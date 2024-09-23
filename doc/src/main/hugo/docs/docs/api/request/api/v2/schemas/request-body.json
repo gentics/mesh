@@ -1,0 +1,14 @@
+{
+  "displayField" : "name",
+  "segmentField" : "name",
+  "container" : true,
+  "description" : "Some description text",
+  "name" : "video",
+  "fields" : [ {
+    "name" : "name",
+    "required" : false,
+    "noIndex" : false,
+    "type" : "string"
+  } ],
+  "microschema" : false
+}

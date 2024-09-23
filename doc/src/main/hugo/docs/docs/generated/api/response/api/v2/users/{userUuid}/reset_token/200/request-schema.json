@@ -1,0 +1,16 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:user:UserResetTokenResponse",
+  "properties" : {
+    "token" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "JSON Web Token which was issued by the API."
+    },
+    "created" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "ISO8601 date of the creation date for the provided token"
+    }
+  }
+}

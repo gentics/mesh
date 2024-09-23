@@ -1,0 +1,11 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:admin:cluster:coordinator:CoordinatorConfig",
+  "properties" : {
+    "mode" : {
+      "type" : "string",
+      "description" : "Coordinator mode which can be set to DISABLED to disable coordination, to CUD to handle only modifying requests or to ALL to handle all requests.",
+      "enum" : [ "DISABLED", "CUD", "ALL" ]
+    }
+  }
+}

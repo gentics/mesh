@@ -1,0 +1,35 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| hostname
+| false
+| string
+| The hostname of the project can be used to generate links across multiple projects. The hostname will be stored along the initial branch of the project.
+
+| name
+| true
+| string
+| Name of the project
+
+| pathPrefix
+| false
+| string
+| Optional path prefix for webroot path and rendered links.
+
+| schema
+| true
+| object
+| Reference to the schema of the root node. Creating a project will also automatically create the base node of the project and link the schema to the initial branch  of the project.
+
+| ssl
+| false
+| boolean
+| SSL flag of the project which will be used to generate links across multiple projects. The flag will be stored along the intial branch of the project.
+
+|======

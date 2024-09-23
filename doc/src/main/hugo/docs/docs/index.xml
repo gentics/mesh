@@ -1,0 +1,408 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Documentation on Gentics Mesh - The open source headless CMS for developers</title>
+    <link>https://getmesh.io/docs/</link>
+    <description>Recent content in Documentation on Gentics Mesh - The open source headless CMS for developers</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    
+	<atom:link href="https://getmesh.io/docs/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Administration Guide</title>
+      <link>https://getmesh.io/docs/administration-guide/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://getmesh.io/docs/administration-guide/</guid>
+      <description>Table of Contents Software Stack Run with Docker Volumes / Locations Docker Compose   Run with JAR File Command Line Arguments   Installation Directory System Requirements Server Requirements Client Requirements   Environment Variables Configuration &amp;amp; Settings General Settings HTTPS/SSL Server Options Cluster Options Storage Options Search Options Upload Options Security Options Monitoring Options Image Options Cache Options Debug Information Options GraphQL Options Memory Settings   Admin Access Backup &amp;amp; Recovery Import &amp;amp; Export Debug Information Active Config Binary Disk Usage Configurations Consistency Check Database Backup Entities Log Migration Status Plugins Status System Information Thread Dump   Read Only Mode Activating Read Only Mode   Changelog Update handling Downgrading Database Revisions   Database Consistency Filesystem support License   Software Stack     Component Type Version     OrientDB</description>
+    </item>
+    
+    <item>
+      <title>Authentication</title>
+      <link>https://getmesh.io/docs/authentication/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://getmesh.io/docs/authentication/</guid>
+      <description>Table of Contents Overview Authentication Configuration   JWT Login API Token Anonymous Access Forcing user to change password   OAuth2 / OIDC Limitations Configuration Mapping Authentication Service Plugin API   OAuth2 Providers Keycloak Auth0 Okta Other     Overview Gentics Mesh provides multiple ways of authentication:
+   Authentication via login
+  Authentication via API token
+  Authentication via OAuth2
+  No authentication - Access via anonymous user</description>
+    </item>
+    
+    <item>
+      <title>Authentication Service Plugin API</title>
+      <link>https://getmesh.io/docs/plugin-types/auth-service-plugin/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://getmesh.io/docs/plugin-types/auth-service-plugin/</guid>
+      <description>Table of Contents Intro Flow JWT handler OAuth handler Anonymous Auth Handler   Setup Mapping JWT Utils Examples   Intro Authentication Service Plugin API can be used to create plugins which can extend the authentication/authorization functionality of Gentics Mesh.
+ Those plugins are intended to work in conjunction with the OAuth2 interation. When the OAuth2 integration with the Keycloak Identity Provider is enabled Gentics Mesh will automatically sync users provided by Keycloak with the users that are stored in Gentics Mesh.</description>
+    </item>
+    
+    <item>
+      <title>Building Blocks</title>
+      <link>https://getmesh.io/docs/building-blocks/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://getmesh.io/docs/building-blocks/</guid>
+      <description>Table of Contents Project API endpoints Response Sample   Node API endpoints Response Sample   Schema API endpoints Response Sample Schema Field   Micronode &amp;amp; Microschema API endpoints Properties Schema Field Types Example   Tag API endpoints Response Sample   Tag Family API endpoints Response Sample   User API endpoints Response Sample   Group API endpoints Response Sample   Role API endpoints Response Sample     This part of the documentation will be about the core concepts of Gentics Mesh.</description>
+    </item>
+    
+    <item>
+      <title>Changelog</title>
+      <link>https://getmesh.io/docs/changelog/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://getmesh.io/docs/changelog/</guid>
+      <description>Table of Contents Clustering Support for OrientDB 2.1.6 (11.09.2024) 2.1.5 (28.08.2024) 2.1.4 (07.08.2024) 2.1.3 (26.06.2024) 2.1.2 (13.05.2024) 2.1.1 (02.05.2024) 2.1.0 (26.04.2024) 2.0.18 (20.03.2024) 2.0.17 (06.03.2024) 2.0.16 (28.02.2024) 2.0.15 (21.02.2024) 2.0.14 (07.02.2024) 2.0.13 (24.01.2024) 2.0.12 (10.01.2024) 2.0.11 (20.12.2023) 2.0.10 (06.12.2023) 2.0.9 (18.11.2023) 2.0.8 (02.11.2023) 2.0.7 (18.10.2023) 2.0.6 (04.10.2023) 2.0.5 (20.09.2023) 2.0.4 (05.09.2023) 2.0.3 (10.08.2023) 2.0.2 (26.07.2023) 2.0.1 (13.07.2023) 2.0.0 (29.06.2023) 1.10.10 (28.06.2023) 1.10.9 (12.06.2023) 1.10.8 (30.05.2023) 1.10.7 (22.05.2023) 1.10.6 (10.05.2023) 1.10.5 (19.</description>
+    </item>
+    
+    <item>
+      <title>Changelog</title>
+      <link>https://getmesh.io/docs/sql-changelog/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://getmesh.io/docs/sql-changelog/</guid>
+      <description>Table of Contents 2.1.7 (12.09.2024) 2.1.6 (28.08.2024) 2.1.5 (08.08.2024) 2.1.4 (26.06.2024) 2.1.3 (27.05.2024) 2.1.2 (14.05.2024) 2.1.1 (02.05.2024) 2.1.0 (26.04.2024) 2.0.20 (17.04.2024) 2.0.19 (20.03.2024) 2.0.18 (06.03.2024) 2.0.17 (28.02.2024) 2.0.16 (22.02.2024) 2.0.15 (08.02.2024) 2.0.14 (24.01.2024) 2.0.13 (10.01.2024) 2.0.12 (20.12.2023) 2.0.11 (06.12.2023) 2.0.10 (19.11.2023) 2.0.9 (03.11.2023) 2.0.8 (18.10.2023) 2.0.7 (04.10.2023) 2.0.6 (20.09.2023) 2.0.5 (05.09.2023) 2.0.4 (23.08.2023) 2.0.3 (11.08.2023) 2.0.2 (26.07.2023) 2.0.1 (13.07.2023) 2.0.0 (29.06.2023) 1.10.36 (11.09.2024) 1.10.35 (28.08.2024) 1.10.34 (07.08.2024) 1.10.33 (26.06.2024) 1.10.32 (28.</description>
+    </item>
+    
+    <item>
+      <title>Clustering</title>
+      <link>https://getmesh.io/docs/clustering/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://getmesh.io/docs/clustering/</guid>
+      <description>Table of Contents Basics Configuration Port Mapping   Setup Node discovery Kubernetes   Session distribution Elasticsearch Handling binary data Cluster Coordination Configuration Master Election Headers   Transaction handling / Change propagation Upgrading a cluster Online Upgrade Offline Upgrade   AWS / GCE Scaling FAQ Monitoring Limitations   Basics     This section is irrelevant, if SQL RDBMS storage premium feature is used. Please refer to the feature documentation, as well as the clustering documentation for the chosen RDBMS.</description>
+    </item>
+    
+    <item>
+      <title>Contribution Guide</title>
+      <link>https://getmesh.io/docs/contributing/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://getmesh.io/docs/contributing/</guid>
+      <description>Table of Contents Contributing Where to start Contribution format Legal stuff   IDE Setup Eclipse IntelliJ Building   Components Big Picture REST API Setup Request Routing Request Handling Domain Model Graph database handling Project structure Startup Sequence Elasticsearch Integration Authentication Authorization Error Handling Transaction Handling Pitfalls Testing AssertJ   Database Changelog TL;DR The good the bad and the ugly   This document is for developers which are interested in contributing to the Gentics Mesh project.</description>
+    </item>
+    
+    <item>
+      <title>Deployment</title>
+      <link>https://getmesh.io/docs/deployment/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://getmesh.io/docs/deployment/</guid>
+      <description>Table of Contents AWS Kubernetes Linux (via systemd) Docker Single Node Cluster     Gentics Mesh can be deployed in various ways. This page contains various information and suggestions on different deployment platforms.
+ AWS It is possible to deploy Gentics Mesh in AWS using the Elastic Container Service (ECS). It is recommended to use Elastic Filesystem (EFS) to persist the file uploads. We also recommend to use Amazon Elasticsearch Service to provide search functionality.</description>
+    </item>
+    
+    <item>
+      <title>DevOps</title>
+      <link>https://getmesh.io/docs/devops/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://getmesh.io/docs/devops/</guid>
+      <description>Table of Contents SystemD Service File Apache Reverse Proxy Nginx Reverse Proxy   This page contains some useful DevOps related information.
+ SystemD Service File This is an example service file to be used with Gentics Mesh.
+ [Unit] Description=Gentics Mesh Server Wants=basic.target After=basic.target network.target syslog.target [Service] User=mesh Restart=on-failure ExecStart=/usr/bin/java -Xms512m -Xmx512m -XX:MaxDirectMemorySize=256m -Dstorage.diskCache.bufferSize=256 -jar /opt/mesh-website-server/mesh-server.jar WorkingDirectory=/opt/mesh-website-server LimitMEMLOCK=infinity LimitNPROC=4096 LimitNOFILE=65536 LimitAS=infinity LimitRSS=infinity LimitCORE=infinity # Features Environment=MESH_UPDATECHECK=false Environment=MESH_DEBUGINFO_LOG_ENABLED=false Environment=MESH_BINARY_DOCUMENT_PARSER=false Environment=MESH_DEFAULT_LANG=en # Auth Environment=MESH_AUTH_KEYSTORE_PASS=YOUR_KEYSTORE_PW # ES Environment=MESH_ELASTICSEARCH_URL=http://localhost:9200 Environment=MESH_ELASTICSEARCH_PREFIX=website Environment=MESH_ELASTICSEARCH_START_EMBEDDED=false # Monitoring Environment=MESH_MONITORING_ENABLED=false Environment=MESH_MONITORING_HTTP_PORT=7071 Environment=MESH_MONITORING_HTTP_HOST=127.</description>
+    </item>
+    
+    <item>
+      <title>Elasticsearch</title>
+      <link>https://getmesh.io/docs/elasticsearch/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://getmesh.io/docs/elasticsearch/</guid>
+      <description>Table of Contents TL;DR Integration details Data format Permission handling Limitations   Configuration Disabling search   Compatibility Security Encrypting communications Basic Authentication REST endpoints Examples / Queries Users Groups Roles Nodes Projects Tags Tag Families Schemas Microschemas Paging Raw search   Binary Search GraphQL Document format Users Groups Roles Nodes Projects Tags Tag Families Microschemas Schemas   Custom mappings / index settings Mapping Modes Mappings / Settings per Language   Binary Fields Exclude distinct Schemas/Microschemas/Fields from indexing.</description>
+    </item>
+    
+    <item>
+      <title>Events</title>
+      <link>https://getmesh.io/docs/events/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://getmesh.io/docs/events/</guid>
+      <description>Table of Contents Intro Eventbus Bridge &amp;amp; Websocket Message Types Registering Unregistering Publishing Sending Ping   Addresses mesh.project.version_purge.start mesh.project.version_purge.finished mesh.schema.migration.start mesh.schema.migration.finished mesh.schema-branch.assign mesh.schema-branch.unassign mesh.microschema-branch.assign mesh.microschema-branch.unassign mesh.microschema.migration.start mesh.microschema.migration.finished mesh.branch.migration.start mesh.branch.migration.finished mesh.startup-complete job.worker mesh.cluster.node.joining mesh.cluster.node.joined mesh.cluster.node.leaving mesh.cluster.node.left mesh.cluster.db.status mesh.ping.local mesh.ping.cluster mesh.clear-permission-store mesh.clear-path-store mesh.clear-caches mesh.user.created mesh.user.updated mesh.user.deleted mesh.group.created mesh.group.updated mesh.group.deleted mesh.group-user.assigned mesh.group-user.unassigned mesh.group-role.assigned mesh.group-role.unassigned mesh.role.created mesh.role.updated mesh.role.deleted mesh.role.permissions.changed mesh.tag.created mesh.tag.updated mesh.tag.deleted mesh.tagfamily.created mesh.tagfamily.updated mesh.tagfamily.deleted mesh.project.created mesh.project.updated mesh.project.deleted mesh.project-schema.assigned mesh.project-schema.unassigned mesh.project-microschema.assigned mesh.project-microschema.unassigned mesh.project-latest-branch.updated mesh.</description>
+    </item>
+    
+    <item>
+      <title>Features</title>
+      <link>https://getmesh.io/docs/features/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://getmesh.io/docs/features/</guid>
+      <description>Table of Contents Content Trees Pretty URLs API endpoints   Navigation Menus API endpoints Response Sample   Breadcrumbs API endpoints Response Sample   Fetch Content with WebRoot Paths Url Fields API endpoints Query content by path Query binary content by path Image manipulation by path   Link Resolving Cross Domain/Project Links Specifying Branches API endpoints Link Resolver Utility   Image Manipulation File Upload Configuration Metadata handling Text extraction Asynchronous binary check   Multi-Language Language Fallback   Permissions Overview Querying Permissions Assigning &amp;amp; Revoking Permissions   Versioning Node Creation Node Updates Publishing Nodes Taking Nodes Offline Reading Nodes Listing versions Auto Purge Purging versions   Content Branches Creating a project branch Updating a project branch Deleting a project branch Moving Nodes Tagging Nodes Deleting Nodes Updating Nodes Permissions   Preview Handling Password Recovery Schema &amp;amp; Microschema Migration Operation: addfield Operation: removefield Operation: changefieldtype Operation: updatefield Operation: updateschema Operation: updatemicroschema Custom Migration Scripts   Executing migrations Clustering HTTP/2 serving   This section will be about the features of Gentics Mesh.</description>
+    </item>
+    
+    <item>
+      <title>Gentics Mesh - API Introduction</title>
+      <link>https://getmesh.io/docs/guides/mesh-api-intro/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://getmesh.io/docs/guides/mesh-api-intro/</guid>
+      <description>Table of Contents Intro Headless CMS Building Blocks Setup   Authentication Load Contents Add Contents WebRoot GraphQL Updating Contents Upload Files Next   Intro In this guide we will learn the basics that are needed to work with the Gentics Mesh API.
+ Before we start lets get our bearings.
+ Headless CMS Gentics Mesh is a headless CMS which means it separates presentation of the content from the content itself.</description>
+    </item>
+    
+    <item>
+      <title>Gentics Mesh - GraphQL Library Plugin Guide</title>
+      <link>https://getmesh.io/docs/guides/mesh-library-plugin/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://getmesh.io/docs/guides/mesh-library-plugin/</guid>
+      <description>Table of Contents Intro Requirements Files Project Setup Schema Plugin Code Data Fetcher   Testing Packaging Deployment Accessing   Intro In this guide you will learn how to create a plugin for Gentics Mesh which will extend the GraphQL API in order query a small library inventory.
+ 
+ This example is inspired by the GraphQL Java Getting Started Guide.
+ All sources for this example are available on GitHub.</description>
+    </item>
+    
+    <item>
+      <title>Gentics Mesh Cookbook</title>
+      <link>https://getmesh.io/docs/cookbook/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://getmesh.io/docs/cookbook/</guid>
+      <description>Table of Contents Introduction Content Binaries Search Autocompletion Did You Mean Autosuggest Result Highlighting Filtering Search Index Tuning Search in Uploads Like &amp;amp; Comment   Storing Data Login Authentication Providers   User data Content Staging Links Sitemap Caching User permissions   Introduction This document aims to provide you with suggestions and hints on how to deal with typical web development tasks. Each chapter will provide you with examples and show you how Gentics Mesh can help you tackle these tasks.</description>
+    </item>
+    
+    <item>
+      <title>Gentics Mesh Hugo Guide</title>
+      <link>https://getmesh.io/docs/guides/mesh-hugo/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://getmesh.io/docs/guides/mesh-hugo/</guid>
+      <description>Table of Contents Intro Building Blocks / Domain Model Step 1 - Content Project Content Permissions   Step 2 - Export Step 3 - Theme Step 4 - Rendering Conclusion   Intro In this guide you will learn how to use Gentics Mesh in combination with Hugo.
+ The site we are building is very basic and only consists of three different views which form a vehicle inventory.</description>
+    </item>
+    
+    <item>
+      <title>Gentics Mesh Java Client</title>
+      <link>https://getmesh.io/docs/java-rest-client/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://getmesh.io/docs/java-rest-client/</guid>
+      <description>Table of Contents Installation Java REST Client SSL handling Connection Leaks   Monitoring Client Use HTTP/2 Minification and pretty printing the REST payloads   Installation You can add the following maven dependency and repository to your project to get the Gentics Mesh Java client dependencies.
+ … &amp;lt;dependency&amp;gt; &amp;lt;artifactId&amp;gt;mesh-rest-client&amp;lt;/artifactId&amp;gt; &amp;lt;groupId&amp;gt;com.gentics.mesh&amp;lt;/groupId&amp;gt; &amp;lt;version&amp;gt;${mesh.version}&amp;lt;/version&amp;gt; &amp;lt;/dependency&amp;gt; … &amp;lt;repositories&amp;gt; &amp;lt;repository&amp;gt; &amp;lt;id&amp;gt;maven.gentics.com&amp;lt;/id&amp;gt; &amp;lt;name&amp;gt;Gentics Maven Repository&amp;lt;/name&amp;gt; &amp;lt;url&amp;gt;https://maven.gentics.com/maven2&amp;lt;/url&amp;gt; &amp;lt;releases&amp;gt; &amp;lt;enabled&amp;gt;true&amp;lt;/enabled&amp;gt; &amp;lt;/releases&amp;gt; &amp;lt;snapshots&amp;gt; &amp;lt;enabled&amp;gt;true&amp;lt;/enabled&amp;gt; &amp;lt;/snapshots&amp;gt; &amp;lt;/repository&amp;gt; &amp;lt;/repositories&amp;gt; …     Java REST Client The REST client can be used to interact with all Gentics Mesh API Endpoints.</description>
+    </item>
+    
+    <item>
+      <title>Gentics Mesh React - Basics</title>
+      <link>https://getmesh.io/docs/guides/mesh-react/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://getmesh.io/docs/guides/mesh-react/</guid>
+      <description>Table of Contents Intro Building Blocks / Domain Model Step 1 - Frontend App Routing Navigation Category View Vehicle View   Step 2 - Gentics Mesh Step 3 - Schemas VehicleImage Vehicle Category   Step 4 - Contents Project Content Permissions   Step 5 - GraphQL Contents Navigation   Step 6 - Integration API React Proxy Content Images Navigation   Conclusion   Intro In this guide you will learn how to adapt a React application to use Gentics Mesh.</description>
+    </item>
+    
+    <item>
+      <title>Gentics Mesh React - Event Handling</title>
+      <link>https://getmesh.io/docs/guides/mesh-react-2/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://getmesh.io/docs/guides/mesh-react-2/</guid>
+      <description>Table of Contents Intro Eventbus App Testing Final thoughts   Intro In this guide which is a follow-up guide to the React Basics Guide you will learn how events can be used to invoke live-reload of contents.
+ Your browser does not support the video tag.      Eventbus Gentics Mesh features an eventbus system which is used to handle all internal and public events. Events will for example be dispatched once a content gets updated, deleted or created.</description>
+    </item>
+    
+    <item>
+      <title>Getting Started Guide</title>
+      <link>https://getmesh.io/docs/getting-started/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://getmesh.io/docs/getting-started/</guid>
+      <description>Table of Contents Headless CMS vs. Regular CMS Quickstart Run with docker Or download the jar   TL;DR Intro Startup Demo   Here you will find everything to get you started with Gentics Mesh.
+ Gentics Mesh is a headless CMS which provides developers with HTTP based API&amp;#8217;s to accessing and manage contents.
+ Headless CMS vs. Regular CMS A headless CMS just provides an API (REST/GraphQL) instead of serving or rendering the pages directly.</description>
+    </item>
+    
+    <item>
+      <title>GraphQL</title>
+      <link>https://getmesh.io/docs/graphql/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://getmesh.io/docs/graphql/</guid>
+      <description>Table of Contents Live Examples Loading current user Loading basic fields of a node Loading a node via uuid Loading referenced fields of a node Loading incoming references Invoking a search query to find specific nodes Using pagination Multilanguage support   Filtering Loading nodes from a specific schema Filter nodes with regular expressions Combining different filters Filtering limitations Native Filtering Sorting Comparison to Elasticsearch   GraphiQL Browser Permission Handling Nodes   Version Handling Exceptions   Slow Query Log Limitations   Gentics Mesh is also able to process GraphQL queries.</description>
+    </item>
+    
+    <item>
+      <title>GraphQL Plugin API</title>
+      <link>https://getmesh.io/docs/plugin-types/graphql-plugin/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://getmesh.io/docs/plugin-types/graphql-plugin/</guid>
+      <description>Table of Contents Setup Context Examples Guides   Setup Add the interface GraphQLPlugin to your plugin class. You will need to implement the createRootSchema() method to return the object type of your plugin. This type is added to the Gentics Mesh GraphQL API and can be accessed via the pluginApi field.
+ Each plugin will be added to the pluginApi field using the apiName as the key for the new field:</description>
+    </item>
+    
+    <item>
+      <title>Image Manipulation</title>
+      <link>https://getmesh.io/docs/image-manipulation/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://getmesh.io/docs/image-manipulation/</guid>
+      <description>Table of Contents Feature control Manipulation features Resize Using UUID Using Path Resizing Options   Crop Placeholders Focal Point Responsive Design Updating Focalpoint   Transform and Update an Image Image Manipulation Query Parameters     Mesh contains an in-built capability of manipulating the image data, stored in the binary content fields.
+ Feature control This capability is controlled by the Mesh options item image.mode with the following options: * ON_DEMAND: Each time a manipulation is requested via image manipulation query parameters, the new variant is created automatically in the image cache and served to the user.</description>
+    </item>
+    
+    <item>
+      <title>LTS Changelog</title>
+      <link>https://getmesh.io/docs/lts-changelog/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://getmesh.io/docs/lts-changelog/</guid>
+      <description>Table of Contents 1.10.34 (11.09.2024) 1.10.33 (28.08.2024) 1.10.32 (07.08.2024) 1.10.31 (26.06.2024) 1.10.30 (13.05.2024) 1.10.29 (06.03.2024) 1.10.28 (27.02.2024) 1.10.27 (21.02.2024) 1.10.26 (07.02.2024) 1.10.25 (17.01.2024) 1.10.24 (10.01.2024) 1.10.23 (20.12.2023) 1.10.22 (06.12.2023) 1.10.21 (29.11.2023) 1.10.20 (17.11.2023) 1.10.19 (02.11.2023) 1.10.18 (24.10.2023) 1.10.17 (18.10.2023) 1.10.16 (04.10.2023) 1.10.15 (20.09.2023) 1.10.14 (04.09.2023) 1.10.13 (10.08.2023) 1.10.12 (26.07.2023) 1.10.11 (12.07.2023) 1.9.16 (22.05.2023) 1.9.15 (10.05.2023) 1.9.14 (19.04.2023) 1.9.13 (22.03.2023) 1.9.12 (08.03.2023) 1.9.11 (22.02.2023) 1.9.10 (26.01.2023) 1.8.21 (19.04.2023) 1.8.20 (22.03.2023) 1.8.19 (08.</description>
+    </item>
+    
+    <item>
+      <title>Logging</title>
+      <link>https://getmesh.io/docs/logging/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://getmesh.io/docs/logging/</guid>
+      <description>Table of Contents Log Levels Format Examples Stdout/Errout (default) Syslog File logging   OrientDB   Gentics Mesh uses logback as the main logging facility. Logging can be configured using the config/logback.xml file.
+ Log Levels Log levels can be configured per package/class
+ &amp;lt;logger name=&#34;io.vertx&#34; level=&#34;INFO&#34;/&amp;gt; &amp;lt;logger name=&#34;com.gentics&#34; level=&#34;INFO&#34;/&amp;gt;   For all remaining loggers the root level will be used:
+ &amp;lt;root level=&#34;ERROR&#34;&amp;gt;   Possible values: ERROR, WARN, INFO, TRACE, DEBUG</description>
+    </item>
+    
+    <item>
+      <title>Long-Term Support</title>
+      <link>https://getmesh.io/docs/commercial/long-term-support/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://getmesh.io/docs/commercial/long-term-support/</guid>
+      <description>Table of Contents Introduction Support Length Maintenance and security updates Changelog Access Maven / Downloads Docker Images     Introduction Once your project is mature, regularly upgrading to new feature releases just to receive bug fixes and security updates can be a burden for you. This is why we decided to provide our users with another option: Long-term support (LTS) releases provide you with a stable and secure upgrade path for your Gentics Mesh projects, while minimizing the risks involved.</description>
+    </item>
+    
+    <item>
+      <title>Mesh CLI</title>
+      <link>https://getmesh.io/docs/cli/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://getmesh.io/docs/cli/</guid>
+      <description>Table of Contents Description Installation Configuration Usage   Description The Gentics Mesh CLI can be used to interact with a Gentics Mesh server using the console prompt. The CLI allows you to list, create, delete and update specific elements. The CLI can also be used to invoke certain administrative tasks such as backup, restore and search index synchronization.
+   Installation yarn global add mesh-cli   or</description>
+    </item>
+    
+    <item>
+      <title>Monitoring</title>
+      <link>https://getmesh.io/docs/monitoring/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://getmesh.io/docs/monitoring/</guid>
+      <description>Table of Contents Configuration Liveness Probe in Docker Endpoints Liveness Probe Readiness Probe Status Cluster Status Version Info Prometheus Metrics Metrics Clients     Gentics Mesh exposes monitoring data via an un-authenticated monitoring server. In addition to the default API server which runs on default port 8080 an additional monitoring server will be started which listens on localhost:8081 by default.
+     The monitoring server is un-authenticated and thus should not be exposed to the public.</description>
+    </item>
+    
+    <item>
+      <title>Performance Guide</title>
+      <link>https://getmesh.io/docs/performance/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://getmesh.io/docs/performance/</guid>
+      <description>Table of Contents Configuration Search Index Memory   Paging Contents   This document contains useful information about performance related topics. It will help you make the right modelling choices when using Gentics Mesh.
+ It is possible to store 200.000 and more nodes within a single node container. We have made tests with more than 2.000.000 nodes in Gentics Mesh. When storing that amount of nodes you should keep the following design suggestions in mind:</description>
+    </item>
+    
+    <item>
+      <title>Platforms &amp; Clients</title>
+      <link>https://getmesh.io/docs/platforms/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://getmesh.io/docs/platforms/</guid>
+      <description>Table of Contents JavaScript PHP Go Java   JavaScript   Gentics Mesh JavaScript Client - A work-in-progress client for Gentics Mesh written in TypeScript.
+  Gentics Mesh Angular Example
+  Gentics Mesh Express Example
+     PHP   Gentics Mesh PHP Client - a client for Gentics Mesh written in PHP.
+  Gentics Mesh PHP Example - This example shows how to use Gentics Mesh in combination with the Silex PHP routing framework.</description>
+    </item>
+    
+    <item>
+      <title>Plugin Development</title>
+      <link>https://getmesh.io/docs/plugin-development/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://getmesh.io/docs/plugin-development/</guid>
+      <description>Table of Contents Plugin Types Plugin Setup Plugin Methods Plugin Manifest Maven   Dependencies Access Data Plugin Extensions Building extension plugins   Integration Testing Full Example   Development Guide Examples Classloading Vert.x Troubleshoot Contributing   Plugins can extend the REST and GraphQL API and also hook into various places of Gentics Mesh. A plugin developer needs to extend the AbstractPlugin class. The plugin can hook into different parts of Gentics Mesh by implementing one of multiple interfaces for the different plugin types.</description>
+    </item>
+    
+    <item>
+      <title>Plugin Migration</title>
+      <link>https://getmesh.io/docs/plugin-migration/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://getmesh.io/docs/plugin-migration/</guid>
+      <description>Table of Contents New plugin setup New manifest handling New dependencies Life cycle changes New changes   Starting with Gentics Mesh 0.37.0 a new plugin API was introduced. Older plugins need to migrate to this API in order to be deployable. This document contains a collection of the most important changes to help migrate older plugins to the new system.
+ New plugin setup The AbstractPluginVerticle class has been replaced by AbstractPlugin.</description>
+    </item>
+    
+    <item>
+      <title>Plugin System</title>
+      <link>https://getmesh.io/docs/plugin-system/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://getmesh.io/docs/plugin-system/</guid>
+      <description>Table of Contents Plugins Plugin System Configuration Plugin Lifecycle Deployment Events Clustering   HTTP/2 Plugin Development FAQ Future   The Gentics Mesh plugin system allows you to write and deploy custom plugins which can enrich the existing REST API.
+ Typical example plugins are:
+   Comment plugin - A plugin to provide a commenting feature.
+  Like plugin - A plugin to store likes to specific nodes.</description>
+    </item>
+    
+    <item>
+      <title>REST Plugin API</title>
+      <link>https://getmesh.io/docs/plugin-types/rest-plugin/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://getmesh.io/docs/plugin-types/rest-plugin/</guid>
+      <description>Table of Contents Setup Global Routes Project Routes Context Router API Examples   Setup You can extend the REST API by adding the RestPlugin interface to your plugin class.
+ You can now implement two different methods to extend the REST API at different places in the API.
+   Global Routes You can hook your plugin routes to the /api/v1/plugins endpoint.
+ Implementing the createGlobalRouter method as shown below would add the /api/v1/plugins/hello-world/hello endpoint for the plugin with the hello-world restApiName.</description>
+    </item>
+    
+    <item>
+      <title>References</title>
+      <link>https://getmesh.io/docs/references/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://getmesh.io/docs/references/</guid>
+      <description>Table of Contents REST API Query Parameters Examples   HTTP Encoding Headers CORS ETag Handling   HTTPs Ports Certificates Client Certificate   API Tools Insomnia Postman     REST API The Gentics Mesh REST API provides endpoints enabling you to invoke CRUD operations on just ANY Gentics Mesh element. There are many things you can do with the REST API. To name a few:
+   Obviously you can create, update &amp;amp; fetch multilingual content items as well as tag them.</description>
+    </item>
+    
+    <item>
+      <title>Security</title>
+      <link>https://getmesh.io/docs/security/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://getmesh.io/docs/security/</guid>
+      <description>Table of Contents API Tokens Server Tokens Network Security Elasticsearch Database Security Vulnerability Disclosure Policy   This section will cover information about Gentics Mesh security related topics.
+ API Tokens API tokens can be generated via the /api/v2/users/:uuid/token. These tokens should not be publicly exposed since they they are equivalent to user credentials. Tokens can be reset via the /api/v2/users/:uuid/reset_token endpoint. This will invalidate any previously generated API token.</description>
+    </item>
+    
+    <item>
+      <title>Support</title>
+      <link>https://getmesh.io/docs/support/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://getmesh.io/docs/support/</guid>
+      <description>Table of Contents Professional Services Versioning Release Cycle Community Support Unsupported releases   Professional Services You can take advantage of our fast support with SLAs, enlightening consulting &amp;amp; empowering trainings.
+ Customers with Professional Service contract get access to our dedicated support system and can report issues via phone.
+ You can reach us at mesh@gentics.com for more details.
+   Versioning We apply Semantic Versioning to our releases.</description>
+    </item>
+    
+    <item>
+      <title>User Interface</title>
+      <link>https://getmesh.io/docs/user-interface/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://getmesh.io/docs/user-interface/</guid>
+      <description>Table of Contents Creating and Managing Content Searching Administrative Functions Configuration   The Gentics Mesh user interface is a web-based administration tool for the Gentics Mesh server. By default it can be reached via http://localhost:8080/mesh-ui/.
+ To start, log in with the administrator credentials: admin and the password that has been auto-generated and printed on first startup. In case, you&amp;#8217;ve downloaded Gentics Mesh including our demo project, you can click on the project to begin exploring its contents.</description>
+    </item>
+    
+  </channel>
+</rss>

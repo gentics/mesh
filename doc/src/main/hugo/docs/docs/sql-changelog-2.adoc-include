@@ -1,0 +1,454 @@
+////
+Note: this file (changelog-2.adoc-include) is generated automatically.
+Do not make manual changes in this file, as they will be lost.
+
+If you want to add changelog entries, create a new file in changelog/src/changelog/entries/... and run creation of the changelog with
+mvn -pl changelog install
+////
+
+[[v2.1.7]]
+== 2.1.7 (12.09.2024)
+
+icon:check[] Core: The Vert.x Handlebars engine dependency has been patched, to replace the vulnerable Apache `commons-text` dependency, targeting `CVE-2022-42889`.
+
+[[v2.1.6]]
+== 2.1.6 (28.08.2024)
+
+icon:check[] Documentation: The check/repair API calls are better documented in regards of an async processing. The logging documentation is extended with format examples.
+
+icon:check[] Core: A crash has been fixed on an attempt of (micro)node migration over non-adjacent (micro)schema versions.
+
+[[v2.1.5]]
+== 2.1.5 (08.08.2024)
+
+icon:check[] Docker: Mesh image startup has been fixed.
+
+icon:check[] Core: A crash in referencing contents lookup has been fixed.
+
+[[v2.1.4]]
+== 2.1.4 (26.06.2024)
+
+icon:check[] Elasticsearch: An Elasticsearch Java Client has been updated to the version 1.1.2, containing the corrections to the connection failure processing mechanism. The Elasticsearch activity idle checking has been improved to be more proof of the unstable connections.
+
+[[v2.1.3]]
+== 2.1.3 (27.05.2024)
+
+icon:check[] Core: A repair mechanism for `Content reference consistency check` has been improved to use off-transactional mechanism, to improve Mesh and database resource consumption.
+
+[[v2.1.2]]
+== 2.1.2 (14.05.2024)
+
+icon:check[] GraphQL: A combination of similar queries with different names and filter parameters, running over native filtering, that produces incorrect results, has been fixed. 
+
+[[v2.1.1]]
+== 2.1.1 (02.05.2024)
+
+icon:check[] A possible NullPointerException when handling binary data has been fixed.
+
+
+icon:check[] The library used to process webp images has been changed due to JVM errors when running in an alpine based image.
+
+
+[[v2.1.0]]
+== 2.1.0 (26.04.2024)
+
+icon:plus[] Core: Usage of application level protocol negotiation (aka ALPN) can be now configured via Mesh Options.
+
+
+icon:plus[] Java Rest client: REST client can now choose the HTTP protocol version to use for the Mesh connection. Possible values: DEFAULT (current default support of the carrier HTTP client library, default value), HTTP_1_1, HTTP_2.
+
+
+icon:plus[] Plugins: An option for connection over HTTP/2 for the Mesh plugins have been added.
+
+
+icon:plus[] Image manipulation: Adds support for WebP images.
+
+icon:plus[] The endpoint `GET /auth/login` now also supports login via the Authentication Bearer request header (using an API token).
+
+
+icon:plus[] Core: The on-demand image manipulation feature has been refactored for DDoS protection. The new image manipulator option, `mode`, has been added with the following values: 
+`ON_DEMAND` keeps already existing behaviour with creating/reusing the image variant automatically on each request, 
+`MANUAL` requires an extra step of calling the image variant creation REST API prior to the variant serve, `OFF` disables the feature completely. A set of REST API calls has been added for the image variants manipulation. 
+The GraphQL `nodes` call has been extended to filter/serve over the image variants of a selected binary field, if applicable.
+
+icon:plus[] Search: Several enhancements have been applied to the content, sent to the search engine for the indexing. Each (micro)schema is presented a `noIndex` flag, marking the content of the (micro)schema as excluded from the indexing. Each (micro)schema field is presented a similar `noIndex` flag. 
+By default no flag is set, meaning the content to be indexable. This feature serves security purposes, preventing the sensible information from leaking through the search engine. 
+
+icon:plus[] REST: A new HttpServer option, `minifyJson`, has been added to control over the REST API payloads being pretty printed for readability, or minified for resource save. An analogous setting has been added to the Java `MeshRestClient`. 
+Default value is `true`, so the payload minification is turned on, which is a @breaking@S change, if one expects the pretty-formatted output.
+
+icon:plus[] Now it's possible to use generated Mesh API key for the login request, with `apikey` string body parameter.
+
+icon:plus[] REST: A new 'languages' endpoint has been added, providing the list of the installed languages, as well as the lookup over UUID or 2-character language tag.
+
+icon:plus[] Mesh SQL has been updated to Java 17 (LTS version).
+
+
+icon:plus[] Some dependencies have been updated:
+* VertX: 4.5.7
+* GraphQL: 21.5
+* GraphQL Dataloader: 3.2.2
+* PF4j: 3.11.0
+* Hazelcast: 3.12.13
+* Jackson: 2.17.0
+* SnakeYAML: 2.2
+* Log4j: 2.23.1
+* SLF4j: 2.0.13
+* Logback: 1.5.5
+* Commons IO: 2.16.1
+* RAML Parser: 0.8.40
+* JSON Path: 2.9.0
+* JSoup: 1.17.2
+* Jettison: 1.5.4
+* Netty: 4.1.108.Final
+* Image IO: 3.10.1
+
+
+[[v2.0.20]]
+== 2.0.20 (17.04.2024)
+
+icon:check[] A repair mechanism for `Node field container versions` inconsistencies has been implemented.
+
+[[v2.0.19]]
+== 2.0.19 (20.03.2024)
+
+icon:check[] GraphQL: A native filter UUID list parameter hits an exception, when a database expects it containing DB-specific UUID types, and not strings, as provided by GraphQL API. This has been fixed.
+
+icon:check[] GraphQL: A regression of missing common `and`, `or`, `not` top level filters has been fixed.
+
+[[v2.0.18]]
+== 2.0.18 (06.03.2024)
+
+icon:check[] Core: Getting lists of nodes over the REST API has been improved to use less queries for improved performance.
+
+icon:check[] REST client: The configuration now allows adding default parameter provider for query parameters, that should be added to every request (unless overwritten).
+
+Tests: The tests API has been extended to allow tests which do not reset the database between test cases.
+
+[[v2.0.17]]
+== 2.0.17 (28.02.2024)
+
+icon:check[] Core: Due to incorrect mutation of cached permission entries, sometimes permissions were temporarily incorrectly granted on nodes.
+
+icon:check[] GraphQL: In cases of long running GraphQL requests, some other GraphQL requests were queued and executed after the long running request, even if enough workers were still
+available. The behaviour has been changed, so that GraphQL requests will only be queued, if all workers are currently busy.
+
+icon:check[] Cache: The permission cache has been fixed to always return copies of the actually cached entries.
+
+[[v2.0.16]]
+== 2.0.16 (22.02.2024)
+
+icon:check[] Core: The root-based data (e.g. tags, branches) was ignoring its root, when being requested in native filtering or sorting. This has been fixed.
+
+icon:check[] REST: When requesting sorted data, the permission limitations are violated. This has been fixed.
+
+icon:check[] Core: The process of updating from Mesh SQL < 2.x with a database containing many records in table mesh_nodefieldcontainer has been optimized to run much faster and to not consume a large amount of Java heap space.
+
+
+icon:check[] Core: Calculation of the memory consumption of cached Strings has been improved to better reflect the real memory consumption. Before this fix, the calculated memory consumption could be too small resulting in the cache using much more memory than the configured maximum size.
+
+icon:check[] Core: Creating a translation for the root node of a project always failed with a "Bad Request" error, which has been fixed.
+
+icon:check[] Elasticsearch: A full access to the data backed by ES has been given to the admin users.
+
+icon:check[] Because of a flawed cache invalidation strategy, the project stayed on an old 'latest' branch, even if a new one has been assigned, until the caches are invalidated, or a restart is triggered. This has been fixed.
+
+icon:check[] Cache: A mechanism of reattaching the cached entity to the persistence context has been introduced, allowing implementations of smarter cache policies.
+
+Cache: Because of a flawed cache invalidation strategy, the project stayed on an old 'latest' branch, even if a new one has been assigned, until the caches are invalidated, or a restart is triggered. This has been fixed.
+
+icon:check[] A regression regarding OAuth user filtering has been fixed.
+
+Minor improvements in authentication-related utilities Java API, allowing more control over authentication URL management.
+
+[[v2.0.15]]
+== 2.0.15 (08.02.2024)
+
+icon:check[] REST: The endpoints for invoking a consistency check/repair now have a new query parameter `async` which allows to perform the action as a background job instead of synchronously.
+
+Core: Updating and publishing a node in a single request has been optimized to only create a single new version of the content.
+
+Core: More consistency checks have been added for asynchronous execution.
+
+
+icon:check[] Auth: Synchronization of users, groups and roles from AuthServicePlugin implementations (like the keycloak plugin) has been improved for performance and stability.
+
+icon:check[] REST client: Improves error handling for WebSocket errors.
+
+icon:check[] REST: The endpoints for invoking a consistency check/repair now have a new query parameter `async` which allows to perform the action as a background job instead of synchronously.
+Core: Updating and publishing a node in a single request has been optimized to only create a single new version of the content.
+
+icon:check[] Auth: Synchronization of users, groups and roles from AuthServicePlugin implementations (like the keycloak plugin) has been improved for performance and stability.
+
+icon:check[] Elasticsearch: A possibility of DDoSing the ES with a bulk request of too many items has been eliminated.
+
+icon:check[] GraphQL: When an inexisting language has been requested for a node, the schema info was not loaded as well. This has been fixed.
+
+[[v2.0.14]]
+== 2.0.14 (24.01.2024)
+
+icon:check[] GraphQL/Core: The performance of getting nodes with micronode fields or micronode list fields has been improved.
+
+icon:check[] GraphQL: Fetching of micronode fields has been improved to allow batch loading.
+
+[[v2.0.13]]
+== 2.0.13 (10.01.2024)
+
+icon:check[] SQL: In cases of temporary unavailability of the database, it could happen that some (stale) transactions were left over, which could cause subsequent `java.lang.IllegalStateException: Session/EntityManager is closed` errors.
+The handling of database unavailability has been improved to properly dispose of such transactions and a periodic background check for stale transactions has been added.
+
+icon:check[] Core: The process of deleting nodes recursively has been refactored to avoid possible deadlocks in the database (when running in parallel requests).
+
+icon:check[] REST: The documentation of the generic parameter `fields` has been fixed. Now `fields` works over the Language entities as well, the values are `uuid`,`name`,`languageTag`,`nativeName`.
+
+icon:check[] GraphQL. Some of (micro)schema fields related queries rely on the target (micro)schema having at least one field, crashing in HTTP 500 otherwise. This has now been fixed. 
+
+[[v2.0.12]]
+== 2.0.12 (20.12.2023)
+
+icon:check[] GraphQL: Sorting nodes by schema.name failed with an error and has been fixed.
+
+
+icon:check[] Core: Configuring `fieldContainerCacheSize` with a memory size or percentage could cause a NullPointerException when handling nodes containing micronodes. This has been fixed.
+
+icon:check[] Core: Unnecessary uniqueness checks for segment fields will now be avoided, when updating nodes.
+
+icon:check[] GraphQL: More test cases for sorting have been added.
+
+
+icon:check[] Core: Unnecessary uniqueness checks for segment fields will now be avoided, when updating nodes.
+
+icon:check[] GraphQL: The overall performance of GraphQL requests has been improved by caching the GraphQL schemas.
+
+icon:check[] Core: Now it is not allowed to set a new password to an empty or invalid (e.g. spaces) string.
+
+icon:check[] Auth: The unnecessary logging of outdated/mismatched auth token has been removed.
+
+[[v2.0.11]]
+== 2.0.11 (06.12.2023)
+
+icon:check[] Core: More performant batch creation of the list fieds.
+
+
+icon:check[] Core: A regression of creation of the named entities has been fixed.
+
+
+icon:check[] Core: Improve the internal Java API of the list field creation, targeting better batch performance.
+
+
+icon:check[] Core: Setting role permissions on node creation/update has been made more efficient.
+
+
+icon:check[] SQL: An edge case for `Too many SQL parameters` occurrences has been fixed.
+
+
+icon:check[] Core: Improve the internal Java API for granting and revoking permissions.
+
+
+[[v2.0.10]]
+== 2.0.10 (19.11.2023)
+
+icon:check[] SQL: Batch loading of node reference fields has been introduced, to speed up the dedicated GraphQL requests.
+
+icon:check[] Cache: Improvements related to the NULL value caching support.
+
+icon:check[] GraphQL: The performance of getting all nodes of a project via GraphQL has been improved.
+
+icon:check[] Core: The content/list cache has been refactored to improve the control over the memory consumption. Now both  `fieldContainerCacheSize` and `listFieldCacheSize` values accept the numeric values, meaning the number of cache entries, size in format `XXX{B|K|M|G|T}`, or a percent of total available memory. For instance, the value `50000` means 50000 entries, `5G` means absolute 5 Gigabytes of RAM, `50%` means half of the RAM available to Mesh..
+
+Monitoring: New files, `contentCache.json` and `listableFieldCache.json`, have been added to the debug info response, containing the content cache resources information. 
+
+
+icon:check[] SQL: An error in indexing of the named entities disclosed the ability to create several entity instances with the same name. Affected entities are: project, schema, microschema, tag, tag family, branch, group, user, role, language. This has been fixed. 
+The already existing duplicated entities are fixed on first boot by renaming according to the pattern `dedup_<old_name>_<uuid>`.
+
+icon:check[] GraphQL: `referencedBy` field fetcher has been refactored for more optimal batch loading.
+
+icon:check[] Tests: Added set of tests of uniqueness of the named entities on a database level.
+
+icon:check[] Core: The cache internal Java API has been presented a new constructor, allowing using the weight instead of entity number for the cache size calculations, as well as some new statistics getters.
+
+icon:check[] Core: Now caches treat NULL as a valid value, instead of a constant miss.
+
+[[v2.0.9]]
+== 2.0.9 (03.11.2023)
+
+icon:check[] SQL: Due to incorrect SQL statements, deleting of nodes could be very slow. The SQL statements have been fixed.
+
+
+icon:check[] SQL: Some more possible `Too many SQL parameters` occurrences have been fixed.
+
+
+icon:check[] GraphQL: Some more multithreading issues with initialization of GraphQL have been fixed.
+
+
+icon:check[] Core: Requests to branches failed with an internal error, if monitoring was disabled. This has been fixed.
+
+
+icon:check[] Core: The new configuration option `vertxOptions.orderedBlockingHandlers` allows to change the behaviour of concurrent handling of "long running" requests
+(requests that modify data or GraphQL requests). If the option is set to `true` (default value) such requests will be run in order (per http verticle) and never concurrently.
+As a consequence, it may happen that e.g. GraphQL requests are queued for some time if some other requests are currently handled.
+If the option is set to `false`, blocking requests will only be queued, if all threads of the worker pool are currently busy.
+
+
+icon:check[] GraphQL: Performance optimizations of the Elasticsearch-based requests.
+
+
+icon:check[] GraphQL: Performance optimizations of the Elasticsearch-based requests.
+
+
+[[v2.0.8]]
+== 2.0.8 (18.10.2023)
+
+icon:check[] Search: The indexed node fetcher has been completely rewritten, targeting the performance and stability.
+
+icon:check[]  Core: Mesh SQL incorrectly showed the version number of Mesh Core instead of its own. This has been fixed, Mesh SQL will now show its own version number.
+
+icon:check[] SQL: An index has been added to the Branch/SchemaVersion edge, for the schema version fetch performance.
+
+icon:check[] GraphQL: When the very first GraphQL Queries (after starting the Mesh instance) were executed in parallel, it could happen that
+GraphQL execution failed with some internal errors. This has been fixed.
+
+
+icon:check[] GraphQL: Parent loading has been speeded up by using a batch data loading.
+
+icon:check[] Search: Minor logging changes in the search engine, making it less annoying.
+
+[[v2.0.7]]
+== 2.0.7 (04.10.2023)
+
+icon:check[] Core: An edge case of `Too many SQL parameters` occurrence has been fixed.
+
+icon:check[] Core: A crash of an attempt to publish the node field, referencing to the deleted node, during the massive publish process, has been fixed.
+
+
+icon:check[] GraphQL: An edge case of losing node data in the massive GraphQL response has been fixed.
+
+
+icon:check[] Core: More NPE occurrences during the massive concurrent publishing process have been fixes.
+
+icon:check[] Core: More NPE occurrences during the massive concurrent publishing process have been fixes.
+
+[[v2.0.6]]
+== 2.0.6 (20.09.2023)
+
+icon:check[] Core: When running in the massive concurrent publishing process, it is possible to run into a race condition when some field containers are already processed while being referenced by the edge, 
+throwing an NPE. This has now been fixed.
+
+
+[[v2.0.5]]
+== 2.0.5 (05.09.2023)
+
+icon:check[] Core: Getting sorted entities over the REST API caused an Internal Server Error, which has been fixed.
+
+
+icon:check[] Mesh Rest Client: An error has been fixed, which prevented sorting parameters from being passed to the endpoint.
+
+
+icon:check[] Clustering: Calling cluster specific REST Endpoints on non-clustered instances could cause internal server errors. The behaviour has been changed so that
+a "Bad Request" error is returned containing a proper error message.
+
+
+icon:check[] Java Rest Client: After logging in with the `login()` method, the login token was never refreshed, which caused it to expire after the configured token expiration time (per default 1 hour),
+even if the client was used to do requests. This has been changed now, so that the login token in the client will be refreshed on every request to mesh.
+
+
+icon:check[] GraphQL: Link resolving in graphql queries ignored the language tags in the links. This has been fixed.
+
+
+icon:check[] GraphQL: The result set of the retrieval of the complex nodes + children structure has been improved to contain all the items.
+
+
+icon:check[] SQL: Deleting nodes in parallel requests could cause deadlocks in the database. This has been resolved by changing the delete requests and adding some indices.
+
+
+icon:check[] GraphQL: The metadata request does not crash anymore on the empty (micro)schemas. The new related filter, `isEmpty`, has been added as well.
+
+
+[[v2.0.4]]
+== 2.0.4 (23.08.2023)
+
+icon:check[] Core: The performance of node deletion has been improved.
+
+[[v2.0.3]]
+== 2.0.3 (11.08.2023)
+
+icon:check[] SQL: The pagination usage for Native Filtering has been fixed for MS SQL databases. 
+
+icon:check[] Java filter for Node reference content field has been fixed. Native filtering pagination has been improved. Some other minor stability fixed applied.
+
+icon:check[] SQL: All named entities have been indexed over name field for performance.
+
+
+icon:check[] SQL: More occurrences of ignoring the `storageOptions.sqlParametersLimit`, leading to the limit violation error, have been fixed.
+
+
+icon:check[] Plugins: Logging fixed upon false triggering of a warning of inexisting role/group connection.
+
+
+icon:check[] Core: All named instances have been presented an own cache.
+
+
+[[v2.0.2]]
+== 2.0.2 (26.07.2023)
+
+icon:check[] Core: The performance of schema migrations has been improved by efficiently loading binary fields and list field values.
+
+
+icon:check[] GraphQL: The performance of graphql queries returning list fields has been improved by efficiently loading those list field values.
+
+
+icon:check[] Core: A cache for list field values has been added. The size of this cache can be configured with `cache.listFieldCacheSize` (defaults to 50000).
+
+
+icon:check[] Core: Uniqueness checks for webroot url field values will now only be done, if those values actually change. This will improve performance of e.g. schema migrations, where the webroot url field values are likely to not change.
+
+
+icon:check[] Core: An internal API for efficient loading of list field values has been added.
+
+
+[[v2.0.1]]
+== 2.0.1 (13.07.2023)
+
+icon:check[] Clustering: Due to an incorrect check, it was possible that migration jobs could complete without actually migrating anything, when run in a clustered environment with disabled coordination mode.
+
+icon:check[] Core: Under race conditions the publishing process might crash on multiple simultaneous node field processing. This has been fixed.
+
+
+icon:check[] Core: The application of `storageOptions.sqlParametersLimit` has been improved, targeting some content fetch edge cases.
+
+
+icon:check[] Core: Some indices have been added to node parent edge entity to speed up fetching of node children.
+
+
+icon:check[] Core: A consistency check with repair option has been added for branches, that do not contain the project root node.
+
+
+icon:check[] Clustering: The caching implementation for clustered instances has been changed from distributed caches to local caches (with distributed invalidation)
+for performance reasons. This also fixes possible locks when uploading binary data.
+
+
+[[v2.0.0]]
+== 2.0.0 (29.06.2023)
+
+icon:plus[] Adds asynchronous checks for uploaded binaries. When the new property `binaryCheckUrl` is set for a binary field in a schema, a request for checking the binary will be sent to that URL. The service is expected to send a request to the callback endpoint for that binary to set the check status to either ACCEPTED or DENIED (status for binaries with pending checks is POSTPONED). Requests for binaries with a check status other than ACCEPTED will result in a 404 response.
+
+
+icon:plus[] Database: Support for DB SQL filtering/sorting is added for all the supported databases.
+
+
+icon:plus[] GraphQL: A support of database level filtering/sorting has been added. New `sort` parameter in added for structured sorting, forcing the usage of DB filtering. New GraphQL parameter `nativeFilter` 
+is added to the selected entity lookup methods, with options `NEVER` (old filtering is forced), `ALWAYS` (DB filtering is forced), `IF_POSSIBLE` (if the requested filter is supported by a DB, DB filtering is used, otherwise filtering is fallen back to the old filter mechanism). 
+Please note that not all the currently existing filters are supported by the DB.
+
+
+icon:plus[] Core: Support of database level filtering/sorting has been added to the low level Java API.
+
+icon:plus[] GraphQL: Support of database level filtering/sorting has been added. New `sort` parameter in added for structured sorting, forcing the usage of DB filtering. New GraphQL parameter `nativeFilter` 
+is added to the selected entity lookup methods, with options `NEVER` (old filtering is forced), `ALWAYS` (DB filtering is forced), `IF_POSSIBLE` (if the requested filter is supported by a DB, DB filtering is used, otherwise filtering is fallen back to the old filter mechanism). 
+Please note that not all the currently existing filters are supported by the DB.
+
+icon:plus[] GraphQL: A simplified, native filtering friendly version of `regex` string operation, `like`, has been added, accepting wildcards `%` as a zeroable set of characters, e.g. `like: "hello%world"` requests filtering in the strings, that start with `hello`, end with `world` and have zero-to-unlimited number of any characters in between.
+
+icon:plus[] GraphQL: Added new filters for field types: list, micronode, (s3)binary. Added a new experimental filter for referencedBy nodes.
+

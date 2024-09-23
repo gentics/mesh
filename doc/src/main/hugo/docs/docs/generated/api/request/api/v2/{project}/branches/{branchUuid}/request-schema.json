@@ -1,0 +1,23 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:branch:BranchUpdateRequest",
+  "properties" : {
+    "name" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "Name of the branch."
+    },
+    "hostname" : {
+      "type" : "string",
+      "description" : "The hostname of the branch which will be used to generate links across multiple projects."
+    },
+    "ssl" : {
+      "type" : "boolean",
+      "description" : "SSL flag of the branch which will be used to generate links across multiple projects."
+    },
+    "pathPrefix" : {
+      "type" : "string",
+      "description" : "Optional path prefix for webroot path and rendered links."
+    }
+  }
+}

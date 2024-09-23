@@ -1,0 +1,20 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| project.name
+| false
+| string
+| Name of the referenced element
+
+| project.uuid
+| true
+| string
+| Uuid of the referenced element
+
+|======

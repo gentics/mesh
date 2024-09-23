@@ -1,0 +1,30 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| eventBus
+| false
+| object
+| EventBus options
+
+| eventPoolSize
+| false
+| integer
+| Configure event pool size. Default is 2 * CPU Cores
+
+| orderedBlockingHandlers
+| false
+| boolean
+| Configure, whether blocking handlers for mutating requests should be ordered. Default is true
+
+| workerPoolSize
+| false
+| integer
+| Configure worker pool size. Default is: 20
+
+|======

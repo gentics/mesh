@@ -1,0 +1,20 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| created
+| true
+| string
+| ISO8601 date of the creation date for the provided token
+
+| token
+| true
+| string
+| JSON Web Token which was issued by the API.
+
+|======

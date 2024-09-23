@@ -1,0 +1,42 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:branch:info:BranchInfoMicroschemaList",
+  "properties" : {
+    "microschemas" : {
+      "type" : "array",
+      "description" : "List of microschema references.",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:branch:info:BranchMicroschemaInfo",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "description" : "Name of the referenced element"
+          },
+          "uuid" : {
+            "type" : "string",
+            "required" : true,
+            "description" : "Uuid of the referenced element"
+          },
+          "version" : {
+            "type" : "string",
+            "required" : true,
+            "description" : "The version of the microschema."
+          },
+          "migrationStatus" : {
+            "type" : "string",
+            "description" : "Status of the migration which was triggered when the schema/microschema was added to the branch.",
+            "enum" : [ "IDLE", "UNKNOWN", "QUEUED", "STARTING", "RUNNING", "COMPLETED", "FAILED" ]
+          },
+          "jobUuid" : {
+            "type" : "string",
+            "description" : "Uuid of the migration job."
+          },
+          "versionUuid" : {
+            "type" : "string"
+          }
+        }
+      }
+    }
+  }
+}

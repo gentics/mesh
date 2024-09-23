@@ -1,0 +1,109 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:plugin:PluginListResponse",
+  "properties" : {
+    "data" : {
+      "type" : "array",
+      "required" : true,
+      "description" : "Array which contains the found elements.",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:plugin:PluginResponse",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "required" : true,
+            "description" : "Id of the plugin."
+          },
+          "name" : {
+            "type" : "string",
+            "required" : true,
+            "description" : "Name of the plugin."
+          },
+          "manifest" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:com:gentics:mesh:plugin:PluginManifest",
+            "required" : true,
+            "description" : "Manifest of the plugin",
+            "properties" : {
+              "id" : {
+                "type" : "string",
+                "required" : true,
+                "description" : "Unique id of the plugin was defined by the plugin developer."
+              },
+              "name" : {
+                "type" : "string",
+                "required" : true,
+                "description" : "Human readable name of the plugin."
+              },
+              "apiName" : {
+                "type" : "string",
+                "required" : true,
+                "description" : "API name of the plugin. This will be used to construct the REST API path to the plugin."
+              },
+              "description" : {
+                "type" : "string",
+                "required" : true,
+                "description" : "Description of the plugin."
+              },
+              "version" : {
+                "type" : "string",
+                "required" : true,
+                "description" : "Version of the plugin."
+              },
+              "author" : {
+                "type" : "string",
+                "required" : true,
+                "description" : "Author of the plugin."
+              },
+              "inception" : {
+                "type" : "string",
+                "required" : true,
+                "description" : "Inception date of the plugin."
+              },
+              "license" : {
+                "type" : "string",
+                "required" : true,
+                "description" : "License of the plugin."
+              }
+            }
+          },
+          "status" : {
+            "type" : "string",
+            "required" : true,
+            "description" : "Status of the plugin",
+            "enum" : [ "LOADED", "VALIDATED", "STARTED", "PRE_REGISTERED", "INITIALIZED", "REGISTERED", "FAILED", "FAILED_RETRY" ]
+          }
+        }
+      }
+    },
+    "_metainfo" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:com:gentics:mesh:core:rest:common:PagingMetaInfo",
+      "required" : true,
+      "description" : "Paging information of the list result.",
+      "properties" : {
+        "currentPage" : {
+          "type" : "integer",
+          "required" : true,
+          "description" : "Number of the current page."
+        },
+        "perPage" : {
+          "type" : "integer",
+          "required" : true,
+          "description" : "Number of elements which can be included in a single page."
+        },
+        "pageCount" : {
+          "type" : "integer",
+          "required" : true,
+          "description" : "Number of the pages which can be found for the given per page count."
+        },
+        "totalCount" : {
+          "type" : "integer",
+          "required" : true,
+          "description" : "Number of all elements which could be found."
+        }
+      }
+    }
+  }
+}

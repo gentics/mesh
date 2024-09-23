@@ -1,0 +1,14 @@
+{
+  "name" : "adminRole",
+  "uuid" : "ddcddceb33d648318ddceb33d618314f",
+  "creator" : {
+    "uuid" : "589319933be24ec79319933be24ec7fe"
+  },
+  "created" : null,
+  "editor" : {
+    "uuid" : "589319933be24ec79319933be24ec7fe"
+  },
+  "edited" : null,
+  "_roleUuids" : [ ],
+  "version" : "27844082"
+}

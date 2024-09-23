@@ -1,0 +1,29 @@
+languageCode = "en-us"
+title = "Gentics Mesh"
+baseURL = "https://gentics.com/"
+theme = "gentics"
+
+DefaultContentLanguage = "en-us"
+
+relativeURLs = true
+canonifyurls = true
+enableRobotsTXT = true
+paginate = 3 # default number of pages per page in pagination
+publishDir = "docs" # if you use GitHub to deploy
+
+# if you want markdown WYSIWYG line break
+[blackfriday]
+    extensions = ["hardLineBreak"]
+    
+[security]
+  enableInlineShortcodes = false
+  [security.exec]
+    allow = ['^dart-sass-embedded$', '^go$', '^npx$', '^postcss$', '^asciidoctor$']
+    osEnv = ['(?i)^(PATH|PATHEXT|APPDATA|TMP|TEMP|TERM)$']
+
+  [security.funcs]
+    getenv = ['^HUGO_']
+
+  [security.http]
+    methods = ['(?i)GET|POST']
+    urls = ['.*']

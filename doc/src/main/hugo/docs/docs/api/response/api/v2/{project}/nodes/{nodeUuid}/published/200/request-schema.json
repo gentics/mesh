@@ -1,0 +1,50 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:PublishStatusResponse",
+  "properties" : {
+    "availableLanguages" : {
+      "type" : "object",
+      "description" : "Map of publish status entries per language",
+      "additionalProperties" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:PublishStatusModel",
+        "properties" : {
+          "published" : {
+            "type" : "boolean",
+            "required" : true,
+            "description" : "Flag which indicates whether the content is published."
+          },
+          "version" : {
+            "type" : "string",
+            "required" : true,
+            "description" : "Version number."
+          },
+          "publisher" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:com:gentics:mesh:core:rest:user:UserReference",
+            "description" : "Reference to the publisher user of the node content.",
+            "properties" : {
+              "firstName" : {
+                "type" : "string",
+                "description" : "Firstname of the user"
+              },
+              "lastName" : {
+                "type" : "string",
+                "description" : "Lastname of the user"
+              },
+              "uuid" : {
+                "type" : "string",
+                "required" : true,
+                "description" : "Uuid of the user"
+              }
+            }
+          },
+          "publishDate" : {
+            "type" : "string",
+            "description" : "ISO8601 formatted publish date string."
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,158 @@
+---
+defaultMaxDepth: 10
+defaultLanguage: "en"
+languagesFilePath: null
+updateCheck: true
+vertxOptions:
+  workerPoolSize: 20
+  eventPoolSize: 2
+  orderedBlockingHandlers: true
+  eventBus:
+    checkInterval: 30000
+    warnThreshold: 60000
+    errorThreshold: 120000
+s3options:
+  enabled: false
+  bucket: null
+  expirationTimeUpload: 60000
+  expirationTimeDownload: 360000
+  linkResolver: null
+  metadataWhitelist: null
+  parserLimit: 40000
+  region: null
+  secretAccessKey: null
+  accessKeyId: null
+  endpoint: null
+  s3cacheOptions:
+    bucket: null
+    expirationTimeDownload: 360000
+    expirationTimeUpload: 60000
+    region: null
+  corsAllowedHeaders:
+  - "*"
+  corsAllowedOrigins:
+  - "*"
+  corsAllowedMethods:
+  - "GET"
+  - "PUT"
+  - "POST"
+  - "DELETE"
+tempDirectory: "/opt/mesh/data/tmp"
+pluginDirectory: "plugins"
+pluginTimeout: 120
+nodeName: null
+startInReadOnly: false
+versionPurgeMaxBatchSize: 10
+migrationMaxBatchSize: 50
+migrationTriggerInterval: 60000
+pluginUseHttp2: false
+httpServer:
+  port: 8080
+  sslPort: 8443
+  host: "0.0.0.0"
+  corsAllowedOriginPattern: ""
+  corsAllowCredentials: false
+  useAlpn: false
+  enableCors: false
+  http: true
+  ssl: false
+  certPath: "config/cert.pem"
+  keyPath: "config/key.pem"
+  clientAuthMode: "NONE"
+  trustedCertPaths: []
+  verticleAmount: 2
+  minifyJson: true
+  maxFormAttributeSize: -1
+  serverTokens: true
+monitoring:
+  enabled: true
+  port: 8081
+  host: "127.0.0.1"
+  jvmMetricsEnabled: true
+cluster:
+  networkHost: null
+  enabled: false
+  clusterName: null
+  vertxPort: 4848
+  coordinatorMode: "DISABLED"
+  coordinatorRegex: null
+  topologyLockTimeout: 0
+  topologyLockDelay: 20000
+  coordinatorTopology: "UNMANAGED"
+  topologyChangeReadOnly: false
+search:
+  url: "http://localhost:9200"
+  username: null
+  password: null
+  certPath: null
+  caPath: null
+  hostnameVerification: true
+  timeout: 60000
+  prefix: "mesh-"
+  bulkLimit: 100
+  bulkLengthLimit: 5000000
+  eventBufferSize: 1000
+  bulkDebounceTime: 2000
+  idleDebounceTime: 100
+  retryInterval: 5000
+  retryLimit: 3
+  waitForIdle: true
+  includeBinaryFields: true
+  mappingMode: "DYNAMIC"
+  complianceMode: "ES_6"
+  syncBatchSize: 50000
+  indexCheckInterval: 60000
+  indexMappingCacheTimeout: 3600000
+upload:
+  byteLimit: 262144000
+  directory: "data/binaryFiles"
+  tempDirectory: "/opt/mesh/data/tmp/temp-uploads"
+  parserLimit: 40000
+  parser: true
+  metadataWhitelist: null
+  checkInterval: 60000
+security:
+  tokenExpirationTime: 3600
+  keystorePassword: "<Your Password>"
+  keystorePath: "config/keystore.jceks"
+  algorithm: "HS256"
+  enableAnonymousAccess: true
+  publicKeysPath: "config/public-keys.json"
+image:
+  mode: "ON_DEMAND"
+  imageCacheDirectory: "data/binaryImageCache"
+  maxWidth: 2048
+  maxHeight: 2048
+  jpegQuality: 0.95
+  resampleFilter: "LANCZOS"
+content:
+  autoPurge: true
+  batchSize: 5000
+cache:
+  pathCacheSize: 20000
+debugInfo:
+  logFolder: "debuginfo"
+  logFileSize: "5MB"
+  logEnabled: true
+  logPattern: "%d{HH:mm:ss.SSS} [%meshName] %-5level [%thread] [%file:%line] - %msg%n"
+graphQL:
+  slowThreshold: 60000
+  asyncWaitTimeout: 120000
+  schemaCacheSize: 1000
+storage:
+  nativeQueryFiltering: "NEVER"
+  directory: "data/graphdb"
+  backupDirectory: "data/backup"
+  exportDirectory: "data/export"
+  startServer: false
+  synchronizeWrites: true
+  synchronizeWritesTimeout: 60000
+  txRetryDelay: 10
+  txRetryLimit: 10
+  txCommitTimeout: 0
+  parameters: {}
+  clusterJoinTimeout: 500000
+  diskQuota:
+    checkInterval: 10000
+    warnThreshold: "3G"
+    readOnlyThreshold: "1G"

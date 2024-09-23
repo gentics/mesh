@@ -1,0 +1,38 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:MeshServerInfoModel",
+  "properties" : {
+    "meshVersion" : {
+      "type" : "string",
+      "description" : "Gentics Mesh Version string."
+    },
+    "meshNodeName" : {
+      "type" : "string",
+      "description" : "Node name of the Gentics Mesh instance."
+    },
+    "databaseVendor" : {
+      "type" : "string",
+      "description" : "Used database implementation vendor name."
+    },
+    "databaseVersion" : {
+      "type" : "string",
+      "description" : "Used database implementation version."
+    },
+    "searchVendor" : {
+      "type" : "string",
+      "description" : "Used search implementation vendor name."
+    },
+    "searchVersion" : {
+      "type" : "string",
+      "description" : "Used search implementation version."
+    },
+    "vertxVersion" : {
+      "type" : "string",
+      "description" : "Used Vert.x version."
+    },
+    "databaseRevision" : {
+      "type" : "string",
+      "description" : "Database structure revision hash."
+    }
+  }
+}

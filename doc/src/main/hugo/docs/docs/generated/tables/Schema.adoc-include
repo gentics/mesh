@@ -1,0 +1,25 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| fields.items.label
+| false
+| string
+| Label of the field.
+
+| fields.items.name
+| true
+| string
+| Name of the field.
+
+| fields.items.type
+| true
+| string
+| Type of the field.
+
+|======

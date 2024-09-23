@@ -1,0 +1,97 @@
+{{ define "content" }}
+<div class="topsection-wrapper">
+  <div class="topsection container">
+    <div>
+      <div class="col-md-12">
+        <h1>{{ .Title }}</h1>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      <h4 class="headlines-plugins">
+        {{ if .Params.image }}
+        <img src="/assets/{{ .Params.image }}" height="150">
+        {{ else }}
+        <i class="fas {{ .Params.icon }} plugins-icon"></i> &nbsp;
+        {{ end }}
+        {{ .Title }}
+      </h4>
+    </div>
+  </div>
+</div>
+{{ $bundle := .Site.GetPage .Path }}
+<div class="topsection-wrapper-white">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="list-group" id="pluginTabs" role="tablist">
+          <a class="list-group-item list-group-item-action active" data-toggle="tab" href="#overview"
+            role="tab">Overview</a>
+            {{ range where ($bundle.Resources.ByType "page") ".Params.pageType" "!=" "documentation" }}
+          <a class="list-group-item list-group-item-action" data-toggle="tab" href="#docs"
+            role="tab">Documentation</a>
+            {{ end }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="container">
+  <div class="row">
+    <div class="col-md-8">
+      <div class="tab-content">
+        <div class="tab-pane active" id="overview" role="tabpanel">
+          <h4 class="headlines-plugins">Description</h4>
+          {{ .Content }}
+        </div>
+        {{ range where ($bundle.Resources.ByType "page") ".Params.pageType" "!=" "documentation" }}
+        <div class="tab-pane" id="docs" role="tabpanel">
+          <h4 class="headlines-plugins">Documentation</h4>
+          <div>
+            {{ .Content }}
+          </div>
+        </div>
+        {{ end }}
+      </div>
+    </div>
+    <div class="col-md-4">
+      <h4 class="headlines-plugins">Plugin Details</h4>
+      <p>{{ .Params.fineprint }}</p>
+      <p class="padding-top-bottom-20">
+        Interested?<br />
+
+        {{ partial "quote-button.html" }}
+
+      </p>
+    </div>
+  </div>
+  <div class="row marketplace-metadata">
+    <div class="col-lg-4 col-md-4">
+      <div class="data">
+        <p><strong>Version</strong></p>
+        <p>{{ .Params.version | default .Site.Data.mesh.version }}</p>
+      </div>
+      <div class="data">
+        <p><strong>License</strong></p>
+        <p>{{ .Params.licence }}</p>
+      </div>
+    </div>
+
+    <div class="col-md-clearfix col-sm-clearfix"></div>
+
+    <div class="col-lg-4 col-md-4">
+      <div class="data">
+        <p><strong>Authors</strong></p>
+        <p>{{ .Params.author }}</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{{ partial "quote-form.html" }}
+
+{{end}}

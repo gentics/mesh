@@ -1,0 +1,22 @@
+{{ define "content" }}
+
+<div class="topsection-wrapper">
+    <div class="topsection container">
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <h1>{{ .Title }}</h1>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="contents">
+    <div class="container">
+        <div class="row">
+            <div class="content center topmargin">
+              {{ .Content }}
+            </div>
+        </div>
+    </div>
+</div>
+{{ end }}

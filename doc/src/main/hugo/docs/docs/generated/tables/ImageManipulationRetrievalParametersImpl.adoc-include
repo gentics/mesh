@@ -1,0 +1,20 @@
+[options="header",cols="10%,20%,10%,60%"]
+|======
+
+| Name
+| Type
+| Mandatory
+| Description
+
+
+| filesize
+| boolean 
+| false
+| Specifies a need to retrieve filesizes for the returned image manipulation variants.
+
+| original
+| boolean 
+| false
+| Specifies a need to retrieve original image along with its manipulation variants.
+
+|======

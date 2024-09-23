@@ -1,0 +1,11 @@
+{
+  "operation" : "ADDFIELD",
+  "properties" : {
+    "field" : "fieldToBeAdded",
+    "elasticsearch" : "{\"settings\":\"value\"}",
+    "label" : "Field Label Value",
+    "after" : "firstField",
+    "type" : "list",
+    "listType" : "html"
+  }
+}

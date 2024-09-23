@@ -1,0 +1,7 @@
+++++
+<div class="graphql-example" style="height: 15em">
+{
+  me { username, uuid }
+}
+</div>
+++++

@@ -1,0 +1,11 @@
+{
+  "permissions" : {
+    "create" : true,
+    "read" : true,
+    "update" : true,
+    "delete" : true,
+    "publish" : false,
+    "readPublished" : false
+  },
+  "recursive" : false
+}

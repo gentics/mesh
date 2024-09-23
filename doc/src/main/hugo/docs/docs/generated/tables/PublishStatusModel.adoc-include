@@ -1,0 +1,30 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| publishDate
+| false
+| string
+| ISO8601 formatted publish date string.
+
+| published
+| true
+| boolean
+| Flag which indicates whether the content is published.
+
+| publisher
+| false
+| object
+| Reference to the publisher user of the node content.
+
+| version
+| true
+| string
+| Version number.
+
+|======

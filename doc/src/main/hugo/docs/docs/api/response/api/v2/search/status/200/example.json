@@ -1,0 +1,131 @@
+{
+  "available" : true,
+  "metrics" : {
+    "tagfamily" : {
+      "insert" : {
+        "synced" : 0,
+        "pending" : 0
+      },
+      "update" : {
+        "synced" : 0,
+        "pending" : 0
+      },
+      "delete" : {
+        "synced" : 0,
+        "pending" : 0
+      }
+    },
+    "schema" : {
+      "insert" : {
+        "synced" : 0,
+        "pending" : 0
+      },
+      "update" : {
+        "synced" : 0,
+        "pending" : 0
+      },
+      "delete" : {
+        "synced" : 0,
+        "pending" : 0
+      }
+    },
+    "node" : {
+      "insert" : {
+        "synced" : 0,
+        "pending" : 0
+      },
+      "update" : {
+        "synced" : 0,
+        "pending" : 0
+      },
+      "delete" : {
+        "synced" : 0,
+        "pending" : 0
+      }
+    },
+    "role" : {
+      "insert" : {
+        "synced" : 0,
+        "pending" : 0
+      },
+      "update" : {
+        "synced" : 0,
+        "pending" : 0
+      },
+      "delete" : {
+        "synced" : 0,
+        "pending" : 0
+      }
+    },
+    "microschema" : {
+      "insert" : {
+        "synced" : 0,
+        "pending" : 0
+      },
+      "update" : {
+        "synced" : 0,
+        "pending" : 0
+      },
+      "delete" : {
+        "synced" : 0,
+        "pending" : 0
+      }
+    },
+    "project" : {
+      "insert" : {
+        "synced" : 0,
+        "pending" : 0
+      },
+      "update" : {
+        "synced" : 0,
+        "pending" : 0
+      },
+      "delete" : {
+        "synced" : 0,
+        "pending" : 0
+      }
+    },
+    "tag" : {
+      "insert" : {
+        "synced" : 0,
+        "pending" : 0
+      },
+      "update" : {
+        "synced" : 0,
+        "pending" : 0
+      },
+      "delete" : {
+        "synced" : 0,
+        "pending" : 0
+      }
+    },
+    "user" : {
+      "insert" : {
+        "synced" : 0,
+        "pending" : 0
+      },
+      "update" : {
+        "synced" : 0,
+        "pending" : 0
+      },
+      "delete" : {
+        "synced" : 0,
+        "pending" : 0
+      }
+    },
+    "group" : {
+      "insert" : {
+        "synced" : 0,
+        "pending" : 0
+      },
+      "update" : {
+        "synced" : 0,
+        "pending" : 0
+      },
+      "delete" : {
+        "synced" : 0,
+        "pending" : 0
+      }
+    }
+  }
+}

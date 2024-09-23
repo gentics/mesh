@@ -1,0 +1,15 @@
+[options="header",cols="10%,20%,10%,60%"]
+|======
+
+| Name
+| Type
+| Mandatory
+| Description
+
+
+| minify
+| boolean 
+| false
+| Flag, indicating the requirement of a minification of an input or output value, to save the payload resources. May override the globally set value.
+
+|======

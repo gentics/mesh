@@ -1,0 +1,109 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:tag:TagResponse",
+  "properties" : {
+    "uuid" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "Uuid of the element"
+    },
+    "creator" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:com:gentics:mesh:core:rest:user:UserReference",
+      "required" : true,
+      "description" : "User reference of the creator of the element.",
+      "properties" : {
+        "firstName" : {
+          "type" : "string",
+          "description" : "Firstname of the user"
+        },
+        "lastName" : {
+          "type" : "string",
+          "description" : "Lastname of the user"
+        },
+        "uuid" : {
+          "type" : "string",
+          "required" : true,
+          "description" : "Uuid of the user"
+        }
+      }
+    },
+    "created" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "ISO8601 formatted created date string."
+    },
+    "editor" : {
+      "type" : "object",
+      "$ref" : "urn:jsonschema:com:gentics:mesh:core:rest:user:UserReference",
+      "description" : "User reference of the editor of the element."
+    },
+    "edited" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "ISO8601 formatted edited date string."
+    },
+    "tagFamily" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:com:gentics:mesh:core:rest:tag:TagFamilyReference",
+      "required" : true,
+      "description" : "Reference to the tag family to which the tag belongs.",
+      "properties" : {
+        "name" : {
+          "type" : "string",
+          "description" : "Name of the referenced element"
+        },
+        "uuid" : {
+          "type" : "string",
+          "required" : true,
+          "description" : "Uuid of the referenced element"
+        }
+      }
+    },
+    "name" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "Name of the tag."
+    },
+    "permissions" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:com:gentics:mesh:core:rest:common:PermissionInfo",
+      "required" : true,
+      "properties" : {
+        "create" : {
+          "type" : "boolean",
+          "required" : true,
+          "description" : "Flag which indicates whether the create permission is granted."
+        },
+        "read" : {
+          "type" : "boolean",
+          "required" : true,
+          "description" : "Flag which indicates whether the read permission is granted."
+        },
+        "update" : {
+          "type" : "boolean",
+          "required" : true,
+          "description" : "Flag which indicates whether the update permission is granted."
+        },
+        "delete" : {
+          "type" : "boolean",
+          "required" : true,
+          "description" : "Flag which indicates whether the delete permission is granted."
+        },
+        "publish" : {
+          "type" : "boolean",
+          "description" : "Flag which indicates whether the publish permission is granted."
+        },
+        "readPublished" : {
+          "type" : "boolean",
+          "description" : "Flag which indicates whether the read published permission is granted."
+        }
+      }
+    },
+    "rolePerms" : {
+      "type" : "object",
+      "$ref" : "urn:jsonschema:com:gentics:mesh:core:rest:common:PermissionInfo",
+      "description" : "Permission information for provided role. This property will only be populated if a role query parameter has been specified."
+    }
+  }
+}

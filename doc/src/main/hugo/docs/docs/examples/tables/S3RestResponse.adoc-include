@@ -1,0 +1,30 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| httpRequestMethod
+| true
+| string
+| httpRequestMethod
+
+| presignedUrl
+| true
+| string
+| presignedUrl
+
+| signedHeaders
+| true
+| object
+| signedHeaders
+
+| version
+| false
+| string
+| version
+
+|======

@@ -1,0 +1,55 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| branchUuid
+| true
+| string
+| Branch uuid to which the node belongs.
+
+| cause
+| true
+| object
+| Some events will be caused by another action. This object contains information about the cause of the event.
+
+| languageTag
+| false
+| string
+| ISO 639-1 language tag of the node content.
+
+| name
+| true
+| string
+| Name of the referenced element.
+
+| origin
+| true
+| string
+| Name of the mesh node from which the event originates.
+
+| project
+| true
+| object
+| Reference to the project to which the element belonged.
+
+| schema
+| false
+| object
+| Schema reference of the node.
+
+| type
+| false
+| string
+| Type of the content (e.g. draft/published)
+
+| uuid
+| true
+| string
+| Uuid of the referenced element.
+
+|======

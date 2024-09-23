@@ -1,0 +1,15 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| availableLanguages
+| false
+| object
+| Map of publish status entries per language
+
+|======

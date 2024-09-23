@@ -1,0 +1,30 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| cause
+| true
+| object
+| Some events will be caused by another action. This object contains information about the cause of the event.
+
+| microschema
+| true
+| object
+| Reference to the microschema.
+
+| origin
+| true
+| string
+| Name of the mesh node from which the event originates.
+
+| project
+| true
+| object
+| Reference to the project.
+
+|======

@@ -1,0 +1,9 @@
+{
+  "name" : "New project",
+  "schema" : {
+    "name" : "folder",
+    "uuid" : "e287e8a7497940ac87e8a7497940ac82"
+  },
+  "hostname" : "getmesh.io",
+  "ssl" : true
+}

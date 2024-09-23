@@ -1,0 +1,50 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| cause
+| true
+| object
+| Some events will be caused by another action. This object contains information about the cause of the event.
+
+| name
+| true
+| string
+| Name of the referenced element.
+
+| origin
+| true
+| string
+| Name of the mesh node from which the event originates.
+
+| project
+| true
+| object
+| Reference to the project.
+
+| role
+| true
+| object
+| Reference to the role that was used when changing permissions.
+
+| tagFamily
+| true
+| object
+| Reference to the tagfamily of the tag.
+
+| type
+| true
+| string
+| Type of the element for which the permissions have changed.
+
+| uuid
+| true
+| string
+| Uuid of the referenced element.
+
+|======

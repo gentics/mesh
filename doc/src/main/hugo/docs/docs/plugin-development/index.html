@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link rel="dns-prefetch" href="//oss.maxcdn.com" />
+<link rel="dns-prefetch" href="//ajax.googleapis.com" />
+
+<title>Plugin Development</title>
+<meta name="description" content="">
+<meta name="author" content="">
+<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Plugin Development" />
+<meta name="twitter:description" content="" />
+<meta name="twitter:image:src" content="https://getmesh.io/assets/gentics-card.png" />
+
+<meta property="og:title" content="Plugin Development">
+<meta property="og:url" content="https://getmesh.io/docs/plugin-development/">
+<meta property="og:description" content="">
+<meta property="og:image" content="https://getmesh.io/assets/gentics-card.png">
+<link rel="icon" href="../../favicon.ico">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+<link rel="shortcut icon" href="../../assets/g_logo_small.png" type="image/png" />
+<link href="../../styles/docs.css" media="screen" rel="stylesheet">
+
+
+<link href="https://fonts.googleapis.com/css?family=Roboto:300,400" rel="stylesheet">
+<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN"
+    crossorigin="anonymous">
+<script src="../../js/GCM.min.js"></script>
+<script>
+    window.GCM.init('/js/GCM-config.json', 'en', 1, true);
+</script>
+
+<link href="https://fonts.googleapis.com/css?family=Roboto:300,400" rel="stylesheet">
+
+</head>
+
+<body class="body-navbar-">
+    <nav class="navbar navbar-default navbar--top">
+    <div class="container-fluid">
+        
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1"
+                aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="../../">
+                <img class="logo" src="../../assets/gentics-mesh-logo.png" alt="Gentics Logo" />
+            </a>
+        </div>
+
+        
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav"> 
+                <li>
+                    <a href="../../features">Features</a>
+                </li>
+                <li>
+                    <a href="../../docs">Documentation</a>
+                </li>
+                <li>
+                    <a href="../../demo">Demo</a>
+                </li>
+                <li>
+                    <a href="../../services">Services</a>
+                </li>
+                <li>
+                    <a href="../../training">Trainings</a>
+                </li>
+                <li>
+                    <a href="../../premium-features">Premium Features</a>
+                </li>
+                
+                <li>
+                    <a class="btn btn-primary btn-download" href="../../download">Download</a>
+                </li>
+            </ul>
+        </div>
+        
+    </div>
+    
+</nav>
+
+
+    
+<div class="topsection-wrapper">
+    <div class="topsection container">
+        <div class="row">
+            <div class="col-md-12">
+                <h1>Plugin Development</h1>
+            </div>
+        </div>
+    </div>
+</div>
+ 
+  <div class="container docs-content">
+    <div class="row">
+      <div class="col-sm-12 col-md-push-9 col-md-3 hidden-xs hidden-sm">
+        <div id="sidebar" data-spy="affix">
+            
+        </div>
+      </div>
+      <div class="col-sm-12 col-md-pull-3 col-md-9">
+        <div class="toc hidden-md hidden-lg">
+          <h2>Plugin Development</h2>
+          
+        </div>
+        <div id="toc" class="toc">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_plugin_types">Plugin Types</a></li>
+<li><a href="#_plugin_setup">Plugin Setup</a></li>
+<li><a href="#_plugin_methods">Plugin Methods</a></li>
+<li><a href="#_plugin_manifest">Plugin Manifest</a>
+<ul class="sectlevel2">
+<li><a href="#_maven">Maven</a></li>
+</ul>
+</li>
+<li><a href="#_dependencies">Dependencies</a></li>
+<li><a href="#_access_data">Access Data</a></li>
+<li><a href="#_plugin_extensions">Plugin Extensions</a>
+<ul class="sectlevel2">
+<li><a href="#_building_extension_plugins">Building extension plugins</a></li>
+</ul>
+</li>
+<li><a href="#_integration_testing">Integration Testing</a>
+<ul class="sectlevel2">
+<li><a href="#_full_example">Full Example</a></li>
+</ul>
+</li>
+<li><a href="#_development_guide">Development Guide</a></li>
+<li><a href="#_examples">Examples</a></li>
+<li><a href="#_classloading">Classloading</a></li>
+<li><a href="#_vert_x">Vert.x</a></li>
+<li><a href="#_troubleshoot">Troubleshoot</a></li>
+<li><a href="#_contributing">Contributing</a></li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Plugins can extend the REST and GraphQL API and also hook into various places of Gentics Mesh.
+A plugin developer needs to extend the <code>AbstractPlugin</code> class. The plugin can hook into different parts of Gentics Mesh by implementing one of multiple interfaces for the different <em>plugin types</em>.
+The plugin code needs to be packages as a regular <code>jar</code> file.</p>
+</div>
+<div class="paragraph">
+<p>In general the plugin developer just needs to implement the methods which will be invoked by Gentics Mesh.</p>
+</div>
+<div class="sect1">
+<h2 id="_plugin_types">Plugin Types</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p><a href="../../docs/plugin-types/rest-plugin/">REST Plugin API</a></p>
+</li>
+<li>
+<p><a href="../../docs/plugin-types/graphql-plugin/">GraphQL Plugin API</a></p>
+</li>
+<li>
+<p><a href="../../docs/plugin-types/auth-service-plugin/">Authentication Service Plugin API</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_plugin_setup">Plugin Setup</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>New Plugin classes need to extend the <code>AbstractPlugin</code> and add the mandatory constructor.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-java" data-lang="java">public class HelloWorldPlugin extends AbstractPlugin {
+
+	public BasicPlugin(PluginWrapper wrapper, PluginEnvironment env) {
+		super(wrapper, env);
+	}
+
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_plugin_methods">Plugin Methods</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Additionally the plugin class provides some utility functions which make it easier to handle plugin configuration and plugin data.</p>
+</div>
+<div class="paragraph">
+<p>The configuration of the plugin will be stored in the plugin directory in a <code>plugins/{pluginId}/config.yml</code> file which can be overridden by a <code>/plugins/{pluginId}/config.local.yml</code> file.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Method</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>AbstractPlugin#writeConfig(config)</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Write the configuration POJO to the <code>config.yml</code> file.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>AbstractPlugin#readConfig(clazz)</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Read the configuration using the class. This method will also use the <code>config.local.yml</code> values if present.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>AbstractPlugin#getConfigFile()</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Return the config file.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>AbstractPlugin#getLocalConfigFile()</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Return the local config file.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>AbstractPlugin#getStorageDir()</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Return the path to the storage directory <code>plugins/{pluginId}/storage</code> in which a plugin can place files in the filesystem.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_plugin_manifest">Plugin Manifest</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The manifest of a plugin contains metadata information which will is used to load and categorize the plugin.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 1. Plugin Manifest</caption>
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Plugin-Id</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Unique id of the plugin. Used to access the plugin once deployed.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Plugin-Name</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Full name of the plugin</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Plugin-Version</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Current version of the plugin</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Plugin-Author</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Author of the plugin</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Plugin-Class</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Fully qualified path to the plugin class</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Plugin-Description</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Short description of the plugin</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Plugin-License</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">License used by the plugin</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Plugin-Inception</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Date when the plugin was initially created (DD-MM-YYYY)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Plugin-Dependencies</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">List of plugin ids of other plugins on which the plugin depends.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="sect2">
+<h3 id="_maven">Maven</h3>
+<div class="paragraph">
+<p>The plugin manifest can directly be added when generating the shaded jar file.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-xml" data-lang="xml">&lt;plugin&gt;
+    &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+    &lt;artifactId&gt;maven-shade-plugin&lt;/artifactId&gt;
+    &lt;executions&gt;
+        &lt;execution&gt;
+            &lt;phase&gt;package&lt;/phase&gt;
+            &lt;goals&gt;
+                &lt;goal&gt;shade&lt;/goal&gt;
+            &lt;/goals&gt;
+            &lt;configuration&gt;
+                &lt;transformers&gt;
+                    &lt;transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"&gt;
+                        &lt;manifestEntries&gt;
+                            &lt;Plugin-Id&gt;${plugin.id}&lt;/Plugin-Id&gt;
+                            &lt;Plugin-Name&gt;${plugin.name}&lt;/Plugin-Name&gt;
+                            &lt;Plugin-Version&gt;${plugin.version}&lt;/Plugin-Version&gt;
+                            &lt;Plugin-Author&gt;${plugin.author}&lt;/Plugin-Author&gt;
+                            &lt;Plugin-Class&gt;${plugin.class}&lt;/Plugin-Class&gt;
+                            &lt;Plugin-Description&gt;${plugin.description}&lt;/Plugin-Description&gt;
+                            &lt;Plugin-License&gt;${plugin.license}&lt;/Plugin-License&gt;
+                            &lt;Plugin-Inception&gt;${plugin.inception}&lt;/Plugin-Inception&gt;
+                        &lt;/manifestEntries&gt;
+                    &lt;/transformer&gt;
+                &lt;/transformers&gt;
+            &lt;/configuration&gt;
+        &lt;/execution&gt;
+    &lt;/executions&gt;
+&lt;/plugin&gt;</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_dependencies">Dependencies</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>All the needed maven artifact are located at our Maven Repository. Please add the following section to your <code>pom.xml</code> in order to be able to download the dependencies.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-xml" data-lang="xml">&lt;repositories&gt;
+    &lt;repository&gt;
+        &lt;id&gt;maven.gentics.com&lt;/id&gt;
+        &lt;name&gt;Gentics Maven Repository&lt;/name&gt;
+        &lt;url&gt;https://maven.gentics.com/maven2&lt;/url&gt;
+        &lt;releases&gt;
+            &lt;enabled&gt;true&lt;/enabled&gt;
+        &lt;/releases&gt;
+    &lt;/repository&gt;
+&lt;/repositories&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The dependency version management can be managed more efficiently by just including the <code>mesh-plugin-bom</code> dependency. This will import the dependencyManagement for all plugin related dependencies.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-xml" data-lang="xml">&lt;dependencyManagement&gt;
+    &lt;dependencies&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;com.gentics.mesh&lt;/groupId&gt;
+            &lt;artifactId&gt;mesh-plugin-bom&lt;/artifactId&gt;
+            &lt;version&gt;${mesh.version}&lt;/version&gt;
+            &lt;type&gt;pom&lt;/type&gt;
+            &lt;scope&gt;import&lt;/scope&gt;
+        &lt;/dependency&gt;
+    &lt;/dependencies&gt;
+&lt;/dependencyManagement&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The plugin needs at least the <code>mesh-plugin-dep</code> dependency. It is important to set the scope to <code>provided</code>. Otherwise the plugin can&#8217;t be loaded by Gentics Mesh.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-xml" data-lang="xml">&lt;dependency&gt;
+    &lt;groupId&gt;com.gentics.mesh&lt;/groupId&gt;
+    &lt;artifactId&gt;mesh-plugin-dep&lt;/artifactId&gt;
+    &lt;scope&gt;provided&lt;/scope&gt;
+&lt;/dependency&gt;</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_access_data">Access Data</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Plugins can access Gentics Mesh data via the provided clients.</p>
+</div>
+<div class="paragraph">
+<p>The <code>adminClient</code> will use the <code>admin</code> permissions and can by-default read everything. The <code>userClient</code> on the other hand will be created using the user information from the request that has been send to the plugin.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-java" data-lang="java">router.route("/example").handler(rc -&gt; {
+    PluginContext context = wrap(rc);
+    MeshRestClient adminClient = adminClient();
+    MeshRestClient userClient = context.client();
+    …
+});</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_plugin_extensions">Plugin Extensions</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Plugins can also use and provide extensions. Extension can be used to modularize plugins. A plugin can for example provide a default implementation of a feature and another plugin can provide an extension which overrides or extends this feature.</p>
+</div>
+<div class="paragraph">
+<p>The plugin (<strong>consumer</strong>) which uses the extension must provide an <code>ExtensionPoint</code> interface. This interface forms the contract which other plugins (<strong>provider</strong>) may use to implement the extension.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-java" data-lang="java">public interface DummyExtensionPoint extends ExtensionPoint {
+
+	String name();
+
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The plugin which provides the extension now implements the extension.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-java" data-lang="java">@Extension
+public class DummyExtension implements DummyExtensionPoint {
+
+	@Override
+	public String name() {
+		return "My dummy extension";
+	}
+
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Finally the consuming plugin may access the available extension via the plugin manager.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-java" data-lang="java">getWrapper().getPluginManager().getExtensions(DummyExtensionPoint.class)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>A full example can be found in our <a href="https://github.com/gentics/mesh-plugin-examples/tree/master/extensions-plugin">example repository</a>.</p>
+</div>
+<div class="sect2">
+<h3 id="_building_extension_plugins">Building extension plugins</h3>
+<div class="paragraph">
+<p>The use of extensions requires additional build steps. Make sure to use the <code>ExtensionAnnotationProcessor</code> in the compile plugin.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-xml" data-lang="xml">&lt;plugin&gt;
+    &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+    &lt;artifactId&gt;maven-compiler-plugin&lt;/artifactId&gt;
+    &lt;version&gt;3.8.1&lt;/version&gt;
+    &lt;configuration&gt;
+        &lt;verbose&gt;true&lt;/verbose&gt;
+        &lt;compilerVersion&gt;1.8&lt;/compilerVersion&gt;
+        &lt;source&gt;1.8&lt;/source&gt;
+        &lt;target&gt;1.8&lt;/target&gt;
+        &lt;annotationProcessors&gt;
+            &lt;annotationProcessor&gt;org.pf4j.processor.ExtensionAnnotationProcessor&lt;/annotationProcessor&gt;
+        &lt;/annotationProcessors&gt;
+    &lt;/configuration&gt;
+    &lt;dependencies&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.pf4j&lt;/groupId&gt;
+            &lt;artifactId&gt;pf4j&lt;/artifactId&gt;
+            &lt;version&gt;3.0.1&lt;/version&gt;
+        &lt;/dependency&gt;
+    &lt;/dependencies&gt;
+&lt;/plugin&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Additionally the plugin which provides the extension muse have an <code>&lt;Plugin-Dependencies&gt;</code> manifest entry that contains the consuming plugin id.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Make sure to share the extension point interfaces via a common maven module.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_integration_testing">Integration Testing</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Plugins can be directly tested in your IDE by starting an embedded Gentics Mesh instance.
+We provide a JUnit class rule which can be used to quickly startup Gentics Mesh:
+<a href="https://github.com/gentics/mesh-plugin-examples/blob/master/test-common/src/main/java/com/gentics/mesh/plugin/OrientDBMeshLocalServer.java">OrientDBMeshLocalServer</a></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-java" data-lang="java">@ClassRule
+public static final MeshLocalServer server = new OrientDBMeshLocalServer()
+    .withInMemoryMode()
+    .withPlugin(GraphQLExamplePlugin.class, "myPlugin")
+    .waitForStartup();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You need to following test dependencies in order to use the class rule.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-xml" data-lang="xml">&lt;dependency&gt;
+    &lt;groupId&gt;junit&lt;/groupId&gt;
+    &lt;artifactId&gt;junit&lt;/artifactId&gt;
+    &lt;version&gt;4.12&lt;/version&gt;
+    &lt;scope&gt;test&lt;/scope&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;com.gentics.mesh&lt;/groupId&gt;
+    &lt;artifactId&gt;mesh-test-common&lt;/artifactId&gt;
+    &lt;scope&gt;test&lt;/scope&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;com.gentics.mesh&lt;/groupId&gt;
+    &lt;artifactId&gt;mesh-core&lt;/artifactId&gt;
+    &lt;scope&gt;test&lt;/scope&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;com.gentics.mesh&lt;/groupId&gt;
+    &lt;artifactId&gt;mesh-mdm-orientdb-wrapper&lt;/artifactId&gt;
+    &lt;scope&gt;test&lt;/scope&gt;
+&lt;/dependency&gt;</code></pre>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_full_example">Full Example</h3>
+<div class="paragraph">
+<p>This example shows how to test the GraphQL plugin using Mesh with the OrientDB storage option.</p>
+</div>
+<div class="listingblock">
+<div class="title">GraphQlExamplePluginTest.java</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-java" data-lang="java">public class GraphQlExamplePluginTest {
+
+	private static String PROJECT = "test";
+
+	@ClassRule
+	public static final MeshLocalServer server = new MeshLocalServer()
+		.withInMemoryMode()
+		.withPlugin(GraphQLExamplePlugin.class, "myPlugin")
+		.waitForStartup();
+
+	@Test
+	public void testPlugin() throws IOException {
+		MeshRestClient client = server.client();
+
+		// Create the project
+		Completable createProject = client.createProject(
+			new ProjectCreateRequest()
+				.setName(PROJECT)
+				.setSchemaRef("folder"))
+			.toCompletable();
+
+		// Run query on the plugin
+		String query = "{ pluginApi { myPlugin { text } } }";
+		Single&lt;GraphQLResponse&gt; rxQuery = client.graphqlQuery(PROJECT, query)
+			.toSingle();
+
+		// Run the operations
+		GraphQLResponse result = createProject.andThen(rxQuery).blockingGet();
+
+		// Print the GraphQL API result
+		System.out.println(result.getData().encodePrettily());
+	}
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_development_guide">Development Guide</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>You can follow the <a href="../../docs/guides/mesh-library-plugin/">Plugin Development Guide</a> for a step by step introduction.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_examples">Examples</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The <a href="https://github.com/gentics/mesh-plugin-examples">Plugin Examples</a> demonstrates basic plugin usage and test setup.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_classloading">Classloading</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The plugin system relies on <a href="https://github.com/pf4j/pf4j">PF4J</a> which uses a <strong>Parent Last</strong> classloader. This means that classes will be first loaded from the plugin even if they are also part of Gentics Mesh.</p>
+</div>
+<div class="paragraph">
+<p>To avoid <code>NoClassDefFoundError</code> / <code>NoSuchMethodError</code> it is thus recommended to add all the classes (libraries) that are used by the plugin jar.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_vert_x">Vert.x</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The <code>mesh-plugin-api</code>, <code>vertx-core</code>, <code>vertx-web</code>, <code>netty</code> libraries must not be included in the plugin jar. Adding those libraries could cause stability issues and errors.</p>
+</div>
+<div class="paragraph">
+<p>Instead you must mark those dependencies as <strong>provided</strong>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-xml" data-lang="xml">...
+&lt;dependency&gt;
+    &lt;groupId&gt;io.vertx&lt;/groupId&gt;
+    &lt;artifactId&gt;vertx-core&lt;/artifactId&gt;
+    &lt;scope&gt;provided&lt;/scope&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;io.vertx&lt;/groupId&gt;
+    &lt;artifactId&gt;vertx-web&lt;/artifactId&gt;
+    &lt;scope&gt;provided&lt;/scope&gt;
+&lt;/dependency&gt;
+...</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_troubleshoot">Troubleshoot</h2>
+<div class="sectionbody">
+<div class="qlist qanda">
+<ol>
+<li>
+<p><em>I&#8217;m getting <code>java.lang.NoSuchMethodException: com.gentics.mesh.plugin.MyPlugin.&lt;init&gt;(org.pf4j.PluginWrapper, com.gentics.mesh.plugin.env.PluginEnvironment)</code></em></p>
+<p>You get this error if you have not added the mandatory constructor to your plugin.</p>
+</li>
+<li>
+<p><em>I&#8217;m getting <code>NoClassDefFoundError</code> / <code>NoSuchMethodError</code></em></p>
+<p>You deployed your plugin on a Gentics Mesh instance which is not compatible with the classes you are using. You can rebuild the plugin with the new version or try to include your dependencies in the plugin jar to avoid classloader issues. Please note that <code>vertx-core</code>, <code>vertx-web</code>, <code>netty</code> should not be included in the jar.</p>
+</li>
+<li>
+<p><em>I&#8217;m getting <code>Caused by: java.lang.ClassCastException: io.vertx.core.logging.SLF4JLogDelegateFactory cannot be cast to io.vertx.core.spi.logging.LogDelegateFactory</code></em></p>
+<p>This error happens if you include <code>vert-core</code> in your plugin. Please ensure that you don&#8217;t include any vert.x dependency that is part of Gentics Mesh. Instead mark those as <code>provided</code>.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_contributing">Contributing</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>You wrote a plugin? Great! Share it with the community via the <a href="https://github.com/gentics/mesh-awesome">Gentics Mesh Awesome List</a></p>
+</div>
+</div>
+</div>
+
+        
+
+
+
+        
+      </div>
+    </div>
+  </div>
+
+
+    <div class="footer">
+    <a name="footer"></a>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <h2>Keep in touch</h2>
+                <p>Find us on Twitter
+                    <a href="https://twitter.com/genticsmesh" target="_blank" rel="noopener noreferrer">@genticsmesh</a>
+                </p>
+                <p>Get help on
+                    <a href="https://stackoverflow.com/questions/tagged/gentics-mesh" target="_blank" rel="noopener noreferrer">stackoverflow</a>
+                </p>
+                <p>Ask us anything on
+                    <a href="https://gitter.im/gentics/mesh" target="_blank" rel="noopener noreferrer">Gitter</a>
+                </p>
+                <p>Dive into the code at
+                    <a href="https://github.com/gentics/mesh" target="_blank" rel="noopener noreferrer">GitHub</a>
+                </p>
+            </div>
+            <div class="col-md-6">
+                <h2>Legal</h2>
+                <p>Licensed under
+                    <a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank" rel="noopener noreferrer">Apache License v2.0</a> |
+                    <a href="../../imprint">Imprint</a>
+                </p>
+            </div>
+        </div>
+        <div class="row ending center">
+            <p class="padding-top-25">Made in
+                <a href="https://www.mercer.com/newsroom/2018-quality-of-living-survey.html" target="_blank" rel="noopener noreferrer">Vienna - the most livable city in the world</a> 
+                <img src="../../assets/noun_Wine_1032235.svg" height="24">
+            </p>
+        </div>
+    </div>
+
+       
+
+        <div class="apa-consent-reset apa-consent-wrapper">
+
+
+            <div class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-banner testOFF">
+
+                <ul class="apa-consent-reset apa-consent-bannerContent">
+                    <li class="apa-consent-reset">
+                        <div class="apa-consent-reset apa-consent-bannerText">
+                        </div>
+                    </li>
+                    <li class="apa-consent-reset apa-consent-buttonWrapperDetails">
+                        <button class="apa-consent-reset apa-consent-button">
+                            cookie-preferences
+                        </button>
+                    </li>
+                    <li class="apa-consent-reset apa-consent-buttonWrapperAccept">
+                        <button id="apa-consent-button-accept" class="apa-consent-reset apa-consent-button">
+                            accept
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="apa-consent-reset apa-consent-bgColorWhite apa-consent-boxShadow apa-consent-bannerButtonOFF">
+                    <div class="apa-consent-reset apa-consent-bannerButtonOFFicon1 apa-consent-bgColor"></div>
+                    <div class="apa-consent-reset apa-consent-bannerButtonOFFicon2 apa-consent-bgColor"></div>
+                </div>
+
+            </div>
+
+            <div class="apa-consent-reset apa-consent-dialogWrapper testOFF">
+                <div class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-dialog">
+                    <div class="apa-consent-reset apa-consent-mobileScroller">
+
+                        <div class="apa-consent-reset apa-consent-mobileClose"></div>
+
+                        <div class="apa-consent-reset apa-consent-dialogInnerWidth apa-consent-dialogHeader">
+                            <h3 class="apa-consent-reset apa-consent-H3">
+                                Cookie Preferences
+                            </h3>
+                            <p class="apa-consent-reset apa-consent-P">
+                                Choose if this website is only allowed to use functional cookies and/or marketing cookies.
+                            </p>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-dialogBodyWrapper">
+                            <div class="apa-consent-reset apa-consent-dialogInnerWidth apa-consent-dialogBody">
+                                <ul class="apa-consent-reset apa-consent-items">
+
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-dialogInnerWidth apa-consent-dialogSubmit">
+                            <button id="apa-constent-button-save-settings" class="apa-consent-reset apa-consent-button apa-consent-boxShadow">
+                                save & close
+                            </button>
+                        </div>
+
+                        <div class="apa-consent-reset apa-consent-bgColorWhite apa-consent-boxShadow apa-consent-dialogButtonOFF">
+                            <div class="apa-consent-reset apa-consent-dialogButtonOFFicon1"></div>
+                            <div class="apa-consent-reset apa-consent-dialogButtonOFFicon2 apa-consent-bgColor"></div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+   <div  id="bannerButtonOpen" class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-bannerButtonON">
+            <div class="apa-consent-reset apa-consent-bannerButtonONicon1 apa-consent-bgColorWhite"></div>
+            <div class="apa-consent-reset apa-consent-bannerButtonONicon2 apa-consent-bgColorWhite"></div>
+        </div>
+
+        <div class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-dialogButtonON testOFF">
+            <div class="apa-consent-reset apa-consent-dialogButtonONicon1 apa-consent-bgColorWhite"></div>
+            <div class="apa-consent-reset apa-consent-dialogButtonONicon2 apa-consent-bgColorWhite"></div>
+        </div>
+
+
+     
+
+        
+
+            
+
+    <ul style="display:none">
+        <li id="prototypeAppEntry" class="apa-consent-reset apa-consent-item">
+            <div class="apa-consent-reset apa-consent-itemSwitch">
+                <span class="apa-consent-reset apa-consent-boxShadow"></span>
+            </div>
+            <div class="apa-consent-reset apa-consent-itemTitle">
+
+            </div>
+            <div class="apa-consent-reset apa-consent-itemText">
+
+            </div>
+            <div class="apa-consent-reset apa-consent-itemSubItems">
+                <ul class="apa-consent-reset apa-consent-cookie-items">
+                    <li id="prototypeAppEntryCookieItem" style="display:none" class="apa-consent-reset apa-consent-itemSubItem">
+                        <div class="apa-consent-reset apa-consent-subItemTitle">
+                            <div class="apa-consent-reset apa-consent-subItemSwitch"></div>
+                            <span></span>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-subItemText">
+                            <p class="apa-consent-reset apa-consent-P"></p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+        <li id="prototypeAppEntryProtected" class="apa-consent-reset apa-consent-item">
+            <div class="apa-consent-reset apa-consent-itemSwitch">
+                <span class=" apa-consent-reset apa-consent-boxShadow"></span>
+            </div>
+            <div class="apa-consent-reset apa-consent-itemTitle apa-consent-itemTitleSwitch">
+            </div>
+            <div class="apa-consent-reset apa-consent-itemText">
+
+            </div>
+            <div class="apa-consent-reset apa-consent-itemSubItems">
+                <ul class="apa-consent-reset apa-consent-cookie-items">
+
+                    <li id="prototypeAppEntryProtectedCookieItem" style="display: none;" class="apa-consent-reset apa-consent-itemSubItem">
+                        <div class="apa-consent-reset apa-consent-subItemTitle">
+                            <div class="apa-consent-reset apa-consent-subItemSwitch"></div>
+                            <span></span>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-subItemText">
+                            <p class="apa-consent-reset apa-consent-P"></p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+    </ul>
+
+
+</div>
+
+    
+    <script
+  src="https://code.jquery.com/jquery-1.12.4.min.js"
+  integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="
+  crossorigin="anonymous"></script>
+
+<script src="../../js/bootstrap.min.js"></script>
+
+<script
+  src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js"
+  crossorigin="anonymous"></script>
+
+<script src="../../js/site.js"></script>
+
+<script 
+  src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.2.0/highlight.min.js"
+  integrity="sha256-sHRX2PXOLRG+LQtTpvREFsWhMVu2AJnmzxpmogmddtM="
+  crossorigin="anonymous"></script>
+
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script src="../../js/docs.js"></script>
+<script src="../../js/sidebar.js"></script>
+<script src="../../js/GCM-banner.js"></script>
+<script>
+  var hasExample = jQuery(".graphql-example").length > 0;
+  hasExample && document.write('<link rel="stylesheet" href="../../graphiql/graphiql.css" /><script src="../../graphiql/vendor/fetch.min.js">\x3C/script><script src="../../graphiql/vendor/react-16.8.6.min.js">\x3C/script><script src="../../graphiql/vendor/react-dom-16.8.6.min.js">\x3C/script><script src="../../graphiql/graphiql.js">\x3C/script><script src="../../graphiql/embedded.js">\x3C/script>');
+</script>
+
+
+       
+
+        <div class="apa-consent-reset apa-consent-wrapper">
+
+
+            <div class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-banner testOFF">
+
+                <ul class="apa-consent-reset apa-consent-bannerContent">
+                    <li class="apa-consent-reset">
+                        <div class="apa-consent-reset apa-consent-bannerText">
+                        </div>
+                    </li>
+                    <li class="apa-consent-reset apa-consent-buttonWrapperDetails">
+                        <button class="apa-consent-reset apa-consent-button">
+                            cookie-preferences
+                        </button>
+                    </li>
+                    <li class="apa-consent-reset apa-consent-buttonWrapperAccept">
+                        <button id="apa-consent-button-accept" class="apa-consent-reset apa-consent-button">
+                            accept
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="apa-consent-reset apa-consent-bgColorWhite apa-consent-boxShadow apa-consent-bannerButtonOFF">
+                    <div class="apa-consent-reset apa-consent-bannerButtonOFFicon1 apa-consent-bgColor"></div>
+                    <div class="apa-consent-reset apa-consent-bannerButtonOFFicon2 apa-consent-bgColor"></div>
+                </div>
+
+            </div>
+
+            <div class="apa-consent-reset apa-consent-dialogWrapper testOFF">
+                <div class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-dialog">
+                    <div class="apa-consent-reset apa-consent-mobileScroller">
+
+                        <div class="apa-consent-reset apa-consent-mobileClose"></div>
+
+                        <div class="apa-consent-reset apa-consent-dialogInnerWidth apa-consent-dialogHeader">
+                            <h3 class="apa-consent-reset apa-consent-H3">
+                                Cookie Preferences
+                            </h3>
+                            <p class="apa-consent-reset apa-consent-P">
+                                Choose if this website is only allowed to use functional cookies and/or marketing cookies.
+                            </p>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-dialogBodyWrapper">
+                            <div class="apa-consent-reset apa-consent-dialogInnerWidth apa-consent-dialogBody">
+                                <ul class="apa-consent-reset apa-consent-items">
+
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-dialogInnerWidth apa-consent-dialogSubmit">
+                            <button id="apa-constent-button-save-settings" class="apa-consent-reset apa-consent-button apa-consent-boxShadow">
+                                save & close
+                            </button>
+                        </div>
+
+                        <div class="apa-consent-reset apa-consent-bgColorWhite apa-consent-boxShadow apa-consent-dialogButtonOFF">
+                            <div class="apa-consent-reset apa-consent-dialogButtonOFFicon1"></div>
+                            <div class="apa-consent-reset apa-consent-dialogButtonOFFicon2 apa-consent-bgColor"></div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+   <div  id="bannerButtonOpen" class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-bannerButtonON">
+            <div class="apa-consent-reset apa-consent-bannerButtonONicon1 apa-consent-bgColorWhite"></div>
+            <div class="apa-consent-reset apa-consent-bannerButtonONicon2 apa-consent-bgColorWhite"></div>
+        </div>
+
+        <div class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-dialogButtonON testOFF">
+            <div class="apa-consent-reset apa-consent-dialogButtonONicon1 apa-consent-bgColorWhite"></div>
+            <div class="apa-consent-reset apa-consent-dialogButtonONicon2 apa-consent-bgColorWhite"></div>
+        </div>
+
+
+     
+
+        
+
+            
+
+    <ul style="display:none">
+        <li id="prototypeAppEntry" class="apa-consent-reset apa-consent-item">
+            <div class="apa-consent-reset apa-consent-itemSwitch">
+                <span class="apa-consent-reset apa-consent-boxShadow"></span>
+            </div>
+            <div class="apa-consent-reset apa-consent-itemTitle">
+
+            </div>
+            <div class="apa-consent-reset apa-consent-itemText">
+
+            </div>
+            <div class="apa-consent-reset apa-consent-itemSubItems">
+                <ul class="apa-consent-reset apa-consent-cookie-items">
+                    <li id="prototypeAppEntryCookieItem" style="display:none" class="apa-consent-reset apa-consent-itemSubItem">
+                        <div class="apa-consent-reset apa-consent-subItemTitle">
+                            <div class="apa-consent-reset apa-consent-subItemSwitch"></div>
+                            <span></span>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-subItemText">
+                            <p class="apa-consent-reset apa-consent-P"></p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+        <li id="prototypeAppEntryProtected" class="apa-consent-reset apa-consent-item">
+            <div class="apa-consent-reset apa-consent-itemSwitch">
+                <span class=" apa-consent-reset apa-consent-boxShadow"></span>
+            </div>
+            <div class="apa-consent-reset apa-consent-itemTitle apa-consent-itemTitleSwitch">
+            </div>
+            <div class="apa-consent-reset apa-consent-itemText">
+
+            </div>
+            <div class="apa-consent-reset apa-consent-itemSubItems">
+                <ul class="apa-consent-reset apa-consent-cookie-items">
+
+                    <li id="prototypeAppEntryProtectedCookieItem" style="display: none;" class="apa-consent-reset apa-consent-itemSubItem">
+                        <div class="apa-consent-reset apa-consent-subItemTitle">
+                            <div class="apa-consent-reset apa-consent-subItemSwitch"></div>
+                            <span></span>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-subItemText">
+                            <p class="apa-consent-reset apa-consent-P"></p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+    </ul>
+
+
+
+    <script>
+    window.GCM.apps.whenAllowed('google', function () {
+        (function (i, s, o, g, r, a, m) {
+            i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+                (i[r].q = i[r].q || []).push(arguments)
+            }, i[r].l = 1 * new Date(); a = s.createElement(o),
+                m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+        ga('create', 'UA-69994739-1', 'auto');
+        ga('send', 'pageview');
+    });
+</script>
+    
+    <script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "Organization",
+        "name": "Gentics Mesh",
+        "url": "https://getmesh.io",
+        "logo": "https://getmesh.io/assets/gentics-mesh-logo.png",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Laimgrubengasse 10",
+            "addressRegion": "Vienna",
+            "postalCode": "1060",
+            "addressCountry": "Austria"
+        },
+        "contactPoint": {
+            "@type": "ContactPoint",
+            "contactType": "customer support",
+            "telephone": "+43-1-7109904-300",
+            "email": "support@gentics.com"
+        },
+        "sameAs": [
+            "https://twitter.com/genticsmesh",
+            "https://github.com/gentics/mesh",
+            "https://stackoverflow.com/questions/tagged/genticsmesh"
+        ]
+    }
+</script>
+</body>
+
+</html>

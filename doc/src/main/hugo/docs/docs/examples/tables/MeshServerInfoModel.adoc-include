@@ -1,0 +1,50 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| databaseRevision
+| false
+| string
+| Database structure revision hash.
+
+| databaseVendor
+| false
+| string
+| Used database implementation vendor name.
+
+| databaseVersion
+| false
+| string
+| Used database implementation version.
+
+| meshNodeName
+| false
+| string
+| Node name of the Gentics Mesh instance.
+
+| meshVersion
+| false
+| string
+| Gentics Mesh Version string.
+
+| searchVendor
+| false
+| string
+| Used search implementation vendor name.
+
+| searchVersion
+| false
+| string
+| Used search implementation version.
+
+| vertxVersion
+| false
+| string
+| Used Vert.x version.
+
+|======

@@ -1,0 +1,29 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:tag:TagListUpdateRequest",
+  "properties" : {
+    "tags" : {
+      "type" : "array",
+      "required" : true,
+      "description" : "List of tags which should be assigned to the node. Tags which are not included will be removed from the node.",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:tag:TagReference",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "description" : "Name of the referenced element"
+          },
+          "uuid" : {
+            "type" : "string",
+            "required" : true,
+            "description" : "Uuid of the referenced element"
+          },
+          "tagFamily" : {
+            "type" : "string"
+          }
+        }
+      }
+    }
+  }
+}

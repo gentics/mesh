@@ -1,0 +1,15 @@
+[options="header",cols="10%,20%,10%,60%"]
+|======
+
+| Name
+| Type
+| Mandatory
+| Description
+
+
+| before
+| string 
+| false
+| Limit the purge operation to versions which are older than the given date.
+
+|======

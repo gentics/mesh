@@ -1,0 +1,13 @@
+////
+Note: this file (changelog-3.adoc-include) is generated automatically.
+Do not make manual changes in this file, as they will be lost.
+
+If you want to add changelog entries, create a new file in changelog/src/changelog/entries/... and run creation of the changelog with
+mvn -pl changelog install
+////
+
+[[v3.0.0-SNAPSHOT]]
+== 3.0.0-SNAPSHOT (30.08.2024)
+
+icon:bullhorn[] The licensed database connectors for Oracle, Microsoft SQL server, Postgres have been provided an own repository.
+

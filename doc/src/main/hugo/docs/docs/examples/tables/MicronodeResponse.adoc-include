@@ -1,0 +1,25 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| fields
+| true
+| object
+| Fields that are stored in the micronode.
+
+| microschema
+| true
+| object
+| Reference to the microschema of the micronode.
+
+| uuid
+| true
+| string
+| Uuid of the element
+
+|======

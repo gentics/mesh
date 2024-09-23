@@ -87,7 +87,7 @@
 									<directory>src/main/docs</directory>
 									<filtering>true</filtering>
 									<includes>
-										<include>*.html</include>
+										<include>just_to_create_dir_from_maven</include>
 									</includes>
 								</resource>
 							</resources>
@@ -100,7 +100,7 @@
 							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${basedir}/target/docs/docs</outputDirectory>
+							<outputDirectory>${basedir}/target/docs/asciidoc</outputDirectory>
 							<resources>
 								<resource>
 									<directory>src/main/docs</directory>
@@ -186,7 +186,7 @@
 							<attach>true</attach>
 							<appendAssemblyId>false</appendAssemblyId>
 							<descriptors>
-								<descriptor>${project.basedir}/src/assembly/doc-package.xml</descriptor>
+								<descriptor>${project.basedir}/src/assembly/maven/doc-package.xml</descriptor>
 							</descriptors>
 						</configuration>
 					</execution>

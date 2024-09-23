@@ -1,0 +1,20 @@
+[options="header",cols="10%,20%,10%,60%"]
+|======
+
+| Name
+| Type
+| Mandatory
+| Description
+
+
+| branch
+| string 
+| false
+| Specifies the branch to be used for loading data. The latest project branch will be used if this parameter is omitted.
+
+| version
+| string  (default: draft) 
+| false
+| Specifies the version to be loaded. Can either be published/draft or version number. e.g.: _0.1_, _1.0_, _draft_, _published_.
+
+|======

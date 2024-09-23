@@ -1,0 +1,75 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| completionCount
+| true
+| integer
+| The completion count of the job. This indicates how many items the job has processed.
+
+| created
+| true
+| string
+| ISO8601 formatted created date string.
+
+| creator
+| true
+| object
+| User reference of the creator of the element.
+
+| errorDetail
+| false
+| string
+| The detailed error information of the job.
+
+| errorMessage
+| false
+| string
+| The error message of the job.
+
+| nodeName
+| false
+| string
+| Name of the Gentics Mesh instance on which the job was executed.
+
+| properties
+| true
+| object
+| Properties of the job.
+
+| startDate
+| true
+| string
+| The start date of the job.
+
+| status
+| true
+| string
+| Migration status.
+
+| stopDate
+| true
+| string
+| The stop date of the job.
+
+| type
+| true
+| string
+| The type of the job.
+
+| uuid
+| true
+| string
+| Uuid of the element
+
+| warnings
+| false
+| array
+| List of warnings which were encoutered while executing the job.
+
+|======

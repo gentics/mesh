@@ -1,0 +1,84 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:ImageVariantsResponse",
+  "properties" : {
+    "variants" : {
+      "type" : "array",
+      "description" : "List of image manipulation variants.",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:ImageVariantResponse",
+        "properties" : {
+          "width" : {
+            "type" : "integer",
+            "description" : "Image width."
+          },
+          "height" : {
+            "type" : "integer",
+            "description" : "Image height."
+          },
+          "rect" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:com:gentics:mesh:parameter:image:ImageRect",
+            "description" : "Image crop parameters.",
+            "properties" : {
+              "startX" : {
+                "type" : "integer"
+              },
+              "startY" : {
+                "type" : "integer"
+              },
+              "width" : {
+                "type" : "integer"
+              },
+              "height" : {
+                "type" : "integer"
+              }
+            }
+          },
+          "cropMode" : {
+            "type" : "string",
+            "description" : "The image crop mode.",
+            "enum" : [ "RECT", "FOCALPOINT" ]
+          },
+          "resizeMode" : {
+            "type" : "string",
+            "description" : "The image resize mode.",
+            "enum" : [ "FORCE", "SMART", "PROP" ]
+          },
+          "focalPoint" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:FocalPoint",
+            "description" : "The image focal point, containing factors of the image width/height. The value 0.5 is the center of the image.",
+            "properties" : {
+              "x" : {
+                "type" : "number",
+                "description" : "The horizontal position of the focal point. The value is a factor of the image width. The value 0.5 is the center of the image."
+              },
+              "y" : {
+                "type" : "number",
+                "description" : "The vertical position of the focal point. The value is a factor of the image height. The value 0.5 is the center of the image."
+              }
+            }
+          },
+          "focalZoom" : {
+            "type" : "number",
+            "description" : "The image focal point zoom factor."
+          },
+          "fileSize" : {
+            "type" : "integer",
+            "description" : "The image file size."
+          },
+          "origin" : {
+            "type" : "boolean",
+            "description" : "This flag states that this variant is an original image."
+          },
+          "auto" : {
+            "type" : "boolean",
+            "description" : "This flag states that this variant is a proportional (aka 'auto') image."
+          }
+        }
+      }
+    }
+  }
+}

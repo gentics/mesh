@@ -1,0 +1,20 @@
+usage: mesh.jar
+ -clusterName <name>              Override the cluster name. Setting a
+                                  cluster name will also enable
+                                  clustering.
+ -disableElasticsearch            Flag which can be used to disable the
+                                  Elasticsearch integration.
+ -elasticsearchUrl <url>          Elasticsearch URL to be used.
+ -embeddedElasticsearch <flag>    Flag which can be used to disable the
+                                  embedded Elasticsearch server.
+ -help                            This output
+ -httpPort <port>                 Override the configured server HTTP
+                                  port.
+ -initCluster                     Flag which can be used to initialise the
+                                  first instance of a cluster. This is
+                                  usually only used for testing or setup
+                                  of fresh cluster instances.
+ -nodeName <name>                 Override the configured node name.
+ -resetAdminPassword <password>   Reset the admin password. It is advised
+                                  to change the password once again after
+                                  the reset has been performed.

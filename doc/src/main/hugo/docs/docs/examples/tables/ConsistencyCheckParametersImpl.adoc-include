@@ -1,0 +1,15 @@
+[options="header",cols="10%,20%,10%,60%"]
+|======
+
+| Name
+| Type
+| Mandatory
+| Description
+
+
+| async
+| boolean  (default: false) 
+| false
+| Specifiy whether the consistency check should be executed asynchronously (as job). *Please note that some checks do require this flag set!*
+
+|======

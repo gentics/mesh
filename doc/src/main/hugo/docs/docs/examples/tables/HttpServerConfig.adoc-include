@@ -1,0 +1,95 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| certPath
+| false
+| string
+| Flag which indicates whether SSL support be enabled.
+
+| clientAuthMode
+| false
+| string
+| Configure the client certificate handling mode. Options: none, request, required. Default: none
+
+| corsAllowCredentials
+| false
+| boolean
+| Flag which indicates whether credentials are allowed to be passed along using CORS requests.
+
+| corsAllowedOriginPattern
+| false
+| string
+| Configured CORS allowed origin pattern. You can specify a regex to include multiple hosts if you want to do so.
+
+| enableCors
+| false
+| boolean
+| Flag which indicates whether CORS handling should be enabled.
+
+| host
+| false
+| string
+| Configure the Gentics Mesh HTTP server host to bind to. Default is: 0.0.0.0
+
+| http
+| false
+| boolean
+| Flag which indicates whether http server should be enabled. Default: true
+
+| keyPath
+| false
+| string
+| Path to the SSL private key. Default: config/key.pem
+
+| maxFormAttributeSize
+| false
+| integer
+| Set the maximum size of a form attribute, set to -1 for unlimited.
+
+| minifyJson
+| false
+| boolean
+| Minify JSON responses to save the payload space. Default is true
+
+| port
+| false
+| integer
+| Configure the Gentics Mesh HTTP server port. Default is: 8080
+
+| serverTokens
+| false
+| boolean
+| Set the http server tokens flag which controls whether the server should expose version information via headers, REST endpoints and GraphQL. Default is true
+
+| ssl
+| false
+| boolean
+| Flag which indicates whether https server should be enabled. Default: false
+
+| sslPort
+| false
+| integer
+| Configure the Gentics Mesh HTTPS server port. Default is: 8443
+
+| trustedCertPaths
+| false
+| array
+| Configure the trusted SSL certificates.
+
+| useAlpn
+| false
+| boolean
+| Flag which indicates whether application-level protocol negotiation (aka ALPN) should be used. Normally HTTP/2 connections need this.
+
+| verticleAmount
+| false
+| integer
+| Amount of rest API verticles to be deployed. Default is 2 * CPU Cores
+
+|======

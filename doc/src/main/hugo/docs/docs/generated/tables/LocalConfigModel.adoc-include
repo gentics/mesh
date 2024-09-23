@@ -1,0 +1,15 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| readOnly
+| false
+| boolean
+| If true, mutating requests to this instance are not allowed.
+
+|======

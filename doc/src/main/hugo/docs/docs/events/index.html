@@ -1,0 +1,2455 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link rel="dns-prefetch" href="//oss.maxcdn.com" />
+<link rel="dns-prefetch" href="//ajax.googleapis.com" />
+
+<title>Events</title>
+<meta name="description" content="">
+<meta name="author" content="">
+<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Events" />
+<meta name="twitter:description" content="" />
+<meta name="twitter:image:src" content="https://getmesh.io/assets/gentics-card.png" />
+
+<meta property="og:title" content="Events">
+<meta property="og:url" content="https://getmesh.io/docs/events/">
+<meta property="og:description" content="">
+<meta property="og:image" content="https://getmesh.io/assets/gentics-card.png">
+<link rel="icon" href="../../favicon.ico">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+<link rel="shortcut icon" href="../../assets/g_logo_small.png" type="image/png" />
+<link href="../../styles/docs.css" media="screen" rel="stylesheet">
+
+
+<link href="https://fonts.googleapis.com/css?family=Roboto:300,400" rel="stylesheet">
+<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN"
+    crossorigin="anonymous">
+<script src="../../js/GCM.min.js"></script>
+<script>
+    window.GCM.init('/js/GCM-config.json', 'en', 1, true);
+</script>
+
+<link href="https://fonts.googleapis.com/css?family=Roboto:300,400" rel="stylesheet">
+
+</head>
+
+<body class="body-navbar-">
+    <nav class="navbar navbar-default navbar--top">
+    <div class="container-fluid">
+        
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1"
+                aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="../../">
+                <img class="logo" src="../../assets/gentics-mesh-logo.png" alt="Gentics Logo" />
+            </a>
+        </div>
+
+        
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav"> 
+                <li>
+                    <a href="../../features">Features</a>
+                </li>
+                <li>
+                    <a href="../../docs">Documentation</a>
+                </li>
+                <li>
+                    <a href="../../demo">Demo</a>
+                </li>
+                <li>
+                    <a href="../../services">Services</a>
+                </li>
+                <li>
+                    <a href="../../training">Trainings</a>
+                </li>
+                <li>
+                    <a href="../../premium-features">Premium Features</a>
+                </li>
+                
+                <li>
+                    <a class="btn btn-primary btn-download" href="../../download">Download</a>
+                </li>
+            </ul>
+        </div>
+        
+    </div>
+    
+</nav>
+
+
+    
+<div class="topsection-wrapper">
+    <div class="topsection container">
+        <div class="row">
+            <div class="col-md-12">
+                <h1>Events</h1>
+            </div>
+        </div>
+    </div>
+</div>
+ 
+  <div class="container docs-content">
+    <div class="row">
+      <div class="col-sm-12 col-md-push-9 col-md-3 hidden-xs hidden-sm">
+        <div id="sidebar" data-spy="affix">
+            
+        </div>
+      </div>
+      <div class="col-sm-12 col-md-pull-3 col-md-9">
+        <div class="toc hidden-md hidden-lg">
+          <h2>Events</h2>
+          
+        </div>
+        <div id="toc" class="toc">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_intro">Intro</a></li>
+<li><a href="#_eventbus_bridge_websocket">Eventbus Bridge &amp; Websocket</a></li>
+<li><a href="#_message_types">Message Types</a>
+<ul class="sectlevel2">
+<li><a href="#_registering">Registering</a></li>
+<li><a href="#_unregistering">Unregistering</a></li>
+<li><a href="#_publishing">Publishing</a></li>
+<li><a href="#_sending">Sending</a></li>
+<li><a href="#ping">Ping</a></li>
+</ul>
+</li>
+<li><a href="#_addresses">Addresses</a>
+<ul class="sectlevel2">
+<li><a href="#_mesh_project_version_purge_start"><em>mesh.project.version_purge.start</em></a></li>
+<li><a href="#_mesh_project_version_purge_finished"><em>mesh.project.version_purge.finished</em></a></li>
+<li><a href="#_mesh_schema_migration_start"><em>mesh.schema.migration.start</em></a></li>
+<li><a href="#_mesh_schema_migration_finished"><em>mesh.schema.migration.finished</em></a></li>
+<li><a href="#_mesh_schema_branch_assign"><em>mesh.schema-branch.assign</em></a></li>
+<li><a href="#_mesh_schema_branch_unassign"><em>mesh.schema-branch.unassign</em></a></li>
+<li><a href="#_mesh_microschema_branch_assign"><em>mesh.microschema-branch.assign</em></a></li>
+<li><a href="#_mesh_microschema_branch_unassign"><em>mesh.microschema-branch.unassign</em></a></li>
+<li><a href="#_mesh_microschema_migration_start"><em>mesh.microschema.migration.start</em></a></li>
+<li><a href="#_mesh_microschema_migration_finished"><em>mesh.microschema.migration.finished</em></a></li>
+<li><a href="#_mesh_branch_migration_start"><em>mesh.branch.migration.start</em></a></li>
+<li><a href="#_mesh_branch_migration_finished"><em>mesh.branch.migration.finished</em></a></li>
+<li><a href="#_mesh_startup_complete"><em>mesh.startup-complete</em></a></li>
+<li><a href="#_job_worker"><em>job.worker</em></a></li>
+<li><a href="#_mesh_cluster_node_joining"><em>mesh.cluster.node.joining</em></a></li>
+<li><a href="#_mesh_cluster_node_joined"><em>mesh.cluster.node.joined</em></a></li>
+<li><a href="#_mesh_cluster_node_leaving"><em>mesh.cluster.node.leaving</em></a></li>
+<li><a href="#_mesh_cluster_node_left"><em>mesh.cluster.node.left</em></a></li>
+<li><a href="#_mesh_cluster_db_status"><em>mesh.cluster.db.status</em></a></li>
+<li><a href="#_mesh_ping_local"><em>mesh.ping.local</em></a></li>
+<li><a href="#_mesh_ping_cluster"><em>mesh.ping.cluster</em></a></li>
+<li><a href="#_mesh_clear_permission_store"><em>mesh.clear-permission-store</em></a></li>
+<li><a href="#_mesh_clear_path_store"><em>mesh.clear-path-store</em></a></li>
+<li><a href="#_mesh_clear_caches"><em>mesh.clear-caches</em></a></li>
+<li><a href="#_mesh_user_created"><em>mesh.user.created</em></a></li>
+<li><a href="#_mesh_user_updated"><em>mesh.user.updated</em></a></li>
+<li><a href="#_mesh_user_deleted"><em>mesh.user.deleted</em></a></li>
+<li><a href="#_mesh_group_created"><em>mesh.group.created</em></a></li>
+<li><a href="#_mesh_group_updated"><em>mesh.group.updated</em></a></li>
+<li><a href="#_mesh_group_deleted"><em>mesh.group.deleted</em></a></li>
+<li><a href="#_mesh_group_user_assigned"><em>mesh.group-user.assigned</em></a></li>
+<li><a href="#_mesh_group_user_unassigned"><em>mesh.group-user.unassigned</em></a></li>
+<li><a href="#_mesh_group_role_assigned"><em>mesh.group-role.assigned</em></a></li>
+<li><a href="#_mesh_group_role_unassigned"><em>mesh.group-role.unassigned</em></a></li>
+<li><a href="#_mesh_role_created"><em>mesh.role.created</em></a></li>
+<li><a href="#_mesh_role_updated"><em>mesh.role.updated</em></a></li>
+<li><a href="#_mesh_role_deleted"><em>mesh.role.deleted</em></a></li>
+<li><a href="#_mesh_role_permissions_changed"><em>mesh.role.permissions.changed</em></a></li>
+<li><a href="#_mesh_tag_created"><em>mesh.tag.created</em></a></li>
+<li><a href="#_mesh_tag_updated"><em>mesh.tag.updated</em></a></li>
+<li><a href="#_mesh_tag_deleted"><em>mesh.tag.deleted</em></a></li>
+<li><a href="#_mesh_tagfamily_created"><em>mesh.tagfamily.created</em></a></li>
+<li><a href="#_mesh_tagfamily_updated"><em>mesh.tagfamily.updated</em></a></li>
+<li><a href="#_mesh_tagfamily_deleted"><em>mesh.tagfamily.deleted</em></a></li>
+<li><a href="#_mesh_project_created"><em>mesh.project.created</em></a></li>
+<li><a href="#_mesh_project_updated"><em>mesh.project.updated</em></a></li>
+<li><a href="#_mesh_project_deleted"><em>mesh.project.deleted</em></a></li>
+<li><a href="#_mesh_project_schema_assigned"><em>mesh.project-schema.assigned</em></a></li>
+<li><a href="#_mesh_project_schema_unassigned"><em>mesh.project-schema.unassigned</em></a></li>
+<li><a href="#_mesh_project_microschema_assigned"><em>mesh.project-microschema.assigned</em></a></li>
+<li><a href="#_mesh_project_microschema_unassigned"><em>mesh.project-microschema.unassigned</em></a></li>
+<li><a href="#_mesh_project_latest_branch_updated"><em>mesh.project-latest-branch.updated</em></a></li>
+<li><a href="#_mesh_node_created"><em>mesh.node.created</em></a></li>
+<li><a href="#_mesh_node_updated"><em>mesh.node.updated</em></a></li>
+<li><a href="#_mesh_node_deleted"><em>mesh.node.deleted</em></a></li>
+<li><a href="#_mesh_node_tagged"><em>mesh.node.tagged</em></a></li>
+<li><a href="#_mesh_node_untagged"><em>mesh.node.untagged</em></a></li>
+<li><a href="#_mesh_node_published"><em>mesh.node.published</em></a></li>
+<li><a href="#_mesh_node_unpublished"><em>mesh.node.unpublished</em></a></li>
+<li><a href="#_mesh_node_moved"><em>mesh.node.moved</em></a></li>
+<li><a href="#_mesh_node_content_deleted"><em>mesh.node-content.deleted</em></a></li>
+<li><a href="#_mesh_node_content_created"><em>mesh.node-content.created</em></a></li>
+<li><a href="#_mesh_node_reference_updated"><em>mesh.node-reference.updated</em></a></li>
+<li><a href="#_mesh_schema_created"><em>mesh.schema.created</em></a></li>
+<li><a href="#_mesh_schema_updated"><em>mesh.schema.updated</em></a></li>
+<li><a href="#_mesh_schema_deleted"><em>mesh.schema.deleted</em></a></li>
+<li><a href="#_mesh_microschema_created"><em>mesh.microschema.created</em></a></li>
+<li><a href="#_mesh_microschema_updated"><em>mesh.microschema.updated</em></a></li>
+<li><a href="#_mesh_microschema_deleted"><em>mesh.microschema.deleted</em></a></li>
+<li><a href="#_mesh_branch_created"><em>mesh.branch.created</em></a></li>
+<li><a href="#_mesh_branch_updated"><em>mesh.branch.updated</em></a></li>
+<li><a href="#_mesh_branch_deleted"><em>mesh.branch.deleted</em></a></li>
+<li><a href="#_mesh_branch_tagged"><em>mesh.branch.tagged</em></a></li>
+<li><a href="#_mesh_branch_untagged"><em>mesh.branch.untagged</em></a></li>
+<li><a href="#_mesh_jobn_created"><em>mesh.jobn.created</em></a></li>
+<li><a href="#_mesh_job_updated"><em>mesh.job.updated</em></a></li>
+<li><a href="#_mesh_job_deleted"><em>mesh.job.deleted</em></a></li>
+<li><a href="#_mesh_search_index_sync_request"><em>mesh.search.index.sync.request</em></a></li>
+<li><a href="#_mesh_search_index_sync_start"><em>mesh.search.index.sync.start</em></a></li>
+<li><a href="#_mesh_search_index_sync_finished"><em>mesh.search.index.sync.finished</em></a></li>
+<li><a href="#_mesh_search_index_clear_request"><em>mesh.search.index.clear.request</em></a></li>
+<li><a href="#_mesh_search_index_clear_start"><em>mesh.search.index.clear.start</em></a></li>
+<li><a href="#_mesh_search_index_clear_finished"><em>mesh.search.index.clear.finished</em></a></li>
+<li><a href="#_mesh_search_index_check_request"><em>mesh.search.index.check.request</em></a></li>
+<li><a href="#_mesh_search_index_check_start"><em>mesh.search.index.check.start</em></a></li>
+<li><a href="#_mesh_search_index_check_finished"><em>mesh.search.index.check.finished</em></a></li>
+<li><a href="#_mesh_search_process_idle"><em>mesh.search.process.idle</em></a></li>
+<li><a href="#_mesh_search_process_isidle"><em>mesh.search.process.isidle</em></a></li>
+<li><a href="#_mesh_search_flush_request"><em>mesh.search.flush.request</em></a></li>
+<li><a href="#_mesh_search_refresh_request"><em>mesh.search.refresh.request</em></a></li>
+<li><a href="#_mesh_graph_backup_start"><em>mesh.graph.backup.start</em></a></li>
+<li><a href="#_mesh_graph_backup_finished"><em>mesh.graph.backup.finished</em></a></li>
+<li><a href="#_mesh_graph_restore_start"><em>mesh.graph.restore.start</em></a></li>
+<li><a href="#_mesh_graph_restore_finished"><em>mesh.graph.restore.finished</em></a></li>
+<li><a href="#_mesh_graph_export_start"><em>mesh.graph.export.start</em></a></li>
+<li><a href="#_mesh_graph_export_finished"><em>mesh.graph.export.finished</em></a></li>
+<li><a href="#_mesh_graph_import_start"><em>mesh.graph.import.start</em></a></li>
+<li><a href="#_mesh_graph_import_finished"><em>mesh.graph.import.finished</em></a></li>
+<li><a href="#_mesh_graph_repair_start"><em>mesh.graph.repair.start</em></a></li>
+<li><a href="#_mesh_graph_repair_finished"><em>mesh.graph.repair.finished</em></a></li>
+<li><a href="#_mesh_plugin_deploying"><em>mesh.plugin.deploying</em></a></li>
+<li><a href="#_mesh_plugin_pre_registered"><em>mesh.plugin.pre-registered</em></a></li>
+<li><a href="#_mesh_plugin_registered"><em>mesh.plugin.registered</em></a></li>
+<li><a href="#_mesh_plugin_deployed"><em>mesh.plugin.deployed</em></a></li>
+<li><a href="#_mesh_plugin_deploy_failed"><em>mesh.plugin.deploy.failed</em></a></li>
+<li><a href="#_mesh_plugin_undeploying"><em>mesh.plugin.undeploying</em></a></li>
+<li><a href="#_mesh_plugin_undeployed"><em>mesh.plugin.undeployed</em></a></li>
+<li><a href="#_mesh_s3binary_created"><em>mesh.s3binary.created</em></a></li>
+<li><a href="#_mesh_s3binary_deleted"><em>mesh.s3binary.deleted</em></a></li>
+<li><a href="#_mesh_s3binary_metadata_extracted"><em>mesh.s3binary.metadata.extracted</em></a></li>
+<li><a href="#_mesh_binary_check_request"><em>mesh.binary.check.request</em></a></li>
+</ul>
+</li>
+<li><a href="#customevents">Custom Events</a></li>
+<li><a href="#_examples">Examples</a>
+<ul class="sectlevel2">
+<li><a href="#iot">IoT Example</a></li>
+</ul>
+</li>
+<li><a href="#_limitations">Limitations</a></li>
+</ul>
+</div>
+<div class="paragraph">
+<p>In Gentics Mesh events can be used to exchange information in between clients and to inform clients about changes in the CMS.</p>
+</div>
+<div class="paragraph">
+<p>Typical use cases for event handling:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Exchange data in between client applications (e.g. Chat)</p>
+</li>
+<li>
+<p>Real time reload if data via <code>mesh.node.updated</code> changes.</p>
+</li>
+<li>
+<p>Client-Side cache purging if data is updated, created, deleted.</p>
+</li>
+<li>
+<p>Hooking external hardware sensors into your front-end.</p>
+</li>
+</ul>
+</div>
+<div class="sect1">
+<h2 id="_intro">Intro</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Events in Gentics Mesh can be triggered by various action. Updating a user for example will trigger the <code>mesh.user.updated</code> event. Events for specific actions can be received by registering on the event address (e.g. <code>mesh.user.updated</code> or <code>mesh.user.deleted</code>).</p>
+</div>
+<div class="paragraph">
+<p>A websocket endpoint is used to deliver event messages to clients which register on the event addresses.</p>
+</div>
+<div class="paragraph">
+<p>Typical workflow:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Authenticate HTTP client</p>
+</li>
+<li>
+<p>Connect client to websocket</p>
+</li>
+<li>
+<p>Send message on websocket to register on specific event addresses</p>
+</li>
+<li>
+<p>Receive events messages</p>
+</li>
+<li>
+<p>Regularly send <a href="#ping">ping</a> messages.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_eventbus_bridge_websocket">Eventbus Bridge &amp; Websocket</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The <code><code>/api/v2/eventbus</code></code> endpoint allows clients to access the eventbus. This is useful if you want to react on specific events.</p>
+</div>
+<div class="paragraph">
+<p>The endpoint is <a href="https://github.com/sockjs">SockJS</a> compliant. It is also possible to access the websocket directly via: <code><code>/api/v2/eventbus/websocket</code></code>.</p>
+</div>
+<div class="paragraph">
+<p>JavaScript projects can use the <a href="https://www.npmjs.com/package/vertx3-eventbus-client">vertx3-eventbus-client</a> library to connect to the eventbus bridge.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_message_types">Message Types</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_registering">Registering</h3>
+<div class="paragraph">
+<p>Once the websocket has been opened you can send a text frame to Gentics Mesh that contains the information to which address you want to register to. Once registered the client will receive the published messaged on that address.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "type": "register",
+  "address": "mesh.user.updated"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_unregistering">Unregistering</h3>
+<div class="paragraph">
+<p>If you want to unregister for specific events you can send a message of type <code>unregister</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "type": "unregister",
+  "address": "mesh.user.updated"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_publishing">Publishing</h3>
+<div class="paragraph">
+<p>You can publish a message which will be received by all recipients which has registered on to the used address. The published message will be delivered to each of the recipients.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "type": "publish",
+  "address": "custom.event",
+  "body": "someText"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_sending">Sending</h3>
+<div class="paragraph">
+<p>Sending a message is different from publishing. When sending a message it will only be received by <em>one</em> randomly selected recipient.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "type": "publish",
+  "address": "custom.event",
+  "body": "someText"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="ping">Ping</h3>
+<div class="paragraph">
+<p>The eventbus bridge requires the client to send a regular <code>ping</code> message. The timeout for a ping message is currently set to <code>10</code> seconds. The websocket will automatically be terminated if no ping message has been received in this interval.</p>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+Handling the ping message is essential. The eventbus bridge will not work properly without handling ping messages.
+</td>
+</tr>
+</table>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "type": "ping"
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_addresses">Addresses</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The following list contains all event addresses with examples which Gentics Mesh exposes.</p>
+</div>
+<div class="sect2">
+<h3 id="_mesh_project_version_purge_start"><em>mesh.project.version_purge.start</em></h3>
+<div class="paragraph">
+<p>Emitted once a version purge job starts</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "demo",
+  "status" : "RUNNING"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_project_version_purge_finished"><em>mesh.project.version_purge.finished</em></h3>
+<div class="paragraph">
+<p>Emitted once a version purge job finishes successully or failed</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "demo",
+  "status" : "RUNNING"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_schema_migration_start"><em>mesh.schema.migration.start</em></h3>
+<div class="paragraph">
+<p>Emitted once a schema migration starts.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "branch" : {
+    "name" : "demoV1",
+    "uuid" : "b12272150db4490ea272150db4190e72"
+  },
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "status" : "RUNNING",
+  "fromVersion" : {
+    "name" : "folder",
+    "uuid" : "cd6b4f2851814773ab4f28518137735f",
+    "version" : "1",
+    "versionUuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  },
+  "toVersion" : {
+    "name" : "folder",
+    "uuid" : "cd6b4f2851814773ab4f28518137735f",
+    "version" : "2",
+    "versionUuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_schema_migration_finished"><em>mesh.schema.migration.finished</em></h3>
+<div class="paragraph">
+<p>Emitted once the migration finishes successful or failed.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "branch" : {
+    "name" : "demoV1",
+    "uuid" : "b12272150db4490ea272150db4190e72"
+  },
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "status" : "RUNNING",
+  "fromVersion" : {
+    "name" : "folder",
+    "uuid" : "cd6b4f2851814773ab4f28518137735f",
+    "version" : "1",
+    "versionUuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  },
+  "toVersion" : {
+    "name" : "folder",
+    "uuid" : "cd6b4f2851814773ab4f28518137735f",
+    "version" : "2",
+    "versionUuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_schema_branch_assign"><em>mesh.schema-branch.assign</em></h3>
+<div class="paragraph">
+<p>Emitted once a schema has been assigned to a branch.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "branch" : {
+    "name" : "demoV1",
+    "uuid" : "b12272150db4490ea272150db4190e72"
+  },
+  "schema" : {
+    "name" : "folder",
+    "uuid" : "cd6b4f2851814773ab4f28518137735f",
+    "version" : "1",
+    "versionUuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  },
+  "status" : "COMPLETED"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_schema_branch_unassign"><em>mesh.schema-branch.unassign</em></h3>
+<div class="paragraph">
+<p>Emitted once a schema has been unassigned from a branch.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "branch" : {
+    "name" : "demoV1",
+    "uuid" : "b12272150db4490ea272150db4190e72"
+  },
+  "schema" : {
+    "name" : "folder",
+    "uuid" : "cd6b4f2851814773ab4f28518137735f",
+    "version" : "1",
+    "versionUuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  },
+  "status" : "COMPLETED"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_microschema_branch_assign"><em>mesh.microschema-branch.assign</em></h3>
+<div class="paragraph">
+<p>Emitted once a microschema gets assigned to a branch.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "branch" : {
+    "name" : "demoV1",
+    "uuid" : "b12272150db4490ea272150db4190e72"
+  },
+  "schema" : {
+    "name" : "vcard",
+    "uuid" : "cd6b4f2851814773ab4f28518137735f",
+    "version" : "1",
+    "versionUuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  },
+  "status" : "COMPLETED"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_microschema_branch_unassign"><em>mesh.microschema-branch.unassign</em></h3>
+<div class="paragraph">
+<p>Emitted once a microschema gets unassigned from a branch.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "branch" : {
+    "name" : "demoV1",
+    "uuid" : "b12272150db4490ea272150db4190e72"
+  },
+  "schema" : {
+    "name" : "vcard",
+    "uuid" : "cd6b4f2851814773ab4f28518137735f",
+    "version" : "1",
+    "versionUuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  },
+  "status" : "COMPLETED"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_microschema_migration_start"><em>mesh.microschema.migration.start</em></h3>
+<div class="paragraph">
+<p>Emitted when a microschema migration starts.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "branch" : {
+    "name" : "demoV1",
+    "uuid" : "b12272150db4490ea272150db4190e72"
+  },
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "status" : "RUNNING",
+  "fromVersion" : {
+    "name" : "vcard",
+    "uuid" : "cd6b4f2851814773ab4f28518137735f",
+    "version" : "1",
+    "versionUuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  },
+  "toVersion" : {
+    "name" : "vcard",
+    "uuid" : "cd6b4f2851814773ab4f28518137735f",
+    "version" : "2",
+    "versionUuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_microschema_migration_finished"><em>mesh.microschema.migration.finished</em></h3>
+<div class="paragraph">
+<p>Emitted when a microschema migration finishes.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "branch" : {
+    "name" : "demoV1",
+    "uuid" : "b12272150db4490ea272150db4190e72"
+  },
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "status" : "RUNNING",
+  "fromVersion" : {
+    "name" : "vcard",
+    "uuid" : "cd6b4f2851814773ab4f28518137735f",
+    "version" : "1",
+    "versionUuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  },
+  "toVersion" : {
+    "name" : "vcard",
+    "uuid" : "cd6b4f2851814773ab4f28518137735f",
+    "version" : "2",
+    "versionUuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_branch_migration_start"><em>mesh.branch.migration.start</em></h3>
+<div class="paragraph">
+<p>Emitted when a branch migration job starts.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "branch" : {
+    "name" : "demoV1",
+    "uuid" : "b12272150db4490ea272150db4190e72"
+  },
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "status" : "RUNNING"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_branch_migration_finished"><em>mesh.branch.migration.finished</em></h3>
+<div class="paragraph">
+<p>Emitted when a branch migration job finishes.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "branch" : {
+    "name" : "demoV1",
+    "uuid" : "b12272150db4490ea272150db4190e72"
+  },
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "status" : "RUNNING"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_startup_complete"><em>mesh.startup-complete</em></h3>
+<div class="paragraph">
+<p>Emitted once the Gentics Mesh instance is fully started and ready to accept requests.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_job_worker"><em>job.worker</em></h3>
+<div class="paragraph">
+<p>Event which will trigger job processing.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_cluster_node_joining"><em>mesh.cluster.node.joining</em></h3>
+<div class="paragraph">
+<p>Emitted when a node joins the cluster.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_cluster_node_joined"><em>mesh.cluster.node.joined</em></h3>
+<div class="paragraph">
+<p>Emitted when a node joined the cluster.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_cluster_node_leaving"><em>mesh.cluster.node.leaving</em></h3>
+<div class="paragraph">
+<p>Emitted when a node is leaving the cluster.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_cluster_node_left"><em>mesh.cluster.node.left</em></h3>
+<div class="paragraph">
+<p>Emitted when a cluster node left the cluster.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_cluster_db_status"><em>mesh.cluster.db.status</em></h3>
+<div class="paragraph">
+<p>Emitted when the database status changes. (e.g. offline, online, backup, syncing)</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_ping_local"><em>mesh.ping.local</em></h3>
+<div class="paragraph">
+<p>Event, which is emitted regularly to check whether local eventbus works</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_ping_cluster"><em>mesh.ping.cluster</em></h3>
+<div class="paragraph">
+<p>Event, which is emitted regularly to check whether clustered eventbus works</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_clear_permission_store"><em>mesh.clear-permission-store</em></h3>
+<div class="paragraph">
+<p>Event which will clear the permission stores.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_clear_path_store"><em>mesh.clear-path-store</em></h3>
+<div class="paragraph">
+<p>Event which will clear the path stores.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_clear_caches"><em>mesh.clear-caches</em></h3>
+<div class="paragraph">
+<p>Event which will clear the internal caches.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_user_created"><em>mesh.user.created</em></h3>
+<div class="paragraph">
+<p>Emitted when a user was created.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "joedoe"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_user_updated"><em>mesh.user.updated</em></h3>
+<div class="paragraph">
+<p>Emitted when a user was updated.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "joedoe"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_user_deleted"><em>mesh.user.deleted</em></h3>
+<div class="paragraph">
+<p>Emitted when a user was deleted.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "joedoe"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_group_created"><em>mesh.group.created</em></h3>
+<div class="paragraph">
+<p>Emitted when a group was created.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "guests"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_group_updated"><em>mesh.group.updated</em></h3>
+<div class="paragraph">
+<p>Emitted when a group was updated.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "guests"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_group_deleted"><em>mesh.group.deleted</em></h3>
+<div class="paragraph">
+<p>Emitted when a group was deleted.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "guests"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_group_user_assigned"><em>mesh.group-user.assigned</em></h3>
+<div class="paragraph">
+<p>Emitted when a user was assigned to a group.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "group" : {
+    "name" : "guests",
+    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  },
+  "user" : {
+    "firstName" : "Joe",
+    "lastName" : "Doe",
+    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_group_user_unassigned"><em>mesh.group-user.unassigned</em></h3>
+<div class="paragraph">
+<p>Emitted when a user was unassigned from a group.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "group" : {
+    "name" : "guests",
+    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  },
+  "user" : {
+    "firstName" : "Joe",
+    "lastName" : "Doe",
+    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_group_role_assigned"><em>mesh.group-role.assigned</em></h3>
+<div class="paragraph">
+<p>Emitted when a role was assigned to a group.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "group" : {
+    "name" : "guests",
+    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  },
+  "role" : {
+    "name" : "translator",
+    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_group_role_unassigned"><em>mesh.group-role.unassigned</em></h3>
+<div class="paragraph">
+<p>Emitted when a role was unassigned from a group.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "group" : {
+    "name" : "guests",
+    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  },
+  "role" : {
+    "name" : "translator",
+    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_role_created"><em>mesh.role.created</em></h3>
+<div class="paragraph">
+<p>Emitted when a role was created.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "translator"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_role_updated"><em>mesh.role.updated</em></h3>
+<div class="paragraph">
+<p>Emitted when a role was updated.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "translator"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_role_deleted"><em>mesh.role.deleted</em></h3>
+<div class="paragraph">
+<p>Emitted when a role was deleted.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "translator"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_role_permissions_changed"><em>mesh.role.permissions.changed</em></h3>
+<div class="paragraph">
+<p>Emitted when the role permissions were changed.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "editors",
+  "type" : "GROUP",
+  "role" : {
+    "name" : "translator",
+    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_tag_created"><em>mesh.tag.created</em></h3>
+<div class="paragraph">
+<p>Emitted when a tag was created.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "red",
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "tagFamily" : {
+    "name" : "colors",
+    "uuid" : "cd6b4f2851814773ab4f28518137735f"
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_tag_updated"><em>mesh.tag.updated</em></h3>
+<div class="paragraph">
+<p>Emitted when a tag was updated.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "red",
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "tagFamily" : {
+    "name" : "colors",
+    "uuid" : "cd6b4f2851814773ab4f28518137735f"
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_tag_deleted"><em>mesh.tag.deleted</em></h3>
+<div class="paragraph">
+<p>Emitted when a tag was deleted.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "red",
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "tagFamily" : {
+    "name" : "colors",
+    "uuid" : "cd6b4f2851814773ab4f28518137735f"
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_tagfamily_created"><em>mesh.tagfamily.created</em></h3>
+<div class="paragraph">
+<p>Emitted when a tag family was created.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "colors",
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_tagfamily_updated"><em>mesh.tagfamily.updated</em></h3>
+<div class="paragraph">
+<p>Emitted when a tag family was updated.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "colors",
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_tagfamily_deleted"><em>mesh.tagfamily.deleted</em></h3>
+<div class="paragraph">
+<p>Emitted when a tag family was deleted.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "colors",
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_project_created"><em>mesh.project.created</em></h3>
+<div class="paragraph">
+<p>Emitted when a project was created.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "demo"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_project_updated"><em>mesh.project.updated</em></h3>
+<div class="paragraph">
+<p>Emitted when a project was updated.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "demo"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_project_deleted"><em>mesh.project.deleted</em></h3>
+<div class="paragraph">
+<p>Emitted when a project was deleted.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "demo"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_project_schema_assigned"><em>mesh.project-schema.assigned</em></h3>
+<div class="paragraph">
+<p>Emitted when a schema was assigned to a project.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_project_schema_unassigned"><em>mesh.project-schema.unassigned</em></h3>
+<div class="paragraph">
+<p>Emitted when a schema was unassigned from a project.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_project_microschema_assigned"><em>mesh.project-microschema.assigned</em></h3>
+<div class="paragraph">
+<p>Emitted when a microschema was assigned to a projec.t</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_project_microschema_unassigned"><em>mesh.project-microschema.unassigned</em></h3>
+<div class="paragraph">
+<p>Emitted when a microschema was unassigned from a project.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_project_latest_branch_updated"><em>mesh.project-latest-branch.updated</em></h3>
+<div class="paragraph">
+<p>Emitted when the latest branch reference of a project was updated.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_node_created"><em>mesh.node.created</em></h3>
+<div class="paragraph">
+<p>Emitted when a node was created.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "branchUuid" : "cd6b4f2851814773ab4f28518137735f"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_node_updated"><em>mesh.node.updated</em></h3>
+<div class="paragraph">
+<p>Emitted when a node was updated.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "branchUuid" : "cd6b4f2851814773ab4f28518137735f"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_node_deleted"><em>mesh.node.deleted</em></h3>
+<div class="paragraph">
+<p>Emitted when a node was deleted.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "branchUuid" : "cd6b4f2851814773ab4f28518137735f"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_node_tagged"><em>mesh.node.tagged</em></h3>
+<div class="paragraph">
+<p>Emitted when a node was tagged.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "tag" : {
+    "name" : "red",
+    "uuid" : "e5861ba26b914b21861ba26b91ab211a",
+    "tagFamily" : "colors"
+  },
+  "branch" : {
+    "name" : "demoV1",
+    "uuid" : "b12272150db4490ea272150db4190e72"
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_node_untagged"><em>mesh.node.untagged</em></h3>
+<div class="paragraph">
+<p>Emitted when a node was untagged.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "tag" : {
+    "name" : "red",
+    "uuid" : "e5861ba26b914b21861ba26b91ab211a",
+    "tagFamily" : "colors"
+  },
+  "branch" : {
+    "name" : "demoV1",
+    "uuid" : "b12272150db4490ea272150db4190e72"
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_node_published"><em>mesh.node.published</em></h3>
+<div class="paragraph">
+<p>Emitted whena a node or node content was published.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "type" : "PUBLISHED",
+  "branchUuid" : "cd6b4f2851814773ab4f28518137735f",
+  "languageTag" : "en"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_node_unpublished"><em>mesh.node.unpublished</em></h3>
+<div class="paragraph">
+<p>Emitted when a node or node content was unpublished.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "type" : "PUBLISHED",
+  "branchUuid" : "cd6b4f2851814773ab4f28518137735f",
+  "languageTag" : "en"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_node_moved"><em>mesh.node.moved</em></h3>
+<div class="paragraph">
+<p>Emitted when a node was moved.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "branchUuid" : "cd6b4f2851814773ab4f28518137735f",
+  "schema" : {
+    "name" : "folder",
+    "uuid" : "cd6b4f2851814773ab4f28518137735f",
+    "version" : "1",
+    "versionUuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  },
+  "target" : {
+    "projectName" : "demo",
+    "uuid" : "cd6b4f2851814773ab4f28518137735f",
+    "schema" : {
+      "name" : "folder",
+      "uuid" : "cd6b4f2851814773ab4f28518137735f",
+      "version" : "1",
+      "versionUuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+    }
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_node_content_deleted"><em>mesh.node-content.deleted</em></h3>
+<div class="paragraph">
+<p>Emitted when a content of a node was deleted. (e.g. English language was deleted)</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "type" : "PUBLISHED",
+  "branchUuid" : "cd6b4f2851814773ab4f28518137735f",
+  "languageTag" : "en"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_node_content_created"><em>mesh.node-content.created</em></h3>
+<div class="paragraph">
+<p>Emitted when a content of a node was created. (e.g. English translation was added)</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "type" : "PUBLISHED",
+  "branchUuid" : "cd6b4f2851814773ab4f28518137735f",
+  "languageTag" : "en"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_node_reference_updated"><em>mesh.node-reference.updated</em></h3>
+<div class="paragraph">
+<p>Emitted when a referencing node gets indirectly updated. (e.g. via deleting a node in the node list of the referenced node.)</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "branchUuid" : "cd6b4f2851814773ab4f28518137735f"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_schema_created"><em>mesh.schema.created</em></h3>
+<div class="paragraph">
+<p>Emitted when a schema was created.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "content"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_schema_updated"><em>mesh.schema.updated</em></h3>
+<div class="paragraph">
+<p>Emitted when a schema was updated.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "content"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_schema_deleted"><em>mesh.schema.deleted</em></h3>
+<div class="paragraph">
+<p>Emitted when a schema was deleted</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "content"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_microschema_created"><em>mesh.microschema.created</em></h3>
+<div class="paragraph">
+<p>Emitted when a microschema was created.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "vcard"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_microschema_updated"><em>mesh.microschema.updated</em></h3>
+<div class="paragraph">
+<p>Emitted when a microschema was updated.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "vcard"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_microschema_deleted"><em>mesh.microschema.deleted</em></h3>
+<div class="paragraph">
+<p>Emitted when a microschema was deleted.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "vcard"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_branch_created"><em>mesh.branch.created</em></h3>
+<div class="paragraph">
+<p>Emitted when a branch was created.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "demoV1",
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_branch_updated"><em>mesh.branch.updated</em></h3>
+<div class="paragraph">
+<p>Emitted when a branch was updated.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "demoV1",
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_branch_deleted"><em>mesh.branch.deleted</em></h3>
+<div class="paragraph">
+<p>Emitted when a branch was deleted.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "demoV1",
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_branch_tagged"><em>mesh.branch.tagged</em></h3>
+<div class="paragraph">
+<p>Emitted when a branch was tagged.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "branch" : {
+    "name" : "demoV1",
+    "uuid" : "b12272150db4490ea272150db4190e72"
+  },
+  "tag" : {
+    "name" : "red",
+    "uuid" : "e5861ba26b914b21861ba26b91ab211a",
+    "tagFamily" : "colors"
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_branch_untagged"><em>mesh.branch.untagged</em></h3>
+<div class="paragraph">
+<p>Emitted when a branch was untagged.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "branch" : {
+    "name" : "demoV1",
+    "uuid" : "b12272150db4490ea272150db4190e72"
+  },
+  "tag" : {
+    "name" : "red",
+    "uuid" : "e5861ba26b914b21861ba26b91ab211a",
+    "tagFamily" : "colors"
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_jobn_created"><em>mesh.jobn.created</em></h3>
+<div class="paragraph">
+<p>Emitted when a job was created.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "uuid" : "2619185de0db4a5399185de0dbda53da"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_job_updated"><em>mesh.job.updated</em></h3>
+<div class="paragraph">
+<p>Emitted when a job was updated.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "uuid" : "2619185de0db4a5399185de0dbda53da"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_job_deleted"><em>mesh.job.deleted</em></h3>
+<div class="paragraph">
+<p>Emitted when a job was deleted.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example</div>
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-json" data-lang="json">{
+  "uuid" : "2619185de0db4a5399185de0dbda53da"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_search_index_sync_request"><em>mesh.search.index.sync.request</em></h3>
+<div class="paragraph">
+<p>Event address which can be used to trigger the sync process.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_search_index_sync_start"><em>mesh.search.index.sync.start</em></h3>
+<div class="paragraph">
+<p>Emitted when the index sync process starts.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_search_index_sync_finished"><em>mesh.search.index.sync.finished</em></h3>
+<div class="paragraph">
+<p>Emitted when the index sync process finishes.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_search_index_clear_request"><em>mesh.search.index.clear.request</em></h3>
+<div class="paragraph">
+<p>Event address which will trigger a index clear.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_search_index_clear_start"><em>mesh.search.index.clear.start</em></h3>
+<div class="paragraph">
+<p>Emitted when the index clear process starts.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_search_index_clear_finished"><em>mesh.search.index.clear.finished</em></h3>
+<div class="paragraph">
+<p>Emitted when the index clear process finishes.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_search_index_check_request"><em>mesh.search.index.check.request</em></h3>
+<div class="paragraph">
+<p>Event address which will trigger an index check.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_search_index_check_start"><em>mesh.search.index.check.start</em></h3>
+<div class="paragraph">
+<p>Emitted when the index check process starts.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_search_index_check_finished"><em>mesh.search.index.check.finished</em></h3>
+<div class="paragraph">
+<p>Emitted when the index check process finishes.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_search_process_idle"><em>mesh.search.process.idle</em></h3>
+<div class="paragraph">
+<p>Emitted when the search interation process has been working and is now in idle.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_search_process_isidle"><em>mesh.search.process.isidle</em></h3>
+<div class="paragraph">
+<p>When emitted, this event will be answered with the current idle status.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_search_flush_request"><em>mesh.search.flush.request</em></h3>
+<div class="paragraph">
+<p>Event which will cause all pending Elasticsearch requests to be sent.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_search_refresh_request"><em>mesh.search.refresh.request</em></h3>
+<div class="paragraph">
+<p>Event which will cause all search indices to be refreshed, so that changes can be queried.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_graph_backup_start"><em>mesh.graph.backup.start</em></h3>
+<div class="paragraph">
+<p>Emitted once the backup process starts.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_graph_backup_finished"><em>mesh.graph.backup.finished</em></h3>
+<div class="paragraph">
+<p>Emitted once the backup process finishes.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_graph_restore_start"><em>mesh.graph.restore.start</em></h3>
+<div class="paragraph">
+<p>Emitted once the restore process starts.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_graph_restore_finished"><em>mesh.graph.restore.finished</em></h3>
+<div class="paragraph">
+<p>Emitted once the restore process finishes.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_graph_export_start"><em>mesh.graph.export.start</em></h3>
+<div class="paragraph">
+<p>Emitted once the graph database export process starts.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_graph_export_finished"><em>mesh.graph.export.finished</em></h3>
+<div class="paragraph">
+<p>Emitted once the graph database export process finishes</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_graph_import_start"><em>mesh.graph.import.start</em></h3>
+<div class="paragraph">
+<p>Emitted once the graph database import process starts.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_graph_import_finished"><em>mesh.graph.import.finished</em></h3>
+<div class="paragraph">
+<p>Emitted once the graph database import process finishes.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_graph_repair_start"><em>mesh.graph.repair.start</em></h3>
+<div class="paragraph">
+<p>Emitted once the repair operation is started.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_graph_repair_finished"><em>mesh.graph.repair.finished</em></h3>
+<div class="paragraph">
+<p>Emitted once the repair operation finishes.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_plugin_deploying"><em>mesh.plugin.deploying</em></h3>
+<div class="paragraph">
+<p>Emitted once a plugin is being deployed.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_plugin_pre_registered"><em>mesh.plugin.pre-registered</em></h3>
+<div class="paragraph">
+<p>Emitted once a plugin has been pre-registered.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_plugin_registered"><em>mesh.plugin.registered</em></h3>
+<div class="paragraph">
+<p>Emitted once a plugin has been registered.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_plugin_deployed"><em>mesh.plugin.deployed</em></h3>
+<div class="paragraph">
+<p>Emitted once a plugin has been deployed.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_plugin_deploy_failed"><em>mesh.plugin.deploy.failed</em></h3>
+<div class="paragraph">
+<p>Emitted when a plugin deployment fails.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_plugin_undeploying"><em>mesh.plugin.undeploying</em></h3>
+<div class="paragraph">
+<p>Emitted once a plugin is being undeployed.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_plugin_undeployed"><em>mesh.plugin.undeployed</em></h3>
+<div class="paragraph">
+<p>Emitted once a plugin has been undeployed.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_s3binary_created"><em>mesh.s3binary.created</em></h3>
+<div class="paragraph">
+<p>Emitted when a S3 binary field was created.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_s3binary_deleted"><em>mesh.s3binary.deleted</em></h3>
+<div class="paragraph">
+<p>Emitted when a S3 binary field gets deleted.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_s3binary_metadata_extracted"><em>mesh.s3binary.metadata.extracted</em></h3>
+<div class="paragraph">
+<p>Emitted when the metadata of a S3 binary field is extracted.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_binary_check_request"><em>mesh.binary.check.request</em></h3>
+<div class="paragraph">
+<p>Event will cause requests to the binary check service for binary fields which are marked as POSTPONED</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="customevents">Custom Events</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>It is also possible to register and send custom events. The address of those events must start with <code>custom.</code>.</p>
+</div>
+<div class="paragraph">
+<p>Custom events can be used to exchange events in between connected clients.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_examples">Examples</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="iot">IoT Example</h3>
+<div class="paragraph">
+<p>The eventbus provides a great way to utilize data of your IoT devices in your frontend application.
+The following example shows how the <a href="https://www.arduino.cc/">Arduino</a> compatible <a href="https://de.wikipedia.org/wiki/ESP8266">ESP8266</a> WIFI enabled microcontroller can utilize the Gentics Mesh eventbus.</p>
+</div>
+<div class="paragraph">
+<p>The shown sketch utilizes the <a href="https://github.com/Links2004/arduinoWebSockets">arduinoWebSockets</a> library.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-c" data-lang="c">#include &lt;Arduino.h&gt;
+#include &lt;ESP8266WiFi.h&gt;
+#include &lt;ESP8266WiFiMulti.h&gt;
+#include &lt;WebSocketsClient.h&gt;
+#include &lt;Hash.h&gt;
+
+ESP8266WiFiMulti WiFiMulti;
+WebSocketsClient webSocket;
+#define USE_SERIAL Serial1
+const char* ssid     = "Demo";
+const char* password = "12345678";
+const byte interruptPin = 13; // D7 on Wemos D1 Mini
+volatile byte interruptCounter = 0;
+int numberOfInterrupts = 0;
+
+void setup() {
+  Serial.begin(115200);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+  Serial.print("Connecting");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  // Set the connection details to the Gentics Mesh Server
+  webSocket.begin("1.2.3.4", 8080, "/api/v2/eventbus/websocket");
+  webSocket.setReconnectInterval(2000);
+  // Register the interrupt pin
+  pinMode(interruptPin, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(interruptPin), handleInterrupt, RISING);
+}
+
+// Interrupt method which will just count up
+void handleInterrupt() {
+  interruptCounter++;
+}
+
+void loop() {
+  // Check whether the connection needs to be re-established
+  webSocket.loop();
+  // Check whether an interrupt has happend and send an event if needed
+  if (interruptCounter &gt; 0) {
+    Serial.println("Detected interrupt");
+    webSocket.sendTXT("{\"type\":\"publish\",\"address\":\"custom.event\",\"body\":\"someText\"}");
+    // Reset the interrupt counter to get ready for the next event
+    interruptCounter = 0;
+  }
+  delay(100);
+  // Send a ping to prevent the server to disconnect the connection
+  webSocket.sendTXT("{\"type\":\"ping\"}");
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In this example the Pin 13 (D7) on the ESP8266 will be used to trigger an event.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_limitations">Limitations</h2>
+<div class="sectionbody">
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Gentics Mesh does currently not support Webhooks to register to events.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+
+        
+
+
+
+        
+      </div>
+    </div>
+  </div>
+
+
+    <div class="footer">
+    <a name="footer"></a>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <h2>Keep in touch</h2>
+                <p>Find us on Twitter
+                    <a href="https://twitter.com/genticsmesh" target="_blank" rel="noopener noreferrer">@genticsmesh</a>
+                </p>
+                <p>Get help on
+                    <a href="https://stackoverflow.com/questions/tagged/gentics-mesh" target="_blank" rel="noopener noreferrer">stackoverflow</a>
+                </p>
+                <p>Ask us anything on
+                    <a href="https://gitter.im/gentics/mesh" target="_blank" rel="noopener noreferrer">Gitter</a>
+                </p>
+                <p>Dive into the code at
+                    <a href="https://github.com/gentics/mesh" target="_blank" rel="noopener noreferrer">GitHub</a>
+                </p>
+            </div>
+            <div class="col-md-6">
+                <h2>Legal</h2>
+                <p>Licensed under
+                    <a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank" rel="noopener noreferrer">Apache License v2.0</a> |
+                    <a href="../../imprint">Imprint</a>
+                </p>
+            </div>
+        </div>
+        <div class="row ending center">
+            <p class="padding-top-25">Made in
+                <a href="https://www.mercer.com/newsroom/2018-quality-of-living-survey.html" target="_blank" rel="noopener noreferrer">Vienna - the most livable city in the world</a> 
+                <img src="../../assets/noun_Wine_1032235.svg" height="24">
+            </p>
+        </div>
+    </div>
+
+       
+
+        <div class="apa-consent-reset apa-consent-wrapper">
+
+
+            <div class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-banner testOFF">
+
+                <ul class="apa-consent-reset apa-consent-bannerContent">
+                    <li class="apa-consent-reset">
+                        <div class="apa-consent-reset apa-consent-bannerText">
+                        </div>
+                    </li>
+                    <li class="apa-consent-reset apa-consent-buttonWrapperDetails">
+                        <button class="apa-consent-reset apa-consent-button">
+                            cookie-preferences
+                        </button>
+                    </li>
+                    <li class="apa-consent-reset apa-consent-buttonWrapperAccept">
+                        <button id="apa-consent-button-accept" class="apa-consent-reset apa-consent-button">
+                            accept
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="apa-consent-reset apa-consent-bgColorWhite apa-consent-boxShadow apa-consent-bannerButtonOFF">
+                    <div class="apa-consent-reset apa-consent-bannerButtonOFFicon1 apa-consent-bgColor"></div>
+                    <div class="apa-consent-reset apa-consent-bannerButtonOFFicon2 apa-consent-bgColor"></div>
+                </div>
+
+            </div>
+
+            <div class="apa-consent-reset apa-consent-dialogWrapper testOFF">
+                <div class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-dialog">
+                    <div class="apa-consent-reset apa-consent-mobileScroller">
+
+                        <div class="apa-consent-reset apa-consent-mobileClose"></div>
+
+                        <div class="apa-consent-reset apa-consent-dialogInnerWidth apa-consent-dialogHeader">
+                            <h3 class="apa-consent-reset apa-consent-H3">
+                                Cookie Preferences
+                            </h3>
+                            <p class="apa-consent-reset apa-consent-P">
+                                Choose if this website is only allowed to use functional cookies and/or marketing cookies.
+                            </p>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-dialogBodyWrapper">
+                            <div class="apa-consent-reset apa-consent-dialogInnerWidth apa-consent-dialogBody">
+                                <ul class="apa-consent-reset apa-consent-items">
+
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-dialogInnerWidth apa-consent-dialogSubmit">
+                            <button id="apa-constent-button-save-settings" class="apa-consent-reset apa-consent-button apa-consent-boxShadow">
+                                save & close
+                            </button>
+                        </div>
+
+                        <div class="apa-consent-reset apa-consent-bgColorWhite apa-consent-boxShadow apa-consent-dialogButtonOFF">
+                            <div class="apa-consent-reset apa-consent-dialogButtonOFFicon1"></div>
+                            <div class="apa-consent-reset apa-consent-dialogButtonOFFicon2 apa-consent-bgColor"></div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+   <div  id="bannerButtonOpen" class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-bannerButtonON">
+            <div class="apa-consent-reset apa-consent-bannerButtonONicon1 apa-consent-bgColorWhite"></div>
+            <div class="apa-consent-reset apa-consent-bannerButtonONicon2 apa-consent-bgColorWhite"></div>
+        </div>
+
+        <div class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-dialogButtonON testOFF">
+            <div class="apa-consent-reset apa-consent-dialogButtonONicon1 apa-consent-bgColorWhite"></div>
+            <div class="apa-consent-reset apa-consent-dialogButtonONicon2 apa-consent-bgColorWhite"></div>
+        </div>
+
+
+     
+
+        
+
+            
+
+    <ul style="display:none">
+        <li id="prototypeAppEntry" class="apa-consent-reset apa-consent-item">
+            <div class="apa-consent-reset apa-consent-itemSwitch">
+                <span class="apa-consent-reset apa-consent-boxShadow"></span>
+            </div>
+            <div class="apa-consent-reset apa-consent-itemTitle">
+
+            </div>
+            <div class="apa-consent-reset apa-consent-itemText">
+
+            </div>
+            <div class="apa-consent-reset apa-consent-itemSubItems">
+                <ul class="apa-consent-reset apa-consent-cookie-items">
+                    <li id="prototypeAppEntryCookieItem" style="display:none" class="apa-consent-reset apa-consent-itemSubItem">
+                        <div class="apa-consent-reset apa-consent-subItemTitle">
+                            <div class="apa-consent-reset apa-consent-subItemSwitch"></div>
+                            <span></span>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-subItemText">
+                            <p class="apa-consent-reset apa-consent-P"></p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+        <li id="prototypeAppEntryProtected" class="apa-consent-reset apa-consent-item">
+            <div class="apa-consent-reset apa-consent-itemSwitch">
+                <span class=" apa-consent-reset apa-consent-boxShadow"></span>
+            </div>
+            <div class="apa-consent-reset apa-consent-itemTitle apa-consent-itemTitleSwitch">
+            </div>
+            <div class="apa-consent-reset apa-consent-itemText">
+
+            </div>
+            <div class="apa-consent-reset apa-consent-itemSubItems">
+                <ul class="apa-consent-reset apa-consent-cookie-items">
+
+                    <li id="prototypeAppEntryProtectedCookieItem" style="display: none;" class="apa-consent-reset apa-consent-itemSubItem">
+                        <div class="apa-consent-reset apa-consent-subItemTitle">
+                            <div class="apa-consent-reset apa-consent-subItemSwitch"></div>
+                            <span></span>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-subItemText">
+                            <p class="apa-consent-reset apa-consent-P"></p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+    </ul>
+
+
+</div>
+
+    
+    <script
+  src="https://code.jquery.com/jquery-1.12.4.min.js"
+  integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="
+  crossorigin="anonymous"></script>
+
+<script src="../../js/bootstrap.min.js"></script>
+
+<script
+  src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js"
+  crossorigin="anonymous"></script>
+
+<script src="../../js/site.js"></script>
+
+<script 
+  src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.2.0/highlight.min.js"
+  integrity="sha256-sHRX2PXOLRG+LQtTpvREFsWhMVu2AJnmzxpmogmddtM="
+  crossorigin="anonymous"></script>
+
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script src="../../js/docs.js"></script>
+<script src="../../js/sidebar.js"></script>
+<script src="../../js/GCM-banner.js"></script>
+<script>
+  var hasExample = jQuery(".graphql-example").length > 0;
+  hasExample && document.write('<link rel="stylesheet" href="../../graphiql/graphiql.css" /><script src="../../graphiql/vendor/fetch.min.js">\x3C/script><script src="../../graphiql/vendor/react-16.8.6.min.js">\x3C/script><script src="../../graphiql/vendor/react-dom-16.8.6.min.js">\x3C/script><script src="../../graphiql/graphiql.js">\x3C/script><script src="../../graphiql/embedded.js">\x3C/script>');
+</script>
+
+
+       
+
+        <div class="apa-consent-reset apa-consent-wrapper">
+
+
+            <div class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-banner testOFF">
+
+                <ul class="apa-consent-reset apa-consent-bannerContent">
+                    <li class="apa-consent-reset">
+                        <div class="apa-consent-reset apa-consent-bannerText">
+                        </div>
+                    </li>
+                    <li class="apa-consent-reset apa-consent-buttonWrapperDetails">
+                        <button class="apa-consent-reset apa-consent-button">
+                            cookie-preferences
+                        </button>
+                    </li>
+                    <li class="apa-consent-reset apa-consent-buttonWrapperAccept">
+                        <button id="apa-consent-button-accept" class="apa-consent-reset apa-consent-button">
+                            accept
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="apa-consent-reset apa-consent-bgColorWhite apa-consent-boxShadow apa-consent-bannerButtonOFF">
+                    <div class="apa-consent-reset apa-consent-bannerButtonOFFicon1 apa-consent-bgColor"></div>
+                    <div class="apa-consent-reset apa-consent-bannerButtonOFFicon2 apa-consent-bgColor"></div>
+                </div>
+
+            </div>
+
+            <div class="apa-consent-reset apa-consent-dialogWrapper testOFF">
+                <div class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-dialog">
+                    <div class="apa-consent-reset apa-consent-mobileScroller">
+
+                        <div class="apa-consent-reset apa-consent-mobileClose"></div>
+
+                        <div class="apa-consent-reset apa-consent-dialogInnerWidth apa-consent-dialogHeader">
+                            <h3 class="apa-consent-reset apa-consent-H3">
+                                Cookie Preferences
+                            </h3>
+                            <p class="apa-consent-reset apa-consent-P">
+                                Choose if this website is only allowed to use functional cookies and/or marketing cookies.
+                            </p>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-dialogBodyWrapper">
+                            <div class="apa-consent-reset apa-consent-dialogInnerWidth apa-consent-dialogBody">
+                                <ul class="apa-consent-reset apa-consent-items">
+
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-dialogInnerWidth apa-consent-dialogSubmit">
+                            <button id="apa-constent-button-save-settings" class="apa-consent-reset apa-consent-button apa-consent-boxShadow">
+                                save & close
+                            </button>
+                        </div>
+
+                        <div class="apa-consent-reset apa-consent-bgColorWhite apa-consent-boxShadow apa-consent-dialogButtonOFF">
+                            <div class="apa-consent-reset apa-consent-dialogButtonOFFicon1"></div>
+                            <div class="apa-consent-reset apa-consent-dialogButtonOFFicon2 apa-consent-bgColor"></div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+   <div  id="bannerButtonOpen" class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-bannerButtonON">
+            <div class="apa-consent-reset apa-consent-bannerButtonONicon1 apa-consent-bgColorWhite"></div>
+            <div class="apa-consent-reset apa-consent-bannerButtonONicon2 apa-consent-bgColorWhite"></div>
+        </div>
+
+        <div class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-dialogButtonON testOFF">
+            <div class="apa-consent-reset apa-consent-dialogButtonONicon1 apa-consent-bgColorWhite"></div>
+            <div class="apa-consent-reset apa-consent-dialogButtonONicon2 apa-consent-bgColorWhite"></div>
+        </div>
+
+
+     
+
+        
+
+            
+
+    <ul style="display:none">
+        <li id="prototypeAppEntry" class="apa-consent-reset apa-consent-item">
+            <div class="apa-consent-reset apa-consent-itemSwitch">
+                <span class="apa-consent-reset apa-consent-boxShadow"></span>
+            </div>
+            <div class="apa-consent-reset apa-consent-itemTitle">
+
+            </div>
+            <div class="apa-consent-reset apa-consent-itemText">
+
+            </div>
+            <div class="apa-consent-reset apa-consent-itemSubItems">
+                <ul class="apa-consent-reset apa-consent-cookie-items">
+                    <li id="prototypeAppEntryCookieItem" style="display:none" class="apa-consent-reset apa-consent-itemSubItem">
+                        <div class="apa-consent-reset apa-consent-subItemTitle">
+                            <div class="apa-consent-reset apa-consent-subItemSwitch"></div>
+                            <span></span>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-subItemText">
+                            <p class="apa-consent-reset apa-consent-P"></p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+        <li id="prototypeAppEntryProtected" class="apa-consent-reset apa-consent-item">
+            <div class="apa-consent-reset apa-consent-itemSwitch">
+                <span class=" apa-consent-reset apa-consent-boxShadow"></span>
+            </div>
+            <div class="apa-consent-reset apa-consent-itemTitle apa-consent-itemTitleSwitch">
+            </div>
+            <div class="apa-consent-reset apa-consent-itemText">
+
+            </div>
+            <div class="apa-consent-reset apa-consent-itemSubItems">
+                <ul class="apa-consent-reset apa-consent-cookie-items">
+
+                    <li id="prototypeAppEntryProtectedCookieItem" style="display: none;" class="apa-consent-reset apa-consent-itemSubItem">
+                        <div class="apa-consent-reset apa-consent-subItemTitle">
+                            <div class="apa-consent-reset apa-consent-subItemSwitch"></div>
+                            <span></span>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-subItemText">
+                            <p class="apa-consent-reset apa-consent-P"></p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+    </ul>
+
+
+
+    <script>
+    window.GCM.apps.whenAllowed('google', function () {
+        (function (i, s, o, g, r, a, m) {
+            i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+                (i[r].q = i[r].q || []).push(arguments)
+            }, i[r].l = 1 * new Date(); a = s.createElement(o),
+                m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+        ga('create', 'UA-69994739-1', 'auto');
+        ga('send', 'pageview');
+    });
+</script>
+    
+    <script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "Organization",
+        "name": "Gentics Mesh",
+        "url": "https://getmesh.io",
+        "logo": "https://getmesh.io/assets/gentics-mesh-logo.png",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Laimgrubengasse 10",
+            "addressRegion": "Vienna",
+            "postalCode": "1060",
+            "addressCountry": "Austria"
+        },
+        "contactPoint": {
+            "@type": "ContactPoint",
+            "contactType": "customer support",
+            "telephone": "+43-1-7109904-300",
+            "email": "support@gentics.com"
+        },
+        "sameAs": [
+            "https://twitter.com/genticsmesh",
+            "https://github.com/gentics/mesh",
+            "https://stackoverflow.com/questions/tagged/genticsmesh"
+        ]
+    }
+</script>
+</body>
+
+</html>

@@ -1,0 +1,34 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:user:UserPermissionResponse",
+  "properties" : {
+    "create" : {
+      "type" : "boolean",
+      "required" : true,
+      "description" : "Flag which indicates whether the create permission is granted."
+    },
+    "read" : {
+      "type" : "boolean",
+      "required" : true,
+      "description" : "Flag which indicates whether the read permission is granted."
+    },
+    "update" : {
+      "type" : "boolean",
+      "required" : true,
+      "description" : "Flag which indicates whether the update permission is granted."
+    },
+    "delete" : {
+      "type" : "boolean",
+      "required" : true,
+      "description" : "Flag which indicates whether the delete permission is granted."
+    },
+    "publish" : {
+      "type" : "boolean",
+      "description" : "Flag which indicates whether the publish permission is granted."
+    },
+    "readPublished" : {
+      "type" : "boolean",
+      "description" : "Flag which indicates whether the read published permission is granted."
+    }
+  }
+}

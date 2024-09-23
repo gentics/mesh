@@ -1,0 +1,20 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| available
+| true
+| boolean
+| Flag which indicates whether Elasticsearch is available and search queries can be executed.
+
+| metrics
+| false
+| object
+| Map which contains various metric values.
+
+|======

@@ -1,0 +1,15 @@
+++++
+<div class="graphql-example" style="height: 23em">
+{
+  nodes(perPage: 2, page: 2) {
+    elements {
+      uuid
+    }
+    # Flag which indicates whether another page exists
+    hasNextPage
+    # Flag which indicates whether a previous page exists
+    hasPreviousPage
+  }
+}
+</div>
+++++

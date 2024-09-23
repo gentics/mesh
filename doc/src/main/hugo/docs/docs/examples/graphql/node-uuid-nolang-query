@@ -1,0 +1,16 @@
+++++
+<div class="graphql-example" style="height: 23em">
+{
+  node(lang: "fr", uuid: "28f42d43a7604114b42d43a7602114da") {
+    uuid
+    version
+    language
+  }
+  nodes(lang: "fr") {
+    elements {
+      uuid
+    }
+  }
+}
+</div>
+++++

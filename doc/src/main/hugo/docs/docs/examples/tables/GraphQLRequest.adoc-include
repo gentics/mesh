@@ -1,0 +1,25 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| operationName
+| false
+| string
+| GraphQL operation name.
+
+| query
+| true
+| string
+| The actual GraphQL query.
+
+| variables
+| false
+| object
+| JSON object which contains the variables.
+
+|======

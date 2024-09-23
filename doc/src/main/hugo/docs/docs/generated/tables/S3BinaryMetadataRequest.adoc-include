@@ -1,0 +1,20 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| language
+| true
+| string
+| ISO 639-1 language tag of the node which provides the image which should be transformed.
+
+| version
+| true
+| string
+| Version number which must be provided in order to handle and detect concurrent changes to the node content.
+
+|======

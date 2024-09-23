@@ -1,0 +1,46 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:project:ProjectCreateRequest",
+  "properties" : {
+    "name" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "Name of the project"
+    },
+    "schema" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:SchemaReference",
+      "required" : true,
+      "description" : "Reference to the schema of the root node. Creating a project will also automatically create the base node of the project and link the schema to the initial branch  of the project.",
+      "properties" : {
+        "version" : {
+          "type" : "string"
+        },
+        "versionUuid" : {
+          "type" : "string"
+        },
+        "uuid" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "set" : {
+          "type" : "boolean"
+        }
+      }
+    },
+    "hostname" : {
+      "type" : "string",
+      "description" : "The hostname of the project can be used to generate links across multiple projects. The hostname will be stored along the initial branch of the project."
+    },
+    "ssl" : {
+      "type" : "boolean",
+      "description" : "SSL flag of the project which will be used to generate links across multiple projects. The flag will be stored along the intial branch of the project."
+    },
+    "pathPrefix" : {
+      "type" : "string",
+      "description" : "Optional path prefix for webroot path and rendered links."
+    }
+  }
+}

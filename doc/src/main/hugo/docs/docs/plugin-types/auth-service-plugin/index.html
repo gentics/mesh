@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link rel="dns-prefetch" href="//oss.maxcdn.com" />
+<link rel="dns-prefetch" href="//ajax.googleapis.com" />
+
+<title>Authentication Service Plugin API</title>
+<meta name="description" content="">
+<meta name="author" content="">
+<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Authentication Service Plugin API" />
+<meta name="twitter:description" content="" />
+<meta name="twitter:image:src" content="https://getmesh.io/assets/gentics-card.png" />
+
+<meta property="og:title" content="Authentication Service Plugin API">
+<meta property="og:url" content="https://getmesh.io/docs/plugin-types/auth-service-plugin/">
+<meta property="og:description" content="">
+<meta property="og:image" content="https://getmesh.io/assets/gentics-card.png">
+<link rel="icon" href="../../../favicon.ico">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+<link rel="shortcut icon" href="../../../assets/g_logo_small.png" type="image/png" />
+<link href="../../../styles/docs.css" media="screen" rel="stylesheet">
+
+
+<link href="https://fonts.googleapis.com/css?family=Roboto:300,400" rel="stylesheet">
+<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN"
+    crossorigin="anonymous">
+<script src="../../../js/GCM.min.js"></script>
+<script>
+    window.GCM.init('/js/GCM-config.json', 'en', 1, true);
+</script>
+
+<link href="https://fonts.googleapis.com/css?family=Roboto:300,400" rel="stylesheet">
+
+</head>
+
+<body class="body-navbar-">
+    <nav class="navbar navbar-default navbar--top">
+    <div class="container-fluid">
+        
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1"
+                aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="../../../">
+                <img class="logo" src="../../../assets/gentics-mesh-logo.png" alt="Gentics Logo" />
+            </a>
+        </div>
+
+        
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav"> 
+                <li>
+                    <a href="../../../features">Features</a>
+                </li>
+                <li>
+                    <a href="../../../docs">Documentation</a>
+                </li>
+                <li>
+                    <a href="../../../demo">Demo</a>
+                </li>
+                <li>
+                    <a href="../../../services">Services</a>
+                </li>
+                <li>
+                    <a href="../../../training">Trainings</a>
+                </li>
+                <li>
+                    <a href="../../../premium-features">Premium Features</a>
+                </li>
+                
+                <li>
+                    <a class="btn btn-primary btn-download" href="../../../download">Download</a>
+                </li>
+            </ul>
+        </div>
+        
+    </div>
+    
+</nav>
+
+
+    
+<div class="topsection-wrapper">
+    <div class="topsection container">
+        <div class="row">
+            <div class="col-md-12">
+                <h1>Authentication Service Plugin API</h1>
+            </div>
+        </div>
+    </div>
+</div>
+ 
+  <div class="container docs-content">
+    <div class="row">
+      <div class="col-sm-12 col-md-push-9 col-md-3 hidden-xs hidden-sm">
+        <div id="sidebar" data-spy="affix">
+            
+        </div>
+      </div>
+      <div class="col-sm-12 col-md-pull-3 col-md-9">
+        <div class="toc hidden-md hidden-lg">
+          <h2>Authentication Service Plugin API</h2>
+          
+        </div>
+        <div id="toc" class="toc">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_intro">Intro</a></li>
+<li><a href="#_flow">Flow</a>
+<ul class="sectlevel2">
+<li><a href="#_jwt_handler">JWT handler</a></li>
+<li><a href="#_oauth_handler">OAuth handler</a></li>
+<li><a href="#_anonymous_auth_handler">Anonymous Auth Handler</a></li>
+</ul>
+</li>
+<li><a href="#_setup">Setup</a></li>
+<li><a href="#_mapping_jwt">Mapping JWT</a></li>
+<li><a href="#_utils">Utils</a></li>
+<li><a href="#_examples">Examples</a></li>
+</ul>
+</div>
+<div class="sect1">
+<h2 id="_intro">Intro</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Authentication Service Plugin API can be used to create plugins which can extend the authentication/authorization functionality of Gentics Mesh.</p>
+</div>
+<div class="paragraph">
+<p>Those plugins are intended to work in conjunction with the <a href="../../../docs/authentication/#_oauth2">OAuth2</a> interation. When the OAuth2 integration with the Keycloak Identity Provider is enabled Gentics Mesh will automatically sync users provided by Keycloak with the users that are stored in Gentics Mesh.</p>
+</div>
+<div class="paragraph">
+<p>Once a JWT has been obtained by keycloak it can be used for Gentics Mesh requests. The token is validated and the user is synced.</p>
+</div>
+<div class="paragraph">
+<p>Often it is however also desired to sync permission specific information from identity provider. This is where most of the Authentication Service Plugin API comes into play. The API can be used to create plugins which map the information from the JWT to Gentics Mesh roles and groups.</p>
+</div>
+<div class="paragraph">
+<p>This way any public claim information from the JWT can be used to dynamically update the user, create roles and groups.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_flow">Flow</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A typical request which needs authentication passes through various handlers which try to autenticate. The <code>MeshAuthChain</code> is currently responsible for passing the requests along these handlers.</p>
+</div>
+<div class="sect2">
+<h3 id="_jwt_handler">JWT handler</h3>
+<div class="paragraph">
+<p>This handler tries to authenticate the request by validating the JWT against the Gentics Mesh keystore certificate. The identified user will be added to the request when this succeeds. In this case no other authentication handler in the chain is called.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Failed authentications at this stage will yield a <code>Could not authenticate token.</code> warning. This warning will be removed in future versions of Gentics Mesh. The next handler in the chain will be used if the JWT handler was unable to authenticate the user.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_oauth_handler">OAuth handler</h3>
+<div class="paragraph">
+<p>This handler will utilize the configured or provided public keys to validate the request.
+The <code>AuthServicePlugin</code> API will be called when the request JWT could be validated with the provided public keys.</p>
+</div>
+<div class="paragraph">
+<p>First the <code>acceptToken</code> method gets called to check if any of the plugins rejects the request.</p>
+</div>
+<div class="paragraph">
+<p>Next the mapping process will be invoked. The token information will be inspected to check whether a mapping call is needed.</p>
+</div>
+<div class="paragraph">
+<p>The <code>extractUsername</code> method gets called to identify and load the user.
+Once the user has been loaded</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+The <code>jti</code> or  <code>iat</code> of the JWT will be used to decide whether a fresh mapping call must be invoked. The JWT will only be passed to the mapping code if it has not yet been handled.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Finally the <code>mapToken</code> method will be called for every <code>AuthServicePlugin</code>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_anonymous_auth_handler">Anonymous Auth Handler</h3>
+<div class="paragraph">
+<p>This handler will only be utilized when no authentication information have been added to the request and when the anonymous authentication has been enabled. The handler will automatically assign the anonymous user to the request and accept it.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_setup">Setup</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The <code>AuthServicePlugin</code> interface must be used for an authentication plugin. This interface provides various methods which will be invoked by Gentics Mesh during the authentication process.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_mapping_jwt">Mapping JWT</h2>
+<div class="sectionbody">
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 1. AuthServicePlugin methods excerpt</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Method</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>AuthServicePlugin#mapToken()</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Use the token information to create a mapping result which will be used to sync user, groups, roles.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>The information from the returned <code>MappingResult</code> will be used to sync the elements in Gentics Mesh. Any of the fields in the result can be omitted.</p>
+</div>
+<div class="paragraph">
+<p>Sync process is as follows:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Update user with <code>MappingResult#getUser</code> information or use <em>default mapper</em> if no user was specified.</p>
+</li>
+<li>
+<p>Create roles that are listed in <code>MappingResult#getRoles</code>.</p>
+</li>
+<li>
+<p>Create groups that are listed in <code>MappingResult#getGroups</code>.</p>
+</li>
+<li>
+<p>Assign user to groups of <code>MappingResult#getGroups</code> list.</p>
+</li>
+<li>
+<p>Link roles that are listed within <code>MappingResult#getGroups</code> entries to the groups (via <code>GroupResponse#getRoles</code>).</p>
+</li>
+<li>
+<p>Iterate over all roles of the mapped groups and invoke <code>MappingResult#getRoleFilter</code> to check whether the role should be unlinked from the group. You can use this to ensure that only specific roles are links to the groups.</p>
+</li>
+<li>
+<p>Link roles that are listed within <code>MappingResult#getRoles</code> entries to the groups (via <code>GroupResponse#getGroups</code>).</p>
+</li>
+<li>
+<p>Iterate over all groups of the user and invoke <code>MappingResult#getGroupFilter</code> to check whether the user should be removed from the group. You can use this to ensure that the use is only part of specific groups.</p>
+</li>
+</ol>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+A default mapper which maps <em>firstname</em>, <em>lastname</em>, <em>email address</em> will be used for user information if you do not set the user field in the <code>MappingResult</code> object.
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+The synchronization process will only be invoked if the access token changes. Remember that you need to issue a new access token if you change the mapping in keycloak. The old token may still contain the old information.
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+It is important to note that the mapper API can not be used to <strong>delete</strong> users, roles or groups.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_utils">Utils</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The <code>AuthServicePluginUtils</code> provides additional utility functions that can be used in your plugin implementation. The <code>AuthServicePluginUtils#createRoleFilter()</code> and <code>AuthServicePluginUtils#createGroupFilter()</code> methods can be used to create filters which will only keep role/group, user/group assignments that have been specified in the given lists.</p>
+</div>
+<div class="paragraph">
+<p>This is useful if you want to ensure that users only belong in the groups that are managed by your identity provider/auth plugin.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_examples">Examples</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://github.com/gentics/mesh-plugin-examples/tree/master/authentication-plugin">Authentication Service Plugin Example</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+        
+
+
+
+        
+      </div>
+    </div>
+  </div>
+
+
+    <div class="footer">
+    <a name="footer"></a>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <h2>Keep in touch</h2>
+                <p>Find us on Twitter
+                    <a href="https://twitter.com/genticsmesh" target="_blank" rel="noopener noreferrer">@genticsmesh</a>
+                </p>
+                <p>Get help on
+                    <a href="https://stackoverflow.com/questions/tagged/gentics-mesh" target="_blank" rel="noopener noreferrer">stackoverflow</a>
+                </p>
+                <p>Ask us anything on
+                    <a href="https://gitter.im/gentics/mesh" target="_blank" rel="noopener noreferrer">Gitter</a>
+                </p>
+                <p>Dive into the code at
+                    <a href="https://github.com/gentics/mesh" target="_blank" rel="noopener noreferrer">GitHub</a>
+                </p>
+            </div>
+            <div class="col-md-6">
+                <h2>Legal</h2>
+                <p>Licensed under
+                    <a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank" rel="noopener noreferrer">Apache License v2.0</a> |
+                    <a href="../../../imprint">Imprint</a>
+                </p>
+            </div>
+        </div>
+        <div class="row ending center">
+            <p class="padding-top-25">Made in
+                <a href="https://www.mercer.com/newsroom/2018-quality-of-living-survey.html" target="_blank" rel="noopener noreferrer">Vienna - the most livable city in the world</a> 
+                <img src="../../../assets/noun_Wine_1032235.svg" height="24">
+            </p>
+        </div>
+    </div>
+
+       
+
+        <div class="apa-consent-reset apa-consent-wrapper">
+
+
+            <div class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-banner testOFF">
+
+                <ul class="apa-consent-reset apa-consent-bannerContent">
+                    <li class="apa-consent-reset">
+                        <div class="apa-consent-reset apa-consent-bannerText">
+                        </div>
+                    </li>
+                    <li class="apa-consent-reset apa-consent-buttonWrapperDetails">
+                        <button class="apa-consent-reset apa-consent-button">
+                            cookie-preferences
+                        </button>
+                    </li>
+                    <li class="apa-consent-reset apa-consent-buttonWrapperAccept">
+                        <button id="apa-consent-button-accept" class="apa-consent-reset apa-consent-button">
+                            accept
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="apa-consent-reset apa-consent-bgColorWhite apa-consent-boxShadow apa-consent-bannerButtonOFF">
+                    <div class="apa-consent-reset apa-consent-bannerButtonOFFicon1 apa-consent-bgColor"></div>
+                    <div class="apa-consent-reset apa-consent-bannerButtonOFFicon2 apa-consent-bgColor"></div>
+                </div>
+
+            </div>
+
+            <div class="apa-consent-reset apa-consent-dialogWrapper testOFF">
+                <div class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-dialog">
+                    <div class="apa-consent-reset apa-consent-mobileScroller">
+
+                        <div class="apa-consent-reset apa-consent-mobileClose"></div>
+
+                        <div class="apa-consent-reset apa-consent-dialogInnerWidth apa-consent-dialogHeader">
+                            <h3 class="apa-consent-reset apa-consent-H3">
+                                Cookie Preferences
+                            </h3>
+                            <p class="apa-consent-reset apa-consent-P">
+                                Choose if this website is only allowed to use functional cookies and/or marketing cookies.
+                            </p>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-dialogBodyWrapper">
+                            <div class="apa-consent-reset apa-consent-dialogInnerWidth apa-consent-dialogBody">
+                                <ul class="apa-consent-reset apa-consent-items">
+
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-dialogInnerWidth apa-consent-dialogSubmit">
+                            <button id="apa-constent-button-save-settings" class="apa-consent-reset apa-consent-button apa-consent-boxShadow">
+                                save & close
+                            </button>
+                        </div>
+
+                        <div class="apa-consent-reset apa-consent-bgColorWhite apa-consent-boxShadow apa-consent-dialogButtonOFF">
+                            <div class="apa-consent-reset apa-consent-dialogButtonOFFicon1"></div>
+                            <div class="apa-consent-reset apa-consent-dialogButtonOFFicon2 apa-consent-bgColor"></div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+   <div  id="bannerButtonOpen" class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-bannerButtonON">
+            <div class="apa-consent-reset apa-consent-bannerButtonONicon1 apa-consent-bgColorWhite"></div>
+            <div class="apa-consent-reset apa-consent-bannerButtonONicon2 apa-consent-bgColorWhite"></div>
+        </div>
+
+        <div class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-dialogButtonON testOFF">
+            <div class="apa-consent-reset apa-consent-dialogButtonONicon1 apa-consent-bgColorWhite"></div>
+            <div class="apa-consent-reset apa-consent-dialogButtonONicon2 apa-consent-bgColorWhite"></div>
+        </div>
+
+
+     
+
+        
+
+            
+
+    <ul style="display:none">
+        <li id="prototypeAppEntry" class="apa-consent-reset apa-consent-item">
+            <div class="apa-consent-reset apa-consent-itemSwitch">
+                <span class="apa-consent-reset apa-consent-boxShadow"></span>
+            </div>
+            <div class="apa-consent-reset apa-consent-itemTitle">
+
+            </div>
+            <div class="apa-consent-reset apa-consent-itemText">
+
+            </div>
+            <div class="apa-consent-reset apa-consent-itemSubItems">
+                <ul class="apa-consent-reset apa-consent-cookie-items">
+                    <li id="prototypeAppEntryCookieItem" style="display:none" class="apa-consent-reset apa-consent-itemSubItem">
+                        <div class="apa-consent-reset apa-consent-subItemTitle">
+                            <div class="apa-consent-reset apa-consent-subItemSwitch"></div>
+                            <span></span>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-subItemText">
+                            <p class="apa-consent-reset apa-consent-P"></p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+        <li id="prototypeAppEntryProtected" class="apa-consent-reset apa-consent-item">
+            <div class="apa-consent-reset apa-consent-itemSwitch">
+                <span class=" apa-consent-reset apa-consent-boxShadow"></span>
+            </div>
+            <div class="apa-consent-reset apa-consent-itemTitle apa-consent-itemTitleSwitch">
+            </div>
+            <div class="apa-consent-reset apa-consent-itemText">
+
+            </div>
+            <div class="apa-consent-reset apa-consent-itemSubItems">
+                <ul class="apa-consent-reset apa-consent-cookie-items">
+
+                    <li id="prototypeAppEntryProtectedCookieItem" style="display: none;" class="apa-consent-reset apa-consent-itemSubItem">
+                        <div class="apa-consent-reset apa-consent-subItemTitle">
+                            <div class="apa-consent-reset apa-consent-subItemSwitch"></div>
+                            <span></span>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-subItemText">
+                            <p class="apa-consent-reset apa-consent-P"></p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+    </ul>
+
+
+</div>
+
+    
+    <script
+  src="https://code.jquery.com/jquery-1.12.4.min.js"
+  integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="
+  crossorigin="anonymous"></script>
+
+<script src="../../../js/bootstrap.min.js"></script>
+
+<script
+  src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js"
+  crossorigin="anonymous"></script>
+
+<script src="../../../js/site.js"></script>
+
+<script 
+  src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.2.0/highlight.min.js"
+  integrity="sha256-sHRX2PXOLRG+LQtTpvREFsWhMVu2AJnmzxpmogmddtM="
+  crossorigin="anonymous"></script>
+
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script src="../../../js/docs.js"></script>
+<script src="../../../js/sidebar.js"></script>
+<script src="../../../js/GCM-banner.js"></script>
+<script>
+  var hasExample = jQuery(".graphql-example").length > 0;
+  hasExample && document.write('<link rel="stylesheet" href="../../../graphiql/graphiql.css" /><script src="../../../graphiql/vendor/fetch.min.js">\x3C/script><script src="../../../graphiql/vendor/react-16.8.6.min.js">\x3C/script><script src="../../../graphiql/vendor/react-dom-16.8.6.min.js">\x3C/script><script src="../../../graphiql/graphiql.js">\x3C/script><script src="../../../graphiql/embedded.js">\x3C/script>');
+</script>
+
+
+       
+
+        <div class="apa-consent-reset apa-consent-wrapper">
+
+
+            <div class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-banner testOFF">
+
+                <ul class="apa-consent-reset apa-consent-bannerContent">
+                    <li class="apa-consent-reset">
+                        <div class="apa-consent-reset apa-consent-bannerText">
+                        </div>
+                    </li>
+                    <li class="apa-consent-reset apa-consent-buttonWrapperDetails">
+                        <button class="apa-consent-reset apa-consent-button">
+                            cookie-preferences
+                        </button>
+                    </li>
+                    <li class="apa-consent-reset apa-consent-buttonWrapperAccept">
+                        <button id="apa-consent-button-accept" class="apa-consent-reset apa-consent-button">
+                            accept
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="apa-consent-reset apa-consent-bgColorWhite apa-consent-boxShadow apa-consent-bannerButtonOFF">
+                    <div class="apa-consent-reset apa-consent-bannerButtonOFFicon1 apa-consent-bgColor"></div>
+                    <div class="apa-consent-reset apa-consent-bannerButtonOFFicon2 apa-consent-bgColor"></div>
+                </div>
+
+            </div>
+
+            <div class="apa-consent-reset apa-consent-dialogWrapper testOFF">
+                <div class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-dialog">
+                    <div class="apa-consent-reset apa-consent-mobileScroller">
+
+                        <div class="apa-consent-reset apa-consent-mobileClose"></div>
+
+                        <div class="apa-consent-reset apa-consent-dialogInnerWidth apa-consent-dialogHeader">
+                            <h3 class="apa-consent-reset apa-consent-H3">
+                                Cookie Preferences
+                            </h3>
+                            <p class="apa-consent-reset apa-consent-P">
+                                Choose if this website is only allowed to use functional cookies and/or marketing cookies.
+                            </p>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-dialogBodyWrapper">
+                            <div class="apa-consent-reset apa-consent-dialogInnerWidth apa-consent-dialogBody">
+                                <ul class="apa-consent-reset apa-consent-items">
+
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-dialogInnerWidth apa-consent-dialogSubmit">
+                            <button id="apa-constent-button-save-settings" class="apa-consent-reset apa-consent-button apa-consent-boxShadow">
+                                save & close
+                            </button>
+                        </div>
+
+                        <div class="apa-consent-reset apa-consent-bgColorWhite apa-consent-boxShadow apa-consent-dialogButtonOFF">
+                            <div class="apa-consent-reset apa-consent-dialogButtonOFFicon1"></div>
+                            <div class="apa-consent-reset apa-consent-dialogButtonOFFicon2 apa-consent-bgColor"></div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+   <div  id="bannerButtonOpen" class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-bannerButtonON">
+            <div class="apa-consent-reset apa-consent-bannerButtonONicon1 apa-consent-bgColorWhite"></div>
+            <div class="apa-consent-reset apa-consent-bannerButtonONicon2 apa-consent-bgColorWhite"></div>
+        </div>
+
+        <div class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-dialogButtonON testOFF">
+            <div class="apa-consent-reset apa-consent-dialogButtonONicon1 apa-consent-bgColorWhite"></div>
+            <div class="apa-consent-reset apa-consent-dialogButtonONicon2 apa-consent-bgColorWhite"></div>
+        </div>
+
+
+     
+
+        
+
+            
+
+    <ul style="display:none">
+        <li id="prototypeAppEntry" class="apa-consent-reset apa-consent-item">
+            <div class="apa-consent-reset apa-consent-itemSwitch">
+                <span class="apa-consent-reset apa-consent-boxShadow"></span>
+            </div>
+            <div class="apa-consent-reset apa-consent-itemTitle">
+
+            </div>
+            <div class="apa-consent-reset apa-consent-itemText">
+
+            </div>
+            <div class="apa-consent-reset apa-consent-itemSubItems">
+                <ul class="apa-consent-reset apa-consent-cookie-items">
+                    <li id="prototypeAppEntryCookieItem" style="display:none" class="apa-consent-reset apa-consent-itemSubItem">
+                        <div class="apa-consent-reset apa-consent-subItemTitle">
+                            <div class="apa-consent-reset apa-consent-subItemSwitch"></div>
+                            <span></span>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-subItemText">
+                            <p class="apa-consent-reset apa-consent-P"></p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+        <li id="prototypeAppEntryProtected" class="apa-consent-reset apa-consent-item">
+            <div class="apa-consent-reset apa-consent-itemSwitch">
+                <span class=" apa-consent-reset apa-consent-boxShadow"></span>
+            </div>
+            <div class="apa-consent-reset apa-consent-itemTitle apa-consent-itemTitleSwitch">
+            </div>
+            <div class="apa-consent-reset apa-consent-itemText">
+
+            </div>
+            <div class="apa-consent-reset apa-consent-itemSubItems">
+                <ul class="apa-consent-reset apa-consent-cookie-items">
+
+                    <li id="prototypeAppEntryProtectedCookieItem" style="display: none;" class="apa-consent-reset apa-consent-itemSubItem">
+                        <div class="apa-consent-reset apa-consent-subItemTitle">
+                            <div class="apa-consent-reset apa-consent-subItemSwitch"></div>
+                            <span></span>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-subItemText">
+                            <p class="apa-consent-reset apa-consent-P"></p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+    </ul>
+
+
+
+    <script>
+    window.GCM.apps.whenAllowed('google', function () {
+        (function (i, s, o, g, r, a, m) {
+            i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+                (i[r].q = i[r].q || []).push(arguments)
+            }, i[r].l = 1 * new Date(); a = s.createElement(o),
+                m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+        ga('create', 'UA-69994739-1', 'auto');
+        ga('send', 'pageview');
+    });
+</script>
+    
+    <script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "Organization",
+        "name": "Gentics Mesh",
+        "url": "https://getmesh.io",
+        "logo": "https://getmesh.io/assets/gentics-mesh-logo.png",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Laimgrubengasse 10",
+            "addressRegion": "Vienna",
+            "postalCode": "1060",
+            "addressCountry": "Austria"
+        },
+        "contactPoint": {
+            "@type": "ContactPoint",
+            "contactType": "customer support",
+            "telephone": "+43-1-7109904-300",
+            "email": "support@gentics.com"
+        },
+        "sameAs": [
+            "https://twitter.com/genticsmesh",
+            "https://github.com/gentics/mesh",
+            "https://stackoverflow.com/questions/tagged/genticsmesh"
+        ]
+    }
+</script>
+</body>
+
+</html>

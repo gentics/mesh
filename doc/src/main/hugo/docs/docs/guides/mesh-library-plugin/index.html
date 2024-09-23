@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link rel="dns-prefetch" href="//oss.maxcdn.com" />
+<link rel="dns-prefetch" href="//ajax.googleapis.com" />
+
+<title>Gentics Mesh - GraphQL Library Plugin Guide</title>
+<meta name="description" content="">
+<meta name="author" content="">
+<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Gentics Mesh - GraphQL Library Plugin Guide" />
+<meta name="twitter:description" content="" />
+<meta name="twitter:image:src" content="https://getmesh.io/assets/gentics-card.png" />
+
+<meta property="og:title" content="Gentics Mesh - GraphQL Library Plugin Guide">
+<meta property="og:url" content="https://getmesh.io/docs/guides/mesh-library-plugin/">
+<meta property="og:description" content="">
+<meta property="og:image" content="https://getmesh.io/assets/gentics-card.png">
+<link rel="icon" href="../../../favicon.ico">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+<link rel="shortcut icon" href="../../../assets/g_logo_small.png" type="image/png" />
+<link href="../../../styles/docs.css" media="screen" rel="stylesheet">
+
+
+<link href="https://fonts.googleapis.com/css?family=Roboto:300,400" rel="stylesheet">
+<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN"
+    crossorigin="anonymous">
+<script src="../../../js/GCM.min.js"></script>
+<script>
+    window.GCM.init('/js/GCM-config.json', 'en', 1, true);
+</script>
+
+<link href="https://fonts.googleapis.com/css?family=Roboto:300,400" rel="stylesheet">
+
+</head>
+
+<body class="body-navbar-">
+    <nav class="navbar navbar-default navbar--top">
+    <div class="container-fluid">
+        
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1"
+                aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="../../../">
+                <img class="logo" src="../../../assets/gentics-mesh-logo.png" alt="Gentics Logo" />
+            </a>
+        </div>
+
+        
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav"> 
+                <li>
+                    <a href="../../../features">Features</a>
+                </li>
+                <li>
+                    <a href="../../../docs">Documentation</a>
+                </li>
+                <li>
+                    <a href="../../../demo">Demo</a>
+                </li>
+                <li>
+                    <a href="../../../services">Services</a>
+                </li>
+                <li>
+                    <a href="../../../training">Trainings</a>
+                </li>
+                <li>
+                    <a href="../../../premium-features">Premium Features</a>
+                </li>
+                
+                <li>
+                    <a class="btn btn-primary btn-download" href="../../../download">Download</a>
+                </li>
+            </ul>
+        </div>
+        
+    </div>
+    
+</nav>
+
+
+    
+<div class="topsection-wrapper">
+    <div class="topsection container">
+        <div class="row">
+            <div class="col-md-12">
+                <h1>Gentics Mesh - GraphQL Library Plugin Guide</h1>
+            </div>
+        </div>
+    </div>
+</div>
+ 
+  <div class="container docs-content">
+    <div class="row">
+      <div class="col-sm-12 col-md-push-9 col-md-3 hidden-xs hidden-sm">
+        <div id="sidebar" data-spy="affix">
+            
+        </div>
+      </div>
+      <div class="col-sm-12 col-md-pull-3 col-md-9">
+        <div class="toc hidden-md hidden-lg">
+          <h2>Gentics Mesh - GraphQL Library Plugin Guide</h2>
+          
+        </div>
+        <div id="toc" class="toc">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_intro">Intro</a></li>
+<li><a href="#_requirements">Requirements</a></li>
+<li><a href="#_files">Files</a>
+<ul class="sectlevel2">
+<li><a href="#_project_setup">Project Setup</a></li>
+<li><a href="#_schema">Schema</a></li>
+<li><a href="#_plugin_code">Plugin Code</a></li>
+<li><a href="#_data_fetcher">Data Fetcher</a></li>
+</ul>
+</li>
+<li><a href="#_testing">Testing</a></li>
+<li><a href="#_packaging">Packaging</a></li>
+<li><a href="#_deployment">Deployment</a></li>
+<li><a href="#_accessing">Accessing</a></li>
+</ul>
+</div>
+<div class="sect1">
+<h2 id="_intro">Intro</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In this guide you will learn how to create a plugin for Gentics Mesh which will extend the GraphQL API in order query a small library inventory.</p>
+</div>
+<div class="paragraph">
+<p><span class="image img-responsive"><img src="graphiql.png" alt="GraphiQL Example"></span></p>
+</div>
+<div class="paragraph">
+<p>This example is inspired by the
+<a href="https://www.graphql-java.com/tutorials/getting-started-with-spring-boot/">GraphQL Java Getting Started Guide</a>.</p>
+</div>
+<div class="paragraph">
+<p>All sources for this example are available on <a href="https://github.com/gentics/mesh-plugin-examples/tree/master/graphql-library-plugin">GitHub</a>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_requirements">Requirements</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Before we can start you need to install <a href="https://maven.apache.org/">Apache Maven</a> and a <a href="https://adoptopenjdk.net/">Java Development Kit</a>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_files">Files</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><strong>Plugin Code:</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>pom.xml</code></p>
+<div class="literalblock">
+<div class="content">
+<pre>Maven project descriptor</pre>
+</div>
+</div>
+</li>
+<li>
+<p><code>src/main/resources/schema.graphqls</code></p>
+<div class="literalblock">
+<div class="content">
+<pre>GraphQL Schema</pre>
+</div>
+</div>
+</li>
+<li>
+<p><code>src/main/java/com/gentics/mesh/plugin/GraphQLDataFetchers.java</code></p>
+<div class="literalblock">
+<div class="content">
+<pre>Data fetchers for the inventory data</pre>
+</div>
+</div>
+</li>
+<li>
+<p><code>src/main/java/com/gentics/mesh/plugin/GraphQLExamplePlugin.java</code></p>
+<div class="literalblock">
+<div class="content">
+<pre>The actual plugin implementation</pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Test Code:</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>src/test/java/com/gentics/mesh/plugin/GraphQlExamplePluginTest.java</code></p>
+<div class="literalblock">
+<div class="content">
+<pre>Plugin integration test</pre>
+</div>
+</div>
+</li>
+<li>
+<p><code>src/test/java/com/gentics/mesh/plugin/PluginRunnerExample.java</code></p>
+<div class="literalblock">
+<div class="content">
+<pre>Example runner which will start Mesh and the plugin</pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+<div class="sect2">
+<h3 id="_project_setup">Project Setup</h3>
+<div class="paragraph">
+<p><strong>/pom.xml</strong></p>
+</div>
+<div class="paragraph">
+<p>The first thing we need to do is to setup our project. In this example we&#8217;ll use the <code>pom.xml</code> file which is used by <a href="https://maven.apache.org/">Apache Maven</a> to build the plugin project.</p>
+</div>
+<div class="paragraph">
+<p>The <code>pom.xml</code> will also contain plugin metadata. It is the place where the plugin manifest will be specified that is later added to the final <code>.jar</code> file.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-xml" data-lang="xml">&lt;project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"&gt;
+  &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+  &lt;groupId&gt;com.gentics.mesh.plugin&lt;/groupId&gt;
+  &lt;artifactId&gt;mesh-graphql-library-example-plugin&lt;/artifactId&gt;
+  &lt;version&gt;0.0.1-SNAPSHOT&lt;/version&gt;
+
+  &lt;properties&gt;
+    &lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt;
+    &lt;mesh.version&gt;0.38.0&lt;/mesh.version&gt;
+
+    &lt;!-- We use these properties to specify the plugin manifest --&gt;
+    &lt;plugin.id&gt;library&lt;/plugin.id&gt;
+    &lt;plugin.name&gt;The GraphQL example plugin&lt;/plugin.name&gt;
+    &lt;plugin.description&gt;A very simple plugin which shows how to extend the
+      GraphQL API.&lt;/plugin.description&gt;
+    &lt;plugin.class&gt;com.gentics.mesh.plugin.GraphQLExamplePlugin&lt;/plugin.class&gt;
+    &lt;plugin.version&gt;${project.version}&lt;/plugin.version&gt;
+    &lt;plugin.license&gt;Apache License 2.0&lt;/plugin.license&gt;
+    &lt;plugin.author&gt;Joe Doe&lt;/plugin.author&gt;
+    &lt;plugin.inception&gt;2019-07-08&lt;/plugin.inception&gt;
+  &lt;/properties&gt;
+
+  &lt;!-- The dependency management section provides the versions for the needed artifacts --&gt;
+  &lt;dependencyManagement&gt;
+    &lt;dependencies&gt;
+      &lt;dependency&gt;
+        &lt;groupId&gt;com.gentics.mesh&lt;/groupId&gt;
+        &lt;artifactId&gt;mesh-plugin-bom&lt;/artifactId&gt;
+        &lt;version&gt;${mesh.version}&lt;/version&gt;
+        &lt;type&gt;pom&lt;/type&gt;
+        &lt;scope&gt;import&lt;/scope&gt;
+      &lt;/dependency&gt;
+    &lt;/dependencies&gt;
+  &lt;/dependencyManagement&gt;
+
+  &lt;dependencies&gt;
+    &lt;!-- The mesh plugin api dependencies.
+         Please note that these dependencies need to be set to provided --&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;com.gentics.mesh&lt;/groupId&gt;
+      &lt;artifactId&gt;mesh-plugin-dep&lt;/artifactId&gt;
+      &lt;scope&gt;provided&lt;/scope&gt;
+    &lt;/dependency&gt;
+
+    &lt;!-- Test dependencies --&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;junit&lt;/groupId&gt;
+      &lt;artifactId&gt;junit&lt;/artifactId&gt;
+      &lt;scope&gt;test&lt;/scope&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;com.gentics.mesh&lt;/groupId&gt;
+      &lt;artifactId&gt;mesh-test-common&lt;/artifactId&gt;
+      &lt;scope&gt;test&lt;/scope&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;com.gentics.mesh&lt;/groupId&gt;
+      &lt;artifactId&gt;mesh-core&lt;/artifactId&gt;
+      &lt;scope&gt;test&lt;/scope&gt;
+    &lt;/dependency&gt;
+  &lt;/dependencies&gt;
+
+  &lt;build&gt;
+    &lt;plugins&gt;
+      &lt;plugin&gt;
+        &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+        &lt;artifactId&gt;maven-compiler-plugin&lt;/artifactId&gt;
+        &lt;version&gt;3.7.0&lt;/version&gt;
+        &lt;configuration&gt;
+          &lt;verbose&gt;true&lt;/verbose&gt;
+          &lt;source&gt;8&lt;/source&gt;
+          &lt;target&gt;8&lt;/target&gt;
+        &lt;/configuration&gt;
+      &lt;/plugin&gt;
+      &lt;!--The shade plugin will generate the jar with all the needed dependencies --&gt;
+      &lt;plugin&gt;
+        &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+        &lt;artifactId&gt;maven-shade-plugin&lt;/artifactId&gt;
+        &lt;version&gt;3.2.1&lt;/version&gt;
+        &lt;executions&gt;
+          &lt;execution&gt;
+            &lt;phase&gt;package&lt;/phase&gt;
+            &lt;goals&gt;
+              &lt;goal&gt;shade&lt;/goal&gt;
+            &lt;/goals&gt;
+            &lt;configuration&gt;
+              &lt;transformers&gt;
+                &lt;!-- We use the transformer to add the manifest properties to the jar manifest --&gt;
+                &lt;transformer
+                  implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"&gt;
+                  &lt;manifestEntries&gt;
+                    &lt;Plugin-Id&gt;${plugin.id}&lt;/Plugin-Id&gt;
+                    &lt;Plugin-Version&gt;${plugin.version}&lt;/Plugin-Version&gt;
+                    &lt;Plugin-Author&gt;${plugin.author}&lt;/Plugin-Author&gt;
+                    &lt;Plugin-Class&gt;${plugin.class}&lt;/Plugin-Class&gt;
+                    &lt;Plugin-Description&gt;${plugin.description}&lt;/Plugin-Description&gt;
+                    &lt;Plugin-License&gt;${plugin.license}&lt;/Plugin-License&gt;
+                    &lt;Plugin-Inception&gt;${plugin.inception}&lt;/Plugin-Inception&gt;
+                  &lt;/manifestEntries&gt;
+                &lt;/transformer&gt;
+              &lt;/transformers&gt;
+            &lt;/configuration&gt;
+          &lt;/execution&gt;
+        &lt;/executions&gt;
+      &lt;/plugin&gt;
+    &lt;/plugins&gt;
+  &lt;/build&gt;
+
+  &lt;!-- The repository section is important.
+       Otherwise you will not be able to download the artifacts --&gt;
+  &lt;repositories&gt;
+    &lt;repository&gt;
+      &lt;id&gt;maven.gentics.com&lt;/id&gt;
+      &lt;name&gt;Gentics Maven Repository&lt;/name&gt;
+      &lt;url&gt;https://maven.gentics.com/maven2&lt;/url&gt;
+      &lt;releases&gt;
+        &lt;enabled&gt;true&lt;/enabled&gt;
+      &lt;/releases&gt;
+    &lt;/repository&gt;
+  &lt;/repositories&gt;
+
+&lt;/project&gt;</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_schema">Schema</h3>
+<div class="paragraph">
+<p>The <code>schema.graphqls</code> file contains the GraphQL Schema definition (SDL) which is used to setup the types for the inventory. It defines fields for each type. In our case we only need the <code>Book</code> and the <code>Author</code> types.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-xml" data-lang="xml">type Query {
+  bookById(id: ID): Book
+}
+
+type Book {
+  id: ID
+  name: String
+  pageCount: Int
+  author: Author
+}
+
+type Author {
+  id: ID
+  firstName: String
+  lastName: String
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_plugin_code">Plugin Code</h3>
+<div class="paragraph">
+<p><strong>GraphQLExamplePlugin.java</strong></p>
+</div>
+<div class="paragraph">
+<p>The <code>GraphQLExamplePlugin</code> file contains the actual plugin code. The plugin itself is very simple.</p>
+</div>
+<div class="paragraph">
+<p>We need to extend the <code>AbstractPlugin</code> class and implement the <code>GraphQLPlugin</code> interface since our plugin will extend the GraphQL API.</p>
+</div>
+<div class="paragraph">
+<p>In the <code>initialize()</code> method we setup the <code>GraphQLSchema</code> for our plugin. The counterpart is the <code>shutdown()</code> method.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-java" data-lang="java">package com.gentics.mesh.plugin;
+
+import static graphql.schema.idl.TypeRuntimeWiring.newTypeWiring;
+
+import java.net.URL;
+
+import org.pf4j.PluginWrapper;
+
+import com.gentics.mesh.plugin.env.PluginEnvironment;
+import com.gentics.mesh.plugin.graphql.GraphQLPlugin;
+import com.google.common.base.Charsets;
+import com.google.common.io.Resources;
+
+import graphql.schema.GraphQLSchema;
+import graphql.schema.idl.RuntimeWiring;
+import graphql.schema.idl.SchemaGenerator;
+import graphql.schema.idl.SchemaParser;
+import graphql.schema.idl.TypeDefinitionRegistry;
+import io.reactivex.Completable;
+
+public class GraphQLExamplePlugin extends AbstractPlugin implements GraphQLPlugin {
+
+	private GraphQLSchema schema;
+
+	private GraphQLDataFetchers fetcher = new GraphQLDataFetchers();
+
+	public GraphQLExamplePlugin(PluginWrapper wrapper, PluginEnvironment env) {
+		super(wrapper, env);
+	}
+
+	@Override
+	public Completable initialize() {
+		return Completable.fromAction(() -&gt; {
+			URL url = Resources.getResource("schema.graphqls");
+			String sdl = Resources.toString(url, Charsets.UTF_8);
+			schema = buildSchema(sdl);
+		});
+	}
+
+	private GraphQLSchema buildSchema(String sdl) {
+		TypeDefinitionRegistry typeRegistry = new SchemaParser().parse(sdl);
+		RuntimeWiring runtimeWiring = buildWiring();
+		SchemaGenerator schemaGenerator = new SchemaGenerator();
+		return schemaGenerator.makeExecutableSchema(typeRegistry, runtimeWiring);
+	}
+
+	private RuntimeWiring buildWiring() {
+		return RuntimeWiring.newRuntimeWiring()
+			.type(newTypeWiring("Query")
+				.dataFetcher("bookById", fetcher.getBookByIdDataFetcher()))
+			.type(newTypeWiring("Book")
+				.dataFetcher("author", fetcher.getAuthorDataFetcher()))
+			.build();
+	}
+
+	@Override
+	public GraphQLSchema createRootSchema() {
+		return schema;
+	}
+
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_data_fetcher">Data Fetcher</h3>
+<div class="paragraph">
+<p>The data fetcher contains the code that is used to actually retrieve the inventory information. One fetcher is used for looking up books by id. The other one will return the author.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-java" data-lang="java">package com.gentics.mesh.plugin;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
+import com.google.common.collect.ImmutableMap;
+
+import graphql.schema.DataFetcher;
+
+public class GraphQLDataFetchers {
+
+	private static List&lt;Map&lt;String, String&gt;&gt; books = Arrays.asList(
+		ImmutableMap.of("id", "book-1",
+			"name", "Harry Potter and the Philosopher's Stone",
+			"pageCount", "223",
+			"authorId", "author-1"),
+		ImmutableMap.of("id", "book-2",
+			"name", "Moby Dick",
+			"pageCount", "635",
+			"authorId", "author-2"),
+		ImmutableMap.of("id", "book-3",
+			"name", "Interview with the vampire",
+			"pageCount", "371",
+			"authorId", "author-3"));
+
+	private static List&lt;Map&lt;String, String&gt;&gt; authors = Arrays.asList(
+		ImmutableMap.of("id", "author-1",
+			"firstName", "Joanne",
+			"lastName", "Rowling"),
+		ImmutableMap.of("id", "author-2",
+			"firstName", "Herman",
+			"lastName", "Melville"),
+		ImmutableMap.of("id", "author-3",
+			"firstName", "Anne",
+			"lastName", "Rice"));
+
+	public DataFetcher getBookByIdDataFetcher() {
+		return dataFetchingEnvironment -&gt; {
+			String bookId = dataFetchingEnvironment.getArgument("id");
+			return books
+				.stream()
+				.filter(book -&gt; book.get("id").equals(bookId))
+				.findFirst()
+				.orElse(null);
+		};
+	}
+
+	public DataFetcher getAuthorDataFetcher() {
+		return dataFetchingEnvironment -&gt; {
+			Map&lt;String, String&gt; book = dataFetchingEnvironment.getSource();
+			String authorId = book.get("authorId");
+			return authors
+				.stream()
+				.filter(author -&gt; author.get("id").equals(authorId))
+				.findFirst()
+				.orElse(null);
+		};
+	}
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_testing">Testing</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>For testing it is possible to use the <code>MeshLocalServer</code> class rule which will make it possible to start-up an in-memory Gentics Mesh server that can be used to run your plugin.</p>
+</div>
+<div class="paragraph">
+<p>The test will:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Start Gentics Mesh in memory</p>
+</li>
+<li>
+<p>Deploy the plugin</p>
+</li>
+<li>
+<p>Setup an empty project</p>
+</li>
+<li>
+<p>Finally run the the query to fetch the data from the plugin</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-java" data-lang="java">package com.gentics.mesh.plugin;
+
+import java.io.IOException;
+
+import org.junit.ClassRule;
+import org.junit.Test;
+
+import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
+import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
+import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.test.local.MeshLocalServer;
+
+import io.reactivex.Completable;
+import io.reactivex.Single;
+
+/**
+ * This example test demonstrates how to use the {@link MeshLocalServer} to deploy a plugin.
+ */
+public class GraphQlExamplePluginTest {
+
+	private static String PROJECT = "test";
+
+	@ClassRule
+	public static final MeshLocalServer server = new MeshLocalServer()
+		.withInMemoryMode()
+		.withPlugin(GraphQLExamplePlugin.class, "myPlugin")
+		.waitForStartup();
+
+	@Test
+	public void testPlugin() throws IOException {
+		MeshRestClient client = server.client();
+
+		// Create the project
+		Completable createProject = client.createProject(
+			new ProjectCreateRequest()
+				.setName(PROJECT)
+				.setSchemaRef("folder"))
+			.toCompletable();
+
+		// Run query on the plugin
+		String query = "{ pluginApi { myPlugin { text } } }";
+		Single&lt;GraphQLResponse&gt; rxQuery = client.graphqlQuery(PROJECT, query)
+			.toSingle();
+
+		// Run the operations
+		GraphQLResponse result = createProject.andThen(rxQuery).blockingGet();
+
+		// Print the GraphQL API result
+		System.out.println(result.getData().encodePrettily());
+	}
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When running the test you should see the output in the result of the GraphQL test request.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code>INFO: 127.0.0.1 - POST /api/v1/test/graphql HTTP/1.1 200 106 - 12 ms
+{
+  "pluginApi" : {
+    "myPlugin" : {
+      "bookById" : {
+        "id" : "book-1",
+        "name" : "Harry Potter and the Philosopher's Stone"
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_packaging">Packaging</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Now we can package the plugin by running <code>mvn clean package</code>. The built plugin will be placed in the <code>target</code> directory.</p>
+</div>
+<div class="paragraph">
+<p>We can now place the <code>mesh-graphql-library-example-plugin-0.0.1-SNAPSHOT.jar</code> file in the Gentics Mesh <code>plugins</code> directory.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_deployment">Deployment</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>You can now deploy start a new Gentics Mesh instance which will deploy the plugin during start-up:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-bash" data-lang="bash">docker run --rm \
+    -v $PWD/target/mesh-graphql-library-example-plugin-0.0.1-SNAPSHOT.jar:/plugins/graphql.jar \
+    -p 8080:8080 \
+    gentics/mesh:0.38.0</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>It is also possible to deploy a plugin in a running instance via the <code>/admin/plugins</code> endpoint.</p>
+</div>
+<div class="paragraph">
+<p>With an admin token at hand you can invoke the deployment via cURL:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-bash" data-lang="bash">curl -X POST \
+ -d '{
+    "path":"mesh-graphql-library-example-plugin-0.0.1-SNAPSHOT.jar"
+    }' \
+ -H "Authorization: Bearer $MESH_TOKEN" \
+ -H "Content-Type: application/json" \
+ $MESH_BASE/admin/plugins</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can read more about how to use the REST API with cURL in the <a href="../../../docs/guides/mesh-api-intro/">API guide</a>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_accessing">Accessing</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Once the plugin has been deployed you can use the plugin via the GraphQL endpoint.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-bash" data-lang="bash">curl -X POST \
+ -d '{
+    "query":"{ pluginApi { myPlugin { bookById(id: \"book-1\") {id name } } } }"
+    }' \
+ -H "Content-Type: application/json" \
+ $MESH_BASE/test/graphql</code></pre>
+</div>
+</div>
+</div>
+</div>
+
+        
+
+
+
+        
+      </div>
+    </div>
+  </div>
+
+
+    <div class="footer">
+    <a name="footer"></a>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <h2>Keep in touch</h2>
+                <p>Find us on Twitter
+                    <a href="https://twitter.com/genticsmesh" target="_blank" rel="noopener noreferrer">@genticsmesh</a>
+                </p>
+                <p>Get help on
+                    <a href="https://stackoverflow.com/questions/tagged/gentics-mesh" target="_blank" rel="noopener noreferrer">stackoverflow</a>
+                </p>
+                <p>Ask us anything on
+                    <a href="https://gitter.im/gentics/mesh" target="_blank" rel="noopener noreferrer">Gitter</a>
+                </p>
+                <p>Dive into the code at
+                    <a href="https://github.com/gentics/mesh" target="_blank" rel="noopener noreferrer">GitHub</a>
+                </p>
+            </div>
+            <div class="col-md-6">
+                <h2>Legal</h2>
+                <p>Licensed under
+                    <a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank" rel="noopener noreferrer">Apache License v2.0</a> |
+                    <a href="../../../imprint">Imprint</a>
+                </p>
+            </div>
+        </div>
+        <div class="row ending center">
+            <p class="padding-top-25">Made in
+                <a href="https://www.mercer.com/newsroom/2018-quality-of-living-survey.html" target="_blank" rel="noopener noreferrer">Vienna - the most livable city in the world</a> 
+                <img src="../../../assets/noun_Wine_1032235.svg" height="24">
+            </p>
+        </div>
+    </div>
+
+       
+
+        <div class="apa-consent-reset apa-consent-wrapper">
+
+
+            <div class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-banner testOFF">
+
+                <ul class="apa-consent-reset apa-consent-bannerContent">
+                    <li class="apa-consent-reset">
+                        <div class="apa-consent-reset apa-consent-bannerText">
+                        </div>
+                    </li>
+                    <li class="apa-consent-reset apa-consent-buttonWrapperDetails">
+                        <button class="apa-consent-reset apa-consent-button">
+                            cookie-preferences
+                        </button>
+                    </li>
+                    <li class="apa-consent-reset apa-consent-buttonWrapperAccept">
+                        <button id="apa-consent-button-accept" class="apa-consent-reset apa-consent-button">
+                            accept
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="apa-consent-reset apa-consent-bgColorWhite apa-consent-boxShadow apa-consent-bannerButtonOFF">
+                    <div class="apa-consent-reset apa-consent-bannerButtonOFFicon1 apa-consent-bgColor"></div>
+                    <div class="apa-consent-reset apa-consent-bannerButtonOFFicon2 apa-consent-bgColor"></div>
+                </div>
+
+            </div>
+
+            <div class="apa-consent-reset apa-consent-dialogWrapper testOFF">
+                <div class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-dialog">
+                    <div class="apa-consent-reset apa-consent-mobileScroller">
+
+                        <div class="apa-consent-reset apa-consent-mobileClose"></div>
+
+                        <div class="apa-consent-reset apa-consent-dialogInnerWidth apa-consent-dialogHeader">
+                            <h3 class="apa-consent-reset apa-consent-H3">
+                                Cookie Preferences
+                            </h3>
+                            <p class="apa-consent-reset apa-consent-P">
+                                Choose if this website is only allowed to use functional cookies and/or marketing cookies.
+                            </p>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-dialogBodyWrapper">
+                            <div class="apa-consent-reset apa-consent-dialogInnerWidth apa-consent-dialogBody">
+                                <ul class="apa-consent-reset apa-consent-items">
+
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-dialogInnerWidth apa-consent-dialogSubmit">
+                            <button id="apa-constent-button-save-settings" class="apa-consent-reset apa-consent-button apa-consent-boxShadow">
+                                save & close
+                            </button>
+                        </div>
+
+                        <div class="apa-consent-reset apa-consent-bgColorWhite apa-consent-boxShadow apa-consent-dialogButtonOFF">
+                            <div class="apa-consent-reset apa-consent-dialogButtonOFFicon1"></div>
+                            <div class="apa-consent-reset apa-consent-dialogButtonOFFicon2 apa-consent-bgColor"></div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+   <div  id="bannerButtonOpen" class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-bannerButtonON">
+            <div class="apa-consent-reset apa-consent-bannerButtonONicon1 apa-consent-bgColorWhite"></div>
+            <div class="apa-consent-reset apa-consent-bannerButtonONicon2 apa-consent-bgColorWhite"></div>
+        </div>
+
+        <div class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-dialogButtonON testOFF">
+            <div class="apa-consent-reset apa-consent-dialogButtonONicon1 apa-consent-bgColorWhite"></div>
+            <div class="apa-consent-reset apa-consent-dialogButtonONicon2 apa-consent-bgColorWhite"></div>
+        </div>
+
+
+     
+
+        
+
+            
+
+    <ul style="display:none">
+        <li id="prototypeAppEntry" class="apa-consent-reset apa-consent-item">
+            <div class="apa-consent-reset apa-consent-itemSwitch">
+                <span class="apa-consent-reset apa-consent-boxShadow"></span>
+            </div>
+            <div class="apa-consent-reset apa-consent-itemTitle">
+
+            </div>
+            <div class="apa-consent-reset apa-consent-itemText">
+
+            </div>
+            <div class="apa-consent-reset apa-consent-itemSubItems">
+                <ul class="apa-consent-reset apa-consent-cookie-items">
+                    <li id="prototypeAppEntryCookieItem" style="display:none" class="apa-consent-reset apa-consent-itemSubItem">
+                        <div class="apa-consent-reset apa-consent-subItemTitle">
+                            <div class="apa-consent-reset apa-consent-subItemSwitch"></div>
+                            <span></span>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-subItemText">
+                            <p class="apa-consent-reset apa-consent-P"></p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+        <li id="prototypeAppEntryProtected" class="apa-consent-reset apa-consent-item">
+            <div class="apa-consent-reset apa-consent-itemSwitch">
+                <span class=" apa-consent-reset apa-consent-boxShadow"></span>
+            </div>
+            <div class="apa-consent-reset apa-consent-itemTitle apa-consent-itemTitleSwitch">
+            </div>
+            <div class="apa-consent-reset apa-consent-itemText">
+
+            </div>
+            <div class="apa-consent-reset apa-consent-itemSubItems">
+                <ul class="apa-consent-reset apa-consent-cookie-items">
+
+                    <li id="prototypeAppEntryProtectedCookieItem" style="display: none;" class="apa-consent-reset apa-consent-itemSubItem">
+                        <div class="apa-consent-reset apa-consent-subItemTitle">
+                            <div class="apa-consent-reset apa-consent-subItemSwitch"></div>
+                            <span></span>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-subItemText">
+                            <p class="apa-consent-reset apa-consent-P"></p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+    </ul>
+
+
+</div>
+
+    
+    <script
+  src="https://code.jquery.com/jquery-1.12.4.min.js"
+  integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="
+  crossorigin="anonymous"></script>
+
+<script src="../../../js/bootstrap.min.js"></script>
+
+<script
+  src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js"
+  crossorigin="anonymous"></script>
+
+<script src="../../../js/site.js"></script>
+
+<script 
+  src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.2.0/highlight.min.js"
+  integrity="sha256-sHRX2PXOLRG+LQtTpvREFsWhMVu2AJnmzxpmogmddtM="
+  crossorigin="anonymous"></script>
+
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script src="../../../js/docs.js"></script>
+<script src="../../../js/sidebar.js"></script>
+<script src="../../../js/GCM-banner.js"></script>
+<script>
+  var hasExample = jQuery(".graphql-example").length > 0;
+  hasExample && document.write('<link rel="stylesheet" href="../../../graphiql/graphiql.css" /><script src="../../../graphiql/vendor/fetch.min.js">\x3C/script><script src="../../../graphiql/vendor/react-16.8.6.min.js">\x3C/script><script src="../../../graphiql/vendor/react-dom-16.8.6.min.js">\x3C/script><script src="../../../graphiql/graphiql.js">\x3C/script><script src="../../../graphiql/embedded.js">\x3C/script>');
+</script>
+
+
+       
+
+        <div class="apa-consent-reset apa-consent-wrapper">
+
+
+            <div class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-banner testOFF">
+
+                <ul class="apa-consent-reset apa-consent-bannerContent">
+                    <li class="apa-consent-reset">
+                        <div class="apa-consent-reset apa-consent-bannerText">
+                        </div>
+                    </li>
+                    <li class="apa-consent-reset apa-consent-buttonWrapperDetails">
+                        <button class="apa-consent-reset apa-consent-button">
+                            cookie-preferences
+                        </button>
+                    </li>
+                    <li class="apa-consent-reset apa-consent-buttonWrapperAccept">
+                        <button id="apa-consent-button-accept" class="apa-consent-reset apa-consent-button">
+                            accept
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="apa-consent-reset apa-consent-bgColorWhite apa-consent-boxShadow apa-consent-bannerButtonOFF">
+                    <div class="apa-consent-reset apa-consent-bannerButtonOFFicon1 apa-consent-bgColor"></div>
+                    <div class="apa-consent-reset apa-consent-bannerButtonOFFicon2 apa-consent-bgColor"></div>
+                </div>
+
+            </div>
+
+            <div class="apa-consent-reset apa-consent-dialogWrapper testOFF">
+                <div class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-dialog">
+                    <div class="apa-consent-reset apa-consent-mobileScroller">
+
+                        <div class="apa-consent-reset apa-consent-mobileClose"></div>
+
+                        <div class="apa-consent-reset apa-consent-dialogInnerWidth apa-consent-dialogHeader">
+                            <h3 class="apa-consent-reset apa-consent-H3">
+                                Cookie Preferences
+                            </h3>
+                            <p class="apa-consent-reset apa-consent-P">
+                                Choose if this website is only allowed to use functional cookies and/or marketing cookies.
+                            </p>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-dialogBodyWrapper">
+                            <div class="apa-consent-reset apa-consent-dialogInnerWidth apa-consent-dialogBody">
+                                <ul class="apa-consent-reset apa-consent-items">
+
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-dialogInnerWidth apa-consent-dialogSubmit">
+                            <button id="apa-constent-button-save-settings" class="apa-consent-reset apa-consent-button apa-consent-boxShadow">
+                                save & close
+                            </button>
+                        </div>
+
+                        <div class="apa-consent-reset apa-consent-bgColorWhite apa-consent-boxShadow apa-consent-dialogButtonOFF">
+                            <div class="apa-consent-reset apa-consent-dialogButtonOFFicon1"></div>
+                            <div class="apa-consent-reset apa-consent-dialogButtonOFFicon2 apa-consent-bgColor"></div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+   <div  id="bannerButtonOpen" class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-bannerButtonON">
+            <div class="apa-consent-reset apa-consent-bannerButtonONicon1 apa-consent-bgColorWhite"></div>
+            <div class="apa-consent-reset apa-consent-bannerButtonONicon2 apa-consent-bgColorWhite"></div>
+        </div>
+
+        <div class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-dialogButtonON testOFF">
+            <div class="apa-consent-reset apa-consent-dialogButtonONicon1 apa-consent-bgColorWhite"></div>
+            <div class="apa-consent-reset apa-consent-dialogButtonONicon2 apa-consent-bgColorWhite"></div>
+        </div>
+
+
+     
+
+        
+
+            
+
+    <ul style="display:none">
+        <li id="prototypeAppEntry" class="apa-consent-reset apa-consent-item">
+            <div class="apa-consent-reset apa-consent-itemSwitch">
+                <span class="apa-consent-reset apa-consent-boxShadow"></span>
+            </div>
+            <div class="apa-consent-reset apa-consent-itemTitle">
+
+            </div>
+            <div class="apa-consent-reset apa-consent-itemText">
+
+            </div>
+            <div class="apa-consent-reset apa-consent-itemSubItems">
+                <ul class="apa-consent-reset apa-consent-cookie-items">
+                    <li id="prototypeAppEntryCookieItem" style="display:none" class="apa-consent-reset apa-consent-itemSubItem">
+                        <div class="apa-consent-reset apa-consent-subItemTitle">
+                            <div class="apa-consent-reset apa-consent-subItemSwitch"></div>
+                            <span></span>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-subItemText">
+                            <p class="apa-consent-reset apa-consent-P"></p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+        <li id="prototypeAppEntryProtected" class="apa-consent-reset apa-consent-item">
+            <div class="apa-consent-reset apa-consent-itemSwitch">
+                <span class=" apa-consent-reset apa-consent-boxShadow"></span>
+            </div>
+            <div class="apa-consent-reset apa-consent-itemTitle apa-consent-itemTitleSwitch">
+            </div>
+            <div class="apa-consent-reset apa-consent-itemText">
+
+            </div>
+            <div class="apa-consent-reset apa-consent-itemSubItems">
+                <ul class="apa-consent-reset apa-consent-cookie-items">
+
+                    <li id="prototypeAppEntryProtectedCookieItem" style="display: none;" class="apa-consent-reset apa-consent-itemSubItem">
+                        <div class="apa-consent-reset apa-consent-subItemTitle">
+                            <div class="apa-consent-reset apa-consent-subItemSwitch"></div>
+                            <span></span>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-subItemText">
+                            <p class="apa-consent-reset apa-consent-P"></p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+    </ul>
+
+
+
+    <script>
+    window.GCM.apps.whenAllowed('google', function () {
+        (function (i, s, o, g, r, a, m) {
+            i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+                (i[r].q = i[r].q || []).push(arguments)
+            }, i[r].l = 1 * new Date(); a = s.createElement(o),
+                m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+        ga('create', 'UA-69994739-1', 'auto');
+        ga('send', 'pageview');
+    });
+</script>
+    
+    <script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "Organization",
+        "name": "Gentics Mesh",
+        "url": "https://getmesh.io",
+        "logo": "https://getmesh.io/assets/gentics-mesh-logo.png",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Laimgrubengasse 10",
+            "addressRegion": "Vienna",
+            "postalCode": "1060",
+            "addressCountry": "Austria"
+        },
+        "contactPoint": {
+            "@type": "ContactPoint",
+            "contactType": "customer support",
+            "telephone": "+43-1-7109904-300",
+            "email": "support@gentics.com"
+        },
+        "sameAs": [
+            "https://twitter.com/genticsmesh",
+            "https://github.com/gentics/mesh",
+            "https://stackoverflow.com/questions/tagged/genticsmesh"
+        ]
+    }
+</script>
+</body>
+
+</html>

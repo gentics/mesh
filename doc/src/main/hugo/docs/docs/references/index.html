@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link rel="dns-prefetch" href="//oss.maxcdn.com" />
+<link rel="dns-prefetch" href="//ajax.googleapis.com" />
+
+<title>References</title>
+<meta name="description" content="">
+<meta name="author" content="">
+<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="References" />
+<meta name="twitter:description" content="" />
+<meta name="twitter:image:src" content="https://getmesh.io/assets/gentics-card.png" />
+
+<meta property="og:title" content="References">
+<meta property="og:url" content="https://getmesh.io/docs/references/">
+<meta property="og:description" content="">
+<meta property="og:image" content="https://getmesh.io/assets/gentics-card.png">
+<link rel="icon" href="../../favicon.ico">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+<link rel="shortcut icon" href="../../assets/g_logo_small.png" type="image/png" />
+<link href="../../styles/docs.css" media="screen" rel="stylesheet">
+
+
+<link href="https://fonts.googleapis.com/css?family=Roboto:300,400" rel="stylesheet">
+<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN"
+    crossorigin="anonymous">
+<script src="../../js/GCM.min.js"></script>
+<script>
+    window.GCM.init('/js/GCM-config.json', 'en', 1, true);
+</script>
+
+<link href="https://fonts.googleapis.com/css?family=Roboto:300,400" rel="stylesheet">
+
+</head>
+
+<body class="body-navbar-">
+    <nav class="navbar navbar-default navbar--top">
+    <div class="container-fluid">
+        
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1"
+                aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="../../">
+                <img class="logo" src="../../assets/gentics-mesh-logo.png" alt="Gentics Logo" />
+            </a>
+        </div>
+
+        
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav"> 
+                <li>
+                    <a href="../../features">Features</a>
+                </li>
+                <li>
+                    <a href="../../docs">Documentation</a>
+                </li>
+                <li>
+                    <a href="../../demo">Demo</a>
+                </li>
+                <li>
+                    <a href="../../services">Services</a>
+                </li>
+                <li>
+                    <a href="../../training">Trainings</a>
+                </li>
+                <li>
+                    <a href="../../premium-features">Premium Features</a>
+                </li>
+                
+                <li>
+                    <a class="btn btn-primary btn-download" href="../../download">Download</a>
+                </li>
+            </ul>
+        </div>
+        
+    </div>
+    
+</nav>
+
+
+    
+<div class="topsection-wrapper">
+    <div class="topsection container">
+        <div class="row">
+            <div class="col-md-12">
+                <h1>References</h1>
+            </div>
+        </div>
+    </div>
+</div>
+ 
+  <div class="container docs-content">
+    <div class="row">
+      <div class="col-sm-12 col-md-push-9 col-md-3 hidden-xs hidden-sm">
+        <div id="sidebar" data-spy="affix">
+            
+        </div>
+      </div>
+      <div class="col-sm-12 col-md-pull-3 col-md-9">
+        <div class="toc hidden-md hidden-lg">
+          <h2>References</h2>
+          
+        </div>
+        <div id="toc" class="toc">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_rest_api">REST API</a>
+<ul class="sectlevel2">
+<li><a href="#_query_parameters">Query Parameters</a></li>
+<li><a href="#_examples">Examples</a></li>
+</ul>
+</li>
+<li><a href="#_http">HTTP</a>
+<ul class="sectlevel2">
+<li><a href="#_encoding">Encoding</a></li>
+<li><a href="#_headers">Headers</a></li>
+<li><a href="#_cors">CORS</a></li>
+<li><a href="#_etag_handling">ETag Handling</a></li>
+</ul>
+</li>
+<li><a href="#_https">HTTPs</a>
+<ul class="sectlevel2">
+<li><a href="#_ports">Ports</a></li>
+<li><a href="#_certificates">Certificates</a></li>
+<li><a href="#_client_certificate">Client Certificate</a></li>
+</ul>
+</li>
+<li><a href="#_api_tools">API Tools</a>
+<ul class="sectlevel2">
+<li><a href="#_insomnia">Insomnia</a></li>
+<li><a href="#_postman">Postman</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="sect1">
+<h2 id="_rest_api">REST API</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The <a href="../../docs/api">Gentics Mesh REST API</a> provides endpoints enabling you to invoke CRUD operations on just ANY Gentics Mesh element.
+There are many things you can do with the REST API. To name a few:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Obviously you can create, update &amp; fetch multilingual content items as well as tag them.</p>
+</li>
+<li>
+<p>But you can also define the schemas, i.e. the content types of your project.</p>
+</li>
+<li>
+<p>You can do file upload and image manipulation.</p>
+</li>
+<li>
+<p>WebRoot Paths for fetching content by path as well as automatic link resolving greatly simplify the integration with any routing framework.</p>
+</li>
+<li>
+<p>Fetching dynamic navigation menus and breadcrumbs based on the content structure will make your editors happy.</p>
+</li>
+<li>
+<p>With Elasticsearch under the hood you can search your content.</p>
+</li>
+<li>
+<p>You can manage your users and their permissions on content elements.</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+All REST API responses are available in JSON, only, except for binary data.
+</td>
+</tr>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_query_parameters">Query Parameters</h3>
+<div class="paragraph">
+<p>The REST API end points can be used in combination with a set of query parameters, all of which are documented for the specific end points in the <a href="../../docs/api">Gentics Mesh REST API</a> reference. Following, we provide an overview of the most common query parameters.</p>
+</div>
+<div class="sect3">
+<h4 id="_paging_parameters">Paging Parameters</h4>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 10%;">
+<col style="width: 20%;">
+<col style="width: 10%;">
+<col style="width: 60%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Mandatory</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">order</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">string  (default: UNSORTED)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Field order (ASC/DESC/UNSORTED) to sort the result by.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">page</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">number  (default: 1)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Number of page to be loaded.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">perPage</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">number</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Number of elements per page.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">sortBy</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">string</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Field name to sort the result by.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Paging is not applied by default. It is advised to include the <code>perPage</code> query parameter whenever possible to reduce the response size.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_versioning_parameters">Versioning Parameters</h4>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 10%;">
+<col style="width: 20%;">
+<col style="width: 10%;">
+<col style="width: 60%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Mandatory</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">branch</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">string</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Specifies the branch to be used for loading data. The latest project branch will be used if this parameter is omitted.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">version</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">string  (default: draft)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Specifies the version to be loaded. Can either be published/draft or version number. e.g.: <em>0.1</em>, <em>1.0</em>, <em>draft</em>, <em>published</em>.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="sect4">
+<h5 id="_node_parameters">Node Parameters</h5>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 10%;">
+<col style="width: 20%;">
+<col style="width: 10%;">
+<col style="width: 60%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Mandatory</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">lang</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">string</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ISO 639-1 language tag of the language which should be loaded. Fallback handling can be applied by specifying multiple languages in a comma-separated list. The first matching language will be returned.  If omitted or the requested language is not available then the <em>defaultLanguage</em> as configured in <em>mesh.yml</em> will be returned.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">resolveLinks</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">string</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The resolve links parameter can be set to either <em>short</em>, <em>medium</em> or <em>full</em>. Stored mesh links will automatically be resolved and replaced by the resolved webroot link. With the parameter set the <em>path</em> property as well as the <em>languagesPath</em> property (for available language variants) will be included in the response. Gentics Mesh links in any HTML-typed field will automatically be resolved and replaced by the resolved WebRoot path. No resolving occurs if no link has been specified.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect4">
+<h5 id="_role_permission_parameters">Role Permission Parameters</h5>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 10%;">
+<col style="width: 20%;">
+<col style="width: 10%;">
+<col style="width: 60%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Mandatory</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">role</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">string</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The <em>role</em> query parameter take a UUID of a role and may be used to add permission information to the response via the <em>rolePerm</em> property which lists the permissions for the specified role on the element.
+This may be useful when you are logged in as admin but you want to retrieve the editor role permissions on a given node.
+Endpoint: <strong>/api/v2/:projectName/nodes?role&#x3D;:roleUuid</strong></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_examples">Examples</h3>
+<div class="paragraph">
+<p>We have set up a Gentics Mesh instance for demo purposes, that you can play with.</p>
+</div>
+<div class="paragraph">
+<p><strong>Let&#8217;s see what&#8217;s inside&#8230;&#8203;</strong></p>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<div class="title">List all projects. Well, it&#8217;s just our demo project.</div>
+<a href="https://demo.getmesh.io/api/v2/projects" class="bare">https://demo.getmesh.io/api/v2/projects</a>
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<div class="title">Want to fetch all content items including media? With pretty URLs? Here you go</div>
+<a href="https://demo.getmesh.io/api/v2/demo/nodes/?resolveLinks=short" class="bare">https://demo.getmesh.io/api/v2/demo/nodes/?resolveLinks=short</a>
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<div class="title">OK, let&#8217;s load a single content item.</div>
+<a href="https://demo.getmesh.io/api/v2/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0" class="bare">https://demo.getmesh.io/api/v2/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0</a>
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<div class="title">And now forget about UUIDs and do it with its corresponding WebRoot path</div>
+<a href="https://demo.getmesh.io/api/v2/demo/webroot/automobiles/ford-gt" class="bare">https://demo.getmesh.io/api/v2/demo/webroot/automobiles/ford-gt</a>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>That&#8217;s easy. Well, what about images?</p>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<div class="title">That&#8217;s the image node</div>
+<a href="https://demo.getmesh.io/api/v2/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6" class="bare">https://demo.getmesh.io/api/v2/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6</a>
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<div class="title">And that&#8217;s the actual image</div>
+<a href="https://demo.getmesh.io/api/v2/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image" class="bare">https://demo.getmesh.io/api/v2/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image</a>
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<div class="title">Let&#8217;s do some resizing</div>
+<a href="https://demo.getmesh.io/api/v2/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?width=400" class="bare">https://demo.getmesh.io/api/v2/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?width=400</a>
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<div class="title">And now again with a readable WebRoot path</div>
+<a href="https://demo.getmesh.io/api/v2/demo/webroot/images/ford-gt.jpg?width=400" class="bare">https://demo.getmesh.io/api/v2/demo/webroot/images/ford-gt.jpg?width=400</a>
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+The <a href="https://insomnia.rest/">Insomnia</a> REST client can be used to build and invoke requests from your browser to Gentics Mesh.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_http">HTTP</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_encoding">Encoding</h3>
+<div class="paragraph">
+<p>Gentics Mesh expects and returns UTF-8 encoded data. Sending data in any other encoding format will result in encoding issues.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_headers">Headers</h3>
+<div class="paragraph">
+<p>It is important to set the <code><code>Content-Type: application/json</code></code> when sending JSON data and to also set the <code><code>Accept</code></code> header in order to signal Gentics Mesh that your client is accepting JSON.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-bash" data-lang="bash">Content-Type: application/json
+Accept: application/json</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>A request which is not well formatted may fail. Gentics Mesh will do its best to identify the issue and return a meaningful error response in those cases.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_cors">CORS</h3>
+<div class="paragraph">
+<p>The Cross-Origin Resource Sharing mechanism enables Gentics Mesh to configure cross-domain access controls.</p>
+</div>
+<div class="paragraph">
+<p>You can read up on this topic on the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS">MDN article</a>.</p>
+</div>
+<div class="paragraph">
+<p>The CORS header handling can be configured using the <code>httpServerOptions.corsAllowedOriginPattern</code>, <code>httpServerOptions.corsAllowCredentials</code> and <code>httpServerOptions.enableCors</code> configuration settings.</p>
+</div>
+<div class="sect3">
+<h4 id="_multi_site_example">Multi Site Example</h4>
+<div class="paragraph">
+<p>The <code>corsAllowedOriginPattern</code> setting accepts a regular expression pattern. It is thus possible to allow multiple origins.</p>
+</div>
+<div class="paragraph">
+<p>Example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code>httpServer:
+  corsAllowedOriginPattern: "http://mydomain:5000|http://mydomain2:5000"
+  corsAllowCredentials: true
+  enableCors: true</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_etag_handling">ETag Handling</h3>
+<div class="paragraph">
+<p>Most endpoints of the Gentics Mesh REST API will return an ETag header within the response.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code>ETag:W/"1125-7cc5c6fb"</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>These headers values can be used to implement or utilize existing web caching solutions.</p>
+</div>
+<div class="paragraph">
+<p>An ETag validation occurs once the ETag is passed along a http request.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code>If-None-Match:W/"1125-7cc5c6fb"</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Gentics Mesh will compare the provided ETag with the current state of the content and return a 304 response if the ETag is the same and the response did not change. Updating the requested resource will alter its ETag and thus another request would return the response which includes the current ETag.</p>
+</div>
+<div class="paragraph">
+<p>ETag Handling can be disabled for each request via the <code>?etag=false</code> query parameter. This will increase performance when ETag headers are not needed.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_https">HTTPs</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Server side SSL support can be enabled via the <code>server.ssl</code> flag or the <code>MESH_HTTP_SSL_ENABLE</code> environment variable. SSL support is disabled by default.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+In most cases a reverse proxy like <a href="https://containo.us/traefik/">Traefik</a> which handles HTTPs is a more viable solution compared to handle HTTPs by Gentics Mesh Server.
+</td>
+</tr>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_ports">Ports</h3>
+<div class="paragraph">
+<p>The HTTPs server port can be configured via <code>server.sslPort</code> or environment variable <code>MESH_HTTPS_PORT</code>. The default is port <strong>8443</strong>.</p>
+</div>
+<div class="paragraph">
+<p>The HTTP server port uses the <code>server.port</code> setting with default <strong>8080</strong>.</p>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+You can also turn off the HTTP server via the <code>server.http</code> setting.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_certificates">Certificates</h3>
+<div class="paragraph">
+<p>A server certificate and server key in PEM format has to be provided.
+The <code>server.certPath</code> and <code>server.keyPath</code> settings can be used to set the path to the generated files.</p>
+</div>
+<div class="paragraph">
+<p>For testing purposes you may want to create a self signed certificate like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-bash" data-lang="bash">openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 90 -nodes</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_client_certificate">Client Certificate</h3>
+<div class="paragraph">
+<p>Gentics Mesh also support client certificate handling. The server can be configured to reject, request or require client certificates.</p>
+</div>
+<div class="paragraph">
+<p>Client certificates are a good option to ensure that the SSL connection between client and server is trusted by both parties.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Please note that client certificates will currently not provide a way to handle authentication. The send request still needs to provide an API Key to be authenticated and mapped to a user.
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+All certs / keys must be in PEM format.
+</td>
+</tr>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_client_authentication_modes">Client Authentication Modes</h4>
+<div class="paragraph">
+<p>The <code>server.clientAuthMode</code> (Env: <code>MESH_HTTP_SSL_CLIENT_AUTH_MODE</code>) setting can be used to control the client authenticaton mode.</p>
+</div>
+<div class="paragraph">
+<p>The Gentics Mesh HTTPs server supports three client authentication modes:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>none</code> - Reject client certificates during SSL handshake (<strong>default</strong>)</p>
+</li>
+<li>
+<p><code>request</code> - Request client certificate. A client certificate will be used when provided. The request will also work when omitting the client cert.</p>
+</li>
+<li>
+<p><code>require</code> - Requiring a client certificate. The ssl handshake will fail when no client certificate was provided.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The <code>server.trustedCertPaths</code> (Env: <code>MESH_HTTP_SSL_TRUSTED_CERTS</code>) setting can be used to set a list of certificates which will be trusted by the server.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_api_tools">API Tools</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Gentics Mesh provides the <code>/raml</code> endpoint to easily extract the API documentation into third party tools.</p>
+</div>
+<div class="sect2">
+<h3 id="_insomnia">Insomnia</h3>
+<div class="paragraph">
+<p>The <a href="https://insomnia.rest/">insomnia REST and GraphQL client</a> can be used to quickly and efficiently interact with the API.</p>
+</div>
+<div class="paragraph">
+<p>You can download and import <a href="../mesh-insomnia-v1.json">mesh-insomnia-v1.json</a> in your Insomnia REST workspace to get a pre-defined set of useful requests and examples.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_postman">Postman</h3>
+<div class="paragraph">
+<p>Here is a quick guide to import the API into <a href="https://www.getpostman.com/">Postman</a>:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Once the Postman app is started go to "Import" &gt; "Import from Link"</p>
+</li>
+<li>
+<p>Input the URL to the <code>/raml</code> endpoint of your Mesh instance.</p>
+</li>
+<li>
+<p>You can also try <a href="https://demo.getmesh.io/api/v2/raml" class="bare">https://demo.getmesh.io/api/v2/raml</a> to get it form our demo</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+Make use of the params and workspace parameters to maximize your productiviy. Check out the <a href="https://www.getpostman.com/docs/v6/postman/sending_api_requests/requests#url">Postman documentation about URL setup</a> for more.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+
+        
+
+
+
+        
+      </div>
+    </div>
+  </div>
+
+
+    <div class="footer">
+    <a name="footer"></a>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <h2>Keep in touch</h2>
+                <p>Find us on Twitter
+                    <a href="https://twitter.com/genticsmesh" target="_blank" rel="noopener noreferrer">@genticsmesh</a>
+                </p>
+                <p>Get help on
+                    <a href="https://stackoverflow.com/questions/tagged/gentics-mesh" target="_blank" rel="noopener noreferrer">stackoverflow</a>
+                </p>
+                <p>Ask us anything on
+                    <a href="https://gitter.im/gentics/mesh" target="_blank" rel="noopener noreferrer">Gitter</a>
+                </p>
+                <p>Dive into the code at
+                    <a href="https://github.com/gentics/mesh" target="_blank" rel="noopener noreferrer">GitHub</a>
+                </p>
+            </div>
+            <div class="col-md-6">
+                <h2>Legal</h2>
+                <p>Licensed under
+                    <a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank" rel="noopener noreferrer">Apache License v2.0</a> |
+                    <a href="../../imprint">Imprint</a>
+                </p>
+            </div>
+        </div>
+        <div class="row ending center">
+            <p class="padding-top-25">Made in
+                <a href="https://www.mercer.com/newsroom/2018-quality-of-living-survey.html" target="_blank" rel="noopener noreferrer">Vienna - the most livable city in the world</a> 
+                <img src="../../assets/noun_Wine_1032235.svg" height="24">
+            </p>
+        </div>
+    </div>
+
+       
+
+        <div class="apa-consent-reset apa-consent-wrapper">
+
+
+            <div class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-banner testOFF">
+
+                <ul class="apa-consent-reset apa-consent-bannerContent">
+                    <li class="apa-consent-reset">
+                        <div class="apa-consent-reset apa-consent-bannerText">
+                        </div>
+                    </li>
+                    <li class="apa-consent-reset apa-consent-buttonWrapperDetails">
+                        <button class="apa-consent-reset apa-consent-button">
+                            cookie-preferences
+                        </button>
+                    </li>
+                    <li class="apa-consent-reset apa-consent-buttonWrapperAccept">
+                        <button id="apa-consent-button-accept" class="apa-consent-reset apa-consent-button">
+                            accept
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="apa-consent-reset apa-consent-bgColorWhite apa-consent-boxShadow apa-consent-bannerButtonOFF">
+                    <div class="apa-consent-reset apa-consent-bannerButtonOFFicon1 apa-consent-bgColor"></div>
+                    <div class="apa-consent-reset apa-consent-bannerButtonOFFicon2 apa-consent-bgColor"></div>
+                </div>
+
+            </div>
+
+            <div class="apa-consent-reset apa-consent-dialogWrapper testOFF">
+                <div class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-dialog">
+                    <div class="apa-consent-reset apa-consent-mobileScroller">
+
+                        <div class="apa-consent-reset apa-consent-mobileClose"></div>
+
+                        <div class="apa-consent-reset apa-consent-dialogInnerWidth apa-consent-dialogHeader">
+                            <h3 class="apa-consent-reset apa-consent-H3">
+                                Cookie Preferences
+                            </h3>
+                            <p class="apa-consent-reset apa-consent-P">
+                                Choose if this website is only allowed to use functional cookies and/or marketing cookies.
+                            </p>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-dialogBodyWrapper">
+                            <div class="apa-consent-reset apa-consent-dialogInnerWidth apa-consent-dialogBody">
+                                <ul class="apa-consent-reset apa-consent-items">
+
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-dialogInnerWidth apa-consent-dialogSubmit">
+                            <button id="apa-constent-button-save-settings" class="apa-consent-reset apa-consent-button apa-consent-boxShadow">
+                                save & close
+                            </button>
+                        </div>
+
+                        <div class="apa-consent-reset apa-consent-bgColorWhite apa-consent-boxShadow apa-consent-dialogButtonOFF">
+                            <div class="apa-consent-reset apa-consent-dialogButtonOFFicon1"></div>
+                            <div class="apa-consent-reset apa-consent-dialogButtonOFFicon2 apa-consent-bgColor"></div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+   <div  id="bannerButtonOpen" class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-bannerButtonON">
+            <div class="apa-consent-reset apa-consent-bannerButtonONicon1 apa-consent-bgColorWhite"></div>
+            <div class="apa-consent-reset apa-consent-bannerButtonONicon2 apa-consent-bgColorWhite"></div>
+        </div>
+
+        <div class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-dialogButtonON testOFF">
+            <div class="apa-consent-reset apa-consent-dialogButtonONicon1 apa-consent-bgColorWhite"></div>
+            <div class="apa-consent-reset apa-consent-dialogButtonONicon2 apa-consent-bgColorWhite"></div>
+        </div>
+
+
+     
+
+        
+
+            
+
+    <ul style="display:none">
+        <li id="prototypeAppEntry" class="apa-consent-reset apa-consent-item">
+            <div class="apa-consent-reset apa-consent-itemSwitch">
+                <span class="apa-consent-reset apa-consent-boxShadow"></span>
+            </div>
+            <div class="apa-consent-reset apa-consent-itemTitle">
+
+            </div>
+            <div class="apa-consent-reset apa-consent-itemText">
+
+            </div>
+            <div class="apa-consent-reset apa-consent-itemSubItems">
+                <ul class="apa-consent-reset apa-consent-cookie-items">
+                    <li id="prototypeAppEntryCookieItem" style="display:none" class="apa-consent-reset apa-consent-itemSubItem">
+                        <div class="apa-consent-reset apa-consent-subItemTitle">
+                            <div class="apa-consent-reset apa-consent-subItemSwitch"></div>
+                            <span></span>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-subItemText">
+                            <p class="apa-consent-reset apa-consent-P"></p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+        <li id="prototypeAppEntryProtected" class="apa-consent-reset apa-consent-item">
+            <div class="apa-consent-reset apa-consent-itemSwitch">
+                <span class=" apa-consent-reset apa-consent-boxShadow"></span>
+            </div>
+            <div class="apa-consent-reset apa-consent-itemTitle apa-consent-itemTitleSwitch">
+            </div>
+            <div class="apa-consent-reset apa-consent-itemText">
+
+            </div>
+            <div class="apa-consent-reset apa-consent-itemSubItems">
+                <ul class="apa-consent-reset apa-consent-cookie-items">
+
+                    <li id="prototypeAppEntryProtectedCookieItem" style="display: none;" class="apa-consent-reset apa-consent-itemSubItem">
+                        <div class="apa-consent-reset apa-consent-subItemTitle">
+                            <div class="apa-consent-reset apa-consent-subItemSwitch"></div>
+                            <span></span>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-subItemText">
+                            <p class="apa-consent-reset apa-consent-P"></p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+    </ul>
+
+
+</div>
+
+    
+    <script
+  src="https://code.jquery.com/jquery-1.12.4.min.js"
+  integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="
+  crossorigin="anonymous"></script>
+
+<script src="../../js/bootstrap.min.js"></script>
+
+<script
+  src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js"
+  crossorigin="anonymous"></script>
+
+<script src="../../js/site.js"></script>
+
+<script 
+  src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.2.0/highlight.min.js"
+  integrity="sha256-sHRX2PXOLRG+LQtTpvREFsWhMVu2AJnmzxpmogmddtM="
+  crossorigin="anonymous"></script>
+
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script src="../../js/docs.js"></script>
+<script src="../../js/sidebar.js"></script>
+<script src="../../js/GCM-banner.js"></script>
+<script>
+  var hasExample = jQuery(".graphql-example").length > 0;
+  hasExample && document.write('<link rel="stylesheet" href="../../graphiql/graphiql.css" /><script src="../../graphiql/vendor/fetch.min.js">\x3C/script><script src="../../graphiql/vendor/react-16.8.6.min.js">\x3C/script><script src="../../graphiql/vendor/react-dom-16.8.6.min.js">\x3C/script><script src="../../graphiql/graphiql.js">\x3C/script><script src="../../graphiql/embedded.js">\x3C/script>');
+</script>
+
+
+       
+
+        <div class="apa-consent-reset apa-consent-wrapper">
+
+
+            <div class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-banner testOFF">
+
+                <ul class="apa-consent-reset apa-consent-bannerContent">
+                    <li class="apa-consent-reset">
+                        <div class="apa-consent-reset apa-consent-bannerText">
+                        </div>
+                    </li>
+                    <li class="apa-consent-reset apa-consent-buttonWrapperDetails">
+                        <button class="apa-consent-reset apa-consent-button">
+                            cookie-preferences
+                        </button>
+                    </li>
+                    <li class="apa-consent-reset apa-consent-buttonWrapperAccept">
+                        <button id="apa-consent-button-accept" class="apa-consent-reset apa-consent-button">
+                            accept
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="apa-consent-reset apa-consent-bgColorWhite apa-consent-boxShadow apa-consent-bannerButtonOFF">
+                    <div class="apa-consent-reset apa-consent-bannerButtonOFFicon1 apa-consent-bgColor"></div>
+                    <div class="apa-consent-reset apa-consent-bannerButtonOFFicon2 apa-consent-bgColor"></div>
+                </div>
+
+            </div>
+
+            <div class="apa-consent-reset apa-consent-dialogWrapper testOFF">
+                <div class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-dialog">
+                    <div class="apa-consent-reset apa-consent-mobileScroller">
+
+                        <div class="apa-consent-reset apa-consent-mobileClose"></div>
+
+                        <div class="apa-consent-reset apa-consent-dialogInnerWidth apa-consent-dialogHeader">
+                            <h3 class="apa-consent-reset apa-consent-H3">
+                                Cookie Preferences
+                            </h3>
+                            <p class="apa-consent-reset apa-consent-P">
+                                Choose if this website is only allowed to use functional cookies and/or marketing cookies.
+                            </p>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-dialogBodyWrapper">
+                            <div class="apa-consent-reset apa-consent-dialogInnerWidth apa-consent-dialogBody">
+                                <ul class="apa-consent-reset apa-consent-items">
+
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-dialogInnerWidth apa-consent-dialogSubmit">
+                            <button id="apa-constent-button-save-settings" class="apa-consent-reset apa-consent-button apa-consent-boxShadow">
+                                save & close
+                            </button>
+                        </div>
+
+                        <div class="apa-consent-reset apa-consent-bgColorWhite apa-consent-boxShadow apa-consent-dialogButtonOFF">
+                            <div class="apa-consent-reset apa-consent-dialogButtonOFFicon1"></div>
+                            <div class="apa-consent-reset apa-consent-dialogButtonOFFicon2 apa-consent-bgColor"></div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+   <div  id="bannerButtonOpen" class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-bannerButtonON">
+            <div class="apa-consent-reset apa-consent-bannerButtonONicon1 apa-consent-bgColorWhite"></div>
+            <div class="apa-consent-reset apa-consent-bannerButtonONicon2 apa-consent-bgColorWhite"></div>
+        </div>
+
+        <div class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-dialogButtonON testOFF">
+            <div class="apa-consent-reset apa-consent-dialogButtonONicon1 apa-consent-bgColorWhite"></div>
+            <div class="apa-consent-reset apa-consent-dialogButtonONicon2 apa-consent-bgColorWhite"></div>
+        </div>
+
+
+     
+
+        
+
+            
+
+    <ul style="display:none">
+        <li id="prototypeAppEntry" class="apa-consent-reset apa-consent-item">
+            <div class="apa-consent-reset apa-consent-itemSwitch">
+                <span class="apa-consent-reset apa-consent-boxShadow"></span>
+            </div>
+            <div class="apa-consent-reset apa-consent-itemTitle">
+
+            </div>
+            <div class="apa-consent-reset apa-consent-itemText">
+
+            </div>
+            <div class="apa-consent-reset apa-consent-itemSubItems">
+                <ul class="apa-consent-reset apa-consent-cookie-items">
+                    <li id="prototypeAppEntryCookieItem" style="display:none" class="apa-consent-reset apa-consent-itemSubItem">
+                        <div class="apa-consent-reset apa-consent-subItemTitle">
+                            <div class="apa-consent-reset apa-consent-subItemSwitch"></div>
+                            <span></span>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-subItemText">
+                            <p class="apa-consent-reset apa-consent-P"></p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+        <li id="prototypeAppEntryProtected" class="apa-consent-reset apa-consent-item">
+            <div class="apa-consent-reset apa-consent-itemSwitch">
+                <span class=" apa-consent-reset apa-consent-boxShadow"></span>
+            </div>
+            <div class="apa-consent-reset apa-consent-itemTitle apa-consent-itemTitleSwitch">
+            </div>
+            <div class="apa-consent-reset apa-consent-itemText">
+
+            </div>
+            <div class="apa-consent-reset apa-consent-itemSubItems">
+                <ul class="apa-consent-reset apa-consent-cookie-items">
+
+                    <li id="prototypeAppEntryProtectedCookieItem" style="display: none;" class="apa-consent-reset apa-consent-itemSubItem">
+                        <div class="apa-consent-reset apa-consent-subItemTitle">
+                            <div class="apa-consent-reset apa-consent-subItemSwitch"></div>
+                            <span></span>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-subItemText">
+                            <p class="apa-consent-reset apa-consent-P"></p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+    </ul>
+
+
+
+    <script>
+    window.GCM.apps.whenAllowed('google', function () {
+        (function (i, s, o, g, r, a, m) {
+            i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+                (i[r].q = i[r].q || []).push(arguments)
+            }, i[r].l = 1 * new Date(); a = s.createElement(o),
+                m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+        ga('create', 'UA-69994739-1', 'auto');
+        ga('send', 'pageview');
+    });
+</script>
+    
+    <script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "Organization",
+        "name": "Gentics Mesh",
+        "url": "https://getmesh.io",
+        "logo": "https://getmesh.io/assets/gentics-mesh-logo.png",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Laimgrubengasse 10",
+            "addressRegion": "Vienna",
+            "postalCode": "1060",
+            "addressCountry": "Austria"
+        },
+        "contactPoint": {
+            "@type": "ContactPoint",
+            "contactType": "customer support",
+            "telephone": "+43-1-7109904-300",
+            "email": "support@gentics.com"
+        },
+        "sameAs": [
+            "https://twitter.com/genticsmesh",
+            "https://github.com/gentics/mesh",
+            "https://stackoverflow.com/questions/tagged/genticsmesh"
+        ]
+    }
+</script>
+</body>
+
+</html>

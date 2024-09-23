@@ -1,0 +1,30 @@
+[options="header",cols="10%,20%,10%,60%"]
+|======
+
+| Name
+| Type
+| Mandatory
+| Description
+
+
+| order
+| string  (default: UNSORTED) 
+| false
+| Field order (ASC/DESC/UNSORTED) to sort the result by.
+
+| page
+| number  (default: 1) 
+| false
+| Number of page to be loaded.
+
+| perPage
+| number 
+| false
+| Number of elements per page.
+
+| sortBy
+| string 
+| false
+| Field name to sort the result by.
+
+|======

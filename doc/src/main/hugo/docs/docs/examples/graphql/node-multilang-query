@@ -1,0 +1,12 @@
+++++
+<div class="graphql-example" style="height: 19em">
+{
+  node(path: "/yachts/pelorus") {
+    availableLanguages
+    node(lang: "de") {
+      language
+    }
+  }
+}
+</div>
+++++

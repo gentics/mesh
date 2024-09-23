@@ -1,0 +1,31 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:change:impl:SchemaChangesListModel",
+  "properties" : {
+    "changes" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:change:impl:SchemaChangeModel",
+        "properties" : {
+          "uuid" : {
+            "type" : "string",
+            "description" : "Uuid of the change entry"
+          },
+          "operation" : {
+            "type" : "string",
+            "description" : "Type of operation for this change",
+            "enum" : [ "ADDFIELD", "REMOVEFIELD", "CHANGEFIELDTYPE", "UPDATEFIELD", "UPDATESCHEMA", "UPDATEMICROSCHEMA", "EMPTY" ]
+          },
+          "properties" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "object",
+              "id" : "urn:jsonschema:java:lang:Object"
+            }
+          }
+        }
+      }
+    }
+  }
+}

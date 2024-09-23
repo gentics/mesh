@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link rel="dns-prefetch" href="//oss.maxcdn.com" />
+<link rel="dns-prefetch" href="//ajax.googleapis.com" />
+
+<title>Contribution Guide</title>
+<meta name="description" content="">
+<meta name="author" content="">
+<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Contribution Guide" />
+<meta name="twitter:description" content="" />
+<meta name="twitter:image:src" content="https://getmesh.io/assets/gentics-card.png" />
+
+<meta property="og:title" content="Contribution Guide">
+<meta property="og:url" content="https://getmesh.io/docs/contributing/">
+<meta property="og:description" content="">
+<meta property="og:image" content="https://getmesh.io/assets/gentics-card.png">
+<link rel="icon" href="../../favicon.ico">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+<link rel="shortcut icon" href="../../assets/g_logo_small.png" type="image/png" />
+<link href="../../styles/docs.css" media="screen" rel="stylesheet">
+
+
+<link href="https://fonts.googleapis.com/css?family=Roboto:300,400" rel="stylesheet">
+<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN"
+    crossorigin="anonymous">
+<script src="../../js/GCM.min.js"></script>
+<script>
+    window.GCM.init('/js/GCM-config.json', 'en', 1, true);
+</script>
+
+<link href="https://fonts.googleapis.com/css?family=Roboto:300,400" rel="stylesheet">
+
+</head>
+
+<body class="body-navbar-">
+    <nav class="navbar navbar-default navbar--top">
+    <div class="container-fluid">
+        
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1"
+                aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="../../">
+                <img class="logo" src="../../assets/gentics-mesh-logo.png" alt="Gentics Logo" />
+            </a>
+        </div>
+
+        
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav"> 
+                <li>
+                    <a href="../../features">Features</a>
+                </li>
+                <li>
+                    <a href="../../docs">Documentation</a>
+                </li>
+                <li>
+                    <a href="../../demo">Demo</a>
+                </li>
+                <li>
+                    <a href="../../services">Services</a>
+                </li>
+                <li>
+                    <a href="../../training">Trainings</a>
+                </li>
+                <li>
+                    <a href="../../premium-features">Premium Features</a>
+                </li>
+                
+                <li>
+                    <a class="btn btn-primary btn-download" href="../../download">Download</a>
+                </li>
+            </ul>
+        </div>
+        
+    </div>
+    
+</nav>
+
+
+    
+<div class="topsection-wrapper">
+    <div class="topsection container">
+        <div class="row">
+            <div class="col-md-12">
+                <h1>Contribution Guide</h1>
+            </div>
+        </div>
+    </div>
+</div>
+ 
+  <div class="container docs-content">
+    <div class="row">
+      <div class="col-sm-12 col-md-push-9 col-md-3 hidden-xs hidden-sm">
+        <div id="sidebar" data-spy="affix">
+            
+        </div>
+      </div>
+      <div class="col-sm-12 col-md-pull-3 col-md-9">
+        <div class="toc hidden-md hidden-lg">
+          <h2>Contribution Guide</h2>
+          
+        </div>
+        <div id="toc" class="toc">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_contributing">Contributing</a>
+<ul class="sectlevel2">
+<li><a href="#_where_to_start">Where to start</a></li>
+<li><a href="#_contribution_format">Contribution format</a></li>
+<li><a href="#_legal_stuff">Legal stuff</a></li>
+</ul>
+</li>
+<li><a href="#_ide_setup">IDE Setup</a>
+<ul class="sectlevel2">
+<li><a href="#_eclipse">Eclipse</a></li>
+<li><a href="#_intellij">IntelliJ</a></li>
+<li><a href="#_building">Building</a></li>
+</ul>
+</li>
+<li><a href="#_components">Components</a></li>
+<li><a href="#_big_picture">Big Picture</a></li>
+<li><a href="#_rest_api_setup">REST API Setup</a></li>
+<li><a href="#_request_routing">Request Routing</a></li>
+<li><a href="#_request_handling">Request Handling</a></li>
+<li><a href="#_domain_model">Domain Model</a></li>
+<li><a href="#_graph_database_handling">Graph database handling</a></li>
+<li><a href="#_project_structure">Project structure</a></li>
+<li><a href="#_startup_sequence">Startup Sequence</a></li>
+<li><a href="#_elasticsearch_integration">Elasticsearch Integration</a></li>
+<li><a href="#_authentication">Authentication</a></li>
+<li><a href="#_authorization">Authorization</a></li>
+<li><a href="#_error_handling">Error Handling</a></li>
+<li><a href="#_transaction_handling">Transaction Handling</a></li>
+<li><a href="#_pitfalls">Pitfalls</a></li>
+<li><a href="#_testing">Testing</a>
+<ul class="sectlevel2">
+<li><a href="#_assertj">AssertJ</a></li>
+</ul>
+</li>
+<li><a href="#_database_changelog">Database Changelog</a></li>
+<li><a href="#_tldr">TL;DR</a></li>
+<li><a href="#_the_good_the_bad_and_the_ugly">The good the bad and the ugly</a></li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This document is for developers which are interested in contributing to the Gentics Mesh project.
+It aims to provide you with a big picture and starting points to get your bearings within the Gentics Mesh codebase.</p>
+</div>
+<div class="sect1">
+<h2 id="_contributing">Contributing</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_where_to_start">Where to start</h3>
+<div class="paragraph">
+<p>A good source for tasks to contribute to is the <a href="https://github.com/gentics/mesh/issues?q=is%3Aissue+is%3Aopen+label%3A%22quick+win%22">quick wins</a> list.
+These tasks have been labelled to indicate that the implementation is fairly easy.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_contribution_format">Contribution format</h3>
+<div class="paragraph">
+<p>The contribution format is described in the <a href="https://github.com/gentics/mesh/blob/master/.github/CONTRIBUTING.md">CONTRIBUTING.md</a></p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_legal_stuff">Legal stuff</h3>
+<div class="paragraph">
+<p>In order for any contributions to be accepted you <strong>must</strong> sign our <a href="https://cla-assistant.io/gentics/mesh">Contributor License Agreement</a>.</p>
+</div>
+<div class="paragraph">
+<p>The purpose of this agreement is to protect users of this codebase by ensuring that all code is free to use under the stipulations of the Apache2 license.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_ide_setup">IDE Setup</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_eclipse">Eclipse</h3>
+<div class="paragraph">
+<p>Make sure that you use at least Eclipse Neon.</p>
+</div>
+<div class="paragraph">
+<p>Install the following Maven m2e workshop plugins:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>m2e-apt-plugin</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Make sure that your Eclipse Maven APT settings are set to "Automatically configure JDT APT". If you don&#8217;t find this option, you most likely need to install the M2E APT Plugin for eclipse.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Import all Maven modules in your IDE.</p>
+</div>
+<div class="paragraph">
+<p>Please note that this project is using Google Dagger for dependency injection.
+Adding new dependencies or beans may require a fresh build (via Project&#8594;Clean) of the <code>mesh-core</code> and <code>mesh-api</code> modules.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_intellij">IntelliJ</h3>
+<div class="paragraph">
+<p>Import the project and select the <code>pom.xml</code> under the <code>mesh</code> folder.</p>
+</div>
+<div class="paragraph">
+<p>To run the server from IntelliJ:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Create an Application in run configuration.</p>
+</li>
+<li>
+<p>In the <code>Main Class</code> field, put <code>com.gentics.mesh.server.ServerRunner</code>.</p>
+</li>
+<li>
+<p>In the <code>Use classpath of module</code> field, select the <code>mesh-server</code> module.</p>
+</li>
+<li>
+<p>In the <code>Working directory</code> field, choose an empty folder.</p>
+</li>
+<li>
+<p>Build the project by executing the maven command below before starting up mesh.</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+You need to manually set the <code>Working directory</code> in your <code>Run/Debug Configuration</code> to an empty folder if you run the <code>ServerRunner</code> or <code>DemoRunner</code> application. Otherwise Gentics Mesh will not be able to start the embedded Elasticsearch service.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_building">Building</h3>
+<div class="paragraph">
+<p>You can build Gentics Mesh locally using <a href="https://maven.apache.org/">Apache Maven</a>.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Running all test locally is <strong>not</strong> recommended since the execution time is <strong>very high</strong>. Some tests also require a docker environment to run integration components.+
+</td>
+</tr>
+</table>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code>git clone git@github.com:gentics/mesh.git
+cd mesh
+git checkout master
+export JAVA_HOME=&lt;PATH-TO-YOUR-JAVA11&gt;
+mvn clean package -DskipTests -Dskip.unit.tests -Dskip.performance.tests -Dskip.cluster.tests</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The master branch should be used as the branch to be build since the dev branch can be unstable.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_components">Components</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The main components which are used to build Gentics Mesh are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 1. Components</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Component</th>
+<th class="tableblock halign-left valign-top">Usage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="http://vertx.io">Vert.x</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Provides HTTP server, Authentication, Upload handling, Eventbus and request routing.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://orientdb.com/">OrientDB</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Embedded Graph Database</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://github.com/Syncleus/Ferma">Ferma</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OGM which forms an access layer ontop of the Graph Database.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://google.github.io/dagger/">Dagger 2</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Dependency injection library</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://github.com/ReactiveX/RxJava">RxJava2</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Library which is used to composing asynchronous requests/processes.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_big_picture">Big Picture</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Since you are most likely already familiar with the Gentics Mesh <a href="../../docs/api">REST API</a> I assume it is best to start there.</p>
+</div>
+<div class="paragraph">
+<p>We&#8217;ll start on how the REST API is setup and continue how requests are handled.
+After that I will explain how data is being handled by the graph database and how the graph is structured.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_rest_api_setup">REST API Setup</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>All REST API endpoints are provided by the <code>RestAPIVerticle</code> which as the name suggests is a <a href="http://vertx.io/docs/vertx-core/java/#_verticles">Vert.x Verticle</a>.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Verticles are deployment units which are registered by Vert.x and contain application code.
+      Gentics Mesh only uses a few verticles one of which is the RestAPIVerticle.
+      Verticles are <strong>not</strong> used to modularize or extend the REST API.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The <code>RestAPIVerticle</code> will setup the actual Http server which accepts the requests and use <a href="http://vertx.io/docs/vertx-web/java/#_basic_vert_x_web_concepts">Vert.x Routers</a> to process the Http request and direct it to the registered endpoints.</p>
+</div>
+<div class="paragraph">
+<p>The <code>RouterStorage</code> is the main class which manages all the REST API routes. A storage will be assigned to each <code>RestAPIVerticle</code> instance.
+The storage is used organize routes by its purpose and to also make routes re-usable.
+There are for example core routes (e.g. /api/v2/users) and project specific routes (e.g. /api/v2/:projectName/nodes).</p>
+</div>
+<div class="paragraph">
+<p>The <code>RestAPIVerticle</code> pulls Endpoints from various Endpoint classes like <code>UserEndpoint</code>, <code>RoleEndpoint</code>, <code>NodeEndpoint</code>.
+Each of those Endpoint classes will be assigned a dedicated router to which the <code>EndpointRoutes</code> can be registered.
+These in turn handle the actual Http request.</p>
+</div>
+<div class="paragraph">
+<p>How a request is being processed will be described in the next section.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_request_routing">Request Routing</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Lets follow the following request:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code>GET /api/v2/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6</code></pre>
+</div>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>The request is accepted by the <code>HttpServer</code> request handler and directed to the <code>RootRouter</code> (<em>/</em>).</p>
+</li>
+<li>
+<p>This router which is part of the <code>RouterStorage</code> will direct the request to the <code>APIRouter</code> (<em>/api/v2</em>).</p>
+</li>
+<li>
+<p>Next the request is routed to the <code>ProjectRouter</code> (<em>/api/v2/demo/)</em> During this step the reference to the <code>demo</code> project is loaded and added to the <code>RoutingContext</code> for later use.</p>
+</li>
+<li>
+<p>After that to the <code>Router</code> which was assigned to the <code>NodeEndpoint</code> instance (<em>/api/v2/demo/nodes/</em>).</p>
+</li>
+<li>
+<p>Finally the request is being directed to the <code>Route</code> which matches the remaining path and Http method. (GET <em>/api/v2/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6</em>)</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_request_handling">Request Handling</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Each class for REST Endpoint  (e.g. NodeEndpoint) also usually has a dedicated CRUDHandler which provides the actual code which processes the request.
+For the NodeEndpoint this would be the <code>NodeCrudHandler</code>. The <code>NodeCrudHandler#handleRead</code> method accepts the request and processes it.
+The CRUDHandler loads the graph vertex which is used to aggregate the elements.</p>
+</div>
+<div class="paragraph">
+<p>In order to load nodes the <code>RootVertex</code> would be the <code>NodeRoot</code> which is connected to the <code>Project</code> vertex which has been loaded before within the ProjectRouter.</p>
+</div>
+<div class="paragraph">
+<p>Next the selected element will be:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>loaded using the <code>NodeRoot</code> and the given <code>uuid</code></p>
+</li>
+<li>
+<p>checked against needed permissions</p>
+</li>
+<li>
+<p>transformed to JSON via the <code>Node#transformToRestSync</code> method</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_domain_model">Domain Model</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>We already hinted that Projects and Nodes are vertices. In fact all elements in Gentics Mesh are models within a Graph Model.
+The graph has a root element which is used as an entry point for Gentics Mesh.
+During startup this vertex will be loaded and all further interacts will use this vertex to load more and more of the graph.
+References to some of these vertices will be kept in memory to speed things up.</p>
+</div>
+<div class="paragraph">
+<p>The graph database structure is documented within this interactive <a href="https://portal.graphgist.org/graph_gists/6c8712b8-d741-45f9-beb4-84ebca278bfa">graph gist</a>.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+The gist may be a bit outdated in some places but the general structure is still valid.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_graph_database_handling">Graph database handling</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Gentics Mesh uses OrientDB to store its data in a graph. Instead of connecting to a remote database the database is directly embedded within Gentics Mesh.</p>
+</div>
+<div class="paragraph">
+<p>This in turn provides many benefits:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Direct access to indices</p>
+</li>
+<li>
+<p>No connection overhead</p>
+</li>
+<li>
+<p>Ease of use (No dedicated DB setup needed)</p>
+</li>
+<li>
+<p>Low level control over Transactions</p>
+</li>
+<li>
+<p>Native database speed</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Downside should not be left unmentioned:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Garbage collector pauses due to the DB may also affect the application server</p>
+</li>
+<li>
+<p>Each Gentics Mesh instance brings its own dedicated db.
+There is currently no way to use a central larger DB for multiple Gentics Mesh instances.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The low level API is provided via a driver implementation of the <a href="http://tinkerpop.apache.org/">Apache TinkerPop</a> graph framework.
+This provides the classes for Vertex, Element, Edge. Gentics Mesh is not directly using these elements.
+Instead <a href="https://github.com/Syncleus/Ferma">Ferma</a> is being used to provide a layer on top of the OrientDB Apache Tinkerpop API.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Ferma is an object graph mapper which makes it possible to create dedicated Java classes for specific types of vertices and edges called <code>Frames</code>.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Gentics Mesh contains various Ferma frames for all kinds of types. There are for example:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 2. Examples</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">MeshRootImpl</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Root of the whole graph</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">UserImpl</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Represents a user</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">NodeRootImpl</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Represents a node root which aggregates all nodes</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">NodeImpl</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Represents a node</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ProjectImpl</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Represents a project</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">TagImpl</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Represents a tag</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Accessing these vertices always requires an active transaction.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_project_structure">Project structure</h2>
+<div class="sectionbody">
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 3. Modules</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">mesh-api</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Contains API classes like Configuration POJOs and constants.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">mesh-core</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Contains the Graph model and the main codebase</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">mesh-demo</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Contains the Gentics Demo which can be run via the <code>DemoRunner</code> main class.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">mesh-rest-client</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Contains the Vert.x based REST client.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">mesh-rest-model</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Contains the POJOs for the REST API models.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">mesh-doc</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Contains sources for the getmesh.io documentation and tools to generate tables and examples from sources.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">mesh-server</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Contains the Gentics Mesh server which can be run via <code>ServerRunner</code> main class.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">mesh-orientdb</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Contains the OrientDB database provider code.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">mesh-changelog-system</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Contains the Gentics Mesh database changelog system. The system is graph model class agnostic.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">mesh-distributed</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Contains code which take care of event handling and event processing in an cluster environment.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">mesh-service-local-storage</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Contains code for the binary storage system which stores data locally on disk.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">mesh-graphql</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Contains code for the GraphQL endpoint and GraphQL types.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">mesh-service-image-imgscalr</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Contains an image resizer implementation based on <a href="https://github.com/rkalla/imgscalr">imgscalr</a>.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">mesh-performance-tests</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Contains dedicated performance tests.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">mesh-common</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Contains common classes and interfaces which are shared among internal maven modules.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">mesh-elasticsearch</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Contains classes needed for the Elasticsearch integration.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">mesh-integration-tests</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Contains integration tests for Gentics Mesh and the UI.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">mesh-test-common</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Contains classes which provide e.g. testcontainer testrules to make it easy to setup integration tests.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_startup_sequence">Startup Sequence</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Understanding the startup sequence of Gentics Mesh helps also to get an idea of the components involved.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 4. Startup sequence</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Location</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>ServeRunner#main</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Load the Mesh options and run mesh via <code>Mesh.mesh(options).run()</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Mesh#mesh()</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Use the Mesh factory to get the <code>MeshImpl</code> singleton.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>MeshImpl#run()</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Initialize dagger context via <code>MeshInternal#create()</code> and invoke <code>BootstrapInitializer#init()</code>.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>MeshInternal#create()</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Setup the dagger context using the <code>MeshModule</code> module.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>BootstrapInitializer#init()</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Initialize the graph database, setup mandatory (admin role, user, group) data.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>BootstrapInitializer#handleLocalData()</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Setup routes for project endpoints and invoke <code>CoreVerticleLoader#loadVerticles()</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>CoreVerticleLoader#loadVerticles()</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Load verticles (e.g. <code>RestAPIVerticle</code>)</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>Deploying the verticles will start the REST API Http server and Mesh is ready to be used.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_elasticsearch_integration">Elasticsearch Integration</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Elasticsearch (ES) stores searchable documents in a flat format since ES is not able to handle relationships to other documents.
+The AbstractIndexHandler implementations flatten mesh elements to the ES document format in order to provide the Search Models.</p>
+</div>
+<div class="paragraph">
+<p>The node search model document contains also tags for the node.
+It is mandatory to update the node document when one of the referenced tags is renamed, removed or even when a new tag is added.
+This pattern applies to various elements and actions within mesh.
+Every CRUD operation may also provide a search queue batch (SQB) which contains the information what ES documents need to be updated, removed or added.
+The SQB is persisted within the graph and is only stored when the same transaction that is updating the element succeeds.</p>
+</div>
+<div class="paragraph">
+<p>The SQB is directly processed after the modifying transaction has been committed.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_authentication">Authentication</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The <code>MeshAuthProvider</code> is used to authenticate the user credentials. The <code>MeshAuthHandler</code> is using this provider in order to authenticate the user.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_authorization">Authorization</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Instead of Vert.x&#8217;s User.isAuthorised the <code>UserImpl#hasPermission</code> methods must be used since Vert.x&#8217;s authorization code is not compatible with document level permission systems that use objects instead of string to validate permissions.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_error_handling">Error Handling</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The HttpStatusCodeErrorException should be used whenever an exception needs to be thrown/returned. Static methods for constructor calls can be used. It is not required to manually translate the exception message. Instead exceptions of this type will automatically be translated if possible. This way only an i18n key needs to be set for the message.</p>
+</div>
+<div class="paragraph">
+<p>The RouterStorage contains the last failure handler that catches all exceptions which have not yet been handled.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_transaction_handling">Transaction Handling</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Transactions can be started using the currently registered Database provider class.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 5. Transaction Method</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Method</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">asyncNoTrx()</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Autocommit async transaction. This method should only be used for read only operations. (Non blocking)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">noTrx(TrxHandler&lt;T&gt; txHandler)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Autocommit transaction. This method should only be used for read only operations. (Blocking)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">asyncTrx()</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Regular async transaction. (non-blocking)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">trx(TrxHandler&lt;T&gt; txHandler)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Regular transaction. (blocking)</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Transactions should not be nested. Nesting transactions will just result in the inner transaction to utilize the previously opened outer transaction.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_pitfalls">Pitfalls</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>It is very important to understand that OrientDB is using MVCC in order to handle transaction concurrency control. This has important implications on how to design methods. Due to MVCC it may be required to retry a TrxHandler. Thus sideeffects that would otherwise change the outcome of the transaction must be avoided. Most problems can occur when modifying shared collections.Collections.unmodifiableList and other methods may help to secure the code.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_testing">Testing</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Each of the endpoints has one or more <code>JUnit</code> test classes which test the routes. (e.g. NodeEndpointTest, UserEndpointTest).</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Avoid wrapping transactions in your tests around code which invokes REST calls.
+      Otherwise you may not be able assert the changes made by REST calls since the transaction still references the old data.
+</td>
+</tr>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_assertj">AssertJ</h3>
+<div class="paragraph">
+<p>Additional to <code>Mockito</code> and <code>JUnit</code> the <code>AssertJ</code> tool is used to create fluent readable custom assertions.
+The <code>MeshAssertions`</code> class should be used to add new custom assertions.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_database_changelog">Database Changelog</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The <code>mesh-changelog-system</code> module contains the <a href="https://github.com/gentics/mesh/tree/master/changelog-system">database changelog system</a>. Sometimes the graph database structure needs to be altered. This can be done by adding a changelog entry to the <a href="https://github.com/gentics/mesh/tree/master/changelog-system">mesh-changelog-system</a>.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+These kind of changes will alter the database structure and thus not be able to be executed online.
+      A cluster of Gentics Mesh instances is required to split and later to reform.
+      An entry should be added to the <code>CHANGELOG.adoc</code> file which informs the users about this change.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_tldr">TL;DR</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The short form for the inpatient:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>RestAPIVerticle</code> contains all EndpointRouters</p>
+</li>
+<li>
+<p><code>NodeEndpoint</code> contains the routes for <code>/api/v2/:projectName/nodes</code></p>
+</li>
+<li>
+<p>Elements in Mesh have each dedicated classes which directly represent the graph data (e.g. <code>NodeImpl</code>, <code>UserImpl</code>)</p>
+</li>
+<li>
+<p>Endpoint classes like <code>NodeEndpoint</code> also have a CRUD class (e.g. <code>NodeCrudHandler</code>)</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_good_the_bad_and_the_ugly">The good the bad and the ugly</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Graph elements which Ferma instantiates can not request dependencies via dagger.
+It is not possible to inject dependencies inside of such objects because of this reason.</p>
+</div>
+<div class="paragraph">
+<p>Currently most of the dagger dependencies can be accessed via <code>MeshInternal().get()</code></p>
+</div>
+</div>
+</div>
+
+        
+
+
+
+        
+      </div>
+    </div>
+  </div>
+
+
+    <div class="footer">
+    <a name="footer"></a>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <h2>Keep in touch</h2>
+                <p>Find us on Twitter
+                    <a href="https://twitter.com/genticsmesh" target="_blank" rel="noopener noreferrer">@genticsmesh</a>
+                </p>
+                <p>Get help on
+                    <a href="https://stackoverflow.com/questions/tagged/gentics-mesh" target="_blank" rel="noopener noreferrer">stackoverflow</a>
+                </p>
+                <p>Ask us anything on
+                    <a href="https://gitter.im/gentics/mesh" target="_blank" rel="noopener noreferrer">Gitter</a>
+                </p>
+                <p>Dive into the code at
+                    <a href="https://github.com/gentics/mesh" target="_blank" rel="noopener noreferrer">GitHub</a>
+                </p>
+            </div>
+            <div class="col-md-6">
+                <h2>Legal</h2>
+                <p>Licensed under
+                    <a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank" rel="noopener noreferrer">Apache License v2.0</a> |
+                    <a href="../../imprint">Imprint</a>
+                </p>
+            </div>
+        </div>
+        <div class="row ending center">
+            <p class="padding-top-25">Made in
+                <a href="https://www.mercer.com/newsroom/2018-quality-of-living-survey.html" target="_blank" rel="noopener noreferrer">Vienna - the most livable city in the world</a> 
+                <img src="../../assets/noun_Wine_1032235.svg" height="24">
+            </p>
+        </div>
+    </div>
+
+       
+
+        <div class="apa-consent-reset apa-consent-wrapper">
+
+
+            <div class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-banner testOFF">
+
+                <ul class="apa-consent-reset apa-consent-bannerContent">
+                    <li class="apa-consent-reset">
+                        <div class="apa-consent-reset apa-consent-bannerText">
+                        </div>
+                    </li>
+                    <li class="apa-consent-reset apa-consent-buttonWrapperDetails">
+                        <button class="apa-consent-reset apa-consent-button">
+                            cookie-preferences
+                        </button>
+                    </li>
+                    <li class="apa-consent-reset apa-consent-buttonWrapperAccept">
+                        <button id="apa-consent-button-accept" class="apa-consent-reset apa-consent-button">
+                            accept
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="apa-consent-reset apa-consent-bgColorWhite apa-consent-boxShadow apa-consent-bannerButtonOFF">
+                    <div class="apa-consent-reset apa-consent-bannerButtonOFFicon1 apa-consent-bgColor"></div>
+                    <div class="apa-consent-reset apa-consent-bannerButtonOFFicon2 apa-consent-bgColor"></div>
+                </div>
+
+            </div>
+
+            <div class="apa-consent-reset apa-consent-dialogWrapper testOFF">
+                <div class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-dialog">
+                    <div class="apa-consent-reset apa-consent-mobileScroller">
+
+                        <div class="apa-consent-reset apa-consent-mobileClose"></div>
+
+                        <div class="apa-consent-reset apa-consent-dialogInnerWidth apa-consent-dialogHeader">
+                            <h3 class="apa-consent-reset apa-consent-H3">
+                                Cookie Preferences
+                            </h3>
+                            <p class="apa-consent-reset apa-consent-P">
+                                Choose if this website is only allowed to use functional cookies and/or marketing cookies.
+                            </p>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-dialogBodyWrapper">
+                            <div class="apa-consent-reset apa-consent-dialogInnerWidth apa-consent-dialogBody">
+                                <ul class="apa-consent-reset apa-consent-items">
+
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-dialogInnerWidth apa-consent-dialogSubmit">
+                            <button id="apa-constent-button-save-settings" class="apa-consent-reset apa-consent-button apa-consent-boxShadow">
+                                save & close
+                            </button>
+                        </div>
+
+                        <div class="apa-consent-reset apa-consent-bgColorWhite apa-consent-boxShadow apa-consent-dialogButtonOFF">
+                            <div class="apa-consent-reset apa-consent-dialogButtonOFFicon1"></div>
+                            <div class="apa-consent-reset apa-consent-dialogButtonOFFicon2 apa-consent-bgColor"></div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+   <div  id="bannerButtonOpen" class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-bannerButtonON">
+            <div class="apa-consent-reset apa-consent-bannerButtonONicon1 apa-consent-bgColorWhite"></div>
+            <div class="apa-consent-reset apa-consent-bannerButtonONicon2 apa-consent-bgColorWhite"></div>
+        </div>
+
+        <div class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-dialogButtonON testOFF">
+            <div class="apa-consent-reset apa-consent-dialogButtonONicon1 apa-consent-bgColorWhite"></div>
+            <div class="apa-consent-reset apa-consent-dialogButtonONicon2 apa-consent-bgColorWhite"></div>
+        </div>
+
+
+     
+
+        
+
+            
+
+    <ul style="display:none">
+        <li id="prototypeAppEntry" class="apa-consent-reset apa-consent-item">
+            <div class="apa-consent-reset apa-consent-itemSwitch">
+                <span class="apa-consent-reset apa-consent-boxShadow"></span>
+            </div>
+            <div class="apa-consent-reset apa-consent-itemTitle">
+
+            </div>
+            <div class="apa-consent-reset apa-consent-itemText">
+
+            </div>
+            <div class="apa-consent-reset apa-consent-itemSubItems">
+                <ul class="apa-consent-reset apa-consent-cookie-items">
+                    <li id="prototypeAppEntryCookieItem" style="display:none" class="apa-consent-reset apa-consent-itemSubItem">
+                        <div class="apa-consent-reset apa-consent-subItemTitle">
+                            <div class="apa-consent-reset apa-consent-subItemSwitch"></div>
+                            <span></span>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-subItemText">
+                            <p class="apa-consent-reset apa-consent-P"></p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+        <li id="prototypeAppEntryProtected" class="apa-consent-reset apa-consent-item">
+            <div class="apa-consent-reset apa-consent-itemSwitch">
+                <span class=" apa-consent-reset apa-consent-boxShadow"></span>
+            </div>
+            <div class="apa-consent-reset apa-consent-itemTitle apa-consent-itemTitleSwitch">
+            </div>
+            <div class="apa-consent-reset apa-consent-itemText">
+
+            </div>
+            <div class="apa-consent-reset apa-consent-itemSubItems">
+                <ul class="apa-consent-reset apa-consent-cookie-items">
+
+                    <li id="prototypeAppEntryProtectedCookieItem" style="display: none;" class="apa-consent-reset apa-consent-itemSubItem">
+                        <div class="apa-consent-reset apa-consent-subItemTitle">
+                            <div class="apa-consent-reset apa-consent-subItemSwitch"></div>
+                            <span></span>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-subItemText">
+                            <p class="apa-consent-reset apa-consent-P"></p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+    </ul>
+
+
+</div>
+
+    
+    <script
+  src="https://code.jquery.com/jquery-1.12.4.min.js"
+  integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="
+  crossorigin="anonymous"></script>
+
+<script src="../../js/bootstrap.min.js"></script>
+
+<script
+  src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js"
+  crossorigin="anonymous"></script>
+
+<script src="../../js/site.js"></script>
+
+<script 
+  src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.2.0/highlight.min.js"
+  integrity="sha256-sHRX2PXOLRG+LQtTpvREFsWhMVu2AJnmzxpmogmddtM="
+  crossorigin="anonymous"></script>
+
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script src="../../js/docs.js"></script>
+<script src="../../js/sidebar.js"></script>
+<script src="../../js/GCM-banner.js"></script>
+<script>
+  var hasExample = jQuery(".graphql-example").length > 0;
+  hasExample && document.write('<link rel="stylesheet" href="../../graphiql/graphiql.css" /><script src="../../graphiql/vendor/fetch.min.js">\x3C/script><script src="../../graphiql/vendor/react-16.8.6.min.js">\x3C/script><script src="../../graphiql/vendor/react-dom-16.8.6.min.js">\x3C/script><script src="../../graphiql/graphiql.js">\x3C/script><script src="../../graphiql/embedded.js">\x3C/script>');
+</script>
+
+
+       
+
+        <div class="apa-consent-reset apa-consent-wrapper">
+
+
+            <div class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-banner testOFF">
+
+                <ul class="apa-consent-reset apa-consent-bannerContent">
+                    <li class="apa-consent-reset">
+                        <div class="apa-consent-reset apa-consent-bannerText">
+                        </div>
+                    </li>
+                    <li class="apa-consent-reset apa-consent-buttonWrapperDetails">
+                        <button class="apa-consent-reset apa-consent-button">
+                            cookie-preferences
+                        </button>
+                    </li>
+                    <li class="apa-consent-reset apa-consent-buttonWrapperAccept">
+                        <button id="apa-consent-button-accept" class="apa-consent-reset apa-consent-button">
+                            accept
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="apa-consent-reset apa-consent-bgColorWhite apa-consent-boxShadow apa-consent-bannerButtonOFF">
+                    <div class="apa-consent-reset apa-consent-bannerButtonOFFicon1 apa-consent-bgColor"></div>
+                    <div class="apa-consent-reset apa-consent-bannerButtonOFFicon2 apa-consent-bgColor"></div>
+                </div>
+
+            </div>
+
+            <div class="apa-consent-reset apa-consent-dialogWrapper testOFF">
+                <div class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-dialog">
+                    <div class="apa-consent-reset apa-consent-mobileScroller">
+
+                        <div class="apa-consent-reset apa-consent-mobileClose"></div>
+
+                        <div class="apa-consent-reset apa-consent-dialogInnerWidth apa-consent-dialogHeader">
+                            <h3 class="apa-consent-reset apa-consent-H3">
+                                Cookie Preferences
+                            </h3>
+                            <p class="apa-consent-reset apa-consent-P">
+                                Choose if this website is only allowed to use functional cookies and/or marketing cookies.
+                            </p>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-dialogBodyWrapper">
+                            <div class="apa-consent-reset apa-consent-dialogInnerWidth apa-consent-dialogBody">
+                                <ul class="apa-consent-reset apa-consent-items">
+
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-dialogInnerWidth apa-consent-dialogSubmit">
+                            <button id="apa-constent-button-save-settings" class="apa-consent-reset apa-consent-button apa-consent-boxShadow">
+                                save & close
+                            </button>
+                        </div>
+
+                        <div class="apa-consent-reset apa-consent-bgColorWhite apa-consent-boxShadow apa-consent-dialogButtonOFF">
+                            <div class="apa-consent-reset apa-consent-dialogButtonOFFicon1"></div>
+                            <div class="apa-consent-reset apa-consent-dialogButtonOFFicon2 apa-consent-bgColor"></div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+   <div  id="bannerButtonOpen" class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-bannerButtonON">
+            <div class="apa-consent-reset apa-consent-bannerButtonONicon1 apa-consent-bgColorWhite"></div>
+            <div class="apa-consent-reset apa-consent-bannerButtonONicon2 apa-consent-bgColorWhite"></div>
+        </div>
+
+        <div class="apa-consent-reset apa-consent-bgColor apa-consent-boxShadow apa-consent-dialogButtonON testOFF">
+            <div class="apa-consent-reset apa-consent-dialogButtonONicon1 apa-consent-bgColorWhite"></div>
+            <div class="apa-consent-reset apa-consent-dialogButtonONicon2 apa-consent-bgColorWhite"></div>
+        </div>
+
+
+     
+
+        
+
+            
+
+    <ul style="display:none">
+        <li id="prototypeAppEntry" class="apa-consent-reset apa-consent-item">
+            <div class="apa-consent-reset apa-consent-itemSwitch">
+                <span class="apa-consent-reset apa-consent-boxShadow"></span>
+            </div>
+            <div class="apa-consent-reset apa-consent-itemTitle">
+
+            </div>
+            <div class="apa-consent-reset apa-consent-itemText">
+
+            </div>
+            <div class="apa-consent-reset apa-consent-itemSubItems">
+                <ul class="apa-consent-reset apa-consent-cookie-items">
+                    <li id="prototypeAppEntryCookieItem" style="display:none" class="apa-consent-reset apa-consent-itemSubItem">
+                        <div class="apa-consent-reset apa-consent-subItemTitle">
+                            <div class="apa-consent-reset apa-consent-subItemSwitch"></div>
+                            <span></span>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-subItemText">
+                            <p class="apa-consent-reset apa-consent-P"></p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+        <li id="prototypeAppEntryProtected" class="apa-consent-reset apa-consent-item">
+            <div class="apa-consent-reset apa-consent-itemSwitch">
+                <span class=" apa-consent-reset apa-consent-boxShadow"></span>
+            </div>
+            <div class="apa-consent-reset apa-consent-itemTitle apa-consent-itemTitleSwitch">
+            </div>
+            <div class="apa-consent-reset apa-consent-itemText">
+
+            </div>
+            <div class="apa-consent-reset apa-consent-itemSubItems">
+                <ul class="apa-consent-reset apa-consent-cookie-items">
+
+                    <li id="prototypeAppEntryProtectedCookieItem" style="display: none;" class="apa-consent-reset apa-consent-itemSubItem">
+                        <div class="apa-consent-reset apa-consent-subItemTitle">
+                            <div class="apa-consent-reset apa-consent-subItemSwitch"></div>
+                            <span></span>
+                        </div>
+                        <div class="apa-consent-reset apa-consent-subItemText">
+                            <p class="apa-consent-reset apa-consent-P"></p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+    </ul>
+
+
+
+    <script>
+    window.GCM.apps.whenAllowed('google', function () {
+        (function (i, s, o, g, r, a, m) {
+            i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+                (i[r].q = i[r].q || []).push(arguments)
+            }, i[r].l = 1 * new Date(); a = s.createElement(o),
+                m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+        ga('create', 'UA-69994739-1', 'auto');
+        ga('send', 'pageview');
+    });
+</script>
+    
+    <script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "Organization",
+        "name": "Gentics Mesh",
+        "url": "https://getmesh.io",
+        "logo": "https://getmesh.io/assets/gentics-mesh-logo.png",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Laimgrubengasse 10",
+            "addressRegion": "Vienna",
+            "postalCode": "1060",
+            "addressCountry": "Austria"
+        },
+        "contactPoint": {
+            "@type": "ContactPoint",
+            "contactType": "customer support",
+            "telephone": "+43-1-7109904-300",
+            "email": "support@gentics.com"
+        },
+        "sameAs": [
+            "https://twitter.com/genticsmesh",
+            "https://github.com/gentics/mesh",
+            "https://stackoverflow.com/questions/tagged/genticsmesh"
+        ]
+    }
+</script>
+</body>
+
+</html>

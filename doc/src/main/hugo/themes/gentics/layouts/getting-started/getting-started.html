@@ -1,0 +1,77 @@
+{{ define "content" }}
+<div class="topsection-wrapper">
+    <div class="topsection container">
+        <div>
+            <div class="col-md-12">
+                <h1>{{ .Title }}</h1>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="topsection-wrapper-white">
+    <div class="col-md-12">
+        <ul class="nav navbar-nav">
+            <li>
+                <a href="../basic-training/">Basic</a>
+            </li>
+                <li>
+                <a href="../advanced-training/">Advanced</a>
+            </li>
+            <li>
+                <a href="../operations-training">DevOps</a>
+            </li>
+        </ul>
+    </div>
+</div>
+<div class="container">
+    <div class="row">
+        <div class="col-xs-12 col-md-6 course-details">
+            <figure>
+                <img src="/assets/{{ .Params.banner }}" class="img-responsive" alt="">
+                <figcaption>&copy; {{ .Params.banner_copyright }}</figcaption>
+            </figure>
+        </div>
+        <div class="col-xs-12 col-md-6 course-details">
+            <h4 class="headlines-services">
+                Course Details
+            </h4>
+            <p class="sublines-services">Audience</p>
+            {{ range .Params.audience }}
+                {{ . }},
+            {{ end }}
+            <p class="sublines-services">Duration
+            </p>
+            <p>{{ .Params.duration }}<br>
+            </p>
+            <p class="sublines-services">Prerequisites
+            </p>
+            <p>{{ .Params.prerequisites }}<br>
+            <p class="sublines-services">Requirements
+            </p>
+            <ul class="list-black">
+                {{ range .Params.requirements }}
+                <li>{{ . }}</li>
+                {{ end }}
+            </ul>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12 col-md-6 training-summary">
+            <h4 class="headlines-services">Course Summary</h4>
+            <p class="sublines-services">{{ .Content }}</p>
+        </div>
+         <div class="col-xs-12 col-md-6 training-summary">
+            <h4 class="headlines-services">Topics Covered
+            </h4>
+            <ul class="list-black">
+                {{ range .Params.covers }}
+                    <li>{{ . }}</li>
+                {{ end }}
+            </ul>
+        </div>
+      <div class="col-xs-12 col-md-6 training-summary">
+        <a href="mailto:mesh@gentics.com?subject=Gentics Mesh {{.Title}} Inquiry" class="btn btn-default">Contact us!</a>
+      </div>
+    </div>
+</div>
+{{end}}

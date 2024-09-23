@@ -1,0 +1,33 @@
+{{ define "content" }}
+<div class="topsection-wrapper">
+    <div class="topsection container">
+        <div class="row">
+            <div class="col-md-12">
+                <h1>Documentation</h1>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="topsection-wrapper-white">
+    <div class="col-md-12">
+        <ul class="nav navbar-nav">
+            <li>
+                <a href="../docs/getting-started">Getting Started</a>
+            </li>
+            <li>
+                <a href="../docs/api">API</a>
+            </li>
+            <li>
+                <a href="../docs/changelog">Changelog</a>
+            </li>
+            <li>
+                <a href="../docs/lts-changelog">LTS Changelog</a>
+            </li>
+            <li>
+                <a href="../docs/sql-changelog">Mesh SQL Changelog</a>
+            </li>
+        </ul>
+    </div>
+</div>
+{{ .Content }}
+{{end}}

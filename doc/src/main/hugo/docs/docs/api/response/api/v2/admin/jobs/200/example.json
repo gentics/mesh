@@ -1,0 +1,26 @@
+{
+  "data" : [ {
+    "uuid" : "afacd93df77a44a2acd93df77a54a27b",
+    "creator" : {
+      "firstName" : "Joe",
+      "lastName" : "Doe",
+      "uuid" : "589319933be24ec79319933be24ec7fe"
+    },
+    "created" : "2018-11-20T20:12:01.084Z",
+    "type" : "branch",
+    "properties" : {
+      "fromVersion" : "1.0",
+      "branchUuid" : "39f69bee0baa415eb69bee0baa115e82",
+      "schemaUuid" : "2aa83a2b3cba40a1a83a2b3cba90a1de",
+      "toVersion" : "2.0"
+    },
+    "completionCount" : 0,
+    "warnings" : [ ]
+  } ],
+  "_metainfo" : {
+    "currentPage" : 1,
+    "perPage" : 25,
+    "pageCount" : 1,
+    "totalCount" : 1
+  }
+}

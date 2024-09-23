@@ -1,0 +1,145 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| availableLanguages
+| true
+| object
+| Map of languages for which content is available and their publish status.
+
+| breadcrumb
+| true
+| array
+| List of nodes which construct the breadcrumb. Note that the start node will not be included in the list.
+
+| childrenInfo
+| false
+| object
+| Object which contains information about child elements.
+
+| container
+| true
+| boolean
+| Flag which indicates whether the node is a container and can contain nested elements.
+
+| created
+| true
+| string
+| ISO8601 formatted created date string.
+
+| creator
+| true
+| object
+| User reference of the creator of the element.
+
+| displayField
+| false
+| string
+| Display field name of the node. May not be retured if the node schema has no display field.
+
+| displayName
+| false
+| string
+| Display field value of the node. May not be retured if the node schema has no display field.
+
+| edited
+| true
+| string
+| ISO8601 formatted edited date string.
+
+| editor
+| false
+| object
+| User reference of the editor of the element.
+
+| fields
+| true
+| object
+| Dynamic map with fields of the node language specific content.
+
+| language
+| false
+| string
+| ISO 639-1 language tag of the node content.
+
+| languagePaths
+| false
+| object
+| Map of webroot paths per language. This property will only be populated if the resolveLinks query parameter has been set accordingly.
+
+| parentNode
+| false
+| object
+| Reference to the parent node. Note that the root node of the project has no parent node.
+
+| path
+| false
+| string
+| Webroot path to the node content. Will only be provided if the resolveLinks query parameter has been set accordingly.
+
+| permissions.create
+| true
+| boolean
+| Flag which indicates whether the create permission is granted.
+
+| permissions.delete
+| true
+| boolean
+| Flag which indicates whether the delete permission is granted.
+
+| permissions.publish
+| false
+| boolean
+| Flag which indicates whether the publish permission is granted.
+
+| permissions.read
+| true
+| boolean
+| Flag which indicates whether the read permission is granted.
+
+| permissions.readPublished
+| false
+| boolean
+| Flag which indicates whether the read published permission is granted.
+
+| permissions.update
+| true
+| boolean
+| Flag which indicates whether the update permission is granted.
+
+| project
+| true
+| object
+| Reference to the project of the node.
+
+| rolePerms
+| false
+| object
+| Permission information for provided role. This property will only be populated if a role query parameter has been specified.
+
+| schema
+| true
+| object
+| Reference to the schema of the node.
+
+| tags
+| true
+| array
+| List of tags that were used to tag the node.
+
+| uuid
+| true
+| string
+| Uuid of the element
+
+| version
+| true
+| string
+| Version of the node content.
+
+|======
