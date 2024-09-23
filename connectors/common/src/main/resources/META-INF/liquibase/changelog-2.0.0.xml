@@ -6,8 +6,9 @@
 		xmlns:pro="http://www.liquibase.org/xml/ns/pro"
 		xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd">
 	<changeSet id="1682326970000-1"	author="p.klaffenboeck@gentics.com">
+		<validCheckSum>ANY</validCheckSum>
 		<addColumn tableName="mesh_binary">
-			<column name="checkstatus" afterColumn="sha512sum" type="CHAR(10)" defaultValue="ACCEPTED">
+			<column name="checkstatus" type="CHAR(10)" defaultValue="ACCEPTED">
 				<constraints nullable="false" checkConstraint="(checkstatus = 'ACCEPTED' OR checkstatus = 'DENIED' OR checkstatus = 'POSTPONED')" />
 			</column>
 		</addColumn>
@@ -15,7 +16,7 @@
 			<column name="checksecret" type="CHAR(32)" />
 		</addColumn>
 		<addColumn tableName="mesh_s3binary">
-			<column name="checkstatus" afterColumn="s3objectkey" type="CHAR(10)" defaultValue="ACCEPTED">
+			<column name="checkstatus" type="CHAR(10)" defaultValue="ACCEPTED">
 				<constraints nullable="false" checkConstraint="(checkstatus = 'ACCEPTED' OR checkstatus = 'DENIED' OR checkstatus = 'POSTPONED')" />
 			</column>
 		</addColumn>
@@ -31,6 +32,7 @@
 		</createIndex>
 	</changeSet>
 	<changeSet id="1682326970000-2"	author="s.plyhun@gentics.com">
+		<validCheckSum>ANY</validCheckSum>
 		<preConditions>
 			<not>
 				<columnExists tableName="mesh_binary" columnName="checkstatus_tmp"/>
@@ -63,13 +65,13 @@
 		<dropColumn tableName="mesh_s3binary" columnName="checksecret" />
 
 		<addColumn tableName="mesh_binary">
-			<column name="checkstatus" afterColumn="sha512sum" type="VARCHAR(10)" defaultValue="ACCEPTED">
+			<column name="checkstatus" type="VARCHAR(10)" defaultValue="ACCEPTED">
 				<constraints nullable="false" checkConstraint="(checkstatus = 'ACCEPTED' OR checkstatus = 'DENIED' OR checkstatus = 'POSTPONED')" />
 			</column>
 			<column name="checksecret" type="VARCHAR(32)"/>
 		</addColumn>
 		<addColumn tableName="mesh_s3binary">
-			<column name="checkstatus" afterColumn="s3objectkey" type="VARCHAR(10)" defaultValue="ACCEPTED">
+			<column name="checkstatus" type="VARCHAR(10)" defaultValue="ACCEPTED">
 				<constraints nullable="false" checkConstraint="(checkstatus = 'ACCEPTED' OR checkstatus = 'DENIED' OR checkstatus = 'POSTPONED')" />
 			</column>
 			<column name="checksecret" type="VARCHAR(32)"/>

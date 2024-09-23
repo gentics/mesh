@@ -1,6 +1,7 @@
 package com.gentics.mesh.liquibase;
 
 import org.slf4j.LoggerFactory;
+
 import liquibase.logging.Logger;
 import liquibase.logging.core.AbstractLogService;
 
@@ -17,6 +18,6 @@ public class LiquibaseLogService extends AbstractLogService {
 	@SuppressWarnings("rawtypes")
 	@Override
 	public Logger getLog(Class clazz) {
-		return new LiquibaseDelegatingLogger(LoggerFactory.getLogger(clazz), filter);
+		return new LiquibaseDelegatingLogger(LoggerFactory.getLogger(clazz), null);
 	}
 }
