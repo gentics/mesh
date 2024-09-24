@@ -17,8 +17,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<skip.doc2html>true</skip.doc2html>
-		<skip.doc.assembly>true</skip.doc.assembly>
+		<skip.doc.package>true</skip.doc.package>
 	</properties>
 
 	<dependencyManagement>
@@ -139,7 +138,7 @@
 						</goals>
 						<phase>prepare-package</phase>
 						<configuration>
-							<skip>${skip.doc2html}</skip>
+							<skip>${skip.doc.package}</skip>
 							<executable>${basedir}/build/dockerBuild.sh</executable>
 						</configuration>
 					</execution>
@@ -156,7 +155,7 @@
 							<goal>single</goal>
 						</goals>
 						<configuration>
-							<skipAssembly>${skip.doc.assembly}</skipAssembly>
+							<skipAssembly>${skip.doc.package}</skipAssembly>
 							<attach>true</attach>
 							<appendAssemblyId>false</appendAssemblyId>
 							<descriptors>
