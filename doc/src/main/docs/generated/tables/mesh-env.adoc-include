@@ -29,11 +29,11 @@
 | *MESH_GRAPHQL_SCHEMA_CACHE_SIZE*
 | Override the configured graphQl schema cache size.
 
-| *MESH_S3_CORS_ALLOWED_METHODS*
-| Override the configured AWS S3 CORS allowed methods.
-
 | *MESH_LANGUAGES_FILE_PATH*
 | Override the path to the optional languages file
+
+| *MESH_S3_CORS_ALLOWED_METHODS*
+| Override the configured AWS S3 CORS allowed methods.
 
 | *MESH_HIBERNATE_GENERATE_STATISTICS*
 | Set whether hibernate should generate statistics.
@@ -62,11 +62,11 @@
 | *MESH_HTTPS_PORT*
 | Override the configured server https port.
 
-| *MESH_ELASTICSEARCH_PREFIX*
-| Override the configured elasticsearch prefix.
-
 | *MESH_BINARY_METADATA_WHITELIST*
 | Override the metadata whitelist
+
+| *MESH_ELASTICSEARCH_PREFIX*
+| Override the configured elasticsearch prefix.
 
 | *MESH_DEBUGINFO_LOG_FOLDER*
 | Override the path to the debug info log folder
@@ -98,11 +98,11 @@
 | *MESH_CLUSTER_ENABLED*
 | Override cluster enabled flag.
 
+| *MESH_DATABASE_ADDRESS*
+| Override the database address.
+
 | *MESH_JDBC_CONNECTION_USERNAME*
 | Set the JDBC connection username.
-
-| *MESH_DB_EXPORT_DIRECTORY*
-| Override the graph database export directory.
 
 | *MESH_BINARY_DOCUMENT_PARSER*
 | Override the document parser enabled flag.
@@ -368,9 +368,6 @@
 | *MESH_STALE_TX_CHECK_INTERVAL*
 | Overwrite the interval (in ms) for periodic check for stale transactions.
 
-| *MESH_JDBC_CONNECTION_URL*
-| Override the default JDBC connection URL.
-
 | *MESH_BINARY_DIR*
 | Override the configured binary data directory.
 
@@ -461,11 +458,11 @@
 | *MESH_GRAPHQL_ASYNC_WAIT_TIMEOUT*
 | Override the configured graphQl async wait timeout.
 
-| *MESH_AUTH_JWT_ALGO*
-| Override the configured algorithm which is used to sign the JWT.
-
 | *MESH_IMAGE_CACHE_DIRECTORY*
 | Override the path for image cache directory.
+
+| *MESH_AUTH_JWT_ALGO*
+| Override the configured algorithm which is used to sign the JWT.
 
 | *MESH_VERTX_EVENT_POOL_SIZE*
 | Override the configured Vert.x event pool size.

@@ -1,7 +1,0 @@
-{
-  "operation" : "UPDATEFIELD",
-  "properties" : {
-    "field" : "fieldToBeUpdated",
-    "name" : "newName"
-  }
-}

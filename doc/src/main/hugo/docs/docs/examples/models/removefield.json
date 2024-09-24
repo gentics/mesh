@@ -1,6 +1,0 @@
-{
-  "operation" : "REMOVEFIELD",
-  "properties" : {
-    "field" : "fieldToBeRemoved"
-  }
-}

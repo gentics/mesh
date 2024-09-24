@@ -8,15 +8,8 @@
 	</formats>
 	<fileSets>
 		<fileSet>
-			<directory>${basedir}/target/docs/asciidoc/</directory>
+			<directory>${basedir}/target/html/docs</directory>
 			<outputDirectory>/docs</outputDirectory>
-			<includes>
-				<include>**</include>
-			</includes>
-		</fileSet>
-		<fileSet>
-			<directory>${basedir}/target/docs/apidocs/</directory>
-			<outputDirectory>/apidocs</outputDirectory>
 			<includes>
 				<include>**</include>
 			</includes>

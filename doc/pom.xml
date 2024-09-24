@@ -17,7 +17,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<skip.raml2html>true</skip.raml2html>
+		<skip.doc2html>true</skip.doc2html>
 		<skip.doc.assembly>true</skip.doc.assembly>
 	</properties>
 
@@ -75,13 +75,13 @@
 				<artifactId>maven-resources-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>copy-apidocs</id>
+						<id>make-html-dir</id>
 						<phase>validate</phase>
 						<goals>
 							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${basedir}/target/docs/apidocs</outputDirectory>
+							<outputDirectory>${basedir}/target/html</outputDirectory>
 							<resources>
 								<resource>
 									<directory>src/main/docs</directory>
@@ -89,22 +89,6 @@
 									<includes>
 										<include>just_to_create_dir_from_maven</include>
 									</includes>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-					<execution>
-						<id>copy-asciidocs</id>
-						<phase>validate</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${basedir}/target/docs/asciidoc</outputDirectory>
-							<resources>
-								<resource>
-									<directory>src/main/docs</directory>
-									<filtering>true</filtering>
 								</resource>
 							</resources>
 						</configuration>
@@ -149,24 +133,14 @@
 						</configuration>
 					</execution>
 					<execution>
-						<id>Generate HTML from RAML</id>
-						<!-- npm i -g raml2html@2.2 -->
+						<id>Generate HTML</id>
 						<goals>
 							<goal>exec</goal>
 						</goals>
-						<phase>process-resources</phase>
+						<phase>prepare-package</phase>
 						<configuration>
-							<skip>${skip.raml2html}</skip>
-							<executable>npx</executable>
-							<arguments>
-								<argument>raml2html@2.2</argument>
-								<argument>-i</argument>
-								<argument>${basedir}/src/main/docs/generated/api/api-docs.raml</argument>
-								<argument>-o</argument>
-								<argument>${basedir}/target/docs/apidocs/index.html</argument>
-								<argument>-t</argument>
-								<argument>${basedir}/src/main/docs/nunjucks/template.nunjucks</argument>								
-							</arguments>
+							<skip>${skip.doc2html}</skip>
+							<executable>${basedir}/build/dockerBuild.sh</executable>
 						</configuration>
 					</execution>
 				</executions>
