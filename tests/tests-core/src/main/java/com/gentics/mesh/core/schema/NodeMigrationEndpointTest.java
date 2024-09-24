@@ -640,6 +640,10 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		changes2.getChanges().add(new SchemaChangeModel(SchemaChangeOperation.CHANGEFIELDTYPE, "i_should_be_number").setProperty(SchemaChangeModel.TYPE_KEY, "number"));
 		adminCall(() -> client().applyChangesToSchema(schemaUuid, changes2));
 
+		SchemaChangesListModel changes3 = new SchemaChangesListModel();
+		changes3.getChanges().add(new SchemaChangeModel(SchemaChangeOperation.ADDFIELD, "newfield").setProperty(SchemaChangeModel.TYPE_KEY, "string"));
+		adminCall(() -> client().applyChangesToSchema(schemaUuid, changes3));
+
 		try (Tx tx = tx()) {
 			container = tx.schemaDao().findByUuid(schemaUuid);
 			versionB = container.getLatestVersion();
