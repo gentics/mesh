@@ -1,0 +1,19 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+	xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.6.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd">
+
+    <changeSet id="sup-15949-1"	author="s.plyhun@gentics.com">
+        <createIndex tableName="mesh_branch_schema_version_edge" indexName="idx_mesh_branch_schema_version_edge_sup_15949_1">
+			<column name="branch_dbuuid" />
+			<column name="dbversion" />
+			<column name="active" />
+			<column name="jobuuid" />
+			<column name="migrationstatus" />
+			<column name="version_dbuuid" />
+		</createIndex>
+    </changeSet>
+</databaseChangeLog>

@@ -1,0 +1,97 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+		xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+		xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+		xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd">
+	<changeSet id="1682326970000-1"	author="p.klaffenboeck@gentics.com">
+		<validCheckSum>ANY</validCheckSum>
+		<addColumn tableName="mesh_binary">
+			<column name="checkstatus" type="CHAR(10)" defaultValue="ACCEPTED">
+				<constraints nullable="false" checkConstraint="(checkstatus = 'ACCEPTED' OR checkstatus = 'DENIED' OR checkstatus = 'POSTPONED')" />
+			</column>
+		</addColumn>
+		<addColumn tableName="mesh_binary">
+			<column name="checksecret" type="CHAR(32)" />
+		</addColumn>
+		<addColumn tableName="mesh_s3binary">
+			<column name="checkstatus" type="CHAR(10)" defaultValue="ACCEPTED">
+				<constraints nullable="false" checkConstraint="(checkstatus = 'ACCEPTED' OR checkstatus = 'DENIED' OR checkstatus = 'POSTPONED')" />
+			</column>
+		</addColumn>
+		<addColumn tableName="mesh_s3binary">
+			<column name="checksecret" type="CHAR(32)" />
+		</addColumn>
+
+		<createIndex tableName="mesh_binary" indexName="idx_mesh_binary_checkstatus">
+			<column name="checkstatus" />
+		</createIndex>
+		<createIndex tableName="mesh_s3binary" indexName="idx_mesh_s3binary_checkstatus">
+			<column name="checkstatus" />
+		</createIndex>
+	</changeSet>
+	<changeSet id="1682326970000-2"	author="s.plyhun@gentics.com">
+		<validCheckSum>ANY</validCheckSum>
+		<preConditions>
+			<not>
+				<columnExists tableName="mesh_binary" columnName="checkstatus_tmp"/>
+				<columnExists tableName="mesh_s3binary" columnName="checkstatus_tmp"/>
+				<columnExists tableName="mesh_binary" columnName="checksecret_tmp"/>
+				<columnExists tableName="mesh_s3binary" columnName="checksecret_tmp"/>
+			</not>
+		</preConditions>
+	
+		<addColumn tableName="mesh_binary">
+			<column name="checkstatus_tmp" type="VARCHAR(10)"/>
+			<column name="checksecret_tmp" type="VARCHAR(32)"/>
+		</addColumn>
+		<addColumn tableName="mesh_s3binary">
+			<column name="checkstatus_tmp" type="VARCHAR(10)"/>
+			<column name="checksecret_tmp" type="VARCHAR(32)"/>
+		</addColumn>
+
+		<sql>UPDATE mesh_binary SET checkstatus_tmp = checkstatus</sql>
+		<sql>UPDATE mesh_binary SET checksecret_tmp = checksecret</sql>
+		<sql>UPDATE mesh_s3binary SET checkstatus_tmp = checkstatus</sql>
+		<sql>UPDATE mesh_s3binary SET checksecret_tmp = checksecret</sql>
+
+		<dropIndex tableName="mesh_binary" indexName="idx_mesh_binary_checkstatus"/>
+		<dropIndex tableName="mesh_s3binary" indexName="idx_mesh_s3binary_checkstatus"/>
+
+		<dropColumn tableName="mesh_binary" columnName="checkstatus" />
+		<dropColumn tableName="mesh_binary" columnName="checksecret" />
+		<dropColumn tableName="mesh_s3binary" columnName="checkstatus" />
+		<dropColumn tableName="mesh_s3binary" columnName="checksecret" />
+
+		<addColumn tableName="mesh_binary">
+			<column name="checkstatus" type="VARCHAR(10)" defaultValue="ACCEPTED">
+				<constraints nullable="false" checkConstraint="(checkstatus = 'ACCEPTED' OR checkstatus = 'DENIED' OR checkstatus = 'POSTPONED')" />
+			</column>
+			<column name="checksecret" type="VARCHAR(32)"/>
+		</addColumn>
+		<addColumn tableName="mesh_s3binary">
+			<column name="checkstatus" type="VARCHAR(10)" defaultValue="ACCEPTED">
+				<constraints nullable="false" checkConstraint="(checkstatus = 'ACCEPTED' OR checkstatus = 'DENIED' OR checkstatus = 'POSTPONED')" />
+			</column>
+			<column name="checksecret" type="VARCHAR(32)"/>
+		</addColumn>
+		
+		<sql>UPDATE mesh_binary SET checkstatus = checkstatus_tmp</sql>
+		<sql>UPDATE mesh_binary SET checksecret = checksecret_tmp</sql>
+		<sql>UPDATE mesh_s3binary SET checkstatus = checkstatus_tmp</sql>
+		<sql>UPDATE mesh_s3binary SET checksecret = checksecret_tmp</sql>
+
+		<dropColumn tableName="mesh_binary" columnName="checkstatus_tmp" />
+		<dropColumn tableName="mesh_binary" columnName="checksecret_tmp" />
+		<dropColumn tableName="mesh_s3binary" columnName="checkstatus_tmp" />
+		<dropColumn tableName="mesh_s3binary" columnName="checksecret_tmp" />
+		
+		<createIndex tableName="mesh_binary" indexName="idx_mesh_binary_checkstatus">
+			<column name="checkstatus" />
+		</createIndex>
+		<createIndex tableName="mesh_s3binary" indexName="idx_mesh_s3binary_checkstatus">
+			<column name="checkstatus" />
+		</createIndex>
+	</changeSet>
+</databaseChangeLog>

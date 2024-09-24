@@ -1,0 +1,130 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| connectionPassword
+| false
+| string
+| JDBC connection password.
+
+| connectionUrl
+| false
+| string
+| JDBC connection URL.
+
+| connectionUrlExtraParams
+| false
+| string
+| JDBC connection URL extra parameters.
+
+| connectionUsername
+| false
+| string
+| JDBC connection username.
+
+| databaseConnectorClasspath
+| false
+| string
+| Mesh Database Connector classpath. This can be a path to either a connector JAR file, or a folder structure containing all the necessary JARs. Symlinks are supported.
+
+| databaseName
+| false
+| string
+| Database name.
+
+| dialectClass
+| false
+| string
+| Optional Hibernate dialect class name. User this to override the default database connector provided dialect class.
+
+| driverClass
+| false
+| string
+| Optional JDBC driver class name. Use this to override the default database connector provided driver class.
+
+| exportDirectory
+| true
+| string
+| Path to the database export directory.
+
+| formatSql
+| false
+| boolean
+| Are actual SQL queries formatted during logging?
+
+| generateStatistics
+| false
+| boolean
+| Enable generation of hibernate statistics
+
+| hikariOptions
+| true
+| object
+| HikariCP (connection pool) options.
+
+| jdbcBatchSize
+| false
+| integer
+| Hibernate JDBC Batch Size. Recommended values are between 5 and 30
+
+| nativeQueryFiltering
+| false
+| string
+| Enables the native database level filtering for queries. Default: ON_DEMAND
+
+| queryTimeout
+| false
+| integer
+| Global query timeout limit in milliseconds. A timeout value of zero means there is no query timeout.
+
+| retryDelayMillis
+| false
+| integer
+| Transaction wait interval between retries, in milliseconds.
+
+| retryLimit
+| false
+| integer
+| Transaction retry count.
+
+| secondLevelCacheEnabled
+| false
+| boolean
+| Enable Hibernate second-level cache
+
+| showSql
+| false
+| boolean
+| Are actual SQL queries logged?
+
+| slowSqlThreshold
+| false
+| integer
+| Define a threshold in milliseconds, upon which a SQL query is considered slow and produces a log warning.
+
+| sqlParametersLimit
+| false
+| string
+| SQL parameter number limit.
+
+| staleTxCheckInterval
+| false
+| integer
+| Interval in ms for periodic check for stale transactions. Defaults to 10000 ms.
+
+| synchronizeWrites
+| false
+| boolean
+| Flag which controls whether writes to the database should be synchronized. Setting this flag improves the stability of massive database updates, by the cost of overall performance. Default: false
+
+| synchronizeWritesTimeout
+| false
+| integer
+| Set the timeout in milliseconds for the sync write lock. Default: 60000
+
+|======

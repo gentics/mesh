@@ -32,9 +32,7 @@ public class ConfigProvider implements DebugInfoProvider {
 		return Flowable.fromArray(
 			"config/mesh.yml",
 			"config/hazelcast.xml",
-			"config/logback.xml",
-			"config/default-distributed-db-config.json",
-			"config/orientdb-server-config.xml"
+			"config/logback.xml"
 		).flatMap(debugInfoUtil::readDebugInfoEntryOrEmpty);
 	}
 }

@@ -9,8 +9,8 @@ public class RestInfoExamples extends AbstractExamples {
 
 	public MeshServerInfoModel getInfoExample() {
 		MeshServerInfoModel info = new MeshServerInfoModel();
-		info.setDatabaseVendor("orientdb");
-		info.setDatabaseVersion("2.2.16");
+		info.setDatabaseVendor("mariadb");
+		info.setDatabaseVersion("10.7");
 		info.setSearchVendor("elasticsearch");
 		info.setSearchVersion("2.4.3");
 		info.setMeshVersion(Mesh.getPlainVersion());

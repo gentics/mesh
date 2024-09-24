@@ -1,27 +1,50 @@
 {
-    "components": [
-      {
-        "name": "Mesh",
-        "modules": [
-          {
-            "name": "External",
-            "dependencies": [
-              {
-                "name": "Java Runtime",
-                "description": "Version included in the container images.",
-                "current": "17",
-                "latest": "17"
-              },
-              {
-                "name": "Elasticsearch",
-                "description": "Version used by automated tests.",
-                "current": "7.4.0",
-                "latest": "8.12"
-              }
-            ]
-          }
-        ]
-      }
-    ]
-  }
-  
+  "components": [
+    {
+      "name": "Mesh SQL",
+      "modules": [
+        {
+          "name": "External",
+          "dependencies": [
+            {
+              "name": "Java Runtime",
+              "description": "Version included in the container images.",
+              "current": "17",
+              "latest": "17"
+            },
+            {
+              "name": "Elasticsearch",
+              "description": "Version used by automated tests.",
+              "current": "7.4.0",
+              "latest": "8.12"
+            },
+            {
+              "name": "MS SQL Server",
+              "description": "Version used by automated tests.",
+              "current": "2019",
+              "latest": "2022"
+            },
+            {
+              "name": "MariaDB",
+              "description": "Version used by automated tests.",
+              "current": "10.7",
+              "latest": "11.3"
+            },
+            {
+              "name": "PostgreSQL",
+              "description": "Version used by automated tests.",
+              "current": "16.2",
+              "latest": "16.2"
+            },
+            {
+              "name": "Oracle Database",
+              "description": "Version used by automated tests.",
+              "current": "21c",
+              "latest": "23c"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

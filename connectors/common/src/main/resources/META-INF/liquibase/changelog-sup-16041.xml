@@ -1,0 +1,56 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+	xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.6.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd">
+	<changeSet id="sup-16041-1"	author="s.plyhun@gentics.com">
+		<dropIndex tableName="mesh_user" indexName="idx_mesh_user_name" />
+		<dropIndex tableName="mesh_tagfamily" indexName="idx_mesh_tagfamily_name"/>
+		<dropIndex tableName="mesh_tag" indexName="idx_mesh_tag_name"/>
+		<dropIndex tableName="mesh_group" indexName="idx_mesh_group_name"/>
+		<dropIndex tableName="mesh_language" indexName="idx_mesh_language_name"/>
+		<dropIndex tableName="mesh_branch" indexName="idx_mesh_branch_name"/>
+		<dropIndex tableName="mesh_role" indexName="idx_mesh_role_name"/>
+		<dropIndex tableName="mesh_project" indexName="idx_mesh_project_name"/>
+	</changeSet>
+	<changeSet id="sup-16041-2"	author="s.plyhun@gentics.com">
+		<customChange class="com.gentics.mesh.liquibase.changelog.sup_16041.NamedEntitiesDeDuplication"></customChange>
+	</changeSet>
+	<changeSet id="sup-16041-3"	author="s.plyhun@gentics.com">
+		<createIndex tableName="mesh_user" indexName="idx_mesh_user_name" unique="true">
+			<column name="name" />
+		</createIndex>
+		<createIndex tableName="mesh_group" indexName="idx_mesh_group_name" unique="true">
+			<column name="name" />
+		</createIndex>
+		<createIndex tableName="mesh_language" indexName="idx_mesh_language_name" unique="true">
+			<column name="name" />
+		</createIndex>
+		<createIndex tableName="mesh_role" indexName="idx_mesh_role_name" unique="true">
+			<column name="name" />
+		</createIndex>
+		<createIndex tableName="mesh_project" indexName="idx_mesh_project_name" unique="true">
+			<column name="name" />
+		</createIndex>
+		<createIndex tableName="mesh_schema" indexName="idx_mesh_schema_name" unique="true">
+			<column name="name" />
+		</createIndex>
+		<createIndex tableName="mesh_microschema" indexName="idx_mesh_microschema_name" unique="true">
+			<column name="name" />
+		</createIndex>
+		<createIndex tableName="mesh_tagfamily" indexName="idx_mesh_tagfamily_name" unique="true">
+			<column name="name" />
+			<column name="project_dbuuid"/>
+		</createIndex>
+		<createIndex tableName="mesh_tag" indexName="idx_mesh_tag_name" unique="true">
+			<column name="name" />
+			<column name="tagfamily_dbuuid"/>
+		</createIndex>
+		<createIndex tableName="mesh_branch" indexName="idx_mesh_branch_name" unique="true">
+			<column name="name" />
+			<column name="project_dbuuid"/>
+		</createIndex>
+	</changeSet>
+</databaseChangeLog>

@@ -27,23 +27,14 @@ import org.mockito.Mockito;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
+import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
-import com.gentics.mesh.core.data.dao.impl.BranchDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.ContentDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.GroupDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.NodeDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.RoleDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.TagDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.TagFamilyDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.UserDaoWrapperImpl;
+import com.gentics.mesh.core.data.dao.GroupDao;
+import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
+import com.gentics.mesh.core.data.dao.TagDao;
+import com.gentics.mesh.core.data.dao.TagFamilyDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -58,9 +49,17 @@ import com.gentics.mesh.core.db.TxData;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
-import com.gentics.mesh.dagger.DaggerOrientDBMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.dagger.DaggerHibernateMeshComponent;
+import com.gentics.mesh.etc.config.HibernateMeshOptions;
+import com.gentics.mesh.hibernate.data.dao.BranchDaoImpl;
+import com.gentics.mesh.hibernate.data.dao.ContentDaoImpl;
+import com.gentics.mesh.hibernate.data.dao.GroupDaoImpl;
+import com.gentics.mesh.hibernate.data.dao.NodeDaoImpl;
+import com.gentics.mesh.hibernate.data.dao.RoleDaoImpl;
+import com.gentics.mesh.hibernate.data.dao.TagDaoImpl;
+import com.gentics.mesh.hibernate.data.dao.TagFamilyDaoImpl;
+import com.gentics.mesh.hibernate.data.dao.UserDaoImpl;
 import com.gentics.mesh.search.index.group.GroupTransformer;
 import com.gentics.mesh.search.index.microschema.MicroschemaTransformer;
 import com.gentics.mesh.search.index.node.NodeContainerTransformer;
@@ -107,7 +106,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 	 * @return
 	 */
 	public static Mesh initPaths() {
-		OrientDBMeshOptions options = new OrientDBMeshOptions();
+		HibernateMeshOptions options = new HibernateMeshOptions();
 		options.setNodeName("Example Generator");
 		options.getAuthenticationOptions().setKeystorePassword("ABCD");
 
@@ -125,7 +124,6 @@ public class SearchModelGenerator extends AbstractGenerator {
 		options.getImageOptions().setImageCacheDirectory(imageCacheDir);
 
 		// The database provider will switch to in memory mode when no directory has been specified.
-		options.getStorageOptions().setDirectory(null);
 		options.getSearchOptions().setUrl(null);
 		options.setNodeName("exampleGenerator");
 		return Mesh.create(options);
@@ -146,22 +144,22 @@ public class SearchModelGenerator extends AbstractGenerator {
 		System.out.println("Writing files to  {" + outputFolder.getAbsolutePath() + "}");
 		// outputDir.mkdirs();
 
-		meshDagger = DaggerOrientDBMeshComponent.builder()
-			.configuration(new OrientDBMeshOptions())
+		meshDagger = DaggerHibernateMeshComponent.builder()
+			.configuration(new HibernateMeshOptions())
 			.searchProviderType(TRACKING)
 			.mesh(mesh)
 			.build();
 
 		try {
 			Tx tx = mockTx();
-			NodeDaoWrapper nodeDao = mock(NodeDaoWrapperImpl.class);
-			BranchDaoWrapper branchDao = mock(BranchDaoWrapperImpl.class);
-			ContentDaoWrapper contentDao = mock(ContentDaoWrapperImpl.class);
-			UserDaoWrapper userDao = mock(UserDaoWrapperImpl.class);
-			RoleDaoWrapper roleDao = mock(RoleDaoWrapperImpl.class);
-			GroupDaoWrapper groupDao = mock(GroupDaoWrapperImpl.class);
-			TagDaoWrapper tagDao = mock(TagDaoWrapperImpl.class);
-			TagFamilyDaoWrapper tagFamilyDao = mock(TagFamilyDaoWrapperImpl.class);
+			NodeDao nodeDao = mock(NodeDaoImpl.class);
+			BranchDao branchDao = mock(BranchDaoImpl.class);
+			ContentDao contentDao = mock(ContentDaoImpl.class);
+			UserDao userDao = mock(UserDaoImpl.class);
+			RoleDao roleDao = mock(RoleDaoImpl.class);
+			GroupDao groupDao = mock(GroupDaoImpl.class);
+			TagDao tagDao = mock(TagDaoImpl.class);
+			TagFamilyDao tagFamilyDao = mock(TagFamilyDaoImpl.class);
 
 			when(tx.nodeDao()).thenReturn(nodeDao);
 			when(tx.contentDao()).thenReturn(contentDao);
@@ -197,7 +195,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		return txMock;
 	}
 
-	private void writeNodeDocumentExample(NodeDaoWrapper nodeDao, ContentDao contentDao, TagDaoWrapper tagDao, RoleDaoWrapper roleDao) throws Exception {
+	private void writeNodeDocumentExample(NodeDao nodeDao, ContentDao contentDao, TagDao tagDao, RoleDao roleDao) throws Exception {
 		String language = "de";
 		HibUser user = mockUser("joe1", "Joe", "Doe");
 		HibProject project = mockProject(user);
@@ -208,7 +206,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		HibNode node = mockNode(nodeDao, contentDao, tagDao, parentNode, project, user, language, tagA, tagB);
 		when(roleDao.getRolesWithPerm(Mockito.any(), Mockito.any())).thenReturn(new TraversalResult<>(Collections.emptyList()));
 
-		write(new NodeContainerTransformer(new OrientDBMeshOptions(), roleDao).toDocument(contentDao.getLatestDraftFieldContainer(node, language), UUID_1, ContainerType.PUBLISHED), "node.search");
+		write(new NodeContainerTransformer(new HibernateMeshOptions(), roleDao).toDocument(contentDao.getLatestDraftFieldContainer(node, language), UUID_1, ContainerType.PUBLISHED), "node.search");
 	}
 
 	private void writeProjectDocumentExample() throws Exception {
@@ -230,7 +228,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		write(new RoleTransformer().toDocument(role), "role.search");
 	}
 
-	private void writeUserDocumentExample(UserDaoWrapper userDao) throws Exception {
+	private void writeUserDocumentExample(UserDao userDao) throws Exception {
 		HibUser creator = mockUser("admin", "Admin", "");
 		HibUser user = mockUser("joe1", "Joe", "Doe", creator);
 		HibGroup groupA = mockGroup("editors", user);
@@ -242,7 +240,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		write(new UserTransformer().toDocument(user), "user.search");
 	}
 
-	private void writeTagFamilyDocumentExample(TagDaoWrapper tagDao, TagFamilyDaoWrapper tagFamilyDao) throws Exception {
+	private void writeTagFamilyDocumentExample(TagDao tagDao, TagFamilyDao tagFamilyDao) throws Exception {
 		HibUser user = mockUser("joe1", "Joe", "Doe");
 		HibProject project = mockProject(user);
 		HibTagFamily tagFamily = mockTagFamily("colors", user, project);

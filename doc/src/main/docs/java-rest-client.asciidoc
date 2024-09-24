@@ -14,7 +14,7 @@ You can add the following maven dependency and repository to your project to get
 	<dependency>
 		<artifactId>mesh-rest-client</artifactId>
 		<groupId>com.gentics.mesh</groupId>
-		<version>${mesh.version}</version>
+		<version>${project.version}</version>
 	</dependency>
 …
 	<repositories>

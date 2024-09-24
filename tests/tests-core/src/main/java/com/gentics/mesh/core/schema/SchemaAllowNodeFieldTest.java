@@ -78,7 +78,7 @@ public class SchemaAllowNodeFieldTest extends AbstractMeshTest {
         fieldMap.put("testField", field);
         req.setFields(fieldMap);
 
-        call(() -> client().createNode(PROJECT_NAME, req), BAD_REQUEST,"node_error_invalid_schema_field_value","testField","test","test2");
+        call(() -> client().createNode(PROJECT_NAME, req), BAD_REQUEST,"node_error_invalid_schema_field_value","testField","test","[test2]");
     }
 
     private void runTest(Field nodeField) {

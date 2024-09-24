@@ -30,6 +30,12 @@ LimitAS=infinity
 LimitRSS=infinity
 LimitCORE=infinity
 
+# Database
+Environment=MESH_DB_CONNECTOR_CLASSPATH=/opt/mesh-website-server/connector
+Environment=MESH_DATABASE_ADDRESS=mariadb:3306
+Environment=MESH_JDBC_CONNECTION_USERNAME=admin
+Environment=MESH_JDBC_CONNECTION_PASSWORD=admin
+
 # Features
 Environment=MESH_UPDATECHECK=false
 Environment=MESH_DEBUGINFO_LOG_ENABLED=false

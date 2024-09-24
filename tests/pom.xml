@@ -10,7 +10,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>2.2.0-SNAPSHOT</version>
+		<version>3.0.0-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -26,11 +26,10 @@
 		<module>tests-api</module>
 		<module>tests-core</module>
 		<module>tests-common</module>
+        <module>tests-hibernate</module>
 		<module>tests-rest-model</module>
 		<module>tests-rest-client</module>
 		<module>tests-plugin-api</module>
-		<module>tests-server</module>
-		<module>tests-changelog-system</module>
 		<module>tests-elasticsearch</module>
 		<module>tests-distributed</module>
 		<module>tests-distributed-coordinator</module>
@@ -45,12 +44,6 @@
 <!--		<module>tests-performance</module>
 		<module>tests-integration</module>
 -->
-		
-		<!-- Default context - OrientDB -->
-		<module>context-orientdb</module>
-		
-		<!-- Tests runner over OrientDB default context -->
-		<module>orientdb-runner</module>
 	</modules>
 
 	<dependencyManagement>

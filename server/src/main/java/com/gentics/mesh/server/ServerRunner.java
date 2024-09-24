@@ -4,12 +4,12 @@ import java.io.File;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.OptionsLoader;
+import com.gentics.mesh.cli.MeshImpl;
 import com.gentics.mesh.context.impl.LoggingConfigurator;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.dagger.DaggerHibernateMeshComponent;
+import com.gentics.mesh.etc.config.HibernateMeshOptions;
 
 import io.vertx.core.json.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Main runner that is used to deploy a preconfigured set of verticles.
@@ -19,34 +19,22 @@ public class ServerRunner {
 	static {
 		System.setProperty("vertx.httpServiceFactory.cacheDir", "data" + File.separator + "tmp");
 		System.setProperty("vertx.cacheDirBase", "data" + File.separator + "tmp");
+		System.setProperty("org.jboss.logging.provider", "slf4j");
 	}
 
-	/**
-	 * Start the production server runner.
-	 * 
-	 * @param args
-	 * @throws Exception
-	 */
 	public static void main(String[] args) throws Exception {
 		LoggingConfigurator.init();
-		Logger log = LoggerFactory.getLogger(ServerRunner.class);
 
-		OrientDBMeshOptions defaultOption = new OrientDBMeshOptions();
+		HibernateMeshOptions defaultOption = new HibernateMeshOptions();
 		defaultOption.getSearchOptions().setUrl(null);
-		OrientDBMeshOptions options = OptionsLoader.createOrloadOptions(OrientDBMeshOptions.class, defaultOption, args);
+		HibernateMeshOptions options = OptionsLoader.createOrloadOptions(HibernateMeshOptions.class, defaultOption, args);
 
-		Mesh mesh = Mesh.create(options);
+		Mesh mesh = new MeshImpl(options, DaggerHibernateMeshComponent.builder());
 		mesh.setCustomLoader(vertx -> {
 			JsonObject config = new JsonObject();
 			config.put("port", options.getHttpServerOptions().getPort());
 		});
-
-		try {
-			mesh.run();
-		} catch (Throwable t) {
-			log.error("Error while starting mesh. Invoking shutdown.", t);
-			mesh.shutdownAndTerminate(10);
-		}
+		mesh.run();
 	}
 
 }

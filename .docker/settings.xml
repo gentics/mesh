@@ -1,0 +1,37 @@
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+	<localRepository />
+	<interactiveMode />
+	<offline />
+	<pluginGroups />
+	<servers>
+		<server>
+			<id>gentics.nexus.maven-central</id>
+			<username>${env.GENTICS_REPO_USER}</username>
+			<password>${env.GENTICS_REPO_PASS}</password>
+		</server>
+		<server>
+			<id>gentics.nexus.releases-oss</id>
+			<username>${env.GENTICS_REPO_USER}</username>
+			<password>${env.GENTICS_REPO_PASS}</password>
+		</server>
+		<server>
+			<id>gentics.nexus.releases</id>
+			<username>${env.GENTICS_REPO_USER}</username>
+			<password>${env.GENTICS_REPO_PASS}</password>
+		</server>
+		<server>
+			<id>gentics.nexus.snapshots</id>
+			<username>${env.GENTICS_REPO_USER}</username>
+			<password>${env.GENTICS_REPO_PASS}</password>
+		</server>
+	</servers>
+	<mirrors>
+		<mirror>
+			<id>gentics.nexus.maven-central</id>
+			<name>Gentics Nexus Maven Mirror</name>
+			<url>https://repo.gentics.com/repository/maven-central/</url>
+			<mirrorOf>central,maven2</mirrorOf>
+		</mirror>
+	</mirrors>
+</settings>

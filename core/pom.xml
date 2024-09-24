@@ -11,14 +11,13 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>2.2.0-SNAPSHOT</version>
+		<version>3.0.0-SNAPSHOT</version>
 	</parent>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<mesh.version>${project.version}</mesh.version>
 		<mesh.mdm.provider.groupId>${project.groupId}</mesh.mdm.provider.groupId>
-		<mesh.mdm.provider.artifactId>mesh-orientdb</mesh.mdm.provider.artifactId>
 		<mesh.mdm.provider.version>${project.version}</mesh.mdm.provider.version>
 		<mesh.mdm.provider.factory>TODO</mesh.mdm.provider.factory>
 	</properties>
@@ -37,11 +36,6 @@
 
 
 	<dependencies>
-		<!-- <dependency> -->
-		<!-- <groupId>${mesh.mdm.provider.groupId}</groupId> -->
-		<!-- <artifactId>${mesh.mdm.provider.artifactId}</artifactId> -->
-		<!-- <version>${mesh.mdm.provider.version}</version> -->
-		<!-- </dependency> -->
 
 		<!-- Internal dependencies -->
 		<dependency>
@@ -152,7 +146,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<!-- Hazelcast (the cluster manager for orientdb) -->
+		<!-- Hazelcast -->
 		<dependency>
 			<groupId>com.hazelcast</groupId>
 			<artifactId>hazelcast-kubernetes</artifactId>

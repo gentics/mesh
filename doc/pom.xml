@@ -1,21 +1,24 @@
 <?xml version="1.0"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>2.2.0-SNAPSHOT</version>
+		<version>3.0.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>mesh-doc</artifactId>
 	<packaging>jar</packaging>
-	<name>Mesh - Documentation</name>
+	<name>Gentics Mesh - Documentation</name>
 	<description>Parent module for documentation</description>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<skip.raml2html>true</skip.raml2html>
+		<skip.doc.assembly>true</skip.doc.assembly>
 	</properties>
 
 	<dependencyManagement>
@@ -31,10 +34,6 @@
 	</dependencyManagement>
 
 	<dependencies>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-mdm-orientdb-wrapper</artifactId>
-		</dependency>
 
 		<!-- Generator dependencies -->
 		<dependency>
@@ -47,15 +46,92 @@
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-test-common</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-mdm-hibernate-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.reflections</groupId>
+			<artifactId>reflections</artifactId>
+			<version>0.10.2</version>
+		</dependency>
 	</dependencies>
 
 	<build>
+		<resources>
+			<resource>
+				<directory>${basedir}/target/docs</directory>
+			</resource>
+			<resource>
+				<directory>src/main/resources</directory>
+			</resource>
+		</resources>
 		<plugins>
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-apidocs</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${basedir}/target/docs/apidocs</outputDirectory>
+							<resources>
+								<resource>
+									<directory>src/main/docs</directory>
+									<filtering>true</filtering>
+									<includes>
+										<include>*.html</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-asciidocs</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${basedir}/target/docs/docs</outputDirectory>
+							<resources>
+								<resource>
+									<directory>src/main/docs</directory>
+									<filtering>true</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
 				<version>1.5.0</version>
 				<executions>
+					<execution>
+						<id>Generate Docs</id>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<phase>process-classes</phase>
+						<configuration>
+							<executable>${env.JAVA_HOME}/bin/java</executable>
+							<arguments>
+								<argument>-classpath</argument>
+								<classpath />
+								<argument>
+									com.gentics.mesh.generator.DocGeneratorRunner</argument>
+							</arguments>
+						</configuration>
+					</execution>
 					<execution>
 						<id>Generate Examples</id>
 						<goals>
@@ -66,9 +142,52 @@
 							<executable>${env.JAVA_HOME}/bin/java</executable>
 							<arguments>
 								<argument>-classpath</argument>
-								<classpath/>
-								<argument>com.gentics.mesh.generator.ExampleGeneratorRunner</argument>
+								<classpath />
+								<argument>
+									com.gentics.mesh.generator.ExampleGeneratorRunner</argument>
 							</arguments>
+						</configuration>
+					</execution>
+					<execution>
+						<id>Generate HTML from RAML</id>
+						<!-- npm i -g raml2html@2.2 -->
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<phase>process-resources</phase>
+						<configuration>
+							<skip>${skip.raml2html}</skip>
+							<executable>npx</executable>
+							<arguments>
+								<argument>raml2html@2.2</argument>
+								<argument>-i</argument>
+								<argument>${basedir}/src/main/docs/generated/api/api-docs.raml</argument>
+								<argument>-o</argument>
+								<argument>${basedir}/target/docs/apidocs/index.html</argument>
+								<argument>-t</argument>
+								<argument>${basedir}/src/main/docs/nunjucks/template.nunjucks</argument>								
+							</arguments>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>doc</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<skipAssembly>${skip.doc.assembly}</skipAssembly>
+							<attach>true</attach>
+							<appendAssemblyId>false</appendAssemblyId>
+							<descriptors>
+								<descriptor>${project.basedir}/src/assembly/doc-package.xml</descriptor>
+							</descriptors>
 						</configuration>
 					</execution>
 				</executions>
@@ -101,7 +220,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore/>
+										<ignore />
 									</action>
 								</pluginExecution>
 								<pluginExecution>
@@ -120,7 +239,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore/>
+										<ignore />
 									</action>
 								</pluginExecution>
 								<pluginExecution>
@@ -133,7 +252,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore/>
+										<ignore />
 									</action>
 								</pluginExecution>
 							</pluginExecutions>
@@ -161,5 +280,4 @@
 			</releases>
 		</repository>
 	</repositories>
-
 </project>

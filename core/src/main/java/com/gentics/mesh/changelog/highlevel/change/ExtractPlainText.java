@@ -10,6 +10,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.changelog.highlevel.AbstractHighLevelChange;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.binary.impl.TikaBinaryProcessor;
@@ -23,8 +26,6 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.storage.LocalBinaryStorageImpl;
 
 import dagger.Lazy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Changelog entry which re-runs the tika extraction.

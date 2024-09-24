@@ -99,9 +99,8 @@
           "required" : {
             "type" : "boolean"
           },
-          "label" : {
-            "type" : "string",
-            "description" : "Label of the field."
+          "noIndex" : {
+            "type" : "boolean"
           },
           "noIndex" : {
             "type" : "boolean"
@@ -109,6 +108,10 @@
           "elasticsearch" : {
             "type" : "object",
             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+          },
+          "label" : {
+            "type" : "string",
+            "description" : "Label of the field."
           }
         }
       }

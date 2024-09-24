@@ -19,8 +19,6 @@ import com.gentics.mesh.core.data.search.request.SearchRequest;
 import io.reactivex.Flowable;
 import io.reactivex.subscribers.TestSubscriber;
 import io.vertx.core.Vertx;
-import org.slf4j.LoggerFactory;
-import io.vertx.core.logging.SLF4JLogDelegateFactory;
 
 public class BulkOperatorTest {
 	private SearchRequest nonBulkable;

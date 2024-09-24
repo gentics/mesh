@@ -31,7 +31,7 @@ This can be done via the environment http host setting: `MESH_MONITORING_HTTP_HO
 
 The liveness of the Gentics Mesh instance running in a docker container can be checked by executing the command `java -cp mesh.jar com.gentics.mesh.monitor.jmx.JMXProbe` inside the container.
 This has some advantages over the liveness probe using the HTTP endpoint:
-Liveness checked with JMX does not depend on the http verticles and vert.x to be fully started, but only on the Java process to be running and having the JMX bean registered. This means that - especially when running Gentics Mesh in a cluster - the instances will become live very soon, whereas starting of vert.x and the http verticles may take a while, because this requires OrientDB cluster to be synchronized first.
+Liveness checked with JMX does not depend on the http verticles and vert.x to be fully started, but only on the Java process to be running and having the JMX bean registered. This means that - especially when running Gentics Mesh in a cluster - the instances will become live very soon, whereas starting of vert.x and the http verticles may take a while, because this requires the cluster to be synchronized first.
 
 == Endpoints
 
@@ -65,12 +65,6 @@ The current Gentics Mesh server status can be checked against the `GET {apiLates
 | **SHUTTING_DOWN**
 | Status which indicates that the instance is shutting down.
 
-|	**BACKUP**
-|	Status which indicates that a blocking backup is currently running.
-
-|	**RESTORE**
-|	Status which indicates that a blocking restore operation is currently running.
-
 |======
 
 === Cluster Status
@@ -84,13 +78,13 @@ The version information can be retrieved via the `GET {apiLatest}/versions` endp
 [source,json]
 ----
 {
-  "meshVersion" : "0.30.2",
+  "meshVersion" : "3.0.0",
   "meshNodeName" : "Singing Chandelure",
-  "databaseVendor" : "orientdb",
-  "databaseVersion" : "3.0.16 - Veloce (build cc3c25ebc7d48a0db1073a0469cee2dd2947f4df, branch 3.0.x)",
+  "databaseVendor" : "mariadb",
+  "databaseVersion" : "10.6",
   "searchVendor" : "elasticsearch",
   "searchVersion" : "6.1.2",
-  "vertxVersion" : "3.5.4",
+  "vertxVersion" : "4.5.2",
   "databaseRevision" : "0be9a986"
 }
 ----

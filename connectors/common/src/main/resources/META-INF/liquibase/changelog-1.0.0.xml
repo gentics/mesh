@@ -1,0 +1,1661 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.6.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd">
+
+    <property name="largetext.type" value="NCLOB" dbms="oracle"/>
+    <property name="largetext.type" value="TEXT" dbms="postgresql,mariadb,mysql,hsqldb"/>
+    <property name="largetext.type" value="NTEXT" dbms="mssql"/>
+
+    <property name="fieldkey.type" value="VARCHAR(255)" dbms="mssql,oracle,postgresql,mariadb,mysql,hsqldb"/>
+    <property name="langtag.type" value="VARCHAR(8)" dbms="mssql,oracle,postgresql,mariadb,mysql,hsqldb"/>
+
+    <property name="smalltext.type" value="NVARCHAR(255)" dbms="mssql"/>
+    <property name="smalltext.type" value="VARCHAR(255)" dbms="oracle,postgresql,mariadb,mysql,hsqldb"/>
+
+    <property name="uuid.type" value="UUID" dbms="oracle,mssql,postgresql"/>
+    <property name="uuid.type" value="binary(16)" dbms="mariadb,mysql,hsqldb"/>
+
+    <property name="timestamp.type" value="TIMESTAMP" dbms="oracle,postgresql,hsqldb,mssql"/>
+    <property name="timestamp.type" value="datetime(6)" dbms="mariadb,mysql"/>
+
+    <property name="double.type" value="DOUBLE PRECISION" dbms="mariadb, mysql, postgresql, hsqldb, mssql"/>
+    <property name="double.type" value="BINARY_DOUBLE" dbms="oracle"/>
+
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-1">
+        <createTable tableName="mesh_binary">
+            <column name="dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_binary_pkey"/>
+            </column>
+            <column name="dbversion" type="BIGINT"/>
+            <column name="imageheight" type="INTEGER"/>
+            <column name="imagewidth" type="INTEGER"/>
+            <column name="filesize" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sha512sum" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-2">
+        <createTable tableName="mesh_binaryfieldref">
+            <column name="dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_binaryfieldref_pkey"/>
+            </column>
+            <column name="containertype" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="containeruuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="containerversionuuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fieldkey" type="${fieldkey.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="valueoruuid" type="${uuid.type}"/>
+            <column name="filename" type="${smalltext.type}"/>
+            <column name="focalpointx" type="REAL"/>
+            <column name="focalpointy" type="REAL"/>
+            <column name="imagedominantcolor" type="VARCHAR(255)"/>
+            <column name="locationaltitude" type="INTEGER"/>
+            <column name="locationlatitude" type="${double.type}"/>
+            <column name="locationlongitude" type="${double.type}"/>
+            <column name="mimetype" type="VARCHAR(255)"/>
+            <column name="plaintext" type="${largetext.type}"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-3">
+        <createTable tableName="mesh_nodefieldcontainer">
+            <column name="element" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_nodefieldcontainer_pkey"/>
+            </column>
+            <column name="contentuuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="languagetag" type="${langtag.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="type" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="webrootpath" type="${smalltext.type}"/>
+            <column name="branch_dbuuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="node_dbuuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="version_dbuuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-4">
+        <createTable tableName="mesh_s3binary">
+            <column name="dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_s3binary_pkey"/>
+            </column>
+            <column name="dbversion" type="BIGINT"/>
+            <column name="imageheight" type="INTEGER"/>
+            <column name="imagewidth" type="INTEGER"/>
+            <column name="filesize" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="filename" type="${smalltext.type}"/>
+            <column name="mimetype" type="VARCHAR(255)"/>
+            <column name="s3objectkey" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-5">
+        <createTable tableName="mesh_s3binaryfieldref">
+            <column name="dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_s3binaryfieldref_pkey"/>
+            </column>
+            <column name="containertype" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="containeruuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="containerversionuuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fieldkey" type="${fieldkey.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="valueoruuid" type="${uuid.type}"/>
+            <column name="filename" type="${smalltext.type}"/>
+            <column name="focalpointx" type="REAL"/>
+            <column name="focalpointy" type="REAL"/>
+            <column name="imagedominantcolor" type="VARCHAR(255)"/>
+            <column name="locationaltitude" type="INTEGER"/>
+            <column name="locationlatitude" type="${double.type}"/>
+            <column name="locationlongitude" type="${double.type}"/>
+            <column name="mimetype" type="VARCHAR(255)"/>
+            <column name="plaintext" type="${largetext.type}"/>
+            <column name="filesize" type="BIGINT"/>
+            <column name="s3objectkey" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-6">
+        <createTable tableName="mesh_boollistitem">
+            <column name="dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_boollistitem_pkey"/>
+            </column>
+            <column name="containertype" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="containeruuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="containerversionuuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fieldkey" type="${fieldkey.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="valueoruuid" type="BOOLEAN"/>
+            <column name="itemindex" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="listuuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-7">
+        <createTable tableName="mesh_micronodefieldref">
+            <column name="dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_micronodefieldref_pkey"/>
+            </column>
+            <column name="containertype" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="containeruuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="containerversionuuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fieldkey" type="${fieldkey.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="valueoruuid" type="${uuid.type}"/>
+            <column name="microschemaversion_dbuuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-8">
+        <createTable tableName="mesh_nodefieldcontainer_versions_edge">
+            <column name="nextcontentuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_nodefieldcontainer_versions_edge_pkey"/>
+            </column>
+            <column name="thiscontentuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_nodefieldcontainer_versions_edge_pkey"/>
+            </column>
+            <column name="nextversion_dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_nodefieldcontainer_versions_edge_pkey"/>
+            </column>
+            <column name="thisversion_dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_nodefieldcontainer_versions_edge_pkey"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-9">
+        <createTable tableName="mesh_language">
+            <column name="dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_language_pkey"/>
+            </column>
+            <column name="dbversion" type="BIGINT"/>
+            <column name="bucketid" type="INTEGER"/>
+            <column name="name" type="${smalltext.type}"/>
+            <column name="created" type="${timestamp.type}"/>
+            <column name="edited" type="${timestamp.type}"/>
+            <column name="languagetag" type="${langtag.type}"/>
+            <column name="nativename" type="${smalltext.type}"/>
+            <column name="creator_dbuuid" type="${uuid.type}"/>
+            <column name="editor_dbuuid" type="${uuid.type}"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-10">
+        <createTable tableName="mesh_project_language">
+            <column name="project_dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_project_language_pkey"/>
+            </column>
+            <column name="languages_dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_project_language_pkey"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-11">
+        <createIndex indexName="idx_sha" tableName="mesh_binary">
+            <column name="sha512sum"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-12">
+        <createIndex indexName="idx_binary" tableName="mesh_binaryfieldref">
+            <column name="valueoruuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-13">
+        <createIndex indexName="idx_content_key" tableName="mesh_binaryfieldref">
+            <column name="containeruuid"/>
+            <column name="fieldkey"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-14">
+        <addUniqueConstraint columnNames="fieldkey, containeruuid, containertype, containerversionuuid" constraintName="keytypeversioncontainer" tableName="mesh_binaryfieldref"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-15">
+        <createIndex indexName="idx_branch_version_type" tableName="mesh_nodefieldcontainer">
+            <column name="branch_dbuuid"/>
+            <column name="version_dbuuid"/>
+            <column name="type"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-16">
+        <createIndex indexName="idx_node_type_branch_language" tableName="mesh_nodefieldcontainer">
+            <column name="node_dbuuid"/>
+            <column name="type"/>
+            <column name="branch_dbuuid"/>
+            <column name="languagetag"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-17">
+        <createIndex indexName="idx_content_type_branch" tableName="mesh_nodefieldcontainer">
+            <column name="contentuuid"/>
+            <column name="type"/>
+            <column name="branch_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-18">
+        <createIndex indexName="idx_content_branch" tableName="mesh_nodefieldcontainer">
+            <column name="contentuuid"/>
+            <column name="branch_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-19">
+        <createIndex indexName="idx_branch_type_webrootpath" tableName="mesh_nodefieldcontainer">
+            <column name="branch_dbuuid"/>
+            <column name="type"/>
+            <column name="webrootpath"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-20">
+        <addUniqueConstraint columnNames="node_dbuuid, type, version_dbuuid, branch_dbuuid, contentuuid, languagetag" constraintName="nodetypebranchversioncontentlanguage" tableName="mesh_nodefieldcontainer"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-21">
+        <createIndex indexName="idx_s3_object_key" tableName="mesh_s3binary">
+            <column name="s3objectkey"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-22">
+        <createIndex indexName="idx_content_field_key" tableName="mesh_s3binaryfieldref">
+            <column name="containeruuid"/>
+            <column name="fieldkey"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-23">
+        <addUniqueConstraint columnNames="itemindex, listuuid, fieldkey, containeruuid, containertype, containerversionuuid" constraintName="keytypeversioncontainerlistindex" tableName="mesh_boollistitem"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-24">
+        <addUniqueConstraint columnNames="microschemaversion_dbuuid, fieldkey, containeruuid, containertype, containerversionuuid" constraintName="keytypeversioncontainermicronode" tableName="mesh_micronodefieldref"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-26">
+        <addUniqueConstraint columnNames="languagetag" constraintName="uk_1myaaclj13fsajew42rb0wmq5" tableName="mesh_language"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-27">
+        <addUniqueConstraint columnNames="languages_dbuuid" constraintName="uk_bh97tf0clarl5xbp3q6fvi5c6" tableName="mesh_project_language"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-28">
+        <createTable tableName="mesh_binaryfieldref_metadataproperties">
+            <column name="binaryfieldref_dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_binaryfieldref_metadataproperties_pkey"/>
+            </column>
+            <column name="pvalue" type="${largetext.type}"/>
+            <column name="pkey" type="VARCHAR(255)">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_binaryfieldref_metadataproperties_pkey"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-29">
+        <createTable tableName="mesh_branch">
+            <column name="dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_branch_pkey"/>
+            </column>
+            <column name="dbversion" type="BIGINT"/>
+            <column name="bucketid" type="INTEGER"/>
+            <column name="name" type="${smalltext.type}"/>
+            <column name="created" type="${timestamp.type}"/>
+            <column name="edited" type="${timestamp.type}"/>
+            <column name="hostname" type="${smalltext.type}"/>
+            <column name="isactive" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ismigrated" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="isssl" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="pathprefix" type="${smalltext.type}"/>
+            <column name="creator_dbuuid" type="${uuid.type}"/>
+            <column name="editor_dbuuid" type="${uuid.type}"/>
+            <column name="previousbranch_dbuuid" type="${uuid.type}"/>
+            <column name="project_dbuuid" type="${uuid.type}"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-30">
+        <createTable tableName="mesh_branch_microschema_version_edge">
+            <column name="dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_branch_microschema_version_edge_pkey"/>
+            </column>
+            <column name="dbversion" type="BIGINT"/>
+            <column name="active" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="jobuuid" type="VARCHAR(255)"/>
+            <column name="migrationstatus" type="INTEGER"/>
+            <column name="branch_dbuuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="version_dbuuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-31">
+        <createTable tableName="mesh_branch_schema_version_edge">
+            <column name="dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_branch_schema_version_edge_pkey"/>
+            </column>
+            <column name="dbversion" type="BIGINT"/>
+            <column name="active" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="jobuuid" type="VARCHAR(255)"/>
+            <column name="migrationstatus" type="INTEGER"/>
+            <column name="branch_dbuuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="version_dbuuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-32">
+        <createTable tableName="mesh_branch_tag">
+            <column name="branch_dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_branch_tag_pkey"/>
+            </column>
+            <column name="tags_dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_branch_tag_pkey"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-33">
+        <createTable tableName="mesh_changemarker">
+            <column name="dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_changemarker_pkey"/>
+            </column>
+            <column name="dbversion" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="duration" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-37">
+        <createTable tableName="mesh_datelistitem">
+            <column name="dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_datelistitem_pkey"/>
+            </column>
+            <column name="containertype" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="containeruuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="containerversionuuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fieldkey" type="${fieldkey.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="valueoruuid" type="BIGINT"/>
+            <column name="itemindex" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="listuuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-38">
+        <createTable tableName="mesh_group">
+            <column name="dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_group_pkey"/>
+            </column>
+            <column name="dbversion" type="BIGINT"/>
+            <column name="bucketid" type="INTEGER"/>
+            <column name="name" type="${smalltext.type}"/>
+            <column name="created" type="${timestamp.type}"/>
+            <column name="edited" type="${timestamp.type}"/>
+            <column name="creator_dbuuid" type="${uuid.type}"/>
+            <column name="editor_dbuuid" type="${uuid.type}"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-39">
+        <createTable tableName="mesh_group_role">
+            <column name="groups_dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_group_role_pkey"/>
+            </column>
+            <column name="roles_dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_group_role_pkey"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-40">
+        <createTable tableName="mesh_group_user">
+            <column name="groups_dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_group_user_pkey"/>
+            </column>
+            <column name="users_dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_group_user_pkey"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-41">
+        <createTable tableName="mesh_htmllistitem">
+            <column name="dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_htmllistitem_pkey"/>
+            </column>
+            <column name="containertype" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="containeruuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="containerversionuuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fieldkey" type="${fieldkey.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="valueoruuid" type="${largetext.type}"/>
+            <column name="itemindex" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="listuuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-42">
+        <createTable tableName="mesh_job">
+            <column name="dtype" type="VARCHAR(31)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_job_pkey"/>
+            </column>
+            <column name="dbversion" type="BIGINT"/>
+            <column name="bucketid" type="INTEGER"/>
+            <column name="name" type="${smalltext.type}"/>
+            <column name="created" type="${timestamp.type}"/>
+            <column name="edited" type="${timestamp.type}"/>
+            <column name="completioncount" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="errordetail" type="${largetext.type}"/>
+            <column name="errormessage" type="${smalltext.type}"/>
+            <column name="nodename" type="${smalltext.type}"/>
+            <column name="starttimestamp" type="BIGINT"/>
+            <column name="jobstatus" type="VARCHAR(32)"/>
+            <column name="stoptimestamp" type="BIGINT"/>
+            <column name="jobtype" type="VARCHAR(32)"/>
+            <column name="warnings" type="${largetext.type}"/>
+            <column name="maxage" type="${timestamp.type}"/>
+            <column name="creator_dbuuid" type="${uuid.type}"/>
+            <column name="editor_dbuuid" type="${uuid.type}"/>
+            <column name="branch_dbuuid" type="${uuid.type}"/>
+            <column name="frommicroschemaversion_dbuuid" type="${uuid.type}"/>
+            <column name="fromschemaversion_dbuuid" type="${uuid.type}"/>
+            <column name="tomicroschemaversion_dbuuid" type="${uuid.type}"/>
+            <column name="toschemaversion_dbuuid" type="${uuid.type}"/>
+            <column name="project_dbuuid" type="${uuid.type}"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-43">
+        <createTable tableName="mesh_micronodelistitem">
+            <column name="dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_micronodelistitem_pkey"/>
+            </column>
+            <column name="containertype" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="containeruuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="containerversionuuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fieldkey" type="${fieldkey.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="valueoruuid" type="${uuid.type}"/>
+            <column name="itemindex" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="listuuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="microschemaversion_dbuuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-44">
+        <createTable tableName="mesh_microschema">
+            <column name="dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_microschema_pkey"/>
+            </column>
+            <column name="dbversion" type="BIGINT"/>
+            <column name="bucketid" type="INTEGER"/>
+            <column name="name" type="${smalltext.type}"/>
+            <column name="created" type="${timestamp.type}"/>
+            <column name="edited" type="${timestamp.type}"/>
+            <column name="creator_dbuuid" type="${uuid.type}"/>
+            <column name="editor_dbuuid" type="${uuid.type}"/>
+            <column name="latestversion_dbuuid" type="${uuid.type}"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-45">
+        <createTable tableName="mesh_microschemaversion">
+            <column name="dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_microschemaversion_pkey"/>
+            </column>
+            <column name="dbversion" type="BIGINT"/>
+            <column name="schemajson" type="${largetext.type}"/>
+            <column name="name" type="${smalltext.type}"/>
+            <column name="version" type="VARCHAR(255)"/>
+            <column name="microschema_dbuuid" type="${uuid.type}"/>
+            <column name="nextchange_dbuuid" type="${uuid.type}"/>
+            <column name="nextversion_dbuuid" type="${uuid.type}"/>
+            <column name="previouschange_dbuuid" type="${uuid.type}"/>
+            <column name="previousversion_dbuuid" type="${uuid.type}"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-46">
+        <createTable tableName="mesh_node">
+            <column name="dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_node_pkey"/>
+            </column>
+            <column name="dbversion" type="BIGINT"/>
+            <column name="bucketid" type="INTEGER"/>
+            <column name="created" type="${timestamp.type}"/>
+            <column name="creator_dbuuid" type="${uuid.type}"/>
+            <column name="project_dbuuid" type="${uuid.type}"/>
+            <column name="schemacontainer_dbuuid" type="${uuid.type}"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-47">
+        <createTable tableName="mesh_node_branch_parent">
+            <column name="branchparent_dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_node_branch_parent_pkey"/>
+            </column>
+            <column name="child_dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_node_branch_parent_pkey"/>
+            </column>
+            <column name="nodeparent_dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_node_branch_parent_pkey"/>
+            </column>
+            <column name="distance" type="INTEGER"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-48">
+        <createTable tableName="mesh_node_tag">
+            <column name="branch_dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_node_tag_pkey"/>
+            </column>
+            <column name="node_dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_node_tag_pkey"/>
+            </column>
+            <column name="tag_dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_node_tag_pkey"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-49">
+        <createTable tableName="mesh_nodefieldcontainer_webrooturlfields">
+            <column name="nodefieldcontainer_element" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="webrooturlfields" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-50">
+        <createTable tableName="mesh_nodefieldref">
+            <column name="dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_nodefieldref_pkey"/>
+            </column>
+            <column name="containertype" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="containeruuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="containerversionuuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fieldkey" type="${fieldkey.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="valueoruuid" type="${uuid.type}"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-51">
+        <createTable tableName="mesh_nodelistitem">
+            <column name="dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_nodelistitem_pkey"/>
+            </column>
+            <column name="containertype" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="containeruuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="containerversionuuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fieldkey" type="${fieldkey.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="valueoruuid" type="${uuid.type}"/>
+            <column name="itemindex" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="listuuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-52">
+        <createTable tableName="mesh_numberlistitem">
+            <column name="dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_numberlistitem_pkey"/>
+            </column>
+            <column name="containertype" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="containeruuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="containerversionuuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fieldkey" type="${fieldkey.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="valueoruuid" type="${double.type}"/>
+            <column name="itemindex" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="listuuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-53">
+        <createTable tableName="mesh_permission">
+            <column name="element" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_permission_pkey"/>
+            </column>
+            <column name="createperm" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleteperm" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="publishperm" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="readperm" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="readpublishedperm" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="type" type="VARCHAR(255)"/>
+            <column name="updateperm" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role_dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_permission_pkey"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-54">
+        <createTable tableName="mesh_permissionroot">
+            <column name="dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_permissionroot_pkey"/>
+            </column>
+            <column name="dbversion" type="BIGINT"/>
+            <column name="type" type="VARCHAR(255)"/>
+            <column name="parent_dbuuid" type="${uuid.type}"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-55">
+        <createTable tableName="mesh_project">
+            <column name="dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_project_pkey"/>
+            </column>
+            <column name="dbversion" type="BIGINT"/>
+            <column name="bucketid" type="INTEGER"/>
+            <column name="name" type="${smalltext.type}"/>
+            <column name="created" type="${timestamp.type}"/>
+            <column name="edited" type="${timestamp.type}"/>
+            <column name="creator_dbuuid" type="${uuid.type}"/>
+            <column name="editor_dbuuid" type="${uuid.type}"/>
+            <column name="basenode_dbuuid" type="${uuid.type}"/>
+            <column name="initialbranch_dbuuid" type="${uuid.type}"/>
+            <column name="latestbranch_dbuuid" type="${uuid.type}"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-56">
+        <createTable tableName="mesh_project_microschema">
+            <column name="projects_dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_project_microschema_pkey"/>
+            </column>
+            <column name="microschemas_dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_project_microschema_pkey"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-57">
+        <createTable tableName="mesh_project_schema">
+            <column name="projects_dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_project_schema_pkey"/>
+            </column>
+            <column name="schemas_dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_project_schema_pkey"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-58">
+        <createTable tableName="mesh_role">
+            <column name="dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_role_pkey"/>
+            </column>
+            <column name="dbversion" type="BIGINT"/>
+            <column name="bucketid" type="INTEGER"/>
+            <column name="name" type="${smalltext.type}"/>
+            <column name="created" type="${timestamp.type}"/>
+            <column name="edited" type="${timestamp.type}"/>
+            <column name="creator_dbuuid" type="${uuid.type}"/>
+            <column name="editor_dbuuid" type="${uuid.type}"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-59">
+        <createTable tableName="mesh_s3binaryfieldref_metadataproperties">
+            <column name="s3binaryfieldref_dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_s3binaryfieldref_metadataproperties_pkey"/>
+            </column>
+            <column name="pvalue" type="${largetext.type}"/>
+            <column name="pkey" type="VARCHAR(255)">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_s3binaryfieldref_metadataproperties_pkey"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-60">
+        <createTable tableName="mesh_schema">
+            <column name="dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_schema_pkey"/>
+            </column>
+            <column name="dbversion" type="BIGINT"/>
+            <column name="bucketid" type="INTEGER"/>
+            <column name="name" type="${smalltext.type}"/>
+            <column name="created" type="${timestamp.type}"/>
+            <column name="edited" type="${timestamp.type}"/>
+            <column name="creator_dbuuid" type="${uuid.type}"/>
+            <column name="editor_dbuuid" type="${uuid.type}"/>
+            <column name="latestversion_dbuuid" type="${uuid.type}"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-61">
+        <createTable tableName="mesh_schemachange">
+            <column name="dtype" type="VARCHAR(31)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_schemachange_pkey"/>
+            </column>
+            <column name="dbversion" type="BIGINT"/>
+            <column name="containeruuid" type="${uuid.type}"/>
+            <column name="nextversionuuid" type="${uuid.type}"/>
+            <column name="operation" type="VARCHAR(255)"/>
+            <column name="previousversionuuid" type="${uuid.type}"/>
+            <column name="nextchange_dbuuid" type="${uuid.type}"/>
+            <column name="previouschange_dbuuid" type="${uuid.type}"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-62">
+        <createTable tableName="mesh_schemachange_properties">
+            <column name="schemachange_dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_schemachange_properties_pkey"/>
+            </column>
+            <column name="pvalue" type="${largetext.type}"/>
+            <column name="pkey" type="VARCHAR(255)">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_schemachange_properties_pkey"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-63">
+        <createTable tableName="mesh_schemaversion">
+            <column name="dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_schemaversion_pkey"/>
+            </column>
+            <column name="dbversion" type="BIGINT"/>
+            <column name="schemajson" type="${largetext.type}"/>
+            <column name="name" type="${smalltext.type}"/>
+            <column name="version" type="VARCHAR(255)"/>
+            <column name="nextchange_dbuuid" type="${uuid.type}"/>
+            <column name="nextversion_dbuuid" type="${uuid.type}"/>
+            <column name="previouschange_dbuuid" type="${uuid.type}"/>
+            <column name="previousversion_dbuuid" type="${uuid.type}"/>
+            <column name="schema_dbuuid" type="${uuid.type}"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-64">
+        <createTable tableName="mesh_stringlistitem">
+            <column name="dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_stringlistitem_pkey"/>
+            </column>
+            <column name="containertype" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="containeruuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="containerversionuuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fieldkey" type="${fieldkey.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="valueoruuid" type="${largetext.type}"/>
+            <column name="itemindex" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="listuuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-65">
+        <createTable tableName="mesh_tag">
+            <column name="dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_tag_pkey"/>
+            </column>
+            <column name="dbversion" type="BIGINT"/>
+            <column name="bucketid" type="INTEGER"/>
+            <column name="name" type="${smalltext.type}"/>
+            <column name="created" type="${timestamp.type}"/>
+            <column name="edited" type="${timestamp.type}"/>
+            <column name="creator_dbuuid" type="${uuid.type}"/>
+            <column name="editor_dbuuid" type="${uuid.type}"/>
+            <column name="project_dbuuid" type="${uuid.type}"/>
+            <column name="tagfamily_dbuuid" type="${uuid.type}"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-66">
+        <createTable tableName="mesh_tagfamily">
+            <column name="dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_tagfamily_pkey"/>
+            </column>
+            <column name="dbversion" type="BIGINT"/>
+            <column name="bucketid" type="INTEGER"/>
+            <column name="name" type="${smalltext.type}"/>
+            <column name="created" type="${timestamp.type}"/>
+            <column name="edited" type="${timestamp.type}"/>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="creator_dbuuid" type="${uuid.type}"/>
+            <column name="editor_dbuuid" type="${uuid.type}"/>
+            <column name="project_dbuuid" type="${uuid.type}"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-67">
+        <createTable tableName="mesh_user">
+            <column name="dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_user_pkey"/>
+            </column>
+            <column name="dbversion" type="BIGINT"/>
+            <column name="bucketid" type="INTEGER"/>
+            <column name="name" type="${smalltext.type}"/>
+            <column name="created" type="${timestamp.type}"/>
+            <column name="edited" type="${timestamp.type}"/>
+            <column name="admin" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="apitokenid" type="VARCHAR(255)"/>
+            <column name="apitokenissuetimestamp" type="BIGINT"/>
+            <column name="emailaddress" type="${smalltext.type}"/>
+            <column name="enabled" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="firstname" type="${smalltext.type}"/>
+            <column name="forcedpasswordchange" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="lastname" type="${smalltext.type}"/>
+            <column name="passwordhash" type="VARCHAR(255)"/>
+            <column name="resettoken" type="VARCHAR(255)"/>
+            <column name="resettokenissuetimestamp" type="BIGINT"/>
+            <column name="creator_dbuuid" type="${uuid.type}"/>
+            <column name="editor_dbuuid" type="${uuid.type}"/>
+            <column name="referencednode_dbuuid" type="${uuid.type}"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-68">
+        <createTable tableName="mesh_version">
+            <column name="dummyid" type="INTEGER">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_version_pkey"/>
+            </column>
+            <column name="databaserevision" type="VARCHAR(255)"/>
+            <column name="meshversion" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-69">
+        <addForeignKeyConstraint baseColumnNames="schemacontainer_dbuuid" baseTableName="mesh_node" constraintName="fk1uio9qqw4xwolm4ydqc6s4ebr" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_schema" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-70">
+        <addForeignKeyConstraint baseColumnNames="latestbranch_dbuuid" baseTableName="mesh_project" constraintName="fk22w2640kcro7ny97shj6u4lw5" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_branch" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-71">
+        <addForeignKeyConstraint baseColumnNames="latestversion_dbuuid" baseTableName="mesh_schema" constraintName="fk29gbds2ydy2igsw39ruxmqpyp" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_schemaversion" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-72">
+        <addForeignKeyConstraint baseColumnNames="creator_dbuuid" baseTableName="mesh_schema" constraintName="fk2jo0bkmen37gptnxbigt7vpf9" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_user" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-73">
+        <addForeignKeyConstraint baseColumnNames="branch_dbuuid" baseTableName="mesh_branch_schema_version_edge" constraintName="fk3cv3ych0p0q92pit72weps04v" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_branch" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-74">
+        <addForeignKeyConstraint baseColumnNames="toschemaversion_dbuuid" baseTableName="mesh_job" constraintName="fk3ddtttf189ay04r19xcojndkp" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_schemaversion" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-75">
+        <addForeignKeyConstraint baseColumnNames="project_dbuuid" baseTableName="mesh_job" constraintName="fk3qubstudb8ynpur7jl88amjxh" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_project" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-76">
+        <addForeignKeyConstraint baseColumnNames="editor_dbuuid" baseTableName="mesh_schema" constraintName="fk3rc1rfbclt62g7uddbpr6ty94" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_user" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-77">
+        <addForeignKeyConstraint baseColumnNames="previouschange_dbuuid" baseTableName="mesh_microschemaversion" constraintName="fk4gf0ei5d7v0kdawbumftp65y5" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_schemachange" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-78">
+        <addForeignKeyConstraint baseColumnNames="tag_dbuuid" baseTableName="mesh_node_tag" constraintName="fk4nml2oy4xkexskq4tfmd5pp43" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_tag" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-79">
+        <addForeignKeyConstraint baseColumnNames="nextversion_dbuuid" baseTableName="mesh_schemaversion" constraintName="fk4ps0t4a6swqj65k3jy8raj6du" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_schemaversion" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-80">
+        <addForeignKeyConstraint baseColumnNames="basenode_dbuuid" baseTableName="mesh_project" constraintName="fk4ygoy6lit5me20fctg01m8o10" deferrable="false" initiallyDeferred="false" onDelete="SET NULL" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_node" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-81">
+        <addForeignKeyConstraint baseColumnNames="nextchange_dbuuid" baseTableName="mesh_schemachange" constraintName="fk5605f53fc4xufrjt2un60m5yp" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_schemachange" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-82">
+        <addForeignKeyConstraint baseColumnNames="creator_dbuuid" baseTableName="mesh_job" constraintName="fk6dxpeuaacb8tvuv360dpu55yl" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_user" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-83">
+        <addForeignKeyConstraint baseColumnNames="creator_dbuuid" baseTableName="mesh_user" constraintName="fk6i9w1k1x1lijxy6j9encc8bck" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_user" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-84">
+        <addForeignKeyConstraint baseColumnNames="projects_dbuuid" baseTableName="mesh_project_microschema" constraintName="fk6r0immo5upcya3ftwvx65tgvr" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_project" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-85">
+        <addForeignKeyConstraint baseColumnNames="branchparent_dbuuid" baseTableName="mesh_node_branch_parent" constraintName="fk6s3kud13juvujpbh20u3kfowq" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_branch" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-86">
+        <addForeignKeyConstraint baseColumnNames="project_dbuuid" baseTableName="mesh_tagfamily" constraintName="fk7ovoeom5blk4ycbaopydw4ptr" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_project" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-87">
+        <addForeignKeyConstraint baseColumnNames="node_dbuuid" baseTableName="mesh_nodefieldcontainer" constraintName="fk8gelxy2sr8p7nb6gjukm5yuvd" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_node" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-88">
+        <addForeignKeyConstraint baseColumnNames="schemachange_dbuuid" baseTableName="mesh_schemachange_properties" constraintName="fk8r42b87q0nh21uyscv3lkxn6n" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_schemachange" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-89">
+        <addForeignKeyConstraint baseColumnNames="branch_dbuuid" baseTableName="mesh_branch_microschema_version_edge" constraintName="fk984myuxw2xbc3n4qlhwkhuns3" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_branch" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-90">
+        <addForeignKeyConstraint baseColumnNames="editor_dbuuid" baseTableName="mesh_tagfamily" constraintName="fk9fji1so4vnb3wtl6lwjmgr7k8" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_user" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-91">
+        <addForeignKeyConstraint baseColumnNames="latestversion_dbuuid" baseTableName="mesh_microschema" constraintName="fk9uml0r4bi7aktd7wxe9liewax" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_microschemaversion" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-92">
+        <addForeignKeyConstraint baseColumnNames="users_dbuuid" baseTableName="mesh_group_user" constraintName="fk9yi2c1hljir7ykl0sw7t5f9pa" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_user" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-93">
+        <addForeignKeyConstraint baseColumnNames="schema_dbuuid" baseTableName="mesh_schemaversion" constraintName="fka4l6qtva7gqlbko3bmx0ik9f0" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_schema" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-94">
+        <addForeignKeyConstraint baseColumnNames="nextchange_dbuuid" baseTableName="mesh_schemaversion" constraintName="fkaf05epdqjcci0srljtuahu2l0" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_schemachange" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-95">
+        <addForeignKeyConstraint baseColumnNames="nextchange_dbuuid" baseTableName="mesh_microschemaversion" constraintName="fkaf6wrpq9ttimhmlwlkvxs482x" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_schemachange" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-96">
+        <addForeignKeyConstraint baseColumnNames="editor_dbuuid" baseTableName="mesh_group" constraintName="fkaxatonoyfwtov7h7rjee5c6ma" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_user" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-97">
+        <addForeignKeyConstraint baseColumnNames="groups_dbuuid" baseTableName="mesh_group_role" constraintName="fkba3suti661ury3my1vsnpaljm" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_group" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-98">
+        <addForeignKeyConstraint baseColumnNames="creator_dbuuid" baseTableName="mesh_microschema" constraintName="fkbkfjov5egkjqoa8y4ofp2c5b9" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_user" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-99">
+        <addForeignKeyConstraint baseColumnNames="microschemaversion_dbuuid" baseTableName="mesh_micronodelistitem" constraintName="fkbnqay9aa90x4bnjllr53ihcvg" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_microschemaversion" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-100">
+        <addForeignKeyConstraint baseColumnNames="editor_dbuuid" baseTableName="mesh_role" constraintName="fkbo5drl20m79kh6bfdgywaaaj0" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_user" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-101">
+        <addForeignKeyConstraint baseColumnNames="tomicroschemaversion_dbuuid" baseTableName="mesh_job" constraintName="fkc0plo9kjjjcc51wmmbwr3d1ge" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_microschemaversion" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-102">
+        <addForeignKeyConstraint baseColumnNames="s3binaryfieldref_dbuuid" baseTableName="mesh_s3binaryfieldref_metadataproperties" constraintName="fkcc7hc46d2ia3lsjcu5tqc94cc" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_s3binaryfieldref" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-103">
+        <addForeignKeyConstraint baseColumnNames="project_dbuuid" baseTableName="mesh_node" constraintName="fkcimaiyfnjy79tu4m1a2s47sbm" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_project" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-104">
+        <addForeignKeyConstraint baseColumnNames="frommicroschemaversion_dbuuid" baseTableName="mesh_job" constraintName="fkcxr47gpda4dpfsm1xro0y5e1a" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_microschemaversion" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-105">
+        <addForeignKeyConstraint baseColumnNames="microschemaversion_dbuuid" baseTableName="mesh_micronodefieldref" constraintName="fkdglkfb4rq1ikvy0jvbfm5mn77" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_microschemaversion" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-106">
+        <addForeignKeyConstraint baseColumnNames="branch_dbuuid" baseTableName="mesh_job" constraintName="fkdrrutku241hpwcrqtjlfoc01v" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_branch" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-107">
+        <addForeignKeyConstraint baseColumnNames="child_dbuuid" baseTableName="mesh_node_branch_parent" constraintName="fkefdmb6v17726ekfdlktdib1fv" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_node" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-108">
+        <addForeignKeyConstraint baseColumnNames="previousbranch_dbuuid" baseTableName="mesh_branch" constraintName="fkeggtn9o8ixmdumh555ppwm88q" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_branch" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-109">
+        <addForeignKeyConstraint baseColumnNames="editor_dbuuid" baseTableName="mesh_language" constraintName="fkeogc8id07pl5a41twt0hfsk91" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_user" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-110">
+        <addForeignKeyConstraint baseColumnNames="referencednode_dbuuid" baseTableName="mesh_user" constraintName="fkepho86r2ek9o0vh5xwcdc3ykp" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_node" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-111">
+        <addForeignKeyConstraint baseColumnNames="fromschemaversion_dbuuid" baseTableName="mesh_job" constraintName="fketh0ladol7lr5bl30tllj5ayp" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_schemaversion" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-112">
+        <addForeignKeyConstraint baseColumnNames="initialbranch_dbuuid" baseTableName="mesh_project" constraintName="fkeyvcyvof86ymvw09oef6bq8io" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_branch" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-113">
+        <addForeignKeyConstraint baseColumnNames="version_dbuuid" baseTableName="mesh_nodefieldcontainer" constraintName="fkfrgy10dhpg6ak101edq82bh6l" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_schemaversion" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-114">
+        <addForeignKeyConstraint baseColumnNames="creator_dbuuid" baseTableName="mesh_tagfamily" constraintName="fkfylv227g8xvwme5h0kj6ugr3g" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_user" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-115">
+        <addForeignKeyConstraint baseColumnNames="nodefieldcontainer_element" baseTableName="mesh_nodefieldcontainer_webrooturlfields" constraintName="fkg0aqhiok1spnfwlwrs54nns2v" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="NO ACTION" referencedColumnNames="element" referencedTableName="mesh_nodefieldcontainer" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-116">
+        <addForeignKeyConstraint baseColumnNames="thisversion_dbuuid" baseTableName="mesh_nodefieldcontainer_versions_edge" constraintName="fkg36f86vvvskhv3ae4m7l624eb" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_schemaversion" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-117">
+        <addForeignKeyConstraint baseColumnNames="editor_dbuuid" baseTableName="mesh_branch" constraintName="fkg6ub5kcvpti34joa5m35dv0cj" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_user" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-118">
+        <addForeignKeyConstraint baseColumnNames="creator_dbuuid" baseTableName="mesh_project" constraintName="fkgbtp300286dlj9g0nmu4by8cq" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_user" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-119">
+        <addForeignKeyConstraint baseColumnNames="groups_dbuuid" baseTableName="mesh_group_user" constraintName="fkgf1rj6p600qei6a7q3h40wmyg" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_group" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-120">
+        <addForeignKeyConstraint baseColumnNames="previouschange_dbuuid" baseTableName="mesh_schemachange" constraintName="fkgjyqhn49aoxot9yfv6fk9e4ds" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_schemachange" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-121">
+        <addForeignKeyConstraint baseColumnNames="branch_dbuuid" baseTableName="mesh_branch_tag" constraintName="fkh9fmfroim05h3wgk6v0fjk70e" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_branch" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-122">
+        <addForeignKeyConstraint baseColumnNames="creator_dbuuid" baseTableName="mesh_branch" constraintName="fkhp0f1anmpd6mrvrhweuaxdelw" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_user" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-123">
+        <addForeignKeyConstraint baseColumnNames="node_dbuuid" baseTableName="mesh_node_tag" constraintName="fkhx8wihyft0ew0335qxkcpstbk" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_node" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-124">
+        <addForeignKeyConstraint baseColumnNames="role_dbuuid" baseTableName="mesh_permission" constraintName="fkj2dnkmu16upnx1m1x5ojjspq6" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_role" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-125">
+        <addForeignKeyConstraint baseColumnNames="nextversion_dbuuid" baseTableName="mesh_microschemaversion" constraintName="fkkaeqnhyqtgncx3qrl3tfu6qeq" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_microschemaversion" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-126">
+            <addForeignKeyConstraint baseColumnNames="binaryfieldref_dbuuid" baseTableName="mesh_binaryfieldref_metadataproperties" constraintName="fkkqnx67pnk5ls3ogwhytypejk6" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_binaryfieldref" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-127">
+        <addForeignKeyConstraint baseColumnNames="version_dbuuid" baseTableName="mesh_branch_microschema_version_edge" constraintName="fkl7hgo50hbxfc0v9o4jsqjlr9g" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_microschemaversion" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-128">
+        <addForeignKeyConstraint baseColumnNames="creator_dbuuid" baseTableName="mesh_language" constraintName="fkllg2ao82aw433gg3shsgn3shq" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_user" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-129">
+        <addForeignKeyConstraint baseColumnNames="projects_dbuuid" baseTableName="mesh_project_schema" constraintName="fklliedjet706tmaaeu3oy4jlje" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_project" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-130">
+        <addForeignKeyConstraint baseColumnNames="previousversion_dbuuid" baseTableName="mesh_schemaversion" constraintName="fkmaaxetfvboi56yar2m3jgea6o" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_schemaversion" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-131">
+        <addForeignKeyConstraint baseColumnNames="nodeparent_dbuuid" baseTableName="mesh_node_branch_parent" constraintName="fkmf4nd0kv045rh03ftekgafnuy" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_node" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-132">
+        <addForeignKeyConstraint baseColumnNames="branch_dbuuid" baseTableName="mesh_nodefieldcontainer" constraintName="fkmnwrt2o90oeakmh98pig52go9" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_branch" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-133">
+        <addForeignKeyConstraint baseColumnNames="schemas_dbuuid" baseTableName="mesh_project_schema" constraintName="fkmtsy07rksv8rprgbwp5xde86f" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_schema" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-134">
+        <addForeignKeyConstraint baseColumnNames="creator_dbuuid" baseTableName="mesh_node" constraintName="fkn0br0p0curx5xj977gqbmbawh" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_user" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-135">
+        <addForeignKeyConstraint baseColumnNames="project_dbuuid" baseTableName="mesh_tag" constraintName="fknd1t3s9a29q2yxdk3spqw2pqe" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_project" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-136">
+        <addForeignKeyConstraint baseColumnNames="languages_dbuuid" baseTableName="mesh_project_language" constraintName="fknkop3j8qf9jy3g048y859cqtm" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_language" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-137">
+        <addForeignKeyConstraint baseColumnNames="creator_dbuuid" baseTableName="mesh_group" constraintName="fknx7s3jig3s1fjksp2n4eyn40p" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_user" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-138">
+        <addForeignKeyConstraint baseColumnNames="editor_dbuuid" baseTableName="mesh_microschema" constraintName="fknytx0anxbm7vswivxpx9evhjj" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_user" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-139">
+        <addForeignKeyConstraint baseColumnNames="creator_dbuuid" baseTableName="mesh_tag" constraintName="fko1omlph9pl9a61vn7qg2q6q6e" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_user" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-140">
+        <addForeignKeyConstraint baseColumnNames="branch_dbuuid" baseTableName="mesh_node_tag" constraintName="fkomv9ayx8w6fu78dwtoe9bn9s4" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_branch" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-141">
+        <addForeignKeyConstraint baseColumnNames="editor_dbuuid" baseTableName="mesh_job" constraintName="fkoosy20klkhsy2skdcc40x6qcb" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_user" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-142">
+        <addForeignKeyConstraint baseColumnNames="nextversion_dbuuid" baseTableName="mesh_nodefieldcontainer_versions_edge" constraintName="fkovhek7lsrlq79bh9ons6efenx" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_schemaversion" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-143">
+        <addForeignKeyConstraint baseColumnNames="editor_dbuuid" baseTableName="mesh_project" constraintName="fkpgceyrqjoe9cbdusb03igawg4" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_user" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-144">
+        <addForeignKeyConstraint baseColumnNames="version_dbuuid" baseTableName="mesh_branch_schema_version_edge" constraintName="fkqi1mtw1iyg7ou7wbtl82b51k" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_schemaversion" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-145">
+        <addForeignKeyConstraint baseColumnNames="previousversion_dbuuid" baseTableName="mesh_microschemaversion" constraintName="fkqkrgun2llgobybe7pexptxfgo" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_microschemaversion" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-146">
+        <addForeignKeyConstraint baseColumnNames="tags_dbuuid" baseTableName="mesh_branch_tag" constraintName="fkqsvjupt9g3y281jxd1pqoavci" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_tag" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-147">
+        <addForeignKeyConstraint baseColumnNames="tagfamily_dbuuid" baseTableName="mesh_tag" constraintName="fkqw3um6ouymkjnmopgjm65bocv" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_tagfamily" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-148">
+        <addForeignKeyConstraint baseColumnNames="previouschange_dbuuid" baseTableName="mesh_schemaversion" constraintName="fkr0pr84cpjgy0hb24twie3h0fm" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_schemachange" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-149">
+        <addForeignKeyConstraint baseColumnNames="parent_dbuuid" baseTableName="mesh_permissionroot" constraintName="fkrjg4jnp1h6uigrxih7ekqik01" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_project" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-150">
+        <addForeignKeyConstraint baseColumnNames="project_dbuuid" baseTableName="mesh_project_language" constraintName="fkrlguhr4sownngq9514gs9dmrx" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_project" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-151">
+        <addForeignKeyConstraint baseColumnNames="creator_dbuuid" baseTableName="mesh_role" constraintName="fks3iu9r9jambplp1va7imewe2a" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_user" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-152">
+        <addForeignKeyConstraint baseColumnNames="project_dbuuid" baseTableName="mesh_branch" constraintName="fksctubq4t1r3pvewagm79j93kv" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_project" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-153">
+        <addForeignKeyConstraint baseColumnNames="editor_dbuuid" baseTableName="mesh_user" constraintName="fksjbeqr01jexcxp48eyk5ftyye" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_user" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-154">
+        <addForeignKeyConstraint baseColumnNames="editor_dbuuid" baseTableName="mesh_tag" constraintName="fkt13elfjy83feclh6jv68fnyb3" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_user" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-155">
+        <addForeignKeyConstraint baseColumnNames="roles_dbuuid" baseTableName="mesh_group_role" constraintName="fktlb270q93bd8sskvyp3s23kyc" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_role" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-156">
+        <addForeignKeyConstraint baseColumnNames="microschemas_dbuuid" baseTableName="mesh_project_microschema" constraintName="fktnnny0usfqeii7mneexwwhsfw" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_microschema" validate="true"/>
+    </changeSet>
+    <changeSet author="u.dovidio@gentics.com" id="1650467673048-157">
+        <addForeignKeyConstraint baseColumnNames="microschema_dbuuid" baseTableName="mesh_microschemaversion" constraintName="fkurr9v0tw63y14gcaydvt43ah" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_microschema" validate="true"/>
+    </changeSet>
+    <changeSet author="n.pomaroli@gentics.com" id="1650467673048-158">
+        <createIndex indexName="idx_bool_listuuid" tableName="mesh_boollistitem">
+            <column name="listuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="n.pomaroli@gentics.com" id="1650467673048-159">
+        <createIndex indexName="idx_date_listuuid" tableName="mesh_datelistitem">
+            <column name="listuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="n.pomaroli@gentics.com" id="1650467673048-160">
+        <createIndex indexName="idx_html_listuuid" tableName="mesh_htmllistitem">
+            <column name="listuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="n.pomaroli@gentics.com" id="1650467673048-161">
+        <createIndex indexName="idx_micronode_listuuid" tableName="mesh_micronodelistitem">
+            <column name="listuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="n.pomaroli@gentics.com" id="1650467673048-162">
+        <createIndex indexName="idx_node_listuuid" tableName="mesh_nodelistitem">
+            <column name="listuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="n.pomaroli@gentics.com" id="1650467673048-163">
+        <createIndex indexName="idx_number_listuuid" tableName="mesh_numberlistitem">
+            <column name="listuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="n.pomaroli@gentics.com" id="1650467673048-164">
+        <createIndex indexName="idx_string_listuuid" tableName="mesh_stringlistitem">
+            <column name="listuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-164" author="u.dovidio@gentics.com">
+        <createIndex indexName="idx_node_branch_parent" tableName="mesh_node_branch_parent">
+            <column name="nodeparent_dbuuid"></column>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-165" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_nodefieldcontainer" indexName="idx_mesh_nodefieldcontainer_version_dbuuid">
+            <column name="version_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-166" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_nodefieldcontainer_versions_edge"
+                     indexName="idx_mesh_nodefieldcontainer_versions_edge_nextversion_dbuuid">
+            <column name="nextversion_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-167" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_nodefieldcontainer_versions_edge"
+                     indexName="idx_mesh_nodefieldcontainer_versions_edge_thisversion_dbuuid">
+            <column name="thisversion_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-168" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_permission" indexName="idx_mesh_permission_role_dbuuid">
+            <column name="role_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-169" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_node" indexName="idx_mesh_node_schemacontainer_dbuuid">
+            <column name="schemacontainer_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-170" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_node" indexName="idx_mesh_node_project_dbuuid">
+            <column name="project_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-171" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_node" indexName="idx_mesh_node_creator_dbuuid">
+            <column name="creator_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-172" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_nodefieldref" indexName="idx_mesh_nodefieldref_valueoruuid">
+            <column name="valueoruuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-173" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_user" indexName="idx_mesh_user_editor_dbuuid">
+            <column name="editor_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-174" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_user" indexName="idx_mesh_user_creator_dbuuid">
+            <column name="creator_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-175" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_group_user" indexName="idx_mesh_group_user_users_dbuuid">
+            <column name="users_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-176" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_schemaversion" indexName="idx_mesh_schemaversion_nextchange_dbuuid">
+            <column name="nextchange_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-177" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_schemaversion" indexName="idx_mesh_schemaversion_schema_dbuuid">
+            <column name="schema_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-178" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_schemaversion" indexName="idx_mesh_schemaversion_nextversion_dbuuid">
+            <column name="nextversion_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-179" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_schemaversion" indexName="idx_mesh_schemaversion_previouschange_dbuuid">
+            <column name="previouschange_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-180" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_schemaversion" indexName="idx_mesh_schemaversion_previousversion_dbuuid">
+            <column name="previousversion_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-181" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_language" indexName="idx_mesh_language_editor_dbuuid">
+            <column name="editor_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-182" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_language" indexName="idx_mesh_language_creator_dbuuid">
+            <column name="creator_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-183" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_job" indexName="idx_mesh_job_toschemaversion_dbuuid">
+            <column name="toschemaversion_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-184" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_branch_schema_version_edge"
+                     indexName="idx_mesh_branch_schema_version_edge_branch_dbuuid">
+            <column name="branch_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-185" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_branch_schema_version_edge"
+                     indexName="idx_mesh_branch_schema_version_edge_version_dbuuid">
+            <column name="version_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-186" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_job" indexName="idx_mesh_job_project_dbuuid">
+            <column name="project_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-187" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_job" indexName="idx_mesh_job_creator_dbuuid">
+            <column name="creator_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-188" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_job" indexName="idx_mesh_job_tomicroschemaversion_dbuuid">
+            <column name="tomicroschemaversion_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-189" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_job" indexName="idx_mesh_job_frommicroschemaversion_dbuuid">
+            <column name="frommicroschemaversion_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-190" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_job" indexName="idx_mesh_job_branch_dbuuid">
+            <column name="branch_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-191" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_job" indexName="idx_mesh_job_fromschemaversion_dbuuid">
+            <column name="fromschemaversion_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-192" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_job" indexName="idx_mesh_job_editor_dbuuid">
+            <column name="editor_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-193" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_branch" indexName="idx_mesh_branch_previousbranch_dbuuid">
+            <column name="previousbranch_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-194" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_schema" indexName="idx_mesh_schema_editor_dbuuid">
+            <column name="editor_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-195" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_schemachange" indexName="idx_mesh_schemachange_nextchange_dbuuid">
+            <column name="nextchange_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-196" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_schemachange" indexName="idx_mesh_schemachange_previouschange_dbuuid">
+            <column name="previouschange_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-197" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_branch_tag" indexName="idx_mesh_branch_tag_tags_dbuuid">
+            <column name="tags_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-198" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_branch" indexName="idx_mesh_branch_project_dbuuid">
+            <column name="project_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-199" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_branch" indexName="idx_mesh_branch_creator_dbuuid">
+            <column name="creator_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-200" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_tag" indexName="idx_mesh_tag_project_dbuuid">
+            <column name="project_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-201" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_tag" indexName="idx_mesh_tag_creator_dbuuid">
+            <column name="creator_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-202" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_tag" indexName="idx_mesh_tag_tagfamily_dbuuid">
+            <column name="tagfamily_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-203" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_tag" indexName="idx_mesh_tag_editor_dbuuid">
+            <column name="editor_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-204" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_tagfamily" indexName="idx_mesh_tagfamily_project_dbuuid">
+            <column name="project_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-205" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_tagfamily" indexName="idx_mesh_tagfamily_editor_dbuuid">
+            <column name="editor_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-206" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_tagfamily" indexName="idx_mesh_tagfamily_creator_dbuuid">
+            <column name="creator_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-207" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_branch" indexName="idx_mesh_branch_editor_dbuuid">
+            <column name="editor_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-208" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_group_role" indexName="idx_mesh_group_role_roles_dbuuid">
+            <column name="roles_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-209" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_nodefieldcontainer_webrooturlfields"
+                     indexName="idx_mesh_nodefieldcontainer_webrootfields_nodefieldcontainer">
+            <column name="nodefieldcontainer_element"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-210" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_group" indexName="idx_mesh_group_creator_dbuuid">
+            <column name="creator_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-211" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_group" indexName="idx_mesh_group_editor_dbuuid">
+            <column name="editor_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-212" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_permissionroot" indexName="idx_mesh_permissionroot_parent_dbuuid">
+            <column name="parent_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-213" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_project" indexName="idx_mesh_project_latestbranch_dbuuid">
+            <column name="latestbranch_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-214" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_project" indexName="idx_mesh_project_basenode_dbuuid">
+            <column name="basenode_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-215" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_project" indexName="idx_mesh_project_initialbranch_dbuuid">
+            <column name="initialbranch_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-216" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_project" indexName="idx_mesh_project_creator_dbuuid">
+            <column name="creator_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-217" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_project" indexName="idx_mesh_project_editor_dbuuid">
+            <column name="editor_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-218" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_project_schema" indexName="idx_mesh_project_schema_schemas_dbuuid">
+            <column name="schemas_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-219" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_role" indexName="idx_mesh_role_editor_dbuuid">
+            <column name="editor_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-220" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_role" indexName="idx_mesh_role_creator_dbuuid">
+            <column name="creator_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-221" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_schema" indexName="idx_mesh_schema_latestversion_dbuuid">
+            <column name="latestversion_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-222" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_schema" indexName="idx_mesh_schema_creator_dbuuid">
+            <column name="creator_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-223" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_microschema" indexName="idx_mesh_microschema_editor_dbuuid">
+            <column name="editor_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-224" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_microschemaversion" indexName="idx_mesh_microschemaversion_previouschange_dbuuid">
+            <column name="previouschange_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-225" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_microschemaversion" indexName="idx_mesh_microschemaversion_nextchange_dbuuid">
+            <column name="nextchange_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-226" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_microschemaversion" indexName="idx_mesh_microschemaversion_nextversion_dbuuid">
+            <column name="nextversion_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-227" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_microschemaversion" indexName="idx_mesh_microschemaversion_previousversion_dbuuid">
+            <column name="previousversion_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-228" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_microschemaversion" indexName="idx_mesh_microschemaversion_microschema_dbuuid">
+            <column name="microschema_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-229" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_microschema" indexName="idx_mesh_microschema_latestversion_dbuuid">
+            <column name="latestversion_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-230" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_micronodelistitem"
+                     indexName="idx_mesh_micronodelistitem_microschemaversion_dbuuid">
+            <column name="microschemaversion_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-231" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_branch_microschema_version_edge"
+                     indexName="idx_mesh_branch_microschema_version_edge_branch_dbuuid">
+            <column name="branch_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-232" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_node_tag" indexName="idx_mesh_node_tag_tag_dbuuid">
+            <column name="tag_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-233" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_microschema" indexName="idx_mesh_microschema_creator_dbuuid">
+            <column name="creator_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-234" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_project_microschema" indexName="idx_mesh_project_microschema_microschemas_dbuuid">
+            <column name="microschemas_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-235" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_nodelistitem" indexName="idx_mesh_nodelistitem_valueoruuid">
+            <column name="valueoruuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-236" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_branch_microschema_version_edge"
+                     indexName="idx_mesh_branch_microschema_version_edge_version_dbuuid">
+            <column name="version_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-237" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_node_branch_parent" indexName="idx_mesh_node_branch_parent_child_dbuuid">
+            <column name="child_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-238" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_node_tag" indexName="idx_mesh_node_tag_node_dbuuid">
+            <column name="node_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1650467673048-239" author="u.dovidio@gentics.com">
+        <createIndex tableName="mesh_user" indexName="idx_mesh_user_referencednode_dbuuid">
+            <column name="referencednode_dbuuid"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

@@ -245,7 +245,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 			call(() -> client().publishNode(PROJECT_NAME, news.getUuid()));
 			call(() -> client().publishNode(PROJECT_NAME, news2015.getUuid()));
 			String branchName = getBranch().getName();
-			call(() -> client().takeNodeOffline(PROJECT_NAME, news.getUuid()), BAD_REQUEST, "node_error_children_containers_still_published", news.getUuid(), branchName);
+			call(() -> client().takeNodeOffline(PROJECT_NAME, news.getUuid()), BAD_REQUEST, "node_error_children_containers_still_published", news2015.getUuid(), news.getUuid(), branchName);
 		}
 	}
 
@@ -259,7 +259,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 
 		call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, newsUuid, "de"));
 		String branchName = getBranch().getName();
-		call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, newsUuid, "en"), BAD_REQUEST, "node_error_children_containers_still_published", news2015Uuid, branchName);
+		call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, newsUuid, "en"), BAD_REQUEST, "node_error_children_containers_still_published", news2015Uuid, newsUuid, branchName);
 
 	}
 
@@ -311,7 +311,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 			// 1. Take folder offline
 			HibNode node = folder("news");
 			String branchName = getBranch().getName();
-			call(() -> client().takeNodeOffline(PROJECT_NAME, node.getUuid()), BAD_REQUEST, "node_error_children_containers_still_published", node.getUuid(), branchName);
+			call(() -> client().takeNodeOffline(PROJECT_NAME, node.getUuid()), BAD_REQUEST, "node_error_children_containers_still_published", folder("2015").getUuid(), node.getUuid(), branchName);
 			return null;
 		});
 

@@ -1,6 +1,11 @@
 {
   "changeLogEntryFileNames": [
-    "7487.bugfix"
+    "7487.bugfix",
+    "7491.bugfix",
+    "7492.bugfix",
+    "7493.bugfix",
+    "7494.bugfix",
+    "7495.bugfix"
   ],
   "version": "2.0.1",
   "date": "13.07.2023",

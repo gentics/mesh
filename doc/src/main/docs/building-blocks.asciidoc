@@ -347,6 +347,10 @@ Setting the extract object will override the global configurations for parsing (
 
 Setting the global metadata whitelist (link:{{< relref "administration-guide.asciidoc" >}}#_upload_options[```upload.metadataWhitelist```]) will filter the parsed metadata accordingly.
 
+===== S3 Binary
+
+Exactly the same binary as above, with the only difference of being stored in the https://aws.amazon.com/s3/[Amazon S3 storage]. This field requires (link:{{< relref "administration-guide.asciidoc" >}}#_s3_storage_options[```S3 Storage```]) to be set up.
+
 [[micronode]]
 == Micronode & Microschema
 
@@ -398,9 +402,6 @@ Microschemas share the same properties as schemas except for the properties ```d
 In comparison to nodes, micronodes can be built with schema field types ```String```, ```Number```, ```Date```, ```Boolean```, ```HTML```, ```Node```, and ```Lists```.
 
 Fields of type ```list``` in micronodes can be of type: ```String```, ```Number```, ```Date```, ```Boolean```, ```HTML```, and ```Node```.
-
-=== Example
-//TODO
 
 == Tag
 

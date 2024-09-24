@@ -48,11 +48,6 @@ import okhttp3.OkHttpClient;
 
 public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelper, PluginHelper, WrapperHelper {
 
-	static {
-		// New OrientDBs have aggressive memory preallocation, which can eat the whole RAM with an eventual crash, so we disable it.
-		System.setProperty("memory.directMemory.preallocate", "false");
-	}
-
 	private OkHttpClient httpClient;
 
 	private EventAsserter eventAsserter;

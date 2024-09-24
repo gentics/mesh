@@ -1,0 +1,25 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| fieldContainerCacheSize
+| false
+| string
+| Set the maximum size of field container cache. A value of null will disable the cache. A value ended with K/M/G will mean an absolute value in [kil|mega|giga]bytes correspondingly. A value ended with % will mean a percent of maximum memory Mesh is allowed to use. Default: 50_000
+
+| listFieldCacheSize
+| false
+| string
+| Set the maximum size of the list field cache. A value of null will disable the cache. A value ended with K/M/G will mean an absolute value in [kil|mega|giga]bytes correspondingly. A value ended with % will mean a percent of maximum memory Mesh is allowed to use. Default: 50_000
+
+| pathCacheSize
+| false
+| integer
+| Set the maximum size of the path cache. A value of 0 will disable the cache. Default: 20000
+
+|======

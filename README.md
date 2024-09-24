@@ -47,31 +47,6 @@ successfully in less time, no matter which technology you prefer.
 
 # Quick Start
 
-You can take a look at our demo application here:
-
-* https://demo.getmesh.io/demo for the website
-* https://demo.getmesh.io/mesh-ui for the CMS (login is admin/admin)
-
-If you want to run the demo locally on your machine, the fastest way to get
-started is using docker:
-
-```bash
-docker run -p 8080:8080 gentics/mesh-demo:latest
-```
-
-If you can't use docker, go to the [download
-page](https://getmesh.io/download/) and get the JAR file, which you can then
-execute from the command line with:
-
-```bash
-java -jar mesh-demo-v.v.v.jar
-```
-<!-- XXX replace latest and v.v.v with up-to-date version XXX -->
-
-Either way, now relax for a minute while the download and the initial database
-setup is performed. Then you can access the demo website locally at
-http://localhost:8080/demo and the CMS at http://localhost:8080/mesh-ui .
-
 Check out our [Getting Started Guide](https://getmesh.io/docs/getting-started/)
 for an explanation of the basic concepts of Gentics Mesh.
 

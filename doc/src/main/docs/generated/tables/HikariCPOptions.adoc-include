@@ -1,0 +1,60 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| autocommit
+| false
+| boolean
+| Connection auto-commit behavior.
+
+| connectionTimeout
+| false
+| integer
+| Connection timeout.
+
+| idleTimeout
+| false
+| integer
+| Idle timeout.
+
+| leakDetectionThreshold
+| false
+| integer
+| Leak detection threshold.
+
+| maxLifetime
+| false
+| integer
+| Max lifetime.
+
+| maxPoolSize
+| false
+| integer
+| Maximum pool size.
+
+| minimumIdleConnection
+| false
+| integer
+| Minimum idle connections in the pool.
+
+| poolName
+| false
+| string
+| Name of the connection pool.
+
+| registerMBeans
+| false
+| boolean
+| Register JMX Management Beans.
+
+| transactionIsolationLevel
+| false
+| integer
+| Transaction isolation level.
+
+|======

@@ -37,7 +37,7 @@ You can now use a `BOM` file to manage the versions of Gentics Mesh Artifacts.
         <dependency>
             <groupId>com.gentics.mesh</groupId>
             <artifactId>mesh-plugin-bom</artifactId>
-            <version>${mesh.version}</version>
+            <version>${project.version}</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>

@@ -26,11 +26,11 @@ ul.doc-toc h2 {
                 <div class="sectionbody">
                     <div class="paragraph">
                         <p>
-                        Gentics Mesh is a headless or API-first CMS shipped with a single JAR file. <br/>
+                        Gentics Mesh is a headless or API-first CMS. <br/>
                         This is the right place for <a href="getting-started">getting started</a> using Gentics Mesh. 
                             <ul>
                                 <li>The <a href="getting-started#_tldr">TL;DR</a> section will briefly explain everything you should know and what makes Gentics Mesh special.</li>
-                                <li>Our <a href="getting-started#_quickstart">Quickstart</a> guide will let you play with Gentics Mesh in seconds - No installation is required. Just download a single JAR file!</li>
+                                <li>Our <a href="getting-started#_quickstart">Quickstart</a> guide will let you play with Gentics Mesh in seconds. No installation is required.</li>
                                 <li>You will find an overview of the <a href="building-blocks">core concepts</a>, a complete list of all <a href="features">features</a> and <a href="references">references</a> for available APIs, such as REST and GraphQL. </li>
                                 <li>To get you started, we have collected a set of samples for different <a href="platforms">platforms</a>, i.e. JavaScript, Java, GO, and PHP .
                                 <li>The <a href="administration-guide">administration guide</a>, will provide information on how to configure and run Gentics Mesh in your environment.</li>
@@ -179,6 +179,17 @@ ul.doc-toc h2 {
                         </ul>
                     </li>
                     
+                    <li class="section">
+                        <h2><a href="/premium-features">Commercial Features</a></h2>
+                        <ul>
+                            <li>
+                                <a href="/premium-features/helm-chart">Helm Chart</a>
+                            </li>
+                            <li>
+                                <a href="/premium-features/premium-db">More database connectors</a>
+                            </li>
+                        </ul>
+                    </li>
 
                     <li class="section">
                         <h2><a href="support">Support</a></h2>
@@ -249,23 +260,6 @@ ul.doc-toc h2 {
                             </li>
                             <li>
                                 <a href="features#_schema_microschema_migration">Schema &amp; Microschema Migration</a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li class="section">
-                        <h2><a href="user-interface">User Interface</a></h2>
-                        <ul>
-                            <li>
-                                <a href="user-interface#_creating_and_managing_content">Creating and Managing Content</a>
-                            </li>
-                            <li>
-                                <a href="user-interface#_searching">Searching</a>
-                            </li>
-                            <li>
-                                <a href="user-interface#_administrative_functions">Administrative Functions</a>
-                            </li>
-                            <li>
-                                <a href="user-interface#_configuration">Configuration</a>
                             </li>
                         </ul>
                     </li>

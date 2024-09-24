@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "2.1.6"
+version: "3.0.0-SNAPSHOT"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -706,7 +706,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "c676542baac64b38a1b1790faa001faf"
+                            "uuid" : "fb91c0d74a37488dbc8293f32b634550"
                           } ]
                         }
             responses: 
@@ -1354,7 +1354,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "3fc0df3bbb4c4560866a927962034ba0"
+                            "uuid" : "bf3a540446b643dca936bc879a5872b7"
                           } ]
                         }
             responses: 
@@ -1893,7 +1893,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "aec283bbff9e4e64ba10e64702a0e33e"
+                            "uuid" : "ad4e4506b3d34ba2a0012febdcfbadb6"
                           } ]
                         }
             responses: 
@@ -2868,7 +2868,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "2edbe7c57fba4ec3bfd98d124dd45ef2"
+                            "uuid" : "bca30ccff15e492a9ece8992c7529cbf"
                           } ]
                         }
             responses: 
@@ -3897,7 +3897,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "e77127127c014bb7bec348b7c3be744f"
+                            "uuid" : "ba264d12206e4474b3f08c9cff6b996b"
                           } ]
                         }
             responses: 
@@ -4571,7 +4571,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "efc19338abe04e04a431af5e7590e201"
+                            "uuid" : "041b9f2f07c740a9b3aecbdd927f22f8"
                           } ]
                         }
             responses: 
@@ -5009,86 +5009,6 @@ mediaType: application/json
                     required: false
                     repeat: false
                     example: "-backup,consistencyCheck"
-    /graphdb/backup: 
-        post: 
-            description: Invoke a graph database backup and dump the data to the configured backup location. Note that this operation will block all current operation. Irrelevant for non-OrientDB server.
-            queryParameters: 
-                consistencyCheck: 
-                    description: Specify whether the consistency check should be run before running the backup.
-                    type: boolean
-                    required: false
-                    repeat: false
-                    default: false
-                    example: "true"
-            responses: 
-                "200": 
-                    description: Incremental backup was invoked.
-                    body: 
-                        application/json: 
-                            schema: |
-                                | Property | Mandatory | Type | Description |
-                                |----------|-----------|------|-------------|
-                                | internalMessage | true | string | Internal developer friendly message |
-                                | message | true | string | Enduser friendly translated message. Translation depends on the &#x27;Accept-Language&#x27; header value |
-                                | properties | false | object | Map of i18n properties which were used to construct the provided message |
-                            example: |
-                                {
-                                  "message" : "I18n message"
-                                }
-    /graphdb/export: 
-        post: 
-            description: Invoke a orientdb graph database export. Irrelevant for non-OrientDB server.
-            responses: 
-                "200": 
-                    description: Export process was invoked.
-                    body: 
-                        application/json: 
-                            schema: |
-                                | Property | Mandatory | Type | Description |
-                                |----------|-----------|------|-------------|
-                                | internalMessage | true | string | Internal developer friendly message |
-                                | message | true | string | Enduser friendly translated message. Translation depends on the &#x27;Accept-Language&#x27; header value |
-                                | properties | false | object | Map of i18n properties which were used to construct the provided message |
-                            example: |
-                                {
-                                  "message" : "I18n message"
-                                }
-    /graphdb/import: 
-        post: 
-            description: Invoke a orientdb graph database import. The latest import file from the import directory will be used for this operation. Irrelevant for non-OrientDB server.
-            responses: 
-                "200": 
-                    description: Database import command was invoked.
-                    body: 
-                        application/json: 
-                            schema: |
-                                | Property | Mandatory | Type | Description |
-                                |----------|-----------|------|-------------|
-                                | internalMessage | true | string | Internal developer friendly message |
-                                | message | true | string | Enduser friendly translated message. Translation depends on the &#x27;Accept-Language&#x27; header value |
-                                | properties | false | object | Map of i18n properties which were used to construct the provided message |
-                            example: |
-                                {
-                                  "message" : "I18n message"
-                                }
-    /graphdb/restore: 
-        post: 
-            description: Invoke a graph database restore. The latest dump from the backup directory will be inserted. Please note that this operation will block all current operation and effectively destroy all previously stored data. Irrelevant for non-OrientDB server.
-            responses: 
-                "200": 
-                    description: Database restore command was invoked.
-                    body: 
-                        application/json: 
-                            schema: |
-                                | Property | Mandatory | Type | Description |
-                                |----------|-----------|------|-------------|
-                                | internalMessage | true | string | Internal developer friendly message |
-                                | message | true | string | Enduser friendly translated message. Translation depends on the &#x27;Accept-Language&#x27; header value |
-                                | properties | false | object | Map of i18n properties which were used to construct the provided message |
-                            example: |
-                                {
-                                  "message" : "I18n message"
-                                }
     /jobs: 
         get: 
             description: List all currently queued jobs.
@@ -7793,10 +7713,10 @@ mediaType: application/json
                                 | vertxVersion | false | string | Used Vert.x version. |
                             example: |
                                 {
-                                  "meshVersion" : "2.1.6",
+                                  "meshVersion" : "3.0.0-SNAPSHOT",
                                   "meshNodeName" : "Reminiscent Tirtouga",
-                                  "databaseVendor" : "orientdb",
-                                  "databaseVersion" : "2.2.16",
+                                  "databaseVendor" : "mariadb",
+                                  "databaseVersion" : "10.7",
                                   "searchVendor" : "elasticsearch",
                                   "searchVersion" : "2.4.3",
                                   "vertxVersion" : "4.5.7"
@@ -10538,7 +10458,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "396153f6a9d5493998427c2fc6299f0f"
+                            "uuid" : "69422d34fdb249d796a7f552a4e2f212"
                           } ]
                         }
             responses: 
@@ -12047,7 +11967,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "8e15e6bf7f7a4d92be2a4517e6e74d21"
+                            "uuid" : "caffbdfcf2064b328ec217bf48bcc0e9"
                           } ]
                         }
             responses: 
@@ -12863,7 +12783,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "b2063d01c56c4a2b9e063a17599804d6"
+                            "uuid" : "1cdbe5629b124e48801f51dc05320c01"
                           } ]
                         }
             responses: 
@@ -14652,7 +14572,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "1749891b94ad43acae16584ac6993ab6"
+                            "uuid" : "8c8fb8b23b7a466da95ab2184a9693ff"
                           } ]
                         }
             responses: 
