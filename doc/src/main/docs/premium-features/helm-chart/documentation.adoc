@@ -114,7 +114,7 @@ ingress:
 
 # You should adjust this to your needs. This just defines the absolute minimum defaults.
 # The memory values should be set in conjunction with the Java Xmx plus other Java memory settings like Direct memory
-# See: https://getmesh.io/docs/administration-guide/#_memory_settings
+# See: link:{{< relref "../../docs/administration-guide/" >}}#_memory_settings
 resources:
   limits:
     memory: 2Gi
@@ -237,7 +237,7 @@ ssl:
   # Enabling SSL here will allow you to setup secured connections between Gentics Mesh PODs and other PODs which internally access Gentics Mesh API.
   enabled: false
   # Client Authentication mode can be: NONE, REQUEST or REQUIRE
-  # See https://getmesh.io/docs/references/#_client_certificate for details
+  # See link:{{< relref "../../docs/references/" >}}#_client_certificate for details
   clientAuthMode: "NONE"
   serverKeyPath: "/certs/key.pem"
   serverCertPath: "/certs/cert.pem"
