@@ -40,6 +40,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -112,92 +113,6 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 		ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(options.getMaxWidth() + 1).setHeight(102);
 		call(() -> client().downloadBinaryField(PROJECT_NAME, nodeUuid, "en", "image", params), BAD_REQUEST,
 			"image_error_width_limit_exceeded", String.valueOf(options.getMaxWidth()), String.valueOf(options.getMaxWidth() + 1));
-	}
-
-	/**
-	 * Test resizing an image, which exceeds the maximum allowed resize height proportionally by only setting a new width
-	 * @throws Exception
-	 */
-	@Test
-	public void testLargeImageResizeProp() throws Exception {
-		HibNode node = folder("news");
-		String nodeUuid = tx(() -> node.getUuid());
-
-		// 1. Upload large image
-		uploadImageType(node, "en", "image", "blume_large", extension, fileType);
-
-		// 2. Resize image
-		ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(100).setResizeMode(ResizeMode.PROP);
-		MeshBinaryResponse result = call(() -> client().downloadBinaryField(PROJECT_NAME, nodeUuid, "en", "image", params));
-
-		// 3. Validate the resized image
-		validateResizeImage(result, null, params, 100, 118);
-	}
-
-	/**
-	 * Test resizing an image, which exceeds the maximum allowed resize height proportionally by setting a new width and the height to "auto"
-	 * @throws Exception
-	 */
-	@Test
-	public void testLargeImageResizePropWithAuto() throws Exception {
-		HibNode node = folder("news");
-		String nodeUuid = tx(() -> node.getUuid());
-
-		// 1. Upload large image
-		uploadImageType(node, "en", "image", "blume_large", extension, fileType);
-
-		// 2. Resize image
-		ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(100).setHeight("auto").setResizeMode(ResizeMode.PROP);
-		MeshBinaryResponse result = call(() -> client().downloadBinaryField(PROJECT_NAME, nodeUuid, "en", "image", params));
-
-		// 3. Validate the resized image
-		validateResizeImage(result, null, params, 100, 118);
-	}
-
-	/**
-	 * Test resizing an image, which exceeds the maximum allowed resize height proportionally by only setting a new width (which would result with a height too large)
-	 * @throws Exception
-	 */
-	@Test
-	public void testLargeImageResizePropTooLarge() throws Exception {
-		HibNode node = folder("news");
-		String nodeUuid = tx(() -> node.getUuid());
-
-		// 1. Upload large image
-		uploadImageType(node, "en", "image", "blume_large", extension, fileType);
-		int originalWidth = 2000;
-		int originalHeight = 2372;
-
-		// 2. Resize image
-		ImageManipulatorOptions options = options().getImageOptions();
-		int requestedWidth = options.getMaxWidth();
-		int expectedHeight = originalHeight * requestedWidth / originalWidth;
-		ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(requestedWidth).setResizeMode(ResizeMode.PROP);
-		call(() -> client().downloadBinaryField(PROJECT_NAME, nodeUuid, "en", "image", params), BAD_REQUEST,
-				"image_error_height_limit_exceeded", String.valueOf(options.getMaxWidth()), String.valueOf(expectedHeight));
-	}
-
-	/**
-	 * Test resizing an image, which exceeds the maximum allowed resize height proportionally by setting a new width (which would result with a height too large) and the height to "auto"
-	 * @throws Exception
-	 */
-	@Test
-	public void testLargeImageResizePropWithAutoTooLarge() throws Exception {
-		HibNode node = folder("news");
-		String nodeUuid = tx(() -> node.getUuid());
-
-		// 1. Upload large image
-		uploadImageType(node, "en", "image", "blume_large", extension, fileType);
-		int originalWidth = 2000;
-		int originalHeight = 2372;
-
-		// 2. Resize image
-		ImageManipulatorOptions options = options().getImageOptions();
-		int requestedWidth = options.getMaxWidth();
-		int expectedHeight = originalHeight * requestedWidth / originalWidth;
-		ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(requestedWidth).setHeight("auto").setResizeMode(ResizeMode.PROP);
-		call(() -> client().downloadBinaryField(PROJECT_NAME, nodeUuid, "en", "image", params), BAD_REQUEST,
-				"image_error_height_limit_exceeded", String.valueOf(options.getMaxWidth()), String.valueOf(expectedHeight));
 	}
 
 	@Test
@@ -387,7 +302,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 		params.setHeight("auto");
 
 		NodeResponse transformResponse = call(() -> client().transformNodeBinaryField(PROJECT_NAME, uuid, "en", version, "image", params));
-		assertEquals("The image should have been in the original Height of 1376", 1376, transformResponse.getFields().getBinaryField("image").getHeight().intValue());
+		assertEquals("The image should have benn in the original Height of 1376", 1376, transformResponse.getFields().getBinaryField("image").getHeight().intValue());
 		assertEquals("The image should have been resized", 200, transformResponse.getFields().getBinaryField("image").getWidth().intValue());
 		MeshCoreAssertion.assertThat(testContext).hasUploads(2, 2).hasTempFiles(0).hasTempUploads(0);
 

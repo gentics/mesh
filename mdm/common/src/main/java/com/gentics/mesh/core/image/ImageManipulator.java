@@ -5,13 +5,11 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.Map;
 
-import com.gentics.mesh.core.data.HibImageDataElement;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.image.ImageManipulation;
-import com.gentics.mesh.parameter.image.ResizeMode;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
@@ -38,11 +36,10 @@ public interface ImageManipulator {
 	 * @param s3ObjectKey
 	 * @param cacheS3ObjectKey
 	 * @param filename
-	 * @param image
 	 * @param parameters
 	 */
 	Completable handleS3CacheResize(String bucketName, String cacheBucketName, String s3ObjectKey,
-			String cacheS3ObjectKey, String filename, HibImageDataElement image, ImageManipulationParameters parameters);
+			String cacheS3ObjectKey, String filename, ImageManipulationParameters parameters);
 
 	/**
 	 * Resize the given s3 binary data and return the resulting file.
@@ -50,10 +47,9 @@ public interface ImageManipulator {
 	 * @param bucketName
 	 * @param s3ObjectKey
 	 * @param filename
-	 * @param image
 	 * @param parameters
 	 */
-	Single<File> handleS3Resize(String bucketName, String s3ObjectKey, String filename, HibImageDataElement image,
+	Single<File> handleS3Resize(String bucketName, String s3ObjectKey, String filename,
 			ImageManipulationParameters parameters);
 
 	/**
@@ -120,13 +116,11 @@ public interface ImageManipulator {
 		Integer originalHeight = binary.getImageHeight();
 		Integer originalWidth = binary.getImageWidth();
 
-		if (imageParams.getResizeMode() == ResizeMode.SMART) {
-			if ("auto".equals(imageParams.getHeight())) {
-				imageParams.setHeight(originalHeight);
-			}
-			if ("auto".equals(imageParams.getWidth())) {
-				imageParams.setWidth(originalWidth);
-			}
+		if ("auto".equals(imageParams.getHeight())) {
+			imageParams.setHeight(originalHeight);
+		}
+		if ("auto".equals(imageParams.getWidth())) {
+			imageParams.setWidth(originalWidth);
 		}
 		return imageParams;
 	}

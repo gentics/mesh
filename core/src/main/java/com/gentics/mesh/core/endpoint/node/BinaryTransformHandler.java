@@ -223,7 +223,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 		s3UploadContext.setS3BinaryUuid(UUIDUtil.randomUUID());
 		s3UploadContext.setS3ObjectKey(s3ObjectKey);
 		imageManipulator
-				.handleS3Resize(options.getS3Options().getBucket(), s3ObjectKey, fileName, s3binaryField.getBinary(), parameters)
+				.handleS3Resize(options.getS3Options().getBucket(), s3ObjectKey, fileName, parameters)
 				.flatMap(file -> {
 					// The image was stored and hashed. Now we need to load the stored file again and check the image properties
 					Single<ImageInfo> info = imageManipulator.readImageInfo(file.getName());
