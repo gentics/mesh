@@ -17,7 +17,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<skip.doc.package>true</skip.doc.package>
+		<skip.doc.package>false</skip.doc.package>
 	</properties>
 
 	<dependencyManagement>
@@ -71,30 +71,6 @@
 		</resources>
 		<plugins>
 			<plugin>
-				<artifactId>maven-resources-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>make-html-dir</id>
-						<phase>validate</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${basedir}/target/html</outputDirectory>
-							<resources>
-								<resource>
-									<directory>src/main/docs</directory>
-									<filtering>true</filtering>
-									<includes>
-										<include>just_to_create_dir_from_maven</include>
-									</includes>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
 				<version>1.5.0</version>
@@ -140,6 +116,7 @@
 						<configuration>
 							<skip>${skip.doc.package}</skip>
 							<executable>${basedir}/build/dockerBuild.sh</executable>
+							<successCodes>0,255</successCodes>
 						</configuration>
 					</execution>
 				</executions>
@@ -157,9 +134,23 @@
 						<configuration>
 							<skipAssembly>${skip.doc.package}</skipAssembly>
 							<attach>true</attach>
-							<appendAssemblyId>false</appendAssemblyId>
+							<appendAssemblyId>true</appendAssemblyId>
 							<descriptors>
 								<descriptor>${project.basedir}/src/assembly/maven/doc-package.xml</descriptor>
+							</descriptors>
+						</configuration>
+					</execution>
+					<execution>
+						<id>src</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<attach>true</attach>
+							<appendAssemblyId>true</appendAssemblyId>
+							<descriptors>
+								<descriptor>${project.basedir}/src/assembly/maven/src-package.xml</descriptor>
 							</descriptors>
 						</configuration>
 					</execution>

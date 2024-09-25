@@ -25,7 +25,7 @@ docker push registry.heroku.com/mesh-test/worker
 
 == Kubernetes
 
-We provide a https://getmesh.io/premium-features/helm-chart/[Helm Chart for Gentics Mesh] as a premium feature.
+We provide a link:{{< relref "../premium-features/helm-chart" >}}[Helm Chart for Gentics Mesh] as a premium feature.
 
 == Linux (via systemd)
 

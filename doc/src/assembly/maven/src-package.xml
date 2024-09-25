@@ -2,22 +2,32 @@
 	xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0 http://maven.apache.org/xsd/assembly-1.1.0.xsd">
-	<id>doc</id>
+	<id>src</id>
 	<formats>
 		<format>zip</format>
 	</formats>
 	<fileSets>
 		<fileSet>
-			<directory>${basedir}/target/html/docs</directory>
+			<directory>${basedir}/src/main/docs</directory>
 			<outputDirectory>/docs</outputDirectory>
 			<includes>
 				<include>**</include>
 			</includes>
-			<excludes>
-				<exclude>**/*.adoc-include</exclude>
-				<exclude>**/*.adoc</exclude>
-				<exclude>**/*.asciidoc</exclude>
-			</excludes>
+		</fileSet>
+        <fileSet>
+			<directory>${basedir}/src/main/hugo/content</directory>
+			<outputDirectory>/hugo/content</outputDirectory>
+			<includes>
+				<include>**</include>
+			</includes>
+		</fileSet>
+		<fileSet>
+			<directory>${basedir}/..</directory>
+			<outputDirectory>/hugo/content</outputDirectory>
+			<includes>
+				<include>CHANGELOG.adoc</include>
+				<include>LTS-CHANGELOG.adoc</include>
+			</includes>
 		</fileSet>
 	</fileSets>
 	<includeBaseDirectory>false</includeBaseDirectory>

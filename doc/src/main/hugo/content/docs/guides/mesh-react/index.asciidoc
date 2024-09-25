@@ -580,7 +580,7 @@ We just need to add the `proxy` field to our `package.json` file. This way the G
 …
 ----
 
-TIP: In production we could either use an link:https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/[nginx proxy] or use link:https://getmesh.io/docs/references/#_cors[CORS] to utilize a different domain for our Gentics Mesh server.
+TIP: In production we could either use an link:https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/[nginx proxy] or use link:{{< relref "../references/" >}}#_cors[CORS] to utilize a different domain for our Gentics Mesh server.
 
 === Content
 

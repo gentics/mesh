@@ -26,11 +26,11 @@
 | *MESH_PLUGIN_TIMEOUT*
 | Override the configured plugin timeout.
 
-| *MESH_GRAPHQL_SCHEMA_CACHE_SIZE*
-| Override the configured graphQl schema cache size.
-
 | *MESH_LANGUAGES_FILE_PATH*
 | Override the path to the optional languages file
+
+| *MESH_GRAPHQL_SCHEMA_CACHE_SIZE*
+| Override the configured graphQl schema cache size.
 
 | *MESH_S3_CORS_ALLOWED_METHODS*
 | Override the configured AWS S3 CORS allowed methods.
@@ -386,11 +386,11 @@
 | *MESH_ELASTICSEARCH_SYNC_BATCH_SIZE*
 | Override the search sync batch size
 
-| *MESH_HTTP_ENABLE*
-| Override the configured http server flag.
-
 | *MESH_LIVE_PATH*
 | Path to the mesh live file.
+
+| *MESH_HTTP_ENABLE*
+| Override the configured http server flag.
 
 | *MESH_HTTP_PORT*
 | Override the configured server http port.

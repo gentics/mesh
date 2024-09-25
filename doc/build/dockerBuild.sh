@@ -4,9 +4,15 @@ BRANCH=$(git branch --show-current)
 SCRIPT=$(realpath $0)
 BASEDIR=$(dirname $SCRIPT)
 ROOT=$(realpath $BASEDIR/..)
-CONTENTROOT=$ROOT/src/main/hugo
+SRCCONTENTROOT=$ROOT/src/main/hugo
+CONTENTROOT=$ROOT/target/hugo
+HTMLROOT=$ROOT/target/html
 
 echo "Generating HTML out of: " $ROOT
+
+mkdir -p $CONTENTROOT
+mkdir -p $HTMLROOT
+cp -Rf $SRCCONTENTROOT/* $CONTENTROOT
 
 # Fetch examples
 EXAMPLEDIR=$CONTENTROOT/content/examples
@@ -17,31 +23,18 @@ fi
 # Fetch Mesh Enterprise, if available
 ENTERPRISEDIR=$ROOT/../../mesh-enterprise
 if [ -e $ENTERPRISEDIR ] ; then
-  cp -R $ENTERPRISEDIR/CHANGELOG.adoc $CONTENTROOT/content/docs/sql-changelog.asciidoc
-  cp -R $ENTERPRISEDIR/ENTERPRISE-CHANGELOG.adoc $CONTENTROOT/content/docs/enterprise-changelog.asciidoc
-  cp -R $ENTERPRISEDIR/changelog-2.adoc-include $CONTENTROOT/content/docs/sql-changelog-2.adoc-include
-  cp -R $ENTERPRISEDIR/changelog-3.adoc-include $CONTENTROOT/content/docs/enterprise-changelog-3.adoc-include
+  cp -Rf $ENTERPRISEDIR/CHANGELOG.adoc $CONTENTROOT/content/docs/sql-changelog.asciidoc
+  cp -Rf $ENTERPRISEDIR/ENTERPRISE-CHANGELOG.adoc $CONTENTROOT/content/docs/enterprise-changelog.asciidoc
+  cp -Rf $ENTERPRISEDIR/changelog-2.adoc-include $CONTENTROOT/content/docs/sql-changelog-2.adoc-include
+  cp -Rf $ENTERPRISEDIR/changelog-3.adoc-include $CONTENTROOT/content/docs/enterprise-changelog-3.adoc-include
 fi
 
 # Copy parts in place
-cp -R $ROOT/src/main/docs/generated/api $CONTENTROOT/content/docs/api
-cp -R $ROOT/src/main/docs/generated/search $CONTENTROOT/content/docs/search
-cp -R $ROOT/src/main/docs/generated/models $CONTENTROOT/content/docs/examples/models
-cp -R $ROOT/src/main/docs/generated/tables $CONTENTROOT/content/docs/examples/tables
-cp -R $ROOT/../CHANGELOG.adoc $CONTENTROOT/content/docs/changelog.asciidoc
-cp -R $ROOT/../LTS-CHANGELOG.adoc $CONTENTROOT/content/docs/lts-changelog.asciidoc
+cp -Rf $ROOT/src/main/docs/generated/api $CONTENTROOT/content/docs/api
+cp -Rf $ROOT/src/main/docs/generated/search $CONTENTROOT/content/docs/search
+cp -Rf $ROOT/src/main/docs/generated/models $CONTENTROOT/content/docs/examples/models
+cp -Rf $ROOT/src/main/docs/generated/tables $CONTENTROOT/content/docs/examples/tables
+cp -Rf $ROOT/../CHANGELOG.adoc $CONTENTROOT/content/docs/changelog.asciidoc
+cp -Rf $ROOT/../LTS-CHANGELOG.adoc $CONTENTROOT/content/docs/lts-changelog.asciidoc
 
-docker run -v $CONTENTROOT:/site -v $ROOT/target/html:/site/docs --user 1000:1000 --rm gentics/hugo-asciidoctor /site/scripts/build.sh
-
-# Cleanup
-rm -rf $CONTENTROOT/content/docs/api
-rm -rf $CONTENTROOT/content/docs/search
-rm -rf $CONTENTROOT/content/docs/examples/models
-rm -rf $CONTENTROOT/content/docs/examples/tables
-rm -rf $CONTENTROOT/content/docs/changelog.asciidoc
-rm -rf $CONTENTROOT/content/docs/lts-changelog.asciidoc
-rm -rf $CONTENTROOT/content/docs/sql-changelog.asciidoc
-rm -rf $CONTENTROOT/content/docs/enterprise-changelog.asciidoc
-rm -rf $CONTENTROOT/content/docs/sql-changelog-2.adoc-include
-rm -rf $CONTENTROOT/content/docs/enterprise-changelog-3.adoc-include
-rm -rf $EXAMPLEDIR
+docker run -v $CONTENTROOT:/site -v $HTMLROOT:/site/docs --user 1000:1000 --rm gentics/hugo-asciidoctor /site/scripts/build.sh

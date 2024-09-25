@@ -1,6 +1,6 @@
 languageCode = "en-us"
 title = "Gentics Mesh - The open source headless CMS for developers"
-baseURL = "https://getmesh.io/"
+baseURL = "https://gentics.com/"
 theme = "gentics"
 
 DefaultContentLanguage = "en-us"
