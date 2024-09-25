@@ -6,5 +6,5 @@ else
   TAG=$1
 fi
 
-docker build -t gtx-docker-jenkinsbuilds.docker.apa-it.at/gentics/jenkinsbuilds/mesh-slave:$TAG .
-docker push gtx-docker-jenkinsbuilds.docker.apa-it.at/gentics/jenkinsbuilds/mesh-slave:$TAG
+docker build -t push.docker.gentics.com/docker-jenkinsbuilds/jenkinsbuilds/mesh-slave:$TAG .
+docker push push.docker.gentics.com/docker-jenkinsbuilds/jenkinsbuilds/mesh-slave:$TAG
