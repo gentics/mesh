@@ -6,7 +6,7 @@ sort-key: 9999
 teaser: Have a an existing SQL database, and want to use it as a storage for Gentics Mesh, but no Mesh Database Connector openly available for it? Take a look here.
 fineprint: Gentics Mesh provides a feature of using one of the mainstream SQL RDBMSs as a storage for Mesh, to allow more control over the data being served.
 status: details
-version: 1.9.x
+version: 3.0.x
 licence: commercial
 author: Gentics
 pageType: feature
