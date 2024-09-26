@@ -1,6 +1,9 @@
 package com.gentics.mesh.distributed.coordinator;
 
+import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -18,17 +21,16 @@ import com.gentics.mesh.core.rest.admin.cluster.ServerRole;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.cluster.CoordinationTopology;
-import com.hazelcast.core.Cluster;
+import com.hazelcast.cluster.Cluster;
+import com.hazelcast.cluster.Member;
+import com.hazelcast.cluster.MembershipEvent;
+import com.hazelcast.cluster.MembershipListener;
+import com.hazelcast.cluster.impl.MemberImpl;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.ILock;
-import com.hazelcast.core.ITopic;
-import com.hazelcast.core.Member;
-import com.hazelcast.core.MemberAttributeEvent;
-import com.hazelcast.core.MembershipEvent;
-import com.hazelcast.core.MembershipListener;
-import com.hazelcast.core.Message;
-import com.hazelcast.core.MessageListener;
-import com.hazelcast.util.function.Consumer;
+import com.hazelcast.cp.lock.FencedLock;
+import com.hazelcast.topic.ITopic;
+import com.hazelcast.topic.Message;
+import com.hazelcast.topic.MessageListener;
 
 import dagger.Lazy;
 
@@ -61,9 +63,9 @@ public class MasterElector {
 
 	private final Lazy<HazelcastInstance> hazelcast;
 
-	protected ILock masterLock;
+	protected FencedLock masterLock;
 	protected Member masterMember;
-	protected String localUuid;
+	protected UUID localUuid;
 	protected Pattern coordinatorRegex;
 
 	/**
@@ -94,12 +96,12 @@ public class MasterElector {
 	 */
 	public void start() {
 		HazelcastInstance hz = hazelcast.get();
-		masterLock = hz.getLock(MASTER);
+		masterLock = hz.getCPSubsystem().getLock(MASTER);
 		Member localMember = localMember();
 		localUuid = localMember.getUuid();
 		int port = options.getHttpServerOptions().getPort();
-		localMember.setIntAttribute(MESH_HTTP_PORT_ATTR, port);
-		localMember.setStringAttribute(MESH_NODE_NAME_ATTR, options.getNodeName());
+		setAttribute(localMember, MESH_HTTP_PORT_ATTR, port);
+		setAttribute(localMember, MESH_NODE_NAME_ATTR, options.getNodeName());
 		addMessageListeners();
 		electMaster();
 		findCurrentMaster();
@@ -153,7 +155,7 @@ public class MasterElector {
 				if (clusterOptions.getCoordinatorTopology() == CoordinationTopology.MASTER_REPLICA) {
 					database.setToMaster();
 				}
-				localMember().setBooleanAttribute(MASTER, true);
+				setAttribute(localMember(), MASTER, true);
 				log.info("Cluster node was elected as new master");
 			} else if (cluster.getMembers().stream()
 					.filter(m -> isMaster(m))
@@ -174,7 +176,7 @@ public class MasterElector {
 	 * @return
 	 */
 	private boolean isElectable(Member member) {
-		String name = member.getStringAttribute(MESH_NODE_NAME_ATTR);
+		String name = member.getAttribute(MESH_NODE_NAME_ATTR);
 
 		// Check whether name of the node matches the coordinator regex.
 		if (coordinatorRegex != null) {
@@ -220,13 +222,6 @@ public class MasterElector {
 			}
 
 			@Override
-			public void memberAttributeChanged(MemberAttributeEvent memberAttributeEvent) {
-				if (memberAttributeEvent.getKey().equals(MASTER)) {
-					findCurrentMaster();
-				}
-			}
-
-			@Override
 			public void memberAdded(MembershipEvent membershipEvent) {
 				log.info("Added member: {}", membershipEvent.getMember().getUuid());
 				findCurrentMaster();
@@ -261,7 +256,7 @@ public class MasterElector {
 					database.setToMaster();
 				}
 				Member localMember = localMember();
-				localMember.setBooleanAttribute(MASTER, true);
+				setAttribute(localMember, MASTER, true);
 			});
 		};
 
@@ -277,7 +272,7 @@ public class MasterElector {
 				.findFirst();
 		if (master.isPresent()) {
 			masterMember = master.get();
-			log.info("Updated master member {" + masterMember.getStringAttribute(MESH_NODE_NAME_ATTR) + "}");
+			log.info("Updated master member {" + masterMember.getAttribute(MESH_NODE_NAME_ATTR) + "}");
 		} else {
 			log.warn("Could not find master member in cluster.");
 			masterMember = null;
@@ -290,7 +285,7 @@ public class MasterElector {
 	private void giveUpMasterFlag() {
 		Member localMember = localMember();
 		if (isMaster(localMember)) {
-			localMember.setBooleanAttribute(MASTER, false);
+			setAttribute(localMember, MASTER, false);
 		}
 	}
 
@@ -302,7 +297,7 @@ public class MasterElector {
 	 * @return true for the master
 	 */
 	private static boolean isMaster(Member member) {
-		return member.getBooleanAttribute(MASTER) == Boolean.TRUE;
+		return Boolean.parseBoolean(member.getAttributes().getOrDefault(MASTER, "false")) == Boolean.TRUE;
 	}
 
 	/**
@@ -332,8 +327,8 @@ public class MasterElector {
 		if (masterMember == null) {
 			return null;
 		}
-		String name = masterMember.getStringAttribute(MESH_NODE_NAME_ATTR);
-		int port = masterMember.getIntAttribute(MESH_HTTP_PORT_ATTR);
+		String name = masterMember.getAttribute(MESH_NODE_NAME_ATTR);
+		int port = Integer.parseInt(masterMember.getAttribute(MESH_HTTP_PORT_ATTR));
 		boolean isMasterLocal = isLocal(masterMember);
 		String host = "localhost";
 		if (!isMasterLocal) {
@@ -344,6 +339,10 @@ public class MasterElector {
 			log.debug("Our master member: " + server);
 		}
 		return server;
+	}
+
+	private <T> void setAttribute(Member member, String key, T value) {
+		((MemberImpl) member).setAttribute(key, Objects.toString(value));
 	}
 
 	/**
