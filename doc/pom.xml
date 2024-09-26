@@ -17,7 +17,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<skip.doc.package>false</skip.doc.package>
+		<skip.doc.package>true</skip.doc.package>
 	</properties>
 
 	<dependencyManagement>
