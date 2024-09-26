@@ -19,13 +19,13 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.util.CompareUtils;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A {@link MicronodeGraphField} is an {@link MeshEdge} which links a {@link GraphFieldContainer} to a {@link Micronode} vertex.
  */
-public interface HibMicronodeField extends HibListableField {
+public interface HibMicronodeField extends HibListableField, HibReferenceField<HibMicronode> {
 
 	Logger log = LoggerFactory.getLogger(HibMicronodeField.class);
 
@@ -58,6 +58,11 @@ public interface HibMicronodeField extends HibListableField {
 				return micronode.transformToRestSync(ac, level);
 			}
 		}
+	}
+
+	@Override
+	default HibMicronode getReferencedEntity() {
+		return getMicronode();
 	}
 
 	@Override

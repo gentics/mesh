@@ -24,12 +24,14 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.HibDeletableField;
+import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -114,8 +116,8 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	}
 
 	@Override
-	public Stream<HibNodeField> getInboundReferences(HibNode node) {
-		return toGraph(node).getInboundReferences();
+	public Stream<HibNodeField> getInboundReferences(HibNode node, boolean lookupInFields, boolean lookupInLists) {
+		return toGraph(node).getInboundReferences(lookupInFields, lookupInLists);
 	}
 
 	@Override
@@ -141,6 +143,11 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	@Override
 	public HibNode getNode(HibNodeFieldContainer content) {
 		return content.getNode();
+	}
+
+	@Override
+	public HibNodeFieldContainer getNodeFieldContainer(HibField field) {
+		return ((MeshEdgeImpl) field).getImpl().outV(NodeGraphFieldContainerImpl.class).nextOrNull();
 	}
 
 	@Override

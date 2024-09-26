@@ -5,11 +5,13 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -19,13 +21,19 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
+import com.gentics.graphqlfilter.filter.operation.Combiner;
+import com.gentics.graphqlfilter.filter.operation.Comparison;
+import com.gentics.graphqlfilter.filter.operation.FieldOperand;
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
+import com.gentics.graphqlfilter.filter.operation.LiteralOperand;
+import com.gentics.mesh.ElementType;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractRootDaoWrapper;
 import com.gentics.mesh.core.data.dao.ContentDao;
@@ -39,6 +47,7 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -72,12 +81,6 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	@Override
 	public Result<? extends HibNode> findAll(HibProject project) {
 		return toGraph(project).findNodes();
-		// return toGraph(project).getNodeRoot().findAll();
-	}
-
-	@Override
-	public Page<? extends HibNode> findAll(HibProject project, InternalActionContext ac, PagingParameters pagingInfo) {
-		return toGraph(project).getNodeRoot().findAll(ac, pagingInfo);
 	}
 
 	@Override
@@ -108,6 +111,7 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 		return toGraph(node).getChildrenStream(ac, perm);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Map<HibNode, List<HibNode>> getChildren(Collection<HibNode> nodes, String branchUuid) {
 		return nodes.stream()
@@ -144,17 +148,17 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
-	public Map<HibNode, List<NodeContent>> getChildren(Set<HibNode> nodes, InternalActionContext ac, String branchUuid, List<String> languageTags, ContainerType type) {
+	public Map<HibNode, List<NodeContent>> getChildren(Set<HibNode> nodes, InternalActionContext ac, String branchUuid, List<String> languageTags, ContainerType type, PagingParameters sorting, Optional<FilterOperation<?>> maybeFilter) {
 		HibUser user = ac.getUser();
 		return nodes.stream()
-				.map(node -> Pair.of(node, getContentFromNode(Tx.get(), user, node, branchUuid, languageTags, type)))
+				.map(node -> Pair.of(node, getContentFromNode(Tx.get(), user, node, branchUuid, languageTags, type, sorting, maybeFilter)))
 				.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
 	}
 
-	private List<NodeContent> getContentFromNode(Tx tx, HibUser user, HibNode sourceNode, String branchUuid, List<String> languageTags, ContainerType type) {
+	private List<NodeContent> getContentFromNode(Tx tx, HibUser user, HibNode sourceNode, String branchUuid, List<String> languageTags, ContainerType type, PagingParameters sorting, Optional<FilterOperation<?>> maybeFilter) {
 		UserDao userDao = tx.userDao();
 		ContentDao contentDao = tx.contentDao();
-		return toGraph(sourceNode).getChildren(branchUuid)
+		return toGraph(sourceNode).getChildren(branchUuid, type, sorting, maybeFilter, Optional.of(user))
 				.stream()
 				.filter(node -> userDao.hasPermissionForId(user, node.getId(), type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM))
 				.map(node -> {
@@ -175,9 +179,13 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
-	public Stream<? extends HibNode> findAllStream(HibProject project, InternalActionContext ac, InternalPermission perm) {
-		Project graphProject = toGraph(project);
-		return graphProject.getNodeRoot().findAllStream(ac, perm);
+	public long countAllContent(HibProject project, InternalActionContext ac, List<String> languageTags, ContainerType type, Optional<FilterOperation<?>> maybeFilter) {
+		return toGraph(project).getNodeRoot().countAll(ac, type == ContainerType.PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM, Optional.ofNullable(type), maybeFilter);
+	}
+
+	@Override
+	public Stream<? extends HibNode> findAllStream(HibProject project, InternalActionContext ac, InternalPermission perm, PagingParameters paging, Optional<ContainerType> maybeType, Optional<FilterOperation<?>> maybeFilter) {
+		return toGraph(project).getNodeRoot().findAllStream(ac, perm, paging, maybeType, maybeFilter);
 	}
 
 	@Override
@@ -248,8 +256,8 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
-	public Stream<HibNodeField> getInboundReferences(HibNode node) {
-		return toGraph(node).getInboundReferences();
+	public Stream<HibNodeField> getInboundReferences(HibNode node, boolean lookupInFields, boolean lookupInLists) {
+		return toGraph(node).getInboundReferences(lookupInFields, lookupInLists);
 	}
 
 	@Override
@@ -271,5 +279,27 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 				setParentNode(node, newBranch.getUuid(), oldParent);
 			}
 		});
+	}
+
+	@SuppressWarnings("rawtypes")
+	@Override
+	public Stream<NodeContent> findAllContent(HibSchemaVersion schemaVersion, InternalActionContext ac, List<String> languageTags, ContainerType type, PagingParameters paging,	Optional<FilterOperation<?>> maybeFilter) {
+		if (maybeFilter.isPresent()) {
+			ContentDao contentDao = Tx.get().contentDao();
+			// TODO use an actual version, not the schema
+			FilterOperation<?> schemaVersionFilter = Comparison.eq(new FieldOperand<>(ElementType.NODE, "schema", Optional.empty(), Optional.of("schema")), new LiteralOperand<>(schemaVersion.getSchemaContainer().getUuid(), true), StringUtils.EMPTY);
+			FilterOperation allFilter = maybeFilter.map(filter -> (FilterOperation) Combiner.and(Arrays.asList(schemaVersionFilter, filter), StringUtils.EMPTY)).orElse(schemaVersionFilter);
+			return findAllStream(Tx.get().getProject(ac), ac, type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM, paging, Optional.of(allFilter)).map(node -> {
+				HibNodeFieldContainer container = contentDao.findVersion(node, ac, languageTags, type);
+				return new NodeContent(node, container, languageTags, type);
+			}).filter(content -> content.getContainer() != null);
+		} else {
+			return NodeDaoWrapper.super.findAllContent(schemaVersion, ac, languageTags, type, paging, maybeFilter);
+		}
+	}
+
+	@Override
+	public Set<String> findUsedLanguages(HibProject project, Collection<String> languageTags, boolean assignedLanguagesOnly) {
+		return toGraph(project).getNodeRoot().findUsedLanguages(languageTags, assignedLanguagesOnly);
 	}
 }

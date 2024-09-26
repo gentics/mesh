@@ -7,9 +7,7 @@ import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.logging.SLF4JLogDelegateFactory;
+import org.slf4j.LoggerFactory;
 
 /**
  * Configurator for logback logging.
@@ -27,7 +25,6 @@ public class LoggingConfigurator {
 			writeFile(logbackFile);
 		}
 		System.setProperty("logback.configurationFile", logbackFile.getAbsolutePath());
-		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
 		LoggerFactory.getLogger(LoggingConfigurator.class);
 	}
 

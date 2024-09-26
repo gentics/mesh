@@ -25,8 +25,8 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Represents an incoming node reference. Use the fromContent methods to create a stream of references.
@@ -53,11 +53,22 @@ public class NodeReferenceIn {
 	 * @return
 	 */
 	public static Stream<NodeReferenceIn> fromContent(GraphQLContext gc, NodeContent content, ContainerType type) {
+		return fromContent(gc, content, type, true, true, true, true);
+	}
+
+	/**
+	 * Creates a stream of incoming node references for the given content.
+	 * @param gc
+	 * @param content
+	 * @param type
+	 * @return
+	 */
+	public static Stream<NodeReferenceIn> fromContent(GraphQLContext gc, NodeContent content, ContainerType type, boolean lookupInFields, boolean lookupInLists, boolean lookupInContent, boolean lookupInMicrocontent) {
 		Tx tx = Tx.get();
 		ContentDao contentDao = tx.contentDao();
 		String branchUuid = tx.getBranch(gc).getUuid();
-		return contentDao.getInboundReferences(content.getNode())
-			.flatMap(ref -> ref.getReferencingContents()
+		return contentDao.getInboundReferences(content.getNode(), lookupInFields, lookupInLists)
+			.flatMap(ref -> ref.getReferencingContents(lookupInContent, lookupInMicrocontent)
 				.filter(container -> {
 					if (type == DRAFT && contentDao.isDraft(container, branchUuid)) {
 						return true;

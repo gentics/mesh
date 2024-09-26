@@ -58,6 +58,21 @@ public interface FieldSchemaContainer extends RestModel {
 	FieldSchemaContainer setDescription(String description);
 
 	/**
+	 * Return the 'exclude from indexing' flag.
+	 * 
+	 * @return flag
+	 */
+	Boolean getNoIndex();
+
+	/**
+	 * Set the 'exclude from indexing' flag.
+	 * 
+	 * @param flag
+	 * @return self
+	 */
+	FieldSchemaContainer setNoIndex(Boolean noIndex);
+
+	/**
 	 * Return the field with the given name.
 	 * 
 	 * @param fieldName
@@ -190,6 +205,13 @@ public interface FieldSchemaContainer extends RestModel {
 	 * @param fields
 	 */
 	FieldSchemaContainer setFields(List<FieldSchema> fields);
+
+	/**
+	 * Does this model describe a microschema?
+	 * 
+	 * @return
+	 */
+	boolean isMicroschema();
 
 	/**
 	 * Validate the schema for correctness.

@@ -8,9 +8,13 @@ import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.madl.field.FieldType.STRING;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
+import static com.gentics.mesh.util.StreamUtil.toStream;
 
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
@@ -19,11 +23,14 @@ import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.data.dao.TagFamilyDao;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
+import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
@@ -33,6 +40,7 @@ import com.gentics.mesh.core.data.search.BucketableElementHelper;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.result.Result;
@@ -40,8 +48,8 @@ import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @see TagFamily
@@ -64,6 +72,8 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 		index.createIndex(edgeIndex(HAS_TAG));
 		index.createIndex(edgeIndex(HAS_TAG));
 		index.createIndex(edgeIndex(HAS_TAG).withInOut().withOut());
+		addUserTrackingRelation(TagFamilyImpl.class);
+
 		index.createIndex(vertexIndex(TagFamilyImpl.class)
 				.withName(TagFamily.UNIQUENAME_INDEX_NAME)
 				.withField(UNIQUENAME_PROPERTY_KEY, STRING)
@@ -216,5 +226,26 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 	@Override
 	public Result<? extends HibTag> findAllTags() {
 		return findAll();
+	}
+
+	@Override
+	public Page<? extends Tag> findAll(InternalActionContext ac, PagingParameters pagingInfo, Optional<FilterOperation<?>> maybeExtraFilter) {
+		PagingParameters sorting = mapSorting(pagingInfo);
+		Optional<String> maybeParsedFilter = maybeExtraFilter
+				.map(extraFilter -> parseFilter(extraFilter, ContainerType.PUBLISHED, ac.getUser(), READ_PERM, Optional.empty()))
+				.or(() -> permissionFilter(ac.getUser(), READ_PERM, Optional.empty(), Optional.empty()));
+		Stream<? extends Tag> stream = toStream(db().getVertices(
+				getPersistanceClass(),
+				new String[] {},
+				new Object[]{},
+				sorting,
+				Optional.empty(),
+				maybeParsedFilter
+			)).map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
+		if (PersistingRootDao.shouldSort(pagingInfo) || maybeExtraFilter.isPresent()) {
+			return new PageImpl<>(stream.collect(Collectors.toList()), pagingInfo, db().countVertices(getPersistanceClass(), new String[] {}, new Object[] {}, maybeParsedFilter, Optional.empty()));
+		} else {
+			return new DynamicStreamPageImpl<>(stream, pagingInfo, maybeExtraFilter.isPresent());
+		}
 	}
 }

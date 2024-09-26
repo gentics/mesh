@@ -61,8 +61,9 @@ public class AuthenticationEndpoint extends AbstractInternalEndpoint {
 		InternalEndpointRoute basicAuthLoginEndpoint = createRoute();
 		basicAuthLoginEndpoint.path("/login");
 		basicAuthLoginEndpoint.method(GET);
-		// basicAuthLoginEndpoint.produces(APPLICATION_JSON);
-		basicAuthLoginEndpoint.description("Login via basic authentication.");
+		basicAuthLoginEndpoint.produces(APPLICATION_JSON);
+		basicAuthLoginEndpoint.exampleResponse(OK, miscExamples.getAuthTokenResponse(), "Generated login token.");
+		basicAuthLoginEndpoint.description("Login via basic or bearer authentication.");
 		basicAuthLoginEndpoint.exampleResponse(OK, "Login was sucessful");
 		basicAuthLoginEndpoint.handler(basicAuthLoginHandler);
 

@@ -8,13 +8,19 @@ import static graphql.schema.GraphQLObjectType.newObject;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.tuple.Pair;
+
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.core.data.HibNamedElement;
 import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.schema.HibSchema;
@@ -28,14 +34,15 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.filter.NodeFilter;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.PagingParameters;
 
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLOutputType;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Singleton
 public class SchemaTypeProvider extends AbstractTypeProvider {
@@ -106,6 +113,7 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 		}));
 
 		// .nodes
+		NodeFilter nodeFilter = NodeFilter.filter(context);
 		schemaType
 			.field(newPagingFieldWithFetcherBuilder("nodes", "Load nodes with this schema", env -> {
 				Tx tx = Tx.get();
@@ -113,12 +121,16 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 				GraphQLContext gc = env.getContext();
 				List<String> languageTags = getLanguageArgument(env);
 				ContainerType type = getNodeVersion(env);
+				PagingParameters pagingInfo = getPagingInfo(env);
 				SchemaDao schemaDao = tx.schemaDao();
-				Stream<? extends NodeContent> nodes = nodeDao.findAllContent(getSchemaContainerVersion(env), gc, languageTags, type);
+				Pair<Predicate<NodeContent>, Optional<FilterOperation<?>>> filters = parseFilters(env, nodeFilter);
+				Stream<? extends NodeContent> nodes = nodeDao.findAllContent(getSchemaContainerVersion(env), gc, languageTags, type, pagingInfo, filters.getRight());
 
-				return applyNodeFilter(env, nodes);
-			}, NODE_PAGE_TYPE_NAME)
-				.argument(NodeFilter.filter(context).createFilterArgument())
+				return applyNodeFilter(env, nodes, filters.getRight().isPresent()  && PersistingRootDao.shouldPage(pagingInfo), filters.getRight().isPresent());
+			}, NODE_PAGE_TYPE_NAME, true)
+				.argument(nodeFilter.createFilterArgument())
+				.argument(nodeFilter.createSortArgument())
+				.argument(createNativeFilterArg())
 				.argument(createLanguageTagArg(true)));
 
 		Builder fieldListBuilder = newObject().name(SCHEMA_FIELD_TYPE).description("List of schema fields");
@@ -167,7 +179,7 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 			SchemaVersionModel model = JsonUtil.readValue(schema.getJson(), SchemaModelImpl.class);
 			return model;
 		}
-		log.error("Invalid type {" + source + "}.");
+		log.error("Invalid type {" + source + "} for schema model loading.");
 		return null;
 	}
 }

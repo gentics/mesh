@@ -11,8 +11,8 @@ import java.util.Set;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.OkHttpClient.Builder;
@@ -89,7 +89,7 @@ public final class KeycloakUtils {
 
 		try (Response response = httpClient().newCall(request).execute()) {
 			if (!response.isSuccessful()) {
-				log.error(response.body().toString());
+				log.error("Error while loading certs.\n\t" + response.body().toString());
 				throw new RuntimeException("Error while loading certs. Got code {" + response.code() + "}");
 			}
 			JsonObject json = new JsonObject(response.body().string());
@@ -138,8 +138,7 @@ public final class KeycloakUtils {
 
 		try (Response response = httpClient().newCall(request).execute()) {
 			if (!response.isSuccessful()) {
-				log.error(response.body().toString());
-
+				log.error("Error while loading realm info.\n\t" + response.body().toString());
 				throw new RuntimeException("Error while loading realm info. Got code {" + response.code() + "}");
 			}
 			return new JsonObject(response.body().string());

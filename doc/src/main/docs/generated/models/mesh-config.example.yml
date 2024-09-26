@@ -5,7 +5,7 @@ languagesFilePath: null
 updateCheck: true
 vertxOptions:
   workerPoolSize: 20
-  eventPoolSize: 64
+  eventPoolSize: 2
   orderedBlockingHandlers: true
   eventBus:
     checkInterval: 30000
@@ -45,12 +45,14 @@ startInReadOnly: false
 versionPurgeMaxBatchSize: 10
 migrationMaxBatchSize: 50
 migrationTriggerInterval: 60000
+pluginUseHttp2: false
 httpServer:
   port: 8080
   sslPort: 8443
   host: "0.0.0.0"
   corsAllowedOriginPattern: ""
   corsAllowCredentials: false
+  useAlpn: false
   enableCors: false
   http: true
   ssl: false
@@ -58,9 +60,10 @@ httpServer:
   keyPath: "config/key.pem"
   clientAuthMode: "NONE"
   trustedCertPaths: []
-  verticleAmount: 64
-  serverTokens: true
+  verticleAmount: 2
+  minifyJson: true
   maxFormAttributeSize: -1
+  serverTokens: true
 monitoring:
   enabled: true
   port: 8081
@@ -107,6 +110,7 @@ upload:
   parserLimit: 40000
   parser: true
   metadataWhitelist: null
+  checkInterval: 60000
 security:
   tokenExpirationTime: 3600
   keystorePassword: "<Your Password>"
@@ -115,6 +119,7 @@ security:
   enableAnonymousAccess: true
   publicKeysPath: "config/public-keys.json"
 image:
+  mode: "ON_DEMAND"
   imageCacheDirectory: "data/binaryImageCache"
   maxWidth: 2048
   maxHeight: 2048
@@ -135,6 +140,7 @@ graphQL:
   asyncWaitTimeout: 120000
   schemaCacheSize: 1000
 storage:
+  nativeQueryFiltering: "NEVER"
   directory: "data/graphdb"
   backupDirectory: "data/backup"
   exportDirectory: "data/export"

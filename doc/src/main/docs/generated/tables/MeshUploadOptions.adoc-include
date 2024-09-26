@@ -12,6 +12,11 @@
 | integer
 | The upload size limit in bytes. Default: 262144000 (250 MB)
 
+| checkInterval
+| false
+| integer
+| Interval in milliseconds for performing binary check requests for binary fields where a check service URL is defined. For values less than one the check is disabled. (default: 60000).
+
 | directory
 | false
 | string

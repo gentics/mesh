@@ -1,0 +1,1 @@
+Now it's possible to use generated Mesh API key for the login request, with `apikey` string body parameter.

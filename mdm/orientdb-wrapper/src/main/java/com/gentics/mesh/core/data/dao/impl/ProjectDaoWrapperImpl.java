@@ -17,18 +17,13 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.schema.HibMicroschema;
-import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
-import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.result.Result;
-import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.parameter.PagingParameters;
 
 import dagger.Lazy;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * DAO for project operations.
@@ -43,11 +38,6 @@ public class ProjectDaoWrapperImpl extends AbstractCoreDaoWrapper<ProjectRespons
 	@Inject
 	public ProjectDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot) {
 		super(boot);
-	}
-
-	@Override
-	public Page<? extends Project> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
-		return boot.get().meshRoot().getProjectRoot().findAll(ac, pagingInfo);
 	}
 
 	@Override

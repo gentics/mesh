@@ -2,20 +2,26 @@ package com.gentics.mesh.core.data.dao.impl;
 
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.AbstractRootDaoWrapper;
+import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
+import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -95,13 +101,6 @@ public class TagFamilyDaoWrapperImpl extends AbstractRootDaoWrapper<TagFamilyRes
 	}
 
 	@Override
-	public Page<? extends TagFamily> findAll(HibProject project, InternalActionContext ac,
-			PagingParameters pagingInfo) {
-		Project graphProject = toGraph(project);
-		return graphProject.getTagFamilyRoot().findAll(ac, pagingInfo);
-	}
-
-	@Override
 	public HibTagFamily findByName(String name) {
 		return boot.get().meshRoot().getTagFamilyRoot().findByName(name);
 	}
@@ -114,8 +113,8 @@ public class TagFamilyDaoWrapperImpl extends AbstractRootDaoWrapper<TagFamilyRes
 
 	@Override
 	public Stream<? extends HibTagFamily> findAllStream(HibProject root, InternalActionContext ac,
-			InternalPermission permission) {
-		return toGraph(root).getTagFamilyRoot().findAllStream(ac, permission);
+			InternalPermission permission, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter) {
+		return toGraph(root).getTagFamilyRoot().findAllStream(ac, permission, paging, maybeFilter);
 	}
 
 	@Override
@@ -152,7 +151,8 @@ public class TagFamilyDaoWrapperImpl extends AbstractRootDaoWrapper<TagFamilyRes
 
 	@Override
 	public Page<? extends HibTagFamily> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
-		return boot.get().meshRoot().getTagFamilyRoot().findAll(ac, pagingInfo);
+		TagFamilyRoot root = boot.get().meshRoot().getTagFamilyRoot();
+		return PersistingRootDao.shouldSort(pagingInfo) ? root.findAll(ac, pagingInfo, Optional.empty()) : root.findAll(ac, pagingInfo);
 	}
 
 	@Override
@@ -177,5 +177,22 @@ public class TagFamilyDaoWrapperImpl extends AbstractRootDaoWrapper<TagFamilyRes
 		HibTagFamily tf = super.createPersisted(root, uuid, inflater);
 		tf.setProject(root);
 		return tf;
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@Override
+	public Page<? extends HibTagFamily> findAll(InternalActionContext ac, PagingParameters pagingInfo, FilterOperation<?> extraFilter) {
+		Stream<? extends TagFamily> stream = boot.get().meshRoot().getTagFamilyRoot().findAllStream(ac, InternalPermission.READ_PERM, pagingInfo, Optional.ofNullable(extraFilter));
+		if (PersistingRootDao.shouldPage(pagingInfo)) {
+			return new PageImpl<>(stream.collect(Collectors.toList()), pagingInfo, 
+					boot.get().meshRoot().getTagFamilyRoot().countAll(ac, InternalPermission.READ_PERM, pagingInfo, Optional.ofNullable(extraFilter)));
+		} else {
+			return new DynamicStreamPageImpl(stream, pagingInfo, true);
+		}
+	}
+
+	@Override
+	public long countAll(HibProject root, InternalActionContext ac, InternalPermission permission, PagingParameters pagingInfo, Optional<FilterOperation<?>> maybeFilter) {
+		return toGraph(root).getTagFamilyRoot().countAll(ac, permission, pagingInfo, maybeFilter);
 	}
 }

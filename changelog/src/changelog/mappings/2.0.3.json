@@ -1,0 +1,10 @@
+{
+  "changeLogEntryFileNames": [
+    "7527.SUP-15549.bugfix",
+    "7515.bugfix",
+    "7526.SUP-15553.bugfix"
+  ],
+  "version": "2.0.3",
+  "date": "10.08.2023",
+  "genericProperties": {}
+}

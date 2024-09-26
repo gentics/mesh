@@ -4,28 +4,26 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Before;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.slf4j.Logger;
 
 import com.gentics.mesh.core.data.util.HibClassConverter;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.mock.MockingLoggerRule;
 import com.tinkerpop.blueprints.Vertex;
-
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.logging.SLF4JLogDelegateFactory;
 
 @Ignore
 public class NestedTransactionTest extends AbstractOrientDBTest {
 
 	private Database db;
-	
 
-	static {
-		// Use slf4j instead of jul
-		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
-		LoggerFactory.getLogger(NestedTransactionTest.class);
-	}
+	@Rule
+	public MockingLoggerRule rule = new MockingLoggerRule();
+
+	protected Logger logger = rule.getLogger(NestedTransactionTest.class.getName());
 
 	@Before
 	public void setup() throws Exception {
@@ -42,14 +40,15 @@ public class NestedTransactionTest extends AbstractOrientDBTest {
 			db.tx((tx) -> {
 				GraphDBTx gtx = HibClassConverter.toGraph(tx);
 				Vertex v = gtx.getGraph().addVertex(null);
-				System.out.println("Outer");
+				logger.info("Outer");
 				db.tx((tx2) -> {
 					GraphDBTx gtx2 = HibClassConverter.toGraph(tx2);
 					long count = gtx2.getGraph().v().count();
-					System.out.println("Inner " + count);
+					logger.info("Inner " + count);
 				});
-				System.out.println("Outer Done");
+				logger.info("Outer Done");
 				if (true == false) {
+					// Added to make Java type system less frantic in picking the method with correct signature
 					return null;
 				}
 				throw new RuntimeException();

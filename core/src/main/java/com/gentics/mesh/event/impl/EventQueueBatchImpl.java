@@ -19,8 +19,8 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @see EventQueueBatch
@@ -87,7 +87,7 @@ public class EventQueueBatchImpl implements EventQueueBatch {
 			if (log.isDebugEnabled()) {
 				log.debug("Created event sent {}", event);
 			}
-			String json = JsonUtil.toJson(entry);
+			String json = JsonUtil.toJson(entry, false);
 			if (log.isTraceEnabled()) {
 				log.trace("Dispatching event '{}' with payload:\n{}", event, json);
 			}

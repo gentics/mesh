@@ -20,8 +20,8 @@ import com.gentics.mesh.core.migration.MigrationAbortedException;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.job.JobWarningList;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The migration status class keeps track of the status of a migration and manages also the errors and event handling.
@@ -127,10 +127,10 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 			log.error("Error handling migration", error);
 
 			if (job != null) {
-				job.setStopTimestamp();
-				job.setError(error);
-				commit(job);
-			}
+			job.setStopTimestamp();
+			job.setError(error);
+			commit(job);
+		}
 		}
 		return this;
 	}

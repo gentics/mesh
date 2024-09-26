@@ -45,6 +45,7 @@ import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.search.DevNullSearchProvider;
@@ -58,8 +59,8 @@ import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Abstract implementation for a mesh search handler.
@@ -180,12 +181,12 @@ public abstract class AbstractSearchHandler<T extends HibCoreElement<RM>, RM ext
 		})).subscribe(response -> {
 			// JsonObject firstResponse = response.getJsonArray("responses").getJsonObject(0);
 			// Directly relay the response to the requester without converting it.
-			ac.send(response.toString(), OK);
+			ac.send(JsonUtil.toJson(response, ac.isMinify(options.getHttpServerOptions())), OK);
 		}, error -> {
 			if (error instanceof HttpErrorException) {
 				HttpErrorException he = (HttpErrorException) error;
+				log.error("Error at: " + error.toString());
 				log.error("Search query failed", error);
-				log.error("Info: " + error.toString());
 				try {
 					ac.send(he.getBody(), HttpResponseStatus.BAD_REQUEST);
 				} catch (Exception e1) {
@@ -304,7 +305,7 @@ public abstract class AbstractSearchHandler<T extends HibCoreElement<RM>, RM ext
 		}).collect(() -> listResponse.getData(), (x, y) -> {
 			x.add(y);
 		}).subscribe(list -> {
-			ac.send(listResponse.toJson(), OK);
+			ac.send(listResponse.toJson(ac.isMinify(options.getHttpServerOptions())), OK);
 		}, error -> {
 			log.error("Error while processing search response items", error);
 			ac.fail(error);

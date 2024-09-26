@@ -36,8 +36,12 @@ import io.reactivex.Completable;
 import io.reactivex.functions.Action;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public interface EventHelper extends BaseHelper {
+
+	static final Logger log = LoggerFactory.getLogger(EventHelper.class);
 
 	EventAsserter eventAsserter();
 
@@ -394,7 +398,7 @@ public interface EventHelper extends BaseHelper {
 				}
 			}
 			if (i == waitSeconds - 1) {
-				String json = response == null ? "NULL" : response.toJson();
+				String json = response == null ? "NULL" : response.toJson(false);
 				throw new RuntimeException("Migration did not complete within " + waitSeconds + " seconds. Last job response was:\n" + json);
 			}
 			sleep(1000);
@@ -419,7 +423,7 @@ public interface EventHelper extends BaseHelper {
 			JobListResponse response = runAsAdmin(() -> call(() -> client().findJobs()));
 			List<JobResponse> diff = TestUtils.difference(response.getData(), before.getData(), JobResponse::getUuid);
 			if (diff.size() > 1) {
-				System.out.println(response.toJson());
+				log.info("Current jobs:\n" + response.toJson(false));
 				throw new RuntimeException("More jobs than expected");
 			}
 			if (diff.size() == 1) {
@@ -428,11 +432,9 @@ public interface EventHelper extends BaseHelper {
 					return;
 				}
 			}
-
-			if (i > 2) {
-				System.out.println(response.toJson());
+			if (i > 2 && log.isDebugEnabled()) {
+				log.debug(response.toJson(false));
 			}
-
 			if (i == MAX_WAIT - 1) {
 				throw new RuntimeException("Migration did not complete within " + MAX_WAIT + " seconds");
 			}
@@ -461,11 +463,9 @@ public interface EventHelper extends BaseHelper {
 			if (response.getStatus().equals(status)) {
 				return response;
 			}
-
-			if (i > 30) {
-				System.out.println(response.toJson());
+			if (i > 30 && log.isDebugEnabled()) {
+				log.debug("Long awaited jobs:\n" + response.toJson(false));
 			}
-
 			if (i == MAX_WAIT - 1) {
 				throw new RuntimeException("Job did not complete within " + MAX_WAIT + " seconds");
 			}

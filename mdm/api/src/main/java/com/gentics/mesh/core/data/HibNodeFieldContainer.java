@@ -143,7 +143,7 @@ public interface HibNodeFieldContainer extends HibFieldContainer, HibEditorTrack
 	}
 
 	@Override
-	default Stream<HibNodeFieldContainer> getContents() {
+	default Stream<HibNodeFieldContainer> getContents(boolean lookupInFields, boolean lookupInLists) {
 		return Stream.of(this);
 	}
 

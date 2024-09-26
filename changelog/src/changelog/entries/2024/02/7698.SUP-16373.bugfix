@@ -1,0 +1,2 @@
+GraphQL: In cases of long running GraphQL requests, some other GraphQL requests were queued and executed after the long running request, even if enough workers were still
+available. The behaviour has been changed, so that GraphQL requests will only be queued, if all workers are currently busy.

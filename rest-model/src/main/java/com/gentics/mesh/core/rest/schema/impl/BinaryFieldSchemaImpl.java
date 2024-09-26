@@ -19,6 +19,8 @@ public class BinaryFieldSchemaImpl extends AbstractFieldSchema implements Binary
 
 	public static String CHANGE_EXTRACT_METADATA_KEY = "extractMetadata";
 
+	public static String CHANGE_CHECK_SERVICE_URL = "checkServiceUrl";
+
 	@JsonProperty("allow")
 	@JsonPropertyDescription("Array of allowed mimetypes")
 	private String[] allowedMimeTypes;
@@ -26,6 +28,10 @@ public class BinaryFieldSchemaImpl extends AbstractFieldSchema implements Binary
 	@JsonProperty("extract")
 	@JsonPropertyDescription("The extracting behaviour for this field.")
 	private BinaryExtractOptions binaryExtractOptions;
+
+	@JsonProperty("checkServiceUrl")
+	@JsonPropertyDescription("The URL for the optional service which checks uploaded binaries before making them available.")
+	private String checkServiceUrl;
 
 	@Override
 	public String[] getAllowedMimeTypes() {
@@ -46,7 +52,9 @@ public class BinaryFieldSchemaImpl extends AbstractFieldSchema implements Binary
 	@Override
 	public Map<String, Object> getAllChangeProperties() {
 		Map<String, Object> properties = super.getAllChangeProperties();
+
 		properties.put(SchemaChangeModel.ALLOW_KEY, getAllowedMimeTypes());
+
 		if (binaryExtractOptions == null) {
 			properties.put(CHANGE_EXTRACT_CONTENT_KEY, null);
 			properties.put(CHANGE_EXTRACT_METADATA_KEY, null);
@@ -54,6 +62,9 @@ public class BinaryFieldSchemaImpl extends AbstractFieldSchema implements Binary
 			properties.put(CHANGE_EXTRACT_CONTENT_KEY, binaryExtractOptions.getContent());
 			properties.put(CHANGE_EXTRACT_METADATA_KEY, binaryExtractOptions.getMetadata());
 		}
+
+		properties.put(CHANGE_CHECK_SERVICE_URL, checkServiceUrl);
+
 		return properties;
 	}
 
@@ -74,6 +85,10 @@ public class BinaryFieldSchemaImpl extends AbstractFieldSchema implements Binary
 		if (!hasExtractContent && !hasExtractMetadata) {
 			setBinaryExtractOptions(null);
 		}
+
+		if (fieldProperties.get(CHANGE_CHECK_SERVICE_URL) != null) {
+			setCheckServiceUrl((String) fieldProperties.get(CHANGE_CHECK_SERVICE_URL));
+		}
 	}
 
 	private BinaryExtractOptions createOrGetBinaryExtractOptions() {
@@ -92,6 +107,17 @@ public class BinaryFieldSchemaImpl extends AbstractFieldSchema implements Binary
 	@Override
 	public BinaryFieldSchema setBinaryExtractOptions(BinaryExtractOptions extract) {
 		this.binaryExtractOptions = extract;
+		return this;
+	}
+
+	@Override
+	public String getCheckServiceUrl() {
+		return checkServiceUrl;
+	}
+
+	@Override
+	public BinaryFieldSchemaImpl setCheckServiceUrl(String checkServiceUrl) {
+		this.checkServiceUrl = checkServiceUrl;
 		return this;
 	}
 }

@@ -33,8 +33,8 @@ import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.madl.field.FieldType;
 import com.gentics.mesh.madl.index.VertexIndexDefinition;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @see Micronode
@@ -89,15 +89,14 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	}
 
 	@Override
-	public Result<? extends NodeGraphFieldContainer> getContainers() {
+	public Result<? extends NodeGraphFieldContainer> getContainers(boolean lookupInFields, boolean lookupInLists) {
 		// First try to get the container in case for normal fields
-		Iterable<? extends NodeGraphFieldContainerImpl> containers = in(HAS_FIELD).frameExplicit(NodeGraphFieldContainerImpl.class);
+		Iterable<? extends NodeGraphFieldContainerImpl> containers = in(HAS_FIELD).filter(field -> lookupInFields).frameExplicit(NodeGraphFieldContainerImpl.class);
 
 		// The micronode may be part of a list field
-		if (!containers.iterator().hasNext()) {
+		if (lookupInLists && !containers.iterator().hasNext()) {
 			containers = in(HAS_ITEM).in(HAS_LIST).has(NodeGraphFieldContainerImpl.class).frameExplicit(NodeGraphFieldContainerImpl.class);
 		}
-
 		return new TraversalResult<>(containers);
 	}
 

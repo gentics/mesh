@@ -12,8 +12,8 @@ import io.reactivex.Observable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -117,7 +117,6 @@ public class OkHttpWebsocket implements MeshWebsocket {
 			@Override
 			public void onMessage(WebSocket webSocket, String text) {
 				log.trace("Received message: {}", text);
-
 				try {
 					createEvent(text).ifPresent(events::onNext);
 				} catch (IOException e) {

@@ -23,8 +23,10 @@ import com.gentics.mesh.core.endpoint.microschema.MicroschemaEndpoint;
 import com.gentics.mesh.core.endpoint.microschema.ProjectMicroschemaEndpoint;
 import com.gentics.mesh.core.endpoint.navroot.NavRootEndpoint;
 import com.gentics.mesh.core.endpoint.node.NodeEndpoint;
+import com.gentics.mesh.core.endpoint.project.LanguageEndpoint;
 import com.gentics.mesh.core.endpoint.project.ProjectEndpoint;
 import com.gentics.mesh.core.endpoint.project.ProjectInfoEndpoint;
+import com.gentics.mesh.core.endpoint.project.ProjectLanguageEndpoint;
 import com.gentics.mesh.core.endpoint.role.RoleEndpoint;
 import com.gentics.mesh.core.endpoint.schema.ProjectSchemaEndpoint;
 import com.gentics.mesh.core.endpoint.schema.SchemaEndpoint;
@@ -70,6 +72,10 @@ public class RestAPIVerticle extends AbstractVerticle {
 	protected final Provider<RouterStorageImpl> routerStorage;
 
 	protected final Provider<UserEndpoint> userEndpoint;
+
+	protected final Provider<LanguageEndpoint> languageEndpoint;
+
+	protected final Provider<ProjectLanguageEndpoint> projectLanguageEndpoint;
 
 	protected final Provider<RoleEndpoint> roleEndpoint;
 
@@ -131,8 +137,8 @@ public class RestAPIVerticle extends AbstractVerticle {
 
 	@Inject
 	public RestAPIVerticle(Provider<RouterStorageImpl> routerStorage, Provider<UserEndpoint> userEndpoint,
-			Provider<RoleEndpoint> roleEndpoint, Provider<GroupEndpoint> groupEndpoint,
-			Provider<ProjectEndpoint> projectEndpoint, Provider<NodeEndpoint> nodeEndpoint,
+			Provider<RoleEndpoint> roleEndpoint, Provider<GroupEndpoint> groupEndpoint, Provider<LanguageEndpoint> languageEndpoint,
+			Provider<ProjectEndpoint> projectEndpoint, Provider<NodeEndpoint> nodeEndpoint, Provider<ProjectLanguageEndpoint> projectLanguageEndpoint,
 			Provider<TagFamilyEndpoint> tagFamilyEndpoint, Provider<BranchEndpoint> branchEndpoint,
 			Provider<SchemaEndpoint> schemaEndpoint, Provider<ProjectSearchEndpointImpl> projectSearchEndpoint,
 			Provider<ProjectRawSearchEndpointImpl> projectRawSearchEndpoint,
@@ -147,6 +153,8 @@ public class RestAPIVerticle extends AbstractVerticle {
 			RouterStorageRegistryImpl routerStorageRegistry, io.vertx.reactivex.core.Vertx rxVertx, Vertx vertx,
 			MeshOptions meshOptions) {
 		this.routerStorage = routerStorage;
+		this.languageEndpoint = languageEndpoint;
+		this.projectLanguageEndpoint = projectLanguageEndpoint;
 		this.userEndpoint = userEndpoint;
 		this.roleEndpoint = roleEndpoint;
 		this.groupEndpoint = groupEndpoint;
@@ -261,6 +269,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 		options.setHost(host);
 		options.setCompressionSupported(true);
 		options.setHandle100ContinueAutomatically(true);
+		options.setUseAlpn(serverConfig.isUseAlpn());
 		// options.setLogActivity(true);
 
 		// TCP options
@@ -293,6 +302,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 		List<AbstractInternalEndpoint> endpoints = new ArrayList<>();
 		endpoints.add(restInfoEndpoint.get());
 		// verticles.add(projectInfoVerticle());
+		endpoints.add(languageEndpoint.get());
 
 		// User Group Role verticles
 		endpoints.add(userEndpoint.get());
@@ -306,6 +316,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 		endpoints.add(projectMicroschemaEndpoint.get());
 		endpoints.add(projectSearchEndpoint.get());
 		endpoints.add(projectRawSearchEndpoint.get());
+		endpoints.add(projectLanguageEndpoint.get());
 		endpoints.add(branchEndpoint.get());
 		endpoints.add(graphqlEndpoint.get());
 

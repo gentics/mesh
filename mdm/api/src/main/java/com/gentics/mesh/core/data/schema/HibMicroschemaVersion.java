@@ -90,10 +90,10 @@ public interface HibMicroschemaVersion
 	default void setSchema(MicroschemaVersionModel microschema) {
 		Tx.get().data().serverSchemaStorage().removeMicroschema(microschema.getName(), microschema.getVersion());
 		Tx.get().data().serverSchemaStorage().addMicroschema(microschema);
-		String json = microschema.toJson();
+		// TODO FIXME can we rely on a frontend formatter, to allow de-prettifying the schema JSON?
+		String json = microschema.toJson(false);
 		setJson(json);
 		setVersion(microschema.getVersion());
-		//Tx.get().persist(this, getClass());
 	}
 
 	@Override

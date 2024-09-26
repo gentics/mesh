@@ -2,8 +2,10 @@ package com.gentics.mesh.core.data.node;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
@@ -46,7 +48,15 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 
 	Result<HibNode> getChildren();
 
-	Result<HibNode> getChildren(String branchUuid);
+	default Result<HibNode> getChildren(String branchUuid) {
+		return getChildren(branchUuid, Optional.empty());
+	}
+
+	default Result<HibNode> getChildren(String branchUuid, Optional<HibUser> user) {
+		return getChildren(branchUuid, ContainerType.PUBLISHED, null, Optional.empty(), user);
+	}
+
+	Result<HibNode> getChildren(String branchUuid, ContainerType containerType, PagingParameters sorting, Optional<FilterOperation<?>> maybeFilter, Optional<HibUser> maybeUser);
 
 	/**
 	 * Return the children for this node. Only fetches nodes from the provided branch and also checks permissions.
@@ -59,7 +69,19 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 * Gets all NodeGraphField edges that reference this node.
 	 * @return
 	 */
-	Stream<HibNodeField> getInboundReferences();
+	default Stream<HibNodeField> getInboundReferences() {
+		return getInboundReferences(true, true);
+	}
+
+	/**
+	 * Gets all NodeGraphField edges that reference this node.
+	 * 
+	 * @param lookupInFields should we look for refs in direct references?
+	 * @param lookupInLists should we look for refs in reference lists?
+	 * 
+	 * @return
+	 */
+	Stream<HibNodeField> getInboundReferences(boolean lookupInFields, boolean lookupInLists);
 
 	/**
 	 * Get an existing edge.

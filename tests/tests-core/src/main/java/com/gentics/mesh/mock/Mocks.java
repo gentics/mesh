@@ -26,6 +26,7 @@ import com.gentics.mesh.util.HttpQueryUtils;
 
 import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.ext.web.RequestBody;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.Session;
 
@@ -95,7 +96,11 @@ public final class Mocks {
 
 		if (body != null) {
 			try {
-				when(rc.getBodyAsString()).thenReturn(JsonUtil.getMapper().writeValueAsString(body));
+				String bodyAsString = JsonUtil.getMapper().writeValueAsString(body);
+				when(rc.getBodyAsString()).thenReturn(bodyAsString);
+				RequestBody requestBody = mock(RequestBody.class);
+				when(requestBody.asString()).thenReturn(bodyAsString);
+				when(rc.body()).thenReturn(requestBody);
 			} catch (JsonProcessingException e) {
 				fail("Could not transform body to string", e);
 			}

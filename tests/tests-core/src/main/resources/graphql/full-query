@@ -22,10 +22,10 @@
 		name
 	}
 	node(path:"/Neuigkeiten/News Overview.de.html") {
-		# [ $.data.node.uuid=<is-uuid>]
+		# [$.data.node.uuid=<is-uuid>]
 		uuid
 		node(lang: "en") {
-			# [ $.data.node.node.language=en]
+			# [$.data.node.node.language=en]
 			language
 		}
 		availableLanguages

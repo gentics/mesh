@@ -18,6 +18,7 @@ import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.ClientHelper.isFailureMessage;
 import static com.gentics.mesh.test.ClientHelper.validateDeletion;
 import static com.gentics.mesh.test.ElasticsearchTestMode.TRACKING;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
@@ -41,6 +42,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeoutException;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -56,6 +58,7 @@ import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
@@ -77,6 +80,7 @@ import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
+import com.gentics.mesh.parameter.impl.SortingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
@@ -84,10 +88,57 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
 import com.gentics.mesh.util.UUIDUtil;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Observable;
 
 @MeshTestSetting(elasticsearch = TRACKING, testSize = TestSize.FULL, startServer = true)
 public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
+	@Test
+	public void testRenameDeleteCreateProject() throws InterruptedException, TimeoutException {
+		// create project named "project"
+		ProjectResponse project = createProject("project");
+
+		// get tag families of project (this will put project into cache)
+		call(() -> client().findTagFamilies("project"));
+		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(1);
+
+		// rename project to "newproject"
+		project = updateProject(project.getUuid(), "newproject");
+		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(0);
+
+		long maxWaitMs = 1000;
+		long delayMs = 100;
+		boolean repeat = false;
+
+		// get tag families of newproject (this will put project into cache)
+		long start = System.currentTimeMillis();
+		do {
+			try {
+				call(() -> client().findTagFamilies("newproject"));
+				repeat = false;
+			} catch (Throwable t) {
+				if (isFailureMessage(t, HttpResponseStatus.NOT_FOUND) && (System.currentTimeMillis() - start) < maxWaitMs) {
+					Thread.sleep(delayMs);
+					repeat = true;
+				} else {
+					throw t;
+				}
+			}
+		} while (repeat);
+		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(1);
+
+		// delete "newproject"
+		deleteProject(project.getUuid());
+		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(0);
+
+		// create (again)
+		project = createProject("project");
+		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(0);
+
+		// get tag families of project
+		call(() -> client().findTagFamilies("project"));
+		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(1);
+	}
 
 	@Test
 	public void testCreateNoSchemaReference() {
@@ -323,7 +374,6 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 	@Test
 	@Override
-	@Ignore("Fails on CI pipeline. See https://github.com/gentics/mesh/issues/608")
 	public void testReadMultiple() throws Exception {
 		final int nProjects = 142;
 		final String noPermProjectName = "no_perm_project";
@@ -389,6 +439,28 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		assertEquals(143, listResponse.getMetainfo().getTotalCount());
 		assertEquals(6, listResponse.getMetainfo().getPageCount());
 		assertEquals(0, listResponse.getData().size());
+
+		verifySorting(param -> call(() -> client().findProjects(param)), ProjectResponse::getName, "name", "List of project names");
+	}
+
+	@Test
+	@Override
+	public void testReadPermittedSorted() throws Exception {
+		for (int i = 0; i < 10; i++) {
+			final String name = "test12345_" + i;
+			ProjectCreateRequest request = new ProjectCreateRequest();
+			request.setName(name);
+			request.setSchema(new SchemaReferenceImpl().setName("folder"));
+			ProjectResponse response = call(() -> client().createProject(request));
+			if ((i % 2) == 0) {
+				tx(tx -> {
+					tx.roleDao().revokePermissions(role(), tx.projectDao().findByUuid(response.getUuid()), READ_PERM);
+				});
+			}
+		}
+		ProjectListResponse list = call(() -> client().findProjects(new SortingParametersImpl("name", SortOrder.DESCENDING)));
+		assertEquals("Total data size should be 6", 6, list.getData().size());
+		assertThat(list.getData()).isSortedAccordingTo((a, b) -> b.getName().compareTo(a.getName()));
 	}
 
 	@Test

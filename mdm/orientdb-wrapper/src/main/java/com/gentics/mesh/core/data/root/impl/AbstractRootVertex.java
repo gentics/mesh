@@ -2,31 +2,41 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
+import static com.gentics.mesh.util.StreamUtil.toStream;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
+import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.GenericParameters;
+import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.ETag;
 
@@ -92,6 +102,8 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 		throw new RuntimeException("Not implemented");
 	}
 
+
+
 	/**
 	 * Generate the eTag for the element. Every time the edges to the root vertex change the internal element version gets updated.
 	 * 
@@ -138,6 +150,21 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 		return ETag.hash(keyBuilder.toString());
 	}
 
+	@Override
+	public Page<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo, Optional<FilterOperation<?>> maybeExtraFilter) {
+		ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
+		return findAll(ac, pagingInfo, type, maybeExtraFilter);
+	}
+
+	@Override
+	public String mapGraphQlFieldName(String gqlName) {
+		switch (gqlName) {
+		case "edited": return "last_edited_timestamp";
+		case "created":	return "creation_timestamp";
+		}
+		return super.mapGraphQlFieldName(gqlName);
+	}
+
 	/**
 	 * This method provides the element specific etag. It needs to be individually implemented for all core element classes.
 	 *
@@ -158,5 +185,26 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	@Override
 	public T create() {
 		return getGraph().addFramedVertex(getPersistanceClass());
+	}
+
+	protected Page<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo, ContainerType ctype, Optional<FilterOperation<?>> maybeExtraFilter) {
+		InternalPermission perm = ctype == ContainerType.PUBLISHED ? InternalPermission.READ_PUBLISHED_PERM : READ_PERM;
+		PagingParameters sorting = mapSorting(pagingInfo);
+		Optional<String> maybeParsedFilter = maybeExtraFilter
+				.map(extraFilter -> parseFilter(extraFilter, ctype, ac.getUser(), perm, Optional.empty()))
+				.or(() -> permissionFilter(ac.getUser(), perm, Optional.empty(), Optional.of(ctype)));
+		Stream<? extends T> stream = toStream(db().getVertices(
+				getPersistanceClass(),
+				new String[] {},
+				new Object[]{},
+				sorting,
+				Optional.empty(),
+				maybeParsedFilter
+			)).map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
+		if (PersistingRootDao.shouldSort(pagingInfo) || maybeExtraFilter.isPresent()) {
+			return new PageImpl<>(stream.collect(Collectors.toList()), pagingInfo, db().countVertices(getPersistanceClass(), new String[] {}, new Object[] {}, maybeParsedFilter, Optional.empty()));
+		} else {
+			return new DynamicStreamPageImpl<>(stream, pagingInfo, maybeExtraFilter.isPresent());
+		}
 	}
 }

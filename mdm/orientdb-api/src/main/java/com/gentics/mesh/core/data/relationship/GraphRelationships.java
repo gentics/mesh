@@ -2,14 +2,51 @@ package com.gentics.mesh.core.data.relationship;
 
 import static com.gentics.mesh.madl.type.EdgeTypeDefinition.edgeType;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.data.BranchParentEntry;
+import com.gentics.mesh.core.data.MeshVertex;
 
 /**
  * Main class that holds all the graph relationship names.
  */
 public class GraphRelationships {
+
+	/**
+	 * Add a relation between entities through an edge.
+	 */
+	public static <K extends MeshVertex, V extends MeshVertex> void addRelation(Class<K> keyClass, Class<V> valueClass, String mappingName, String relationName, String edgeFieldName, String defaultEdgeFieldFilterValue) {
+		Map<String, GraphRelationship> relations = VERTEX_RELATIONS.getOrDefault(keyClass, new HashMap<>());
+		relations.put(mappingName, new GraphRelationship(relationName, valueClass, edgeFieldName, defaultEdgeFieldFilterValue));
+		VERTEX_RELATIONS.put(keyClass, relations);
+	}
+
+	/**
+	 * Add a relation between entities through UUID.
+	 * 
+	 * @param <K>
+	 * @param <V>
+	 * @param keyClass
+	 * @param valueClass
+	 * @param mappingName
+	 * @param relationName
+	 */
+	public static <K extends MeshVertex, V extends MeshVertex> void addRelation(Class<K> keyClass, Class<V> valueClass, String mappingName) {
+		addRelation(keyClass, valueClass, mappingName, MeshVertex.UUID_KEY, mappingName, null);
+	}
+
+	/**
+	 * Find all relations of a given type.
+	 * 
+	 * @param keyClass
+	 * @return
+	 */
+	public static Map<String, GraphRelationship> findRelation(Class<?> keyClass) {
+		return VERTEX_RELATIONS.get(keyClass);
+	}
 
 	/**
 	 * Initialise the graph database by adding all needed edge types and indices.
@@ -73,6 +110,9 @@ public class GraphRelationships {
 		// Changelog
 		type.createType(edgeType(HAS_CHANGELOG_ROOT));
 
+		// Image variants
+		type.createType(edgeType(HAS_VARIANTS));
+		type.createType(edgeType(HAS_FIELD_VARIANTS));
 	}
 
 	// Project
@@ -155,6 +195,8 @@ public class GraphRelationships {
 	public static final String HAS_FIELD = "HAS_FIELD";
 	public static final String HAS_ITEM = "HAS_ITEM";
 	public static final String HAS_LIST = "HAS_LIST";
+	public static final String HAS_VARIANTS = "HAS_VARIANTS";
+	public static final String HAS_FIELD_VARIANTS = "HAS_FIELD_VARIANTS";
 
 	// Versioning
 	public static final String HAS_VERSION = "HAS_VERSION";
@@ -169,4 +211,5 @@ public class GraphRelationships {
 	// Changelog system
 	public static final String HAS_CHANGELOG_ROOT = "HAS_CHANGELOG_ROOT";
 
+	private static final Map<Class<? extends MeshVertex>, Map<String, GraphRelationship>> VERTEX_RELATIONS = new HashMap<>();
 }

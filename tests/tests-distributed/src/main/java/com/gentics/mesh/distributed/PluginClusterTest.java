@@ -28,8 +28,8 @@ import com.gentics.mesh.test.category.ClusterTests;
 import com.gentics.mesh.test.category.PluginTests;
 import com.gentics.mesh.test.docker.MeshContainer;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * These tests require the test plugins to be build. You can build these plugins using the /core/build-test-plugins.sh script.

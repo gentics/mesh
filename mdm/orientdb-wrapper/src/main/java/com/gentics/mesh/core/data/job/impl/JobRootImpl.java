@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.job.impl;
 
+import static com.gentics.mesh.core.data.dao.ElementResolver.log;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_JOB;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PROJECT;
@@ -10,10 +11,11 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.time.ZonedDateTime;
 import java.util.Iterator;
+import java.util.Optional;
+import java.util.Set;
 import java.util.Stack;
 import java.util.function.Predicate;
 
-import com.gentics.mesh.core.data.Project;
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.madl.index.IndexHandler;
@@ -21,6 +23,7 @@ import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.job.HibJob;
@@ -254,14 +257,14 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 
 	@Override
 	public void purgeFailed() {
-		log.info("Purging failed jobs..");
+		log.info("Purging failed jobs...");
 		Iterable<? extends JobImpl> it = out(HAS_JOB).hasNot("error", null).frameExplicit(JobImpl.class);
 		long count = 0;
 		for (Job job : it) {
 			job.delete();
 			count++;
 		}
-		log.info("Purged {" + count + "} failed jobs.");
+		log.info(count + "} failed jobs purged.");
 	}
 
 	@Override
@@ -274,4 +277,8 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 		throw new NotImplementedException("The job root can't be deleted");
 	}
 
+	@Override
+	public Optional<Set<Class<? extends Job>>> getPersistenceClassVariations() {
+		return Optional.of(Set.of(BranchMigrationJobImpl.class, MicronodeMigrationJobImpl.class, NodeMigrationJobImpl.class, VersionPurgeJobImpl.class));
+	}
 }

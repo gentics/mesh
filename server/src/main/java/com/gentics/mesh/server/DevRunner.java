@@ -5,15 +5,11 @@ import java.io.File;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.context.impl.LoggingConfigurator;
-import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
-import com.gentics.mesh.router.EndpointRegistry;
-import com.gentics.mesh.verticle.admin.AdminGUI2Endpoint;
-import com.gentics.mesh.verticle.admin.AdminGUIEndpoint;
 
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Main runner that is used to deploy a preconfigured set of verticles.
@@ -30,7 +26,7 @@ public class DevRunner {
 
 	/**
 	 * Start the dev runner.
-	 * 
+	 *
 	 * @param args
 	 * @throws Exception
 	 */
@@ -45,16 +41,12 @@ public class DevRunner {
 		defaultOption.getDebugInfoOptions().setLogEnabled(false);
 		OrientDBMeshOptions options = OptionsLoader.createOrloadOptions(OrientDBMeshOptions.class, defaultOption, args);
 
+		options.getStorageOptions().setStartServer(true);
+
 		Mesh mesh = Mesh.create(options);
 		mesh.setCustomLoader((vertx) -> {
 			JsonObject config = new JsonObject();
 			config.put("port", options.getHttpServerOptions().getPort());
-
-			// Add admin ui
-			MeshComponent meshInternal = mesh.internal();
-			EndpointRegistry registry = meshInternal.endpointRegistry();
-			registry.register(AdminGUIEndpoint.class);
-			registry.register(AdminGUI2Endpoint.class);
 		});
 		try {
 			mesh.run();

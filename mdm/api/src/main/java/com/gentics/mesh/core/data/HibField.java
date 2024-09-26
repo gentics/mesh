@@ -13,7 +13,7 @@ import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 
-public interface HibField {
+public interface HibField extends HibFieldKeyElement {
 
 	/**
 	 * Fail if the field is required but no valid value has been specified.
@@ -48,20 +48,6 @@ public interface HibField {
 			throw error(BAD_REQUEST, "node_error_required_field_not_deletable", key, schema.getName());
 		}
 	}
-
-	/**
-	 * Set the graph field key.
-	 * 
-	 * @param key
-	 */
-	void setFieldKey(String key);
-
-	/**
-	 * Return the graph field key.
-	 * 
-	 * @return
-	 */
-	String getFieldKey();
 
 	/**
 	 * Clone this field into the given container. If the field uses extra vertices for storing the data, they must be reused, not copied

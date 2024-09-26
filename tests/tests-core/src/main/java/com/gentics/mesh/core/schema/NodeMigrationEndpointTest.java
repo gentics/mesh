@@ -328,7 +328,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			HibSchemaVersion version = schemaContainer("content").getLatestVersion();
 			SchemaVersionModel schema = version.getSchema();
 			schema.getField("slug").setElasticsearch(setting);
-			version.setJson(schema.toJson());
+			version.setJson(schema.toJson(false));
 			return schema;
 		});
 		SchemaUpdateRequest request = JsonUtil.readValue(schemaModel.toJson(), SchemaUpdateRequest.class);
@@ -356,7 +356,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			HibSchemaVersion version = schemaContainer("content").getLatestVersion();
 			SchemaVersionModel schema = version.getSchema();
 			schema.setElasticsearch(setting);
-			version.setJson(schema.toJson());
+			version.setJson(schema.toJson(false));
 			return schema;
 		});
 		SchemaUpdateRequest request = JsonUtil.readValue(schemaModel.toJson(), SchemaUpdateRequest.class);

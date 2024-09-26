@@ -13,8 +13,8 @@ import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.util.NodeUtil;
 
 import io.reactivex.Maybe;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
 
 /**
@@ -42,7 +42,7 @@ public class BasicImageDataProcessor extends AbstractBinaryProcessor {
 		FileUpload upload = ctx.getUpload();
 		return imageManipulator.readImageInfo(upload.uploadedFileName()).map(info -> {
 			Consumer<HibBinaryField> consumer = field -> {
-				log.info("Setting info to binary field " + field.getFieldKey() + " - " + info);
+				log.debug("Setting info to binary field " + field.getFieldKey() + " - " + info);
 				field.setImageDominantColor(info.getDominantColor());
 				HibBinary binary = field.getBinary();
 				binary.setImageHeight(info.getHeight());
@@ -50,9 +50,7 @@ public class BasicImageDataProcessor extends AbstractBinaryProcessor {
 			};
 			return consumer;
 		}).doOnError(e -> {
-			if (log.isDebugEnabled()) {
-				log.warn("Could not read image information from upload {" + upload.fileName() + "/" + upload.name() + "}", e);
-			}
+			log.warn("Could not read image information from upload {" + upload.fileName() + "/" + upload.name() + "}", e);
 		}).toMaybe().onErrorComplete();
 
 	}

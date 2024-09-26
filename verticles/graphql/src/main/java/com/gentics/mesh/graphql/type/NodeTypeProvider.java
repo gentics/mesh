@@ -27,6 +27,7 @@ import java.util.Stack;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -35,12 +36,15 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.dataloader.DataLoader;
 
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -62,6 +66,7 @@ import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
+import com.gentics.mesh.graphql.dataloader.DataLoaderKey;
 import com.gentics.mesh.graphql.dataloader.NodeContentWithOptionalRuntimeException;
 import com.gentics.mesh.graphql.dataloader.NodeDataLoader;
 import com.gentics.mesh.graphql.dataloader.NodeDataLoader.ParentNodeLoaderKey;
@@ -70,6 +75,7 @@ import com.gentics.mesh.graphql.model.NodeReferenceIn;
 import com.gentics.mesh.graphql.type.field.FieldDefinitionProvider;
 import com.gentics.mesh.handler.Versioned;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.path.impl.PathImpl;
@@ -129,6 +135,41 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		this.waitUtil = waitUtil;
 	}
 
+	/**
+	 * Fetcher for the parent node reference of a node.
+	 *
+	 * @param env
+	 * @return
+	 */
+	public CompletableFuture<DataFetcherResult<NodeContent>> parentNodeFetcher(DataFetchingEnvironment env) {
+		Tx tx = Tx.get();
+		NodeDao nodeDao = tx.nodeDao();
+
+		NodeContent content = env.getSource();
+		if (content == null) {
+			return null;
+		}
+		GraphQLContext gc = env.getContext();
+		String uuid = tx.getBranch(gc).getUuid();
+		HibNode parentNode = nodeDao.getParentNode(content.getNode(), uuid);
+		// The project root node can have no parent. Lets check this and exit early.
+		if (parentNode == null) {
+			return null;
+		}
+		gc.requiresPerm(parentNode, READ_PERM, READ_PUBLISHED_PERM);
+
+		List<String> languageTags = getLanguageArgument(env, content);
+		ContainerType type = getNodeVersion(env);
+
+		NodeDataLoader.Context context = new NodeDataLoader.Context(type, languageTags, Optional.empty(), getPagingInfo(env));
+		DataLoader<DataLoaderKey<HibNode>, List<HibNodeFieldContainer>> contentLoader = env.getDataLoader(NodeDataLoader.CONTENT_LOADER_KEY);
+
+		return contentLoader.load(new DataLoaderKey<HibNode>(env, parentNode), context).thenApply((containers) -> {
+			HibNodeFieldContainer container = getContainerWithFallback(languageTags, containers);
+			return createNodeContentWithSoftPermissions(env, gc, parentNode, languageTags, type, container);
+		});
+	}
+
 	public CompletableFuture<DataFetcherResult<NodeContent>> nodeLanguageFetcher(DataFetchingEnvironment env) {
 		NodeContent content = env.getSource();
 		if (content == null) {
@@ -140,9 +181,9 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		HibNode node = content.getNode();
 		ContainerType type = getNodeVersion(env);
 
-		NodeDataLoader.Context context = new NodeDataLoader.Context(type, languageTags);
-		DataLoader<HibNode, List<HibNodeFieldContainer>> contentLoader = env.getDataLoader(NodeDataLoader.CONTENT_LOADER_KEY);
-		return contentLoader.load(node, context).thenApply((containers) -> {
+		NodeDataLoader.Context context = new NodeDataLoader.Context(type, languageTags, Optional.empty(), getPagingInfo(env));
+		DataLoader<DataLoaderKey<HibNode>, List<HibNodeFieldContainer>> contentLoader = env.getDataLoader(NodeDataLoader.CONTENT_LOADER_KEY);
+		return contentLoader.load(new DataLoaderKey<>(env, node), context).thenApply((containers) -> {
 			HibNodeFieldContainer container = getContainerWithFallback(languageTags, containers);
 			return createNodeContentWithSoftPermissions(env, gc, node, languageTags, type, container);
 		});
@@ -157,10 +198,10 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 		ContainerType type = getNodeVersion(env);
 		List<String> languageTags = getLanguageArgument(env, content);
-		NodeDataLoader.Context context = new NodeDataLoader.Context(type, languageTags);
+		NodeDataLoader.Context context = new NodeDataLoader.Context(type, languageTags, Optional.empty(), getPagingInfo(env));
 
-		DataLoader<HibNode, List<NodeContent>> breadcrumbLoader = env.getDataLoader(NodeDataLoader.BREADCRUMB_LOADER_KEY);
-		return breadcrumbLoader.load(content.getNode(), context).thenApply(contents -> {
+		DataLoader<DataLoaderKey<HibNode>, List<NodeContent>> breadcrumbLoader = env.getDataLoader(NodeDataLoader.BREADCRUMB_LOADER_KEY);
+		return breadcrumbLoader.load(new DataLoaderKey<>(env, content.getNode()), context).thenApply(contents -> {
 			return contents.stream()
 					.filter(item -> item != null && item.getContainer() != null && gc.hasReadPerm(item, type))
 					.collect(Collectors.toList());
@@ -190,9 +231,9 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		GraphQLContext gc = env.getContext();
 		ContainerType type = getNodeVersion(env);
 
-		NodeDataLoader.Context context = new NodeDataLoader.Context(type);
-		DataLoader<HibNode, List<HibNodeFieldContainer>> contentLoader = env.getDataLoader(NodeDataLoader.CONTENT_LOADER_KEY);
-		return contentLoader.load(node, context).thenApply(l -> l.stream()
+		NodeDataLoader.Context context = new NodeDataLoader.Context(type, Collections.emptyList(), Optional.empty(), new PagingParametersImpl());
+		DataLoader<DataLoaderKey<HibNode>, List<HibNodeFieldContainer>> contentLoader = env.getDataLoader(NodeDataLoader.CONTENT_LOADER_KEY);
+		return contentLoader.load(new DataLoaderKey<HibNode>(env, node), context).thenApply(l -> l.stream()
 				.filter(c -> gc.hasReadPerm(c, type))
 				.map(container -> new NodeContent(node, container, content.getLanguageFallback(), content.getType()))
 				.collect(Collectors.toList()));
@@ -233,6 +274,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	}
 
 	public Versioned<List<GraphQLFieldDefinition>> createNodeInterfaceFields(GraphQLContext context) {
+		NodeFilter nodeFilter = NodeFilter.filter(context);
+
 		List<GraphQLFieldDefinition> baseFields = Arrays.asList(
 			// .project
 			newFieldDefinition().name("project").description("Project of the node").type(new GraphQLTypeReference("Project")).dataFetcher((
@@ -341,19 +384,21 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 				List<String> languageTags = getLanguageArgument(env, content);
 				ContainerType type = getNodeVersion(env);
-
-				NodeDataLoader.Context dataLoaderContext = new NodeDataLoader.Context(type, languageTags);
-				DataLoader<HibNode, List<NodeContent>> childrenLoader = env.getDataLoader(NodeDataLoader.CHILDREN_LOADER_KEY);
-				CompletableFuture<List<NodeContent>> future = childrenLoader.load(content.getNode(), dataLoaderContext);
+				Pair<Predicate<NodeContent>, Optional<FilterOperation<?>>> filters = parseFilters(env, nodeFilter);
+				PagingParameters pagingInfo = getPagingInfo(env);
+				NodeDataLoader.Context dataLoaderContext = new NodeDataLoader.Context(type, languageTags, filters.getValue(), pagingInfo);
+				DataLoader<DataLoaderKey<HibNode>, List<NodeContent>> childrenLoader = env.getDataLoader(NodeDataLoader.CHILDREN_LOADER_KEY);
+				CompletableFuture<List<NodeContent>> future = childrenLoader.load(new DataLoaderKey<>(env, content.getNode()), dataLoaderContext);
 
 				return future.thenApply(contents -> {
-					return applyNodeFilter(env, contents.stream()
-							.filter(item -> item.getContainer() != null)
-					);
+					return applyNodeFilter(env, contents.stream().filter(item -> item.getContainer() != null), 
+							filters.getRight().isPresent() && PersistingRootDao.shouldPage(pagingInfo), filters.getRight().isPresent());
 				});
-			}, NODE_PAGE_TYPE_NAME)
+			}, NODE_PAGE_TYPE_NAME, true)
 				.argument(createLanguageTagArg(false))
-				.argument(NodeFilter.filter(context).createFilterArgument()).build(),
+				.argument(createNativeFilterArg())
+				.argument(nodeFilter.createSortArgument())
+				.argument(nodeFilter.createFilterArgument()).build(),
 
 			// .parent
 
@@ -377,14 +422,14 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					List<String> languageTags = getLanguageArgument(env, content);
 					ContainerType type = getNodeVersion(env);
 
-					DataLoader<ParentNodeLoaderKey, NodeContentWithOptionalRuntimeException> parentLoader = env.getDataLoader(NodeDataLoader.PARENT_LOADER_KEY);
-					return parentLoader.load(new ParentNodeLoaderKey(node, type, languageTags)).thenApply(c -> c.getResult(env));
+					DataLoader<DataLoaderKey<ParentNodeLoaderKey>, NodeContentWithOptionalRuntimeException> parentLoader = env.getDataLoader(NodeDataLoader.PARENT_LOADER_KEY);
+					return parentLoader.load(new DataLoaderKey<>(env, new ParentNodeLoaderKey(node, type, languageTags, getPagingInfo(env)))).thenApply(c -> c.getResult(env));
 				})
 				.build(),
 
 			// .tags
 			newFieldDefinition().name("tags")
-				.argument(createPagingArgs()).type(new GraphQLTypeReference(TAG_PAGE_TYPE_NAME))
+				.argument(createPagingArgs(false)).type(new GraphQLTypeReference(TAG_PAGE_TYPE_NAME))
 				.dataFetcher(env -> {
 					Tx tx = Tx.get();
 					TagDao tagDao = tx.tagDao();
@@ -414,7 +459,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			newFieldDefinition()
 				.name("referencedBy")
 				.description("Loads nodes that reference this node.")
-				.argument(createPagingArgs())
+				.argument(createPagingArgs(false))
 				.argument(nodeReferenceFilter(context).createFilterArgument())
 				.argument(createNodeVersionArg())
 				.type(new GraphQLTypeReference(NODE_REFERENCE_PAGE_TYPE_NAME))
@@ -430,8 +475,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					}
 					ContainerType type = getNodeVersion(env);
 
-					DataLoader<NodeContent, Collection<NodeReferenceIn>> byRefLoader = env.getDataLoader(NodeDataLoader.REFERENCED_BY_LOADER_KEY);
-					return byRefLoader.load(new NodeContent(content.getNode(), content.getContainer(), content.getLanguageFallback(), type)).thenApply(c -> {
+					DataLoader<DataLoaderKey<NodeContent>, Collection<NodeReferenceIn>> byRefLoader = env.getDataLoader(NodeDataLoader.REFERENCED_BY_LOADER_KEY);
+					return byRefLoader.load(new DataLoaderKey<>(env, new NodeContent(content.getNode(), content.getContainer(), content.getLanguageFallback(), type))).thenApply(c -> {
 						Stream<NodeReferenceIn> stream = c.stream();
 						Map<String, ?> filterInput = env.getArgument("filter");
 						if (filterInput != null) {
@@ -468,9 +513,9 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				ContainerType containerType = getNodeVersion(env);
 				String languageTag = container.getLanguageTag();
 
-				DataLoader<HibNodeFieldContainer, String> pathLoader = env.getDataLoader(NodeDataLoader.PATH_LOADER_KEY);
-				NodeDataLoader.Context dataLoaderContext = new NodeDataLoader.Context(containerType, Collections.singletonList(languageTag));
-				return pathLoader.load(container, dataLoaderContext);
+				DataLoader<DataLoaderKey<HibNodeFieldContainer>, String> pathLoader = env.getDataLoader(NodeDataLoader.PATH_LOADER_KEY);
+				NodeDataLoader.Context dataLoaderContext = new NodeDataLoader.Context(containerType, Collections.singletonList(languageTag), Optional.empty(), getPagingInfo(env));
+				return pathLoader.load(new DataLoaderKey<>(env, container), dataLoaderContext);
 			}).build(),
 
 			// .edited

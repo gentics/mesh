@@ -20,13 +20,12 @@ import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
 import com.gentics.mesh.core.data.s3binary.S3Binary;
-import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 import com.gentics.mesh.core.data.s3binary.impl.S3BinaryImpl;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryMetadata;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @see S3BinaryGraphField
@@ -107,7 +106,7 @@ public class S3BinaryGraphFieldImpl extends MeshEdgeImpl implements S3BinaryGrap
 	}
 
 	@Override
-	public S3HibBinary getBinary() {
+	public S3Binary getBinary() {
 		return inV().nextOrDefaultExplicit(S3BinaryImpl.class, null);
 	}
 

@@ -1,0 +1,20 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| reason
+| false
+| string
+| The reason why the binary was denied if applicable.
+
+| status
+| true
+| string
+| The new status for the binary. One of ACCEPTED or DENIED.
+
+|======

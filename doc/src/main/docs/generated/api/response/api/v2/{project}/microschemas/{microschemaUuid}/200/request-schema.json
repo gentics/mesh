@@ -74,6 +74,10 @@
         }
       }
     },
+    "noIndex" : {
+      "type" : "boolean",
+      "description" : "'Exclude from indexing' flag."
+    },
     "fields" : {
       "type" : "array",
       "required" : true,
@@ -99,12 +103,18 @@
             "type" : "string",
             "description" : "Label of the field."
           },
+          "noIndex" : {
+            "type" : "boolean"
+          },
           "elasticsearch" : {
             "type" : "object",
             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
           }
         }
       }
+    },
+    "microschema" : {
+      "type" : "boolean"
     },
     "permissions" : {
       "type" : "object",

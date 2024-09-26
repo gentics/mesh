@@ -9,8 +9,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
 
 /**
@@ -51,8 +51,11 @@ public class DebugInfoUtil {
 			.map(io.vertx.reactivex.core.buffer.Buffer::getDelegate)
 			.toFlowable()
 			.onErrorResumeNext(err -> {
-				log.debug(String.format("Could not read file {%s}", path), err);
-				log.info(String.format("Could not read file {%s}", path));
+				if (log.isDebugEnabled()) {
+					log.debug(String.format("Could not read file {%s}", path), err);
+				} else {
+					log.info(String.format("Could not read file {%s}", path));
+				}
 				return Flowable.empty();
 			});
 	}

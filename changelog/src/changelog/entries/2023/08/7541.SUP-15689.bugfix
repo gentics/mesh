@@ -1,0 +1,1 @@
+Mesh Rest Client: An error has been fixed, which prevented sorting parameters from being passed to the endpoint.

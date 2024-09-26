@@ -4,6 +4,7 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayInputStream;
 import java.util.Set;
@@ -21,7 +22,6 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.test.ElasticsearchTestMode;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.util.CollectionUtil;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
@@ -143,7 +143,7 @@ public class BinaryFieldExtractOptionTest extends AbstractMeshTest {
 		setUp(new BinaryExtractOptions()
 			.setMetadata(true)
 			.setContent(false)
-		, CollectionUtil.setOf("dc_subject"));
+		, Set.of("dc_subject"));
 
 		assertThat(metadata.get("dc_subject")).isEqualTo("TestSubject");
 		assertThat(plainText).isNull();

@@ -110,6 +110,31 @@ Check the documentation explorer (in the top-right corner) to find out more deta
 [TIP]
 Your instance of Gentics Mesh comes with the <<_graphiql_browser>> as well.
 
+=== Native Filtering
+
+There is a possibility to speed up the filtering by using a *native filtering* feature, that is applied on a database level. This means that initially less data will be fetched from the database, but at a cost of filtering flexibility, as not every Mesh filter is natively supported.
+
+The native filtering is enabled on Mesh level by The GraphQL Mesh options' new preference `nativeQueryFiltering` with possible values: 
+* `OFF` - old runtime filtering.
+* `ALWAYS` - DB filtering is forced.
+* `ON_DEMAND` - GraphQL parameter `nativeFilter` is considered for the filtering (default value)
+
+The native filtering itself is controlled by a GraphQL parameter `nativeFilter` with values:
+* `NEVER` - old filtering is forced.
+* `ALWAYS` - native DB filtering is forced. If the requested filter is not supported by a DB, an exception is thrown.
+* `IF_POSSIBLE` - if the requested filter is supported by a DB, DB filtering is used, otherwise filtering is fallen back to the old filter mechanism (default value).
+
+=== Sorting
+
+Sorting is possible on selected GraphQL calls, by setting the `sort` parameter. The sorting request building is analogous to the one for `filter` parameter, but instead of the filter comparison value, a sorting direction value is used:
+* `ASCENDING`
+* `DESCENDING`
+
+For instance,
+----
+sort: {fields: { mesh_binary_content: {name:ASCENDING}} edited:DESCENDING creator:{lastname:ASCENDING} editor:{emailAddress:DESCENDING}}
+----
+
 === Comparison to Elasticsearch
 Many tasks can be done by both the search and the filtering feature. Here are a few tips that help you decide which technology is suited best for your needs:
 

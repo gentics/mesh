@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 
 import io.vertx.core.json.JsonObject;
 
@@ -32,6 +33,10 @@ public class MicroschemaUpdateRequest implements MicroschemaVersionModel {
 	@JsonPropertyDescription("Additional elasticsearch index configuration. This can be used to setup custom analyzers and filters.")
 	private JsonObject elasticsearch;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("'Exclude from indexing' flag.")
+	private Boolean noIndex;
+
 	@JsonPropertyDescription("List of microschema fields")
 	private List<FieldSchema> fields = new ArrayList<>();
 
@@ -43,6 +48,17 @@ public class MicroschemaUpdateRequest implements MicroschemaVersionModel {
 	@Override
 	public MicroschemaUpdateRequest setVersion(String version) {
 		this.version = version;
+		return this;
+	}
+
+	@Override
+	public Boolean getNoIndex() {
+		return noIndex;
+	}
+
+	@Override
+	public MicroschemaUpdateRequest setNoIndex(Boolean noIndex) {
+		this.noIndex = noIndex;
 		return this;
 	}
 

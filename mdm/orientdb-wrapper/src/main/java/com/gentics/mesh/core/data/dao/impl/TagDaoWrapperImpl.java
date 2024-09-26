@@ -3,20 +3,30 @@ package com.gentics.mesh.core.data.dao.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractCoreDaoWrapper;
+import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
@@ -28,11 +38,13 @@ import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.util.HibClassConverter;
 import com.gentics.mesh.core.db.CommonTx;
+import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
+
 import dagger.Lazy;
 
 /**
@@ -91,7 +103,7 @@ public class TagDaoWrapperImpl extends AbstractCoreDaoWrapper<TagResponse, HibTa
 	public Page<? extends HibTag> findAll(HibTagFamily tagFamily, InternalActionContext ac, PagingParameters pagingInfo,
 		Predicate<HibTag> extraFilter) {
 		TagFamily graphTagFamily = HibClassConverter.toGraph(tagFamily);
-		return graphTagFamily.findAll(ac, pagingInfo, tag -> {
+		return graphTagFamily.findAll(ac, fixSortingInfo(pagingInfo), tag -> {
 			return extraFilter.test(tag);
 		});
 	}
@@ -99,7 +111,7 @@ public class TagDaoWrapperImpl extends AbstractCoreDaoWrapper<TagResponse, HibTa
 	@Override
 	public Page<? extends HibTag> findAll(HibTagFamily tagFamily, InternalActionContext ac, PagingParameters pagingParameters) {
 		TagFamily graphTagFamily = HibClassConverter.toGraph(tagFamily);
-		return graphTagFamily.findAll(ac, pagingParameters);
+		return graphTagFamily.findAll(ac, fixSortingInfo(pagingParameters));
 	}
 
 	@Override
@@ -162,7 +174,7 @@ public class TagDaoWrapperImpl extends AbstractCoreDaoWrapper<TagResponse, HibTa
 
 	@Override
 	public Page<? extends HibTag> getTags(HibNode node, HibUser user, PagingParameters params, HibBranch branch) {
-		return toGraph(node).getTags(user, params, branch);
+		return toGraph(node).getTags(user, fixSortingInfo(params), branch);
 	}
 
 	@Override
@@ -172,14 +184,20 @@ public class TagDaoWrapperImpl extends AbstractCoreDaoWrapper<TagResponse, HibTa
 
 	@Override
 	public Stream<? extends HibTag> findAllStream(HibTagFamily root, InternalActionContext ac,
-			InternalPermission permission) {
-		return toGraph(root).findAllStream(ac, permission);
+			InternalPermission permission, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter) {
+		return toGraph(root).findAllStream(ac, permission, fixSortingInfo(paging), maybeFilter);
+	}
+
+	@Override
+	public long countAll(HibTagFamily root, InternalActionContext ac, InternalPermission permission,
+			PagingParameters pagingInfo, Optional<FilterOperation<?>> maybeFilter) {
+		return toGraph(root).countAll(ac, permission, pagingInfo, maybeFilter);
 	}
 
 	@Override
 	public Page<? extends HibTag> findAllNoPerm(HibTagFamily root, InternalActionContext ac,
 			PagingParameters pagingInfo) {
-		return toGraph(root).findAllNoPerm(ac, pagingInfo);
+		return toGraph(root).findAllNoPerm(ac, fixSortingInfo(pagingInfo));
 	}
 
 	@Override
@@ -198,18 +216,43 @@ public class TagDaoWrapperImpl extends AbstractCoreDaoWrapper<TagResponse, HibTa
 	}
 
 	@Override
-	public Page<? extends HibTag> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
-		return boot.get().meshRoot().getTagRoot().findAll(ac, pagingInfo);
-	}
-
-	@Override
 	public Page<? extends HibTag> findAll(InternalActionContext ac, PagingParameters pagingInfo,
 			Predicate<HibTag> extraFilter) {
-		return boot.get().meshRoot().getTagRoot().findAll(ac, pagingInfo, e -> extraFilter.test(e));
+		return boot.get().meshRoot().getTagRoot().findAll(ac, fixSortingInfo(pagingInfo), e -> extraFilter.test(e));
 	}
 
 	@Override
 	protected RootVertex<Tag> getRoot() {
 		return boot.get().meshRoot().getTagRoot();
+	}
+
+	/**
+	 * If the given paging parameters contains sorting information, the names of the sorted attributes are changed from the external names to the internal names.
+	 * @param pagingParameters paging parameters
+	 * @return paging parameters with optionally fixed sorting info
+	 */
+	private PagingParameters fixSortingInfo(PagingParameters pagingParameters) {
+		if (PersistingRootDao.shouldSort(pagingParameters)) {
+			Map<String, SortOrder> sort = pagingParameters.getSort();
+			List<Pair<String, SortOrder>> fixedSort = new ArrayList<>();
+			fixedSort.addAll(
+					sort.entrySet().stream().map(entry -> Pair.of(fixSortedAttribute(entry.getKey()), entry.getValue()))
+							.collect(Collectors.toList()));
+			pagingParameters.clearSort();
+			fixedSort.forEach(pair -> pagingParameters.putSort(pair.getLeft(), pair.getRight()));
+		}
+		return pagingParameters;
+	}
+
+	/**
+	 * Change the attribute name from the external name to the internal name
+	 * @param attributeName attribute name
+	 * @return internal attribute name
+	 */
+	private String fixSortedAttribute(String attributeName) {
+		if (StringUtils.equals("name", attributeName)) {
+			return TagImpl.TAG_VALUE_KEY;
+		}
+		return attributeName;
 	}
 }

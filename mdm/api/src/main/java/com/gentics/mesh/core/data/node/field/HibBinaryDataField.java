@@ -10,7 +10,7 @@ import com.gentics.mesh.util.UniquenessUtil;
  * @author plyhun
  *
  */
-public interface HibBinaryDataField extends HibField{
+public interface HibBinaryDataField extends HibField {
 
 	/**
 	 * Return the binary filename.

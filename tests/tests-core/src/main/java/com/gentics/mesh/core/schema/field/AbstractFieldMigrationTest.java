@@ -69,6 +69,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 	protected final static String NEWFIELD = "New field";
 	protected final static String NEWFIELDVALUE = "New field value";
+	protected final static String NEWBINARYCHECKSTATUS = "New binary check status";
 	protected final static String OLDFIELD = "Old field";
 	protected final static String OLDFIELDVALUE = "Old field value";
 
@@ -88,7 +89,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 	/**
 	 * Generic method to test migration where a field has been removed from the schema/microschema
-	 * 
+	 *
 	 * @param creator
 	 *            creator implementation
 	 * @param dataProvider
@@ -112,7 +113,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 	/**
 	 * Generic method to test node migration where a field has been removed from the schema
-	 * 
+	 *
 	 * @param creator
 	 *            creator implementation
 	 * @param dataProvider
@@ -195,7 +196,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 	/**
 	 * Generic method to test micronode migration where a field has been removed from the microschema
-	 * 
+	 *
 	 * @param creator
 	 *            creator implementation
 	 * @param dataProvider
@@ -474,7 +475,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 	/**
 	 * Generic method to test node migration where the type of a field is changed
-	 * 
+	 *
 	 * @param oldField
 	 *            creator for the old field
 	 * @param dataProvider
@@ -499,7 +500,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 	/**
 	 * Generic method to test node migration where the type of a field is changed
-	 * 
+	 *
 	 * @param oldField
 	 *            creator for the old field
 	 * @param dataProvider
@@ -600,6 +601,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		});
 
 		NodeMigrationActionContextImpl context = new NodeMigrationActionContextImpl();
+		context.setHttpServerConfig(tx(tx -> { return tx.data().options().getHttpServerOptions();}));
 		context.setProject(tx(() -> project()));
 		context.setBranch(tx(() -> project().getLatestBranch()));
 		context.setFromVersion(tx(tx -> {
@@ -640,7 +642,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 	/**
 	 * Generic method to test micronode migration where the type of a field is changed
-	 * 
+	 *
 	 * @param oldField
 	 *            creator for the old field
 	 * @param dataProvider
@@ -766,7 +768,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 	/**
 	 * Generic test for migrating an existing field with a custom migration script
-	 * 
+	 *
 	 * @param creator
 	 *            creator implementation
 	 * @param dataProvider
@@ -794,7 +796,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 	/**
 	 * Generic test for migrating an existing field with a custom migration script
-	 * 
+	 *
 	 * @param creator
 	 *            creator implementation
 	 * @param dataProvider
@@ -875,7 +877,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 	/**
 	 * Generic test for migrating an existing field with a custom migration script
-	 * 
+	 *
 	 * @param creator
 	 *            creator implementation
 	 * @param dataProvider
@@ -1116,7 +1118,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 	/**
 	 * Create a microschema
-	 * 
+	 *
 	 * @param name
 	 *            name
 	 * @param version
@@ -1145,7 +1147,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 	/**
 	 * Create a micronode field in an existing node
-	 * 
+	 *
 	 * @param micronodeFieldName
 	 *            name of the micronode field
 	 * @param schemaVersion

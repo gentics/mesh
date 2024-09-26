@@ -2,7 +2,7 @@ package com.gentics.mesh.core.data.binary;
 
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
-import com.gentics.mesh.core.data.node.field.HibBinaryField;
+import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 import com.gentics.mesh.core.result.Result;
 
 /**
@@ -18,16 +18,20 @@ public interface Binary extends MeshVertex, HibBinary {
 
 	String BINARY_IMAGE_HEIGHT_PROPERTY_KEY = "binaryImageHeight";
 
+	String BINARY_CHECK_STATUS_KEY = "checkStatus";
+
+	String BINARY_CHECK_SECRET_KEY = "checkSecret";
+
 	/**
 	 * Find all binary fields which make use of this binary.
-	 * 
+	 *
 	 * @return
 	 */
-	Result<? extends HibBinaryField> findFields();
+	Result<? extends BinaryGraphField> findFields();
 
 	/**
 	 * Return the sha512 checksum.
-	 * 
+	 *
 	 * @return
 	 */
 	default String getSHA512Sum() {
@@ -36,7 +40,7 @@ public interface Binary extends MeshVertex, HibBinary {
 
 	/**
 	 * Set the SHA512 checksum.
-	 * 
+	 *
 	 * @param sha512sum
 	 * @return
 	 */
@@ -47,7 +51,7 @@ public interface Binary extends MeshVertex, HibBinary {
 
 	/**
 	 * Return the binary size in bytes.
-	 * 
+	 *
 	 * @return
 	 */
 	default long getSize() {
@@ -57,7 +61,7 @@ public interface Binary extends MeshVertex, HibBinary {
 
 	/**
 	 * Set the binary file size in bytes
-	 * 
+	 *
 	 * @param sizeInBytes
 	 * @return Fluent API
 	 */
@@ -68,7 +72,7 @@ public interface Binary extends MeshVertex, HibBinary {
 
 	/**
 	 * Return the binary image height.
-	 * 
+	 *
 	 * @return
 	 */
 	default Integer getImageHeight() {
@@ -77,7 +81,7 @@ public interface Binary extends MeshVertex, HibBinary {
 
 	/**
 	 * Return the width of the binary image.
-	 * 
+	 *
 	 * @return
 	 */
 	default Integer getImageWidth() {
@@ -86,7 +90,7 @@ public interface Binary extends MeshVertex, HibBinary {
 
 	/**
 	 * Set the with of the binary image. You can set this null to indicate that the binary data has no height.
-	 * 
+	 *
 	 * @param heigth
 	 * @return Fluent API
 	 */
@@ -97,7 +101,7 @@ public interface Binary extends MeshVertex, HibBinary {
 
 	/**
 	 * Set the image width of the binary image.
-	 * 
+	 *
 	 * @param width
 	 * @return Fluent API
 	 */
@@ -106,4 +110,52 @@ public interface Binary extends MeshVertex, HibBinary {
 		return this;
 	}
 
+	/**
+	 * Return the check status of the binary (one of ACCEPTED, DENIED or POSTPONED).
+	 * @return The check status of the binary.
+	 */
+	@Override
+	default BinaryCheckStatus getCheckStatus() {
+		Object status = property(BINARY_CHECK_STATUS_KEY);
+
+		return status == null ? null : BinaryCheckStatus.valueOf(status.toString());
+	}
+
+	/**
+	 * Set the check status of the binary (one of ACCEPTED, DENIED or POSTPONDED).
+	 * @param checkStatus The check status to set.
+	 * @return Fluent API.
+	 */
+	@Override
+	default Binary setCheckStatus(BinaryCheckStatus checkStatus) {
+		property(BINARY_CHECK_STATUS_KEY, checkStatus);
+		return this;
+	}
+
+	/**
+	 * Return the check secret of the binary.
+	 * @return The check secret of the binary.
+	 */
+	@Override
+	default String getCheckSecret() {
+		return property(BINARY_CHECK_SECRET_KEY);
+	}
+
+	/**
+	 * Set the check secret of the binary.
+	 * @param checkSecret The binaries check secret.
+	 * @return Fluent API.
+	 */
+	@Override
+	default Binary setCheckSecret(String checkSecret) {
+		property(BINARY_CHECK_SECRET_KEY, checkSecret);
+		return this;
+	}
+
+	/**
+	 * Get the manipulation variants of this binary image representation.
+	 * 
+	 * @return
+	 */
+	Result<? extends ImageVariant> getVariants();
 }

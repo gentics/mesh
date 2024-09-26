@@ -1,0 +1,30 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| callbackUrl
+| true
+| string
+| The URL where the check service should post its results to.
+
+| downloadUrl
+| true
+| string
+| The URL for the check service to download the binary.
+
+| filename
+| true
+| string
+| The checked binary&#x27;s filename
+
+| mimeType
+| true
+| string
+| The checked binary&#x27;s MIME type
+
+|======

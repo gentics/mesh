@@ -17,8 +17,8 @@ import org.assertj.core.data.Percentage;
 import com.gentics.mesh.test.performance.BenchmarkJob;
 import com.gentics.mesh.test.performance.StopWatch;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class PerformanceTestUtils {
 

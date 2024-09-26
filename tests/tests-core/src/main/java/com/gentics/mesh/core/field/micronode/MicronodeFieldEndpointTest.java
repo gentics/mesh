@@ -373,8 +373,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		microschema.setName("captionedImage");
 		field.setMicroschema(microschema);
 		field.getFields().put("firstName", new StringFieldImpl().setString("Max"));
-		createNodeAndExpectFailure(FIELD_NAME, field, BAD_REQUEST, "node_error_invalid_microschema_field_value", "micronodeField",
-				"captionedImage");
+		createNodeAndExpectFailure(FIELD_NAME, field, BAD_REQUEST, "node_error_invalid_microschema_field_value", FIELD_NAME, "captionedImage", "vcard");
 	}
 
 	@Test

@@ -1,0 +1,298 @@
+////
+Note: this file (changelog-2.adoc-include) is generated automatically.
+Do not make manual changes in this file, as they will be lost.
+
+If you want to add changelog entries, create a new file in changelog/src/changelog/entries/... and run creation of the changelog with
+mvn -pl changelog install
+////
+
+[[v2.1.6]]
+== 2.1.6 (13.09.2024)
+
+icon:check[] Core: The Vert.x Handlebars engine dependency has been patched, to replace the vulnerable Apache `commons-text` dependency, targeting `CVE-2022-42889`.
+
+[[v2.1.5]]
+== 2.1.5 (28.08.2024)
+
+icon:check[] Core: A crash has been fixed on an attempt of (micro)node migration over non-adjacent (micro)schema versions.
+
+[[v2.1.4]]
+== 2.1.4 (07.08.2024)
+
+icon:check[] Documentation: The check/repair API calls are better documented in regards of an async processing. The logging documentation is extended with format examples.
+
+[[v2.1.3]]
+== 2.1.3 (26.06.2024)
+
+icon:check[] Elasticsearch: An Elasticsearch Java Client has been updated to the version 1.1.2, containing the corrections to the connection failure processing mechanism. The Elasticsearch activity idle checking has been improved to be more proof of the unstable connections.
+
+[[v2.1.2]]
+== 2.1.2 (13.05.2024)
+
+icon:check[] GraphQL: A combination of similar queries with different names and filter parameters, running over native filtering, that produces incorrect results, has been fixed. 
+
+[[v2.1.1]]
+== 2.1.1 (02.05.2024)
+
+icon:check[] The library used to process webp images has been changed due to JVM errors when running in an alpine based image.
+
+
+[[v2.1.0]]
+== 2.1.0 (26.04.2024)
+
+icon:plus[] Core: Usage of application level protocol negotiation (aka ALPN) can be now configured via Mesh Options.
+
+
+icon:plus[] Java Rest client: REST client can now choose the HTTP protocol version to use for the Mesh connection. Possible values: DEFAULT (current default support of the carrier HTTP client library, default value), HTTP_1_1, HTTP_2.
+
+
+icon:plus[] Plugins: An option for connection over HTTP/2 for the Mesh plugins have been added.
+
+
+icon:plus[] Image manipulation: Adds support for WebP images.
+
+icon:plus[] The endpoint `GET /auth/login` now also supports login via the Authentication Bearer request header (using an API token).
+
+
+icon:plus[] Core: The on-demand image manipulation feature has been refactored for DDoS protection. The new image manipulator option, `mode`, has been added with the following values: 
+`ON_DEMAND` keeps already existing behaviour with creating/reusing the image variant automatically on each request, 
+`MANUAL` requires an extra step of calling the image variant creation REST API prior to the variant serve, `OFF` disables the feature completely. A set of REST API calls has been added for the image variants manipulation. 
+The GraphQL `nodes` call has been extended to filter/serve over the image variants of a selected binary field, if applicable.
+
+icon:plus[] Search: Several enhancements have been applied to the content, sent to the search engine for the indexing. Each (micro)schema is presented a `noIndex` flag, marking the content of the (micro)schema as excluded from the indexing. Each (micro)schema field is presented a similar `noIndex` flag. 
+By default no flag is set, meaning the content to be indexable. This feature serves security purposes, preventing the sensible information from leaking through the search engine. 
+
+icon:plus[] REST: A new HttpServer option, `minifyJson`, has been added to control over the REST API payloads being pretty printed for readability, or minified for resource save. An analogous setting has been added to the Java `MeshRestClient`. 
+Default value is `true`, so the payload minification is turned on, which is a @breaking@S change, if one expects the pretty-formatted output.
+
+icon:plus[] Now it's possible to use generated Mesh API key for the login request, with `apikey` string body parameter.
+
+icon:plus[] REST: A new 'languages' endpoint has been added, providing the list of the installed languages, as well as the lookup over UUID or 2-character language tag.
+
+icon:plus[] Some dependencies have been updated:
+* VertX: 4.5.7
+* GraphQL: 21.5
+* GraphQL Dataloader: 3.2.2
+* PF4j: 3.11.0
+* Hazelcast: 3.12.13
+* Jackson: 2.17.0
+* SnakeYAML: 2.2
+* Log4j: 2.23.1
+* SLF4j: 2.0.13
+* Logback: 1.5.5
+* Commons IO: 2.16.1
+* RAML Parser: 0.8.40
+* JSON Path: 2.9.0
+* JSoup: 1.17.2
+* Jettison: 1.5.4
+* Netty: 4.1.108.Final
+* Image IO: 3.10.1
+
+
+icon:plus[] Mesh has been updated to Java 17 (LTS version).
+
+
+[[v2.0.18]]
+== 2.0.18 (20.03.2024)
+
+icon:check[] GraphQL: A regression of missing common `and`, `or`, `not` top level filters has been fixed.
+
+[[v2.0.17]]
+== 2.0.17 (06.03.2024)
+
+icon:check[] REST client: The configuration now allows adding default parameter provider for query parameters, that should be added to every request (unless overwritten).
+
+Tests: The tests API has been extended to allow tests which do not reset the database between test cases.
+
+[[v2.0.16]]
+== 2.0.16 (28.02.2024)
+
+icon:check[] GraphQL: In cases of long running GraphQL requests, some other GraphQL requests were queued and executed after the long running request, even if enough workers were still
+available. The behaviour has been changed, so that GraphQL requests will only be queued, if all workers are currently busy.
+
+icon:check[] Cache: The permission cache has been fixed to always return copies of the actually cached entries.
+
+[[v2.0.15]]
+== 2.0.15 (21.02.2024)
+
+icon:check[] REST: When requesting sorted data, the permission limitations are violated. This has been fixed.
+
+icon:check[] Core: Creating a translation for the root node of a project always failed with a "Bad Request" error, which has been fixed.
+
+icon:check[] Elasticsearch: A full access to the data backed by ES has been given to the admin users.
+
+icon:check[] Because of a flawed cache invalidation strategy, the project stayed on an old 'latest' branch, even if a new one has been assigned, until the caches are invalidated, or a restart is triggered. This has been fixed.
+
+icon:check[] Cache: A mechanism of reattaching the cached entity to the persistence context has been introduced, allowing implementations of smarter cache policies.
+
+Cache: Because of a flawed cache invalidation strategy, the project stayed on an old 'latest' branch, even if a new one has been assigned, until the caches are invalidated, or a restart is triggered. This has been fixed.
+
+icon:check[] A regression regarding OAuth user filtering has been fixed.
+
+Minor improvements in authentication-related utilities Java API, allowing more control over authentication URL management.
+
+[[v2.0.14]]
+== 2.0.14 (07.02.2024)
+
+icon:check[] REST client: Improves error handling for WebSocket errors.
+
+icon:check[] REST: The endpoints for invoking a consistency check/repair now have a new query parameter `async` which allows to perform the action as a background job instead of synchronously.
+Core: Updating and publishing a node in a single request has been optimized to only create a single new version of the content.
+
+icon:check[] Auth: Synchronization of users, groups and roles from AuthServicePlugin implementations (like the keycloak plugin) has been improved for performance and stability.
+
+icon:check[] Elasticsearch: A possibility of DDoSing the ES with a bulk request of too many items has been eliminated.
+
+icon:check[] GraphQL: When an inexisting language has been requested for a node, the schema info was not loaded as well. This has been fixed.
+
+[[v2.0.13]]
+== 2.0.13 (24.01.2024)
+
+icon:check[] GraphQL: Fetching of micronode fields has been improved to allow batch loading.
+
+[[v2.0.12]]
+== 2.0.12 (10.01.2024)
+
+icon:check[] REST: The documentation of the generic parameter `fields` has been fixed. Now `fields` works over the Language entities as well, the values are `uuid`,`name`,`languageTag`,`nativeName`.
+
+icon:check[] GraphQL. Some of (micro)schema fields related queries rely on the target (micro)schema having at least one field, crashing in HTTP 500 otherwise. This has now been fixed. 
+
+[[v2.0.11]]
+== 2.0.11 (20.12.2023)
+
+icon:check[] GraphQL: More test cases for sorting have been added.
+
+
+icon:check[] Core: Unnecessary uniqueness checks for segment fields will now be avoided, when updating nodes.
+
+icon:check[] GraphQL: The overall performance of GraphQL requests has been improved by caching the GraphQL schemas.
+
+icon:check[] Core: Now it is not allowed to set a new password to an empty or invalid (e.g. spaces) string.
+
+icon:check[] Auth: The unnecessary logging of outdated/mismatched auth token has been removed.
+
+[[v2.0.10]]
+== 2.0.10 (06.12.2023)
+
+icon:check[] Core: A regression of creation of the named entities has been fixed.
+
+
+icon:check[] Core: Improve the internal Java API of the list field creation, targeting better batch performance.
+
+
+icon:check[] Core: Improve the internal Java API for granting and revoking permissions.
+
+
+[[v2.0.9]]
+== 2.0.9 (18.11.2023)
+
+icon:check[] GraphQL: `referencedBy` field fetcher has been refactored for more optimal batch loading.
+
+icon:check[] Tests: Added set of tests of uniqueness of the named entities on a database level.
+
+icon:check[] Core: The cache internal Java API has been presented a new constructor, allowing using the weight instead of entity number for the cache size calculations, as well as some new statistics getters.
+
+icon:check[] Core: Now caches treat NULL as a valid value, instead of a constant miss.
+
+[[v2.0.8]]
+== 2.0.8 (02.11.2023)
+
+icon:check[] GraphQL: Some more multithreading issues with initialization of GraphQL have been fixed.
+
+
+icon:check[] Core: Requests to branches failed with an internal error, if monitoring was disabled. This has been fixed.
+
+
+icon:check[] Core: The new configuration option `vertxOptions.orderedBlockingHandlers` allows to change the behaviour of concurrent handling of "long running" requests
+(requests that modify data or GraphQL requests). If the option is set to `true` (default value) such requests will be run in order (per http verticle) and never concurrently.
+As a consequence, it may happen that e.g. GraphQL requests are queued for some time if some other requests are currently handled.
+If the option is set to `false`, blocking requests will only be queued, if all threads of the worker pool are currently busy.
+
+
+icon:check[] GraphQL: Performance optimizations of the Elasticsearch-based requests.
+
+
+[[v2.0.7]]
+== 2.0.7 (18.10.2023)
+
+icon:check[] GraphQL: When the very first GraphQL Queries (after starting the Mesh instance) were executed in parallel, it could happen that
+GraphQL execution failed with some internal errors. This has been fixed.
+
+
+icon:check[] GraphQL: Parent loading has been speeded up by using a batch data loading.
+
+icon:check[] Search: Minor logging changes in the search engine, making it less annoying.
+
+[[v2.0.6]]
+== 2.0.6 (04.10.2023)
+
+icon:check[] Core: More NPE occurrences during the massive concurrent publishing process have been fixes.
+
+[[v2.0.5]]
+== 2.0.5 (20.09.2023)
+
+icon:check[] Core: When running in the massive concurrent publishing process, it is possible to run into a race condition when some field containers are already processed while being referenced by the edge, 
+throwing an NPE. This has now been fixed.
+
+
+[[v2.0.4]]
+== 2.0.4 (05.09.2023)
+
+icon:check[] Mesh Rest Client: An error has been fixed, which prevented sorting parameters from being passed to the endpoint.
+
+
+icon:check[] Clustering: Calling cluster specific REST Endpoints on non-clustered instances could cause internal server errors. The behaviour has been changed so that
+a "Bad Request" error is returned containing a proper error message.
+
+
+icon:check[] Java Rest Client: After logging in with the `login()` method, the login token was never refreshed, which caused it to expire after the configured token expiration time (per default 1 hour),
+even if the client was used to do requests. This has been changed now, so that the login token in the client will be refreshed on every request to mesh.
+
+
+icon:check[] GraphQL: Link resolving in graphql queries ignored the language tags in the links. This has been fixed.
+
+
+icon:check[] GraphQL: The metadata request does not crash anymore on the empty (micro)schemas. The new related filter, `isEmpty`, has been added as well.
+
+
+[[v2.0.3]]
+== 2.0.3 (10.08.2023)
+
+icon:check[] Java filter for Node reference content field has been fixed. Native filtering pagination has been improved. Some other minor stability fixed applied.
+
+icon:check[] Plugins: Logging fixed upon false triggering of a warning of inexisting role/group connection.
+
+
+icon:check[] Core: All named instances have been presented an own cache.
+
+
+[[v2.0.2]]
+== 2.0.2 (26.07.2023)
+
+icon:check[] Core: Uniqueness checks for webroot url field values will now only be done, if those values actually change. This will improve performance of e.g. schema migrations, where the webroot url field values are likely to not change.
+
+
+icon:check[] Core: An internal API for efficient loading of list field values has been added.
+
+
+[[v2.0.1]]
+== 2.0.1 (13.07.2023)
+
+icon:check[] Clustering: Due to an incorrect check, it was possible that migration jobs could complete without actually migrating anything, when run in a clustered environment with disabled coordination mode.
+
+[[v2.0.0]]
+== 2.0.0 (29.06.2023)
+
+icon:plus[] Core: Support of database level filtering/sorting has been added to the low level Java API.
+
+icon:plus[] GraphQL: Support of database level filtering/sorting has been added. New `sort` parameter in added for structured sorting, forcing the usage of DB filtering. New GraphQL parameter `nativeFilter` 
+is added to the selected entity lookup methods, with options `NEVER` (old filtering is forced), `ALWAYS` (DB filtering is forced), `IF_POSSIBLE` (if the requested filter is supported by a DB, DB filtering is used, otherwise filtering is fallen back to the old filter mechanism). 
+Please note that not all the currently existing filters are supported by the DB.
+
+icon:plus[] GraphQL: A simplified, native filtering friendly version of `regex` string operation, `like`, has been added, accepting wildcards `%` as a zeroable set of characters, e.g. `like: "hello%world"` requests filtering in the strings, that start with `hello`, end with `world` and have zero-to-unlimited number of any characters in between.
+
+icon:plus[] GraphQL: Added new filters for field types: list, micronode, (s3)binary. Added a new experimental filter for referencedBy nodes.
+
+icon:plus[] OrientDB: Basic experimental support for OrientDB native filtering/sorting is added. The GraphQL Mesh options has a new preference `nativeQueryFiltering` with options: `NEVER` (old filtering, default value), `ALWAYS` (DB filtering is forced), 
+`ON_DEMAND` (GraphQL parameter `nativeFilter` is considered).
+

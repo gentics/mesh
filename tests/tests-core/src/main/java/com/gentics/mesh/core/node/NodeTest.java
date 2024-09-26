@@ -504,8 +504,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			// 10. assert for initial branch
 			List<HibNode> nodes = new ArrayList<>();
-			nodeDao.findAll(project, mockActionContext("release=" + initialBranch.getName()), new PagingParametersImpl(1, 10000L, "name",
-				SortOrder.ASCENDING)).forEach(node -> nodes.add(node));
+			nodeDao.findAll(project, mockActionContext("release=" + initialBranch.getName()), new PagingParametersImpl(1, 10000L)).forEach(node -> nodes.add(node));
 			assertThat(nodes).as("Nodes in initial branch").usingElementComparatorOnFields("uuid").doesNotContain(subFolder, subSubFolder);
 			assertThat(folder).as("folder").hasNoChildren(initialBranch);
 

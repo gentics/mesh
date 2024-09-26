@@ -4,11 +4,11 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 
@@ -62,7 +62,7 @@ public class DatabaseRevisionTableGenerator extends AbstractRenderingGenerator {
 			VersionNumber parsedVersion = VersionNumber.parse(version);
 			if (parsedVersion != null && parsedVersion.compareTo(VersionNumber.parse("0.16.1")) >= 0) {
 				URL revisionFileUrl = new URL(BASE_PATH + version + "/" + "mesh-orientdb-" + version + "-revision.txt");
-				String hash = IOUtils.readLines(revisionFileUrl.openStream(), "UTF-8").stream().collect(Collectors.joining());
+				String hash = IOUtils.toString(revisionFileUrl.openStream(), Charset.forName("UTF-8"));
 				System.out.println("Found version {" + version + "} with hash {" + hash + "}");
 				Map<String, String> map = new HashMap<>();
 				map.put("version", version);
@@ -76,7 +76,7 @@ public class DatabaseRevisionTableGenerator extends AbstractRenderingGenerator {
 		if (!version.endsWith("-SNAPSHOT")) {
 			local.put("version", version);
 			local.put("revision",
-				new OrientDBDatabase(null, null, null, null, null, null, null, null, null, null, null, null, null).getDatabaseRevision());
+				new OrientDBDatabase(null, null, null, null, null, null, null, null, null, null, null, null, null, null).getDatabaseRevision());
 			entries.add(local);
 		}
 

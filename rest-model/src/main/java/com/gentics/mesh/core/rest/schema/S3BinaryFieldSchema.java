@@ -46,4 +46,18 @@ public interface S3BinaryFieldSchema extends FieldSchema {
 	 * @return
 	 */
 	S3BinaryFieldSchema setS3BinaryExtractOptions(S3BinaryExtractOptions extract);
+
+	/**
+	 * Returns the check service URL.
+	 *
+	 * @return The check service URL.
+	 */
+	String getCheckServiceUrl();
+
+	/**
+	 * Set the check service URL.
+	 * @param checkServiceUrl The check service URL.
+	 * @return Fluent API.
+	 */
+	S3BinaryFieldSchema setCheckServiceUrl(String checkServiceUrl);
 }

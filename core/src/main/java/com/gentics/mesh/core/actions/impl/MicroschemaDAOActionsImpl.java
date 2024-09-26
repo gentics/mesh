@@ -5,6 +5,7 @@ import java.util.function.Predicate;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.DAOActionContext;
@@ -93,4 +94,8 @@ public class MicroschemaDAOActionsImpl implements MicroschemaDAOActions {
 		return element.getETag(ac);
 	}
 
+	@Override
+	public Page<? extends HibMicroschema> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, FilterOperation<?> extraFilter) {
+		return ctx.tx().microschemaDao().findAll(ctx.ac(), pagingInfo, extraFilter);
+	}
 }

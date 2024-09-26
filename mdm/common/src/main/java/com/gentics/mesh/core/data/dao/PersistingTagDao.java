@@ -33,8 +33,8 @@ import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A persisting extension to {@link TagDao}
@@ -78,7 +78,7 @@ public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<HibTag>, P
 	 */
 	default HibTag loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, InternalPermission perm,
 			boolean errorIfNotFound) {
-		return Tx.get().tagFamilyDao().findAllStream(project, ac, perm)
+		return Tx.get().tagFamilyDao().findAllStream(project, ac, perm, ac.getPagingParameters(), Optional.empty())
 				.map(tagFamily -> loadObjectByUuid(tagFamily, ac, uuid, perm, false))
 				.filter(Objects::nonNull)
 				.map(tag -> checkPerms(tag, uuid, ac, perm, errorIfNotFound))

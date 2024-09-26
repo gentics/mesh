@@ -24,8 +24,8 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @see Tag
@@ -46,6 +46,9 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse> implements Tag 
 	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(TagImpl.class, MeshVertexImpl.class);
+
+		addUserTrackingRelation(TagImpl.class);
+
 		index.createIndex(vertexIndex(TagImpl.class)
 				.withName(Tag.UNIQUENAME_INDEX_NAME)
 				.withField(UNIQUENAME_PROPERTY_KEY, STRING)

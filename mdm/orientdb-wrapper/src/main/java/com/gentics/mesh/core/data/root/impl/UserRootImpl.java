@@ -83,6 +83,14 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 	}
 
 	@Override
+	public String mapGraphQlFieldNameForSorting(String gqlName) {
+		switch (gqlName) {
+		case "name": return "username";
+		}
+		return super.mapGraphQlFieldNameForSorting(gqlName);
+	}
+
+	@Override
 	public void delete(BulkActionContext context) {
 		throw new NotImplementedException("The user root should never be deleted");
 	}

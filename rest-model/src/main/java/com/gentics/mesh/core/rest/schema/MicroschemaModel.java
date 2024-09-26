@@ -40,4 +40,8 @@ public interface MicroschemaModel extends FieldSchemaContainer {
 		}
 	}
 
+	@Override
+	default boolean isMicroschema() {
+		return true;
+	}
 }

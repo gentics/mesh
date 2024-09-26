@@ -15,12 +15,21 @@ include::content/docs/variables.adoc-include[]
 
 = Gentics Mesh Changelog
 
-[[expected]]
-== Planned Future Changes
+[[clustering_orientdb]]
+== Clustering Support for OrientDB
 
-* With the release of `/api/v2` of the API, v1 has been deprecated. Version 2 introduced changes in the GraphQL API only. See the note in the changelog for link:#v0.35.0[v0.35.0] for details. The `/api/v1` still works like before, we will however cease support for `/api/v1` in the future. The Java REST client still uses v1 per default but can be set to v2. We advise to do so while `/api/v1` is still supported to prevent failures in the future.
+Starting with version 2.0.0 clustering with OrientDB is no longer part of the professional support by Gentics. For high availability setups, it is recommended to use
+link:https://getmesh.io/premium-features/sql-db/[Gentics Mesh SQL].
 
-* The `html` field type will be removed in the future. Instead the `string` type will be used in combination with an additional configuration property for this field in the schema. Of course, your existing schemas will be migrated for you.
+[[v2.1.x]]
+== 2.1.x Changelog
+
+Mesh 2.1.x is part of the Gentics Content Management Platform 8.1: link:https://www.gentics.com/cmp/changelog/8.1.0/merged_changelog.html?show=mesh,meshplugins[Changelog]
+
+[[v2.0.x]]
+== 2.0.x Changelog
+
+Mesh 2.0.x is part of the Gentics Content Management Platform 8.0: link:https://www.gentics.com/cmp/changelog/8.0.0/merged_changelog.html?show=mesh,meshplugins[Changelog]
 
 [[v1.10.10]]
 == 1.10.10 (28.06.2023)
@@ -52,7 +61,7 @@ icon:check[] GraphQL: Performance of queries that return large amounts of nodes 
 [[v1.10.5]]
 == 1.10.5 (19.04.2023)
 
-icon:check[] Core: The name of a Mesh user is now forced to be unique on a database level, to prevent creating users with an already existing username. The duplicated username detection mechanism has also been improved. 
+icon:check[] Core: The name of a Mesh user is now forced to be unique on a database level, to prevent creating users with an already existing username. The duplicated username detection mechanism has also been improved.
 
 CAUTION: Duplicate usernames must be removed before the update, otherwise Mesh will fail to start!
 
@@ -594,7 +603,7 @@ icon:check[] Core: Fixed a bug which caused a `NullPointerException` when loadin
 CAUTION: Java 10: This version of Gentics Mesh will only be executable using Java 10 or newer JVM versions.
 		The Java APIs for `mesh-api`, `mesh-rest-model`, `mesh-rest-client` and `mesh-test-common` are still be usable with Java 8.
     Plugins need to be upgraded to Java 10 in order to be compatible with this version.
-		
+
 icon:plus[] Internal: The maven package structure for internal code has been changed.
 
 icon:plus[] Internal: The internal code has been cleaned up.
@@ -773,13 +782,13 @@ More information can be found in the link:{{< relref "references.asciidoc" >}}#_
 
 icon:plus[] Java Rest Client: The client configuration has been enhanced. It is now possible to specify a client certificate and key to be used by the REST client.
 
-The following methods have been added to the config builder for `MeshRestClientConfig`:  
+The following methods have been added to the config builder for `MeshRestClientConfig`:
 
 Methods to set the client key which will be used during SSL handshake:
 
   * `MeshRestClientConfig.Builder#setClientKey(String path)`
-  * `MeshRestClientConfig.Builder#setClientKey(InputStream ins)` 
-  * `MeshRestClientConfig.Builder#setClientKey(byte[] data)` 
+  * `MeshRestClientConfig.Builder#setClientKey(InputStream ins)`
+  * `MeshRestClientConfig.Builder#setClientKey(byte[] data)`
 
 Methods to set the client certificate which will be used during SSL handshake:
 

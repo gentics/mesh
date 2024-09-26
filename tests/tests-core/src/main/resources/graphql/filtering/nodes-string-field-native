@@ -1,0 +1,99 @@
+{
+	nameEquals2015: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        name: {equals: "2015"}
+	      }
+	    }
+	  }) {
+	    # [$.data.nameEquals2015.elements.length()=1]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	nameEndsWith15: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        name: {like: "%15"}
+	      }
+	    }
+	  }) {
+	    # [$.data.nameEndsWith15.elements.length()=1]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	nameNotEquals2015: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        name: {notEquals: "2015" isNull: false}
+	      }
+	    }
+	  }) {
+	    # [$.data.nameNotEquals2015.elements.length()=5]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }	     
+	    }
+	}
+	nameOneOf: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        name:{oneOf: ["2014", "2015", "News"]}
+	      }
+	    }
+	  }) {
+	    # [$.data.nameOneOf.elements.length()=3]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }	      
+	    }
+	}
+	nameIsNotNull: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        name: {isNull: false}
+	      }
+	    }
+	  }) {
+	    # [$.data.nameIsNotNull.elements.length()=6]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	nameIsNull: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        name: {isNull: true}
+	      }
+	    }
+	  }) {
+	    # [$.data.nameIsNull.elements.length()=3]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+}
+# [$.errors=<is-undefined>]

@@ -6,6 +6,7 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.changelog.highlevel.change.AssignLanguagesToProject;
 import com.gentics.mesh.changelog.highlevel.change.ExtractPlainText;
 import com.gentics.mesh.changelog.highlevel.change.FixNodeVersionOrder;
 import com.gentics.mesh.changelog.highlevel.change.RestructureWebrootIndex;
@@ -25,11 +26,14 @@ public class OrientDBHighLevelChangesList extends HighLevelChangesList {
 
 	protected final FixNodeVersionOrder fixNodeVersionOrder;
 
+	protected final AssignLanguagesToProject assignLanguagesToProject;
+
 	@Inject
-	public OrientDBHighLevelChangesList(ExtractPlainText plainText, SetAdminUserFlag setAdminUserFlag, RestructureWebrootIndex restructureWebroot, FixNodeVersionOrder fixNodeVersionOrder) {
+	public OrientDBHighLevelChangesList(ExtractPlainText plainText, SetAdminUserFlag setAdminUserFlag, RestructureWebrootIndex restructureWebroot, FixNodeVersionOrder fixNodeVersionOrder, AssignLanguagesToProject assignLanguagesToProject) {
 		super(plainText, setAdminUserFlag);
 		this.restructureWebroot = restructureWebroot;
 		this.fixNodeVersionOrder = fixNodeVersionOrder;
+		this.assignLanguagesToProject = assignLanguagesToProject;
 	}
 
 	@Override
@@ -43,6 +47,7 @@ public class OrientDBHighLevelChangesList extends HighLevelChangesList {
 		// WARNING!
 		changeList.add(restructureWebroot);
 		changeList.add(fixNodeVersionOrder);
+		changeList.add(assignLanguagesToProject);
 
 		return changeList;
 	}

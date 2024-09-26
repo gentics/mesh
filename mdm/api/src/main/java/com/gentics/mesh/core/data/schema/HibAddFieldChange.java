@@ -1,10 +1,7 @@
 package com.gentics.mesh.core.data.schema;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.ADD_FIELD_AFTER_KEY;
-import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.ALLOW_KEY;
-import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.LIST_TYPE_KEY;
-import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.TYPE_KEY;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.*;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.Collections;
@@ -147,6 +144,15 @@ public interface HibAddFieldChange extends HibSchemaFieldChange {
 		return getRestProperty(SchemaChangeModel.REQUIRED_KEY);
 	}
 
+	/**
+	 * Get the 'exclude from indexing' flag
+	 * 
+	 * @return flag
+	 */
+	default Boolean getNoIndex() {
+		return getRestProperty(SchemaChangeModel.NO_INDEX_KEY);
+	}
+
 	@Override
 	default <R extends FieldSchemaContainer> R apply(R container) {
 
@@ -230,6 +236,10 @@ public interface HibAddFieldChange extends HibSchemaFieldChange {
 		Boolean required = getRequired();
 		if (required != null) {
 			field.setRequired(required);
+		}
+		Boolean noIndex = getNoIndex();
+		if (noIndex != null) {
+			field.setNoIndex(noIndex);
 		}
 		JsonObject elasticSearch = getIndexOptions();
 		if (elasticSearch != null) {

@@ -1,0 +1,2 @@
+GraphQL: When the very first GraphQL Queries (after starting the Mesh instance) were executed in parallel, it could happen that
+GraphQL execution failed with some internal errors. This has been fixed.

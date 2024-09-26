@@ -13,6 +13,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
  * Authentication provider for the Mesh Rest Client.
  * TODO Replace this with generic way of adding request/response hooks
@@ -55,21 +57,22 @@ public class JWTAuthentication extends AbstractAuthenticationProvider {
 	public Single<GenericMessageResponse> login(AbstractMeshRestHttpClient meshRestClient) {
 		return Single.defer(() -> {
 			LoginRequest loginRequest = new LoginRequest();
-			loginRequest.setUsername(getUsername());
-			loginRequest.setPassword(getPassword());
-			loginRequest.setNewPassword(getNewPassword());
-
+			if (!loginToken && StringUtils.isNotBlank(token)) {
+				loginRequest.setApiKey(token);
+			} else {
+				loginRequest.setUsername(getUsername());
+				loginRequest.setPassword(getPassword());
+				loginRequest.setNewPassword(getNewPassword());
+			}
 			return meshRestClient.prepareRequest(HttpMethod.POST, "/auth/login", TokenResponse.class, loginRequest).toSingle();
 		}).doOnSuccess(response -> {
-			token = response.getToken();
-			loginToken = true;
+			setLoginToken(response.getToken());
 		}).map(ignore -> new GenericMessageResponse("OK"));
 	}
 
 	@Override
 	public Single<GenericMessageResponse> logout(AbstractMeshRestHttpClient meshRestClient) {
-		token = null;
-		loginToken = false;
+		setToken(null);
 		// No need call any endpoint in JWT
 		return Single.just(new GenericMessageResponse("OK"));
 	}

@@ -32,9 +32,6 @@ successfully in less time, no matter which technology you prefer.
  <a href="https://github.com/gentics/mesh/releases">
   <img src="https://img.shields.io/github/v/release/gentics/mesh?sort=semver" alt="Latest release" />
  </a>
- <a href="https://sonarcloud.io/dashboard?id=gentics_mesh">
-  <img src="https://sonarcloud.io/api/project_badges/measure?project=gentics_mesh&metric=alert_status" alt="Quality Gate Status" />
- </a>
  <a href="https://cla-assistant.io/gentics/mesh">
   <img src="https://cla-assistant.io/readme/badge/gentics/mesh" alt="CLA assistant" />
  </a>
@@ -85,6 +82,7 @@ for an explanation of the basic concepts of Gentics Mesh.
    * [Quick Start](#quick-start)
    * [Table of Contents](#table-of-contents)
    * [Introduction](#introduction)
+      * [Gentics CMP](#gentics-cmp)
       * [What is a Headless CMS?](#what-is-a-headless-cms)
       * [Why pick Gentics Mesh?](#why-pick-gentics-mesh)
    * [Status](#status)
@@ -106,12 +104,21 @@ for an explanation of the basic concepts of Gentics Mesh.
 
 # Introduction
 
+## Gentics CMP
+
+Gentics CMP (Content Management Platform) is composed of the following components: Gentics CMS, Gentics Mesh, and Gentics Portal. Gentics CMS and Mesh are available as both open-source software (OSS) and Enterprise Edition (EE). Gentics Portal Java and PHP can only be acquired with the Enterprise Edition. You can find the EE features here: [Open-Source and Enterprise Edition](https://www.gentics.com/infoportal/cmp/ossandee/). For more information about the EE, please contact [sales@gentics.com](mailto:sales@gentics.com).
+
+Here are the links to our open-source projects:
+
+- Gentics CMS OSS: https://github.com/gentics/cms-oss
+- Gentics Mesh OSS: https://github.com/gentics/mesh
+
 ## What is a Headless CMS?
 
 Traditional CMSes are "coupled", which means that the CMS also takes care of
 the presentation layer responsible for delivering the content to the
 clients. The content and the presentation are closely interlinked. Typically,
-content managers create and manage their content through tools like WYSIWYG
+content managers create and manage their content through tools like "What you see is what you get" (WYSIWYG)
 editors. The CMS then delivers the content according to the front-end delivery
 layer built into the CMS. Typically, a traditional CMS supports your websites
 but not much else.
@@ -139,7 +146,7 @@ interface that makes content editing and administration enjoyable. At the same
 time, we don’t lock you in: You choose the technology and programming language
 you want to implement your application with. You decide whether you want to
 host it locally or in the cloud. We don’t care if you’re a Windows, Linux or
-Mac guy or girl. Also, with its Apache license, you are free to use it, modify
+Mac guy or girl. Also, with its Apache 2.0 license, you are free to use it, modify
 it and improve it.
 
 What makes Gentics Mesh special over other headless CMSes is:
@@ -155,30 +162,80 @@ What makes Gentics Mesh special over other headless CMSes is:
 
 # Status
 
-Gentics Mesh is actively developed by a dedicated team at APA-IT in Vienna,
+Gentics Mesh is actively developed by a dedicated team at Gentics Software GmbH in Vienna,
 Austria.
 
 <p align="center">
-    <img src="https://getmesh.io/blog/gentics-mesh-1-0/gentics-team.jpg" alt="photo of the Gentics Mesh team" style="max-width: 80%" />
+    <img src="https://getmesh.io/blog/JPGs/CMP-DEV.jpg" alt="CMP DEV" style="max-width: 80%" />
 </p>
 
-The Gentics Mesh core team consists of:
+The Gentics Mesh core team consists of the following members:
 
 <p align="center">
  <table align="center" style="width: 100%; max-width: 600px;">
   <tr>
    <td align="center">
-    <a href="https://github.com/pschulzk">
-     <img src="https://avatars.githubusercontent.com/pschulzk?size=150" width="150" /><br />
-     Philip Viktor Schulz-Klingauf<br /><i>UI/UX developer</i>
+    <a href="https://github.com/deckdom">
+     <!-- <img src="https://avatars.githubusercontent.com/pschulzk?size=150" width="150" /><br /> -->
+     Dominik Decker<br /><i>UI/UX developer</i>
     </a>
    </td>
   </tr>
   <tr>
    <td align="center">
     <a href="https://github.com/npomaroli">
-     <img src="https://avatars.githubusercontent.com/npomaroli?size=150" width="150" /><br />
-     Norbert Pomaroli<br /><i>software architect</i>
+     <!-- <img src="https://avatars.githubusercontent.com/npomaroli?size=150" width="150" /><br /> -->
+     Norbert Pomaroli<br /><i>Software architect</i>
+    </a>
+   </td>
+  </tr>
+    <tr>
+   <td align="center">
+    <a href="https://github.com/yrucrem">
+     <!-- <img src="https://avatars.githubusercontent.com/pschulzk?size=150" width="150" /><br /> -->
+     Patrick Klaffenböck<br /><i>Backend developer</i>
+    </a>
+   </td>
+  </tr>
+    </tr>
+    <tr>
+   <td align="center">
+    <a href="https://github.com/plyhun">
+     <!-- <img src="https://avatars.githubusercontent.com/pschulzk?size=150" width="150" /><br /> -->
+     Serhii Plyhun<br /><i>Backend developer</i>
+    </a>
+   </td>
+  </tr>
+    </tr>
+    </tr>
+    <tr>
+   <td align="center">
+    <a href="https://github.com/guggi">
+     <!-- <img src="https://avatars.githubusercontent.com/pschulzk?size=150" width="150" /><br /> -->
+     Oliver Guggenberger<br /><i>Backend developer</i>
+    </a>
+   </td>
+  </tr>
+    </tr>
+    </tr>
+    </tr>
+    <tr>
+   <td align="center">
+    <a href="https://github.com/netwarex">
+     <!-- <img src="https://avatars.githubusercontent.com/pschulzk?size=150" width="150" /><br /> -->
+     Péter Nyári<br /><i>Frontend developer</i>
+    </a>
+   </td>
+  </tr>
+    </tr>
+    </tr>
+    </tr>
+    </tr>
+    <tr>
+   <td align="center">
+    <a href="https://github.com/enizhou">
+     <!-- <img src="https://avatars.githubusercontent.com/pschulzk?size=150" width="150" /><br /> -->
+     En Qiang Zhou<br /><i>Product Owner</i>
     </a>
    </td>
   </tr>
@@ -226,9 +283,9 @@ be reported via [GitHub](https://github.com/gentics/mesh/issues).
 
 # Professional Services
 
-The company behind Gentics Mesh, APA-IT Informations Technologie GmbH, is
+The company behind Gentics Mesh, Gentics Software GmbH is
 offering commercial services for Gentics Mesh. Please contact us at
-mesh@gentics.com for details.
+sales@gentics.com for details.
 
 ## Product Development
 
@@ -318,7 +375,7 @@ query webroot($path: String) {
 # Contributing to Gentics Mesh
 
 Please read our [Contributing Guidelines](https://getmesh.io/docs/contributing/) if you intend to contribute to the project. The guidelines will tell you the
-legal stuff, give you instructions on how to set up your IDE in order to build Gentics Mesh, and will tell you necessary knowledge to understand the codebase.
+legal information, give you instructions on how to set up your IDE in order to build Gentics Mesh, and will tell you necessary knowledge to understand the codebase.
 
 Gentics Mesh is currently split into two repositories:
 
@@ -328,7 +385,7 @@ Gentics Mesh is currently split into two repositories:
 
 # Copyright & License
 
-Copyright 2014-2020 APA-IT Informations Technologie GmbH. Licensed under the
+Copyright (c) 2014-2023 Gentics Software GmbH. Licensed under the
 Apache License, Version 2.0.
 
-Gentics is a registered trade mark of APA-IT Informations Technologie GmbH.
+Gentics is a registered trade mark of Gentics Software GmbH.

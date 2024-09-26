@@ -1,0 +1,1 @@
+Core: Creating a translation for the root node of a project always failed with a "Bad Request" error, which has been fixed.

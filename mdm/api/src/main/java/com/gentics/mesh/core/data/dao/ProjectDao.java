@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.dao;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -142,4 +143,11 @@ public interface ProjectDao extends DaoGlobal<HibProject>, DaoTransformable<HibP
 	 * @return
 	 */
 	Result<? extends HibNode> findNodes(HibProject project);
+
+	/**
+	 * Find all the languages assigned to the project.
+	 * 
+	 * @return
+	 */
+	Result<? extends HibLanguage> findLanguages(HibProject project);
 }

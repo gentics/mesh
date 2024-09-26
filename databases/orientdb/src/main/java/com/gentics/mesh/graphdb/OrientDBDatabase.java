@@ -26,12 +26,14 @@ import javax.inject.Singleton;
 import org.apache.commons.lang3.tuple.Triple;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.cache.TotalsCache;
 import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.dao.DaoCollection;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
+import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.db.TxAction;
@@ -40,6 +42,7 @@ import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterServerConfig;
 import com.gentics.mesh.core.rest.admin.cluster.ServerRole;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
@@ -63,6 +66,7 @@ import com.gentics.mesh.graphdb.tx.impl.OrientServerStorageImpl;
 import com.gentics.mesh.madl.frame.VertexFrame;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.metric.SimpleMetric;
+import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ETag;
 import com.orientechnologies.common.concur.ONeedRetryException;
 import com.orientechnologies.orient.core.OConstants;
@@ -80,6 +84,7 @@ import com.orientechnologies.orient.server.hazelcast.OHazelcastPlugin;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
+import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
@@ -96,8 +101,8 @@ import com.tinkerpop.pipes.util.FastNoSuchElementException;
 import dagger.Lazy;
 import io.micrometer.core.instrument.Timer;
 import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * OrientDB specific mesh graph database implementation.
@@ -128,6 +133,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 	private WriteLock writeLock;
 
 	private final TransactionComponent.Factory txFactory;
+
+	private final TotalsCache totalsCache;
 
 	/**
 	 * Executor service for running the disk quota check
@@ -166,7 +173,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 			OrientDBTypeHandler typeHandler, OrientDBIndexHandler indexHandler,
 			OrientDBClusterManagerImpl clusterManager, TxCleanupTask txCleanupTask,
 			Lazy<PermissionRoots> permissionRoots, WriteLock writeLock,
-			TransactionComponent.Factory txFactory, Mesh mesh
+			TransactionComponent.Factory txFactory, Mesh mesh, TotalsCache totalsCache
 	) {
 		super(vertx, mesh, metrics);
 		this.options = options;
@@ -180,6 +187,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		this.txCleanUpTask = txCleanupTask;
 		this.writeLock = writeLock;
 		this.txFactory = txFactory;
+		this.totalsCache = totalsCache;
 	}
 
 	@Override
@@ -253,7 +261,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 				try {
 					return Integer.parseInt(val);
 				} catch (Exception e) {
-					log.error("Could not parse value of storage parameter {" + RIDBAG_PARAM_KEY + "}");
 					throw new RuntimeException("Parameter {" + RIDBAG_PARAM_KEY + "} could not be parsed.");
 				}
 			}
@@ -321,15 +328,45 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues) {
-		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
-		return orientBaseGraph.getVertices(classOfVertex.getSimpleName(), fieldNames, fieldValues).iterator();
+	public long countVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues, Optional<String> maybeFilter, Optional<ContainerType> maybeContainerType) {
+		MeshOrientGraphVertexQuery query = new MeshOrientGraphVertexQuery(unwrapCurrentGraph(), classOfVertex, Optional.of(totalsCache));
+		query.relationDirection(Direction.OUT);
+		query.hasAll(fieldNames, fieldValues);
+		query.filter(maybeFilter);
+		query.setOrderPropsAndDirs(new String[0]);
+		return query.count(maybeContainerType);
 	}
 
 	@Override
-	public Iterable<Vertex> getVerticesForRange(Class<?> classOfVertex, String indexPostfix, String[] fieldNames, Object[] fieldValues,
-		String rangeKey, long start,
-		long end) {
+	public Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues, PagingParameters paging, Optional<ContainerType> maybeContainerType, Optional<String> maybeFilter) {
+		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
+		Iterator<Vertex> ret;
+		if (PersistingRootDao.shouldSort(paging) || maybeFilter.isPresent()) {
+			MeshOrientGraphVertexQuery query = new MeshOrientGraphVertexQuery(orientBaseGraph, classOfVertex);
+			query.relationDirection(Direction.OUT);
+			query.hasAll(fieldNames, fieldValues);
+			query.filter(maybeFilter);
+			if (PersistingRootDao.shouldPage(paging)) {
+				query.skip((int) (paging.getActualPage() * paging.getPerPage()));
+				query.limit(paging.getPerPage().intValue());
+			}
+			String[] sorted;
+			if (PersistingRootDao.shouldSort(paging)) {
+				List<String> sortParams = paging.getSort().entrySet().stream().map(e -> e.getKey() + " " + e.getValue().getValue()).collect(Collectors.toUnmodifiableList());
+				sorted = sortParams.toArray(new String[sortParams.size()]);
+			} else {
+				sorted = new String[0];
+			}
+			query.setOrderPropsAndDirs(sorted);
+			ret = query.fetch(maybeContainerType).iterator();
+		} else {
+			ret = orientBaseGraph.getVertices(classOfVertex.getSimpleName(), fieldNames, fieldValues).iterator();
+		}
+		return ret;
+	}
+
+	@Override
+	public Iterable<Vertex> getVerticesForRange(Class<?> classOfVertex, String indexPostfix, String[] fieldNames, Object[] fieldValues, String rangeKey, long start, long end) {
 		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
 		OrientVertexType elementType = orientBaseGraph.getVertexType(classOfVertex.getSimpleName());
 		String indexName = classOfVertex.getSimpleName() + "_" + indexPostfix;
@@ -507,7 +544,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 				handlerFinished = false;
 				handlerResult = null;
 			} catch (ORecordDuplicatedException e) {
-				log.error(e);
+				log.error("Internal OrientDB error", e);
 				throw error(INTERNAL_SERVER_ERROR, "error_internal");
 			} catch (GenericRestException e) {
 				// Don't log. Just throw it along so that others can handle it
@@ -709,7 +746,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 					// Interval is fixed
 					Thread.sleep(500);
 				} catch (InterruptedException e1) {
-					log.info("Cleanup task stopped");
+					log.error("Cleanup task stopped", e1);
 					break;
 				}
 			}
@@ -734,7 +771,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 			if (logError) {
 				log.error("Local instance is read-only due to limited disk space.");
 			} else {
-				log.warn("Local instance is read-only due to limited disk space.");
+				log.info("Local instance is read-only due to limited disk space.");
 			}
 			return true;
 		} else {
@@ -743,7 +780,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 				if (logError) {
 					log.error("Instance " + readOnlyInstance.get() + " is read-only due to limited disk space.");
 				} else {
-					log.warn("Instance " + readOnlyInstance.get() + " is read-only due to limited disk space.");
+					log.info("Instance " + readOnlyInstance.get() + " is read-only due to limited disk space.");
 				}
 				return true;
 			} else {

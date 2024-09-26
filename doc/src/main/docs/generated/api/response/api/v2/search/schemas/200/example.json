@@ -10,43 +10,51 @@
       "name" : "name",
       "label" : "Name",
       "required" : false,
+      "noIndex" : false,
       "type" : "string"
     }, {
       "name" : "number",
       "label" : "Number",
       "required" : false,
+      "noIndex" : false,
       "type" : "number"
     }, {
       "name" : "html",
       "label" : "Teaser",
       "required" : false,
+      "noIndex" : false,
       "type" : "html"
     }, {
       "name" : "list",
       "label" : "List of nodes",
       "required" : false,
+      "noIndex" : false,
       "listType" : "node",
       "type" : "list",
       "allow" : [ "content", "video" ]
     }, {
       "name" : "node",
       "required" : false,
+      "noIndex" : false,
       "type" : "node",
       "allow" : [ "content", "video", "image" ]
     }, {
       "name" : "location",
       "label" : "Location",
       "required" : false,
+      "noIndex" : false,
       "type" : "micronode",
       "allow" : [ "geolocation" ]
     }, {
       "name" : "locationlist",
       "label" : "List of Locations",
       "required" : false,
+      "noIndex" : false,
       "listType" : "micronode",
       "type" : "list",
       "allow" : [ "geolocation" ]
     } ],
+    "microschema" : false,
     "permissions" : {
       "create" : true,
       "read" : true,
@@ -66,43 +74,51 @@
       "name" : "name",
       "label" : "Name",
       "required" : false,
+      "noIndex" : false,
       "type" : "string"
     }, {
       "name" : "number",
       "label" : "Number",
       "required" : false,
+      "noIndex" : false,
       "type" : "number"
     }, {
       "name" : "html",
       "label" : "Teaser",
       "required" : false,
+      "noIndex" : false,
       "type" : "html"
     }, {
       "name" : "list",
       "label" : "List of nodes",
       "required" : false,
+      "noIndex" : false,
       "listType" : "node",
       "type" : "list",
       "allow" : [ "content", "video" ]
     }, {
       "name" : "node",
       "required" : false,
+      "noIndex" : false,
       "type" : "node",
       "allow" : [ "content", "video", "image" ]
     }, {
       "name" : "location",
       "label" : "Location",
       "required" : false,
+      "noIndex" : false,
       "type" : "micronode",
       "allow" : [ "geolocation" ]
     }, {
       "name" : "locationlist",
       "label" : "List of Locations",
       "required" : false,
+      "noIndex" : false,
       "listType" : "micronode",
       "type" : "list",
       "allow" : [ "geolocation" ]
     } ],
+    "microschema" : false,
     "permissions" : {
       "create" : true,
       "read" : true,

@@ -3,10 +3,12 @@ package com.gentics.mesh.core.data.dao;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Stream;
 
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
@@ -100,7 +102,22 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param type
 	 * @return
 	 */
-	Map<HibNode, List<NodeContent>> getChildren(Set<HibNode> nodes, InternalActionContext ac, String branchUuid, List<String> languageTags, ContainerType type);
+	default Map<HibNode, List<NodeContent>> getChildren(Set<HibNode> nodes, InternalActionContext ac, String branchUuid, List<String> languageTags, ContainerType type) {
+		return getChildren(nodes, ac, branchUuid, languageTags, type, null, Optional.empty());
+	}
+
+	/**
+	 * Return all content of the provided type using language fallback for each node in the given branch.
+	 * This will also check for permissions.
+	 * @param nodes
+	 * @param ac
+	 * @param branchUuid
+	 * @param languageTags
+	 * @param type
+	 * @param maybeFilter an optional filter to apply
+	 * @return
+	 */
+	Map<HibNode, List<NodeContent>> getChildren(Set<HibNode> nodes, InternalActionContext ac, String branchUuid, List<String> languageTags, ContainerType type, PagingParameters sorting, Optional<FilterOperation<?>> maybeFilter);
 
 	/**
 	 * Return the children for this node. Only fetches nodes from the provided branch and also checks permissions.
@@ -437,13 +454,40 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	/**
 	 * Fetch all contents for the provided project in the action context branch and the container type.
 	 * If the content is published, checks for read published permissions, otherwise check for read permissions
-	 *  @param project
+	 * @param project
 	 * @param ac
 	 * @param languageTags
 	 * @param type
 	 * @return
 	 */
-	Stream<NodeContent> findAllContent(HibProject project, InternalActionContext ac, List<String> languageTags, ContainerType type);
+	default Stream<NodeContent> findAllContent(HibProject project, InternalActionContext ac, List<String> languageTags, ContainerType type) {
+		return findAllContent(project, ac, languageTags, type, null, Optional.empty());
+	}
+
+	/**
+	 * Fetch all contents for the provided project in the action context branch and the container type, considering the paging parameters.
+	 * If the content is published, checks for read published permissions, otherwise check for read permissions. An optional initial data filtering may be applied.
+	 * @param project
+	 * @param ac
+	 * @param languageTags
+	 * @param type
+	 * @param paging
+	 * @param maybeFilter
+	 * @return
+	 */
+	Stream<NodeContent> findAllContent(HibProject project, InternalActionContext ac, List<String> languageTags, ContainerType type, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter);
+
+	/**
+	 * Count all contents for the provided project in the action context branch and the container type.
+	 * If the content is published, checks for read published permissions, otherwise check for read permissions. An optional initial data filtering may be applied.
+	 * @param project
+	 * @param ac
+	 * @param languageTags
+	 * @param type
+	 * @param maybeFilter
+	 * @return
+	 */
+	long countAllContent(HibProject project, InternalActionContext ac, List<String> languageTags, ContainerType type, Optional<FilterOperation<?>> maybeFilter);
 
 	/**
 	 * Fetch all contents for the provided schemaVersion in the action context branch and the container type.
@@ -454,7 +498,22 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param type
 	 * @return
 	 */
-	Stream<NodeContent> findAllContent(HibSchemaVersion schemaVersion, InternalActionContext ac, List<String> languageTags, ContainerType type);
+	default Stream<NodeContent> findAllContent(HibSchemaVersion schemaVersion, InternalActionContext ac, List<String> languageTags, ContainerType type) {
+		return findAllContent(schemaVersion, ac, languageTags, type, null, Optional.empty());
+	}
+
+	/**
+	 * Fetch all contents for the provided schemaVersion in the action context branch and the container type. Optionally, paging and filtering are applied
+	 * If the content is published, checks for read published permissions, otherwise check for read permissions
+	 * @param schemaVersion
+	 * @param ac
+	 * @param languageTags
+	 * @param type
+	 * @param paging
+	 * @param maybeFilter
+	 * @return
+	 */
+	Stream<NodeContent> findAllContent(HibSchemaVersion schemaVersion, InternalActionContext ac, List<String> languageTags, ContainerType type, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter);
 
 	/**
 	 * Stream the hierarchical patch of the node.
@@ -522,10 +581,23 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	void addReferenceUpdates(HibNode node, BulkActionContext bac);
 
 	/**
-	 * Gets all HibNodeFields that reference the node.
+	 * Gets all NodeField edges that reference this node.
+	 *
 	 * @return
 	 */
-	Stream<HibNodeField> getInboundReferences(HibNode node);
+	default Stream<HibNodeField> getInboundReferences(HibNode node) {
+		return getInboundReferences(node, true, true);
+	}
+
+	/**
+	 * Gets all NodeField edges that reference this node.
+	 * 
+	 * @param lookupInFields should we look for refs in direct references?
+	 * @param lookupInLists should we look for refs in reference lists?
+	 *
+	 * @return
+	 */
+	Stream<HibNodeField> getInboundReferences(HibNode node, boolean lookupInFields, boolean lookupInLists);
 
 	/**
 	 * Delete the given element

@@ -34,6 +34,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse> implements 
 		index.createIndex(vertexIndex(GroupImpl.class)
 			.withField("name", FieldType.STRING)
 			.unique());
+		addUserTrackingRelation(GroupImpl.class);
 	}
 
 	@Override

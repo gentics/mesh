@@ -1,4 +1,5 @@
 {
   "name" : "geolocation-renamed",
-  "fields" : [ ]
+  "fields" : [ ],
+  "microschema" : true
 }

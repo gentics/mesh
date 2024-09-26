@@ -48,6 +48,7 @@ import javax.inject.Singleton;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
+import com.gentics.graphqlfilter.Sorting;
 import com.gentics.mesh.cache.GraphQLSchemaCache;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.action.DAOActionsCollection;
@@ -62,6 +63,7 @@ import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.PermissionException;
@@ -69,7 +71,9 @@ import com.gentics.mesh.core.rest.error.UuidNotFoundException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.filter.GroupFilter;
+import com.gentics.mesh.graphql.filter.MicronodeFilter;
 import com.gentics.mesh.graphql.filter.NodeFilter;
+import com.gentics.mesh.graphql.filter.NodeReferenceFilter;
 import com.gentics.mesh.graphql.filter.RoleFilter;
 import com.gentics.mesh.graphql.filter.UserFilter;
 import com.gentics.mesh.graphql.type.field.FieldDefinitionProvider;
@@ -278,7 +282,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			.filter(content -> content.getContainer() != null)
 			.filter(content1 -> gc.hasReadPerm(content1, type)).collect(Collectors.toList());
 
-		return DataFetcherResult.<Page<NodeContent>>newResult().data(applyNodeFilter(env, contents.stream())).errors(errors).build();
+		return DataFetcherResult.<Page<NodeContent>>newResult().data(applyNodeFilter(env, contents.stream(), false, false)).errors(errors).build();
 	}
 
 	/**
@@ -429,14 +433,17 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			.type(new GraphQLTypeReference(NODE_TYPE_NAME)).build());
 
 		// .nodes
+		NodeFilter nodeFilter = NodeFilter.filter(context);
 		root.field(newFieldDefinition().name("nodes")
 			.description("Load a page of nodes via the regular nodes list or via a search.")
-			.argument(createPagingArgs())
+			.argument(createPagingArgs(true))
 			.argument(createQueryArg())
 			.argument(createUuidsArg("Node uuids"))
 			.argument(createLanguageTagArg(true))
 			.argument(createNodeVersionArg())
-			.argument(NodeFilter.filter(context).createFilterArgument())
+			.argument(nodeFilter.createFilterArgument())
+			.argument(nodeFilter.createSortArgument())
+			.argument(createNativeFilterArg())
 			.type(new GraphQLTypeReference(NODE_PAGE_TYPE_NAME))
 			.dataFetcher(env -> {
 				String query = env.getArgument("query");
@@ -604,14 +611,28 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 * @return
 	 */
 	public GraphQLSchema getRootSchema(GraphQLContext context) {
+		CommonTx tx = CommonTx.get();
 		String cacheKey = getCacheKey(context);
 
 		return cache.get(cacheKey, key -> {
 			HibProject project = Tx.get().getProject(context);
 			graphql.schema.GraphQLSchema.Builder builder = GraphQLSchema.newSchema();
-
 			Set<GraphQLType> additionalTypes = new HashSet<>();
 
+			additionalTypes.add(UserFilter.filter().createType());
+			additionalTypes.add(UserFilter.filter().createSortingType());
+			
+			additionalTypes.add(NodeFilter.filter(context).createType());
+			additionalTypes.add(NodeFilter.filter(context).createSortingType());
+			
+			for (byte features = 1; features <= NodeReferenceFilter.createLookupChange(true, true, true, true); features++) {
+				additionalTypes.add(NodeReferenceFilter.nodeReferenceFilter(context, features).createType());
+				additionalTypes.add(NodeReferenceFilter.nodeReferenceFilter(context, features).createSortingType());
+			}
+			
+			additionalTypes.add(MicronodeFilter.filter(context).createType());
+			additionalTypes.add(MicronodeFilter.filter(context).createSortingType());
+			
 			additionalTypes.add(schemaTypeProvider.createType(context));
 			additionalTypes.add(newPageType(SCHEMA_PAGE_TYPE_NAME, SCHEMA_TYPE_NAME));
 
@@ -673,6 +694,8 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			// Shared argument types
 			additionalTypes.add(createLinkEnumType());
 			additionalTypes.add(createNodeEnumType());
+			additionalTypes.add(createNativeFilterEnumType());
+			additionalTypes.add(Sorting.getSortingEnumType());
 
 			GraphQLSchema schema = builder.query(getRootType(context)).additionalTypes(additionalTypes).build();
 			return schema;

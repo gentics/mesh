@@ -1,0 +1,1 @@
+Elasticsearch: A possibility of DDoSing the ES with a bulk request of too many items has been eliminated.

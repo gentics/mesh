@@ -43,8 +43,6 @@ import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.parameter.GenericParameters;
-import com.gentics.mesh.parameter.client.GenericParametersImpl;
 import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
@@ -74,7 +72,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 	}
 
 	private void setSchema(boolean isRequired) throws IOException {
-		try (Tx tx = tx()) {
+		tx(tx -> {
 			// add non restricted string field
 			BinaryFieldSchema binaryFieldSchema = new BinaryFieldSchemaImpl();
 			binaryFieldSchema.setName(FIELD_NAME);
@@ -82,8 +80,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 			binaryFieldSchema.setRequired(isRequired);
 			prepareTypedSchema(schemaContainer("folder"), List.of(binaryFieldSchema), Optional.empty());
 			prepareTypedSchema(folder("2015"), binaryFieldSchema, true);
-			tx.success();
-		}
+		});
 	}
 
 	@Override

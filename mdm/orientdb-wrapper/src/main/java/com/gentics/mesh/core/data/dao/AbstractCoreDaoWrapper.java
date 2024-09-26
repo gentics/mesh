@@ -1,12 +1,17 @@
 package com.gentics.mesh.core.data.dao;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.parameter.PagingParameters;
 
 import dagger.Lazy;
 
@@ -64,6 +69,19 @@ public abstract class AbstractCoreDaoWrapper<R extends RestModel, T extends HibC
 	@Override
 	public Class<? extends T> getPersistenceClass() {
 		return (Class<? extends T>) getRoot().getPersistanceClass();
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public Page<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo, FilterOperation<?> extraFilter) {
+		return ((RootVertex<? extends T>) getRoot()).findAll(ac, pagingInfo, Optional.ofNullable(extraFilter));
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public Page<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
+		RootVertex<? extends T> root = ((RootVertex<? extends T>) getRoot());
+		return PersistingRootDao.shouldSort(pagingInfo) ? root.findAll(ac, pagingInfo, Optional.empty()) : root.findAll(ac, pagingInfo);
 	}
 
 	/**

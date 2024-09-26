@@ -7,6 +7,7 @@ JobContext.set(this)
 
 properties([
 	parameters([
+		booleanParam(name: 'checkGitCommit',      defaultValue: false, description: 'If set to true, the current git revision is compared with the git revision of the last successful build. If they are equal, the build is skipped and env.BUILD_SKIPPED is set to true'),
 		booleanParam(name: 'runTests',            defaultValue: true,  description: "Whether to run the unit tests"),
 		booleanParam(name: 'splitTests',          defaultValue: true,  description: "Whether to split tests or not"),
 		booleanParam(name: 'skipSearchTests',     defaultValue: false, description: "Whether to skip search tests or not"),
@@ -15,50 +16,80 @@ properties([
 		booleanParam(name: 'runPerformanceTests', defaultValue: false, description: "Whether to run performance tests."),
 		booleanParam(name: 'runClusterTests',     defaultValue: false, description: "Whether to run cluster tests."),
 		booleanParam(name: 'runDeploy',           defaultValue: false, description: "Whether to run the deploy steps."),
+		booleanParam(name: 'runDeployTesting',    defaultValue: false, description: "Whether to deploy for the testing systems. This will skip building the changelog."),
 		booleanParam(name: 'runDocker',           defaultValue: false, description: "Whether to run the docker steps."),
 		booleanParam(name: 'runMavenBuild',       defaultValue: false, description: "Whether to run the maven build steps."),
-		booleanParam(name: 'setBranchAsVersion',  defaultValue: false, description: "Whether to set the branch name as project version (unless runDeploy is true). Use this together with runMavenBuild to install the maven artifacts to the local repository (demo and documentation will be skipped)."),
+		booleanParam(name: 'setBranchAsVersion',  defaultValue: false, description: "Whether to set the branch name as project version (unless runDeploy is true). Use this together with runMavenBuild to install the maven artifacts to the local repository (changelog and documentation will be skipped)."),
 		booleanParam(name: 'runIntegrationTests', defaultValue: false, description: "Whether to run integration tests."),
-		booleanParam(name: 'runMavenDeploy',      defaultValue: false, description: "Whether to deploy the maven artifact during the maven build step.")
+		booleanParam(name: 'runMavenDeploy',      defaultValue: false, description: "Whether to deploy the maven artifact during the maven build step."),
+		string(	     name: 'testingVersion',      defaultValue: "",    description: "Version for testing"),
 	])
 ])
 
 final def gitCommitTag         = '[Jenkins | ' + env.JOB_BASE_NAME + ']';
 final def splits = 20;
 final def runs = 20;
-final def imagePrefix		   = "push.docker.gentics.com/docker-products/";
+final def registryHostStaging	   = "push.docker.gentics.com/docker-products";
+final def registryHostTest	   = "push.docker.gentics.com/docker-snapshots";
+
+def registryHost = registryHostStaging;
 
 stage("Setup Build Environment") {
-	node("mesh-root-worker-11") {
+	node("mesh-root-worker-17") {
 		githubBuildStarted()
 		try {
 			stage("Checkout") {
-				checkout scm
+				scm_variables = checkout scm
+				env.GIT_COMMIT = scm_variables.get('GIT_COMMIT')
+				env.GIT_PREVIOUS_SUCCESSFUL_COMMIT = scm_variables.get('GIT_PREVIOUS_SUCCESSFUL_COMMIT')
 			}
 
 			def branchName = GitHelper.fetchCurrentBranchName()
 			def version = MavenHelper.getVersion()
 
+			stage('Check git commit') {
+				if ( Boolean.valueOf(params.checkGitCommit) ) {
+					if ( env.GIT_COMMIT == env.GIT_PREVIOUS_SUCCESSFUL_COMMIT ) {
+						echo "env.GIT_COMMIT (" + env.GIT_COMMIT + ") = env.GIT_PREVIOUS_SUCCESSFUL_COMMIT (" + env.GIT_PREVIOUS_SUCCESSFUL_COMMIT + "). Skip building."
+						env.BUILD_SKIPPED = "true"
+					} else {
+						echo "env.GIT_COMMIT (" + env.GIT_COMMIT + ") != env.GIT_PREVIOUS_SUCCESSFUL_COMMIT (" + env.GIT_PREVIOUS_SUCCESSFUL_COMMIT + "). Need to rebuild."
+					}
+				} else {
+					echo "Not checking git commit"
+				}
+			}
+
 			stage("Set Version") {
-				if (Boolean.valueOf(params.runDeploy)) {
-					if (version) {
+				withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
+					if (Boolean.valueOf(params.runDeploy)) {
+						if (version) {
+							echo "Building version " + version
+							version = MavenHelper.transformSnapshotToReleaseVersion(version)
+							MavenHelper.setVersion(version)
+						}
+						//TODO only add pom.xml files
+						sh 'git add .'
+						sh "git commit -m 'Raise version'"
+						GitHelper.addTag(version, 'Release of version ' + version)
+					} else if (Boolean.valueOf(params.setBranchAsVersion)) {
+						version = branchName
 						echo "Building version " + version
-						version = MavenHelper.transformSnapshotToReleaseVersion(version)
 						MavenHelper.setVersion(version)
 					}
-					//TODO only add pom.xml files
-					sh 'git add .'
-					sh "git commit -m 'Raise version'"
-					GitHelper.addTag(version, 'Release of version ' + version)
-				} else if (Boolean.valueOf(params.setBranchAsVersion)) {
-					version = branchName
-					echo "Building version " + version
-					MavenHelper.setVersion(version)
+				}
+				
+				if (Boolean.valueOf(params.runDeployTesting)) {
+					if (params.testingVersion?.trim()) {
+						version = params.testingVersion.trim()
+						echo "Building version test build with name: " + version
+						MavenHelper.setVersion(version)
+					}
 				}
 			}
 
 			stage("Prebuild") {
-				if (Boolean.valueOf(params.runTests) || Boolean.valueOf(params.runUnstableTests) ) {
+				if ( env.BUILD_SKIPPED != "true" && (Boolean.valueOf(params.runTests) || Boolean.valueOf(params.runUnstableTests))) {
 					def extraFlags = ""
 					if (Boolean.valueOf(params.runSonar)) {
 						extraFlags = "-Djacoco.skip=false"
@@ -77,7 +108,7 @@ stage("Setup Build Environment") {
 			}
 
 			stage("Test") {
-				if (Boolean.valueOf(params.runTests)) {
+				if (env.BUILD_SKIPPED != "true" && Boolean.valueOf(params.runTests)) {
 					if (Boolean.valueOf(params.splitTests)) {
 						if (Boolean.valueOf(params.skipSearchTests)) {
 							sh ".jenkins/split-tests.sh ${splits} nosearch"
@@ -89,7 +120,7 @@ stage("Setup Build Environment") {
 						for (int i = 0; i < runs; i++) {
 							def current = i
 							branches["split${current}"] = {
-								node('mesh-worker-11') {
+								node('mesh-worker-17') {
 									echo "Preparing slave environment for ${current}"
 									sh "rm -rf split${current}"
 									sh "mkdir split${current}"
@@ -128,7 +159,7 @@ stage("Setup Build Environment") {
 						sshagent(["git"]) {
 							try {
 								withEnv(["TESTCONTAINERS_RYUK_DISABLED=true"]) {
-									sh "mvn -fae -Dsurefire.excludedGroups=com.gentics.mesh.test.category.FailingTests,com.gentics.mesh.test.category.ClusterTests -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dskip.vertx-hazelcast=true -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.gentics.com/ -B -U -e -pl '!ferma,!demo/default,!doc,!performance-tests' clean install"
+									sh "mvn -fae -Dsurefire.excludedGroups=com.gentics.mesh.test.category.FailingTests,com.gentics.mesh.test.category.ClusterTests,com.gentics.mesh.test.category.NativeGraphQLFilterTests -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dskip.vertx-hazelcast=true -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.gentics.com/ -B -U -e -pl '!ferma,!doc,!performance-tests' clean install"
 								}
 							} finally {
 								step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
@@ -141,11 +172,11 @@ stage("Setup Build Environment") {
 			}
 
 			stage("Unstable Tests") {
-				if (Boolean.valueOf(params.runUnstableTests)) {
+				if (env.BUILD_SKIPPED != "true" && Boolean.valueOf(params.runUnstableTests)) {
 					sshagent(["git"]) {
 						try {
 							withEnv(["TESTCONTAINERS_RYUK_DISABLED=true"]) {
-								sh "mvn -fae -Dsurefire.groups=com.gentics.mesh.test.category.FailingTests -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dskip.vertx-hazelcast=true -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.gentics.com/ -B -e -pl '!ferma,!demo/default,!doc,!performance-tests' test -DfailIfNoTests=false"
+								sh "mvn -fae -Dsurefire.groups=com.gentics.mesh.test.category.FailingTests,com.gentics.mesh.test.category.NativeGraphQLFilterTests -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dskip.vertx-hazelcast=true -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.gentics.com/ -B -e -pl '!ferma,!doc,!performance-tests' test -DfailIfNoTests=false"
 							}
 						} finally {
 							step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
@@ -157,17 +188,21 @@ stage("Setup Build Environment") {
 			}
 
 			stage("Maven Build") {
-				if (Boolean.valueOf(params.runMavenBuild)) {
+				if (env.BUILD_SKIPPED != "true" && Boolean.valueOf(params.runMavenBuild)) {
 					sshagent(["git"]) {
-						if (Boolean.valueOf(params.runDeploy) || Boolean.valueOf(params.runMavenDeploy)) {
+						if (Boolean.valueOf(params.runDeploy) || Boolean.valueOf(params.runDeploy) || Boolean.valueOf(params.runMavenDeploy)) {
+							def extraFlags = ""
+							if (Boolean.valueOf(params.runDeployTesting)) {
+								extraFlags = "-am -pl bom,server,plugin-bom,plugin-parent -Dversion=0.0.0-SNAPSHOT"
+							}
 							echo "Setup of GPG"
 							sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-public-key.asc"
 							sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-secret-key.asc"
 							withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
-								sh "mvn -U -B -DskipTests -Dgpg.skip=false clean deploy"
+								sh "mvn -U -B -DskipTests -Dgpg.skip=false ${extraFlags} clean deploy"
 							}
 						} else if (Boolean.valueOf(params.setBranchAsVersion)) {
-							sh "mvn -B -DskipTests -pl '!demo/default,!doc' clean install"
+							sh "mvn -B -DskipTests -pl '!doc,!changelog' clean install"
 						} else {
 							sh "mvn -B -DskipTests clean package"
 						}
@@ -178,7 +213,7 @@ stage("Setup Build Environment") {
 			}
 
 			stage ("Sonar") {
-				if (Boolean.valueOf(params.runTests) && Boolean.valueOf(params.runSonar)) {
+				if (env.BUILD_SKIPPED != "true" && Boolean.valueOf(params.runTests) && Boolean.valueOf(params.runSonar)) {
 					if (Boolean.valueOf(params.splitTests)) {
 						for (int i = 0; i < runs; i++) {
 							echo "Invoking merge for " + i
@@ -196,12 +231,12 @@ stage("Setup Build Environment") {
 			}
 
 			stage("Cluster Tests") {
-				if (Boolean.valueOf(params.runClusterTests)) {
+				if (env.BUILD_SKIPPED != "true" && Boolean.valueOf(params.runClusterTests)) {
 					stash includes: '**', name: 'project'
-					node("mesh-cluster-worker-11") {
+					node("mesh-cluster-worker-17") {
 						try {
 							unstash 'project'
-							sh "mvn -B -DskipTests clean install -pl '!demo/default,!doc'"
+							sh "mvn -B -DskipTests clean install -pl '!doc'"
 							sh "mvn -B -Dsurefire.groups=com.gentics.mesh.test.category.ClusterTests -DfailIfNoTests=false -Dmesh.container.image.prefix=docker.gentics.com/ test"
 						} finally {
 							step([$class: 'JUnitResultArchiver', testResults: 'distributed/target/surefire-reports/*.xml'])
@@ -214,28 +249,28 @@ stage("Setup Build Environment") {
 			}
 
 			stage("Docker Build") {
-				if (Boolean.valueOf(params.runDocker)) {
-					// demo
-					sh "rm demo/default/target/*sources.jar || true"
-					sh "rm demo/default/target/*javadoc.jar || true"
-					sh "cd demo/default ; docker build --network=host -t " + imagePrefix + "gentics/mesh-demo:latest -t " + imagePrefix + "gentics/mesh-demo:" + version + " . "
+				if (env.BUILD_SKIPPED != "true" && Boolean.valueOf(params.runDocker)) {
+					if (Boolean.valueOf(params.runDeployTesting)) {
+						version = branchName;
+						registryHost = registryHostTest;
+					}
 
 					// server
 					sh "rm server/target/*sources.jar || true"
 					sh "rm server/target/*javadoc.jar || true"
-					sh "cd server ; docker build --network=host -t " + imagePrefix + "gentics/mesh:latest -t " + imagePrefix + "gentics/mesh:" + version + " . "
+					sh "cd server ; docker build --network=host -t " + registryHost + "/gentics/mesh:latest -t " + registryHost + "/gentics/mesh:" + version + " . "
 				} else {
 					echo "Docker build skipped.."
 				}
 			}
 
 			stage("Performance Tests") {
-				if (Boolean.valueOf(params.runPerformanceTests)) {
+				if (env.BUILD_SKIPPED != "true" && Boolean.valueOf(params.runPerformanceTests)) {
 					stash includes: '**', name: 'project'
-					node("mesh-performance-worker-11") {
+					node("mesh-performance-worker-17") {
 						try {
 							unstash 'project'
-							sh "mvn -B -U clean package -pl '!doc,!demo/default,!server' -Dskip.unit.tests=true -Dskip.cluster.tests=true -Dskip.vertx-hazelcast=true -Dskip.performance.tests=false -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.gentics.com/"
+							sh "mvn -B -U clean package -pl '!doc,!server' -Dskip.unit.tests=true -Dskip.cluster.tests=true -Dskip.vertx-hazelcast=true -Dskip.performance.tests=false -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.gentics.com/"
 						} finally {
 							step([$class: 'JUnitResultArchiver', testResults: '**/target/*.performance.xml'])
 							deleteDir()
@@ -247,7 +282,7 @@ stage("Setup Build Environment") {
 			}
 
 			stage("Integration Tests") {
-				if (Boolean.valueOf(params.runIntegrationTests)) {
+				if (env.BUILD_SKIPPED != "true" && Boolean.valueOf(params.runIntegrationTests)) {
 					withEnv(["MESH_VERSION=" + version]) {
 						sh "integration-tests/test.sh"
 					}
@@ -257,14 +292,20 @@ stage("Setup Build Environment") {
 			}
 
 			stage("Deploy") {
-				if (Boolean.valueOf(params.runDeploy)) {
+				if (env.BUILD_SKIPPED != "true" && (Boolean.valueOf(params.runDeploy) || Boolean.valueOf(params.runDeployTesting))) {
 					if (Boolean.valueOf(params.runDocker)) {
+						if (Boolean.valueOf(params.runDeployTesting)) {
+							version = branchName;
+							registryHost = registryHostTest;
+						}
 						withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
-							sh 'docker login -u $repoUsername -p $repoPassword push.docker.gentics.com'
-							sh 'docker push ' + imagePrefix + 'gentics/mesh-demo:latest'
-							sh 'docker push ' + imagePrefix + 'gentics/mesh-demo:' + version
-							sh 'docker push ' + imagePrefix + 'gentics/mesh:latest'
-							sh 'docker push ' + imagePrefix + 'gentics/mesh:' + version
+							sh 'docker login -u $repoUsername -p $repoPassword ' + registryHost
+
+							if (Boolean.valueOf(params.runDeploy)) {
+								sh 'docker push ' + registryHost + '/gentics/mesh:latest'
+							}
+
+							sh 'docker push ' + registryHost + '/gentics/mesh:' + version
 						}
 					}
 				} else {
@@ -273,7 +314,7 @@ stage("Setup Build Environment") {
 			}
 
 			stage("Git push") {
-				if (Boolean.valueOf(params.runDeploy)) {
+				if (env.BUILD_SKIPPED != "true" && Boolean.valueOf(params.runDeploy)) {
 					sshagent(["git"]) {
 						def snapshotVersion = MavenHelper.getNextSnapShotVersion(version)
 						MavenHelper.setVersion(snapshotVersion)

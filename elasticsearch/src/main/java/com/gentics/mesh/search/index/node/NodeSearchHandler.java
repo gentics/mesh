@@ -48,8 +48,8 @@ import com.gentics.mesh.util.SearchWaitUtil;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Collection of handlers which are used to deal with search requests.
@@ -152,7 +152,7 @@ public class NodeSearchHandler extends AbstractSearchHandler<HibNode, NodeRespon
 
 				// batch-load the nodes and contents for each language and collect results in contentMap
 				langUuids.entrySet().stream().forEach(entry -> {
-					HibLanguage language = tx.languageDao().findByLanguageTag(entry.getKey());
+					HibLanguage language = tx.languageDao().findByLanguageTag(tx.getProject(ac), entry.getKey());
 					if (language == null) {
 						log.warn("Could not find language {" + entry.getKey() + "}");
 						return;

@@ -1,8 +1,10 @@
 package com.gentics.mesh.core.data.node;
 
+import java.util.Collections;
 import java.util.List;
 
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -18,7 +20,7 @@ public class NodeContent {
 	private ContainerType type;
 
 	/**
-	 * Create a new node content.
+	 * Create a new node content from content definition parts.
 	 * 
 	 * @param node
 	 * @param container
@@ -30,6 +32,19 @@ public class NodeContent {
 		this.container = container;
 		this.languageFallback = languageFallback;
 		this.type = type;
+	}
+
+	/**
+	 * Create a new node content from content edge.
+	 * 
+	 * @param node
+	 * @param edge
+	 */
+	public NodeContent(HibNode node, HibNodeFieldContainerEdge edge) {
+		this.node = node;
+		this.container = edge.getNodeContainer();
+		this.languageFallback = Collections.singletonList(edge.getLanguageTag());
+		this.type = edge.getType();
 	}
 
 	/**

@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.schema.field;
 
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBINARY;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBINARY_WITH_CHECK_URL;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEAN;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEANLIST;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEDATE;
@@ -19,6 +20,7 @@ import static com.gentics.mesh.core.field.FieldTestHelper.NOOP;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.binary.Binaries;
@@ -43,7 +45,7 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 	String hash;
 
 	/**
-	 * Creates a new binary field in the given container
+	 * Creates a new binary field in the given container setting the binary check status to ACCEPTED.
 	 */
 	final DataProvider FILL = (container, name) -> {
 		Buffer buffer = Buffer.buffer(FILECONTENTS);
@@ -57,6 +59,9 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 			binary = binaries.create(hash, 1L).runInExistingTx(Tx.get());
 			store = true;
 		}
+
+		binary.setCheckStatus(BinaryCheckStatus.ACCEPTED);
+
 		HibBinaryField field = container.createBinary(name, binary);
 		field.setFileName(FILENAME);
 		field.setMimeType(MIMETYPE);
@@ -69,6 +74,41 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 			storage.moveInPlace(binary.getUuid(), tmpId).blockingAwait();
 		}
 	};
+
+	/**
+	 * Creates a new binary field in the given container setting the binary check status to ACCEPTED.
+	 */
+	final DataProvider FILL_WITH_STATUS_POSTPONED = (container, name) -> {
+		FILL.set(container, name);
+
+		HibBinary binary = Tx.get().binaries().findByHash(hash).runInExistingTx(Tx.get());
+
+		binary.setCheckStatus(BinaryCheckStatus.POSTPONED);
+	};
+
+	@Test
+	public void testSetCheckUrl() throws Exception {
+		changeType(
+			CREATEBINARY,
+			FILL,
+			FETCH,
+			CREATEBINARY_WITH_CHECK_URL,
+			(container, name) -> assertThat(container.getBinary(name).getBinary().getCheckStatus())
+				.as(NEWBINARYCHECKSTATUS)
+				.isEqualTo(BinaryCheckStatus.POSTPONED));
+	}
+
+	@Test
+	public void testUnsetCheckUrl() throws Exception {
+		changeType(
+			CREATEBINARY_WITH_CHECK_URL,
+			FILL_WITH_STATUS_POSTPONED,
+			FETCH,
+			CREATEBINARY,
+			(container, name) -> assertThat(container.getBinary(name).getBinary().getCheckStatus())
+				.as(NEWBINARYCHECKSTATUS)
+				.isEqualTo(BinaryCheckStatus.ACCEPTED));
+	}
 
 	@Test
 	@Override
@@ -321,5 +361,4 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 			assertThat(container.getStringList(name)).as(NEWFIELD).isNull();
 		});
 	}
-
 }

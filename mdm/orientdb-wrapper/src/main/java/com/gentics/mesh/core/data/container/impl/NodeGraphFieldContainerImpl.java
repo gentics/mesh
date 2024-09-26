@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
@@ -35,21 +37,31 @@ import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.binary.impl.BinaryImpl;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.MicronodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.S3BinaryGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
+import com.gentics.mesh.core.data.node.field.list.impl.BooleanGraphFieldListImpl;
+import com.gentics.mesh.core.data.node.field.list.impl.HtmlGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.MicronodeGraphFieldListImpl;
+import com.gentics.mesh.core.data.node.field.list.impl.NodeGraphFieldListImpl;
+import com.gentics.mesh.core.data.node.field.list.impl.NumberGraphFieldListImpl;
+import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
+import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.data.relationship.GraphRelationships;
+import com.gentics.mesh.core.data.s3binary.impl.S3BinaryImpl;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
@@ -65,8 +77,8 @@ import com.gentics.mesh.util.UniquenessUtil;
 import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @see NodeGraphFieldContainer
@@ -100,6 +112,16 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			.withField(BucketableElementHelper.BUCKET_ID_KEY, LONG)
 			.withType(NOTUNIQUE)
 			.withPostfix("bucket"));
+
+		GraphRelationships.addRelation(NodeGraphFieldContainerImpl.class, MicronodeImpl.class, "*", HAS_FIELD, GraphField.FIELD_KEY_PROPERTY_KEY, StringUtils.EMPTY);
+		GraphRelationships.addRelation(NodeGraphFieldContainerImpl.class, BinaryImpl.class, "*", HAS_FIELD, GraphField.FIELD_KEY_PROPERTY_KEY, StringUtils.EMPTY);
+		GraphRelationships.addRelation(NodeGraphFieldContainerImpl.class, S3BinaryImpl.class, "*", HAS_FIELD, GraphField.FIELD_KEY_PROPERTY_KEY, StringUtils.EMPTY);
+		GraphRelationships.addRelation(NodeGraphFieldContainerImpl.class, StringGraphFieldListImpl.class, "*", HAS_LIST, GraphField.FIELD_KEY_PROPERTY_KEY, StringUtils.EMPTY);
+		GraphRelationships.addRelation(NodeGraphFieldContainerImpl.class, NumberGraphFieldListImpl.class, "*", HAS_LIST, GraphField.FIELD_KEY_PROPERTY_KEY, StringUtils.EMPTY);
+		GraphRelationships.addRelation(NodeGraphFieldContainerImpl.class, BooleanGraphFieldListImpl.class, "*", HAS_LIST, GraphField.FIELD_KEY_PROPERTY_KEY, StringUtils.EMPTY);
+		GraphRelationships.addRelation(NodeGraphFieldContainerImpl.class, HtmlGraphFieldListImpl.class, "*", HAS_LIST, GraphField.FIELD_KEY_PROPERTY_KEY, StringUtils.EMPTY);
+		GraphRelationships.addRelation(NodeGraphFieldContainerImpl.class, NodeGraphFieldListImpl.class, "*", HAS_LIST, GraphField.FIELD_KEY_PROPERTY_KEY, StringUtils.EMPTY);
+		GraphRelationships.addRelation(NodeGraphFieldContainerImpl.class, MicronodeGraphFieldListImpl.class, "*", HAS_LIST, GraphField.FIELD_KEY_PROPERTY_KEY, StringUtils.EMPTY);
 	}
 
 	@Override

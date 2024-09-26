@@ -73,7 +73,7 @@ stage("Setup Build Environment") {
 										sh "mv includes-${postfix} inclusions.txt"
 										sshagent(["git"]) {
 											try {
-												sh "mvn -fae -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -B -U -e -P inclusions -pl '!demo/default,!doc,!performance-tests' clean install"
+												sh "mvn -fae -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -B -U -e -P inclusions -pl '!doc,!performance-tests' clean install"
 												stash name: "jacoco" + current, includes: "**/jacoco-partial.exec", allowEmpty: true
 											} finally {
 												step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
@@ -92,7 +92,7 @@ stage("Setup Build Environment") {
 					} else {
 						sshagent(["git"]) {
 							try {
-								sh "mvn -fae -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -B -U -e -pl '!demo/default,!doc,!performance-tests' clean install"
+								sh "mvn -fae -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -B -U -e -pl '!doc,!performance-tests' clean install"
 							} finally {
 								step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
 							}
@@ -144,7 +144,7 @@ stage("Setup Build Environment") {
 				if (Boolean.valueOf(params.runClusterTests)) {
 					node("mesh-cluster-worker") {
 						try {
-							sh "mvn -B -DskipTests clean install -pl '!demo/default,!doc'"
+							sh "mvn -B -DskipTests clean install -pl '!doc'"
 							sh "mvn -B test -pl distributed"
 						} finally {
 							step([$class: 'JUnitResultArchiver', testResults: 'distributed/target/surefire-reports/*.xml'])
@@ -158,11 +158,6 @@ stage("Setup Build Environment") {
 			stage("Docker Build") {
 
 				if (Boolean.valueOf(params.runDocker)) {
-					// demo
-					sh "rm demo/default/target/*sources.jar || true"
-					sh "rm demo/default/target/*javadoc.jar || true"
-					sh "cd demo/default ; docker build --network=host -t " + imagePrefix + "gentics/mesh-demo:latest -t " + imagePrefix + "gentics/mesh-demo:" + version + " . "
-
 					// server
 					sh "rm server/target/*sources.jar || true"
 					sh "rm server/target/*javadoc.jar || true"
@@ -176,7 +171,7 @@ stage("Setup Build Environment") {
 				if (Boolean.valueOf(params.runPerformanceTests)) {
 					node("mesh-performance-worker") {
 						try {
-							sh "mvn -B -U clean package -pl '!doc,!demo/default,!distributed,!verticles,!server' -Dskip.unit.tests=true -Dskip.performance.tests=false -Dmaven.test.failure.ignore=true"
+							sh "mvn -B -U clean package -pl '!doc,!distributed,!verticles,!server' -Dskip.unit.tests=true -Dskip.performance.tests=false -Dmaven.test.failure.ignore=true"
 						} finally {
 							step([$class: 'JUnitResultArchiver', testResults: '**/target/*.performance.xml'])
 						}
@@ -198,6 +193,25 @@ stage("Setup Build Environment") {
 
 			stage("Deploy") {
 				if (Boolean.valueOf(params.runDeploy)) {
+					withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
+						sh 'cd js'
+
+						// Install dependencies
+						sh 'npm ci --no-audit --no-fund'
+
+						// Set the version for the packages
+						sh "npm run nx -- release version ${version}"
+
+						// Build all JS packages
+						sh 'npm run nx -- run-many --targets build'
+
+						// Publish the pacakges to artifactory
+						sh 'npm run nx -- release publish'
+
+						// Go back to the project root
+						sh 'cd ..'
+					}
+
 					if (Boolean.valueOf(params.runDocker)) {
 						withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
 							sh 'docker login -u $repoUsername -p $repoPassword docker.gentics.com'

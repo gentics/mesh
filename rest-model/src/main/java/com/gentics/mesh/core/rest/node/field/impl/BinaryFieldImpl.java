@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.FieldTypes;
+import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
@@ -62,6 +63,13 @@ public class BinaryFieldImpl implements BinaryField {
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Plain text content of the upload. This can be the text content of a word or PDF document.")
 	private String plainText;
+
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Status of the external binary check (one of ACCEPTED, DENIED or POSTPONED). The binary field is only accessible when the status is ACCEPTED.")
+	private BinaryCheckStatus checkStatus = BinaryCheckStatus.POSTPONED;
+
+	@JsonIgnore
+	private String checkSecret;
 
 	@Override
 	public String getBinaryUuid() {
@@ -172,12 +180,12 @@ public class BinaryFieldImpl implements BinaryField {
 		this.metadata = metadata;
 		return this;
 	}
-	
+
 	@Override
 	public String getPlainText() {
 		return plainText;
 	}
-	
+
 	@Override
 	public BinaryField setPlainText(String text) {
 		this.plainText = text;
@@ -188,5 +196,28 @@ public class BinaryFieldImpl implements BinaryField {
 	@JsonIgnore
 	public boolean hasValues() {
 		return getDominantColor() != null || getFileName() != null && getMimeType() != null || getFocalPoint() != null || getMetadata() != null || getSha512sum() != null;
+	}
+
+	@Override
+	public BinaryCheckStatus getCheckStatus() {
+		return checkStatus;
+	}
+
+	@Override
+	public BinaryFieldImpl setCheckStatus(BinaryCheckStatus checkStatus) {
+		this.checkStatus = checkStatus;
+		return this;
+	}
+
+	@Override
+	@JsonIgnore
+	public String getCheckSecret() {
+		return checkSecret;
+	}
+
+	@Override
+	public BinaryFieldImpl setCheckSecret(String checkSecret) {
+		this.checkSecret = checkSecret;
+		return this;
 	}
 }

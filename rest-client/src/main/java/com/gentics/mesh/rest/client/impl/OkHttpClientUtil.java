@@ -15,6 +15,8 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.Collections;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
@@ -30,11 +32,12 @@ import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import com.gentics.mesh.rest.client.MeshRestClientConfig;
 import com.gentics.mesh.util.UUIDUtil;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import okhttp3.Dispatcher;
 import okhttp3.OkHttpClient;
 import okhttp3.OkHttpClient.Builder;
+import okhttp3.Protocol;
 
 /**
  * Utility for the OkHttp client.
@@ -125,6 +128,21 @@ public final class OkHttpClientUtil {
 			builder.sslSocketFactory(sslCtx.getSocketFactory(), (X509TrustManager) trustManagers[0]);
 		}
 
+		if (config.getProtocolVersion() != null) {
+			switch (config.getProtocolVersion()) {
+			case DEFAULT:
+				// Follows enclosed OkHttpClient::DEFAULT_PROTOCOLS.
+				builder.protocols(Arrays.asList(Protocol.HTTP_2, Protocol.HTTP_1_1));
+				break;
+			case HTTP_1_1:
+				builder.protocols(Collections.singletonList(Protocol.HTTP_1_1));
+				break;
+			case HTTP_2:
+				// Caution: OkHttpClient does not support standalone h2 protocol, so in the case of SSL connection will fall back to Protocol.HTTP_2 + Protocol.HTTP_1_1.
+				builder.protocols(Collections.singletonList(Protocol.H2_PRIOR_KNOWLEDGE));
+				break;
+			}
+		}
 	}
 
 	/**

@@ -20,8 +20,8 @@ import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventBusStore;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Central LRU permission cache which is used to quickly lookup cached permissions.

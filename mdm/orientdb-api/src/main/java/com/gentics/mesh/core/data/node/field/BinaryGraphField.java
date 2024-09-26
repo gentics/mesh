@@ -1,14 +1,19 @@
 package com.gentics.mesh.core.data.node.field;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+
 import java.util.Map;
 import java.util.Objects;
 
 import com.gentics.mesh.core.data.MeshEdge;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.binary.Binary;
-import com.gentics.mesh.core.data.binary.HibBinary;
+import com.gentics.mesh.core.data.binary.ImageVariant;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.util.UniquenessUtil;
 
 /**
@@ -36,11 +41,23 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 
 	String BINARY_ALT_KEY = "metadata-alt";
 
-	String PLAIN_TEXT_KEY = "plainText"; 
+	String PLAIN_TEXT_KEY = "plainText";
+
+	/**
+	 * Set the plain text content.
+	 * @param text
+	 */
+	void setPlainText(String text);
+
+	/**
+	 * Return the extracted plain text content of the binary.
+	 * @return
+	 */
+	String getPlainText();
 
 	/**
 	 * Return the binary filename.
-	 * 
+	 *
 	 * @return
 	 */
 	default String getFileName() {
@@ -49,7 +66,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 
 	/**
 	 * Set the binary filename.
-	 * 
+	 *
 	 * @param fileName
 	 * @return Fluent API
 	 */
@@ -60,14 +77,14 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 
 	/**
 	 * Increment any found postfix number in the filename.
-	 * 
+	 *
 	 * e.g:
 	 * <ul>
 	 * <li>test.txt -> test_1.txt</li>
 	 * <li>test -> test_1</li>
 	 * <li>test.blub.txt -> test.blub_1.txt</li>
 	 * <ul>
-	 * 
+	 *
 	 */
 	default void postfixFileName() {
 		String oldName = getFileName();
@@ -79,7 +96,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 
 	/**
 	 * Return the binary mime type of the node.
-	 * 
+	 *
 	 * @return
 	 */
 	default String getMimeType() {
@@ -88,7 +105,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 
 	/**
 	 * Set the binary mime type of the node.
-	 * 
+	 *
 	 * @param mimeType
 	 * @return Fluent API
 	 */
@@ -99,7 +116,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 
 	/**
 	 * Set the binary image dominant color.
-	 * 
+	 *
 	 * @param dominantColor
 	 * @return Fluent API
 	 */
@@ -110,7 +127,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 
 	/**
 	 * Return the binary image dominant color.
-	 * 
+	 *
 	 * @return
 	 */
 	default String getImageDominantColor() {
@@ -119,7 +136,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 
 	/**
 	 * Return the stored focal point of the image.
-	 * 
+	 *
 	 * @return Focal point or null if no focal point has been set
 	 */
 	default FocalPoint getImageFocalPoint() {
@@ -133,7 +150,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 
 	/**
 	 * Set the image focal point.
-	 * 
+	 *
 	 * @param point
 	 */
 	default BinaryGraphField setImageFocalPoint(FocalPoint point) {
@@ -144,28 +161,21 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 
 	/**
 	 * Return the uuid of the binary field.
-	 * 
+	 *
 	 * @return
 	 */
 	String getUuid();
 
 	/**
 	 * Set the uuid of the binary field.
-	 * 
+	 *
 	 * @param uuid
 	 */
 	void setUuid(String uuid);
 
 	/**
-	 * Return the referenced binary.
-	 * 
-	 * @return
-	 */
-	HibBinary getBinary();
-
-	/**
 	 * Set the metadata property.
-	 * 
+	 *
 	 * @param key
 	 * @param value
 	 */
@@ -173,14 +183,23 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 
 	/**
 	 * Return the metadata properties.
-	 * 
+	 *
 	 * @return
 	 */
 	Map<String, String> getMetadataProperties();
 
+	@Override
+	Binary getBinary();
+
+	@Override
+	NodeGraphFieldContainer getParentContainer();
+
+	@Override
+	Result<? extends ImageVariant> getImageVariants();
+
 	/**
 	 * Set the location information.
-	 * 
+	 *
 	 * @param loc
 	 */
 	default void setLocation(Location loc) {
@@ -195,7 +214,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 
 	/**
 	 * Return the location latitude.
-	 * 
+	 *
 	 * @return
 	 */
 	default Double getLocationLatitude() {
@@ -204,7 +223,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 
 	/**
 	 * Set the location latitude.
-	 * 
+	 *
 	 * @param lat
 	 */
 	default void setLocationLatitude(Double lat) {
@@ -213,7 +232,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 
 	/**
 	 * Return the location longitude.
-	 * 
+	 *
 	 * @return
 	 */
 	default Double getLocationLongitude() {
@@ -222,7 +241,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 
 	/**
 	 * Set the location longitude.
-	 * 
+	 *
 	 * @param lon
 	 */
 	default void setLocationLongitude(Double lon) {
@@ -231,7 +250,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 
 	/**
 	 * Return the location altitude.
-	 * 
+	 *
 	 * @return
 	 */
 	default Integer getLocationAltitude() {
@@ -240,7 +259,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 
 	/**
 	 * Set the location altitude.
-	 * 
+	 *
 	 * @param alt
 	 */
 	default void setLocationAltitude(Integer alt) {
@@ -264,15 +283,34 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	}
 
 	/**
-	 * Set the plain text content.
-	 * @param text
+	 * Attach the image variant to this binary field.
+	 * 
+	 * @param variant
 	 */
-	void setPlainText(String text);
+	default void attachImageVariant(ImageVariant variant, boolean throwOnExisting) {
+		NodeGraphFieldContainer container = getParentContainer();
+		if (container.findImageVariant(getFieldKey(), variant) == null) {
+			container.attachImageVariant(getFieldKey(), variant);
+		} else {
+			if (throwOnExisting) {
+				throw error(BAD_REQUEST, "image_error_variant_exists", variant.getKey(), getFieldKey());
+			}
+		}
+	}
 
 	/**
-	 * Return the extracted plain text content of the binary.
-	 * @return
+	 * Detach the image variant from this binary field.
+	 * 
+	 * @param variant
 	 */
-	String getPlainText();
-
+	default void detachImageVariant(ImageVariant variant, boolean throwOnAbsent) {
+		NodeGraphFieldContainer container = getParentContainer();
+		if (container.findImageVariant(getFieldKey(), variant) != null) {
+			container.detachImageVariant(getFieldKey(), variant);
+		} else {
+			if (throwOnAbsent) {
+				throw error(BAD_REQUEST, "image_error_no_variant", variant.getKey(), getFieldKey());
+			}
+		}
+	}
 }

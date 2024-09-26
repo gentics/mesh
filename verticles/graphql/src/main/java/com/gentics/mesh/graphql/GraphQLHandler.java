@@ -21,8 +21,8 @@ import org.dataloader.DataLoaderRegistry;
 
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.error.AbstractUnavailableException;
-import com.gentics.mesh.etc.config.GraphQLOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.NativeQueryFiltering;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.dataloader.NodeDataLoader;
 import com.gentics.mesh.graphql.type.QueryTypeProvider;
@@ -40,8 +40,8 @@ import graphql.language.SourceLocation;
 import io.micrometer.core.instrument.Timer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
 
 /**
@@ -63,12 +63,12 @@ public class GraphQLHandler {
 
 	private Timer graphQlTimer;
 
-	private GraphQLOptions graphQLOptions;
+	private MeshOptions options;
 
 	@Inject
 	public GraphQLHandler(MetricsService metrics, MeshOptions options, QueryTypeProvider typeProvider, Database db, Vertx vertx) {
-		graphQlTimer = metrics.timer(SimpleMetric.GRAPHQL_TIME);
-		graphQLOptions = options.getGraphQLOptions();
+		this.graphQlTimer = metrics.timer(SimpleMetric.GRAPHQL_TIME);
+		this.options = options;
 		this.typeProvider = typeProvider;
 		this.db = db;
 		this.vertx = vertx;
@@ -83,91 +83,94 @@ public class GraphQLHandler {
 	 *            GraphQL query
 	 */
 	public void handleQuery(GraphQLContext gc, String body) {
-		Timer.Sample sample = Timer.start();
-		AtomicReference<String> loggableQuery = new AtomicReference<>();
-		AtomicReference<Map<String, Object>> loggableVariables = new AtomicReference<>();
-		try {
-			db.tx(tx -> {
-				JsonObject queryJson = new JsonObject(body);
-				// extract query body and variables from the sent body
-				String query = queryJson.getString("query");
-				Map<String, Object> variables = extractVariables(queryJson);
-				// store for possibly logging it later
-				loggableQuery.set(query);
-				loggableVariables.set(variables);
-				GraphQL graphQL = newGraphQL(typeProvider.getRootSchema(gc)).instrumentation(new DataLoaderDispatcherInstrumentation()).build();
+			Timer.Sample sample = Timer.start();
+			AtomicReference<String> loggableQuery = new AtomicReference<>();
+			AtomicReference<Map<String, Object>> loggableVariables = new AtomicReference<>();
+			try {
+				db.tx(tx -> {
+					JsonObject queryJson = new JsonObject(body);
+					// extract query body and variables from the sent body
+					String query = queryJson.getString("query");
+					Map<String, Object> variables = extractVariables(queryJson);
+					// store for possibly logging it later
+					loggableQuery.set(query);
+					loggableVariables.set(variables);
+					GraphQL graphQL = newGraphQL(typeProvider.getRootSchema(gc)).instrumentation(new DataLoaderDispatcherInstrumentation()).build();
 
-				DataLoaderRegistry dataLoaderRegistry = new DataLoaderRegistry();
-				DataLoaderOptions options = DataLoaderOptions.newOptions().setBatchLoaderContextProvider(() -> gc);
-				dataLoaderRegistry.register(NodeDataLoader.CONTENT_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.CONTENT_LOADER, options));
-				dataLoaderRegistry.register(NodeDataLoader.CHILDREN_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.CHILDREN_LOADER, options));
-				dataLoaderRegistry.register(NodeDataLoader.PATH_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.PATH_LOADER, options));
-				dataLoaderRegistry.register(NodeDataLoader.PARENT_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.PARENT_LOADER, options));
-				dataLoaderRegistry.register(NodeDataLoader.REFERENCED_BY_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.REFERENCED_BY_LOADER, options));
-				dataLoaderRegistry.register(NodeDataLoader.BREADCRUMB_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.BREADCRUMB_LOADER, options));
-				dataLoaderRegistry.register(FieldDefinitionProvider.LINK_REPLACER_DATA_LOADER_KEY, DataLoader.newDataLoader(typeProvider.getFieldDefProvider().LINK_REPLACER_LOADER, options));
-				dataLoaderRegistry.register(FieldDefinitionProvider.BOOLEAN_LIST_VALUES_DATA_LOADER_KEY, DataLoader.newDataLoader(typeProvider.getFieldDefProvider().BOOLEAN_LIST_VALUE_LOADER, options));
-				dataLoaderRegistry.register(FieldDefinitionProvider.DATE_LIST_VALUES_DATA_LOADER_KEY, DataLoader.newDataLoader(typeProvider.getFieldDefProvider().DATE_LIST_VALUE_LOADER, options));
-				dataLoaderRegistry.register(FieldDefinitionProvider.NUMBER_LIST_VALUES_DATA_LOADER_KEY, DataLoader.newDataLoader(typeProvider.getFieldDefProvider().NUMBER_LIST_VALUE_LOADER, options));
-				dataLoaderRegistry.register(FieldDefinitionProvider.HTML_LIST_VALUES_DATA_LOADER_KEY, DataLoader.newDataLoader(typeProvider.getFieldDefProvider().HTML_LIST_VALUE_LOADER, options));
-				dataLoaderRegistry.register(FieldDefinitionProvider.STRING_LIST_VALUES_DATA_LOADER_KEY, DataLoader.newDataLoader(typeProvider.getFieldDefProvider().STRING_LIST_VALUE_LOADER, options));
-				dataLoaderRegistry.register(FieldDefinitionProvider.MICRONODE_LIST_VALUES_DATA_LOADER_KEY, DataLoader.newDataLoader(typeProvider.getFieldDefProvider().MICRONODE_LIST_VALUE_LOADER, options));
-				dataLoaderRegistry.register(FieldDefinitionProvider.MICRONODE_DATA_LOADER_KEY, DataLoader.newDataLoader(typeProvider.getFieldDefProvider().MICRONODE_LOADER, options));
+					DataLoaderRegistry dataLoaderRegistry = new DataLoaderRegistry();
+					DataLoaderOptions dlOptions = DataLoaderOptions.newOptions().setBatchLoaderContextProvider(() -> gc);
+					// TODO this is inefficient, but otherwise we can't easily tell if a filter is native ready without parsing each of it ahead of time.
+					dlOptions.setCachingEnabled(options.getNativeQueryFiltering() == NativeQueryFiltering.NEVER);
+					dataLoaderRegistry.register(NodeDataLoader.CONTENT_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.CONTENT_LOADER, dlOptions));
+					dataLoaderRegistry.register(NodeDataLoader.CHILDREN_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.CHILDREN_LOADER, dlOptions));
+					dataLoaderRegistry.register(NodeDataLoader.PATH_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.PATH_LOADER, dlOptions));
+					dataLoaderRegistry.register(NodeDataLoader.PARENT_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.PARENT_LOADER, dlOptions));
+					dataLoaderRegistry.register(NodeDataLoader.REFERENCED_BY_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.REFERENCED_BY_LOADER, dlOptions));
+					dataLoaderRegistry.register(NodeDataLoader.BREADCRUMB_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.BREADCRUMB_LOADER, dlOptions));
+					dataLoaderRegistry.register(FieldDefinitionProvider.LINK_REPLACER_DATA_LOADER_KEY, DataLoader.newDataLoader(typeProvider.getFieldDefProvider().LINK_REPLACER_LOADER, dlOptions));
+					dataLoaderRegistry.register(FieldDefinitionProvider.BOOLEAN_LIST_VALUES_DATA_LOADER_KEY, DataLoader.newDataLoader(typeProvider.getFieldDefProvider().BOOLEAN_LIST_VALUE_LOADER, dlOptions));
+					dataLoaderRegistry.register(FieldDefinitionProvider.DATE_LIST_VALUES_DATA_LOADER_KEY, DataLoader.newDataLoader(typeProvider.getFieldDefProvider().DATE_LIST_VALUE_LOADER, dlOptions));
+					dataLoaderRegistry.register(FieldDefinitionProvider.NUMBER_LIST_VALUES_DATA_LOADER_KEY, DataLoader.newDataLoader(typeProvider.getFieldDefProvider().NUMBER_LIST_VALUE_LOADER, dlOptions));
+					dataLoaderRegistry.register(FieldDefinitionProvider.HTML_LIST_VALUES_DATA_LOADER_KEY, DataLoader.newDataLoader(typeProvider.getFieldDefProvider().HTML_LIST_VALUE_LOADER, dlOptions));
+					dataLoaderRegistry.register(FieldDefinitionProvider.STRING_LIST_VALUES_DATA_LOADER_KEY, DataLoader.newDataLoader(typeProvider.getFieldDefProvider().STRING_LIST_VALUE_LOADER, dlOptions));
+					dataLoaderRegistry.register(FieldDefinitionProvider.MICRONODE_LIST_VALUES_DATA_LOADER_KEY, DataLoader.newDataLoader(typeProvider.getFieldDefProvider().MICRONODE_LIST_VALUE_LOADER, dlOptions));
+					dataLoaderRegistry.register(FieldDefinitionProvider.MICRONODE_DATA_LOADER_KEY, DataLoader.newDataLoader(typeProvider.getFieldDefProvider().MICRONODE_LOADER, dlOptions));
 
-				ExecutionInput executionInput = ExecutionInput
-					.newExecutionInput()
-					.dataLoaderRegistry(dataLoaderRegistry)
-					.query(query)
-					.context(gc)
-					.variables(variables)
-					.build();
-				try {
-					// Implementation Note: GraphQL is implemented synchronously (no implemented datafetcher returns a CompletableFuture, which is not yet completed)
-					// Nonetheless, we see sometimes that the CompletableFuture is not completed (and never will be), when GraphQL joins it, which leads to endlessly
-					// blocked worker threads.
-					// Therefore, we use the "async approach" for calling GraphQL and wait for the result with a timeout.
-					ExecutionResult result = graphQL.executeAsync(executionInput)
-							.get(graphQLOptions.getAsyncWaitTimeout(), TimeUnit.MILLISECONDS);
-					List<GraphQLError> errors = result.getErrors();
-					JsonObject response = new JsonObject();
-					if (!errors.isEmpty()) {
-						addErrors(errors, response);
-						if (log.isDebugEnabled()) {
-							log.debug("Encountered {" + errors.size() + "} errors while executing query {" + query + "}");
-							for (GraphQLError error : errors) {
-								String loc = "unknown location";
-								if (error.getLocations() != null) {
-									loc = error.getLocations().stream().map(Object::toString).collect(Collectors.joining(","));
+					ExecutionInput executionInput = ExecutionInput
+						.newExecutionInput()
+						.dataLoaderRegistry(dataLoaderRegistry)
+						.query(query)
+						.context(gc)
+						.variables(variables)
+						.build();
+					try {
+						// Implementation Note: GraphQL is implemented synchronously (no implemented datafetcher returns a CompletableFuture, which is not yet completed)
+						// Nonetheless, we see sometimes that the CompletableFuture is not completed (and never will be), when GraphQL joins it, which leads to endlessly
+						// blocked worker threads.
+						// Therefore, we use the "async approach" for calling GraphQL and wait for the result with a timeout.
+						ExecutionResult result = graphQL.executeAsync(executionInput)
+								.get(options.getGraphQLOptions().getAsyncWaitTimeout(), TimeUnit.MILLISECONDS);
+						List<GraphQLError> errors = result.getErrors();
+						JsonObject response = new JsonObject();
+						if (!errors.isEmpty()) {
+							addErrors(errors, response);
+							if (log.isDebugEnabled()) {
+								log.debug("Encountered {" + errors.size() + "} errors while executing query {" + query + "}");
+								for (GraphQLError error : errors) {
+									String loc = "unknown location";
+									if (error.getLocations() != null) {
+										loc = error.getLocations().stream().map(Object::toString).collect(Collectors.joining(","));
+									}
+									log.debug("Error: " + error.getErrorType() + ":" + error.getMessage() + ":" + loc);
 								}
-								log.debug("Error: " + error.getErrorType() + ":" + error.getMessage() + ":" + loc);
 							}
 						}
+						if (result.getData() != null) {
+							Map<String, Object> data = result.getData();
+							response.put("data", new JsonObject(data));
+						}
+						boolean minify = gc.isMinify(options.getHttpServerOptions());
+						gc.send(minify ? response.encode() : response.encodePrettily(), OK);
+					} catch (TimeoutException | InterruptedException | ExecutionException e) {
+						// If an error happens while "waiting" for the result, we log the GraphQL query here.
+						log.error("GraphQL query failed after {} ms with {}:\n{}\nvariables: {}",
+								options.getGraphQLOptions().getAsyncWaitTimeout(), e.getClass().getSimpleName(), loggableQuery.get(),
+								loggableVariables.get());
+						gc.fail(e);
 					}
-					if (result.getData() != null) {
-						Map<String, Object> data = result.getData();
-						response.put("data", new JsonObject(data));
+				});
+			} catch (Exception e) {
+				gc.fail(e);
+			} finally {
+				long duration = sample.stop(graphQlTimer);
+				Long slowThreshold = options.getGraphQLOptions().getSlowThreshold();
+				if (loggableQuery.get() != null && slowThreshold != null && slowThreshold.longValue() > 0) {
+					long durationMs = TimeUnit.MILLISECONDS.convert(duration, TimeUnit.NANOSECONDS);
+					if (durationMs > slowThreshold) {
+						slowQueryLog.warn("GraphQL Query took {} ms:\n{}\nvariables: {}", durationMs, loggableQuery.get(), loggableVariables.get());
 					}
-					gc.send(response.encodePrettily(), OK);
-				} catch (TimeoutException | InterruptedException | ExecutionException e) {
-					// If an error happens while "waiting" for the result, we log the GraphQL query here.
-					log.error("GraphQL query failed after {} ms with {}:\n{}\nvariables: {}",
-							graphQLOptions.getAsyncWaitTimeout(), e.getClass().getSimpleName(), loggableQuery.get(),
-							loggableVariables.get());
-					gc.fail(e);
-				}
-			});
-		} catch (Exception e) {
-			gc.fail(e);
-		} finally {
-			long duration = sample.stop(graphQlTimer);
-			Long slowThreshold = graphQLOptions.getSlowThreshold();
-			if (loggableQuery.get() != null && slowThreshold != null && slowThreshold.longValue() > 0) {
-				long durationMs = TimeUnit.MILLISECONDS.convert(duration, TimeUnit.NANOSECONDS);
-				if (durationMs > slowThreshold) {
-					slowQueryLog.warn("GraphQL Query took {} ms:\n{}\nvariables: {}", durationMs, loggableQuery.get(), loggableVariables.get());
 				}
 			}
-		}
 	}
 
 	/**

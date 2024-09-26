@@ -3,16 +3,12 @@ package com.gentics.mesh.server.cluster;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.context.impl.LoggingConfigurator;
-import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
-import com.gentics.mesh.router.EndpointRegistry;
-import com.gentics.mesh.verticle.admin.AdminGUI2Endpoint;
-import com.gentics.mesh.verticle.admin.AdminGUIEndpoint;
 
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Abstract implementation for cluster servers.
@@ -73,12 +69,6 @@ public abstract class ClusterServer {
 		mesh.setCustomLoader(vertx -> {
 			JsonObject config = new JsonObject();
 			config.put("port", options.getHttpServerOptions().getPort());
-
-			// Add admin ui
-			MeshComponent meshInternal = mesh.internal();
-			EndpointRegistry registry = meshInternal.endpointRegistry();
-			registry.register(AdminGUIEndpoint.class);
-			registry.register(AdminGUI2Endpoint.class);
 		});
 
 		try {

@@ -40,6 +40,7 @@ import org.dataloader.DataLoader;
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.binary.HibBinary;
+import com.gentics.mesh.core.data.binary.HibImageVariant;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -71,11 +72,13 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
+import com.gentics.mesh.graphql.dataloader.DataLoaderKey;
 import com.gentics.mesh.graphql.dataloader.NodeDataLoader;
 import com.gentics.mesh.graphql.filter.NodeFilter;
 import com.gentics.mesh.graphql.type.AbstractTypeProvider;
 import com.gentics.mesh.graphql.type.NodeTypeProvider;
 import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.util.DateUtils;
 import com.google.common.base.Functions;
 
@@ -144,7 +147,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	 * @param keyContexts map of keys to contexts
 	 * @param consumer consumer
 	 */
-	private static void partitioningByLinkTypeAndText(List<DataLoaderKey> keys, BiConsumer<Pair<LinkType, String>, Set<String>> consumer) {
+	private static void partitioningByLinkTypeAndText(List<FieldDefinitionDataLoaderKey> keys, BiConsumer<Pair<LinkType, String>, Set<String>> consumer) {
 		Map<Pair<LinkType, String>, Set<String>> partitionedKeys = keys.stream()
 			.map(key -> Pair.of(Pair.of(key.linkType, key.languageTag), key.content))
 			.collect(Collectors.groupingBy(Pair::getLeft, Collectors.mapping(Pair::getRight, Collectors.toSet())));
@@ -155,7 +158,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	/**
 	 * DataLoader implementation that replaces links in contents
 	 */
-	public BatchLoaderWithContext<DataLoaderKey, String> LINK_REPLACER_LOADER;
+	public BatchLoaderWithContext<FieldDefinitionDataLoaderKey, String> LINK_REPLACER_LOADER;
 
 	/**
 	 * Generic list field data loader
@@ -254,7 +257,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 			String branchUuid = Tx.get().getBranch(gc).getUuid();
 			String projectName = Tx.get().getProject(gc).getName();
 
-			Map<DataLoaderKey, String> resolvedByContent = new HashMap<>();
+			Map<FieldDefinitionDataLoaderKey, String> resolvedByContent = new HashMap<>();
 
 			partitioningByLinkTypeAndText(keys, (pair, contents) -> {
 				LinkType type = pair.getLeft();
@@ -265,7 +268,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 					String content = entry.getKey();
 					String replaced = entry.getValue();
 
-					DataLoaderKey key = new DataLoaderKey(content, type, languageTag);
+					FieldDefinitionDataLoaderKey key = new FieldDefinitionDataLoaderKey(content, type, languageTag);
 					resolvedByContent.put(key, replaced);
 				}
 			});
@@ -344,6 +347,12 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		// .plainText
 		type.field(newFieldDefinition().name("plainText").description("Extracted plain text of the uploaded document.").type(GraphQLString));
 
+		// .variants
+		type.field(newFieldDefinition().name("variants").description("Image binary manipulation variants, if applicable").type(new GraphQLList(createImageVariantType("variant"))).dataFetcher(fetcher -> {
+			HibBinaryField field = fetcher.getSource();
+			return field.getImageVariants().list();
+		}));
+
 		return type.build();
 	}
 
@@ -403,6 +412,82 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 
 		// .s3ObjectKey
 		type.field(newFieldDefinition().name("s3ObjectKey").description("S3 object key. Serves as reference to AWS.").type(GraphQLString));
+
+		return type.build();
+	}
+
+	public GraphQLObjectType createImageVariantType(String name) {
+		Builder type = newObject().name(name).description("Image variant");
+
+		// .width
+		type.field(newFieldDefinition().name("width").description("Variant width").type(GraphQLInt)
+			.dataFetcher(fetcher -> {
+				HibImageVariant variant = fetcher.getSource();
+				return variant.getWidth();
+			}));
+
+		// .height
+		type.field(newFieldDefinition().name("height").description("Variant height").type(GraphQLInt)
+			.dataFetcher(fetcher -> {
+				HibImageVariant variant = fetcher.getSource();
+				return variant.getHeight();
+			}));
+
+		// .cropX
+		type.field(newFieldDefinition().name("cropX").description("Variant crop X starting point").type(GraphQLInt)
+			.dataFetcher(fetcher -> {
+				HibImageVariant variant = fetcher.getSource();
+				return variant.getCropStartX();
+			}));
+
+		// .cropY
+		type.field(newFieldDefinition().name("cropY").description("Variant crop Y starting point").type(GraphQLInt)
+			.dataFetcher(fetcher -> {
+				HibImageVariant variant = fetcher.getSource();
+				return variant.getCropStartY();
+			}));
+
+		// .cropWidth
+		type.field(newFieldDefinition().name("cropWidth").description("Variant crop width").type(GraphQLInt)
+			.dataFetcher(fetcher -> {
+				HibImageVariant variant = fetcher.getSource();
+				return variant.getCropWidth();
+			}));
+
+		// .cropHeigth
+		type.field(newFieldDefinition().name("cropHeight").description("Variant crop heigth").type(GraphQLInt)
+			.dataFetcher(fetcher -> {
+				HibImageVariant variant = fetcher.getSource();
+				return variant.getCropHeight();
+			}));
+
+		// .cropMode
+		type.field(newFieldDefinition().name("cropMode").description("Variant crop mode").type(GraphQLString)
+			.dataFetcher(fetcher -> {
+				HibImageVariant variant = fetcher.getSource();
+				return String.valueOf(variant.getCropMode());
+			}));
+
+		// .resizeMode
+		type.field(newFieldDefinition().name("resizeMode").description("Variant resize mode").type(GraphQLString)
+			.dataFetcher(fetcher -> {
+				HibImageVariant variant = fetcher.getSource();
+				return String.valueOf(variant.getResizeMode());
+			}));
+
+		// .focalPoint
+		type.field(
+			newFieldDefinition().name("focalPoint").description("Focal point of the variant.").type(createFocalPointType("ImageVariantFocalPoint")).dataFetcher(fetcher -> {
+				HibImageVariant variant = fetcher.getSource();
+				return variant.getFocalPoint();
+			}));
+
+		// .focalZoom
+		type.field(newFieldDefinition().name("zoom").description("Focal zoom factor").type(GraphQLFloat)
+			.dataFetcher(fetcher -> {
+				HibImageVariant variant = fetcher.getSource();
+				return variant.getFocalPointZoom();
+			}));
 
 		return type.build();
 	}
@@ -478,8 +563,8 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 					String content = htmlField.getHTML();
 
 					if (type != null && type != LinkType.OFF) {
-						DataLoader<DataLoaderKey, String> linkedContentLoader = env.getDataLoader(FieldDefinitionProvider.LINK_REPLACER_DATA_LOADER_KEY);
-						return linkedContentLoader.load(new DataLoaderKey(content, type, container.getLanguageTag()));
+						DataLoader<FieldDefinitionDataLoaderKey, String> linkedContentLoader = env.getDataLoader(FieldDefinitionProvider.LINK_REPLACER_DATA_LOADER_KEY);
+						return linkedContentLoader.load(new FieldDefinitionDataLoaderKey(content, type, container.getLanguageTag()));
 					} else {
 						return content;
 					}
@@ -500,8 +585,8 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 					String content = field.getString();
 
 					if (type != null && type != LinkType.OFF) {
-						DataLoader<DataLoaderKey, String> linkedContentLoader = env.getDataLoader(FieldDefinitionProvider.LINK_REPLACER_DATA_LOADER_KEY);
-						return linkedContentLoader.load(new DataLoaderKey(content, type, container.getLanguageTag()));
+						DataLoader<FieldDefinitionDataLoaderKey, String> linkedContentLoader = env.getDataLoader(FieldDefinitionProvider.LINK_REPLACER_DATA_LOADER_KEY);
+						return linkedContentLoader.load(new FieldDefinitionDataLoaderKey(content, type, container.getLanguageTag()));
 					} else {
 						return content;
 					}
@@ -541,7 +626,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 			.name(schema.getName())
 			.description(schema.getLabel())
 			.type(new GraphQLList(type))
-			.argument(createPagingArgs());
+			.argument(createPagingArgs(false));
 		NodeFilter nodeFilter = NodeFilter.filter(context);
 
 		// Add link resolving arg to html and string lists
@@ -789,9 +874,9 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 						// Check permissions for the linked node
 						gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 
-						NodeDataLoader.Context context = new NodeDataLoader.Context(type, languageTags);
-						DataLoader<HibNode, List<HibNodeFieldContainer>> contentLoader = env.getDataLoader(NodeDataLoader.CONTENT_LOADER_KEY);
-						return contentLoader.load(node, context).thenApply((containers) -> {
+						NodeDataLoader.Context context = new NodeDataLoader.Context(type, languageTags, Optional.empty(), getPagingInfo(env));
+						DataLoader<DataLoaderKey<HibNode>, List<HibNodeFieldContainer>> contentLoader = env.getDataLoader(NodeDataLoader.CONTENT_LOADER_KEY);
+						return contentLoader.load(new DataLoaderKey<>(env, node), context).thenApply((containers) -> {
 							HibNodeFieldContainer container = NodeTypeProvider.getContainerWithFallback(languageTags, containers);
 							return NodeTypeProvider.createNodeContentWithSoftPermissions(env, gc, node, languageTags, type, container);
 						});
@@ -804,7 +889,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	/**
 	 * Keys for the DataLoader (containing content, link type and language)
 	 */
-	public static class DataLoaderKey {
+	public static class FieldDefinitionDataLoaderKey {
 		/**
 		 * Content
 		 */
@@ -826,7 +911,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		 * @param linkType link type
 		 * @param languageTag language
 		 */
-		public DataLoaderKey(String content, LinkType linkType, String languageTag) {
+		public FieldDefinitionDataLoaderKey(String content, LinkType linkType, String languageTag) {
 			this.content = content;
 			this.linkType = linkType;
 			this.languageTag = languageTag;
@@ -834,8 +919,8 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 
 		@Override
 		public boolean equals(Object obj) {
-			if (obj instanceof DataLoaderKey) {
-				DataLoaderKey other = (DataLoaderKey) obj;
+			if (obj instanceof FieldDefinitionDataLoaderKey) {
+				FieldDefinitionDataLoaderKey other = (FieldDefinitionDataLoaderKey) obj;
 				return other.linkType == linkType && StringUtils.equals(other.languageTag, languageTag) && StringUtils.equals(other.content, content);
 			} else {
 				return false;

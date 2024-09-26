@@ -6,9 +6,11 @@ import static com.gentics.mesh.test.ElasticsearchTestMode.CONTAINER_ES6;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.function.Function;
 
 import org.junit.Before;
@@ -56,96 +58,116 @@ public class MicroschemaMappingTest extends AbstractMeshTest {
 	@Parameters
 	public static Collection<Object[]> paramData() {
 		// @formatter:off
-		return Arrays.asList(new Object[][] {
-			{
-				FieldUtil.createStringFieldSchema(DYNAMIC_FIELD_NAME),
-				new JsonObject()
-					.put("test", new JsonObject()
-						.put("type", "keyword")
-						.put("index", true)),
-				FieldUtil.createStringField("aaa-aaa"),
-				(Function<String, JsonObject>) ((path) -> new JsonObject()
-					.put("term", new JsonObject()
-						.put(path + ".test", "aaa-aaa")))
-			},
-			{
-				FieldUtil.createStringFieldSchema(DYNAMIC_FIELD_NAME),
-				new JsonObject()
-					.put("test", new JsonObject()
-						.put("type", "text")
-						.put("index", true)),
-				FieldUtil.createStringField("a very cool test string"),
-				(Function<String, JsonObject>) ((path) -> new JsonObject()
-					.put("match", new JsonObject()
-						.put(path + ".test", "cool")))
-			},
-			{
-				FieldUtil.createHtmlFieldSchema(DYNAMIC_FIELD_NAME),
-				new JsonObject()
-					.put("test", new JsonObject()
-						.put("type", "keyword")
-						.put("index", true)),
-				FieldUtil.createHtmlField("aaa-aaa"),
-				(Function<String, JsonObject>) ((path) -> new JsonObject()
-					.put("term", new JsonObject()
-						.put(path + ".test", "aaa-aaa")))
-			},
-			{
-				FieldUtil.createHtmlFieldSchema(DYNAMIC_FIELD_NAME),
-				new JsonObject()
-					.put("test", new JsonObject()
-						.put("type", "text")
-						.put("index", true)),
-				FieldUtil.createHtmlField("a very cool test string"),
-				(Function<String, JsonObject>) ((path) -> new JsonObject()
-					.put("match", new JsonObject()
-						.put(path + ".test", "cool")))
-			},
-			{
-				FieldUtil.createListFieldSchema(DYNAMIC_FIELD_NAME, "string"),
-				new JsonObject()
-					.put("test", new JsonObject()
-						.put("type", "keyword")
-						.put("index", true)),
-				FieldUtil.createStringListField("aaa-aaa"),
-				(Function<String, JsonObject>) ((path) -> new JsonObject()
-					.put("term", new JsonObject()
-						.put(path + ".test", "aaa-aaa")))
-			},
-			{
-				FieldUtil.createListFieldSchema(DYNAMIC_FIELD_NAME, "string"),
-				new JsonObject()
-					.put("test", new JsonObject()
-						.put("type", "text")
-						.put("index", true)),
-				FieldUtil.createStringListField("a very cool test string"),
-				(Function<String, JsonObject>) ((path) -> new JsonObject()
-					.put("match", new JsonObject()
-						.put(path + ".test", "cool")))
-			},
-			{
-				FieldUtil.createListFieldSchema(DYNAMIC_FIELD_NAME, "html"),
-				new JsonObject()
-					.put("test", new JsonObject()
-						.put("type", "keyword")
-						.put("index", true)),
-				FieldUtil.createHtmlListField("aaa-aaa"),
-				(Function<String, JsonObject>) ((path) -> new JsonObject()
-					.put("term", new JsonObject()
-						.put(path + ".test", "aaa-aaa")))
-			},
-			{
-				FieldUtil.createListFieldSchema(DYNAMIC_FIELD_NAME, "html"),
-				new JsonObject()
-					.put("test", new JsonObject()
-						.put("type", "text")
-						.put("index", true)),
-				FieldUtil.createHtmlListField("a very cool test string"),
-				(Function<String, JsonObject>) ((path) -> new JsonObject()
-					.put("match", new JsonObject()
-						.put(path + ".test", "cool")))
-			},
-		});
+		List<Object[]> params = new ArrayList<>(4 * 8);
+		for (Boolean noSchemaIndex : new Boolean[] {false, true}) {
+			for (Boolean noFieldIndex : new Boolean[] {false, true}) {
+				params.add(new Object[] {
+					FieldUtil.createStringFieldSchema(DYNAMIC_FIELD_NAME),
+					new JsonObject()
+						.put("test", new JsonObject()
+							.put("type", "keyword")
+							.put("index", true)),
+					FieldUtil.createStringField("aaa-aaa"),
+					(Function<String, JsonObject>) ((path) -> new JsonObject()
+						.put("term", new JsonObject()
+							.put(path + ".test", "aaa-aaa"))),
+					noSchemaIndex,
+					noFieldIndex
+				});
+				params.add(new Object[] {
+					FieldUtil.createStringFieldSchema(DYNAMIC_FIELD_NAME),
+					new JsonObject()
+						.put("test", new JsonObject()
+							.put("type", "text")
+							.put("index", true)),
+					FieldUtil.createStringField("a very cool test string"),
+					(Function<String, JsonObject>) ((path) -> new JsonObject()
+						.put("match", new JsonObject()
+							.put(path + ".test", "cool"))),
+					noSchemaIndex,
+					noFieldIndex
+				});
+				params.add(new Object[] {
+					FieldUtil.createHtmlFieldSchema(DYNAMIC_FIELD_NAME),
+					new JsonObject()
+						.put("test", new JsonObject()
+							.put("type", "keyword")
+							.put("index", true)),
+					FieldUtil.createHtmlField("aaa-aaa"),
+					(Function<String, JsonObject>) ((path) -> new JsonObject()
+						.put("term", new JsonObject()
+							.put(path + ".test", "aaa-aaa"))),
+					noSchemaIndex,
+					noFieldIndex
+				});
+				params.add(new Object[] {
+					FieldUtil.createHtmlFieldSchema(DYNAMIC_FIELD_NAME),
+					new JsonObject()
+						.put("test", new JsonObject()
+							.put("type", "text")
+							.put("index", true)),
+					FieldUtil.createHtmlField("a very cool test string"),
+					(Function<String, JsonObject>) ((path) -> new JsonObject()
+						.put("match", new JsonObject()
+							.put(path + ".test", "cool"))),
+					noSchemaIndex,
+					noFieldIndex
+				});
+				params.add(new Object[] {
+					FieldUtil.createListFieldSchema(DYNAMIC_FIELD_NAME, "string"),
+					new JsonObject()
+						.put("test", new JsonObject()
+							.put("type", "keyword")
+							.put("index", true)),
+					FieldUtil.createStringListField("aaa-aaa"),
+					(Function<String, JsonObject>) ((path) -> new JsonObject()
+						.put("term", new JsonObject()
+							.put(path + ".test", "aaa-aaa"))),
+					noSchemaIndex,
+					noFieldIndex
+				});
+				params.add(new Object[] {
+					FieldUtil.createListFieldSchema(DYNAMIC_FIELD_NAME, "string"),
+					new JsonObject()
+						.put("test", new JsonObject()
+							.put("type", "text")
+							.put("index", true)),
+					FieldUtil.createStringListField("a very cool test string"),
+					(Function<String, JsonObject>) ((path) -> new JsonObject()
+						.put("match", new JsonObject()
+							.put(path + ".test", "cool"))),
+					noSchemaIndex,
+					noFieldIndex
+				});
+				params.add(new Object[] {
+					FieldUtil.createListFieldSchema(DYNAMIC_FIELD_NAME, "html"),
+					new JsonObject()
+						.put("test", new JsonObject()
+							.put("type", "keyword")
+							.put("index", true)),
+					FieldUtil.createHtmlListField("aaa-aaa"),
+					(Function<String, JsonObject>) ((path) -> new JsonObject()
+						.put("term", new JsonObject()
+							.put(path + ".test", "aaa-aaa"))),
+					noSchemaIndex,
+					noFieldIndex
+				});
+				params.add(new Object[] {
+					FieldUtil.createListFieldSchema(DYNAMIC_FIELD_NAME, "html"),
+					new JsonObject()
+						.put("test", new JsonObject()
+							.put("type", "text")
+							.put("index", true)),
+					FieldUtil.createHtmlListField("a very cool test string"),
+					(Function<String, JsonObject>) ((path) -> new JsonObject()
+						.put("match", new JsonObject()
+							.put(path + ".test", "cool"))),
+					noSchemaIndex,
+					noFieldIndex
+				});
+			}
+		}
+		return params;
 		// @formatter:on
 	}
 
@@ -161,6 +183,12 @@ public class MicroschemaMappingTest extends AbstractMeshTest {
 	@Parameter(3)
 	public Function<String, JsonObject> searchQuery;
 
+	@Parameter(4)
+	public Boolean noSchemaIndex;
+
+	@Parameter(5)
+	public Boolean noFieldIndex;
+
 	/**
 	 * The created dummy schema in the preparations. Used to get the ES-Mapping of it.
 	 */
@@ -171,7 +199,8 @@ public class MicroschemaMappingTest extends AbstractMeshTest {
 		// Create and assign a dummy microschema
 		MicroschemaCreateRequest createMicroschema = new MicroschemaCreateRequest();
 		createMicroschema.setName(MICROSCHEMA_NAME);
-		createMicroschema.addField(this.schemaField.setElasticsearch(this.fieldMapping));
+		createMicroschema.addField(this.schemaField.setElasticsearch(this.fieldMapping).setNoIndex(noFieldIndex));
+		createMicroschema.setNoIndex(noSchemaIndex);
 		MicroschemaResponse microschema = call(() -> client().createMicroschema(createMicroschema));
 		call(() -> client().assignMicroschemaToProject(PROJECT_NAME, microschema.getUuid()));
 
@@ -196,7 +225,7 @@ public class MicroschemaMappingTest extends AbstractMeshTest {
 
 		tx(() -> {
 			HibBranch branch = latestBranch();
-			JsonObject schemaMapping = provider.getMapping(this.schema, branch, null);
+			JsonObject schemaMapping = provider.getMapping(this.schema, branch, null).get();
 			if (mode == ComplianceMode.ES_6) {
 				schemaMapping = schemaMapping.getJsonObject(DEFAULT_TYPE);
 			}
@@ -210,10 +239,18 @@ public class MicroschemaMappingTest extends AbstractMeshTest {
 				.getJsonObject(MICRONODE_FIELD_NAME)
 				.getJsonObject("properties")
 				.getJsonObject("fields-" + MICROSCHEMA_NAME);
-			assertNotNull(microschemaMapping);
-			JsonObject fieldMapping = microschemaMapping.getJsonObject("properties").getJsonObject(DYNAMIC_FIELD_NAME);
+			if (noSchemaIndex) {
+				assertNull(microschemaMapping);
+			} else {
+				assertNotNull(microschemaMapping);
+				JsonObject fieldMapping = microschemaMapping.getJsonObject("properties").getJsonObject(DYNAMIC_FIELD_NAME);
 
-			assertEquals(this.fieldMapping, fieldMapping.getJsonObject("fields"));
+				if (noFieldIndex) {
+					assertNull(fieldMapping);
+				} else {
+					assertEquals(this.fieldMapping, fieldMapping.getJsonObject("fields"));
+				}
+			}
 		});
 	}
 
@@ -237,13 +274,18 @@ public class MicroschemaMappingTest extends AbstractMeshTest {
 			NodeListResponse response = call(() -> client().searchNodes(project().getName(),
 				new JsonObject().put("query", this.searchQuery.apply(searchPath)).encode()));
 
-			// Expect the search to return a single element
-			assertEquals(response.getMetainfo().getTotalCount(), 1);
+			if (noFieldIndex || noSchemaIndex) {
+				// Expect the search to return a single element
+				assertEquals(0, response.getMetainfo().getTotalCount());
+			} else {
+				// Expect the search to return a single element
+				assertEquals(1, response.getMetainfo().getTotalCount());
 
-			// Check if the node is the one we expected
-			NodeResponse responseNode = response.getData().get(0);
-			assertEquals(SCHEMA_NAME, responseNode.getSchema().getName());
-			assertEquals(node.getUuid(), responseNode.getUuid());
+				// Check if the node is the one we expected
+				NodeResponse responseNode = response.getData().get(0);
+				assertEquals(SCHEMA_NAME, responseNode.getSchema().getName());
+				assertEquals(node.getUuid(), responseNode.getUuid());
+			}
 		});
 	}
 
@@ -273,14 +315,18 @@ public class MicroschemaMappingTest extends AbstractMeshTest {
 			waitForSearchIdleEvent();
 			// Search for the node
 			NodeListResponse response = call(() -> client().searchNodes(project().getName(), query.encode()));
+			if (noFieldIndex || noSchemaIndex) {
+				// Expect no result
+				assertEquals(0, response.getMetainfo().getTotalCount());
+			} else {
+				// Expect the search to return a single element
+				assertEquals(1, response.getMetainfo().getTotalCount());
 
-			// Expect the search to return a single element
-			assertEquals(response.getMetainfo().getTotalCount(), 1);
-
-			// Check if the node is the one we expected
-			NodeResponse responseNode = response.getData().get(0);
-			assertEquals(SCHEMA_NAME, responseNode.getSchema().getName());
-			assertEquals(node.getUuid(), responseNode.getUuid());
+				// Check if the node is the one we expected
+				NodeResponse responseNode = response.getData().get(0);
+				assertEquals(SCHEMA_NAME, responseNode.getSchema().getName());
+				assertEquals(node.getUuid(), responseNode.getUuid());
+			}
 		});
 	}
 }

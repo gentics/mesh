@@ -3,10 +3,12 @@ package com.gentics.mesh.core.data.page.impl;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ValidationUtil;
 
@@ -19,8 +21,10 @@ import com.gentics.mesh.util.ValidationUtil;
 public abstract class AbstractDynamicPage<T> implements Page<T> {
 
 	protected long pageNumber;
-
 	protected Long perPage;
+	protected boolean ignoreStreamPaging;
+
+	protected Map<String, SortOrder> sort;
 
 	protected Long lowerBound;
 
@@ -42,9 +46,14 @@ public abstract class AbstractDynamicPage<T> implements Page<T> {
 	protected Iterator<? extends T> visibleItems;
 
 	public AbstractDynamicPage(PagingParameters pagingInfo) {
+		this(pagingInfo, false);
+	}
+
+	public AbstractDynamicPage(PagingParameters pagingInfo, boolean ignoreStreamPaging) {
 		ValidationUtil.validate(pagingInfo);
 		this.pageNumber = pagingInfo.getPage();
 		this.perPage = pagingInfo.getPerPage();
+		this.ignoreStreamPaging = ignoreStreamPaging;
 
 		if (perPage == null) {
 			this.lowerBound = null;
@@ -53,6 +62,7 @@ public abstract class AbstractDynamicPage<T> implements Page<T> {
 		} else {
 			this.lowerBound = (pageNumber - 1) * perPage;
 		}
+		this.sort = pagingInfo.getSort();
 	}
 
 	@Override

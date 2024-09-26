@@ -7,6 +7,11 @@
 | Description
 
 
+| order
+| string  (default: UNSORTED) 
+| false
+| Field order (ASC/DESC/UNSORTED) to sort the result by.
+
 | page
 | number  (default: 1) 
 | false
@@ -16,5 +21,10 @@
 | number 
 | false
 | Number of elements per page.
+
+| sortBy
+| string 
+| false
+| Field name to sort the result by.
 
 |======

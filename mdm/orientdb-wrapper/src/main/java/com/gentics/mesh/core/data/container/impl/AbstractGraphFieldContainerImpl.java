@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.container.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_VARIANTS;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.error.Errors.error;
@@ -15,7 +16,10 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.HibField;
+import com.gentics.mesh.core.data.binary.BinaryGraphFieldVariant;
 import com.gentics.mesh.core.data.binary.HibBinary;
+import com.gentics.mesh.core.data.binary.HibImageVariant;
+import com.gentics.mesh.core.data.binary.impl.BinaryGraphFieldVariantImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldTypes;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Micronode;
@@ -65,8 +69,8 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Abstract implementation for a field container. A {@link GraphFieldContainer} is used to store {@link GraphField} instances.
@@ -80,6 +84,44 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	 * @return
 	 */
 	abstract protected HibNode getNode();
+
+	@Override
+	public BinaryGraphFieldVariant findImageVariant(String key, HibImageVariant variant) {
+		if (getBinary(key) == null) {
+			throw error(BAD_REQUEST, "error_found_field_is_not_binary", key);
+		}
+		return outE(HAS_FIELD_VARIANTS).has(GraphField.FIELD_KEY_PROPERTY_KEY, key).filter(frame -> {
+			return variant.equals(frame.inV().nextOrDefault(null));
+		}).nextOrDefaultExplicit(BinaryGraphFieldVariantImpl.class, null);
+	}
+
+	@Override
+	public Iterable<? extends BinaryGraphFieldVariant> findImageVariants(String key) {
+		if (getBinary(key) == null) {
+			throw error(BAD_REQUEST, "error_found_field_is_not_binary", key);
+		}
+		return outE(HAS_FIELD_VARIANTS).has(GraphField.FIELD_KEY_PROPERTY_KEY, key).frameExplicit(BinaryGraphFieldVariantImpl.class);
+	}
+
+	@Override
+	public void attachImageVariant(String key, HibImageVariant variant) {
+		if (getBinary(key) == null) {
+			throw error(BAD_REQUEST, "error_found_field_is_not_binary", key);
+		}
+		BinaryGraphFieldVariant edge = addFramedEdge(HAS_FIELD_VARIANTS, toGraph(variant), BinaryGraphFieldVariantImpl.class);
+		edge.setFieldKey(key);
+	}
+
+	@Override
+	public void detachImageVariant(String key, HibImageVariant variant) {
+		if (getBinary(key) == null) {
+			throw error(BAD_REQUEST, "error_found_field_is_not_binary", key);
+		}
+		BinaryGraphFieldVariant edge = findImageVariant(key, variant);
+		if (edge != null) {
+			edge.remove();
+		}
+	}
 
 	@Override
 	public void removeField(String fieldKey, BulkActionContext bac) {

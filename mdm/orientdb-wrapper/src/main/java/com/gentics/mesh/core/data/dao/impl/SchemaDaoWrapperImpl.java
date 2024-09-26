@@ -3,11 +3,13 @@ package com.gentics.mesh.core.data.dao.impl;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Bucket;
@@ -68,11 +70,6 @@ public class SchemaDaoWrapperImpl
 	@Override
 	public HibSchema findByUuid(String uuid) {
 		return getRoot().findByUuid(uuid);
-	}
-
-	@Override
-	public Page<? extends HibSchema> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
-		return getRoot().findAll(ac, pagingInfo);
 	}
 
 	@Override
@@ -189,8 +186,14 @@ public class SchemaDaoWrapperImpl
 
 	@Override
 	public Stream<? extends HibSchema> findAllStream(HibProject root, InternalActionContext ac,
-			InternalPermission permission) {
-		return toGraph(root).getSchemaContainerRoot().findAllStream(ac, permission);
+			InternalPermission permission, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter) {
+		return toGraph(root).getSchemaContainerRoot().findAllStream(ac, permission, paging, maybeFilter);
+	}
+
+	@Override
+	public long countAll(HibProject root, InternalActionContext ac, InternalPermission permission,
+			PagingParameters pagingInfo, Optional<FilterOperation<?>> maybeFilter) {
+		return toGraph(root).getSchemaContainerRoot().countAll(ac, permission, pagingInfo, maybeFilter);
 	}
 
 	@Override

@@ -50,8 +50,8 @@ import com.gentics.mesh.util.VersionNumber;
 
 import io.reactivex.Completable;
 import io.reactivex.exceptions.CompositeException;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @see MicronodeMigration
@@ -86,7 +86,8 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 			NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
 			Set<String> touchedFields = new HashSet<>();
 			try {
-				db.tx(() -> {
+				db.tx(tx -> {
+					ac.setHttpServerConfig(tx.data().options().getHttpServerOptions());
 					HibMicroschemaVersion currentVersion = reloadVersion(fromVersion);
 					do {
 						prepareMigration(currentVersion, touchedFields);

@@ -76,6 +76,9 @@
             "type" : "string",
             "description" : "Label of the field."
           },
+          "noIndex" : {
+            "type" : "boolean"
+          },
           "elasticsearch" : {
             "type" : "object",
             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
@@ -86,6 +89,13 @@
     "autoPurge" : {
       "type" : "boolean",
       "description" : "Auto purge flag of the schema. Controls whether contents of this schema should create new versions."
+    },
+    "noIndex" : {
+      "type" : "boolean",
+      "description" : "'Exclude from indexing' schema flag."
+    },
+    "microschema" : {
+      "type" : "boolean"
     }
   }
 }

@@ -2,17 +2,23 @@ package com.gentics.mesh.core.data.root;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 import java.util.Spliterator;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.dao.ElementResolver;
+import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicNonTransformablePageImpl;
@@ -22,26 +28,24 @@ import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.util.HibClassConverter;
 import com.gentics.mesh.core.db.GraphDBTx;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
+import com.gentics.mesh.graphdb.MeshOrientGraphEdgeQuery;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.FramedTransactionalGraph;
+import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
-
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 /**
  * A root vertex is an aggregation vertex that is used to aggregate various basic elements such as users, nodes, groups.
  */
 public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> extends MeshVertex, HasPermissionsRoot, ElementResolver<HibBaseElement, T> {
-
-	public static final Logger log = LoggerFactory.getLogger(RootVertex.class);
 
 	@Override
 	default boolean checkReadPermissionBeforeApplyingPermissions() {
@@ -60,6 +64,45 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	}
 
 	/**
+	 * Count all elements. Only use this method if you know that the root->item relation only yields a specific kind of item. This also checks
+	 * permissions.
+	 *
+	 * @param ac
+	 *            The context of the request
+	 * @param permission
+	 *            Needed permission
+	 */
+	default long countAll(InternalActionContext ac, InternalPermission permission, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter) {
+		HibUser user = ac.getUser();
+		FramedTransactionalGraph graph = GraphDBTx.getGraphTx().getGraph();
+		UserDao userDao = GraphDBTx.getGraphTx().userDao();
+
+		if (maybeFilter.isPresent() || PersistingRootDao.shouldSort(paging)) {
+			DelegatingFramedOrientGraph ograph = (DelegatingFramedOrientGraph) graph;
+			MeshOrientGraphEdgeQuery query = new MeshOrientGraphEdgeQuery(ograph.getBaseGraph(), getPersistanceClass(), getRootLabel().toUpperCase());
+
+			List<String> sortParams = paging.getSort().entrySet().stream().map(e -> e.getKey() + " " + e.getValue().getValue()).collect(Collectors.toUnmodifiableList());
+			query.setOrderPropsAndDirs(sortParams.toArray(new String[sortParams.size()]));
+			query.has(Direction.IN.name().toLowerCase(), id());
+			query.filter(maybeFilter
+					.map(filter -> parseFilter(filter, ContainerType.PUBLISHED, user, permission, Optional.of("inV()")))
+					.or(() -> permissionFilter(user, permission, Optional.empty(), Optional.empty())));
+			if (paging.getPerPage() != null) {
+				query.skip((int) (paging.getActualPage() * paging.getPerPage()));
+				query.limit(paging.getPerPage().intValue());
+			}
+			Optional<? extends Collection<? extends Class<?>>> maybeVariations = getPersistenceClassVariations();
+			return query.count(maybeVariations);
+		} else {
+			String idx = "e." + getRootLabel().toLowerCase() + "_out";
+			return StreamSupport.stream(graph.getEdges(idx.toLowerCase(), id()).spliterator(), false)
+					.map(edge -> edge.getVertex(Direction.IN))
+					.filter(vertex -> userDao.hasPermissionForId(user, vertex.getId(), permission))
+					.count();
+		}
+	}
+
+	/**
 	 * Return an iterator of all elements. Only use this method if you know that the root->item relation only yields a specific kind of item. This also checks
 	 * permissions.
 	 *
@@ -68,13 +111,33 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	 * @param permission
 	 *            Needed permission
 	 */
-	default Stream<? extends T> findAllStream(InternalActionContext ac, InternalPermission permission) {
+	default Stream<? extends T> findAllStream(InternalActionContext ac, InternalPermission permission, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter) {
 		HibUser user = ac.getUser();
 		FramedTransactionalGraph graph = GraphDBTx.getGraphTx().getGraph();
 		UserDao userDao = GraphDBTx.getGraphTx().userDao();
 
-		String idx = "e." + getRootLabel().toLowerCase() + "_out";
-		Spliterator<Edge> itemEdges = graph.getEdges(idx.toLowerCase(), id()).spliterator();
+		Spliterator<Edge> itemEdges;
+		if (maybeFilter.isPresent() || PersistingRootDao.shouldSort(paging)) {
+			DelegatingFramedOrientGraph ograph = (DelegatingFramedOrientGraph) graph;
+			MeshOrientGraphEdgeQuery query = new MeshOrientGraphEdgeQuery(ograph.getBaseGraph(), getPersistanceClass(), getRootLabel().toUpperCase());
+
+			List<String> sortParams = paging.getSort().entrySet().stream().map(e -> e.getKey() + " " + e.getValue().getValue()).collect(Collectors.toUnmodifiableList());
+			query.setOrderPropsAndDirs(sortParams.toArray(new String[sortParams.size()]));
+			query.has(Direction.IN.name().toLowerCase(), id());
+			query.filter(maybeFilter
+					.map(filter -> parseFilter(filter, ContainerType.PUBLISHED, user, permission, Optional.of("inV()")))
+					.or(() -> permissionFilter(user, permission, Optional.empty(), Optional.empty())));
+			if (paging.getPerPage() != null) {
+				query.skip((int) (paging.getActualPage() * paging.getPerPage()));
+				query.limit(paging.getPerPage().intValue());
+			}
+			Optional<? extends Collection<? extends Class<?>>> maybeVariations = getPersistenceClassVariations();
+			itemEdges = query.fetch(maybeVariations).spliterator();
+		} else {
+			String idx = "e." + getRootLabel().toLowerCase() + "_out";
+			itemEdges = graph.getEdges(idx.toLowerCase(), id()).spliterator();
+		}
+
 		return StreamSupport.stream(itemEdges, false)
 			.map(edge -> edge.getVertex(Direction.IN))
 			.filter(vertex -> userDao.hasPermissionForId(user, vertex.getId(), permission))
@@ -171,8 +234,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 		if (t != null) {
 			FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
 			// Use the edge index to determine whether the element is part of this root vertex
-			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout", db.index().createComposedIndexKey(t
-				.getId(), id()));
+			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout", db.index().createComposedIndexKey(t.getId(), id()));
 			if (edges.iterator().hasNext()) {
 				return t;
 			}
@@ -266,4 +328,23 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	 * @return
 	 */
 	Result<? extends HibRole> getRolesWithPerm(HibBaseElement vertex, InternalPermission perm);
+
+	/**
+	 * Get extensions/variations of the ferma graph persistence class.
+	 * 
+	 * @return
+	 */
+	default Optional<? extends Collection<Class<? extends T>>> getPersistenceClassVariations() {
+		return Optional.empty();
+	}
+
+	/**
+	 * Find all entities with an optional native filter.
+	 * 
+	 * @param ac
+	 * @param pagingInfo
+	 * @param maybeExtraFilter
+	 * @return
+	 */
+	Page<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo, Optional<FilterOperation<?>> maybeExtraFilter);
 }

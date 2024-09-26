@@ -171,12 +171,6 @@ public class RoleDaoWrapperImpl extends AbstractCoreDaoWrapper<RoleResponse, Hib
 	}
 
 	@Override
-	public Page<? extends HibRole> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
-		RoleRoot roleRoot = boot.get().meshRoot().getRoleRoot();
-		return roleRoot.findAll(ac, pagingInfo);
-	}
-
-	@Override
 	public Page<? extends HibRole> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibRole> extraFilter) {
 		RoleRoot roleRoot = boot.get().meshRoot().getRoleRoot();
 		return roleRoot.findAll(ac, pagingInfo, role -> {

@@ -1,0 +1,93 @@
+{
+	anyMatch: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        numberList: {
+	          anyMatch: {equals: 1337}
+	        }
+	      }
+	    }
+	  }) {
+	    # [$.data.anyMatch.elements.length()=1]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	allMatch: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        numberList: {
+	          allMatch: {equals: 1337}
+	        }
+	      }
+	    }
+	  }) {
+	    # [$.data.allMatch.elements.length()=0]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	noneMatch: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        numberList: {
+	          noneMatch: {equals: 100500} isNull:false
+	        }
+	      }
+	    }
+	  }) {
+	    # [$.data.noneMatch.elements.length()=1]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	anyNotMatch: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        numberList: {
+	          anyNotMatch: {equals: 0.314}
+	        }
+	      }
+	    }
+	  }) {
+	    # [$.data.anyNotMatch.elements.length()=1]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	count: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	      	numberList: {
+		      count: {gte: 0}
+		    }
+	      }
+	    }
+	  }) {
+	    # [$.data.count.elements.length()=9]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+}
+# [$.errors=<is-undefined>]

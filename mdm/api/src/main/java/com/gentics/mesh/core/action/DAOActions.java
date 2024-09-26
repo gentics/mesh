@@ -2,6 +2,7 @@ package com.gentics.mesh.core.action;
 
 import java.util.function.Predicate;
 
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
@@ -82,6 +83,19 @@ public interface DAOActions<T extends HibCoreElement<RM>, RM extends RestModel> 
 	 * @return
 	 */
 	Page<? extends T> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, Predicate<T> extraFilter);
+
+	/**
+	 * Load all elements which this action covers into a page.
+	 * 
+	 * @param ctx
+	 *            Context of the action
+	 * @param pagingInfo
+	 *            Paging information to be used when loading a page
+	 * @param extraFilter
+	 *            Additional filters to be used when loading paged elements
+	 * @return
+	 */
+	Page<? extends T> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, FilterOperation<?> extraFilter);
 
 	/**
 	 * Update the given element.

@@ -18,8 +18,8 @@ import com.gentics.mesh.router.route.DefaultNotFoundHandler;
 import com.gentics.mesh.router.route.FailureHandler;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.LoggerHandler;
 import io.vertx.ext.web.impl.RouterImpl;
@@ -65,8 +65,8 @@ public class MonitoringRoutes {
 	 */
 	public void init() {
 		router.route().handler(LoggerHandler.create());
-		router.route().last().handler(DefaultNotFoundHandler.create());
-		router.route().failureHandler(FailureHandler.create(liveness));
+		router.route().last().handler(DefaultNotFoundHandler.create(options.getHttpServerOptions()));
+		router.route().failureHandler(FailureHandler.create(liveness, options.getHttpServerOptions()));
 
 		addMetrics();
 		addLive();

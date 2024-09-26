@@ -1,0 +1,93 @@
+{
+	anyMatch: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        dateList: {
+	          anyMatch: {equals: "2012-07-11T08:55:21Z"}
+	        }
+	      }
+	    }
+	  }) {
+	    # [$.data.anyMatch.elements.length()=1]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	allMatch: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        dateList: {
+	          allMatch: {equals: "2012-07-11T08:55:21Z"}
+	        }
+	      }
+	    }
+	  }) {
+	    # [$.data.allMatch.elements.length()=0]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	noneMatch: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        dateList: {
+	          noneMatch: {equals: "2012-07-11T08:55:21Z"} isNull:false
+	        }
+	      }
+	    }
+	  }) {
+	    # [$.data.noneMatch.elements.length()=0]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	anyNotMatch: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        dateList: {
+	          anyNotMatch: {equals: "2012-07-11T08:55:21Z"}
+	        }
+	      }
+	    }
+	  }) {
+	    # [$.data.anyNotMatch.elements.length()=1]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	count: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	      	dateList: {
+		      count: {gte: 0}
+		    }
+	      }
+	    }
+	  }) {
+	    # [$.data.count.elements.length()=9]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+}
+# [$.errors=<is-undefined>]

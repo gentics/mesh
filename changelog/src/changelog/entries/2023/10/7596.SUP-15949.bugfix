@@ -1,0 +1,1 @@
+Core: Requests to branches failed with an internal error, if monitoring was disabled. This has been fixed.

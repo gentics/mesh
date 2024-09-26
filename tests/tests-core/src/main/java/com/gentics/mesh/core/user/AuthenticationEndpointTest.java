@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -22,8 +23,10 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.util.TokenUtil;
 
 import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
@@ -64,6 +67,32 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 
 			call(() -> client.me(), UNAUTHORIZED, "error_not_authorized");
 		}
+	}
+
+	@Test
+	public void testApiTokenLogin() {
+		UserResponse response = call(() -> client().me());
+		String token = call(() -> client().issueAPIToken(response.getUuid())).getToken();
+		client().setAPIKey(token).setLogin(null, null, null);
+		GenericMessageResponse loginResponse = client().login().blockingGet();
+		assertNotNull(loginResponse);
+		assertEquals("OK", loginResponse.getMessage());
+	}
+
+	@Test
+	public void testApiTokenBadLogin() {
+		String token = TokenUtil.randomToken();
+		client().setAPIKey(token).setLogin(null, null, null);
+		try {
+			client().login().blockingGet();
+		} catch (Exception e) {
+			if (e.getCause() instanceof MeshRestClientMessageException) {
+				MeshRestClientMessageException me = (MeshRestClientMessageException) e.getCause();
+				assertEquals(401, me.getStatusCode());
+				return;
+			}
+		}
+		fail();
 	}
 
 	@Test

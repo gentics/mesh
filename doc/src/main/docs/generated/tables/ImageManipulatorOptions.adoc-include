@@ -27,6 +27,11 @@
 | integer
 | Configure the maximum allowed image resize width. Resizing is a memory intensive operation and thus this limit can help avoid memory issues. Default: 2048
 
+| mode
+| false
+| string
+| Configure the image manipulation mode. Default: ON_DEMAND.
+
 | resampleFilter
 | false
 | string

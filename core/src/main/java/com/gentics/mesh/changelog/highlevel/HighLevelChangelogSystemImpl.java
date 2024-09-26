@@ -14,8 +14,8 @@ import com.gentics.mesh.core.data.dao.ChangelogDao;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.etc.config.MeshOptions;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Manager class for the high level changelog system.
@@ -51,11 +51,10 @@ public class HighLevelChangelogSystemImpl implements HighLevelChangelogSystem {
 					try {
 						long start = System.currentTimeMillis();
 						db.tx(tx -> {
-							if (log.isDebugEnabled()) {
-								log.debug("Executing change {" + change.getName() + "}/{" + change.getUuid() + "}");
-							}
+							log.info("Applying change {" + change.getName() + "}/{" + change.getUuid() + "}");
 							change.apply();
 							tx.success();
+							log.info("Change {" + change.getName() + "}/{" + change.getUuid() + "} applied");
 						});
 						change.applyNoTx();
 						long duration = System.currentTimeMillis() - start;

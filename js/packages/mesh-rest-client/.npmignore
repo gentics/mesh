@@ -1,0 +1,19 @@
+# Linting files
+.eslintrc.js
+.editorconfig
+
+# Misc files
+/node
+tsconfig.json
+tsconfig.*.json
+
+# Repository files
+pom.xml
+project.json
+ng-package.json
+
+# Test files
+jest.config.ts
+/test
+**/*.spec.ts
+**/*.spec.js

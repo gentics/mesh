@@ -88,6 +88,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 			.withField(UNIQUENAME_PROPERTY_KEY, STRING)
 			.unique());
 		// database.addVertexIndex(UNIQUENAME_INDEX_NAME, BranchImpl.class, true, UNIQUENAME_PROPERTY_KEY, STRING);
+		addUserTrackingRelation(BranchImpl.class);
 	}
 
 	@Override

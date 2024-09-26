@@ -5,6 +5,6 @@ import com.gentics.mesh.parameter.PagingParameters;
 /**
  * @see PagingParameters
  */
-public class PagingParametersImpl extends AbstractParameters implements PagingParameters {
+public class PagingParametersImpl extends SortingParametersImpl implements PagingParameters {
 
 }

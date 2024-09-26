@@ -30,8 +30,8 @@ import com.gentics.mesh.search.verticle.eventhandler.project.ProjectUpdateEventH
 
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Maps events from mesh to elastic search requests.
@@ -157,8 +157,8 @@ public class MainEventHandler implements EventHandler {
 		return Flowable.fromIterable(handlers.get(messageEvent.event))
 			.flatMap(handler -> handler.handle(messageEvent), 1)
 			.doOnError(err -> {
-				String body = messageEvent.message == null ? null : messageEvent.message.toJson();
-				logElasticSearchError(err, () -> log.error("Error while handling event {} with body {}", messageEvent.event, body, err));
+				String body = messageEvent.message == null ? null : messageEvent.message.toJson(false);
+				logElasticSearchError(err, () -> log.error("Error while handling event " + messageEvent.event + " with body " + body, err));
 			});
 	}
 

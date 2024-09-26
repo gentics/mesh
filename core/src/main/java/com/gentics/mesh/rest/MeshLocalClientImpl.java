@@ -23,9 +23,11 @@ import com.gentics.mesh.core.endpoint.branch.BranchCrudHandler;
 import com.gentics.mesh.core.endpoint.group.GroupCrudHandler;
 import com.gentics.mesh.core.endpoint.microschema.MicroschemaCrudHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandlerImpl;
+import com.gentics.mesh.core.endpoint.node.BinaryVariantsHandler;
 import com.gentics.mesh.core.endpoint.node.NodeCrudHandler;
 import com.gentics.mesh.core.endpoint.node.S3BinaryMetadataExtractionHandlerImpl;
 import com.gentics.mesh.core.endpoint.node.S3BinaryUploadHandlerImpl;
+import com.gentics.mesh.core.endpoint.project.LanguageCrudHandler;
 import com.gentics.mesh.core.endpoint.project.ProjectCrudHandler;
 import com.gentics.mesh.core.endpoint.role.RoleCrudHandlerImpl;
 import com.gentics.mesh.core.endpoint.schema.SchemaCrudHandler;
@@ -63,6 +65,8 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
+import com.gentics.mesh.core.rest.lang.LanguageListResponse;
+import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
@@ -74,6 +78,9 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeUpsertRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
+import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
+import com.gentics.mesh.core.rest.node.field.image.ImageManipulationRequest;
+import com.gentics.mesh.core.rest.node.field.image.ImageVariantsResponse;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryMetadataRequest;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryUploadRequest;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3RestResponse;
@@ -135,6 +142,7 @@ import com.gentics.mesh.search.index.AdminIndexHandler;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.reactivex.Single;
+import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -149,6 +157,10 @@ import io.vertx.ext.web.FileUpload;
 public class MeshLocalClientImpl implements MeshLocalClient {
 
 	public MeshAuthUser user;
+
+	protected final LanguageCrudHandler languageCrudHandler;
+
+	protected final BinaryVariantsHandler binaryVariantsHandler;
 
 	protected final UserCrudHandler userCrudHandler;
 
@@ -198,13 +210,15 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	public MeshLocalClientImpl(UserCrudHandler userCrudHandler, RoleCrudHandlerImpl roleCrudHandler,
 			GroupCrudHandler groupCrudHandler, SchemaCrudHandler schemaCrudHandler,
 			MicroschemaCrudHandler microschemaCrudHandler, TagCrudHandler tagCrudHandler,
-			TagFamilyCrudHandler tagFamilyCrudHandler, ProjectCrudHandler projectCrudHandler,
+			TagFamilyCrudHandler tagFamilyCrudHandler, ProjectCrudHandler projectCrudHandler, LanguageCrudHandler languageCrudHandler,
 			NodeCrudHandler nodeCrudHandler, BinaryUploadHandlerImpl fieldAPIHandler,
 			S3BinaryUploadHandlerImpl s3fieldAPIHandler,
 			S3BinaryMetadataExtractionHandlerImpl s3BinaryMetadataExtractionHandler, WebRootHandler webrootHandler,
 			WebRootFieldHandler webrootFieldHandler, AdminHandler adminHandler, AdminIndexHandler adminIndexHandler,
 			AuthenticationRestHandler authRestHandler, UtilityHandler utilityHandler,
-			BranchCrudHandler branchCrudHandler, PluginHandler pluginHandler, Vertx vertx, BootstrapInitializer boot) {
+			BranchCrudHandler branchCrudHandler, BinaryVariantsHandler binaryVariantsHandler, PluginHandler pluginHandler, Vertx vertx, BootstrapInitializer boot) {
+		this.binaryVariantsHandler = binaryVariantsHandler;
+		this.languageCrudHandler = languageCrudHandler;
 		this.userCrudHandler = userCrudHandler;
 		this.roleCrudHandler = roleCrudHandler;
 		this.groupCrudHandler = groupCrudHandler;
@@ -456,10 +470,9 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	}
 
 	@Override
+	@Deprecated
 	public MeshRequest<ProjectResponse> assignLanguageToProject(String projectUuid, String languageUuid) {
-		LocalActionContextImpl<ProjectResponse> ac = createContext(ProjectResponse.class);
-		// TODO add implementation
-		return new MeshLocalRequestImpl<>(ac.getFuture());
+		return assignLanguageToProjectByUuid(projectUuid, languageUuid);
 	}
 
 	@Override
@@ -613,6 +626,7 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 			ParameterProvider... parameters) {
 		LocalActionContextImpl<MeshWebrootFieldResponse> ac = createContext(MeshWebrootFieldResponse.class, parameters);
 		ac.setProject(projectName);
+		//webrootFieldHandler.handleGetPathField(ac);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -621,6 +635,24 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 			String[] pathSegments, ParameterProvider... parameters) {
 		LocalActionContextImpl<MeshWebrootFieldResponse> ac = createContext(MeshWebrootFieldResponse.class, parameters);
 		ac.setProject(projectName);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<ImageVariantsResponse> upsertWebrootFieldImageVariants(String projectName, String fieldName,
+			String path, ImageManipulationRequest request, ParameterProvider... parameters) {
+		LocalActionContextImpl<ImageVariantsResponse> ac = createContext(ImageVariantsResponse.class, parameters);
+		ac.setProject(projectName);
+		//webrootFieldHandler.handlePostPathField(ac);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<ImageVariantsResponse> upsertWebrootFieldImageVariants(String projectName, String fieldName,
+			String[] pathSegments, ImageManipulationRequest request, ParameterProvider... parameters) {
+		LocalActionContextImpl<ImageVariantsResponse> ac = createContext(ImageVariantsResponse.class, parameters);
+		ac.setProject(projectName);
+		//webrootFieldHandler.handlePostPathField(ac);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -1224,6 +1256,11 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 				public boolean cancel() {
 					return false;
 				}
+
+				@Override
+				public Future<Void> delete() {
+					return vertx.fileSystem().delete(tmpFile.getAbsolutePath());
+				}
 			});
 
 			fieldAPIHandler.handleUpdateField(ac, nodeUuid, fieldKey, attributes);
@@ -1263,6 +1300,12 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 		LocalActionContextImpl<NodeResponse> ac = createContext(NodeResponse.class);
 		ac.setProject(projectName);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<NodeResponse> updateNodeBinaryFieldCheckStatus(String projectName, String nodeUuid, String languageTag, String nodeVersion,
+			String fieldKey, String secret, String branchUuid, BinaryCheckStatus status, String reason) {
+		return null;
 	}
 
 	@Override
@@ -1361,7 +1404,7 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 
 	/**
 	 * Add the project to the list of projects which will be used by the context object.
-	 * 
+	 *
 	 * @param name
 	 * @param project
 	 */
@@ -2151,6 +2194,113 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 		LocalActionContextImpl<ObjectPermissionResponse> ac = createContext(ObjectPermissionResponse.class);
 		ac.setPayloadObject(request);
 		userCrudHandler.handleRevokePermissions(ac, uuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<ImageVariantsResponse> upsertNodeBinaryFieldImageVariants(String projectName, String nodeUuid,
+			String fieldKey, ImageManipulationRequest request, ParameterProvider... parameters) {
+		LocalActionContextImpl<ImageVariantsResponse> ac = createContext(ImageVariantsResponse.class, parameters);
+		ac.setProject(projectName);
+		ac.setPayloadObject(request);
+		binaryVariantsHandler.handleUpsertBinaryFieldVariants(ac, nodeUuid, fieldKey);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<EmptyResponse> clearNodeBinaryFieldImageVariants(String projectName, String nodeUuid,
+			String fieldKey, ParameterProvider... parameters) {
+		LocalActionContextImpl<EmptyResponse> ac = createContext(EmptyResponse.class, parameters);
+		ac.setProject(projectName);
+		binaryVariantsHandler.handleDeleteBinaryFieldVariants(ac, nodeUuid, fieldKey);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<ImageVariantsResponse> getNodeBinaryFieldImageVariants(String projectName, String nodeUuid,
+			String fieldKey, ParameterProvider... parameters) {
+		LocalActionContextImpl<ImageVariantsResponse> ac = createContext(ImageVariantsResponse.class, parameters);
+		ac.setProject(projectName);
+		binaryVariantsHandler.handleListBinaryFieldVariants(ac, nodeUuid, fieldKey);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<LanguageResponse> findLanguageByUuid(String uuid, ParameterProvider... parameters) {
+		LocalActionContextImpl<LanguageResponse> ac = createContext(LanguageResponse.class, parameters);
+		languageCrudHandler.handleRead(ac, uuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<LanguageResponse> findLanguageByTag(String tag, ParameterProvider... parameters) {
+		LocalActionContextImpl<LanguageResponse> ac = createContext(LanguageResponse.class, parameters);
+		languageCrudHandler.handleReadByTag(ac, tag);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<LanguageListResponse> findLanguages(ParameterProvider... parameters) {
+		LocalActionContextImpl<LanguageListResponse> ac = createContext(LanguageListResponse.class, parameters);
+		languageCrudHandler.handleReadList(ac);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<LanguageResponse> findLanguageByUuid(String projectName, String uuid,
+			ParameterProvider... parameters) {
+		LocalActionContextImpl<LanguageResponse> ac = createContext(LanguageResponse.class, parameters);
+		ac.setProject(projectName);
+		languageCrudHandler.handleRead(ac, uuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<LanguageResponse> findLanguageByTag(String projectName, String tag,
+			ParameterProvider... parameters) {
+		LocalActionContextImpl<LanguageResponse> ac = createContext(LanguageResponse.class, parameters);
+		ac.setProject(projectName);
+		languageCrudHandler.handleReadByTag(ac, tag);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<LanguageListResponse> findLanguages(String projectName, ParameterProvider... parameters) {
+		LocalActionContextImpl<LanguageListResponse> ac = createContext(LanguageListResponse.class, parameters);
+		ac.setProject(projectName);
+		languageCrudHandler.handleReadList(ac);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<ProjectResponse> assignLanguageToProjectByUuid(String projectName, String uuid, ParameterProvider... parameters) {
+		LocalActionContextImpl<ProjectResponse> ac = createContext(ProjectResponse.class, parameters);
+		ac.setProject(projectName);
+		languageCrudHandler.handleAssignLanguageToProject(ac, uuid, "languageUuid");
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<ProjectResponse> assignLanguageToProjectByTag(String projectName, String tag, ParameterProvider... parameters) {
+		LocalActionContextImpl<ProjectResponse> ac = createContext(ProjectResponse.class, parameters);
+		ac.setProject(projectName);
+		languageCrudHandler.handleAssignLanguageToProject(ac, tag, "languageTag");
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<ProjectResponse> unassignLanguageFromProjectByUuid(String projectName, String uuid, ParameterProvider... parameters) {
+		LocalActionContextImpl<ProjectResponse> ac = createContext(ProjectResponse.class, parameters);
+		ac.setProject(projectName);
+		languageCrudHandler.handleUnassignLanguageFromProject(ac, uuid, "languageUuid");
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<ProjectResponse> unassignLanguageFromProjectByTag(String projectName, String tag, ParameterProvider... parameters) {
+		LocalActionContextImpl<ProjectResponse> ac = createContext(ProjectResponse.class, parameters);
+		ac.setProject(projectName);
+		languageCrudHandler.handleUnassignLanguageFromProject(ac, tag, "languageTag");
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 }

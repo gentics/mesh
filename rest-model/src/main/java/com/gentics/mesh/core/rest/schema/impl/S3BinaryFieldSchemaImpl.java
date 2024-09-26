@@ -19,6 +19,8 @@ public class S3BinaryFieldSchemaImpl extends AbstractFieldSchema implements S3Bi
 
 	public static String CHANGE_EXTRACT_METADATA_KEY = "extractMetadata";
 
+	public static String CHANGE_CHECK_SERVICE_URL = "checkServiceUrl";
+
 	@JsonProperty("allow")
 	@JsonPropertyDescription("Array of allowed mimetypes")
 	private String[] allowedMimeTypes;
@@ -26,6 +28,10 @@ public class S3BinaryFieldSchemaImpl extends AbstractFieldSchema implements S3Bi
 	@JsonProperty("extract")
 	@JsonPropertyDescription("The extracting behaviour for this field.")
 	private S3BinaryExtractOptions s3binaryExtractOptions;
+
+	@JsonProperty("checkServiceUrl")
+	@JsonPropertyDescription("The URL for the optional service which checks uploaded binaries before making them available.")
+	private String checkServiceUrl;
 
 	@Override
 	public String[] getAllowedMimeTypes() {
@@ -54,6 +60,8 @@ public class S3BinaryFieldSchemaImpl extends AbstractFieldSchema implements S3Bi
 			properties.put(CHANGE_EXTRACT_CONTENT_KEY, s3binaryExtractOptions.getContent());
 			properties.put(CHANGE_EXTRACT_METADATA_KEY, s3binaryExtractOptions.getMetadata());
 		}
+		properties.put(CHANGE_CHECK_SERVICE_URL, checkServiceUrl);
+
 		return properties;
 	}
 
@@ -74,6 +82,9 @@ public class S3BinaryFieldSchemaImpl extends AbstractFieldSchema implements S3Bi
 		if (!hasExtractContent && !hasExtractMetadata) {
 			setS3BinaryExtractOptions(null);
 		}
+		if (fieldProperties.get(CHANGE_CHECK_SERVICE_URL) != null) {
+			setCheckServiceUrl((String) fieldProperties.get(CHANGE_CHECK_SERVICE_URL));
+		}
 	}
 
 	private S3BinaryExtractOptions createOrGetBinaryExtractOptions() {
@@ -92,6 +103,17 @@ public class S3BinaryFieldSchemaImpl extends AbstractFieldSchema implements S3Bi
 	@Override
 	public S3BinaryFieldSchema setS3BinaryExtractOptions(S3BinaryExtractOptions extract) {
 		this.s3binaryExtractOptions = extract;
+		return this;
+	}
+
+	@Override
+	public String getCheckServiceUrl() {
+		return checkServiceUrl;
+	}
+
+	@Override
+	public S3BinaryFieldSchemaImpl setCheckServiceUrl(String checkServiceUrl) {
+		this.checkServiceUrl = checkServiceUrl;
 		return this;
 	}
 }

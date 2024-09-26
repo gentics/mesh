@@ -6,8 +6,8 @@ import java.util.ResourceBundle;
 
 import com.gentics.mesh.handler.ActionContext;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Central I18N Util which manages the i18n handling of messages.

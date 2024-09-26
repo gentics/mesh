@@ -2,21 +2,24 @@ package com.gentics.mesh.core.image.spi;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Paths;
-import javax.imageio.ImageIO;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.core.image.CacheFileInfo;
 import com.gentics.mesh.core.image.ImageInfo;
 import com.gentics.mesh.core.image.ImageManipulator;
+import com.gentics.mesh.etc.config.ImageManipulationMode;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
-import com.gentics.mesh.parameter.ImageManipulationParameters;
+import com.gentics.mesh.parameter.image.ImageManipulation;
 
 import io.reactivex.Maybe;
 import io.reactivex.Single;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.file.FileSystem;
 
@@ -37,7 +40,17 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 	}
 
 	@Override
-	public Single<CacheFileInfo> getCacheFilePath(String sha512sum, ImageManipulationParameters parameters) {
+	public Single<CacheFileInfo> getCacheFilePath(String sha512sum, ImageManipulation parameters) {
+		ImageManipulationMode mode = options.getMode();
+
+		switch (mode) {
+		case OFF:
+			throw error(BAD_REQUEST, "image_error_turned_off");
+		case MANUAL:
+		case ON_DEMAND:
+			break;
+		}
+
 		FileSystem fs = vertx.fileSystem();
 
 		String[] parts = sha512sum.split("(?<=\\G.{8})");
@@ -98,19 +111,26 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 					bh.fail(error(BAD_REQUEST, "image_error_reading_failed"));
 					return;
 				}
-				BufferedImage image = ImageIO.read(file);
+				BufferedImage image = readFromFile(file);
 				if (image == null) {
 					bh.fail(error(BAD_REQUEST, "image_error_reading_failed"));
 				} else {
 					bh.complete(toImageInfo(image));
 				}
 			} catch (Exception e) {
-				log.error("Reading image information failed", e);
 				bh.fail(e);
 			}
 		}, false);
 		return result.toSingle();
 	}
+
+	/**
+	 * Read the image from the given file into a {@link BufferedImage}
+	 * @param imageFile image file
+	 * @return buffered image
+	 * @throws IOException
+	 */
+	abstract protected BufferedImage readFromFile(File imageFile) throws IOException;
 
 	/**
 	 * Extract the image information from the given buffered image.

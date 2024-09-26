@@ -21,6 +21,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.DummyBulkActionContext;
+import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -208,7 +209,7 @@ public interface ContentDao {
 
 	/**
 	 * Return the mount of elements.
-	 * 
+	 *
 	 * @return
 	 */
 	long globalCount();
@@ -507,10 +508,22 @@ public interface ContentDao {
 
 	/**
 	 * Gets all NodeField edges that reference this node.
-	 * 
+	 *
 	 * @return
 	 */
-	Stream<HibNodeField> getInboundReferences(HibNode node);
+	default Stream<HibNodeField> getInboundReferences(HibNode node) {
+		return getInboundReferences(node, true, true);
+	}
+
+	/**
+	 * Gets all NodeField edges that reference this node.
+	 * 
+	 * @param lookupInFields should we look for refs in direct references?
+	 * @param lookupInLists should we look for refs in reference lists?
+	 *
+	 * @return
+	 */
+	Stream<HibNodeField> getInboundReferences(HibNode node, boolean lookupInFields, boolean lookupInLists);
 
 	/**
 	 * Gets all NodeField edges that reference the nodes.
@@ -590,6 +603,13 @@ public interface ContentDao {
 	 * @return
 	 */
 	HibNode getNode(HibNodeFieldContainer content);
+
+	/**
+	 * Get the node field container for the given field.
+	 * @param field The field to get the node field container for.
+	 * @return The node field container for the given field.
+	 */
+	HibNodeFieldContainer getNodeFieldContainer(HibField field);
 
 	/**
 	 * Get the parent nodes to which the containers belong.
@@ -809,7 +829,7 @@ public interface ContentDao {
 
 	/**
 	 * Return the schema version for the given content
-	 * 
+	 *
 	 * @param content
 	 * @return
 	 */
@@ -1049,8 +1069,18 @@ public interface ContentDao {
 	Result<? extends HibNodeFieldContainerEdge> getFieldEdges(HibNode node, String branchUuid, ContainerType type);
 
 	/**
+	 * Return the field edges for the given node, container type and current node project branch.
+	 * @param node
+	 * @param type
+	 * @return
+	 */
+	default Result<? extends HibNodeFieldContainerEdge> getFieldEdges(HibNode fieldNode, ContainerType version) {
+		return getFieldEdges(fieldNode, fieldNode.getProject().getLatestBranch().getUuid(), version);
+	}
+
+	/**
 	 * Create a {@link NodeFieldListItem} that contains the reference to the given node.
-	 * 
+	 *
 	 * @param node
 	 * @param ac
 	 * @param languageTags

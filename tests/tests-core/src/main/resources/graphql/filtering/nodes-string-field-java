@@ -1,0 +1,36 @@
+{
+	nameContains: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        name:{contains: "201"}
+	      }
+	    }
+	  }) {
+	    # [$.data.nameContains.elements.length()=2]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }	      
+	    }
+	}
+	
+	nameRegex: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        name:{regex: "^[0-9]+$"}
+	      }
+	    }
+	  }) {
+	    # [$.data.nameRegex.elements.length()=2]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }	      
+	    }
+	}
+}
+# [$.errors=<is-undefined>]

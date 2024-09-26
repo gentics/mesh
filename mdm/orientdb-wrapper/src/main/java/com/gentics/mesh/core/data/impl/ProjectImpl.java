@@ -44,8 +44,8 @@ import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.madl.field.FieldType;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @see Project
@@ -66,6 +66,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 		index.createIndex(vertexIndex(ProjectImpl.class)
 			.withField("name", FieldType.STRING)
 			.unique());
+		addUserTrackingRelation(ProjectImpl.class);
 	}
 
 	@Override
@@ -81,6 +82,14 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 	@Override
 	public Result<? extends Language> getLanguages() {
 		return out(HAS_LANGUAGE, LanguageImpl.class);
+	}
+
+	@SuppressWarnings("deprecation")
+	@Override
+	public Language findLanguageByTag(String languageTag) {
+		return out(HAS_LANGUAGE)
+				.filter(item -> item.getProperty(LanguageImpl.LANGUAGE_TAG_PROPERTY_KEY, String.class).equals(languageTag))
+				.nextOrDefaultExplicit(LanguageImpl.class, null);
 	}
 
 	@Override

@@ -8,9 +8,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
-import io.vertx.core.http.Cookie;
-import io.vertx.ext.auth.authentication.AuthenticationProvider;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -30,13 +27,14 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.http.Cookie;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.auth.AuthProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.vertx.ext.auth.JWTOptions;
 import io.vertx.ext.auth.KeyStoreOptions;
 import io.vertx.ext.auth.User;
+import io.vertx.ext.auth.authentication.AuthenticationProvider;
 import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.auth.jwt.JWTAuthOptions;
 
@@ -300,7 +298,36 @@ public class MeshJWTAuthProvider implements AuthenticationProvider, JWTAuth {
 		String token = generateToken(username, password, newPassword);
 		ac.addCookie(Cookie.cookie(SharedKeys.TOKEN_COOKIE_KEY, token)
 			.setMaxAge(meshOptions.getAuthenticationOptions().getTokenExpirationTime()).setPath("/"));
-		ac.send(new TokenResponse(token).toJson());
+		ac.send(new TokenResponse(token).toJson(ac.isMinify(meshOptions.getHttpServerOptions())));
 	}
 
+	/**
+	 * Handle the login action and set a token cookie if the apiToken is valid.
+	 *
+	 * @param ac
+	 *            Action context used to add token cookie
+	 * @param apiToken
+	 *            Mesh API token
+	 */
+	public void login(InternalActionContext ac, String apiToken) {
+		JsonObject authInfo = new JsonObject().put("token", apiToken).put("options", new JsonObject());
+		authenticateJWT(authInfo, res -> {
+			// Authentication was successful.
+			if (res.succeeded()) {
+				AuthenticationResult result = res.result();
+				User authenticatedUser = result.getUser();
+				String token = generateToken(authenticatedUser);
+				ac.addCookie(Cookie.cookie(SharedKeys.TOKEN_COOKIE_KEY, token)
+						.setMaxAge(meshOptions.getAuthenticationOptions().getTokenExpirationTime()).setPath("/"));
+					ac.send(new TokenResponse(token).toJson());
+			} else {
+				if (res.cause() != null) {
+					if (log.isDebugEnabled()) {
+						log.error("Authentication failed in Mesh JWT p.", res.cause());
+					}
+				}
+				throw error(UNAUTHORIZED, "auth_login_failed");
+			}
+		});
+	}
 }

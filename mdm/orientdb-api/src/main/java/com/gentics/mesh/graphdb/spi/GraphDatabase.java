@@ -1,13 +1,16 @@
 package com.gentics.mesh.graphdb.spi;
 
 import java.util.Iterator;
+import java.util.Optional;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.madl.frame.VertexFrame;
+import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.EdgeFrame;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.TransactionalGraph;
@@ -28,7 +31,32 @@ public interface GraphDatabase extends Database {
 	 * @param fieldValues
 	 * @return
 	 */
-	Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues);
+	default Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues) {
+		return getVertices(classOfVertex, fieldNames, fieldValues, null, Optional.empty(), Optional.empty());
+	}
+
+	/**
+	 * Count vertices using SQL.
+	 *
+	 * @param classOfVertex
+	 * @param fieldNames
+	 * @param fieldValues
+	 * @param maybeFilter
+	 * @return
+	 */
+	long countVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues, Optional<String> maybeFilter, Optional<ContainerType> maybeContainerType);
+
+	/**
+	 * Utilize the index and locate the matching vertices, considering paging parameters. Optionally, data fetch filtering may be applied.
+	 *
+	 * @param classOfVertex
+	 * @param fieldNames
+	 * @param fieldValues
+	 * @param paging
+	 * @param maybeFilter
+	 * @return
+	 */
+	Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues, PagingParameters paging, Optional<ContainerType> maybeContainerType, Optional<String> maybeFilter);
 
 	/**
 	 * Utilize the index and locate the matching vertices for the given parameters and the given range.

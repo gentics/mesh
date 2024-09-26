@@ -42,8 +42,8 @@ import com.google.common.collect.Sets;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @see NodeContainerMappingProvider
@@ -67,12 +67,17 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 	}
 
 	@Override
-	public JsonObject getMapping(SchemaModel schema) {
+	public Optional<JsonObject> getMapping(SchemaModel schema) {
 		return getMapping(schema, null, null);
 	}
 
 	@Override
-	public JsonObject getMapping(SchemaModel schema, HibBranch branch, String language) {
+	public Optional<JsonObject> getMapping(SchemaModel schema, HibBranch branch, String language) {
+		// 0. 'no index' schema flag check
+		if (schema.getNoIndex() != null && schema.getNoIndex()) {
+			return Optional.empty();
+		}
+
 		// 1. Get the common type specific mapping
 		JsonObject mapping = getMapping();
 
@@ -158,10 +163,10 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 
 		switch (complianceMode) {
 		case ES_7:
-			return typeMapping;
+			return Optional.of(typeMapping);
 		case ES_6:
 			mapping.put(DEFAULT_TYPE, typeMapping);
-			return mapping;
+			return Optional.of(mapping);
 		default:
 			throw new RuntimeException("Unknown compliance mode {" + complianceMode + "}");
 		}
@@ -316,8 +321,7 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 				}
 				break;
 			default:
-				log.error("Unknown list type {" + listFieldSchema.getListType() + "}");
-				throw new RuntimeException("Mapping type  for field type {" + type + "} unknown.");
+				throw new RuntimeException("Unknown mapping type for the field type {" + type + "}.");
 			}
 		}
 	}
@@ -478,7 +482,7 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 
 				// Check if the microschema is contained in the whitelist
 				// and ignore it if it isn't
-				if (!whitelist.contains(microschemaName)) {
+				if (!whitelist.contains(microschemaName) || (microschema.getNoIndex() != null && microschema.getNoIndex())) {
 					continue;
 				}
 

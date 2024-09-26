@@ -27,8 +27,8 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.buffer.Buffer;
 import io.vertx.reactivex.core.http.HttpServer;
@@ -71,7 +71,7 @@ public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 				}
 				if (maybeCustomStatus.isPresent()) {
 					rh.response().setStatusCode(maybeCustomStatus.get()).setStatusMessage("HTTP " + maybeCustomStatus.get()).end(new JsonObject().put("error", "HTTP error " + maybeCustomStatus.get() + " occurred!!!").toString());
-				} else {
+			} else {
 					HttpRequest<Buffer> realRequest = realClient.request(
 							rh.method(), 
 							testContext.elasticsearchContainer().getMappedPort(9200), 
@@ -89,7 +89,7 @@ public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 							log.info(rh.toString() + " sent");
 							rh.response().end(rs.result().body());
 						});
-					}
+			}
 				}
 			} catch (InterruptedException e) {
 			}

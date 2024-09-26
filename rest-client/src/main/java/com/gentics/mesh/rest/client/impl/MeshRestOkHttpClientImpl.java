@@ -30,14 +30,20 @@ public class MeshRestOkHttpClientImpl extends MeshRestHttpClientImpl {
 	}
 
 	@Override
-	public <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, InputStream bodyData, long fileSize,
-		String contentType) {
-		return MeshOkHttpRequestImpl.BinaryRequest(this, client, config, method.name(), getUrl(path), createHeaders(), classOfT, bodyData, fileSize, contentType);
+	protected boolean isMinifyJson() {
+		return config.isMinifyJson();
+	}
+
+	@Override
+	public <T> MeshRequest<T> prepareFileuploadRequest(HttpMethod method, String path, Class<? extends T> classOfT,
+			String fileName, String contentType, InputStream fileData, long fileSize, Map<String, String> fields) {
+		return MeshOkHttpRequestImpl.FileUploadRequest(this, client, config, method.name(), getUrl(path),
+				createHeaders(), classOfT, fileName, contentType, fileData, fileSize, fields);
 	}
 
 	@Override
 	public <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, RestModel restModel) {
-		return handleRequest(method, path, classOfT, restModel.toJson());
+		return handleRequest(method, path, classOfT, restModel == null ? null :restModel.toJson(config.isMinifyJson()));
 	}
 
 	@Override

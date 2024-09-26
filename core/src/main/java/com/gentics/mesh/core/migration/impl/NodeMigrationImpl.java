@@ -61,8 +61,8 @@ import com.gentics.mesh.util.VersionNumber;
 
 import io.reactivex.Completable;
 import io.reactivex.exceptions.CompositeException;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Handler for node migrations after schema updates.
@@ -180,7 +180,6 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 					}
 				});
 			} catch (Exception e) {
-				log.error("Error while preparing migration");
 				return Completable.error(e);
 			}
 

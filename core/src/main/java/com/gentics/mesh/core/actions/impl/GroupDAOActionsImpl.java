@@ -5,6 +5,7 @@ import java.util.function.Predicate;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.DAOActionContext;
@@ -88,5 +89,10 @@ public class GroupDAOActionsImpl implements GroupDAOActions {
 	@Override
 	public String getETag(Tx tx, InternalActionContext ac, HibGroup group) {
 		return tx.groupDao().getETag(group, ac);
+	}
+
+	@Override
+	public Page<? extends HibGroup> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, FilterOperation<?> extraFilter) {
+		return ctx.tx().groupDao().findAll(ctx.ac(), pagingInfo, extraFilter);
 	}
 }

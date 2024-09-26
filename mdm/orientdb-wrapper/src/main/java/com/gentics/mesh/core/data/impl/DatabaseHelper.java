@@ -5,6 +5,7 @@ import static com.gentics.mesh.madl.type.EdgeTypeDefinition.edgeType;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
+import com.gentics.mesh.core.data.binary.impl.BinaryGraphFieldVariantImpl;
 import com.gentics.mesh.core.data.binary.impl.BinaryImpl;
 import com.gentics.mesh.core.data.branch.impl.BranchMicroschemaEdgeImpl;
 import com.gentics.mesh.core.data.branch.impl.BranchSchemaEdgeImpl;
@@ -61,8 +62,8 @@ import com.gentics.mesh.core.data.schema.impl.UpdateMicroschemaChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateSchemaChangeImpl;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility class that will handle index creation and database migration.
@@ -164,6 +165,8 @@ public final class DatabaseHelper {
 		// Changelog
 		ChangeMarkerVertexImpl.init(type, index);
 
+		// Binary variant
+		BinaryGraphFieldVariantImpl.init(type, index);
 	}
 
 	private static void initPermissions(TypeHandler type, IndexHandler index) {

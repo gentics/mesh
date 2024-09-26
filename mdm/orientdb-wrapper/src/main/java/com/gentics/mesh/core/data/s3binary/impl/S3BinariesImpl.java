@@ -5,7 +5,9 @@ import com.gentics.mesh.core.data.s3binary.S3Binary;
 import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Transactional;
+import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
+import com.gentics.mesh.util.UUIDUtil;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -27,12 +29,17 @@ public class S3BinariesImpl implements S3Binaries {
 	}
 
 	@Override
-	public Transactional<S3HibBinary> create(String uuid, String objectKey, String fileName) {
+	public Transactional<S3HibBinary> create(String uuid, String objectKey, String fileName, BinaryCheckStatus checkStatus) {
 		return database.transactional(tx -> {
-			S3HibBinary binary = ((GraphDBTx) tx).getGraph().addFramedVertex(S3BinaryImpl.class);
+			S3BinaryImpl binary = ((GraphDBTx) tx).getGraph().addFramedVertex(S3BinaryImpl.class);
 			binary.setS3ObjectKey(objectKey);
 			binary.setUuid(uuid);
 			binary.setFileName(fileName);
+			binary.setCheckStatus(checkStatus);
+
+			if (checkStatus == BinaryCheckStatus.POSTPONED) {
+				binary.setCheckSecret(UUIDUtil.randomUUID());
+			}
 			return binary;
 		});
 	}
