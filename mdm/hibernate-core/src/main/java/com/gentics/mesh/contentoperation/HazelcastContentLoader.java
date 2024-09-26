@@ -4,10 +4,6 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import jakarta.persistence.CacheRetrieveMode;
-import jakarta.persistence.CacheStoreMode;
-import jakarta.persistence.EntityManager;
-
 import org.hibernate.cfg.AvailableSettings;
 
 import com.gentics.mesh.core.db.Tx;
@@ -15,7 +11,11 @@ import com.gentics.mesh.core.db.TxAction;
 import com.gentics.mesh.database.HibernateDatabase;
 import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.hibernate.data.domain.HibUnmanagedFieldContainer;
-import com.hazelcast.core.MapLoader;
+import com.hazelcast.map.MapLoader;
+
+import jakarta.persistence.CacheRetrieveMode;
+import jakarta.persistence.CacheStoreMode;
+import jakarta.persistence.EntityManager;
 
 /**
  * Loader used by hazelcast when keys are not found in the cache.
@@ -66,7 +66,7 @@ public class HazelcastContentLoader implements MapLoader<ContentKey, HibUnmanage
 	 * @param entityManager
 	 */
 	private void byPassCache(EntityManager entityManager) {
-		entityManager.setProperty(AvailableSettings.JPA_SHARED_CACHE_STORE_MODE, CacheStoreMode.BYPASS);
-		entityManager.setProperty(AvailableSettings.JPA_SHARED_CACHE_RETRIEVE_MODE, CacheRetrieveMode.BYPASS);
+		entityManager.setProperty(AvailableSettings.JAKARTA_SHARED_CACHE_STORE_MODE, CacheStoreMode.BYPASS);
+		entityManager.setProperty(AvailableSettings.JAKARTA_SHARED_CACHE_RETRIEVE_MODE, CacheRetrieveMode.BYPASS);
 	}
 }

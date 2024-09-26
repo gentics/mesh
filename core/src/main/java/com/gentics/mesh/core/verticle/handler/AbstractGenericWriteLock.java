@@ -13,7 +13,7 @@ import com.gentics.mesh.core.db.cluster.ClusterManager;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.metric.MetricsService;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.ILock;
+import com.hazelcast.cp.lock.FencedLock;
 
 import dagger.Lazy;
 import io.micrometer.core.instrument.Counter;
@@ -27,7 +27,7 @@ import io.micrometer.core.instrument.Timer;
  */
 public abstract class AbstractGenericWriteLock implements WriteLock {
 
-	protected ILock clusterLock;
+	protected FencedLock clusterLock;
 	protected final Semaphore localLock = new Semaphore(1);
 	protected final MeshOptions options;
 	protected final Lazy<HazelcastInstance> hazelcast;
@@ -90,7 +90,7 @@ public abstract class AbstractGenericWriteLock implements WriteLock {
 						if (clusterLock == null) {
 							HazelcastInstance hz = hazelcast.get();
 							if (hz != null) {
-								this.clusterLock = hz.getLock(GLOBAL_LOCK_KEY);
+								this.clusterLock = hz.getCPSubsystem().getLock(GLOBAL_LOCK_KEY);
 							}
 						}
 						if (clusterLock != null) {
@@ -100,8 +100,6 @@ public abstract class AbstractGenericWriteLock implements WriteLock {
 								throw new RuntimeException("Got timeout while waiting for write lock.");
 							}
 						}
-					} catch (InterruptedException e) {
-						throw new RuntimeException(e);
 					} finally {
 						timer.stop(writeLockTimer);
 					}
