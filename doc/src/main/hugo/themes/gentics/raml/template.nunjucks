@@ -6,9 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Learn about all the avaliable REST endpoints in Gentics Mesh">
     <title>Mesh Restful API documentation - Gentics Mesh</title>
-    <link rel="icon" href="/favicon.ico">
-    <link rel="shortcut icon" href="/assets/g_logo_small.png" type="image/png" />
-    <link href="/styles/raml.css" media="screen" rel="stylesheet">
+    <link rel="icon" href="../favicon.ico">
+    <link rel="shortcut icon" href="../assets/g_logo_small.png" type="image/png" />
+    <link href="../styles/raml.css" media="screen" rel="stylesheet">
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -74,20 +74,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="/"><img class="logo" src="/assets/gentics-mesh-logo.png" alt="Gentics Mesh Logo"/></a>
-        </div>
-
-        <!-- Collect the nav links, forms, and other content for toggling -->
-        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-          <ul class="nav navbar-nav">
-            <li><a href="/features">Features</a></li>
-            <li><a href="/docs">Documentation</a></li>
-            <li><a href="/services">Services</a></li>
-            <li><a href="/training">Training</a></li>
-            <li><a href="/premium-features">Premium Features</a></li>
-            <li><a href="/blog">Blog</a></li>
-            <li><a class="btn btn-primary btn-download" href="/download">Download</a></li>
-          </ul>
+          <a class="navbar-brand" href="/"><img class="logo" src="../assets/gentics-mesh-logo.png" alt="Gentics Mesh Logo"/></a>
         </div>
       </div>
     </nav>

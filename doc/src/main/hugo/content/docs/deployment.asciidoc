@@ -23,10 +23,6 @@ docker push registry.heroku.com/mesh-test/worker
 ```
 ////
 
-== Kubernetes
-
-We provide a link:{{< relref "../premium-features/helm-chart" >}}[Helm Chart for Gentics Mesh] as a premium feature.
-
 == Linux (via systemd)
 
 Gentics Mesh can quickly be installed on a Linux by registering a systemd service.

@@ -8,12 +8,15 @@
 	</formats>
 	<fileSets>
 		<fileSet>
-			<directory>${basedir}/target/html/docs</directory>
-			<outputDirectory>/docs</outputDirectory>
+			<directory>${basedir}/target/html</directory>
+			<outputDirectory>/mesh-docs</outputDirectory>
 			<includes>
-				<include>**</include>
+				<include>**</include>                
 			</includes>
 			<excludes>
+            	<exclude>categories/</exclude>
+           	<exclude>tags/</exclude>
+            	<exclude>index.html</exclude>
 				<exclude>**/*.adoc-include</exclude>
 				<exclude>**/*.adoc</exclude>
 				<exclude>**/*.asciidoc</exclude>

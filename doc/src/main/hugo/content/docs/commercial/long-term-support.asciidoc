@@ -42,5 +42,6 @@ The releases can be downloaded via the link:https://repo.gentics.com/[commercial
 
 === Docker Images
 
-* Server: docker.gentics.com/gentics/mesh:VERSION
-* Demo: docker.gentics.com/gentics/mesh-demo:VERSION
+* Raw server: docker.gentics.com/gentics/mesh:VERSION
+* MariaDB server: docker.gentics.com/gentics/mesh-mariadb:VERSION
+* In-memory HSQLDB server: docker.gentics.com/gentics/mesh-hsqldb:VERSION

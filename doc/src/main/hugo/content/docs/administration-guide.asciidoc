@@ -428,24 +428,24 @@ Includes the latest debug log output of Gentics Mesh. Check the link:{{< relref 
 Query name: `migrationStatus`
 
 Includes the
-link:{{< relref "api/" >}}#project__branches__branchUuid__schemas_get[schema migration status]
+link:../api/#project__branches__branchUuid__schemas_get[schema migration status]
 and
-link:{{< relref "api/" >}}#project__branches__branchUuid__microschemas_get[mircoschema migration status]
+link:../api/#project__branches__branchUuid__microschemas_get[mircoschema migration status]
 for every branch of every project.
 
 === Plugins
 Query name: `plugins`
 
-Includes the link:{{< relref "api/" >}}#admin_plugins_get[currently deployed plugins].
+Includes the link:../api/#admin_plugins_get[currently deployed plugins].
 
 === Status
 Query name: `status`
 
 Includes the
-link:{{< relref "api/" >}}#_get[version],
-link:{{< relref "api/" >}}#admin_cluster_status_get[cluster status]
+link:../api/#_get[version],
+link:../api/#admin_cluster_status_get[cluster status]
 and
-link:{{< relref "api/" >}}#search_status_get[elastic search status].
+link:../api/#search_status_get[elastic search status].
 
 === System Information
 Query name: `systemInfo`
@@ -475,7 +475,7 @@ Read only mode can be activated in one of the following ways:
 
 * Setting the entry `startInReadOnly` to `true` in the link:#conf[configuration file] before starting will start Gentics Mesh in read only mode.
 * Setting the environment variable `MESH_START_IN_READ_ONLY` to `true` before starting will start Gentics Mesh in read only mode.
-* Using the link:{{< relref "api/" >}}#admin_config_post[REST API]. Changing read only mode in this way will take immediate effect.
+* Using the link:../api/#admin_config_post[REST API]. Changing read only mode in this way will take immediate effect.
 
 == link:{{< relref "changelog.asciidoc" >}}[Changelog]
 

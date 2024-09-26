@@ -8,14 +8,14 @@
 | *MESH_DB_SYNC_WRITES*
 | Override the database sync writes flag.
 
+| *MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET*
+| Control whether a forced password reset should be triggered when creating the initial admin user. Default: true
+
 | *MESH_VERTX_EVENT_BUS_CHECK_INTERVAL*
 | Override the Vert.x eventBus check interval in ms.
 
 | *MESH_VERTX_EVENT_BUS_ERROR_THRESHOLD*
 | Override the Vert.x eventBus error threshold in ms.
-
-| *MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET*
-| Control whether a forced password reset should be triggered when creating the initial admin user. Default: true
 
 | *MESH_DEBUGINFO_LOG_PATTERN*
 | Override the log pattern
@@ -26,11 +26,11 @@
 | *MESH_PLUGIN_TIMEOUT*
 | Override the configured plugin timeout.
 
-| *MESH_LANGUAGES_FILE_PATH*
-| Override the path to the optional languages file
-
 | *MESH_GRAPHQL_SCHEMA_CACHE_SIZE*
 | Override the configured graphQl schema cache size.
+
+| *MESH_LANGUAGES_FILE_PATH*
+| Override the path to the optional languages file
 
 | *MESH_S3_CORS_ALLOWED_METHODS*
 | Override the configured AWS S3 CORS allowed methods.
@@ -230,11 +230,11 @@
 | *MESH_MAX_MIGRATION_BATCH_SIZE*
 | Override the maximum migration batch size
 
-| *MESH_CLUSTER_COORDINATOR_REGEX*
-| Override the cluster coordinator regex.
-
 | *MESH_HTTP_SSL_CLIENT_AUTH_MODE*
 | Override the configured client certificate handling mode.
+
+| *MESH_CLUSTER_COORDINATOR_REGEX*
+| Override the cluster coordinator regex.
 
 | *MESH_CLUSTER_TOPOLOGY_LOCK_TIMEOUT*
 | Override the cluster topology lock timeout in ms.
