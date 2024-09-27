@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>1.10.34-SNAPSHOT</version>
+		<version>1.10.35-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>mesh-doc</artifactId>
@@ -40,10 +40,6 @@
 		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-web-templ-handlebars</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.github.jknack</groupId>
-			<artifactId>handlebars</artifactId>
 		</dependency>
 
 		<!-- Required by SearchModelGenerator -->

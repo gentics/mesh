@@ -40,20 +40,22 @@ stage("Setup Build Environment") {
 			def version = MavenHelper.getVersion()
 
 			stage("Set Version") {
-				if (Boolean.valueOf(params.runDeploy)) {
-					if (version) {
+				withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
+					if (Boolean.valueOf(params.runDeploy)) {
+						if (version) {
+							echo "Building version " + version
+							version = MavenHelper.transformSnapshotToReleaseVersion(version)
+							MavenHelper.setVersion(version)
+						}
+						//TODO only add pom.xml files
+						sh 'git add .'
+						sh "git commit -m 'Raise version'"
+						GitHelper.addTag(version, 'Release of version ' + version)
+					} else if (Boolean.valueOf(params.setBranchAsVersion)) {
+						version = branchName
 						echo "Building version " + version
-						version = MavenHelper.transformSnapshotToReleaseVersion(version)
 						MavenHelper.setVersion(version)
 					}
-					//TODO only add pom.xml files
-					sh 'git add .'
-					sh "git commit -m 'Raise version'"
-					GitHelper.addTag(version, 'Release of version ' + version)
-				} else if (Boolean.valueOf(params.setBranchAsVersion)) {
-					version = branchName
-					echo "Building version " + version
-					MavenHelper.setVersion(version)
 				}
 			}
 
