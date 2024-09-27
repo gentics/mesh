@@ -109,9 +109,10 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 		return toGraph(node).getChildrenStream(ac, perm);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Map<HibNode, List<HibNode>> getChildren(Collection<HibNode> nodes, String branchUuid) {
-		return nodes.stream()
+		return new HashSet<>(nodes).stream()
 				.map(node -> Pair.of(node, (List<HibNode>) getChildren(node, branchUuid).list()))
 				.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
 	}
