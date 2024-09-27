@@ -2,17 +2,25 @@ package com.gentics.mesh.core.image.spi;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+
 import javax.imageio.ImageIO;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.core.image.CacheFileInfo;
 import com.gentics.mesh.core.image.ImageInfo;
 import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
+import com.gentics.mesh.util.StreamUtil;
 
+import io.reactivex.Completable;
 import io.reactivex.Maybe;
 import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
@@ -114,6 +122,23 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 			}
 		}, false);
 		return result.toSingle();
+	}
+
+	@Override
+	public Completable resetImageCache() {
+		if (StringUtils.isNotBlank(options.getImageCacheDirectory()) && Files.exists(Path.of(options.getImageCacheDirectory()))) {
+			return vertx.fileSystem()
+					.rxReadDir(options.getImageCacheDirectory())
+					.flatMapCompletable(list -> {
+						if (list.size() < 1) {
+							return Completable.complete();
+						} else {
+							return Completable.concat(StreamUtil.toIterable(list.stream().map(path -> vertx.fileSystem().rxDeleteRecursive(path, true))));
+						}
+					});
+		} else {
+			return Completable.complete();
+		}
 	}
 
 	/**

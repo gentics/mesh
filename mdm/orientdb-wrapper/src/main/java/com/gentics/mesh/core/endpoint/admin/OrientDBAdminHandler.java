@@ -33,6 +33,7 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
+import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
@@ -57,9 +58,9 @@ public class OrientDBAdminHandler extends AdminHandler {
 	public OrientDBAdminHandler(Vertx vertx, Database db, RouterStorageImpl routerStorage, BootstrapInitializer boot,
 			SearchProvider searchProvider, HandlerUtilities utils, MeshOptions options,
 			RouterStorageRegistryImpl routerStorageRegistry, Coordinator coordinator, WriteLock writeLock,
-			ConsistencyCheckHandler consistencyCheckHandler, CacheRegistry cacheRegistry) {
+			ConsistencyCheckHandler consistencyCheckHandler, CacheRegistry cacheRegistry, ImageManipulator imageManipulator) {
 		super(vertx, db, routerStorage, boot, searchProvider, utils, options, routerStorageRegistry, coordinator, writeLock,
-				consistencyCheckHandler, cacheRegistry);
+				consistencyCheckHandler, cacheRegistry, imageManipulator);
 	}
 
 	@Override

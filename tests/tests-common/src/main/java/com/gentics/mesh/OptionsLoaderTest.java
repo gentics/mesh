@@ -66,6 +66,7 @@ public abstract class OptionsLoaderTest<T extends MeshOptions> implements MeshOp
 		environmentVariables.set(ContentConfig.MESH_CONTENT_AUTO_PURGE_ENV, "true");
 		environmentVariables.set(ElasticSearchOptions.MESH_ELASTICSEARCH_MAPPING_MODE_ENV, "STRICT");
 		environmentVariables.set(ImageManipulatorOptions.MESH_IMAGE_CACHE_DIRECTORY_ENV, "data" + File.separator +"binaryImageCache");
+		environmentVariables.set(ImageManipulatorOptions.MESH_IMAGE_CACHE_SPLIT_SIZE_ENV, "1");
 
 		MeshOptions options = OptionsLoader.createOrloadOptions(getMeshOptionsClass());
 		assertEquals(8100, options.getHttpServerOptions().getPort());
@@ -83,6 +84,7 @@ public abstract class OptionsLoaderTest<T extends MeshOptions> implements MeshOp
 		assertTrue(options.getContentOptions().isAutoPurge());
 		assertEquals(MappingMode.STRICT, options.getSearchOptions().getMappingMode());
 		assertEquals("data" + File.separator + "binaryImageCache", options.getImageOptions().getImageCacheDirectory());
+		assertEquals(1, options.getImageOptions().getCacheSplitSize().intValue());
 	}
 
 	@Test

@@ -35,6 +35,7 @@ import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
+import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.distributed.DistributedEventManager;
 import com.gentics.mesh.distributed.coordinator.MasterElector;
 import com.gentics.mesh.etc.config.ClusterOptions;
@@ -100,10 +101,10 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 			MeshPluginManager pluginManager, MeshOptions options, RouterStorageRegistryImpl routerStorageRegistry,
 			MetricsOptions metricsOptions, LocalConfigApi localConfigApi, BCryptPasswordEncoder passwordEncoder,
 			MasterElector coordinatorMasterElector, LivenessManager liveness, EventBusLivenessManager eventbusLiveness,
-			EventBusStore eventBusStore) {
+			EventBusStore eventBusStore, Lazy<ImageManipulator> imageManipulator) {
 		super(schemaStorage, db, searchProvider, passwordEncoder, eventManager, indexHandlerRegistry, loader,
 				highlevelChangelogSystem, cacheRegistry, pluginManager, options, routerStorageRegistry, metricsOptions,
-				localConfigApi, passwordEncoder, coordinatorMasterElector, liveness, eventbusLiveness, eventBusStore);
+				localConfigApi, passwordEncoder, coordinatorMasterElector, liveness, eventbusLiveness, eventBusStore, imageManipulator);
 		this.changelogSystem = changelogSystem;
 		this.db = db;
 	}

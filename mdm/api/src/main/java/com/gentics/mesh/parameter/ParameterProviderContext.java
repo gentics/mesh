@@ -2,6 +2,7 @@ package com.gentics.mesh.parameter;
 
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.impl.BackupParametersImpl;
+import com.gentics.mesh.parameter.impl.CacheClearParametersImpl;
 import com.gentics.mesh.parameter.impl.ConsistencyCheckParametersImpl;
 import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
@@ -85,5 +86,9 @@ public interface ParameterProviderContext extends ActionContext {
 
 	default ConsistencyCheckParameters getConsistencyCheckParameters() {
 		return new ConsistencyCheckParametersImpl(this);
+	}
+
+	default CacheClearParameters getCacheClearParameters() {
+		return new CacheClearParametersImpl(this);
 	}
 }

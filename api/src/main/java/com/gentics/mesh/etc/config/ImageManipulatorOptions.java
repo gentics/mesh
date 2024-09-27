@@ -36,7 +36,8 @@ public class ImageManipulatorOptions implements Option {
 	private String imageCacheDirectory = DEFAULT_IMAGE_CACHE_DIRECTORY;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Configure the image cache folder depth, which is produced by splitting the image's SHA512 hash into the number of fractions, defined here. Values accepted: 1-128. Default: 16")
+	@JsonPropertyDescription("Configure the image cache folder depth, which is produced by splitting the image's SHA512 hash into the number of fractions, defined here. "
+			+ "Depending on the OS, filesystem and container environment used, this can improve the performance or accessibility of the image cache. Values accepted: 1-128. Default: 16")
 	@EnvironmentVariable(name = MESH_IMAGE_CACHE_SPLIT_SIZE_ENV, description = "Override the image cache folder depth.")
 	private Integer cacheSplitSize = DEFAULT_CACHE_SPLIT_SIZE;
 

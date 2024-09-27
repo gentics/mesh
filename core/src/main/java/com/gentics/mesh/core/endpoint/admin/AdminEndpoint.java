@@ -37,6 +37,7 @@ import com.gentics.mesh.core.endpoint.admin.plugin.PluginHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.impl.BackupParametersImpl;
+import com.gentics.mesh.parameter.impl.CacheClearParametersImpl;
 import com.gentics.mesh.parameter.impl.ConsistencyCheckParametersImpl;
 import com.gentics.mesh.parameter.impl.JobParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
@@ -477,8 +478,8 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		endpoint.path("/cache");
 		endpoint.method(DELETE);
 		endpoint.setMutating(false);
-		endpoint.description(
-			"Clear all internal caches (cluster wide).");
+		endpoint.description("Clear all internal caches (cluster wide).");
+		endpoint.addQueryParameters(CacheClearParametersImpl.class);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Clearing the caches has been invoked.");
 		endpoint.handler(rc -> {

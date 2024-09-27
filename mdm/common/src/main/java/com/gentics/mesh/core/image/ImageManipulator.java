@@ -1,14 +1,15 @@
 package com.gentics.mesh.core.image;
 
-import com.gentics.mesh.core.data.binary.HibBinary;
-import com.gentics.mesh.parameter.ImageManipulationParameters;
-import io.reactivex.Completable;
-import io.reactivex.Single;
-
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.InputStream;
 import java.util.Map;
+
+import com.gentics.mesh.core.data.binary.HibBinary;
+import com.gentics.mesh.parameter.ImageManipulationParameters;
+
+import io.reactivex.Completable;
+import io.reactivex.Single;
 
 /**
  * SPI provider interface for image manipulators.
@@ -80,4 +81,10 @@ public interface ImageManipulator {
 	 * @return
 	 */
 	Single<Map<String, String>> getMetadata(InputStream ins);
+
+	/**
+	 * Clear the image cache.
+	 * @return
+	 */
+	Completable resetImageCache();
 }

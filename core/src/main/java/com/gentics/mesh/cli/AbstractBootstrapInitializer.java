@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -48,6 +50,7 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
+import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
@@ -148,6 +151,8 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 
 	protected final EventBusStore eventBusStore;
 
+	protected final Lazy<ImageManipulator> imageManipulator;
+
 	// TODO: Changing the role name or deleting the role would cause code that utilizes this field to break.
 	// This is however a rare case.
 	protected HibRole anonymousRole;
@@ -171,7 +176,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 			MeshPluginManager pluginManager, MeshOptions options, RouterStorageRegistryImpl routerStorageRegistry,
 			MetricsOptions metricsOptions, LocalConfigApi localConfigApi, BCryptPasswordEncoder passwordEncoder,
 			MasterElector coordinatorMasterElector, LivenessManager liveness, EventBusLivenessManager eventbusLiveness,
-			EventBusStore eventBusStore) {
+			EventBusStore eventBusStore, Lazy<ImageManipulator> imageManipulator) {
 		this.schemaStorage = schemaStorage;
 		this.db = db;
 		this.searchProvider = searchProvider;
@@ -191,6 +196,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 		this.liveness = liveness;
 		this.eventbusLiveness = eventbusLiveness;
 		this.eventBusStore = eventBusStore;
+		this.imageManipulator = imageManipulator;
 		clearReferences();
 	}
 
@@ -387,6 +393,23 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 		});
 	}
 
+	private void resetCacheIfNecessary() {
+		if (StringUtils.isNotBlank(options.getImageOptions().getImageCacheDirectory()) && Files.exists(Path.of(options.getImageOptions().getImageCacheDirectory()))) {
+			log.debug("Checking image cache level");
+			try {
+				int maxLevel = Files.walk(Path.of(options.getImageOptions().getImageCacheDirectory())).map(Path::getNameCount).reduce(0, (a,b) -> a > b ? a : b);
+				if (maxLevel > 1 && !Integer.valueOf(maxLevel).equals(options.getImageOptions().getCacheSplitSize())) {
+					Throwable error = imageManipulator.get().resetImageCache().blockingGet();
+					if (error != null) {
+						throw error;
+					}
+				}
+			} catch (Throwable e) {
+				throw new IllegalStateException(e);
+			}
+		}
+	}
+
 	@Override
 	public void init(Mesh mesh, boolean forceResync, MeshOptions options, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
 		this.mesh = (MeshImpl) mesh;
@@ -415,6 +438,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 
 		eventManager.registerHandlers();
 		handleLocalData(flags, options, verticleLoader);
+		resetCacheIfNecessary();
 
 		// Load existing plugins
 		pluginManager.start();

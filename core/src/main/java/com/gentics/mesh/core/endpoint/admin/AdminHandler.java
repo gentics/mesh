@@ -17,14 +17,17 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.db.TxAction;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
+import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfig;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorMasterResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.distributed.coordinator.Coordinator;
@@ -32,6 +35,7 @@ import com.gentics.mesh.distributed.coordinator.MasterServer;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.generator.RAMLGenerator;
 import com.gentics.mesh.parameter.BackupParameters;
+import com.gentics.mesh.parameter.CacheClearParameters;
 import com.gentics.mesh.router.RouterStorageImpl;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
 import com.gentics.mesh.search.SearchProvider;
@@ -72,10 +76,12 @@ public abstract class AdminHandler extends AbstractHandler {
 
 	protected final CacheRegistry cacheRegistry;
 
+	protected final ImageManipulator imageManipulator;
+
 	protected AdminHandler(Vertx vertx, Database db, RouterStorageImpl routerStorage, BootstrapInitializer boot, SearchProvider searchProvider,
 		HandlerUtilities utils,
 		MeshOptions options, RouterStorageRegistryImpl routerStorageRegistry, Coordinator coordinator, WriteLock writeLock,
-		ConsistencyCheckHandler consistencyCheckHandler, CacheRegistry cacheRegistry) {
+		ConsistencyCheckHandler consistencyCheckHandler, CacheRegistry cacheRegistry, ImageManipulator imageManipulator) {
 		this.vertx = vertx;
 		this.db = db;
 		this.routerStorage = routerStorage;
@@ -88,6 +94,7 @@ public abstract class AdminHandler extends AbstractHandler {
 		this.writeLock = writeLock;
 		this.consistencyCheckHandler = consistencyCheckHandler;
 		this.cacheRegistry = cacheRegistry;
+		this.imageManipulator = imageManipulator;
 	}
 
 	/**
@@ -361,16 +368,24 @@ public abstract class AdminHandler extends AbstractHandler {
 	 * @param ac
 	 */
 	public void handleCacheClear(InternalActionContext ac) {
-		utils.syncTx(ac, tx -> {
+		TxAction<GenericMessageResponse> action = tx -> {
 			HibUser user = ac.getUser();
 			if (user != null && !user.isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
-
 			cacheRegistry.clear();
 			vertx.eventBus().publish(CLEAR_CACHES.address, null);
 
 			return message(ac, "cache_clear_invoked");
-		}, model -> ac.send(model, OK));
+		};
+		CacheClearParameters parameters = ac.getCacheClearParameters();
+		if (parameters.isClearImageCache()) {
+			db.tx((tx) -> {
+				GenericMessageResponse message = action.apply(tx);
+				imageManipulator.resetImageCache().subscribe(() -> ac.send(message, OK), e -> ac.fail(e));
+			});
+		} else {
+			utils.syncTx(ac, action, model -> ac.send(model, OK));
+		}
 	}
 }
