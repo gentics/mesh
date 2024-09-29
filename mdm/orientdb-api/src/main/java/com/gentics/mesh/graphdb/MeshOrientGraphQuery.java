@@ -1,5 +1,6 @@
 package com.gentics.mesh.graphdb;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -204,12 +205,24 @@ abstract class MeshOrientGraphQuery<T extends Element, P> extends OrientGraphQue
 				String sanitizedPart = sanitizeInput(sortParts[0]);
 				String[] pathParts = sanitizedPart.split("\\.");
 				text.append(", ");
-				Map<String, GraphRelationship> relation = GraphRelationships.findRelation(currentMapping);
+				Map<String, GraphRelationship> relation = null;
+				Optional<String[]> maybeEdgeLevelFields = Optional.empty();
 				for (int i = 0; i < pathParts.length; i++) {
 					String pathPart = pathParts[i];
+					relation = GraphRelationships.findRelation(currentMapping);
+					Map<String, GraphRelationship> localRelation = relation;
+					Optional<String> maybeFieldTypeMapping = Optional.ofNullable(localRelation)
+							.flatMap(relation1 -> relation1.keySet().stream()
+									.filter(key -> key.startsWith("*") && pathPart.matches("[\\S]" + key))
+									.findAny());
 					if (relation != null && !sanitizedPart.endsWith(pathPart)
-							&& (relation.containsKey(pathPart) || (relation.containsKey("*")))) {
-						GraphRelationship relationMapping = relation.get(pathPart) != null ? relation.get(pathPart) : relation.get("*");
+							&& (relation.containsKey(pathPart) || (relation.containsKey("*") || maybeFieldTypeMapping.isPresent()))) {
+						GraphRelationship relationMapping = maybeFieldTypeMapping.map(key -> localRelation.get(key))
+								.or(() -> Optional.ofNullable(localRelation.get(pathPart))).orElseGet(() -> localRelation.get("*"));
+						if (relationMapping.isSkipMapping()) {
+							continue;
+						}
+						maybeEdgeLevelFields = relationMapping.getMaybeEdgeLevelFields();
 						if (useEdgeFilters && relationMapping != null) {
 							if (MeshVertex.UUID_KEY.equals(relationMapping.getEdgeName())) {
 								String partName = pathParts.length > 1 ? pathParts[1] : pathPart;
@@ -230,6 +243,10 @@ abstract class MeshOrientGraphQuery<T extends Element, P> extends OrientGraphQue
 								escapeFieldNameIfRequired(text, relationMapping.getEdgeFieldName());
 								text.append(")");
 							} else {
+								String localPathPart = pathPart;
+								if (maybeFieldTypeMapping.isPresent()) {
+									localPathPart = pathPart.split("-")[0];
+								}
 								if (i < 1 && isEdgeRequest) {
 									text.append(relationDirection.name().toLowerCase());
 									text.append("V().");
@@ -240,10 +257,12 @@ abstract class MeshOrientGraphQuery<T extends Element, P> extends OrientGraphQue
 								text.append("')[");
 								text.append(relationMapping.getEdgeFieldName());
 								text.append("='");
-								text.append(relation.get(pathPart) != null ? relationMapping.getDefaultEdgeFieldFilterValue() : pathPart); 
+								text.append(localRelation.get(localPathPart) != null ? relationMapping.getDefaultEdgeFieldFilterValue() : localPathPart); 
 								text.append("'].");
-								text.append(vertexLookupDirOpposite.name().toLowerCase());
-								text.append("V()");
+								if (maybeEdgeLevelFields.isEmpty()) {
+									text.append(vertexLookupDirOpposite.name().toLowerCase());
+									text.append("V()");
+								}
 							}
 						} else {
 							if (i < 1 && isEdgeRequest) {
@@ -255,19 +274,31 @@ abstract class MeshOrientGraphQuery<T extends Element, P> extends OrientGraphQue
 							escapeFieldNameIfRequired(text, relationMapping.getEdgeName());
 							text.append(")");
 						}
-						text.append("[0].");
-						currentMapping = relationMapping.getRelatedVertexClass();
-					} else if (i == 1 && "fields".equals(pathParts[0]) && pathParts.length > 2) {
-						// skip the schema name
+						if (maybeEdgeLevelFields.isEmpty()) {
+							text.append("[0].");
+							currentMapping = relationMapping.getRelatedVertexClass();
+						}
+					} else if ((i > 0 && "fields".equals(pathParts[i-1])) || (i < (pathParts.length-1) && "fields".equals(pathParts[i+1])) && pathParts.length > 2) {
+						// skip the schema name or the self-reference
 						continue;
 					} else {
 						if (i < 1 && isEdgeRequest) {
 							text.append(relationDirection.name().toLowerCase());
 							text.append("V().");
 						}
-						text.append("`");
-						text.append(pathPart);
-						text.append("`");
+						maybeEdgeLevelFields
+							.flatMap(edgeLevelFields -> Arrays.stream(edgeLevelFields).filter(field -> field.equals(pathPart)).findAny())
+							.ifPresentOrElse(field -> {
+								text.append("`");
+								text.append(field);
+								text.append("`");
+								text.append("[0]");
+							}, () -> {
+								text.append("`");
+								text.append(pathPart);
+								text.append("`");
+							});
+						maybeEdgeLevelFields = Optional.empty();
 					}
 				}
 				text.append(" as ");

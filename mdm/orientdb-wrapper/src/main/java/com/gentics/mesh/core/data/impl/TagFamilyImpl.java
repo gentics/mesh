@@ -233,7 +233,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 		PagingParameters sorting = mapSorting(pagingInfo);
 		Optional<String> maybeParsedFilter = maybeExtraFilter
 				.map(extraFilter -> parseFilter(extraFilter, ContainerType.PUBLISHED, ac.getUser(), READ_PERM, Optional.empty()))
-				.or(() -> permissionFilter(ac.getUser(), READ_PERM, Optional.empty(), Optional.empty()));
+				.or(() -> permissionFilterIfRequired(pagingInfo, ac.getUser(), READ_PERM, Optional.empty(), Optional.empty()));
 		Stream<? extends Tag> stream = toStream(db().getVertices(
 				getPersistanceClass(),
 				new String[] {},

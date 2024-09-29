@@ -4,6 +4,7 @@ import static com.gentics.mesh.madl.type.EdgeTypeDefinition.edgeType;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
@@ -19,8 +20,15 @@ public class GraphRelationships {
 	 * Add a relation between entities through an edge.
 	 */
 	public static <K extends MeshVertex, V extends MeshVertex> void addRelation(Class<K> keyClass, Class<V> valueClass, String mappingName, String relationName, String edgeFieldName, String defaultEdgeFieldFilterValue) {
+		addRelation(keyClass, valueClass, mappingName, relationName, edgeFieldName, defaultEdgeFieldFilterValue, Optional.empty(), false);
+	}
+
+	/**
+	 * Add a relation between entities through an edge, with optional edge fields.
+	 */
+	public static <K extends MeshVertex, V extends MeshVertex> void addRelation(Class<K> keyClass, Class<V> valueClass, String mappingName, String relationName, String edgeFieldName, String defaultEdgeFieldFilterValue, Optional<String[]> maybeEdgeLevelFieldNames, boolean skipMapping) {
 		Map<String, GraphRelationship> relations = VERTEX_RELATIONS.getOrDefault(keyClass, new HashMap<>());
-		relations.put(mappingName, new GraphRelationship(relationName, valueClass, edgeFieldName, defaultEdgeFieldFilterValue));
+		relations.put(mappingName, new GraphRelationship(relationName, valueClass, edgeFieldName, defaultEdgeFieldFilterValue, maybeEdgeLevelFieldNames, skipMapping));
 		VERTEX_RELATIONS.put(keyClass, relations);
 	}
 
@@ -34,8 +42,22 @@ public class GraphRelationships {
 	 * @param mappingName
 	 * @param relationName
 	 */
+	public static <K extends MeshVertex, V extends MeshVertex> void addUnmappedRelation(Class<K> keyClass, Class<V> valueClass, String mappingName) {
+		addRelation(keyClass, valueClass, mappingName, MeshVertex.UUID_KEY, mappingName, null, Optional.empty(), true);
+	}
+
+	/**
+	 * Add a relation between entities through UUID.
+	 * 
+	 * @param <K>
+	 * @param <V>
+	 * @param keyClass
+	 * @param valueClass
+	 * @param mappingName
+	 * @param relationName
+	 */
 	public static <K extends MeshVertex, V extends MeshVertex> void addRelation(Class<K> keyClass, Class<V> valueClass, String mappingName) {
-		addRelation(keyClass, valueClass, mappingName, MeshVertex.UUID_KEY, mappingName, null);
+		addRelation(keyClass, valueClass, mappingName, MeshVertex.UUID_KEY, mappingName, null, Optional.empty(), false);
 	}
 
 	/**

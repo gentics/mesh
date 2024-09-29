@@ -139,6 +139,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			.withPostfix("branch_parents")
 			.withField(BRANCH_PARENTS_KEY_PROPERTY, STRING_SET));
 
+		GraphRelationships.addUnmappedRelation(NodeImpl.class, NodeImpl.class, "node");
 		GraphRelationships.addRelation(NodeImpl.class, NodeGraphFieldContainerImpl.class, "fields", HAS_FIELD_CONTAINER, "edgeType", ContainerType.INITIAL.getCode());
 		GraphRelationships.addRelation(NodeImpl.class, SchemaContainerImpl.class, "schema");
 		GraphRelationships.addRelation(NodeImpl.class, UserImpl.class, "creator");
@@ -246,7 +247,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			new Object[] { getUuid() }), NodeImpl.class));
 	}
 
-	@Override
 	public Result<HibNode> getChildren(String branchUuid, ContainerType containerType, PagingParameters sorting, Optional<FilterOperation<?>> maybeFilter, Optional<HibUser> maybeUser) {
 		InternalPermission perm = containerType == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM;
 		Tx tx = GraphDBTx.getGraphTx();
