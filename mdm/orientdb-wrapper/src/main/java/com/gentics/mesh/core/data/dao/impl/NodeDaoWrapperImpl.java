@@ -7,6 +7,7 @@ import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -108,9 +109,10 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 		return toGraph(node).getChildrenStream(ac, perm);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Map<HibNode, List<HibNode>> getChildren(Collection<HibNode> nodes, String branchUuid) {
-		return nodes.stream()
+		return new HashSet<>(nodes).stream()
 				.map(node -> Pair.of(node, (List<HibNode>) getChildren(node, branchUuid).list()))
 				.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
 	}
@@ -223,7 +225,7 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 
 	@Override
 	public Map<HibNode, List<HibNode>> getBreadcrumbNodesMap(Collection<HibNode> nodes, InternalActionContext ac) {
-		return nodes.stream().map(node -> Pair.of(node,
+		return new HashSet<>(nodes).stream().map(node -> Pair.of(node,
 				getBreadcrumbNodes(node, ac)
 						.stream()
 						.map(HibNode.class::cast)
