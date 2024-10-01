@@ -22,7 +22,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
@@ -45,8 +44,6 @@ import com.gentics.mesh.test.util.UnixUtils;
 import com.gentics.mesh.util.UUIDUtil;
 import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 
-import io.vertx.core.json.JsonObject;
-
 /**
  * Test container for a mesh instance which uses local class files. The image for the container will automatically be rebuild during each startup.
  * 
@@ -55,10 +52,6 @@ import io.vertx.core.json.JsonObject;
 public class MeshContainer extends GenericContainer<MeshContainer> {
 
 	protected static final String PATH_UPLOADS = "/uploads";
-
-	protected static final String PATH_BACKUP = "/backup";
-
-	protected static final String PATH_GRAPHDB = "/graphdb";
 
 	protected static final Charset UTF8 = Charset.forName("UTF-8");
 
@@ -137,8 +130,6 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 	}
 	
 	protected void init() {
-		pathOverrides.put(PATH_GRAPHDB, new ContainerPath(StringUtils.EMPTY, BindMode.READ_WRITE));
-		pathOverrides.put(PATH_BACKUP, new ContainerPath(StringUtils.EMPTY, BindMode.READ_WRITE));
 		pathOverrides.put(PATH_UPLOADS, new ContainerPath(StringUtils.EMPTY, BindMode.READ_WRITE));
 	}
 
@@ -151,12 +142,8 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 		log.info("Using base folder {}", basePath);
 		String confPath = basePath + "/config";
 		if (useFilesystem) {
-			ContainerPath graphDbPath = pathOverrides.get(PATH_GRAPHDB);
-			ContainerPath backupPath = pathOverrides.get(PATH_BACKUP);
 			ContainerPath uploadsPath = pathOverrides.get(PATH_UPLOADS);
 			
-			String dataGraphDBPath = StringUtils.isNotBlank(graphDbPath.hostPath) ? graphDbPath.hostPath : (basePath + "/data-graphdb-" + dataPathPostfix);
-			String dataBackupPath = StringUtils.isNotBlank(backupPath.hostPath) ? backupPath.hostPath : (basePath + "/data-backup-" + dataPathPostfix);			
 			String dataUploadsPath = StringUtils.isNotBlank(uploadsPath.hostPath) ? uploadsPath.hostPath : (basePath + "/data-uploads-" + dataPathPostfix);
 
 			// Ensure that the folder is created upfront. This is important to keep the uid and gids correct.
@@ -164,37 +151,13 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 
 			if (clearDataFolders) {
 				try {
-					prepareFolder(dataGraphDBPath);
-				} catch (Exception e) {
-					fail("Could not setup bind folder {" + dataGraphDBPath + "}");
-				}
-				try {
-					prepareFolder(dataBackupPath);
-				} catch (Exception e) {
-					fail("Could not setup bind folder {" + dataBackupPath + "}");
-				}
-				try {
 					prepareFolder(dataUploadsPath);
 				} catch (Exception e) {
 					fail("Could not setup bind folder {" + dataUploadsPath + "}");
 				}
 			}
-			addFileSystemBind(dataGraphDBPath, PATH_GRAPHDB, graphDbPath.bindMode);
-			addFileSystemBind(dataBackupPath, PATH_BACKUP, backupPath.bindMode);
 			addFileSystemBind(dataUploadsPath, PATH_UPLOADS, uploadsPath.bindMode);
 			// withCreateContainerCmdModifier(it -> it.withVolumes(new Volume("/data")));
-		}
-
-		if (isClustered()) {
-			try {
-				new File(confPath).mkdirs();
-				File confFile = new File(confPath, "default-distributed-db-config.json");
-				String jsonConfig = generateDistributedConfig(writeQuorum).encodePrettily();
-				FileUtils.writeStringToFile(confFile, jsonConfig, Charset.forName("UTF-8"));
-				addFileSystemBind(confFile.getAbsolutePath(), "/config/default-distributed-db-config.json", BindMode.READ_ONLY);
-			} catch (Exception e) {
-				throw new RuntimeException("Error while creating default-distributed-db-config.json", e);
-			}
 		}
 
 		changeUserInContainer();
@@ -216,7 +179,6 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 
 		addEnv(MeshOptions.MESH_INITIAL_ADMIN_PASSWORD_ENV, "admin");
 		addEnv(MeshOptions.MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET_ENV, "false");
-
 		if (coordinatorMode != null) {
 			addEnv(ClusterOptions.MESH_CLUSTER_COORDINATOR_MODE_ENV, coordinatorMode.name());
 		}
@@ -235,6 +197,14 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 			javaOpts += extraOpts + " ";
 		}
 		addEnv("JAVAOPTS", javaOpts);
+
+		String licenseKey = System.getenv("LICENSEKEY");
+		if (StringUtils.isBlank(licenseKey)) {
+			licenseKey = System.getProperty("licenseKey");
+		}
+		if (StringUtils.isNotBlank(licenseKey)) {
+			addEnv("LICENSEKEY", licenseKey);
+		}
 
 		exposedPorts.add(8600);
 		exposedPorts.add(8080);
@@ -373,28 +343,11 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 		}
 	}
 
-	// TODO de-orientDB this?
 	protected static String generateMeshYML(MeshOptions options, boolean enableClustering) throws JsonProcessingException {
 		options.getClusterOptions().setEnabled(enableClustering);
 		options.getClusterOptions().setVertxPort(8600);
 		options.getAuthenticationOptions().setKeystorePassword(UUIDUtil.randomUUID());
 		return OptionsLoader.getYAMLMapper().writeValueAsString(options);
-	}
-
-	protected static JsonObject generateDistributedConfig(int writeQuorum) {
-		JsonObject json;
-		try {
-			json = new JsonObject(IOUtils.toString(MeshContainer.class.getResourceAsStream("/config/default-distributed-db-config.json")));
-			if (writeQuorum == -1) {
-				json.put("writeQuorum", "majority");
-			} else {
-				json.put("writeQuorum", writeQuorum);
-			}
-			return json;
-		} catch (IOException e) {
-			throw new RuntimeException("Could not find default config", e);
-		}
-
 	}
 
 	protected static String generateCommand(String classpath) {
@@ -610,20 +563,6 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 	 */
 	public MeshContainer withFilesystem() {
 		this.useFilesystem = true;
-		return this;
-	}
-	
-	public MeshContainer overrideODBClusterBackupFolder(String folder, BindMode bindMode) {
-		ContainerPath override = this.pathOverrides.get(PATH_BACKUP);
-		override.hostPath = folder;
-		override.bindMode = bindMode;
-		return this;
-	}
-	
-	public MeshContainer overrideGraphDbFolder(String folder, BindMode bindMode) {
-		ContainerPath override = this.pathOverrides.get(PATH_GRAPHDB);
-		override.hostPath = folder;
-		override.bindMode = bindMode;
 		return this;
 	}
 	

@@ -1,12 +1,13 @@
 {
   "changeLogEntryFileNames": [
-    "7650.SUP-16155.bugfix",
-    "7651.SUP-16158.bugfix",
-    "7653.SUP-15263.bugfix",
-    "7645.SUP-16169.bugfix",
-    "7652.SUP-15674.bugfix"
+    "7639.SUP-16072.bugfix",
+    "7634.SUP-16120.bugfix",
+    "7635.SUP-16095.bugfix",
+    "7636.SUP-16072.bugfix",
+    "7637.SUP-16095.bugfix",
+    "7638.SUP-16072.bugfix"
   ],
   "version": "2.0.11",
-  "date": "20.12.2023",
+  "date": "06.12.2023",
   "genericProperties": {}
 }

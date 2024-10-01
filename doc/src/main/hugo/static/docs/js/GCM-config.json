@@ -1,0 +1,194 @@
+{
+  "cookies": {
+    "cookiesAllowed": {
+      "label": {
+        "de": "Cookie Hinweis",
+        "en": "Cookie Banner"
+      },
+      "description": {
+        "de": "Wird gesetzt wenn der Cookie Hinweis bestätigt wurde.",
+        "en": "Will be set, when the cookie banner got accepted."
+      },
+      "catid": "others",
+      "appid": "gentics"
+    },
+    "_ga": {
+      "label": {
+        "de": "Google Analytics Benutzer Cookie",
+        "en": "Google Analytics User Cookie"
+      },
+      "description": {
+        "de": "Wird verwendet um den Nutzer zu bestimmen.",
+        "en": "Is used to distinguish users."
+      },
+      "catid": "analytics",
+      "appid": "google"
+    },
+    "_gat": {
+      "label": {
+        "de": "Google Analytics Benutzer Cookie",
+        "en": "Google Analytics User Cookie"
+      },
+      "description": {
+        "de": "Wird verwendet um den Nutzer zu bestimmen.",
+        "en": "Is used to distinguish users."
+      },
+      "catid": "analytics",
+      "appid": "google"
+    },
+    "_gid": {
+      "label": {
+        "de": "Google Analytics Benutzer Cookie",
+        "en": "Google Analytics User Cookie"
+      },
+      "description": {
+        "de": "Wird verwendet um den Nutzer zu bestimmen.",
+        "en": "Is used to distinguish users."
+      },
+      "catid": "analytics",
+      "appid": "google"
+    },
+    "github-gist": {
+      "label": {
+        "de": "gist code snippets",
+        "en": "gist code snippets"
+      },
+      "description": {
+        "de": "view and use github gist code snippets",
+        "en": "view and use github gist code snippets"
+      },
+      "catid": "others",
+      "appid": "github-gist"
+    },
+    "youtube": {
+      "label": {
+        "de": "youtube videos",
+        "en": "youtube videos"
+      },
+      "description": {
+        "de": "view embeded videos from youtube.com",
+        "en": "view embeded videos from youtube.com"
+      },
+      "catid": "others",
+      "appid": "youtube"
+    }
+  },
+  "categories": {
+    "analytics": {
+      "label": {
+        "de": "Analyse und Marketing",
+        "en": "Analytics"
+      },
+      "description": {
+        "de": "Analyse und Marketing",
+        "en": "Analytics"
+      }
+    },
+    "others": {
+      "label": {
+        "de": "Andere",
+        "en": "Others"
+      },
+      "description": {
+        "de": "Andere",
+        "en": "Others"
+      }
+    }
+  },
+  "apps": {
+    "gentics": {
+      "label": "Gentics",
+      "value": true,
+      "protected": true,
+      "description": {
+        "de": "Andere",
+        "en": "Others"
+      },
+      "groupid": "essential"
+    },
+    "google": {
+      "label": {
+        "de": "Google",
+        "en": "Google"
+      },
+      "value": true,
+      "protected": false,
+      "description": {
+        "de": "Analytics",
+        "en": "Analytics"
+      },
+      "groupid": "marketing"
+    },
+    "github": {
+      "label": {
+        "de": "Github",
+        "en": "Github"
+      },
+      "value": true,
+      "protected": false,
+      "description": {
+        "de": "codesnippets and stars",
+        "en": "codesnippets and stars"
+      },
+      "groupid": "functional"
+    },
+    "github-gist": {
+      "label": {
+        "de": "github gist",
+        "en": "github gist"
+      },
+      "value": true,
+      "protected": false,
+      "description": {
+        "de": "view and use github gist code snippets",
+        "en": "view and use github gist code snippets"
+      },
+      "groupid": "functional"
+    },
+    "youtube": {
+      "label": {
+        "de": "youtube videos",
+        "en": "youtube videos"
+      },
+      "value": true,
+      "protected": false,
+      "description": {
+        "de": "view embeded videos from youtube.com",
+        "en": "view embeded videos from youtube.com"
+      },
+      "groupid": "functional"
+    }
+  },
+  "groups": {
+    "essential": {
+      "label": {
+        "de": "Cookie für Cookie Einstellungen",
+        "en": "Cookie for Cookie Settings"
+      },
+      "description": {
+        "de": "Dieses Cookie speichert die Einstellungen die Sie hier für Cookies auf dieser Webseite vornehmen.",
+        "en": "This cookie will be used to remember your prefered settings for cookies on this website."
+      }
+    },
+    "functional": {
+      "label": {
+        "de": "Funktionelle Cookies",
+        "en": "Functional Cookies"
+      },
+      "description": {
+        "de": "Diese Cookies dienen dazu die Funktionalität der Website für Sie zu verbessern bzw. zu erweitern.",
+        "en": "These cookies serve to improve or extend the functionality of the website for you."
+      }
+    },
+    "marketing": {
+      "label": {
+        "de": "Marketing Cookies",
+        "en": "Marketing Cookies"
+      },
+      "description": {
+        "de": "Wir setzen Marketing Cookies ein, um nützliche Erkenntnisse darüber zu gewinnen, wie unsere Sites genutzt werden, sodass wir sie in Folge weiter verbessern können.",
+        "en": "We use marketing cookies to gain useful insight into how our sites are used so that we can continue to improve them."
+      }
+    }
+  }
+}

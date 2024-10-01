@@ -1,0 +1,9 @@
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="{{ .Title }}" />
+<meta name="twitter:description" content="{{ if .Params.teaser }}{{ .Params.teaser | plainify }}{{ end }}" />
+<meta name="twitter:image:src" content="{{ if .Params.banner }}{{ .Permalink }}{{ .Params.banner }}{{ else }}{{ "/assets/gentics-card.png" | absURL }}{{ end }}" />
+
+<meta property="og:title" content="{{ .Title }}">
+<meta property="og:url" content="{{ .Permalink }}">
+<meta property="og:description" content="{{ if .Params.teaser }}{{ .Params.teaser | plainify }}{{ end }}">
+<meta property="og:image" content="{{ if .Params.banner }}{{ .Permalink }}{{ .Params.banner }}{{ else }}{{ "/assets/gentics-card.png" | absURL }}{{ end }}">

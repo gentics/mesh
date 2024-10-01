@@ -1,0 +1,244 @@
+:toc:
+//:source-highlighter: highlightjs
+:source-highlighter: coderay
+:icons: font
+:experimental:
+
+= Level 1
+John Doe <john@mymail.com>
+v2.0, February 2003: Rewritten for version 2 release.
+
+
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam 
+nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, 
+sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. 
+Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+
+== Level 2
+
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam 
+nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, 
+sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. 
+Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+
+=== Level 3
+
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam 
+nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, 
+sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. 
+Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+
+==== Level 4
+
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam 
+nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, 
+sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. 
+Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+
+===== Level 5
+
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam 
+nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, 
+sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. 
+Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+
+===== Level 6
+
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam 
+nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, 
+sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. 
+Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+
+
+[NOTE]
+--
+This is an open block styled as NOTE.
+This is an open block
+
+  * item 1
+  * item 2
+  * item 3
+  
+--
+
+TIP: This is a tip.
+
+IMPORTANT: This is important.
+
+WARNING: This is a warning.
+
+CAUTION: This is caution.
+
+A regular listing block without highlighting:
+
+----
+class Main {
+   void main(String ars[]) {
+       int a = 1;
+   }
+}
+----
+
+
+Source code listing:
+
+[source,java,options="nowrap",role="prescrollable"]
+----
+class Main {
+   void main(String ars[]) { <1>
+       int a = 1;
+   }
+}
+
+class Main {
+   void main(String ars[]) { <1>
+       int a = 1;
+   }
+}
+
+class Main {
+   void main(String ars[]) { <1>
+       int a = 1;
+   }
+}
+
+class Main {
+   void main(String ars[]) { <1>
+       int a = 1;
+   }
+}
+----
+
+<1> The main method.
+
+
+
+.Optional Title
+==========================
+*Example* Block
+
+Use: examples :)
+
+Default caption "Example:"
+can be changed using
+
+ [caption="Custom: "]
+
+before example block.
+==========================
+
+.Literal Block
+....
+Use: workaround when literal
+paragraph (indented) like
+  1. First.
+  2. Second.
+incorrectly processed as list.
+....
+ 
+.Paragraph with literal style attribute
+[literal]
+This is a literal paragraph
+with literal style attribute.
+
+.Literal Paragraph (implicit by indentation)
+
+  This is a literal paragraph
+  with literal style attribute.
+
+.Optional Title
+[quote, cite author, cite source]
+____
+*Quote* Block
+
+Use: cite somebody
+____
+
+
+.An example table with additional Bootstrap role "table-striped"
+
+[role="table-striped",options="header,footer"]
+|=======================
+|Col 1|Col 2      |Col 3
+|1    |Item 1     |a
+|2    |Item 2     |b
+|3    |Item 3     |c
+|6    |Three items|d
+|=======================
+
+.Multiline cells, row/col span with row separators
+[options="header",grid="rows"]
+|====
+|Date |Duration |Avg HR |Notes
+
+|22-Aug-08 .2+^.^|10:24 | 157 |
+Worked out MSHR (max sustainable
+heart rate) by going hard
+for this interval.
+
+|22-Aug-08 | 152 |
+Back-to-back with previous interval.
+
+|24-Aug-08 3+^|none
+
+|====
+
+.Regular list
+
+* item 1
+* item 2
+* item 3
+
+.Checklist
+- [*] checked
+- [x] also checked
+- [ ] not checked
+-     normal list item
+
+== Thumbnails and Images
+
+// Use "float-group" (asciidoctor) or "clearfix" (Bootstrap) to limit 
+// floating to a block or paragraph
+ 
+[role="clearfix"]
+image:/thumbnail.png["My thumbnail",role="thumb right",link="/thumbnail.png"]
+Here's text that will wrap around the image to the left. Thumbnail is linked to an image (itself in this case).
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam 
+nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, 
+sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. 
+Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+// Floating stops here
+
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam 
+nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, 
+sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. 
+Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+
+Here is an image with a title:
+
+.Image title
+image::/image.png[role="thumb",link="/image.png"]
+
+== Experimental
+
+kbd:[Alt]+kbd:[F1]
+
+btn:[OK]
+
+menu:View[Zoom > Reset]
+
+== Bootstrap passthrough
+
+[pass]
+++++
+<ul class="pagination">
+  <li class="disabled"><a href="#">&laquo;</a></li>
+  <li class="active"><a href="#">1</a></li>
+  <li><a href="#">2</a></li>
+  <li><a href="#">3</a></li>
+  <li><a href="#">4</a></li>
+  <li><a href="#">5</a></li>
+  <li><a href="#">&raquo;</a></li>
+</ul>
+++++
+

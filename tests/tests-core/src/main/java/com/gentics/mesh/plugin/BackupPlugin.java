@@ -21,7 +21,7 @@ import okhttp3.OkHttpClient;
 /**
  * Test plugin which will
  * <ol>
- * <li>Invoke the OrientDB backup and fail immediately, when initialized the first time</li>
+ * <li>Invoke the db backup and fail immediately, when initialized the first time</li>
  * <li>Succeed initialization for every further attempt</li>
  * </ol>
  */
@@ -47,7 +47,7 @@ public class BackupPlugin extends AbstractPlugin {
 	}
 
 	/**
-	 * Invoke the OrientDB back (using a client with timeout set to 1 ms), wait for the CLUSTER_DATABASE_CHANGE_STATUS event and then fail
+	 * Invoke the db back (using a client with timeout set to 1 ms), wait for the CLUSTER_DATABASE_CHANGE_STATUS event and then fail
 	 * @return failing completable
 	 */
 	protected Completable invokeBackupAndFail() {

@@ -6,7 +6,7 @@
 
 	<groupId>com.gentics.mesh</groupId>
 	<artifactId>mesh</artifactId>
-	<version>2.2.0-SNAPSHOT</version>
+	<version>3.0.0-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
 	<name>Gentics Mesh</name>
@@ -14,10 +14,14 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<projectRoot>${project.basedir}</projectRoot>
+		<mesh.build.version>${project.version}</mesh.build.version>
+		<mesh.build.timestamp>${maven.build.timestamp}</mesh.build.timestamp>
+		<license.checker.version>1.0.0</license.checker.version>
 
 		<vertx.version>4.5.7</vertx.version>
 		<dagger.version>2.24</dagger.version>
 		<compiler.plugin.version>3.11.0</compiler.plugin.version>
+
 		<!-- Tests -->
 		<surefire.version>3.0.0-M5</surefire.version>
 		<surefire.forkcount>1</surefire.forkcount>
@@ -34,9 +38,12 @@
 		<jacoco.skip>true</jacoco.skip>
 		<jacoco.env></jacoco.env>
 
+		<!-- Miscellaneous -->
 		<mesh.image.provider>mesh-service-image-imgscalr</mesh.image.provider>
-		<mesh.build.version>${project.version}</mesh.build.version>
-		<mesh.build.timestamp>${maven.build.timestamp}</mesh.build.timestamp>
+
+		<!-- Database tests -->
+		<skip.mariadb.tests>true</skip.mariadb.tests>
+		<skip.hsqlmemory.tests>true</skip.hsqlmemory.tests>
 	</properties>
 
 	<scm>
@@ -51,10 +58,6 @@
 		<artifactId>maven-parent</artifactId>
 		<version>5.1.0</version>
 	</parent>
-
-	<developers>
-	</developers>
-
 	<organization>
 		<name>Gentics Software</name>
 		<url>https://www.gentics.com</url>
@@ -73,7 +76,6 @@
 	<modules>
 		<module>bom</module>
 		<module>changelog</module>
-		<module>ferma</module>
 		<module>rest-model</module>
 		<module>api</module>
 		<module>plugin-api</module>
@@ -81,21 +83,21 @@
 		<module>plugin-dep</module>
 		<module>plugin-parent</module>
 		<module>common-api</module>
-		<module>madl</module>
 		<module>mdm</module>
 		<module>common</module>
 		<module>elasticsearch</module>
 		<module>rest-client</module>
-		<module>changelog-system</module>
-		<module>databases</module>
 		<module>services</module>
 		<module>distributed</module>
 		<module>distributed-coordinator</module>
 		<module>core</module>
 		<module>verticles</module>
-		<module>server</module>
 		<module>doc</module>
+		<module>server</module>
 		<module>tests</module>
+		<module>database-tests</module>
+		<module>test-scanner</module>
+		<module>connectors</module>
 		<module>performance-tests</module>
 		<module>hazelcast3-cluster-manager</module>
 	</modules>
@@ -135,27 +137,6 @@
 					<version>${surefire.version}</version>
 					<configuration>
 						<skip>${skip.unit.tests}</skip>
-						<jvm>${env.JAVA_HOME}/bin/java</jvm>
-						<argLine>
-							-Xms128m -Xmx256m -XX:MaxDirectMemorySize=128m
-							--add-opens=java.base/java.lang=ALL-UNNAMED
-							-Dstorage.diskCache.bufferSize=128
-							${jacoco.env}
-						</argLine>
-						<forkedProcessTimeoutInSeconds>2700</forkedProcessTimeoutInSeconds>
-						<rerunFailingTestsCount>0</rerunFailingTestsCount>
-						<reuseForks>false</reuseForks>
-						<forkCount>${surefire.forkcount}</forkCount>
-						<trimStackTrace>false</trimStackTrace>
-						<useSystemClassLoader>false</useSystemClassLoader>
-						<excludes>
-							<include>**/*AbstractTest.java</include>
-							<include>**/*Abstract*Test.java</include>
-							<exclude>**/*Abstract*.java</exclude>
-							<exclude>**/Abstract*.java</exclude>
-						</excludes>
-						<groups>${surefire.groups}</groups>
-						<excludedGroups>${surefire.excludedGroups}</excludedGroups>
 					</configuration>
 				</plugin>
 				<plugin>
@@ -210,14 +191,13 @@
 					<artifactId>dependency-reporting-plugin</artifactId>
 					<version>1.0.0</version>
 				</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>versions-maven-plugin</artifactId>
-				<version>2.16.2</version>
-			</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>versions-maven-plugin</artifactId>
+					<version>2.16.2</version>
+				</plugin>
 			</plugins>
 		</pluginManagement>
-
 		<plugins>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>

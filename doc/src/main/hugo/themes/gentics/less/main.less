@@ -1,0 +1,545 @@
+@import "includes/bootstrap-custom.less";
+@import "includes/variables-custom.less";
+@import "includes/cookie-styles.less";
+
+/*
+ * Base structure
+ */
+html,
+body {
+  height: 100%;
+  /* font-family: "Univers LT W01_45 Light", arial, helvetica, sans-serif; */
+  font-family: 'Roboto', arial, helvetica, sans-serif;
+  line-height: 200%;
+  color: @fontcolor;
+  font-size: 16px;
+  font-weight: 200;
+}
+
+a.btn, a.btn.btn-primary {
+    color: #fff;
+    background: @gtxblue;
+    text-decoration: none;
+
+    &:hover {
+        background-color: #ececec;
+    }
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 200;
+    line-height: 150%;
+}
+
+h1 {
+  font-size: 48px;
+}
+
+h2 {
+    font-size: 32px;
+}
+
+ul.nav.navbar-nav {
+    margin-top: 2px;
+}
+.navbar {
+  background: #fff;
+  height: 55px;
+  min-height: 52px;
+  z-index: 9999;
+}
+
+.navbar-default .navbar-nav>li>a.btn {
+    color: #fff;
+    padding: 6px 12px;
+    margin-top: 7px;
+}
+
+.navbar-default .navbar-collapse {
+    margin-top: 2px;
+}
+
+.navbar-header {
+  height: 50px;
+}
+
+.navbar-collapse {
+  background: #fff;
+  width: 100%;
+}
+
+.navbar-collapse.in {
+    margin: 0;
+    padding: 30px 0;
+}
+
+.navbar-brand .logo {
+  height: 28px;
+  position: absolute;
+}
+
+.navbar-brand-text {
+    position: absolute;
+    top: 16px;
+    left: 50px;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.navbar-toggle {
+  margin-top: 7px;
+}
+
+.navbar-fixed-top {
+  border: 0;
+}
+
+ul.nav {
+  float: none;
+  display: table;
+  margin: auto;
+}
+
+.min-height {
+    min-height: 500px;
+}
+
+.topsection-wrapper {
+  background: @gtxblue;
+  background-size: cover;
+  background-position-y: 100%;
+  color: @body-bg;
+
+  .heroimg {
+      margin: 0 auto;
+  }
+
+  a {
+    color: @body-bg;
+    border-bottom: 1px dotted @body-bg;
+  }
+}
+.contents {
+    padding-bottom: 52px;
+}
+
+.topsection {
+  padding-bottom: 10px;
+    .row {
+    margin-top:0px;
+    }
+
+    h1 {
+        font-size: 34px;
+        line-height: 110%;
+    }
+
+    h2 {
+        font-size: 22px;
+    }
+
+    .logo {
+        max-height: 70px;
+        margin-bottom: 15px;
+    }
+}
+
+@keyframes logo-fadein {
+  0% {
+    top: 0px;
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.center {
+    text-align: center;
+}
+
+.header {
+  text-align: center;
+}
+
+.topmargin, .row {
+    margin-top: 30px;
+}
+
+.invite, #regform {
+  margin-top: 5%;
+  padding: 15px 30px;
+  text-align: center;
+}
+
+.invite input {
+  text-align: center;
+}
+
+.form-control:focus {
+  box-shadow: 0 0 10px #fff;
+}
+
+.has-success input, .has-error input {
+  border: 1px solid #fff;
+  background-color: #cfc;
+}
+
+.has-error input {
+  background-color: #fcc;
+}
+
+#regform {
+  display: none;
+  .btn {
+    background: transparent;
+    border: 1px solid #fff;
+    transition: box-shadow 500ms ease;
+  }
+  .btn:hover, .btn:focus {
+    color: #fff;
+    box-shadow: 0 0 10px #fff;
+  }
+}
+
+#download, #registered {
+  display: none;
+  margin-top: 50px;
+  text-align: center;
+  a {
+    font-size: 24px;
+    color: @gtxblue;
+    text-decoration: none;
+    background: #fff;
+    padding: 10px;
+  }
+}
+
+.footer {
+  padding: 20px 0;
+  background-color: #efefef;
+
+  .logo {
+    height: 31px;
+    margin-bottom: 12px;
+  }
+}
+
+.blogpost-topsection {
+    text-shadow: 0 0 5px black;
+
+    h1, h2 {
+        background: rgba(0, 0, 0, 0.2);
+        padding: 10px;
+    }
+}
+
+.blogpost .content {
+    margin-bottom: 50px;
+}
+
+.blogpost .btn {
+    margin-top: 15px;
+}
+
+.topsection.blogpost a.btn {
+    color: @gtxblue;
+    text-decoration: none;
+}
+
+.blogpost-part {
+    margin-bottom: 15px;
+
+    .paragraph {
+        text-align: justify;
+    }
+
+    .question {
+        font-weight: bolder;
+        margin-top: 2em;
+    }
+
+    .note {
+        font-variant: super;
+        font-style: italic;
+    }
+
+    ol, ul {
+        margin-bottom: 1.3em;
+    }
+
+    ol > li p, ul > li p {
+        margin-bottom: @line-height-computed * 0.2;
+    }
+}
+
+.blogpost-img img {
+    width: 100%;
+}
+
+.vcenter {
+    display: inline-block;
+    vertical-align: middle;
+    float: none;
+}
+
+.youtube {
+    width: 300px;
+    height: 169px;
+}
+
+@media (min-width: 770px) {
+    .youtube {
+        width: 720px;
+        height: 405px;
+    }
+}
+
+.card {
+    color: @fontcolor;
+    background: #fff;
+    text-align: center;
+    padding: 10px;
+    border: 1px solid #ccc;
+
+    &.card-dark {
+        background: @gray;
+        color: #fff;
+        border: 0;
+    }
+    hr {
+        border-top: 1px dotted #ccc;
+    }
+    form {
+        margin-bottom: 20px;
+    }
+    a {
+        color: @gtxblue;
+    }
+}
+
+.plan__pricewrap {
+    margin: 30px 0 20px 0;
+    padding-left: 55px;
+}
+
+.plan__currency, .plan__billing-period {
+    font-size: 12px;
+}
+
+.plan__price {
+    font-size: 48px;
+}
+
+.btn.btn-primary {
+    border: 0;
+    transition: box-shadow 0.5s;
+}
+
+#signup-form {
+    background: @gray;
+    color: @gray-lighter;
+    overflow: hidden;
+    transition: height 1s;
+    height: 0px;
+    .container {
+        padding: 50px 0;
+    }
+    .logo {
+        float: left;
+        width: 50px;
+        margin: 10px 10px 0 0;
+    }
+    box-shadow: inset 0 0 10px @dropshadow;
+}
+
+.padding-bottom {
+    padding-bottom: 30px;
+}
+
+.glyphicon {
+    top: 4px;
+    margin-right: 3px;
+    color: @gtxblue;
+}
+
+.call-to-action {
+    font-size: 16px;
+
+    .btn {
+        font-size: 30px;
+    }
+}
+
+@media (max-width: 320px) {
+    .topsection h1 {
+        font-size: 31px;
+    }
+    .call-to-action {
+        font-size: 15px;
+        .btn {
+            font-size: 25px;
+        }
+    }
+}
+
+.row-equal-height {
+  display: flex;
+  display: -webkit-flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 0px;
+  flex-grow: 1;
+
+  .card {
+      width: 100%;
+  }
+}
+
+.dark {
+    background: @gray;
+    div[class*="col"] {
+        color: #fff;
+    }
+}
+
+.navbar-default .navbar-nav>li>a.navbar-highlight {
+    color: @brand-success;
+}
+
+a.btn.btn-download,
+.navbar-default .navbar-nav>li>a.btn.btn-download,
+.navbar-default .navbar-nav>li>a.btn.btn-download,
+.btn.btn-download {
+    background-color: @brand-success;
+    .glyphicon {
+        color: @body-bg;
+        margin-right: 5px;
+    }
+    &:focus,
+    &:hover {
+        background-color:@brand-success-dark
+    }
+}
+
+.main-features {
+    font-size: 20px;
+}
+
+.feature-card {
+    margin: 0 15px 15px 15px;
+    padding: 10px;
+
+    .emoji {
+        font-size: 50px;
+    }
+
+    .emoji, .emoji + h4 {
+        text-align: center;
+        line-height: 150%;
+        margin: 15px 0 10px 0;
+    }
+}
+
+.ending {
+    border-top: 1px dashed @gray-light;
+}
+
+.contents,
+.footer {
+    a {
+        border-bottom: 1px @gtxblue dotted;
+
+        &:hover {
+            text-decoration: none;
+            border-bottom-style: solid;
+            border-color: @gtxblue-dark;
+        }
+    }
+}
+
+.footer {
+    img {
+        height: 2em;
+    }
+}
+
+.topmargin {
+    a {
+        border-bottom: 1px @body-bg dotted;
+
+        &:hover {
+            text-decoration: none;
+            border-bottom-style: solid;
+            border-color: @body-bg;
+        }
+    }
+}
+.icon {
+
+    .glyphicon {
+        border-radius: 50%;
+        padding: 30px;
+        background: @gray-lighter;
+        font-size: 25px;
+    }
+
+    h4 {
+        font-weight: bold;
+        margin: 40px;
+    }
+}
+/* fix api anchor links landing behind navigation */
+.body-navbar-fixed .container *[id]:before {
+  display: block;
+  content: " ";
+  margin-top: -50px;
+  padding-top: 50px;
+  visibility: hidden;
+}
+
+.github-btn {
+    margin-left: 26px;
+}
+
+.customer-card {
+    text-align:center;
+    height: 150px;
+    img {
+        vertical-align: unset;
+    }
+    a {
+        border-bottom: 0px;
+    }
+}
+.padding-top-20{
+  padding-top:20px;
+}
+.padding-top-25{
+  padding-top:25px;
+}
+.margin-top-30{
+  margin-top:30px !important;
+}
+.customer {
+    vertical-align: middle;
+}
+.row-user {
+    display: table;
+    padding-left: 0;
+    padding-right: 0;
+    width: 100%;
+    table-layout: fixed;
+    margin-left: auto;
+    margin-right: auto;
+}
+body {
+  overflow-x: hidden;
+}
+body {
+  position: relative
+}
+
+.blog-list-heading {
+  min-height: 3em;
+}

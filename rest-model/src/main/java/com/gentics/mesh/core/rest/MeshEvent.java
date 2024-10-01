@@ -596,44 +596,11 @@ public enum MeshEvent {
 		null,
 		"Event which will cause all search indices to be refreshed, so that changes can be queried."),
 
-	// Backup & Restore Events
-
-	GRAPH_BACKUP_START("mesh.graph.backup.start",
-		null, "Emitted once the backup process starts."),
-
-	GRAPH_BACKUP_FINISHED("mesh.graph.backup.finished",
-		null,
-		"Emitted once the backup process finishes."),
-
-	GRAPH_RESTORE_START("mesh.graph.restore.start",
-		null,
-		"Emitted once the restore process starts."),
-
-	GRAPH_RESTORE_FINISHED("mesh.graph.restore.finished",
-		null,
-		"Emitted once the restore process finishes."),
-
-	GRAPH_EXPORT_START("mesh.graph.export.start",
-		null,
-		"Emitted once the graph database export process starts."),
-
-	GRAPH_EXPORT_FINISHED("mesh.graph.export.finished",
-		null,
-		"Emitted once the graph database export process finishes"),
-
-	GRAPH_IMPORT_START("mesh.graph.import.start",
-		null,
-		"Emitted once the graph database import process starts."),
-
-	GRAPH_IMPORT_FINISHED("mesh.graph.import.finished",
-		null,
-		"Emitted once the graph database import process finishes."),
-
-	REPAIR_START("mesh.graph.repair.start",
+	REPAIR_START("mesh.db.repair.start",
 		null,
 		"Emitted once the repair operation is started."),
 
-	REPAIR_FINISHED("mesh.graph.repair.finished",
+	REPAIR_FINISHED("mesh.db.repair.finished",
 		null,
 		"Emitted once the repair operation finishes."),
 

@@ -1,0 +1,31 @@
+{{ define "content" }}
+<div class="topsection-wrapper">
+    <div class="topsection container">
+        <div>
+            <div class="col-md-12">
+                <h1>{{ .Title }}</h1>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="blogpost">
+    <div class="container">
+        {{ range $i, $p := .Pages }}
+        {{if  (modBool $i 2) }}
+            <div class="row">
+                {{end}}
+                <div class="content teaser col-md-6">
+                    <h2 class="blog-list-heading">{{ .Title }}</h2>
+
+                    <div>{{ .Params.teaser }}</div>
+                    <p>
+                        <a href="{{ .Permalink }}" class="btn btn-default">Read more</a>
+                    </p>
+                </div>
+                {{if not (modBool $i 2)}}
+            </div>
+            {{end}}
+        {{end}}
+    </div>
+</div>
+{{end}}

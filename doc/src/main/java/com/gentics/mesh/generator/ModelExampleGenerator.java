@@ -14,7 +14,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import io.vertx.core.json.JsonObject;
 import org.apache.commons.io.FileUtils;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -22,8 +21,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
+import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+
+import io.vertx.core.json.JsonObject;
 
 /**
  * Example generator for various JSON / YAML models.
@@ -89,7 +90,7 @@ public class ModelExampleGenerator extends AbstractGenerator {
 	}
 
 	private void writeMeshConfig() throws JsonProcessingException, IOException {
-		OrientDBMeshOptions conf = new OrientDBMeshOptions();
+		HibernateMeshOptions conf = new HibernateMeshOptions();
 		conf.setTempDirectory("/opt/mesh/data/tmp");
 		conf.getUploadOptions().setTempDirectory("/opt/mesh/data/tmp/temp-uploads");
 		conf.getAuthenticationOptions().setKeystorePassword("<Your Password>");

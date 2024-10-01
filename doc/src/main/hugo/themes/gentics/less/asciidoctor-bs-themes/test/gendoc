@@ -1,0 +1,11 @@
+#!/bin/bash
+
+styles="default default_themed amelia cerulean cosmo cyborg darkly flatly journal lumen united readable simplex slate spacelab superhero yeti"
+
+rm -fr output > /dev/null
+mkdir output
+
+for i in $styles
+do
+    asciidoctor -a stylesheet="../css/bootstrap_$i.css" -o output/test_$i.html test.adoc
+done

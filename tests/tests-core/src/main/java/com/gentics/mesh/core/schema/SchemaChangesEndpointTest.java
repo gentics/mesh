@@ -776,7 +776,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 				new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
 		});
 
-		// Note : testing against content() directly (orientdb model) doesnt work since old field is not deleted
+		// Note : testing against content() directly doesnt work since old field is not deleted
 		assertEquals("2.0", tx(tx -> { return tx.contentDao().getFieldContainer(node, "en").getVersion().toString(); }));
 		assertNull("We would expect the new version to not include the old field value.",
 			tx(tx -> { return tx.contentDao().getFieldContainer(node, "en").getHtml("content"); }));

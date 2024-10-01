@@ -1,8 +1,0 @@
-node
-mesh.yml
-node_modules
-/data
-/config
-/target/
-bower_components
-
