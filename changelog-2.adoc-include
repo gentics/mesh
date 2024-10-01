@@ -6,6 +6,11 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v2.1.7]]
+== 2.1.7 (01.10.2024)
+
+icon:check[] Core: A crash, caused by duplicated nodes in a GraphQL resulting set, has been fixed.
+
 [[v2.1.6]]
 == 2.1.6 (13.09.2024)
 
