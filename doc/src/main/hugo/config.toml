@@ -1,5 +1,5 @@
 languageCode = "en-us"
-title = "Gentics Mesh - The open source headless CMS for developers"
+title = "Gentics Mesh - Documentation"
 baseURL = "https://gentics.com/mesh-docs/"
 theme = "gentics"
 

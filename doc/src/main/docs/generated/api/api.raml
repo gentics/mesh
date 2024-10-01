@@ -1528,7 +1528,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "cc2558e460304c18972360676dd95cd5"
+                            "uuid" : "eb786305ace14a3e89a241fdea974d18"
                           } ]
                         }
             responses: 
@@ -3061,7 +3061,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "0b0eb3f89d51427685be97c05947e1ad"
+                            "uuid" : "89477b780e0440b39ec6e18149753407"
                           } ]
                         }
             responses: 
@@ -4367,7 +4367,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "b69226e5c7d84a148c9de49c243abd90"
+                            "uuid" : "77c67cc645534256acef0e6603db2aa9"
                           } ]
                         }
             responses: 
@@ -6876,7 +6876,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "2eb46d4c14e8405da78cd74b2d1ec154"
+                            "uuid" : "d3c6178e899c4a5d9378da8e955edd57"
                           } ]
                         }
             responses: 
@@ -8261,12 +8261,6 @@ mediaType: application/json
         post: 
             description: Update the schema.
             queryParameters: 
-                strictValidation: 
-                    description: Validate the Elasticsearch settings in the schema. When this parameter is set, a schema update or creation will fail, when the respective Elasticsearch index cannot be created.
-                    type: boolean
-                    required: false
-                    repeat: false
-                    default: false
                 updateAssignedBranches: 
                     description: Update the schema version for all branches which already utilize the schema.
                     type: boolean
@@ -8279,6 +8273,12 @@ mediaType: application/json
                     required: false
                     repeat: false
                     example: summerBranch,winterBranch
+                strictValidation: 
+                    description: Validate the Elasticsearch settings in the schema. When this parameter is set, a schema update or creation will fail, when the respective Elasticsearch index cannot be created.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    default: false
             body: 
                 application/json: 
                     schema: |
@@ -9326,7 +9326,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "e19b4ae2799b46e2bc7d402df83f13bd"
+                            "uuid" : "0a2adbd059ae42c3ba2af8c37504485d"
                           } ]
                         }
             responses: 
@@ -11083,7 +11083,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "9c07d388839b48899994515b9125660a"
+                            "uuid" : "0b341ee9cff9489f807aa6027753e58f"
                           } ]
                         }
             responses: 
@@ -24031,7 +24031,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "a6bdb3ac5d5d451b9d4a49cb0e15c5d7"
+                            "uuid" : "c1d3fb8333f84c83901ff530b7a808ee"
                           } ]
                         }
             responses: 
@@ -27494,7 +27494,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "7242a2a78a764da6a777ccce9abdbfc6"
+                            "uuid" : "4d4f3846711244dea0b82d70b186e5c6"
                           } ]
                         }
             responses: 
@@ -29384,7 +29384,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "16ad41f8113b4dc6bb4be0717b4af7b6"
+                            "uuid" : "c2fbfc3dddb9476f93aa722b24b89582"
                           } ]
                         }
             responses: 
@@ -33582,7 +33582,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "fd8bca937be7410eb4a4426c5195a64b"
+                            "uuid" : "d5f040e51ea44133867ee4ac225c9bdf"
                           } ]
                         }
             responses: 
