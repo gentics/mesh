@@ -94,7 +94,7 @@ java -cp mesh-database-connector-hsqldb-X.X.X.jar:mesh-server-X.X.X.jar com.gent
 java -cp mesh-database-connector-hsqldb-X.X.X.jar;mesh-server-X.X.X.jar com.gentics.mesh.server.ServerRunner
 ----
 
-The same example for MariaDB database will require the same database setup, as in the link{{ relref "getting-started.asciidoc" }}#_use_mariadb_connected_container[Docker setup above], with the following command lines:
+The same example for MariaDB database will require the same database setup, as in the link:{{ relref "getting-started.asciidoc" }}#_use_mariadb_connected_container[Docker setup above], with the following command lines:
 
 
 === For Unix/Linux/MacOS
