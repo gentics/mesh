@@ -1,0 +1,428 @@
+@import "main.less";
+@import "includes/syntax.less";
+
+@import "asciidoctor-bs-themes/src/less/adocvariables.less";
+@import "asciidoctor-bs-themes/src/less/asciidoc.less";
+@import "asciidoctor-bs-themes/src/less/awesome-icons.less";
+@import "asciidoctor-bs-themes/src/less/mixins.less";
+
+.docs-content {
+    padding-top: 20px;
+    padding-bottom: 100px;
+}
+
+body {
+    line-height: 150%;
+}
+
+figcaption {
+    font-size: smaller;
+}
+
+/*
+.ulist ul {
+    list-style-type: none;
+}
+
+.ulist ul li:before {
+    content: "+";
+    display: inline;
+    float: left;
+    color: @gtxblue;
+    margin-right: 9px;
+    font-weight: bold;
+}
+*/
+
+
+/* Reset some of the Asciidoc definitions */
+#header,
+#content,
+#footnotes,
+#footer {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 0;
+    margin-bottom: 0;
+    max-width: inherit;
+    position: relative;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.listingblock pre.highlight {
+    padding: 0;
+    margin-bottom: @line-height-computed;
+}
+
+.sect1+.sect1 {
+    border-top: 1px solid @gray-lighter;
+    margin-top: @line-height-computed * 0.5;
+    padding-top: @line-height-computed;
+}
+
+#footer {
+    background-color: none;
+}
+
+#footer-text,
+#content #footnotes {
+    margin-top: @line-height-computed;
+    padding-top: @line-height-computed;
+    border-top: 1px solid @gray-lighter;
+    color: @gray-light;
+}
+
+#footnotes+#footer #footer-text {
+    border-top: none;
+    padding-top: 0;
+}
+
+/** Documentation page */
+
+/* Sidebar should stick to the top */
+#sidebar {
+    overflow-y: auto;
+    max-height: ~"calc(100vh - 40px)";
+    font-size: 16px;
+
+    &.affix,
+    &.affix-bottom {
+        width: ((@screen-md-min - @grid-gutter-width) * 0.25 - @grid-gutter-width);
+    }
+
+    &.affix {
+        position: fixed;
+        top: 20px;
+    }
+
+    &.affix-bottom {
+        position: absolute;
+    }
+
+    @media (max-width: @screen-md-min) {
+        display: none;
+    }
+
+    @media (min-width: @screen-lg-min) {
+
+        &.affix,
+        &.affix-bottom {
+            width: ((@screen-lg-min - @grid-gutter-width) * 0.25 - @grid-gutter-width);
+        }
+    }
+
+    &>.nav {
+        padding-left: 0;
+
+        a {
+            padding: 0 0 (@line-height-computed / 8) 5px;
+
+            &:hover {
+                border-left: 1px solid @brand-primary;
+                /*padding-left: 4px;*/
+            }
+
+            border-left: 1px solid transparent;
+        }
+
+        &>.active>a {
+            border-left: 2px solid @brand-primary;
+            padding-left: 3px;
+        }
+
+        .nav {
+            display: none;
+
+            li {
+
+                a {
+                    padding-left: 20px;
+                }
+
+                &:last-child a {
+                    padding: 0 0 (@line-height-computed / 8) 20px;
+
+                    &:hover {
+                        padding-left: 20px;
+                    }
+                }
+
+                &.active a {
+                    border-left: 2px solid @brand-primary;
+                    padding-left: 18px;
+                }
+
+                border-left: 2px solid transparent;
+            }
+        }
+
+        .active .nav {
+            display: block;
+        }
+    }
+
+    &.sidebar-no-level2 {
+        .sectlevel2 {
+            display: none !important;
+        }
+    }
+}
+
+.toc {
+    display: none;
+}
+
+.toc {
+    h2 {
+        margin-top: 0;
+    }
+
+    padding-bottom: @line-height-computed * 2;
+
+    ul {
+        list-style-type: disc;
+        margin-top: 0;
+        margin-bottom: 12.5px;
+        margin-left: 0;
+        padding-left: 1.2em;
+
+        li {
+            display: list-item;
+
+            a {
+                padding: 0;
+            }
+        }
+    }
+}
+
+.docs-content {
+    .no-margin-top {
+        margin-top: 0;
+    }
+}
+
+.docs-content [id]:before {
+    content: none;
+    margin: auto;
+}
+
+// do not display language name. it interferes with the code.
+.listingblock:hover code[class*="language-"]:before {
+    display: none;
+}
+
+// Premium Features Boxes
+.box.box-premium-features {
+    margin: 0 0 30px;
+    border: 1px solid #cccccc;
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+    -webkit-box-shadow: 0 1px 1px rgba(204, 204, 204, 0.5);
+    box-shadow: 0 1px 1px rgba(204, 204, 204, 0.5);
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    -webkit-transition: border ease-in-out 0.15s;
+    transition: border ease-in-out 0.15s;
+    -webkit-background-clip: padding-box;
+    -moz-background-clip: padding;
+    background-clip: padding-box;
+}
+
+.box.box-premium-features header {
+    padding: 10px;
+
+    h3 {
+        min-height: 4em;
+    }
+}
+
+.box.box-premium-features footer {
+    border-top: 1px solid #f0f0f0;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+}
+
+.box.box-premium-features img {
+    opacity: 0.6;
+}
+
+.plugin .box-premium-features {
+    position: relative;
+    padding-bottom: 20px;
+    height: 100%;
+    padding-bottom: 60px;
+}
+
+.plugins-height {
+    min-height: 290px;
+}
+
+.box-premium-features footer {
+    a.btn, button.btn {
+        padding: 8px 12px;
+        margin: 8px;
+        width: 95%;
+    }
+}
+
+.box-demo {
+    padding-top: 10px;
+    margin: 0 0 30px;
+    border: 1px solid #cccccc;
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+    -webkit-box-shadow: 0 1px 1px rgba(204, 204, 204, 0.5);
+    box-shadow: 0 1px 1px rgba(204, 204, 204, 0.5);
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    -webkit-transition: border ease-in-out 0.15s;
+    transition: border ease-in-out 0.15s;
+    -webkit-background-clip: padding-box;
+    -moz-background-clip: padding;
+    background-clip: padding-box;
+}
+
+.demos .row {
+    margin-top: 0px;
+}
+
+.padding20 {
+    padding: 20px
+}
+
+h4.headlines-plugins img {
+    opacity: 0.6;
+}
+
+.plugins-icon {
+    font-size: 60px !important;
+    padding-bottom: 20px;
+    color: rgb(102, 102, 102);
+    //font-weight: 100;
+}
+
+#pluginTabs {
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: 400;
+}
+
+#pluginTabs a {
+    padding: 20px
+}
+
+.btn-quote {
+    padding: 8px 12px;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.padding-top-bottom-20 {
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+// Graph QL 
+.graphql-example {
+    height: 15em;
+}
+
+.img-responsive img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+
+.admonitionblock a {
+    word-wrap: break-word;
+}
+
+
+.admonitionblock>table {
+    table-layout: fixed;
+}
+
+.tableblock a code {
+    color: #0096dc;
+}
+
+.sectionbody a {
+    text-decoration: underline;
+}
+
+.services-height {
+    min-height: 150px;
+}
+
+.fineprint {
+    font-size: 90%;
+}
+
+.services-icon {
+    font-size: 100px;
+    color: #5cb85c;
+}
+
+.topsection-wrapper-white {
+    border-bottom: 1px solid #cecece;
+    min-height: 51px;
+}
+
+.btn-quote {
+    padding: 8px 12px;
+    width: 100%;
+}
+
+.padding-top-bottom-20 {
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+.topsection-credit {
+    position: absolute;
+    right: 0px;
+    margin: 1em;
+    padding: 2px 6px;
+    background-color: white;
+    color: @fontcolor;
+    opacity: 0.6;
+}
+
+.headlines-services {
+    line-height: 42px;
+    font-size: 30px;
+    margin-bottom: 30px;
+}
+
+.sublines-services {
+    line-height: 20px;
+    color: #000;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.list-black {
+    margin: 0px 0px 15px 0px;
+    padding: 0;
+}
+
+ul.list-black li {
+    list-style-type: disc;
+    padding-left: 5px;
+    margin-bottom: 10px;
+    margin-left: 20px;
+}
+
+.imageblock>.title {
+    margin-top: -40px;
+    margin-left: 10px;
+}

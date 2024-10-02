@@ -2473,7 +2473,7 @@ icon:plus[] UI: Add multi binary upload dialogue. Users can now upload multiple 
 icon:plus[] UI: Binary fields can now be used as display fields. The filename is used as the display name for the node. link:https://github.com/gentics/mesh-ui/issues/11[#11]
 
 icon:plus[] UI: It is now possible to specify the URL to the front end of a system. This allows users to quickly go to the page that represents the node in the system.
-  See the default `mesh-ui-config.js` or the link:{{< relref "user-interface.asciidoc" >}}#_configuration[online documentation] for more details. link:https://github.com/gentics/mesh-ui/issues/14[#14]
+  See the default `mesh-ui-config.js` for more details. link:https://github.com/gentics/mesh-ui/issues/14[#14]
 
 icon:plus[] Upload: The upload handling code has been refactored in order to process the uploaded data in-parallel.
 

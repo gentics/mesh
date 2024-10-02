@@ -1,0 +1,68 @@
+{{ define "content" }}
+<div class="topsection-wrapper">
+    <div class="topsection container">
+        <div class="row">
+            <div class="col-md-12">
+                <h1>Demos</h1>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ $demos := .Pages.ByParam "sort-key" }}
+
+<div class="contents demos">
+    <div class="container">
+        <div class="row">
+            <div class="center col-md-12">
+                <h2>Check out our demo applications</h2>
+            </div>
+        </div>
+        {{ $count := $demos | len }} {{ range $i, $p := $demos }}
+        <div class="row box box-md box-demo">
+            <div class="col-md-6 center">
+                <div>
+                    <img src="/demo/{{ .Params.image }}" width="100%" />
+                </div>
+            </div>
+            <div class="col-md-6 center">
+                <div class="container">
+                    <div class="row">
+                        <div class="center col-md-6">
+                            <h3> {{.Title}} </h3>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="text-left col-md-4 col-md-offset-1">
+                            {{ .Content }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 col-md-offset-1">
+                            <hr/>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="text-left col-md-5 col-md-offset-1">
+                            <ul>
+                                {{ if .Params.demo }}
+                                <li><a href="{{ .Params.demo }}" target="_blank" ref="noopener noreferrer">Demo</a></li>
+                                {{ end }}
+                                {{ if .Params.cms }}
+                                <li><a href="{{ .Params.cms }}" target="_blank" ref="noopener noreferrer">CMS</a> (Login: admin / admin)</li>
+                                {{end}}
+                                {{ if .Params.github }}
+                                <li><a href="{{ .Params.github }}" target="_blank" ref="noopener noreferrer">Source code</a></li>
+                                {{end}}
+                                {{ if .Params.blog }}
+                                <li><a href="{{ .Params.blog }}" target="_blank" ref="noopener noreferrer">Blog post</a></li>
+                                {{end}}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{end}}
+    </div>
+    {{end}}

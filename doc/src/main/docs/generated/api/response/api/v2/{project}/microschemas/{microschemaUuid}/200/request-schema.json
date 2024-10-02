@@ -102,9 +102,6 @@
           "noIndex" : {
             "type" : "boolean"
           },
-          "noIndex" : {
-            "type" : "boolean"
-          },
           "elasticsearch" : {
             "type" : "object",
             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"

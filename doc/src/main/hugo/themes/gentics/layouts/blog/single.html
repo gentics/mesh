@@ -1,0 +1,91 @@
+{{ define "content" }}
+{{ if .Params.banner }}
+<div class="topsection-wrapper min-height" style="background-image: url({{ .Params.banner }})">
+    {{ if .Params.banner_credit }}
+    <div class="topsection-credit">&copy; {{ .Params.banner_credit }}</div>
+    {{ end }}
+    {{else}}
+    <div class="topsection-wrapper">
+        {{end}}
+        <div class="topsection container blogpost-topsection">
+            <div class="row">
+                <div class="col-md-8 col-md-offset-2">
+                    <h1>{{ .Title }}</h1>
+                    {{ if .Params.teaser }}
+                    <h2>{{ .Params.teaser }}</h2>
+                    {{ end }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="blogpost">
+        <div class="container docs-content">
+            <div class="row">
+                <div class="col-sm-12 col-md-push-9 col-md-3 hidden-xs hidden-sm">
+                    <div id="sidebar" data-spy="affix">
+                        {{ .TableOfContents }}
+                    </div>
+                </div>
+                <div class="col-sm-12 col-md-pull-3 col-md-9">
+                    <div class="toc hidden-md hidden-lg">
+                        <h2>{{ .Title }}</h2>
+                        {{ .TableOfContents }}
+                    </div>
+
+                    <div class="blogpost-part">
+                        {{ if .Params.author }}
+                        <p>
+                            <i>By {{ .Params.author }}, on {{ .Date.Format "January 2, 2006" }} </i>
+                        </p>
+                        {{end}} {{ if .Params.youtube }}
+                        <script>
+                            window.GCM.apps.whenAllowed('youtube', function () {
+                                document.write('<iframe class="youtube" src="https://www.youtube.com/embed/{{ .Params.youtube }}" frameborder="0" allowfullscreen></iframe>')
+                            });
+                        </script> {{end}}
+                        <p>
+                            {{ .Content }}
+                        </p>
+                    </div>
+
+
+                    {{ if .Params.nofooter }}
+                    <div id="footnotes">
+                        {{ range .Params }}
+                        <div class="footnote" id="_footnote_<%= fn.index %>">
+                            <a href="#_footnoteref_<%= fn.index %>"><%= fn.index %></a>. <%= fn.text %>
+                        </div>
+                        {{ end }}
+                    </div>
+                    {{end}}
+
+                    {{ if .Params.nofooter }}
+                    <div id="footer">
+                        <div id="footer-text">
+                            <% if attr? :revnumber %>
+                            <%= %(#{attr 'version-label'} #{attr :revnumber}) %><br>
+                            <% end
+                        if attr? 'last-update-label' %>
+                            <%= %(#{attr 'last-update-label'} #{attr :docdatetime}) %>
+                            <% end %>
+                            <%= (docinfo_content = (docinfo :footer)).empty? ? nil : %(#{docinfo_content}) %>
+                        </div>
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-8 center">
+                    <div class="card">
+                        <p>Thanks for reading our blog! Try our headless CMS Gentics Mesh for free!</p>
+                        <p>
+                            <a class="btn btn-primary btn-download" href="/download">Free Download</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{end}}
