@@ -10,6 +10,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.rest.InternalCommonEndpoint;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
@@ -48,7 +49,7 @@ public class ProjectInfoEndpoint extends AbstractInternalEndpoint {
 		endpoint.addUriParameter("project", "Name of the project.", "demo");
 		endpoint.description("Return the current project info.");
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(OK, projectExamples.getProjectResponse("demo"), "Project information.");
+		endpoint.exampleResponse(OK, InternalCommonEndpoint.projectExamples.getProjectResponse("demo"), "Project information.");
 		if (chain != null) {
 			chain.secure(endpoint.getRoute());
 		}

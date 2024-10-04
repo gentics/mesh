@@ -14,6 +14,7 @@ import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.rest.InternalCommonEndpoint;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 
@@ -44,7 +45,7 @@ public abstract class RolePermissionHandlingProjectEndpoint extends AbstractProj
 		readPermissionsEndpoint.method(GET);
 		readPermissionsEndpoint.description("Get the permissions on the " + typeDescription + " for all roles.");
 		readPermissionsEndpoint.produces(APPLICATION_JSON);
-		readPermissionsEndpoint.exampleResponse(OK, roleExamples.getObjectPermissionResponse(includePublishPermissions), "Loaded permissions.");
+		readPermissionsEndpoint.exampleResponse(OK, InternalCommonEndpoint.roleExamples.getObjectPermissionResponse(includePublishPermissions), "Loaded permissions.");
 		readPermissionsEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().getParam(uuidParameterName);
@@ -58,8 +59,8 @@ public abstract class RolePermissionHandlingProjectEndpoint extends AbstractProj
 		grantPermissionsEndpoint.description("Grant permissions on the " + typeDescription + " to multiple roles.");
 		grantPermissionsEndpoint.consumes(APPLICATION_JSON);
 		grantPermissionsEndpoint.produces(APPLICATION_JSON);
-		grantPermissionsEndpoint.exampleRequest(roleExamples.getObjectPermissionGrantRequest(includePublishPermissions));
-		grantPermissionsEndpoint.exampleResponse(OK, roleExamples.getObjectPermissionResponse(includePublishPermissions), "Updated permissions.");
+		grantPermissionsEndpoint.exampleRequest(InternalCommonEndpoint.roleExamples.getObjectPermissionGrantRequest(includePublishPermissions));
+		grantPermissionsEndpoint.exampleResponse(OK, InternalCommonEndpoint.roleExamples.getObjectPermissionResponse(includePublishPermissions), "Updated permissions.");
 		grantPermissionsEndpoint.events(ROLE_PERMISSIONS_CHANGED);
 		grantPermissionsEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -74,8 +75,8 @@ public abstract class RolePermissionHandlingProjectEndpoint extends AbstractProj
 		revokePermissionsEndpoint.description("Revoke permissions on the " + typeDescription + " from multiple roles.");
 		revokePermissionsEndpoint.consumes(APPLICATION_JSON);
 		revokePermissionsEndpoint.produces(APPLICATION_JSON);
-		revokePermissionsEndpoint.exampleRequest(roleExamples.getObjectPermissionRevokeRequest(includePublishPermissions));
-		revokePermissionsEndpoint.exampleResponse(OK, roleExamples.getObjectPermissionResponse(includePublishPermissions), "Updated permissions.");
+		revokePermissionsEndpoint.exampleRequest(InternalCommonEndpoint.roleExamples.getObjectPermissionRevokeRequest(includePublishPermissions));
+		revokePermissionsEndpoint.exampleResponse(OK, InternalCommonEndpoint.roleExamples.getObjectPermissionResponse(includePublishPermissions), "Updated permissions.");
 		revokePermissionsEndpoint.events(ROLE_PERMISSIONS_CHANGED);
 		revokePermissionsEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);

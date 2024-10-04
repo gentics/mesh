@@ -15,6 +15,7 @@ import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.parameter.client.ImageManipulationRetrievalParametersImpl;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
+import com.gentics.mesh.rest.InternalCommonEndpoint;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 
@@ -74,8 +75,8 @@ public class WebRootFieldEndpoint extends AbstractProjectEndpoint {
 		fieldPost.setRAMLPath("/{fieldName}/{path}");
 		fieldPost.addUriParameter("fieldName", "Name of the field which should be processed.", "binaryField");
 		fieldPost.addUriParameter("path", "Path to the node", "/News/2015/Images/flower.jpg");
-		fieldPost.exampleRequest(nodeExamples.createImageManipulationRequest());
-		fieldPost.exampleResponse(OK, nodeExamples.createImageVariantsResponse(), "JSON for a variants of the binary field of the node for the given path.");
+		fieldPost.exampleRequest(InternalCommonEndpoint.nodeExamples.createImageManipulationRequest());
+		fieldPost.exampleResponse(OK, InternalCommonEndpoint.nodeExamples.createImageVariantsResponse(), "JSON for a variants of the binary field of the node for the given path.");
 		fieldPost.description("Update the binary field variants for the node, which is located using the provided path.");
 		fieldPost.addQueryParameters(ImageManipulationRetrievalParametersImpl.class);
 		fieldPost.addQueryParameters(VersioningParametersImpl.class);

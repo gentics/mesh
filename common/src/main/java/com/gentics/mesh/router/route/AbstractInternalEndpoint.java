@@ -9,7 +9,7 @@ import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.VertxOptions;
-import com.gentics.mesh.rest.InternalEndpoint;
+import com.gentics.mesh.rest.InternalCommonEndpoint;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.rest.impl.InternalEndpointRouteImpl;
 import com.gentics.mesh.router.RouterStorage;
@@ -21,7 +21,7 @@ import io.vertx.ext.web.Router;
 /**
  * An abstract class that should be used when creating new endpoints.
  */
-public abstract class AbstractInternalEndpoint implements InternalEndpoint {
+public abstract class AbstractInternalEndpoint implements InternalCommonEndpoint {
 
 	protected List<InternalEndpointRoute> endpointRoutes = new ArrayList<>();
 

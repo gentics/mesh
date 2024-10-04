@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import com.gentics.mesh.database.connector.DatabaseConnector;
 import com.gentics.mesh.database.connector.service.DatabaseConnectorService;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
+import com.gentics.mesh.handler.RuntimeServiceRegistry;
 import com.gentics.mesh.util.StreamUtil;
 
 import dagger.Module;
@@ -32,7 +33,7 @@ public abstract class DatabaseConnectorModule {
 
 	@Provides
 	@Singleton
-	public static DatabaseConnector databaseConnector(HibernateMeshOptions options) {
+	public static DatabaseConnector databaseConnector(HibernateMeshOptions options, RuntimeServiceRegistry runtimeHandler) {
 		try {
 			Logger log = LoggerFactory.getLogger(DatabaseConnectorModule.class);
 			String databaseConnectorClasspath = options.getStorageOptions().getDatabaseConnectorClasspath();
@@ -58,7 +59,7 @@ public abstract class DatabaseConnectorModule {
 				Thread.currentThread().setContextClassLoader(classLoader);
 			}
 			return StreamUtil.toStream(ServiceLoader.load(DatabaseConnectorService.class))
-				.map(dc -> dc.instantiate(options))
+				.map(dc -> dc.instantiate(options, runtimeHandler))
 				.peek(dc -> log.info("Found connector: {}", dc.getConnectorDescription()))
 				.findAny()
 				.orElseThrow(() -> new IllegalArgumentException("Could not find the database connector in either provided path [" + databaseConnectorClasspath + "] or the default classpath!"));

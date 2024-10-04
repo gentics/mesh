@@ -20,6 +20,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.rest.InternalCommonEndpoint;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 
@@ -59,7 +60,7 @@ public class ProjectSchemaEndpoint extends AbstractProjectEndpoint {
 		readOne.addUriParameter("schemaUuid", "Uuid of the schema.", SCHEMA_VEHICLE_UUID);
 		readOne.method(GET);
 		readOne.description("Load the schema with the given uuid.");
-		readOne.exampleResponse(OK, schemaExamples.getSchemaResponse(), "Loaded schema.");
+		readOne.exampleResponse(OK, InternalCommonEndpoint.schemaExamples.getSchemaResponse(), "Loaded schema.");
 		readOne.produces(APPLICATION_JSON);
 		readOne.blockingHandler(rc -> {
 			String uuid = rc.request().params().get("schemaUuid");
@@ -75,7 +76,7 @@ public class ProjectSchemaEndpoint extends AbstractProjectEndpoint {
 		readAll.path("/");
 		readAll.method(GET);
 		readAll.description("Read multiple schemas and return a paged list response.");
-		readAll.exampleResponse(OK, schemaExamples.getSchemaListResponse(), "Loaded list of schemas.");
+		readAll.exampleResponse(OK, InternalCommonEndpoint.schemaExamples.getSchemaListResponse(), "Loaded list of schemas.");
 		readAll.produces(APPLICATION_JSON);
 		readAll.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -91,7 +92,7 @@ public class ProjectSchemaEndpoint extends AbstractProjectEndpoint {
 		endpoint.description(
 			"Assign the schema to the project. This will automatically assign the latest schema version to all branches of the project.");
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(OK, schemaExamples.getSchemaResponse(), "Assigned schema.");
+		endpoint.exampleResponse(OK, InternalCommonEndpoint.schemaExamples.getSchemaResponse(), "Assigned schema.");
 		endpoint.events(PROJECT_SCHEMA_ASSIGNED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
