@@ -7,7 +7,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,6 +28,7 @@ public class LicenseService {
 
 	public LicenseService(HibernateMeshOptions options) {
 		this.options = options;
+		init();
 	}
 
 	/**
@@ -67,9 +67,6 @@ public class LicenseService {
 	 * @return true if license is sufficient
 	 */
 	public boolean isLicenseSufficient() {
-		if (!init()) {
-			return false;
-		}
 		boolean isLicensed = LicenseChecker.getLicenseCheckResult().containsFeature(LicensedFeature.MSQL);
 
 		if (!isLicensed) {
