@@ -48,6 +48,7 @@ import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
+import com.gentics.mesh.rest.InternalCommonEndpoint;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 
 import io.vertx.core.MultiMap;
@@ -140,7 +141,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		endpoint.description("Returns a navigation object for the provided node.");
 		endpoint.displayName("Navigation");
 		endpoint.exampleResponse(OK, responseExample, "Loaded navigation.");
-		endpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
+		endpoint.exampleResponse(NOT_FOUND, InternalCommonEndpoint.miscExamples.createMessageResponse(), "The node could not be found.");
 		endpoint.addQueryParameters(NavigationParametersImpl.class);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -157,7 +158,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Returns a list of versions.");
 		endpoint.displayName("Versions");
-		endpoint.exampleResponse(OK, nodeExamples.createVersionsList(), "Loaded version list.");
+		endpoint.exampleResponse(OK, InternalCommonEndpoint.nodeExamples.createVersionsList(), "Loaded version list.");
 		endpoint.addQueryParameters(NodeParametersImpl.class);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -175,7 +176,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Delete the language specific content of the node.");
 		endpoint.exampleResponse(NO_CONTENT, "Language variation of the node has been deleted.");
-		endpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
+		endpoint.exampleResponse(NOT_FOUND, InternalCommonEndpoint.miscExamples.createMessageResponse(), "The node could not be found.");
 		endpoint.events(NODE_CONTENT_DELETED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -193,9 +194,9 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		fieldUpdate.addUriParameter("publish", "Whether the node shall be published after updating the binary field", "true");
 		fieldUpdate.method(POST);
 		fieldUpdate.produces(APPLICATION_JSON);
-		fieldUpdate.exampleRequest(nodeExamples.getExampleBinaryUploadFormParameters());
-		fieldUpdate.exampleResponse(OK, nodeExamples.getNodeResponseWithAllFields(), "The response contains the updated node.");
-		fieldUpdate.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the field could not be found.");
+		fieldUpdate.exampleRequest(InternalCommonEndpoint.nodeExamples.getExampleBinaryUploadFormParameters());
+		fieldUpdate.exampleResponse(OK, InternalCommonEndpoint.nodeExamples.getNodeResponseWithAllFields(), "The response contains the updated node.");
+		fieldUpdate.exampleResponse(NOT_FOUND, InternalCommonEndpoint.miscExamples.createMessageResponse(), "The node or the field could not be found.");
 		fieldUpdate.description("Update the binaryfield with the given name.");
 		fieldUpdate.events(NODE_UPDATED);
 		fieldUpdate.blockingHandler(rc -> {
@@ -212,9 +213,9 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		checkCallback.addUriParameter("fieldName", "Name of the field for which the check status is to be updated.", "stringField");
 		checkCallback.method(POST);
 		checkCallback.produces(APPLICATION_JSON);
-		checkCallback.exampleRequest(nodeExamples.getExampleBinaryCheckCallbackParameters());
+		checkCallback.exampleRequest(InternalCommonEndpoint.nodeExamples.getExampleBinaryCheckCallbackParameters());
 		checkCallback.exampleResponse(NO_CONTENT, "");
-		checkCallback.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the field could not be found.");
+		checkCallback.exampleResponse(NOT_FOUND, InternalCommonEndpoint.miscExamples.createMessageResponse(), "The node or the field could not be found.");
 		checkCallback.description("Set the check status for the binaryfield with the given name.");
 		checkCallback.events(NODE_UPDATED);
 		checkCallback.blockingHandler(rc -> {
@@ -232,9 +233,9 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		imageTransform.produces(APPLICATION_JSON);
 		imageTransform.consumes(APPLICATION_JSON);
 		imageTransform.description("Transform the image with the given field name and overwrite the stored image with the transformation result.");
-		imageTransform.exampleRequest(nodeExamples.getBinaryFieldTransformRequest());
-		imageTransform.exampleResponse(OK, nodeExamples.getNodeResponseWithAllFields(), "Transformation was executed and updated node was returned.");
-		imageTransform.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the field could not be found.");
+		imageTransform.exampleRequest(InternalCommonEndpoint.nodeExamples.getBinaryFieldTransformRequest());
+		imageTransform.exampleResponse(OK, InternalCommonEndpoint.nodeExamples.getNodeResponseWithAllFields(), "Transformation was executed and updated node was returned.");
+		imageTransform.exampleResponse(NOT_FOUND, InternalCommonEndpoint.miscExamples.createMessageResponse(), "The node or the field could not be found.");
 		imageTransform.events(NODE_UPDATED);
 		imageTransform.blockingHandler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
@@ -266,7 +267,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		fieldGet.addQueryParameters(VersioningParametersImpl.class);
 		fieldGet.addQueryParameters(ImageManipulationRetrievalParametersImpl.class);
 		fieldGet.produces(APPLICATION_JSON);
-		fieldGet.exampleResponse(OK, nodeExamples.createImageVariantsResponse(), "A list of image variants have been returned.");
+		fieldGet.exampleResponse(OK, InternalCommonEndpoint.nodeExamples.createImageVariantsResponse(), "A list of image variants have been returned.");
 		fieldGet.method(GET);
 		fieldGet.description(
 			"Get the list of image manipulation variants of the binary, possessed by a field with the given name.");
@@ -285,7 +286,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		fieldDelete.produces(APPLICATION_JSON);
 		fieldDelete.method(DELETE);
 		fieldDelete.exampleResponse(NO_CONTENT, "Image variants have been deleted.");
-		fieldDelete.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
+		fieldDelete.exampleResponse(NOT_FOUND, InternalCommonEndpoint.miscExamples.createMessageResponse(), "The node could not be found.");
 		fieldDelete.description(
 			"Delete unused image manipulation variants of the binary, referenced by a field with the given name.");
 		fieldDelete.blockingHandler(rc -> {
@@ -302,9 +303,9 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		fieldPut.addQueryParameters(ImageManipulationRetrievalParametersImpl.class);
 		fieldPut.method(POST);
 		fieldPut.produces(APPLICATION_JSON);
-		fieldPut.exampleRequest(nodeExamples.createImageManipulationRequest());
-		fieldPut.exampleResponse(OK, nodeExamples.createImageVariantsResponse(), "An updated list of variants is returned");
-		fieldPut.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the field could not be found.");
+		fieldPut.exampleRequest(InternalCommonEndpoint.nodeExamples.createImageManipulationRequest());
+		fieldPut.exampleResponse(OK, InternalCommonEndpoint.nodeExamples.createImageVariantsResponse(), "An updated list of variants is returned");
+		fieldPut.exampleResponse(NOT_FOUND, InternalCommonEndpoint.miscExamples.createMessageResponse(), "The node or the field could not be found.");
 		fieldPut.description("Add new image variants to the binary, referenced by a field with the given name.");
 		fieldPut.blockingHandler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
@@ -320,9 +321,9 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		fieldUpdate.addUriParameter("fieldName", "Name of the field which should be created.", "stringField");
 		fieldUpdate.method(POST);
 		fieldUpdate.produces(APPLICATION_JSON);
-		fieldUpdate.exampleRequest(nodeExamples.getExampleBinaryUploadFormParameters());
-		fieldUpdate.exampleResponse(OK, nodeExamples.getNodeResponseWithAllFields(), "The response contains the updated node.");
-		fieldUpdate.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the field could not be found.");
+		fieldUpdate.exampleRequest(InternalCommonEndpoint.nodeExamples.getExampleBinaryUploadFormParameters());
+		fieldUpdate.exampleResponse(OK, InternalCommonEndpoint.nodeExamples.getNodeResponseWithAllFields(), "The response contains the updated node.");
+		fieldUpdate.exampleResponse(NOT_FOUND, InternalCommonEndpoint.miscExamples.createMessageResponse(), "The node or the field could not be found.");
 		fieldUpdate.description("Create the s3 binaryfield with the given name.");
 		fieldUpdate.events(NODE_UPDATED, S3BINARY_CREATED);
 		fieldUpdate.blockingHandler(rc -> {
@@ -338,9 +339,9 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		checkCallback.addUriParameter("fieldName", "Name of the field which should be created.", "stringField");
 		checkCallback.method(POST);
 		checkCallback.produces(APPLICATION_JSON);
-		checkCallback.exampleRequest(nodeExamples.getExampleBinaryCheckCallbackParameters());
+		checkCallback.exampleRequest(InternalCommonEndpoint.nodeExamples.getExampleBinaryCheckCallbackParameters());
 		checkCallback.exampleResponse(NO_CONTENT, "");
-		checkCallback.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the field could not be found.");
+		checkCallback.exampleResponse(NOT_FOUND, InternalCommonEndpoint.miscExamples.createMessageResponse(), "The node or the field could not be found.");
 		checkCallback.description("Set the check status for the binaryfield with the given name.");
 		checkCallback.events(NODE_UPDATED);
 		checkCallback.blockingHandler(rc -> {
@@ -356,9 +357,9 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		fieldMetadataExtraction.addUriParameter("fieldName", "Name of the field which should be created.", "stringField");
 		fieldMetadataExtraction.method(POST);
 		fieldMetadataExtraction.produces(APPLICATION_JSON);
-		fieldMetadataExtraction.exampleRequest(nodeExamples.getExampleBinaryUploadFormParameters());
-		fieldMetadataExtraction.exampleResponse(OK, nodeExamples.getNodeResponseWithAllFields(), "The response contains the updated node.");
-		fieldMetadataExtraction.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the field could not be found.");
+		fieldMetadataExtraction.exampleRequest(InternalCommonEndpoint.nodeExamples.getExampleBinaryUploadFormParameters());
+		fieldMetadataExtraction.exampleResponse(OK, InternalCommonEndpoint.nodeExamples.getNodeResponseWithAllFields(), "The response contains the updated node.");
+		fieldMetadataExtraction.exampleResponse(NOT_FOUND, InternalCommonEndpoint.miscExamples.createMessageResponse(), "The node or the field could not be found.");
 		fieldMetadataExtraction.description("Parse metadata of s3 binaryfield with the given name.");
 		fieldMetadataExtraction.events(S3BINARY_METADATA_EXTRACTED);
 		fieldMetadataExtraction.blockingHandler(rc -> {
@@ -378,7 +379,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Move the node into the target node.");
 		endpoint.exampleResponse(NO_CONTENT, "Node was moved.");
-		endpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The source or target node could not be found.");
+		endpoint.exampleResponse(NOT_FOUND, InternalCommonEndpoint.miscExamples.createMessageResponse(), "The source or target node could not be found.");
 		endpoint.addQueryParameters(VersioningParametersImpl.class);
 		endpoint.events(NODE_MOVED);
 		endpoint.blockingHandler(rc -> {
@@ -395,8 +396,8 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		endpoint.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
 		endpoint.method(GET);
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(OK, nodeExamples.getNodeListResponse(), "List of loaded node children.");
-		endpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
+		endpoint.exampleResponse(OK, InternalCommonEndpoint.nodeExamples.getNodeListResponse(), "List of loaded node children.");
+		endpoint.exampleResponse(NOT_FOUND, InternalCommonEndpoint.miscExamples.createMessageResponse(), "The node could not be found.");
 		endpoint.description("Load all child nodes and return a paged list response.");
 		endpoint.addQueryParameters(PagingParametersImpl.class);
 		endpoint.addQueryParameters(NodeParametersImpl.class);
@@ -416,8 +417,8 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		getTags.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
 		getTags.method(GET);
 		getTags.produces(APPLICATION_JSON);
-		getTags.exampleResponse(OK, tagExamples.createTagListResponse(), "List of tags that were used to tag the node.");
-		getTags.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
+		getTags.exampleResponse(OK, InternalCommonEndpoint.tagExamples.createTagListResponse(), "List of tags that were used to tag the node.");
+		getTags.exampleResponse(NOT_FOUND, InternalCommonEndpoint.miscExamples.createMessageResponse(), "The node could not be found.");
 		getTags.description("Return a list of all tags which tag the node.");
 		getTags.addQueryParameters(VersioningParametersImpl.class);
 		getTags.addQueryParameters(GenericParametersImpl.class);
@@ -433,9 +434,9 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		bulkUpdate.method(POST);
 		bulkUpdate.produces(APPLICATION_JSON);
 		bulkUpdate.description("Update the list of assigned tags");
-		bulkUpdate.exampleRequest(tagExamples.getTagListUpdateRequest());
-		bulkUpdate.exampleResponse(OK, tagExamples.createTagListResponse(), "Updated tag list.");
-		bulkUpdate.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
+		bulkUpdate.exampleRequest(InternalCommonEndpoint.tagExamples.getTagListUpdateRequest());
+		bulkUpdate.exampleResponse(OK, InternalCommonEndpoint.tagExamples.createTagListResponse(), "Updated tag list.");
+		bulkUpdate.exampleResponse(NOT_FOUND, InternalCommonEndpoint.miscExamples.createMessageResponse(), "The node could not be found.");
 		bulkUpdate.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String nodeUuid = ac.getParameter("nodeUuid");
@@ -448,8 +449,8 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		addTag.addUriParameter("tagUuid", "Uuid of the tag", TAG_RED_UUID);
 		addTag.method(POST);
 		addTag.produces(APPLICATION_JSON);
-		addTag.exampleResponse(OK, nodeExamples.getNodeResponse2(), "Updated node.");
-		addTag.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or tag could not be found.");
+		addTag.exampleResponse(OK, InternalCommonEndpoint.nodeExamples.getNodeResponse2(), "Updated node.");
+		addTag.exampleResponse(NOT_FOUND, InternalCommonEndpoint.miscExamples.createMessageResponse(), "The node or tag could not be found.");
 		addTag.description("Assign the given tag to the node.");
 		addTag.addQueryParameters(VersioningParametersImpl.class);
 		addTag.events(NODE_TAGGED);
@@ -469,7 +470,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		removeTag.produces(APPLICATION_JSON);
 		removeTag.description("Remove the given tag from the node.");
 		removeTag.exampleResponse(NO_CONTENT, "Removal was successful.");
-		removeTag.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or tag could not be found.");
+		removeTag.exampleResponse(NOT_FOUND, InternalCommonEndpoint.miscExamples.createMessageResponse(), "The node or tag could not be found.");
 		removeTag.events(NODE_UNTAGGED);
 		removeTag.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -488,8 +489,8 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		endpoint.method(POST);
 		endpoint.description("Create a new node.");
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleRequest(nodeExamples.getNodeCreateRequest());
-		endpoint.exampleResponse(CREATED, nodeExamples.getNodeResponseWithAllFields(), "Created node.");
+		endpoint.exampleRequest(InternalCommonEndpoint.nodeExamples.getNodeCreateRequest());
+		endpoint.exampleResponse(CREATED, InternalCommonEndpoint.nodeExamples.getNodeResponseWithAllFields(), "Created node.");
 		endpoint.events(NODE_CREATED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -505,8 +506,8 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		readOne.method(GET);
 		readOne.description("Load the node with the given uuid.");
 		readOne.produces(APPLICATION_JSON);
-		readOne.exampleResponse(OK, nodeExamples.getNodeResponseWithAllFields(), "Loaded node.");
-		readOne.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
+		readOne.exampleResponse(OK, InternalCommonEndpoint.nodeExamples.getNodeResponseWithAllFields(), "Loaded node.");
+		readOne.exampleResponse(NOT_FOUND, InternalCommonEndpoint.miscExamples.createMessageResponse(), "The node could not be found.");
 		readOne.addQueryParameters(VersioningParametersImpl.class);
 		readOne.addQueryParameters(RolePermissionParametersImpl.class);
 		readOne.addQueryParameters(NodeParametersImpl.class);
@@ -526,7 +527,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		readAll.description("Read all nodes and return a paged list response.");
 		readAll.method(GET);
 		readAll.produces(APPLICATION_JSON);
-		readAll.exampleResponse(OK, nodeExamples.getNodeListResponse(), "Loaded list of nodes.");
+		readAll.exampleResponse(OK, InternalCommonEndpoint.nodeExamples.getNodeListResponse(), "Loaded list of nodes.");
 		readAll.addQueryParameters(VersioningParametersImpl.class);
 		readAll.addQueryParameters(RolePermissionParametersImpl.class);
 		readAll.addQueryParameters(NodeParametersImpl.class);
@@ -548,7 +549,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.addQueryParameters(DeleteParametersImpl.class);
 		endpoint.exampleResponse(NO_CONTENT, "Deletion was successful.");
-		endpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
+		endpoint.exampleResponse(NOT_FOUND, InternalCommonEndpoint.miscExamples.createMessageResponse(), "The node could not be found.");
 		endpoint.events(NODE_DELETED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -570,10 +571,10 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		endpoint.method(POST);
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleRequest(nodeExamples.getNodeUpdateRequest());
-		endpoint.exampleResponse(OK, nodeExamples.getNodeResponse2(), "Updated node.");
-		endpoint.exampleResponse(CONFLICT, miscExamples.createMessageResponse(), "A conflict has been detected.");
-		endpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
+		endpoint.exampleRequest(InternalCommonEndpoint.nodeExamples.getNodeUpdateRequest());
+		endpoint.exampleResponse(OK, InternalCommonEndpoint.nodeExamples.getNodeResponse2(), "Updated node.");
+		endpoint.exampleResponse(CONFLICT, InternalCommonEndpoint.miscExamples.createMessageResponse(), "A conflict has been detected.");
+		endpoint.exampleResponse(NOT_FOUND, InternalCommonEndpoint.miscExamples.createMessageResponse(), "The node could not be found.");
 		endpoint.events(NODE_UPDATED, NODE_CREATED, NODE_CONTENT_CREATED, NODE_UPDATED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -591,8 +592,8 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		getEndpoint.addUriParameter("nodeUuid", "Uuid of the node", NODE_DELOREAN_UUID);
 		getEndpoint.method(GET);
 		getEndpoint.produces(APPLICATION_JSON);
-		getEndpoint.exampleResponse(OK, versioningExamples.createPublishStatusResponse(), "Publish status of the node.");
-		getEndpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
+		getEndpoint.exampleResponse(OK, InternalCommonEndpoint.versioningExamples.createPublishStatusResponse(), "Publish status of the node.");
+		getEndpoint.exampleResponse(NOT_FOUND, InternalCommonEndpoint.miscExamples.createMessageResponse(), "The node could not be found.");
 		getEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().getParam("nodeUuid");
@@ -605,8 +606,8 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		postEndpoint.addUriParameter("nodeUuid", "Uuid of the node", NODE_DELOREAN_UUID);
 		postEndpoint.method(POST);
 		postEndpoint.produces(APPLICATION_JSON);
-		postEndpoint.exampleResponse(OK, versioningExamples.createPublishStatusResponse(), "Publish status of the node.");
-		postEndpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
+		postEndpoint.exampleResponse(OK, InternalCommonEndpoint.versioningExamples.createPublishStatusResponse(), "Publish status of the node.");
+		postEndpoint.exampleResponse(NOT_FOUND, InternalCommonEndpoint.miscExamples.createMessageResponse(), "The node could not be found.");
 		postEndpoint.addQueryParameters(PublishParametersImpl.class);
 		postEndpoint.events(NODE_PUBLISHED);
 		postEndpoint.blockingHandler(rc -> {
@@ -622,7 +623,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		deleteEndpoint.method(DELETE);
 		deleteEndpoint.produces(APPLICATION_JSON);
 		deleteEndpoint.exampleResponse(NO_CONTENT, "Node was unpublished.");
-		deleteEndpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
+		deleteEndpoint.exampleResponse(NOT_FOUND, InternalCommonEndpoint.miscExamples.createMessageResponse(), "The node could not be found.");
 		deleteEndpoint.addQueryParameters(PublishParametersImpl.class);
 		deleteEndpoint.events(NODE_UNPUBLISHED);
 		deleteEndpoint.blockingHandler(rc -> {
@@ -640,8 +641,8 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		getLanguageRoute.addUriParameter("language", "Name of the language tag", "en");
 		getLanguageRoute.method(GET);
 		getLanguageRoute.produces(APPLICATION_JSON);
-		getLanguageRoute.exampleResponse(OK, versioningExamples.createPublishStatusModel(), "Publish status of the specific language.");
-		getLanguageRoute.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the language could not be found.");
+		getLanguageRoute.exampleResponse(OK, InternalCommonEndpoint.versioningExamples.createPublishStatusModel(), "Publish status of the specific language.");
+		getLanguageRoute.exampleResponse(NOT_FOUND, InternalCommonEndpoint.miscExamples.createMessageResponse(), "The node or the language could not be found.");
 		getLanguageRoute.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().getParam("nodeUuid");
@@ -655,8 +656,8 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		putLanguageRoute.addUriParameter("language", "Name of the language tag", "en");
 		putLanguageRoute.description(
 			"Publish the language of the node. This will automatically assign a new major version to the node and update the draft version to the published version.");
-		putLanguageRoute.exampleResponse(OK, versioningExamples.createPublishStatusModel(), "Updated publish status.");
-		putLanguageRoute.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the language could not be found.");
+		putLanguageRoute.exampleResponse(OK, InternalCommonEndpoint.versioningExamples.createPublishStatusModel(), "Updated publish status.");
+		putLanguageRoute.exampleResponse(NOT_FOUND, InternalCommonEndpoint.miscExamples.createMessageResponse(), "The node or the language could not be found.");
 		putLanguageRoute.produces(APPLICATION_JSON);
 		putLanguageRoute.events(NODE_PUBLISHED);
 		putLanguageRoute.blockingHandler(rc -> {
@@ -672,7 +673,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		deleteLanguageRoute.addUriParameter("nodeUuid", "Uuid of the node", NODE_DELOREAN_UUID);
 		deleteLanguageRoute.addUriParameter("language", "Name of the language tag", "en");
 		deleteLanguageRoute.exampleResponse(NO_CONTENT, "Node language was taken offline.");
-		deleteLanguageRoute.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the language could not be found.");
+		deleteLanguageRoute.exampleResponse(NOT_FOUND, InternalCommonEndpoint.miscExamples.createMessageResponse(), "The node or the language could not be found.");
 		deleteLanguageRoute.produces(APPLICATION_JSON);
 		deleteLanguageRoute.events(NODE_UNPUBLISHED);
 		deleteLanguageRoute.blockingHandler(rc -> {

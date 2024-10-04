@@ -17,7 +17,7 @@ import io.vertx.reactivex.core.shareddata.AsyncMap;
  * Handler to process the local configuration.
  */
 @Singleton
-public class LocalConfigApi {
+public class LocalConfigApiImpl implements LocalConfigApi {
 
 	private static final String LOCAL_CONFIG_KEY = "localConfig";
 
@@ -25,7 +25,7 @@ public class LocalConfigApi {
 	private final MeshOptions meshOptions;
 
 	@Inject
-	public LocalConfigApi(Lazy<Vertx> vertx, MeshOptions meshOptions) {
+	public LocalConfigApiImpl(Lazy<Vertx> vertx, MeshOptions meshOptions) {
 		this.vertx = vertx;
 		this.meshOptions = meshOptions;
 	}
@@ -44,6 +44,7 @@ public class LocalConfigApi {
 	 * Loads the local config currently active in this instance.
 	 * @return
 	 */
+	@Override
 	public Single<LocalConfigModel> getActiveConfig() {
 		return getMap().flatMap(map -> map.rxGet(LOCAL_CONFIG_KEY).toSingle());
 	}

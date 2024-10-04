@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import com.gentics.mesh.auth.MeshAuthChainImpl;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.VertxOptions;
-import com.gentics.mesh.rest.InternalEndpoint;
+import com.gentics.mesh.rest.InternalCommonEndpoint;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.rest.impl.InternalEndpointRouteImpl;
 import com.gentics.mesh.router.RouterStorage;
@@ -21,7 +21,7 @@ import io.vertx.ext.web.Router;
 /**
  * An abstract class that should be used when creating new endpoints.
  */
-public abstract class AbstractInternalEndpoint implements InternalEndpoint {
+public abstract class AbstractInternalEndpoint implements InternalCommonEndpoint {
 
 	protected List<InternalEndpointRoute> endpointRoutes = new ArrayList<>();
 
@@ -29,7 +29,7 @@ public abstract class AbstractInternalEndpoint implements InternalEndpoint {
 
 	protected String basePath;
 
-	protected MeshAuthChainImpl chain;
+	protected MeshAuthChain chain;
 
 	protected RouterStorage routerStorage;
 
@@ -39,7 +39,7 @@ public abstract class AbstractInternalEndpoint implements InternalEndpoint {
 
 	protected final MeshOptions options;
 
-	protected AbstractInternalEndpoint(String basePath, MeshAuthChainImpl chain, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+	protected AbstractInternalEndpoint(String basePath, MeshAuthChain chain, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
 		this.basePath = basePath;
 		this.chain = chain;
 		this.localConfigApi = localConfigApi;

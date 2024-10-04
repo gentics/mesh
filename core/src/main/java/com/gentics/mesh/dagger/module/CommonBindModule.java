@@ -89,6 +89,8 @@ import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 import com.gentics.mesh.core.data.storage.s3.S3BinaryStorageImpl;
 import com.gentics.mesh.core.db.CommonTxData;
 import com.gentics.mesh.core.db.TxData;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApiImpl;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandlerImpl;
 import com.gentics.mesh.core.endpoint.node.S3BinaryUploadHandler;
@@ -98,6 +100,7 @@ import com.gentics.mesh.core.endpoint.role.RoleCrudHandlerImpl;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.link.WebRootLinkReplacerImpl;
 import com.gentics.mesh.core.search.index.node.NodeIndexHandler;
+import com.gentics.mesh.core.service.RuntimeServiceRegistryImpl;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticleImpl;
 import com.gentics.mesh.distributed.TopologyChangeReadonlyHandler;
@@ -106,6 +109,7 @@ import com.gentics.mesh.event.EventBusLivenessManagerImpl;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.event.impl.EventQueueBatchImpl;
 import com.gentics.mesh.handler.RangeRequestHandler;
+import com.gentics.mesh.handler.RuntimeServiceRegistry;
 import com.gentics.mesh.handler.impl.RangeRequestHandlerImpl;
 import com.gentics.mesh.liveness.LivenessManagerImpl;
 import com.gentics.mesh.metric.MetricsService;
@@ -157,6 +161,9 @@ import dagger.Module;
  */
 @Module
 public abstract class CommonBindModule {
+
+	@Binds
+	abstract LocalConfigApi localConfigApi(LocalConfigApiImpl e);
 
 	@Binds
 	abstract TxData txData(CommonTxData e);
@@ -259,6 +266,9 @@ public abstract class CommonBindModule {
 
 	@Binds
 	abstract S3BinaryUploadHandler s3binaryUploadHandler(S3BinaryUploadHandlerImpl e);
+
+	@Binds
+	abstract RuntimeServiceRegistry runtimeServiceRegistry(RuntimeServiceRegistryImpl e);
 
 	@Binds
 	abstract ServerSchemaStorage serverSchemaStorage(ServerSchemaStorageImpl e);

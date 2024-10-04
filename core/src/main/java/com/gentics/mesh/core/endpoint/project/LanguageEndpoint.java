@@ -16,6 +16,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.example.ExampleUuids;
 import com.gentics.mesh.parameter.client.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.rest.InternalCommonEndpoint;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
@@ -70,7 +71,7 @@ public class LanguageEndpoint extends AbstractInternalEndpoint {
 		InternalEndpointRoute getAllRoute = createRoute();
 		getAllRoute.path("/");
 		getAllRoute.description("Get all system installed languages");
-		getAllRoute.exampleResponse(OK, languageExamples.getLanguageListResponse(), "List of languages");
+		getAllRoute.exampleResponse(OK, InternalCommonEndpoint.languageExamples.getLanguageListResponse(), "List of languages");
 		getAllRoute.addQueryParameters(PagingParametersImpl.class);
 		getAllRoute.method(GET);
 		getAllRoute.produces(APPLICATION_JSON);
@@ -83,7 +84,7 @@ public class LanguageEndpoint extends AbstractInternalEndpoint {
 		getRoute.path("/:languageUuid");
 		getRoute.description("Get a system installed language by its UUID");
 		getRoute.addUriParameter("languageUuid", "UUID of a language", ExampleUuids.UUID_1);
-		getRoute.exampleResponse(OK, languageExamples.getJapaneseLanguageResponse(), "A language");
+		getRoute.exampleResponse(OK, InternalCommonEndpoint.languageExamples.getJapaneseLanguageResponse(), "A language");
 		getRoute.method(GET);
 		getRoute.produces(APPLICATION_JSON);
 		getRoute.blockingHandler(rc -> {
@@ -96,7 +97,7 @@ public class LanguageEndpoint extends AbstractInternalEndpoint {
 		getByTagRoute.path("/tag/:languageTag");
 		getByTagRoute.description("Get a system installed language by its ISO tag");
 		getByTagRoute.addUriParameter("languageTag", "ISO language tag", "jp");
-		getByTagRoute.exampleResponse(OK, languageExamples.getJapaneseLanguageResponse(), "A language");
+		getByTagRoute.exampleResponse(OK, InternalCommonEndpoint.languageExamples.getJapaneseLanguageResponse(), "A language");
 		getByTagRoute.method(GET);
 		getByTagRoute.produces(APPLICATION_JSON);
 		getByTagRoute.blockingHandler(rc -> {

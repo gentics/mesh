@@ -23,6 +23,7 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.rest.InternalCommonEndpoint;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 import com.gentics.mesh.search.index.node.NodeSearchHandler;
@@ -78,17 +79,17 @@ public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implement
 	private void addSearchEndpoints() {
 		registerSearchHandler("nodes", (uuid) -> {
 			return Tx.get().nodeDao().findByUuidGlobal(uuid);
-		}, NodeListResponse.class, nodeSearchHandler, nodeExamples.getNodeListResponse(), true);
+		}, NodeListResponse.class, nodeSearchHandler, InternalCommonEndpoint.nodeExamples.getNodeListResponse(), true);
 
 		registerSearchHandler("tags", uuid -> {
 			HibTag tag = Tx.get().tagDao().findByUuid(uuid);
 			return tag;
-		}, TagListResponse.class, tagSearchHandler, tagExamples.createTagListResponse(), false);
+		}, TagListResponse.class, tagSearchHandler, InternalCommonEndpoint.tagExamples.createTagListResponse(), false);
 
 		registerSearchHandler("tagFamilies", uuid -> {
 			TagFamilyDao tagFamilyDao = Tx.get().tagFamilyDao();
 			return tagFamilyDao.findByUuid(uuid);
-		}, TagFamilyListResponse.class, tagFamilySearchHandler, tagFamilyExamples.getTagFamilyListResponse(), false);
+		}, TagFamilyListResponse.class, tagFamilySearchHandler, InternalCommonEndpoint.tagFamilyExamples.getTagFamilyListResponse(), false);
 	}
 
 	/**
@@ -117,7 +118,7 @@ public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implement
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, exampleResponse, "Paged search result list.");
-		endpoint.exampleRequest(miscExamples.getSearchQueryExample());
+		endpoint.exampleRequest(InternalCommonEndpoint.miscExamples.getSearchQueryExample());
 		endpoint.handler(rc -> {
 			try {
 				InternalActionContext ac = wrap(rc);

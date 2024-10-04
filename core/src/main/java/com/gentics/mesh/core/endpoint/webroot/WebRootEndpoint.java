@@ -16,6 +16,7 @@ import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
+import com.gentics.mesh.rest.InternalCommonEndpoint;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 
@@ -74,10 +75,10 @@ public class WebRootEndpoint extends AbstractProjectEndpoint {
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
 
-		endpoint.exampleRequest(nodeExamples.getNodeUpdateRequest());
-		endpoint.exampleResponse(OK, nodeExamples.getNodeResponse2(), "Updated node.");
-		endpoint.exampleResponse(CREATED, nodeExamples.getNodeResponse2(), "Created node.");
-		endpoint.exampleResponse(CONFLICT, miscExamples.createMessageResponse(), "A conflict has been detected.");
+		endpoint.exampleRequest(InternalCommonEndpoint.nodeExamples.getNodeUpdateRequest());
+		endpoint.exampleResponse(OK, InternalCommonEndpoint.nodeExamples.getNodeResponse2(), "Updated node.");
+		endpoint.exampleResponse(CREATED, InternalCommonEndpoint.nodeExamples.getNodeResponse2(), "Created node.");
+		endpoint.exampleResponse(CONFLICT, InternalCommonEndpoint.miscExamples.createMessageResponse(), "A conflict has been detected.");
 
 		endpoint.description("Update or create a node for the given path.");
 		endpoint.blockingHandler(rc -> {
