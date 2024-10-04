@@ -1,6 +1,7 @@
 package com.gentics.mesh.enterprise.database.connector;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.UUID;
 
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -8,6 +9,7 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.database.connector.AbstractDatabaseConnector;
 import com.gentics.mesh.enterprise.server.license.LicenseService;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
+import com.gentics.mesh.handler.RuntimeServiceRegistry;
 
 import jakarta.persistence.EntityManager;
 
@@ -19,12 +21,18 @@ import jakarta.persistence.EntityManager;
  */
 public abstract class AbstractEnterpriseDatabaseConnector extends AbstractDatabaseConnector {
 
-	protected AbstractEnterpriseDatabaseConnector(HibernateMeshOptions options) {
+	protected AbstractEnterpriseDatabaseConnector(HibernateMeshOptions options, RuntimeServiceRegistry runtimeServiceRegistry) {
 		super(options);
 		LicenseService licenseService = new LicenseService(options);
-		if (!licenseService.isLicenseSufficient()) {
+		Optional<LicenseCheckingAuthenticationService> maybeLicenseCheckingAuthService = runtimeServiceRegistry.authHandlers().stream()
+				.filter(LicenseCheckingAuthenticationService.class::isInstance)
+				.map(LicenseCheckingAuthenticationService.class::cast)
+				.findAny();
+		if (maybeLicenseCheckingAuthService.isPresent()) {
+			maybeLicenseCheckingAuthService.get().init(this, licenseService);
+		} else if (!licenseService.isLicenseSufficient()) {
 			throw new IllegalStateException("Usage of " + getClass().getSimpleName() + " requires a valid Gentics license!");
-		}		
+		}
 	}
 
 	@Override
