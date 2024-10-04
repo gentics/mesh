@@ -19,6 +19,9 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
@@ -41,12 +44,9 @@ import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UUIDUtil;
 import com.gentics.mesh.util.ValidationUtil;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 
 /**
@@ -446,6 +446,15 @@ public class HandlerUtilities {
 	 * @param context
 	 */
 	public void requiresAdminRole(RoutingContext context) {
+		requiresAdminRole(context, meshOptions, database);
+	}
+
+	/**
+	 * Check whether the user is an admin. An error will be thrown otherwise.
+	 * 
+	 * @param context
+	 */
+	public static void requiresAdminRole(RoutingContext context, MeshOptions meshOptions, Database database) {
 		InternalRoutingActionContextImpl ac = new InternalRoutingActionContextImpl(context);
 		ac.setHttpServerConfig(meshOptions.getHttpServerOptions());
 		if (database.tx(() -> !ac.getUser().isAdmin())) {

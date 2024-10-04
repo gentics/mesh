@@ -17,11 +17,16 @@ import com.gentics.mesh.util.StreamUtil;
 @Singleton
 public class RuntimeServiceRegistryImpl implements RuntimeServiceRegistry {
 
-	private final Set<AuthenticationService> authHandlers;
-	private final Set<EndpointService> endpointHandlers;
+	private Set<AuthenticationService> authHandlers;
+	private Set<EndpointService> endpointHandlers;
 
 	@Inject
 	public RuntimeServiceRegistryImpl() {
+		reset();
+	}
+
+	@Override
+	public void reset() {
 		this.authHandlers = StreamUtil.toStream(ServiceLoader.load(AuthenticationService.class)).collect(Collectors.toSet());
 		this.endpointHandlers = StreamUtil.toStream(ServiceLoader.load(EndpointService.class)).collect(Collectors.toSet());
 	}

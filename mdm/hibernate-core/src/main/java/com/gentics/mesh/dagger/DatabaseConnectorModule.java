@@ -57,6 +57,7 @@ public abstract class DatabaseConnectorModule {
 				}
 				ClassLoader classLoader = new URLClassLoader(classpaths, Thread.currentThread().getContextClassLoader());
 				Thread.currentThread().setContextClassLoader(classLoader);
+				runtimeHandler.reset();
 			}
 			return StreamUtil.toStream(ServiceLoader.load(DatabaseConnectorService.class))
 				.map(dc -> dc.instantiate(options, runtimeHandler))

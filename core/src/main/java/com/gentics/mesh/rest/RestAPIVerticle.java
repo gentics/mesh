@@ -353,5 +353,4 @@ public class RestAPIVerticle extends AbstractVerticle {
 			endpoint.registerEndPoints();
 		}
 	}
-
 }
