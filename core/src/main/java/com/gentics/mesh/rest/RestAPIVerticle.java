@@ -343,7 +343,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 		endpoints.add(healthEndpoint.get());
 
 		for (EndpointService endpointService: runtimeServiceRegistry.endpointHandlers()) {
-			for (InternalEndpoint endpoint : endpointService.endpoints()) {
+			for (InternalEndpoint endpoint : endpointService.generateEndpoints(routerStorage.get())) {
 				endpoints.add(endpoint);
 			}
 		}

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import com.gentics.mesh.auth.MeshAuthChainImpl;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -29,7 +29,7 @@ public abstract class AbstractInternalEndpoint implements InternalCommonEndpoint
 
 	protected String basePath;
 
-	protected MeshAuthChainImpl chain;
+	protected MeshAuthChain chain;
 
 	protected RouterStorage routerStorage;
 
@@ -39,7 +39,7 @@ public abstract class AbstractInternalEndpoint implements InternalCommonEndpoint
 
 	protected final MeshOptions options;
 
-	protected AbstractInternalEndpoint(String basePath, MeshAuthChainImpl chain, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+	protected AbstractInternalEndpoint(String basePath, MeshAuthChain chain, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
 		this.basePath = basePath;
 		this.chain = chain;
 		this.localConfigApi = localConfigApi;
