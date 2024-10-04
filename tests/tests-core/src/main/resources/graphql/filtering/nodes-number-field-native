@@ -7,7 +7,7 @@
 			}
 		}
 	  }) {
-		# [$.data.numberNotEqualsUltimateAnswer.elements.length()=0]
+		# [$.data.numberNotEqualsUltimateAnswer.elements.length()=8]
 		elements {
 			...output
 		}
@@ -23,7 +23,7 @@
 			}
 		}
 	  }) {
-		# [$.data.notNumberNotEqualsUltimateAnswer.elements.length()=9]
+		# [$.data.notNumberNotEqualsUltimateAnswer.elements.length()=1]
 		elements {
 			...output
 		}

@@ -37,7 +37,7 @@
 			}
 		}
 	}) {
-		# [$.data.dateNotEquals.elements.length()=1]
+		# [$.data.dateNotEquals.elements.length()=9]
 		elements {
 			...output
 		}
@@ -53,7 +53,7 @@
 			}
 		}
 	}) {
-		# [$.data.notDateNotEquals.elements.length()=8]
+		# [$.data.notDateNotEquals.elements.length()=0]
 		elements {
 			...output
 		}
