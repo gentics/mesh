@@ -1,13 +1,20 @@
-package com.gentics.mesh.enterprise.server.license;
+package com.gentics.mesh.enterprise.service.license;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.gentics.license.License;
 import com.gentics.license.LicenseChecker;
+import com.gentics.license.LicenseStatus;
+import com.gentics.license.feature.LicenseKeyFeature;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
 
 /**
@@ -71,5 +78,36 @@ public class LicenseService {
 		return isLicensed;
 	}
 
+	/**
+	 * Get license info.
+	 * 
+	 * @return
+	 */
+	public LicenseResponse getLicenseInfo() {
+		License license = LicenseChecker.getLicense();
+		if (license != null) {
+			LicenseKeyFeature[] features = LicenseChecker.getLicenseCheckResult().getFeatures();
+			LicenseStatus status = LicenseChecker.getLicenseCheckResult().getLicenseResult();
+
+			LicenseResponse response = new LicenseResponse();
+			response.setStatus(status.name());
+			response.setFeatures(Arrays.stream(features).map(LicenseKeyFeature::getProductName).collect(Collectors.toSet()));
+			{
+				String[] parts = license.getLicense().split("-");
+				String obfuscated = IntStream.range(0, parts.length).mapToObj(i -> {
+					if (i > 0 && i < (parts.length-1)) {
+						return "****";
+					} else {
+						return parts[i];
+					}
+				}).collect(Collectors.joining("-"));
+				response.setLicenseKey(obfuscated);
+			}
+
+			return response;
+		} else {
+			return null;
+		}
+	}
 }
 

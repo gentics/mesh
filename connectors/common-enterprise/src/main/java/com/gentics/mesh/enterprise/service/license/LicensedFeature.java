@@ -1,4 +1,4 @@
-package com.gentics.mesh.enterprise.server.license;
+package com.gentics.mesh.enterprise.service.license;
 
 
 import com.gentics.license.feature.LicenseKeyFeature;
