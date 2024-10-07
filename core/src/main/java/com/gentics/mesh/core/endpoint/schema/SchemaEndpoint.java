@@ -66,6 +66,7 @@ public class SchemaEndpoint extends RolePermissionHandlingEndpoint {
 		addCreateHandler();
 		addUpdateHandler();
 		addDeleteHandler();
+		addMiscHandlers();
 
 		addRolePermissionHandler("schemaUuid", SCHEMA_VEHICLE_UUID, "schema", crudHandler, false);
 	}
@@ -202,6 +203,26 @@ public class SchemaEndpoint extends RolePermissionHandlingEndpoint {
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleReadList(ac);
 		}, false);
+	}
 
+	private void addMiscHandlers() {
+		InternalEndpointRoute readOne = createRoute();
+		readOne.path("/:schemaUuid/projects");
+		readOne.addUriParameter("schemaUuid", "Uuid of the schema.", SCHEMA_VEHICLE_UUID);
+		readOne.method(GET);
+		readOne.description("Load the projects, attached to the schema with the given uuid.");
+		readOne.exampleResponse(OK, projectExamples.getProjectListResponse(), "Loaded projects.");
+		readOne.addQueryParameters(GenericParametersImpl.class);
+		readOne.addQueryParameters(PagingParametersImpl.class);
+		readOne.produces(APPLICATION_JSON);
+		readOne.blockingHandler(rc -> {
+			String uuid = rc.request().params().get("schemaUuid");
+			if (StringUtils.isEmpty(uuid)) {
+				rc.next();
+			} else {
+				InternalActionContext ac = wrap(rc);
+				crudHandler.handleGetLinkedProjects(ac, uuid);
+			}
+		}, false);
 	}
 }

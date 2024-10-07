@@ -22,9 +22,10 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.endpoint.RolePermissionHandlingEndpoint;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.core.endpoint.RolePermissionHandlingEndpoint;
+import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
@@ -62,6 +63,7 @@ public class MicroschemaEndpoint extends RolePermissionHandlingEndpoint {
 		addReadHandlers();
 		addUpdateHandler();
 		addDeleteHandler();
+		addMiscHandlers();
 		addRolePermissionHandler("microschemaUuid", MICROSCHEMA_UUID, "microschema", crudHandler, false);
 	}
 
@@ -192,5 +194,26 @@ public class MicroschemaEndpoint extends RolePermissionHandlingEndpoint {
 		endpoint.blockingHandler(rc -> {
 			crudHandler.handleCreate(wrap(rc));
 		}, isOrderedBlockingHandlers());
+	}
+
+	private void addMiscHandlers() {
+		InternalEndpointRoute readOne = createRoute();
+		readOne.path("/:microschemaUuid/projects");
+		readOne.addUriParameter("microschemaUuid", "Uuid of the microschema.", MICROSCHEMA_UUID);
+		readOne.method(GET);
+		readOne.description("Load the projects, attached to the microschema with the given uuid.");
+		readOne.exampleResponse(OK, projectExamples.getProjectListResponse(), "Loaded projects.");
+		readOne.addQueryParameters(GenericParametersImpl.class);
+		readOne.addQueryParameters(PagingParametersImpl.class);
+		readOne.produces(APPLICATION_JSON);
+		readOne.blockingHandler(rc -> {
+			String uuid = rc.request().params().get("microschemaUuid");
+			if (StringUtils.isEmpty(uuid)) {
+				rc.next();
+			} else {
+				InternalActionContext ac = wrap(rc);
+				crudHandler.handleGetLinkedProjects(ac, uuid);
+			}
+		}, false);
 	}
 }

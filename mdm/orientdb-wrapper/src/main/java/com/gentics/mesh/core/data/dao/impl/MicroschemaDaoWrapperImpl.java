@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.dao.impl;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -200,8 +201,12 @@ public class MicroschemaDaoWrapperImpl
 
 	@Override
 	public Result<HibProject> findLinkedProjects(HibMicroschema schema) {
-		return new TraversalResult<>(boot.get().meshRoot().getProjectRoot()
-				.findAll().stream().filter(project -> project.getMicroschemaContainerRoot().contains(schema)));
+		return new TraversalResult<>(getRoots(schema).stream().map(root -> root.getProject()).filter(Objects::nonNull));
+	}
+
+	@Override
+	public Result<? extends MicroschemaRoot> getRoots(HibMicroschema schema) {
+		return boot.get().meshRoot().getMicroschemaContainerRoot().getRoots(toGraph(schema));
 	}
 
 	@Override
