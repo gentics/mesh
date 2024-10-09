@@ -1,99 +1,201 @@
 {
 	nameEquals2015: nodes(filter: {
-	    schema: {is: folder}
-	    fields: {
-	      folder: {
-	        name: {equals: "2015"}
-	      }
-	    }
-	  }) {
-	    # [$.data.nameEquals2015.elements.length()=1]
-	    elements {
-	      uuid
-	      schema {
-	        name
-	      }
-	    }
+		schema: {is: folder}
+		fields: {
+			folder: {
+				name: {equals: "2015"}
+			}
+		}
+	}) {
+		# [$.data.nameEquals2015.elements.length()=1]
+		elements {
+	      	...output
+		}
+	}
+	notNameEquals2015: nodes(filter: {
+		schema: {is: folder}
+		not: {
+			fields: {
+				folder: {
+					name: {equals: "2015"}
+				}
+			}
+		}
+	}) {
+		# [$.data.notNameEquals2015.elements.length()=8]
+		elements {
+			...output
+		}
 	}
 	nameEndsWith15: nodes(filter: {
-	    schema: {is: folder}
-	    fields: {
-	      folder: {
-	        name: {like: "%15"}
-	      }
-	    }
-	  }) {
-	    # [$.data.nameEndsWith15.elements.length()=1]
-	    elements {
-	      uuid
-	      schema {
-	        name
-	      }
-	    }
+		schema: {is: folder}
+		fields: {
+			folder: {
+				name: {like: "%15"}
+			}
+		}
+	}) {
+		# [$.data.nameEndsWith15.elements.length()=1]
+		elements {
+			...output
+		}
+	}
+	notNameEndsWith15: nodes(filter: {
+		schema: {is: folder}
+		not: {
+			fields: {
+				folder: {
+					name: {like: "%15"}
+				}
+			}
+		}
+	}) {
+		# [$.data.notNameEndsWith15.elements.length()=8]
+		elements {
+			...output
+		}
 	}
 	nameNotEquals2015: nodes(filter: {
-	    schema: {is: folder}
-	    fields: {
-	      folder: {
-	        name: {notEquals: "2015" isNull: false}
-	      }
-	    }
-	  }) {
-	    # [$.data.nameNotEquals2015.elements.length()=5]
-	    elements {
-	      uuid
-	      schema {
-	        name
-	      }	     
-	    }
+		schema: {is: folder}
+		fields: {
+			folder: {
+				name: {notEquals: "2015" isNull: false}
+			}
+		}
+	}) {
+		# [$.data.nameNotEquals2015.elements.length()=5]
+		elements {
+			...output
+		}
+	}
+	notNameNotEquals2015: nodes(filter: {
+		schema: {is: folder}
+		not: {
+			fields: {
+				folder: {
+					name: {notEquals: "2015" isNull: false}
+				}
+			}
+		}
+	}) {
+		# [$.data.notNameNotEquals2015.elements.length()=4]
+		elements {
+			...output
+		}
+	}
+	nameNotEquals2015WithNull: nodes(filter: {
+		schema: {is: folder}
+		fields: {
+			folder: {
+				name: {notEquals: "2015"}
+			}
+		}
+	}) {
+		# [$.data.nameNotEquals2015WithNull.elements.length()=8]
+		elements {
+			...output
+		}
+	}
+	notNameNotEquals2015WithNull: nodes(filter: {
+		schema: {is: folder}
+		not: {
+			fields: {
+				folder: {
+					name: {notEquals: "2015"}
+				}
+			}
+		}
+	}) {
+		# [$.data.notNameNotEquals2015WithNull.elements.length()=1]
+		elements {
+			...output
+		}
 	}
 	nameOneOf: nodes(filter: {
-	    schema: {is: folder}
-	    fields: {
-	      folder: {
-	        name:{oneOf: ["2014", "2015", "News"]}
-	      }
-	    }
-	  }) {
-	    # [$.data.nameOneOf.elements.length()=3]
-	    elements {
-	      uuid
-	      schema {
-	        name
-	      }	      
-	    }
+		schema: {is: folder}
+		fields: {
+			folder: {
+				name:{oneOf: ["2014", "2015", "News"]}
+			}
+		}
+	}) {
+		# [$.data.nameOneOf.elements.length()=3]
+		elements {
+			...output
+		}
+	}
+	notNameOneOf: nodes(filter: {
+		schema: {is: folder}
+		not: {
+			fields: {
+				folder: {
+					name:{oneOf: ["2014", "2015", "News"]}
+				}
+			}
+		}
+	}) {
+		# [$.data.notNameOneOf.elements.length()=6]
+		elements {
+			...output
+		}
 	}
 	nameIsNotNull: nodes(filter: {
-	    schema: {is: folder}
-	    fields: {
-	      folder: {
-	        name: {isNull: false}
-	      }
-	    }
-	  }) {
-	    # [$.data.nameIsNotNull.elements.length()=6]
-	    elements {
-	      uuid
-	      schema {
-	        name
-	      }
-	    }
+		schema: {is: folder}
+		fields: {
+			folder: {
+				name: {isNull: false}
+			}
+		}
+	}) {
+		# [$.data.nameIsNotNull.elements.length()=6]
+		elements {
+			...output
+		}
+	}
+	notNameIsNotNull: nodes(filter: {
+		schema: {is: folder}
+		not: {
+			fields: {
+				folder: {
+					name: {isNull: false}
+				}
+			}
+		}
+	}) {
+		# [$.data.notNameIsNotNull.elements.length()=3]
+		elements {
+			...output
+		}
 	}
 	nameIsNull: nodes(filter: {
-	    schema: {is: folder}
-	    fields: {
-	      folder: {
-	        name: {isNull: true}
-	      }
-	    }
-	  }) {
-	    # [$.data.nameIsNull.elements.length()=3]
-	    elements {
-	      uuid
-	      schema {
-	        name
-	      }
-	    }
+		schema: {is: folder}
+		fields: {
+			folder: {
+				name: {isNull: true}
+			}
+		}
+	}) {
+		# [$.data.nameIsNull.elements.length()=3]
+		elements {
+			...output
+		}
+	}
+	notNameIsNull: nodes(filter: {
+		schema: {is: folder}
+		fields: {
+			folder: {
+				name: {isNull: true}
+			}
+		}
+	}) {
+		# [$.data.notNameIsNull.elements.length()=3]
+		elements {
+			...output
+		}
 	}
 }
 # [$.errors=<is-undefined>]
+
+fragment output on Node {
+	uuid
+}
