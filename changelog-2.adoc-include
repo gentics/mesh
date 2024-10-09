@@ -6,6 +6,17 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v2.1.8]]
+== 2.1.8 (09.10.2024)
+
+icon:check[] Image Manipulation: The validation of resize width and height have been fixed to also properly handle values set to "auto" in the request.
+
+icon:check[] GraphQL: The library for handling GraphQL Filters in Java has been updated to fix inconsistent behaviour when filtering nodes with fields of type "date" or "number",
+which had the field set to null.
+Before the fix, such nodes were never returned regardless of the used filter. Now the behaviour is identical to filters on fields of other types (such as "string" or "boolean") so that
+null values will not natch when compared to non-null values, but the negation with "not" will match.
+
+
 [[v2.1.7]]
 == 2.1.7 (01.10.2024)
 
