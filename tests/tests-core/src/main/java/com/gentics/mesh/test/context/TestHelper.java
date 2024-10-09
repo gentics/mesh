@@ -712,8 +712,12 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	}
 
 	default public NodeResponse uploadImageType(HibNode node, String languageTag, String fieldName, String extension, String mimeSubtype) throws IOException {
+		return uploadImageType(node, languageTag, fieldName, "blume", extension, mimeSubtype);
+	}
+
+	default public NodeResponse uploadImageType(HibNode node, String languageTag, String fieldName, String imageName, String extension, String mimeSubtype) throws IOException {
 		String contentType = "image/" + mimeSubtype;
-		String fileName = "blume." + StringUtils.removeStart(extension, ".");
+		String fileName = imageName + "." + StringUtils.removeStart(extension, ".");
 		try (Tx tx = tx()) {
 			prepareSchema(tx.nodeDao().findByUuidGlobal(node.getUuid()), "image/.*", fieldName);
 			tx.success();
