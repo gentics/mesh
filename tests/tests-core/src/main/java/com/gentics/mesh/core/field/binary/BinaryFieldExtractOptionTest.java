@@ -77,10 +77,10 @@ public class BinaryFieldExtractOptionTest extends AbstractMeshTest {
 		// Same as both
 		setUp(null);
 
-		assertThat(metadata.get("subject")).isEqualTo("TestSubject");
-		assertThat(metadata.getMap()).hasSize(49);
+		assertThat(metadata.get("dc_subject")).isEqualTo("TestSubject");
+		assertThat(metadata.getMap()).hasSize(24);
 		assertThat(plainText).isEqualTo("Das ist ein Word Dokument für den Johannes");
-		assertThat(document.getJsonObject("fields").getJsonObject("binary").getJsonObject("metadata").getString("subject")).isEqualTo("TestSubject");
+		assertThat(document.getJsonObject("fields").getJsonObject("binary").getJsonObject("metadata").getString("dc_subject")).isEqualTo("TestSubject");
 		assertThat(document.getJsonObject("fields").getJsonObject("binary").getJsonObject("file").getString("content")).isEqualTo("Das ist ein Word Dokument für den Johannes");
 	}
 
@@ -104,10 +104,10 @@ public class BinaryFieldExtractOptionTest extends AbstractMeshTest {
 			.setContent(false)
 		);
 
-		assertThat(metadata.get("subject")).isEqualTo("TestSubject");
-		assertThat(metadata.getMap()).hasSize(49);
+		assertThat(metadata.get("dc_subject")).isEqualTo("TestSubject");
+		assertThat(metadata.getMap()).hasSize(24);
 		assertThat(plainText).isNull();
-		assertThat(document.getJsonObject("fields").getJsonObject("binary").getJsonObject("metadata").getString("subject")).isEqualTo("TestSubject");
+		assertThat(document.getJsonObject("fields").getJsonObject("binary").getJsonObject("metadata").getString("dc_subject")).isEqualTo("TestSubject");
 		assertThat(document.getJsonObject("fields").getJsonObject("binary").getJsonObject("file")).isNull();
 	}
 
@@ -131,10 +131,10 @@ public class BinaryFieldExtractOptionTest extends AbstractMeshTest {
 			.setContent(true)
 		);
 
-		assertThat(metadata.get("subject")).isEqualTo("TestSubject");
-		assertThat(metadata.getMap()).hasSize(49);
+		assertThat(metadata.get("dc_subject")).isEqualTo("TestSubject");
+		assertThat(metadata.getMap()).hasSize(24);
 		assertThat(plainText).isEqualTo("Das ist ein Word Dokument für den Johannes");
-		assertThat(document.getJsonObject("fields").getJsonObject("binary").getJsonObject("metadata").getString("subject")).isEqualTo("TestSubject");
+		assertThat(document.getJsonObject("fields").getJsonObject("binary").getJsonObject("metadata").getString("dc_subject")).isEqualTo("TestSubject");
 		assertThat(document.getJsonObject("fields").getJsonObject("binary").getJsonObject("file").getString("content")).isEqualTo("Das ist ein Word Dokument für den Johannes");
 	}
 
@@ -143,14 +143,14 @@ public class BinaryFieldExtractOptionTest extends AbstractMeshTest {
 		setUp(new BinaryExtractOptions()
 			.setMetadata(true)
 			.setContent(false)
-		, Set.of("subject"));
+		, Set.of("dc_subject"));
 
-		assertThat(metadata.get("subject")).isEqualTo("TestSubject");
+		assertThat(metadata.get("dc_subject")).isEqualTo("TestSubject");
 		assertThat(plainText).isNull();
 		assertThat(metadata.getLocation()).isNull();
 		assertThat(metadata.getMap()).hasSize(1);
 
-		assertThat(document.getJsonObject("fields").getJsonObject("binary").getJsonObject("metadata").getString("subject")).isEqualTo("TestSubject");
+		assertThat(document.getJsonObject("fields").getJsonObject("binary").getJsonObject("metadata").getString("dc_subject")).isEqualTo("TestSubject");
 		assertThat(document.getJsonObject("fields").getJsonObject("binary").getJsonObject("file")).isNull();
 	}
 }
