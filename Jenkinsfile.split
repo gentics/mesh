@@ -21,6 +21,7 @@ properties([
 		booleanParam(name: 'runDeploy',           defaultValue: false, description: "Whether to run the deploy steps."),
 		booleanParam(name: 'runDeployTesting',    defaultValue: false, description: "Whether to run the testing deploy steps."),
 		booleanParam(name: 'runDocker',           defaultValue: false, description: "Whether to run the docker steps."),
+		booleanParam(name: 'omitScan',            defaultValue: false, description: "Omit scanning the docker images"),
 		booleanParam(name: 'runMavenBuild',       defaultValue: false, description: "Whether to run the maven build steps."),
 		booleanParam(name: 'runIntegrationTests', defaultValue: false, description: "Whether to run integration tests."),
 		booleanParam(name: 'consistencyChecks',   defaultValue: false, description: "Whether to do consistency checks for every test. Enabling this will increase overall test runtime."),
@@ -347,10 +348,21 @@ stage("Setup Build Environment") {
 					sh "rm server/target/*sources.jar || true"
 					sh "rm server/target/*javadoc.jar || true"
 					sh "cd server ; docker build --network=host -t " + registryHost + "/gentics/mesh:latest -t " + registryHost + "/gentics/mesh:" + version + " . ; cd .. "
+
+					if (!params.omitScan) {
+                        scanImage image: registryHost + "/gentics/mesh:" + version, exitCode: 1
+                    }
+
 					// connectors
 					def mavenVersion = MavenHelper.getVersion()
 					sh "cd .docker ; cp ../connectors/hsqldb/target/mesh-database-connector-hsqldb-" + mavenVersion + ".jar ./mesh-connector.jar ; docker build --network=host -t " + registryHost + "/gentics/mesh-hsqldb:latest -t " + registryHost + "/gentics/mesh-hsqldb:" + version + " --build-arg MESH_VERSION=" + version + " --build-arg MESH_REGISTRY_HOST=" + registryHost + " . ; rm -f mesh-connector.jar ; cd .."
 					sh "cd .docker ; cp ../connectors/mariadb/target/mesh-database-connector-mariadb-" + mavenVersion + ".jar ./mesh-connector.jar ; docker build --network=host -t " + registryHost + "/gentics/mesh-mariadb:latest -t " + registryHost + "/gentics/mesh-mariadb:" + version + " --build-arg MESH_VERSION=" + version + " --build-arg MESH_REGISTRY_HOST=" + registryHost + " . ; rm -f mesh-connector.jar ; cd .."
+
+                    if (!params.omitScan) {
+                        scanImage image: registryHost + "/gentics/mesh-hsqldb:" + version, exitCode: 1
+						scanImage image: registryHost + "/gentics/mesh-mariadb:" + version, exitCode: 1
+                    }
+
 				} else {
 					echo "Docker build skipped.."
 				}
