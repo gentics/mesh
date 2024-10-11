@@ -1,0 +1,1 @@
+Image Manipulation: The validation of resize width and height have been fixed to also properly handle values set to "auto" in the request.

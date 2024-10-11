@@ -11,6 +11,22 @@ mvn -pl changelog install
 
 icon:bullhorn[] Core: The storage layer has been replaced from the included OrientDB to the Hibernate ORM based solution, allowing the usage of 3rd party SQL RDBMS as a structured data storage. The supported database for Mesh OSS is MariaDB 10.7+.  Additionally, an in-memory mode HSQLDB is supported for the testing purposes.
 
+[[v2.1.8]]
+== 2.1.8 (09.10.2024)
+
+icon:check[] Image Manipulation: The validation of resize width and height have been fixed to also properly handle values set to "auto" in the request.
+
+icon:check[] GraphQL: The library for handling GraphQL Filters in Java has been updated to fix inconsistent behaviour when filtering nodes with fields of type "date" or "number",
+which had the field set to null.
+Before the fix, such nodes were never returned regardless of the used filter. Now the behaviour is identical to filters on fields of other types (such as "string" or "boolean") so that
+null values will not natch when compared to non-null values, but the negation with "not" will match.
+
+
+[[v2.1.7]]
+== 2.1.7 (01.10.2024)
+
+icon:check[] Core: A crash, caused by duplicated nodes in a GraphQL resulting set, has been fixed.
+
 [[v2.1.6]]
 == 2.1.6 (13.09.2024)
 
