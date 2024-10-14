@@ -16,6 +16,8 @@ import static com.gentics.mesh.example.ExampleUuids.NODE_DELOREAN_UUID;
 import static com.gentics.mesh.example.ExampleUuids.TAG_RED_UUID;
 import static com.gentics.mesh.example.ExampleUuids.UUID_1;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
+import static com.gentics.mesh.http.HttpConstants.APPLICATION_OCTET_STREAM;
+import static com.gentics.mesh.http.HttpConstants.MULTIPART_FORM_DATA;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
@@ -193,6 +195,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		fieldUpdate.addUriParameter("fieldName", "Name of the field which should be created.", "stringField");
 		fieldUpdate.addUriParameter("publish", "Whether the node shall be published after updating the binary field", "true");
 		fieldUpdate.method(POST);
+		fieldUpdate.consumes(MULTIPART_FORM_DATA);
 		fieldUpdate.produces(APPLICATION_JSON);
 		fieldUpdate.exampleRequest(InternalCommonEndpoint.nodeExamples.getExampleBinaryUploadFormParameters());
 		fieldUpdate.exampleResponse(OK, InternalCommonEndpoint.nodeExamples.getNodeResponseWithAllFields(), "The response contains the updated node.");
@@ -250,6 +253,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		fieldGet.addQueryParameters(ImageManipulationParametersImpl.class);
 		fieldGet.addQueryParameters(VersioningParametersImpl.class);
 		fieldGet.method(GET);
+		fieldGet.produces(APPLICATION_OCTET_STREAM);
 		fieldGet.description(
 			"Download the binary field with the given name. You can use image query parameters for crop and resize if the binary data represents an image.");
 		fieldGet.blockingHandler(rc -> {
