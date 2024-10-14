@@ -211,7 +211,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 		}
 
 		UUID branchId = UUIDUtil.toJavaUuid(branchUuid);
-		List<UUID> nodesUuids = nodes.stream().map(HibNode::getId).map(UUID.class::cast).collect(Collectors.toList());
+		Set<UUID> nodesUuids = nodes.stream().map(HibNode::getId).map(UUID.class::cast).collect(Collectors.toSet());
 		Map<HibNode, List<HibNode>> map = SplittingUtils.splitAndMergeInMapOfLists(nodesUuids, inQueriesLimitForSplitting(1), (uuids) -> {
 			List<Object[]> resultList = em().createNamedQuery("nodeBranchParents.findChildrenByNodesAndBranch")
 					.setParameter("nodesUuids", uuids)
@@ -1058,7 +1058,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 		}
 
 		UUID branchUuid = UUIDUtil.toJavaUuid(Tx.get().getBranch(ac).getUuid());
-		List<Object> nodesUuids = nodes.stream().map(HibNode::getId).collect(Collectors.toList());
+		Set<Object> nodesUuids = nodes.stream().map(HibNode::getId).collect(Collectors.toSet());
 		Map<HibNode, List<HibNode>> map = SplittingUtils.splitAndMergeInMapOfLists(nodesUuids, inQueriesLimitForSplitting(1), (uuids) -> {
 			List<Object[]> list = em().createNamedQuery("nodeBranchParents.findAncestors")
 					.setParameter("nodeUuids", uuids)
