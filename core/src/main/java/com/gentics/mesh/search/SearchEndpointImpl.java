@@ -31,7 +31,6 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.impl.IndexMaintenanceParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.SearchParametersImpl;
-import com.gentics.mesh.rest.InternalCommonEndpoint;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 import com.gentics.mesh.search.index.AdminIndexHandler;
@@ -121,32 +120,32 @@ public class SearchEndpointImpl extends AbstractInternalEndpoint implements Sear
 	 */
 	private void addSearchEndpoints() {
 		registerHandler("users", (uuid) -> Tx.get().userDao().findByUuid(uuid), UserListResponse.class, userSearchHandler,
-			InternalCommonEndpoint.userExamples.getUserListResponse(), false);
+			userExamples.getUserListResponse(), false);
 		registerHandler("groups", (uuid) -> Tx.get().groupDao().findByUuid(uuid), GroupListResponse.class, groupSearchHandler,
-			InternalCommonEndpoint.groupExamples.getGroupListResponse(), false);
+			groupExamples.getGroupListResponse(), false);
 		registerHandler("roles", (uuid) -> Tx.get().roleDao().findByUuid(uuid), RoleListResponse.class, roleSearchHandler,
-			InternalCommonEndpoint.roleExamples.getRoleListResponse(), false);
+			roleExamples.getRoleListResponse(), false);
 
 		registerHandler("nodes", (uuid) -> {
 			HibNode node = Tx.get().nodeDao().findByUuidGlobal(uuid);
 			return node;
-		}, NodeListResponse.class, nodeSearchHandler, InternalCommonEndpoint.nodeExamples.getNodeListResponse(), true);
+		}, NodeListResponse.class, nodeSearchHandler, nodeExamples.getNodeListResponse(), true);
 
-		registerHandler("tags", (uuid) -> Tx.get().tagDao().findByUuid(uuid), TagListResponse.class, tagSearchHandler, InternalCommonEndpoint.tagExamples
+		registerHandler("tags", (uuid) -> Tx.get().tagDao().findByUuid(uuid), TagListResponse.class, tagSearchHandler, tagExamples
 			.createTagListResponse(), false);
 		registerHandler("tagFamilies", (uuid) -> Tx.get().tagFamilyDao().findByUuid(uuid), TagFamilyListResponse.class,
 			tagFamilySearchHandler,
-			InternalCommonEndpoint.tagFamilyExamples.getTagFamilyListResponse(), false);
+			tagFamilyExamples.getTagFamilyListResponse(), false);
 
 		registerHandler("projects", (uuid) -> Tx.get().projectDao().findByUuid(uuid), ProjectListResponse.class,
-			projectSearchHandler, InternalCommonEndpoint.projectExamples
+			projectSearchHandler, projectExamples
 				.getProjectListResponse(),
 			false);
 		registerHandler("schemas", (uuid) -> Tx.get().schemaDao().findByUuid(uuid), SchemaListResponse.class,
 			schemaContainerSearchHandler,
-			InternalCommonEndpoint.schemaExamples.getSchemaListResponse(), false);
+			schemaExamples.getSchemaListResponse(), false);
 		registerHandler("microschemas", (uuid) -> Tx.get().microschemaDao().findByUuid(uuid), MicroschemaListResponse.class,
-			microschemaContainerSearchHandler, InternalCommonEndpoint.microschemaExamples.getMicroschemaListResponse(), false);
+			microschemaContainerSearchHandler, microschemaExamples.getMicroschemaListResponse(), false);
 		addAdminHandlers();
 	}
 
@@ -156,7 +155,7 @@ public class SearchEndpointImpl extends AbstractInternalEndpoint implements Sear
 		statusEndpoint.method(GET);
 		statusEndpoint.description("Returns the search index status.");
 		statusEndpoint.produces(APPLICATION_JSON);
-		statusEndpoint.exampleResponse(OK, InternalCommonEndpoint.miscExamples.searchStatusJson(), "Search index status.");
+		statusEndpoint.exampleResponse(OK, miscExamples.searchStatusJson(), "Search index status.");
 		statusEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			adminHandler.handleStatus(ac);
@@ -179,7 +178,7 @@ public class SearchEndpointImpl extends AbstractInternalEndpoint implements Sear
 		indexClearEndpoint.produces(APPLICATION_JSON);
 		indexClearEndpoint.addQueryParameters(IndexMaintenanceParametersImpl.class);
 		indexClearEndpoint.description("Drops all indices and recreates them. The index sync is not invoked automatically.");
-		indexClearEndpoint.exampleResponse(OK, InternalCommonEndpoint.miscExamples.createMessageResponse(), "Recreated all indices.");
+		indexClearEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Recreated all indices.");
 		indexClearEndpoint.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			adminHandler.handleClear(ac);
@@ -192,7 +191,7 @@ public class SearchEndpointImpl extends AbstractInternalEndpoint implements Sear
 		indexSyncEndpoint.addQueryParameters(IndexMaintenanceParametersImpl.class);
 		indexSyncEndpoint.description(
 			"Invokes the manual synchronisation of the search indices. This operation may take some time to complete and is performed asynchronously. When clustering is enabled it will be executed on any free instance.");
-		indexSyncEndpoint.exampleResponse(OK, InternalCommonEndpoint.miscExamples.createMessageResponse(), "Invoked index synchronisation on all indices.");
+		indexSyncEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Invoked index synchronisation on all indices.");
 		indexSyncEndpoint.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			adminHandler.handleSync(ac);
@@ -222,7 +221,7 @@ public class SearchEndpointImpl extends AbstractInternalEndpoint implements Sear
 		endpoint.addQueryParameters(PagingParametersImpl.class);
 		endpoint.addQueryParameters(SearchParametersImpl.class);
 		endpoint.exampleResponse(OK, exampleListResponse, "Paged search result for " + typeName);
-		endpoint.exampleRequest(InternalCommonEndpoint.miscExamples.getSearchQueryExample());
+		endpoint.exampleRequest(miscExamples.getSearchQueryExample());
 		endpoint.handler(rc -> {
 			try {
 				InternalActionContext ac = wrap(rc);

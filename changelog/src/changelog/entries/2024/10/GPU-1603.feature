@@ -1,0 +1,1 @@
+A set of Java Service based API for the management of Mesh Runtime has been introduced. As of now, the `AuthenticationService` and `EndpointService` allow external authentication providers and endpoints being loaded at boot from the classpath provided JAR files, respectively.
