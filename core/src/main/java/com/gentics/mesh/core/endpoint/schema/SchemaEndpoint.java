@@ -22,14 +22,13 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.db.Database;
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.core.endpoint.RolePermissionHandlingEndpoint;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.rest.InternalCommonEndpoint;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 
 /**
@@ -88,8 +87,8 @@ public class SchemaEndpoint extends RolePermissionHandlingEndpoint {
 		endpoint.method(POST);
 		endpoint.description("Apply the posted changes to the schema. The schema migration will not automatically be started.");
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleRequest(InternalCommonEndpoint.schemaExamples.getSchemaChangesListModel());
-		endpoint.exampleResponse(OK, InternalCommonEndpoint.miscExamples.createMessageResponse(), "Schema changes have been applied.");
+		endpoint.exampleRequest(schemaExamples.getSchemaChangesListModel());
+		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Schema changes have been applied.");
 		endpoint.events(SCHEMA_UPDATED, SCHEMA_BRANCH_ASSIGN, SCHEMA_MIGRATION_START, SCHEMA_MIGRATION_FINISHED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -105,8 +104,8 @@ public class SchemaEndpoint extends RolePermissionHandlingEndpoint {
 		endpoint.description("Create a new schema.");
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleRequest(InternalCommonEndpoint.schemaExamples.getSchemaCreateRequest());
-		endpoint.exampleResponse(CREATED, InternalCommonEndpoint.schemaExamples.getSchemaResponse(), "Created schema.");
+		endpoint.exampleRequest(schemaExamples.getSchemaCreateRequest());
+		endpoint.exampleResponse(CREATED, schemaExamples.getSchemaResponse(), "Created schema.");
 		endpoint.events(SCHEMA_CREATED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -123,8 +122,8 @@ public class SchemaEndpoint extends RolePermissionHandlingEndpoint {
 		diffEndpoint.description("Compare the given schema with the stored schema and create a changeset.");
 		diffEndpoint.consumes(APPLICATION_JSON);
 		diffEndpoint.produces(APPLICATION_JSON);
-		diffEndpoint.exampleRequest(InternalCommonEndpoint.schemaExamples.getSchemaResponse());
-		diffEndpoint.exampleResponse(OK, InternalCommonEndpoint.schemaExamples.getSchemaChangesListModel(),
+		diffEndpoint.exampleRequest(schemaExamples.getSchemaResponse());
+		diffEndpoint.exampleResponse(OK, schemaExamples.getSchemaChangesListModel(),
 			"List of schema changes that were detected by comparing the posted schema and the current version.");
 		diffEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -142,8 +141,8 @@ public class SchemaEndpoint extends RolePermissionHandlingEndpoint {
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.addQueryParameters(SchemaUpdateParametersImpl.class);
-		endpoint.exampleRequest(InternalCommonEndpoint.schemaExamples.getSchemaUpdateRequest());
-		endpoint.exampleResponse(OK, InternalCommonEndpoint.schemaExamples.getSchemaResponse(), "Updated schema.");
+		endpoint.exampleRequest(schemaExamples.getSchemaUpdateRequest());
+		endpoint.exampleResponse(OK, schemaExamples.getSchemaResponse(), "Updated schema.");
 		endpoint.events(SCHEMA_UPDATED, SCHEMA_MIGRATION_START, SCHEMA_MIGRATION_FINISHED);
 		endpoint.blockingHandler(rc -> {
 			// Update operations should always be executed sequentially - never in parallel
@@ -178,7 +177,7 @@ public class SchemaEndpoint extends RolePermissionHandlingEndpoint {
 		readOne.method(GET);
 		readOne.addQueryParameters(VersioningParametersImpl.class);
 		readOne.description("Load the schema with the given uuid.");
-		readOne.exampleResponse(OK, InternalCommonEndpoint.schemaExamples.getSchemaResponse(), "Loaded schema.");
+		readOne.exampleResponse(OK, schemaExamples.getSchemaResponse(), "Loaded schema.");
 		readOne.addQueryParameters(GenericParametersImpl.class);
 		readOne.produces(APPLICATION_JSON);
 		readOne.blockingHandler(rc -> {
@@ -198,7 +197,7 @@ public class SchemaEndpoint extends RolePermissionHandlingEndpoint {
 		readAll.produces(APPLICATION_JSON);
 		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.addQueryParameters(GenericParametersImpl.class);
-		readAll.exampleResponse(OK, InternalCommonEndpoint.schemaExamples.getSchemaListResponse(), "Loaded list of schemas.");
+		readAll.exampleResponse(OK, schemaExamples.getSchemaListResponse(), "Loaded list of schemas.");
 		readAll.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleReadList(ac);

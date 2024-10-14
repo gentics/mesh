@@ -15,10 +15,8 @@ import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.example.ExampleUuids;
-import com.gentics.mesh.parameter.client.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.ProjectLoadParametersImpl;
-import com.gentics.mesh.rest.InternalCommonEndpoint;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 
@@ -46,7 +44,7 @@ public class ProjectLanguageEndpoint extends AbstractProjectEndpoint {
 		InternalEndpointRoute getAllRoute = createRoute();
 		getAllRoute.path("/");
 		getAllRoute.description("Get all languages, assigned to this project");
-		getAllRoute.exampleResponse(OK, InternalCommonEndpoint.languageExamples.getLanguageListResponse(), "List of languages");
+		getAllRoute.exampleResponse(OK, languageExamples.getLanguageListResponse(), "List of languages");
 		getAllRoute.addQueryParameters(PagingParametersImpl.class);
 		getAllRoute.method(GET);
 		getAllRoute.produces(APPLICATION_JSON);
@@ -58,7 +56,7 @@ public class ProjectLanguageEndpoint extends AbstractProjectEndpoint {
 		InternalEndpointRoute getRoute = createRoute();
 		getRoute.path("/:languageUuid");
 		getRoute.addUriParameter("languageUuid", "UUID of a language", ExampleUuids.UUID_1);
-		getRoute.exampleResponse(OK, InternalCommonEndpoint.languageExamples.getJapaneseLanguageResponse(), "A language");
+		getRoute.exampleResponse(OK, languageExamples.getJapaneseLanguageResponse(), "A language");
 		getRoute.method(GET);
 		getRoute.produces(APPLICATION_JSON);
 		getRoute.blockingHandler(rc -> {
@@ -70,7 +68,7 @@ public class ProjectLanguageEndpoint extends AbstractProjectEndpoint {
 		InternalEndpointRoute getByTagRoute = createRoute();
 		getByTagRoute.path("/tag/:languageTag");
 		getByTagRoute.addUriParameter("languageTag", "ISO language tag", "jp");
-		getByTagRoute.exampleResponse(OK, InternalCommonEndpoint.languageExamples.getJapaneseLanguageResponse(), "A language");
+		getByTagRoute.exampleResponse(OK, languageExamples.getJapaneseLanguageResponse(), "A language");
 		getByTagRoute.method(GET);
 		getByTagRoute.produces(APPLICATION_JSON);
 		getByTagRoute.blockingHandler(rc -> {
@@ -83,7 +81,7 @@ public class ProjectLanguageEndpoint extends AbstractProjectEndpoint {
 		assignRoute.path("/:languageUuid");
 		assignRoute.addUriParameter("languageUuid", "UUID of a language to assign", ExampleUuids.UUID_1);
 		assignRoute.addQueryParameters(ProjectLoadParametersImpl.class);
-		assignRoute.exampleResponse(OK, InternalCommonEndpoint.projectExamples.getProjectResponseWithLanguages("Multilingual_project"), "A project");
+		assignRoute.exampleResponse(OK, projectExamples.getProjectResponseWithLanguages("Multilingual_project"), "A project");
 		assignRoute.method(POST);
 		assignRoute.produces(APPLICATION_JSON);
 		assignRoute.blockingHandler(rc -> {
@@ -96,7 +94,7 @@ public class ProjectLanguageEndpoint extends AbstractProjectEndpoint {
 		unassignRoute.path("/:languageUuid");
 		unassignRoute.addUriParameter("languageUuid", "UUID of a language to unassign", ExampleUuids.UUID_1);
 		unassignRoute.addQueryParameters(ProjectLoadParametersImpl.class);
-		unassignRoute.exampleResponse(OK, InternalCommonEndpoint.projectExamples.getProjectResponseWithLanguages("Multilingual_project"), "A project");
+		unassignRoute.exampleResponse(OK, projectExamples.getProjectResponseWithLanguages("Multilingual_project"), "A project");
 		unassignRoute.method(DELETE);
 		unassignRoute.produces(APPLICATION_JSON);
 		unassignRoute.blockingHandler(rc -> {
@@ -109,7 +107,7 @@ public class ProjectLanguageEndpoint extends AbstractProjectEndpoint {
 		assignByTagRoute.path("/tag/:languageTag");
 		assignByTagRoute.addUriParameter("languageTag", "ISO tag of a language to assign", ExampleUuids.UUID_1);
 		assignByTagRoute.addQueryParameters(ProjectLoadParametersImpl.class);
-		assignByTagRoute.exampleResponse(OK, InternalCommonEndpoint.projectExamples.getProjectResponseWithLanguages("Multilingual_project"), "A project");
+		assignByTagRoute.exampleResponse(OK, projectExamples.getProjectResponseWithLanguages("Multilingual_project"), "A project");
 		assignByTagRoute.method(POST);
 		assignByTagRoute.produces(APPLICATION_JSON);
 		assignByTagRoute.blockingHandler(rc -> {
@@ -122,7 +120,7 @@ public class ProjectLanguageEndpoint extends AbstractProjectEndpoint {
 		unassignByTagRoute.path("/tag/:languageTag");
 		unassignByTagRoute.addUriParameter("languageTag", "ISO tag of a language to unassign", ExampleUuids.UUID_1);
 		unassignByTagRoute.addQueryParameters(ProjectLoadParametersImpl.class);
-		unassignByTagRoute.exampleResponse(OK, InternalCommonEndpoint.projectExamples.getProjectResponseWithLanguages("Multilingual_project"), "A project");
+		unassignByTagRoute.exampleResponse(OK, projectExamples.getProjectResponseWithLanguages("Multilingual_project"), "A project");
 		unassignByTagRoute.method(DELETE);
 		unassignByTagRoute.produces(APPLICATION_JSON);
 		unassignByTagRoute.blockingHandler(rc -> {

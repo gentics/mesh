@@ -20,12 +20,11 @@ import javax.inject.Inject;
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.db.Database;
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.core.endpoint.RolePermissionHandlingEndpoint;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.rest.InternalCommonEndpoint;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 
 /**
@@ -72,8 +71,8 @@ public class RoleEndpoint extends RolePermissionHandlingEndpoint {
 			"projects/" + PROJECT_DEMO_UUID + "\nprojects/" + PROJECT_DEMO_UUID + "/nodes/" + NODE_DELOREAN_UUID);
 		permissionSetEndpoint.method(POST);
 		permissionSetEndpoint.description("Set the permissions between role and the targeted element.");
-		permissionSetEndpoint.exampleResponse(OK, InternalCommonEndpoint.miscExamples.createMessageResponse(), "Permissions were set.");
-		permissionSetEndpoint.exampleRequest(InternalCommonEndpoint.roleExamples.getRolePermissionRequest());
+		permissionSetEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Permissions were set.");
+		permissionSetEndpoint.exampleRequest(roleExamples.getRolePermissionRequest());
 		permissionSetEndpoint.consumes(APPLICATION_JSON);
 		permissionSetEndpoint.events(ROLE_PERMISSIONS_CHANGED);
 		permissionSetEndpoint.produces(APPLICATION_JSON);
@@ -93,7 +92,7 @@ public class RoleEndpoint extends RolePermissionHandlingEndpoint {
 		permissionGetEndpoint.description("Load the permissions between given role and the targeted element.");
 		permissionGetEndpoint.method(GET);
 		permissionGetEndpoint.produces(APPLICATION_JSON);
-		permissionGetEndpoint.exampleResponse(OK, InternalCommonEndpoint.roleExamples.getRolePermissionResponse(), "Loaded permissions.");
+		permissionGetEndpoint.exampleResponse(OK, roleExamples.getRolePermissionResponse(), "Loaded permissions.");
 		permissionGetEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String roleUuid = ac.getParameter("param0");
@@ -124,8 +123,8 @@ public class RoleEndpoint extends RolePermissionHandlingEndpoint {
 		endpoint.description("Update the role with the given uuid. The role is created if no role with the specified uuid could be found.");
 		endpoint.method(POST);
 		endpoint.consumes(APPLICATION_JSON);
-		endpoint.exampleRequest(InternalCommonEndpoint.roleExamples.getRoleUpdateRequest("New role name"));
-		endpoint.exampleResponse(OK, InternalCommonEndpoint.roleExamples.getRoleResponse1("New role name"), "Updated role.");
+		endpoint.exampleRequest(roleExamples.getRoleUpdateRequest("New role name"));
+		endpoint.exampleResponse(OK, roleExamples.getRoleResponse1("New role name"), "Updated role.");
 		endpoint.events(ROLE_UPDATED, ROLE_CREATED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -141,7 +140,7 @@ public class RoleEndpoint extends RolePermissionHandlingEndpoint {
 		readOne.description("Load the role with the given uuid.");
 		readOne.method(GET);
 		readOne.produces(APPLICATION_JSON);
-		readOne.exampleResponse(OK, InternalCommonEndpoint.roleExamples.getRoleResponse1("Admin Role"), "Loaded role.");
+		readOne.exampleResponse(OK, roleExamples.getRoleResponse1("Admin Role"), "Loaded role.");
 		readOne.addQueryParameters(GenericParametersImpl.class);
 		readOne.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -157,7 +156,7 @@ public class RoleEndpoint extends RolePermissionHandlingEndpoint {
 		readAll.description("Load multiple roles and return a paged list response");
 		readAll.method(GET);
 		readAll.produces(APPLICATION_JSON);
-		readAll.exampleResponse(OK, InternalCommonEndpoint.roleExamples.getRoleListResponse(), "Loaded list of roles.");
+		readAll.exampleResponse(OK, roleExamples.getRoleListResponse(), "Loaded list of roles.");
 		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.addQueryParameters(GenericParametersImpl.class);
 		readAll.blockingHandler(rc -> {
@@ -173,8 +172,8 @@ public class RoleEndpoint extends RolePermissionHandlingEndpoint {
 		endpoint.method(POST);
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleRequest(InternalCommonEndpoint.roleExamples.getRoleCreateRequest("New role"));
-		endpoint.exampleResponse(CREATED, InternalCommonEndpoint.roleExamples.getRoleResponse1("New role"), "Created role.");
+		endpoint.exampleRequest(roleExamples.getRoleCreateRequest("New role"));
+		endpoint.exampleResponse(CREATED, roleExamples.getRoleResponse1("New role"), "Created role.");
 		endpoint.events(ROLE_CREATED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);

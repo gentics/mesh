@@ -25,13 +25,12 @@ import javax.inject.Inject;
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.db.Database;
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.core.endpoint.RolePermissionHandlingEndpoint;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
-import com.gentics.mesh.rest.InternalCommonEndpoint;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 
 /**
@@ -77,7 +76,7 @@ public class GroupEndpoint extends RolePermissionHandlingEndpoint {
 		readRoles.description("Load multiple roles that are assigned to the group. Return a paged list response.");
 		readRoles.method(GET);
 		readRoles.produces(APPLICATION_JSON);
-		readRoles.exampleResponse(OK, InternalCommonEndpoint.roleExamples.getRoleListResponse(), "List of roles which were assigned to the group.");
+		readRoles.exampleResponse(OK, roleExamples.getRoleListResponse(), "List of roles which were assigned to the group.");
 		readRoles.addQueryParameters(PagingParametersImpl.class);
 		readRoles.addQueryParameters(RolePermissionParametersImpl.class);
 		readRoles.blockingHandler(rc -> {
@@ -93,7 +92,7 @@ public class GroupEndpoint extends RolePermissionHandlingEndpoint {
 		addRole.method(POST);
 		addRole.description("Add the specified role to the group.");
 		addRole.produces(APPLICATION_JSON);
-		addRole.exampleResponse(OK, InternalCommonEndpoint.groupExamples.getGroupResponse1("Group name"), "Loaded role.");
+		addRole.exampleResponse(OK, groupExamples.getGroupResponse1("Group name"), "Loaded role.");
 		addRole.events(GROUP_ROLE_ASSIGNED);
 		addRole.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -125,7 +124,7 @@ public class GroupEndpoint extends RolePermissionHandlingEndpoint {
 		readUsers.addUriParameter("groupUuid", "Uuid of the group.", GROUP_CLIENT_UUID);
 		readUsers.method(GET);
 		readUsers.produces(APPLICATION_JSON);
-		readUsers.exampleResponse(OK, InternalCommonEndpoint.userExamples.getUserListResponse(), "List of users which belong to the group.");
+		readUsers.exampleResponse(OK, userExamples.getUserListResponse(), "List of users which belong to the group.");
 		readUsers.description("Load a list of users which have been assigned to the group.");
 		readUsers.addQueryParameters(PagingParametersImpl.class);
 		readUsers.blockingHandler(rc -> {
@@ -141,7 +140,7 @@ public class GroupEndpoint extends RolePermissionHandlingEndpoint {
 		addUser.method(POST);
 		addUser.description("Add the given user to the group");
 		addUser.produces(APPLICATION_JSON);
-		addUser.exampleResponse(OK, InternalCommonEndpoint.groupExamples.getGroupResponse1("Group name"), "Updated group.");
+		addUser.exampleResponse(OK, groupExamples.getGroupResponse1("Group name"), "Updated group.");
 		addUser.events(GROUP_USER_ASSIGNED);
 		addUser.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -191,8 +190,8 @@ public class GroupEndpoint extends RolePermissionHandlingEndpoint {
 		endpoint.method(POST);
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleRequest(InternalCommonEndpoint.groupExamples.getGroupUpdateRequest("New group name"));
-		endpoint.exampleResponse(OK, InternalCommonEndpoint.groupExamples.getGroupResponse1("New group name"), "Updated group.");
+		endpoint.exampleRequest(groupExamples.getGroupUpdateRequest("New group name"));
+		endpoint.exampleResponse(OK, groupExamples.getGroupResponse1("New group name"), "Updated group.");
 		endpoint.events(GROUP_UPDATED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -209,7 +208,7 @@ public class GroupEndpoint extends RolePermissionHandlingEndpoint {
 		readOne.description("Read the group with the given uuid.");
 		readOne.method(GET);
 		readOne.produces(APPLICATION_JSON);
-		readOne.exampleResponse(OK, InternalCommonEndpoint.groupExamples.getGroupResponse1("Admin Group"), "Loaded group.");
+		readOne.exampleResponse(OK, groupExamples.getGroupResponse1("Admin Group"), "Loaded group.");
 		readOne.addQueryParameters(RolePermissionParametersImpl.class);
 		readOne.addQueryParameters(GenericParametersImpl.class);
 		readOne.blockingHandler(rc -> {
@@ -226,7 +225,7 @@ public class GroupEndpoint extends RolePermissionHandlingEndpoint {
 		readAll.method(GET);
 		readAll.description("Read multiple groups and return a paged list response.");
 		readAll.produces(APPLICATION_JSON);
-		readAll.exampleResponse(OK, InternalCommonEndpoint.groupExamples.getGroupListResponse(), "List response which contains the found  groups.");
+		readAll.exampleResponse(OK, groupExamples.getGroupListResponse(), "List response which contains the found  groups.");
 		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.addQueryParameters(RolePermissionParametersImpl.class);
 		readAll.addQueryParameters(GenericParametersImpl.class);
@@ -241,8 +240,8 @@ public class GroupEndpoint extends RolePermissionHandlingEndpoint {
 		endpoint.path("/");
 		endpoint.method(POST);
 		endpoint.description("Create a new group.");
-		endpoint.exampleRequest(InternalCommonEndpoint.groupExamples.getGroupCreateRequest("New group"));
-		endpoint.exampleResponse(CREATED, InternalCommonEndpoint.groupExamples.getGroupResponse1("New group"), "Created group.");
+		endpoint.exampleRequest(groupExamples.getGroupCreateRequest("New group"));
+		endpoint.exampleResponse(CREATED, groupExamples.getGroupResponse1("New group"), "Created group.");
 		endpoint.events(GROUP_CREATED);
 		endpoint.blockingHandler(rc -> {
 			crudHandler.handleCreate(wrap(rc));

@@ -120,8 +120,8 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		deployEndpoint.method(POST);
 		deployEndpoint.description("Deploys the plugin using the provided deployment information.");
 		deployEndpoint.produces(APPLICATION_JSON);
-		deployEndpoint.exampleRequest(InternalCommonEndpoint.adminExamples.createPluginDeploymentRequest());
-		deployEndpoint.exampleResponse(OK, InternalCommonEndpoint.adminExamples.createHelloWorldPluginResponse(), "Plugin response.");
+		deployEndpoint.exampleRequest(adminExamples.createPluginDeploymentRequest());
+		deployEndpoint.exampleResponse(OK, adminExamples.createHelloWorldPluginResponse(), "Plugin response.");
 		deployEndpoint.events(PLUGIN_DEPLOYED, PLUGIN_DEPLOYING);
 		deployEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -134,7 +134,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		undeployEndpoint.description("Undeploys the plugin with the given uuid.");
 		undeployEndpoint.produces(APPLICATION_JSON);
 		undeployEndpoint.addUriParameter("id", "Id of the plugin.", PLUGIN_1_ID);
-		undeployEndpoint.exampleResponse(OK, InternalCommonEndpoint.adminExamples.createHelloWorldPluginResponse(), "Plugin response.");
+		undeployEndpoint.exampleResponse(OK, adminExamples.createHelloWorldPluginResponse(), "Plugin response.");
 		undeployEndpoint.events(PLUGIN_UNDEPLOYED, PLUGIN_UNDEPLOYING);
 		undeployEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -148,7 +148,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		readEndpoint.description("Loads deployment information for the plugin with the given id.");
 		readEndpoint.produces(APPLICATION_JSON);
 		readEndpoint.addUriParameter("uuid", "Uuid of the plugin.", PLUGIN_1_ID);
-		readEndpoint.exampleResponse(OK, InternalCommonEndpoint.adminExamples.createHelloWorldPluginResponse(), "Plugin response.");
+		readEndpoint.exampleResponse(OK, adminExamples.createHelloWorldPluginResponse(), "Plugin response.");
 		readEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("uuid");
@@ -160,7 +160,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		readAllEndpoint.method(GET);
 		readAllEndpoint.description("Loads deployment information for all deployed plugins.");
 		readAllEndpoint.produces(APPLICATION_JSON);
-		readAllEndpoint.exampleResponse(OK, InternalCommonEndpoint.adminExamples.createPluginListResponse(), "Plugin list response.");
+		readAllEndpoint.exampleResponse(OK, adminExamples.createPluginListResponse(), "Plugin list response.");
 		readAllEndpoint.blockingHandler(rc -> {
 			pluginHandler.handleReadList(wrap(rc));
 		}, false);
@@ -176,7 +176,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		endpoint.method(GET);
 		endpoint.description("Loads the cluster status information.");
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(OK, InternalCommonEndpoint.adminExamples.createClusterStatusResponse(), "Cluster status.");
+		endpoint.exampleResponse(OK, adminExamples.createClusterStatusResponse(), "Cluster status.");
 		endpoint.blockingHandler(rc -> {
 			adminHandler.handleClusterStatus(wrap(rc));
 		}, false);
@@ -188,7 +188,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		endpoint.method(GET);
 		endpoint.description("Loads the cluster configuration.");
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(OK, InternalCommonEndpoint.adminExamples.createClusterConfigResponse(), "Currently active cluster configuration.");
+		endpoint.exampleResponse(OK, adminExamples.createClusterConfigResponse(), "Currently active cluster configuration.");
 		endpoint.blockingHandler(rc -> {
 			adminHandler.handleLoadClusterConfig(wrap(rc));
 		}, false);
@@ -198,8 +198,8 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		updateEndpoint.method(POST);
 		updateEndpoint.description("Update the cluster configuration.");
 		updateEndpoint.produces(APPLICATION_JSON);
-		updateEndpoint.exampleRequest(InternalCommonEndpoint.adminExamples.createClusterConfigRequest());
-		updateEndpoint.exampleResponse(OK, InternalCommonEndpoint.adminExamples.createClusterConfigResponse(), "Updated cluster configuration.");
+		updateEndpoint.exampleRequest(adminExamples.createClusterConfigRequest());
+		updateEndpoint.exampleResponse(OK, adminExamples.createClusterConfigResponse(), "Updated cluster configuration.");
 		updateEndpoint.blockingHandler(rc -> {
 			adminHandler.handleUpdateClusterConfig(wrap(rc));
 		}, isOrderedBlockingHandlers());
@@ -214,7 +214,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 					+ "When an `async=true` query parameter is used, a new consistency check Job is queued, and the check results should be obtained with the call to the link:#admin_jobs__jobUuid__get[corresponding job]."
 					+ "Please note that some checks do require an `async` flag set.");
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(OK, InternalCommonEndpoint.adminExamples.createConsistencyCheckResponse(false), "Consistency check report");
+		endpoint.exampleResponse(OK, adminExamples.createConsistencyCheckResponse(false), "Consistency check report");
 		endpoint.addQueryParameters(ConsistencyCheckParametersImpl.class);
 		endpoint.blockingHandler(rc -> {
 			consistencyHandler.invokeCheck(wrap(rc));
@@ -228,7 +228,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 					+ "When an `async=true` query parameter is used, a new consistency repair Job is queued, and the repair results should be obtained with the call to the link:#admin_jobs__jobUuid__get[corresponding job]. "
 					+ "Please note that some repairs do require an `async` flag set.");
 		repairEndpoint.produces(APPLICATION_JSON);
-		repairEndpoint.exampleResponse(OK, InternalCommonEndpoint.adminExamples.createConsistencyCheckResponse(true), "Consistency check and repair report");
+		repairEndpoint.exampleResponse(OK, adminExamples.createConsistencyCheckResponse(true), "Consistency check and repair report");
 		repairEndpoint.events(REPAIR_START, REPAIR_FINISHED);
 		repairEndpoint.addQueryParameters(ConsistencyCheckParametersImpl.class);
 		repairEndpoint.blockingHandler(rc -> {
@@ -248,7 +248,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		endpoint.path("/status");
 		endpoint.method(GET);
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(OK, InternalCommonEndpoint.adminExamples.createMeshStatusResponse(MeshStatus.READY), "Status of the Gentics Mesh server.");
+		endpoint.exampleResponse(OK, adminExamples.createMeshStatusResponse(MeshStatus.READY), "Status of the Gentics Mesh server.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			// TODO this is currently polled by apa. We need to update their monitoring as well if we change this
@@ -264,7 +264,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		invokeJobWorker.method(POST);
 		invokeJobWorker.description("Invoke the processing of remaining jobs.");
 		invokeJobWorker.produces(APPLICATION_JSON);
-		invokeJobWorker.exampleResponse(OK, InternalCommonEndpoint.miscExamples.createMessageResponse(), "Response message.");
+		invokeJobWorker.exampleResponse(OK, miscExamples.createMessageResponse(), "Response message.");
 		invokeJobWorker.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			jobHandler.handleInvokeJobWorker(ac);
@@ -276,7 +276,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		readJobList.description("List all currently queued jobs.");
 		readJobList.produces(APPLICATION_JSON);
 		readJobList.addQueryParameters(JobParametersImpl.class);
-		readJobList.exampleResponse(OK, InternalCommonEndpoint.jobExamples.createJobList(), "List of jobs.");
+		readJobList.exampleResponse(OK, jobExamples.createJobList(), "List of jobs.");
 		readJobList.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			jobHandler.handleReadList(ac);
@@ -288,7 +288,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		readJob.description("Load a specific job.");
 		readJob.produces(APPLICATION_JSON);
 		readJob.addUriParameter("jobUuid", "Uuid of the job.", JOB_UUID);
-		readJob.exampleResponse(OK, InternalCommonEndpoint.jobExamples.createJobResponse(), "Job information.");
+		readJob.exampleResponse(OK, jobExamples.createJobResponse(), "Job information.");
 		readJob.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("jobUuid");
@@ -344,7 +344,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		getRoute.method(GET);
 		getRoute.produces(APPLICATION_JSON);
 		getRoute.description("Retrieves the currently active local configuration of this instance.");
-		getRoute.exampleResponse(OK, InternalCommonEndpoint.localConfig.createExample(), "The currently active local configuration");
+		getRoute.exampleResponse(OK, localConfig.createExample(), "The currently active local configuration");
 		getRoute.handler(rc -> localConfigHandler.handleGetActiveConfig(wrap(rc)));
 
 		InternalEndpointRoute postRoute = createRoute();
@@ -353,7 +353,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		postRoute.setMutating(false);
 		postRoute.produces(APPLICATION_JSON);
 		postRoute.description("Sets the currently active local configuration of this instance.");
-		postRoute.exampleResponse(OK, InternalCommonEndpoint.localConfig.createExample(), "The currently active local configuration");
+		postRoute.exampleResponse(OK, localConfig.createExample(), "The currently active local configuration");
 		postRoute.handler(rc -> localConfigHandler.handleSetActiveConfig(wrap(rc)));
 	}
 
@@ -363,7 +363,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		postRoute.method(POST);
 		postRoute.produces(APPLICATION_JSON);
 		postRoute.description("Initiates shutdown of this instance.");
-		postRoute.exampleResponse(OK, InternalCommonEndpoint.miscExamples.createMessageResponse(), "Shutdown initiated.");
+		postRoute.exampleResponse(OK, miscExamples.createMessageResponse(), "Shutdown initiated.");
 		postRoute
 			.blockingHandler(rc -> handlerUtilities.requiresAdminRole(rc), isOrderedBlockingHandlers())
 			.handler(rc -> shutdownHandler.shutdown(wrap(rc)));
@@ -375,7 +375,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		loadMaster.method(GET);
 		loadMaster.produces(APPLICATION_JSON);
 		loadMaster.description("Returns information on the elected coordinator master.");
-		loadMaster.exampleResponse(OK, InternalCommonEndpoint.adminExamples.createCoordinatorResponse(), "Currently elected master.");
+		loadMaster.exampleResponse(OK, adminExamples.createCoordinatorResponse(), "Currently elected master.");
 		loadMaster.handler(rc -> adminHandler.handleLoadCoordinationMaster(wrap(rc)));
 
 		InternalEndpointRoute electMaster = createRoute();
@@ -383,7 +383,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		electMaster.method(POST);
 		electMaster.produces(APPLICATION_JSON);
 		electMaster.description("Make this instance the coordination master.");
-		electMaster.exampleResponse(OK, InternalCommonEndpoint.miscExamples.createMessageResponse(), "Election status message.");
+		electMaster.exampleResponse(OK, miscExamples.createMessageResponse(), "Election status message.");
 		electMaster.handler(rc -> adminHandler.handleSetCoordinationMaster(wrap(rc)));
 
 		InternalEndpointRoute loadConfig = createRoute();
@@ -391,7 +391,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		loadConfig.method(GET);
 		loadConfig.produces(APPLICATION_JSON);
 		loadConfig.description("Returns the currently active coordination configuration.");
-		loadConfig.exampleResponse(OK, InternalCommonEndpoint.adminExamples.createCoordinatorConfig(), "The currently active coordination config on this instance.");
+		loadConfig.exampleResponse(OK, adminExamples.createCoordinatorConfig(), "The currently active coordination config on this instance.");
 		loadConfig.handler(rc -> adminHandler.handleLoadCoordinationConfig(wrap(rc)));
 
 		InternalEndpointRoute updateConfig = createRoute();
@@ -399,8 +399,8 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		updateConfig.method(POST);
 		updateConfig.produces(APPLICATION_JSON);
 		updateConfig.description("Update the coordinator configuration of this instance. Note that the updated config will not be persisted.");
-		updateConfig.exampleResponse(OK, InternalCommonEndpoint.adminExamples.createCoordinatorConfig(), "The currently active config on this instance.");
-		updateConfig.exampleRequest(InternalCommonEndpoint.adminExamples.createCoordinatorConfigRequest());
+		updateConfig.exampleResponse(OK, adminExamples.createCoordinatorConfig(), "The currently active config on this instance.");
+		updateConfig.exampleRequest(adminExamples.createCoordinatorConfigRequest());
 		updateConfig.handler(rc -> adminHandler.handleUpdateCoordinationConfig(wrap(rc)));
 	}
 
@@ -412,7 +412,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		endpoint.description(
 			"Clear all internal caches (cluster wide).");
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(OK, InternalCommonEndpoint.miscExamples.createMessageResponse(), "Clearing the caches has been invoked.");
+		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Clearing the caches has been invoked.");
 		endpoint.handler(rc -> {
 			adminHandler.handleCacheClear(wrap(rc));
 		});

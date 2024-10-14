@@ -29,12 +29,11 @@ import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.db.Database;
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.core.endpoint.RolePermissionHandlingProjectEndpoint;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.rest.InternalCommonEndpoint;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 
 /**
@@ -81,7 +80,7 @@ public class BranchEndpoint extends RolePermissionHandlingProjectEndpoint {
 		readMicroschemas.method(GET);
 		readMicroschemas.description("Load microschemas that are assigned to the branch and return a paged list response.");
 		readMicroschemas.produces(APPLICATION_JSON);
-		readMicroschemas.exampleResponse(OK, InternalCommonEndpoint.microschemaExamples.createMicroschemaReferenceList(), "List of microschemas.");
+		readMicroschemas.exampleResponse(OK, microschemaExamples.createMicroschemaReferenceList(), "List of microschemas.");
 		readMicroschemas.addQueryParameters(PagingParametersImpl.class);
 		readMicroschemas.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -99,7 +98,7 @@ public class BranchEndpoint extends RolePermissionHandlingProjectEndpoint {
 		readSchemas.description("Load schemas that are assigned to the branch and return a paged list response.");
 		readSchemas.addQueryParameters(PagingParametersImpl.class);
 		readSchemas.produces(APPLICATION_JSON);
-		readSchemas.exampleResponse(OK, InternalCommonEndpoint.branchExamples.createSchemaReferenceList(), "Loaded schema list.");
+		readSchemas.exampleResponse(OK, branchExamples.createSchemaReferenceList(), "Loaded schema list.");
 		readSchemas.blockingHandler(rc -> {
 			String uuid = rc.request().getParam("branchUuid");
 			InternalActionContext ac = wrap(rc);
@@ -114,7 +113,7 @@ public class BranchEndpoint extends RolePermissionHandlingProjectEndpoint {
 		endpoint.setMutating(true);
 		endpoint.addUriParameter("branchUuid", "Uuid of the branch", BRANCH_UUID);
 		endpoint.description("Invoked the node migration for not yet migrated nodes of schemas that are assigned to the branch.");
-		endpoint.exampleResponse(OK, InternalCommonEndpoint.miscExamples.createMessageResponse(), "schema_migration_invoked");
+		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "schema_migration_invoked");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -130,7 +129,7 @@ public class BranchEndpoint extends RolePermissionHandlingProjectEndpoint {
 		endpoint.setMutating(true);
 		endpoint.addUriParameter("branchUuid", "Uuid of the branch", BRANCH_UUID);
 		endpoint.description("Invoked the micronode migration for not yet migrated micronodes of microschemas that are assigned to the branch.");
-		endpoint.exampleResponse(OK, InternalCommonEndpoint.miscExamples.createMessageResponse(), "schema_migration_invoked");
+		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "schema_migration_invoked");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -146,8 +145,8 @@ public class BranchEndpoint extends RolePermissionHandlingProjectEndpoint {
 		endpoint.setMutating(true);
 		endpoint.description("Create a new branch and automatically invoke a node migration.");
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleRequest(InternalCommonEndpoint.versioningExamples.createBranchCreateRequest("Winter 2016"));
-		endpoint.exampleResponse(CREATED, InternalCommonEndpoint.versioningExamples.createBranchResponse("Winter 2016", false), "Created branch.");
+		endpoint.exampleRequest(versioningExamples.createBranchCreateRequest("Winter 2016"));
+		endpoint.exampleResponse(CREATED, versioningExamples.createBranchResponse("Winter 2016", false), "Created branch.");
 		endpoint.events(BRANCH_CREATED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -162,7 +161,7 @@ public class BranchEndpoint extends RolePermissionHandlingProjectEndpoint {
 		readOne.description("Load the branch with the given uuid.");
 		readOne.method(GET);
 		readOne.produces(APPLICATION_JSON);
-		readOne.exampleResponse(OK, InternalCommonEndpoint.versioningExamples.createBranchResponse("Summer Collection Branch", true), "Loaded branch.");
+		readOne.exampleResponse(OK, versioningExamples.createBranchResponse("Summer Collection Branch", true), "Loaded branch.");
 		readOne.addQueryParameters(GenericParametersImpl.class);
 		readOne.blockingHandler(rc -> {
 			String uuid = rc.request().params().get("branchUuid");
@@ -178,7 +177,7 @@ public class BranchEndpoint extends RolePermissionHandlingProjectEndpoint {
 		readAll.path("/");
 		readAll.method(GET);
 		readAll.description("Load multiple branches and return a paged list response.");
-		readAll.exampleResponse(OK, InternalCommonEndpoint.versioningExamples.createBranchListResponse(), "Loaded branches.");
+		readAll.exampleResponse(OK, versioningExamples.createBranchListResponse(), "Loaded branches.");
 		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.addQueryParameters(GenericParametersImpl.class);
 		readAll.produces(APPLICATION_JSON);
@@ -197,8 +196,8 @@ public class BranchEndpoint extends RolePermissionHandlingProjectEndpoint {
 		addSchema.description("Assign a schema version to the branch.");
 		addSchema.consumes(APPLICATION_JSON);
 		addSchema.produces(APPLICATION_JSON);
-		addSchema.exampleRequest(InternalCommonEndpoint.branchExamples.createSchemaReferenceList());
-		addSchema.exampleResponse(OK, InternalCommonEndpoint.branchExamples.createSchemaReferenceList(), "Updated schema list.");
+		addSchema.exampleRequest(branchExamples.createSchemaReferenceList());
+		addSchema.exampleResponse(OK, branchExamples.createSchemaReferenceList(), "Updated schema list.");
 		addSchema.events(SCHEMA_BRANCH_ASSIGN, SCHEMA_MIGRATION_START, SCHEMA_MIGRATION_FINISHED);
 		addSchema.blockingHandler(rc -> {
 			String uuid = rc.request().params().get("branchUuid");
@@ -214,8 +213,8 @@ public class BranchEndpoint extends RolePermissionHandlingProjectEndpoint {
 		addMicroschema.description("Assign a microschema version to the branch.");
 		addMicroschema.consumes(APPLICATION_JSON);
 		addMicroschema.produces(APPLICATION_JSON);
-		addMicroschema.exampleRequest(InternalCommonEndpoint.microschemaExamples.createMicroschemaReferenceList());
-		addMicroschema.exampleResponse(OK, InternalCommonEndpoint.microschemaExamples.createMicroschemaReferenceList(), "Updated microschema list.");
+		addMicroschema.exampleRequest(microschemaExamples.createMicroschemaReferenceList());
+		addMicroschema.exampleResponse(OK, microschemaExamples.createMicroschemaReferenceList(), "Updated microschema list.");
 		addMicroschema.events(MICROSCHEMA_BRANCH_ASSIGN, MICROSCHEMA_MIGRATION_START, MICROSCHEMA_MIGRATION_FINISHED);
 		addMicroschema.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -230,7 +229,7 @@ public class BranchEndpoint extends RolePermissionHandlingProjectEndpoint {
 		setLatest.method(POST);
 		setLatest.setMutating(true);
 		setLatest.produces(APPLICATION_JSON);
-		setLatest.exampleResponse(OK, InternalCommonEndpoint.versioningExamples.createBranchResponse("Winter Collection Branch", true), "Latest branch");
+		setLatest.exampleResponse(OK, versioningExamples.createBranchResponse("Winter Collection Branch", true), "Latest branch");
 		setLatest.events(PROJECT_LATEST_BRANCH_UPDATED);
 		setLatest.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -247,8 +246,8 @@ public class BranchEndpoint extends RolePermissionHandlingProjectEndpoint {
 		updateBranch.setMutating(true);
 		updateBranch.consumes(APPLICATION_JSON);
 		updateBranch.produces(APPLICATION_JSON);
-		updateBranch.exampleRequest(InternalCommonEndpoint.versioningExamples.createBranchUpdateRequest("Winter Collection Branch"));
-		updateBranch.exampleResponse(OK, InternalCommonEndpoint.versioningExamples.createBranchResponse("Winter Collection Branch", false), "Updated branch");
+		updateBranch.exampleRequest(versioningExamples.createBranchUpdateRequest("Winter Collection Branch"));
+		updateBranch.exampleResponse(OK, versioningExamples.createBranchResponse("Winter Collection Branch", false), "Updated branch");
 		updateBranch.events(BRANCH_UPDATED);
 		updateBranch.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -263,7 +262,7 @@ public class BranchEndpoint extends RolePermissionHandlingProjectEndpoint {
 		getTags.addUriParameter("branchUuid", "Uuid of the branch.", BRANCH_UUID);
 		getTags.method(GET);
 		getTags.produces(APPLICATION_JSON);
-		getTags.exampleResponse(OK, InternalCommonEndpoint.tagExamples.createTagListResponse(), "List of tags that were used to tag the branch.");
+		getTags.exampleResponse(OK, tagExamples.createTagListResponse(), "List of tags that were used to tag the branch.");
 		getTags.description("Return a list of all tags which tag the branch.");
 		getTags.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -278,8 +277,8 @@ public class BranchEndpoint extends RolePermissionHandlingProjectEndpoint {
 		bulkUpdate.setMutating(true);
 		bulkUpdate.produces(APPLICATION_JSON);
 		bulkUpdate.description("Update the list of assigned tags");
-		bulkUpdate.exampleRequest(InternalCommonEndpoint.tagExamples.getTagListUpdateRequest());
-		bulkUpdate.exampleResponse(OK, InternalCommonEndpoint.tagExamples.createTagListResponse(), "Updated tag list.");
+		bulkUpdate.exampleRequest(tagExamples.getTagListUpdateRequest());
+		bulkUpdate.exampleResponse(OK, tagExamples.createTagListResponse(), "Updated tag list.");
 		bulkUpdate.events(BRANCH_TAGGED, BRANCH_UNTAGGED);
 		bulkUpdate.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -294,7 +293,7 @@ public class BranchEndpoint extends RolePermissionHandlingProjectEndpoint {
 		addTag.method(POST);
 		addTag.setMutating(true);
 		addTag.produces(APPLICATION_JSON);
-		addTag.exampleResponse(OK, InternalCommonEndpoint.versioningExamples.createBranchResponse("Summer Collection Branch", false), "Updated branch.");
+		addTag.exampleResponse(OK, versioningExamples.createBranchResponse("Summer Collection Branch", false), "Updated branch.");
 		addTag.description("Assign the given tag to the branch.");
 		addTag.events(BRANCH_TAGGED);
 		addTag.blockingHandler(rc -> {

@@ -17,16 +17,15 @@ import javax.inject.Inject;
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.db.Database;
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.core.endpoint.RolePermissionHandlingEndpoint;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.UserParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.rest.InternalCommonEndpoint;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 
 import io.vertx.core.http.HttpHeaders;
@@ -80,7 +79,7 @@ public class UserEndpoint extends RolePermissionHandlingEndpoint {
 		endpoint.method(POST);
 		endpoint.setMutating(true);
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(OK, InternalCommonEndpoint.userExamples.getAPIKeyResponse(), "The User API token response.");
+		endpoint.exampleResponse(OK, userExamples.getAPIKeyResponse(), "The User API token response.");
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("userUuid");
@@ -96,7 +95,7 @@ public class UserEndpoint extends RolePermissionHandlingEndpoint {
 		deleteEndpoint.method(DELETE);
 		deleteEndpoint.setMutating(true);
 		deleteEndpoint.produces(APPLICATION_JSON);
-		deleteEndpoint.exampleResponse(OK, InternalCommonEndpoint.miscExamples.createMessageResponse(), "Message confirming the invalidation of the API token. Requires DELETE permission on the user.");
+		deleteEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Message confirming the invalidation of the API token. Requires DELETE permission on the user.");
 		deleteEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("userUuid");
@@ -113,7 +112,7 @@ public class UserEndpoint extends RolePermissionHandlingEndpoint {
 		endpoint.description("Read the user permissions on the element that can be located by the specified path. Requires READ permission on the user.");
 		endpoint.method(GET);
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(OK, InternalCommonEndpoint.userExamples.getUserPermissionResponse(), "Response which contains the loaded permissions.");
+		endpoint.exampleResponse(OK, userExamples.getUserPermissionResponse(), "Response which contains the loaded permissions.");
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String userUuid = ac.getParameter("param0");
@@ -131,7 +130,7 @@ public class UserEndpoint extends RolePermissionHandlingEndpoint {
 		endpoint.method(POST);
 		endpoint.setMutating(true);
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(OK, InternalCommonEndpoint.userExamples.getTokenResponse(), "User token response.");
+		endpoint.exampleResponse(OK, userExamples.getTokenResponse(), "User token response.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("userUuid");
@@ -146,7 +145,7 @@ public class UserEndpoint extends RolePermissionHandlingEndpoint {
 		readOne.addUriParameter("userUuid", "Uuid of the user.", USER_EDITOR_UUID);
 		readOne.method(GET);
 		readOne.produces(APPLICATION_JSON);
-		readOne.exampleResponse(OK, InternalCommonEndpoint.userExamples.getUserResponse1("jdoe"), "User response which may also contain an expanded node.");
+		readOne.exampleResponse(OK, userExamples.getUserResponse1("jdoe"), "User response which may also contain an expanded node.");
 		readOne.addQueryParameters(NodeParametersImpl.class);
 		readOne.addQueryParameters(VersioningParametersImpl.class);
 		readOne.addQueryParameters(RolePermissionParametersImpl.class);
@@ -165,7 +164,7 @@ public class UserEndpoint extends RolePermissionHandlingEndpoint {
 		readAll.description("Load multiple users and return a paged list response.");
 		readAll.method(GET);
 		readAll.produces(APPLICATION_JSON);
-		readAll.exampleResponse(OK, InternalCommonEndpoint.userExamples.getUserListResponse(), "User list response which may also contain an expanded node references.");
+		readAll.exampleResponse(OK, userExamples.getUserListResponse(), "User list response which may also contain an expanded node references.");
 		readAll.addQueryParameters(NodeParametersImpl.class);
 		readAll.addQueryParameters(VersioningParametersImpl.class);
 		readAll.addQueryParameters(RolePermissionParametersImpl.class);
@@ -213,8 +212,8 @@ public class UserEndpoint extends RolePermissionHandlingEndpoint {
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.addQueryParameters(UserParametersImpl.class);
-		endpoint.exampleRequest(InternalCommonEndpoint.userExamples.getUserUpdateRequest("jdoe42"));
-		endpoint.exampleResponse(OK, InternalCommonEndpoint.userExamples.getUserResponse1("jdoe42"), "Updated user response.");
+		endpoint.exampleRequest(userExamples.getUserUpdateRequest("jdoe42"));
+		endpoint.exampleResponse(OK, userExamples.getUserResponse1("jdoe42"), "Updated user response.");
 		endpoint.events(USER_UPDATED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -231,8 +230,8 @@ public class UserEndpoint extends RolePermissionHandlingEndpoint {
 		endpoint.setMutating(true);
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleRequest(InternalCommonEndpoint.userExamples.getUserCreateRequest("newuser"));
-		endpoint.exampleResponse(CREATED, InternalCommonEndpoint.userExamples.getUserResponse1("newuser"), "User response of the created user.");
+		endpoint.exampleRequest(userExamples.getUserCreateRequest("newuser"));
+		endpoint.exampleResponse(CREATED, userExamples.getUserResponse1("newuser"), "User response of the created user.");
 		endpoint.events(USER_CREATED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);

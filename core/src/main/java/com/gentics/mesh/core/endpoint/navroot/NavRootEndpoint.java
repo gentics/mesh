@@ -12,7 +12,6 @@ import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
-import com.gentics.mesh.rest.InternalCommonEndpoint;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 
@@ -53,7 +52,7 @@ public class NavRootEndpoint extends AbstractProjectEndpoint {
 		endpoint.addUriParameter("path", "Webroot path to the node language variation.", "someFolder/somePage.html");
 		endpoint.addQueryParameters(NavigationParametersImpl.class);
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(OK, InternalCommonEndpoint.nodeExamples.getNavigationResponse(), "Loaded navigation.");
+		endpoint.exampleResponse(OK, nodeExamples.getNavigationResponse(), "Loaded navigation.");
 		endpoint.blockingHandler(rc -> handler.handleGetPath(rc), false);
 	}
 }

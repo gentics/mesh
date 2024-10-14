@@ -20,6 +20,9 @@ import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -31,11 +34,7 @@ import com.gentics.mesh.core.endpoint.tag.TagCrudHandler;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.rest.InternalCommonEndpoint;
 import com.gentics.mesh.rest.InternalEndpointRoute;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Endpoint for /api/v1/:project/tagFamilies
@@ -101,8 +100,8 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Update the specified tag. The tag is created if no tag with the specified uuid could be found.");
-		endpoint.exampleRequest(InternalCommonEndpoint.tagExamples.createTagUpdateRequest("Red"));
-		endpoint.exampleResponse(OK, InternalCommonEndpoint.tagExamples.createTagResponse1("Red"), "Updated tag.");
+		endpoint.exampleRequest(tagExamples.createTagUpdateRequest("Red"));
+		endpoint.exampleResponse(OK, tagExamples.createTagResponse1("Red"), "Updated tag.");
 		endpoint.events(TAG_UPDATED, TAG_CREATED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -118,8 +117,8 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 		createTag.description("Create a new tag within the tag family.");
 		createTag.path("/:tagFamilyUuid/tags").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		createTag.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
-		createTag.exampleRequest(InternalCommonEndpoint.tagExamples.createTagCreateRequest("red"));
-		createTag.exampleResponse(OK, InternalCommonEndpoint.tagExamples.createTagResponse1("red"), "Created tag");
+		createTag.exampleRequest(tagExamples.createTagCreateRequest("red"));
+		createTag.exampleResponse(OK, tagExamples.createTagResponse1("red"), "Created tag");
 		createTag.events(TAG_CREATED);
 		createTag.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -135,7 +134,7 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 		readOne.addUriParameter("tagUuid", "Uuid of the tag.", TAG_BLUE_UUID);
 		readOne.method(GET);
 		readOne.description("Read the specified tag from the tag family.");
-		readOne.exampleResponse(OK, InternalCommonEndpoint.tagExamples.createTagResponse1("red"), "Loaded tag.");
+		readOne.exampleResponse(OK, tagExamples.createTagResponse1("red"), "Loaded tag.");
 		readOne.addQueryParameters(GenericParametersImpl.class);
 		readOne.produces(APPLICATION_JSON);
 		readOne.blockingHandler(rc -> {
@@ -150,7 +149,7 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 		readAll.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
 		readAll.method(GET);
 		readAll.description("Load tags which were assigned to this tag family and return a paged list response.");
-		readAll.exampleResponse(OK, InternalCommonEndpoint.tagExamples.createTagListResponse(), "List of tags.");
+		readAll.exampleResponse(OK, tagExamples.createTagListResponse(), "List of tags.");
 		readAll.produces(APPLICATION_JSON);
 		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.addQueryParameters(GenericParametersImpl.class);
@@ -189,7 +188,7 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 		readPermissionsEndpoint.method(GET);
 		readPermissionsEndpoint.description("Get the permissions on the tag for all roles.");
 		readPermissionsEndpoint.produces(APPLICATION_JSON);
-		readPermissionsEndpoint.exampleResponse(OK, InternalCommonEndpoint.roleExamples.getObjectPermissionResponse(false), "Loaded permissions.");
+		readPermissionsEndpoint.exampleResponse(OK, roleExamples.getObjectPermissionResponse(false), "Loaded permissions.");
 		readPermissionsEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String tagFamilyUuid = PathParameters.getTagFamilyUuid(rc);
@@ -205,8 +204,8 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 		grantPermissionsEndpoint.description("Grant permissions on the tag to multiple roles.");
 		grantPermissionsEndpoint.consumes(APPLICATION_JSON);
 		grantPermissionsEndpoint.produces(APPLICATION_JSON);
-		grantPermissionsEndpoint.exampleRequest(InternalCommonEndpoint.roleExamples.getObjectPermissionGrantRequest(false));
-		grantPermissionsEndpoint.exampleResponse(OK, InternalCommonEndpoint.roleExamples.getObjectPermissionResponse(false), "Updated permissions.");
+		grantPermissionsEndpoint.exampleRequest(roleExamples.getObjectPermissionGrantRequest(false));
+		grantPermissionsEndpoint.exampleResponse(OK, roleExamples.getObjectPermissionResponse(false), "Updated permissions.");
 		grantPermissionsEndpoint.events(ROLE_PERMISSIONS_CHANGED);
 		grantPermissionsEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -223,8 +222,8 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 		revokePermissionsEndpoint.description("Revoke permissions on the tag from multiple roles.");
 		revokePermissionsEndpoint.consumes(APPLICATION_JSON);
 		revokePermissionsEndpoint.produces(APPLICATION_JSON);
-		revokePermissionsEndpoint.exampleRequest(InternalCommonEndpoint.roleExamples.getObjectPermissionRevokeRequest(false));
-		revokePermissionsEndpoint.exampleResponse(OK, InternalCommonEndpoint.roleExamples.getObjectPermissionResponse(false), "Updated permissions.");
+		revokePermissionsEndpoint.exampleRequest(roleExamples.getObjectPermissionRevokeRequest(false));
+		revokePermissionsEndpoint.exampleResponse(OK, roleExamples.getObjectPermissionResponse(false), "Updated permissions.");
 		revokePermissionsEndpoint.events(ROLE_PERMISSIONS_CHANGED);
 		revokePermissionsEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -243,7 +242,7 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Load all nodes that have been tagged with the tag and return a paged list response.");
 		endpoint.addQueryParameters(PagingParametersImpl.class);
-		endpoint.exampleResponse(OK, InternalCommonEndpoint.nodeExamples.getNodeListResponse(), "List of nodes which were tagged using the provided tag.");
+		endpoint.exampleResponse(OK, nodeExamples.getNodeListResponse(), "List of nodes which were tagged using the provided tag.");
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String tagFamilyUuid = PathParameters.getTagFamilyUuid(rc);
@@ -275,7 +274,7 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 		readOne.method(GET);
 		readOne.description("Read the tag family with the given uuid.");
 		readOne.produces(APPLICATION_JSON);
-		readOne.exampleResponse(OK, InternalCommonEndpoint.tagFamilyExamples.getTagFamilyResponse("Colors"), "Loaded tag family.");
+		readOne.exampleResponse(OK, tagFamilyExamples.getTagFamilyResponse("Colors"), "Loaded tag family.");
 		readOne.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String tagFamilyUuid = PathParameters.getTagFamilyUuid(rc);
@@ -288,7 +287,7 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 		readAll.produces(APPLICATION_JSON);
 		readAll.description("Load multiple tag families and return a paged list response.");
 		readAll.addQueryParameters(PagingParametersImpl.class);
-		readAll.exampleResponse(OK, InternalCommonEndpoint.tagFamilyExamples.getTagFamilyListResponse(), "Loaded tag families.");
+		readAll.exampleResponse(OK, tagFamilyExamples.getTagFamilyListResponse(), "Loaded tag families.");
 		readAll.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			tagFamilyCrudHandler.handleReadList(ac);
@@ -302,8 +301,8 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 		endpoint.description("Create a new tag family.");
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleRequest(InternalCommonEndpoint.tagFamilyExamples.getTagFamilyCreateRequest("Colors"));
-		endpoint.exampleResponse(CREATED, InternalCommonEndpoint.tagFamilyExamples.getTagFamilyResponse("Colors"), "Created tag family.");
+		endpoint.exampleRequest(tagFamilyExamples.getTagFamilyCreateRequest("Colors"));
+		endpoint.exampleResponse(CREATED, tagFamilyExamples.getTagFamilyResponse("Colors"), "Created tag family.");
 		endpoint.events(TAG_FAMILY_CREATED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -319,8 +318,8 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 		endpoint.description("Update the tag family with the given uuid. The tag family will be created if it can't be found for the given uuid.");
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleRequest(InternalCommonEndpoint.tagFamilyExamples.getTagFamilyUpdateRequest("Nicer colors"));
-		endpoint.exampleResponse(OK, InternalCommonEndpoint.tagFamilyExamples.getTagFamilyResponse("Nicer colors"), "Updated tag family.");
+		endpoint.exampleRequest(tagFamilyExamples.getTagFamilyUpdateRequest("Nicer colors"));
+		endpoint.exampleResponse(OK, tagFamilyExamples.getTagFamilyResponse("Nicer colors"), "Updated tag family.");
 		endpoint.events(TAG_FAMILY_UPDATED, TAG_FAMILY_CREATED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);

@@ -21,13 +21,12 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.db.Database;
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.core.endpoint.RolePermissionHandlingEndpoint;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.ProjectPurgeParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
-import com.gentics.mesh.rest.InternalCommonEndpoint;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 
 /**
@@ -76,8 +75,8 @@ public class ProjectEndpoint extends RolePermissionHandlingEndpoint {
 		updateEndpoint.method(POST);
 		updateEndpoint.consumes(APPLICATION_JSON);
 		updateEndpoint.produces(APPLICATION_JSON);
-		updateEndpoint.exampleRequest(InternalCommonEndpoint.projectExamples.getProjectUpdateRequest("New project name"));
-		updateEndpoint.exampleResponse(OK, InternalCommonEndpoint.projectExamples.getProjectResponse("New project name"), "Updated project.");
+		updateEndpoint.exampleRequest(projectExamples.getProjectUpdateRequest("New project name"));
+		updateEndpoint.exampleResponse(OK, projectExamples.getProjectResponse("New project name"), "Updated project.");
 		updateEndpoint.events(PROJECT_UPDATED);
 		updateEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -95,8 +94,8 @@ public class ProjectEndpoint extends RolePermissionHandlingEndpoint {
 		endpoint.description("Create a new project.");
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleRequest(InternalCommonEndpoint.projectExamples.getProjectCreateRequest("New project"));
-		endpoint.exampleResponse(CREATED, InternalCommonEndpoint.projectExamples.getProjectResponse("New Project"), "Created project.");
+		endpoint.exampleRequest(projectExamples.getProjectCreateRequest("New project"));
+		endpoint.exampleResponse(CREATED, projectExamples.getProjectResponse("New Project"), "Created project.");
 		endpoint.events(PROJECT_CREATED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -111,7 +110,7 @@ public class ProjectEndpoint extends RolePermissionHandlingEndpoint {
 		readOne.description("Load the project with the given uuid.");
 		readOne.method(GET);
 		readOne.produces(APPLICATION_JSON);
-		readOne.exampleResponse(OK, InternalCommonEndpoint.projectExamples.getProjectResponse("Project name"), "Loaded project.");
+		readOne.exampleResponse(OK, projectExamples.getProjectResponse("Project name"), "Loaded project.");
 		readOne.addQueryParameters(RolePermissionParametersImpl.class);
 		readOne.blockingHandler(rc -> {
 			String uuid = rc.request().params().get("projectUuid");
@@ -128,7 +127,7 @@ public class ProjectEndpoint extends RolePermissionHandlingEndpoint {
 		readAll.method(GET);
 		readAll.description("Load multiple projects and return a paged response.");
 		readAll.produces(APPLICATION_JSON);
-		readAll.exampleResponse(OK, InternalCommonEndpoint.projectExamples.getProjectListResponse(), "Loaded project list.");
+		readAll.exampleResponse(OK, projectExamples.getProjectListResponse(), "Loaded project list.");
 		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.addQueryParameters(RolePermissionParametersImpl.class);
 		readAll.blockingHandler(rc -> {

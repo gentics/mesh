@@ -18,7 +18,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.rest.InternalCommonEndpoint;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 
@@ -58,7 +57,7 @@ public class ProjectMicroschemaEndpoint extends AbstractProjectEndpoint {
 		endpoint.method(GET);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Read all microschemas which are assigned to the project.");
-		endpoint.exampleResponse(OK, InternalCommonEndpoint.microschemaExamples.getMicroschemaListResponse(), "List of assigned microschemas.");
+		endpoint.exampleResponse(OK, microschemaExamples.getMicroschemaListResponse(), "List of assigned microschemas.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleReadProjectList(ac);
@@ -72,7 +71,7 @@ public class ProjectMicroschemaEndpoint extends AbstractProjectEndpoint {
 		endpoint.method(POST);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Add the microschema to the project.");
-		endpoint.exampleResponse(OK, InternalCommonEndpoint.microschemaExamples.getGeolocationMicroschemaResponse(), "Microschema was added to the project.");
+		endpoint.exampleResponse(OK, microschemaExamples.getGeolocationMicroschemaResponse(), "Microschema was added to the project.");
 		endpoint.events(PROJECT_MICROSCHEMA_ASSIGNED);
 		endpoint.handler(rc -> {
 			InternalActionContext ac = wrap(rc);

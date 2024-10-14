@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.endpoint.utility;
 
-import static com.gentics.mesh.example.ExampleUuids.NODE_DELOREAN_UUID;
 import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
+import static com.gentics.mesh.example.ExampleUuids.NODE_DELOREAN_UUID;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.POST;
 
@@ -13,7 +13,6 @@ import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
-import com.gentics.mesh.rest.InternalCommonEndpoint;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
@@ -54,8 +53,8 @@ public class UtilityEndpoint extends AbstractInternalEndpoint {
 		endpoint.method(POST);
 		endpoint.setMutating(false);
 		endpoint.description("Validate the posted schema and report errors.");
-		endpoint.exampleRequest(InternalCommonEndpoint.schemaExamples.getSchemaUpdateRequest());
-		endpoint.exampleResponse(OK, InternalCommonEndpoint.utilityExamples.createValidationResponse(), "The validation message");
+		endpoint.exampleRequest(schemaExamples.getSchemaUpdateRequest());
+		endpoint.exampleResponse(OK, utilityExamples.createValidationResponse(), "The validation message");
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			utilityHandler.validateSchema(ac);
@@ -68,8 +67,8 @@ public class UtilityEndpoint extends AbstractInternalEndpoint {
 		endpoint.method(POST);
 		endpoint.setMutating(false);
 		endpoint.description("Validate the posted microschema and report errors.");
-		endpoint.exampleRequest(InternalCommonEndpoint.microschemaExamples.getGeolocationMicroschemaCreateRequest());
-		endpoint.exampleResponse(OK, InternalCommonEndpoint.utilityExamples.createValidationResponse(), "The validation report");
+		endpoint.exampleRequest(microschemaExamples.getGeolocationMicroschemaCreateRequest());
+		endpoint.exampleResponse(OK, utilityExamples.createValidationResponse(), "The validation report");
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			utilityHandler.validateMicroschema(ac);

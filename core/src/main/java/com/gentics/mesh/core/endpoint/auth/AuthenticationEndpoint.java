@@ -12,7 +12,6 @@ import com.gentics.mesh.auth.MeshBasicAuthLoginHandler;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.rest.InternalCommonEndpoint;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
@@ -54,7 +53,7 @@ public class AuthenticationEndpoint extends AbstractInternalEndpoint {
 		meEndpoint.method(GET);
 		meEndpoint.produces(APPLICATION_JSON);
 		meEndpoint.description("Load your own user which is currently logged in.");
-		meEndpoint.exampleResponse(OK, InternalCommonEndpoint.userExamples.getUserResponse1("jdoe"), "Currently logged in user.");
+		meEndpoint.exampleResponse(OK, userExamples.getUserResponse1("jdoe"), "Currently logged in user.");
 		meEndpoint.handler(rc -> {
 			authRestHandler.handleMe(wrap(rc));
 		});
@@ -63,7 +62,7 @@ public class AuthenticationEndpoint extends AbstractInternalEndpoint {
 		basicAuthLoginEndpoint.path("/login");
 		basicAuthLoginEndpoint.method(GET);
 		basicAuthLoginEndpoint.produces(APPLICATION_JSON);
-		basicAuthLoginEndpoint.exampleResponse(OK, InternalCommonEndpoint.miscExamples.getAuthTokenResponse(), "Generated login token.");
+		basicAuthLoginEndpoint.exampleResponse(OK, miscExamples.getAuthTokenResponse(), "Generated login token.");
 		basicAuthLoginEndpoint.description("Login via basic or bearer authentication.");
 		basicAuthLoginEndpoint.exampleResponse(OK, "Login was sucessful");
 		basicAuthLoginEndpoint.handler(basicAuthLoginHandler);
@@ -75,8 +74,8 @@ public class AuthenticationEndpoint extends AbstractInternalEndpoint {
 		loginEndpoint.consumes(APPLICATION_JSON);
 		loginEndpoint.produces(APPLICATION_JSON);
 		loginEndpoint.description("Login via this dedicated login endpoint.");
-		loginEndpoint.exampleRequest(InternalCommonEndpoint.miscExamples.getLoginRequest());
-		loginEndpoint.exampleResponse(OK, InternalCommonEndpoint.miscExamples.getAuthTokenResponse(), "Generated login token.");
+		loginEndpoint.exampleRequest(miscExamples.getLoginRequest());
+		loginEndpoint.exampleResponse(OK, miscExamples.getAuthTokenResponse(), "Generated login token.");
 		loginEndpoint.blockingHandler(rc -> {
 			authRestHandler.handleLoginJWT(wrap(rc));
 		}, false);
@@ -90,7 +89,7 @@ public class AuthenticationEndpoint extends AbstractInternalEndpoint {
 		logoutEndpoint.method(GET);
 		logoutEndpoint.produces(APPLICATION_JSON);
 		logoutEndpoint.description("Logout and delete the currently active session.");
-		logoutEndpoint.exampleResponse(OK, InternalCommonEndpoint.miscExamples.createMessageResponse(), "User was successfully logged out.");
+		logoutEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "User was successfully logged out.");
 		logoutEndpoint.handler(rc -> {
 			authRestHandler.handleLogout(wrap(rc));
 		});
