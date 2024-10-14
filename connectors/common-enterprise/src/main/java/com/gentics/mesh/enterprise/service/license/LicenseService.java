@@ -1,6 +1,8 @@
 package com.gentics.mesh.enterprise.service.license;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -15,6 +17,7 @@ import com.gentics.license.LicenseChecker;
 import com.gentics.license.LicenseStatus;
 import com.gentics.license.feature.LicenseKeyFeature;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
+import com.github.jknack.handlebars.internal.lang3.StringUtils;
 
 /**
  * Service to perform license checks. I.e. check which services are licensed and allowed to use.
@@ -28,15 +31,15 @@ public class LicenseService {
 
 	public LicenseService(HibernateMeshOptions options) {
 		this.options = options;
-		init();
+		reset();
 	}
 
 	/**
-	 * Initialize the LicenseChecker. Reads the license.key file and register available features
+	 * Re/Initialize the LicenseChecker. Reads the license.key file and register available features.
 	 *
-	 * @return true if initializing was successfully (e.g. valid license.key file)
+	 * @return true if initializing was successful (e.g. valid license.key file)
 	 */
-	private boolean init() {
+	public LicenseStatus reset() {
 		File licenseKeyFile = new File(options.getLicenseKeyPath());
 
 		try {
@@ -56,9 +59,9 @@ public class LicenseService {
 			LicenseChecker.doLicenseCheck(true, null, null);
 		} catch (Exception exception) {
 			logger.error("License check failed.", exception);
-			return false;
+			return LicenseStatus.INVALID;
 		}
-		return true;
+		return LicenseChecker.getLicenseCheckResult().getLicenseResult();
 	}
 
 	/**
@@ -89,7 +92,7 @@ public class LicenseService {
 			LicenseResponse response = new LicenseResponse();
 			response.setStatus(status.name());
 			response.setFeatures(Arrays.stream(features).map(LicenseKeyFeature::getProductName).collect(Collectors.toSet()));
-			{
+			if (StringUtils.isNotBlank(license.getLicense())) {
 				String[] parts = license.getLicense().split("-");
 				String obfuscated = IntStream.range(0, parts.length).mapToObj(i -> {
 					if (i > 0 && i < (parts.length-1)) {
@@ -100,11 +103,19 @@ public class LicenseService {
 				}).collect(Collectors.joining("-"));
 				response.setLicenseKey(obfuscated);
 			}
-
 			return response;
 		} else {
 			return null;
 		}
+	}
+
+	/**
+	 * Get the license key file, if exists.
+	 * 
+	 * @return
+	 */
+	public Optional<File> getLicenseFile() {
+		return Optional.ofNullable(Files.exists(Path.of(options.getLicenseKeyPath()))).filter(Boolean::booleanValue).map(exists -> new File(options.getLicenseKeyPath()));
 	}
 }
 
