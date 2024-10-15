@@ -15,7 +15,6 @@ import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.example.ExampleUuids;
-import com.gentics.mesh.parameter.client.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.ProjectLoadParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;

@@ -30,6 +30,8 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.ToxiproxyContainer;
 import org.testcontainers.containers.ToxiproxyContainer.ContainerProxy;
@@ -79,8 +81,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.http.ClientAuth;
 import io.vertx.core.json.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import okhttp3.OkHttpClient;
 
 public class MeshTestContext implements TestRule {
@@ -522,9 +522,13 @@ public class MeshTestContext implements TestRule {
 		LOG.info(String.format("Stopping JobWorkerVerticle took {%d} ms", System.currentTimeMillis() - start));
 	}
 
-	private void cleanupFolders() throws IOException {
+	private void cleanupFolders() {
 		for (File folder : tmpFolders) {
-			FileUtils.deleteDirectory(folder);
+			try {
+				FileUtils.deleteDirectory(folder);
+			} catch (IOException e) {
+				LOG.error("Could not delete folder " + folder, e);
+			}
 		}
 		if (meshDagger != null && meshDagger.permissionCache() != null) {
 			meshDagger.permissionCache().clear(false);

@@ -8,11 +8,15 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import javax.inject.Inject;
 import javax.naming.InvalidNameException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.distributed.RequestDelegator;
 import com.gentics.mesh.distributed.TopologyChangeReadonlyHandler;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -25,8 +29,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.impl.BodyHandlerImpl;
@@ -62,11 +64,13 @@ public class RouterStorageImpl implements RouterStorage {
 
 	private final TopologyChangeReadonlyHandler topologyChangeReadonlyHandler;
 
+	private final LocalConfigApi localConfigApi;
+
 	@Inject
 	public RouterStorageImpl(Vertx vertx, MeshOptions options, MeshAuthChainImpl authChain, CorsHandler corsHandler, BodyHandlerImpl bodyHandler,
 		Lazy<BootstrapInitializer> boot,
 		Lazy<Database> db, VersionHandlerImpl versionHandler,
-		RouterStorageRegistryImpl routerStorageRegistry,
+		RouterStorageRegistryImpl routerStorageRegistry, LocalConfigApi localConfigApi,
 		RequestDelegator delegator, TopologyChangeReadonlyHandler topologyChangeReadonlyHandler, LivenessManager liveness) {
 		this.vertx = vertx;
 		this.options = options;
@@ -78,6 +82,7 @@ public class RouterStorageImpl implements RouterStorage {
 		this.versionHandler = versionHandler;
 		this.routerStorageRegistry = routerStorageRegistry;
 		this.delegator = delegator;
+		this.localConfigApi = localConfigApi;
 		this.topologyChangeReadonlyHandler = topologyChangeReadonlyHandler;
 
 		// Initialize the router chain. The root router will create additional routers which will be mounted.
@@ -188,5 +193,10 @@ public class RouterStorageImpl implements RouterStorage {
 	@Override
 	public TopologyChangeReadonlyHandler getTopologyChangeReadonlyHandler() {
 		return topologyChangeReadonlyHandler;
+	}
+
+	@Override
+	public LocalConfigApi getLocalConfigApi() {
+		return localConfigApi;
 	}
 }

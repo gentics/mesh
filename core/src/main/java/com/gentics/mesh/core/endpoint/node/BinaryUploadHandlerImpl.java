@@ -54,12 +54,12 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.NodeUtil;
 import com.gentics.mesh.util.RxUtil;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UUIDUtil;
+import com.gentics.mesh.util.VertxUtil;
 
 import dagger.Lazy;
 import io.reactivex.Completable;
@@ -110,30 +110,6 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 		this.writeLock = writeLock;
 	}
 
-	private void validateFileUpload(FileUpload ul, String fieldName) {
-		MeshUploadOptions uploadOptions = options.getUploadOptions();
-		long byteLimit = uploadOptions.getByteLimit();
-
-		if (ul.size() > byteLimit) {
-			if (log.isDebugEnabled()) {
-				log.debug("Upload size of {" + ul.size() + "} exceeds limit of {" + byteLimit + "} by {" + (ul.size() - byteLimit) + "} bytes.");
-			}
-			String humanReadableFileSize = org.apache.commons.io.FileUtils.byteCountToDisplaySize(ul.size());
-			String humanReadableUploadLimit = org.apache.commons.io.FileUtils.byteCountToDisplaySize(byteLimit);
-			throw error(BAD_REQUEST, "node_error_uploadlimit_reached", humanReadableFileSize, humanReadableUploadLimit);
-		}
-
-		if (isEmpty(ul.fileName())) {
-			throw error(BAD_REQUEST, "field_binary_error_emptyfilename", fieldName);
-		}
-		if (isEmpty(ul.contentType())) {
-			throw error(BAD_REQUEST, "field_binary_error_emptymimetype", fieldName);
-		}
-		if (ul.size() < 1) {
-			throw error(BAD_REQUEST, "field_binary_error_emptyfile", fieldName, ul.fileName());
-		}
-	}
-
 	/**
 	 * Handle a request to create a new field.
 	 *
@@ -174,7 +150,7 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 
 		FileUpload ul = fileUploads.iterator().next();
 		// TODO fail on multiple multipart formdata files
-		validateFileUpload(ul, fieldName);
+		VertxUtil.validateFileUpload(ul, fieldName, options);
 
 		UploadContext ctx = new UploadContext();
 		ctx.setUpload(ul);

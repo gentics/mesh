@@ -30,6 +30,7 @@ import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.impl.ConsistencyCheckParametersImpl;
 import com.gentics.mesh.parameter.impl.JobParametersImpl;
+import com.gentics.mesh.rest.InternalCommonEndpoint;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 

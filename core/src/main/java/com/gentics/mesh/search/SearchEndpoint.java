@@ -6,13 +6,13 @@ import static io.vertx.core.http.HttpMethod.POST;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.parameter.impl.SearchParametersImpl;
-import com.gentics.mesh.rest.InternalEndpoint;
+import com.gentics.mesh.rest.InternalCommonEndpoint;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 
 /**
  * Endpoint definition for /api/v1/:project/search/:type routes.
  */
-public interface SearchEndpoint extends InternalEndpoint {
+public interface SearchEndpoint extends InternalCommonEndpoint {
 
 	/**
 	 * Register the search handler which will directly return the search response without any post processing by mesh.
@@ -29,8 +29,8 @@ public interface SearchEndpoint extends InternalEndpoint {
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.addQueryParameters(SearchParametersImpl.class);
-		endpoint.exampleResponse(OK, miscExamples.createSearchResponse(), "Raw search response.");
-		endpoint.exampleRequest(miscExamples.getSearchQueryExample());
+		endpoint.exampleResponse(OK, InternalCommonEndpoint.miscExamples.createSearchResponse(), "Raw search response.");
+		endpoint.exampleRequest(InternalCommonEndpoint.miscExamples.getSearchQueryExample());
 		endpoint.handler(rc -> {
 			try {
 				InternalActionContext ac = wrap(rc);
