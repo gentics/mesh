@@ -761,8 +761,20 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 
 				HibernateFilter leftSql = makeSqlComparisonOperand(left, ownerAlias, true, myJoin, maybeBranch, maybeTopLevelFilter, maybeContainerType, callStack);
 				HibernateFilter rightSql = makeSqlComparisonOperand(right, ownerAlias, true, myJoin, maybeBranch, maybeTopLevelFilter, maybeContainerType, callStack);
-				String filter1 = String.format(filter.shouldBracket() ? " (%s %s %s) " : " %s %s %s ", 
-						leftSql.getSqlFilter(), filter.getOperator(), rightSql.getSqlFilter());
+				String filter1;
+				if (right.isLiteral() && !StringUtils.equals(filter.getOperator(), "IS") && !StringUtils.equals(filter.getOperator(), "IS NOT") && !StringUtils.equals(filter.getOperator(), "<>")) {
+				    // when we compare a value in the DB with a literal (not with IS or IS NOT), then we should add the "AND [column] IS NOT NULL" clause.
+				    // this will change the behavior, if the whole clause is negated with "NOT". In that cases, records having a null value in the [column] will be returned (which is the expected behavior)
+				    filter1 = String.format(" (%s %s %s AND %s IS NOT NULL) ",
+				            leftSql.getSqlFilter(), filter.getOperator(), rightSql.getSqlFilter(), leftSql.getSqlFilter());
+				} else if (right.isLiteral() && StringUtils.equals(filter.getOperator(), "<>")) {
+				    // when we compare with <> (different), we also check whether the value is null
+				    filter1 = String.format(" (%s %s %s OR %s IS NULL) ",
+				            leftSql.getSqlFilter(), filter.getOperator(), rightSql.getSqlFilter(), leftSql.getSqlFilter());
+				} else {
+				    filter1 = String.format(filter.shouldBracket() ? " (%s %s %s) " : " %s %s %s ",
+				            leftSql.getSqlFilter(), filter.getOperator(), rightSql.getSqlFilter());
+				}
 				HibernateFilter nf = new HibernateFilter(
 						filter1, 
 						Stream.of(leftSql.getRawSqlJoins().stream(), rightSql.getRawSqlJoins().stream(), myMeaningfulJoins.stream())

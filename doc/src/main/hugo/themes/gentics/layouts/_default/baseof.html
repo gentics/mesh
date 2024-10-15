@@ -5,20 +5,15 @@
     {{ partial "header.html" . }}
 </head>
 
-<body class="body-navbar-{{ .Params.navbar }}">
-    {{ partial "navbar.html" }}
+<body class="body-navbar-{{ .Params.navbar | default "static" }}">
+    {{ partial "navbar.html" . }}
+    {{ partial "search-results.html" . }}
 
     {{ block "content" . }}{{end}}
 
     {{ partial "footer.html" . }}
     
-    {{ partial "scripts.html"}}
-
-    {{ partial "consent.html" }}
-
-    {{ partial "analytics.html" }}
-    
-    {{ partial "ldjson.html" }}
+    {{ partial "scripts.html" . }}
 </body>
 
 </html>
