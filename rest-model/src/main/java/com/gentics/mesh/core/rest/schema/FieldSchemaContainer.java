@@ -230,4 +230,16 @@ public interface FieldSchemaContainer extends RestModel {
 			throw error(BAD_REQUEST, "node_unhandled_fields", getName(), Arrays.toString(allFieldsOfRequest.toArray()));
 		}
 	}
+
+	/**
+	 * Remove the fields from FieldMap, that have either changed name/type, or completely removed.
+	 * 
+	 * @param fieldMap
+	 */
+	default void removeUnhandledFields(FieldMap fieldMap) {
+		fieldMap.keySet().stream().filter(key -> {
+			FieldSchema field = getField(key);
+			return field == null || fieldMap.getField(key, field) == null;
+		}).forEach(toRemove -> fieldMap.remove(toRemove));
+	}
 }
