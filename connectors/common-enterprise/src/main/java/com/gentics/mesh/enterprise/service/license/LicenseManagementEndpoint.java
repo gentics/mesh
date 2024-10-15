@@ -120,7 +120,7 @@ public class LicenseManagementEndpoint extends AbstractInternalEndpoint {
 									// We allow update only VALID status by default.
 									// We allow update with any other than VALID or INVALID status only under the `force` flag set.
 									// We allow no update with the INVALID status, since it can mean that the uploaded file is not even a license.
-									if (status == LicenseStatus.VALID || (status != LicenseStatus.INVALID && rc.queryParam(UPLOAD_QUERY_PARAM_FORCE).stream().map(Boolean::parseBoolean).allMatch(Boolean::booleanValue))) {
+									if (status == LicenseStatus.VALID || (status != LicenseStatus.INVALID && rc.queryParam(UPLOAD_QUERY_PARAM_FORCE).stream().map(Boolean::parseBoolean).anyMatch(Boolean::booleanValue))) {
 										sendLicenseInfo(ac);
 									} else {
 										fs.copy(options.getLicenseKeyPath() + ".bak", options.getLicenseKeyPath(), copyOptions)
