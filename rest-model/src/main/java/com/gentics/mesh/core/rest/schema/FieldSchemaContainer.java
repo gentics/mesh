@@ -237,9 +237,6 @@ public interface FieldSchemaContainer extends RestModel {
 	 * @param fieldMap
 	 */
 	default void removeUnhandledFields(FieldMap fieldMap) {
-		fieldMap.keySet().stream().filter(key -> {
-			FieldSchema field = getField(key);
-			return field == null || fieldMap.getField(key, field) == null;
-		}).forEach(toRemove -> fieldMap.remove(toRemove));
+		fieldMap.keySet().stream().filter(key -> getField(key) == null).forEach(toRemove -> fieldMap.remove(toRemove));
 	}
 }
