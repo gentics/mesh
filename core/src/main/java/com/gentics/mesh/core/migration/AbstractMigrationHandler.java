@@ -141,7 +141,9 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 					log.info("Update skipped for container [{}] of schema [{}] version [{}] from the intermediate version [{}]", newContainer.getUuid(), newContainer.getSchemaContainerVersion().getSchema().getName(), newContainer.getSchemaContainerVersion().getVersion(), ((FieldSchemaContainerVersion)schema).getVersion());
 					schema.assertForUnhandledFields(fm);
 				} else {
-					fm = currentContent.get().getFields();
+					if (versionChain.size() > 1) {
+						fm = currentContent.get().getFields();
+					}
 					schema.removeUnhandledFields(fm);
 					newContainer.updateFieldsFromRest(ac, fm);
 				}
