@@ -3,6 +3,7 @@ package com.gentics.mesh.dagger.module;
 import com.gentics.mesh.core.jobs.BranchJobProcessor;
 import com.gentics.mesh.core.jobs.ConsistencyCheckJobProcessor;
 import com.gentics.mesh.core.jobs.ConsistencyRepairJobProcessor;
+import com.gentics.mesh.core.jobs.ImageCacheMigrationProcessor;
 import com.gentics.mesh.core.jobs.JobProcessor;
 import com.gentics.mesh.core.jobs.JobProcessorImpl;
 import com.gentics.mesh.core.jobs.MicronodeJobProcessor;
@@ -49,4 +50,9 @@ public abstract class JobProcessingModule {
 	@IntoMap
 	@JobTypeKey(JobType.consistencyrepair)
 	abstract SingleJobProcessor consistencyRepairJobProcessor(ConsistencyRepairJobProcessor e);
+
+	@Binds
+	@IntoMap
+	@JobTypeKey(JobType.imagecache)
+	abstract SingleJobProcessor imageCacheMigrationJobProcessor(ImageCacheMigrationProcessor e);
 }

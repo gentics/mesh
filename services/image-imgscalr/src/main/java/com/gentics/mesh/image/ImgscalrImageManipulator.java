@@ -318,7 +318,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
 		Supplier<InputStream> stream = binary.openBlockingStream();
 
-		return getCacheFilePath(binary.getSHA512Sum(), parameters).flatMap(cacheFileInfo -> {
+		return getCacheFilePath(binary, parameters).flatMap(cacheFileInfo -> {
 			if (cacheFileInfo.exists) {
 				return Single.just(cacheFileInfo.path);
 			} else {
