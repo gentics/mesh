@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.jobs;
 
+import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
+import static com.gentics.mesh.core.rest.job.JobStatus.FAILED;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -10,6 +13,7 @@ import javax.inject.Inject;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.BinaryDao;
 import com.gentics.mesh.core.data.job.HibJob;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -43,6 +47,7 @@ public class ImageCacheMigrationProcessor implements SingleJobProcessor {
 	public Completable process(HibJob job) {
 		return Completable.defer(() -> {
 			return db.asyncTx(() -> {
+				log.info("Image cache migration started");
 				Path imageCachePath = Path.of(options.getImageOptions().getImageCacheDirectory());
 				Files.walk(imageCachePath)
 					.filter(path -> path.getFileName().toString().startsWith("image-") && Files.isRegularFile(path))
@@ -74,6 +79,20 @@ public class ImageCacheMigrationProcessor implements SingleJobProcessor {
 							}
 						}
 					});
+				log.info("Image cache migration finished successfully");
+			});
+		}).doOnComplete(() -> {
+			db.tx(tx -> {
+				job.setStopTimestamp();
+				job.setStatus(COMPLETED);
+				tx.<CommonTx>unwrap().jobDao().mergeIntoPersisted(job);
+			});
+		}).doOnError(error -> {
+			db.tx(tx -> {
+				job.setStopTimestamp();
+				job.setStatus(FAILED);
+				job.setError(error);
+				tx.<CommonTx>unwrap().jobDao().mergeIntoPersisted(job);
 			});
 		});
 	}
