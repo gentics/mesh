@@ -43,10 +43,11 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 
 	@Override
 	public Single<CacheFileInfo> getCacheFilePath(HibBinary binary, ImageManipulationParameters parameters) {
+		String sha512 = binary.getSHA512Sum();
 		return getCacheFilePathNew(binary, parameters).onErrorResumeNext(e -> {
 			log.debug("New Image Cache miss", e);
 			return getCacheFilePathOld(
-					binary.getSHA512Sum(), 
+					sha512, 
 					parameters, 
 					Optional.ofNullable(e)
 						.filter(CacheFileNotFoundException.class::isInstance)
