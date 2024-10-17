@@ -143,8 +143,8 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 				} else {
 					if (versionChain.size() > 1) {
 						fm = currentContent.get().getFields();
+						schema.removeUnhandledFields(fm);
 					}
-					schema.removeUnhandledFields(fm);
 					newContainer.updateFieldsFromRest(ac, fm);
 				}
 			});
