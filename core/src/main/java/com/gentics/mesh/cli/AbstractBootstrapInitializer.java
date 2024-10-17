@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,9 +19,6 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-
-import com.gentics.mesh.event.EventBusStore;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -65,6 +64,7 @@ import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.DebugInfoOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MonitoringConfig;
+import com.gentics.mesh.event.EventBusStore;
 import com.gentics.mesh.monitor.liveness.EventBusLivenessManager;
 import com.gentics.mesh.monitor.liveness.LivenessManager;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
@@ -630,6 +630,18 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 
 		registerEventHandlers();
 
+		checkImageCacheMigrated();
+	}
+
+	@Deprecated
+	private void checkImageCacheMigrated() throws IOException {
+		Path imageCachePath = Path.of(options.getImageOptions().getImageCacheDirectory());
+		if (Files.list(imageCachePath).filter(path -> path.getFileName().toString().length() == 8).count() > 0) {
+			db().tx(tx -> {
+				log.info("Image cache requires migration, triggering one.");
+				tx.jobDao().enqueueImageCacheMigration(tx.userDao().findByUsername("admin"));
+			});
+		}
 	}
 
 	/**
