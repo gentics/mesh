@@ -537,7 +537,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 		assertEquals(expectedHeight, img.getHeight());
 
 		if (binaryField != null) {
-			CacheFileInfo cacheFile = meshDagger().imageManipulator().getCacheFilePath(binaryField.getBinary().getSHA512Sum(), params).blockingGet();
+			CacheFileInfo cacheFile = meshDagger().imageManipulator().getCacheFilePath(binaryField.getBinary(), params).blockingGet();
 			assertTrue("The cache file could not be found in the cache directory. {" + cacheFile.path + "}", cacheFile.exists);
 		}
 	}

@@ -15,6 +15,7 @@ public enum JobType {
 
 	consistencycheck,
 
-	consistencyrepair
+	consistencyrepair,
 
+	imagecache
 }
