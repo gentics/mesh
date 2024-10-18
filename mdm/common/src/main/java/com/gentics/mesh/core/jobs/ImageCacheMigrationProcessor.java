@@ -4,8 +4,11 @@ import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.job.JobStatus.FAILED;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 
 import javax.inject.Inject;
@@ -60,7 +63,7 @@ public class ImageCacheMigrationProcessor implements SingleJobProcessor {
 							Path segmentsPath = Path.of(options.getImageOptions().getImageCacheDirectory(), segments);
 							try {
 								Files.createDirectories(segmentsPath);
-								Files.copy(path, segmentsPath.resolve(uuid + "-" + path.getFileName().toString().replace("image-", "")));
+								Files.move(path, segmentsPath.resolve(uuid + "-" + path.getFileName().toString().replace("image-", "")));
 							} catch (IOException e) {
 								log.error("Could not copy old cached file " + path, e);
 							}
@@ -73,6 +76,12 @@ public class ImageCacheMigrationProcessor implements SingleJobProcessor {
 							try {
 								Files.delete(path);
 								path = path.getParent();
+							} catch (DirectoryNotEmptyException e) {
+								// fair
+								return;
+							} catch(NoSuchFileException e) {
+								// fair
+								return;
 							} catch (IOException e) {
 								log.error("Could not delete image cache " + path, e);
 								return;
