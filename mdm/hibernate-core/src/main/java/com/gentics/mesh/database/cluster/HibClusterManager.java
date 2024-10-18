@@ -1,4 +1,4 @@
-package com.gentics.mesh.database;
+package com.gentics.mesh.database.cluster;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -9,8 +9,8 @@ import javax.inject.Singleton;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.cluster.ClusterManager;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
-import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.etc.config.ClusterOptions;
+import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 

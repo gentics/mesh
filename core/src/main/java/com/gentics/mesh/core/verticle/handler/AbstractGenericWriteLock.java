@@ -13,7 +13,7 @@ import com.gentics.mesh.core.db.cluster.ClusterManager;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.metric.MetricsService;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.cp.lock.FencedLock;
+import com.hazelcast.map.IMap;
 
 import dagger.Lazy;
 import io.micrometer.core.instrument.Counter;
@@ -27,7 +27,7 @@ import io.micrometer.core.instrument.Timer;
  */
 public abstract class AbstractGenericWriteLock implements WriteLock {
 
-	protected FencedLock clusterLock;
+	protected IMap<Object, Object> clusterLock;
 	protected final Semaphore localLock = new Semaphore(1);
 	protected final MeshOptions options;
 	protected final Lazy<HazelcastInstance> hazelcast;
@@ -60,8 +60,9 @@ public abstract class AbstractGenericWriteLock implements WriteLock {
 	@Override
 	public void close() {
 		if (isClustered) {
-			if (clusterLock != null && clusterLock.isLockedByCurrentThread()) {
-				clusterLock.unlock();
+			String instanceName = hazelcast.get().getName();
+			if (clusterLock != null && clusterLock.isLocked(instanceName)) {
+				clusterLock.unlock(instanceName);
 			}
 		} else {
 			localLock.release();
@@ -90,11 +91,16 @@ public abstract class AbstractGenericWriteLock implements WriteLock {
 						if (clusterLock == null) {
 							HazelcastInstance hz = hazelcast.get();
 							if (hz != null) {
-								this.clusterLock = hz.getCPSubsystem().getLock(GLOBAL_LOCK_KEY);
+								this.clusterLock = hz.getMap(GLOBAL_LOCK_KEY);
 							}
 						}
 						if (clusterLock != null) {
-							boolean isTimeout = !clusterLock.tryLock(timeout, TimeUnit.MILLISECONDS);
+							boolean isTimeout = false;
+							try {
+								isTimeout = !clusterLock.tryLock(hazelcast.get().getName(), timeout, TimeUnit.MILLISECONDS);
+							} catch (InterruptedException e) {
+								// TODO ?
+							}
 							if (isTimeout) {
 								timeoutCount.increment();
 								throw new RuntimeException("Got timeout while waiting for write lock.");
