@@ -3,7 +3,6 @@ package com.gentics.mesh.core.data.dao.impl;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
 import java.time.ZonedDateTime;
-import java.util.Set;
 import java.util.function.Predicate;
 
 import javax.inject.Inject;
@@ -12,14 +11,12 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractCoreDaoWrapper;
 import com.gentics.mesh.core.data.dao.JobDaoWrapper;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
@@ -27,7 +24,6 @@ import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.result.Result;
-import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
 import dagger.Lazy;
@@ -145,5 +141,10 @@ public class JobDaoWrapperImpl extends AbstractCoreDaoWrapper<JobResponse, HibJo
 	@Override
 	public HibJob enqueueConsistencyCheck(HibUser user, boolean repair) {
 		return boot.get().meshRoot().getJobRoot().enqueueConsistencyCheck(user, repair);
+	}
+
+	@Override
+	public HibJob enqueueImageCacheMigration(HibUser user) {
+		return boot.get().meshRoot().getJobRoot().enqueueImageCacheMigration(user);
 	}
 }
