@@ -72,20 +72,19 @@ public class ImageCacheMigrationProcessor implements SingleJobProcessor {
 						}
 						return path;
 					}).forEach(path -> {
-						while (!path.equals(imageCachePath)) {
+						while (path != null && !path.equals(imageCachePath)) {
 							try {
 								Files.delete(path);
-								path = path.getParent();
 							} catch (DirectoryNotEmptyException e) {
 								// fair
 								return;
-							} catch(NoSuchFileException e) {
-								// fair
-								return;
+							} catch (NoSuchFileException e) {
+								// fair, but continue with parent
 							} catch (IOException e) {
 								log.error("Could not delete image cache " + path, e);
 								return;
 							}
+							path = path.getParent();
 						}
 					});
 				log.info("Image cache migration finished successfully");
