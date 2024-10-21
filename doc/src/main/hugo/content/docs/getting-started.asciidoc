@@ -44,7 +44,7 @@ docker run \
 
 === Use MariaDB-connected container
 
-Other variant for an easy, yet production ready start is to use https://hub.docker.com/r/gentics/mesh-mariadb/[mesh-mariadb] image, providing along an external instance of MariaDB 10.3+ database as a data storage, and a JDBC connector, which can be downloaded from the https://mariadb.com/downloads/connectors/connectors-data-access/java8-connector [official website]. For instance, below is how a dedicated `docker-compose` setup may look like.
+Other variant for an easy, yet production ready start is to use https://hub.docker.com/r/gentics/mesh-mariadb/[mesh-mariadb] image, providing along an external instance of MariaDB 10.3+ database as a data storage, and a JDBC connector, which can be downloaded from the link:https://mariadb.com/downloads/connectors/connectors-data-access/java8-connector[official website]. For instance, below is how a dedicated `docker-compose` setup may look like.
 
 First, initialize an empty database in your MariaDB, as well as its user:
 
@@ -76,7 +76,9 @@ Include the following `mesh` container into your `docker-compose.yml`:
 
 == Run with JAR File
 
-There is no dedicated installation procedure for Gentics Mesh. However, you will need to download https://github.com/gentics/mesh/releases[a Gentics Mesh JAR and a database connector JAR file]. An example of starting Mesh along with the HSQL in-memory mode database, assuming having both downloaded JARs in the same folder, looks as following:
+There is no dedicated installation procedure for Gentics Mesh. However, you will need to download https://github.com/gentics/mesh/releases[a Gentics Mesh JAR and a database connector JAR file]. 
+
+An example of starting Mesh along with the HSQL in-memory mode database, assuming having both downloaded JARs in the same folder, looks as following:
 
 === For Unix/Linux/MacOS
 
@@ -90,6 +92,23 @@ java -cp mesh-database-connector-hsqldb-X.X.X.jar:mesh-server-X.X.X.jar com.gent
 [source,bash]
 ----
 java -cp mesh-database-connector-hsqldb-X.X.X.jar;mesh-server-X.X.X.jar com.gentics.mesh.server.ServerRunner
+----
+
+The same example for MariaDB database will require the same database setup, as in the link:{{ relref "getting-started.asciidoc" }}#_use_mariadb_connected_container[Docker setup above], with the following command lines:
+
+
+=== For Unix/Linux/MacOS
+
+[source,bash]
+----
+java -cp mesh-database-connector-mariadb-X.X.X.jar:mariadb-java-client-Y.Y.Y.jar:mesh-server-X.X.X.jar com.gentics.mesh.server.ServerRunner
+----
+
+=== For Windows
+
+[source,bash]
+----
+java -cp mesh-database-connector-mariadb-X.X.X.jar;mariadb-java-client-Y.Y.Y.jar;mesh-server-X.X.X.jar com.gentics.mesh.server.ServerRunner
 ----
 
 [[tldr]]

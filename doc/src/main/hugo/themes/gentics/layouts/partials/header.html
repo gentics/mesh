@@ -5,12 +5,11 @@
 <link rel="dns-prefetch" href="//oss.maxcdn.com" />
 <link rel="dns-prefetch" href="//ajax.googleapis.com" />
 
-<title>{{ if .Title }}{{ .Title }}{{ else }}Gentics Mesh - The open source headless CMS for developers{{end}}</title>
-<meta name="description" content="{{ if .Params.teaser }}{{ .Params.teaser | plainify }}{{ end }}{{ if .Params.isIndex }}Open source headless CMS, complete with multilanguage support, versioning and roles & permissions{{end}}">
+<title>{{ if .Title }}{{ .Title }} &middot; {{ end }}{{ .Site.Title }}</title>
+<meta name="description" content="{{ if .Params.teaser }}{{ .Params.teaser | plainify }}{{ end }}{{ if .Params.isIndex }}Gentics Software{{end}}">
 <meta name="author" content="">
 <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
-{{ partial "social-metadata.html" . }}
 <link rel="icon" href="/favicon.ico">
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
 <link rel="shortcut icon" href="/assets/g_logo_small.png" type="image/png" />
@@ -23,9 +22,5 @@
 <link href="https://fonts.googleapis.com/css?family=Roboto:300,400" rel="stylesheet">
 <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN"
     crossorigin="anonymous">
-<script src="/js/GCM.min.js"></script>
-<script>
-    window.GCM.init('/js/GCM-config.json', 'en', 1, true);
-</script>
 
 <link href="https://fonts.googleapis.com/css?family=Roboto:300,400" rel="stylesheet">
