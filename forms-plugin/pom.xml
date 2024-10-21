@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.gentics.mesh.plugin.commercial</groupId>
 		<artifactId>mesh-commercial-plugins</artifactId>
-		<version>2.2.0-SNAPSHOT</version>
+		<version>3.0.0-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -34,7 +34,11 @@
 	</dependencyManagement>
 
 	<dependencies>
-
+		<dependency>
+			<groupId>com.gentics.mesh.plugin.commercial</groupId>
+			<artifactId>mesh-commercial-plugins-common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-web-templ-handlebars</artifactId>
@@ -44,11 +48,6 @@
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-mail-client</artifactId>
 			<scope>provided</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>com.gentics.mesh.plugin.commercial</groupId>
-			<artifactId>mesh-commercial-plugins-common</artifactId>
 		</dependency>
 
 		<!-- Dagger -->
@@ -86,13 +85,7 @@
 			<version>1.6</version>
 		</dependency>
 
-		<!-- HttpClient -->
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-			<version>4.5.14</version>
-		</dependency>
-
+		<!-- Misc -->
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
@@ -116,7 +109,8 @@
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-mdm-orientdb-wrapper</artifactId>
+			<artifactId>mesh-mdm-hibernate-core</artifactId>
+			<version>${mesh.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

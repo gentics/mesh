@@ -1,12 +1,13 @@
 package com.gentics.mesh.plugin.forms.model;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
 
 import io.vertx.core.json.JsonObject;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * Checkbox field

@@ -9,8 +9,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
-import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.rest.client.MeshRestClient;
 
 import io.reactivex.Completable;
@@ -19,9 +18,8 @@ public class TestRunner {
 	public static void main(String[] args) throws Throwable {
 		final int httpPort = 8092;
 
-		OrientDBMeshOptions options = OptionsLoader.createOrloadOptions(OrientDBMeshOptions.class, args);
+		HibernateMeshOptions options = OptionsLoader.createOrloadOptions(HibernateMeshOptions.class, args);
 
-		options.getStorageOptions().setDirectory(null);
 		options.getSearchOptions().setUrl(null);
 		options.getHttpServerOptions().setPort(httpPort);
 

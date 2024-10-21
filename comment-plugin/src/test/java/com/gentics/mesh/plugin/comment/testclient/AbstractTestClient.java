@@ -1,7 +1,5 @@
 package com.gentics.mesh.plugin.comment.testclient;
 
-import com.gentics.mesh.core.rest.lang.LanguageListResponse;
-import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import java.io.InputStream;
 
 import org.apache.commons.lang.NotImplementedException;
@@ -35,6 +33,8 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
+import com.gentics.mesh.core.rest.lang.LanguageListResponse;
+import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;

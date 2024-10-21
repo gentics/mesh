@@ -1,6 +1,7 @@
 package com.gentics.mesh.plugin.forms.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.plugin.common.license.LicenseConfiguration;
 import com.gentics.mesh.plugin.forms.export.ExportFormat;
 
@@ -47,6 +48,12 @@ public class FormsConfig extends LicenseConfiguration {
 	private MailOptions mailOptions = new MailOptions();
 
 	private boolean validateElements = false;
+
+	private boolean forceNoES = true;
+
+	private SortOrder defaultSortOrder = SortOrder.ASCENDING;
+
+	private String defaultSortBy = "created";
 
 	@JsonProperty("poll")
 	private PollOptions pollOptions = new PollOptions();
@@ -193,6 +200,14 @@ public class FormsConfig extends LicenseConfiguration {
 		this.validateElements = validateElements;
 	}
 
+	public boolean isForceNoES() {
+		return forceNoES;
+	}
+
+	public void setForceNoES(boolean forceNoES) {
+		this.forceNoES = forceNoES;
+	}
+
 	public Map<String, Object> getCustom() {
 		if (custom == null) {
 			custom = new HashMap<>();
@@ -229,6 +244,26 @@ public class FormsConfig extends LicenseConfiguration {
 
 	public void setMultipageRenderMode(MultipageRenderMode multipageRenderMode) {
 		this.multipageRenderMode = multipageRenderMode;
+	}
+
+	@Nonnull
+	public SortOrder getDefaultSortOrder() {
+		return defaultSortOrder;
+	}
+
+	public FormsConfig setDefaultSortOrder(SortOrder defaultSortOrder) {
+		this.defaultSortOrder = defaultSortOrder;
+		return this;
+	}
+
+	@Nonnull
+	public String getDefaultSortBy() {
+		return defaultSortBy;
+	}
+
+	public FormsConfig setDefaultSortBy(String defaultSortBy) {
+		this.defaultSortBy = defaultSortBy;
+		return this;
 	}
 
 	@Nonnull

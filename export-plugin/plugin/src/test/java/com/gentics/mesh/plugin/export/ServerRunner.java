@@ -5,15 +5,15 @@ import java.util.concurrent.TimeUnit;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.OptionsLoader;
+import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 
 public class ServerRunner {
 	public static void main(String[] args) throws Throwable {
 		File logbackFile = new File("config", "logback.xml");
 		System.setProperty("logback.configurationFile", logbackFile.getAbsolutePath());
 
-		MeshOptions options = OptionsLoader.createOrloadOptions(OrientDBMeshOptions.class, args);
+		MeshOptions options = OptionsLoader.createOrloadOptions(HibernateMeshOptions.class, args);
 
 		options
 			.setAdminPassword("admin")

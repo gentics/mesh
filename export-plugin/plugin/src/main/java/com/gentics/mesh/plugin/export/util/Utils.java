@@ -1,18 +1,25 @@
 package com.gentics.mesh.plugin.export.util;
 
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Stream;
+
+import javax.validation.ConstraintValidatorContext;
+import javax.validation.constraints.NotNull;
+
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
 import com.gentics.mesh.plugin.export.model.BooleanMapping;
+
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-
-import javax.validation.ConstraintValidatorContext;
-import javax.validation.constraints.NotNull;
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.stream.Stream;
 
 public class Utils {
     private Utils() {}

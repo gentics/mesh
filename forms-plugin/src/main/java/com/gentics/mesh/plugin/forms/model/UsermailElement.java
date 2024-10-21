@@ -1,14 +1,21 @@
 package com.gentics.mesh.plugin.forms.model;
 
+import java.util.Collections;
+import java.util.Set;
+import java.util.concurrent.Callable;
+
+import org.apache.commons.lang3.StringUtils;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.plugin.forms.util.RxUtil;
+
+import io.reactivex.Maybe;
 import io.vertx.core.MultiMap;
 import io.vertx.ext.web.FileUpload;
-import org.apache.commons.lang3.StringUtils;
-
-import java.util.Collections;
-import java.util.Set;
+import io.vertx.reactivex.core.Vertx;
+import okhttp3.OkHttpClient;
 
 /**
  * Usermail element
@@ -80,15 +87,17 @@ public class UsermailElement extends FormElement {
 	}
 
 	@Override
-	public ValidationError validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode) {
-		ValidationError error = super.validate(postedData, fileUploads, formDataNode);
-		if (error == null) {
+	public Maybe<ValidationError> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx, OkHttpClient httpClient) {
+		Callable<Maybe<ValidationError>> ifSuperIsEmpty = () -> {
 			String value = getSingleFormData(postedData);
 			if (StringUtils.isNotBlank(value)) {
-				error = Validator.email.validate(getName(), Collections.singletonList(value));
+				return Validator.email.validate(getName(), Collections.singletonList(value));
+			} else {
+				return RxUtil.emptyMaybe();
 			}
-		}
-		return error;
+		};
+		return super.validate(postedData, fileUploads, formDataNode, rxVertx, httpClient)
+				.switchIfEmpty(Maybe.fromCallable(ifSuperIsEmpty).flatMap(x -> x));
 	}
 
 	@Override

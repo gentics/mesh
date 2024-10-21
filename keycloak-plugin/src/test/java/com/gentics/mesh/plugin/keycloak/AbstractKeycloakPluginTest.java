@@ -20,7 +20,7 @@ import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.plugin.test.common.AbstractPluginLocalIntegrationTest;
-import com.gentics.mesh.plugin.test.common.OrientDBMeshLocalServer;
+import com.gentics.mesh.plugin.test.common.HibernateMeshLocalServer;
 import com.gentics.mesh.plugin.test.common.util.PluginTestUtil;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.docker.KeycloakContainer;
@@ -46,8 +46,7 @@ public abstract class AbstractKeycloakPluginTest extends AbstractPluginLocalInte
 	}
 
 	@Rule
-	public final MeshLocalServer server = new OrientDBMeshLocalServer()
-		.withInMemoryMode()
+	public final MeshLocalServer server = new HibernateMeshLocalServer()
 		.withPlugin(KeycloakTestPlugin.class, "authPlugin")
 		.waitForStartup();
 

@@ -1,13 +1,6 @@
 package com.gentics.mesh.plugin.forms.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.gentics.mesh.core.rest.common.FieldContainer;
-import com.gentics.mesh.core.rest.node.FieldMap;
-import com.gentics.mesh.core.rest.node.field.StringField;
-import io.vertx.core.json.JsonObject;
-
-import java.util.List;
-import java.util.Optional;
 
 /**
  * Combi Element

@@ -36,10 +36,13 @@ import javax.inject.Singleton;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.rest.common.FieldContainer;
+import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -80,6 +83,7 @@ import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.impl.EmptyResponse;
+import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.UUIDUtil;
 import com.github.jknack.handlebars.Context;
 import com.github.jknack.handlebars.Handlebars;
@@ -92,8 +96,6 @@ import io.vertx.core.MultiMap;
 import io.vertx.core.http.Cookie;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.reactivex.core.Vertx;
@@ -153,6 +155,8 @@ public class FormDataService {
 
 	private final StatusService statusService;
 
+	private final OkHttpClientService okHttpClientService;
+
 	private final File storageDir;
 
 	private final String loadFormDataToMigrateGraphQl;
@@ -169,6 +173,7 @@ public class FormDataService {
 			MailService mailService,
 			RenderService renderService,
 			StatusService statusService,
+			OkHttpClientService okHttpClientService,
 			PluginManifest manifest,
 			@StorageDir File storageDir) {
 		this.adminClient = adminClient;
@@ -181,6 +186,7 @@ public class FormDataService {
 		this.mailService = mailService;
 		this.renderService = renderService;
 		this.statusService = statusService;
+		this.okHttpClientService = okHttpClientService;
 		this.storageDir = storageDir;
 
 		try {
@@ -866,7 +872,7 @@ public class FormDataService {
 			.flatMap(langFallback -> formService.load(projectName, formUuid, langFallback))
 			.flatMap(formService::toForm)
 			.flatMap(form -> {
-				GraphQLRequest graphQlRequest = getDataGraphQlRequest(form, query, pagingParams);
+				GraphQLRequest graphQlRequest = getDataGraphQlRequest(form, query, pagingParams, configuration.isForceNoES());
 				VersioningParameters params = new VersioningParametersImpl();
 
 				if (publishedOnly) {
@@ -902,12 +908,41 @@ public class FormDataService {
 	 * @return a GraphQLRequest
 	 * @throws IOException if loading the ElasticSearch or GraphQL query fails
 	 */
-	private GraphQLRequest getDataGraphQlRequest(Form form, String query, JsonObject pagingParams) throws IOException {
-		String rawGraphQLQuery = IOUtils.toString(FormsPlugin.class.getResource("findFormData.graphql"), StandardCharsets.UTF_8);
-		JsonObject graphQLParams = new JsonObject(pagingParams.toBuffer())
-			.put("query", assembleFindFormDataESQuery(form.getUuid(), query).toString());
+	private GraphQLRequest getDataGraphQlRequest(Form form, String query, JsonObject pagingParams, boolean forceNoES) throws IOException {
+		JsonObject graphQLParams = new JsonObject(pagingParams.toBuffer());
 		Map<String, String> context = new HashMap<>();
 
+		String rawGraphQLQuery;
+		if (StringUtils.isNotBlank(query) && !forceNoES) {
+			rawGraphQLQuery = IOUtils.toString(FormsPlugin.class.getResource("findFormData.graphql"), StandardCharsets.UTF_8);
+			graphQLParams.put("query", assembleFindFormDataESQuery(form.getUuid(), query).toString());
+		} else {
+			rawGraphQLQuery = IOUtils.toString(FormsPlugin.class.getResource("findFormDataNoES.graphql"), StandardCharsets.UTF_8);
+			if (pagingParams.containsKey("sortBy")) {
+				SortOrder order = SortOrder.valueOf(Objects.toString(pagingParams.getValue("sortOrder"))) ;
+				String sortBy = pagingParams.getString("sortBy").replace(" ", "_");
+				if (order == null || order == SortOrder.UNSORTED) {
+					order = SortOrder.ASCENDING ;
+				}
+				context.put("sorting", "sort: { " + sortBy + ": " + order.name() + " }");
+			} else if (configuration.getDefaultSortOrder() != null && StringUtils.isNotEmpty(configuration.getDefaultSortBy())) {
+				context.put("sorting", "sort: { " + configuration.getDefaultSortBy().replace(" ", "_") + ": " + configuration.getDefaultSortOrder().name() + " }");
+			} else {
+				context.put("sorting", StringUtils.EMPTY);
+			}
+			if (forceNoES && StringUtils.isNotBlank(query)) {
+				String filter = form.getElements().stream().map(element -> {
+					if (element.isMultivalue()) {
+						return element.getGraphQLName() + ": {anyMatch: {like: \"%" + query + "%\"}}";
+					} else {
+						return element.getGraphQLName() + ": {like: \"%" + query + "%\"}";
+					}
+				}).collect(Collectors.joining(" ", " fields: {" + SchemaService.getSchemaName(form.getUuid()) + ":{or: { ", " }}} "));
+				context.put("fieldFilter", filter);
+			} else {
+				context.put("fieldFilter", StringUtils.EMPTY);
+			}			
+		}
 		context.put("schemaName", SchemaService.getSchemaName(form.getUuid()));
 		context.put("fieldNames", String.join("\n", form.getReportableElementNamesForGraphQL()));
 
@@ -1025,18 +1060,29 @@ public class FormDataService {
 	private Single<PostDataResponse> savePostedData(FormDataSaveContext ctx) {
 		Form form = ctx.getForm();
 		MultiMap postedData = ctx.getPostedData();
-		Map<String, ValidationError> errors = form.validate(postedData, ctx.getFileUploads(), ctx.getFormDataNode());
-
-		errors.putAll(form.preventInjection(postedData, configuration.getSecurityOptions()));
+		Single<Map<String, ValidationError>> errorSingle = Single.zip(
+				Single.just(form.preventInjection(postedData, configuration.getSecurityOptions())), 
+				form.validate(postedData, ctx.getFileUploads(), ctx.getFormDataNode(), rxVertx, okHttpClientService.getClient()), 
+				(a,b) -> {
+					HashMap<String, ValidationError> errors = new HashMap<>();
+					errors.putAll(a);
+					errors.putAll(b);
+					return errors;
+				});
 
 		String projectName = ctx.getProjectName();
 		NodeResponse formNode = ctx.getFormNode();
 		Single<String> dataFolderUuidSingle = getFormDataFolderUuid(projectName, formNode.getUuid(),
 				ParameterUtil.getLanguages(ctx.getContext()));
 
-		return dataFolderUuidSingle.flatMap(dataFolderUuid -> saveFormData(projectName, formNode, dataFolderUuid, ctx.getFormDataNode(), form, postedData, errors))
-			.flatMap(savedFormDataNode -> saveFileUploads(ctx.getProjectName(), form, savedFormDataNode, postedData, ctx.getFileUploads()))
-			.flatMap(savedFileUploads -> {
+		return errorSingle.zipWith(
+				dataFolderUuidSingle, 
+				(errors, dataFolderUuid) -> saveFormData(projectName, formNode, dataFolderUuid, ctx.getFormDataNode(), form, postedData, errors).map(formData -> Pair.of(formData, errors)))
+			.flatMap(single -> single)
+			.flatMap(savedFormDataNodePlusErrors -> saveFileUploads(ctx.getProjectName(), form, savedFormDataNodePlusErrors.getKey(), postedData, ctx.getFileUploads()).map(uploads -> Pair.of(uploads, savedFormDataNodePlusErrors.getValue())))
+			.flatMap(savedFileUploadsPlusErrors -> {
+				NodeResponse savedFileUploads = savedFileUploadsPlusErrors.getKey();
+				Map<String, ValidationError> errors = savedFileUploadsPlusErrors.getValue();
 				if (ctx.isPublish() && errors.isEmpty() && form.isCompleted(savedFileUploads)) {
 					return publishFormData(ctx, savedFileUploads, errors);
 				} else {
@@ -1183,7 +1229,7 @@ public class FormDataService {
 	 * @return single
 	 */
 	private Single<PostDataResponse> publishFormData(FormDataSaveContext ctx, NodeResponse savedFileUploads, Map<String, ValidationError> errors) {
-		return adminClient.publishNode(ctx.getProjectName(), savedFileUploads.getUuid()).toSingle().map(publishStatus -> {
+		return adminClient.publishNode(ctx.getProjectName(), savedFileUploads.getUuid()).toSingle().flatMap(publishStatus -> {
 			PluginContext meshContext = ctx.getContext();
 			Form form = ctx.getForm();
 			MultiMap postedData = ctx.getPostedData();
@@ -1192,38 +1238,40 @@ public class FormDataService {
 			mailService.sendMails(ctx.getProjectName(), ctx.getForm(), savedFileUploads, meshContext);
 
 			// perform actions
-			ctx.getForm().flattened().forEach(e -> e.performSubmit(ctx.getForm(), postedData));
+			return Single.zip(
+					StreamUtil.toIterable(ctx.getForm().flattened().map(e -> e.performSubmit(ctx.getForm(), postedData, rxVertx, okHttpClientService.getClient()).toSingleDefault(1))), 
+					allSubmitted -> {
+						boolean isPoll = ctx.getForm().getType() == FormType.POLL;
 
-			boolean isPoll = ctx.getForm().getType() == FormType.POLL;
+						// remove the data cookie
+						if (ctx.handleCookies()) {
+							meshContext.removeCookie(COOKIE_NAME_DATA);
+							Cookie cookie = Cookie.cookie(COOKIE_NAME_DATA, "");
+							cookie.setPath(getPath(ctx.getReferer()));
+							cookie.setHttpOnly(true);
+							cookie.setMaxAge(0);
+							meshContext.addCookie(cookie);
 
-			// remove the data cookie
-			if (ctx.handleCookies()) {
-				meshContext.removeCookie(COOKIE_NAME_DATA);
-				Cookie cookie = Cookie.cookie(COOKIE_NAME_DATA, "");
-				cookie.setPath(getPath(ctx.getReferer()));
-				cookie.setHttpOnly(true);
-				cookie.setMaxAge(0);
-				meshContext.addCookie(cookie);
+							if (isPoll) {
+								addPollCookie(ctx);
+							}
+						}
 
-				if (isPoll) {
-					addPollCookie(ctx);
-				}
-			}
+						PostDataResponse response = new PostDataResponse();
+						response.setDataUuid(savedFileUploads.getUuid());
+						response.setCreated(savedFileUploads.getCreated());
+						response.setErrors(errors);
+						response.setFinished(true);
+						if (form.getSuccessurl() != null) {
+							response.setRedirectUrl(form.getSuccessurl());
+						} else if (isPoll) {
+							response.setRedirectUrl(ctx.getReferer());
+						} else {
+							response.setRedirectUrl("");
+						}
 
-			PostDataResponse response = new PostDataResponse();
-			response.setDataUuid(savedFileUploads.getUuid());
-			response.setCreated(savedFileUploads.getCreated());
-			response.setErrors(errors);
-			response.setFinished(true);
-			if (form.getSuccessurl() != null) {
-				response.setRedirectUrl(form.getSuccessurl());
-			} else if (isPoll) {
-				response.setRedirectUrl(ctx.getReferer());
-			} else {
-				response.setRedirectUrl("");
-			}
-
-			return response;
+						return response;
+					});			
 		});
 	}
 

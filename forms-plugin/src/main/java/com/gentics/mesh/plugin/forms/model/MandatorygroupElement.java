@@ -10,10 +10,14 @@ import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
+import com.gentics.mesh.plugin.forms.util.RxUtil;
 
+import io.reactivex.Maybe;
 import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.FileUpload;
+import io.vertx.reactivex.core.Vertx;
+import okhttp3.OkHttpClient;
 
 /**
  * Element for mandatory groups
@@ -55,9 +59,9 @@ public class MandatorygroupElement extends FormElement {
 	}
 
 	@Override
-	public ValidationError validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode) {
+	public Maybe<ValidationError> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx, OkHttpClient httpClient) {
 		if (skipElement(postedData)) {
-			return null;
+			return RxUtil.emptyMaybe();
 		}
 
 		if (!getElements().stream().filter(element -> {
@@ -68,11 +72,10 @@ public class MandatorygroupElement extends FormElement {
 			}
 			return values.stream().anyMatch(v -> v != null && !"".equals(v));
 		}).findFirst().isPresent()) {
-			return new ValidationError().setName(getName()).setTitle(I18nHelper.get(Locale.GERMAN, "error.mandatory_group_not_filled.title"))
-					.setMessage(I18nHelper.get(Locale.GERMAN, "error.mandatory_group_not_filled"));
+			return Maybe.just(new ValidationError().setName(getName()).setTitle(I18nHelper.get(Locale.GERMAN, "error.mandatory_group_not_filled.title"))
+					.setMessage(I18nHelper.get(Locale.GERMAN, "error.mandatory_group_not_filled")));
 		}
-
-		return null;
+		return RxUtil.emptyMaybe();
 	}
 
 	@Override
