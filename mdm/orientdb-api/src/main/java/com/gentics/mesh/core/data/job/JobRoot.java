@@ -84,6 +84,14 @@ public interface JobRoot extends RootVertex<Job> {
 	HibJob enqueueConsistencyCheck(HibUser user, boolean repair);
 
 	/**
+	 * Enqueue an image check job.
+	 * 
+	 * @param user
+	 * @return
+	 */
+	HibJob enqueueImageCacheMigration(HibUser user);
+
+	/**
 	 * Delete all the jobs referencing the provided project.
 	 * @param project
 	 */
