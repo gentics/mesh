@@ -89,7 +89,7 @@ public class MeshTestContext implements TestRule {
 
 	static {
 		System.setProperty(TrackingSearchProviderImpl.TEST_PROPERTY_KEY, "true");
-		System.setProperty("memory.directMemory.preallocate", "false");
+		System.setProperty("org.jboss.logging.provider", "slf4j");
 	}
 
 	public static final Logger LOG = LoggerFactory.getLogger(MeshTestContext.class);
@@ -154,7 +154,7 @@ public class MeshTestContext implements TestRule {
 	 */
 	protected void starting(Description description) throws Throwable {
 		MeshTestSetting settings = getSettings(description);
-		// Setup the dagger context and orientdb,es once
+		// Setup the dagger context, orm, es once
 		if (description.isSuite()) {
 			setupOnce(settings);
 		} else {
@@ -174,6 +174,7 @@ public class MeshTestContext implements TestRule {
 		switch (settings.elasticsearch()) {
 		case CONTAINER_ES6:
 		case CONTAINER_ES7:
+		case CONTAINER_ES8:
 			setupIndexHandlers(true);
 			break;
 		default:
@@ -187,6 +188,7 @@ public class MeshTestContext implements TestRule {
 		switch (settings.elasticsearch()) {
 		case CONTAINER_ES6:
 		case CONTAINER_ES7:
+		case CONTAINER_ES8:
 			setupIndexHandlers(false);
 			break;
 		default:
@@ -285,6 +287,7 @@ public class MeshTestContext implements TestRule {
 		idleConsumer.unregister();
 		switch (settings.elasticsearch()) {
 		case CONTAINER_ES7:
+		case CONTAINER_ES8:
 		case CONTAINER_ES6:
 		case CONTAINER_ES6_TOXIC:
 			meshDagger.searchProvider().clear().blockingAwait();
@@ -641,12 +644,26 @@ public class MeshTestContext implements TestRule {
 		S3Options s3Options = meshOptions.getS3Options();
 		searchOptions.setTimeout(10_000L);
 
-		String version = ElasticsearchContainer.VERSION_ES6;
-		switch (settings.elasticsearch()) {
-		case CONTAINER_ES7:
-			searchOptions.setComplianceMode(ComplianceMode.ES_7);
-			version = ElasticsearchContainer.VERSION_ES7;
+		String version = switch (settings.elasticsearch()) {
+            case CONTAINER_ES7 -> {
+                searchOptions.setComplianceMode(ComplianceMode.ES_7);
+
+                yield ElasticsearchContainer.VERSION_ES7;
+            }
+
+            case CONTAINER_ES8 -> {
+                searchOptions.setComplianceMode(ComplianceMode.ES_8);
+
+                yield ElasticsearchContainer.VERSION_ES8;
+            }
+
+            default -> ElasticsearchContainer.VERSION_ES6;
+        };
+
+        switch (settings.elasticsearch()) {
 		case CONTAINER_ES6:
+		case CONTAINER_ES7:
+		case CONTAINER_ES8:
 		case UNREACHABLE:
 			elasticsearch = new ElasticsearchContainer(version);
 			if (!elasticsearch.isRunning()) {

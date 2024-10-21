@@ -23,7 +23,6 @@ import com.gentics.mesh.util.DateUtils;
 
 import io.vertx.ext.auth.User;
 
-
 /**
  * Domain model for user.
  */

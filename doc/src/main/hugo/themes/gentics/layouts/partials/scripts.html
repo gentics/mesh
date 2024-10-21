@@ -1,0 +1,13 @@
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="//twemoji.maxcdn.com/twemoji.min.js"></script>
+<script src="/js/site.js"></script>
+<link rel="stylesheet"
+      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.0.0/styles/default.min.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.0.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<script src="/js/docs.js"></script>
+<script src="/js/sidebar.js"></script>
+{{- if .Site.Params.gcse -}}
+<script async src="https://cse.google.com/cse.js?cx={{ .Site.Params.gcse }}"></script>
+{{- end -}}

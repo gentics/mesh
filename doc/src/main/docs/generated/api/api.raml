@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "2.1.6"
+version: "3.0.0-SNAPSHOT"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -1528,7 +1528,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "bf940f1949164031a9ba2952be2f1476"
+                            "uuid" : "eb786305ace14a3e89a241fdea974d18"
                           } ]
                         }
             responses: 
@@ -3061,7 +3061,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "1969155b41504c118a30fa20d9f2e431"
+                            "uuid" : "89477b780e0440b39ec6e18149753407"
                           } ]
                         }
             responses: 
@@ -4367,7 +4367,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "bb9282279ff546d49fa0fc2af6348c7e"
+                            "uuid" : "77c67cc645534256acef0e6603db2aa9"
                           } ]
                         }
             responses: 
@@ -6876,7 +6876,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "38fd6b71b9944ef487eb01d483f024ab"
+                            "uuid" : "d3c6178e899c4a5d9378da8e955edd57"
                           } ]
                         }
             responses: 
@@ -7355,16 +7355,16 @@ mediaType: application/json
                                                 "required" : {
                                                   "type" : "boolean"
                                                 },
-                                                "label" : {
-                                                  "type" : "string",
-                                                  "description" : "Label of the field."
-                                                },
                                                 "noIndex" : {
                                                   "type" : "boolean"
                                                 },
                                                 "elasticsearch" : {
                                                   "type" : "object",
                                                   "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                                },
+                                                "label" : {
+                                                  "type" : "string",
+                                                  "description" : "Label of the field."
                                                 }
                                               }
                                             }
@@ -7665,16 +7665,16 @@ mediaType: application/json
                                   "required" : {
                                     "type" : "boolean"
                                   },
-                                  "label" : {
-                                    "type" : "string",
-                                    "description" : "Label of the field."
-                                  },
                                   "noIndex" : {
                                     "type" : "boolean"
                                   },
                                   "elasticsearch" : {
                                     "type" : "object",
                                     "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                  },
+                                  "label" : {
+                                    "type" : "string",
+                                    "description" : "Label of the field."
                                   }
                                 }
                               }
@@ -7831,16 +7831,16 @@ mediaType: application/json
                                           "required" : {
                                             "type" : "boolean"
                                           },
-                                          "label" : {
-                                            "type" : "string",
-                                            "description" : "Label of the field."
-                                          },
                                           "noIndex" : {
                                             "type" : "boolean"
                                           },
                                           "elasticsearch" : {
                                             "type" : "object",
                                             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                          },
+                                          "label" : {
+                                            "type" : "string",
+                                            "description" : "Label of the field."
                                           }
                                         }
                                       }
@@ -8125,16 +8125,16 @@ mediaType: application/json
                                           "required" : {
                                             "type" : "boolean"
                                           },
-                                          "label" : {
-                                            "type" : "string",
-                                            "description" : "Label of the field."
-                                          },
                                           "noIndex" : {
                                             "type" : "boolean"
                                           },
                                           "elasticsearch" : {
                                             "type" : "object",
                                             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                          },
+                                          "label" : {
+                                            "type" : "string",
+                                            "description" : "Label of the field."
                                           }
                                         }
                                       }
@@ -8261,12 +8261,6 @@ mediaType: application/json
         post: 
             description: Update the schema.
             queryParameters: 
-                strictValidation: 
-                    description: Validate the Elasticsearch settings in the schema. When this parameter is set, a schema update or creation will fail, when the respective Elasticsearch index cannot be created.
-                    type: boolean
-                    required: false
-                    repeat: false
-                    default: false
                 updateAssignedBranches: 
                     description: Update the schema version for all branches which already utilize the schema.
                     type: boolean
@@ -8279,6 +8273,12 @@ mediaType: application/json
                     required: false
                     repeat: false
                     example: summerBranch,winterBranch
+                strictValidation: 
+                    description: Validate the Elasticsearch settings in the schema. When this parameter is set, a schema update or creation will fail, when the respective Elasticsearch index cannot be created.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    default: false
             body: 
                 application/json: 
                     schema: |
@@ -8356,16 +8356,16 @@ mediaType: application/json
                                   "required" : {
                                     "type" : "boolean"
                                   },
-                                  "label" : {
-                                    "type" : "string",
-                                    "description" : "Label of the field."
-                                  },
                                   "noIndex" : {
                                     "type" : "boolean"
                                   },
                                   "elasticsearch" : {
                                     "type" : "object",
                                     "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                  },
+                                  "label" : {
+                                    "type" : "string",
+                                    "description" : "Label of the field."
                                   }
                                 }
                               }
@@ -8514,16 +8514,16 @@ mediaType: application/json
                                           "required" : {
                                             "type" : "boolean"
                                           },
-                                          "label" : {
-                                            "type" : "string",
-                                            "description" : "Label of the field."
-                                          },
                                           "noIndex" : {
                                             "type" : "boolean"
                                           },
                                           "elasticsearch" : {
                                             "type" : "object",
                                             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                          },
+                                          "label" : {
+                                            "type" : "string",
+                                            "description" : "Label of the field."
                                           }
                                         }
                                       }
@@ -8897,16 +8897,16 @@ mediaType: application/json
                                   "required" : {
                                     "type" : "boolean"
                                   },
-                                  "label" : {
-                                    "type" : "string",
-                                    "description" : "Label of the field."
-                                  },
                                   "noIndex" : {
                                     "type" : "boolean"
                                   },
                                   "elasticsearch" : {
                                     "type" : "object",
                                     "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                  },
+                                  "label" : {
+                                    "type" : "string",
+                                    "description" : "Label of the field."
                                   }
                                 }
                               }
@@ -9326,7 +9326,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "8b252736d9064fb183491b046007f16d"
+                            "uuid" : "0a2adbd059ae42c3ba2af8c37504485d"
                           } ]
                         }
             responses: 
@@ -9691,16 +9691,16 @@ mediaType: application/json
                                   "required" : {
                                     "type" : "boolean"
                                   },
-                                  "label" : {
-                                    "type" : "string",
-                                    "description" : "Label of the field."
-                                  },
                                   "noIndex" : {
                                     "type" : "boolean"
                                   },
                                   "elasticsearch" : {
                                     "type" : "object",
                                     "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                  },
+                                  "label" : {
+                                    "type" : "string",
+                                    "description" : "Label of the field."
                                   }
                                 }
                               }
@@ -9836,16 +9836,16 @@ mediaType: application/json
                                           "required" : {
                                             "type" : "boolean"
                                           },
-                                          "label" : {
-                                            "type" : "string",
-                                            "description" : "Label of the field."
-                                          },
                                           "noIndex" : {
                                             "type" : "boolean"
                                           },
                                           "elasticsearch" : {
                                             "type" : "object",
                                             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                          },
+                                          "label" : {
+                                            "type" : "string",
+                                            "description" : "Label of the field."
                                           }
                                         }
                                       }
@@ -10068,16 +10068,16 @@ mediaType: application/json
                                                 "required" : {
                                                   "type" : "boolean"
                                                 },
-                                                "label" : {
-                                                  "type" : "string",
-                                                  "description" : "Label of the field."
-                                                },
                                                 "noIndex" : {
                                                   "type" : "boolean"
                                                 },
                                                 "elasticsearch" : {
                                                   "type" : "object",
                                                   "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                                },
+                                                "label" : {
+                                                  "type" : "string",
+                                                  "description" : "Label of the field."
                                                 }
                                               }
                                             }
@@ -10354,16 +10354,16 @@ mediaType: application/json
                                           "required" : {
                                             "type" : "boolean"
                                           },
-                                          "label" : {
-                                            "type" : "string",
-                                            "description" : "Label of the field."
-                                          },
                                           "noIndex" : {
                                             "type" : "boolean"
                                           },
                                           "elasticsearch" : {
                                             "type" : "object",
                                             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                          },
+                                          "label" : {
+                                            "type" : "string",
+                                            "description" : "Label of the field."
                                           }
                                         }
                                       }
@@ -10504,16 +10504,16 @@ mediaType: application/json
                                   "required" : {
                                     "type" : "boolean"
                                   },
-                                  "label" : {
-                                    "type" : "string",
-                                    "description" : "Label of the field."
-                                  },
                                   "noIndex" : {
                                     "type" : "boolean"
                                   },
                                   "elasticsearch" : {
                                     "type" : "object",
                                     "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                  },
+                                  "label" : {
+                                    "type" : "string",
+                                    "description" : "Label of the field."
                                   }
                                 }
                               }
@@ -10749,16 +10749,16 @@ mediaType: application/json
                                   "required" : {
                                     "type" : "boolean"
                                   },
-                                  "label" : {
-                                    "type" : "string",
-                                    "description" : "Label of the field."
-                                  },
                                   "noIndex" : {
                                     "type" : "boolean"
                                   },
                                   "elasticsearch" : {
                                     "type" : "object",
                                     "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                  },
+                                  "label" : {
+                                    "type" : "string",
+                                    "description" : "Label of the field."
                                   }
                                 }
                               }
@@ -11083,7 +11083,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "4054d7b8d9ce43608981c964634771f4"
+                            "uuid" : "0b341ee9cff9489f807aa6027753e58f"
                           } ]
                         }
             responses: 
@@ -12022,162 +12022,6 @@ mediaType: application/json
                     required: false
                     repeat: false
                     example: "-backup,consistencyCheck"
-    /graphdb/backup: 
-        post: 
-            description: Invoke a graph database backup and dump the data to the configured backup location. Note that this operation will block all current operation. Irrelevant for non-OrientDB server.
-            queryParameters: 
-                consistencyCheck: 
-                    description: Specify whether the consistency check should be run before running the backup.
-                    type: boolean
-                    required: false
-                    repeat: false
-                    default: false
-                    example: "true"
-            responses: 
-                "200": 
-                    description: Incremental backup was invoked.
-                    body: 
-                        application/json: 
-                            schema: |
-                                {
-                                  "type" : "object",
-                                  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:common:GenericMessageResponse",
-                                  "properties" : {
-                                    "message" : {
-                                      "type" : "string",
-                                      "required" : true,
-                                      "description" : "Enduser friendly translated message. Translation depends on the 'Accept-Language' header value"
-                                    },
-                                    "internalMessage" : {
-                                      "type" : "string",
-                                      "required" : true,
-                                      "description" : "Internal developer friendly message"
-                                    },
-                                    "properties" : {
-                                      "type" : "object",
-                                      "description" : "Map of i18n properties which were used to construct the provided message",
-                                      "additionalProperties" : {
-                                        "type" : "object",
-                                        "id" : "urn:jsonschema:java:lang:Object"
-                                      }
-                                    }
-                                  }
-                                }
-                            example: |
-                                {
-                                  "message" : "I18n message"
-                                }
-    /graphdb/export: 
-        post: 
-            description: Invoke a orientdb graph database export. Irrelevant for non-OrientDB server.
-            responses: 
-                "200": 
-                    description: Export process was invoked.
-                    body: 
-                        application/json: 
-                            schema: |
-                                {
-                                  "type" : "object",
-                                  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:common:GenericMessageResponse",
-                                  "properties" : {
-                                    "message" : {
-                                      "type" : "string",
-                                      "required" : true,
-                                      "description" : "Enduser friendly translated message. Translation depends on the 'Accept-Language' header value"
-                                    },
-                                    "internalMessage" : {
-                                      "type" : "string",
-                                      "required" : true,
-                                      "description" : "Internal developer friendly message"
-                                    },
-                                    "properties" : {
-                                      "type" : "object",
-                                      "description" : "Map of i18n properties which were used to construct the provided message",
-                                      "additionalProperties" : {
-                                        "type" : "object",
-                                        "id" : "urn:jsonschema:java:lang:Object"
-                                      }
-                                    }
-                                  }
-                                }
-                            example: |
-                                {
-                                  "message" : "I18n message"
-                                }
-    /graphdb/import: 
-        post: 
-            description: Invoke a orientdb graph database import. The latest import file from the import directory will be used for this operation. Irrelevant for non-OrientDB server.
-            responses: 
-                "200": 
-                    description: Database import command was invoked.
-                    body: 
-                        application/json: 
-                            schema: |
-                                {
-                                  "type" : "object",
-                                  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:common:GenericMessageResponse",
-                                  "properties" : {
-                                    "message" : {
-                                      "type" : "string",
-                                      "required" : true,
-                                      "description" : "Enduser friendly translated message. Translation depends on the 'Accept-Language' header value"
-                                    },
-                                    "internalMessage" : {
-                                      "type" : "string",
-                                      "required" : true,
-                                      "description" : "Internal developer friendly message"
-                                    },
-                                    "properties" : {
-                                      "type" : "object",
-                                      "description" : "Map of i18n properties which were used to construct the provided message",
-                                      "additionalProperties" : {
-                                        "type" : "object",
-                                        "id" : "urn:jsonschema:java:lang:Object"
-                                      }
-                                    }
-                                  }
-                                }
-                            example: |
-                                {
-                                  "message" : "I18n message"
-                                }
-    /graphdb/restore: 
-        post: 
-            description: Invoke a graph database restore. The latest dump from the backup directory will be inserted. Please note that this operation will block all current operation and effectively destroy all previously stored data. Irrelevant for non-OrientDB server.
-            responses: 
-                "200": 
-                    description: Database restore command was invoked.
-                    body: 
-                        application/json: 
-                            schema: |
-                                {
-                                  "type" : "object",
-                                  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:common:GenericMessageResponse",
-                                  "properties" : {
-                                    "message" : {
-                                      "type" : "string",
-                                      "required" : true,
-                                      "description" : "Enduser friendly translated message. Translation depends on the 'Accept-Language' header value"
-                                    },
-                                    "internalMessage" : {
-                                      "type" : "string",
-                                      "required" : true,
-                                      "description" : "Internal developer friendly message"
-                                    },
-                                    "properties" : {
-                                      "type" : "object",
-                                      "description" : "Map of i18n properties which were used to construct the provided message",
-                                      "additionalProperties" : {
-                                        "type" : "object",
-                                        "id" : "urn:jsonschema:java:lang:Object"
-                                      }
-                                    }
-                                  }
-                                }
-                            example: |
-                                {
-                                  "message" : "I18n message"
-                                }
     /jobs: 
         get: 
             description: List all currently queued jobs.
@@ -13619,16 +13463,16 @@ mediaType: application/json
                                                 "required" : {
                                                   "type" : "boolean"
                                                 },
-                                                "label" : {
-                                                  "type" : "string",
-                                                  "description" : "Label of the field."
-                                                },
                                                 "noIndex" : {
                                                   "type" : "boolean"
                                                 },
                                                 "elasticsearch" : {
                                                   "type" : "object",
                                                   "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                                },
+                                                "label" : {
+                                                  "type" : "string",
+                                                  "description" : "Label of the field."
                                                 }
                                               }
                                             }
@@ -15104,16 +14948,16 @@ mediaType: application/json
                                                 "required" : {
                                                   "type" : "boolean"
                                                 },
-                                                "label" : {
-                                                  "type" : "string",
-                                                  "description" : "Label of the field."
-                                                },
                                                 "noIndex" : {
                                                   "type" : "boolean"
                                                 },
                                                 "elasticsearch" : {
                                                   "type" : "object",
                                                   "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                                },
+                                                "label" : {
+                                                  "type" : "string",
+                                                  "description" : "Label of the field."
                                                 }
                                               }
                                             }
@@ -16625,16 +16469,16 @@ mediaType: application/json
                                   "required" : {
                                     "type" : "boolean"
                                   },
-                                  "label" : {
-                                    "type" : "string",
-                                    "description" : "Label of the field."
-                                  },
                                   "noIndex" : {
                                     "type" : "boolean"
                                   },
                                   "elasticsearch" : {
                                     "type" : "object",
                                     "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                  },
+                                  "label" : {
+                                    "type" : "string",
+                                    "description" : "Label of the field."
                                   }
                                 }
                               }
@@ -17026,16 +16870,16 @@ mediaType: application/json
                                   "required" : {
                                     "type" : "boolean"
                                   },
-                                  "label" : {
-                                    "type" : "string",
-                                    "description" : "Label of the field."
-                                  },
                                   "noIndex" : {
                                     "type" : "boolean"
                                   },
                                   "elasticsearch" : {
                                     "type" : "object",
                                     "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                  },
+                                  "label" : {
+                                    "type" : "string",
+                                    "description" : "Label of the field."
                                   }
                                 }
                               }
@@ -17690,10 +17534,10 @@ mediaType: application/json
                                 }
                             example: |
                                 {
-                                  "meshVersion" : "2.1.6",
+                                  "meshVersion" : "3.0.0-SNAPSHOT",
                                   "meshNodeName" : "Reminiscent Tirtouga",
-                                  "databaseVendor" : "orientdb",
-                                  "databaseVersion" : "2.2.16",
+                                  "databaseVendor" : "mariadb",
+                                  "databaseVersion" : "10.7",
                                   "searchVendor" : "elasticsearch",
                                   "searchVersion" : "2.4.3",
                                   "vertxVersion" : "4.5.7"
@@ -24187,7 +24031,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "5daa13fae23849f1ae544a20ecd61df3"
+                            "uuid" : "c1d3fb8333f84c83901ff530b7a808ee"
                           } ]
                         }
             responses: 
@@ -27650,7 +27494,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "06e7357d6d744121a09dcb8237390923"
+                            "uuid" : "4d4f3846711244dea0b82d70b186e5c6"
                           } ]
                         }
             responses: 
@@ -29540,7 +29384,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "eea058076de642d6a2b8613fa64079d8"
+                            "uuid" : "c2fbfc3dddb9476f93aa722b24b89582"
                           } ]
                         }
             responses: 
@@ -33738,7 +33582,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "39e18b4c3b8c47b0be6a79efeb06bff2"
+                            "uuid" : "d5f040e51ea44133867ee4ac225c9bdf"
                           } ]
                         }
             responses: 
@@ -36274,16 +36118,16 @@ mediaType: application/json
                                                 "required" : {
                                                   "type" : "boolean"
                                                 },
-                                                "label" : {
-                                                  "type" : "string",
-                                                  "description" : "Label of the field."
-                                                },
                                                 "noIndex" : {
                                                   "type" : "boolean"
                                                 },
                                                 "elasticsearch" : {
                                                   "type" : "object",
                                                   "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                                },
+                                                "label" : {
+                                                  "type" : "string",
+                                                  "description" : "Label of the field."
                                                 }
                                               }
                                             }
@@ -36645,16 +36489,16 @@ mediaType: application/json
                                           "required" : {
                                             "type" : "boolean"
                                           },
-                                          "label" : {
-                                            "type" : "string",
-                                            "description" : "Label of the field."
-                                          },
                                           "noIndex" : {
                                             "type" : "boolean"
                                           },
                                           "elasticsearch" : {
                                             "type" : "object",
                                             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                          },
+                                          "label" : {
+                                            "type" : "string",
+                                            "description" : "Label of the field."
                                           }
                                         }
                                       }
@@ -36904,16 +36748,16 @@ mediaType: application/json
                                           "required" : {
                                             "type" : "boolean"
                                           },
-                                          "label" : {
-                                            "type" : "string",
-                                            "description" : "Label of the field."
-                                          },
                                           "noIndex" : {
                                             "type" : "boolean"
                                           },
                                           "elasticsearch" : {
                                             "type" : "object",
                                             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                          },
+                                          "label" : {
+                                            "type" : "string",
+                                            "description" : "Label of the field."
                                           }
                                         }
                                       }
@@ -37163,16 +37007,16 @@ mediaType: application/json
                                                 "required" : {
                                                   "type" : "boolean"
                                                 },
-                                                "label" : {
-                                                  "type" : "string",
-                                                  "description" : "Label of the field."
-                                                },
                                                 "noIndex" : {
                                                   "type" : "boolean"
                                                 },
                                                 "elasticsearch" : {
                                                   "type" : "object",
                                                   "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                                },
+                                                "label" : {
+                                                  "type" : "string",
+                                                  "description" : "Label of the field."
                                                 }
                                               }
                                             }
@@ -37435,16 +37279,16 @@ mediaType: application/json
                                           "required" : {
                                             "type" : "boolean"
                                           },
-                                          "label" : {
-                                            "type" : "string",
-                                            "description" : "Label of the field."
-                                          },
                                           "noIndex" : {
                                             "type" : "boolean"
                                           },
                                           "elasticsearch" : {
                                             "type" : "object",
                                             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                          },
+                                          "label" : {
+                                            "type" : "string",
+                                            "description" : "Label of the field."
                                           }
                                         }
                                       }

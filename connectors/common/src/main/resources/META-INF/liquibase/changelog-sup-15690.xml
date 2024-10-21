@@ -1,0 +1,17 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+	xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.6.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd">
+
+    <changeSet id="sup-15690-1"	author="n.pomaroli@gentics.com">
+        <createIndex tableName="mesh_nodefieldcontainer_versions_edge" indexName="idx_mesh_nodefieldcontainer_versions_edge_thiscontentuuid">
+			<column name="thiscontentuuid" />
+		</createIndex>
+        <createIndex tableName="mesh_nodefieldcontainer_versions_edge" indexName="idx_mesh_nodefieldcontainer_versions_edge_nextcontentuuid">
+			<column name="nextcontentuuid" />
+		</createIndex>
+    </changeSet>
+</databaseChangeLog>

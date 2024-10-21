@@ -1,0 +1,301 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+	xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.6.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd">
+
+    <changeSet id="sup-15549-1"	author="s.plyhun@gentics.com">
+        <createIndex tableName="mesh_tagfamily" indexName="idx_mesh_tagfamily_name">
+			<column name="name" />
+		</createIndex>
+		<createIndex tableName="mesh_tag" indexName="idx_mesh_tag_name">
+			<column name="name" />
+		</createIndex>
+		<createIndex tableName="mesh_group" indexName="idx_mesh_group_name">
+			<column name="name" />
+		</createIndex>
+		<createIndex tableName="mesh_language" indexName="idx_mesh_language_name">
+			<column name="name" />
+		</createIndex>
+		<createIndex tableName="mesh_branch" indexName="idx_mesh_branch_name">
+			<column name="name" />
+		</createIndex>
+		<createIndex tableName="mesh_role" indexName="idx_mesh_role_name">
+			<column name="name" />
+		</createIndex>
+		<createIndex tableName="mesh_project" indexName="idx_mesh_project_name">
+			<column name="name" />
+		</createIndex>
+    </changeSet>
+    <changeSet author="s.plyhun@gentics.com" id="sup-15549-2" dbms="postgresql,mariadb,mysql,hsqldb">
+        <createIndex tableName="mesh_node" indexName="fk1uio9qqw4xwolm4ydqc6s4ebr">
+        	<column name="schemacontainer_dbuuid" />
+        </createIndex>
+        <createIndex tableName="mesh_project" indexName="fk22w2640kcro7ny97shj6u4lw5">
+        	<column name="latestbranch_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_schema" indexName="fk29gbds2ydy2igsw39ruxmqpyp">
+        	<column name="latestversion_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_schema" indexName="fk2jo0bkmen37gptnxbigt7vpf9">
+        	<column name="creator_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_branch_schema_version_edge" indexName="fk3cv3ych0p0q92pit72weps04v">
+        	<column name="branch_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_job" indexName="fk3ddtttf189ay04r19xcojndkp">
+        	<column name="toschemaversion_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_job" indexName="fk3qubstudb8ynpur7jl88amjxh">
+        	<column name="project_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_schema" indexName="fk3rc1rfbclt62g7uddbpr6ty94">
+        	<column name="editor_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_microschemaversion" indexName="fk4gf0ei5d7v0kdawbumftp65y5">
+        	<column name="previouschange_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_node_tag" indexName="fk4nml2oy4xkexskq4tfmd5pp43">
+        	<column name="tag_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_schemaversion" indexName="fk4ps0t4a6swqj65k3jy8raj6du">
+        	<column name="nextversion_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_project" indexName="fk4ygoy6lit5me20fctg01m8o10">
+        	<column name="basenode_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_schemachange" indexName="fk5605f53fc4xufrjt2un60m5yp">
+        	<column name="nextchange_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_job" indexName="fk6dxpeuaacb8tvuv360dpu55yl">
+        	<column name="creator_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_user" indexName="fk6i9w1k1x1lijxy6j9encc8bck">
+        	<column name="creator_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_project_microschema" indexName="fk6r0immo5upcya3ftwvx65tgvr">
+        	<column name="projects_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_node_branch_parent" indexName="fk6s3kud13juvujpbh20u3kfowq">
+        	<column name="branchparent_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_tagfamily" indexName="fk7ovoeom5blk4ycbaopydw4ptr">
+        	<column name="project_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_nodefieldcontainer" indexName="fk8gelxy2sr8p7nb6gjukm5yuvd">
+        	<column name="node_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_schemachange_properties" indexName="fk8r42b87q0nh21uyscv3lkxn6n">
+        	<column name="schemachange_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_branch_microschema_version_edge" indexName="fk984myuxw2xbc3n4qlhwkhuns3">
+        	<column name="branch_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_tagfamily" indexName="fk9fji1so4vnb3wtl6lwjmgr7k8">
+        	<column name="editor_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_microschema" indexName="fk9uml0r4bi7aktd7wxe9liewax">
+        	<column name="latestversion_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_group_user" indexName="fk9yi2c1hljir7ykl0sw7t5f9pa">
+        	<column name="users_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_schemaversion" indexName="fka4l6qtva7gqlbko3bmx0ik9f0">
+        	<column name="schema_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_schemaversion" indexName="fkaf05epdqjcci0srljtuahu2l0">
+        	<column name="nextchange_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_microschemaversion" indexName="fkaf6wrpq9ttimhmlwlkvxs482x">
+        	<column name="nextchange_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_group" indexName="fkaxatonoyfwtov7h7rjee5c6ma">
+        	<column name="editor_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_group_role" indexName="fkba3suti661ury3my1vsnpaljm">
+        	<column name="groups_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_microschema" indexName="fkbkfjov5egkjqoa8y4ofp2c5b9">
+        	<column name="creator_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_micronodelistitem" indexName="fkbnqay9aa90x4bnjllr53ihcvg">
+        	<column name="microschemaversion_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_role" indexName="fkbo5drl20m79kh6bfdgywaaaj0">
+        	<column name="editor_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_job" indexName="fkc0plo9kjjjcc51wmmbwr3d1ge">
+        	<column name="tomicroschemaversion_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_s3binaryfieldref_metadataproperties" indexName="fkcc7hc46d2ia3lsjcu5tqc94cc">
+        	<column name="s3binaryfieldref_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_node" indexName="fkcimaiyfnjy79tu4m1a2s47sbm">
+        	<column name="project_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_job" indexName="fkcxr47gpda4dpfsm1xro0y5e1a">
+        	<column name="frommicroschemaversion_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_micronodefieldref" indexName="fkdglkfb4rq1ikvy0jvbfm5mn77">
+        	<column name="microschemaversion_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_job" indexName="fkdrrutku241hpwcrqtjlfoc01v">
+        	<column name="branch_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_node_branch_parent" indexName="fkefdmb6v17726ekfdlktdib1fv">
+        	<column name="child_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_branch" indexName="fkeggtn9o8ixmdumh555ppwm88q">
+        	<column name="previousbranch_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_language" indexName="fkeogc8id07pl5a41twt0hfsk91">
+        	<column name="editor_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_user" indexName="fkepho86r2ek9o0vh5xwcdc3ykp">
+        	<column name="referencednode_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_job" indexName="fketh0ladol7lr5bl30tllj5ayp">
+        	<column name="fromschemaversion_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_project" indexName="fkeyvcyvof86ymvw09oef6bq8io">
+        	<column name="initialbranch_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_nodefieldcontainer" indexName="fkfrgy10dhpg6ak101edq82bh6l">
+        	<column name="version_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_tagfamily" indexName="fkfylv227g8xvwme5h0kj6ugr3g">
+        	<column name="creator_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_nodefieldcontainer_webrooturlfields" indexName="fkg0aqhiok1spnfwlwrs54nns2v">
+        	<column name="nodefieldcontainer_element"></column>
+        </createIndex>
+        <createIndex tableName="mesh_nodefieldcontainer_versions_edge" indexName="fkg36f86vvvskhv3ae4m7l624eb">
+        	<column name="thisversion_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_branch" indexName="fkg6ub5kcvpti34joa5m35dv0cj">
+        	<column name="editor_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_project" indexName="fkgbtp300286dlj9g0nmu4by8cq">
+        	<column name="creator_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_group_user" indexName="fkgf1rj6p600qei6a7q3h40wmyg">
+        	<column name="groups_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_schemachange" indexName="fkgjyqhn49aoxot9yfv6fk9e4ds">
+        	<column name="previouschange_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_branch_tag" indexName="fkh9fmfroim05h3wgk6v0fjk70e">
+        	<column name="branch_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_branch" indexName="fkhp0f1anmpd6mrvrhweuaxdelw">
+        	<column name="creator_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_node_tag" indexName="fkhx8wihyft0ew0335qxkcpstbk">
+        	<column name="node_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_permission" indexName="fkj2dnkmu16upnx1m1x5ojjspq6">
+        	<column name="role_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_microschemaversion" indexName="fkkaeqnhyqtgncx3qrl3tfu6qeq">
+        	<column name="nextversion_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_binaryfieldref_metadataproperties" indexName="fkkqnx67pnk5ls3ogwhytypejk6">
+        	<column name="binaryfieldref_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_branch_microschema_version_edge" indexName="fkl7hgo50hbxfc0v9o4jsqjlr9g">
+        	<column name="version_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_language" indexName="fkllg2ao82aw433gg3shsgn3shq">
+        	<column name="creator_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_project_schema" indexName="fklliedjet706tmaaeu3oy4jlje">
+        	<column name="projects_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_schemaversion" indexName="fkmaaxetfvboi56yar2m3jgea6o">
+        	<column name="previousversion_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_node_branch_parent" indexName="fkmf4nd0kv045rh03ftekgafnuy">
+        	<column name="nodeparent_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_nodefieldcontainer" indexName="fkmnwrt2o90oeakmh98pig52go9">
+        	<column name="branch_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_project_schema" indexName="fkmtsy07rksv8rprgbwp5xde86f">
+        	<column name="schemas_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_node" indexName="fkn0br0p0curx5xj977gqbmbawh">
+        	<column name="creator_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_tag" indexName="fknd1t3s9a29q2yxdk3spqw2pqe">
+        	<column name="project_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_project_language" indexName="fknkop3j8qf9jy3g048y859cqtm">
+        	<column name="languages_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_group" indexName="fknx7s3jig3s1fjksp2n4eyn40p">
+        	<column name="creator_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_microschema" indexName="fknytx0anxbm7vswivxpx9evhjj">
+        	<column name="editor_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_tag" indexName="fko1omlph9pl9a61vn7qg2q6q6e">
+        	<column name="creator_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_node_tag" indexName="fkomv9ayx8w6fu78dwtoe9bn9s4">
+        	<column name="branch_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_job" indexName="fkoosy20klkhsy2skdcc40x6qcb">
+        	<column name="editor_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_nodefieldcontainer_versions_edge" indexName="fkovhek7lsrlq79bh9ons6efenx">
+        	<column name="nextversion_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_project" indexName="fkpgceyrqjoe9cbdusb03igawg4">
+        	<column name="editor_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_branch_schema_version_edge" indexName="fkqi1mtw1iyg7ou7wbtl82b51k">
+        	<column name="version_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_microschemaversion" indexName="fkqkrgun2llgobybe7pexptxfgo">
+        	<column name="previousversion_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_branch_tag" indexName="fkqsvjupt9g3y281jxd1pqoavci">
+        	<column name="tags_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_tag" indexName="fkqw3um6ouymkjnmopgjm65bocv">
+        	<column name="tagfamily_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_schemaversion" indexName="fkr0pr84cpjgy0hb24twie3h0fm">
+        	<column name="previouschange_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_permissionroot" indexName="fkrjg4jnp1h6uigrxih7ekqik01">
+        	<column name="parent_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_project_language" indexName="fkrlguhr4sownngq9514gs9dmrx">
+        	<column name="project_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_role" indexName="fks3iu9r9jambplp1va7imewe2a">
+        	<column name="creator_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_branch" indexName="fksctubq4t1r3pvewagm79j93kv">
+        	<column name="project_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_user" indexName="fksjbeqr01jexcxp48eyk5ftyye">
+        	<column name="editor_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_tag" indexName="fkt13elfjy83feclh6jv68fnyb3">
+        	<column name="editor_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_group_role" indexName="fktlb270q93bd8sskvyp3s23kyc">
+        	<column name="roles_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_project_microschema" indexName="fktnnny0usfqeii7mneexwwhsfw">
+        	<column name="microschemas_dbuuid"></column>
+        </createIndex>
+        <createIndex tableName="mesh_microschemaversion" indexName="fkurr9v0tw63y14gcaydvt43ah">
+        	<column name="microschema_dbuuid"></column>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

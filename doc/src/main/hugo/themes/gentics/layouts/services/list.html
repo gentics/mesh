@@ -1,0 +1,42 @@
+{{ define "content" }}
+<div class="topsection-wrapper">
+    <div class="topsection container">
+        <div>
+            <div class="col-md-12">
+                <h1>{{ .Title }}</h1>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ $services := .Pages.ByParam "sort-key" }}
+
+<div>
+    <div class="container center">
+        <div class="row">
+            {{ $count := $services | len }}
+            {{ range $i, $p := $services }}
+            <div
+                class="content teaser col-lg-6 col-md-4 col-sm-12 plugin {{ if eq $count (add $i 1) }}{{if modBool $i 2}}col-md-offset-3 {{ end }}{{ end }}">
+                <div class="box box-md box-premium-features text-center">
+                    <header>
+                        <h3>{{ .Title }} </h3>
+                    </header>
+                    <section>
+                        <div class="section services-height">
+                            <i class="{{ .Params.icon }} plugins-icon"></i>
+                            <p class="padding20">{{ .Params.teaser }}</p>
+                        </div>
+                        <footer>
+                            {{ partial "quote-button.html" }}
+                        </footer>
+                    </section>
+                </div>
+            </div>
+            {{end}}
+        </div>
+    </div>
+
+    {{ partial "quote-form.html" }}
+
+    {{end}}

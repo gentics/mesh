@@ -367,8 +367,6 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		});
 		syncIndex();
 		EntityMetrics metrics = call(() -> client().searchStatus()).getMetrics().get("node");
-		// orientdb implementation is making some unneeded document updates compared to the mdm implementation.
-		// to make the test work for both implementations, we just check that we have at least one document synced.
 		assertThat(metrics.getUpdate().getSynced()).isGreaterThanOrEqualTo(1);
 		assertThat(metrics.getUpdate().getPending()).isEqualTo(0);
 

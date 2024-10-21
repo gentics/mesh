@@ -7,7 +7,6 @@ import java.io.File;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.testcontainers.containers.BindMode;
 
 import com.gentics.mesh.test.category.ClusterTests;
 import com.gentics.mesh.test.docker.MeshContainer;
@@ -26,7 +25,6 @@ public class ClusterTortureSecondaryCreatedBackupOnSync extends AbstractClusterT
 			MeshContainer serverB2 = prepareSlave("dockerCluster" + clusterPostFix, "nodeB2", randomToken(), true, true, 1);
 			File backupFolder = new File("target/backup-" + serverB2.getDataPathPostfix());
 			backupFolder.mkdirs();
-			serverB2.overrideODBClusterBackupFolder(backupFolder.getAbsolutePath(), BindMode.READ_WRITE);
 			serverB2.start();
 			
 			File plannedBackup = new File(backupFolder.getAbsolutePath() + "/databases/storage");

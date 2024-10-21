@@ -1,0 +1,68 @@
+{{ define "content" }}
+<style>
+    .row {
+        margin-top: 0px;
+    }
+</style>
+<div class="topsection-wrapper">
+    <div class="topsection container">
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <h1>{{ .Title }}</h1>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="topsection-wrapper center">
+    <div class="topsection container">
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <h1><img class="logo" src="/assets/gentics-logo-white.png" alt="Gentics Logo"> Gentics Mesh</h1>
+                <p class="lead">The open-source headless CMS for developers</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 col-md-offset-3">
+                <div class="card">
+                    {{ $version := .Site.Data.mesh.version }}
+                    <h2>v{{ $version }}</h2>
+                    <p>
+                        Gentics Mesh is <a href="/docs/changelog">updated</a> on a weekly basis with new 
+                        features and fixes.</p>
+                    <h3><a href="/docs/administration-guide/#_run_with_docker">Docker</a></h3>
+                    <div class="listingblock">
+                        <pre class="prettyprint highlight"><code class="language-json" data-lang="json">docker run -p 8080:8080 gentics/mesh-demo:{{$version}}</code></pre>
+                    </div>
+                    <h3><a href="/docs/administration-guide/#_run_with_jar_file">Java</a></h3>
+                    <div class="listingblock">
+                        <pre class="prettyprint highlight"><code class="language-json" data-lang="json">java -jar mesh-demo-{{$version}}.jar</code></pre>
+                    </div>
+                    <p><a class="btn btn-primary btn-download btn-lg" 
+                          href="https://maven.gentics.com/maven2/com/gentics/mesh/mesh-demo/{{ $version }}/mesh-demo-{{ $version }}.jar"
+                          onclick="ga('send', 'event', 'Download', 'Download', '{{ $version }}', 0)">
+                          <span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span>
+                          Download</a>
+                          <a href="https://maven.gentics.com/maven2/com/gentics/mesh/mesh-demo/{{ $version }}/mesh-demo-{{ $version }}.jar.asc">(sig)</a>
+                    </p>
+                    <hr/>
+                    <p>GPG keys:
+                        <pre>curl https://getmesh.io/public-key.asc | gpg --import</pre>
+                        Demo: <a href="https://maven.gentics.com/maven2/com/gentics/mesh/mesh-demo/{{ $version }}/mesh-demo-{{ $version }}.jar.asc">GPG signature</a> - <a href="https://maven.gentics.com/maven2/com/gentics/mesh/mesh-demo/{{ $version }}/mesh-demo-{{ $version }}.jar.sha256">sha256</a><br/>
+                        Server: <a href="https://maven.gentics.com/maven2/com/gentics/mesh/mesh-server/{{ $version }}/mesh-server-{{ $version }}.jar.asc">GPG signature</a> - <a href="https://maven.gentics.com/maven2/com/gentics/mesh/mesh-server/{{ $version }}/mesh-server-{{ $version }}.jar.sha256">sha256</a>
+                    </p>
+                    <hr/>
+                    <p><strong>For production purposes please <a 
+                    href="https://maven.gentics.com/maven2/com/gentics/mesh/mesh-server/{{ $version }}/mesh-server-{{ $version }}.jar"
+                    onclick="ga('send', 'event', 'Download', 'Download Server', '{{ $version }}', 0)"
+                    ><span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span>download</a> the Gentics Mesh server or use the docker image <code>gentics/mesh</code> free from any demo content.</strong></p>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                &nbsp;
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}

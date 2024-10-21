@@ -10,6 +10,7 @@ import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.image.ImageManipulation;
+import com.gentics.mesh.parameter.image.ResizeMode;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
@@ -116,11 +117,13 @@ public interface ImageManipulator {
 		Integer originalHeight = binary.getImageHeight();
 		Integer originalWidth = binary.getImageWidth();
 
-		if ("auto".equals(imageParams.getHeight())) {
-			imageParams.setHeight(originalHeight);
-		}
-		if ("auto".equals(imageParams.getWidth())) {
-			imageParams.setWidth(originalWidth);
+		if (imageParams.getResizeMode() == ResizeMode.SMART) {
+			if ("auto".equals(imageParams.getHeight())) {
+				imageParams.setHeight(originalHeight);
+			}
+			if ("auto".equals(imageParams.getWidth())) {
+				imageParams.setWidth(originalWidth);
+			}
 		}
 		return imageParams;
 	}

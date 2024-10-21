@@ -10,6 +10,7 @@ import org.junit.Test;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.test.MeshOptionsTypeAwareContext;
+import com.gentics.mesh.test.MeshTestContextProvider;
 import com.gentics.mesh.test.local.MeshLocalServer;
 
 public abstract class LocalServerTest<T extends MeshOptions> implements MeshOptionsTypeAwareContext<T> {
@@ -18,7 +19,7 @@ public abstract class LocalServerTest<T extends MeshOptions> implements MeshOpti
 
 	@BeforeClass
 	public void initServerA() {
-		serverA = new MeshLocalServer(getOptions())
+		serverA = new MeshLocalServer(MeshTestContextProvider.getProvider())
 				.withNodeName("localNodeA")
 				.withClusterName("cluster" + clusterPostFix)
 				.withInitCluster()

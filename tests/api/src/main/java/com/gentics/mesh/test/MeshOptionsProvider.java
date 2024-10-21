@@ -3,13 +3,12 @@ package com.gentics.mesh.test;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.ServiceLoader;
 
 import org.apache.commons.lang3.StringUtils;
-import org.reflections.Reflections;
 
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.util.StreamUtil;
 
 /**
  * A runtime provider of context-specific {@link MeshOptions}. 
@@ -41,37 +40,17 @@ public interface MeshOptionsProvider {
 		return spawnProviderInstance(System.getProperty(ENV_OPTIONS_PROVIDER_CLASS), MeshOptionsProvider.class);
 	}
 	
-	//TODO move off to Utils
 	@SuppressWarnings("unchecked")
 	static <T extends MeshOptionsProvider> T spawnProviderInstance(String className, Class<T> classOfT) {
-		Class<? extends T> classToInstantiate = null;
-		if (StringUtils.isBlank(className)) {
-			Reflections reflections = new Reflections("com.gentics.mesh");
-			List<Class<? extends T>> classes = new ArrayList<>(reflections.getSubTypesOf(classOfT));
-
-			// remove interfaces, abstract classes or classes, which are not eligible
-			classes.removeIf(cls -> cls.isInterface() || Modifier.isAbstract(cls.getModifiers()) || !isEligible(cls));
-
-			if (!classes.isEmpty()) {
-				// sort classes by order
-				classes.sort((c1, c2) -> Integer.compare(getOrder(c1), getOrder(c2)));
-				classToInstantiate = classes.get(0);
-			}
-			if (classToInstantiate == null) {
-				throw new NoMeshTestContextException(classOfT);
-			}
+		if (StringUtils.isBlank(className)) {			
+			return StreamUtil.toStream(ServiceLoader.load(classOfT)).findAny().orElseThrow(() -> new NoMeshTestContextException(classOfT));
 		} else {
 			try {
-				classToInstantiate = (Class<? extends T>) MeshOptionsProvider.class.getClassLoader().loadClass(className);
-			} catch (ClassNotFoundException e) {
+				return (T) MeshOptionsProvider.class.getClassLoader().loadClass(className).getConstructor().newInstance();
+			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
-		}
-		try {
-			return (T) classToInstantiate.getConstructor().newInstance();
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+		}		
 	}
 
 	/**

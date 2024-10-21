@@ -1,0 +1,69 @@
+{{ define "content" }}
+<div class="topsection-wrapper">
+    <div class="topsection container">
+        <div class="row">
+            <div class="col-md-12">
+                <h1>{{ .Title }}</h1>
+            </div>
+        </div>
+    </div>
+</div>
+ {{ if eq .Params.nav "docs"}}
+ <div class="topsection-wrapper-white">
+        <div class="col-md-12">
+            <ul class="nav navbar-nav">
+                <li>
+                    <a href="../getting-started">Getting Started</a>
+                </li>
+                <li>
+                    <a href="../api">API</a>
+                </li>
+                <li>
+                    <a href="../changelog">Changelog</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+ {{end}}
+  <div class="container docs-content">
+    <div class="row">
+      <div class="col-sm-12 col-md-push-9 col-md-3 hidden-xs hidden-sm">
+        <div id="sidebar" data-spy="affix">
+            {{ .TableOfContents }}
+        </div>
+      </div>
+      <div class="col-sm-12 col-md-pull-3 col-md-9">
+        <div class="toc hidden-md hidden-lg">
+          <h2>{{ .Title }}</h2>
+          {{ .TableOfContents }}
+        </div>
+        {{ .Content }}
+        {{ if .Params.nofooter }}
+          <div id="footnotes">
+            {{ range .Params }}
+                <div class="footnote" id="_footnote_<%= fn.index %>">
+                    <a href="#_footnoteref_<%= fn.index %>"><%= fn.index %></a>. <%= fn.text %>
+                </div>          
+            {{ end }}
+        </div>
+        {{end}}
+
+
+
+        {{ if .Params.nofooter }}
+          <div id="footer">
+            <div id="footer-text">
+              <% if attr? :revnumber %>
+                <%= %(#{attr 'version-label'} #{attr :revnumber}) %><br>
+              <% end
+                if attr? 'last-update-label' %>
+                <%= %(#{attr 'last-update-label'} #{attr :docdatetime}) %>
+              <% end %>
+              <%= (docinfo_content = (docinfo :footer)).empty? ? nil : %(#{docinfo_content}) %>
+            </div>
+          </div>
+        {{end}}
+      </div>
+    </div>
+  </div>
+{{end}}

@@ -1,1 +1,0 @@
-The logging system has been revisited, getting rid of the deprecations, checking the messages and levels for consistency.
