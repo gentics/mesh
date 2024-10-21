@@ -12,11 +12,6 @@
 | string
 | JDBC connection password.
 
-| connectionUrl
-| false
-| string
-| JDBC connection URL.
-
 | connectionUrlExtraParams
 | false
 | string
@@ -26,6 +21,11 @@
 | false
 | string
 | JDBC connection username.
+
+| databaseAddress
+| false
+| string
+| Database address in HOST&lt;:PORT&gt; format.
 
 | databaseConnectorClasspath
 | false
@@ -46,11 +46,6 @@
 | false
 | string
 | Optional JDBC driver class name. Use this to override the default database connector provided driver class.
-
-| exportDirectory
-| true
-| string
-| Path to the database export directory.
 
 | formatSql
 | false

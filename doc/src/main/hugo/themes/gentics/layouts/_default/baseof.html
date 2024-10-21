@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    {{ partial "header.html" . }}
+</head>
+
+<body class="body-navbar-{{ .Params.navbar | default "static" }}">
+    {{ partial "navbar.html" . }}
+    {{ partial "search-results.html" . }}
+
+    {{ block "content" . }}{{end}}
+
+    {{ partial "footer.html" . }}
+    
+    {{ partial "scripts.html" . }}
+</body>
+
+</html>

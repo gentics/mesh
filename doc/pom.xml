@@ -17,8 +17,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<skip.raml2html>true</skip.raml2html>
-		<skip.doc.assembly>true</skip.doc.assembly>
+		<skip.doc.package>true</skip.doc.package>
 	</properties>
 
 	<dependencyManagement>
@@ -72,46 +71,6 @@
 		</resources>
 		<plugins>
 			<plugin>
-				<artifactId>maven-resources-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>copy-apidocs</id>
-						<phase>validate</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${basedir}/target/docs/apidocs</outputDirectory>
-							<resources>
-								<resource>
-									<directory>src/main/docs</directory>
-									<filtering>true</filtering>
-									<includes>
-										<include>*.html</include>
-									</includes>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-					<execution>
-						<id>copy-asciidocs</id>
-						<phase>validate</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${basedir}/target/docs/docs</outputDirectory>
-							<resources>
-								<resource>
-									<directory>src/main/docs</directory>
-									<filtering>true</filtering>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
 				<version>1.5.0</version>
@@ -149,24 +108,15 @@
 						</configuration>
 					</execution>
 					<execution>
-						<id>Generate HTML from RAML</id>
-						<!-- npm i -g raml2html@2.2 -->
+						<id>Generate HTML</id>
 						<goals>
 							<goal>exec</goal>
 						</goals>
-						<phase>process-resources</phase>
+						<phase>prepare-package</phase>
 						<configuration>
-							<skip>${skip.raml2html}</skip>
-							<executable>npx</executable>
-							<arguments>
-								<argument>raml2html@2.2</argument>
-								<argument>-i</argument>
-								<argument>${basedir}/src/main/docs/generated/api/api-docs.raml</argument>
-								<argument>-o</argument>
-								<argument>${basedir}/target/docs/apidocs/index.html</argument>
-								<argument>-t</argument>
-								<argument>${basedir}/src/main/docs/nunjucks/template.nunjucks</argument>								
-							</arguments>
+							<skip>${skip.doc.package}</skip>
+							<executable>${basedir}/build/dockerBuild.sh</executable>
+							<successCodes>0,255</successCodes>
 						</configuration>
 					</execution>
 				</executions>
@@ -182,11 +132,25 @@
 							<goal>single</goal>
 						</goals>
 						<configuration>
-							<skipAssembly>${skip.doc.assembly}</skipAssembly>
+							<skipAssembly>${skip.doc.package}</skipAssembly>
 							<attach>true</attach>
-							<appendAssemblyId>false</appendAssemblyId>
+							<appendAssemblyId>true</appendAssemblyId>
 							<descriptors>
-								<descriptor>${project.basedir}/src/assembly/doc-package.xml</descriptor>
+								<descriptor>${project.basedir}/src/assembly/maven/doc-package.xml</descriptor>
+							</descriptors>
+						</configuration>
+					</execution>
+					<execution>
+						<id>src</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<attach>true</attach>
+							<appendAssemblyId>true</appendAssemblyId>
+							<descriptors>
+								<descriptor>${project.basedir}/src/assembly/maven/src-package.xml</descriptor>
 							</descriptors>
 						</configuration>
 					</execution>

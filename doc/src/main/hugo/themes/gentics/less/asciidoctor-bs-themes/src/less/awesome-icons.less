@@ -1,0 +1,83 @@
+/*
+ * This is based on Dan Allen's _awesome-icons.scss 
+ * https://github.com/asciidoctor/asciidoctor-stylesheet-factory/tree/master/sass/components
+ */
+
+span.icon > .fa {
+  cursor: default;
+}
+
+.admonitionblock td.icon {
+  [class^="fa icon-"]:before {
+    font-size: 2.5em;
+    text-shadow: @icon-text-shadow;
+    cursor: default;
+  }
+  
+  .icon-note:before {
+    content: "\f05a";
+    color: @brand-info;
+  }
+  
+  .icon-tip:before {
+    content: "\f0eb";
+    color: @brand-primary;
+  }
+  
+  .icon-warning:before {
+    content: "\f071";
+    color: @brand-warning;
+  }
+
+  .icon-caution:before {
+    content: "\f06d";
+    color: @brand-danger;
+  }
+  
+  .icon-important:before {
+    content: "\f06a";
+    color: @brand-success;
+  }
+}
+
+// alternatively could use &#10122; through &#10131 to get the numbered circles,
+// then style them as appropriate; would need to output them in the text, though
+.conum {
+  display: inline-block;
+  color: white !important;
+  background-color: black;
+
+  -webkit-border-radius: 100px;
+  -moz-border-radius: 100px;
+  border-radius: 100px;
+
+  text-align: center;
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 20px;
+  font-family: @font-family-base;
+  font-style: normal;
+  position: relative;
+  top: -2px;
+  letter-spacing: -1px;
+
+  & * {
+    color: white !important;
+  }
+
+  & + b {
+    display: none;
+  }
+
+  &:after {
+    content: attr(data-value);
+  }
+
+  // hack for when highlight.js adds a bogus element into DOM
+  // we could solve this w/ javascript instead
+  &:not([data-value]):empty {
+    display: none;
+  }
+}

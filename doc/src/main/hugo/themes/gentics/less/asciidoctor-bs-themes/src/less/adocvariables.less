@@ -1,0 +1,53 @@
+// adocvariables.less
+// This file contains additional global variables used by asciidoc.less.
+// Variables may be overriden locally by each theme, e.g. in styles.less.
+// -----------------------------------------------------------------------
+
+// Media queries for screen
+
+@media-small:    ~"only screen and (min-width: @{screen-sm-min})";
+@media-medium:   ~"only screen and (min-width: @{screen-md-min})";
+@media-large:    ~"only screen and (min-width: @{screen-lg-min})";
+
+@icon-text-shadow: 1px 1px 2px rgba(0, 0, 0, .5);
+//@icon-text-shadow: @gray-light 1px 1px 5px;
+@icon-width: 60px;
+
+// overridden in styles.less for dark backgrounds
+// to keep readability.
+@literalblock-color: @pre-color;
+
+@pre-font-size: (@font-size-base - 1);
+@pre-padding: @padding-small-vertical @padding-small-horizontal;
+
+@block-padding: @padding-small-vertical @padding-small-horizontal;
+@block-padding-bottom: @padding-small-vertical;
+
+@blockquote-border-width: 5px;
+@blockquote-border-style: solid;
+
+@example-border-color: @blockquote-border-color;
+@example-border-width: @blockquote-border-width;
+@example-border-style: @blockquote-border-style;
+@example-font-color: @text-color;
+
+@title-font-color: @text-color;
+@title-font-weight: normal;
+
+@sect-divider-size: 3px;
+@sect-divider-style: double;
+@sect-divider-color: @gray-lighter;
+
+@list-side-margin: 0;
+@toc-list-nested-padding: @gap-wide;
+
+@definition-list-content-margin-left: 1em;
+
+@thumb-border-style: solid;
+@thumb-border-width: 1px;
+
+@gap-narrow: .25em;
+@gap-half: 0.5em;
+@gap-standard: 1em;
+@gap-wide: 1.5em;
+@gap-extra-wide: 2em;

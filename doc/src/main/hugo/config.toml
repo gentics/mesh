@@ -1,0 +1,12 @@
+languageCode = "en-us"
+title = "Gentics Mesh - Documentation"
+baseURL = "https://gentics.com/mesh-docs/"
+theme = "gentics"
+
+DefaultContentLanguage = "en-us"
+
+relativeURLs = true
+canonifyurls = true
+enableRobotsTXT = true
+paginate = 3 # default number of pages per page in pagination
+publishDir = "docs" # if you use GitHub to deploy

@@ -1,0 +1,200 @@
+= Asciidoctor Bootstrap Themes
+Thomas Kern
+:idprefix:
+:idseparator: -
+:sources: https://github.com/nerk/asciidoctor-bs-themes
+:license: https://github.com/nerk/asciidoctor-bs-themes/blob/master/LICENSE.txt
+
+Create style sheets to theme AsciiDoc HTML output using http://www.getbootstrap.com[Bootstrap] and free themes from http://bootswatch.com/[Bootswatch].
+
+== Introduction
+
+The AsciiDoc markup processor http://asciidoctor.org[Asciidoctor] already includes a good set of CSS style sheets based on http://foundation.zurb.com[Foundation].
+However, if you would like to use themes based on Twitter's http://getbootstrap.com[Bootstrap] instead, this project is for you.
+
+Bootstrap is using the http://www.lesscss.org/[Less] preprocessor to compile +.less+ style sheets into CSS files. Most of Bootstrap's
+styling like sizes, fonts, and colors is defined in a file named +variables.less+. By modifying the contents of this 
+file or overriding the values of the defined variables, you can create your own Bootstrap themes.
+
+A popular site with free Bootstrap themes is http://bootswatch.com/[Bootswatch]. Fortunately, rather than downloading the final
+CSS files, you can also just grab the +variables.less+ file for almost any of the themes.
+
+This project uses the Bootstrap +.less+ sources, +variables.less+ files from Bootswatch, and additional 
+styling specific to AsciiDoc to create AsciiDoc-enhanced versions of the Bootswatch themes. The 
+AsciiDoc specific styling is based on Dan Allen's Asciidoctor SASS style sheets 
+https://github.com/asciidoctor/asciidoctor-stylesheet-factory[asciidoctor-stylesheet-factory].
+
+Rather than using Bootswatch themes, you may also create a custom theme by providing your own +variables.less+ file. 
+A good online resource for creating your own style is http://pikock.github.io/bootstrap-magic/index.html[Bootstrap Magic].
+
+You may conveniently save your +variables.less+ directly from the site.
+
+== Prerequisites
+
+The following software must be installed before you start:
+
+  * http://www.lesscss.org/[Less]
+  * http://asciidoctor.org[Asciidoctor]
+
+NOTE: Make sure that the Ruby gems +tilt+ and +coderay+ are installed. For node.js, 
++clean-css+ must be installed in addition to +less+.
+
+== Setup
+
+Clone the source from GitHub:
+
+ $ git clone --recurse-submodules https://github.com/nerk/asciidoctor-bs-themes
+ 
+NOTE: If you don't want to use GIT, you may also download the code as a +.zip+ file and unpack it 
+to a local directory.
+
+Next, switch to the 'asciidoctor-bs-themes' directory and generate the CSS files:
+
+ $ cd asciidoctor-bs-themes
+ $ ./buildcss
+
+This creates the CSS files (regular and minified versions) in directory +css+.
+
+You may test your created themes by generating some example documents from directory +test+:
+
+ $ cd test
+ $ ./gendoc
+ 
+This compiles a file named 'test.adoc'
+for each of the generated styles and puts the generated HTML into directory 'output'.
+
+
+NOTE: Some +bootswatch.less+ files for some of the styles import Google Fonts
+using a 'scheme-relative' URI. The import will not work if the file is opened
+directly in a browser from the file system. This is the reason why you need to serve the generated files
+from a web server.
+
+To view the generated files, start a webserver with directory 'test' as the root directory. 
+If you have 'python' installed, invoke the following command from directory 'test':
+
+ $ python -m SimpleHTTPServer
+ 
+If 'python' is not installed, you may want to install a web server for 'node.js':
+
+  $ npm install -g local-web-server
+  
+Start the web server from directory 'test':
+
+  $ ws
+
+Now enter the following URL in your browser:
+
+  http://localhost:8000/output/
+
+Your browser will now display a list of generated HTML files, one for each style.
+
+== Using Generated Styles
+
+To create HTML from an AsciiDoc source using a generated style, you may specify the CSS stylesheet 
+from the command line. For example, to use the +bootstrap_flatly+ style, invoke:
+
+ asciidoctor -a stylesheet="css/bootstrap_flatly.css" thedocument.adoc
+
+Rather than using 'asciidoctor', you may also use Stuart Rackham's http://www.asciidoc.org[asciidoc] instead:
+ 
+ asciidoc -a stylesheet="`pwd`/css/bootstrap_flatly.css" thedocument.adoc
+ 
+NOTE: +asciidoc+ (unlike +asciidoctor+) requires an absolute path to the stylesheet, if the stylesheet is
+not globally installed.
+ 
+Unless you specify the +linkcss+ attribute, the stylesheet is directly embedded into the generated document.
+The reference to the stylesheet refers to its location on the file system at *compile time* of the document.
+
+For including just a reference to the stylesheet, use:
+
+ asciidoctor -a linkcss -a stylesheet="css/bootstrap_flatly.css" thedocument.adoc
+ 
+Please note that in this case, the reference to the stylesheet is resolved when the generated
+document is displayed in the browser.
+
+If you want to tweak the generated output further or want to include additional JavaScript libraries
+into the generated document, you may specify your own Asciidoctor templates.
+You can find a modified +document.html.erb+ template under
+
+ src/templates/html5/document.html.erb
+ 
+This modified template will put references to +jQuery+ and +bootstrap.js+ into the generated document. 
+When compiling your document, you must specify the location of the template directory:
+
+ asciidoctor -T src/templates -a stylesheet="css/bootstrap_flatly.css" thedocument.adoc
+
+NOTE: The included +document.html.erb+ template was tested with Asciidoctor 0.1.4 and may
+not work with other versions.
+
+== Custom Styles
+
+If you want to create a custom style based on Bootstrap, do the following (we assume your
+new style is named 'awesome'):
+
+* Create a new directory +src/less/styles/awesome+
+
+* Inside +src/less/styles/awesome+, create a new file +variables.less+. 
+   For example, you may use http://pikock.github.io/bootstrap-magic/index.html[Bootstrap Magic] 
+   to create a theme and save the variables to a file.
+   
+* Inside +src/less/styles/awesome+, create a new file named +styles.less+ with the following content:
++
+----
+@import url("@{bsw-root}/bower_components/bootstrap/less/bootstrap.less");
+@import "variables.less";
+
+@import "../../adocvariables.less";
+@import "../../asciidoc.less";
+@import "../../awesome-icons.less";
+@import "../../mixins.less";
+----
+   
+* Invoke 
++
+----
+lessc src/less/styles/awesome/styles.less css/bootstrap_awesome.css
+----
+from the toplevel directory to create the new CSS file.
+
+== Using Special Bootstrap Markup
+
+Bootstrap components use +class+ for additional styling. 
+
+For example, Bootstrap tables may be styled by adding one or more of the following classes:
+
+ * table-striped
+ * table-bordered
+ * table-hover
+ * table-condensed
+ 
+If you want to use these additional styles for your AsciiDoc tables, you
+can use the 'role' attribute:
+
+----
+[role="table-striped table-hover",options="header,footer"]
+|=======================
+|Col 1|Col 2      |Col 3
+|1    |Item 1     |a
+|2    |Item 2     |b
+|3    |Item 3     |c
+|6    |Three items|d
+|=======================
+----
+
+NOTE: Default tables in Bootstrap are not bordered and without grid lines by default. However, to be compatible with
+default AsciiDoc behavior, the generated styles create fully bordered tables with grid lines. Grid lines and borders
+may be explicitly switched off using the +grid+ and +frame+ attributes.
+
+== Shortcomings
+
+ * The dark themes in particular could use some additional tweaking.
+ * The Google Fonts API is used for some of the themes. 
+   On Webkit-based browsers like Chrome under Windows, they are not 
+   rendered nicely. This is a known problem.
+   
+== Copyright
+
+Copyright (C) 2014 Thomas Kern.
+
+Licensed under MIT License.
+See the {license}[LICENSE] file for details.

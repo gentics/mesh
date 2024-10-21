@@ -1,0 +1,150 @@
+{{ define "content" }}
+<div class="topsection-wrapper center">
+    <div class="topsection container">
+        <div class="row margin-top-30">
+            <div class="col-md-10 col-md-offset-1 col-lg-8 col-lg-offset-2">
+                <img class="logo img-responsive center-block" src="/assets/gentics-mesh-logo-white.png" alt="Gentics Mesh Logo">
+                <p class="lead">Gentics Mesh is an
+                    <strong>open source headless CMS</strong>, complete with multi-language support, versioning and roles &amp; permissions</p>
+                    <div class="call-to-action">
+                        <a class="btn btn-primary btn-download" href="/download">Download</a>
+                        <p>Apache 2.0 License</p>
+                        {{ partial "github-count.html" . }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <img class="hidden-xs heroimg img-responsive" src="/assets/mesh-heroimg.png" alt="Screenshot of Gentics Mesh User Interface">
+    </div>
+<div class="contents topsection-wrapper">
+    <div class="container">
+        <div class="row center">
+            <h2>'Do it yourself' or let us help</h2>
+            <div class="col-md-5 col-md-offset-1 center">
+                <div class="card">
+                    <h3>On premises</h3>
+                    <p>Download the latest version for free.
+                        <br>Setup in ZERO time with one JAR file!</p>
+                        <p>
+                            <a class="btn btn-primary btn-download" href="/Download">Download</a>
+                        </p>
+                        <!--a href="/Demo">or try a demo online</a-->
+                    </div>
+                </div>
+                <div class="col-md-5 center">
+                    <div class="card">
+                        <h3>Professional Services</h3>
+                        <p>We got your back! Take advantage of our fast support with SLAs, enlightening consulting &amp; empowering
+                            trainings.
+                        </p>
+                        <p>
+                            <a class="btn btn-primary btn-download" href="mailto:mesh@gentics.com?subject=getmesh.io%20professional%20services">Contact us</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<div class="contents">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2 center">
+                <h2>Not sure where to start?</h2>
+                <p>Setup a fully functional local Gentics Mesh demo project right now in a few seconds:</p>
+            </div>
+        </div>
+        <div class="row row-equal-height">
+            <div class="col-md-4 row-equal-height">
+                <div class="card">
+                    <h2>Download</h2>
+                    <p>Download Gentics Mesh into an empty folder</p>
+                    <a class="btn btn-primary btn-download" href="/download">Download</a>
+                </div>
+            </div>
+            <div class="col-md-4 row-equal-height">
+                <div class="card">
+                    <h2>Run</h2>
+                    <p>Start the JAR-file by executing
+                        <pre>java -jar mesh-demo-X.X.X.jar</pre>
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4 row-equal-height">
+                <div class="card">
+                    <h2>Done</h2>
+                    <p>Point your browser to
+                        <br>
+                        <a href="http://localhost:8080/mesh-ui/" target="_blank" rel="noopener noreferrer">http://localhost:8080/mesh-ui/</a>
+                        <br>to reach the Gentics Mesh User Interface
+                        <br>the initial credentials are
+                        <code>admin/admin</code>
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-12 center">
+                <p class="padding-top-20">Find a more in-depth setup guide in the
+                    <a href="/docs/getting-started">getting started guide</a>.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="contents">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-8 col-md-offset-2 center topmargin">
+                    <h2>Used by</h2>
+                </div>
+            </div>
+            <div class="row row-user">
+                <div class="col-12 col-md-4 customer">
+                    <div class="customer-card">
+                        <a href="https://www.cineplexx.at/" target="_blank" rel="noopener noreferrer">
+                            <img src="assets/customers/cineplexx.png" height="120">
+                        </a>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4 customer">
+                    <div class="customer-card">
+                        <a href="https://www.apa.at/" target="_blank" rel="noopener noreferrer">
+                            <img src="assets/customers/APA_Logo_RGB.png" height="75">
+                        </a>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4 customer">
+                    <div class="customer-card">
+                        <a href="https://www.catalysts.cc/" target="_blank" rel="noopener noreferrer">
+                            <img src="assets/customers/catalysts.png" height="100">
+                        </a>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4 customer">
+                    <div class="customer-card">
+                        <a href="https://www.rtr.at/" target="_blank" rel="noopener noreferrer">
+                            <img src="assets/customers/RTR.png" height="100">
+                        </a>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4 customer">
+                    <div class="customer-card">
+                        <a href="http://cbc.wien/" target="_blank" rel="noopener noreferrer">
+                            <img src="assets/customers/CBC-Wien.png" height="75">
+                        </a>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4 customer">
+                    <div class="customer-card">
+                        <a href="https://www.rechnungshof.gv.at/" target="_blank" rel="noopener noreferrer">
+                            <img src="assets/customers/RH.png" height="100">
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    </div>
+</div>
+</div>
+
+{{end}}

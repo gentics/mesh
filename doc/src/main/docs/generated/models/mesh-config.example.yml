@@ -48,12 +48,11 @@ migrationTriggerInterval: 60000
 pluginUseHttp2: false
 storageOptions:
   nativeQueryFiltering: "ON_DEMAND"
-  exportDirectory: "data/export"
   retryLimit: 10
   retryDelayMillis: 2000
   driverClass: null
   dialectClass: null
-  connectionUrl: null
+  databaseAddress: null
   connectionUrlExtraParams: ""
   databaseName: "mesh"
   databaseConnectorClasspath: ""

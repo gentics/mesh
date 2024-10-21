@@ -1,1 +1,0 @@
-../../../../LTS-CHANGELOG.adoc

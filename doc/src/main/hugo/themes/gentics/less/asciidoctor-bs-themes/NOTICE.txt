@@ -1,0 +1,44 @@
+Asciidoctor Bootstrap Themes
+----------------------------
+
+Copyright 2014 Thomas Kern
+Licensed under MIT License
+See file LICENSE for details.
+
+This product includes the following software with their respective
+copyrights and licenses:
+
+- CSS for AsciiDoc elements is based on the files 
+    _asciidoc.scss and 
+	_awesome-icons.scss
+	
+  from Dan Allen's Asccidoctor Stylesheet Factory
+
+  https://github.com/asciidoctor/asciidoctor-stylesheet-factory
+  licensed under MIT License
+  
+- Asciidoctor - An open source Ruby processor for converting AsciiDoc markup
+
+  http://www.asciidoctor.org
+  licensed under MIT License
+
+- Bootstrap, Copyright (c) 2014 Twitter, Inc
+
+  http://getbootstrap.com/
+  licensed under MIT License
+  
+- Bootswatch, free Bootstrap Themes, by Thomas Park
+
+  http://bootswatch.com/
+  http://www.apache.org/licenses/LICENSE-2.0
+  
+- Font Awesome, the iconic font for Bootstrap
+
+  http://fontawesome.io/
+  http://fontawesome.io/license/
+  
+  
+  
+  
+  
+
