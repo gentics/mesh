@@ -18,7 +18,7 @@ public class Keycloak8PluginTest extends AbstractKeycloakPluginTest {
 	@ClassRule
 	public static final TestRule initKeycloak() {
 		keycloak = new KeycloakContainer("/keycloak/realm.json", "8.0.1")
-				.waitingFor(Wait.forHttp("/auth/realms/master-test"));
+				.waitingFor(Wait.forHttp(realmUrlPrefix + "/realms/master-test"));
 		return keycloak;
 	} ;
 

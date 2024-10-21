@@ -18,8 +18,10 @@ public class KeycloakPluginConfig extends LicenseConfiguration {
 	private static final String ENV_REALM = ENV_PREFIX + "REALM_NAME";
 	private static final String ENV_LOAD_PUBLIC_KEYS = ENV_PREFIX + "LOAD_PUBLIC_KEYS";
 	private static final String ENV_REALM_URL_PREFIX = ENV_PREFIX + "REALM_URL_PREFIX";
+	private static final String ENV_RETRY_PERIOD_SECONDS = ENV_PREFIX + "RETRY_PERIOD_SECONDS";
 
 	public static final String DEFAULT_REALM_URL_PREFIX = KeycloakUtils.DEFAULT_REALM_URL_PREFIX;
+	public static final int DEFAULT_RETRY_PERIOD_SECONDS = 10;
 
 	/**
 	 * URL to keycloak server
@@ -59,6 +61,20 @@ public class KeycloakPluginConfig extends LicenseConfiguration {
 	@JsonPropertyDescription("Keycloak realm URL prefix. Default value is: " + DEFAULT_REALM_URL_PREFIX)
 	@EnvironmentVariable(name = ENV_REALM_URL_PREFIX, description = "Override the keycloak realm URL prefix")
 	private String realmUrlPrefix = DEFAULT_REALM_URL_PREFIX;
+
+	@JsonProperty
+	@JsonPropertyDescription("If set to greater than zero, the Keycloak connection initialization will try to start again, if Keycloak server is unreachable. If zero, the portal is shut down. If less than zero, the old behavior (instant fail) is applied")
+	@EnvironmentVariable(name = ENV_RETRY_PERIOD_SECONDS, description = "Override the 'retry' period value")
+	private int retryPeriodSeconds = DEFAULT_RETRY_PERIOD_SECONDS;
+
+	public int getRetryPeriodSeconds() {
+		return retryPeriodSeconds;
+	}
+
+	public KeycloakPluginConfig setRetryPeriodSeconds(int retryPeriodSeconds) {
+		this.retryPeriodSeconds = retryPeriodSeconds;
+		return this;
+	}
 
 	public String getUrl() {
 		return url;

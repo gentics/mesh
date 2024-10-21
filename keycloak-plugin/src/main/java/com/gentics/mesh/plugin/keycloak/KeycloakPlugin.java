@@ -38,6 +38,7 @@ import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.buffer.Buffer;
 import io.vertx.reactivex.core.file.FileSystem;
@@ -135,30 +136,48 @@ public class KeycloakPlugin extends AbstractCommercialPlugin<KeycloakPluginConfi
 			return Completable.complete();
 		}
 
-		try {
-			URL url = new URL(config.getUrl());
-			String proto = url.getProtocol();
-			String host = url.getHost();
-			int port = url.getPort();
+		while (publicKeys.isEmpty()) {
+			try {
+				URL url = new URL(config.getUrl());
+				String proto = url.getProtocol();
+				String host = url.getHost();
+				int port = url.getPort();
 
-			if (port == -1) {
-				port = proto.equalsIgnoreCase("https") ? 443 : 80;
-			}
-
-			String realmName = config.getRealmName();
-			String realmUrlPrefix = config.getRealmUrlPrefix();
-			Set<JsonObject> keys = KeycloakUtils.loadJWKs(proto, host, port, realmName, Optional.ofNullable(realmUrlPrefix));
-
-			if (log.isDebugEnabled()) {
-				for (JsonObject key : keys) {
-					log.debug("Loaded public key\n{}\n", key.encodePrettily());
+				if (port == -1) {
+					port = proto.equalsIgnoreCase("https") ? 443 : 80;
 				}
-			}
 
-			publicKeys = keys;
-		} catch (Exception e) {
-			log.error("Error while loading public keys");
-			return Completable.error(e);
+				String realmName = config.getRealmName();
+				String realmUrlPrefix = config.getRealmUrlPrefix();
+				Set<JsonObject> keys = KeycloakUtils.loadJWKs(proto, host, port, realmName, Optional.ofNullable(realmUrlPrefix));
+
+				if (log.isDebugEnabled()) {
+					for (JsonObject key : keys) {
+						log.debug("Loaded public key\n{}\n", key.encodePrettily());
+					}
+				}
+				publicKeys = keys;
+			} catch (Throwable cause) {
+				// Direct connection
+				if (cause instanceof IOException
+						// Nginx failure
+						|| (cause instanceof NoStackTraceThrowable && cause.getMessage() != null && cause.getMessage().contains("Bad Gateway"))) {
+					int retryPeriodSeconds = getConfig().getRetryPeriodSeconds();
+					if (retryPeriodSeconds > 0) {
+						log.info("Retrying Keycloak configuration in {} seconds", retryPeriodSeconds);
+						try {
+							Thread.sleep(retryPeriodSeconds * 1000);
+						} catch (InterruptedException e) {
+							log.error("Keycloak retry delay interrupted.", e);
+						}
+						continue;
+					} else if (retryPeriodSeconds == 0) {
+						log.error("FATAL: Keycloak is not reachable.");
+					}
+				}
+				log.error("Could not configure Keycloak via OpenID Connect discovery", cause.getMessage());
+				return Completable.error(cause);
+			}
 		}
 		return Completable.complete();
 	}
