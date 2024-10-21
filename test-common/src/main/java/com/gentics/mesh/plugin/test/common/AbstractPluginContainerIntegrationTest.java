@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.junit.AfterClass;
 import org.junit.ClassRule;
 import org.testcontainers.Testcontainers;
@@ -26,6 +27,7 @@ import com.gentics.mesh.test.docker.MeshContainer;
 public abstract class AbstractPluginContainerIntegrationTest {
 
 	public static final File PLUGINS_DIR = new File("target", "it_" + System.currentTimeMillis());
+	public static final String DOCKER_MESH_IMAGE = "DOCKER_MESH_IMAGE";
 
 	static {
 		PLUGINS_DIR.deleteOnExit();
@@ -53,13 +55,13 @@ public abstract class AbstractPluginContainerIntegrationTest {
 		// 3. Copy pre-build plugin jar
 		Path pluginJar = Files.list(Paths.get("target"))
 			.filter(Files::isRegularFile)
+			.filter(f -> f.getFileName().toString().endsWith(".jar"))
 			.filter(f -> !f.getFileName().toString().endsWith("sources.jar"))
 			.filter(f -> !f.getFileName().toString().startsWith("original-"))
 			.findFirst().orElse(null);
 		if (pluginJar == null) {
 			fail("Could not find plugin jar in target folder. Make sure you run mvn package before running integration tests");
 		}
-		FileUtils.copyFile(pluginJar.toFile(), new File(PLUGINS_DIR, pluginId + "-plugin.jar"));
 
 		// Prepare config
 		File pluginDir = new File(PLUGINS_DIR, pluginId);
@@ -77,7 +79,7 @@ public abstract class AbstractPluginContainerIntegrationTest {
 	}
 
 	public static String meshImage() {
-		return MeshVersionUtil.getMatchingImage();
+		return StringUtils.isNotBlank(System.getenv(DOCKER_MESH_IMAGE)) ? System.getenv(DOCKER_MESH_IMAGE) :  MeshVersionUtil.getMatchingImage();
 	}
 
 	@AfterClass

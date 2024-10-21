@@ -45,29 +45,19 @@
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-database-connector-mariadb</artifactId>
+			<artifactId>mesh-database-connector-hsqldb</artifactId>
 			<version>${mesh.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-database-connector-mariadb</artifactId>
+			<artifactId>mesh-database-connector-hsqldb</artifactId>
 			<version>${mesh.version}</version>
 			<type>test-jar</type>
 		</dependency>
 		<dependency>
-			<groupId>org.mariadb.jdbc</groupId>
-			<artifactId>mariadb-java-client</artifactId>
-			<version>3.1.2</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-api</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>ch.qos.logback</groupId>
-					<artifactId>logback-classic</artifactId>
-				</exclusion>
-			</exclusions>
+			<groupId>org.hsqldb</groupId>
+			<artifactId>hsqldb</artifactId>
+			<version>2.6.1</version>
 		</dependency>
 	</dependencies>
 
