@@ -11,6 +11,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cache.CacheRegistry;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -20,7 +23,6 @@ import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
-import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfig;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorMasterResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
@@ -38,8 +40,6 @@ import com.gentics.mesh.search.SearchProvider;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.launcher.commands.VersionCommand;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Handler for admin request methods.
@@ -236,40 +236,6 @@ public abstract class AdminHandler extends AbstractHandler {
 			ac.send(raml, OK, APPLICATION_YAML_UTF8);
 		} else {
 			throw error(FORBIDDEN, "error_admin_permission_required");
-		}
-	}
-
-	/**
-	 * Load the currently active cluster configuration.
-	 * 
-	 * @param ac
-	 */
-	public void handleLoadClusterConfig(InternalActionContext ac) {
-		utils.syncTx(ac, tx -> {
-			HibUser user = ac.getUser();
-			if (user != null && !user.isAdmin()) {
-				throw error(FORBIDDEN, "error_admin_permission_required");
-			}
-			return db.loadClusterConfig();
-		}, model -> ac.send(model, OK));
-	}
-
-	/**
-	 * Update the cluster configuration.
-	 * 
-	 * @param ac
-	 */
-	public void handleUpdateClusterConfig(InternalActionContext ac) {
-		try (WriteLock lock = writeLock.lock(ac)) {
-			utils.syncTx(ac, tx -> {
-				HibUser user = ac.getUser();
-				if (user != null && !user.isAdmin()) {
-					throw error(FORBIDDEN, "error_admin_permission_required");
-				}
-				ClusterConfigRequest request = ac.fromJson(ClusterConfigRequest.class);
-				db.updateClusterConfig(request);
-				return db.loadClusterConfig();
-			}, model -> ac.send(model, OK));
 		}
 	}
 

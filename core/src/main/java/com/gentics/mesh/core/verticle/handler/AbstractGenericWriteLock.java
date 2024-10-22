@@ -95,17 +95,14 @@ public abstract class AbstractGenericWriteLock implements WriteLock {
 							}
 						}
 						if (clusterLock != null) {
-							boolean isTimeout = false;
-							try {
-								isTimeout = !clusterLock.tryLock(hazelcast.get().getName(), timeout, TimeUnit.MILLISECONDS);
-							} catch (InterruptedException e) {
-								// TODO ?
-							}
+							boolean isTimeout = !clusterLock.tryLock(hazelcast.get().getName(), timeout, TimeUnit.MILLISECONDS);
 							if (isTimeout) {
 								timeoutCount.increment();
 								throw new RuntimeException("Got timeout while waiting for write lock.");
 							}
 						}
+					} catch (InterruptedException e) {
+						throw new RuntimeException(e);
 					} finally {
 						timer.stop(writeLockTimer);
 					}

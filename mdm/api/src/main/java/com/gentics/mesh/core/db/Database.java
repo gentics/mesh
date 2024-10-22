@@ -7,10 +7,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.db.cluster.ClusterManager;
-import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -23,8 +25,6 @@ import io.reactivex.functions.BiFunction;
 import io.reactivex.functions.Function;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Vertx;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Main description of a graph database.
@@ -127,13 +127,6 @@ public interface Database extends TxFactory {
 	 * @return
 	 */
 	Vertx vertx();
-
-	/**
-	 * Update the cluster configuration.
-	 * 
-	 * @param request
-	 */
-	void updateClusterConfig(ClusterConfigRequest request);
 
 	/**
 	 * Load the current cluster configuration.

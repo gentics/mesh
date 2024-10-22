@@ -8,14 +8,20 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.cluster.ClusterManager;
+import com.gentics.mesh.core.rest.admin.cluster.ClusterInstanceInfo;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
+import com.gentics.mesh.distributed.coordinator.MasterElector;
+import com.gentics.mesh.distributed.coordinator.MeshMemberInfo;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
+import com.gentics.mesh.util.UUIDUtil;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 
 import dagger.Lazy;
 import io.reactivex.Completable;
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 
 /**
@@ -26,10 +32,12 @@ import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
  */
 @Singleton
 public class HibClusterManager implements ClusterManager {
+	private static final Logger log = LoggerFactory.getLogger(HibClusterManager.class);
 
 	private final ClusterOptions clusterOptions;
 	private final Lazy<Database> db;
 	private HazelcastClusterManager clusterManager;
+	private Lazy<MasterElector> masterElector;
 
 	@Override
 	public HazelcastInstance getHazelcast() {
@@ -52,9 +60,10 @@ public class HibClusterManager implements ClusterManager {
 	}
 
 	@Inject
-	public HibClusterManager(HibernateMeshOptions options, Lazy<Database> db) {
+	public HibClusterManager(HibernateMeshOptions options, Lazy<Database> db, Lazy<MasterElector> masterElector) {
 		this.clusterOptions = options.getClusterOptions();
 		this.db = db;
+		this.masterElector = masterElector;
 	}
 
 	@Override
@@ -64,7 +73,20 @@ public class HibClusterManager implements ClusterManager {
 
 	@Override
 	public ClusterStatusResponse getClusterStatus() {
-		// database clustering is not managed directly by mesh hibernate, hence we return an empty response
+		clusterManager.getHazelcastInstance().getCluster().getMembers().stream().map(member -> {
+			ClusterInstanceInfo info = new ClusterInstanceInfo();
+			info.setAddress(member.getAddress().toString());
+			info.setUuid(UUIDUtil.toShortUuid(member.getUuid()));
+			MeshMemberInfo memberInfo = masterElector.get().getMemberInfo().get(member.getUuid());
+			if (memberInfo != null) {
+				info.setRole(memberInfo.isMaster() ? "MASTER" : "");
+				info.setStartDate(memberInfo.getStartedAt().toString());
+				info.setName(memberInfo.getName());
+			} else {
+				log.error("No member info available for " + member.getUuid());
+			}
+			return info;
+		});
 		return new ClusterStatusResponse();
 	}
 

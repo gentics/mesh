@@ -1,7 +1,5 @@
 package com.gentics.mesh.rest.client.method;
 
-import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
-import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfig;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorMasterResponse;
@@ -36,22 +34,6 @@ public interface AdminClientMethods {
 	 */
 	@Deprecated
 	MeshRequest<ClusterStatusResponse> clusterStatus();
-
-	/**
-	 * Return the cluster configuration.
-	 * 
-	 * @return
-	 */
-	MeshRequest<ClusterConfigResponse> loadClusterConfig();
-
-	/**
-	 * Update the cluster configuration.
-	 * 
-	 * @param request
-	 *            New configuration
-	 * @return Updated configuration
-	 */
-	MeshRequest<ClusterConfigResponse> updateClusterConfig(ClusterConfigRequest request);
 
 	/**
 	 * Invoke a graph database backup.

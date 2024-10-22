@@ -7,7 +7,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.assertj.MeshAssertions;
-import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfig;
 import com.gentics.mesh.etc.config.cluster.CoordinatorMode;
 import com.gentics.mesh.test.MeshTestSetting;
@@ -23,18 +22,6 @@ public class ClusterConfigEndpointNoClusterTest extends AbstractMeshTest {
 	@Before
 	public void addAdminPerms() {
 		grantAdmin();
-	}
-
-	@Test
-	public void testLoadClusterConfig() {
-		call(() -> client().loadClusterConfig(), HttpResponseStatus.BAD_REQUEST,
-				"error_cluster_status_only_available_in_cluster_mode");
-	}
-
-	@Test
-	public void testUpdateClusterConfig() {
-		call(() -> client().updateClusterConfig(new ClusterConfigRequest()), HttpResponseStatus.BAD_REQUEST,
-				"error_cluster_status_only_available_in_cluster_mode");
 	}
 
 	@Test

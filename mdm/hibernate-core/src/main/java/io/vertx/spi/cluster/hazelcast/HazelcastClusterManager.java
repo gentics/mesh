@@ -124,7 +124,7 @@ public class HazelcastClusterManager implements ClusterManager, MembershipListen
 
 	@Override
 	public void join(Promise<Void> promise) {
-		vertx.executeBlocking(prom -> {
+		vertx.executeBlocking(() -> {
 			if (!active) {
 				active = true;
 
@@ -165,9 +165,8 @@ public class HazelcastClusterManager implements ClusterManager, MembershipListen
 				lifecycleListenerId = hazelcast.getLifecycleService().addLifecycleListener(this);
 
 				nodeInfoMap = hazelcast.getMap("__vertx.nodeInfo");
-
-				prom.complete();
 			}
+			return null;
 		}, promise);
 	}
 
@@ -199,10 +198,10 @@ public class HazelcastClusterManager implements ClusterManager, MembershipListen
 			this.nodeInfo = nodeInfo;
 		}
 		HazelcastNodeInfo value = new HazelcastNodeInfo(nodeInfo);
-		vertx.executeBlocking(prom -> {
-			nodeInfoMap.put(nodeId, value);
-			prom.complete();
-		}, false, promise);
+		vertx.executeBlocking(() -> {
+					nodeInfoMap.put(nodeId, value);
+					return null;
+				}, false, promise);
 	}
 
 	@Override
@@ -212,14 +211,16 @@ public class HazelcastClusterManager implements ClusterManager, MembershipListen
 
 	@Override
 	public void getNodeInfo(String nodeId, Promise<NodeInfo> promise) {
-		vertx.executeBlocking(prom -> {
-			HazelcastNodeInfo value = nodeInfoMap.get(nodeId);
-			if (value != null) {
-				prom.complete(value.unwrap());
-			} else {
-				promise.fail("Not a member of the cluster");
-			}
-		}, false, promise);
+		vertx.executeBlocking(() -> nodeInfoMap.get(nodeId), false)
+			.onComplete(value -> {
+				if (value != null) {
+					promise.complete(value.unwrap());
+				} else {
+					promise.fail("Not a member of the cluster");
+				}
+			}, e -> {
+				promise.fail(e);
+			});
 	}
 
 	@Override
@@ -234,7 +235,7 @@ public class HazelcastClusterManager implements ClusterManager, MembershipListen
 
 	@Override
 	public void getLockWithTimeout(String name, long timeout, Promise<Lock> promise) {
-		vertx.executeBlocking(prom -> {
+		vertx.executeBlocking(() -> {
 			IMap<String, Object> lockMap = hazelcast.getMap(MAP_LOCK_NAME);
 			boolean locked = false;
 			long remaining = timeout;
@@ -248,7 +249,7 @@ public class HazelcastClusterManager implements ClusterManager, MembershipListen
 				remaining = remaining - MILLISECONDS.convert(System.nanoTime() - start, NANOSECONDS);
 			} while (!locked && remaining > 0);
 			if (locked) {
-				prom.complete(new HazelcastLock(lockMap, name, lockReleaseExec));
+				return new HazelcastLock(lockMap, name, lockReleaseExec);
 			} else {
 				throw new VertxException("Timed out waiting to get lock " + name, true);
 			}
@@ -262,45 +263,40 @@ public class HazelcastClusterManager implements ClusterManager, MembershipListen
 
 	@Override
 	public void leave(Promise<Void> promise) {
-		vertx.executeBlocking(prom -> {
+		vertx.executeBlocking(() -> {
 			// We need to synchronized on the cluster manager instance to avoid other call
 			// to happen while leaving the
 			// cluster, typically, memberRemoved and memberAdded
 			synchronized (HazelcastClusterManager.this) {
 				if (active) {
-					try {
-						active = false;
-						lockReleaseExec.shutdown();
-						subsMapHelper.close();
-						boolean left = hazelcast.getCluster().removeMembershipListener(membershipListenerId);
-						if (!left) {
-							log.warn("No membership listener");
-						}
-						hazelcast.getLifecycleService().removeLifecycleListener(lifecycleListenerId);
+					active = false;
+					lockReleaseExec.shutdown();
+					subsMapHelper.close();
+					boolean left = hazelcast.getCluster().removeMembershipListener(membershipListenerId);
+					if (!left) {
+						log.warn("No membership listener");
+					}
+					hazelcast.getLifecycleService().removeLifecycleListener(lifecycleListenerId);
 
-						// Do not shutdown the cluster if we are not the owner.
-						while (!customHazelcastCluster && hazelcast.getLifecycleService().isRunning()) {
-							try {
-								// This can sometimes throw java.util.concurrent.RejectedExecutionException so
-								// we retry.
-								hazelcast.getLifecycleService().shutdown();
-							} catch (RejectedExecutionException ignore) {
-								log.debug("Rejected execution of the shutdown operation, retrying");
-							}
-							try {
-								Thread.sleep(1);
-							} catch (InterruptedException t) {
-								// Manage the interruption in another handler.
-								Thread.currentThread().interrupt();
-							}
+					// Do not shutdown the cluster if we are not the owner.
+					while (!customHazelcastCluster && hazelcast.getLifecycleService().isRunning()) {
+						try {
+							// This can sometimes throw java.util.concurrent.RejectedExecutionException so
+							// we retry.
+							hazelcast.getLifecycleService().shutdown();
+						} catch (RejectedExecutionException ignore) {
+							log.debug("Rejected execution of the shutdown operation, retrying");
 						}
-
-					} catch (Throwable t) {
-						prom.fail(t);
+						try {
+							Thread.sleep(1);
+						} catch (InterruptedException t) {
+							// Manage the interruption in another handler.
+							Thread.currentThread().interrupt();
+						}
 					}
 				}
 			}
-			prom.complete();
+			return null;
 		}, promise);
 	}
 
@@ -364,9 +360,9 @@ public class HazelcastClusterManager implements ClusterManager, MembershipListen
 	}
 
 	private void republishOwnSubs() {
-		vertx.executeBlocking(prom -> {
+		vertx.executeBlocking(() -> {
 			subsMapHelper.republishOwnSubs();
-			prom.complete();
+			return null;
 		}, false);
 	}
 
@@ -411,9 +407,7 @@ public class HazelcastClusterManager implements ClusterManager, MembershipListen
 
 	@Override
 	public void getRegistrations(String address, Promise<List<RegistrationInfo>> promise) {
-		vertx.executeBlocking(prom -> {
-			prom.complete(subsMapHelper.get(address));
-		}, false, promise);
+		vertx.executeBlocking(() -> subsMapHelper.get(address), false, promise);
 	}
 
 	@Override
