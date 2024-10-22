@@ -169,6 +169,9 @@ public class MasterElector {
 				log.info("Detected multiple masters in the cluster, giving up the master flag");
 				giveUpMasterFlag();
 			}
+		} catch (Throwable e) {
+			log.error("Could not elect master", e);
+			throw new IllegalStateException(e);
 		} finally {
 			masterLock.unlock(MASTER);
 			log.info("Unlocked after master election");
@@ -182,32 +185,37 @@ public class MasterElector {
 	 * @return
 	 */
 	private boolean isElectable(Member member) {
-		String name = members.get(member.getUuid()).getName();
+		try {
+			String name = members.get(member.getUuid()).getName();
 
-		// Check whether name of the node matches the coordinator regex.
-		if (coordinatorRegex != null) {
-			Matcher m = coordinatorRegex.matcher(name);
-			if (!m.matches()) {
-				log.info("Node {" + name + "} was not accepted by provided regex.");
-				return false;
-			}
-		}
-
-		if (clusterOptions.getCoordinatorTopology() == CoordinationTopology.UNMANAGED) {
-			ClusterConfigResponse config = database.loadClusterConfig();
-			Optional<ClusterServerConfig> databaseServer = config.getServers().stream().filter(s -> s.getName().equals(name)).findFirst();
-			if (databaseServer.isPresent()) {
-				// Replicas are not eligible for master election
-				ServerRole role = databaseServer.get().getRole();
-				if (role == ServerRole.REPLICA) {
-					log.info("Node {" + name + "} is a replica and thus not eligible for election.");
+			// Check whether name of the node matches the coordinator regex.
+			if (coordinatorRegex != null) {
+				Matcher m = coordinatorRegex.matcher(name);
+				if (!m.matches()) {
+					log.info("Node {" + name + "} was not accepted by provided regex.");
 					return false;
 				}
 			}
-		}
 
-		// TODO test connection?
-		return true;
+			if (clusterOptions.getCoordinatorTopology() == CoordinationTopology.UNMANAGED) {
+				ClusterConfigResponse config = database.loadClusterConfig();
+				Optional<ClusterServerConfig> databaseServer = config.getServers().stream().filter(s -> s.getName().equals(name)).findFirst();
+				if (databaseServer.isPresent()) {
+					// Replicas are not eligible for master election
+					ServerRole role = databaseServer.get().getRole();
+					if (role == ServerRole.REPLICA) {
+						log.info("Node {" + name + "} is a replica and thus not eligible for election.");
+						return false;
+					}
+				}
+			}
+
+			// TODO test connection?
+			return true;
+		} catch (Throwable e) {
+			log.error("Could not detect electable member " + member.getUuid(), e);
+			return false;
+		} 
 	}
 
 	/**
@@ -272,8 +280,12 @@ public class MasterElector {
 				}
 				Member localMember = localMember();
 				MeshMemberInfo info = members.get(localMember.getUuid());
-				info.setMaster(true);
-				members.put(localMember.getUuid(), info);
+				if (info != null) {
+					info.setMaster(true);
+					members.put(localMember.getUuid(), info);
+				} else {
+					log.error("No member info found for " + localMember.getUuid());
+				}
 			});
 		};
 
@@ -289,7 +301,7 @@ public class MasterElector {
 				.findFirst();
 		if (master.isPresent()) {
 			masterMember = master.get();
-			log.info("Updated master member {" + members.get(masterMember.getUuid()).getName() + "}");
+			log.info("Updated master member {" + masterMember.getUuid() + "}");
 		} else {
 			log.warn("Could not find master member in cluster.");
 			masterMember = null;
@@ -303,8 +315,12 @@ public class MasterElector {
 		Member localMember = localMember();
 		if (isMaster(localMember)) {
 			MeshMemberInfo info = members.get(localMember.getUuid());
-			info.setMaster(false);
-			members.put(localMember.getUuid(), info);
+			if (info != null) {
+				info.setMaster(false);
+				members.put(localMember.getUuid(), info);
+			} else {
+				log.error("No member info found for " + localMember.getUuid());
+			}
 		}
 	}
 
@@ -316,7 +332,6 @@ public class MasterElector {
 	 * @return true for the master
 	 */
 	private boolean isMaster(Member member) {
-		IMap<UUID, MeshMemberInfo> members = hazelcast.get().getMap(MEMBERS);
 		return members.containsKey(member.getUuid()) && members.get(member.getUuid()).isMaster();
 	}
 
@@ -347,18 +362,23 @@ public class MasterElector {
 		if (masterMember == null) {
 			return null;
 		}
-		String name = members.get(masterMember.getUuid()).getName();
-		int port = members.get(masterMember.getUuid()).getPort();
-		boolean isMasterLocal = isLocal(masterMember);
-		String host = "localhost";
-		if (!isMasterLocal) {
-			host = masterMember.getAddress().getHost();
+		try {
+			String name = members.get(masterMember.getUuid()).getName();
+			int port = members.get(masterMember.getUuid()).getPort();
+			boolean isMasterLocal = isLocal(masterMember);
+			String host = "localhost";
+			if (!isMasterLocal) {
+				host = masterMember.getAddress().getHost();
+			}
+			MasterServer server = new MasterServer(name, host, port, isMasterLocal);
+			if (log.isDebugEnabled()) {
+				log.debug("Our master member: " + server);
+			}
+			return server;
+		} catch (Exception e) {
+			log.error("Could not get master member", e);
 		}
-		MasterServer server = new MasterServer(name, host, port, isMasterLocal);
-		if (log.isDebugEnabled()) {
-			log.debug("Our master member: " + server);
-		}
-		return server;
+		return null;
 	}
 
 	/**
