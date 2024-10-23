@@ -6,6 +6,47 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v2.1.8]]
+== 2.1.8 (09.10.2024)
+
+icon:check[] Image Manipulation: The validation of resize width and height have been fixed to also properly handle values set to "auto" in the request.
+
+icon:check[] GraphQL: The library for handling GraphQL Filters in Java has been updated to fix inconsistent behaviour when filtering nodes with fields of type "date" or "number",
+which had the field set to null.
+Before the fix, such nodes were never returned regardless of the used filter. Now the behaviour is identical to filters on fields of other types (such as "string" or "boolean") so that
+null values will not natch when compared to non-null values, but the negation with "not" will match.
+
+
+[[v2.1.7]]
+== 2.1.7 (01.10.2024)
+
+icon:check[] Core: A crash, caused by duplicated nodes in a GraphQL resulting set, has been fixed.
+
+[[v2.1.6]]
+== 2.1.6 (13.09.2024)
+
+icon:check[] Core: The Vert.x Handlebars engine dependency has been patched, to replace the vulnerable Apache `commons-text` dependency, targeting `CVE-2022-42889`.
+
+[[v2.1.5]]
+== 2.1.5 (28.08.2024)
+
+icon:check[] Core: A crash has been fixed on an attempt of (micro)node migration over non-adjacent (micro)schema versions.
+
+[[v2.1.4]]
+== 2.1.4 (07.08.2024)
+
+icon:check[] Documentation: The check/repair API calls are better documented in regards of an async processing. The logging documentation is extended with format examples.
+
+[[v2.1.3]]
+== 2.1.3 (26.06.2024)
+
+icon:check[] Elasticsearch: An Elasticsearch Java Client has been updated to the version 1.1.2, containing the corrections to the connection failure processing mechanism. The Elasticsearch activity idle checking has been improved to be more proof of the unstable connections.
+
+[[v2.1.2]]
+== 2.1.2 (13.05.2024)
+
+icon:check[] GraphQL: A combination of similar queries with different names and filter parameters, running over native filtering, that produces incorrect results, has been fixed. 
+
 [[v2.1.1]]
 == 2.1.1 (02.05.2024)
 

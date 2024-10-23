@@ -17,6 +17,36 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.10.35]]
+== 1.10.35 (27.09.2024)
+
+icon:check[] Core: A crash, caused by duplicated nodes in a GraphQL resulting set, has been fixed.
+
+[[v1.10.34]]
+== 1.10.34 (11.09.2024)
+
+icon:check[] Core: The Vert.x Handlebars engine dependency has been patched, to replace the vulnerable Apache `commons-text` dependency, targeting `CVE-2022-42889`.
+
+[[v1.10.33]]
+== 1.10.33 (28.08.2024)
+
+icon:check[] Core: A crash has been fixed on an attempt of (micro)node migration over non-adjacent (micro)schema versions.
+
+[[v1.10.32]]
+== 1.10.32 (07.08.2024)
+
+icon:check[] Documentation: The check/repair API calls are better documented in regards of an async processing. The logging documentation is extended with format examples.
+
+[[v1.10.31]]
+== 1.10.31 (26.06.2024)
+
+icon:check[] Elasticsearch: An Elasticsearch Java Client has been updated to the version 1.1.2, containing the corrections to the connection failure processing mechanism. The Elasticsearch activity idle checking has been improved to be more proof of the unstable connections.
+
+[[v1.10.30]]
+== 1.10.30 (13.05.2024)
+
+icon:check[] Core: Improvement of an error message of the webroot field URL conflict, now containing correct UUID, language and webroot URLS of a conflicting content.
+
 [[v1.10.29]]
 == 1.10.29 (06.03.2024)
 

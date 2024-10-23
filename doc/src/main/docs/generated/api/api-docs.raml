@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "2.1.1"
+version: "2.1.8"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -706,7 +706,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "894cac58ede44162b64e99663614f141"
+                            "uuid" : "95cad48bd96f4055a57b5b1a9fcf3521"
                           } ]
                         }
             responses: 
@@ -1354,7 +1354,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "7095deb4698a439482002b7fbe55ddbc"
+                            "uuid" : "8229d8d880c44251abed2e7a30f1bba1"
                           } ]
                         }
             responses: 
@@ -1893,7 +1893,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "4b14c2f8f9c44ace9a2c6d4921293732"
+                            "uuid" : "7d4af416ba884a8f8e75167224448c2a"
                           } ]
                         }
             responses: 
@@ -2868,7 +2868,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "29005a844da94fff9c57673e45e9bb93"
+                            "uuid" : "c0a306d0102d44268ab4bcdbfbee0500"
                           } ]
                         }
             responses: 
@@ -3897,7 +3897,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "eba63fa08f1e465d890cda6047d99ee8"
+                            "uuid" : "ce22eed95aca4ca585c9e0fd55602a34"
                           } ]
                         }
             responses: 
@@ -4571,7 +4571,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "2f3684d9e3d34ce2842d446d0f074d5b"
+                            "uuid" : "4fed61eeb1c24f1ebbfabd03743f5777"
                           } ]
                         }
             responses: 
@@ -4851,10 +4851,10 @@ mediaType: application/json
                                 }
     /consistency/check: 
         get: 
-            description: Invokes a consistency check of the graph database without attempting to repairing the found issues. A list of found issues will be returned.
+            description: "Invokes a consistency check of the graph database without attempting to repairing the found issues. A list of found issues will be returned. When an `async=true` query parameter is used, a new consistency check Job is queued, and the check results should be obtained with the call to the link:#admin_jobs__jobUuid__get[corresponding job].Please note that some checks do require an `async` flag set."
             queryParameters: 
                 async: 
-                    description: Specifiy whether the consistency check should be executed asynchronously (as job).
+                    description: Specifiy whether the consistency check should be executed asynchronously (as job). *Please note that some checks do require this flag set!*
                     type: boolean
                     required: false
                     repeat: false
@@ -4887,10 +4887,10 @@ mediaType: application/json
                                 }
     /consistency/repair: 
         post: 
-            description: Invokes a consistency check and repair of the graph database and returns a list of found issues and their state.
+            description: "Invokes a consistency check and repair of the graph database and returns a list of found issues and their state. When an `async=true` query parameter is used, a new consistency repair Job is queued, and the repair results should be obtained with the call to the link:#admin_jobs__jobUuid__get[corresponding job]. Please note that some repairs do require an `async` flag set."
             queryParameters: 
                 async: 
-                    description: Specifiy whether the consistency check should be executed asynchronously (as job).
+                    description: Specifiy whether the consistency check should be executed asynchronously (as job). *Please note that some checks do require this flag set!*
                     type: boolean
                     required: false
                     repeat: false
@@ -7793,7 +7793,7 @@ mediaType: application/json
                                 | vertxVersion | false | string | Used Vert.x version. |
                             example: |
                                 {
-                                  "meshVersion" : "2.1.1",
+                                  "meshVersion" : "2.1.8",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",
@@ -10538,7 +10538,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "adff4a11d5d942ed8acbedd8ddb63460"
+                            "uuid" : "7dd886137a994346aca0f62dcaff5741"
                           } ]
                         }
             responses: 
@@ -12047,7 +12047,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "88f5022430c44b0d9835db7a4d2be647"
+                            "uuid" : "034a3a568ce94a9aa555fe5c55dc9983"
                           } ]
                         }
             responses: 
@@ -12863,7 +12863,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "5d2b3ced8bc1445a9893e43c0558fe4b"
+                            "uuid" : "f2f78b89e02a456596670f1152eb77d5"
                           } ]
                         }
             responses: 
@@ -14652,7 +14652,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "6be562dc03b147e5936f7c144c4cead1"
+                            "uuid" : "8d09304b744343aea04b7a0a5dd97582"
                           } ]
                         }
             responses: 

@@ -203,7 +203,12 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 					return originalImage;
 				}
 			}
-
+			if (options.getMaxWidth() != null && width > options.getMaxWidth()) {
+				throw error(BAD_REQUEST, "image_error_width_limit_exceeded", String.valueOf(options.getMaxWidth()), String.valueOf(width));
+			}
+			if (options.getMaxHeight() != null && height > options.getMaxHeight()) {
+				throw error(BAD_REQUEST, "image_error_height_limit_exceeded", String.valueOf(options.getMaxHeight()), String.valueOf(height));
+			}
 			try {
 				BufferedImage image = Scalr.apply(originalImage,
 						new ResampleOp(width, height, options.getResampleFilter().getFilter()));

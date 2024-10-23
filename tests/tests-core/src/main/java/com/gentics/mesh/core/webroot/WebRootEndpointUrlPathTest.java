@@ -137,7 +137,7 @@ public class WebRootEndpointUrlPathTest extends AbstractMeshTest {
 		nodeCreateRequest2.getFields().put("shortUrl", FieldUtil.createStringField("/some/other/url"));
 		nodeCreateRequest2.getFields().put("shortUrlList", FieldUtil.createStringListField("/some/other/url2", "/middle3", "/some/other/url4"));
 		call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest2), CONFLICT, "node_conflicting_urlfield_update", "/some/other/url", uuid,
-				"en");
+				"en", "/some/other/url, /middle");
 
 	}
 
@@ -179,7 +179,7 @@ public class WebRootEndpointUrlPathTest extends AbstractMeshTest {
 
 		// Now publish the second node - The published fields of the second node should cause a conflict with the first published node
 		call(() -> client().publishNode(PROJECT_NAME, secondNode.getUuid()), CONFLICT, "node_conflicting_urlfield_update", "/some/other/url,/middle",
-				uuid, "en");
+				uuid, "en", "/some/other/url, /middle");
 
 	}
 
@@ -276,7 +276,7 @@ public class WebRootEndpointUrlPathTest extends AbstractMeshTest {
 		nodeUpdateRequest2.getFields().put("shortUrl", FieldUtil.createStringField("/some/other/url2"));
 		// Conflict with /middle
 		nodeUpdateRequest2.getFields().put("shortUrlList", FieldUtil.createStringListField("/some/other/url2", "/middle", "/some/other/url2"));
-		call(() -> client().updateNode(PROJECT_NAME, uuid, nodeUpdateRequest2), CONFLICT, "node_conflicting_urlfield_update", "/middle", uuid, "en");
+		call(() -> client().updateNode(PROJECT_NAME, uuid, nodeUpdateRequest2), CONFLICT, "node_conflicting_urlfield_update", "/middle", uuid, "en", "/some/other/url, /middle");
 
 	}
 

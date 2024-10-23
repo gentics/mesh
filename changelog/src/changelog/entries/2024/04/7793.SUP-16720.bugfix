@@ -1,0 +1,1 @@
+GraphQL: A combination of similar queries with different names and filter parameters, running over native filtering, that produces incorrect results, has been fixed. 

@@ -8,8 +8,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +21,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.dataloader.BatchLoaderWithContext;
 
@@ -61,22 +62,27 @@ public class NodeDataLoader {
 	 * Batch load all field containers of a node for transaction branch and the provided types, without doing permission
 	 * checks.
 	 */
-	public static BatchLoaderWithContext<HibNode, List<HibNodeFieldContainer>> CONTENT_LOADER = (keys, environment) -> {
+	public static BatchLoaderWithContext<DataLoaderKey<HibNode>, List<HibNodeFieldContainer>> CONTENT_LOADER = (keys, environment) -> {
 		Tx tx = Tx.get();
 		GraphQLContext context = environment.getContext();
 		String branchUuid = tx.getBranch(context).getUuid();
-		Map<HibNode, List<HibNodeFieldContainer>> fieldsContainers = new HashMap<>();
+		Map<DataLoaderKey<HibNode>, List<HibNodeFieldContainer>> fieldsContainers = new HashMap<>();
 
 		// query for all types provided
-		partitioningByContainerType(environment.getKeyContexts(), (Pair<ContainerType, List<HibNode>> keysByContainerType) -> {
-			Set<HibNode> keysForPartition = new HashSet<>(keysByContainerType.getValue());
+		partitioningByContainerType(environment.getKeyContexts(), (Pair<ContainerType, List<DataLoaderKey<HibNode>>> keysByContainerType) -> {
 			ContainerType type = keysByContainerType.getKey();
-			Map<HibNode, List<HibNodeFieldContainer>> containerByType = tx.contentDao().getFieldsContainers(keysForPartition, branchUuid, type);
-			fieldsContainers.putAll(containerByType);
+			Map<String, Set<HibNode>> nodesByPath = keysByContainerType.getValue().stream().collect(Collectors.groupingBy(DataLoaderKey::getPath, Collectors.mapping(DataLoaderKey::getValue, Collectors.toSet())));
+			nodesByPath.entrySet().stream().forEach(entry -> {
+				Map<HibNode, List<HibNodeFieldContainer>> containerByType = tx.contentDao().getFieldsContainers(entry.getValue(), branchUuid, type);
+				fieldsContainers.putAll(containerByType.entrySet()
+						.stream()
+						.map(child -> Pair.of(new DataLoaderKey<>(entry.getKey(), child.getKey()), child.getValue()))
+						.collect(Collectors.toMap(Pair::getKey, Pair::getValue)));
+			});
 		});
 
 		List<List<HibNodeFieldContainer>> results = new ArrayList<>();
-		for (HibNode key : keys) {
+		for (DataLoaderKey<HibNode> key : keys) {
 			results.add(fieldsContainers.getOrDefault(key, Collections.emptyList()));
 		}
 		Promise<List<List<HibNodeFieldContainer>>> promise = Promise.promise();
@@ -89,21 +95,30 @@ public class NodeDataLoader {
 	 * Batch load all children of a node for a transaction branch, the provided container type and language tags,
 	 * also checking for permissions.
 	 */
-	public static BatchLoaderWithContext<HibNode, List<NodeContent>> CHILDREN_LOADER = (keys, environment) -> {
+	public static BatchLoaderWithContext<DataLoaderKey<HibNode>, List<NodeContent>> CHILDREN_LOADER = (keys, environment) -> {
 		Tx tx = Tx.get();
 		GraphQLContext context = environment.getContext();
 		String branchUuid = tx.getBranch(context).getUuid();
 
-		Map<HibNode, List<NodeContent>> childrenByNode = new HashMap<>();
-		partitioningByContext(environment.getKeyContexts(), (Pair<Context, List<HibNode>> keysByContext) -> {
-			Set<HibNode> keysForPartition = new HashSet<>(keysByContext.getValue());
+		Map<DataLoaderKey<HibNode>, List<NodeContent>> childrenByNode = new HashMap<>();
+		partitioningByContext(environment.getKeyContexts(), (Pair<Context, List<DataLoaderKey<HibNode>>> keysByContext) -> {
 			List<String> languageTags = keysByContext.getKey().getLanguageTags();
 			ContainerType type = keysByContext.getKey().getType();
-			childrenByNode.putAll(tx.nodeDao().getChildren(keysForPartition, context, branchUuid, languageTags, type, keysByContext.getKey().getPaging(), keysByContext.getKey().getMaybeNativeFilter()));
+			PagingParameters paging = keysByContext.getKey().getPaging();
+			Optional<FilterOperation<?>> maybeNativeFilter = keysByContext.getKey().getMaybeNativeFilter();
+			Map<String, Set<HibNode>> nodesByPath = keysByContext.getValue().stream().collect(Collectors.groupingBy(DataLoaderKey::getPath, Collectors.mapping(DataLoaderKey::getValue, Collectors.toSet())));
+			nodesByPath.entrySet().stream().forEach(entry -> {
+				childrenByNode.putAll(tx.nodeDao()
+						.getChildren(entry.getValue(), context, branchUuid, languageTags, type, paging, maybeNativeFilter)
+						.entrySet()
+						.stream()
+						.map(child -> Pair.of(new DataLoaderKey<>(entry.getKey(), child.getKey()), child.getValue()))
+						.collect(Collectors.toMap(Pair::getKey, Pair::getValue)));
+			});
 		});
 
 		List<List<NodeContent>> results = new ArrayList<>();
-		for (HibNode key : keys) {
+		for (DataLoaderKey<HibNode> key : keys) {
 			results.add(childrenByNode.getOrDefault(key, Collections.emptyList()));
 		}
 		Promise<List<List<NodeContent>>> promise = Promise.promise();
@@ -115,15 +130,18 @@ public class NodeDataLoader {
 	/**
 	 * Batch loading node parents
 	 */
-	public static BatchLoaderWithContext<NodeContent, Collection<NodeReferenceIn>> REFERENCED_BY_LOADER = (keys, environment) -> {
+	public static BatchLoaderWithContext<DataLoaderKey<NodeContent>, Collection<NodeReferenceIn>> REFERENCED_BY_LOADER = (keys, environment) -> {
 		GraphQLContext context = environment.getContext();
-
-		// we will collect the results by keys here
-		Map<NodeContent, List<NodeReferenceIn>> resultByKey = NodeReferenceIn.fromContent(context, keys).collect(Collectors.groupingBy(Pair::getValue, Collectors.mapping(Pair::getKey, Collectors.toList())));
+		Map<String, Set<NodeContent>> contentByPath = keys.stream().collect(Collectors.groupingBy(DataLoaderKey::getPath, Collectors.mapping(DataLoaderKey::getValue, Collectors.toSet())));
+		Map<DataLoaderKey<NodeContent>, List<NodeReferenceIn>> resultByKey = new HashMap<>();
+		contentByPath.entrySet().stream().forEach(entry -> {
+			// we will collect the results by keys here
+			resultByKey.putAll(NodeReferenceIn.fromContent(context, entry.getValue()).collect(Collectors.groupingBy(p -> new DataLoaderKey<>(entry.getKey(), p.getValue()), Collectors.mapping(Pair::getKey, Collectors.toList()))));
+		});		
 
 		// collect the results as list in the correct order (corresponding to the order of the keys)
 		List<Collection<NodeReferenceIn>> results = new ArrayList<>();
-		for (NodeContent key : keys) {
+		for (DataLoaderKey<NodeContent> key : keys) {
 			results.add(resultByKey.getOrDefault(key, Collections.emptyList()));
 		}
 		Promise<List<Collection<NodeReferenceIn>>> promise = Promise.promise();
@@ -136,17 +154,17 @@ public class NodeDataLoader {
 	 * Batch load path of a nodefieldcontainer for a transaction branch, the provided container type and language tags,
 	 * without doing permission checks.
 	 */
-	public static BatchLoaderWithContext<HibNodeFieldContainer, String> PATH_LOADER = (keys, environment) -> {
+	public static BatchLoaderWithContext<DataLoaderKey<HibNodeFieldContainer>, String> PATH_LOADER = (keys, environment) -> {
 		Tx tx = Tx.get();
 		GraphQLContext context = environment.getContext();
-		Map<HibNodeFieldContainer, String> contentPaths = new HashMap<>();
+		Map<DataLoaderKey<HibNodeFieldContainer>, String> contentPaths = new HashMap<>();
 
-		partitioningByContext(environment.getKeyContexts(), (Pair<Context, List<HibNodeFieldContainer>> keysByContext) -> {
-			Map<HibNodeFieldContainer, HibNode> nodeByContent = keysByContext.getValue().stream().collect(Collectors.toMap(Function.identity(), HibNodeFieldContainer::getNode));
+		partitioningByContext(environment.getKeyContexts(), (Pair<Context, List<DataLoaderKey<HibNodeFieldContainer>>> keysByContext) -> {
+			Map<DataLoaderKey<HibNodeFieldContainer>, HibNode> nodeByContent = keysByContext.getValue().stream().collect(Collectors.toMap(Function.identity(), key -> key.getValue().getNode()));
 			String[] languageTags = keysByContext.getKey().getLanguageTagsArray();
 			ContainerType type = keysByContext.getKey().getType();
 			Map<HibNode, String> nodePaths = tx.nodeDao().getPaths(nodeByContent.values(), context, type, languageTags);
-			Map<HibNodeFieldContainer, String> pathsByPartition = nodeByContent.entrySet()
+			Map<DataLoaderKey<HibNodeFieldContainer>, String> pathsByPartition = nodeByContent.entrySet()
 					.stream()
 					.map(entry -> Pair.of(entry.getKey(), nodePaths.get(entry.getValue())))
 					.filter(p -> p.getValue() != null)
@@ -155,7 +173,7 @@ public class NodeDataLoader {
 		});
 
 		List<String> results = new ArrayList<>();
-		for (HibNodeFieldContainer key : keys) {
+		for (DataLoaderKey<HibNodeFieldContainer> key : keys) {
 			results.add(contentPaths.getOrDefault(key, null));
 		}
 		Promise<List<String>> promise = Promise.promise();
@@ -167,81 +185,83 @@ public class NodeDataLoader {
 	/**
 	 * Batch loading node parents
 	 */
-	public static BatchLoaderWithContext<ParentNodeLoaderKey, NodeContentWithOptionalRuntimeException> PARENT_LOADER = (keys, environment) -> {
+	public static BatchLoaderWithContext<DataLoaderKey<ParentNodeLoaderKey>, NodeContentWithOptionalRuntimeException> PARENT_LOADER = (keys, environment) -> {
 		Tx tx = Tx.get();
 		GraphQLContext context = environment.getContext();
 		HibUser user = context.getUser();
 		String branchUuid = tx.getBranch(context).getUuid();
 		PersistingUserDao userDao = CommonTx.get().userDao();
+		Map<String, List<ParentNodeLoaderKey>> parentNodeKeysByPath = keys.stream().collect(Collectors.groupingBy(DataLoaderKey::getPath, Collectors.mapping(DataLoaderKey::getValue, Collectors.toList())));
 
 		// we will collect the results by keys here
-		Map<ParentNodeLoaderKey, NodeContentWithOptionalRuntimeException> resultByKey = new HashMap<>();
+		Map<DataLoaderKey<ParentNodeLoaderKey>, NodeContentWithOptionalRuntimeException> resultByKey = new HashMap<>();
 
-		// first load the parent nodes
-		Map<HibNode, HibNode> parentByNode = tx.nodeDao().getParentNodes(
-				keys.stream().map(ParentNodeLoaderKey::getNode).collect(Collectors.toSet()), branchUuid);
+		parentNodeKeysByPath.entrySet().stream().forEach(entry -> {
+			// first load the parent nodes
+			Map<HibNode, HibNode> parentByNode = tx.nodeDao().getParentNodes(
+					entry.getValue().stream().map(ParentNodeLoaderKey::getNode).collect(Collectors.toSet()), branchUuid);
 
-		if (!user.isAdmin()) {
-			// prepare the permissions for all parent nodes
-			Set<Object> parentNodeIds = parentByNode.values().stream().filter(parent -> parent != null)
-					.map(HibNode::getId).collect(Collectors.toSet());
-			userDao.preparePermissionsForElementIds(user, parentNodeIds);
-		}
-
-		// now partition the keys by type and language tags for loading the containers
-		ParentNodeLoaderKey.partitioningByTypeAndLanguageTags(keys, (partContext, partNodes) -> {
-			ContainerType type = partContext.getType();
-			InternalPermission perm = type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM;
-			List<String> languageTags = partContext.getLanguageTags();
-
-			Set<HibNode> partParents = partNodes.stream()
-					.map(node -> parentByNode.get(node))
-					.filter(parent -> parent != null)
-					.collect(Collectors.toSet());
-
-			// load all containers (languages) for the partition
-			Map<HibNode, List<HibNodeFieldContainer>> containersForNodePartitions = tx.contentDao()
-					.getFieldsContainers(partParents, branchUuid, type);
-
-			// make language fallback for each parent from the partition
-			Map<HibNode, NodeContentWithOptionalRuntimeException> contentsByParentNode = partParents.stream().map(parentNode -> {
-				NodeContentWithOptionalRuntimeException result = null;
-
-				// first we check, whether the user has ANY read permission on the parentNode
-				if (user.isAdmin() || userDao.hasPermission(user, parentNode, READ_PUBLISHED_PERM) || userDao.hasPermission(user, parentNode, READ_PERM)) {
-					// now check whether the user has the correct permission
-					if (user.isAdmin() || userDao.hasPermission(user, parentNode, perm)) {
-						List<HibNodeFieldContainer> containers = containersForNodePartitions.getOrDefault(parentNode, Collections.emptyList());
-						HibNodeFieldContainer container = NodeTypeProvider.getContainerWithFallback(languageTags, containers);
-						result = new NodeContentWithOptionalRuntimeException(new NodeContent(parentNode, container, languageTags, type));
-					} else {
-						PermissionException error = new PermissionException("node", parentNode.getUuid());
-						result = new NodeContentWithOptionalRuntimeException(new NodeContent(parentNode, null, languageTags, type), error);
-					}
-				} else {
-					// no permission at all, so we will just return the error
-					PermissionException error = new PermissionException("node", parentNode.getUuid());
-					result = new NodeContentWithOptionalRuntimeException(error);
-				}
-
-				return Map.entry(parentNode, result);
-			}).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
-			// for all nodes in the partition, get the content of the parent node and put into the resultsByKey map
-			for (HibNode node : partNodes) {
-				HibNode parentNode = parentByNode.get(node);
-				if (parentNode != null) {
-					NodeContentWithOptionalRuntimeException content = contentsByParentNode.get(parentNode);
-					if (content != null) {
-						resultByKey.put(new ParentNodeLoaderKey(node, partContext), content);
-					}
-				}
+			if (!user.isAdmin()) {
+				// prepare the permissions for all parent nodes
+				Set<Object> parentNodeIds = parentByNode.values().stream().filter(parent -> parent != null)
+						.map(HibNode::getId).collect(Collectors.toSet());
+				userDao.preparePermissionsForElementIds(user, parentNodeIds);
 			}
-		});
 
+			// now partition the keys by type and language tags for loading the containers
+			ParentNodeLoaderKey.partitioningByTypeAndLanguageTags(entry.getValue(), (partContext, partNodes) -> {
+				ContainerType type = partContext.getType();
+				InternalPermission perm = type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM;
+				List<String> languageTags = partContext.getLanguageTags();
+
+				Set<HibNode> partParents = partNodes.stream()
+						.map(node -> parentByNode.get(node))
+						.filter(parent -> parent != null)
+						.collect(Collectors.toSet());
+
+				// load all containers (languages) for the partition
+				Map<HibNode, List<HibNodeFieldContainer>> containersForNodePartitions = tx.contentDao()
+						.getFieldsContainers(partParents, branchUuid, type);
+
+				// make language fallback for each parent from the partition
+				Map<HibNode, NodeContentWithOptionalRuntimeException> contentsByParentNode = partParents.stream().map(parentNode -> {
+					NodeContentWithOptionalRuntimeException result = null;
+
+					// first we check, whether the user has ANY read permission on the parentNode
+					if (user.isAdmin() || userDao.hasPermission(user, parentNode, READ_PUBLISHED_PERM) || userDao.hasPermission(user, parentNode, READ_PERM)) {
+						// now check whether the user has the correct permission
+						if (user.isAdmin() || userDao.hasPermission(user, parentNode, perm)) {
+							List<HibNodeFieldContainer> containers = containersForNodePartitions.getOrDefault(parentNode, Collections.emptyList());
+							HibNodeFieldContainer container = NodeTypeProvider.getContainerWithFallback(languageTags, containers);
+							result = new NodeContentWithOptionalRuntimeException(new NodeContent(parentNode, container, languageTags, type));
+						} else {
+							PermissionException error = new PermissionException("node", parentNode.getUuid());
+							result = new NodeContentWithOptionalRuntimeException(new NodeContent(parentNode, null, languageTags, type), error);
+						}
+					} else {
+						// no permission at all, so we will just return the error
+						PermissionException error = new PermissionException("node", parentNode.getUuid());
+						result = new NodeContentWithOptionalRuntimeException(error);
+					}
+
+					return Map.entry(parentNode, result);
+				}).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+				// for all nodes in the partition, get the content of the parent node and put into the resultsByKey map
+				for (HibNode node : partNodes) {
+					HibNode parentNode = parentByNode.get(node);
+					if (parentNode != null) {
+						NodeContentWithOptionalRuntimeException content = contentsByParentNode.get(parentNode);
+						if (content != null) {
+							resultByKey.put(new DataLoaderKey<>(entry.getKey(), new ParentNodeLoaderKey(node, partContext)), content);
+						}
+					}
+				}
+			});
+		});
 		// collect the results as list in the correct order (corresponding to the order of the keys)
 		List<NodeContentWithOptionalRuntimeException> results = new ArrayList<>();
-		for (ParentNodeLoaderKey key : keys) {
+		for (DataLoaderKey<ParentNodeLoaderKey> key : keys) {
 			results.add(resultByKey.getOrDefault(key, NodeContentWithOptionalRuntimeException.EMPTY));
 		}
 		Promise<List<NodeContentWithOptionalRuntimeException>> promise = Promise.promise();
@@ -250,42 +270,44 @@ public class NodeDataLoader {
 		return promise.future().toCompletionStage();
 	};
 
-	public static BatchLoaderWithContext<HibNode, List<NodeContent>> BREADCRUMB_LOADER = (keys, environment) -> {
+	public static BatchLoaderWithContext<DataLoaderKey<HibNode>, List<NodeContent>> BREADCRUMB_LOADER = (keys, environment) -> {
 		NodeDao nodeDao = Tx.get().nodeDao();
 		ContentDao contentDao = Tx.get().contentDao();
 		GraphQLContext context = environment.getContext();
 		HibBranch branch = Tx.get().getBranch(context);
 
-		Map<HibNode, List<NodeContent>> nodeContentMap = new HashMap<>();
-		partitioningByContext(environment.getKeyContexts(), (Pair<Context, List<HibNode>> keysByContext) -> {
-			List<HibNode> keysForPartition = keysByContext.getValue();
+		Map<DataLoaderKey<HibNode>, List<NodeContent>> nodeContentMap = new HashMap<>();
+		partitioningByContext(environment.getKeyContexts(), (Pair<Context, List<DataLoaderKey<HibNode>>> keysByContext) -> {
+			Map<String, List<HibNode>> keysForPartitionByPath = keysByContext.getValue().stream().collect(Collectors.groupingBy(DataLoaderKey::getPath, Collectors.mapping(DataLoaderKey::getValue, Collectors.toList())));
 			List<String> languageTags = keysByContext.getKey().getLanguageTags();
 			ContainerType type = keysByContext.getKey().getType();
-			Map<HibNode, List<HibNode>> breadcrumbNodesMap = nodeDao.getBreadcrumbNodesMap(keysForPartition, context);
-			Set<HibNode> nodes = breadcrumbNodesMap.values().stream().flatMap(Collection::stream).collect(Collectors.toSet());
-			Map<HibNode, List<HibNodeFieldContainer>> fieldsContainers = contentDao.getFieldsContainers(nodes, branch.getUuid(), type);
+			keysForPartitionByPath.entrySet().stream().forEach(entry -> {
+				Map<HibNode, List<HibNode>> breadcrumbNodesMap = nodeDao.getBreadcrumbNodesMap(entry.getValue(), context);
+				Set<HibNode> nodes = breadcrumbNodesMap.values().stream().flatMap(Collection::stream).collect(Collectors.toSet());
+				Map<HibNode, List<HibNodeFieldContainer>> fieldsContainers = contentDao.getFieldsContainers(nodes, branch.getUuid(), type);
 
-			Map<HibNode, NodeContent> contentByNode = fieldsContainers.entrySet().stream()
-					.map(kv -> {
-						List<HibNodeFieldContainer> containers = kv.getValue();
-						HibNodeFieldContainer container = NodeTypeProvider.getContainerWithFallback(languageTags, containers);
-						return new NodeContent(kv.getKey(), container, languageTags, type);
-					}).collect(Collectors.toMap(NodeContent::getNode, Function.identity()));
+				Map<HibNode, NodeContent> contentByNode = fieldsContainers.entrySet().stream()
+						.map(kv -> {
+							List<HibNodeFieldContainer> containers = kv.getValue();
+							HibNodeFieldContainer container = NodeTypeProvider.getContainerWithFallback(languageTags, containers);
+							return new NodeContent(kv.getKey(), container, languageTags, type);
+						}).collect(Collectors.toMap(NodeContent::getNode, Function.identity()));
 
-			Map<HibNode, List<NodeContent>> resultForPartition = breadcrumbNodesMap.entrySet().stream()
-					.map(kv -> {
-						HibNode sourceNode = kv.getKey();
-						List<NodeContent> contents = kv.getValue().stream().map(contentByNode::get).collect(Collectors.toList());
+				Map<DataLoaderKey<HibNode>, List<NodeContent>> resultForPartition = breadcrumbNodesMap.entrySet().stream()
+						.map(kv -> {
+							HibNode sourceNode = kv.getKey();
+							List<NodeContent> contents = kv.getValue().stream().map(contentByNode::get).collect(Collectors.toList());
 
-						return Pair.of(sourceNode, contents);
-					}).collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+							return Pair.of(new DataLoaderKey<>(entry.getKey(), sourceNode), contents);
+						}).collect(Collectors.toMap(Pair::getKey, Pair::getValue));
 
-			nodeContentMap.putAll(resultForPartition);
+				nodeContentMap.putAll(resultForPartition);
+			});
 		});
 
 		Promise<List<List<NodeContent>>> promise = Promise.promise();
 		List<List<NodeContent>> results = new ArrayList<>();
-		for (HibNode key : keys) {
+		for (DataLoaderKey<HibNode> key : keys) {
 			results.add(nodeContentMap.getOrDefault(key, Collections.emptyList()));
 		}
 		promise.complete(results);
@@ -315,17 +337,14 @@ public class NodeDataLoader {
 	 * The context of the loader for a specific key
 	 */
 	public static class Context {
-		private ContainerType type;
+		private final ContainerType type;
 		
-		private String languageTags = "";
+		private final String languageTags;
 
-		private Optional<FilterOperation<?>> maybeNativeFilter = Optional.empty();
+		private final Optional<FilterOperation<?>> maybeNativeFilter;
 
-		private PagingParameters paging;
-
-		public Context(ContainerType type) {
-			this.type = type;
-		}
+		private final PagingParameters paging;
+		private final int pagingId;
 
 		public Context(ContainerType type, List<String> languageTags, Optional<FilterOperation<?>> maybeNativeFilter, PagingParameters pagingInfo) {
 			this.type = type;
@@ -333,6 +352,7 @@ public class NodeDataLoader {
 			this.languageTags = String.join(",", new LinkedHashSet<>(languageTags));
 			this.maybeNativeFilter = maybeNativeFilter;
 			this.paging = pagingInfo;
+			this.pagingId = Objects.hash(paging.getPage(), paging.getPerPage(), paging.getSort().entrySet().stream().map(entry -> entry.getKey() + entry.getValue().name()).sorted(Comparator.naturalOrder()).collect(Collectors.joining()));
 		}
 
 		public ContainerType getType() {
@@ -352,12 +372,17 @@ public class NodeDataLoader {
 			if (this == o) return true;
 			if (!(o instanceof Context)) return false;
 			Context context = (Context) o;
-			return type == context.type && Objects.equals(languageTags, context.languageTags);
+			return type == context.type 
+					&& pagingId == context.pagingId
+					&& Objects.equals(languageTags, context.languageTags)
+					&& Objects.equals(
+							maybeNativeFilter.map(Objects::toString).orElse(StringUtils.EMPTY), 
+							context.maybeNativeFilter.map(Objects::toString).orElse(StringUtils.EMPTY));
 		}
 
 		@Override
 		public int hashCode() {
-			return Objects.hash(type, languageTags);
+			return Objects.hash(type, languageTags, pagingId, maybeNativeFilter.map(Objects::toString).orElse(StringUtils.EMPTY));
 		}
 
 		public Optional<FilterOperation<?>> getMaybeNativeFilter() {
