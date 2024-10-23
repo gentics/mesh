@@ -11,6 +11,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
 
+import java.util.UUID;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +39,7 @@ import com.gentics.mesh.parameter.BackupParameters;
 import com.gentics.mesh.router.RouterStorageImpl;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.launcher.commands.VersionCommand;
@@ -284,7 +287,8 @@ public abstract class AdminHandler extends AbstractHandler {
 		String name = server.getName();
 		String host = server.getHost();
 		int port = server.getPort();
-		return new CoordinatorMasterResponse(name, port, host);
+		UUID uuid = server.getUuid();
+		return new CoordinatorMasterResponse(UUIDUtil.toShortUuid(uuid), name, port, host);
 	}
 
 	/**

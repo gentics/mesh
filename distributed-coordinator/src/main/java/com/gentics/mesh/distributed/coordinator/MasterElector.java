@@ -133,8 +133,8 @@ public class MasterElector {
 
 		HazelcastInstance instance = hazelcast.get();
 		if (instance != null) {
-			ITopic<Void> requestMasterTopic = instance.getTopic(REQUEST_MASTER_TOPIC);
-			requestMasterTopic.publish(null);
+			ITopic<UUID> requestMasterTopic = instance.getTopic(REQUEST_MASTER_TOPIC);
+			requestMasterTopic.publish(localUuid);
 		}
 	}
 
@@ -270,7 +270,7 @@ public class MasterElector {
 		/**
 		 * Request master message listener
 		 */
-		MessageListener<Void> REQUEST_MASTER_LISTENER = msg -> {
+		MessageListener<UUID> REQUEST_MASTER_LISTENER = msg -> {
 			executeIfNotFromLocal(msg, m -> {
 				giveUpMasterFlag();
 			});
@@ -289,7 +289,7 @@ public class MasterElector {
 			});
 		};
 
-		ITopic<Void> requestMasterTopic = hazelcast.get().getTopic(REQUEST_MASTER_TOPIC);
+		ITopic<UUID> requestMasterTopic = hazelcast.get().getTopic(REQUEST_MASTER_TOPIC);
 		requestMasterTopic.addMessageListener(REQUEST_MASTER_LISTENER);
 
 	}
@@ -370,7 +370,7 @@ public class MasterElector {
 			if (!isMasterLocal) {
 				host = masterMember.getAddress().getHost();
 			}
-			MasterServer server = new MasterServer(name, host, port, isMasterLocal);
+			MasterServer server = new MasterServer(masterMember.getUuid(), name, host, port, isMasterLocal);
 			if (log.isDebugEnabled()) {
 				log.debug("Our master member: " + server);
 			}
