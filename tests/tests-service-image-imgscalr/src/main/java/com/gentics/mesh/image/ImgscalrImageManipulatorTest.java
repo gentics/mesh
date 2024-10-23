@@ -32,6 +32,7 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.storage.BinaryStorage;
@@ -81,7 +82,7 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 
 			HibBinary hb = createMockedBinary(path);
 			try {
-				when(mockedBinaryStorage.openBlockingStream(null)).then(uuid -> ImageTestUtil.class.getResourceAsStream(path));
+				when(mockedBinaryStorage.openBlockingStream(Mockito.any())).then(uuid -> ImageTestUtil.class.getResourceAsStream(path));
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
