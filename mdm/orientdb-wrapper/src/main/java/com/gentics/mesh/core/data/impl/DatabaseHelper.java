@@ -19,6 +19,7 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.job.impl.BranchMigrationJobImpl;
 import com.gentics.mesh.core.data.job.impl.ConsistencyCheckJobImpl;
 import com.gentics.mesh.core.data.job.impl.ConsistencyRepairJobImpl;
+import com.gentics.mesh.core.data.job.impl.ImageCacheMigrationJobImpl;
 import com.gentics.mesh.core.data.job.impl.JobRootImpl;
 import com.gentics.mesh.core.data.job.impl.MicronodeMigrationJobImpl;
 import com.gentics.mesh.core.data.job.impl.NodeMigrationJobImpl;
@@ -153,6 +154,7 @@ public final class DatabaseHelper {
 		BranchMigrationJobImpl.init(type, index);
 		ConsistencyCheckJobImpl.init(type, index);
 		ConsistencyRepairJobImpl.init(type, index);
+		ImageCacheMigrationJobImpl.init(type, index);
 
 		// Field changes
 		FieldTypeChangeImpl.init(type, index);

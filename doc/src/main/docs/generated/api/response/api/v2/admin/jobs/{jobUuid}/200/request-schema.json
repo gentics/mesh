@@ -45,7 +45,7 @@
       "type" : "string",
       "required" : true,
       "description" : "The type of the job.",
-      "enum" : [ "schema", "microschema", "branch", "versionpurge", "consistencycheck", "consistencyrepair" ]
+      "enum" : [ "schema", "microschema", "branch", "versionpurge", "consistencycheck", "consistencyrepair", "imagecache" ]
     },
     "status" : {
       "type" : "string",

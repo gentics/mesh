@@ -144,6 +144,14 @@ public interface JobDao extends DaoGlobal<HibJob>, DaoTransformable<HibJob, JobR
 	HibJob enqueueConsistencyCheck(HibUser user, boolean repair);
 
 	/**
+	 * Enqueue an image check job.
+	 * 
+	 * @param user
+	 * @return
+	 */
+	HibJob enqueueImageCacheMigration(HibUser user);
+
+	/**
 	 * Purge all failed jobs from the job root.
 	 */
 	void purgeFailed();

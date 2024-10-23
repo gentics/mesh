@@ -137,4 +137,9 @@ public class JobDaoWrapperImpl extends AbstractCoreDaoWrapper<JobResponse, HibJo
 	public HibJob enqueueConsistencyCheck(HibUser user, boolean repair) {
 		return boot.get().meshRoot().getJobRoot().enqueueConsistencyCheck(user, repair);
 	}
+
+	@Override
+	public HibJob enqueueImageCacheMigration(HibUser user) {
+		return boot.get().meshRoot().getJobRoot().enqueueImageCacheMigration(user);
+	}
 }

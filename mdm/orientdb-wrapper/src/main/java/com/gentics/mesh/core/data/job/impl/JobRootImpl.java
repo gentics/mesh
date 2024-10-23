@@ -208,6 +208,17 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	}
 
 	@Override
+	public HibJob enqueueImageCacheMigration(HibUser user) {
+		Job job = getGraph().addFramedVertex(ImageCacheMigrationJobImpl.class);
+		job.setCreator(user);
+		job.setType(JobType.imagecache);	
+		job.setCreationTimestamp();
+		job.setStatus(QUEUED);
+		addItem(job);
+		return job;
+	}
+
+	@Override
 	public HibBaseElement resolveToElement(HibBaseElement permissionRoot, HibBaseElement root, Stack<String> stack) {
 		throw error(BAD_REQUEST, "Jobs are not accessible");
 	}
