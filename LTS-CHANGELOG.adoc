@@ -18,9 +18,11 @@ The LTS changelog lists releases which are only accessible via a commercial subs
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
 [[v1.10.36]]
-== 1.10.36 (TBD)
+== 1.10.36 (23.10.2024)
 
 icon:check[] Cache: Image cache has been refactored, utilizing now simpler structure with less folder depth.
+
+icon:check[] Core: A potential data loss on an edge case of node migration over several schema versions, including field name/type change, has been fixed.
 
 [[v1.10.35]]
 == 1.10.35 (27.09.2024)
