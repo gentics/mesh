@@ -24,6 +24,7 @@ import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 
 import com.gentics.mesh.core.data.binary.HibBinary;
+import com.gentics.mesh.util.UUIDUtil;
 
 public final class ImageTestUtil {
 	private ImageTestUtil() {
@@ -33,6 +34,7 @@ public final class ImageTestUtil {
 		HibBinary mock = mock(HibBinary.class);
 		when(mock.openBlockingStream()).thenReturn(() -> ImageTestUtil.class.getResourceAsStream(filePath));
 		when(mock.getSHA512Sum()).thenReturn(filePath);
+		when(mock.getUuid()).thenReturn(UUIDUtil.randomUUID());
 		return mock;
 	}
 

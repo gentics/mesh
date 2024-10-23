@@ -639,7 +639,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	@Deprecated
 	private void checkImageCacheMigrated() throws IOException {
 		Path imageCachePath = Path.of(options.getImageOptions().getImageCacheDirectory());
-		if (Files.list(imageCachePath).filter(path -> path.getFileName().toString().length() == 8).count() > 0) {
+		if (Files.exists(imageCachePath) && Files.list(imageCachePath).filter(path -> path.getFileName().toString().length() == 8).count() > 0) {
 			db().tx(tx -> {
 				log.info("Image cache requires migration, triggering the corresponding Job.");
 				tx.jobDao().findAll().stream().filter(job -> job.getType() == JobType.imagecache).forEach(job -> {
