@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "1.10.35"
+version: "1.10.36"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -693,7 +693,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "fec33a6c23724b19b41a8ddc56f9697a"
+                            "uuid" : "79ae6e97f6f64d719d340bbeacab21ac"
                           } ]
                         }
             responses: 
@@ -1328,7 +1328,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "558e8f74cd9a4412bc529de3844802df"
+                            "uuid" : "09e8516034654818b240129aba5f4a68"
                           } ]
                         }
             responses: 
@@ -1854,7 +1854,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "677d17f740e445aaaa85b536b5baedfe"
+                            "uuid" : "88ef3d93106645e7b706733cbaf28d65"
                           } ]
                         }
             responses: 
@@ -2787,7 +2787,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "5913ae38d2574fb1bb113c1b555eaeb5"
+                            "uuid" : "939fc2e3b1d240aa82ac742fc5d35517"
                           } ]
                         }
             responses: 
@@ -3746,7 +3746,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "f413f876aa684baa885dcbc337fd52f0"
+                            "uuid" : "98065c7ae62d4a76a5035cab9dfccc67"
                           } ]
                         }
             responses: 
@@ -4383,7 +4383,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "18b40bdc60ac4ede8454ade48e030aa1"
+                            "uuid" : "cc4c88346b494b9d9a221433ce8f935f"
                           } ]
                         }
             responses: 
@@ -5529,6 +5529,12 @@ mediaType: application/json
                     required: false
                     repeat: false
                     example: "true"
+                etag: 
+                    description: Parameter which can be used to disable the etag parameter generation and thus increase performance when etags are not needed.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    default: "true"
                 perPage: 
                     description: Number of elements per page.
                     type: number
@@ -5542,6 +5548,12 @@ mediaType: application/json
                     repeat: false
                     default: "1"
                     example: "42"
+                fields: 
+                    description: Limit the output to certain fields. This is useful in order to reduce the response JSON overhead.
+                    type: string
+                    required: false
+                    repeat: false
+                    default: ""
             body: 
                 application/json: 
                     example: '{"query":{"query_string":{"query":"some name"}}}'
@@ -7459,7 +7471,7 @@ mediaType: application/json
                                 | vertxVersion | false | string | Used Vert.x version. |
                             example: |
                                 {
-                                  "meshVersion" : "1.10.35",
+                                  "meshVersion" : "1.10.36",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",
@@ -9896,7 +9908,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "b072e44e574740a58492b70f60e77087"
+                            "uuid" : "88ee25942e7f4bf683568e3dfb5b78bf"
                           } ]
                         }
             responses: 
@@ -11341,7 +11353,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "6916a6c0504847498171056c78c372f1"
+                            "uuid" : "4aac0fc28fdb4ec9b3c229e1db6ba76b"
                           } ]
                         }
             responses: 
@@ -12130,7 +12142,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "2c09888950a74da89ae52e0cc36f72e6"
+                            "uuid" : "7fa6c33976c84c6589f23e66c807bd28"
                           } ]
                         }
             responses: 
@@ -13801,7 +13813,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "3c4279fd31b044d18a686b87cc6b5594"
+                            "uuid" : "8270273c1c07404895744e5a73def617"
                           } ]
                         }
             responses: 
@@ -14344,6 +14356,38 @@ mediaType: application/json
     /nodes: 
         post: 
             description: Invoke a search query for nodes and return a paged list response.
+            queryParameters: 
+                wait: 
+                    description: Specify whether search should wait for the search to be idle before responding.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
+                etag: 
+                    description: Parameter which can be used to disable the etag parameter generation and thus increase performance when etags are not needed.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    default: "true"
+                perPage: 
+                    description: Number of elements per page.
+                    type: number
+                    required: false
+                    repeat: false
+                    example: "42"
+                page: 
+                    description: Number of page to be loaded.
+                    type: number
+                    required: false
+                    repeat: false
+                    default: "1"
+                    example: "42"
+                fields: 
+                    description: Limit the output to certain fields. This is useful in order to reduce the response JSON overhead.
+                    type: string
+                    required: false
+                    repeat: false
+                    default: ""
             body: 
                 application/json: 
                     example: '{"query":{"query_string":{"query":"some name"}}}'
@@ -14580,6 +14624,26 @@ mediaType: application/json
     /tagFamilies: 
         post: 
             description: Invoke a search query for tagFamilies and return a paged list response.
+            queryParameters: 
+                wait: 
+                    description: Specify whether search should wait for the search to be idle before responding.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
+                perPage: 
+                    description: Number of elements per page.
+                    type: number
+                    required: false
+                    repeat: false
+                    example: "42"
+                page: 
+                    description: Number of page to be loaded.
+                    type: number
+                    required: false
+                    repeat: false
+                    default: "1"
+                    example: "42"
             body: 
                 application/json: 
                     example: '{"query":{"query_string":{"query":"some name"}}}'
@@ -14628,6 +14692,26 @@ mediaType: application/json
     /tags: 
         post: 
             description: Invoke a search query for tags and return a paged list response.
+            queryParameters: 
+                wait: 
+                    description: Specify whether search should wait for the search to be idle before responding.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
+                perPage: 
+                    description: Number of elements per page.
+                    type: number
+                    required: false
+                    repeat: false
+                    example: "42"
+                page: 
+                    description: Number of page to be loaded.
+                    type: number
+                    required: false
+                    repeat: false
+                    default: "1"
+                    example: "42"
             body: 
                 application/json: 
                     example: '{"query":{"query_string":{"query":"some name"}}}'
