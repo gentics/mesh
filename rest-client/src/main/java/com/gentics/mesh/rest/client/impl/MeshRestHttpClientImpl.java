@@ -7,23 +7,17 @@ import static com.gentics.mesh.rest.client.impl.HttpMethod.POST;
 import static com.gentics.mesh.rest.client.impl.HttpMethod.PUT;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.io.SequenceInputStream;
-import java.io.UnsupportedEncodingException;
 import java.security.InvalidParameterException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Vector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
-import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
-import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfig;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorMasterResponse;
@@ -1138,16 +1132,6 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	@Override
 	public MeshRequest<ClusterStatusResponse> clusterStatus() {
 		return prepareRequest(GET, "/admin/cluster/status", ClusterStatusResponse.class);
-	}
-
-	@Override
-	public MeshRequest<ClusterConfigResponse> loadClusterConfig() {
-		return prepareRequest(GET, "/admin/cluster/config", ClusterConfigResponse.class);
-	}
-
-	@Override
-	public MeshRequest<ClusterConfigResponse> updateClusterConfig(ClusterConfigRequest request) {
-		return prepareRequest(POST, "/admin/cluster/config", ClusterConfigResponse.class, request);
 	}
 
 	@Override

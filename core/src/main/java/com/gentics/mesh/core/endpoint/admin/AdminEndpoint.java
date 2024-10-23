@@ -93,7 +93,6 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		//addBackupHandler();
 		//addRestoreHandler();
 		addClusterStatusHandler();
-		addClusterConfigHandler();
 		addConsistencyCheckHandler();
 		//addImportHandler();
 		//addExportHandler();
@@ -179,29 +178,6 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		endpoint.blockingHandler(rc -> {
 			adminHandler.handleClusterStatus(wrap(rc));
 		}, false);
-	}
-
-	private void addClusterConfigHandler() {
-		InternalEndpointRoute endpoint = createRoute();
-		endpoint.path("/cluster/config");
-		endpoint.method(GET);
-		endpoint.description("Loads the cluster configuration.");
-		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(OK, adminExamples.createClusterConfigResponse(), "Currently active cluster configuration.");
-		endpoint.blockingHandler(rc -> {
-			adminHandler.handleLoadClusterConfig(wrap(rc));
-		}, false);
-
-		InternalEndpointRoute updateEndpoint = createRoute();
-		updateEndpoint.path("/cluster/config");
-		updateEndpoint.method(POST);
-		updateEndpoint.description("Update the cluster configuration.");
-		updateEndpoint.produces(APPLICATION_JSON);
-		updateEndpoint.exampleRequest(adminExamples.createClusterConfigRequest());
-		updateEndpoint.exampleResponse(OK, adminExamples.createClusterConfigResponse(), "Updated cluster configuration.");
-		updateEndpoint.blockingHandler(rc -> {
-			adminHandler.handleUpdateClusterConfig(wrap(rc));
-		}, isOrderedBlockingHandlers());
 	}
 
 	private void addConsistencyCheckHandler() {

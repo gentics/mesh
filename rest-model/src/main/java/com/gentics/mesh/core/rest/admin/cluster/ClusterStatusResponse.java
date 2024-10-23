@@ -16,4 +16,8 @@ public class ClusterStatusResponse implements RestModel {
 		return instances;
 	}
 
+	public ClusterStatusResponse setInstances(List<ClusterInstanceInfo> instances) {
+		this.instances = instances;
+		return this;
+	}
 }

@@ -16,7 +16,7 @@
 
 package io.vertx.spi.cluster.hazelcast.impl;
 
-import com.hazelcast.core.ISemaphore;
+import com.hazelcast.map.IMap;
 import io.vertx.core.shareddata.Lock;
 
 import java.util.concurrent.Executor;
@@ -24,19 +24,21 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class HazelcastLock implements Lock {
 
-  private final ISemaphore semaphore;
+  private final IMap<String, ?> lockMap;
+  private final String key;
   private final Executor lockReleaseExec;
   private final AtomicBoolean released = new AtomicBoolean();
 
-  public HazelcastLock(ISemaphore semaphore, Executor lockReleaseExec) {
-    this.semaphore = semaphore;
+  public HazelcastLock(IMap<String, ?> lockMap, String key, Executor lockReleaseExec) {
+    this.lockMap = lockMap;
+    this.key = key;
     this.lockReleaseExec = lockReleaseExec;
   }
 
   @Override
   public void release() {
     if (released.compareAndSet(false, true)) {
-      lockReleaseExec.execute(semaphore::release);
+      lockReleaseExec.execute(() -> lockMap.forceUnlock(key));
     }
   }
 }

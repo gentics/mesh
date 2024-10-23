@@ -1,10 +1,15 @@
 package com.gentics.mesh.distributed.coordinator;
 
+import java.util.UUID;
+
+import com.gentics.mesh.util.UUIDUtil;
+
 /**
  * Master server POJO which holds information we know about the elected master.
  */
 public class MasterServer {
 
+	private UUID uuid;
 	private String name;
 	private String host;
 	private int port;
@@ -22,7 +27,8 @@ public class MasterServer {
 	 * @param self
 	 *            Flag which indicates whether we are the master
 	 */
-	public MasterServer(String name, String host, int port, boolean self) {
+	public MasterServer(UUID uuid, String name, String host, int port, boolean self) {
+		this.setUuid(uuid);
 		this.name = name;
 		this.host = host;
 		this.port = port;
@@ -57,9 +63,16 @@ public class MasterServer {
 		return self;
 	}
 
-	@Override
-	public String toString() {
-		return "Node: " + host + ":" + port;
+	public UUID getUuid() {
+		return uuid;
 	}
 
+	public void setUuid(UUID uuid) {
+		this.uuid = uuid;
+	}
+
+	@Override
+	public String toString() {
+		return "Node: " + host + ":" + port + ":" + UUIDUtil.toShortUuid(uuid);
+	}
 }

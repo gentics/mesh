@@ -6,8 +6,8 @@ import java.util.Properties;
 import com.gentics.mesh.database.HibernateDatabase;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.hibernate.data.domain.HibUnmanagedFieldContainer;
-import com.hazelcast.core.MapLoader;
-import com.hazelcast.core.MapStoreFactory;
+import com.hazelcast.map.MapLoader;
+import com.hazelcast.map.MapStoreFactory;
 
 /**
  * A factory used by Hazelcast to build the content loader. We have to do dependency injection ourselves since otherwise

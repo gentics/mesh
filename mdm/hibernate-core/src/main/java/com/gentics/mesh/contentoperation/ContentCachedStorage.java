@@ -21,6 +21,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.cache.CacheStatus;
 import com.gentics.mesh.context.InternalActionContext;
@@ -34,9 +36,9 @@ import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoUtil;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.database.HibernateDatabase;
+import com.gentics.mesh.etc.config.ConfigUtils;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.etc.config.hibernate.HibernateCacheConfig;
-import com.gentics.mesh.etc.config.ConfigUtils;
 import com.gentics.mesh.hibernate.data.domain.HibUnmanagedFieldContainer;
 import com.gentics.mesh.hibernate.util.StringScale;
 import com.gentics.mesh.metric.MetricsService;
@@ -48,13 +50,11 @@ import com.hazelcast.config.Config;
 import com.hazelcast.config.XmlConfigBuilder;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.ITopic;
+import com.hazelcast.topic.ITopic;
 
 import dagger.Lazy;
 import io.micrometer.core.instrument.binder.cache.CaffeineCacheMetrics;
 import io.reactivex.Flowable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Implements a cached data storage for content. When running in standalone mode, the cache is backed by caffeine.
@@ -155,7 +155,7 @@ public class ContentCachedStorage implements DebugInfoProvider {
 			throw new RuntimeException("Please provide a " + hazelcastFilePath + " file", e);
 		}
 		config.setInstanceName(options.getClusterOptions().getClusterName());
-		config.getGroupConfig().setName(options.getClusterOptions().getClusterName());
+		config.setClusterName(options.getClusterOptions().getClusterName());
 		config.setClassLoader(Thread.currentThread().getContextClassLoader());
 
 		Hazelcast.getOrCreateHazelcastInstance(config);

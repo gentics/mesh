@@ -38,8 +38,6 @@ import com.gentics.mesh.core.endpoint.utility.UtilityHandler;
 import com.gentics.mesh.core.endpoint.webroot.WebRootHandler;
 import com.gentics.mesh.core.endpoint.webrootfield.WebRootFieldHandler;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
-import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
-import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfig;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorMasterResponse;
@@ -1130,20 +1128,6 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	public MeshRequest<ClusterStatusResponse> clusterStatus() {
 		LocalActionContextImpl<ClusterStatusResponse> ac = createContext(ClusterStatusResponse.class);
 		adminHandler.handleClusterStatus(ac);
-		return new MeshLocalRequestImpl<>(ac.getFuture());
-	}
-
-	@Override
-	public MeshRequest<ClusterConfigResponse> loadClusterConfig() {
-		LocalActionContextImpl<ClusterConfigResponse> ac = createContext(ClusterConfigResponse.class);
-		adminHandler.handleLoadClusterConfig(ac);
-		return new MeshLocalRequestImpl<>(ac.getFuture());
-	}
-
-	@Override
-	public MeshRequest<ClusterConfigResponse> updateClusterConfig(ClusterConfigRequest request) {
-		LocalActionContextImpl<ClusterConfigResponse> ac = createContext(ClusterConfigResponse.class);
-		adminHandler.handleUpdateClusterConfig(ac);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
