@@ -6,6 +6,15 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v2.1.9]]
+== 2.1.9 (23.10.2024)
+
+icon:check[] Documentation: A missing query parameters documentation for the `/search` and `/{{project}}/search` has been added.
+
+icon:check[] Cache: Image cache has been refactored, utilizing now simpler structure with less folder depth.
+
+icon:check[] Core: A potential data loss on an edge case of node migration over several schema versions, including field name/type change, has been fixed.
+
 [[v2.1.8]]
 == 2.1.8 (09.10.2024)
 
