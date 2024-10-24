@@ -55,6 +55,7 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.relationship.GraphRelationship;
 import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
@@ -260,25 +261,47 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 		sorting.clearSort();
 		items.entrySet().stream().forEach(entry -> {
 			String key = mapGraphQlFieldNameForSorting(entry.getKey());
-			String[] keyParts = key.split("\\.");
-			if (keyParts.length > 1) {
-				// We expect format of 'fields.<schema_name>'.<field_name>
-				if ("fields".equals(keyParts[0])) {
-					if (keyParts.length > 2) {
-						HibSchema schema = Tx.get().schemaDao().findByName(keyParts[1]);
-						if (schema == null) {
-							throw new IllegalArgumentException("No schema found for sorting request: " + key);
+			String[] fieldParts = key.split("fields\\.");
+			String newKey = StringUtils.EMPTY;
+			if (fieldParts.length > 1) {
+				for (int i = 0 ; i < fieldParts.length; i++) {
+					String part = fieldParts[i];
+					String[] keyParts = part.split("\\.");
+					if (keyParts.length > 1) {
+						HibSchema schema = Tx.get().schemaDao().findByName(keyParts[0]);
+						String type;
+						if (schema != null) {
+							FieldSchema field = schema.getLatestVersion().getSchema().getFieldsAsMap().get(keyParts[1]);
+							if (field == null) {
+								throw new IllegalArgumentException("No field found for sorting request: " + key);
+							}
+							type = field.getType().toLowerCase();
+						} else {
+							HibMicroschema microschema = Tx.get().microschemaDao().findByName(keyParts[0]);
+							if (microschema != null) {
+								//
+								FieldSchema field = microschema.getLatestVersion().getSchema().getFieldsAsMap().get(keyParts[1]);
+								if (field == null) {
+									throw new IllegalArgumentException("No field found for sorting request: " + key);
+								}
+								type = field.getType().toLowerCase();
+							} else {
+								throw new IllegalArgumentException("No schema found for sorting request: " + key);
+							}
 						}
-						FieldSchema field = schema.getLatestVersion().getSchema().getFieldsAsMap().get(keyParts[2]);
-						if (field == null) {
-							throw new IllegalArgumentException("No field found for sorting request: " + key);
+						if (i > 0 && newKey.length() > 0) {
+							newKey += ".";
 						}
-						key = keyParts[0] + "." + keyParts[2] + "-" + field.getType().toLowerCase();
+						newKey += "fields." + keyParts[0] + "." + keyParts[1] + "-" + type;
+						if (keyParts.length > 2) {
+							newKey += Arrays.stream(keyParts).skip(2).map(this::mapGraphQlFieldNameForSorting).collect(Collectors.joining(".", ".", StringUtils.EMPTY));
+						}
 					}
-					// else process as non-schema content field
 				}
+			} else {
+				newKey = key;
 			}
-			sorting.putSort(key,  entry.getValue());
+			sorting.putSort(newKey,  entry.getValue());
 		});
 		return sorting;
 	}

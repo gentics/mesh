@@ -24,7 +24,7 @@
 	      }
 	    }
 	  }) {
-	    # [$.data.micronodeIsNull.elements.length()=8]
+	    # [$.data.micronodeIsNull.elements.length()=7]
 	    elements {
 	      uuid
 	      schema {
