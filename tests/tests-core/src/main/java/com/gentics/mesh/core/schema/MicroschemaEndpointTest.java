@@ -87,6 +87,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 		}
 	}
 
+	@Test
 	@Override
 	public void testReadPermittedSorted() throws Exception {
 		for (int i = 0; i < 10; i++) {
@@ -101,7 +102,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 			}
 		}
 		MicroschemaListResponse list = call(() -> client().findMicroschemas(new SortingParametersImpl("name", SortOrder.DESCENDING)));
-		assertEquals("Total data size should be 6", 6, list.getData().size());
+		assertEquals("Total data size should be 7", 7, list.getData().size());
 		assertThat(list.getData()).isSortedAccordingTo((a, b) -> b.getName().compareTo(a.getName()));
 	}
 
