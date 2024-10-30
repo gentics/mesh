@@ -1,7 +1,9 @@
 package com.gentics.mesh.database.cluster;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -73,7 +75,7 @@ public class HibClusterManager implements ClusterManager {
 
 	@Override
 	public ClusterStatusResponse getClusterStatus() {
-		clusterManager.getHazelcastInstance().getCluster().getMembers().stream().map(member -> {
+		List<ClusterInstanceInfo> instances = clusterManager.getHazelcastInstance().getCluster().getMembers().stream().map(member -> {
 			ClusterInstanceInfo info = new ClusterInstanceInfo();
 			info.setAddress(member.getAddress().toString());
 			info.setUuid(UUIDUtil.toShortUuid(member.getUuid()));
@@ -86,8 +88,8 @@ public class HibClusterManager implements ClusterManager {
 				log.error("No member info available for " + member.getUuid());
 			}
 			return info;
-		});
-		return new ClusterStatusResponse();
+		}).collect(Collectors.toList());
+		return new ClusterStatusResponse().setInstances(instances);
 	}
 
 	@Override
