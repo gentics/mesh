@@ -141,153 +141,153 @@ import dagger.multibindings.IntoSet;
 public abstract class HibernateModule {
 
 	@Binds
-	public abstract HighLevelChangesList highLevelChangesList(HibernateHighLevelChangesList e);
+	abstract HighLevelChangesList highLevelChangesList(HibernateHighLevelChangesList e);
 
 	@Binds
-	public abstract Database bindDatabase(HibernateDatabase e);
+	abstract Database bindDatabase(HibernateDatabase e);
 
 	@Binds
-	public abstract RootResolver bindRootResolver(HibernateRootResolver rootResolver);
+	abstract RootResolver bindRootResolver(HibernateRootResolver rootResolver);
 	
 	@Binds
-	public abstract WriteLock bindWriteLock(HibernateWriteLockImpl e);
+	abstract WriteLock bindWriteLock(HibernateWriteLockImpl e);
 
 	@Binds
-	public abstract DatabaseProvider bindDatabaseProvider(DefaultSQLDatabase e);
+	abstract DatabaseProvider bindDatabaseProvider(DefaultSQLDatabase e);
 	
 	@Binds
-	public abstract BootstrapInitializer bindBootstrapInitializer(HibernateBootstrapInitializerImpl e);
+	abstract BootstrapInitializer bindBootstrapInitializer(HibernateBootstrapInitializerImpl e);
 
 	@Binds
-	public abstract ClusterManager bindClusterManager(HibClusterManager e);
+	abstract ClusterManager bindClusterManager(HibClusterManager e);
 
 	@Binds
-	public abstract HighLevelChangelogSystem bindHighLevelChangelogSystem(HighLevelChangelogSystemImpl e);
+	abstract HighLevelChangelogSystem bindHighLevelChangelogSystem(HighLevelChangelogSystemImpl e);
 	
 	@Binds
-	public abstract RequestDelegator bindRequestDelegator(RequestDelegatorStub e);
+	abstract RequestDelegator bindRequestDelegator(RequestDelegatorStub e);
 
 	@Binds
-	public abstract UserProperties userProperties(HibernateUserPropertiesImpl e);
+	abstract UserProperties userProperties(HibernateUserPropertiesImpl e);
 
 	@Binds
-	public abstract WebRootService bindWebrootService(HibWebRootServiceImpl e);
+	abstract WebRootService bindWebrootService(HibWebRootServiceImpl e);
 
 	@Binds
-	public abstract AdminHandler adminHandler(HibAdminHandler e);
+	abstract AdminHandler adminHandler(HibAdminHandler e);
 
 	@Binds
-	public abstract ContentStorage contentQuery(ContentStorageImpl e);
+	abstract ContentStorage contentQuery(ContentStorageImpl e);
 
 	// Caches
 
 	@Binds
-	public abstract UserNameCache bindUserNameCache(UserNameCacheImpl e);
+	abstract UserNameCache bindUserNameCache(UserNameCacheImpl e);
 
 	@Binds
-	public abstract TagFamilyNameCache bindTagFamilyNameCache(TagFamilyNameCacheImpl e);
+	abstract TagFamilyNameCache bindTagFamilyNameCache(TagFamilyNameCacheImpl e);
 
 	@Binds
-	public abstract TagNameCache bindTagNameCache(TagNameCacheImpl e);
+	abstract TagNameCache bindTagNameCache(TagNameCacheImpl e);
 
 	@Binds
-	public abstract RoleNameCache bindRoleNameCache(RoleNameCacheImpl e);
+	abstract RoleNameCache bindRoleNameCache(RoleNameCacheImpl e);
 
 	@Binds
-	public abstract GroupNameCache bindGroupNameCache(GroupNameCacheImpl e);
+	abstract GroupNameCache bindGroupNameCache(GroupNameCacheImpl e);
 
 	@Binds
-	public abstract ProjectBranchNameCache bindBranchNameCache(ProjectBranchNameCacheImpl e);
+	abstract ProjectBranchNameCache bindBranchNameCache(ProjectBranchNameCacheImpl e);
 
 	@Binds
-	public abstract ProjectNameCache bindProjectNameCache(ProjectNameCacheImpl e);
+	abstract ProjectNameCache bindProjectNameCache(ProjectNameCacheImpl e);
 
 	@Binds
-	public abstract ListableFieldCache<AbstractHibListFieldEdgeImpl<?>> bindListableFieldCache(ListableFieldCacheImpl e);
+	abstract ListableFieldCache<AbstractHibListFieldEdgeImpl<?>> bindListableFieldCache(ListableFieldCacheImpl e);
 
 	@Binds
-	public abstract CacheRegistry bindCacheRegistry(HibCacheRegistry e);
+	abstract CacheRegistry bindCacheRegistry(HibCacheRegistry e);
 
 	// Migration
 	@Binds
-	public abstract NodeMigration bindNodeMigration(HibNodeMigration e);
+	abstract NodeMigration bindNodeMigration(HibNodeMigration e);
 
 	@Binds
-	public abstract MicronodeMigration bindMicronodeMigration(HibMicronodeMigration e);
+	abstract MicronodeMigration bindMicronodeMigration(HibMicronodeMigration e);
 
 	@Binds
-	public abstract BranchMigration branchMigration(HibBranchMigration e);
+	abstract BranchMigration branchMigration(HibBranchMigration e);
 
 	@Binds
-	public abstract ProjectVersionPurgeHandler projectVersionPurgeHandler(HibProjectVersionPurge e);
+	abstract ProjectVersionPurgeHandler projectVersionPurgeHandler(HibProjectVersionPurge e);
 
 	// Daos
 
 	@Binds
-	public abstract ChangelogDao changelogDao(ChangelogDaoImpl e);
+	abstract ChangelogDao changelogDao(ChangelogDaoImpl e);
 
 	@Binds
-	public abstract DaoCollection daoCollection(HibDaoCollectionImpl daoCollection);
+	abstract DaoCollection daoCollection(HibDaoCollectionImpl daoCollection);
 
 	@Binds
-	public abstract PermissionRoots permissionRoots(HibPermissionRoots daoCollection);
+	abstract PermissionRoots permissionRoots(HibPermissionRoots daoCollection);
 
 	@Binds
-	public abstract PersistingImageVariantDao bindImageVariantDao(ImageVariantDaoImpl dao);
+	abstract PersistingImageVariantDao bindImageVariantDao(ImageVariantDaoImpl dao);
 
 	@Binds
-	public abstract PersistingUserDao bindUserDao(UserDaoImpl dao);
+	abstract PersistingUserDao bindUserDao(UserDaoImpl dao);
 
 	@Binds
-	public abstract PersistingRoleDao bindRoleDao(RoleDaoImpl e);
+	abstract PersistingRoleDao bindRoleDao(RoleDaoImpl e);
 
 	@Binds
-	public abstract PersistingGroupDao bindGroupDao(GroupDaoImpl e);
+	abstract PersistingGroupDao bindGroupDao(GroupDaoImpl e);
 
 	@Binds
-	public abstract PersistingProjectDao bindProjectDao(ProjectDaoImpl e);
+	abstract PersistingProjectDao bindProjectDao(ProjectDaoImpl e);
 
 	@Binds
-	public abstract PersistingNodeDao bindNodeDao(NodeDaoImpl e);
+	abstract PersistingNodeDao bindNodeDao(NodeDaoImpl e);
 
 	@Binds
-	public abstract PersistingContentDao bindContentDao(ContentDaoImpl e);
+	abstract PersistingContentDao bindContentDao(ContentDaoImpl e);
 
 	@Binds
-	public abstract PersistingJobDao bindJobDao(JobDaoImpl e);
+	abstract PersistingJobDao bindJobDao(JobDaoImpl e);
 
 	@Binds
-	public abstract PersistingTagDao bindTagDao(TagDaoImpl e);
+	abstract PersistingTagDao bindTagDao(TagDaoImpl e);
 
 	@Binds
-	public abstract PersistingTagFamilyDao bindTagFamilyDao(TagFamilyDaoImpl e);
+	abstract PersistingTagFamilyDao bindTagFamilyDao(TagFamilyDaoImpl e);
 
 	@Binds
-	public abstract PersistingBinaryDao bindBinaryDao(BinaryDaoImpl e);
+	abstract PersistingBinaryDao bindBinaryDao(BinaryDaoImpl e);
 
 	@Binds
-	public abstract PersistingS3BinaryDao bindS3BinaryDao(S3BinaryDaoImpl e);
+	abstract PersistingS3BinaryDao bindS3BinaryDao(S3BinaryDaoImpl e);
 
 	@Binds
-	public abstract PersistingBranchDao bindBranchDao(BranchDaoImpl e);
+	abstract PersistingBranchDao bindBranchDao(BranchDaoImpl e);
 
 	@Binds
-	public abstract PersistingSchemaDao bindSchemaDao(SchemaDaoImpl e);
+	abstract PersistingSchemaDao bindSchemaDao(SchemaDaoImpl e);
 
 	@Binds
-	public abstract PersistingMicroschemaDao bindMicroschemaDao(MicroschemaDaoImpl e);
+	abstract PersistingMicroschemaDao bindMicroschemaDao(MicroschemaDaoImpl e);
 
 	@Binds
-	public abstract PersistingLanguageDao bindLanguageDao(LanguageDaoImpl e);
+	abstract PersistingLanguageDao bindLanguageDao(LanguageDaoImpl e);
 
 	@Binds
-	public abstract BucketManager bindBucketManager(BucketManagerImpl e);
+	abstract BucketManager bindBucketManager(BucketManagerImpl e);
 
 	@Binds
-	public abstract Binaries bindBinaries(HibBinariesImpl e);
+	abstract Binaries bindBinaries(HibBinariesImpl e);
 
 	@Binds
-	public abstract S3Binaries bindS3Binaries(S3HibBinariesImpl e);
+	abstract S3Binaries bindS3Binaries(S3HibBinariesImpl e);
 
 	@Provides
 	public static HibernateMeshOptions hibernateMeshOptions(MeshOptions meshOptions) {
@@ -306,11 +306,11 @@ public abstract class HibernateModule {
 
 	@Binds
 	@IntoSet
-	public abstract DebugInfoProvider contentCacheInfoProvider(ContentCachedStorage provider);
+	abstract DebugInfoProvider contentCacheInfoProvider(ContentCachedStorage provider);
 
 	@Binds
 	@IntoSet
-	public abstract DebugInfoProvider listableFieldCacheInfoProvider(ListableFieldCacheImpl provider);
+	abstract DebugInfoProvider listableFieldCacheInfoProvider(ListableFieldCacheImpl provider);
 
 	/**
 	 * List of consistency checks. This is deliberately made a mutable lists, because some tests are currently written in a way that they create inconsistencies,

@@ -17,7 +17,6 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.context.impl.GraphQLContextImpl;
 import com.gentics.mesh.parameter.impl.SearchParametersImpl;
-import com.gentics.mesh.rest.InternalCommonEndpoint;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 
@@ -45,9 +44,9 @@ public class GraphQLEndpoint extends AbstractProjectEndpoint {
 
 		InternalEndpointRoute queryEndpoint = createRoute();
 		queryEndpoint.method(POST);
-		queryEndpoint.exampleRequest(InternalCommonEndpoint.graphqlExamples.createQueryRequest());
+		queryEndpoint.exampleRequest(graphqlExamples.createQueryRequest());
 		queryEndpoint.addQueryParameters(SearchParametersImpl.class);
-		queryEndpoint.exampleResponse(OK, InternalCommonEndpoint.graphqlExamples.createResponse(), "Basic GraphQL response.");
+		queryEndpoint.exampleResponse(OK, graphqlExamples.createResponse(), "Basic GraphQL response.");
 		queryEndpoint.description("Endpoint which accepts GraphQL queries.");
 		queryEndpoint.path("/");
 		// TODO Change this when mutations are implemented
