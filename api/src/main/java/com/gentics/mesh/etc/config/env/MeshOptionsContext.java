@@ -19,4 +19,10 @@ public interface MeshOptionsContext<T extends MeshOptions> {
 	 * @return
 	 */
 	T getOptions();
+
+	/**
+	 * Get a clone of the options, which will share the storage options
+	 * @return options clone
+	 */
+	public T getClone() throws Exception;
 }

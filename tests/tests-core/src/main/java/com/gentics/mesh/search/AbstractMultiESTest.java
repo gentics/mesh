@@ -148,6 +148,16 @@ public abstract class AbstractMultiESTest implements TestHttpMethods, TestGraphH
 		}
 
 		@Override
+		public String clusterName() {
+			return delegate.clusterName();
+		}
+
+		@Override
+		public int clusterInstances() {
+			return delegate.clusterInstances();
+		}
+
+		@Override
 		public SSLTestMode ssl() {
 			return delegate.ssl();
 		}

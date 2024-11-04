@@ -1,7 +1,5 @@
 package com.gentics.mesh.contentoperation;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -46,9 +44,6 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.CacheLoader;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
-import com.hazelcast.config.Config;
-import com.hazelcast.config.XmlConfigBuilder;
-import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.topic.ITopic;
 
@@ -81,6 +76,8 @@ public class ContentCachedStorage implements DebugInfoProvider {
 	public static final int DEFAULT_PERCENT_OF_XMX = 70;
 
 	private static final String CONTENT_MAP = "content";
+
+	private final static ContentKey ALL = new ContentKey(null, null, null);
 
 	protected static final Logger log = LoggerFactory.getLogger(ContentCachedStorage.class);
 
@@ -147,24 +144,11 @@ public class ContentCachedStorage implements DebugInfoProvider {
 	}
 
 	private void loadHazelcastCache(HibernateDatabase db, boolean statisticsEnabled) {
-		Config config = null;
-		String hazelcastFilePath = new File("").getAbsolutePath() + File.separator + "config" + File.separator + "hazelcast.xml";
-		try {
-			config = new XmlConfigBuilder(hazelcastFilePath).build();
-		} catch (FileNotFoundException e) {
-			throw new RuntimeException("Please provide a " + hazelcastFilePath + " file", e);
-		}
-		config.setInstanceName(options.getClusterOptions().getClusterName());
-		config.setClusterName(options.getClusterOptions().getClusterName());
-		config.setClassLoader(Thread.currentThread().getContextClassLoader());
-
-		Hazelcast.getOrCreateHazelcastInstance(config);
-
 		ITopic<ContentKey> evictTopic = hazelcast.get().getTopic(CONTENT_MAP);
 		evictTopic.addMessageListener(message -> {
 			if (!message.getPublishingMember().localMember()) {
 				ContentKey key = message.getMessageObject();
-				if (key != null) {
+				if (!ALL.equals(key)) {
 					if (log.isDebugEnabled()) {
 						log.debug("Evicting object with key {} from cache", key);
 					}
@@ -259,7 +243,7 @@ public class ContentCachedStorage implements DebugInfoProvider {
 		reset();
 		if (isClustered) {
 			ITopic<ContentKey> evictTopic = hazelcast.get().getTopic(CONTENT_MAP);
-			evictTopic.publish(null);
+			evictTopic.publish(ALL);
 		}
 	}
 

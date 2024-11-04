@@ -30,7 +30,13 @@ public interface MeshOptionsProvider {
 	 * @return
 	 */
 	public MeshOptions getOptions();
-	
+
+	/**
+	 * Get a clone of the options, which will share the storage options
+	 * @return options clone
+	 */
+	public MeshOptions getClone() throws Exception;
+
 	/**
 	 * Resolve the provider instance, currently - from the system properties.
 	 * 

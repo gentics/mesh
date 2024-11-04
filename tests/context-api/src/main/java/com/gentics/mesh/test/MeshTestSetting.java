@@ -68,6 +68,18 @@ public @interface MeshTestSetting {
 	boolean clusterMode() default false;
 
 	/**
+	 * Name of the cluster (when {@link #clusterMode()} is true)
+	 * @return name of the cluster
+	 */
+	String clusterName() default "";
+
+	/**
+	 * Number of started instances, when {@link #clusterMode()} is true. Default is 3 instances.
+	 * @return number of cluster instances
+	 */
+	int clusterInstances() default 3;
+
+	/**
 	 * SSL test mode.
 	 * 
 	 * @return

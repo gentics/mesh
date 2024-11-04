@@ -1,75 +1,33 @@
 package com.gentics.mesh.distributed;
 
 import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.util.TokenUtil.randomToken;
-import static com.gentics.mesh.util.UUIDUtil.randomUUID;
+import static com.gentics.mesh.test.TestSize.FULL;
 
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.RuleChain;
 
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
-import com.gentics.mesh.test.category.ClusterTests;
-import com.gentics.mesh.test.docker.MeshContainer;
+import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.context.MeshTestContext.MeshTestInstance;
 
 /**
  * Test how a cluster behaves with more than two nodes.
  */
-@Category(ClusterTests.class)
-public class MultiNodeClusterTest extends AbstractClusterTest {
+@MeshTestSetting(testSize = FULL, startServer = true, clusterMode = true, clusterName = "MultiNodeClusterTest", clusterInstances = 4)
+public class MultiNodeClusterTest extends AbstractMeshClusteringTest {
+	protected MeshTestInstance serverA;
+	protected MeshTestInstance serverB;
+	protected MeshTestInstance serverC;
+	protected MeshTestInstance serverD;
 
-	private static final int STARTUP_TIMEOUT = 500;
-
-	private static String clusterPostFix = randomUUID();
-
-	// public static MeshLocalServer serverA = new MeshLocalServer("localNodeA", true, true);
-
-	public static MeshContainer serverA = createDefaultMeshContainer()
-		.withClusterName("dockerCluster" + clusterPostFix)
-		.withNodeName("nodeA")
-		.withDataPathPostfix(randomToken())
-		.withInitCluster()
-		.waitForStartup()
-		.withFilesystem()
-		.withClearFolders();
-
-	public static MeshContainer serverB = createDefaultMeshContainer()
-		.withClusterName("dockerCluster" + clusterPostFix)
-		.withNodeName("nodeB")
-		.withDataPathPostfix(randomToken())
-		.withFilesystem()
-		.withClearFolders();
-
-	public static MeshContainer serverC = createDefaultMeshContainer()
-		.withClusterName("dockerCluster" + clusterPostFix)
-		.withNodeName("nodeC")
-		.withDataPathPostfix(randomToken())
-		.withFilesystem()
-		.withClearFolders();
-
-	public static MeshContainer serverD = createDefaultMeshContainer()
-		.withClusterName("dockerCluster" + clusterPostFix)
-		.withNodeName("nodeD")
-		.withDataPathPostfix(randomToken())
-		.withFilesystem()
-		.withClearFolders();
-
-	@ClassRule
-	public static RuleChain chain = RuleChain.outerRule(serverD).around(serverC).around(serverB).around(serverA);
-
-	@BeforeClass
-	public static void login() throws InterruptedException {
-		serverB.awaitStartup(STARTUP_TIMEOUT);
-		serverB.login();
-		serverC.awaitStartup(STARTUP_TIMEOUT);
-		serverC.login();
-		serverD.awaitStartup(STARTUP_TIMEOUT);
-		serverD.login();
-		serverA.awaitStartup(STARTUP_TIMEOUT);
-		serverA.login();
+	@Before
+	public void setup() {
+		serverA = getInstance(0);
+		serverB = getInstance(1);
+		serverC = getInstance(2);
+		serverD = getInstance(3);
 	}
 
 	/**
@@ -78,20 +36,20 @@ public class MultiNodeClusterTest extends AbstractClusterTest {
 	@Test
 	public void testCluster() throws InterruptedException {
 		ProjectResponse response = call(
-			() -> serverA.client().createProject(new ProjectCreateRequest().setName(randomName()).setSchemaRef("folder")));
+			() -> serverA.getHttpClient().createProject(new ProjectCreateRequest().setName(RandomStringUtils.randomAlphabetic(10)).setSchemaRef("folder")));
 		Thread.sleep(1000);
 
-		call(() -> serverB.client().findProjectByUuid(response.getUuid()));
-		call(() -> serverC.client().findProjectByUuid(response.getUuid()));
-		call(() -> serverD.client().findProjectByUuid(response.getUuid()));
+		call(() -> serverB.getHttpClient().findProjectByUuid(response.getUuid()));
+		call(() -> serverC.getHttpClient().findProjectByUuid(response.getUuid()));
+		call(() -> serverD.getHttpClient().findProjectByUuid(response.getUuid()));
 
 		ProjectResponse response2 = call(
-			() -> serverD.client().createProject(new ProjectCreateRequest().setName(randomName()).setSchemaRef("folder")));
+			() -> serverD.getHttpClient().createProject(new ProjectCreateRequest().setName(RandomStringUtils.randomAlphabetic(10)).setSchemaRef("folder")));
 
 		Thread.sleep(1000);
-		call(() -> serverA.client().findProjectByUuid(response2.getUuid()));
-		call(() -> serverB.client().findProjectByUuid(response2.getUuid()));
-		call(() -> serverC.client().findProjectByUuid(response2.getUuid()));
-		call(() -> serverD.client().findProjectByUuid(response2.getUuid()));
+		call(() -> serverA.getHttpClient().findProjectByUuid(response2.getUuid()));
+		call(() -> serverB.getHttpClient().findProjectByUuid(response2.getUuid()));
+		call(() -> serverC.getHttpClient().findProjectByUuid(response2.getUuid()));
+		call(() -> serverD.getHttpClient().findProjectByUuid(response2.getUuid()));
 	}
 }

@@ -54,21 +54,24 @@ public class HSQLMemoryTestContextProvider extends HibernateTestContextProvider 
 	}
 
 	@Override
-	public boolean fastStorageCleanup(Database db) throws Exception {
-		return db.tx(tx -> {
-			EntityManager em = tx.<HibernateTx>unwrap().entityManager();
-			log.info("Clearing the test HSQL database...");
-			em.createNativeQuery("SET DATABASE REFERENTIAL INTEGRITY FALSE").executeUpdate();
-			String findAllMeshTablesQuery = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND UPPER(TABLE_NAME) LIKE UPPER(:prefix)";
-			List<?> tableNames = em.createNativeQuery(findAllMeshTablesQuery).setParameter("prefix", "%" + MeshTablePrefixStrategy.TABLE_NAME_PREFIX + "%").getResultList();
-
-			tableNames.forEach(tableName -> {
-				// we cannot use truncate since removing the referential integrity doesn't work for it: https://stackoverflow.com/questions/63556383/truncate-table-with-referential-constraint?rq=1
-				String statement = "delete from " + tableName;
-				em.createNativeQuery(statement).executeUpdate();
+	public boolean fastStorageCleanup(List<Database> dbs) throws Exception {
+		for (Database db : dbs) {
+			db.tx(tx -> {
+				EntityManager em = tx.<HibernateTx>unwrap().entityManager();
+				log.info("Clearing the test HSQL database...");
+				em.createNativeQuery("SET DATABASE REFERENTIAL INTEGRITY FALSE").executeUpdate();
+				String findAllMeshTablesQuery = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND UPPER(TABLE_NAME) LIKE UPPER(:prefix)";
+				List<?> tableNames = em.createNativeQuery(findAllMeshTablesQuery).setParameter("prefix", "%" + MeshTablePrefixStrategy.TABLE_NAME_PREFIX + "%").getResultList();
+	
+				tableNames.forEach(tableName -> {
+					// we cannot use truncate since removing the referential integrity doesn't work for it: https://stackoverflow.com/questions/63556383/truncate-table-with-referential-constraint?rq=1
+					String statement = "delete from " + tableName;
+					em.createNativeQuery(statement).executeUpdate();
+				});
+				em.createNativeQuery("SET DATABASE REFERENTIAL INTEGRITY TRUE").executeUpdate();
+				return true;
 			});
-			em.createNativeQuery("SET DATABASE REFERENTIAL INTEGRITY TRUE").executeUpdate();
-			return true;
-		});
+		}
+		return true;
 	}
 }
