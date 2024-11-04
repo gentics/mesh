@@ -1,1 +1,0 @@
-A mechanism of Gentics Mesh license management has been added, allowing a runtime REST API access to the license, including update, info and download.
