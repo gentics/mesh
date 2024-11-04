@@ -1,11 +1,7 @@
 package com.gentics.mesh.auth;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import com.gentics.mesh.auth.handler.MeshAnonymousAuthHandler;
 import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
-import com.gentics.mesh.auth.handler.MeshRuntimeAuthHandler;
 import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.vertx.ext.web.Route;
@@ -13,7 +9,6 @@ import io.vertx.ext.web.Route;
 /**
  * Main location for the Gentics Mesh auth chain.
  */
-@Singleton
 public class MeshAuthChainImpl implements MeshAuthChain {
 
 	private final MeshOAuthService oauthService;
@@ -22,15 +17,11 @@ public class MeshAuthChainImpl implements MeshAuthChain {
 
 	private final MeshAnonymousAuthHandler anonHandler;
 
-	private final MeshRuntimeAuthHandler runtimeHandler;
-
-	@Inject
 	public MeshAuthChainImpl(MeshOAuthService oauthService, MeshJWTAuthHandler jwtAuthHandler,
-		MeshAnonymousAuthHandler anonHandler, MeshRuntimeAuthHandler runtimeHandler, MeshOptions options) {
+		MeshAnonymousAuthHandler anonHandler, MeshOptions options) {
 		this.oauthService = oauthService;
 		this.jwtAuthHandler = jwtAuthHandler;
 		this.anonHandler = anonHandler;
-		this.runtimeHandler = runtimeHandler;
 	}
 
 	@Override
@@ -47,11 +38,5 @@ public class MeshAuthChainImpl implements MeshAuthChain {
 		route.handler(rc -> {
 			anonHandler.handle(rc);
 		});
-
-		// Pass runtime auth handlers, if any exist
-		route.handler(rc -> {
-			runtimeHandler.handle(rc);
-		});
 	}
-
 }

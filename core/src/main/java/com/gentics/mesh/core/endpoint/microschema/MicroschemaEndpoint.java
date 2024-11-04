@@ -19,7 +19,7 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.gentics.mesh.auth.MeshAuthChainImpl;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.RolePermissionHandlingEndpoint;
@@ -41,7 +41,7 @@ public class MicroschemaEndpoint extends RolePermissionHandlingEndpoint {
 	}
 
 	@Inject
-	public MicroschemaEndpoint(MeshAuthChainImpl chain, MicroschemaCrudHandler crudHandler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+	public MicroschemaEndpoint(MeshAuthChain chain, MicroschemaCrudHandler crudHandler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
 		super("microschemas", chain, localConfigApi, db, options);
 		this.crudHandler = crudHandler;
 	}

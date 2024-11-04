@@ -32,7 +32,7 @@ import javax.inject.Inject;
 import org.apache.commons.lang3.StringUtils;
 import org.raml.model.Resource;
 
-import com.gentics.mesh.auth.MeshAuthChainImpl;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.db.Database;
@@ -80,7 +80,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 	}
 
 	@Inject
-	public NodeEndpoint(MeshAuthChainImpl chain, BootstrapInitializer boot, NodeCrudHandler crudHandler, BinaryUploadHandler binaryUploadHandler,
+	public NodeEndpoint(MeshAuthChain chain, BootstrapInitializer boot, NodeCrudHandler crudHandler, BinaryUploadHandler binaryUploadHandler,
 		BinaryTransformHandler binaryTransformHandler, BinaryDownloadHandler binaryDownloadHandler, S3BinaryUploadHandlerImpl s3binaryUploadHandler,
 						S3BinaryMetadataExtractionHandlerImpl s3BinaryMetadataExtractionHandler, BinaryVariantsHandler binaryVariantsHandler, 
 						LocalConfigApi localConfigApi, Database db, MeshOptions options) {

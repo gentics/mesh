@@ -1,20 +1,17 @@
 package com.gentics.mesh.core.endpoint.project;
 
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
-import static io.vertx.core.http.HttpMethod.DELETE;
-import static io.vertx.core.http.HttpMethod.GET;
-import static io.vertx.core.http.HttpMethod.POST;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.vertx.core.http.HttpMethod.GET;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.auth.MeshAuthChainImpl;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.example.ExampleUuids;
-import com.gentics.mesh.parameter.client.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.InternalCommonEndpoint;
 import com.gentics.mesh.rest.InternalEndpointRoute;
@@ -30,7 +27,7 @@ public class LanguageEndpoint extends AbstractInternalEndpoint {
 	private final LanguageCrudHandler crudHandler;
 
 	@Inject
-	public LanguageEndpoint(MeshAuthChainImpl chain, LocalConfigApi localConfigApi, Database db, MeshOptions options, LanguageCrudHandler crudHandler) {
+	public LanguageEndpoint(MeshAuthChain chain, LocalConfigApi localConfigApi, Database db, MeshOptions options, LanguageCrudHandler crudHandler) {
 		super("languages", chain, localConfigApi, db, options);
 		this.crudHandler = crudHandler;
 	}

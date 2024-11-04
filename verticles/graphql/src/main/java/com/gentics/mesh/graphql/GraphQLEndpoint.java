@@ -6,7 +6,10 @@ import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.auth.MeshAuthChainImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
@@ -18,8 +21,6 @@ import com.gentics.mesh.rest.InternalCommonEndpoint;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.vertx.ext.web.handler.StaticHandler;
 
 public class GraphQLEndpoint extends AbstractProjectEndpoint {
@@ -33,7 +34,7 @@ public class GraphQLEndpoint extends AbstractProjectEndpoint {
 	}
 
 	@Inject
-	public GraphQLEndpoint(MeshAuthChainImpl chain, BootstrapInitializer boot, GraphQLHandler queryHandler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+	public GraphQLEndpoint(MeshAuthChain chain, BootstrapInitializer boot, GraphQLHandler queryHandler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
 		super("graphql", chain, boot, localConfigApi, db, options);
 		this.queryHandler = queryHandler;
 	}

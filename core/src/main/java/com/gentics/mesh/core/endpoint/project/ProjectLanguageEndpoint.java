@@ -8,7 +8,7 @@ import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.auth.MeshAuthChainImpl;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.db.Database;
@@ -32,7 +32,7 @@ public class ProjectLanguageEndpoint extends AbstractProjectEndpoint {
 	}
 
 	@Inject
-	public ProjectLanguageEndpoint(MeshAuthChainImpl chain, BootstrapInitializer boot, LocalConfigApi localConfigApi, Database db, MeshOptions options, LanguageCrudHandler crudHandler) {
+	public ProjectLanguageEndpoint(MeshAuthChain chain, BootstrapInitializer boot, LocalConfigApi localConfigApi, Database db, MeshOptions options, LanguageCrudHandler crudHandler) {
 		super("languages", chain, boot, localConfigApi, db, options);
 		this.crudHandler = crudHandler;
 	}

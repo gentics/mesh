@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.auth.MeshAuthChain;
-import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Database;
@@ -56,7 +55,7 @@ public class RouterStorageImpl implements RouterStorage {
 
 	public final VersionHandlerImpl versionHandler;
 
-	private MeshAuthChainImpl authChain;
+	private MeshAuthChain authChain;
 
 	private final RouterStorageRegistryImpl routerStorageRegistry;
 
@@ -67,7 +66,7 @@ public class RouterStorageImpl implements RouterStorage {
 	private final LocalConfigApi localConfigApi;
 
 	@Inject
-	public RouterStorageImpl(Vertx vertx, MeshOptions options, MeshAuthChainImpl authChain, CorsHandler corsHandler, BodyHandlerImpl bodyHandler,
+	public RouterStorageImpl(Vertx vertx, MeshOptions options, MeshAuthChain authChain, CorsHandler corsHandler, BodyHandlerImpl bodyHandler,
 		Lazy<BootstrapInitializer> boot,
 		Lazy<Database> db, VersionHandlerImpl versionHandler,
 		RouterStorageRegistryImpl routerStorageRegistry, LocalConfigApi localConfigApi,

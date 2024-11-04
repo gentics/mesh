@@ -24,9 +24,26 @@ import com.gentics.mesh.cache.TagNameCache;
 import com.gentics.mesh.cache.TagNameCacheImpl;
 import com.gentics.mesh.cache.UserNameCache;
 import com.gentics.mesh.cache.UserNameCacheImpl;
+import com.gentics.mesh.changelog.HibernateBootstrapInitializerImpl;
+import com.gentics.mesh.changelog.HibernateHighLevelChangesList;
 import com.gentics.mesh.changelog.highlevel.HighLevelChangelogSystem;
 import com.gentics.mesh.changelog.highlevel.HighLevelChangelogSystemImpl;
 import com.gentics.mesh.changelog.highlevel.HighLevelChangesList;
+import com.gentics.mesh.check.BinaryFieldRefCheck;
+import com.gentics.mesh.check.BoolListItemCheck;
+import com.gentics.mesh.check.ContentRefCheck;
+import com.gentics.mesh.check.DateListItemCheck;
+import com.gentics.mesh.check.HibernateBranchCheck;
+import com.gentics.mesh.check.HtmlListItemCheck;
+import com.gentics.mesh.check.MicronodeFieldRefCheck;
+import com.gentics.mesh.check.MicronodeListItemCheck;
+import com.gentics.mesh.check.NodeFieldContainerCheck;
+import com.gentics.mesh.check.NodeFieldContainerVersionsEdgeCheck;
+import com.gentics.mesh.check.NodeFieldRefCheck;
+import com.gentics.mesh.check.NodeListItemCheck;
+import com.gentics.mesh.check.NumberListItemCheck;
+import com.gentics.mesh.check.S3BinaryFieldRefCheck;
+import com.gentics.mesh.check.StringListItemCheck;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.contentoperation.ContentCachedStorage;
 import com.gentics.mesh.contentoperation.ContentStorage;
@@ -65,37 +82,15 @@ import com.gentics.mesh.core.migration.MicronodeMigration;
 import com.gentics.mesh.core.migration.NodeMigration;
 import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandler;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
-import com.gentics.mesh.distributed.RequestDelegator;
-import com.gentics.mesh.changelog.HibernateBootstrapInitializerImpl;
-import com.gentics.mesh.changelog.HibernateHighLevelChangesList;
-import com.gentics.mesh.check.BinaryFieldRefCheck;
-import com.gentics.mesh.check.BoolListItemCheck;
-import com.gentics.mesh.check.ContentRefCheck;
-import com.gentics.mesh.check.DateListItemCheck;
-import com.gentics.mesh.check.HibernateBranchCheck;
-import com.gentics.mesh.check.HtmlListItemCheck;
-import com.gentics.mesh.check.MicronodeFieldRefCheck;
-import com.gentics.mesh.check.MicronodeListItemCheck;
-import com.gentics.mesh.check.NodeFieldContainerCheck;
-import com.gentics.mesh.check.NodeFieldContainerVersionsEdgeCheck;
-import com.gentics.mesh.check.NodeFieldRefCheck;
-import com.gentics.mesh.check.NodeListItemCheck;
-import com.gentics.mesh.check.NumberListItemCheck;
-import com.gentics.mesh.check.S3BinaryFieldRefCheck;
-import com.gentics.mesh.check.StringListItemCheck;
 import com.gentics.mesh.dagger.tx.TransactionComponent;
 import com.gentics.mesh.database.DatabaseProvider;
 import com.gentics.mesh.database.DefaultSQLDatabase;
 import com.gentics.mesh.database.HibClusterManager;
 import com.gentics.mesh.database.HibernateDatabase;
+import com.gentics.mesh.distributed.RequestDelegator;
 import com.gentics.mesh.distributed.RequestDelegatorStub;
 import com.gentics.mesh.endpoint.admin.HibAdminHandler;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
-import com.gentics.mesh.migration.HibBranchMigration;
-import com.gentics.mesh.migration.HibMicronodeMigration;
-import com.gentics.mesh.migration.HibNodeMigration;
-import com.gentics.mesh.migration.HibProjectVersionPurge;
-import com.gentics.mesh.verticle.handler.HibernateWriteLockImpl;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.hibernate.HibernateRootResolver;
 import com.gentics.mesh.hibernate.data.binary.impl.HibBinariesImpl;
@@ -103,9 +98,9 @@ import com.gentics.mesh.hibernate.data.dao.BinaryDaoImpl;
 import com.gentics.mesh.hibernate.data.dao.BranchDaoImpl;
 import com.gentics.mesh.hibernate.data.dao.ChangelogDaoImpl;
 import com.gentics.mesh.hibernate.data.dao.ContentDaoImpl;
-import com.gentics.mesh.hibernate.data.dao.HibernateUserPropertiesImpl;
 import com.gentics.mesh.hibernate.data.dao.GroupDaoImpl;
 import com.gentics.mesh.hibernate.data.dao.HibDaoCollectionImpl;
+import com.gentics.mesh.hibernate.data.dao.HibernateUserPropertiesImpl;
 import com.gentics.mesh.hibernate.data.dao.ImageVariantDaoImpl;
 import com.gentics.mesh.hibernate.data.dao.JobDaoImpl;
 import com.gentics.mesh.hibernate.data.dao.LanguageDaoImpl;
@@ -122,8 +117,13 @@ import com.gentics.mesh.hibernate.data.domain.AbstractHibListFieldEdgeImpl;
 import com.gentics.mesh.hibernate.data.permission.HibPermissionRoots;
 import com.gentics.mesh.hibernate.data.s3binary.impl.S3HibBinariesImpl;
 import com.gentics.mesh.hibernate.data.service.HibWebRootServiceImpl;
+import com.gentics.mesh.migration.HibBranchMigration;
+import com.gentics.mesh.migration.HibMicronodeMigration;
+import com.gentics.mesh.migration.HibNodeMigration;
+import com.gentics.mesh.migration.HibProjectVersionPurge;
 import com.gentics.mesh.search.index.BucketManager;
 import com.gentics.mesh.search.index.BucketManagerImpl;
+import com.gentics.mesh.verticle.handler.HibernateWriteLockImpl;
 import com.hazelcast.core.HazelcastInstance;
 
 import dagger.Binds;
@@ -137,157 +137,157 @@ import dagger.multibindings.IntoSet;
  * @author plyhun
  *
  */
-@Module(includes = { DaoHelperModule.class, UtilModule.class, DatabaseConnectorModule.class }, subcomponents = TransactionComponent.class)
+@Module(includes = { DaoHelperModule.class, UtilModule.class }, subcomponents = TransactionComponent.class)
 public abstract class HibernateModule {
 
 	@Binds
-	abstract HighLevelChangesList highLevelChangesList(HibernateHighLevelChangesList e);
+	public abstract HighLevelChangesList highLevelChangesList(HibernateHighLevelChangesList e);
 
 	@Binds
-	abstract Database bindDatabase(HibernateDatabase e);
+	public abstract Database bindDatabase(HibernateDatabase e);
 
 	@Binds
-	abstract RootResolver bindRootResolver(HibernateRootResolver rootResolver);
+	public abstract RootResolver bindRootResolver(HibernateRootResolver rootResolver);
 	
 	@Binds
-	abstract WriteLock bindWriteLock(HibernateWriteLockImpl e);
+	public abstract WriteLock bindWriteLock(HibernateWriteLockImpl e);
 
 	@Binds
-	abstract DatabaseProvider bindDatabaseProvider(DefaultSQLDatabase e);
+	public abstract DatabaseProvider bindDatabaseProvider(DefaultSQLDatabase e);
 	
 	@Binds
-	abstract BootstrapInitializer bindBootstrapInitializer(HibernateBootstrapInitializerImpl e);
+	public abstract BootstrapInitializer bindBootstrapInitializer(HibernateBootstrapInitializerImpl e);
 
 	@Binds
-	abstract ClusterManager bindClusterManager(HibClusterManager e);
+	public abstract ClusterManager bindClusterManager(HibClusterManager e);
 
 	@Binds
-	abstract HighLevelChangelogSystem bindHighLevelChangelogSystem(HighLevelChangelogSystemImpl e);
+	public abstract HighLevelChangelogSystem bindHighLevelChangelogSystem(HighLevelChangelogSystemImpl e);
 	
 	@Binds
-	abstract RequestDelegator bindRequestDelegator(RequestDelegatorStub e);
+	public abstract RequestDelegator bindRequestDelegator(RequestDelegatorStub e);
 
 	@Binds
-	abstract UserProperties userProperties(HibernateUserPropertiesImpl e);
+	public abstract UserProperties userProperties(HibernateUserPropertiesImpl e);
 
 	@Binds
-	abstract WebRootService bindWebrootService(HibWebRootServiceImpl e);
+	public abstract WebRootService bindWebrootService(HibWebRootServiceImpl e);
 
 	@Binds
-	abstract AdminHandler adminHandler(HibAdminHandler e);
+	public abstract AdminHandler adminHandler(HibAdminHandler e);
 
 	@Binds
-	abstract ContentStorage contentQuery(ContentStorageImpl e);
+	public abstract ContentStorage contentQuery(ContentStorageImpl e);
 
 	// Caches
 
 	@Binds
-	abstract UserNameCache bindUserNameCache(UserNameCacheImpl e);
+	public abstract UserNameCache bindUserNameCache(UserNameCacheImpl e);
 
 	@Binds
-	abstract TagFamilyNameCache bindTagFamilyNameCache(TagFamilyNameCacheImpl e);
+	public abstract TagFamilyNameCache bindTagFamilyNameCache(TagFamilyNameCacheImpl e);
 
 	@Binds
-	abstract TagNameCache bindTagNameCache(TagNameCacheImpl e);
+	public abstract TagNameCache bindTagNameCache(TagNameCacheImpl e);
 
 	@Binds
-	abstract RoleNameCache bindRoleNameCache(RoleNameCacheImpl e);
+	public abstract RoleNameCache bindRoleNameCache(RoleNameCacheImpl e);
 
 	@Binds
-	abstract GroupNameCache bindGroupNameCache(GroupNameCacheImpl e);
+	public abstract GroupNameCache bindGroupNameCache(GroupNameCacheImpl e);
 
 	@Binds
-	abstract ProjectBranchNameCache bindBranchNameCache(ProjectBranchNameCacheImpl e);
+	public abstract ProjectBranchNameCache bindBranchNameCache(ProjectBranchNameCacheImpl e);
 
 	@Binds
-	abstract ProjectNameCache bindProjectNameCache(ProjectNameCacheImpl e);
+	public abstract ProjectNameCache bindProjectNameCache(ProjectNameCacheImpl e);
 
 	@Binds
-	abstract ListableFieldCache<AbstractHibListFieldEdgeImpl<?>> bindListableFieldCache(ListableFieldCacheImpl e);
+	public abstract ListableFieldCache<AbstractHibListFieldEdgeImpl<?>> bindListableFieldCache(ListableFieldCacheImpl e);
 
 	@Binds
-	abstract CacheRegistry bindCacheRegistry(HibCacheRegistry e);
+	public abstract CacheRegistry bindCacheRegistry(HibCacheRegistry e);
 
 	// Migration
 	@Binds
-	abstract NodeMigration bindNodeMigration(HibNodeMigration e);
+	public abstract NodeMigration bindNodeMigration(HibNodeMigration e);
 
 	@Binds
-	abstract MicronodeMigration bindMicronodeMigration(HibMicronodeMigration e);
+	public abstract MicronodeMigration bindMicronodeMigration(HibMicronodeMigration e);
 
 	@Binds
-	abstract BranchMigration branchMigration(HibBranchMigration e);
+	public abstract BranchMigration branchMigration(HibBranchMigration e);
 
 	@Binds
-	abstract ProjectVersionPurgeHandler projectVersionPurgeHandler(HibProjectVersionPurge e);
+	public abstract ProjectVersionPurgeHandler projectVersionPurgeHandler(HibProjectVersionPurge e);
 
 	// Daos
 
 	@Binds
-	abstract ChangelogDao changelogDao(ChangelogDaoImpl e);
+	public abstract ChangelogDao changelogDao(ChangelogDaoImpl e);
 
 	@Binds
-	abstract DaoCollection daoCollection(HibDaoCollectionImpl daoCollection);
+	public abstract DaoCollection daoCollection(HibDaoCollectionImpl daoCollection);
 
 	@Binds
-	abstract PermissionRoots permissionRoots(HibPermissionRoots daoCollection);
+	public abstract PermissionRoots permissionRoots(HibPermissionRoots daoCollection);
 
 	@Binds
-	abstract PersistingImageVariantDao bindImageVariantDao(ImageVariantDaoImpl dao);
+	public abstract PersistingImageVariantDao bindImageVariantDao(ImageVariantDaoImpl dao);
 
 	@Binds
-	abstract PersistingUserDao bindUserDao(UserDaoImpl dao);
+	public abstract PersistingUserDao bindUserDao(UserDaoImpl dao);
 
 	@Binds
-	abstract PersistingRoleDao bindRoleDao(RoleDaoImpl e);
+	public abstract PersistingRoleDao bindRoleDao(RoleDaoImpl e);
 
 	@Binds
-	abstract PersistingGroupDao bindGroupDao(GroupDaoImpl e);
+	public abstract PersistingGroupDao bindGroupDao(GroupDaoImpl e);
 
 	@Binds
-	abstract PersistingProjectDao bindProjectDao(ProjectDaoImpl e);
+	public abstract PersistingProjectDao bindProjectDao(ProjectDaoImpl e);
 
 	@Binds
-	abstract PersistingNodeDao bindNodeDao(NodeDaoImpl e);
+	public abstract PersistingNodeDao bindNodeDao(NodeDaoImpl e);
 
 	@Binds
-	abstract PersistingContentDao bindContentDao(ContentDaoImpl e);
+	public abstract PersistingContentDao bindContentDao(ContentDaoImpl e);
 
 	@Binds
-	abstract PersistingJobDao bindJobDao(JobDaoImpl e);
+	public abstract PersistingJobDao bindJobDao(JobDaoImpl e);
 
 	@Binds
-	abstract PersistingTagDao bindTagDao(TagDaoImpl e);
+	public abstract PersistingTagDao bindTagDao(TagDaoImpl e);
 
 	@Binds
-	abstract PersistingTagFamilyDao bindTagFamilyDao(TagFamilyDaoImpl e);
+	public abstract PersistingTagFamilyDao bindTagFamilyDao(TagFamilyDaoImpl e);
 
 	@Binds
-	abstract PersistingBinaryDao bindBinaryDao(BinaryDaoImpl e);
+	public abstract PersistingBinaryDao bindBinaryDao(BinaryDaoImpl e);
 
 	@Binds
-	abstract PersistingS3BinaryDao bindS3BinaryDao(S3BinaryDaoImpl e);
+	public abstract PersistingS3BinaryDao bindS3BinaryDao(S3BinaryDaoImpl e);
 
 	@Binds
-	abstract PersistingBranchDao bindBranchDao(BranchDaoImpl e);
+	public abstract PersistingBranchDao bindBranchDao(BranchDaoImpl e);
 
 	@Binds
-	abstract PersistingSchemaDao bindSchemaDao(SchemaDaoImpl e);
+	public abstract PersistingSchemaDao bindSchemaDao(SchemaDaoImpl e);
 
 	@Binds
-	abstract PersistingMicroschemaDao bindMicroschemaDao(MicroschemaDaoImpl e);
+	public abstract PersistingMicroschemaDao bindMicroschemaDao(MicroschemaDaoImpl e);
 
 	@Binds
-	abstract PersistingLanguageDao bindLanguageDao(LanguageDaoImpl e);
+	public abstract PersistingLanguageDao bindLanguageDao(LanguageDaoImpl e);
 
 	@Binds
-	abstract BucketManager bindBucketManager(BucketManagerImpl e);
+	public abstract BucketManager bindBucketManager(BucketManagerImpl e);
 
 	@Binds
-	abstract Binaries bindBinaries(HibBinariesImpl e);
+	public abstract Binaries bindBinaries(HibBinariesImpl e);
 
 	@Binds
-	abstract S3Binaries bindS3Binaries(S3HibBinariesImpl e);
+	public abstract S3Binaries bindS3Binaries(S3HibBinariesImpl e);
 
 	@Provides
 	public static HibernateMeshOptions hibernateMeshOptions(MeshOptions meshOptions) {

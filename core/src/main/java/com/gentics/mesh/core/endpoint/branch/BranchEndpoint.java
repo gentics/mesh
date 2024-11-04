@@ -25,7 +25,7 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.gentics.mesh.auth.MeshAuthChainImpl;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.db.Database;
@@ -48,7 +48,7 @@ public class BranchEndpoint extends RolePermissionHandlingProjectEndpoint {
 	}
 
 	@Inject
-	public BranchEndpoint(MeshAuthChainImpl chain, BootstrapInitializer boot, BranchCrudHandler crudHandler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+	public BranchEndpoint(MeshAuthChain chain, BootstrapInitializer boot, BranchCrudHandler crudHandler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
 		super("branches", chain, boot, localConfigApi, db, options);
 		this.crudHandler = crudHandler;
 	}

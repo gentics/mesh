@@ -23,7 +23,7 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gentics.mesh.auth.MeshAuthChainImpl;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.db.Database;
@@ -57,7 +57,7 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 	}
 
 	@Inject
-	public TagFamilyEndpoint(MeshAuthChainImpl chain, BootstrapInitializer boot, TagCrudHandler tagCrudHandler,
+	public TagFamilyEndpoint(MeshAuthChain chain, BootstrapInitializer boot, TagCrudHandler tagCrudHandler,
 		TagFamilyCrudHandler tagFamilyCrudHandler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
 		super("tagFamilies", chain, boot, localConfigApi, db, options);
 		this.tagCrudHandler = tagCrudHandler;

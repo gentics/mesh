@@ -38,7 +38,6 @@ import com.gentics.mesh.core.endpoint.webrootfield.WebRootFieldEndpoint;
 import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.GraphQLEndpoint;
-import com.gentics.mesh.handler.RuntimeServiceRegistry;
 import com.gentics.mesh.router.RouterStorageImpl;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
@@ -46,7 +45,6 @@ import com.gentics.mesh.search.ProjectRawSearchEndpointImpl;
 import com.gentics.mesh.search.ProjectSearchEndpointImpl;
 import com.gentics.mesh.search.RawSearchEndpointImpl;
 import com.gentics.mesh.search.SearchEndpointImpl;
-import com.gentics.mesh.service.EndpointService;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
@@ -129,8 +127,6 @@ public class RestAPIVerticle extends AbstractVerticle {
 
 	protected final Provider<HealthEndpoint> healthEndpoint;
 
-	protected final RuntimeServiceRegistry runtimeServiceRegistry;
-
 	protected final RouterStorageRegistryImpl routerStorageRegistry;
 
 	protected final io.vertx.reactivex.core.Vertx rxVertx;
@@ -154,7 +150,6 @@ public class RestAPIVerticle extends AbstractVerticle {
 			Provider<AuthenticationEndpoint> authenticationEndpoint, Provider<SearchEndpointImpl> searchEndpoint,
 			Provider<RawSearchEndpointImpl> rawSearchEndpoint, Provider<GraphQLEndpoint> graphqlEndpoint,
 			Provider<AdminEndpoint> adminEndpoint, Provider<HealthEndpoint> healthEndpoint,
-			RuntimeServiceRegistry runtimeServiceRegistry,
 			RouterStorageRegistryImpl routerStorageRegistry, io.vertx.reactivex.core.Vertx rxVertx, Vertx vertx,
 			MeshOptions meshOptions) {
 		this.routerStorage = routerStorage;
@@ -187,7 +182,6 @@ public class RestAPIVerticle extends AbstractVerticle {
 		this.adminEndpoint = adminEndpoint;
 		this.healthEndpoint = healthEndpoint;
 		this.routerStorageRegistry = routerStorageRegistry;
-		this.runtimeServiceRegistry = runtimeServiceRegistry;
 		this.rxVertx = rxVertx;
 		this.vertx = vertx;
 		this.meshOptions = meshOptions;
@@ -341,12 +335,6 @@ public class RestAPIVerticle extends AbstractVerticle {
 		endpoints.add(utilityEndpoint.get());
 		endpoints.add(projectInfoEndpoint.get());
 		endpoints.add(healthEndpoint.get());
-
-		for (EndpointService endpointService: runtimeServiceRegistry.endpointHandlers()) {
-			for (InternalEndpoint endpoint : endpointService.generateEndpoints(routerStorage.get())) {
-				endpoints.add(endpoint);
-			}
-		}
 
 		for (InternalEndpoint endpoint : endpoints) {
 			endpoint.init(vertx, storage);
