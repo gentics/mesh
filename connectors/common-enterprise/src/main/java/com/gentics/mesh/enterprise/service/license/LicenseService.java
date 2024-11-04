@@ -3,7 +3,8 @@ package com.gentics.mesh.enterprise.service.license;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -13,11 +14,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gentics.license.License;
+import com.gentics.license.LicenseCheckResult;
 import com.gentics.license.LicenseChecker;
 import com.gentics.license.LicenseStatus;
-import com.gentics.license.feature.LicenseKeyFeature;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
-import com.github.jknack.handlebars.internal.lang3.StringUtils;
+import com.gentics.mesh.util.UUIDUtil;
 
 /**
  * Service to perform license checks. I.e. check which services are licensed and allowed to use.
@@ -52,11 +53,9 @@ public class LicenseService {
 		}
 
 		try {
-			LicenseChecker.init(List.of(LicensedFeature.values()), LicensedFeature.MSQL, licenseKeyFile,
-					true,
-					true);
+			LicenseChecker.init(List.of(LicensedFeature.MSQL.name()), licenseKeyFile);
 
-			LicenseChecker.doLicenseCheck(true, null, null);
+			LicenseChecker.checkLicense();
 		} catch (Exception exception) {
 			logger.error("License check failed.", exception);
 			return LicenseStatus.INVALID;
@@ -84,29 +83,28 @@ public class LicenseService {
 	 * @return
 	 */
 	public LicenseResponse getLicenseInfo() {
-		License license = LicenseChecker.getLicense();
+		LicenseCheckResult checkResult = LicenseChecker.getLicenseCheckResult();
+		LicenseResponse response = new LicenseResponse();
+		LicenseStatus status = checkResult.getLicenseResult();
+		response.setStatus(status.name());
+		License license = checkResult.getLicense();
 		if (license != null) {
-			LicenseKeyFeature[] features = LicenseChecker.getLicenseCheckResult().getFeatures();
-			LicenseStatus status = LicenseChecker.getLicenseCheckResult().getLicenseResult();
-
-			LicenseResponse response = new LicenseResponse();
-			response.setStatus(status.name());
-			response.setFeatures(Arrays.stream(features).map(LicenseKeyFeature::getProductName).collect(Collectors.toSet()));
-			if (StringUtils.isNotBlank(license.getLicense())) {
-				String[] parts = license.getLicense().split("-");
-				String obfuscated = IntStream.range(0, parts.length).mapToObj(i -> {
-					if (i > 0 && i < (parts.length-1)) {
-						return "****";
-					} else {
-						return parts[i];
-					}
-				}).collect(Collectors.joining("-"));
-				response.setLicenseKey(obfuscated);
-			}
-			return response;
-		} else {
-			return null;
+			Collection<String> features = checkResult.getFeatures();
+			response.setIssuedAt(license.getIssuedAt().toInstant());
+			response.setExpiresAt(license.getValidUntil().toInstant());
+			response.setIssuer(license.getIssuer());
+			response.setSubject(license.getSubject());
+			response.setFeatures(new HashSet<>(features));
+			String uuid = UUIDUtil.toShortUuid(license.getUuid());
+			response.setLicenseKey(IntStream.range(0, uuid.length()).mapToObj(i -> {
+				if (i > 2 && i < (uuid.length() - 2)) {
+					return '*';
+				} else {
+					return uuid.charAt(i);
+				}
+			}).map(Object::toString).collect(Collectors.joining()));
 		}
+		return response;
 	}
 
 	/**
