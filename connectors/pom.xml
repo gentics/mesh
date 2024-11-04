@@ -35,6 +35,7 @@
 	</dependencyManagement>
 
 	<modules>
+		<module>api</module>
 		<module>common-enterprise</module>
 		<module>mssql</module>
 		<module>postgres</module>

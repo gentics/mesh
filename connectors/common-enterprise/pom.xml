@@ -21,6 +21,10 @@
 			<artifactId>mesh-database-connector-common</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>com.gentics.mesh.enterprise</groupId>
+			<artifactId>mesh-enterprise-database-connector-api</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-mdm-hibernate-core</artifactId>
 			<scope>provided</scope>
