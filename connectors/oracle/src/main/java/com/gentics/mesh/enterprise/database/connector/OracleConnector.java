@@ -9,8 +9,8 @@ import java.util.stream.IntStream;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.enterprise.hibernate.dialect.OracleLongTextDialect;
+import com.gentics.mesh.enterprise.license.LicenseService;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
-import com.gentics.mesh.handler.RuntimeServiceRegistry;
 import com.gentics.mesh.hibernate.MeshTablePrefixStrategy;
 import com.gentics.mesh.hibernate.data.domain.AbstractHibListFieldEdgeImpl;
 import com.gentics.mesh.hibernate.data.node.field.HibListFieldEdge;
@@ -24,8 +24,8 @@ import jakarta.persistence.Query;
  */
 public class OracleConnector extends AbstractEnterpriseDatabaseConnector {
 
-	public OracleConnector(HibernateMeshOptions options, RuntimeServiceRegistry runtimeServiceRegistry) {
-		super(options, runtimeServiceRegistry);
+	public OracleConnector(HibernateMeshOptions options, LicenseService licenseService) {
+		super(options, licenseService);
 	}
 
 	@Override

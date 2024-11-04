@@ -1,15 +1,14 @@
 package com.gentics.mesh.enterprise.database.connector.service;
 
 import com.gentics.mesh.database.connector.DatabaseConnector;
-import com.gentics.mesh.database.connector.service.DatabaseConnectorService;
 import com.gentics.mesh.enterprise.database.connector.SQLServerConnector;
+import com.gentics.mesh.enterprise.license.LicenseService;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
-import com.gentics.mesh.handler.RuntimeServiceRegistry;
 
-public class SQLServerService implements DatabaseConnectorService {
+public class SQLServerService implements EnterpriseDatabaseConnectorService {
 
 	@Override
-	public DatabaseConnector instantiate(HibernateMeshOptions options, RuntimeServiceRegistry runtimeServiceRegistry) {
-		return new SQLServerConnector(options, runtimeServiceRegistry);
+	public DatabaseConnector instantiate(HibernateMeshOptions options, LicenseService licenseService) {
+		return new SQLServerConnector(options, licenseService);
 	}
 }

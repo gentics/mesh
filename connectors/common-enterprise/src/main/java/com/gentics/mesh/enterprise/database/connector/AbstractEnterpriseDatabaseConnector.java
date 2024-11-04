@@ -1,41 +1,38 @@
 package com.gentics.mesh.enterprise.database.connector;
 
-import static org.slf4j.LoggerFactory.getLogger;
-
 import java.util.Collection;
-import java.util.Optional;
+import java.util.Collections;
+import java.util.Set;
 import java.util.UUID;
-
-import org.slf4j.Logger;
 
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.database.connector.AbstractDatabaseConnector;
-import com.gentics.mesh.enterprise.service.LicenseCheckingAuthenticationService;
-import com.gentics.mesh.enterprise.service.LicenseManagementEndpointService;
-import com.gentics.mesh.enterprise.service.license.LicenseService;
+import com.gentics.mesh.enterprise.license.LicenseService;
+import com.gentics.mesh.enterprise.license.LicensedFeature;
+import com.gentics.mesh.enterprise.license.service.RequiresLicense;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
-import com.gentics.mesh.handler.RuntimeServiceRegistry;
 
 import jakarta.persistence.EntityManager;
 
 /**
  * Base functionality for the Mesh Database Connector - licensed implementations.
- * 
- * @param <DR>
- * @param <DI>
  */
-public abstract class AbstractEnterpriseDatabaseConnector extends AbstractDatabaseConnector {
-
-	private static final Logger log = getLogger(AbstractEnterpriseDatabaseConnector.class);
+public abstract class AbstractEnterpriseDatabaseConnector extends AbstractDatabaseConnector implements RequiresLicense {
 
 	private final LicenseService licenseService;
 
-	protected AbstractEnterpriseDatabaseConnector(HibernateMeshOptions options, RuntimeServiceRegistry runtimeServiceRegistry) {
+	protected AbstractEnterpriseDatabaseConnector(HibernateMeshOptions options, LicenseService licenseService) {
 		super(options);
-		this.licenseService = new LicenseService(options);
-		initAuthHandlers(runtimeServiceRegistry);
-		initEndpointHandlers(runtimeServiceRegistry);
+		this.licenseService = licenseService;
+		if (licenseService == null) {
+			licenseService = new LicenseService(options);
+			if (!licenseService.isLicenseSufficient()) {
+				throw new IllegalStateException("Usage of " + getClass().getSimpleName() + " requires a valid Gentics license!");
+			}
+		} else {
+			licenseService.registerRequestor(this);
+		}
 	}
 
 	@Override
@@ -60,28 +57,9 @@ public abstract class AbstractEnterpriseDatabaseConnector extends AbstractDataba
 				.executeUpdate();
 	}
 
-	private void initEndpointHandlers(RuntimeServiceRegistry runtimeServiceRegistry) {
-		Optional<LicenseManagementEndpointService> maybeLicenseManagementEndpointService = runtimeServiceRegistry.endpointHandlers().stream()
-				.filter(LicenseManagementEndpointService.class::isInstance)
-				.map(LicenseManagementEndpointService.class::cast)
-				.findAny();
-		if (maybeLicenseManagementEndpointService.isPresent()) {
-			maybeLicenseManagementEndpointService.get().init(this);
-		} else {
-			log.warn("This database connector provides a licensing management endpoint, which has not been loaded. Please check Mesh logs for the reasons.");
-		}
-	}
-
-	private void initAuthHandlers(RuntimeServiceRegistry runtimeServiceRegistry) {
-		Optional<LicenseCheckingAuthenticationService> maybeLicenseCheckingAuthService = runtimeServiceRegistry.authHandlers().stream()
-				.filter(LicenseCheckingAuthenticationService.class::isInstance)
-				.map(LicenseCheckingAuthenticationService.class::cast)
-				.findAny();
-		if (maybeLicenseCheckingAuthService.isPresent()) {
-			maybeLicenseCheckingAuthService.get().init(this);
-		} else if (!licenseService.isLicenseSufficient()) {
-			throw new IllegalStateException("Usage of " + getClass().getSimpleName() + " requires a valid Gentics license!");
-		}
+	@Override
+	public Set<String> requiredFeatures() {
+		return Collections.singleton(LicensedFeature.MSQL.getProductName());
 	}
 
 	public LicenseService getLicenseService() {
