@@ -174,9 +174,6 @@ public abstract class HibernateModule {
 	abstract WebRootService bindWebrootService(HibWebRootServiceImpl e);
 
 	@Binds
-	abstract AdminHandler adminHandler(HibAdminHandler e);
-
-	@Binds
 	abstract ContentStorage contentQuery(ContentStorageImpl e);
 
 	// Caches

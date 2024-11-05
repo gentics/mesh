@@ -6,9 +6,6 @@ import static com.gentics.mesh.rest.Messages.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import com.gentics.mesh.cache.CacheRegistry;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.contentoperation.ContentCachedStorage;
@@ -33,12 +30,10 @@ import io.vertx.core.Vertx;
  * @author plyhun
  *
  */
-@Singleton
 public class HibAdminHandler extends AdminHandler {
 
 	private final ContentCachedStorage contentCache;
 
-	@Inject
 	public HibAdminHandler(Vertx vertx, Database db, RouterStorageImpl routerStorage, BootstrapInitializer boot,
 			SearchProvider searchProvider, HandlerUtilities utils, MeshOptions options,
 			RouterStorageRegistryImpl routerStorageRegistry, Coordinator coordinator, WriteLock writeLock,

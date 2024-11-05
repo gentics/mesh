@@ -219,6 +219,7 @@ public abstract class AdminHandler extends AbstractHandler {
 			info.setMeshVersion(Mesh.getPlainVersion());
 			info.setVertxVersion(VersionCommand.getVersion());
 			info.setMeshNodeName(options.getNodeName());
+			info.setMeshRevision("OSS");
 		}
 		return info;
 	}
