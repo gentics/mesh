@@ -1,6 +1,7 @@
 package com.gentics.mesh.enterprise.core;
 
 import com.gentics.mesh.core.PreparingDatabaseTestContextProvider;
+import com.gentics.mesh.enterprise.dagger.DaggerEnterpriseHibernateMeshComponent;
 import com.gentics.mesh.enterprise.test.docker.PostgresDatabaseContainer;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.test.MeshOptionsProvider;
@@ -14,7 +15,7 @@ public class PostgresTestContextProvider extends PreparingDatabaseTestContextPro
 	}
 
 	public PostgresTestContextProvider() {
-		super(new PostgresDatabaseContainer());
+		super(new PostgresDatabaseContainer(), DaggerEnterpriseHibernateMeshComponent.builder());
 	}
 
 	@Override

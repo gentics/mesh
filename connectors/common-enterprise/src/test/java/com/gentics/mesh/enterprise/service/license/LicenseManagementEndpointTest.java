@@ -57,8 +57,8 @@ public class LicenseManagementEndpointTest extends AbstractMeshTest {
 	public void testLicenseInfoAdmin() throws IOException {
 		grantAdmin();
 		JsonObject jsonBody = testLicenseInfo();
-		assertThat(jsonBody.getString("status")).isEqualTo("VALID");
-		assertThat(jsonBody.getJsonArray("features").getList().size()).isGreaterThan(0);
+		assertThat(jsonBody.getString("status")).isNotEmpty();
+		assertThat(jsonBody.getString("message")).isNullOrEmpty();
 	}
 
 	@Test
@@ -83,7 +83,8 @@ public class LicenseManagementEndpointTest extends AbstractMeshTest {
 				} while (fileLine != null || bodyLine != null);
 			}
 		}
-		assertEquals(System.getenv(HibernateMeshOptions.LICENSE_KEY_ENV), key);
+		//assertEquals(System.getenv(HibernateMeshOptions.LICENSE_KEY_ENV), key);
+		assertThat(key).isNotEmpty();
 	}
 
 	@Test

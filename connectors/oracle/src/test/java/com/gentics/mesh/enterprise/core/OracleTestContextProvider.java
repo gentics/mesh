@@ -1,6 +1,7 @@
 package com.gentics.mesh.enterprise.core;
 
 import com.gentics.mesh.core.PreparingDatabaseTestContextProvider;
+import com.gentics.mesh.enterprise.dagger.DaggerEnterpriseHibernateMeshComponent;
 import com.gentics.mesh.enterprise.test.docker.OracleDatabaseContainer;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.test.MeshOptionsProvider;
@@ -14,7 +15,7 @@ public class OracleTestContextProvider extends PreparingDatabaseTestContextProvi
 	}
 
 	public OracleTestContextProvider() {
-		super(new OracleDatabaseContainer());
+		super(new OracleDatabaseContainer(), DaggerEnterpriseHibernateMeshComponent.builder());
 	}
 
 	@Override
