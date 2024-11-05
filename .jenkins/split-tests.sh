@@ -10,10 +10,10 @@ rm includes*
 echo
 echo  "Collecting all tests"
 mvn -Dstyle.color=never com.gentics.mesh:test-scanner-maven-plugin:scan-test-files | grep "TEST_CLASS:" | sed 's/TEST_CLASS: //g' | awk '!seen[$0]++' > alltests
+## DEBUG START
+echo "NodeMigrationEndpointClusteredTest" > alltests
+## DEBUG END
 tests=$(cat alltests | wc -l)
-
-## DEBUG
-tests=NodeMigrationEndpointClusteredTest
 
 echo "Found $tests tests"
 grep search alltests  > searchtests
