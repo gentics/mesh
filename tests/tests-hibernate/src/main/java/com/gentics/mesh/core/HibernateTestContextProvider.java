@@ -21,13 +21,21 @@ import org.slf4j.LoggerFactory;
 
 public abstract class HibernateTestContextProvider extends AbstractHibernateOptionsProvider implements MeshTestContextProvider, MeshInstanceProvider<HibernateMeshOptions> {
 
-	private final MeshComponent.Builder componentBuilder;
-	private final HibernateMeshTestActions actions = new HibernateMeshTestActions();
+	protected MeshComponent.Builder componentBuilder;
+	protected final HibernateMeshTestActions actions = new HibernateMeshTestActions();
 	
 	protected static final Logger log = LoggerFactory.getLogger(HibernateTestContextProvider.class);
 	
 	public HibernateTestContextProvider() {
-		this.componentBuilder = DaggerHibernateMeshComponent.builder();
+		this(null);
+	}
+
+	public HibernateTestContextProvider(MeshComponent.Builder componentBuilder) {
+		if (componentBuilder != null) {
+			this.componentBuilder = componentBuilder;
+		} else {
+			this.componentBuilder = DaggerHibernateMeshComponent.builder();
+		}
 	}
 
 	@Override
