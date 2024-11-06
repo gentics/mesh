@@ -6,6 +6,11 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v2.1.10]]
+== 2.1.10 (06.11.2024)
+
+icon:plus[] Core: Now it is possible to sort over binary metadata, node reference and micronode non-list fields.
+
 [[v2.1.9]]
 == 2.1.9 (23.10.2024)
 
