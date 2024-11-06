@@ -25,13 +25,12 @@ import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 
 import dagger.Lazy;
-import io.reactivex.Completable;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 
 /**
- * Hibernate DB cluster manager. Either creates its own Hazelcast instance, or reuses an existing 2nd level cache, built atop Hazelcast.
+ * Hibernate DB cluster manager.
  * 
  * @author plyhun
  *
@@ -101,30 +100,5 @@ public class HibClusterManager implements ClusterManager {
 			return info;
 		}).collect(Collectors.toList());
 		return new ClusterStatusResponse().setInstances(instances);
-	}
-
-	@Override
-	public Completable waitUntilWriteQuorumReached() {
-		return Completable.complete();
-	}
-
-	@Override
-	public boolean isClusterTopologyLocked() {
-		return false;
-	}
-
-	@Override
-	public boolean isLocalNodeOnline() {
-		return true;
-	}
-
-	@Override
-	public boolean isWriteQuorumReached() {
-		return true;
-	}
-
-	@Override
-	public Completable waitUntilLocalNodeOnline() {
-		return Completable.complete();
 	}
 }

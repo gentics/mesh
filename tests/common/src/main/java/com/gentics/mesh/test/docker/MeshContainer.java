@@ -36,7 +36,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.cluster.CoordinatorMode;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.rest.client.AbstractMeshRestHttpClient;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -109,8 +108,6 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 
 	protected String dataPathPostfix;
 
-	protected CoordinatorMode coordinatorMode = null;
-
 	protected String coordinatorPlaneRegex;
 
 	protected boolean useFilesystem = false;
@@ -179,9 +176,6 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 
 		addEnv(MeshOptions.MESH_INITIAL_ADMIN_PASSWORD_ENV, "admin");
 		addEnv(MeshOptions.MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET_ENV, "false");
-		if (coordinatorMode != null) {
-			addEnv(ClusterOptions.MESH_CLUSTER_COORDINATOR_MODE_ENV, coordinatorMode.name());
-		}
 
 		if (coordinatorPlaneRegex != null) {
 			addEnv(ClusterOptions.MESH_CLUSTER_COORDINATOR_REGEX_ENV, coordinatorPlaneRegex);
@@ -529,15 +523,6 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 	 */
 	public MeshContainer withInitCluster() {
 		this.initCluster = true;
-		return this;
-	}
-
-	public MeshContainer withCoordinatorPlane() {
-		return withCoordinatorPlane(CoordinatorMode.ALL);
-	}
-
-	public MeshContainer withCoordinatorPlane(CoordinatorMode coordinatorMode) {
-		this.coordinatorMode = coordinatorMode;
 		return this;
 	}
 

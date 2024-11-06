@@ -25,7 +25,6 @@ import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
-import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfig;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorMasterResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
@@ -289,40 +288,6 @@ public abstract class AdminHandler extends AbstractHandler {
 		int port = server.getPort();
 		UUID uuid = server.getUuid();
 		return new CoordinatorMasterResponse(UUIDUtil.toShortUuid(uuid), name, port, host);
-	}
-
-	/**
-	 * Return the currently set coordinator config.
-	 * 
-	 * @param ac
-	 */
-	public void handleLoadCoordinationConfig(InternalActionContext ac) {
-		utils.syncTx(ac, tx -> {
-			HibUser user = ac.getUser();
-			if (user != null && !user.isAdmin()) {
-				throw error(FORBIDDEN, "error_admin_permission_required");
-			}
-			return coordinator.loadConfig();
-		}, model -> ac.send(model, OK));
-	}
-
-	/**
-	 * Update the coordination configuration.
-	 * 
-	 * @param ac
-	 */
-	public void handleUpdateCoordinationConfig(InternalActionContext ac) {
-		try (WriteLock lock = writeLock.lock(ac)) {
-			utils.syncTx(ac, tx -> {
-				HibUser user = ac.getUser();
-				if (user != null && !user.isAdmin()) {
-					throw error(FORBIDDEN, "error_admin_permission_required");
-				}
-				CoordinatorConfig request = ac.fromJson(CoordinatorConfig.class);
-				coordinator.updateConfig(request);
-				return coordinator.loadConfig();
-			}, model -> ac.send(model, OK));
-		}
 	}
 
 	/**

@@ -23,7 +23,7 @@ import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.core.rest.event.search.SearchIndexSyncEventModel;
-import com.gentics.mesh.distributed.RequestDelegator;
+import com.gentics.mesh.distributed.MasterInfoProvider;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -73,7 +73,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	private final IdleChecker idleChecker;
 	private final SyncEventHandler syncEventHandler;
 	private final ElasticSearchOptions options;
-	private final RequestDelegator delegator;
+	private final MasterInfoProvider masterInfoProvider;
 	private final String nodeName;
 	private final boolean clusteringEnabled;
 
@@ -90,13 +90,13 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 		IdleChecker idleChecker,
 		SyncEventHandler syncEventHandler,
 										MeshOptions options,
-										RequestDelegator delegator) {
+										MasterInfoProvider masterInfoProvider) {
 		this.mainEventhandler = mainEventhandler;
 		this.searchProvider = searchProvider;
 		this.idleChecker = idleChecker;
 		this.syncEventHandler = syncEventHandler;
 		this.options = options.getSearchOptions();
-		this.delegator = delegator;
+		this.masterInfoProvider = masterInfoProvider;
 		this.nodeName = options.getNodeName();
 		this.clusteringEnabled = options.getClusterOptions().isEnabled();
 	}
@@ -141,7 +141,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 			// periodically send the event to check the indices
 			vertx.setPeriodic(options.getIndexCheckInterval(), id -> {
 				// only do this for the current master
-				if (!clusteringEnabled || delegator.isMaster()) {
+				if (!clusteringEnabled || masterInfoProvider.isMaster()) {
 					vertx.eventBus().publish(INDEX_CHECK_REQUEST.address, null);
 				}
 			});

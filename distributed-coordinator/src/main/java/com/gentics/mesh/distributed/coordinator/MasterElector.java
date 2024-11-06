@@ -21,7 +21,6 @@ import com.gentics.mesh.core.rest.admin.cluster.ClusterServerConfig;
 import com.gentics.mesh.core.rest.admin.cluster.ServerRole;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.cluster.CoordinationTopology;
 import com.hazelcast.cluster.Cluster;
 import com.hazelcast.cluster.Member;
 import com.hazelcast.cluster.MembershipEvent;
@@ -167,9 +166,6 @@ public class MasterElector {
 			boolean hasMaster = foundMaster.isPresent();
 			boolean isElectible = isElectable(localMember());
 			if (!hasMaster && isElectible) {
-				if (clusterOptions.getCoordinatorTopology() == CoordinationTopology.MASTER_REPLICA) {
-					database.setToMaster();
-				}
 				MeshMemberInfo info = members.get(localMember().getUuid());
 				info.setMaster(true);
 				members.put(localMember().getUuid(), info);
@@ -209,16 +205,14 @@ public class MasterElector {
 				}
 			}
 
-			if (clusterOptions.getCoordinatorTopology() == CoordinationTopology.UNMANAGED) {
-				ClusterConfigResponse config = database.loadClusterConfig();
-				Optional<ClusterServerConfig> databaseServer = config.getServers().stream().filter(s -> s.getName().equals(name)).findFirst();
-				if (databaseServer.isPresent()) {
-					// Replicas are not eligible for master election
-					ServerRole role = databaseServer.get().getRole();
-					if (role == ServerRole.REPLICA) {
-						log.info("Node {" + name + "} is a replica and thus not eligible for election.");
-						return false;
-					}
+			ClusterConfigResponse config = database.loadClusterConfig();
+			Optional<ClusterServerConfig> databaseServer = config.getServers().stream().filter(s -> s.getName().equals(name)).findFirst();
+			if (databaseServer.isPresent()) {
+				// Replicas are not eligible for master election
+				ServerRole role = databaseServer.get().getRole();
+				if (role == ServerRole.REPLICA) {
+					log.info("Node {" + name + "} is a replica and thus not eligible for election.");
+					return false;
 				}
 			}
 

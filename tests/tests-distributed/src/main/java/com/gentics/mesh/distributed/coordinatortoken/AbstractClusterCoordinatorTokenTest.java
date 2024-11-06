@@ -76,7 +76,6 @@ public abstract class AbstractClusterCoordinatorTokenTest {
 		// Email has changed. The request has to be redirected.
 		serverBClient.setAPIKey(new TokenBuilder().setMail("test@gentics.com").build());
 		response = serverBClient.me().getResponse().blockingGet();
-		assertThat(response).isForwardedFrom("nodeA");
 		assertThat(response.getBody())
 			.hasName(userName)
 			.hasEmail("test@gentics.com");
@@ -90,7 +89,6 @@ public abstract class AbstractClusterCoordinatorTokenTest {
 
 		serverBClient.setAPIKey(new TokenBuilder().addGroup("testGroup").build());
 		MeshResponse<UserResponse> response = serverBClient.me().getResponse().blockingGet();
-		assertThat(response).isForwardedFrom("nodeA");
 		assertThat(response.getBody())
 			.hasName(userName)
 			.hasGroup("testGroup");
@@ -107,7 +105,6 @@ public abstract class AbstractClusterCoordinatorTokenTest {
 			.addGroup("testGroup", "testRole")
 			.build());
 		MeshResponse<UserResponse> response = serverBClient.me().getResponse().blockingGet();
-		assertThat(response).isForwardedFrom("nodeA");
 		assertThat(response.getBody())
 			.hasName(userName);
 
@@ -120,7 +117,6 @@ public abstract class AbstractClusterCoordinatorTokenTest {
 	private void checkRepeatedRead() {
 		// User should not be changed anymore, so no redirect should happen
 		MeshResponse<UserResponse> response = serverBClient.me().getResponse().blockingGet();
-		assertThat(response).isNotForwarded();
 		assertThat(response.getBody()).hasName(userName);
 	}
 
@@ -129,7 +125,6 @@ public abstract class AbstractClusterCoordinatorTokenTest {
 
 		// This creates the user
 		MeshResponse<UserResponse> response = serverBClient.me().getResponse().blockingGet();
-		assertThat(response).isForwardedFrom("nodeA");
 		assertThat(response.getBody()).hasName(userName);
 	}
 

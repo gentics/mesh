@@ -45,7 +45,6 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.user.UserReference;
-import com.gentics.mesh.distributed.RequestDelegator;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.plugin.auth.MappingResult;
 import com.gentics.mesh.test.MeshTestSetting;
@@ -150,9 +149,7 @@ public class TokenMappingTest extends AbstractMeshTest {
 
 		service = tx(tx -> {
 			mockActionContext();
-			RequestDelegator delegator = mock(RequestDelegator.class);
-			when(delegator.canWrite()).thenReturn(writable);
-			return new MeshOAuth2ServiceImpl(db(), options(), null, null, null, null, delegator, tx.data().permissionRoots());
+			return new MeshOAuth2ServiceImpl(db(), options(), null, null, null, null, tx.data().permissionRoots());
 		});
 	}
 

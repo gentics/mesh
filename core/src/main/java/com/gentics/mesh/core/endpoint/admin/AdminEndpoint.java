@@ -360,23 +360,6 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		electMaster.description("Make this instance the coordination master.");
 		electMaster.exampleResponse(OK, miscExamples.createMessageResponse(), "Election status message.");
 		electMaster.handler(rc -> adminHandler.handleSetCoordinationMaster(wrap(rc)));
-
-		InternalEndpointRoute loadConfig = createRoute();
-		loadConfig.path("/coordinator/config");
-		loadConfig.method(GET);
-		loadConfig.produces(APPLICATION_JSON);
-		loadConfig.description("Returns the currently active coordination configuration.");
-		loadConfig.exampleResponse(OK, adminExamples.createCoordinatorConfig(), "The currently active coordination config on this instance.");
-		loadConfig.handler(rc -> adminHandler.handleLoadCoordinationConfig(wrap(rc)));
-
-		InternalEndpointRoute updateConfig = createRoute();
-		updateConfig.path("/coordinator/config");
-		updateConfig.method(POST);
-		updateConfig.produces(APPLICATION_JSON);
-		updateConfig.description("Update the coordinator configuration of this instance. Note that the updated config will not be persisted.");
-		updateConfig.exampleResponse(OK, adminExamples.createCoordinatorConfig(), "The currently active config on this instance.");
-		updateConfig.exampleRequest(adminExamples.createCoordinatorConfigRequest());
-		updateConfig.handler(rc -> adminHandler.handleUpdateCoordinationConfig(wrap(rc)));
 	}
 
 	private void addCacheHandler() {

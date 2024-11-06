@@ -158,6 +158,11 @@ public abstract class AbstractMultiESTest implements TestHttpMethods, TestGraphH
 		}
 
 		@Override
+		public String[] nodeNames() {
+			return delegate.nodeNames();
+		}
+
+		@Override
 		public SSLTestMode ssl() {
 			return delegate.ssl();
 		}

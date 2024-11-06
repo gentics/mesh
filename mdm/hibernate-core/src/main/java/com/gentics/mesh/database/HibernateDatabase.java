@@ -313,19 +313,10 @@ public class HibernateDatabase extends CommonDatabase implements Database, Seria
 				response.getServers().add(serverConfig);
 			});
 
-			// relational databases don't depend on mesh for reading/writing
-			response.setReadQuorum(1);
-			response.setWriteQuorum(String.valueOf(1));
-
 			return response;
 		} else {
 			throw error(BAD_REQUEST, "error_cluster_status_only_available_in_cluster_mode");
 		}
-	}
-
-	@Override
-	public void blockingTopologyLockCheck() {
-		// nothing to do
 	}
 
 	@Override

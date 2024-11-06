@@ -9,6 +9,8 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import javax.inject.Provider;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.core.data.HibFieldContainer;
@@ -36,14 +38,11 @@ import com.gentics.mesh.core.rest.event.EventCauseInfo;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
-import com.gentics.mesh.distributed.RequestDelegator;
+import com.gentics.mesh.distributed.MasterInfoProvider;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.util.CollectionUtil;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Abstract implementation for migration handlers that deal with content migrations.
@@ -62,18 +61,18 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 
 	protected final MeshOptions options;
 
-	private final RequestDelegator delegator;
+	private final MasterInfoProvider masterInfoProvider;
 
 	private final boolean clusteringEnabled;
 
 	public AbstractMigrationHandler(Database db, BinaryUploadHandlerImpl binaryFieldHandler, MetricsService metrics,
-									Provider<EventQueueBatch> batchProvider, MeshOptions options, RequestDelegator delegator) {
+									Provider<EventQueueBatch> batchProvider, MeshOptions options, MasterInfoProvider masterInfoProvider) {
 		this.db = db;
 		this.binaryFieldHandler = binaryFieldHandler;
 		this.metrics = metrics;
 		this.batchProvider = batchProvider;
 		this.options = options;
-		this.delegator = delegator;
+		this.masterInfoProvider = masterInfoProvider;
 		clusteringEnabled = this.options.getClusterOptions().isEnabled();
 	}
 
@@ -162,19 +161,7 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 				errorsDetected.add(new MigrationAbortedException("Database is read-only."));
 				return errorsDetected;
 			}
-			if (clusteringEnabled && db.clusterManager().isClusterTopologyLocked()) {
-				errorsDetected.add(new MigrationAbortedException("Cluster is locked due to topology change."));
-				return errorsDetected;
-			}
-			if (clusteringEnabled && !db.clusterManager().isWriteQuorumReached()) {
-				errorsDetected.add(new MigrationAbortedException("Write quorum not reached."));
-				return errorsDetected;
-			}
-			if (clusteringEnabled && !db.clusterManager().isLocalNodeOnline()) {
-				errorsDetected.add(new MigrationAbortedException("Local node is not online."));
-				return errorsDetected;
-			}
-			if (clusteringEnabled && !delegator.canWrite() && !delegator.isMaster()) {
+			if (clusteringEnabled && !masterInfoProvider.isMaster()) {
 				errorsDetected.add(new MigrationAbortedException("Instance is not the master."));
 				return errorsDetected;
 			}

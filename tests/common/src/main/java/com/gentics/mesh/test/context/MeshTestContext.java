@@ -218,7 +218,7 @@ public class MeshTestContext implements TestRule {
 			MeshOptions clonedMeshOptions = meshInstanceProvider.getClone();
 
 			MeshTestInstance instance = new MeshTestInstance();
-			instance.setupOnce(settings, clonedMeshOptions);
+			instance.setupOnce(settings, clonedMeshOptions, i);
 			instances.add(instance);
 		}
 	}
@@ -316,6 +316,8 @@ public class MeshTestContext implements TestRule {
 				instance.mesh.shutdown();
 			}
 		}
+		instances.clear();
+		dataProvider = null;
 		removeConfigDirectory();
 		if (elasticsearch != null) {
 			elasticsearch.stop();
@@ -649,12 +651,12 @@ public class MeshTestContext implements TestRule {
 			}
 		}
 
-		public void setupOnce(MeshTestSetting settings, MeshOptions meshOptions) throws Exception {
+		public void setupOnce(MeshTestSetting settings, MeshOptions meshOptions, int instanceNumber) throws Exception {
 			httpPort = TestUtils.getRandomPort();
 			httpsPort = TestUtils.getRandomPort();
 			monitoringPort = TestUtils.getRandomPort();
 			removeConfigDirectory();
-			MeshOptions options = init(settings, meshOptions);
+			MeshOptions options = init(settings, meshOptions, instanceNumber);
 			try {
 				initDagger(options, settings);
 			} catch (Exception e) {
@@ -669,9 +671,11 @@ public class MeshTestContext implements TestRule {
 		 * Initialize mesh options.
 		 *
 		 * @param settings
+		 * @param meshOptions
+		 * @param instanceNumber
 		 * @throws Exception
 		 */
-		public MeshOptions init(MeshTestSetting settings, MeshOptions meshOptions) throws Exception {
+		public MeshOptions init(MeshTestSetting settings, MeshOptions meshOptions, int instanceNumber) throws Exception {
 			if (settings == null) {
 				throw new RuntimeException("Settings could not be found. Did you forget to add the @MeshTestSetting annotation to your test?");
 			}
@@ -705,7 +709,17 @@ public class MeshTestContext implements TestRule {
 			AuthenticationOptions authOptions = meshOptions.getAuthenticationOptions();
 			authOptions.setKeystorePassword(keystorePassword);
 			authOptions.setKeystorePath(keystoreFile.getAbsolutePath());
-			meshOptions.setNodeName(settings.clusterMode() ? "testNode-" + clusterNodeCounter.incrementAndGet() : "testNode");
+
+			String nodeName = "testNode";
+			if (settings.clusterMode()) {
+				List<String> nodeNames = Arrays.asList(settings.nodeNames());
+				if (instanceNumber >= nodeNames.size()) {
+					nodeName = "testNode-" + clusterNodeCounter.incrementAndGet();
+				} else {
+					nodeName = nodeNames.get(instanceNumber);
+				}
+			}
+			meshOptions.setNodeName(nodeName);
 
 			initFolders(meshOptions);
 

@@ -628,8 +628,8 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 		String password = configuration.getAdminPassword();
 		if (password != null) {
 			// wait for DB being ready, then update/create the admin user
-			db().clusterManager().waitUntilDistributedDatabaseReady().andThen(doWithLock(GLOBAL_CHANGELOG_LOCK_KEY,
-					"setting admin password", ensureAdminUser(password), 60 * 1000)).subscribe();
+			doWithLock(GLOBAL_CHANGELOG_LOCK_KEY,
+					"setting admin password", ensureAdminUser(password), 60 * 1000).subscribe();
 		}
 
 		registerEventHandlers();

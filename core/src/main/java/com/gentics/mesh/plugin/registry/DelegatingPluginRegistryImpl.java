@@ -122,7 +122,7 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 
 		String id = plugin.id();
 		JsonObject payload = toEventPayload(plugin);
-		optionalDatabaseReadyCheck().andThen(optionalLock(registerAndInitializePlugin(plugin), id)).subscribe(() -> {
+		optionalLock(registerAndInitializePlugin(plugin), id).subscribe(() -> {
 			log.info("Completed handling of pre-registered plugin {" + id + "}");
 			manager.get().setStatus(id, REGISTERED);
 
@@ -175,14 +175,6 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 				});
 		} else {
 			return lockedAction;
-		}
-	}
-
-	private Completable optionalDatabaseReadyCheck() {
-		if (options.getClusterOptions().isEnabled()) {
-			return db.clusterManager().waitUntilDistributedDatabaseReady();
-		} else {
-			return Completable.complete();
 		}
 	}
 

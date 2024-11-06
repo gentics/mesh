@@ -2,9 +2,8 @@ package com.gentics.mesh.distributed;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.util.TestUtils.getJson;
-import static com.gentics.mesh.util.TokenUtil.randomToken;
-import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -16,16 +15,14 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.RuleChain;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.context.impl.LoggingConfigurator;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.core.rest.branch.BranchListResponse;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
@@ -52,62 +49,32 @@ import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.parameter.client.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshRestClient;
-import com.gentics.mesh.test.category.ClusterTests;
-import com.gentics.mesh.test.docker.MeshContainer;
+import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.context.MeshTestContext.MeshTestInstance;
 import com.gentics.mesh.test.util.TestUtils;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-@Category(ClusterTests.class)
-public class BasicClusterTest extends AbstractClusterTest {
-
-	private static String clusterPostFix = randomUUID();
-
-	private static final int STARTUP_TIMEOUT = 500;
+@MeshTestSetting(testSize = FULL, startServer = true, clusterMode = true, clusterName = "BasicClusterTest", clusterInstances = 2)
+public class BasicClusterTest extends AbstractMeshClusteringTest {
 
 	private static final Logger log = LoggerFactory.getLogger(BasicClusterTest.class);
 
-	// public static MeshLocalServer serverA = new MeshLocalServer()
-	// .withClusterName("dockerCluster" + clusterPostFix)
-	// .withNodeName("localNodeA")
-	// .withInitCluster()
-	// .waitForStartup();
+	public MeshTestInstance serverA;
+	public MeshTestInstance serverB;
 
-	public static MeshContainer serverA = createDefaultMeshContainer()
-		.withClusterName("dockerCluster" + clusterPostFix)
-		.withNodeName("nodeA")
-		.withDataPathPostfix(randomToken())
-		.withInitCluster()
-		.waitForStartup()
-		.withFilesystem()
-		.withClearFolders();
+	public String nameA;
+	public String nameB;
 
-	public static MeshContainer serverB = createDefaultMeshContainer()
-		.withClusterName("dockerCluster" + clusterPostFix)
-		.withNodeName("nodeB")
-		.withDataPathPostfix(randomToken())
-		.withFilesystem()
-		.withClearFolders();
-
-	public static MeshRestClient clientA;
-	public static MeshRestClient clientB;
-
-	@ClassRule
-	public static RuleChain chain = RuleChain.outerRule(serverB).around(serverA);
-
-	@BeforeClass
-	public static void waitForNodes() throws InterruptedException {
-		LoggingConfigurator.init();
-		serverB.awaitStartup(STARTUP_TIMEOUT);
-		clientA = serverA.client();
-		clientB = serverB.client();
-	}
+	public MeshRestClient clientA;
+	public MeshRestClient clientB;
 
 	@Before
 	public void setupLogin() {
-		serverA.login();
-		serverB.login();
+		serverA = getInstance(0);
+		serverB = getInstance(1);
+		nameA = serverA.getOptions().getNodeName();
+		nameB = serverB.getOptions().getNodeName();
+		clientA = serverA.getHttpClient();
+		clientB = serverB.getHttpClient();
 	}
 
 	@Test
@@ -115,9 +82,7 @@ public class BasicClusterTest extends AbstractClusterTest {
 		ClusterStatusResponse response = call(() -> clientA.clusterStatus());
 		assertThat(response.getInstances()).hasSize(2);
 		List<String> names = response.getInstances().stream().map(i -> i.getName()).collect(Collectors.toList());
-		List<String> stati = response.getInstances().stream().map(i -> i.getStatus()).collect(Collectors.toList());
-		assertThat(names).containsExactlyInAnyOrder("nodeA", "nodeB");
-		assertThat(stati).containsExactly("ONLINE", "ONLINE");
+		assertThat(names).containsExactlyInAnyOrder(nameA, nameB);
 	}
 
 	@Test

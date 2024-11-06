@@ -361,6 +361,11 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 		}
 
 		@Override
+		public String[] nodeNames() {
+			return new String[0];
+		}
+
+		@Override
 		public AWSTestMode awsContainer() {
 			return AWSTestMode.NONE;
 		}

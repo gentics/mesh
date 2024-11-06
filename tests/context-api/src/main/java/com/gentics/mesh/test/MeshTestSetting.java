@@ -80,6 +80,12 @@ public @interface MeshTestSetting {
 	int clusterInstances() default 3;
 
 	/**
+	 * Array of node names to be used for the instances. If more instances are created, they will get created node names.
+	 * @return node names
+	 */
+	String[] nodeNames() default {};
+
+	/**
 	 * SSL test mode.
 	 * 
 	 * @return

@@ -26,6 +26,8 @@ import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
@@ -53,7 +55,7 @@ import com.gentics.mesh.core.migration.NodeMigration;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.event.node.SchemaMigrationCause;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
-import com.gentics.mesh.distributed.RequestDelegator;
+import com.gentics.mesh.distributed.MasterInfoProvider;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.metric.MetricsService;
@@ -61,8 +63,6 @@ import com.gentics.mesh.util.VersionNumber;
 
 import io.reactivex.Completable;
 import io.reactivex.exceptions.CompositeException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Handler for node migrations after schema updates.
@@ -77,8 +77,8 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 
 	@Inject
 	public NodeMigrationImpl(Database db, BinaryUploadHandlerImpl nodeFieldAPIHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider,
-							 WriteLock writeLock, MeshOptions options, RequestDelegator delegator) {
-		super(db, nodeFieldAPIHandler, metrics, batchProvider, options, delegator);
+							 WriteLock writeLock, MeshOptions options, MasterInfoProvider masterInfoProvider) {
+		super(db, nodeFieldAPIHandler, metrics, batchProvider, options, masterInfoProvider);
 		migrationGauge = metrics.longGauge(NODE_MIGRATION_PENDING);
 		this.writeLock = writeLock;
 	}

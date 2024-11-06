@@ -3,7 +3,6 @@ package com.gentics.mesh.router;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.cluster.CoordinatorMode;
 import com.gentics.mesh.handler.VersionUtils;
 import io.vertx.core.Vertx;
 import org.slf4j.Logger;
@@ -57,15 +56,6 @@ public class APIRouterImpl implements APIRouter {
 	private void initHandlers(RouterStorage storage) {
 		// Add the coordinator delegator handler
 		ClusterOptions clusterOptions = options.getClusterOptions();
-
-		// add topology readonly handler
-		if (clusterOptions.isEnabled() && clusterOptions.isTopologyChangeReadOnly()) {
-			router.route().handler(root.getStorage().getTopologyChangeReadonlyHandler());
-		}
-
-		if (clusterOptions.isEnabled() && clusterOptions.getCoordinatorMode() != CoordinatorMode.DISABLED) {
-			router.route().handler(root.getStorage().getDelegator());
-		}
 
 		if (options.getHttpServerOptions().isCorsEnabled()) {
 			router.route().handler(storage.getCorsHandler());
