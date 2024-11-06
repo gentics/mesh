@@ -8,11 +8,13 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.impl.DummyBulkActionContext;
+import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.madl.frame.VertexFrame;
+import com.gentics.mesh.parameter.PagingParameters;
 import com.tinkerpop.blueprints.Vertex;
 
 /**
@@ -95,5 +97,19 @@ public interface MeshVertex extends MeshElement, VertexFrame, HibBaseElement {
 	 */
 	default String parseFilter(FilterOperation<?> filter, ContainerType ctype, HibUser user, InternalPermission permission, Optional<String> maybeOwner) {
 		return parseFilter(filter, ctype) + permissionFilter(user, permission, maybeOwner, Optional.ofNullable(ctype)).map(permFilter -> " AND " + permFilter).orElse(StringUtils.EMPTY);
+	}
+
+	/**
+	 * Set up native permission filter if the sorting is requested, since the sorting forces the native SQL data fetcher.
+	 * 
+	 * @param pagingInfo
+	 * @param user
+	 * @param permission
+	 * @param maybeOwner
+	 * @param containerType
+	 * @return
+	 */
+	default Optional<String> permissionFilterIfRequired(PagingParameters pagingInfo, HibUser user, InternalPermission permission, Optional<String> maybeOwner, Optional<ContainerType> containerType) {
+		return PersistingRootDao.shouldSort(pagingInfo) ? permissionFilter(user, permission, maybeOwner, containerType) : Optional.empty();
 	}
 }

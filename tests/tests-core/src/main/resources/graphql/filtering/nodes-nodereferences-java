@@ -83,7 +83,7 @@
 	    	count: { gt: 1 }
 	    }
 	  }) {
-	    # [$.data.hasMicronodeReferences.elements.length()=1]
+	    # [$.data.hasMicronodeReferences.elements.length()=2]
 	    elements {
 	      uuid
 	      schema {
@@ -96,7 +96,7 @@
 	    	count: { gt: 2 }
 	    }
 	  }) {
-	    # [$.data.moreThan2References.elements.length()=2]
+	    # [$.data.moreThan2References.elements.length()=3]
 	    elements {
 	      uuid
 	      schema {

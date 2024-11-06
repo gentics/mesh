@@ -226,6 +226,8 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 			pathIsDate(path, msg);
 		} else if ("<is-undefined>".equals(value)) {
 			pathIsUndefined(path, msg);
+		} else if ("<is-empty>".equals(value)) {
+			pathIsEmpty(path, msg);
 		} else {
 			has(path, replaceVariables(value), msg);
 		}
@@ -258,6 +260,21 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 			fail(msg + " The value at path {" + path + "} was present but it should be undefined.");
 		} catch (PathNotFoundException e) {
 			// OK
+		}
+		return this;
+	}
+
+	@SuppressWarnings("rawtypes")
+	private JsonObjectAssert pathIsEmpty(String path, String msg) {
+		try {
+			Object value = JsonPath.read(actual.toString(), path);
+			if (value instanceof Map && ((Map) value).size() > 0) {
+				fail(msg + " The value at path {" + path + "} is not empty, while should be.");
+			} else if (value instanceof Collection && ((Collection) value).size() > 0) {
+				fail(msg + " The value at path {" + path + "} is not empty, while should be.");
+			}			
+		} catch (PathNotFoundException e) {
+			fail(msg + " The value at path {" + path + "} was not present but it should be present but empty.");
 		}
 		return this;
 	}

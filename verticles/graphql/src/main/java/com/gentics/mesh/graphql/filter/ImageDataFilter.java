@@ -42,7 +42,6 @@ public abstract class ImageDataFilter<T extends HibImageDataElement> extends Mai
 
 	@Override
 	public boolean isSortable() {
-		// TODO implement later
 		return false;
 	}
 }
