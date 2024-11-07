@@ -119,6 +119,7 @@ public class RAMLGenerator extends AbstractGenerator {
 		try {
 			addCoreEndpoints(raml.getResources());
 			addProjectEndpoints(raml.getResources());
+			addExtraEndpoints(raml.getResources());
 		} catch (IOException e) {
 			throw new RuntimeException("Could not add all verticles to raml generator", e);
 		}
@@ -138,7 +139,7 @@ public class RAMLGenerator extends AbstractGenerator {
 	 *            Endpoint which provides endpoints
 	 * @throws IOException
 	 */
-	private void addEndpoints(String basePath, Map<String, Resource> resources, AbstractInternalEndpoint verticle) throws IOException {
+	protected void addEndpoints(String basePath, Map<String, Resource> resources, AbstractInternalEndpoint verticle) throws IOException {
 
 		String ramlPath = basePath + "/" + verticle.getBasePath();
 		// Check whether the resource was already added. Maybe we just need to extend it
@@ -269,11 +270,11 @@ public class RAMLGenerator extends AbstractGenerator {
 	 * @param method
 	 * @return
 	 */
-	private ActionType getActionType(HttpMethod method) {
+	protected ActionType getActionType(HttpMethod method) {
 		return ActionType.valueOf(method.name());
 	}
 
-	private void initEndpoint(AbstractInternalEndpoint endpoint) {
+	protected void initEndpoint(AbstractInternalEndpoint endpoint) {
 		Vertx vertx = mock(Vertx.class);
 		Mockito.when(endpoint.getRouter()).thenReturn(Router.router(vertx));
 		endpoint.registerEndPoints();
@@ -286,7 +287,7 @@ public class RAMLGenerator extends AbstractGenerator {
 	 * @throws IOException
 	 * @throws Exception
 	 */
-	private void addProjectEndpoints(Map<String, Resource> resources) throws IOException {
+	protected void addProjectEndpoints(Map<String, Resource> resources) throws IOException {
 		NodeEndpoint nodeEndpoint = Mockito.spy(new NodeEndpoint());
 		initEndpoint(nodeEndpoint);
 		String projectBasePath = "/{project}";
@@ -341,7 +342,7 @@ public class RAMLGenerator extends AbstractGenerator {
 	 * @throws IOException
 	 * @throws Exception
 	 */
-	private void addCoreEndpoints(Map<String, Resource> resources) throws IOException {
+	protected void addCoreEndpoints(Map<String, Resource> resources) throws IOException {
 		String coreBasePath = "";
 		UserEndpoint userEndpoint = Mockito.spy(new UserEndpoint());
 		initEndpoint(userEndpoint);
@@ -409,6 +410,15 @@ public class RAMLGenerator extends AbstractGenerator {
 		initEndpoint(projectInfoEndpoint);
 		addEndpoints(coreBasePath, resources, projectInfoEndpoint);
 
+	}
+
+	/**
+	 * Add any extra verticles to the map of RAML resources.
+	 * 
+	 * @param resources
+	 * @throws IOException
+	 */
+	protected void addExtraEndpoints(Map<String, Resource> resources) throws IOException {
 	}
 
 	/**
