@@ -1,9 +1,9 @@
-openapi: 3.0.2
+openapi: 3.1.0
 servers: 
   - url: "http://localhost:8080/api/v2"
 info:
-  title: Forms-Plugin
-  version: "1.6.3"
+  title: "Forms Plugin"
+  version: "2.1.1"
 paths:
   /{project}/plugins/forms/active:
     parameters:
@@ -59,6 +59,11 @@ paths:
       summary: Set the current languages
       tags:
         - Languages
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Languages'
       responses:
         "200":
           description: Languages have been set
@@ -210,13 +215,44 @@ paths:
         schema:
           type: string
           default: "%7C%7C%7C"
+      - name: publishedOnly
+        in: query
+        required: false
+        description: "Whether only published form data should be exported."
+        schema:
+          type: boolean
+          default: true
+      - name: lang
+        in: query
+        required: false
+        description: "The Language for which to export form data."
+        schema:
+          type: array
+      - name: options
+        in: query
+        required: false
+        description: "The CSV format. Possible values are: Default, Excel, InformixUnload, InformixUnloadCsv, MySQL, PostgreSQLCsv, PostgreSQLText, RFC4180 and TDF."
+        schema:
+          type: string
+          default: "Default"
     get:
-      summary: Export Form
+      summary: Export form synchronously.
       tags:
         - Forms
       responses:
         "200":
           description: Exported Form
+    post:
+      summary: Request an export for asynchronous download.
+      tags:
+        - Forms
+      responses:
+        "200":
+          description: The UUID of the generated export download node.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DownloadResponse'
   /{project}/plugins/forms/forms/{formUuid}/binaries:
     parameters:
       - $ref: '#/components/parameters/project'
@@ -224,7 +260,7 @@ paths:
     get:
       tags:
         - Forms
-      summary: Download binary data
+      summary: Download binary data synchronously.
       description: Downloads all files of all form data of a form as a single zip file
       responses:
         "200":
@@ -234,6 +270,18 @@ paths:
               schema:
                 type: string
                 format: binary
+    post:
+      tags:
+        - Forms
+      summary: Request asynchronous binary data download.
+      description: Create a zip file in the background which can be downloaded later.
+      responses:
+        "200":
+          description: The UUID of the generated export download node.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DownloadResponse'
   /{project}/plugins/forms/forms/{formUuid}/data:
     parameters:
       - $ref: '#/components/parameters/project'
@@ -382,6 +430,56 @@ paths:
       responses:
         "200":
           description: Binary data
+
+  /{project}/plugins/forms/forms/{formUuid}/download/{downloadType}/status:
+    parameters:
+      - $ref: '#/components/parameters/project'
+      - $ref: '#/components/parameters/formUuid'
+      - $ref: '#/components/parameters/downloadType'
+      - name: publishedOnly
+        required: false
+        in: query
+        schema:
+          type: boolean
+          description: Whether to include only form data that was already published. This must match the value for the same parameter when the export was requested. Only relevant for export downloads.
+      - name: format
+        required: false
+        in: query
+        schema:
+          type: string
+          description: The concrete CSV format. This must match the value for the format when the export was requested. Only relevant for export downloads.
+    get:
+      tags:
+        - Export/binary downloads
+      summary: Check download availability.
+      description: Check whether the specified export or binary download is available.
+      responses:
+        "200":
+          description: Download status information.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  downloadReady:
+                    type: boolean
+                    description: Set to true when the file is ready for download.
+                  requestPending:
+                    type: boolean
+                    description: Set to true when the download file is currently being created.
+  /{project}/plugins/forms/forms/{formUuid}/download/{downloadUuid}:
+    parameters:
+      - $ref: '#/components/parameters/project'
+      - $ref: '#/components/parameters/formUuid'
+      - $ref: '#/components/parameters/downloadUuid'
+    get:
+      tags:
+        - Export/binary downloads
+      summary: Download export or binary archive.
+      description: Download the file for the given download UUID.
+      responses:
+        "200":
+          description: Download export data (csv) or binary archive (zip).
 components:
   responses:
     FormResponse:
@@ -402,7 +500,7 @@ components:
         application/json:
           schema:
             type: object
-            
+
   parameters:
     publish:
       in: query
@@ -428,6 +526,14 @@ components:
       name: formUuid
       schema:
         $ref: '#/components/schemas/uuid'
+    downloadUuid:
+      in: path
+      required: true
+      description: The form UUID
+      example: "f1326e4cc946ff93e331d0be39217cbf"
+      name: downloadUuid
+      schema:
+        $ref: '#/components/schemas/uuid'
     language:
       in: path
       required: true
@@ -444,6 +550,14 @@ components:
       name: formDataUuid
       schema:
         $ref: '#/components/schemas/uuid'
+    downloadType:
+      in: path
+      required: true
+      description: "The type of the download: export or binary."
+      example: "export"
+      name: downloadType
+      schema:
+        type: string
     page:
       in: query
       name: page
@@ -472,7 +586,7 @@ components:
       properties:
         languages:
           type: array
-          example: ["de", "en"]
+          example: [ "de", "en" ]
           items:
             type: string
     Form:
@@ -504,6 +618,10 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/FormResponse'
+    DownloadResponse:
+      properties:
+        downloadUuid:
+          type: string
     FormData:
       type: object
     FormDataResponse:
