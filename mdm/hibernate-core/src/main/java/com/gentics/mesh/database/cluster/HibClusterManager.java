@@ -85,20 +85,24 @@ public class HibClusterManager implements ClusterManager {
 
 	@Override
 	public ClusterStatusResponse getClusterStatus() {
-		List<ClusterInstanceInfo> instances = getHazelcast().getCluster().getMembers().stream().map(member -> {
-			ClusterInstanceInfo info = new ClusterInstanceInfo();
-			info.setAddress(member.getAddress().toString());
-			info.setUuid(UUIDUtil.toShortUuid(member.getUuid()));
-			MeshMemberInfo memberInfo = masterElector.get().getMemberInfo().get(member.getUuid());
-			if (memberInfo != null) {
-				info.setRole(memberInfo.isMaster() ? "MASTER" : "");
-				info.setStartDate(memberInfo.getStartedAt().toString());
-				info.setName(memberInfo.getName());
-			} else {
-				log.error("No member info available for " + member.getUuid());
-			}
-			return info;
-		}).collect(Collectors.toList());
-		return new ClusterStatusResponse().setInstances(instances);
+		if (options.getClusterOptions().isEnabled()) {
+			List<ClusterInstanceInfo> instances = getHazelcast().getCluster().getMembers().stream().map(member -> {
+				ClusterInstanceInfo info = new ClusterInstanceInfo();
+				info.setAddress(member.getAddress().toString());
+				info.setUuid(UUIDUtil.toShortUuid(member.getUuid()));
+				MeshMemberInfo memberInfo = masterElector.get().getMemberInfo().get(member.getUuid());
+				if (memberInfo != null) {
+					info.setRole(memberInfo.isMaster() ? "MASTER" : "");
+					info.setStartDate(memberInfo.getStartedAt().toString());
+					info.setName(memberInfo.getName());
+				} else {
+					log.error("No member info available for " + member.getUuid());
+				}
+				return info;
+			}).collect(Collectors.toList());
+			return new ClusterStatusResponse().setInstances(instances);
+		} else {
+			return new ClusterStatusResponse();
+		}
 	}
 }
