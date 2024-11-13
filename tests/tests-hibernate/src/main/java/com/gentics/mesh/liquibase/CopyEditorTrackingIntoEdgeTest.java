@@ -26,7 +26,7 @@ public class CopyEditorTrackingIntoEdgeTest extends AbstractMeshTest {
 			EntityManager em = hTx.entityManager();
 			String containerTableName = hTx.data().getDatabaseConnector().maybeGetPhysicalTableName(HibNodeFieldContainerEdgeImpl.class).get();
 
-			assertThat(em.createNativeQuery("DELETE FROM databasechangelog WHERE id = ?").setParameter(1, CHANGE_ID)
+			assertThat(em.createNativeQuery("DELETE FROM DATABASECHANGELOG WHERE id = ?").setParameter(1, CHANGE_ID)
 					.executeUpdate()).as("Liquibase changelog entries deleted").isEqualTo(1);
 
 			assertThat(em.createNativeQuery("UPDATE " + containerTableName + " SET edited = NULL, editor_dbuuid = NULL")
