@@ -38,7 +38,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
-			<artifactId>tests-mesh-hibernate</artifactId>
+			<artifactId>mesh-test-common</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
