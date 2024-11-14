@@ -19,7 +19,6 @@ import java.util.stream.Stream;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
-import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfig;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorMasterResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.localconfig.LocalConfigModel;
@@ -1580,16 +1579,6 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	@Override
 	public MeshRequest<GenericMessageResponse> setCoordinationMaster() {
 		return prepareRequest(POST, "/admin/coordinator/master", GenericMessageResponse.class);
-	}
-
-	@Override
-	public MeshRequest<CoordinatorConfig> loadCoordinationConfig() {
-		return prepareRequest(GET, "/admin/coordinator/config", CoordinatorConfig.class);
-	}
-
-	@Override
-	public MeshRequest<CoordinatorConfig> updateCoordinationConfig(CoordinatorConfig coordinatorConfig) {
-		return prepareRequest(POST, "/admin/coordinator/config", CoordinatorConfig.class, coordinatorConfig);
 	}
 
 	@Override

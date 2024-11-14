@@ -50,7 +50,6 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
-import com.gentics.mesh.distributed.RequestDelegator;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -95,19 +94,16 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 	private final AuthHandlerContainer authHandlerContainer;
 	private final LocalConfigApi localConfigApi;
 
-	private final RequestDelegator delegator;
-
 	@Inject
 	public MeshOAuth2ServiceImpl(Database db, MeshOptions meshOptions,
 		Provider<EventQueueBatch> batchProvider, AuthServicePluginRegistry authPluginRegistry,
-		AuthHandlerContainer authHandlerContainer, LocalConfigApi localConfigApi, RequestDelegator delegator, PermissionRoots permissionRoots) {
+		AuthHandlerContainer authHandlerContainer, LocalConfigApi localConfigApi, PermissionRoots permissionRoots) {
 		this.db = db;
 		this.batchProvider = batchProvider;
 		this.authPluginRegistry = authPluginRegistry;
 		this.authOptions = meshOptions.getAuthenticationOptions();
 		this.authHandlerContainer = authHandlerContainer;
 		this.localConfigApi = localConfigApi;
-		this.delegator = delegator;
 		this.permissionRoots = permissionRoots;
 	}
 
@@ -201,17 +197,13 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 			}, error -> {
 				// if the current instance is not writable, we redirect the request to the master instance
 				Throwable rootCause = getRootCause(error);
-				if (rootCause instanceof CannotWriteException) {
-					delegator.redirectToMaster(rc);
-				} else {
-					// all other errors while sync'ing will cause the sync to be repeated once.
-					// the reason is that the error might be caused by a race condition (when parallel requests try to sync the same objects)
-					// trying again (once) increases the chance of the request to actually succeed.
-					syncUser(rc, decodedToken).subscribe(syncedUser -> {
-						rc.setUser(syncedUser);
-						rc.next();
-					}, rc::fail);
-				}
+				// all other errors while sync'ing will cause the sync to be repeated once.
+				// the reason is that the error might be caused by a race condition (when parallel requests try to sync the same objects)
+				// trying again (once) increases the chance of the request to actually succeed.
+				syncUser(rc, decodedToken).subscribe(syncedUser -> {
+					rc.setUser(syncedUser);
+					rc.next();
+				}, rc::fail);
 			});
 		});
 	}
@@ -263,7 +255,6 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 			// Create the user if it can't be found.
 			.switchIfEmpty(
 				assertReadOnlyDeactivated()
-					.andThen(requiresWriteCompletable())
 					.andThen(db.singleTxWriteLock(tx -> {
 						UserDao userDao = tx.userDao();
 						HibBaseElement userRoot = permissionRoots.user();
@@ -315,7 +306,6 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		} else {
 			String currentFirstName = user.getDelegate().getFirstname();
 			if (!Objects.equals(currentFirstName, givenName)) {
-				requiresWrite();
 				user.getDelegate().setFirstname(givenName);
 				modified = true;
 			}
@@ -327,7 +317,6 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		} else {
 			String currentLastName = user.getDelegate().getLastname();
 			if (!Objects.equals(currentLastName, familyName)) {
-				requiresWrite();
 				user.getDelegate().setLastname(familyName);
 				modified = true;
 			}
@@ -339,7 +328,6 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		} else {
 			String currentEmail = user.getDelegate().getEmailAddress();
 			if (!Objects.equals(currentEmail, email)) {
-				requiresWrite();
 				user.getDelegate().setEmailAddress(email);
 				modified = true;
 			}
@@ -396,9 +384,6 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 						InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 						ac.setBody(mappedUser);
 						ac.setUser(admin.toAuthUser());
-						if (!delegator.canWrite() && userDao.updateDry(authUser, ac)) {
-							throw new CannotWriteException();
-						}
 						userDao.update(authUser, ac, batch);
 					} else {
 						defaultUserMapper(batch, user, token);
@@ -444,9 +429,6 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		rolesHelper.initMapped(mappedRoles, RoleResponse::getUuid, RoleResponse::getName, MappingHelper.Order.UUID_FIRST);
 		rolesHelper.initAssigned(mappedGroups, GroupResponse::getRoles, RoleReference::getUuid, RoleReference::getName, MappingHelper.Order.NAME_FIRST);
 		rolesHelper.load();
-		if (rolesHelper.areMappedEntitiesMissing()) {
-			requiresWrite();
-		}
 		rolesHelper.createMissingMapped(roleName -> {
 			log.debug("Creating new role {} via mapping request.", roleName);
 			return roleDao.create(roleName, admin);
@@ -459,9 +441,6 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		groupsHelper.initMapped(mappedGroups, GroupResponse::getUuid, GroupResponse::getName, MappingHelper.Order.UUID_FIRST);
 		groupsHelper.initAssigned(mappedRoles, RoleResponse::getGroups, GroupReference::getUuid, GroupReference::getName, MappingHelper.Order.NAME_FIRST);
 		groupsHelper.load();
-		if (groupsHelper.areMappedEntitiesMissing()) {
-			requiresWrite();
-		}
 		groupsHelper.createMissingMapped(groupName -> {
 			log.debug("Creating group {} via mapping request.", groupName);
 			return groupDao.create(groupName, admin);
@@ -475,7 +454,6 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		toAssign.removeAll(assignedGroups);
 
 		for (HibGroup group : toAssign) {
-			requiresWrite();
 			log.debug("Adding user {} to group {} via mapping request.", authUser.getUsername(), group.getName());
 			userDao.addGroup(authUser, group);
 			batch.add(groupDao.createUserAssignmentEvent(group, authUser, ASSIGNED));
@@ -540,10 +518,6 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 				List<HibRole> rolesToAssign = new ArrayList<>(rolesHelper.getEntities(entry.getValue()));
 				rolesToAssign.removeAll(rolesPerGroup.getOrDefault(group, Collections.emptyList()));
 
-				if (!rolesToAssign.isEmpty()) {
-					requiresWrite();
-				}
-
 				for (HibRole role : rolesToAssign) {
 					groupDao.addRole(group, role);
 					batch.add(groupDao.createRoleAssignmentEvent(group, role, ASSIGNED));
@@ -556,7 +530,6 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 			for (HibGroup group : groupsHelper.getMappedEntities()) {
 				for (HibRole role : rolesPerGroup.getOrDefault(group, Collections.emptyList())) {
 					if (roleFilter.filter(group.getName(), role.getName())) {
-						requiresWrite();
 						log.info("Unassigning role {" + role.getName() + "} from group {" + group.getName() + "}");
 						groupDao.removeRole(group, role);
 						batch.add(groupDao.createRoleAssignmentEvent(group, role, UNASSIGNED));
@@ -570,26 +543,11 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		if (groupFilter != null) {
 			for (HibGroup group : assignedGroups) {
 				if (groupFilter.filter(group.getName())) {
-					requiresWrite();
 					log.info("Unassigning group {" + group.getName() + "} from user {" + authUser.getUsername() + "}");
 					groupDao.removeUser(group, authUser);
 					batch.add(groupDao.createUserAssignmentEvent(group, authUser, UNASSIGNED));
 				}
 			}
-		}
-	}
-
-	private void requiresWrite() throws CannotWriteException {
-		if (!delegator.canWrite()) {
-			throw new CannotWriteException();
-		}
-	}
-
-	private Completable requiresWriteCompletable() {
-		if (delegator.canWrite()) {
-			return Completable.complete();
-		} else {
-			return Completable.error(new CannotWriteException());
 		}
 	}
 }

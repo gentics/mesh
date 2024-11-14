@@ -1,5 +1,6 @@
 package com.gentics.mesh.test.context;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.test.MeshTestSetting;
@@ -10,21 +11,14 @@ public class MeshTestContextOverride extends MeshTestContext {
 	private SearchWaitUtil waitUtil;
 
 	@Override
-	public MeshComponent createMeshComponent(MeshOptions options, MeshTestSetting settings) {
+	public MeshComponent createMeshComponent(MeshOptions options, MeshTestSetting settings, Mesh mesh) {
+		options.getSearchOptions().setWaitForIdle(false);
 		return getMeshDaggerBuilder()
 			.configuration(options)
 			.searchProviderType(settings.elasticsearch().toSearchProviderType())
 			.searchWaitUtilSupplier(this::getWaitUtil)
-			.mesh(getMesh())
+			.mesh(mesh)
 			.build();
-	}
-
-	@Override
-	public MeshOptions init(MeshTestSetting settings) throws Exception {
-		MeshOptions options = super.init(settings);
-		options.getSearchOptions().setWaitForIdle(false);
-
-		return options;
 	}
 
 	public SearchWaitUtil getWaitUtil() {

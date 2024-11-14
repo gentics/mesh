@@ -128,11 +128,6 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 			EventBus eb = vertx.get().eventBus();
 
 			eb.consumer(CLUSTER_DATABASE_CHANGE_STATUS.address, (Message<JsonObject> handler) -> {
-				// at least one database in the cluster changed its status
-				if (clusterManager != null) {
-					// we are interested in the cluster-wide locking of storages
-					handleDatabaseAvailability(!clusterManager.isClusterTopologyLocked());
-				}
 			});
 			log.trace("Distributed DB status event listener registered.");
 		}

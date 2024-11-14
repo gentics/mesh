@@ -87,8 +87,8 @@ import com.gentics.mesh.database.DatabaseProvider;
 import com.gentics.mesh.database.DefaultSQLDatabase;
 import com.gentics.mesh.database.HibernateDatabase;
 import com.gentics.mesh.database.cluster.HibClusterManager;
-import com.gentics.mesh.distributed.RequestDelegator;
-import com.gentics.mesh.distributed.RequestDelegatorStub;
+import com.gentics.mesh.distributed.MasterInfoProvider;
+import com.gentics.mesh.distributed.MasterInfoProviderImpl;
 import com.gentics.mesh.endpoint.admin.HibAdminHandler;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -165,7 +165,7 @@ public abstract class HibernateModule {
 	abstract HighLevelChangelogSystem bindHighLevelChangelogSystem(HighLevelChangelogSystemImpl e);
 	
 	@Binds
-	abstract RequestDelegator bindRequestDelegator(RequestDelegatorStub e);
+	abstract MasterInfoProvider bindMasterInfoProvider(MasterInfoProviderImpl e);
 
 	@Binds
 	abstract UserProperties userProperties(HibernateUserPropertiesImpl e);

@@ -1,9 +1,7 @@
 package com.gentics.mesh.core.verticle.handler;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.metric.SimpleMetric.WRITE_LOCK_TIMEOUT_COUNT;
 import static com.gentics.mesh.metric.SimpleMetric.WRITE_LOCK_WAITING_TIME;
-import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
 
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -77,12 +75,6 @@ public abstract class AbstractGenericWriteLock implements WriteLock {
 		if (ac != null && ac.isSkipWriteLock()) {
 			return this;
 		} else {
-			// throw an error, if the cluster topology is currently locked and the option "topology change readonly" is activated
-			if (options.getClusterOptions().isTopologyChangeReadOnly() && clusterManager != null
-					&& clusterManager.isClusterTopologyLocked()) {
-				throw error(SERVICE_UNAVAILABLE, "error_cluster_topology_readonly").setLogStackTrace(false);
-			}
-
 			if (isSyncWrites()) {
 				Timer.Sample timer = Timer.start();
 				long timeout = getSyncWritesTimeoutMillis();

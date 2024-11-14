@@ -2,13 +2,8 @@ package com.gentics.mesh.auth;
 
 import static com.gentics.mesh.test.TestSize.PROJECT;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -23,10 +18,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.assertj.core.util.Objects;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
 
 import com.gentics.mesh.auth.oauth2.CannotWriteException;
 import com.gentics.mesh.auth.oauth2.MeshOAuth2ServiceImpl;
@@ -45,7 +36,6 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.user.UserReference;
-import com.gentics.mesh.distributed.RequestDelegator;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.plugin.auth.MappingResult;
 import com.gentics.mesh.test.MeshTestSetting;
@@ -54,26 +44,12 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 /**
  * Test cases for mapping groups and roles with the {@link MeshOAuthService}
  */
-@RunWith(Parameterized.class)
 @MeshTestSetting(testSize = PROJECT, startServer = false)
 public class TokenMappingTest extends AbstractMeshTest {
 	/**
 	 * Name of the test user
 	 */
 	public final static String TESTUSER_NAME = "testuser";
-
-	/**
-	 * Test parameters
-	 * @return parameters
-	 */
-	@Parameters(name = "writable: {0}")
-	public static Collection<Object[]> paramData() {
-		Collection<Object[]> data = new ArrayList<>();
-		for (boolean writable : Arrays.asList(true, false)) {
-			data.add(new Object[] { writable });
-		}
-		return data;
-	}
 
 	/**
 	 * Comparator for events
@@ -124,12 +100,6 @@ public class TokenMappingTest extends AbstractMeshTest {
 	};
 
 	/**
-	 * Whether the instance is assumed to be writable
-	 */
-	@Parameter(0)
-	public boolean writable;
-
-	/**
 	 * Tested service instance
 	 */
 	private MeshOAuth2ServiceImpl service;
@@ -150,9 +120,7 @@ public class TokenMappingTest extends AbstractMeshTest {
 
 		service = tx(tx -> {
 			mockActionContext();
-			RequestDelegator delegator = mock(RequestDelegator.class);
-			when(delegator.canWrite()).thenReturn(writable);
-			return new MeshOAuth2ServiceImpl(db(), options(), null, null, null, null, delegator, tx.data().permissionRoots());
+			return new MeshOAuth2ServiceImpl(db(), options(), null, null, null, null, tx.data().permissionRoots());
 		});
 	}
 
@@ -982,15 +950,12 @@ public class TokenMappingTest extends AbstractMeshTest {
 
 				try {
 					service.handleMappingResult(tx, eqb, result, testUser, admin);
-					if (!writable && expectUpdate) {
-						fail("Handling mapping result was supposed to fail, but succeeded");
-					}
 					if (expectedEvents != null) {
 						caughtEvents.addAll(eqb.getEntries());
 					}
 					return true;
 				} catch (CannotWriteException e) {
-					if (writable || !expectUpdate) {
+					if (!expectUpdate) {
 						throw e;
 					}
 					return false;

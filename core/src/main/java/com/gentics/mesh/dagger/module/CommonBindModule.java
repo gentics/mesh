@@ -100,8 +100,6 @@ import com.gentics.mesh.core.link.WebRootLinkReplacerImpl;
 import com.gentics.mesh.core.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticleImpl;
-import com.gentics.mesh.distributed.TopologyChangeReadonlyHandler;
-import com.gentics.mesh.distributed.TopologyChangeReadonlyHandlerImpl;
 import com.gentics.mesh.event.EventBusLivenessManagerImpl;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.event.impl.EventQueueBatchImpl;
@@ -319,9 +317,6 @@ public abstract class CommonBindModule {
 
 	@Binds
 	abstract SecurityUtils bindSecurityUtils(SecurityUtilsImpl e);
-
-	@Binds
-	abstract TopologyChangeReadonlyHandler bindTopologyChangeReadonlyHandler(TopologyChangeReadonlyHandlerImpl e);
 
 	@Binds
 	abstract LivenessManager bindLivenessManager(LivenessManagerImpl e);

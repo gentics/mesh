@@ -106,10 +106,6 @@ public class MonitoringCrudHandler {
 			log.warn("Liveness was set to false due to {}", liveness.getError());
 			throw error(SERVICE_UNAVAILABLE, "error_internal").setLogStackTrace(false);
 		}
-		if (clusterManager != null && !clusterManager.isLocalNodeOnline()) {
-			log.warn("Local node is not online - Failing readiness probe");
-			throw error(SERVICE_UNAVAILABLE, "error_internal").setLogStackTrace(false);
-		}
 		if (!db.isHealthy()) {
 			log.warn("Failing DB health check");
 			throw error(SERVICE_UNAVAILABLE, "error_internal").setLogStackTrace(false);
@@ -135,12 +131,6 @@ public class MonitoringCrudHandler {
 						rc.fail(error(SERVICE_UNAVAILABLE, "error_internal").setLogStackTrace(false));
 					} else if (db.isReadOnly(false)) {
 						log.warn("Local node cannot write - read only database");
-						rc.fail(error(SERVICE_UNAVAILABLE, "error_internal").setLogStackTrace(false));
-					} else if (clusterManager.isClusterTopologyLocked()) {
-						log.warn("Local node cannot write - cluster topology locked");
-						rc.fail(error(SERVICE_UNAVAILABLE, "error_internal").setLogStackTrace(false));
-					} else if (!clusterManager.isWriteQuorumReached()) {
-						log.warn("Local node cannot write - write quorum not reached");
 						rc.fail(error(SERVICE_UNAVAILABLE, "error_internal").setLogStackTrace(false));
 					} else {
 						rc.response().setStatusCode(200).end();

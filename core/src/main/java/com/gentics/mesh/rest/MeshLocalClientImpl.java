@@ -39,7 +39,6 @@ import com.gentics.mesh.core.endpoint.webroot.WebRootHandler;
 import com.gentics.mesh.core.endpoint.webrootfield.WebRootFieldHandler;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
-import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfig;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorMasterResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.localconfig.LocalConfigModel;
@@ -1874,16 +1873,6 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 
 	@Override
 	public MeshRequest<GenericMessageResponse> setCoordinationMaster() {
-		return null;
-	}
-
-	@Override
-	public MeshRequest<CoordinatorConfig> loadCoordinationConfig() {
-		return null;
-	}
-
-	@Override
-	public MeshRequest<CoordinatorConfig> updateCoordinationConfig(CoordinatorConfig coordinatorConfig) {
 		return null;
 	}
 

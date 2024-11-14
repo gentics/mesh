@@ -349,7 +349,22 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 		public boolean clusterMode() {
 			return clustering;
 		}
-		
+
+		@Override
+		public String clusterName() {
+			return null;
+		}
+
+		@Override
+		public int clusterInstances() {
+			return 0;
+		}
+
+		@Override
+		public String[] nodeNames() {
+			return new String[0];
+		}
+
 		@Override
 		public AWSTestMode awsContainer() {
 			return AWSTestMode.NONE;

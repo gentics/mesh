@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -22,7 +21,6 @@ import com.gentics.mesh.core.rest.admin.cluster.ClusterServerConfig;
 import com.gentics.mesh.core.rest.admin.cluster.ServerRole;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.cluster.CoordinationTopology;
 import com.hazelcast.cluster.Cluster;
 import com.hazelcast.cluster.Member;
 import com.hazelcast.cluster.MembershipEvent;
@@ -30,8 +28,6 @@ import com.hazelcast.cluster.MembershipListener;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
 import com.hazelcast.topic.ITopic;
-import com.hazelcast.topic.Message;
-import com.hazelcast.topic.MessageListener;
 
 import dagger.Lazy;
 
@@ -54,9 +50,9 @@ public class MasterElector {
 	private final static String MEMBERS = "members";
 
 	/**
-	 * Name of the Topic for requesting the master status
+	 * Name of the Topic for requesting update of the masterMember
 	 */
-	private final static String REQUEST_MASTER_TOPIC = "request.master";
+	private final static String REQUEST_MASTER_MEMBER_UPDATE_TOPIC = "request.masterMember.update";
 
 	private final MeshOptions options;
 	private final ClusterOptions clusterOptions;
@@ -131,10 +127,24 @@ public class MasterElector {
 			return;
 		}
 
+		// update the shared members info and set the master flag only for the local member
+		UUID localUuid = localMember().getUuid();
+		members.entrySet().stream().forEach(entry -> {
+			UUID uuid = entry.getKey();
+			MeshMemberInfo info = entry.getValue();
+
+			if (localUuid.equals(uuid)) {
+				info.setMaster(true);
+			} else {
+				info.setMaster(false);
+			}
+			members.put(uuid, info);
+		});
+
 		HazelcastInstance instance = hazelcast.get();
 		if (instance != null) {
-			ITopic<UUID> requestMasterTopic = instance.getTopic(REQUEST_MASTER_TOPIC);
-			requestMasterTopic.publish(localUuid);
+			ITopic<String> requestMasterTopic = instance.getTopic(REQUEST_MASTER_MEMBER_UPDATE_TOPIC);
+			requestMasterTopic.publish("");
 		}
 	}
 
@@ -156,9 +166,6 @@ public class MasterElector {
 			boolean hasMaster = foundMaster.isPresent();
 			boolean isElectible = isElectable(localMember());
 			if (!hasMaster && isElectible) {
-				if (clusterOptions.getCoordinatorTopology() == CoordinationTopology.MASTER_REPLICA) {
-					database.setToMaster();
-				}
 				MeshMemberInfo info = members.get(localMember().getUuid());
 				info.setMaster(true);
 				members.put(localMember().getUuid(), info);
@@ -169,6 +176,7 @@ public class MasterElector {
 				log.info("Detected multiple masters in the cluster, giving up the master flag");
 				giveUpMasterFlag();
 			}
+			findCurrentMaster();
 		} catch (Throwable e) {
 			log.error("Could not elect master", e);
 			throw new IllegalStateException(e);
@@ -197,16 +205,14 @@ public class MasterElector {
 				}
 			}
 
-			if (clusterOptions.getCoordinatorTopology() == CoordinationTopology.UNMANAGED) {
-				ClusterConfigResponse config = database.loadClusterConfig();
-				Optional<ClusterServerConfig> databaseServer = config.getServers().stream().filter(s -> s.getName().equals(name)).findFirst();
-				if (databaseServer.isPresent()) {
-					// Replicas are not eligible for master election
-					ServerRole role = databaseServer.get().getRole();
-					if (role == ServerRole.REPLICA) {
-						log.info("Node {" + name + "} is a replica and thus not eligible for election.");
-						return false;
-					}
+			ClusterConfigResponse config = database.loadClusterConfig();
+			Optional<ClusterServerConfig> databaseServer = config.getServers().stream().filter(s -> s.getName().equals(name)).findFirst();
+			if (databaseServer.isPresent()) {
+				// Replicas are not eligible for master election
+				ServerRole role = databaseServer.get().getRole();
+				if (role == ServerRole.REPLICA) {
+					log.info("Node {" + name + "} is a replica and thus not eligible for election.");
+					return false;
 				}
 			}
 
@@ -267,31 +273,8 @@ public class MasterElector {
 			}
 		});
 
-		/**
-		 * Request master message listener
-		 */
-		MessageListener<UUID> REQUEST_MASTER_LISTENER = msg -> {
-			executeIfNotFromLocal(msg, m -> {
-				giveUpMasterFlag();
-			});
-			executeIfFromLocal(msg, m -> {
-				if (clusterOptions.getCoordinatorTopology() == CoordinationTopology.MASTER_REPLICA) {
-					database.setToMaster();
-				}
-				Member localMember = localMember();
-				MeshMemberInfo info = members.get(localMember.getUuid());
-				if (info != null) {
-					info.setMaster(true);
-					members.put(localMember.getUuid(), info);
-				} else {
-					log.error("No member info found for " + localMember.getUuid());
-				}
-			});
-		};
-
-		ITopic<UUID> requestMasterTopic = hazelcast.get().getTopic(REQUEST_MASTER_TOPIC);
-		requestMasterTopic.addMessageListener(REQUEST_MASTER_LISTENER);
-
+		ITopic<String> requestMasterTopic = hazelcast.get().getTopic(REQUEST_MASTER_MEMBER_UPDATE_TOPIC);
+		requestMasterTopic.addMessageListener(msg -> findCurrentMaster());
 	}
 
 	protected void findCurrentMaster() {
@@ -379,36 +362,6 @@ public class MasterElector {
 			log.error("Could not get master member", e);
 		}
 		return null;
-	}
-
-	/**
-	 * Let the handler accept the object from the given message, if the message was not published from the local node
-	 *
-	 * @param msg
-	 *            message
-	 * @param handler
-	 *            handler
-	 */
-	private <T> void executeIfNotFromLocal(Message<T> msg, Consumer<T> handler) {
-		Member publishingMember = msg.getPublishingMember();
-		if (publishingMember != null && !publishingMember.localMember()) {
-			handler.accept(msg.getMessageObject());
-		}
-	}
-
-	/**
-	 * Let the handler accept the object from the given message, if the message was published from the local node
-	 *
-	 * @param msg
-	 *            message
-	 * @param handler
-	 *            handler
-	 */
-	private <T> void executeIfFromLocal(Message<T> msg, Consumer<T> handler) {
-		Member publishingMember = msg.getPublishingMember();
-		if (publishingMember != null && publishingMember.localMember()) {
-			handler.accept(msg.getMessageObject());
-		}
 	}
 
 	/**

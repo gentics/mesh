@@ -9,22 +9,22 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import org.hibernate.Session;
+
 import com.gentics.mesh.contentoperation.ContentStorage;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandlerImpl;
 import com.gentics.mesh.core.migration.impl.BranchMigrationImpl;
 import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.distributed.RequestDelegator;
 import com.gentics.mesh.database.HibernateTx;
+import com.gentics.mesh.distributed.MasterInfoProvider;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
-
 import com.gentics.mesh.hibernate.data.dao.NodeDaoImpl;
 import com.gentics.mesh.hibernate.data.domain.HibNodeFieldContainerEdgeImpl;
 import com.gentics.mesh.hibernate.data.domain.HibNodeImpl;
 import com.gentics.mesh.metric.MetricsService;
-import org.hibernate.Session;
 
 /**
  * Branch migrator implementation.
@@ -39,8 +39,8 @@ public class HibBranchMigration extends BranchMigrationImpl {
 
 	@Inject
 	public HibBranchMigration(Database db, BinaryUploadHandlerImpl nodeFieldAPIHandler, MetricsService metrics,
-							  Provider<EventQueueBatch> batchProvider, MeshOptions options, ContentStorage contentStorage, RequestDelegator delegator) {
-		super(db, nodeFieldAPIHandler, metrics, batchProvider, options, delegator);
+							  Provider<EventQueueBatch> batchProvider, MeshOptions options, ContentStorage contentStorage, MasterInfoProvider masterInfoProvider) {
+		super(db, nodeFieldAPIHandler, metrics, batchProvider, options, masterInfoProvider);
 		this.contentStorage = contentStorage;
 	}
 
