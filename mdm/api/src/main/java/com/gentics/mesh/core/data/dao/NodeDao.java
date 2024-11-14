@@ -26,6 +26,7 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.node.NodeTaggedEventModel;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
@@ -42,7 +43,7 @@ import com.gentics.mesh.path.Path;
 /**
  * Dao for {@link HibNode}
  */
-public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeResponse>, RootDao<HibProject, HibNode> {
+public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeResponse>, CreateRequestRootDao<NodeCreateRequest, HibProject, HibNode> {
 
 	/**
 	 * Return the API path for the node.

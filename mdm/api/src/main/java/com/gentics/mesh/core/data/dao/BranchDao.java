@@ -9,13 +9,14 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 
 /**
  * DAO for {@link HibBranch}.
  */
-public interface BranchDao extends DaoTransformable<HibBranch, BranchResponse>, Dao<HibBranch>, RootDao<HibProject, HibBranch> {
+public interface BranchDao extends DaoTransformable<HibBranch, BranchResponse>, Dao<HibBranch>, CreateRequestRootDao<BranchCreateRequest, HibProject, HibBranch> {
 
 	/**
 	 * Assign the given schema version to the branch and queue a job which will trigger the migration.

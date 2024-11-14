@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
+import java.util.List;
 import java.util.function.Predicate;
 
 import javax.inject.Inject;
@@ -31,6 +32,11 @@ public class LanguageDAOActionsImpl implements LanguageDAOActions {
 
 	@Override
 	public HibLanguage create(Tx tx, InternalActionContext ac, EventQueueBatch batch, String uuid) {
+		throw error(METHOD_NOT_ALLOWED, "error_language_creation_forbidden");
+	}
+
+	@Override
+	public List<HibLanguage> createBatch(Tx tx, InternalActionContext ac, EventQueueBatch batch) {
 		throw error(METHOD_NOT_ALLOWED, "error_language_creation_forbidden");
 	}
 

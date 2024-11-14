@@ -907,7 +907,14 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	@Override
-	default HibNode create(HibProject project, InternalActionContext ac, EventQueueBatch batch, String uuid) {
+	default HibNode create(HibProject root, InternalActionContext ac, EventQueueBatch batch,
+			String uuid) {
+		NodeCreateRequest requestModel = ac.fromJson(NodeCreateRequest.class);
+		return create(requestModel, root, ac, batch, uuid);
+	}
+
+	@Override
+	default HibNode create(NodeCreateRequest requestModel, HibProject project, InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		Tx tx = Tx.get();
 		HibBranch branch = tx.getBranch(ac);
 		UserDao userDao = tx.userDao();
@@ -939,7 +946,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			if (schemaVersion == null) {
 				throw error(BAD_REQUEST, "schema_error_schema_not_linked_to_branch", schemaByUuid.getName(), branch.getName(), project.getName());
 			}
-			return createNode(ac, schemaVersion, batch, uuid);
+			return createNode(requestModel, ac, schemaVersion, batch, uuid);
 		}
 
 		// 3. Or just schema reference by name
@@ -954,7 +961,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 						throw error(BAD_REQUEST, "schema_error_schema_not_linked_to_branch", schemaByName.getName(), branch.getName(),
 								project.getName());
 					}
-					return createNode(ac, schemaVersion, batch, uuid);
+					return createNode(requestModel, ac, schemaVersion, batch, uuid);
 				} else {
 					throw error(FORBIDDEN, "error_missing_perm", schemaUuid + "/" + schemaName, READ_PERM.getRestPerm().getName());
 				}
@@ -977,14 +984,13 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	 * @return
 	 */
 	// TODO use schema container version instead of container
-	private HibNode createNode(InternalActionContext ac, HibSchemaVersion schemaVersion, EventQueueBatch batch,
+	private HibNode createNode(NodeCreateRequest requestModel, InternalActionContext ac, HibSchemaVersion schemaVersion, EventQueueBatch batch,
 							String uuid) {
 		Tx tx = Tx.get();
 		HibProject project = tx.getProject(ac);
 		HibUser requestUser = ac.getUser();
 		UserDao userRoot = tx.userDao();
 
-		NodeCreateRequest requestModel = ac.fromJson(NodeCreateRequest.class);
 		if (requestModel.getParentNode() == null || isEmpty(requestModel.getParentNode().getUuid())) {
 			throw error(BAD_REQUEST, "node_missing_parentnode_field");
 		}

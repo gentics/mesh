@@ -30,6 +30,7 @@ import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
@@ -186,6 +187,17 @@ public interface PersistingMicroschemaDao
 		userRoot.inheritRolePermissions(requestUser, microschemaRoot, container);
 		mergeIntoPersisted(container);
 		return container;
+	}
+
+
+	@Override
+	default HibMicroschema create(MicroschemaCreateRequest request, HibProject root, InternalActionContext ac, EventQueueBatch batch, String uuid) {
+		return create(request, ac.getUser(), uuid, batch);
+	}
+
+	@Override
+	default HibMicroschema create(MicroschemaCreateRequest request, InternalActionContext ac, EventQueueBatch batch, String uuid) {
+		return create(request, ac.getUser(), batch);
 	}
 
 	/**

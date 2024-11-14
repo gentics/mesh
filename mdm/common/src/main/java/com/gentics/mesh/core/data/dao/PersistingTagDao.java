@@ -110,10 +110,15 @@ public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<HibTag>, P
 	}
 
 	@Override
-	default HibTag create(HibTagFamily tagFamily, InternalActionContext ac, EventQueueBatch batch, String uuid) {
+	default HibTag create(HibTagFamily root, InternalActionContext ac, EventQueueBatch batch, String uuid) {
+		TagCreateRequest requestModel = ac.fromJson(TagCreateRequest.class);
+		return create(requestModel, root, ac, batch, uuid);
+	}
+
+	@Override
+	default HibTag create(TagCreateRequest requestModel, HibTagFamily tagFamily, InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		Tx tx = Tx.get();
 		HibProject project = tx.getProject(ac);
-		TagCreateRequest requestModel = ac.fromJson(TagCreateRequest.class);
 		String tagName = requestModel.getName();
 		if (isEmpty(tagName)) {
 			throw error(BAD_REQUEST, "tag_name_not_set");

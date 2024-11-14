@@ -2,12 +2,13 @@ package com.gentics.mesh.core.rest.user;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.core.rest.common.CreateRequest;
 import com.gentics.mesh.core.rest.common.RestModel;
 
 /**
  * POJO for a user create request model.
  */
-public class UserCreateRequest implements RestModel {
+public class UserCreateRequest extends CreateRequest implements RestModel {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Username of the user.")

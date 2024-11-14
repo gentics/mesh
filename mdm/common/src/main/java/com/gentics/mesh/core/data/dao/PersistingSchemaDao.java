@@ -35,7 +35,7 @@ import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
-import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
@@ -63,12 +63,18 @@ public interface PersistingSchemaDao
 	 * @param uuid
 	 * @return
 	 */
+	@Override
 	default HibSchema create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
+		SchemaCreateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaCreateRequest.class);
+		return create(requestModel, ac, batch, uuid);
+	}
+
+	@Override
+	default HibSchema create(SchemaCreateRequest requestModel, InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		HibUser requestUser = ac.getUser();
 		UserDao userDao = Tx.get().userDao();
 		HibBaseElement schemaRoot = CommonTx.get().data().permissionRoots().schema();
 
-		SchemaVersionModel requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModelImpl.class);
 		requestModel.validate();
 
 		if (!userDao.hasPermission(requestUser, schemaRoot, CREATE_PERM)) {
@@ -334,6 +340,16 @@ public interface PersistingSchemaDao
 				throw new RuntimeException(error);
 			}
 		}
+	}
+
+	@Override
+	default HibSchema create(SchemaCreateRequest request, HibProject root, InternalActionContext ac, EventQueueBatch batch, String uuid) {
+		HibSchema schema = create(request, ac, batch, uuid);
+		assign(schema, root, ac.getUser(), batch);
+		PersistingProjectDao projectDao = CommonTx.get().projectDao();
+		projectDao.mergeIntoPersisted(root);
+		assignEvents(schema, UNASSIGNED).forEach(batch::add);
+		return schema;
 	}
 
 	@Override

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.actions.impl;
 
+import java.util.List;
 import java.util.function.Predicate;
 
 import javax.inject.Inject;
@@ -83,6 +84,13 @@ public class TagDAOActionsImpl implements TagDAOActions {
 	public boolean update(Tx tx, HibTag element, InternalActionContext ac, EventQueueBatch batch) {
 		TagDao tagDao = tx.tagDao();
 		return tagDao.update(element, ac, batch);
+	}
+
+	@Override
+	public List<HibTag> createBatch(Tx tx, InternalActionContext ac, EventQueueBatch batch) {
+		String tagFamilyUuid = PathParameters.getTagFamilyUuid(ac);
+		HibTagFamily tagFamily = getTagFamily(tx, ac, tagFamilyUuid);
+		return tx.tagDao().createBatch(tagFamily, ac, batch);
 	}
 
 	@Override

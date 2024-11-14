@@ -57,10 +57,15 @@ public interface PersistingTagFamilyDao extends TagFamilyDao, PersistingRootDao<
 	}
 
 	@Override
-	default HibTagFamily create(HibProject project, InternalActionContext ac, EventQueueBatch batch, String uuid) {
+	default HibTagFamily create(HibProject root, InternalActionContext ac, EventQueueBatch batch, String uuid) {
+		TagFamilyCreateRequest requestModel = ac.fromJson(TagFamilyCreateRequest.class);
+		return create(requestModel, root, ac, batch, uuid);
+	}
+
+	@Override
+	default HibTagFamily create(TagFamilyCreateRequest requestModel, HibProject project, InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		HibUser requestUser = ac.getUser();
 		UserDao userDao = Tx.get().userDao();
-		TagFamilyCreateRequest requestModel = ac.fromJson(TagFamilyCreateRequest.class);
 
 		String name = requestModel.getName();
 		if (StringUtils.isEmpty(name)) {

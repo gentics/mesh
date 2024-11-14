@@ -2,12 +2,13 @@ package com.gentics.mesh.core.rest.tag;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.core.rest.common.CreateRequest;
 import com.gentics.mesh.core.rest.common.RestModel;
 
 /**
  * POJO for a tag create request model.
  */
-public class TagFamilyCreateRequest implements RestModel {
+public class TagFamilyCreateRequest extends CreateRequest implements RestModel {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Name of the tag family which will be created.")

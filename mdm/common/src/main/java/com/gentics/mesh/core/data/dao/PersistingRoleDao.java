@@ -117,8 +117,14 @@ public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole>
 	 *			Uuid of the role
 	 * @return
 	 */
+	@Override
 	default HibRole create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		RoleCreateRequest requestModel = ac.fromJson(RoleCreateRequest.class);
+		return create(requestModel, ac, batch, uuid);
+	}
+
+	@Override
+	default HibRole create(RoleCreateRequest requestModel, InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		String roleName = requestModel.getName();
 		UserDao userDao = Tx.get().userDao();
 		HibBaseElement roleRoot = Tx.get().data().permissionRoots().role();

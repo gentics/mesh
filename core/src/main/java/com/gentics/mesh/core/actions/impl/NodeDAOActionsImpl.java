@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.actions.impl;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -80,6 +81,13 @@ public class NodeDAOActionsImpl implements NodeDAOActions {
 		NodeDao nodeDao = tx.nodeDao();
 		HibProject project = tx.getProject(ac);
 		return nodeDao.create(project, ac, batch, uuid);
+	}
+
+	@Override
+	public List<HibNode> createBatch(Tx tx, InternalActionContext ac, EventQueueBatch batch) {
+		NodeDao nodeDao = tx.nodeDao();
+		HibProject project = tx.getProject(ac);
+		return nodeDao.createBatch(project, ac, batch);
 	}
 
 	@Override

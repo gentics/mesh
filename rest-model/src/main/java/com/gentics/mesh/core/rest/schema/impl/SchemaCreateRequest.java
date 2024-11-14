@@ -5,15 +5,20 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.core.rest.common.CreateRequest;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 
 import io.vertx.core.json.JsonObject;
 
 /**
  * REST model for schema create requests. 
  */
-public class SchemaCreateRequest implements SchemaModel {
+public class SchemaCreateRequest extends CreateRequest implements SchemaVersionModel {
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Version of the schema")
+	private String version;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Name of the display field.")
@@ -165,4 +170,14 @@ public class SchemaCreateRequest implements SchemaModel {
 		return this;
 	}
 
+	@Override
+	public String getVersion() {
+		return version;
+	}
+
+	@Override
+	public SchemaCreateRequest setVersion(String version) {
+		this.version = version;
+		return this;
+	}
 }

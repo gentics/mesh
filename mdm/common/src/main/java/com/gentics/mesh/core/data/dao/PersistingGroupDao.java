@@ -46,9 +46,14 @@ public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGro
 
 	@Override
 	default HibGroup create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
+		GroupCreateRequest requestModel = ac.fromJson(GroupCreateRequest.class);
+		return create(requestModel, ac, batch, uuid);
+	}
+
+	@Override
+	default HibGroup create(GroupCreateRequest requestModel, InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		HibUser requestUser = ac.getUser();
 		UserDao userDao = Tx.get().userDao();
-		GroupCreateRequest requestModel = ac.fromJson(GroupCreateRequest.class);
 
 		if (StringUtils.isEmpty(requestModel.getName())) {
 			throw error(BAD_REQUEST, "error_name_must_be_set");

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.actions.impl;
 
+import java.util.List;
 import java.util.function.Predicate;
 
 import javax.inject.Inject;
@@ -67,6 +68,11 @@ public class UserDAOActionsImpl implements UserDAOActions {
 	@Override
 	public HibUser create(Tx tx, InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		return tx.userDao().create(ac, batch, uuid);
+	}
+
+	@Override
+	public List<HibUser> createBatch(Tx tx, InternalActionContext ac, EventQueueBatch batch) {
+		return tx.userDao().createBatch(ac, batch);
 	}
 
 	@Override

@@ -24,6 +24,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
+import static io.vertx.core.http.HttpMethod.PUT;
 
 import javax.inject.Inject;
 
@@ -483,18 +484,32 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 	// TODO handle schema by name / by uuid - move that code in a separate
 	// handler
 	private void addCreateHandler() {
-		InternalEndpointRoute endpoint = createRoute();
-		endpoint.path("/");
-		endpoint.method(POST);
-		endpoint.description("Create a new node.");
-		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleRequest(nodeExamples.getNodeCreateRequest());
-		endpoint.exampleResponse(CREATED, nodeExamples.getNodeResponseWithAllFields(), "Created node.");
-		endpoint.events(NODE_CREATED);
-		endpoint.blockingHandler(rc -> {
+		InternalEndpointRoute createEndpoint = createRoute();
+		createEndpoint.path("/");
+		createEndpoint.method(POST);
+		createEndpoint.description("Create a new node.");
+		createEndpoint.produces(APPLICATION_JSON);
+		createEndpoint.exampleRequest(nodeExamples.getNodeCreateRequest());
+		createEndpoint.exampleResponse(CREATED, nodeExamples.getNodeResponseWithAllFields(), "Created node.");
+		createEndpoint.events(NODE_CREATED);
+		createEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			ac.getVersioningParameters().setVersion("draft");
 			crudHandler.handleCreate(ac);
+		}, isOrderedBlockingHandlers());
+
+		InternalEndpointRoute batchCreateEndpoint = createRoute();
+		batchCreateEndpoint.path("/");
+		batchCreateEndpoint.method(PUT);
+		batchCreateEndpoint.description("Create new nodes in a batch.");
+		batchCreateEndpoint.produces(APPLICATION_JSON);
+		batchCreateEndpoint.exampleRequest(nodeExamples.getNodeCreateRequest());
+		batchCreateEndpoint.exampleResponse(CREATED, nodeExamples.getNodeResponseWithAllFields(), "Created node.");
+		batchCreateEndpoint.events(NODE_CREATED);
+		batchCreateEndpoint.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			ac.getVersioningParameters().setVersion("draft");
+			crudHandler.handleBatchCreate(ac);
 		}, isOrderedBlockingHandlers());
 	}
 

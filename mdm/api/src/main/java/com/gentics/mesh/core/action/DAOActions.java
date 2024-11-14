@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.action;
 
+import java.util.List;
 import java.util.function.Predicate;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
@@ -158,4 +159,13 @@ public interface DAOActions<T extends HibCoreElement<RM>, RM extends RestModel> 
 	 */
 	String getAPIPath(Tx tx, InternalActionContext ac, T element);
 
+	/**
+	 * Entity batch creation
+	 * 
+	 * @param tx
+	 * @param ac
+	 * @param batch
+	 * @return
+	 */
+	List<T> createBatch(Tx tx, InternalActionContext ac, EventQueueBatch batch);
 }

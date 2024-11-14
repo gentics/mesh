@@ -1,5 +1,9 @@
 package com.gentics.mesh.core.actions.impl;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
+
+import java.util.List;
 import java.util.function.Predicate;
 
 import javax.inject.Inject;
@@ -57,6 +61,11 @@ public class ProjectDAOActionsImpl implements ProjectDAOActions {
 	public Page<? extends HibProject> loadAll(DAOActionContext ctx, PagingParameters pagingInfo,
 		Predicate<HibProject> extraFilter) {
 		return ctx.tx().projectDao().findAll(ctx.ac(), pagingInfo, extraFilter);
+	}
+
+	@Override
+	public List<HibProject> createBatch(Tx tx, InternalActionContext ac, EventQueueBatch batch) {
+		throw error(METHOD_NOT_ALLOWED, "Project batch creation forbidden");
 	}
 
 	@Override

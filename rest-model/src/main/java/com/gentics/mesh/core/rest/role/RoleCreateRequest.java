@@ -2,12 +2,13 @@ package com.gentics.mesh.core.rest.role;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.core.rest.common.CreateRequest;
 import com.gentics.mesh.core.rest.common.RestModel;
 
 /**
  * POJO for a role request model that is used for role creation.
  */
-public class RoleCreateRequest implements RestModel {
+public class RoleCreateRequest extends CreateRequest implements RestModel {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("New name of the role")

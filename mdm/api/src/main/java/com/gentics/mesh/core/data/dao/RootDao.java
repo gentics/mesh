@@ -5,6 +5,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -225,6 +226,16 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	default L create(R root, InternalActionContext ac, EventQueueBatch batch) {
 		return create(root, ac, batch, null);
 	}
+
+	/**
+	 * Batch creation of leaf objects.
+	 * 
+	 * @param root
+	 * @param ac
+	 * @param batch
+	 * @return
+	 */
+	List<L> createBatch(R root, InternalActionContext ac, EventQueueBatch batch);
 
 	/**
 	 * Create a new leaf object which is connected or directly related to this root element.

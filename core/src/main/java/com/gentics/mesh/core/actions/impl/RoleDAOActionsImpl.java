@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.actions.impl;
 
+import java.util.List;
 import java.util.function.Predicate;
 
 import javax.inject.Inject;
@@ -64,6 +65,11 @@ public class RoleDAOActionsImpl implements RoleDAOActions {
 	@Override
 	public HibRole create(Tx tx, InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		return tx.roleDao().create(ac, batch, uuid);
+	}
+
+	@Override
+	public List<HibRole> createBatch(Tx tx, InternalActionContext ac, EventQueueBatch batch) {
+		return tx.roleDao().createBatch(ac, batch);
 	}
 
 	@Override

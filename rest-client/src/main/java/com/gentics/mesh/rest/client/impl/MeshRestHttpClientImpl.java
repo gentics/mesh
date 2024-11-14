@@ -37,6 +37,7 @@ import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
 import com.gentics.mesh.core.rest.branch.info.BranchInfoMicroschemaList;
 import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaList;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.common.ListRequest;
 import com.gentics.mesh.core.rest.common.ObjectPermissionGrantRequest;
 import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
 import com.gentics.mesh.core.rest.common.ObjectPermissionRevokeRequest;
@@ -166,6 +167,13 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(nodeCreateRequest, "nodeCreateRequest must not be null");
 		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/nodes" + getQuery(getConfig(), parameters), NodeResponse.class, nodeCreateRequest);
+	}
+
+	@Override
+	public MeshRequest<NodeListResponse> createNodes(String projectName, ListRequest<NodeCreateRequest> nodesCreateRequest, ParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(nodesCreateRequest, "nodeCreateRequest must not be null");
+		return prepareRequest(PUT, "/" + encodeSegment(projectName) + "/nodes" + getQuery(getConfig(), parameters), NodeListResponse.class, nodesCreateRequest);
 	}
 
 	@Override

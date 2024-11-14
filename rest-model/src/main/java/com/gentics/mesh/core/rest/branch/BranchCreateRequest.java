@@ -2,12 +2,12 @@ package com.gentics.mesh.core.rest.branch;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.core.rest.common.CreateRequest;
 
 /**
  * REST model for a branch create request.
  */
-public class BranchCreateRequest implements RestModel {
+public class BranchCreateRequest extends CreateRequest {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Name of the branch.")

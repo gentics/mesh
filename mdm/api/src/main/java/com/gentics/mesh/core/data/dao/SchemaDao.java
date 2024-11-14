@@ -14,6 +14,7 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
+import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.error.MeshSchemaException;
@@ -22,7 +23,7 @@ import com.gentics.mesh.event.EventQueueBatch;
 /**
  * DAO for {@link HibSchema}.
  */
-public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionModel, SchemaReference, HibSchema, HibSchemaVersion, SchemaModel>, RootDao<HibProject, HibSchema> {
+public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionModel, SchemaReference, HibSchema, HibSchemaVersion, SchemaModel>, CreateRequestDaoGlobal<SchemaCreateRequest, HibSchema>, CreateRequestRootDao<SchemaCreateRequest, HibProject, HibSchema> {
 
 	/**
 	 * Create the schema.

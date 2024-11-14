@@ -6,15 +6,20 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.core.rest.common.CreateRequest;
+import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 
 import io.vertx.core.json.JsonObject;
 
 /**
  * REST POJO for microschema create requests.
  */
-public class MicroschemaCreateRequest implements MicroschemaModel {
+public class MicroschemaCreateRequest extends CreateRequest implements MicroschemaVersionModel {
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Version of the microschema")
+	private String version;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Description of the microschema")
@@ -90,10 +95,18 @@ public class MicroschemaCreateRequest implements MicroschemaModel {
 		return this;
 	}
 
+	public String getVersion() {
+		return version;
+	}
+
+	public MicroschemaCreateRequest setVersion(String version) {
+		this.version = version;
+		return this;
+	}
+
 	@Override
 	public String toString() {
 		String fields = getFields().stream().map(field -> field.getName()).collect(Collectors.joining(","));
 		return getName() + " fields: {" + fields + "}";
 	}
-
 }

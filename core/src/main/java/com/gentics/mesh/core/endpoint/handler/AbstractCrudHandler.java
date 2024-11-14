@@ -66,6 +66,10 @@ public abstract class AbstractCrudHandler<T extends HibCoreElement<RM>, RM exten
 		return actions;
 	}
 
+	public void handleBatchCreate(InternalActionContext ac) {
+		utils.createElements(ac, crudActions());
+	}
+
 	@Override
 	public void handleCreate(InternalActionContext ac) {
 		utils.createElement(ac, crudActions());

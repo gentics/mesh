@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.actions.impl;
 
+import java.util.List;
 import java.util.function.Predicate;
 
 import javax.inject.Inject;
@@ -59,6 +60,11 @@ public class GroupDAOActionsImpl implements GroupDAOActions {
 		return ctx.tx().groupDao().findAll(ctx.ac(), pagingInfo, group -> {
 			return extraFilter.test(group);
 		});
+	}
+
+	@Override
+	public List<HibGroup> createBatch(Tx tx, InternalActionContext ac, EventQueueBatch batch) {
+		return tx.groupDao().createBatch(ac, batch);
 	}
 
 	@Override

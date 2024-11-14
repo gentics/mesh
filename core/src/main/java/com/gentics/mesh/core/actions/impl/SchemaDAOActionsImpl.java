@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.actions.impl;
 
+import java.util.List;
 import java.util.function.Predicate;
 
 import javax.inject.Inject;
@@ -84,6 +85,11 @@ public class SchemaDAOActionsImpl implements SchemaDAOActions {
 	public boolean update(Tx tx, HibSchema element, InternalActionContext ac, EventQueueBatch batch) {
 		// Updates are handled by dedicated migration code
 		return false;
+	}
+
+	@Override
+	public List<HibSchema> createBatch(Tx tx, InternalActionContext ac, EventQueueBatch batch) {
+		return tx.schemaDao().createBatch(ac, batch);
 	}
 
 	@Override

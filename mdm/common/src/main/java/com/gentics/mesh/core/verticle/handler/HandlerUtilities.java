@@ -10,6 +10,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -27,6 +28,7 @@ import com.gentics.mesh.core.action.LoadAllAction;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.PageTransformer;
+import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
@@ -41,7 +43,7 @@ import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.util.Tuple;
+import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.util.UUIDUtil;
 import com.gentics.mesh.util.ValidationUtil;
 
@@ -78,6 +80,25 @@ public class HandlerUtilities {
 		this.writeLock = writeLock;
 		this.pageTransformer = pageTransformer;
 		this.meshOptions = meshOptions;
+	}
+
+	/**
+	 * Create an object using the given aggregation node and respond with a transformed object.
+	 * 
+	 * @param ac
+	 * @param actions
+	 */
+	public <T extends HibCoreElement<RM>, RM extends RestModel> void createElements(InternalActionContext ac, DAOActions<T, RM> actions) {
+		ac.setHttpServerConfig(meshOptions.getHttpServerOptions());
+		try (WriteLock lock = writeLock.lock(ac)) {
+			AtomicBoolean created = new AtomicBoolean(false);
+			syncTx(ac, (batch, tx) -> {
+				created.set(true);
+				List<T> createdElement =  actions.createBatch(tx, ac, batch);
+				Page<? extends T> page = new PageImpl<>(createdElement, new PagingParametersImpl(), createdElement.size());
+				return pageTransformer.transformToRestSync(page, ac, 0);
+			}, model -> ac.send(model, created.get() ? CREATED : OK));
+		}
 	}
 
 	/**

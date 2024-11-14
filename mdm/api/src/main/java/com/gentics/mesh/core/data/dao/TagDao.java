@@ -12,6 +12,7 @@ import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -19,7 +20,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 /**
  * DAO for {@link HibTag}.
  */
-public interface TagDao extends DaoGlobal<HibTag>, DaoTransformable<HibTag, TagResponse>, RootDao<HibTagFamily, HibTag> {
+public interface TagDao extends DaoGlobal<HibTag>, DaoTransformable<HibTag, TagResponse>, CreateRequestRootDao<TagCreateRequest, HibTagFamily, HibTag> {
 
 	/**
 	 * Return the tag of the uuid.

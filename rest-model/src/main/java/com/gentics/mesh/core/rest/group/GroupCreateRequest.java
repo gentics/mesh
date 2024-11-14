@@ -2,12 +2,13 @@ package com.gentics.mesh.core.rest.group;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.core.rest.common.CreateRequest;
 import com.gentics.mesh.core.rest.common.RestModel;
 
 /**
  * REST POJO for group request requests.
  */
-public class GroupCreateRequest implements RestModel {
+public class GroupCreateRequest extends CreateRequest implements RestModel {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Name of the group.")

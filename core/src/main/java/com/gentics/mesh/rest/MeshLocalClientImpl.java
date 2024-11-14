@@ -53,6 +53,7 @@ import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
 import com.gentics.mesh.core.rest.branch.info.BranchInfoMicroschemaList;
 import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaList;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.common.ListRequest;
 import com.gentics.mesh.core.rest.common.ObjectPermissionGrantRequest;
 import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
 import com.gentics.mesh.core.rest.common.ObjectPermissionRevokeRequest;
@@ -276,6 +277,17 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 		ac.setPayloadObject(nodeCreateRequest);
 		ac.getVersioningParameters().setVersion("draft");
 		nodeCrudHandler.handleCreate(ac);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<NodeListResponse> createNodes(String projectName,
+			ListRequest<NodeCreateRequest> nodeCreateRequest, ParameterProvider... parameters) {
+		LocalActionContextImpl<NodeListResponse> ac = createContext(NodeListResponse.class, parameters);
+		ac.setProject(projectName);
+		ac.setPayloadObject(nodeCreateRequest);
+		ac.getVersioningParameters().setVersion("draft");
+		nodeCrudHandler.handleBatchCreate(ac);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 

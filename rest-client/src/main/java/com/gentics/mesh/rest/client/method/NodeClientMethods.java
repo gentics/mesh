@@ -1,5 +1,6 @@
 package com.gentics.mesh.rest.client.method;
 
+import com.gentics.mesh.core.rest.common.ListRequest;
 import com.gentics.mesh.core.rest.common.ObjectPermissionGrantRequest;
 import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
 import com.gentics.mesh.core.rest.common.ObjectPermissionRevokeRequest;
@@ -45,6 +46,17 @@ public interface NodeClientMethods {
 	 * @return Mesh request which can be invoked
 	 */
 	MeshRequest<NodeResponse> createNode(String projectName, NodeCreateRequest nodeCreateRequest, ParameterProvider... parameters);
+
+	/**
+	 * Create a set of nodes within the given project. The query parameters determine which language of the nodes will be returned.
+	 * 
+	 * @param projectName
+	 *            Name of the project
+	 * @param nodeCreateRequest
+	 * @param parameters
+	 * @return Mesh request which can be invoked
+	 */
+	MeshRequest<NodeListResponse> createNodes(String projectName, ListRequest<NodeCreateRequest> nodeCreateRequest, ParameterProvider... parameters);
 
 	/**
 	 * Create a node within the given project. The query parameters determine which language of the node will be returned. Use the provided uuid for the node.

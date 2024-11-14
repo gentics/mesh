@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.actions.impl;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -65,6 +66,11 @@ public class BranchDAOActionsImpl implements BranchDAOActions {
 	public Page<? extends HibBranch> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, Predicate<HibBranch> extraFilter) {
 		BranchDao branchDao = ctx.tx().branchDao();
 		return branchDao.findAll(ctx.project(), ctx.ac(), pagingInfo, extraFilter);
+	}
+
+	@Override
+	public List<HibBranch> createBatch(Tx tx, InternalActionContext ac, EventQueueBatch batch) {
+		return tx.branchDao().createBatch(tx.getProject(ac), ac, batch);
 	}
 
 	@Override

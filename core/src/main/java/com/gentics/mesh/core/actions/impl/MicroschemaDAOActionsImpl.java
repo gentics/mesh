@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.actions.impl;
 
+import java.util.List;
 import java.util.function.Predicate;
 
 import javax.inject.Inject;
@@ -61,6 +62,11 @@ public class MicroschemaDAOActionsImpl implements MicroschemaDAOActions {
 		return ctx.tx().microschemaDao().findAll(ctx.ac(), pagingInfo, schema -> {
 			return extraFilter.test(schema);
 		});
+	}
+
+	@Override
+	public List<HibMicroschema> createBatch(Tx tx, InternalActionContext ac, EventQueueBatch batch) {
+		return tx.microschemaDao().createBatch(null, ac, batch);
 	}
 
 	@Override

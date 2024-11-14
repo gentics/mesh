@@ -142,8 +142,13 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 
 	@Override
 	default HibBranch create(HibProject project, InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		CommonTx tx = CommonTx.get();
 		BranchCreateRequest request = ac.fromJson(BranchCreateRequest.class);
+		return create(request, project, ac, batch, uuid);
+	}
+
+	@Override
+	default HibBranch create(BranchCreateRequest request, HibProject project, InternalActionContext ac, EventQueueBatch batch, String uuid) {
+		CommonTx tx = CommonTx.get();
 		HibUser requestUser = ac.getUser();
 
 		// Check for completeness of request
@@ -173,6 +178,10 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 
 		if (baseBranch == null) {
 			baseBranch = getLatestBranch(project);
+		}
+
+		if (StringUtils.isBlank(uuid)) {
+			uuid = request.getUuid();
 		}
 
 		HibBranch branch = create(project, request.getName(), requestUser, uuid, request.isLatest(), baseBranch, false, batch);

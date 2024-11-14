@@ -503,6 +503,12 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 
 	@Override
 	default HibUser create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
+		UserCreateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), UserCreateRequest.class);
+		return create(requestModel, ac, batch, uuid);
+	}
+
+	@Override
+	default HibUser create(UserCreateRequest requestModel, InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		Tx tx = Tx.get();
 		HibBaseElement userRoot = tx.data().permissionRoots().user();
 		GroupDao groupDao = tx.groupDao();
@@ -510,7 +516,6 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 		NodeDao nodeDao = tx.nodeDao();
 		HibUser requestUser = ac.getUser();
 
-		UserCreateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), UserCreateRequest.class);
 		if (requestModel == null) {
 			throw error(BAD_REQUEST, "error_parse_request_json_error");
 		}
