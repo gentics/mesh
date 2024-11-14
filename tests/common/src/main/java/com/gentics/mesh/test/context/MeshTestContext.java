@@ -880,6 +880,10 @@ public class MeshTestContext implements TestRule {
 			return mesh.getOptions();
 		}
 
+		public Mesh getMesh() {
+			return mesh;
+		}
+
 		private void setupRestEndpoints(MeshTestSetting settings) throws Exception {
 			mesh.getOptions().getUploadOptions().setByteLimit(Long.MAX_VALUE);
 

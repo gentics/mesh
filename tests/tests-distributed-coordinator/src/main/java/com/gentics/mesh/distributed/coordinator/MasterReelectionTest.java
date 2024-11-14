@@ -11,6 +11,7 @@ import org.junit.Test;
 import com.gentics.mesh.distributed.AbstractMeshClusteringTest;
 import com.gentics.mesh.distributed.AwaitMembershipEvent;
 import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.util.TestUtils;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 
@@ -18,7 +19,7 @@ import com.hazelcast.core.HazelcastInstance;
  * Test for the automatic re-election of the coordination master, when the current master leaves the cluster.
  * This case is the only test case in this test class, because it will shut down the hazelcast instance of one of the cluster members.
  */
-@MeshTestSetting(testSize = FULL, startServer = true, clusterMode = true, clusterName = "MasterReelectionTest")
+@MeshTestSetting(testSize = FULL, startServer = true, clusterMode = true, clusterName = "MasterReelectionTest", resetBetweenTests = false)
 public class MasterReelectionTest extends AbstractMeshClusteringTest {
 	/**
 	 * Test automatic re-election
@@ -40,6 +41,8 @@ public class MasterReelectionTest extends AbstractMeshClusteringTest {
 			HazelcastInstance hzInstance2 = Hazelcast.getHazelcastInstanceByName(getInstanceName(1));
 			hzInstance2.shutdown();
 		}
+
+		TestUtils.sleep(1000);
 
 		// get master info from other instances (should not be instance 2 any more)
 		String coordinationMasterFromInstance1 = call(() -> getInstance(0).getHttpClient().loadCoordinationMaster())

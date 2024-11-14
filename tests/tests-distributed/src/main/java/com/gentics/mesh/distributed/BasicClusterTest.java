@@ -13,6 +13,7 @@ import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.RandomStringUtils;
@@ -52,6 +53,8 @@ import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.MeshTestContext.MeshTestInstance;
 import com.gentics.mesh.test.util.TestUtils;
+
+import io.netty.handler.codec.http.HttpResponseStatus;
 
 @MeshTestSetting(testSize = FULL, startServer = true, clusterMode = true, clusterName = "BasicClusterTest", clusterInstances = 2)
 public class BasicClusterTest extends AbstractMeshClusteringTest {
@@ -174,7 +177,7 @@ public class BasicClusterTest extends AbstractMeshClusteringTest {
 		request.getFields().put("slug", FieldUtil.createStringField("new-page.de.html"));
 		request.getFields().put("content", FieldUtil.createStringField("Mahlzeit!"));
 		NodeResponse updateResponse = call(() -> clientB.updateNode(projectName, response.getUuid(), request, new NodeParametersImpl().setLanguages(
-			"de")));
+			"de")), HttpResponseStatus.NOT_FOUND, 10, TimeUnit.SECONDS);
 		assertEquals("new-page.de.html", updateResponse.getFields().getStringField("slug").getString());
 
 		NodeResponse responseFromNodeA = call(() -> clientA.findNodeByUuid(projectName, response.getUuid(), new NodeParametersImpl().setLanguages(
@@ -188,7 +191,7 @@ public class BasicClusterTest extends AbstractMeshClusteringTest {
 		String projectName = randomName();
 		NodeResponse response = createProjectAndNode(clientA, projectName);
 
-		NodeResponse nodeResponse = call(() -> clientB.findNodeByUuid(projectName, response.getUuid()));
+		NodeResponse nodeResponse = call(() -> clientB.findNodeByUuid(projectName, response.getUuid()), HttpResponseStatus.NOT_FOUND, 10, TimeUnit.SECONDS);
 		assertEquals("Blessed mealtime again!", nodeResponse.getFields().getStringField("content").getString());
 	}
 
