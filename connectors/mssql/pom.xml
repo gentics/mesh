@@ -261,7 +261,7 @@
 					</dependenciesToScan>
 					<skip>${skip.mssql.tests}</skip>
 					<jvm>${env.JAVA_HOME}/bin/java</jvm>
-					<argLine>-Xms128m -Xmx256m -XX:MaxDirectMemorySize=128m
+					<argLine>-Xms128m -Xmx512m
 						--add-opens=java.base/java.util=ALL-UNNAMED
 						${jacoco.env}
 					</argLine>
@@ -330,6 +330,10 @@
 									<MESH_TESTDB_MANAGER_MSSQL_HOST_EXTERNAL>localhost</MESH_TESTDB_MANAGER_MSSQL_HOST_EXTERNAL>
 									<MESH_TESTDB_MANAGER_MSSQL_PORT_EXTERNAL>+${mssql.port}</MESH_TESTDB_MANAGER_MSSQL_PORT_EXTERNAL>
 									<MESH_TESTDB_MANAGER_MSSQL_PASSWORD><![CDATA[changeitNow4567&]]></MESH_TESTDB_MANAGER_MSSQL_PASSWORD>
+
+									<MESH_TESTDB_MANAGER_MARIADB_ENABLED>false</MESH_TESTDB_MANAGER_MARIADB_ENABLED>
+									<MESH_TESTDB_MANAGER_POSTGRES_ENABLED>false</MESH_TESTDB_MANAGER_POSTGRES_ENABLED>
+									<MESH_TESTDB_MANAGER_ORACLE_ENABLED>false</MESH_TESTDB_MANAGER_ORACLE_ENABLED>
 								</env>
 								<wait>
 									<log>.*WebSocket ready for connections.*</log>

@@ -263,7 +263,7 @@
 					</dependenciesToScan>
 					<skip>${skip.postgres.tests}</skip>
 					<jvm>${env.JAVA_HOME}/bin/java</jvm>
-					<argLine>-Xms128m -Xmx256m -XX:MaxDirectMemorySize=128m
+					<argLine>-Xms128m -Xmx512m
 						--add-opens=java.base/java.util=ALL-UNNAMED
 						${jacoco.env}
 					</argLine>
@@ -335,6 +335,10 @@
 									<MESH_TESTDB_MANAGER_POSTGRES_PORT_EXTERNAL>+${postgres.port}</MESH_TESTDB_MANAGER_POSTGRES_PORT_EXTERNAL>
 									<MESH_TESTDB_MANAGER_POSTGRES_USERNAME>meshdbuser</MESH_TESTDB_MANAGER_POSTGRES_USERNAME>
 									<MESH_TESTDB_MANAGER_POSTGRES_PASSWORD><![CDATA[changeitNow4567&]]></MESH_TESTDB_MANAGER_POSTGRES_PASSWORD>
+
+									<MESH_TESTDB_MANAGER_MARIADB_ENABLED>false</MESH_TESTDB_MANAGER_MARIADB_ENABLED>
+									<MESH_TESTDB_MANAGER_MSSQL_ENABLED>false</MESH_TESTDB_MANAGER_MSSQL_ENABLED>
+									<MESH_TESTDB_MANAGER_ORACLE_ENABLED>false</MESH_TESTDB_MANAGER_ORACLE_ENABLED>
 								</env>
 								<wait>
 									<log>.*WebSocket ready for connections.*</log>
