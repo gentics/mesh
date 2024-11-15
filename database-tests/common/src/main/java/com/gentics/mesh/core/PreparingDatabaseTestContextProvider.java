@@ -1,5 +1,7 @@
 package com.gentics.mesh.core;
 
+import java.util.List;
+
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.test.docker.PreparingDatabaseContainer;
@@ -31,11 +33,12 @@ public abstract class PreparingDatabaseTestContextProvider<T extends PreparingDa
 	}
 
 	@Override
-	public boolean fastStorageCleanup(Database db) throws Exception {
+	public boolean fastStorageCleanup(List<Database> dbs) throws Exception {
 		getDatabaseContainer().dispose(current);
-		current = getDatabaseContainer().take();
 		fillMeshOptions(meshOptions);
-		db.reset();
+		for (Database db : dbs) {
+			db.reset();
+		}
 		return true;
 	}
 }

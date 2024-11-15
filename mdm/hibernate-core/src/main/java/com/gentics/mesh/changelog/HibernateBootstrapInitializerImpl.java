@@ -36,16 +36,14 @@ import com.gentics.mesh.core.data.service.ServerSchemaStorageImpl;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
-import com.gentics.mesh.distributed.DistributedEventManager;
-import com.gentics.mesh.distributed.coordinator.MasterElector;
 import com.gentics.mesh.database.HibernateDatabase;
 import com.gentics.mesh.database.HibernateTx;
-import com.gentics.mesh.etc.config.HibernateMeshOptions;
+import com.gentics.mesh.distributed.DistributedEventManager;
+import com.gentics.mesh.distributed.coordinator.MasterElector;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.ClusterOptions;
+import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.cluster.CoordinationTopology;
-import com.gentics.mesh.etc.config.cluster.CoordinatorMode;
 import com.gentics.mesh.event.EventBusStore;
 import com.gentics.mesh.hibernate.data.dao.RoleDaoImpl;
 import com.gentics.mesh.hibernate.data.permission.HibPermissionRoots;
@@ -305,18 +303,6 @@ public class HibernateBootstrapInitializerImpl extends AbstractBootstrapInitiali
 		final String hazelcastConfig = System.getProperty("hazelcast.config", defaultHazelcastConfigPath);
 		// This setting is used by the HazelcastClusterManager to identify the path of the hazelcast configuration file
 		System.setProperty("vertx.hazelcast.config", hazelcastConfig);
-
-		// request delegation based on cluster membership is a specific feature of an own cluster manager implementation, which we currently don't have
-		if (clusterOptions.getCoordinatorMode() != CoordinatorMode.DISABLED) {
-			log.warn("Coordination mode " + clusterOptions.getCoordinatorMode() + " will be ignored. Setting coordination mode to DISABLED");
-		}
-		clusterOptions.setCoordinatorMode(CoordinatorMode.DISABLED);
-
-		// coordination topology management is a specific feature of an own cluster manager implementation, which we currently don't have
-		if (clusterOptions.getCoordinatorTopology() != CoordinationTopology.UNMANAGED) {
-			log.warn("Coordination topology " + clusterOptions.getCoordinatorTopology() + " will be ignored. Setting coordination topology to UNMANAGED");
-		}
-		clusterOptions.setCoordinatorTopology(CoordinationTopology.UNMANAGED);
 
 		initVertx(options);
 

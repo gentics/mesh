@@ -22,10 +22,15 @@ public class CoordinatorMasterResponse implements RestModel {
 	@JsonPropertyDescription("Hostname of the coordination master instance.")
 	private String host;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("UUID of the coordination master instance.")
+	private String uuid;
+
 	public CoordinatorMasterResponse() {
 	}
 
-	public CoordinatorMasterResponse(String name, int port, String host) {
+	public CoordinatorMasterResponse(String uuid, String name, int port, String host) {
+		this.uuid = uuid;
 		this.name = name;
 		this.port = port;
 		this.host = host;
@@ -58,6 +63,16 @@ public class CoordinatorMasterResponse implements RestModel {
 	@Setter
 	public CoordinatorMasterResponse setHost(String host) {
 		this.host = host;
+		return this;
+	}
+
+	public String getUuid() {
+		return uuid;
+	}
+
+	@Setter
+	public CoordinatorMasterResponse setUuid(String uuid) {
+		this.uuid = uuid;
 		return this;
 	}
 }

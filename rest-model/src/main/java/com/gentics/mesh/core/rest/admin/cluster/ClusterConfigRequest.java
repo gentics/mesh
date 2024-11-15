@@ -16,14 +16,6 @@ public class ClusterConfigRequest implements RestModel {
 	@JsonPropertyDescription("List of server configurations.")
 	private List<ClusterServerConfig> servers = new ArrayList<>();
 
-	@JsonProperty(required = false)
-	@JsonPropertyDescription("Global write quorum setting. Allowed values are numbers and 'all', 'majority'.")
-	private String writeQuorum;
-
-	@JsonProperty(required = false)
-	@JsonPropertyDescription("Global read quorum setting.")
-	private Integer readQuorum;
-
 	public ClusterConfigRequest() {
 	}
 
@@ -34,21 +26,4 @@ public class ClusterConfigRequest implements RestModel {
 	public void setServers(List<ClusterServerConfig> servers) {
 		this.servers = servers;
 	}
-
-	public Integer getReadQuorum() {
-		return readQuorum;
-	}
-
-	public void setReadQuorum(Integer readQuorum) {
-		this.readQuorum = readQuorum;
-	}
-
-	public String getWriteQuorum() {
-		return writeQuorum;
-	}
-
-	public void setWriteQuorum(String writeQuorum) {
-		this.writeQuorum = writeQuorum;
-	}
-
 }

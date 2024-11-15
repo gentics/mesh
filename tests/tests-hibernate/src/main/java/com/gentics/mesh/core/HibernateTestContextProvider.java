@@ -85,6 +85,11 @@ public abstract class HibernateTestContextProvider extends AbstractHibernateOpti
 	}
 
 	@Override
+	public HibernateMeshOptions getClone() throws Exception {
+		return HibernateMeshOptions.class.cast(super.getClone());
+	}
+
+	@Override
 	public void setSyncWrites(boolean syncWrites) {
 		meshOptions.getStorageOptions().setSynchronizeWrites(syncWrites);
 	}

@@ -16,6 +16,9 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.context.MicronodeMigrationContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.HibField;
@@ -42,7 +45,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
-import com.gentics.mesh.distributed.RequestDelegator;
+import com.gentics.mesh.distributed.MasterInfoProvider;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.metric.MetricsService;
@@ -50,8 +53,6 @@ import com.gentics.mesh.util.VersionNumber;
 
 import io.reactivex.Completable;
 import io.reactivex.exceptions.CompositeException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @see MicronodeMigration
@@ -66,8 +67,8 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 	@Inject
 	public MicronodeMigrationImpl(Database db, BinaryUploadHandlerImpl binaryFieldHandler, MetricsService metrics,
 			Provider<EventQueueBatch> batchProvider, WriteLock writeLock, MeshOptions options,
-			RequestDelegator delegator) {
-		super(db, binaryFieldHandler, metrics, batchProvider, options, delegator);
+			MasterInfoProvider masterInfoProvider) {
+		super(db, binaryFieldHandler, metrics, batchProvider, options, masterInfoProvider);
 		this.writeLock = writeLock;
 	}
 

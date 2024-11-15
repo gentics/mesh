@@ -99,7 +99,6 @@
 		<module>test-scanner</module>
 		<module>connectors</module>
 		<module>performance-tests</module>
-		<module>hazelcast3-cluster-manager</module>
 	</modules>
 
 	<dependencies>

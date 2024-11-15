@@ -18,12 +18,6 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.LockModeType;
-import jakarta.persistence.OptimisticLockException;
-import jakarta.persistence.Persistence;
-import jakarta.persistence.criteria.CriteriaQuery;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
@@ -48,13 +42,13 @@ import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.db.TxAction;
 import com.gentics.mesh.core.db.cluster.ClusterManager;
-import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterServerConfig;
 import com.gentics.mesh.core.rest.admin.cluster.ServerRole;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.dagger.tx.TransactionComponent;
+import com.gentics.mesh.database.cluster.HibClusterManager;
 import com.gentics.mesh.database.connector.DatabaseConnector;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.etc.config.hibernate.HibernateStorageOptions;
@@ -72,6 +66,12 @@ import dagger.Lazy;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Timer;
 import io.vertx.core.Vertx;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.OptimisticLockException;
+import jakarta.persistence.Persistence;
+import jakarta.persistence.criteria.CriteriaQuery;
 import liquibase.Contexts;
 import liquibase.Liquibase;
 import liquibase.Scope;
@@ -292,19 +292,13 @@ public class HibernateDatabase extends CommonDatabase implements Database, Seria
 
 	@Override
 	public List<String> getChangeUuidList() {
+		// TODO use Liquibase update log?
 		return Collections.emptyList();
 	}
 
 	@Override
 	public Vertx vertx() {
 		return vertx.get();
-	}
-
-	@Override
-	public void updateClusterConfig(ClusterConfigRequest request) {
-		// nothing to do, in the hibernate context changing reading/writing quorum values or member roles
-		// has no effect
-		log.warn("update cluster configuration call was ignored");
 	}
 
 	@Override
@@ -316,23 +310,13 @@ public class HibernateDatabase extends CommonDatabase implements Database, Seria
 				ClusterServerConfig serverConfig = new ClusterServerConfig();
 				serverConfig.setName(node);
 				serverConfig.setRole(ServerRole.MASTER); // all mesh nodes can write/read with hibernate
-
 				response.getServers().add(serverConfig);
 			});
-
-			// relational databases don't depend on mesh for reading/writing
-			response.setReadQuorum(1);
-			response.setWriteQuorum(String.valueOf(1));
 
 			return response;
 		} else {
 			throw error(BAD_REQUEST, "error_cluster_status_only_available_in_cluster_mode");
 		}
-	}
-
-	@Override
-	public void blockingTopologyLockCheck() {
-		// nothing to do
 	}
 
 	@Override

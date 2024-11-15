@@ -2,6 +2,7 @@ package com.gentics.mesh.core;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -146,13 +147,15 @@ public abstract class ManagedDatabaseTestContextProvider extends HibernateTestCo
 	}
 
 	@Override
-	public boolean fastStorageCleanup(Database db) throws Exception {
+	public boolean fastStorageCleanup(List<Database> dbs) throws Exception {
 		databaseMessageLatch = new CountDownLatch(1);
 		webSocket.send("reset");
 		assertThat(databaseMessageLatch.await(DB_WAIT_TIMEOUT_S, TimeUnit.SECONDS))
 				.as(String.format("Database was available within %d seconds", DB_WAIT_TIMEOUT_S)).isTrue();
 		fillMeshOptions(meshOptions);
-		db.reset();
+		for (Database db : dbs) {
+			db.reset();
+		}
 		return true;
 	}
 

@@ -161,17 +161,6 @@
 			<artifactId>vertx-codegen</artifactId>
 		</dependency>
 
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>hazelcast3-cluster-manager</artifactId>
-			<!-- Use the specified hazelcast version instead -->
-			<exclusions>
-				<exclusion>
-					<groupId>com.hazelcast</groupId>
-					<artifactId>hazelcast</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
 		<!-- Hazelcast -->
 		<dependency>
 			<groupId>com.hazelcast</groupId>

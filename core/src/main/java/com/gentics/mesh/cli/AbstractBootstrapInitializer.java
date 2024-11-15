@@ -87,12 +87,9 @@ import dagger.Lazy;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.vertx.core.Vertx;
-import io.vertx.core.VertxException;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.EventBusOptions;
-import io.vertx.core.impl.VertxInternal;
-import io.vertx.core.impl.btc.BlockedThreadEvent;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.metrics.MetricsOptions;
@@ -631,8 +628,8 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 		String password = configuration.getAdminPassword();
 		if (password != null) {
 			// wait for DB being ready, then update/create the admin user
-			db().clusterManager().waitUntilDistributedDatabaseReady().andThen(doWithLock(GLOBAL_CHANGELOG_LOCK_KEY,
-					"setting admin password", ensureAdminUser(password), 60 * 1000)).subscribe();
+			doWithLock(GLOBAL_CHANGELOG_LOCK_KEY,
+					"setting admin password", ensureAdminUser(password), 60 * 1000).subscribe();
 		}
 
 		registerEventHandlers();

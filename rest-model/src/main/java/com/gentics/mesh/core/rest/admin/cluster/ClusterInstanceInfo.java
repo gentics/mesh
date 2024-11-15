@@ -7,6 +7,7 @@ import com.gentics.mesh.core.rest.common.RestModel;
  */
 public class ClusterInstanceInfo implements RestModel {
 
+	private String uuid;
 	private String address;
 	private String name;
 	private String status;
@@ -111,5 +112,22 @@ public class ClusterInstanceInfo implements RestModel {
 	public ClusterInstanceInfo setRole(String role) {
 		this.role = role;
 		return this;
+	}
+
+	/**
+	 * Get UUID of the instance.
+	 * 
+	 * @return
+	 */
+	public String getUuid() {
+		return uuid;
+	}
+
+	/**
+	 * Set UUID of the instance.
+	 * @param uuid
+	 */
+	public void setUuid(String uuid) {
+		this.uuid = uuid;
 	}
 }

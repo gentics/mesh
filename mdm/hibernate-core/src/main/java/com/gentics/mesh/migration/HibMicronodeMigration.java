@@ -9,6 +9,8 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import org.hibernate.Session;
+
 import com.gentics.mesh.contentoperation.CommonContentColumn;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -17,8 +19,8 @@ import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandlerImpl;
 import com.gentics.mesh.core.migration.impl.MicronodeMigrationImpl;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
-import com.gentics.mesh.distributed.RequestDelegator;
 import com.gentics.mesh.database.HibernateTx;
+import com.gentics.mesh.distributed.MasterInfoProvider;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.hibernate.ContentInterceptor;
@@ -26,7 +28,6 @@ import com.gentics.mesh.hibernate.data.dao.NodeDaoImpl;
 import com.gentics.mesh.hibernate.data.domain.HibNodeFieldContainerImpl;
 import com.gentics.mesh.hibernate.data.loader.DataLoaders;
 import com.gentics.mesh.metric.MetricsService;
-import org.hibernate.Session;
 
 /**
  * Micronode migrator implementation.
@@ -38,8 +39,8 @@ import org.hibernate.Session;
 public class HibMicronodeMigration extends MicronodeMigrationImpl {
 
 	@Inject
-	public HibMicronodeMigration(Database db, BinaryUploadHandlerImpl binaryFieldHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider, WriteLock writeLock, MeshOptions options, RequestDelegator delegator) {
-		super(db, binaryFieldHandler, metrics, batchProvider, writeLock, options, delegator);
+	public HibMicronodeMigration(Database db, BinaryUploadHandlerImpl binaryFieldHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider, WriteLock writeLock, MeshOptions options, MasterInfoProvider masterInfoProvider) {
+		super(db, binaryFieldHandler, metrics, batchProvider, writeLock, options, masterInfoProvider);
 	}
 
 	public void beforeBatchMigration(List<? extends HibNodeFieldContainer> containerList, InternalActionContext ac) {

@@ -13,7 +13,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -43,9 +42,6 @@ import io.vertx.core.json.JsonObject;
  * @see Mesh
  */
 public class MeshImpl implements Mesh {
-
-	private static AtomicLong instanceCounter = new AtomicLong(0);
-
 	private static final Logger log = LoggerFactory.getLogger(MeshImpl.class);
 	private final MeshComponent.Builder builder;
 
@@ -63,12 +59,6 @@ public class MeshImpl implements Mesh {
 
 	public MeshImpl(MeshOptions options, MeshComponent.Builder builder) {
 		this.builder = builder;
-		long current = instanceCounter.incrementAndGet();
-		if (current >= 2) {
-			if (options.getClusterOptions().isEnabled()) {
-				throw new RuntimeException("Clustering is currently limited to a single instance mode.");
-			}
-		}
 		Objects.requireNonNull(options, "Please specify a valid options object.");
 		this.options = options;
 	}

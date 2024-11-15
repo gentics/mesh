@@ -7,25 +7,18 @@ import static com.gentics.mesh.rest.client.impl.HttpMethod.POST;
 import static com.gentics.mesh.rest.client.impl.HttpMethod.PUT;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.io.SequenceInputStream;
-import java.io.UnsupportedEncodingException;
 import java.security.InvalidParameterException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Vector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
-import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
-import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
-import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfig;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorMasterResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.localconfig.LocalConfigModel;
@@ -1141,16 +1134,6 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<ClusterConfigResponse> loadClusterConfig() {
-		return prepareRequest(GET, "/admin/cluster/config", ClusterConfigResponse.class);
-	}
-
-	@Override
-	public MeshRequest<ClusterConfigResponse> updateClusterConfig(ClusterConfigRequest request) {
-		return prepareRequest(POST, "/admin/cluster/config", ClusterConfigResponse.class, request);
-	}
-
-	@Override
 	public MeshRequest<NodeResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String version, String fieldKey,
 		InputStream fileData, long fileSize, String fileName, String contentType, boolean publish, ParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
@@ -1596,16 +1579,6 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	@Override
 	public MeshRequest<GenericMessageResponse> setCoordinationMaster() {
 		return prepareRequest(POST, "/admin/coordinator/master", GenericMessageResponse.class);
-	}
-
-	@Override
-	public MeshRequest<CoordinatorConfig> loadCoordinationConfig() {
-		return prepareRequest(GET, "/admin/coordinator/config", CoordinatorConfig.class);
-	}
-
-	@Override
-	public MeshRequest<CoordinatorConfig> updateCoordinationConfig(CoordinatorConfig coordinatorConfig) {
-		return prepareRequest(POST, "/admin/coordinator/config", CoordinatorConfig.class, coordinatorConfig);
 	}
 
 	@Override
