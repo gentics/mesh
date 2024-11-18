@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.cache.jcache.internal.JCacheRegionFactory;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.hikaricp.internal.HikariCPConnectionProvider;
 import org.hibernate.jpa.boot.spi.IntegratorProvider;
@@ -15,8 +16,6 @@ import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.hibernate.ContentInterceptor;
 import com.google.common.collect.ImmutableMap;
 import com.hazelcast.hibernate.HazelcastLocalCacheRegionFactory;
-
-import net.sf.ehcache.hibernate.EhCacheRegionFactory;
 
 /**
  * Hibernate-backed DB wrapper.
@@ -90,7 +89,7 @@ public class DefaultSQLDatabase implements DatabaseProvider {
 						.put("hibernate.cache.hazelcast.instance_name", options.getClusterOptions().getClusterName());
 			} else {
 				optionBuilder
-						.put("hibernate.cache.region.factory_class", EhCacheRegionFactory.class.getName());
+						.put("hibernate.cache.region.factory_class", JCacheRegionFactory.class.getName());
 			}
 		}
 	}
