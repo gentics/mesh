@@ -22,9 +22,9 @@ import com.gentics.mesh.maven.VersionNumber;
  */
 public class DatabaseRevisionTableGenerator extends AbstractRenderingGenerator {
 
-	private static final String BASE_PATH = "https://maven.gentics.com/maven2/com/gentics/mesh/mesh-orientdb/";
+	private static final String BASE_PATH = "https://repo.gentics.com/repository/maven-releases-oss/com/gentics/mesh/mesh-orientdb/";
 
-	private static final String DB_REV_TABLE_TEMPLATE_NAME = "db-revs-table.hbs";;
+	private static final String DB_REV_TABLE_TEMPLATE_NAME = "db-revs-table.hbs";
 
 	public DatabaseRevisionTableGenerator(File outputFolder) throws IOException {
 		super(new File(outputFolder, "tables"), false);
@@ -61,12 +61,16 @@ public class DatabaseRevisionTableGenerator extends AbstractRenderingGenerator {
 			VersionNumber parsedVersion = VersionNumber.parse(version);
 			if (parsedVersion != null && parsedVersion.compareTo(VersionNumber.parse("0.16.1")) >= 0) {
 				URL revisionFileUrl = new URL(BASE_PATH + version + "/" + "mesh-orientdb-" + version + "-revision.txt");
-				String hash = IOUtils.readStringFromStream(revisionFileUrl.openStream());
-				System.out.println("Found version {" + version + "} with hash {" + hash + "}");
-				Map<String, String> map = new HashMap<>();
-				map.put("version", version);
-				map.put("revision", hash);
-				entries.add(map);
+				try {
+					String hash = IOUtils.readStringFromStream(revisionFileUrl.openStream());
+					System.out.println("Found version {" + version + "} with hash {" + hash + "}");
+					Map<String, String> map = new HashMap<>();
+					map.put("version", version);
+					map.put("revision", hash);
+					entries.add(map);
+				} catch (Throwable e) {
+					System.err.println("Error by reading " + revisionFileUrl + ":\n\t" + e.getMessage());
+				}
 			}
 		}
 		// Add the local version as well.
