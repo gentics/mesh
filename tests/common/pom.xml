@@ -92,8 +92,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.jdom</groupId>
-			<artifactId>jdom</artifactId>
-			<version>1.1</version>
+			<artifactId>jdom2</artifactId>
 			<type>jar</type>
 		</dependency>
 		<dependency>
