@@ -17,7 +17,7 @@
 		<plugin.license>Commercial</plugin.license>
 		<plugin.author>Gentics</plugin.author>
 		<!--  Don't forget to also update dependencyManagement section! -->
-		<mesh.version>3.0.0-SNAPSHOT</mesh.version>
+		<mesh.version>ci-devtest-SNAPSHOT</mesh.version>
 		<netty.version>4.1.115.Final</netty.version>
 		<hsqldb.version>2.7.3</hsqldb.version>
 		<commons-beanutils.version>1.9.4</commons-beanutils.version>
