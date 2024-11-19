@@ -337,12 +337,9 @@ public class NodeDataLoader {
 	 * The context of the loader for a specific key
 	 */
 	public static class Context {
-		private final ContainerType type;
-		
+		private final ContainerType type;		
 		private final String languageTags;
-
 		private final Optional<FilterOperation<?>> maybeNativeFilter;
-
 		private final PagingParameters paging;
 		private final int pagingId;
 
@@ -382,7 +379,7 @@ public class NodeDataLoader {
 
 		@Override
 		public int hashCode() {
-			return Objects.hash(type, languageTags, pagingId, maybeNativeFilter.map(Objects::toString).orElse(StringUtils.EMPTY));
+			return Objects.hash(pagingId, type, languageTags, maybeNativeFilter.map(Objects::toString).orElse(StringUtils.EMPTY));
 		}
 
 		public Optional<FilterOperation<?>> getMaybeNativeFilter() {
@@ -391,6 +388,13 @@ public class NodeDataLoader {
 
 		public PagingParameters getPaging() {
 			return paging;
+		}
+
+		@Override
+		public String toString() {
+			return "Context [type=" + type + ", languageTags=" + languageTags + ", maybeNativeFilter="
+					+ maybeNativeFilter.map(Objects::toString).orElse(StringUtils.EMPTY) + ", paging=" + paging + ", pagingId=" + pagingId
+					+ "]";
 		}
 	}
 

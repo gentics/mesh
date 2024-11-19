@@ -21,7 +21,7 @@
 		<graphql.version>21.5</graphql.version>
 		<graphql-scalars.version>21.0</graphql-scalars.version>
 		<graphql-dataloader.version>3.2.2</graphql-dataloader.version>
-		<graphql-filter.version>3.0.6</graphql-filter.version>
+		<graphql-filter.version>3.0.7</graphql-filter.version>
 		<pf4j.version>3.11.0</pf4j.version>
 		<asm.version>3.3.1</asm.version>
 		<spring.security.version>5.5.7</spring.security.version>
