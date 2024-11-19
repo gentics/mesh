@@ -1,0 +1,1 @@
+A GraphQL data fetchers have been speed up on native filtering, by fixing the proper context detection, so complex multi-inclusion queries run up to 10x faster.
