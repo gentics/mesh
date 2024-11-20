@@ -373,13 +373,13 @@ public class NodeDataLoader {
 					&& pagingId == context.pagingId
 					&& Objects.equals(languageTags, context.languageTags)
 					&& Objects.equals(
-							maybeNativeFilter.map(Objects::toString).orElse(StringUtils.EMPTY), 
-							context.maybeNativeFilter.map(Objects::toString).orElse(StringUtils.EMPTY));
+							maybeNativeFilter.map(FilterOperation::toSql).orElse(StringUtils.EMPTY), 
+							context.maybeNativeFilter.map(FilterOperation::toSql).orElse(StringUtils.EMPTY));
 		}
 
 		@Override
 		public int hashCode() {
-			return Objects.hash(pagingId, type, languageTags, maybeNativeFilter.map(Objects::toString).orElse(StringUtils.EMPTY));
+			return Objects.hash(type, pagingId, languageTags, maybeNativeFilter.map(FilterOperation::toSql).orElse(StringUtils.EMPTY));
 		}
 
 		public Optional<FilterOperation<?>> getMaybeNativeFilter() {
@@ -388,13 +388,6 @@ public class NodeDataLoader {
 
 		public PagingParameters getPaging() {
 			return paging;
-		}
-
-		@Override
-		public String toString() {
-			return "Context [type=" + type + ", languageTags=" + languageTags + ", maybeNativeFilter="
-					+ maybeNativeFilter.map(Objects::toString).orElse(StringUtils.EMPTY) + ", paging=" + paging + ", pagingId=" + pagingId
-					+ "]";
 		}
 	}
 
