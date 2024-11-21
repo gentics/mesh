@@ -89,8 +89,13 @@ public class DefaultSQLDatabase implements DatabaseProvider {
 						.put("hibernate.cache.hazelcast.instance_name", options.getClusterOptions().getClusterName());
 			} else {
 				optionBuilder
-						.put("hibernate.cache.region.factory_class", JCacheRegionFactory.class.getName());
+						.put("hibernate.cache.region.factory_class", JCacheRegionFactory.class.getName())
+						.put("hibernate.javax.cache.provider", "org.ehcache.jsr107.EhcacheCachingProvider");
 			}
+		} else {
+			optionBuilder
+				.put("hibernate.cache.use_query_cache", Boolean.FALSE.toString())
+				.put("hibernate.cache.use_second_level_cache", Boolean.FALSE.toString());
 		}
 	}
 
