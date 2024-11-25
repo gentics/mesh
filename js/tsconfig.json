@@ -4,7 +4,7 @@
     "rootDir": ".",
     "sourceMap": false,
     "declaration": false,
-    "moduleResolution": "node",
+    "moduleResolution": "node10",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "importHelpers": true,
@@ -18,7 +18,7 @@
     "noFallthroughCasesInSwitch": false,
     "strictPropertyInitialization": false,
     "target": "ES2022",
-    "module": "esnext",
+    "module": "ES2022",
     "lib": [
       "es2022",
       "dom"
