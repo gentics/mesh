@@ -9,7 +9,7 @@ import java.util.function.Function;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.auth.MeshAuthChainImpl;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -70,7 +70,7 @@ public class SearchEndpointImpl extends AbstractInternalEndpoint implements Sear
 	protected final MicroschemaSearchHandler microschemaContainerSearchHandler;
 
 	@Inject
-	public SearchEndpointImpl(MeshAuthChainImpl chain, NodeSearchHandler searchHandler, AdminIndexHandler adminHandler,
+	public SearchEndpointImpl(MeshAuthChain chain, NodeSearchHandler searchHandler, AdminIndexHandler adminHandler,
 			UserSearchHandler userSearchHandler, GroupSearchHandler groupSearchHandler,
 			RoleSearchHandler roleSearchHandler, NodeSearchHandler nodeSearchHandler, TagSearchHandler tagSearchHandler,
 			TagFamilySearchHandler tagFamilySearchHandler, ProjectSearchHandler projectSearchHandler,

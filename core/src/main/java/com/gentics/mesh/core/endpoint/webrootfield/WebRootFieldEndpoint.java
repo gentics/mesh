@@ -6,7 +6,7 @@ import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.auth.MeshAuthChainImpl;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
@@ -33,7 +33,7 @@ public class WebRootFieldEndpoint extends AbstractProjectEndpoint {
 	}
 
 	@Inject
-	public WebRootFieldEndpoint(MeshAuthChainImpl chain, BootstrapInitializer boot, WebRootFieldHandler handler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+	public WebRootFieldEndpoint(MeshAuthChain chain, BootstrapInitializer boot, WebRootFieldHandler handler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
 		super("webrootfield", chain, boot, localConfigApi, db, options);
 		this.handler = handler;
 	}

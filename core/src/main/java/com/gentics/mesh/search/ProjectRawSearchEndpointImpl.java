@@ -2,7 +2,7 @@ package com.gentics.mesh.search;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.auth.MeshAuthChainImpl;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
@@ -31,7 +31,7 @@ public class ProjectRawSearchEndpointImpl extends AbstractProjectEndpoint implem
 	}
 
 	@Inject
-	public ProjectRawSearchEndpointImpl(MeshAuthChainImpl chain, BootstrapInitializer boot,
+	public ProjectRawSearchEndpointImpl(MeshAuthChain chain, BootstrapInitializer boot,
 			NodeSearchHandler nodeSearchHandler, TagSearchHandler tagSearchHandler,
 			TagFamilySearchHandler tagFamilySearchHandler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
 		super("rawSearch", chain, boot, localConfigApi, db, options);

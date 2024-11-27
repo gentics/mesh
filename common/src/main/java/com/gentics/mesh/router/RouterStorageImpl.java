@@ -8,11 +8,14 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import javax.inject.Inject;
 import javax.naming.InvalidNameException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.auth.MeshAuthChain;
-import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.handler.VersionHandlerImpl;
@@ -23,8 +26,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.impl.BodyHandlerImpl;
@@ -52,16 +53,18 @@ public class RouterStorageImpl implements RouterStorage {
 
 	public final VersionHandlerImpl versionHandler;
 
-	private MeshAuthChainImpl authChain;
+	private MeshAuthChain authChain;
 
 	private final RouterStorageRegistryImpl routerStorageRegistry;
 
+	private final LocalConfigApi localConfigApi;
+
 	@Inject
-	public RouterStorageImpl(Vertx vertx, MeshOptions options, MeshAuthChainImpl authChain, CorsHandler corsHandler, BodyHandlerImpl bodyHandler,
+	public RouterStorageImpl(Vertx vertx, MeshOptions options, MeshAuthChain authChain, CorsHandler corsHandler, BodyHandlerImpl bodyHandler,
 		Lazy<BootstrapInitializer> boot,
 		Lazy<Database> db, VersionHandlerImpl versionHandler,
 		RouterStorageRegistryImpl routerStorageRegistry,
-		LivenessManager liveness) {
+		LivenessManager liveness, LocalConfigApi localConfigApi) {
 		this.vertx = vertx;
 		this.options = options;
 		this.boot = boot;
@@ -71,6 +74,7 @@ public class RouterStorageImpl implements RouterStorage {
 		this.authChain = authChain;
 		this.versionHandler = versionHandler;
 		this.routerStorageRegistry = routerStorageRegistry;
+		this.localConfigApi = localConfigApi;
 
 		// Initialize the router chain. The root router will create additional routers which will be mounted.
 		rootRouter = new RootRouterImpl(vertx, this, options, liveness);
@@ -166,5 +170,10 @@ public class RouterStorageImpl implements RouterStorage {
 	@Override
 	public CorsHandler getCorsHandler() {
 		return corsHandler;
+	}
+
+	@Override
+	public LocalConfigApi getLocalConfigApi() {
+		return localConfigApi;
 	}
 }

@@ -2,7 +2,10 @@ package com.gentics.mesh.core.endpoint.eventbus;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.auth.MeshAuthChainImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -11,8 +14,6 @@ import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
 import io.vertx.core.Vertx;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.bridge.BridgeEventType;
 import io.vertx.ext.bridge.PermittedOptions;
@@ -36,7 +37,7 @@ public class EventbusEndpoint extends AbstractInternalEndpoint {
 	}
 
 	@Inject
-	public EventbusEndpoint(Vertx vertx, MeshAuthChainImpl chain, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+	public EventbusEndpoint(Vertx vertx, MeshAuthChain chain, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
 		super("eventbus", chain, localConfigApi, db, options);
 		this.vertx = vertx;
 	}

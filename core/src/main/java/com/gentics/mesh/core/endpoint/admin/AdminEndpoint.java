@@ -16,10 +16,8 @@ import static io.vertx.core.http.HttpMethod.POST;
 
 import java.util.function.BiConsumer;
 
-import javax.inject.Inject;
-
 import com.gentics.mesh.MeshStatus;
-import com.gentics.mesh.auth.MeshAuthChainImpl;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.db.Database;
@@ -39,26 +37,25 @@ import io.vertx.ext.web.RoutingContext;
 /**
  * The admin verticle provides core administration rest endpoints.
  */
-public class AdminEndpoint extends AbstractInternalEndpoint {
+public abstract class AdminEndpoint extends AbstractInternalEndpoint {
 
-	private AdminHandler adminHandler;
+	protected AdminHandler adminHandler;
 
-	private JobHandler jobHandler;
+	protected JobHandler jobHandler;
 
-	private ConsistencyCheckHandler consistencyHandler;
+	protected ConsistencyCheckHandler consistencyHandler;
 
-	private PluginHandler pluginHandler;
+	protected PluginHandler pluginHandler;
 
-	private DebugInfoHandler debugInfoHandler;
+	protected DebugInfoHandler debugInfoHandler;
 
-	private LocalConfigHandler localConfigHandler;
+	protected LocalConfigHandler localConfigHandler;
 
-	private ShutdownHandler shutdownHandler;
+	protected ShutdownHandler shutdownHandler;
 
-	private HandlerUtilities handlerUtilities;
+	protected HandlerUtilities handlerUtilities;
 
-	@Inject
-	public AdminEndpoint(MeshAuthChainImpl chain, AdminHandler adminHandler, JobHandler jobHandler, ConsistencyCheckHandler consistencyHandler,
+	public AdminEndpoint(MeshAuthChain chain, AdminHandler adminHandler, JobHandler jobHandler, ConsistencyCheckHandler consistencyHandler,
 		PluginHandler pluginHandler, DebugInfoHandler debugInfoHandler, LocalConfigHandler localConfigHandler, ShutdownHandler shutdownHandler,
 		HandlerUtilities handlerUtilities, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
 		super("admin", chain, localConfigApi, db, options);
@@ -72,7 +69,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		this.handlerUtilities = handlerUtilities;
 	}
 
-	public AdminEndpoint() {
+	protected AdminEndpoint() {
 		super("admin", null, null, null, null);
 	}
 
@@ -105,14 +102,14 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		addCacheHandler();
 	}
 
-	private void addSecurityLogger() {
+	protected void addSecurityLogger() {
 		getRouter().route().handler(internalHandler((rc, ac) -> {
 			ac.getSecurityLogger().info("Accessed path " + rc.request().path());
 			rc.next();
 		}));
 	}
 
-	private void addPluginHandler() {
+	protected void addPluginHandler() {
 		InternalEndpointRoute deployEndpoint = createRoute();
 		deployEndpoint.path("/plugins");
 		deployEndpoint.method(POST);
@@ -168,7 +165,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 	 * @deprecated Use monitoring server endpoint instead
 	 */
 	@Deprecated
-	private void addClusterStatusHandler() {
+	protected void addClusterStatusHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/cluster/status");
 		endpoint.method(GET);
@@ -180,7 +177,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		}, false);
 	}
 
-	private void addConsistencyCheckHandler() {
+	protected void addConsistencyCheckHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/consistency/check");
 		endpoint.method(GET);
@@ -217,7 +214,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 	 * @deprecated Use monitoring server status endpoint instead
 	 */
 	@Deprecated
-	private void addMeshStatusHandler() {
+	protected void addMeshStatusHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.description("Return the Gentics Mesh server status.");
 		endpoint.path("/status");
@@ -232,8 +229,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 
 	}
 
-	private void addJobHandler() {
-
+	protected void addJobHandler() {
 		InternalEndpointRoute invokeJobWorker = createRoute();
 		invokeJobWorker.path("/processJobs");
 		invokeJobWorker.method(POST);
@@ -304,7 +300,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		}, isOrderedBlockingHandlers());
 	}
 
-	private void addDebugInfoHandler() {
+	protected void addDebugInfoHandler() {
 		InternalEndpointRoute route = createRoute();
 		route.path("/debuginfo");
 		route.method(GET);
@@ -313,7 +309,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		route.handler(rc -> debugInfoHandler.handle(rc));
 	}
 
-	private void addRuntimeConfigHandler() {
+	protected void addRuntimeConfigHandler() {
 		InternalEndpointRoute getRoute = createRoute();
 		getRoute.path("/config");
 		getRoute.method(GET);
@@ -332,7 +328,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		postRoute.handler(rc -> localConfigHandler.handleSetActiveConfig(wrap(rc)));
 	}
 
-	private void addShutdownHandler() {
+	protected void addShutdownHandler() {
 		InternalEndpointRoute postRoute = createRoute();
 		postRoute.path("/shutdown");
 		postRoute.method(POST);
@@ -344,7 +340,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 			.handler(rc -> shutdownHandler.shutdown(wrap(rc)));
 	}
 
-	private void addCoordinatorHandler() {
+	protected void addCoordinatorHandler() {
 		InternalEndpointRoute loadMaster = createRoute();
 		loadMaster.path("/coordinator/master");
 		loadMaster.method(GET);
@@ -362,7 +358,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		electMaster.handler(rc -> adminHandler.handleSetCoordinationMaster(wrap(rc)));
 	}
 
-	private void addCacheHandler() {
+	protected void addCacheHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/cache");
 		endpoint.method(DELETE);
@@ -379,6 +375,4 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 	static Handler<RoutingContext> internalHandler(BiConsumer<RoutingContext, InternalActionContext> handler) {
 		return ctx -> handler.accept(ctx, new InternalRoutingActionContextImpl(ctx));
 	}
-
-
 }

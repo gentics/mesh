@@ -32,6 +32,9 @@ public class MeshServerInfoModel implements RestModel {
 	@JsonPropertyDescription("Database structure revision hash.")
 	private String databaseRevision;
 
+	@JsonPropertyDescription("Mesh revision name.")
+	private String meshRevision;
+
 	public MeshServerInfoModel() {
 	}
 
@@ -99,4 +102,11 @@ public class MeshServerInfoModel implements RestModel {
 		this.databaseRevision = databaseRevision;
 	}
 
+	public String getMeshRevision() {
+		return meshRevision;
+	}
+
+	public void setMeshRevision(String meshRevision) {
+		this.meshRevision = meshRevision;
+	}
 }

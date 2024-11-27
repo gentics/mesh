@@ -9,7 +9,7 @@ import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.auth.MeshAuthChainImpl;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
@@ -31,7 +31,7 @@ public class WebRootEndpoint extends AbstractProjectEndpoint {
 	}
 
 	@Inject
-	public WebRootEndpoint(MeshAuthChainImpl chain, BootstrapInitializer boot, WebRootHandler handler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+	public WebRootEndpoint(MeshAuthChain chain, BootstrapInitializer boot, WebRootHandler handler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
 		super("webroot", chain, boot, localConfigApi, db, options);
 		this.handler = handler;
 	}

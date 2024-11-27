@@ -1,8 +1,5 @@
 package com.gentics.mesh.auth;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import com.gentics.mesh.auth.handler.MeshAnonymousAuthHandler;
 import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -12,7 +9,6 @@ import io.vertx.ext.web.Route;
 /**
  * Main location for the Gentics Mesh auth chain.
  */
-@Singleton
 public class MeshAuthChainImpl implements MeshAuthChain {
 
 	private final MeshOAuthService oauthService;
@@ -21,7 +17,6 @@ public class MeshAuthChainImpl implements MeshAuthChain {
 
 	private final MeshAnonymousAuthHandler anonHandler;
 
-	@Inject
 	public MeshAuthChainImpl(MeshOAuthService oauthService, MeshJWTAuthHandler jwtAuthHandler,
 		MeshAnonymousAuthHandler anonHandler, MeshOptions options) {
 		this.oauthService = oauthService;
@@ -39,10 +34,9 @@ public class MeshAuthChainImpl implements MeshAuthChain {
 		// Now use the OAuth handler which may be able to authenticate the request - The jwt auth handler may have failed
 		oauthService.secure(route);
 
-		// Finally pass the request through the anonymous handler to fallback to anonymous when enabled
+		// Pass the request through the anonymous handler to fallback to anonymous when enabled
 		route.handler(rc -> {
 			anonHandler.handle(rc);
 		});
 	}
-
 }

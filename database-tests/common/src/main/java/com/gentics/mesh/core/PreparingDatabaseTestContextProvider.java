@@ -3,6 +3,7 @@ package com.gentics.mesh.core;
 import java.util.List;
 
 import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.test.docker.PreparingDatabaseContainer;
 import com.gentics.mesh.test.MeshProviderOrder;
@@ -22,7 +23,11 @@ public abstract class PreparingDatabaseTestContextProvider<T extends PreparingDa
 	 * @param databaseContainer database container
 	 */
 	public PreparingDatabaseTestContextProvider(T databaseContainer) {
-		super(databaseContainer);
+		this(databaseContainer, null);
+	}
+
+	public PreparingDatabaseTestContextProvider(T databaseContainer, MeshComponent.Builder componentBuilder) {
+		super(databaseContainer, componentBuilder);
 	}
 
 	@Override

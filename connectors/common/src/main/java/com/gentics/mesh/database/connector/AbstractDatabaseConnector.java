@@ -463,6 +463,21 @@ public abstract class AbstractDatabaseConnector implements DatabaseConnector {
 		}
 	}
 
+	/**
+	 * Get the Mesh options.
+	 * 
+	 * @return
+	 */
+	public HibernateMeshOptions getOptions() {
+		return options;
+	}
+
+	/**
+	 * Get the database connector properties.
+	 * 
+	 * @return
+	 * @throws IOException
+	 */
 	protected Properties getConnectorProperties() throws IOException {
 		Properties buildProperties = new Properties();
 		buildProperties.load(getClass().getResourceAsStream("/connector.build.properties"));

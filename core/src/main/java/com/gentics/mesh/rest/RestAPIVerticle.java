@@ -299,7 +299,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 	 */
 	private void registerEndPoints(RouterStorageImpl storage) throws Exception {
 
-		List<AbstractInternalEndpoint> endpoints = new ArrayList<>();
+		List<InternalEndpoint> endpoints = new ArrayList<>();
 		endpoints.add(restInfoEndpoint.get());
 		// verticles.add(projectInfoVerticle());
 		endpoints.add(languageEndpoint.get());
@@ -336,10 +336,9 @@ public class RestAPIVerticle extends AbstractVerticle {
 		endpoints.add(projectInfoEndpoint.get());
 		endpoints.add(healthEndpoint.get());
 
-		for (AbstractInternalEndpoint endpoint : endpoints) {
+		for (InternalEndpoint endpoint : endpoints) {
 			endpoint.init(vertx, storage);
 			endpoint.registerEndPoints();
 		}
 	}
-
 }

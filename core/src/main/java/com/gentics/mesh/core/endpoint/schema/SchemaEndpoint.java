@@ -19,12 +19,12 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.gentics.mesh.auth.MeshAuthChainImpl;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.endpoint.RolePermissionHandlingEndpoint;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.core.endpoint.RolePermissionHandlingEndpoint;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
@@ -45,7 +45,7 @@ public class SchemaEndpoint extends RolePermissionHandlingEndpoint {
 	}
 
 	@Inject
-	public SchemaEndpoint(MeshAuthChainImpl chain, SchemaCrudHandler crudHandler, SchemaLock schemaLock, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+	public SchemaEndpoint(MeshAuthChain chain, SchemaCrudHandler crudHandler, SchemaLock schemaLock, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
 		super("schemas", chain, localConfigApi, db, options);
 		this.crudHandler = crudHandler;
 		this.schemaLock = schemaLock;

@@ -89,6 +89,8 @@ import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 import com.gentics.mesh.core.data.storage.s3.S3BinaryStorageImpl;
 import com.gentics.mesh.core.db.CommonTxData;
 import com.gentics.mesh.core.db.TxData;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApiImpl;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandlerImpl;
 import com.gentics.mesh.core.endpoint.node.S3BinaryUploadHandler;
@@ -155,6 +157,9 @@ import dagger.Module;
  */
 @Module
 public abstract class CommonBindModule {
+
+	@Binds
+	abstract LocalConfigApi localConfigApi(LocalConfigApiImpl e);
 
 	@Binds
 	abstract TxData txData(CommonTxData e);

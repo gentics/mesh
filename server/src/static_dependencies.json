@@ -1,7 +1,7 @@
 {
   "components": [
     {
-      "name": "Mesh SQL",
+      "name": "Mesh",
       "modules": [
         {
           "name": "External",
@@ -19,28 +19,10 @@
               "latest": "8.12"
             },
             {
-              "name": "MS SQL Server",
-              "description": "Version used by automated tests.",
-              "current": "2019",
-              "latest": "2022"
-            },
-            {
               "name": "MariaDB",
               "description": "Version used by automated tests.",
               "current": "10.7",
               "latest": "11.3"
-            },
-            {
-              "name": "PostgreSQL",
-              "description": "Version used by automated tests.",
-              "current": "16.2",
-              "latest": "16.2"
-            },
-            {
-              "name": "Oracle Database",
-              "description": "Version used by automated tests.",
-              "current": "21c",
-              "latest": "23c"
             }
           ]
         }

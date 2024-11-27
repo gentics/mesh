@@ -35,7 +35,7 @@ import com.gentics.mesh.core.data.root.RootResolver;
 import com.gentics.mesh.core.data.service.ServerSchemaStorageImpl;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApiImpl;
 import com.gentics.mesh.database.HibernateDatabase;
 import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.distributed.DistributedEventManager;
@@ -105,7 +105,7 @@ public class HibernateBootstrapInitializerImpl extends AbstractBootstrapInitiali
 			Lazy<IndexHandlerRegistryImpl> indexHandlerRegistry, Lazy<CoreVerticleLoader> loader,
 			HighLevelChangelogSystem highlevelChangelogSystem, CacheRegistry cacheRegistry,
 			MeshPluginManager pluginManager, MeshOptions options, RouterStorageRegistryImpl routerStorageRegistry,
-			MetricsOptions metricsOptions, LocalConfigApi localConfigApi, BCryptPasswordEncoder passwordEncoder,
+			MetricsOptions metricsOptions, LocalConfigApiImpl localConfigApi, BCryptPasswordEncoder passwordEncoder,
 			MasterElector coordinatorMasterElector, LivenessManager liveness, EventBusLivenessManager eventbusLiveness,
 			EventBusStore eventBusStore, ContentCachedStorage contentCachedStorage, HibPermissionRoots permRoots, RootResolver rootResolver, ChangelogDao changelogDao) {
 		super(schemaStorage, db, searchProvider, passwordEncoder, eventManager, indexHandlerRegistry, loader,

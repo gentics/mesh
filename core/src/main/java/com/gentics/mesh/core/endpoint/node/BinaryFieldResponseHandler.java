@@ -20,7 +20,6 @@ import com.gentics.mesh.core.data.dao.PersistingImageVariantDao;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.storage.BinaryStorage;
 import com.gentics.mesh.core.image.ImageManipulator;
-import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.etc.config.ImageManipulationMode;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -28,8 +27,8 @@ import com.gentics.mesh.handler.RangeRequestHandler;
 import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.util.ETag;
-import com.gentics.mesh.util.EncodeUtil;
 import com.gentics.mesh.util.MimeTypeUtils;
+import com.gentics.mesh.util.VertxUtil;
 
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerResponse;
@@ -111,7 +110,7 @@ public class BinaryFieldResponseHandler {
 
 		response.putHeader(MeshHeaders.WEBROOT_RESPONSE_TYPE, "binary");
 
-		addContentDispositionHeader(response, fileName, "attachment");
+		VertxUtil.addContentDispositionHeader(response, fileName, "attachment");
 
 		// Set to IDENTITY to avoid gzip compression
 		response.putHeader(HttpHeaders.CONTENT_ENCODING, HttpHeaders.IDENTITY);
@@ -158,7 +157,7 @@ public class BinaryFieldResponseHandler {
 						// Set to IDENTITY to avoid gzip compression
 						response.putHeader(HttpHeaders.CONTENT_ENCODING, HttpHeaders.IDENTITY);
 	
-						addContentDispositionHeader(response, fileName, "inline");
+						VertxUtil.addContentDispositionHeader(response, fileName, "inline");
 	
 						response.sendFile(cachedFilePath);
 					}))
@@ -174,16 +173,4 @@ public class BinaryFieldResponseHandler {
 			break;
 		}
 	}
-
-	private void addContentDispositionHeader(HttpServerResponse response, String fileName, String type) {
-		String encodedFileNameUTF8 = EncodeUtil.encodeForRFC5597(fileName);
-		String encodedFileNameISO = EncodeUtil.toISO88591(fileName);
-
-		StringBuilder value = new StringBuilder();
-		value.append(type + ";");
-		value.append(" filename=\"" + encodedFileNameISO + "\";");
-		value.append(" filename*=" + encodedFileNameUTF8);
-		response.putHeader("content-disposition", value.toString());
-	}
-
 }

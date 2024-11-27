@@ -5,7 +5,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.auth.MeshAuthChainImpl;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
@@ -26,7 +26,7 @@ public class ProjectInfoEndpoint extends AbstractInternalEndpoint {
 	private ProjectCrudHandler crudHandler;
 
 	@Inject
-	public ProjectInfoEndpoint(MeshAuthChainImpl chain, ProjectCrudHandler crudHandler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+	public ProjectInfoEndpoint(MeshAuthChain chain, ProjectCrudHandler crudHandler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
 		super(null, chain, localConfigApi, db, options);
 		this.crudHandler = crudHandler;
 	}

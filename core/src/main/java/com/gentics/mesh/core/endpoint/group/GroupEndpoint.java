@@ -22,12 +22,12 @@ import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.auth.MeshAuthChainImpl;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.endpoint.RolePermissionHandlingEndpoint;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.core.endpoint.RolePermissionHandlingEndpoint;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
@@ -45,7 +45,7 @@ public class GroupEndpoint extends RolePermissionHandlingEndpoint {
 	}
 
 	@Inject
-	public GroupEndpoint(MeshAuthChainImpl chain, GroupCrudHandler crudHandler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+	public GroupEndpoint(MeshAuthChain chain, GroupCrudHandler crudHandler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
 		super("groups", chain, localConfigApi, db, options);
 		this.crudHandler = crudHandler;
 	}

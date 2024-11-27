@@ -131,7 +131,7 @@ stage("Setup Build Environment") {
 						GitHelper.addTag(version, 'Release of version ' + version)
 					}
 				}
-				
+
 				if (Boolean.valueOf(params.runDeployTesting)) {
 					if (params.testingVersion?.trim()) {
 						version = params.testingVersion.trim()
@@ -232,7 +232,7 @@ stage("Setup Build Environment") {
 							withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
 								withEnv(["TESTCONTAINERS_RYUK_DISABLED=true", "MESH_CONSISTENCY_CHECKS=" + (Boolean.valueOf(params.consistencyChecks) ? "true" : "false")]) {
 									sh "mvn -fae -Dsurefire.groups=com.gentics.mesh.test.category.FailingTests -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.gentics.com/ -B -e -pl '!doc' test -DfailIfNoTests=false"
-							}
+								}
 							}
 						} finally {
 							step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])

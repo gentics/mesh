@@ -46,7 +46,7 @@ import com.gentics.mesh.core.data.service.ServerSchemaStorageImpl;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApiImpl;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
@@ -135,7 +135,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 
 	protected final MetricsOptions metricsOptions;
 
-	protected final LocalConfigApi localConfigApi;
+	protected final LocalConfigApiImpl localConfigApi;
 
 	protected final BCryptPasswordEncoder passwordEncoder;
 
@@ -168,7 +168,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 			Lazy<IndexHandlerRegistryImpl> indexHandlerRegistry, Lazy<CoreVerticleLoader> loader,
 			HighLevelChangelogSystem highlevelChangelogSystem, CacheRegistry cacheRegistry,
 			MeshPluginManager pluginManager, MeshOptions options, RouterStorageRegistryImpl routerStorageRegistry,
-			MetricsOptions metricsOptions, LocalConfigApi localConfigApi, BCryptPasswordEncoder passwordEncoder,
+			MetricsOptions metricsOptions, LocalConfigApiImpl localConfigApi, BCryptPasswordEncoder passwordEncoder,
 			MasterElector coordinatorMasterElector, LivenessManager liveness, EventBusLivenessManager eventbusLiveness,
 			EventBusStore eventBusStore) {
 		this.schemaStorage = schemaStorage;

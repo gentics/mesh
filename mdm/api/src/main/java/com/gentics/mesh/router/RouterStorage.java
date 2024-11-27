@@ -2,6 +2,7 @@ package com.gentics.mesh.router;
 
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.handler.VersionHandler;
 
 import io.vertx.ext.web.handler.BodyHandler;
@@ -67,4 +68,6 @@ public interface RouterStorage {
 	CorsHandler getCorsHandler();
 
 	Database getDb();
+
+	LocalConfigApi getLocalConfigApi();
 }

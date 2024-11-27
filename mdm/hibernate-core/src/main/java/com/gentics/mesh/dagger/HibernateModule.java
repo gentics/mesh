@@ -137,7 +137,7 @@ import dagger.multibindings.IntoSet;
  * @author plyhun
  *
  */
-@Module(includes = { DaoHelperModule.class, UtilModule.class, DatabaseConnectorModule.class }, subcomponents = TransactionComponent.class)
+@Module(includes = { DaoHelperModule.class, UtilModule.class }, subcomponents = TransactionComponent.class)
 public abstract class HibernateModule {
 
 	@Binds
@@ -172,9 +172,6 @@ public abstract class HibernateModule {
 
 	@Binds
 	abstract WebRootService bindWebrootService(HibWebRootServiceImpl e);
-
-	@Binds
-	abstract AdminHandler adminHandler(HibAdminHandler e);
 
 	@Binds
 	abstract ContentStorage contentQuery(ContentStorageImpl e);
@@ -306,11 +303,11 @@ public abstract class HibernateModule {
 
 	@Binds
 	@IntoSet
-	public abstract DebugInfoProvider contentCacheInfoProvider(ContentCachedStorage provider);
+	abstract DebugInfoProvider contentCacheInfoProvider(ContentCachedStorage provider);
 
 	@Binds
 	@IntoSet
-	public abstract DebugInfoProvider listableFieldCacheInfoProvider(ListableFieldCacheImpl provider);
+	abstract DebugInfoProvider listableFieldCacheInfoProvider(ListableFieldCacheImpl provider);
 
 	/**
 	 * List of consistency checks. This is deliberately made a mutable lists, because some tests are currently written in a way that they create inconsistencies,

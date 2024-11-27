@@ -14,7 +14,7 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.gentics.mesh.auth.MeshAuthChainImpl;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.db.Database;
@@ -35,7 +35,7 @@ public class ProjectSchemaEndpoint extends AbstractProjectEndpoint {
 	}
 
 	@Inject
-	public ProjectSchemaEndpoint(MeshAuthChainImpl chain, BootstrapInitializer boot, SchemaCrudHandler crudHandler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+	public ProjectSchemaEndpoint(MeshAuthChain chain, BootstrapInitializer boot, SchemaCrudHandler crudHandler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
 		super("schemas", chain, boot, localConfigApi, db, options);
 		this.crudHandler = crudHandler;
 	}

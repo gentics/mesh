@@ -3,6 +3,7 @@ package com.gentics.mesh.core;
 import org.apache.commons.lang3.StringUtils;
 import org.testcontainers.containers.output.OutputFrame;
 
+import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.test.docker.DatabaseContainer;
 import com.gentics.mesh.test.MeshInstanceProvider;
@@ -19,8 +20,13 @@ import com.gentics.mesh.test.MeshTestSetting;
 public abstract class DatabaseTestContextProvider<T extends DatabaseContainer<T>> extends HibernateTestContextProvider implements MeshTestContextProvider, MeshInstanceProvider<HibernateMeshOptions> {
 
 	private final T databaseContainer;
-	
+
 	public DatabaseTestContextProvider(T databaseContainer) {
+		this(databaseContainer, null);
+	}
+
+	public DatabaseTestContextProvider(T databaseContainer, MeshComponent.Builder componentBuilder) {
+		super(componentBuilder);
 		this.databaseContainer = databaseContainer;
 	}
 

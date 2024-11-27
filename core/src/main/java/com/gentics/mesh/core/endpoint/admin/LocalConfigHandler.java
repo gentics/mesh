@@ -15,10 +15,10 @@ import com.gentics.mesh.json.JsonUtil;
 @Singleton
 public class LocalConfigHandler {
 
-	private final LocalConfigApi localConfigApi;
+	private final LocalConfigApiImpl localConfigApi;
 
 	@Inject
-	public LocalConfigHandler(LocalConfigApi localConfigApi) {
+	public LocalConfigHandler(LocalConfigApiImpl localConfigApi) {
 		this.localConfigApi = localConfigApi;
 	}
 
