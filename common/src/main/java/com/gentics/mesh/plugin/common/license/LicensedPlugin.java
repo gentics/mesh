@@ -37,10 +37,4 @@ public enum LicensedPlugin implements LicenseKeyFeature {
 	public String getProductName() {
 		return this.productName;
 	}
-
-	@Override
-	public String getVersion() {
-		return null;
-	}
-
 }

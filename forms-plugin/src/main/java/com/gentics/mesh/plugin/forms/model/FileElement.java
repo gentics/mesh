@@ -218,7 +218,7 @@ public class FileElement extends FormElement {
 				.map(file -> {
 					try (ReadInputStream inputStream = new ReadInputStream(file); TikaInputStream tikaInputStream = TikaInputStream.get(inputStream)) {
 						Metadata metadata = new Metadata();
-						metadata.add(Metadata.RESOURCE_NAME_KEY, providedFileName);
+						metadata.add("resourceName", providedFileName);
 						String mimeType = detector.detect(tikaInputStream, metadata).toString();
 
 						log.debug(String.format("Tika detected mime type %s", mimeType));
