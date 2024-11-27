@@ -71,10 +71,7 @@ public class NodeRawSearchEndpointTest extends AbstractMeshTest {
 
 		// search in old project
 		JsonObject response = new JsonObject(call(() -> client().searchNodesRaw(getSimpleQuery("fields.content", contentFieldValue))).toString());
-		String path = "responses[0].hits.total";
-		if (complianceMode() == ComplianceMode.ES_7) {
-			path = "responses[0].hits.total.value";
-		}
+		String path = complianceMode() == ComplianceMode.ES_6 ? "responses[0].hits.total" : "responses[0].hits.total.value";
 		assertThat(response).has(path, "2", "Not exactly two item was found.");
 		JsonArray hits = response.getJsonArray("responses").getJsonObject(0).getJsonObject("hits").getJsonArray("hits");
 

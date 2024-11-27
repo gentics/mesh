@@ -163,6 +163,7 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 
 		switch (complianceMode) {
 		case ES_7:
+		case ES_8:
 			return Optional.of(typeMapping);
 		case ES_6:
 			mapping.put(DEFAULT_TYPE, typeMapping);

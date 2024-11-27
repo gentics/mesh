@@ -1,0 +1,750 @@
+/**
+custom by reza anwar
+ */
+
+.testOFF {
+	display: none !important;
+}
+
+[id^="prototypeAppEntryProtected-"] .apa-consent-subItemTitle {
+	cursor: default;
+}
+
+.apa-consent-reset {
+	margin: 0px;
+	padding: 0px;
+	border: 0px;
+	outline: none;
+	box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+	font-family: arial, helvetica, sans-serif;
+	font-size: 13px;
+	line-height: 18px;
+	vertical-align: middle;
+	color: #FFFFFF;
+	outline: none;
+	text-size-adjust: none;
+	-webkit-text-size-adjust: none;
+}
+
+ul.apa-consent-reset {
+	list-style: none;
+}
+
+a.apa-consent-reset {
+	color: #FFFFFF;
+}
+
+.apa-consent-dialogButtonON {
+	position: fixed;
+	left: 17px;
+	bottom: 16px;
+	width: 65px;
+	height: 65px;
+	border-radius: 100%;
+	-webkit-border-radius: 100%;
+	cursor: pointer;
+	z-index: 99998;
+}
+
+.apa-consent-dialogButtonONicon1,
+.apa-consent-dialogButtonONicon2 {
+	position: relative;
+	left: 0px;
+	top: 0px;
+	width: 24px;
+	height: 9px;
+	margin: 20px auto 0px auto;
+	border-radius: 9px;
+	-webkit-border-radius: 9px;
+}
+
+.apa-consent-dialogButtonONicon1:after,
+.apa-consent-dialogButtonONicon2:after {
+	position: absolute;
+	left: -2px;
+	top: -4px;
+	width: 13px;
+	height: 13px;
+	display: block;
+	content: " ";
+	border: 2px solid #4A4A4A;
+	border-radius: 100%;
+	-webkit-border-radius: 100%;
+	background-color: #FFFFFF;
+}
+
+.apa-consent-dialogButtonONicon2:after {
+	left: auto;
+	right: -2px;
+}
+
+.apa-consent-dialogButtonONicon2 {
+	margin-top: 8px;
+}
+
+.apa-consent-dialogWrapper {
+	position: fixed;
+	left: 0px;
+	top: 0px;
+	width: 100%;
+	height: 100%;
+	/*bottom: 0px;*/
+	z-index: 1;
+}
+
+.apa-consent-dialog {
+	position: absolute;
+	left: 0px;
+	bottom: 0px;
+	width: 414px;
+	padding: 40px 10px 210px 45px;
+	border-radius: 6px;
+	-webkit-border-radius: 6px;
+}
+@media (max-width: 767px) {
+	.apa-consent-dialog {
+		width: auto;
+	}
+}
+
+
+.apa-consent-dialogBodyWrapper {
+	min-height: 100px;
+	max-height: 38vh;
+	overflow: auto;
+	overflow-scrolling: touch;
+	-webkit-overflow-scrolling: touch;
+}
+
+.apa-consent-dialogSubmit {
+	padding: 12px 0px;
+}
+
+.apa-consent-mobileClose {
+	position: absolute;
+	right: 17px;
+	top: 17px;
+	width: 12px;
+	height: 12px;
+	cursor: pointer;
+	display: none;
+}
+
+.apa-consent-mobileClose:before,
+.apa-consent-mobileClose:after {
+	position: absolute;
+	left: 0px;
+	top: 1px;
+	width: 2px;
+	height: 15.5px;
+	display: block;
+	content: " ";
+	background-color: #ffffff;
+	transform-origin: left top;
+	-webkit-transform-origin: left top;
+	-ms-transform-origin: left top;
+	transform: rotate(-45deg);
+	-webkit-transform: rotate(-45deg);
+	-ms-transform: rotate(-45deg);
+}
+
+.apa-consent-mobileClose:after {
+	left: auto;
+	right: 0px;
+	transform-origin: right top;
+	-webkit-transform-origin: right top;
+	-ms-transform-origin: right top;
+	transform: rotate(45deg);
+	-webkit-transform: rotate(45deg);
+	-ms-transform: rotate(45deg);
+}
+
+.apa-consent-H3 {
+	padding-bottom: 6px;
+	font-size: 24px;
+	line-height: 33px;
+	font-weight: normal;
+	letter-spacing: 1.5px;
+}
+
+.apa-consent-P {
+	padding-bottom: 6px;
+}
+
+.apa-consent-item {
+	position: relative;
+	left: 0px;
+	top: 0px;
+	padding: 11px 0px;
+}
+
+.apa-consent-itemSwitch {
+	position: absolute;
+	left: 5px;
+	top: 11px;
+	width: 50px;
+	height: 21px;
+	background-color: #d2d2d2;
+	border-radius: 21px;
+	-webkit-border-radius: 21px;
+	transition: background-color 500ms;
+}
+
+.apa-consent-itemSwitch span {
+	position: absolute;
+	left: 24px;
+	top: -5px;
+	width: 31px;
+	height: 31px;
+	display: block;
+	border-radius: 100%;
+	-webkit-border-radius: 100%;
+	background-color: #FFFFFF;
+	transition: left 300ms;
+}
+
+.apa-consent-itemSwitchOFF {
+	background-color: #f65050;
+	cursor: pointer;
+}
+
+.apa-consent-itemSwitchON {
+	background-color: #16c34c;
+	cursor: pointer;
+}
+
+.apa-consent-itemSwitchOFF span {
+	left: -5px;
+}
+
+.apa-consent-itemTitle {
+	padding-left: 71px;
+	font-size: 18px;
+	line-height: 21px;
+	cursor: pointer;
+}
+
+.apa-consent-itemTitle:after {
+	position: absolute;
+	right: -13px;
+	top: 16px;
+	width: 6px;
+	height: 6px;
+	display: block;
+	content: " ";
+	border-top: 2px solid #FFFFFF;
+	border-right: 2px solid #FFFFFF;
+	transform-origin: left top;
+	-webkit-transform-origin: left top;
+	-ms-transform-origin: left top;
+	transform: rotate(45deg);
+	-webkit-transform: rotate(45deg);
+	-ms-transform: rotate(45deg);
+	transition: all 100ms;
+}
+
+.apa-consent-itemSubItemsON .apa-consent-itemTitle:after {
+	right: -18px;
+	top: 22px;
+	transform: rotate(135deg);
+	-webkit-transform: rotate(135deg);
+	-ms-transform: rotate(135deg);
+}
+
+.apa-consent-itemTitleNoSwitch {
+	padding: 0px;
+}
+
+.apa-consent-itemTitleNoSubText {
+	cursor: default;
+}
+
+.apa-consent-itemTitleNoSubText:after {
+	display: none;
+	cursor: default;
+}
+
+.apa-consent-itemText {
+	padding-top: 11px;
+}
+
+.apa-consent-itemSubItems {
+	display: none;
+	padding-top: 11px;
+}
+
+.apa-consent-itemSubItemsON .apa-consent-itemSubItems {
+	display: block;
+}
+
+.apa-consent-itemSubItem {
+	padding: 8px 0px 8px 32px;
+	transition: opacity 200ms;
+}
+
+.apa-consent-subItemTitle {
+	position: relative;
+	left: 0px;
+	top: 0px;
+	font-size: 14px;
+	line-height: 24px;
+	cursor: pointer;
+}
+
+.apa-consent-subItemSwitch {
+	position: absolute;
+	left: -32px;
+	top: 0px;
+	width: 24px;
+	height: 24px;
+	background-color: #FFFFFF;
+	border-radius: 100%;
+	-webkit-border-radius: 100%;
+}
+
+.apa-consent-subItemSwitch:after {
+	position: absolute;
+	left: 10px;
+	bottom: 6px;
+	width: 10px;
+	height: 4px;
+	display: block;
+	content: " ";
+	border-left: 2px solid #4A4A4A;
+	border-bottom: 2px solid #4A4A4A;
+	transform-origin: left bottom;
+	-webkit-transform-origin: left bottom;
+	-ms-transform-origin: left bottom;
+	transform: rotate(-45deg);
+	-webkit-transform: rotate(-45deg);
+	-ms-transform: rotate(-45deg);
+}
+
+.apa-consent-subItemText {
+	padding-top: 12px;
+}
+
+.apa-consent-itemSubItemOFF {
+	opacity: 0.67;
+}
+
+.apa-consent-itemSubItemOFF .apa-consent-subItemSwitch:after {
+	left: 7.5px;
+	bottom: 6.5px;
+	width: 14px;
+	border-left: 0px;
+}
+
+.apa-consent-itemSubItemOFF .apa-consent-subItemSwitch:before {
+	position: absolute;
+	right: 8px;
+	bottom: 6.5px;
+	width: 14px;
+	height: 4px;
+	display: block;
+	content: " ";
+	border-bottom: 2px solid #4A4A4A;
+	transform-origin: right bottom;
+	-webkit-transform-origin: right bottom;
+	-ms-transform-origin: right bottom;
+	transform: rotate(45deg);
+	-webkit-transform: rotate(45deg);
+	-ms-transform: rotate(45deg);
+}
+
+.apa-consent-dialogButtonOFF {
+	position: fixed;
+	left: 17px;
+	bottom: 16px;
+	width: 65px;
+	height: 65px;
+	border-radius: 100%;
+	-webkit-border-radius: 100%;
+	cursor: pointer;
+}
+
+.apa-consent-dialogButtonOFFicon1 {
+	position: relative;
+	left: 0px;
+	top: 0px;
+	width: 22px;
+	height: 22px;
+	margin: 15px 0px 0px 29px;
+	border-left: 4px solid #4A4A4A;
+	border-bottom: 4px solid #4A4A4A;
+}
+
+.apa-consent-dialogButtonOFFicon1:after {
+	position: absolute;
+	left: 1px;
+	bottom: -2px;
+	width: 25px;
+	height: 4px;
+	display: block;
+	content: " ";
+	background-color: #4A4A4A;
+	transform-origin: left bottom;
+	-webkit-transform-origin: left bottom;
+	-ms-transform-origin: left bottom;
+	transform: rotate(-45deg);
+	-webkit-transform: rotate(-45deg);
+	-ms-transform: rotate(-45deg);
+}
+
+.apa-consent-dialogButtonOFFicon2 {
+	width: 10px;
+	height: 10px;
+	margin: 3px 0px 0px 15px;
+	border-radius: 100%;
+	-webkit-border-radius: 100%;
+}
+
+.apa-consent-button {
+	width: 100%;
+	padding: 9px 0px;
+	color: #4A4A4A;
+	text-transform: uppercase;
+	background-color: #FFFFFF;
+	border-radius: 2px;
+	-webkit-border-radius: 2px;
+	cursor: pointer;
+}
+
+.apa-consent-bgColor {
+	background-color: #4A4A4A;
+}
+
+.apa-consent-bgColorWhite {
+	background-color: #FFFFFF;
+}
+
+.apa-consent-boxShadow {
+	box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.12), 0 2px 2px 0 rgba(0, 0, 0, 0.24);
+}
+
+.apa-consent-dialogInnerWidth {
+	width: 324px;
+}
+
+/* modal */
+.apa-consent-modalDialogWrapper {
+	background-color: rgba(0, 0, 0, 0.3);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	display: -webkit-flex;
+	-webkit-justify-content: center;
+	-webkit-align-items: center;
+	display: -ms-flexbox;
+	-ms-flex-pack: center;
+	-ms-flex-align: center;
+	z-index: 20;
+}
+
+.apa-consent-modalDialogWrapper .apa-consent-dialog {
+	position: relative;
+	top: 0px;
+	left: 0px;
+	bottom: auto;
+	height: 80vh;
+	max-height: 740px;
+}
+
+.apa-consent-modalDialogWrapper .apa-consent-dialogBodyWrapper {
+	height: 320px;
+	max-height: none;
+}
+
+.apa-consent-modalDialogWrapper .apa-consent-mobileClose {
+	display: block;
+}
+
+.apa-consent-modalDialogWrapper .apa-consent-dialogButtonOFF {
+	display: none;
+}
+
+/* /modal */
+
+/* banner */
+.apa-consent-bannerButtonON {
+	position: fixed;
+	left: 17px;
+	bottom: 16px;
+	width: 65px;
+	height: 65px;
+	border-radius: 100%;
+	-webkit-border-radius: 100%;
+	cursor: pointer;
+	z-index: 99999;
+}
+
+.apa-consent-bannerButtonONicon1,
+.apa-consent-bannerButtonONicon2 {
+	position: relative;
+	left: 0px;
+	top: 0px;
+	width: 24px;
+	height: 9px;
+	margin: 20px auto 0px auto;
+	border-radius: 9px;
+	-webkit-border-radius: 9px;
+}
+
+.apa-consent-bannerButtonONicon1:after,
+.apa-consent-bannerButtonONicon2:after {
+	position: absolute;
+	left: -2px;
+	top: -4px;
+	width: 13px;
+	height: 13px;
+	display: block;
+	content: " ";
+	border: 2px solid #4A4A4A;
+	border-radius: 100%;
+	-webkit-border-radius: 100%;
+	background-color: #FFFFFF;
+}
+
+.apa-consent-bannerButtonONicon2:after {
+	left: auto;
+	right: -2px;
+}
+
+.apa-consent-bannerButtonONicon2 {
+	margin-top: 8px;
+}
+
+.apa-consent-wrapper {
+	position: fixed;
+	left: 0px;
+	top: 100%;
+	width: 100%; /*height: 100%;*/
+	z-index: 100000;
+}
+
+.apa-consent-banner {
+	z-index: -1 !important;
+	position: absolute;
+	left: 0px;
+	bottom: 0px;
+	width: 100%;
+	min-height: 98px;
+	padding: 20px 20px 20px 100px;
+	border-radius: 6px 6px 0px 0px;
+	-webkit-border-radius: 6px 6px 0px 0px;
+	z-index: 10
+}
+
+.apa-consent-bannerButtonOFF {
+	position: absolute;
+	left: 17px;
+	bottom: 16px;
+	width: 65px;
+	height: 65px;
+	border-radius: 100%;
+	-webkit-border-radius: 100%;
+	cursor: pointer;
+}
+
+.apa-consent-bannerButtonOFFicon1,
+.apa-consent-bannerButtonOFFicon2 {
+	position: relative;
+	left: 0px;
+	top: 0px;
+	width: 24px;
+	height: 9px;
+	margin: 20px auto 0px auto;
+	border-radius: 9px;
+	-webkit-border-radius: 9px;
+}
+
+.apa-consent-bannerButtonOFFicon1:after,
+.apa-consent-bannerButtonOFFicon2:after {
+	position: absolute;
+	left: -2px;
+	top: -4px;
+	width: 13px;
+	height: 13px;
+	display: block;
+	content: " ";
+	border: 2px solid #FFFFFF;
+	border-radius: 100%;
+	-webkit-border-radius: 100%;
+	background-color: #4A4A4A;
+}
+
+.apa-consent-bannerButtonOFFicon2:after {
+	left: auto;
+	right: -2px;
+}
+
+.apa-consent-bannerButtonOFFicon2 {
+	margin-top: 8px;
+}
+
+.apa-consent-bannerContent {
+	width: 100%;
+	display: table;
+}
+
+.apa-consent-bannerContent li {
+	display: table-cell;
+	vertical-align: middle;
+}
+
+.apa-consent-bannerText {
+	max-width: 770px;
+}
+
+.apa-consent-buttonWrapperDetails {
+	padding-left: 15px;
+	min-width: 224px;
+}
+
+.apa-consent-buttonWrapperAccept {
+	padding-left: 15px;
+	min-width: 224px;
+}
+
+.apa-consent-buttonWrapperAccept .apa-consent-button {
+	background-color: #16c34c;
+	color: #FFFFFF;
+}
+
+.apa-consent-banner .apa-consent-button {
+	padding: 26px 0px;
+}
+
+/* /banner */
+
+@media only screen and (max-width: 860px) {
+	.apa-consent-bannerContent {
+		display: block;
+	}
+
+	.apa-consent-bannerContent li {
+		display: block;
+	}
+
+	.apa-consent-buttonWrapperDetails {
+		padding: 15px 2% 0px 0px;
+		float: left;
+		width: 49%;
+	}
+
+	.apa-consent-buttonWrapperAccept {
+		padding: 15px 0px 0px 0px;
+		float: right;
+		width: 49%;
+	}
+
+	.apa-consent-banner .apa-consent-button {
+		padding: 9px 0px;
+	}
+}
+
+@media only screen and (max-width: 767px), only screen and (max-height: 640px) {
+	.apa-consent-dialogWrapper {
+		background-color: rgba(0, 0, 0, 0.3);
+		z-index: 20;
+	}
+
+	.apa-consent-dialog { /*width: 100%;*/
+		max-width: 768px;
+		height: 100%;
+		top: 0px;
+		bottom: auto;
+		padding: 0px;
+		border-radius: 0px;
+		-webkit-border-radius: 0px;
+	}
+
+	.apa-consent-mobileScroller {
+		position: relative;
+		left: 0px;
+		top: 0px;
+		height: 100%;
+		padding: 20px 5% 80px 5%;
+		overflow: auto;
+		overflow-scrolling: touch;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	.apa-consent-dialogInnerWidth {
+		width: 100%;
+	}
+
+	.apa-consent-mobileClose {
+		display: block;
+	}
+
+	.apa-consent-dialogButtonOFF {
+		display: none;
+	}
+
+	.apa-consent-dialogBodyWrapper {
+		max-height: none;
+		overflow: visible;
+	}
+
+	.apa-consent-modalDialogWrapper {
+		display: block;
+	}
+
+	.apa-consent-modalDialogWrapper .apa-consent-dialog {
+		position: absolute;
+		left: 0px;
+		bottom: 0px;
+		height: 100%
+	}
+
+	.apa-consent-modalDialogWrapper .apa-consent-dialogBodyWrapper {
+		height: auto;
+	}
+}
+
+@media only screen and (max-width: 767px) {
+	.apa-consent-banner {
+		padding: 20px 5% 100px 5%;
+	}
+}
+
+@media only screen and (max-width: 580px) {
+	.apa-consent-buttonWrapperDetails {
+		padding: 15px 0px 0px 0px;
+		float: none;
+		width: 100%;
+	}
+
+	.apa-consent-buttonWrapperAccept {
+		padding: 15px 0px 0px 0px;
+		float: none;
+		width: 100%;
+	}
+}
+
+@media only screen and (max-width: 420px) {
+	.apa-consent-itemSwitch {
+		margin-right: 10px;
+	}
+}
+
+@media only screen and (max-width: 380px) {
+	.apa-consent-bannerContent {
+		max-height: 300px;
+		overflow: scroll;
+		overflow-scrolling: touch;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	.apa-consent-banner {
+		padding: 20px 5% 140px 5%;
+	}
+}
+
+@media only screen and (max-width: 340px) {
+	.apa-consent-itemTitle {
+		font-size: 16px;
+	}
+}
