@@ -23,6 +23,7 @@ import org.apache.tika.config.TikaConfig;
 import org.apache.tika.detect.Detector;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
+import org.apache.tika.metadata.TikaCoreProperties;
 
 import java.util.*;
 import java.util.function.Function;
@@ -218,7 +219,7 @@ public class FileElement extends FormElement {
 				.map(file -> {
 					try (ReadInputStream inputStream = new ReadInputStream(file); TikaInputStream tikaInputStream = TikaInputStream.get(inputStream)) {
 						Metadata metadata = new Metadata();
-						metadata.add("resourceName", providedFileName);
+						metadata.add(TikaCoreProperties.RESOURCE_NAME_KEY, providedFileName);
 						String mimeType = detector.detect(tikaInputStream, metadata).toString();
 
 						log.debug(String.format("Tika detected mime type %s", mimeType));
