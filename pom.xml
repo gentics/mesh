@@ -213,10 +213,10 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
+			<!--plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-gpg-plugin</artifactId>
-			</plugin>
+			</plugin-->
 			<plugin>
 				<artifactId>maven-scm-plugin</artifactId>
 				<version>1.8.1</version>
