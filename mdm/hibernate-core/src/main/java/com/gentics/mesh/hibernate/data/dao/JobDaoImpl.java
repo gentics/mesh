@@ -158,6 +158,20 @@ public class JobDaoImpl extends AbstractHibDaoGlobal<HibJob, JobResponse, HibJob
 	}
 
 	@Override
+	public HibJob enqueueImageCacheMigration(HibUser user) {
+		HibJob job = createPersisted(null, j -> {
+			j.setType(JobType.imagecache);
+			j.setCreationTimestamp();
+			j.setStatus(QUEUED);
+		});
+		if (log.isDebugEnabled()) {
+			log.debug("Enqueued image cache migration job {" + job.getUuid() + "}");
+		}
+		mergeIntoPersisted(job);
+		return job;
+	}
+
+	@Override
 	public void delete(HibJob job, BulkActionContext bac) {
 		em().remove(job);
 	}

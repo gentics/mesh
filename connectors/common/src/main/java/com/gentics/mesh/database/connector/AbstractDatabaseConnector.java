@@ -206,7 +206,7 @@ public abstract class AbstractDatabaseConnector implements DatabaseConnector {
 
 	@Override
 	public String renderNonContentColumn(String column) {
-		return renderColumnUnsafe(column, false);
+		return renderColumnUnsafe(column, !column.contains("-"));
 	}
 
 	@Override

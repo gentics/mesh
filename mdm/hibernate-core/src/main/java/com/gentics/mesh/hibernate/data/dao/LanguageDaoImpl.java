@@ -74,7 +74,7 @@ public class LanguageDaoImpl extends AbstractHibDaoGlobal<HibLanguage, LanguageR
 	@Override
 	public Page<? extends HibLanguage> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		return PersistingRootDao.shouldSort(pagingInfo) 
-				? daoHelper.findAll(ac, null, pagingInfo, Optional.empty()) 
+				? daoHelper.findAll(ac, Optional.empty(), pagingInfo, Optional.empty()) 
 				: daoHelper.findAll(ac, pagingInfo, null, false);
 	}
 }

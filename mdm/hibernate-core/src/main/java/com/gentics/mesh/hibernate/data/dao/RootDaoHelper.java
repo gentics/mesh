@@ -70,7 +70,7 @@ public class RootDaoHelper<CHILD extends HibBaseElement, CHILDIMPL extends CHILD
 			PagingParameters pagingInfo, Optional<FilterOperation<?>> maybeNativeFilter, java.util.function.Predicate<CHILD> extraFilter,
 			List<InternalPermission> permissions) {
 		if (maybeNativeFilter.isPresent() || PersistingRootDao.shouldSort(pagingInfo)) {
-			return daoHelper.findAll(ac, Optional.ofNullable(permissions).flatMap(perms -> perms.stream().findAny()).orElse(null), pagingInfo, maybeNativeFilter, Optional.of(Pair.of(rootJoin, (ROOTIMPL) root)));
+			return daoHelper.findAll(ac, Optional.ofNullable(permissions).flatMap(perms -> perms.stream().findAny()), pagingInfo, maybeNativeFilter, Optional.of(Pair.of(rootJoin, (ROOTIMPL) root)));
 		} else {
 			return (Page) daoHelper.getResultPage(ac, makeFindAllInRoot(root, ac, permissions), pagingInfo, daoHelper.getEntityGraph("rest"), extraFilter);
 		}
@@ -88,7 +88,7 @@ public class RootDaoHelper<CHILD extends HibBaseElement, CHILDIMPL extends CHILD
 	 */
 	@SuppressWarnings("unchecked")
 	public long countAllInRoot(ROOT root, InternalActionContext ac, PagingParameters pagingInfo, Optional<FilterOperation<?>> maybeFilter, InternalPermission permission) {
-		return daoHelper.countAll(ac, permission, pagingInfo, maybeFilter, Optional.of(Pair.of(rootJoin, (ROOTIMPL) root)));
+		return daoHelper.countAll(ac, Optional.ofNullable(permission), pagingInfo, maybeFilter, Optional.of(Pair.of(rootJoin, (ROOTIMPL) root)));
 	}
 
 	private CriteriaQuery<? extends CHILD> makeFindAllInRoot(

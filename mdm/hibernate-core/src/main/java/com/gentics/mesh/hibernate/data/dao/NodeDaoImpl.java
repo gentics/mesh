@@ -172,6 +172,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 		case "references": return super.mapGraphQlSortingFieldName("uuid");
 		case "editor": return "CONTAINER.editor_dbUuid";
 		case "schema": return "SCHEMA.schemacontainer_dbUuid";
+		case "microschema": return "MICROSCHEMA.microschemacontainer_dbUuid";
 		case "CONTAINER.editor_dbUuid": return super.mapGraphQlSortingFieldName("editor");
 		}
 		return super.mapGraphQlSortingFieldName(gqlName);

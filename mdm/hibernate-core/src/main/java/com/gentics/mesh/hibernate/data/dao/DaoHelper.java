@@ -70,6 +70,7 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -88,6 +89,7 @@ import com.gentics.mesh.handler.VersionUtils;
 import com.gentics.mesh.hibernate.MeshTablePrefixStrategy;
 import com.gentics.mesh.hibernate.data.HibQueryFieldMapper;
 import com.gentics.mesh.hibernate.data.dao.helpers.RootJoin;
+import com.gentics.mesh.hibernate.data.domain.AbstractBinaryImpl;
 import com.gentics.mesh.hibernate.data.domain.AbstractFieldEdgeImpl;
 import com.gentics.mesh.hibernate.data.domain.AbstractHibListFieldEdgeImpl;
 import com.gentics.mesh.hibernate.data.domain.HibBinaryFieldEdgeImpl;
@@ -417,7 +419,11 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 	}
 
 	public Page<? extends T> findAll(InternalActionContext ac, InternalPermission perm, PagingParameters pagingInfo, Optional<FilterOperation<?>> maybeExtraFilter) {
-		return findAll(ac, perm, pagingInfo, maybeExtraFilter, Optional.empty());
+		return findAll(ac, Optional.ofNullable(perm), pagingInfo, maybeExtraFilter, Optional.empty());
+	}
+
+	public Page<? extends T> findAll(InternalActionContext ac, Optional<InternalPermission> maybePerm, PagingParameters pagingInfo, Optional<FilterOperation<?>> maybeExtraFilter) {
+		return findAll(ac, maybePerm, pagingInfo, maybeExtraFilter, Optional.empty());
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -528,8 +534,8 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 	 * @param maybeRoot
 	 * @return
 	 */
-	public <R extends HibBaseElement> long countAll(InternalActionContext ac, InternalPermission perm, PagingParameters pagingInfo, Optional<FilterOperation<?>> maybeExtraFilter, Optional<Pair<RootJoin<D, R>, R>> maybeRoot) {
-		return query(ac, Optional.ofNullable(perm), pagingInfo, maybeExtraFilter, maybeRoot, true).getRight();
+	public <R extends HibBaseElement> long countAll(InternalActionContext ac, Optional<InternalPermission> maybePerm, PagingParameters pagingInfo, Optional<FilterOperation<?>> maybeExtraFilter, Optional<Pair<RootJoin<D, R>, R>> maybeRoot) {
+		return query(ac, maybePerm, pagingInfo, maybeExtraFilter, maybeRoot, true).getRight();
 	}
 
 	/**
@@ -537,22 +543,22 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 	 * 
 	 * @param <R>
 	 * @param ac
-	 * @param perm
+	 * @param maybePerm
 	 * @param pagingInfo
 	 * @param maybeExtraFilter
 	 * @param maybeRoot
 	 * @return
 	 */
-	public <R extends HibBaseElement> Page<? extends T> findAll(InternalActionContext ac, InternalPermission perm, PagingParameters pagingInfo, Optional<FilterOperation<?>> maybeExtraFilter, Optional<Pair<RootJoin<D, R>, R>> maybeRoot) {
-		Stream<? extends T> resultStream = query(ac, Optional.ofNullable(perm), pagingInfo, maybeExtraFilter, maybeRoot, false).getLeft();
+	public <R extends HibBaseElement> Page<? extends T> findAll(InternalActionContext ac, Optional<InternalPermission> maybePerm, PagingParameters pagingInfo, Optional<FilterOperation<?>> maybeExtraFilter, Optional<Pair<RootJoin<D, R>, R>> maybeRoot) {
+		Stream<? extends T> resultStream = query(ac, maybePerm, pagingInfo, maybeExtraFilter, maybeRoot, false).getLeft();
 		if (PersistingRootDao.shouldPage(pagingInfo)) {
 			return new PageImpl<T>(
 					resultStream.collect(Collectors.toList()), 
 					pagingInfo, 
-					countAll(ac, perm, pagingInfo, maybeExtraFilter, maybeRoot));
+					countAll(ac, maybePerm, pagingInfo, maybeExtraFilter, maybeRoot));
 		} else {
-		return new DynamicStreamPageImpl<T>(resultStream, pagingInfo, null, pagingInfo.getPerPage() != null);
-	}
+			return new DynamicStreamPageImpl<T>(resultStream, pagingInfo, null, pagingInfo.getPerPage() != null);
+		}
 	}
 
 	/**
@@ -573,43 +579,122 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 		items.entrySet().stream().forEach(entry -> {
 			String key = mapper.mapGraphQlFilterFieldName(entry.getKey());
 			String[] keyParts = key.split("\\.");
-			if ("fields".equals(keyParts[0]) && keyParts.length > 2) {
-				// We expect format of 'fields.<schema_name>'.<field_name>
-				HibSchema schema = Tx.get().schemaDao().findByName(keyParts[1]);
-				if (schema == null) {
-					throw new IllegalArgumentException("No schema found for sorting request: " + key);
-				}
-				FieldSchema field = schema.getLatestVersion().getSchema().getFieldsAsMap().get(keyParts[2]);
-				
-				if (field == null) {
-					throw new IllegalArgumentException("No field found for sorting request: " + key);
-				}
-				String columnName = databaseConnector.renderColumnUnsafe(keyParts[2] + "-" + field.getType().toLowerCase(), false);
-				key = databaseConnector.installStringContentColumn(makeAlias("CONTENT") + "." + columnName, true, true);
-				makeContentJoin(ownerAlias, ansiJoin, schema.getLatestVersion(), maybeContainerType, maybeBranch, Optional.empty());			
-			} else {
-				Pair<String, String> pair = makeSortJoins(ownerAlias, keyParts, mapper, ansiJoin, maybeContainerType, maybeBranch, otherJoins);
-				key = Optional.ofNullable(pair.getLeft()).map(table -> table + ".").orElse(StringUtils.EMPTY) + pair.getRight();
-			}			
-			sorting.putSort(ownerAlias + key,  entry.getValue());
+			// ALIAS: <owner>
+			String alias = ownerAlias;
+			Pair<String, String> baseJoin = Pair.of(makeAlias(mapper.getHibernateEntityName()[0]), null);
+			for (int i = 0; i < keyParts.length; i++) {
+				if ("fields".equals(keyParts[i]) && i < (keyParts.length+2)) {
+					// We expect format of 'fields.<schema_name>.<field_name>'
+					HibFieldSchemaElement<?, ?, ?, ?, ?> schema = Tx.get().schemaDao().findByName(keyParts[i+1]);
+					if (schema != null) {
+						// ALIAS: <owner_>content_
+						makeContentJoin(alias, ansiJoin, schema.getLatestVersion(), maybeContainerType, maybeBranch, Optional.empty());
+						alias += makeAlias("CONTENT");
+					} else if ((schema = Tx.get().microschemaDao().findByName(keyParts[i+1])) != null) {
+						String entityAlias = alias + "MICROCONTENT";
+						String entityLocalAlias = makeAlias(entityAlias);
+						ansiJoin.addJoin(databaseConnector.getPhysicalTableName(schema.getLatestVersion()), entityLocalAlias, 
+								new String[] {alias + "." + databaseConnector.renderNonContentColumn("valueOrUuid")}, new String[] {databaseConnector.renderColumn(CommonContentColumn.DB_UUID)}, 
+								JoinType.LEFT, alias);
+						// ALIAS: <owner_>content_<field>_microcontent_
+						alias = entityLocalAlias;
+					}
+					if (schema == null) {
+						throw new IllegalArgumentException("No (micro)schema found for sorting request: " + key);
+					}
+					FieldSchema field = schema.getLatestVersion().getSchema().getFieldsAsMap().get(keyParts[i+2]);
+					if (field == null) {
+						// Not a field sort, but something other (schema/microschema etc). Skip upto the sorting target.
+						i += 2;
+						continue;
+					}
+					String columnName = databaseConnector.renderNonContentColumn(field.getName() + "-" + field.getType().toLowerCase());
+					switch (FieldTypes.valueOf(field.getType().toUpperCase())) {
+					case MICRONODE:
+						String localName = alias + field.getName();
+						String localAlias = makeAlias(localName);
+						ansiJoin.addJoin(databaseConnector.maybeGetPhysicalTableName(
+								HibMicronodeFieldEdgeImpl.class).get(), localAlias, 
+								new String[] {alias + "." + columnName, alias + "." + databaseConnector.renderColumn(CommonContentColumn.DB_UUID)}, new String[] {databaseConnector.renderColumn(CommonContentColumn.DB_UUID), databaseConnector.renderNonContentColumn("containerUuid")}, 
+								JoinType.LEFT, alias);
+						// ALIAS: <owner_>content_<field>_
+						alias = localAlias;
+						baseJoin = Pair.of(alias, "microschemaVersion_dbUuid");
+						if (i < keyParts.length+3 && "micronode".equals(keyParts[i+3])) {
+							i += 1;
+						}
+						break;
+					case BINARY:
+						localName = alias + field.getName();
+						localAlias = makeAlias(localName);
+						ansiJoin.addJoin(databaseConnector.maybeGetPhysicalTableName(
+								HibBinaryFieldEdgeImpl.class).get(), localAlias, 
+								new String[] {alias + "." + columnName, alias + "." + databaseConnector.renderColumn(CommonContentColumn.DB_UUID)}, new String[] {databaseConnector.renderColumn(CommonContentColumn.DB_UUID), databaseConnector.renderNonContentColumn("containerUuid")}, 
+								JoinType.LEFT, alias);
+						// ALIAS: <owner_>content_<field>_
+						alias = localAlias;
+						baseJoin = Pair.of(null, null);
+						break;
+					case S3BINARY:
+						localName = alias + field.getName();
+						localAlias = makeAlias(localName);
+						ansiJoin.addJoin(databaseConnector.maybeGetPhysicalTableName(
+								HibS3BinaryFieldEdgeImpl.class).get(), localAlias, 
+								new String[] {alias + "." + columnName, alias + "." + databaseConnector.renderColumn(CommonContentColumn.DB_UUID)}, new String[] {databaseConnector.renderColumn(CommonContentColumn.DB_UUID), databaseConnector.renderNonContentColumn("containerUuid")}, 
+								JoinType.LEFT, alias);
+						// ALIAS: <owner_>content_<field>_
+						alias = localAlias;
+						baseJoin = Pair.of(null, null);
+						break;
+					case NODE:
+						localName = alias + field.getName();
+						localAlias = makeAlias(localName);
+						makeNodeSchemaVersionJoin(Optional.of(localAlias), localAlias, "NODE", ansiJoin);
+						if (i < keyParts.length+3 && "node".equals(keyParts[i+3])) {
+							i += 1;
+						}
+						alias = localAlias += makeAlias("NODE");
+						break;
+					default:
+						key = databaseConnector.installStringContentColumn(alias + "." + columnName, true, true);
+						break;
+					}
+					// We've done with the whole 'fields.<schema>.<field>' chain, skip it.
+					i += 2;
+				} else {
+					String[] localKeyParts = keyParts;
+					if (i > 0) {
+						localKeyParts = Arrays.copyOfRange(localKeyParts, i, localKeyParts.length); // Collections.singletonList(IntStream.range(i, keyParts.length).mapToObj(start -> keyParts[start]).collect(Collectors.joining("."))).toArray(new String[keyParts.length-i]);
+					}
+					boolean noAlias = StringUtils.isBlank(alias);
+					Pair<String, String> pair = makeSortJoins(alias, localKeyParts, mapper, ansiJoin, maybeContainerType, maybeBranch, baseJoin, otherJoins);
+					key = alias + Optional.ofNullable(pair.getLeft()).map(table -> table + ".").orElseGet(() -> noAlias ? StringUtils.EMPTY : ".") + databaseConnector.renderNonContentColumn(pair.getRight());
+					break;
+				}	
+			}
+			sorting.putSort(key, entry.getValue());
 		});
 		return ansiJoin;
 	}
 
 	/**
-	 * Make joins for sorting request.
+	 * Make joins for the sorting request, based on an arbitrary entity.
 	 * 
-	 * @param columns request columns
-	 * @param mapper 
+	 * @param ownerAlias
+	 * @param columns
+	 * @param mapper
 	 * @param ansiJoin
-	 * @param ctype
+	 * @param maybeCtype
 	 * @param maybeBranch
+	 * @param baseJoin
 	 * @param otherJoins
 	 * @return
 	 */
-	private Pair<String, String> makeSortJoins(String ownerAlias, String[] columns, HibQueryFieldMapper mapper, NativeJoin ansiJoin, Optional<ContainerType> maybeCtype, Optional<UUID> maybeBranch, Set<NativeJoin> otherJoins) {
-		Pair<String, String> joins = Pair.of(makeAlias(mapper.getHibernateEntityName()[0]), null);
+	private Pair<String, String> makeSortJoins(String ownerAlias, String[] columns, HibQueryFieldMapper mapper, NativeJoin ansiJoin, Optional<ContainerType> maybeCtype, Optional<UUID> maybeBranch, Pair<String, String> baseJoin, Set<NativeJoin> otherJoins) {
 		for (String column: columns) {
+			if (StringUtils.isBlank(column)) {
+				continue;
+			}
 			String mapped = mapper.mapGraphQlSortingFieldName(column);
 			boolean mappedContainsDot = mapped.contains(".");
 			if (mappedContainsDot) {
@@ -621,22 +706,22 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 						if (otherJoins.stream().noneMatch(join -> join.isAlreadyJoined("container"))) {
 							makeContentEdgeJoin(ansiJoin, ownerAlias, maybeCtype, maybeBranch, Optional.empty());
 						}
-						joins = Pair.of(makeAlias(parts[0]), parts[1]);
+						baseJoin = Pair.of(makeAlias(parts[0]), parts[1]);
 					} else {
-						if (otherJoins.stream().noneMatch(join -> join.isAlreadyJoined(column))) {
-							if (StringUtils.isBlank(joins.getRight())) {
-								joins = Pair.of(joins.getLeft(), parts[1]);
+						if (otherJoins.stream().noneMatch(join -> join.isAlreadyJoined(parts[0]))) {
+							if (StringUtils.isBlank(baseJoin.getRight())) {
+								baseJoin = Pair.of(baseJoin.getLeft(), parts[1]);
 							}
 							mapper = ElementType.parse(parts[0]).flatMap(etype -> daoCollection.get().maybeFindDao(etype)).map(HibQueryFieldMapper.class::cast).orElse(mapper);
 							for (String tableName: mapper.getHibernateEntityName()) {
 								ansiJoin.addJoin(
-										getPhysicalTableNameIdentifier(tableName), makeAlias(column), 
-										new String[] {joins.getLeft() + "." + databaseConnector.renderNonContentColumn(joins.getRight())}, 
+										getPhysicalTableNameIdentifier(tableName), makeAlias(parts[0]), 
+										new String[] {baseJoin.getLeft() + "." + databaseConnector.renderNonContentColumn(baseJoin.getRight())}, 
 										new String[] {databaseConnector.renderNonContentColumn(mapper.mapGraphQlFilterFieldName("uuid"))}, 
-										JoinType.INNER, joins.getLeft());
+										JoinType.LEFT, baseJoin.getLeft());
 							}
 						}
-						joins = Pair.of(makeAlias(column), parts[1]);
+						baseJoin = Pair.of(makeAlias(parts[0]), null);
 					}
 					String mapped1 = mapped;
 					mapped = mapper.mapGraphQlSortingFieldName(mapped);
@@ -647,10 +732,10 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 					}
 				}
 			} else {
-				joins = Pair.of(joins.getLeft(), mapped);
+				baseJoin = Pair.of(baseJoin.getLeft(), mapped);
 			}
 		}
-		return joins;
+		return baseJoin;
 	}
 
 	/**
@@ -962,6 +1047,35 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 		return ansiJoin;
 	}
 
+	private Optional<String> makeNodeSchemaVersionJoin(Optional<String> maybeOwner, String dependency, String entityType, NativeJoin localJoin) {
+		localJoin.addJoin(
+				databaseConnector.maybeGetPhysicalTableName(HibNodeImpl.class).get(), maybeOwner.get() + makeAlias(entityType), 
+				new String[] {dependency + "." + databaseConnector.renderNonContentColumn("valueOrUuid")}, 
+				new String[] {databaseConnector.renderNonContentColumn("dbUuid")}, 
+				JoinType.LEFT, dependency);
+		maybeOwner = maybeOwner.map(o -> o + makeAlias(entityType));
+		localJoin.addJoin(
+				databaseConnector.maybeGetPhysicalTableName(HibSchemaImpl.class).get(), maybeOwner.get() + makeAlias("SCHEMA"), 
+				new String[] {maybeOwner.get() + "." + databaseConnector.renderNonContentColumn("schemaContainer_dbUuid")}, 
+				new String[] {databaseConnector.renderNonContentColumn("dbUuid")}, 
+				JoinType.LEFT, maybeOwner.get());
+		return maybeOwner;
+	}
+
+	private void makeMicronodeSchemaVersionJoin(String owner, String dependency, NativeJoin localJoin) {
+		String versionAlias = owner + makeAlias(ElementType.MICROSCHEMAVERSION);
+		localJoin.addJoin(
+				databaseConnector.maybeGetPhysicalTableName(HibMicroschemaVersionImpl.class).get(), versionAlias, 
+				new String[] {dependency + "." + databaseConnector.renderNonContentColumn("microschemaVersion_dbUuid")}, 
+				new String[] {databaseConnector.renderNonContentColumn("dbUuid")}, 
+				JoinType.LEFT, dependency);
+		localJoin.addJoin(
+				databaseConnector.maybeGetPhysicalTableName(HibMicroschemaImpl.class).get(), owner + makeAlias(ElementType.MICROSCHEMA), 
+				new String[] {versionAlias + "." + databaseConnector.renderNonContentColumn("microschema_dbUuid")}, 
+				new String[] {databaseConnector.renderNonContentColumn("dbUuid")}, 
+				JoinType.LEFT, versionAlias);
+	}
+
 	private Optional<HibernateFilter> maybeMakeLiteralOperand(FilterOperand<?> operand, String ownerAlias) {
 		return Optional.ofNullable(operand).filter(FilterOperand::isLiteral).map(op -> {
 			HibernateFilter nf;
@@ -975,10 +1089,6 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 						value = UUIDUtil.toJavaUuid(value.toString());
 					} else if (value.getClass().isEnum()) {
 						value = Enum.class.cast(value).name();
-					} else if (value instanceof Collection) {
-						value = ((Collection<?>)value).stream().map(HibernateUtil::toJavaUuidOrSelf).collect(Collectors.toList());
-					} else if (value.getClass().isArray()) {
-						value = Arrays.stream(((Object[]) value)).map(HibernateUtil::toJavaUuidOrSelf).collect(Collectors.toList()).toArray();
 					}
 				}
 				nf = new HibernateFilter(":" + paramName, Collections.emptySet(), Collections.singletonMap(paramName, value));
@@ -1012,7 +1122,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 			.or(() -> joins.stream()
 				.filter(j -> "variants".equals(j.getLeft().getField()) && "IMAGEVARIANTLIST".equals(j.getRight().getTable()))
 				.findAny()
-				.map(j -> Pair.of(j.getRight().getTable(), j.getRight().getField())));
+				.map(j -> Pair.of(j.getLeft().getTable(), j.getLeft().getField())));
 		return maybeListData.map(listData -> {
 			String contentAlias = ownerAlias + makeAlias("CONTENT");
 			String listAlias = contentAlias + makeAlias(listData.getRight());
@@ -1022,11 +1132,6 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 				} else if (maybeOwner.filter(o -> "NODELIST".equals(o)).isPresent()) {
 					// New iteration of appendFilter() call will deal with adding `node_` by itself, no need to set it here
 					//listAlias += makeAlias(ElementType.NODE);
-				} else if (maybeOwner.filter(o -> "IMAGEVARIANTLIST".equals(o)).isPresent()) {
-					// The topmost callstack item is `variants`, which we already know.
-					FilterOperation<?> topmost = callStack.pop();
-					listAlias = contentAlias + makeAlias(callStack.peek().getInitiatingFilterName());
-					callStack.push(topmost);
 				}
 			}
 
@@ -1241,7 +1346,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 		}).orElse(localFieldName);
 	}
 
-	private String buildListFieldItemCountOperand(FilterOperand<?> op, Optional<String> maybeOwner, String ownerAlias) {
+	private String buildListFieldItemCountOperand(FilterOperand<?> op, Optional<String> maybeOwner, String ownerAlias, Deque<FilterOperation<?>> callStack, Map<String, Object> paramsMap) {
 		if (maybeOwner.filter(o -> o.endsWith("REFERENCELIST")).isPresent()) {
 			byte lookupFeatures = maybeOwner.map(o -> o.split("REFERENCELIST")).filter(o -> o.length > 0).map(o -> o[0]).filter(StringUtils::isNotBlank).map(Byte::valueOf).orElse(NodeReferenceFilter.createLookupChange(true, true, true, true));
 			boolean lookupInContent = NodeReferenceFilter.isLookupInContent(lookupFeatures);
@@ -1261,23 +1366,69 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 			return " (" + select.toStatementString() + ") ";
 		} else {
 			String itemType = maybeOwner.get().substring(0, maybeOwner.get().indexOf("LIST"));
-			String localFieldName = op.getJoins().stream()
+			return op.getJoins().stream()
 					.filter(j -> "list".equals(j.getLeft().getField()) && "list".equals(j.getRight().getTable()) && itemType.equalsIgnoreCase(j.getRight().getField()) && j.getLeft().getTable().indexOf('.') > 0)
 					.map(j -> j.getLeft().getTable().split("\\.")[1])
-					.findAny().orElseThrow(() -> new IllegalStateException("Unable to find a field name for filter: " + op));
+					.findAny()
+					.map(localFieldName -> {
+						String listAlias = ownerAlias + makeAlias("CONTENT" + "_" + localFieldName);
+						Select select = new Select(databaseConnector.getSessionMetadataIntegrator().getSessionFactoryImplementor());
+						select.addColumn("count(1)");
+						select.setTableName(tableNameIntoClass(maybeOwner.get()).flatMap(cls -> databaseConnector.maybeGetPhysicalTableName(cls)).get() + " " + listAlias);
+						
+						StringBuilder sb = new StringBuilder();
+						sb.append(listAlias).append(".").append(databaseConnector.renderNonContentColumn("containerUuid")).append(" = ").append(ownerAlias).append(makeAlias("CONTENT"))
+								.append(".").append(databaseConnector.renderColumn(CommonContentColumn.DB_UUID));
+						sb.append(" AND ").append(listAlias).append(".").append(databaseConnector.renderNonContentColumn("listUuid")).append(" = ").append(ownerAlias).append(makeAlias("CONTENT"))
+								.append(".").append(databaseConnector.renderNonContentColumn(localFieldName + "-list." + itemType));
+						select.addRestriction(sb.toString());
+						return " (" + select.toStatementString() + ") ";
+					}).or(() -> Optional.ofNullable(itemType)
+						.filter(it -> "IMAGEVARIANT".equals(it))
+						.map(it -> {
+							NativeJoin localJoin = new NativeJoin();
+							String listData = op.getJoins().stream()
+									.filter(j -> "variants".equals(j.getLeft().getField()) && "IMAGEVARIANTLIST".equals(j.getRight().getTable()))
+									.findAny()
+									.map(j -> j.getLeft().getField()).orElseThrow();
+							String contentAlias = ownerAlias + makeAlias("CONTENT");
+							String listAlias = contentAlias + makeAlias(listData);
+							String variantEdgeAlias = listAlias + makeAlias("binary_field_variant");
+							String binaryFieldAlias = listAlias + makeAlias("binaryfieldref");
 
-			String listAlias = ownerAlias + makeAlias("CONTENT" + "_" + localFieldName);
-			Select select = new Select(databaseConnector.getSessionMetadataIntegrator().getSessionFactoryImplementor());
-			select.addColumn("count(1)");
-			select.setTableName(tableNameIntoClass(maybeOwner.get()).flatMap(cls -> databaseConnector.maybeGetPhysicalTableName(cls)).get() + " " + listAlias);
-			
-			StringBuilder sb = new StringBuilder();
-			sb.append(listAlias).append(".").append(databaseConnector.renderNonContentColumn("containerUuid")).append(" = ").append(ownerAlias).append(makeAlias("CONTENT"))
-					.append(".").append(databaseConnector.renderColumn(CommonContentColumn.DB_UUID));
-			sb.append(" AND ").append(listAlias).append(".").append(databaseConnector.renderNonContentColumn("listUuid")).append(" = ").append(ownerAlias).append(makeAlias("CONTENT"))
-					.append(".").append(databaseConnector.renderColumnUnsafe(localFieldName + "-list." + itemType, false));
-			select.addRestriction(sb.toString());
-			return " (" + select.toStatementString() + ") ";
+							Select select = new Select(databaseConnector.getSessionMetadataIntegrator().getSessionFactoryImplementor());
+							select.addColumn("count(1)");
+							select.setTableName(tableNameIntoClass(maybeOwner.get()).flatMap(cls -> databaseConnector.maybeGetPhysicalTableName(cls)).get() + " " + listAlias);
+							
+							// The topmost callstack item is `count`, which we already know.
+							FilterOperation<?> topmost = callStack.pop();
+							// The second topmost callstack item is `variants`, which we we don't need.
+							FilterOperation<?> secondTopmost = callStack.pop();
+							String fieldKey = callStack.peek().getInitiatingFilterName();
+							callStack.push(secondTopmost);
+							callStack.push(topmost);
+
+							String fieldKeyParam = makeParamName(fieldKey);
+
+							localJoin.addJoin(
+									getPhysicalTableNameIdentifier("binary_field_variant"), variantEdgeAlias, 
+									new String[] {listAlias + "." + databaseConnector.renderColumn(CommonContentColumn.DB_UUID)}, 
+									new String[] {databaseConnector.renderNonContentColumn("variants_dbUuid")}, 
+									JoinType.INNER, listAlias);
+							localJoin.addJoin(
+									databaseConnector.maybeGetPhysicalTableName(HibBinaryFieldEdgeImpl.class).get(), binaryFieldAlias, 
+									new String[] {variantEdgeAlias + "." + databaseConnector.renderNonContentColumn("fields_dbUuid")}, 
+									new String[] {databaseConnector.renderColumn(CommonContentColumn.DB_UUID)}, 
+									JoinType.INNER, variantEdgeAlias);
+
+							StringBuilder sb = new StringBuilder();
+							sb.append(binaryFieldAlias).append(".").append(databaseConnector.renderNonContentColumn("containerUuid")).append(" = ").append(contentAlias).append(".").append(databaseConnector.renderColumn(CommonContentColumn.DB_UUID));
+							sb.append(" AND ").append(binaryFieldAlias).append(".").append(databaseConnector.renderNonContentColumn("fieldKey")).append(" = ").append(":").append(fieldKeyParam);
+							select.setJoin(mergeJoins(Stream.of(localJoin), listAlias, contentAlias));
+							paramsMap.put(fieldKeyParam, fieldKey);
+							select.addRestriction(sb.toString());
+							return " (" + select.toStatementString() + ") ";
+						})).orElseThrow(() -> new IllegalStateException("Unable to find a field name for filter: " + op));
 		}
 	}
 
@@ -1287,6 +1438,14 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 				.filter(j -> "list".equals(j.getLeft().getField()) && "list".equals(j.getRight().getTable()) && itemType.equalsIgnoreCase(j.getRight().getField()) && j.getLeft().getTable().indexOf('.') > 0)
 				.map(j -> j.getLeft().getTable().split("\\.")[1] + "-list." + itemType.toLowerCase())
 				.findAny();
+	}
+
+	private void makeBinaryJoin(Class<? extends AbstractBinaryImpl> cls, String dependency, String owner, NativeJoin join) {
+		join.addJoin(
+				databaseConnector.maybeGetPhysicalTableName(cls).get(), dependency + makeAlias(owner), 
+				new String[] {dependency + "." + databaseConnector.renderNonContentColumn("valueOrUuid")}, 
+				new String[] {databaseConnector.renderNonContentColumn("dbUuid")}, 
+				JoinType.LEFT, dependency);
 	}
 
 	private HibernateFilter makeParameterOperand(
@@ -1342,7 +1501,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 				maybeOwner = Optional.empty();
 				isNative = true;
 			} else if (op instanceof FieldOperand && ListFilter.OP_COUNT.equals(((FieldOperand<?>)op).getValue())) {
-				actualFieldName = buildListFieldItemCountOperand(op, maybeOwner, ownerAlias);
+				actualFieldName = buildListFieldItemCountOperand(op, maybeOwner, ownerAlias, callStack, paramsMap);
 				maybeOwner = Optional.empty();
 				isNative = true;
 			} else {
@@ -1369,17 +1528,9 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 					new String[] {databaseConnector.renderColumn(CommonContentColumn.DB_UUID)}, 
 					JoinType.LEFT, ownerAlias);
 		} else if (maybeOwner.filter(o -> "BINARY".equals(o)).isPresent()) {
-			join.addJoin(
-					databaseConnector.maybeGetPhysicalTableName(HibBinaryImpl.class).get(), ownerAlias + makeAlias(maybeOwner.get()), 
-					new String[] {ownerAlias + "." + databaseConnector.renderNonContentColumn("valueOrUuid")}, 
-					new String[] {databaseConnector.renderNonContentColumn("dbUuid")}, 
-					JoinType.LEFT, ownerAlias);
+			makeBinaryJoin(HibBinaryImpl.class, ownerAlias, maybeOwner.get(), join);
 		} else if (maybeOwner.filter(o -> "S3BINARY".equals(o)).isPresent()) {
-			join.addJoin(
-					databaseConnector.maybeGetPhysicalTableName(HibS3BinaryImpl.class).get(), ownerAlias + makeAlias(maybeOwner.get()), 
-					new String[] {ownerAlias + "." + databaseConnector.renderNonContentColumn("valueOrUuid")}, 
-					new String[] {databaseConnector.renderNonContentColumn("dbUuid")}, 
-					JoinType.LEFT, ownerAlias);
+			makeBinaryJoin(HibBinaryImpl.class, ownerAlias, maybeOwner.get(), join);
 		} else if (maybeOwner.filter(o -> "NODE".equals(o)).isPresent() 
 				&& (ReferencedNodesFilterJoin.ALIAS_CONTENTFIELDKEY.equals(actualFieldName) || ReferencedNodesFilterJoin.ALIAS_MICROCONTENTFIELDKEY.equals(actualFieldName))) {
 			ownerAlias = ownerAlias.substring(0, ownerAlias.lastIndexOf(makeAlias(ElementType.NODE)));
@@ -1456,31 +1607,10 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 		// We reference an actual entity, thus have to join it as well
 		if (entityType.equals(localFieldName)) {
 			if (HibMicronodeFieldEdgeImpl.class.equals(edgeClass)) {
-				String versionAlias = maybeOwner.get() + makeAlias(ElementType.MICROSCHEMAVERSION);
-				localJoin.addJoin(
-						databaseConnector.maybeGetPhysicalTableName(HibMicroschemaVersionImpl.class).get(), versionAlias, 
-						new String[] {dependency + "." + databaseConnector.renderNonContentColumn("microschemaVersion_dbUuid")}, 
-						new String[] {databaseConnector.renderNonContentColumn("dbUuid")}, 
-						JoinType.LEFT, dependency);
-				localJoin.addJoin(
-						databaseConnector.maybeGetPhysicalTableName(HibMicroschemaImpl.class).get(), maybeOwner.get() + makeAlias(ElementType.MICROSCHEMA), 
-						new String[] {versionAlias + "." + databaseConnector.renderNonContentColumn("microschema_dbUuid")}, 
-						new String[] {databaseConnector.renderNonContentColumn("dbUuid")}, 
-						JoinType.LEFT, versionAlias);
+				makeMicronodeSchemaVersionJoin(maybeOwner.get(), dependency, localJoin);
 				maybeOwner = maybeOwner.map(o -> o + makeAlias("MICROCONTENT"));		
 			} else if (HibNodeFieldEdgeImpl.class.equals(edgeClass)) {
-				localJoin.addJoin(
-						databaseConnector.maybeGetPhysicalTableName(HibNodeImpl.class).get(), maybeOwner.get() + makeAlias(entityType), 
-						new String[] {dependency + "." + databaseConnector.renderNonContentColumn("valueOrUuid")}, 
-						new String[] {databaseConnector.renderNonContentColumn("dbUuid")}, 
-						JoinType.LEFT, dependency);
-				maybeOwner = maybeOwner.map(o -> o + makeAlias(entityType));
-				localJoin.addJoin(
-						databaseConnector.maybeGetPhysicalTableName(HibSchemaImpl.class).get(), maybeOwner.get() + makeAlias("SCHEMA"), 
-						new String[] {maybeOwner.get() + "." + databaseConnector.renderNonContentColumn("schemaContainer_dbUuid")}, 
-						new String[] {databaseConnector.renderNonContentColumn("dbUuid")}, 
-						JoinType.LEFT, maybeOwner.get());
-				dependency = maybeOwner.get();
+				dependency = makeNodeSchemaVersionJoin(maybeOwner, dependency, entityType, localJoin).get();
 			} else {
 				maybeOwner = maybeOwner.map(o -> o + makeAlias(entityType));
 			}
@@ -1974,6 +2104,20 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 	
 	public Class<D> getDomainClass() {
 		return domainClass;
+	}
+
+	/**
+	 * If the entity is not null, load it by its UUID.
+	 * This will make sure that the entity is either loaded from the database or taken from the hibernate cache
+	 * @param entity entity to reload
+	 * @return entity
+	 */
+	public T nullSafeFindByUuid(T entity) {
+		if (entity != null) {
+			return findByUuid(entity.getUuid());
+		} else {
+			return entity;
+		}
 	}
 
 	/**
