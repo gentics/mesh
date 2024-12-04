@@ -14,7 +14,7 @@
   ],
   "targets": {
     "build": {
-      "executor": "@nx/angular:package",
+      "executor": "@nx/angular:ng-packagr-lite",
       "options": {
         "tsConfig": "packages/mesh-rest-client-angular/tsconfig.lib.json",
         "project": "packages/mesh-rest-client-angular/ng-package.json"
