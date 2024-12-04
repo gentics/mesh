@@ -18,12 +18,17 @@ import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
+import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
+
+import io.netty.handler.codec.http.HttpResponseStatus;
 
 @MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true)
 public class NodeLanguagesEndpointTest extends AbstractMeshTest {
@@ -68,7 +73,6 @@ public class NodeLanguagesEndpointTest extends AbstractMeshTest {
 		// The node was removed since the node only existed in a single branch and had no other languages
 		call(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid(), new VersioningParametersImpl().published()), NOT_FOUND,
 				"object_not_found_for_uuid", contentUuid());
-
 	}
 
 	@Test
@@ -84,5 +88,16 @@ public class NodeLanguagesEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 		call(() -> client().deleteNode(PROJECT_NAME, contentUuid(), "en"), FORBIDDEN, "error_missing_perm", contentUuid(), DELETE_PERM.getRestPerm().getName());
+	}
+
+	@Test
+	public void testDeleteBaseNodeThroughLanguage() {
+		ProjectResponse project = call(() -> client().createProject(new ProjectCreateRequest().setName("bogus").setSchemaRef("folder")));
+		String rootNodeUuid = project.getRootNode().getUuid();
+		call(() -> client().createNode("bogus", new NodeCreateRequest().setLanguage("en").setParentNodeUuid(rootNodeUuid).setSchemaName("folder")));
+		call(() -> client().deleteNode("bogus", rootNodeUuid, "en", new DeleteParametersImpl().setRecursive(true)), HttpResponseStatus.METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
+		adminCall(() -> client().clearCache());
+		project = call(() -> client().findProjectByName("bogus"));
+		call(() -> client().findNodeByUuid("bogus", rootNodeUuid));
 	}
 }
