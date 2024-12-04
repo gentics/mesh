@@ -9,6 +9,8 @@ import com.gentics.mesh.context.impl.LoggingConfigurator;
 import com.gentics.mesh.dagger.DaggerHibernateMeshComponent;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
 
+import io.jsonwebtoken.JwtParserBuilder;
+import io.jsonwebtoken.impl.DefaultJwtParserBuilder;
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -20,6 +22,10 @@ public class ServerRunner {
 		System.setProperty("vertx.httpServiceFactory.cacheDir", "data" + File.separator + "tmp");
 		System.setProperty("vertx.cacheDirBase", "data" + File.separator + "tmp");
 		System.setProperty("org.jboss.logging.provider", "slf4j");
+
+		// TODO FIXME These dependencies make mess on the commercial plugins, so required to be explicitly loaded.
+		JwtParserBuilder builder = new DefaultJwtParserBuilder();
+		builder.build();
 	}
 
 	public static void main(String[] args) throws Exception {
