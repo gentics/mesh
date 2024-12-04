@@ -5,6 +5,7 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.enterprise.hibernate.dialect.PostgresDuplicationAwareDialect;
+import com.gentics.mesh.enterprise.license.LicenseService;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.hibernate.util.HibernateUtil;
 
@@ -13,8 +14,8 @@ import com.gentics.mesh.hibernate.util.HibernateUtil;
  */
 public class PostgreSQLConnector extends AbstractEnterpriseDatabaseConnector {
 
-	public PostgreSQLConnector(HibernateMeshOptions options) {
-		super(options);
+	public PostgreSQLConnector(HibernateMeshOptions options, LicenseService licenseService) {
+		super(options, licenseService);
 	}
 
 	@Override
