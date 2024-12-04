@@ -214,7 +214,10 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 				Arrays.asList("filtering/nodes-binary-field-native", true, false, "draft"),
 				Arrays.asList("filtering/nodes-s3binary-field-native", true, false, "draft"),
 				Arrays.asList("filtering/nodes-nodelist-field-native", true, false, "draft"),
-				Arrays.asList("filtering/nodes-micronodelist-field-native", true, false, "draft")
+				Arrays.asList("filtering/nodes-micronodelist-field-native", true, false, "draft"),
+				Arrays.asList("filtering/nodes-sorted-micronode", true, false, "draft"),
+				Arrays.asList("filtering/nodes-sorted-binary", true, false, "draft"),
+				Arrays.asList("filtering/nodes-sorted-node-field", true, false, "draft")
 			);
 	}
 
@@ -414,7 +417,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			HibBinary binary = tx.binaries().create("hashsumvalue", 1L).runInExistingTx(tx);
 			binary.setImageHeight(10).setImageWidth(20).setSize(2048);
 			container.createBinary("binary", binary).setImageDominantColor("00FF00")
-				.setImageFocalPoint(new FocalPoint(0.2f, 0.3f)).setMimeType("image/jpeg");
+				.setImageFocalPoint(new FocalPoint(0.2f, 0.3f)).setMimeType("image/jpeg").setFileName("some_image.jpg");
 
 			// s3binary
 			S3HibBinary s3binary = tx.s3binaries().create(UUIDUtil.randomUUID(), node.getUuid() + "/s3", "test.jpg").runInExistingTx(tx);
@@ -479,6 +482,30 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 				micronodeField.getMicronode().createString("lastName").setString("Doe");
 				micronodeField.getMicronode().createString("address").setString("Somewhere");
 				micronodeField.getMicronode().createString("postcode").setString("1010");
+
+				// Second micronode 
+				HibNodeFieldContainer container3 = tx.contentDao().createFieldContainer(node3, "en", initialBranch(), user());
+				// micronodeList
+				micronodeList = container3.createMicronodeList("micronodeList");
+				firstMicronode = micronodeList.createMicronode(microschemaContainer("vcard").getLatestVersion());
+				firstMicronode.createString("firstName").setString("Jane");
+				firstMicronode.createString("lastName").setString("Dow");
+				firstMicronode.createString("address").setString("Overthere");
+				firstMicronode.createString("postcode").setString("8010");
+
+				secondMicronode = micronodeList.createMicronode(microschemaDao.findByUuid(microschemaUuid).getLatestVersion());
+				secondMicronode.createString("text").setString("Jane");
+				secondMicronode.createNode("nodeRef", content());
+				micrnodeNodeList = secondMicronode.createNodeList("nodeList");
+				micrnodeNodeList.createNode(0, node2);
+				micrnodeNodeList.createNode(1, node3);
+
+				// micronode
+				micronodeField = container3.createMicronode("micronode", microschemaContainer("vcard").getLatestVersion());
+				micronodeField.getMicronode().createString("firstName").setString("Jane");
+				micronodeField.getMicronode().createString("lastName").setString("Dow");
+				micronodeField.getMicronode().createString("address").setString("Overthere");
+				micronodeField.getMicronode().createString("postcode").setString("8010");
 			}
 			tx.contentDao().updateWebrootPathInfo(container, initialBranchUuid(), null);
 			tx.success();
@@ -539,7 +566,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 				assertion.accept(jsonResponse);
 			}
 		} catch (Throwable e) {
-			getTestContext().LOG.error("Assertion failed for: \n{}\nPayload:\n{}", query, response.toJson());
+			getTestContext().LOG.error("Assertion failed for: \n{}\nPayload:\n{}", query, jsonResponse.encodePrettily());
 			throw e;
 		}
 	}

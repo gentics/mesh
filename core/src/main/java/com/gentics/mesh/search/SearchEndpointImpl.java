@@ -5,6 +5,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
+import java.util.Arrays;
 import java.util.function.Function;
 
 import javax.inject.Inject;
@@ -28,6 +29,8 @@ import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.parameter.ParameterProvider;
+import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.IndexMaintenanceParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.SearchParametersImpl;
@@ -129,7 +132,7 @@ public class SearchEndpointImpl extends AbstractInternalEndpoint implements Sear
 		registerHandler("nodes", (uuid) -> {
 			HibNode node = Tx.get().nodeDao().findByUuidGlobal(uuid);
 			return node;
-		}, NodeListResponse.class, nodeSearchHandler, nodeExamples.getNodeListResponse(), true);
+		}, NodeListResponse.class, nodeSearchHandler, nodeExamples.getNodeListResponse(), true, GenericParametersImpl.class);
 
 		registerHandler("tags", (uuid) -> Tx.get().tagDao().findByUuid(uuid), TagListResponse.class, tagSearchHandler, tagExamples
 			.createTagListResponse(), false);
@@ -208,9 +211,10 @@ public class SearchEndpointImpl extends AbstractInternalEndpoint implements Sear
 	 * @param classOfRL
 	 *            Class of matching list response
 	 */
+	@SafeVarargs
 	private <T extends HibCoreElement<?>, TR extends RestModel, RL extends ListResponse<TR>> void registerHandler(String typeName,
 		Function<String, T> elementLoader, Class<RL> classOfRL, SearchHandler<T, TR> searchHandler, RL exampleListResponse,
-		boolean filterByLanguage) {
+		boolean filterByLanguage, Class<? extends ParameterProvider>... extraParameters) {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/" + typeName);
 		endpoint.method(POST);
@@ -220,6 +224,7 @@ public class SearchEndpointImpl extends AbstractInternalEndpoint implements Sear
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.addQueryParameters(PagingParametersImpl.class);
 		endpoint.addQueryParameters(SearchParametersImpl.class);
+		Arrays.stream(extraParameters).forEach(endpoint::addQueryParameters);
 		endpoint.exampleResponse(OK, exampleListResponse, "Paged search result for " + typeName);
 		endpoint.exampleRequest(miscExamples.getSearchQueryExample());
 		endpoint.handler(rc -> {

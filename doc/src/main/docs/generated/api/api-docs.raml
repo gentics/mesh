@@ -5663,18 +5663,30 @@ mediaType: application/json
         post: 
             description: Invoke a search query for nodes and return a paged list response.
             queryParameters: 
-                sortBy: 
-                    description: Field name to sort the result by.
-                    type: string
-                    required: false
-                    repeat: false
-                    example: name
                 wait: 
                     description: Specify whether search should wait for the search to be idle before responding.
                     type: boolean
                     required: false
                     repeat: false
                     example: "true"
+                perPage: 
+                    description: Number of elements per page.
+                    type: number
+                    required: false
+                    repeat: false
+                    example: "42"
+                sortBy: 
+                    description: Field name to sort the result by.
+                    type: string
+                    required: false
+                    repeat: false
+                    example: name
+                etag: 
+                    description: Parameter which can be used to disable the etag parameter generation and thus increase performance when etags are not needed.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    default: true
                 page: 
                     description: Number of page to be loaded.
                     type: number
@@ -5682,12 +5694,12 @@ mediaType: application/json
                     repeat: false
                     default: 1
                     example: "42"
-                perPage: 
-                    description: Number of elements per page.
-                    type: number
+                fields: 
+                    description: Limit the output to certain fields. This is useful in order to reduce the response JSON overhead.
+                    type: string
                     required: false
                     repeat: false
-                    example: "42"
+                    default: ""
                 order: 
                     description: Field order (ASC/DESC/UNSORTED) to sort the result by.
                     type: string
@@ -15128,6 +15140,51 @@ mediaType: application/json
     /nodes: 
         post: 
             description: Invoke a search query for nodes and return a paged list response.
+            queryParameters: 
+                wait: 
+                    description: Specify whether search should wait for the search to be idle before responding.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
+                perPage: 
+                    description: Number of elements per page.
+                    type: number
+                    required: false
+                    repeat: false
+                    example: "42"
+                sortBy: 
+                    description: Field name to sort the result by.
+                    type: string
+                    required: false
+                    repeat: false
+                    example: name
+                etag: 
+                    description: Parameter which can be used to disable the etag parameter generation and thus increase performance when etags are not needed.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    default: true
+                page: 
+                    description: Number of page to be loaded.
+                    type: number
+                    required: false
+                    repeat: false
+                    default: 1
+                    example: "42"
+                fields: 
+                    description: Limit the output to certain fields. This is useful in order to reduce the response JSON overhead.
+                    type: string
+                    required: false
+                    repeat: false
+                    default: ""
+                order: 
+                    description: Field order (ASC/DESC/UNSORTED) to sort the result by.
+                    type: string
+                    required: false
+                    repeat: false
+                    default: UNSORTED
+                    example: ASCENDING
             body: 
                 application/json: 
                     example: '{"query":{"query_string":{"query":"some name"}}}'
@@ -15365,6 +15422,39 @@ mediaType: application/json
     /tagFamilies: 
         post: 
             description: Invoke a search query for tagFamilies and return a paged list response.
+            queryParameters: 
+                sortBy: 
+                    description: Field name to sort the result by.
+                    type: string
+                    required: false
+                    repeat: false
+                    example: name
+                wait: 
+                    description: Specify whether search should wait for the search to be idle before responding.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
+                page: 
+                    description: Number of page to be loaded.
+                    type: number
+                    required: false
+                    repeat: false
+                    default: 1
+                    example: "42"
+                perPage: 
+                    description: Number of elements per page.
+                    type: number
+                    required: false
+                    repeat: false
+                    example: "42"
+                order: 
+                    description: Field order (ASC/DESC/UNSORTED) to sort the result by.
+                    type: string
+                    required: false
+                    repeat: false
+                    default: UNSORTED
+                    example: ASCENDING
             body: 
                 application/json: 
                     example: '{"query":{"query_string":{"query":"some name"}}}'
@@ -15413,6 +15503,39 @@ mediaType: application/json
     /tags: 
         post: 
             description: Invoke a search query for tags and return a paged list response.
+            queryParameters: 
+                sortBy: 
+                    description: Field name to sort the result by.
+                    type: string
+                    required: false
+                    repeat: false
+                    example: name
+                wait: 
+                    description: Specify whether search should wait for the search to be idle before responding.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
+                page: 
+                    description: Number of page to be loaded.
+                    type: number
+                    required: false
+                    repeat: false
+                    default: 1
+                    example: "42"
+                perPage: 
+                    description: Number of elements per page.
+                    type: number
+                    required: false
+                    repeat: false
+                    example: "42"
+                order: 
+                    description: Field order (ASC/DESC/UNSORTED) to sort the result by.
+                    type: string
+                    required: false
+                    repeat: false
+                    default: UNSORTED
+                    example: ASCENDING
             body: 
                 application/json: 
                     example: '{"query":{"query_string":{"query":"some name"}}}'

@@ -135,9 +135,11 @@ public class SchemaChangeModel implements RestModel {
 	 * 
 	 * @param key
 	 * @param value
+	 * @return fluent
 	 */
-	public void setProperty(String key, Object value) {
+	public SchemaChangeModel setProperty(String key, Object value) {
 		properties.put(key, value);
+		return this;
 	}
 
 	/**

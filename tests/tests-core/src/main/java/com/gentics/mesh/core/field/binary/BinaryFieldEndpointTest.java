@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.field.binary;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -12,13 +13,20 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
@@ -28,6 +36,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
@@ -43,7 +52,9 @@ import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.image.CropMode;
+import com.gentics.mesh.parameter.image.ResizeMode;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
@@ -334,6 +345,78 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 		));
 
 		assertNotEquals("Downloaded binary must be different", hash, hash2);
+	}
+
+	@Test
+	public void testCacheMigration() throws IOException {
+		String imageCache = options().getImageOptions().getImageCacheDirectory();
+
+		for (String img: Arrays.asList("blume.jpg", "dreamtime.jpg", "iphone-gps.jpg", "android-gps.jpg")) {
+			byte[] bytes = getBinary("/pictures/" + img);
+
+			NodeResponse nodeResponse = createBinaryNode();
+
+			call(() -> client().updateNodeBinaryField(PROJECT_NAME, nodeResponse.getUuid(), "en", nodeResponse.getVersion(), "binary",
+				new ByteArrayInputStream(bytes), bytes.length, img,"image/jpg"));
+		}
+		tx(tx -> {
+			tx.binaryDao().findAll().runInExistingTx(tx).forEach(binary -> {
+				String sha512sum = binary.getSHA512Sum();
+				String[] parts = sha512sum.split("(?<=\\G.{8})");
+				StringBuffer buffer = new StringBuffer();
+				buffer.append(File.separator);
+				for (String part : parts) {
+					buffer.append(part + File.separator);
+				}
+				String baseFolder = Paths.get(imageCache, buffer.toString()).toString();
+				String baseName = "image-" + randomImageManipulation().getCacheKey() + ".jpg";
+				try {
+					Files.createDirectories(Path.of(baseFolder));
+					try (InputStream i = binary.openBlockingStream().get(); OutputStream o = new BufferedOutputStream(new FileOutputStream(new File(Paths.get(baseFolder, baseName).toString())))) {
+						i.transferTo(o);
+					}
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			});
+		});
+		assertThat(Files.walk(Path.of(imageCache)).filter(path -> {
+			File file = new File(path.toString());
+			return file.exists() && file.isFile() && file.getName().startsWith("image-");
+		}).count()).isEqualTo(4);
+		assertThat(Files.walk(Path.of(imageCache)).filter(path -> {
+			File file = new File(path.toString());
+			return file.exists() && file.isFile() && file.getName().endsWith(".jpg");
+		}).count()).isEqualTo(4);
+
+		grantAdmin();
+		HibJob job = tx(tx -> { return tx.jobDao().enqueueImageCacheMigration(user()); });
+		String jobUuid = tx(() -> job.getUuid());
+
+		waitForJob(() -> {
+			call(() -> client().processJob(jobUuid));
+		}, jobUuid, COMPLETED);
+
+		revokeAdmin();
+
+		assertThat(Files.walk(Path.of(imageCache)).filter(path -> {
+			File file = new File(path.toString());
+			return file.exists() && file.isFile() && file.getName().startsWith("image-");
+		}).count()).isEqualTo(0);
+		assertThat(Files.walk(Path.of(imageCache)).filter(path -> {
+			File file = new File(path.toString());
+			return file.exists() && file.isFile() && file.getName().endsWith(".jpg");
+		}).count()).isEqualTo(4);
+	}
+
+	private ImageManipulationParameters randomImageManipulation() {
+		Random rnd = new Random();
+		return new ImageManipulationParametersImpl()
+				.setCropMode(CropMode.values()[rnd.nextInt(CropMode.values().length)])
+				.setFocalPoint(1f / (rnd.nextInt(8)+1), 1f / (rnd.nextInt(8)+1))
+				.setResizeMode(ResizeMode.values()[rnd.nextInt(ResizeMode.values().length)])
+				.setWidth(rnd.nextInt(options().getImageOptions().getMaxWidth()))
+				.setHeight(rnd.nextInt(options().getImageOptions().getMaxHeight()));
 	}
 
 	private String hashBinary(MeshRequest<MeshBinaryResponse> downloadBinaryField) throws IOException {

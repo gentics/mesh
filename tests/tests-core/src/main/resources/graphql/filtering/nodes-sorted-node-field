@@ -1,0 +1,65 @@
+{
+	nodeRefSlugLike: nodes(
+	  filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        nodeRef: {node: {schema: {is: content} fields: { content: { slug: { like: "%.html" } } }}}
+	      }
+	    }
+	  }
+	  sort: {
+	    fields: {
+	      folder: {
+	        nodeRef: {node: { fields: { content: { slug: ASCENDING } }}}
+	      }
+	    }
+	  }
+	) {
+	    # [$.data.nodeRefSlugLike.elements.length()=2]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	
+	nodeRefIsNotNull: nodes(
+	  filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        nodeRef: {isNull:false}
+	      }
+	    }
+	  }
+	  sort: {
+	    fields: {
+	      folder: {
+	        nodeRef: {node: { fields: { content: { slug: ASCENDING } }}}
+	      }
+	    }
+	  }
+	) {
+	    # [$.data.nodeRefIsNotNull.elements.length()=3]
+	    # [$.data.nodeRefIsNotNull.elements[0].fields.nodeRef=<is-empty>]
+	    # [$.data.nodeRefIsNotNull.elements[1].fields.nodeRef.fields.slug=News Overview.en.html]
+	    # [$.data.nodeRefIsNotNull.elements[2].fields.nodeRef.fields.slug=News Overview.en.html]
+	    elements {
+	      uuid
+	      ... on folder {
+	        fields {
+	          nodeRef {
+	            ... on content {
+	              fields {
+	                slug
+	              }
+	            }
+	          }
+	        }
+	      }
+	    }
+	}
+}
+# [$.errors=<is-undefined>]

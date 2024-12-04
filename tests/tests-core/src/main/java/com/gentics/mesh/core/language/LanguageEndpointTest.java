@@ -16,6 +16,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.lang.LanguageListResponse;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
@@ -26,6 +27,7 @@ import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.parameter.client.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.ProjectLoadParametersImpl;
+import com.gentics.mesh.parameter.impl.SortingParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -369,9 +371,11 @@ public class LanguageEndpointTest extends AbstractMeshTest implements BasicRestT
 		}
 	}
 
-	@Override
 	@Test
-	@Ignore
+	@Override
 	public void testReadPermittedSorted() throws Exception {
+		LanguageListResponse list = call(() -> client().findLanguages(new SortingParametersImpl("name", SortOrder.DESCENDING)));
+		assertEquals("Total data size should be 11", 11, list.getData().size());
+		assertThat(list.getData()).isSortedAccordingTo((a, b) -> b.getName().compareTo(a.getName()));
 	}
 }

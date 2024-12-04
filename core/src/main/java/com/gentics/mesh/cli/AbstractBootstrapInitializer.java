@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,6 +32,7 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.cache.CacheRegistry;
 import com.gentics.mesh.changelog.highlevel.HighLevelChangelogSystem;
+import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.HibMeshVersion;
 import com.gentics.mesh.core.data.dao.GroupDao;
@@ -47,6 +50,8 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApiImpl;
+import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
@@ -634,6 +639,22 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 
 		registerEventHandlers();
 
+		checkImageCacheMigrated();
+	}
+
+	@Deprecated
+	private void checkImageCacheMigrated() throws IOException {
+		Path imageCachePath = Path.of(options.getImageOptions().getImageCacheDirectory());
+		if (Files.exists(imageCachePath) && Files.list(imageCachePath).filter(path -> path.getFileName().toString().length() == 8).count() > 0) {
+			db().tx(tx -> {
+				log.info("Image cache requires migration, triggering the corresponding Job.");
+				tx.jobDao().findAll().stream().filter(job -> job.getType() == JobType.imagecache).forEach(job -> {
+					tx.jobDao().delete(job, new DummyBulkActionContext());
+				});
+				tx.jobDao().enqueueImageCacheMigration(tx.userDao().findByUsername("admin"));
+				MeshEvent.triggerJobWorker(mesh);
+			});
+		}
 	}
 
 	/**

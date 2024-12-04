@@ -217,7 +217,7 @@ public class LocalBinaryStorageImpl extends AbstractBinaryStorage implements Loc
 	}
 
 	/**
-	 * Generate the segmented path for the given binary uuid.
+	 * Generate the segmented path for the given binary uuid. Unrelated to the implementation of AbstractImageManipulator.
 	 * 
 	 * @param binaryUuid
 	 * @return

@@ -56,11 +56,11 @@ public interface ImageManipulator {
 	/**
 	 * Return the cache file for the given binary and image parameters.
 	 *
-	 * @param sha512sum  Hashsum of the source binary
+	 * @param binary source binary
 	 * @param parameters Resize parameters
 	 * @return
 	 */
-	Single<CacheFileInfo> getCacheFilePath(String sha512sum, ImageManipulation parameters);
+	Single<CacheFileInfo> getCacheFilePath(HibBinary binary, ImageManipulation parameters);
 
 	/**
 	 * Read the image information from image file.

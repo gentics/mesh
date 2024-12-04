@@ -4,6 +4,7 @@ import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.POST;
 
+import java.util.Arrays;
 import java.util.function.Function;
 
 import javax.inject.Inject;
@@ -23,6 +24,10 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.parameter.ParameterProvider;
+import com.gentics.mesh.parameter.impl.GenericParametersImpl;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.parameter.impl.SearchParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 import com.gentics.mesh.search.index.node.NodeSearchHandler;
@@ -78,7 +83,7 @@ public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implement
 	private void addSearchEndpoints() {
 		registerSearchHandler("nodes", (uuid) -> {
 			return Tx.get().nodeDao().findByUuidGlobal(uuid);
-		}, NodeListResponse.class, nodeSearchHandler, nodeExamples.getNodeListResponse(), true);
+		}, NodeListResponse.class, nodeSearchHandler, nodeExamples.getNodeListResponse(), true, GenericParametersImpl.class);
 
 		registerSearchHandler("tags", uuid -> {
 			HibTag tag = Tx.get().tagDao().findByUuid(uuid);
@@ -107,8 +112,9 @@ public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implement
 	 * @param filterByLanguage
 	 *            Whether to append the language filter
 	 */
+	@SafeVarargs
 	private <T extends HibCoreElement<?>, TR extends RestModel, RL extends ListResponse<TR>> void registerSearchHandler(String typeName,
-		Function<String, T> elementLoader, Class<RL> classOfRL, SearchHandler<T, TR> searchHandler, RL exampleResponse, boolean filterByLanguage) {
+		Function<String, T> elementLoader, Class<RL> classOfRL, SearchHandler<T, TR> searchHandler, RL exampleResponse, boolean filterByLanguage, Class<? extends ParameterProvider>... extraParameters) {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/" + typeName);
 		endpoint.method(POST);
@@ -116,6 +122,9 @@ public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implement
 		endpoint.setMutating(false);
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
+		endpoint.addQueryParameters(PagingParametersImpl.class);
+		endpoint.addQueryParameters(SearchParametersImpl.class);
+		Arrays.stream(extraParameters).forEach(endpoint::addQueryParameters);
 		endpoint.exampleResponse(OK, exampleResponse, "Paged search result list.");
 		endpoint.exampleRequest(miscExamples.getSearchQueryExample());
 		endpoint.handler(rc -> {

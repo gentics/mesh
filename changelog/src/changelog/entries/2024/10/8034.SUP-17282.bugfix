@@ -1,0 +1,1 @@
+Core: A potential data loss on an edge case of node migration over several schema versions, including field name/type change, has been fixed.

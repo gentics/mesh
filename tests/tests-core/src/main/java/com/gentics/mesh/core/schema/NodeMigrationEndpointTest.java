@@ -19,10 +19,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Comparator;
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import org.junit.Test;
 
@@ -67,6 +64,7 @@ import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
@@ -78,7 +76,6 @@ import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
-import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -626,28 +623,24 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			node = nodeDao.create(folder("2015"), user(), versionA, project());
 			HibNodeFieldContainer englishContainer = tx.contentDao().createFieldContainer(node, english(), project().getLatestBranch(),
 				user());
-			englishContainer.createString(oldFieldName).setString("content");
-			englishContainer.createString("name").setString("someName");
+			englishContainer.createString(oldFieldName).setString("777");
+			englishContainer.createString("name").setString("a_name");
 			InternalActionContext ac = new InternalRoutingActionContextImpl(mockRoutingContext());
 			nodeDao.publish(node, ac, createBulkContext(), "en");
 			tx.success();
 		}
 
-		// 1. Drop random fields
-		SchemaUpdateRequest request = tx(() -> JsonUtil.readValue(node.getSchemaContainer().getLatestVersion().getJson(),
-			SchemaUpdateRequest.class));
-		List<FieldSchema> someFields = IntStream.range(0, request.getFields().size()).filter(i -> i % 2 == 0).mapToObj(i -> request.getFields().get(i)).collect(Collectors.toList());
-		request.getFields().removeAll(someFields);
-		adminCall(() -> client().updateSchema(schemaUuid, request, new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false)));
+		SchemaChangesListModel changes = new SchemaChangesListModel();
+		changes.getChanges().add(new SchemaChangeModel(SchemaChangeOperation.UPDATEFIELD, fieldName).setProperty(SchemaChangeModel.NAME_KEY, "i_should_be_number"));
+		adminCall(() -> client().applyChangesToSchema(schemaUuid, changes));
 
-		// 2. Add random fields
-		IntStream.range(0, someFields.size()).forEach(i -> {
-			if (i % 2 == 0) {
-				someFields.get(i).setName("bogus_" + i);
-			}
-		});
-		request.getFields().addAll(someFields);
-		adminCall(() -> client().updateSchema(schemaUuid, request, new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false)));
+		SchemaChangesListModel changes2 = new SchemaChangesListModel();
+		changes2.getChanges().add(new SchemaChangeModel(SchemaChangeOperation.CHANGEFIELDTYPE, "i_should_be_number").setProperty(SchemaChangeModel.TYPE_KEY, "number"));
+		adminCall(() -> client().applyChangesToSchema(schemaUuid, changes2));
+
+		SchemaChangesListModel changes3 = new SchemaChangesListModel();
+		changes3.getChanges().add(new SchemaChangeModel(SchemaChangeOperation.ADDFIELD, "newfield").setProperty(SchemaChangeModel.TYPE_KEY, "string"));
+		adminCall(() -> client().applyChangesToSchema(schemaUuid, changes3));
 
 		try (Tx tx = tx()) {
 			container = tx.schemaDao().findByUuid(schemaUuid);
@@ -664,6 +657,8 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertThat(contentDao.getFieldContainer(node, "en", project().getLatestBranch().getUuid(), ContainerType.PUBLISHED))
 				.as("Migrated skipping published")
 				.isOf(versionB).hasVersion("2.0");
+			assertThat(contentDao.getFieldContainer(node, "en", project().getLatestBranch().getUuid(), ContainerType.PUBLISHED).getNumber("i_should_be_number").getNumber().longValue())
+				.isEqualTo(777L);
 		}
 
 		JobListResponse status = adminCall(() -> client().findJobs());

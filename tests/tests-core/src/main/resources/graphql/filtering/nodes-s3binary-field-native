@@ -20,7 +20,7 @@
 	    schema: {is: folder}
 	    fields: {
 	      folder: {
-	        s3Binary: {s3binary:{key: { like: "%/s3" }}}
+	        s3Binary: {s3binary:{s3ObjectKey: { like: "%/s3" }}}
 	      }
 	    }
 	  }) {
