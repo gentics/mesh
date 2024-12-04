@@ -277,11 +277,12 @@ stage("Setup Build Environment") {
 
 			stage("Deploy") {
 				if (Boolean.valueOf(params.runDeploy) || Boolean.valueOf(params.runDeployTesting)) {
+					if (Boolean.valueOf(params.runDeployTesting)) {
+						version = branchName;
+						registryHost = registryHostTest;
+					}
+
 					if (Boolean.valueOf(params.runDocker)) {
-						if (Boolean.valueOf(params.runDeployTesting)) {
-							version = branchName;
-							registryHost = registryHostTest;
-						}
 						withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
 							sh 'docker login -u $repoUsername -p $repoPassword ' + registryHost
 
@@ -290,6 +291,22 @@ stage("Setup Build Environment") {
 							}
 
 							sh 'docker push ' + registryHost + '/gentics/mesh:' + version
+						}
+					}
+
+					if (Boolean.valueOf(params.runDeploy) {
+						dir(path: 'js') {
+							// Install dependencies
+							sh 'npm ci --no-audit --no-fund'
+
+							// Set the version for the packages
+							sh "npm run nx -- release version ${version}"
+
+							// Build all JS packages
+							sh 'npm run nx -- run-many --targets build'
+
+							// Publish the pacakges to artifactory
+							sh 'npm run nx -- release publish'
 						}
 					}
 				} else {
