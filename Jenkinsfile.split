@@ -397,6 +397,7 @@ stage("Setup Build Environment") {
 
 			stage("Deploy") {
 				if (env.BUILD_SKIPPED != "true" && (Boolean.valueOf(params.runDeploy) || Boolean.valueOf(params.runDeployTesting))) {
+					if (Boolean.valueOf(params.runDocker)) {
 						if (Boolean.valueOf(params.runDeployTesting)) {
 							version = branchName;
 							registryHost = registryHostTest;
