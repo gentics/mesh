@@ -294,7 +294,7 @@ stage("Setup Build Environment") {
 						}
 					}
 
-					if (Boolean.valueOf(params.runDeploy) {
+					if (Boolean.valueOf(params.runDeploy)) {
 						dir(path: 'js') {
 							// Install dependencies
 							sh 'npm ci --no-audit --no-fund'
