@@ -40,10 +40,8 @@ public class LicenseService {
 		}
 
 		try {
-			LicenseChecker.init(List.of(LicensedPlugin.values()), licensedPlugin, licenseKeyFile,
-					true,
-					true);
-			LicenseChecker.doLicenseCheck(true, null, null);
+			LicenseChecker.init(List.of(licensedPlugin.name()), licenseKeyFile);
+			LicenseChecker.checkLicense();
 		} catch (Exception exception) {
 			throw new MeshPluginException(
 					String.format("License check failed. Reason: %s", exception.getMessage()));

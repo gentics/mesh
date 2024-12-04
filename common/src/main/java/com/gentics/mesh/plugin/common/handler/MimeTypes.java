@@ -1,8 +1,5 @@
 package com.gentics.mesh.plugin.common.handler;
 
-import javax.ws.rs.core.MediaType;
-import java.nio.charset.StandardCharsets;
-
 /**
  * Predefined MIME types for plugin responses.
  *
@@ -16,20 +13,14 @@ import java.nio.charset.StandardCharsets;
 public interface MimeTypes {
 
 	/** Plain text without encoding information. */
-	String TEXT_PLAIN = MediaType.TEXT_PLAIN_TYPE
-		.toString();
+	String TEXT_PLAIN = "text/plain";
 
 	/** Plain text with UTF-8 encoding. */
-	String TEXT_PLAIN_UTF8 = MediaType.TEXT_PLAIN_TYPE
-		.withCharset(StandardCharsets.UTF_8.name())
-		.toString();
+	String TEXT_PLAIN_UTF8 = "text/plain;charset=UTF-8";
 
 	/** JSON without encoding information. */
-	String APPLICATION_JSON = MediaType.APPLICATION_JSON_TYPE
-		.toString();
+	String APPLICATION_JSON = "application/json";
 
 	/** JSON with UTF-8 encoding. */
-	String APPLICATION_JSON_UTF8 = MediaType.APPLICATION_JSON_TYPE
-		.withCharset(StandardCharsets.UTF_8.name())
-		.toString();
+	String APPLICATION_JSON_UTF8 = "application/json;charset=UTF-8";
 }
