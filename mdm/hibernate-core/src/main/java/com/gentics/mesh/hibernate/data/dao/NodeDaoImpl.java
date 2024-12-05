@@ -77,6 +77,7 @@ import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -573,6 +574,12 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 			Optional<FilterOperation<?>> maybeFilter, Optional<Set<HibNode>> maybeParents, Optional<HibSchema> maybeContentSchema, 
 			Optional<HibSchemaVersion> maybeContentSchemaVersion, Optional<List<String>> maybeContainerLanguages, Optional<UUID> maybeBranch, 
 			boolean noSchemaVersionExtractionFromJoins, boolean countOnly) {
+
+		// Early return for the requested children of empty parents set
+		if (maybeParents.filter(parents -> parents.isEmpty()).isPresent()) {
+			return Pair.of(Stream.empty(), 0L);
+		}
+
 		HibernateTxImpl tx = currentTransaction.getTx();
 		DatabaseConnector databaseConnector = tx.data().getDatabaseConnector();
 
@@ -587,7 +594,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 		NativeJoin permJoins = daoHelper.makePermissionJoins(StringUtils.EMPTY, user, perm, maybeCtype, maybeBranch, maybeFilterJoin.map(j -> j.getRawSqlJoins()).orElse(Collections.emptySet()));
 
 		// Make sorting table joins
-		NativeJoin sortJoins = daoHelper.mapSorting(paging, StringUtils.EMPTY, maybeBranch, maybeCtype, Stream.of(
+		Pair<NativeJoin, Map<String, SortOrder>> sortJoins = daoHelper.mapSorting(paging, StringUtils.EMPTY, maybeBranch, maybeCtype, Stream.of(
 				Stream.of(permJoins),
 				maybeFilterJoin.map(filterJoin -> filterJoin.getRawSqlJoins().stream()).orElse(Stream.empty())
 			).flatMap(Function.identity()).collect(Collectors.toSet()));
@@ -597,7 +604,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 
 		// If not blocked, try extacting schema version out of filter/sort joins
 		maybeContentSchemaVersion = maybeContentSchemaVersion
-				.or(() -> daoHelper.extractVersion(sortJoins, noSchemaVersionExtractionFromJoins))
+				.or(() -> daoHelper.extractVersion(sortJoins.getKey(), noSchemaVersionExtractionFromJoins))
 				.or(() -> maybeFilterJoin.flatMap(filterJoin -> filterJoin.getRawSqlJoins().stream()
 						.map(join -> daoHelper.extractVersion(join, noSchemaVersionExtractionFromJoins))
 						.filter(Optional::isPresent).map(Optional::get)
@@ -616,8 +623,8 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 		maybeParents.map(parents -> makeAlias(databaseConnector.maybeGetDatabaseEntityName(HibBranchNodeParent.class).get()) + ".*").ifPresent(columns::add);
 		maybeContainerLanguages.or(() -> maybeContentColumns.map(contentColumns -> Collections.emptyList())).map(yes -> makeAlias("CONTAINER") + ".*").ifPresent(columns::add);
 		maybeContentColumns.ifPresent(contentColumns -> streamContentSelectClause(databaseConnector, contentColumns, Optional.of(makeAlias("CONTENT")), true).forEach(columns::add));
-		if (!countOnly && PersistingRootDao.shouldSort(paging)) {
-			paging.getSort().keySet().stream()
+		if (!countOnly && !sortJoins.getValue().isEmpty()) {
+			sortJoins.getValue().keySet().stream()
 				.map(col -> maybeContainerLanguages.map(columnsExplicitlyRequested -> col).orElseGet(() -> databaseConnector.makeSortDefinition(col, Optional.empty())))
 				.filter(col -> columns.stream().noneMatch(acol -> col.equalsIgnoreCase(acol)))
 				.forEach(columns::add);
@@ -637,7 +644,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 				maybeFilterJoin.map(filterJoin -> filterJoin.getRawSqlJoins().stream()).orElse(Stream.empty()),
 				maybeParentJoin.map(filterJoin -> Stream.of(filterJoin)).orElse(Stream.empty()),
 				maybeContentJoin.map(filterJoin -> Stream.of(filterJoin)).orElse(Stream.empty()),
-				Stream.of(sortJoins)
+				Stream.of(sortJoins.getKey())
 			).flatMap(Function.identity())
 				.filter(j -> !Objects.isNull(j))
 				.collect(Collectors.toSet());
@@ -656,8 +663,8 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 				+ (wheres.size() > 0 ? wheres.stream().collect(Collectors.joining(" AND ", " AND ", StringUtils.EMPTY)) : StringUtils.EMPTY));
 
 		// Fill sorting, if applicable
-		if (!countOnly && PersistingRootDao.shouldSort(paging)) {
-			String clause = paging.getSort().entrySet().stream()
+		if (!countOnly && !sortJoins.getValue().isEmpty()) {
+			String clause = sortJoins.getValue().entrySet().stream()
 					.map(entry -> {
 						String alias = databaseConnector.findSortAlias(entry.getKey());
 						return maybeContainerLanguages
@@ -684,7 +691,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 		query.setParameter("project", project.getId());
 
 		// Add an extra parent edge entity to fetch, if applicable
-		maybeParents.filter(parents -> !parents.isEmpty()).ifPresent(unused -> query.addEntity(HibBranchNodeParent.class));
+		maybeParents.ifPresent(unused -> query.addEntity(HibBranchNodeParent.class));
 
 		// Add an extra container edge entity to fetch, if applicable
 		maybeContainerLanguages.flatMap(unused -> maybeParents).ifPresent(unused -> query.addEntity(HibNodeFieldContainerEdgeImpl.class));

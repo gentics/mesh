@@ -15,7 +15,6 @@ import java.time.Instant;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
@@ -62,7 +61,6 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaElement;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
-import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibCreatorTracking;
 import com.gentics.mesh.core.data.user.HibEditorTracking;
@@ -80,7 +78,6 @@ import com.gentics.mesh.database.CurrentTransaction;
 import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.database.HibernateTxImpl;
 import com.gentics.mesh.database.connector.DatabaseConnector;
-import com.gentics.mesh.unhibernate.Select;
 import com.gentics.mesh.graphql.filter.ListFilter;
 import com.gentics.mesh.graphql.filter.NodeReferenceFilter;
 import com.gentics.mesh.graphql.filter.operation.EntityReferenceOperationOperand;
@@ -128,7 +125,6 @@ import com.gentics.mesh.hibernate.data.domain.HibUnmanagedFieldContainer;
 import com.gentics.mesh.hibernate.data.domain.HibUserImpl;
 import com.gentics.mesh.hibernate.event.EventFactory;
 import com.gentics.mesh.hibernate.util.HibernateFilter;
-import com.gentics.mesh.hibernate.util.HibernateUtil;
 import com.gentics.mesh.hibernate.util.JpaUtil;
 import com.gentics.mesh.hibernate.util.TypeInfoUtil;
 import com.gentics.mesh.hibernate.util.UuidGenerator;
@@ -139,6 +135,7 @@ import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.query.NativeFilterJoin;
 import com.gentics.mesh.query.NativeJoin;
 import com.gentics.mesh.query.ReferencedNodesFilterJoin;
+import com.gentics.mesh.unhibernate.Select;
 import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.UUIDUtil;
 import com.google.auto.factory.AutoFactory;
@@ -443,7 +440,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 		Optional<NativeJoin> maybePermJoins = maybePerm.map(perm -> makePermissionJoins(StringUtils.EMPTY, user, perm, Optional.empty(), Optional.ofNullable(UUIDUtil.toJavaUuid(branchUuid)), maybeFilterJoin.map(j -> j.getRawSqlJoins()).orElse(Collections.emptySet())));
 
 		// Make sort joins
-		NativeJoin sortJoins = mapSorting(pagingInfo, StringUtils.EMPTY, Optional.ofNullable(UUIDUtil.toJavaUuid(branchUuid)), Optional.empty(), Stream.of(
+		Pair<NativeJoin, Map<String, SortOrder>> sortJoins = mapSorting(pagingInfo, StringUtils.EMPTY, Optional.ofNullable(UUIDUtil.toJavaUuid(branchUuid)), Optional.empty(), Stream.of(
 				maybePermJoins.stream(),
 				maybeFilterJoin.map(filterJoin -> filterJoin.getRawSqlJoins().stream()).orElseGet(() -> Stream.empty())
 			).flatMap(Function.identity()).collect(Collectors.toSet()));
@@ -457,8 +454,8 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 		select.setTableName(databaseConnector.maybeGetPhysicalTableName(domainClass).get() + " " + myAlias);
 		List<String> columns = new ArrayList<>();
 		columns.addAll(domainColumns);
-		if (!countOnly && PersistingRootDao.shouldSort(pagingInfo)) {
-			pagingInfo.getSort().keySet().stream()
+		if (!countOnly && !sortJoins.getValue().isEmpty()) {
+			sortJoins.getValue().keySet().stream()
 				.filter(col -> columns.stream().noneMatch(acol -> col.equalsIgnoreCase(acol)))
 				.forEach(columns::add);
 		}
@@ -469,7 +466,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 				maybePermJoins.stream(),
 				maybeRootJoin.map(filterJoin -> Stream.of(filterJoin)).orElse(Stream.empty()),
 				maybeFilterJoin.map(filterJoin -> filterJoin.getRawSqlJoins().stream()).orElseGet(() -> Stream.empty()),
-				Stream.of(sortJoins)
+				Stream.of(sortJoins.getKey())
 			).flatMap(Function.identity())
 				.filter(j -> !Objects.isNull(j)).collect(Collectors.toSet());
 
@@ -480,8 +477,8 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 		String wheres = allJoins.stream().flatMap(join -> join.getWhereClauses().stream()).collect(Collectors.joining(" AND "));
 		select.addRestriction(wheres + maybeFilterJoin.map(filterJoin -> (StringUtils.isBlank(wheres) ? StringUtils.EMPTY : " AND ") + filterJoin.getSqlFilter()).orElse(StringUtils.EMPTY));
 
-		if (!countOnly && PersistingRootDao.shouldSort(pagingInfo)) {
-			select.setOrderBy(" order by " + pagingInfo.getSort().entrySet().stream().map(entry -> {
+		if (!countOnly && !sortJoins.getValue().isEmpty()) {
+			select.setOrderBy(" order by " + sortJoins.getValue().entrySet().stream().map(entry -> {
 				return databaseConnector.findSortAlias(entry.getKey()) + " " + entry.getValue().getValue();
 			}).collect(Collectors.joining(", ")));
 		}
@@ -568,15 +565,14 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 	 * @param sorting
 	 * @return
 	 */
-	<S extends SortingParameters> NativeJoin mapSorting(S sorting, String ownerAlias, Optional<UUID> maybeBranch, Optional<ContainerType> maybeContainerType, Set<NativeJoin> otherJoins) {
+	<S extends SortingParameters> Pair<NativeJoin, Map<String, SortOrder>> mapSorting(S sorting, String ownerAlias, Optional<UUID> maybeBranch, Optional<ContainerType> maybeContainerType, Set<NativeJoin> otherJoins) {
 		NativeJoin ansiJoin = new NativeJoin();
 		if (!PersistingRootDao.shouldSort(sorting)) {
-			return ansiJoin;
+			return Pair.of(ansiJoin, Collections.emptyMap());
 		}
 		HibQueryFieldMapper mapper = daoCollection.get().maybeFindFieldMapper(domainClass).get();
 		Map<String, SortOrder> items = sorting.getSort();
-		sorting.clearSort();
-		items.entrySet().stream().forEach(entry -> {
+		items = items.entrySet().stream().map(entry -> {
 			String key = mapper.mapGraphQlFilterFieldName(entry.getKey());
 			String[] keyParts = key.split("\\.");
 			// ALIAS: <owner>
@@ -672,9 +668,9 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 					break;
 				}	
 			}
-			sorting.putSort(key, entry.getValue());
-		});
-		return ansiJoin;
+			return Pair.of(key, entry.getValue());
+		}).collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+		return Pair.of(ansiJoin, items);
 	}
 
 	/**
