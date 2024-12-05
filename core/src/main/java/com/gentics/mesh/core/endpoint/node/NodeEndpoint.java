@@ -252,7 +252,6 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		fieldGet.addQueryParameters(ImageManipulationParametersImpl.class);
 		fieldGet.addQueryParameters(VersioningParametersImpl.class);
 		fieldGet.method(GET);
-		fieldGet.produces(APPLICATION_OCTET_STREAM);
 		fieldGet.description(
 			"Download the binary field with the given name. You can use image query parameters for crop and resize if the binary data represents an image.");
 		fieldGet.blockingHandler(rc -> {
