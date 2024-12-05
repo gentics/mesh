@@ -31,8 +31,8 @@ properties([
 ])
 
 final def gitCommitTag         = '[Jenkins | ' + env.JOB_BASE_NAME + ']';
-final def splits = 20;
-final def runs = 20;
+final def splits = 5;
+final def runs = 5;
 final def registryHostStaging	   = "push.docker.gentics.com/docker-products";
 final def registryHostTest	   = "push.docker.gentics.com/docker-snapshots";
 
