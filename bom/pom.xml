@@ -42,6 +42,8 @@
 		<hazelcast-hibernate.version>5.2.0</hazelcast-hibernate.version>
 		<bytebuddy.version>1.12.9</bytebuddy.version>
 		<ehcache.version>3.10.8</ehcache.version>
+		<!-- Should correlate to the dependency of ehcache -->
+		<jaxb.runtime.version>2.3.9</jaxb.runtime.version>
 		<handlebars.version>4.3.1</handlebars.version>
 		<hsqldb.version>2.7.3</hsqldb.version>
 	</properties>
@@ -793,6 +795,11 @@
 				<groupId>org.ehcache</groupId>
 				<artifactId>ehcache</artifactId>
 				<version>${ehcache.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.glassfish.jaxb</groupId>
+				<artifactId>jaxb-runtime</artifactId>
+				<version>${jaxb.runtime.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>net.bytebuddy</groupId>
