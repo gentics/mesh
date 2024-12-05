@@ -128,6 +128,11 @@
 				<artifactId>commons-beanutils</artifactId>
 				<version>1.9.4</version>
 			</dependency>
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-compress</artifactId>
+				<version>1.26.2</version>
+			</dependency>
 
 			<!-- HTTP Client -->
 			<dependency>
