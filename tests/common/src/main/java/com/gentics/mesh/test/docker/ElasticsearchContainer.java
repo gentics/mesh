@@ -45,6 +45,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 		}
 
 		addEnv("discovery.type", "single-node");
+		addEnv("ES_JAVA_OPTS", "-Xms1g -Xmx1g");
 		withTmpFs(Collections.singletonMap("/usr/share/elasticsearch/data", "rw,size=64m"));
 		// addEnv("xpack.security.enabled", "false");
 		withExposedPorts(9200);
