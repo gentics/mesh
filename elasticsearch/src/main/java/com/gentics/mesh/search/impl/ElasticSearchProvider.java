@@ -97,23 +97,6 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	@Override
 	public ElasticSearchProvider init() {
-		if (options.getSearchOptions().getComplianceMode().equals(ComplianceMode.ES_8)) {
-			client.settings(new JsonObject("{\n"
-					+ "    \"persistent\": {\n"
-					+ "        \"action.destructive_requires_name\": false\n"
-					+ "    }\n"
-					+ "}"))
-			.async()
-			.doOnSuccess(success -> {
-				log.info("Elasticsearch settings were updated");
-				if (log.isDebugEnabled()) {
-					log.debug(success.toString());
-				}
-			})
-			.doOnError(error -> {
-				log.error("Could not update ES settings", error);
-			}).subscribe();
-		}
 		return this;
 	}
 

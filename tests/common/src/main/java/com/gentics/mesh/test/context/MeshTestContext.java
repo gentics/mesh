@@ -51,6 +51,7 @@ import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
 import com.gentics.mesh.crypto.KeyStoreHelper;
 import com.gentics.mesh.dagger.MeshComponent;
+import com.gentics.mesh.dagger.module.SearchProviderModule;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -66,6 +67,7 @@ import com.gentics.mesh.rest.monitoring.MonitoringRestClient;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.TrackingSearchProviderImpl;
 import com.gentics.mesh.search.verticle.ElasticsearchProcessVerticle;
+import com.gentics.mesh.test.ElasticsearchTestMode;
 import com.gentics.mesh.test.MeshCoreOptionChanger;
 import com.gentics.mesh.test.MeshInstanceProvider;
 import com.gentics.mesh.test.MeshTestActions;
@@ -84,7 +86,10 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.http.ClientAuth;
 import io.vertx.core.json.JsonObject;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
 
 public class MeshTestContext implements TestRule {
 
@@ -806,6 +811,15 @@ public class MeshTestContext implements TestRule {
 					searchOptions.setUrl(UNREACHABLE_HOST);
 				} else {
 					searchOptions.setUrl("http://" + elasticsearch.getHost() + ":" + elasticsearch.getMappedPort(9200));
+				}
+				if (settings.elasticsearch() == ElasticsearchTestMode.CONTAINER_ES8) {
+					Thread.sleep(1000);
+					SearchProviderModule.searchClient(meshOptions).settings(new JsonObject("{\n"
+							+ "    \"persistent\": {\n"
+							+ "        \"action.destructive_requires_name\": false\n"
+							+ "    }\n"
+							+ "}"))
+					.sync();
 				}
 				break;
 			case CONTAINER_ES6_TOXIC:
