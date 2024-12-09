@@ -24,6 +24,12 @@
     "@angular/core": "18.0.2",
     "rxjs": "^6.6.7"
   },
+  "optionalDependencies": {
+    "@nx/nx-darwin-arm64": "18.0.2",
+    "@nx/nx-darwin-x64": "18.0.2",
+    "@nx/nx-linux-x64-gnu": "18.0.2",
+    "@nx/nx-win32-x64-msvc": "18.0.2"
+  },
   "devDependencies": {
     "@angular-devkit/architect": "0.1800.3",
     "@angular-devkit/build-angular": "18.0.3",
