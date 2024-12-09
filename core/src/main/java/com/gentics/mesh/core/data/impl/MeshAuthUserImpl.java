@@ -86,7 +86,7 @@ public class MeshAuthUserImpl implements MeshAuthUser {
 
 			HibNode reference = delegate.getReferencedNode();
 			if (reference != null) {
-				user.put("nodeReference", reference.getUuid());
+				user.put("nodeReference", tx.userDao().findByUuid(delegate.getUuid()).getReferencedNode().getUuid());
 			}
 			return user;
 		});
