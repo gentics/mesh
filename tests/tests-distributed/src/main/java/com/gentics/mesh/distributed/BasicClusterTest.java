@@ -16,10 +16,10 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,11 +51,13 @@ import com.gentics.mesh.parameter.client.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.category.ClusterTests;
 import com.gentics.mesh.test.context.MeshTestContext.MeshTestInstance;
 import com.gentics.mesh.test.util.TestUtils;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 
+@Category(ClusterTests.class)
 @MeshTestSetting(testSize = FULL, startServer = true, clusterMode = true, clusterName = "BasicClusterTest", clusterInstances = 2)
 public class BasicClusterTest extends AbstractMeshClusteringTest {
 

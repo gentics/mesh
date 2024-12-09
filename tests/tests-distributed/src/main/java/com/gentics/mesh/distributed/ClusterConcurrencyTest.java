@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,11 +25,13 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.category.ClusterTests;
 import com.gentics.mesh.test.context.MeshTestContext.MeshTestInstance;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 
+@Category(ClusterTests.class)
 @MeshTestSetting(testSize = FULL, startServer = true, clusterMode = true, clusterName = "ClusterConcurrencyTest", clusterInstances = 3)
 public class ClusterConcurrencyTest extends AbstractMeshClusteringTest {
 

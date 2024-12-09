@@ -5,16 +5,19 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.category.ClusterTests;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
 
-@MeshTestSetting(testSize = FULL, startServer = true, clusterMode = true)
+@Category(ClusterTests.class)
+@MeshTestSetting(testSize = FULL, startServer = true, clusterMode = true, clusterInstances = 1, clusterName = "WebRootClusteredEndpointTest")
 public class WebRootClusteredEndpointTest extends AbstractMeshTest {
 
     @Test

@@ -8,17 +8,20 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gentics.mesh.core.rest.admin.cluster.ClusterInstanceInfo;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorMasterResponse;
 import com.gentics.mesh.distributed.AbstractMeshClusteringTest;
 import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.category.ClusterTests;
 import com.gentics.mesh.test.context.MeshTestContext.MeshTestInstance;
 
 /**
  * Test cases for the {@link MasterElector}
  */
+@Category(ClusterTests.class)
 @MeshTestSetting(testSize = FULL, startServer = true, clusterMode = true, clusterName = "MasterElectorTest")
 public class MasterElectorTest extends AbstractMeshClusteringTest {
 	/**
