@@ -41,6 +41,11 @@ public class SQLServerConnector extends AbstractEnterpriseDatabaseConnector {
 	}
 
 	@Override
+	public String renderNonContentColumn(String column) {
+		return column.contains("-") ? renderColumnUnsafe(column, false) : renderColumnUnsafe(column.toLowerCase(), true);
+	}
+
+	@Override
 	public int getQueryParametersCountLimit() {
 		return 2048; //2100 is a lie
 	}
