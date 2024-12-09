@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "3.0.0-SNAPSHOT"
+version: "3.0.0"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -706,7 +706,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "75a754663d3440238f7fe9f6b27a89a7"
+                            "uuid" : "b71dc7f355cc4d7da1ab6b4c939b45de"
                           } ]
                         }
             responses: 
@@ -1354,7 +1354,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "8663a57d45bb46a3ac1ebd5c36ce1bd8"
+                            "uuid" : "b2fb509e1c6045a990943b919a879a6d"
                           } ]
                         }
             responses: 
@@ -1893,7 +1893,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "a8a0ec6df3384603bd4a69c72b38487c"
+                            "uuid" : "ac6878db59d24a0b9f65ce4fffe90d3e"
                           } ]
                         }
             responses: 
@@ -2868,7 +2868,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "ce94e60ae9c443b8af6c07d15ef1421f"
+                            "uuid" : "c9460a1ac0f04b49963cd07f370283ba"
                           } ]
                         }
             responses: 
@@ -3446,6 +3446,12 @@ mediaType: application/json
         post: 
             description: Update the schema.
             queryParameters: 
+                strictValidation: 
+                    description: Validate the Elasticsearch settings in the schema. When this parameter is set, a schema update or creation will fail, when the respective Elasticsearch index cannot be created.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    default: false
                 updateAssignedBranches: 
                     description: Update the schema version for all branches which already utilize the schema.
                     type: boolean
@@ -3458,12 +3464,6 @@ mediaType: application/json
                     required: false
                     repeat: false
                     example: summerBranch,winterBranch
-                strictValidation: 
-                    description: Validate the Elasticsearch settings in the schema. When this parameter is set, a schema update or creation will fail, when the respective Elasticsearch index cannot be created.
-                    type: boolean
-                    required: false
-                    repeat: false
-                    default: false
             body: 
                 application/json: 
                     schema: |
@@ -3897,7 +3897,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "bf05ce13e5ef49efba5464be74d669db"
+                            "uuid" : "61b0e450eda2435588781481b0563488"
                           } ]
                         }
             responses: 
@@ -4571,7 +4571,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "513b419f93ea4af6812a6076214b8b56"
+                            "uuid" : "980fc0d572bf43608d3836e33f14f14b"
                           } ]
                         }
             responses: 
@@ -4711,86 +4711,6 @@ mediaType: application/json
                                 {
                                   "message" : "I18n message"
                                 }
-    /cluster/config: 
-        get: 
-            description: Loads the cluster configuration.
-            responses: 
-                "200": 
-                    description: Currently active cluster configuration.
-                    body: 
-                        application/json: 
-                            schema: |
-                                | Property | Mandatory | Type | Description |
-                                |----------|-----------|------|-------------|
-                                | readQuorum | false | integer | Global read quorum setting. |
-                                | servers | false | array | List of server configurations. |
-                                | writeQuorum | false | string | Global write quorum setting. Allowed values are numbers and &#x27;all&#x27;, &#x27;majority&#x27;. |
-                            example: |
-                                {
-                                  "servers" : [ {
-                                    "name" : "master-1",
-                                    "role" : "MASTER"
-                                  }, {
-                                    "name" : "replica-1",
-                                    "role" : "REPLICA"
-                                  }, {
-                                    "name" : "replica-2",
-                                    "role" : "REPLICA"
-                                  } ],
-                                  "writeQuorum" : "majority",
-                                  "readQuorum" : 1
-                                }
-        post: 
-            description: Update the cluster configuration.
-            body: 
-                application/json: 
-                    schema: |
-                        | Property | Mandatory | Type | Description |
-                        |----------|-----------|------|-------------|
-                        | readQuorum | false | integer | Global read quorum setting. |
-                        | servers | false | array | List of server configurations. |
-                        | writeQuorum | false | string | Global write quorum setting. Allowed values are numbers and &#x27;all&#x27;, &#x27;majority&#x27;. |
-                    example: |
-                        {
-                          "servers" : [ {
-                            "name" : "master-1",
-                            "role" : "MASTER"
-                          }, {
-                            "name" : "replica-1",
-                            "role" : "REPLICA"
-                          }, {
-                            "name" : "replica-2",
-                            "role" : "REPLICA"
-                          } ],
-                          "writeQuorum" : "1",
-                          "readQuorum" : 1
-                        }
-            responses: 
-                "200": 
-                    description: Updated cluster configuration.
-                    body: 
-                        application/json: 
-                            schema: |
-                                | Property | Mandatory | Type | Description |
-                                |----------|-----------|------|-------------|
-                                | readQuorum | false | integer | Global read quorum setting. |
-                                | servers | false | array | List of server configurations. |
-                                | writeQuorum | false | string | Global write quorum setting. Allowed values are numbers and &#x27;all&#x27;, &#x27;majority&#x27;. |
-                            example: |
-                                {
-                                  "servers" : [ {
-                                    "name" : "master-1",
-                                    "role" : "MASTER"
-                                  }, {
-                                    "name" : "replica-1",
-                                    "role" : "REPLICA"
-                                  }, {
-                                    "name" : "replica-2",
-                                    "role" : "REPLICA"
-                                  } ],
-                                  "writeQuorum" : "majority",
-                                  "readQuorum" : 1
-                                }
     /cluster/status: 
         get: 
             description: Loads the cluster status information.
@@ -4921,47 +4841,6 @@ mediaType: application/json
                                     "repairAction" : "DELETE"
                                   } ]
                                 }
-    /coordinator/config: 
-        get: 
-            description: Returns the currently active coordination configuration.
-            responses: 
-                "200": 
-                    description: The currently active coordination config on this instance.
-                    body: 
-                        application/json: 
-                            schema: |
-                                | Property | Mandatory | Type | Description |
-                                |----------|-----------|------|-------------|
-                                | mode | false | string | Coordinator mode which can be set to DISABLED to disable coordination, to CUD to handle only modifying requests or to ALL to handle all requests. |
-                            example: |
-                                {
-                                  "mode" : "CUD"
-                                }
-        post: 
-            description: Update the coordinator configuration of this instance. Note that the updated config will not be persisted.
-            body: 
-                application/json: 
-                    schema: |
-                        | Property | Mandatory | Type | Description |
-                        |----------|-----------|------|-------------|
-                        | mode | false | string | Coordinator mode which can be set to DISABLED to disable coordination, to CUD to handle only modifying requests or to ALL to handle all requests. |
-                    example: |
-                        {
-                          "mode" : "DISABLED"
-                        }
-            responses: 
-                "200": 
-                    description: The currently active config on this instance.
-                    body: 
-                        application/json: 
-                            schema: |
-                                | Property | Mandatory | Type | Description |
-                                |----------|-----------|------|-------------|
-                                | mode | false | string | Coordinator mode which can be set to DISABLED to disable coordination, to CUD to handle only modifying requests or to ALL to handle all requests. |
-                            example: |
-                                {
-                                  "mode" : "CUD"
-                                }
     /coordinator/master: 
         get: 
             description: Returns information on the elected coordinator master.
@@ -4976,6 +4855,7 @@ mediaType: application/json
                                 | host | false | string | Hostname of the coordination master instance. |
                                 | name | false | string | Cluster node name of the coordination master. |
                                 | port | false | integer | HTTP port of the coordination master Gentics Mesh API. |
+                                | uuid | false | string | UUID of the coordination master instance. |
                             example: |
                                 {
                                   "name" : "gentics-mesh-1",
@@ -7719,19 +7599,20 @@ mediaType: application/json
                                 | databaseVendor | false | string | Used database implementation vendor name. |
                                 | databaseVersion | false | string | Used database implementation version. |
                                 | meshNodeName | false | string | Node name of the Gentics Mesh instance. |
+                                | meshRevision | false | string | Mesh revision name. |
                                 | meshVersion | false | string | Gentics Mesh Version string. |
                                 | searchVendor | false | string | Used search implementation vendor name. |
                                 | searchVersion | false | string | Used search implementation version. |
                                 | vertxVersion | false | string | Used Vert.x version. |
                             example: |
                                 {
-                                  "meshVersion" : "3.0.0-SNAPSHOT",
+                                  "meshVersion" : "3.0.0",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "mariadb",
                                   "databaseVersion" : "10.7",
                                   "searchVendor" : "elasticsearch",
                                   "searchVersion" : "2.4.3",
-                                  "vertxVersion" : "4.5.7"
+                                  "vertxVersion" : "4.5.11"
                                 }
     /raml: 
         get: 
@@ -10470,7 +10351,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "39d16738842c4d5fa1df55690d4970a7"
+                            "uuid" : "c951e191bd874aeeaf51fb6c57aa8373"
                           } ]
                         }
             responses: 
@@ -11979,7 +11860,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "16cb95658a9745d99d490a692b526137"
+                            "uuid" : "b007c6afdb404870b59c2d3e3e7eefd0"
                           } ]
                         }
             responses: 
@@ -12795,7 +12676,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "614ca36eee2941648a05d1cf53ae9c44"
+                            "uuid" : "98cc521f753a46a5a631afc338fa3ec0"
                           } ]
                         }
             responses: 
@@ -14584,7 +14465,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "876749991ec240d08323f3686839aeb4"
+                            "uuid" : "0def6d90b7924904964943908f80b511"
                           } ]
                         }
             responses: 

@@ -22,4 +22,9 @@
 | integer
 | HTTP port of the coordination master Gentics Mesh API.
 
+| uuid
+| false
+| string
+| UUID of the coordination master instance.
+
 |======

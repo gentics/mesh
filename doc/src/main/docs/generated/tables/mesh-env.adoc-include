@@ -8,14 +8,14 @@
 | *MESH_DB_SYNC_WRITES*
 | Override the database sync writes flag.
 
+| *MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET*
+| Control whether a forced password reset should be triggered when creating the initial admin user. Default: true
+
 | *MESH_VERTX_EVENT_BUS_CHECK_INTERVAL*
 | Override the Vert.x eventBus check interval in ms.
 
 | *MESH_VERTX_EVENT_BUS_ERROR_THRESHOLD*
 | Override the Vert.x eventBus error threshold in ms.
-
-| *MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET*
-| Control whether a forced password reset should be triggered when creating the initial admin user. Default: true
 
 | *MESH_DEBUGINFO_LOG_PATTERN*
 | Override the log pattern
@@ -26,14 +26,14 @@
 | *MESH_PLUGIN_TIMEOUT*
 | Override the configured plugin timeout.
 
+| *MESH_LANGUAGES_FILE_PATH*
+| Override the path to the optional languages file
+
 | *MESH_S3_CORS_ALLOWED_METHODS*
 | Override the configured AWS S3 CORS allowed methods.
 
 | *MESH_GRAPHQL_SCHEMA_CACHE_SIZE*
 | Override the configured graphQl schema cache size.
-
-| *MESH_LANGUAGES_FILE_PATH*
-| Override the path to the optional languages file
 
 | *MESH_HIBERNATE_GENERATE_STATISTICS*
 | Set whether hibernate should generate statistics.
@@ -62,11 +62,11 @@
 | *MESH_HTTPS_PORT*
 | Override the configured server https port.
 
-| *MESH_BINARY_METADATA_WHITELIST*
-| Override the metadata whitelist
-
 | *MESH_ELASTICSEARCH_PREFIX*
 | Override the configured elasticsearch prefix.
+
+| *MESH_BINARY_METADATA_WHITELIST*
+| Override the metadata whitelist
 
 | *MESH_DEBUGINFO_LOG_FOLDER*
 | Override the path to the debug info log folder
@@ -116,9 +116,6 @@
 | *MESH_ELASTICSEARCH_HOSTNAME_VERIFICATION*
 | Override the configured hostname verification flag.
 
-| *MESH_CLUSTER_TOPOLOGY_LOCK_DELAY*
-| Override the cluster topology lock delay in ms.
-
 | *MESH_IMAGE_MAX_HEIGHT*
 | Override the max height for image resize operations.
 
@@ -155,9 +152,6 @@
 | *MESH_VERTX_ORDERED_BLOCKING_HANDLERS*
 | Override the configured Vert.x blocking handlers ordering setting.
 
-| *MESH_CLUSTER_TOPOLOGY_CHANGE_READONLY*
-| Override the topology change readonly flag.
-
 | *MESH_STORAGE_DISK_QUOTA_READ_ONLY_THRESHOLD*
 | Overwrite the disk quota ready only threshold.
 
@@ -190,9 +184,6 @@
 
 | *MESH_UPDATECHECK*
 | Override the configured updatecheck flag.
-
-| *MESH_CLUSTER_COORDINATOR_MODE*
-| Override the cluster coordinator mode.
 
 | *MESH_S3_BINARY_BUCKET*
 | Override the configured AWS S3 bucket.
@@ -235,9 +226,6 @@
 
 | *MESH_CLUSTER_COORDINATOR_REGEX*
 | Override the cluster coordinator regex.
-
-| *MESH_CLUSTER_TOPOLOGY_LOCK_TIMEOUT*
-| Override the cluster topology lock timeout in ms.
 
 | *MESH_S3_CORS_ALLOWED_HEADERS*
 | Override the configured AWS S3 CORS allowed headers.
@@ -386,11 +374,11 @@
 | *MESH_ELASTICSEARCH_SYNC_BATCH_SIZE*
 | Override the search sync batch size
 
-| *MESH_HTTP_ENABLE*
-| Override the configured http server flag.
-
 | *MESH_LIVE_PATH*
 | Path to the mesh live file.
+
+| *MESH_HTTP_ENABLE*
+| Override the configured http server flag.
 
 | *MESH_HTTP_PORT*
 | Override the configured server http port.
@@ -434,9 +422,6 @@
 | *MESH_ELASTICSEARCH_RETRY_INTERVAL*
 | Override the retry interval.
 
-| *MESH_CLUSTER_COORDINATOR_TOPOLOGY*
-| Override the cluster coordinator topology management mode.
-
 | *MESH_VERTX_WORKER_POOL_SIZE*
 | Override the configured Vert.x worker pool size.
 
@@ -458,17 +443,17 @@
 | *MESH_GRAPHQL_ASYNC_WAIT_TIMEOUT*
 | Override the configured graphQl async wait timeout.
 
-| *MESH_IMAGE_CACHE_DIRECTORY*
-| Override the path for image cache directory.
-
 | *MESH_AUTH_JWT_ALGO*
 | Override the configured algorithm which is used to sign the JWT.
 
-| *MESH_VERTX_EVENT_POOL_SIZE*
-| Override the configured Vert.x event pool size.
+| *MESH_IMAGE_CACHE_DIRECTORY*
+| Override the path for image cache directory.
 
 | *MESH_HTTP_SERVER_MAX_FORM_ATTRIBUTE_SIZE*
 | Override the max form attribute size
+
+| *MESH_VERTX_EVENT_POOL_SIZE*
+| Override the configured Vert.x event pool size.
 
 | *MESH_HIBERNATE_JDBC_BATCH_SIZE*
 | Set batch size. Recommended values are between 5 and 30

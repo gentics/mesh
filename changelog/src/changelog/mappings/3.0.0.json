@@ -1,0 +1,13 @@
+{
+  "changeLogEntryFileNames": [
+    "7970.GPU-1800.enhancement",
+    "8075.enhancement",
+    "8020.GPU-1808.enhancement",
+    "7895.GPU-1579.feature",
+    "7980.GPU-1809.enhancement",
+    "7885.GPU-1625.enhancement"
+  ],
+  "version": "3.0.0",
+  "date": "09.12.2024",
+  "genericProperties": {}
+}
