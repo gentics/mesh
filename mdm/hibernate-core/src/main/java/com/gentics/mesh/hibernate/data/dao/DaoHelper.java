@@ -611,7 +611,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 						String localAlias = makeAlias(localName);
 						ansiJoin.addJoin(databaseConnector.maybeGetPhysicalTableName(
 								HibMicronodeFieldEdgeImpl.class).get(), localAlias, 
-								new String[] {alias + "." + columnName, alias + "." + databaseConnector.renderColumn(CommonContentColumn.DB_UUID)}, new String[] {databaseConnector.renderColumn(CommonContentColumn.DB_UUID), databaseConnector.renderNonContentColumn("containerUuid")}, 
+								new String[] {alias + "." + columnName, alias + "." + databaseConnector.renderColumn(CommonContentColumn.DB_UUID)}, new String[] {databaseConnector.renderNonContentColumn("dbUuid"), databaseConnector.renderNonContentColumn("containerUuid")}, 
 								JoinType.LEFT, alias);
 						// ALIAS: <owner_>content_<field>_
 						alias = localAlias;
@@ -625,7 +625,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 						localAlias = makeAlias(localName);
 						ansiJoin.addJoin(databaseConnector.maybeGetPhysicalTableName(
 								HibBinaryFieldEdgeImpl.class).get(), localAlias, 
-								new String[] {alias + "." + columnName, alias + "." + databaseConnector.renderColumn(CommonContentColumn.DB_UUID)}, new String[] {databaseConnector.renderColumn(CommonContentColumn.DB_UUID), databaseConnector.renderNonContentColumn("containerUuid")}, 
+								new String[] {alias + "." + columnName, alias + "." + databaseConnector.renderColumn(CommonContentColumn.DB_UUID)}, new String[] {databaseConnector.renderNonContentColumn("dbUuid"), databaseConnector.renderNonContentColumn("containerUuid")}, 
 								JoinType.LEFT, alias);
 						// ALIAS: <owner_>content_<field>_
 						alias = localAlias;
@@ -636,7 +636,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 						localAlias = makeAlias(localName);
 						ansiJoin.addJoin(databaseConnector.maybeGetPhysicalTableName(
 								HibS3BinaryFieldEdgeImpl.class).get(), localAlias, 
-								new String[] {alias + "." + columnName, alias + "." + databaseConnector.renderColumn(CommonContentColumn.DB_UUID)}, new String[] {databaseConnector.renderColumn(CommonContentColumn.DB_UUID), databaseConnector.renderNonContentColumn("containerUuid")}, 
+								new String[] {alias + "." + columnName, alias + "." + databaseConnector.renderColumn(CommonContentColumn.DB_UUID)}, new String[] {databaseConnector.renderNonContentColumn("dbUuid"), databaseConnector.renderNonContentColumn("containerUuid")}, 
 								JoinType.LEFT, alias);
 						// ALIAS: <owner_>content_<field>_
 						alias = localAlias;
@@ -1376,7 +1376,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 						sb.append(listAlias).append(".").append(databaseConnector.renderNonContentColumn("containerUuid")).append(" = ").append(ownerAlias).append(makeAlias("CONTENT"))
 								.append(".").append(databaseConnector.renderColumn(CommonContentColumn.DB_UUID));
 						sb.append(" AND ").append(listAlias).append(".").append(databaseConnector.renderNonContentColumn("listUuid")).append(" = ").append(ownerAlias).append(makeAlias("CONTENT"))
-								.append(".").append(databaseConnector.renderNonContentColumn(localFieldName + "-list." + itemType));
+								.append(".").append(databaseConnector.renderColumnUnsafe(localFieldName + "-list." + itemType, false));
 						select.addRestriction(sb.toString());
 						return " (" + select.toStatementString() + ") ";
 					}).or(() -> Optional.ofNullable(itemType)
@@ -1526,7 +1526,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 		} else if (maybeOwner.filter(o -> "BINARY".equals(o)).isPresent()) {
 			makeBinaryJoin(HibBinaryImpl.class, ownerAlias, maybeOwner.get(), join);
 		} else if (maybeOwner.filter(o -> "S3BINARY".equals(o)).isPresent()) {
-			makeBinaryJoin(HibBinaryImpl.class, ownerAlias, maybeOwner.get(), join);
+			makeBinaryJoin(HibS3BinaryImpl.class, ownerAlias, maybeOwner.get(), join);
 		} else if (maybeOwner.filter(o -> "NODE".equals(o)).isPresent() 
 				&& (ReferencedNodesFilterJoin.ALIAS_CONTENTFIELDKEY.equals(actualFieldName) || ReferencedNodesFilterJoin.ALIAS_MICROCONTENTFIELDKEY.equals(actualFieldName))) {
 			ownerAlias = ownerAlias.substring(0, ownerAlias.lastIndexOf(makeAlias(ElementType.NODE)));

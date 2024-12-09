@@ -32,7 +32,7 @@ public class HSQLDBConnector extends AbstractDatabaseConnector {
 
 	@Override
 	public String renderNonContentColumn(String column) {
-		return column;
+		return (column != null && column.contains("-")) ? renderColumnUnsafe(column, false) : column;
 	}
 
 	@Override

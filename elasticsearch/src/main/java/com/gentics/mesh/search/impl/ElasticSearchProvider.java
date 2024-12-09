@@ -399,6 +399,9 @@ public class ElasticSearchProvider implements SearchProvider {
 				if (log.isDebugEnabled()) {
 					log.debug("Deleted index {" + indices + "}. Duration " + (System.currentTimeMillis() - start) + "[ms]");
 				}
+			})
+			.doOnError(e -> {
+				log.error("Error at deleting index {" + indices + "}", e);
 			}).ignoreElement();
 
 		if (!failOnMissingIndex) {
