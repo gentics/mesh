@@ -434,7 +434,12 @@ public class ElasticSearchProvider implements SearchProvider {
 
 		String randomName = info.getIndexName() + UUIDUtil.randomUUID();
 		String templateName = randomName.toLowerCase();
-		json.put("template", templateName);
+		if (options.getSearchOptions().getComplianceMode() != ComplianceMode.ES_8) {
+			json.put("template", templateName);
+		} else {
+			JsonArray indexPatterns = new JsonArray(List.of(templateName));
+			json.put("index_patterns", indexPatterns);
+		}
 
 		return client.createIndexTemplate(templateName, json).async()
 			.doOnSuccess(response -> {
