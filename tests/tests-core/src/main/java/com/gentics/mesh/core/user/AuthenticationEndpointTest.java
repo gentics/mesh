@@ -19,9 +19,12 @@ import java.util.List;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshRestClientMessageException;
@@ -30,6 +33,7 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.util.TokenUtil;
 
 import io.reactivex.Single;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import okhttp3.Cookie;
 import okhttp3.CookieJar;
@@ -103,6 +107,47 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 		assertEquals("anonymous", response.getUsername());
 		client().disableAnonymousAccess();
 		call(() -> client().me(), UNAUTHORIZED, "error_not_authorized");
+	}
+
+	/**
+	 * This test does belong to the `AuthUserTest` suite, but needs a running server, so placed here for convenience.
+	 */
+	@Test
+	public void testLoadPrincipalWithReferencedNodeWithoutTx() {
+		NodeResponse referencedNode = createNode();
+		tx(tx -> {
+			MeshAuthUser au = getRequestMeshAuthUser();
+			HibNode rn = tx.nodeDao().findByUuidGlobal(referencedNode.getUuid());
+			tx.userDao().findByUuid(au.getDelegate().getUuid()).setReferencedNode(rn);
+			tx.success();
+		});
+		MeshAuthUser user = tx(() -> getRequestMeshAuthUser());
+
+		JsonObject json = user.principal();
+		assertNotNull(json);
+		assertEquals(userUuid(), json.getString("uuid"));
+		assertEquals(tx(() -> user.getDelegate().getEmailAddress()), json.getString("emailAddress"));
+		assertEquals(tx(() -> user.getDelegate().getLastname()), json.getString("lastname"));
+		assertEquals(tx(() -> user.getDelegate().getFirstname()), json.getString("firstname"));
+		assertEquals(tx(() -> user.getDelegate().getUsername()), json.getString("username"));
+
+		assertNotNull(json.getString("nodeReference"));
+		assertEquals(referencedNode.getUuid(), json.getString("nodeReference"));
+
+		JsonArray roles = json.getJsonArray("roles");
+		for (int i = 0; i < roles.size(); i++) {
+			JsonObject role = roles.getJsonObject(i);
+			assertNotNull(role.getString("uuid"));
+			assertNotNull(role.getString("name"));
+		}
+		assertEquals("The principal should contain two roles.", 1, roles.size());
+		JsonArray groups = json.getJsonArray("groups");
+		for (int i = 0; i < roles.size(); i++) {
+			JsonObject group = groups.getJsonObject(i);
+			assertNotNull(group.getString("uuid"));
+			assertNotNull(group.getString("name"));
+		}
+		assertEquals("The principal should contain two groups.", 1, groups.size());
 	}
 
 	@Test
