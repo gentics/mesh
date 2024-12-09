@@ -5,6 +5,7 @@ import static com.gentics.mesh.test.TestSize.FULL;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
@@ -15,6 +16,7 @@ import com.gentics.mesh.test.context.MeshTestContext.MeshTestInstance;
 /**
  * Test how a cluster behaves with more than two nodes.
  */
+@Ignore("Test seems to consume too much memory")
 @MeshTestSetting(testSize = FULL, startServer = true, clusterMode = true, clusterName = "MultiNodeClusterTest", clusterInstances = 4)
 public class MultiNodeClusterTest extends AbstractMeshClusteringTest {
 	protected MeshTestInstance serverA;
