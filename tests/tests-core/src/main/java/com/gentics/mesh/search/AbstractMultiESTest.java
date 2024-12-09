@@ -28,9 +28,9 @@ import okhttp3.OkHttpClient;
 
 public abstract class AbstractMultiESTest implements TestHttpMethods, TestGraphHelper, PluginHelper {
 
-	private OkHttpClient httpClient;
+	protected OkHttpClient httpClient;
 
-	private static ElasticsearchTestMode currentMode = null;
+	protected static ElasticsearchTestMode currentMode = null;
 
 	@Parameters(name = "{index}: ({0})")
 	public static Collection<Object[]> esVersions() {
