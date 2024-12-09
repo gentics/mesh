@@ -67,8 +67,8 @@ stage("Setup Build Environment") {
 					}
 					// Install is needed to provide deps for the test plugin build
 					echo "Setup of GPG"
-					sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-public-key.asc"
-					sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-secret-key.asc"
+					// sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-public-key.asc"
+					// sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-secret-key.asc"
 					withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),
 					                 usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
 						sh "mvn -ff -B -U -Dmaven.javadoc.skip=true -Dskip.test-plugins=false -Dskip.cluster.tests=true -Dskip.vertx-hazelcast=true -Dgpg.skip=false -DskipTests ${extraFlags} clean install"
@@ -163,8 +163,8 @@ stage("Setup Build Environment") {
 					sshagent(["git"]) {
 						if (Boolean.valueOf(params.runDeploy) || Boolean.valueOf(params.runMavenDeploy)) {
 							echo "Setup of GPG"
-							sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-public-key.asc"
-							sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-secret-key.asc"
+							// sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-public-key.asc"
+							// sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-secret-key.asc"
 							withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
 								sh "mvn -U -B -DskipTests -Dgpg.skip=false clean deploy"
 							}
