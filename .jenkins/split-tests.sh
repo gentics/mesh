@@ -9,7 +9,8 @@ rm includes*
 
 echo
 echo  "Collecting all tests"
-mvn -Dstyle.color=never com.gentics.mesh:test-scanner-maven-plugin:scan-test-files | grep "TEST_CLASS:" | sed 's/TEST_CLASS: //g' | awk '!seen[$0]++' > alltests
+# mvn -Dstyle.color=never com.gentics.mesh:test-scanner-maven-plugin:scan-test-files | grep "TEST_CLASS:" | sed 's/TEST_CLASS: //g' | awk '!seen[$0]++' > alltests
+cp alltests.debug alltests
 tests=$(cat alltests | wc -l)
 
 echo "Found $tests tests"
