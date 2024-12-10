@@ -147,7 +147,8 @@ public class LicenseManagementEndpointTest extends AbstractMeshTest {
 		Request request = new Request.Builder().url("http://localhost:" + getTestContext().getHttpPort() + "/api/v1/admin/license/file?force=true").header("Authorization", "Bearer " + client().getAPIKey()).post(requestBody).build();
 		Response response = okHttpClient.newCall(request).execute();
 		JsonObject jsonBody = new JsonObject(response.body().string());
-		assertThat(jsonBody.getString("status")).isEqualTo("NOT_ACTIVATED");;
+		assertThat(jsonBody.getString("status")).isNull();
+		assertThat(jsonBody.getString("message")).isEqualTo("Invalid license!");
 		restoreOriginalLicense(suffix);
 	}
 
