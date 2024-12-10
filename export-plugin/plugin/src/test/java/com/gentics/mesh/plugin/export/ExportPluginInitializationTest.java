@@ -5,6 +5,8 @@ import static org.junit.Assert.assertEquals;
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 
+import com.gentics.mesh.database.connector.DatabaseConnector;
+import com.gentics.mesh.database.connector.HSQLDBConnector;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -23,12 +25,18 @@ public class ExportPluginInitializationTest {
 	@BeforeClass
 	public static void init() {
 		File logbackFile = new File("config", "logback.xml");
+
 		System.setProperty("logback.configurationFile", logbackFile.getAbsolutePath());
-		HibernateMeshOptions options = OptionsLoader.createOrloadOptions(HibernateMeshOptions.class);;
+
+		HibernateMeshOptions options = OptionsLoader.createOrloadOptions(HibernateMeshOptions.class);
+		DatabaseConnector connector = new HSQLDBConnector(options);
 
 		options
 			.setAdminPassword("admin")
 			.setForceInitialAdminPasswordReset(false);
+		options.getStorageOptions()
+			.setDriverClass(connector.getJdbcDriverClass().getCanonicalName())
+			.setDialectClass(connector.getHibernateDialectClass().getCanonicalName());
 
 		mesh = new HibernateMeshFactoryImpl().create(options);
 

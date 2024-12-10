@@ -12,7 +12,7 @@ public class CsvStringWriter {
 
     public CsvStringWriter() {
         stringWriter = new StringWriter();
-        csvWriter = new CSVWriter(stringWriter, ';');
+        csvWriter = new CSVWriter(stringWriter, ';', '"', '"', "\n");
     }
 
     public void writeRow(List<String> row) {
