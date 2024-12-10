@@ -68,7 +68,7 @@
                         <trimStackTrace>false</trimStackTrace>
                         <argLine>-Xms64m -Xmx128m ${argLine}</argLine>
                         <environmentVariables>
-                            <LICENSEKEY>FBF4-6D85-75CD-7FA0-3EAE-FB5E-3D31-B936</LICENSEKEY>
+                            <LICENSEKEY>eyJhbGciOiJSUzI1NiJ9.eyJ1dWlkIjoiN2U5MTFiY2YtMGQ0NC00MDE2LTkxYWYtZWY5OGRhZGY2YzQ4IiwiZmVhdHVyZXMiOnsiQUxMIjoiQWxsIGZlYXR1cmVzIiwiQ0xVU1RFUiI6IkNsdXN0ZXIiLCJDTiI6IkdlbnRpY3MgQ29udGVudC5Ob2RlIiwiQ1MiOiJDb250ZW50IFN0YWdpbmciLCJFTEMiOiJGZWF0dXJlIExpbmsgQ2hlY2tlciIsIkVTIjoiRWxhc3RpYyBTZWFyY2giLCJGT1JNUyI6Ik1lc2ggRm9ybXMgUGx1Z2luIiwiS0MiOiJLZXljbG9hayIsIk1DIjoiRmVhdHVyZSBNdWx0aWNoYW5uZWxsaW5nIiwiTUNDUiI6IkZlYXR1cmUgTXVsdGljaGFubmVsbGluZyBDb250ZW50IFJlcG9zaXRvcnkiLCJNQ01UIjoiTWVzaCBDb21tZW50IFBsdWdpbiIsIk1FWFAiOiJNZXNoIEV4cG9ydCBQbHVnaW4iLCJNRkFWIjoiTWVzaCBGYXZvdXJpdGUgUGx1Z2luIiwiTUdDTVMiOiJNZXNoIEdDTVMgUGx1Z2luIiwiTUtDIjoiTWVzaCBLZXljbG9hayBQbHVnaW4iLCJNTEtFIjoiTWVzaCBMaWtlIFBsdWdpbiIsIk1NUkQiOiJNZXNoIE11c3QgUmVhZCBQbHVnaW4iLCJNU1FMIjoiTWVzaCBFbnRlcnByaXNlIiwiTVNSSCI6Ik1lc2ggU2VhcmNoIFBsdWdpbiIsIlBKIjoiUG9ydGFsIHwgamF2YSIsIlRUTSI6IkZlYXR1cmUgVGFnIFR5cGUgTWlncmF0aW9uIC8gVGVtcGxhdGUgTWlncmF0aW9uIn0sImlzcyI6IkdlbnRpY3MiLCJpYXQiOjE3MzI2NTIyMTIsInN1YiI6ImRldnRlc3QtamF2YSJ9.sQNrRGnowSo2bQMkbqj5GJmJlsnGZE4ZF8hpzdZMBB2tYmhAk4CZa5lkeWHzjC3EwIJCG8lIENaQd6UeGw8_sdIOWLWA3Onm1ukiEoxv5CEmYbF-H-5mH4RKjAzC95oBATpUTT95A0gwJz6sl0vFMZ8qwYqS1SG2r7rx4eU42HBNBdIPTrLg47eGBvbpW3RtyvclVOiweg5_2wGZl1BctAfGJ5NIOqEH4DO-97SlKlAibMPzfULfvhDmf9vCvoyegXD8oib9gzemocFV5bij_1qrjIhuAbvrbp2y1PQbOnyDnVMj9v5YtAqAiumqBmvyXo2Sa1M019yzCS7_Nvyi8w</LICENSEKEY>
                         </environmentVariables>
                     </configuration>
                 </plugin>
