@@ -12,3 +12,4 @@ debuginfo
 *.orig
 comment-plugin/data
 comment-plugin/config
+license.key
