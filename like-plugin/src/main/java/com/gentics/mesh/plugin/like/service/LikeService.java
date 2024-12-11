@@ -466,7 +466,7 @@ public class LikeService {
 	 * @return single node list response
 	 */
 	protected Single<NodeListResponse> getSectionLikes(String projectName, NodeResponse section) {
-		return adminClient.findNodeChildren(projectName, section.getUuid(), new PagingParametersImpl().setPerPage(Long.MAX_VALUE)).toSingle();
+		return adminClient.findNodeChildren(projectName, section.getUuid(), new PagingParametersImpl().setPerPage((long) Integer.MAX_VALUE)).toSingle();
 	}
 
 	/**

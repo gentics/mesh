@@ -129,7 +129,7 @@ public class LikePluginIntegrationTest extends AbstractPluginLocalIntegrationTes
 	public void setup() {
 		// delete all nodes of the specified schemas
 		List<String> schemasToDelete = Arrays.asList(SchemaService.SECTION_SCHEMA_NAME, schema.getName());
-		NodeListResponse response = call(() -> server.client().findNodes(PROJECT_NAME, new PagingParametersImpl().setPerPage(Long.MAX_VALUE)));
+		NodeListResponse response = call(() -> server.client().findNodes(PROJECT_NAME, new PagingParametersImpl().setPerPage((long) Integer.MAX_VALUE)));
 		for (NodeResponse node : response.getData()) {
 			if (schemasToDelete.contains(node.getSchema().getName())) {
 				call(() -> server.client().deleteNode(PROJECT_NAME, node.getUuid(), new DeleteParametersImpl().setRecursive(true)));
@@ -913,7 +913,7 @@ public class LikePluginIntegrationTest extends AbstractPluginLocalIntegrationTes
 		List<NodeResponse> likeNodes = Arrays.asList(userUuids).stream().map(uuid -> loadLike(nodeUuid, lang, uuid)).collect(Collectors.toList());
 
 		NodeListResponse sectionChildren = call(
-			() -> server.client().findNodeChildren(PROJECT_NAME, sectionNode.getUuid(), new PagingParametersImpl().setPerPage(Long.MAX_VALUE)));
+			() -> server.client().findNodeChildren(PROJECT_NAME, sectionNode.getUuid(), new PagingParametersImpl().setPerPage((long) Integer.MAX_VALUE)));
 		assertThat(sectionChildren.getData()).as("Children of section node").usingElementComparatorOnFields("uuid").containsOnlyElementsOf(likeNodes);
 	}
 

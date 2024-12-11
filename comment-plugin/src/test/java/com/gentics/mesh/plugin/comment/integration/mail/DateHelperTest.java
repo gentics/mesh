@@ -65,7 +65,7 @@ public class DateHelperTest extends AbstractLocalIntegrationTest {
 			.setSchemaName("dateSchema")
 			.setLanguage("en")
 			.setParentNodeUuid(playground.getUuid())
-			.setFields(FieldMap.of("somedate", new DateFieldImpl().setDate("1990-03-21T13:37+02:00")))
+			.setFields(FieldMap.of("somedate", new DateFieldImpl().setDate("1990-03-21T13:37:00z")))
 		).blockingGet();
 	}
 }

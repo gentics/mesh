@@ -183,7 +183,7 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 		List<String> schemasToDelete = Arrays.asList(SchemaService.PLUGIN_SCHEMA_NAME);
 
 		// delete all form nodes and form template nodes
-		NodeListResponse response = call(() -> server.client().findNodes(PROJECT_NAME, new PagingParametersImpl().setPerPage(Long.MAX_VALUE)));
+		NodeListResponse response = call(() -> server.client().findNodes(PROJECT_NAME, new PagingParametersImpl().setPerPage((long) Integer.MAX_VALUE)));
 		for (NodeResponse node : response.getData()) {
 			if (schemasToDelete.contains(node.getSchema().getName())) {
 				call(() -> server.client().deleteNode(PROJECT_NAME, node.getUuid(), new DeleteParametersImpl().setRecursive(true)));
@@ -191,7 +191,7 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 		}
 
 		// remove additional schemas
-		SchemaListResponse schemas = call(() -> server.client().findSchemas(new PagingParametersImpl().setPerPage(Long.MAX_VALUE)));
+		SchemaListResponse schemas = call(() -> server.client().findSchemas(new PagingParametersImpl().setPerPage((long) Integer.MAX_VALUE)));
 		for (SchemaResponse schema : schemas.getData()) {
 			if (schema.getName().startsWith(SchemaService.SCHEMA_NAME)) {
 				call(() -> server.client().deleteSchema(schema.getUuid()));
@@ -339,7 +339,7 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 	 * @return optional schema response
 	 */
 	protected Optional<SchemaResponse> loadSchema(String name) {
-		return call(() -> server.client().findSchemas(PROJECT_NAME, new PagingParametersImpl().setPerPage(Long.MAX_VALUE))).getData().stream()
+		return call(() -> server.client().findSchemas(PROJECT_NAME, new PagingParametersImpl().setPerPage((long) Integer.MAX_VALUE))).getData().stream()
 			.filter(schema -> name.equals(schema.getName())).findFirst().map(e -> Optional.of(e)).orElse(Optional.empty());
 	}
 

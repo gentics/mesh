@@ -50,7 +50,7 @@ public class SchemaService {
 	 * @return single of the schema response which may contain the found schema within the optional
 	 */
 	public Single<Optional<SchemaResponse>> loadSchemaByName(String name, boolean failIfNotFound) {
-		Single<Optional<SchemaResponse>> single = adminClient.findSchemas(new PagingParametersImpl().setPerPage(Long.MAX_VALUE)).toSingle()
+		Single<Optional<SchemaResponse>> single = adminClient.findSchemas(new PagingParametersImpl().setPerPage((long) Integer.MAX_VALUE)).toSingle()
 			.map(schemaListResponse -> {
 				Optional<SchemaResponse> result = schemaListResponse.getData().stream().filter(schema -> name.equals(schema.getName())).findFirst()
 					.map(e -> Optional.of(e)).orElse(Optional.empty());
