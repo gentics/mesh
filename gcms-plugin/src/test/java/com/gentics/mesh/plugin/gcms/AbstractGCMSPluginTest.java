@@ -26,7 +26,7 @@ public abstract class AbstractGCMSPluginTest extends AbstractPluginLocalIntegrat
 	@BeforeClass
 	public static void configurePlugin() throws IOException {
 		GCMSTestPlugin.config = new GCMSPluginConfig();
-		GCMSTestPlugin.publicKey = new JsonObject(IOUtils.toString(AbstractGCMSPluginTest.class.getResource("/public-key.jwk"), "UTF-8"));
+		GCMSTestPlugin.publicKey = new JsonObject(IOUtils.toString(AbstractGCMSPluginTest.class.getResource("/keys/public-key.jwk"), "UTF-8"));
 	}
 
 	@Rule
@@ -42,7 +42,7 @@ public abstract class AbstractGCMSPluginTest extends AbstractPluginLocalIntegrat
 	@Before
 	public void createAuthProvider() throws IOException {
 		provider = JWTAuth.create(server.getMesh().getVertx(), new JWTAuthOptions().addJwk(
-				new JsonObject(IOUtils.toString(AbstractGCMSPluginTest.class.getResource("/private-key.jwk"), "UTF-8"))));
+				new JsonObject(IOUtils.toString(AbstractGCMSPluginTest.class.getResource("/keys/private-key.jwk"), "UTF-8"))));
 	}
 
 	@Before
