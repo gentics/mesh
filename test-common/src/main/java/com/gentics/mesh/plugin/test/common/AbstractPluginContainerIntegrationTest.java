@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import com.gentics.mesh.MeshVersion;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.junit.AfterClass;
@@ -17,7 +18,6 @@ import org.testcontainers.Testcontainers;
 import com.gentics.mesh.core.rest.plugin.PluginDeploymentRequest;
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
 import com.gentics.mesh.plugin.test.common.util.ConfigSetupAction;
-import com.gentics.mesh.plugin.test.common.util.MeshVersionUtil;
 import com.gentics.mesh.plugin.test.common.util.PluginTestUtil;
 import com.gentics.mesh.test.docker.MeshContainer;
 
@@ -79,7 +79,9 @@ public abstract class AbstractPluginContainerIntegrationTest {
 	}
 
 	public static String meshImage() {
-		return StringUtils.isNotBlank(System.getenv(DOCKER_MESH_IMAGE)) ? System.getenv(DOCKER_MESH_IMAGE) :  MeshVersionUtil.getMatchingImage();
+        return StringUtils.isNotBlank(System.getenv(DOCKER_MESH_IMAGE))
+			? System.getenv(DOCKER_MESH_IMAGE)
+			: "docker.gentics.com/gentics/mesh-hsqldb:" + MeshVersion.getPlainVersion();
 	}
 
 	@AfterClass
