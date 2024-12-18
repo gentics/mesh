@@ -1,0 +1,23 @@
+{{- if not .Values.existingConfigmap }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "mesh.fullname" . }}-config
+data:
+  
+{{- if .Values.logging.logback }}
+  logback.xml: |-
+{{ tpl .Values.logging.logback . | indent 4 }}
+{{- else }}
+  logback.xml: |-
+{{- $file := .Files.Get "config/common/logback.xml" | indent 6 }}
+{{ tpl $file . }}
+{{- end }}
+
+{{ (.Files.Glob "config/common/hazelcast.xml").AsConfig | indent 2 }}
+
+
+  public-keys.json: |-
+{{ .Values.config.publicKeys | indent 4 }}
+
+{{- end }}

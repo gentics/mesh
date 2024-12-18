@@ -1,0 +1,214 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "mesh.fullname" . }}
+  labels:
+    {{- include "mesh.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "mesh.selectorLabels" . | nindent 6 }}-cluster
+  serviceName: mesh
+  template:
+    metadata:
+      labels:
+        {{- include "mesh.selectorLabels" . | nindent 8 }}-cluster
+        mesh-cluster: {{ include "mesh.fullname" . }}
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8}}
+      {{- end }}
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      serviceAccountName: {{ include "mesh.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      terminationGracePeriodSeconds: 60
+      initContainers:
+      {{- if .Values.setulimit.enabled }}
+        - name: increase-ulimit
+          image: busybox
+          command: [ "sh", "-c", "ulimit -l unlimited" ]
+          securityContext:
+            privileged: true
+      {{- end }}
+      containers:
+      - name: mesh
+        {{- if .Values.securityContext }}
+        securityContext:
+        {{- toYaml .Values.securityContext | nindent 12 }}
+        {{- end }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        env:
+{{- include "mesh.envVars" . | nindent 8 }}
+
+        ports:
+          - name: http
+            containerPort: 8080
+            protocol: TCP
+          {{- if .Values.ssl.enabled }}
+          - name: https
+            containerPort: 8443
+            protocol: TCP
+          {{- end }}
+          - name: monitoring
+            containerPort: 8081
+            protocol: TCP
+          - name: hazelcast
+            containerPort: 5701
+            protocol: TCP
+          - name: vertx
+            containerPort: 4848
+            protocol: TCP
+          - name: http-monitoring
+            containerPort: 8081
+            protocol: TCP
+        livenessProbe:
+          {{- if .Values.livenessProbe }}
+          {{- toYaml .Values.livenessProbe | nindent 10 }}
+          {{- else }}
+          exec:
+            command:
+            - /bin/sh
+            - live.sh
+          initialDelaySeconds: 10
+          periodSeconds: 8
+          failureThreshold: 3
+          {{- end }}
+        readinessProbe:
+          {{- if .Values.readinessProbe }}
+          {{- toYaml .Values.readinessProbe | nindent 10 }}
+          {{- else }}
+          httpGet:
+            path: /api/v2/health/ready
+            port: http
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          failureThreshold: 5
+          {{- end }}
+
+        resources:
+{{ toYaml .Values.resources | indent 12 }}
+
+        volumeMounts:
+          {{- range $path, $bytes  := $.Files.Glob "config/common/*" }}
+          - mountPath: "/config/{{ base $path }}"
+            name: config
+            subPath: {{ base $path }}
+          {{ end }}
+          {{- range $path, $bytes  := $.Files.Glob "config/master/*" }}
+          - mountPath: "/config/{{ base $path }}"
+            name: config
+            subPath: {{ base $path }}
+          {{ end }}
+          {{- if .Values.config.publicKeys }}
+          - mountPath: "/config/public-keys.json"
+            name: config
+            subPath: public-keys.json
+          {{- end }}
+          - mountPath: "/keystore"
+            name: shared
+            subPath: keystore
+          - mountPath: "/uploads"
+            name: shared
+            subPath: uploads
+          {{- if .Values.ssl.enabled }}
+          - mountPath: /certs
+            name: ssl-secret
+          {{- end }}
+          {{- if .Values.persistence.imageCache.enabled }}
+          - mountPath: /mesh/data/binaryImageCache
+            name: shared
+            subPath: binaryImageCache
+          {{- end }}
+          {{- if .Values.licenseKey }}
+          - name: shared
+            mountPath: {{ .Values.licenseKeyPath }}
+            subPath: license
+          {{- end }}
+          {{ if .Values.extraConfig }}
+          {{- range .Values.extraConfig }}
+          {{ $extraConfVolScope := . }}
+          {{ range .items }}
+          - name: extraconfig-{{ $extraConfVolScope.name }}
+            mountPath: {{ .mountPath | quote }}
+            subPath: {{ .key | quote }}
+          {{ end }}
+          {{ end }}
+          {{ end }}
+          {{- if .Values.extraVolumeMounts }}
+          {{- tpl (toYaml .Values.extraVolumeMounts) $ | nindent 10 }}
+          {{- end }}
+
+      volumes:
+      - name: config
+        configMap:
+          {{- if .Values.existingConfigmap }}
+          name: {{ .Values.existingConfigmap }}
+          {{- else }}
+          name: {{ template "mesh.fullname" . }}-config
+          {{- end }}
+
+      {{- if .Values.extraConfig }}
+      {{ $extraConfVolScope := . }}
+      {{- range .Values.extraConfig }}
+      - name: extraconfig-{{ .name }}
+        configMap:
+          name: {{ template "mesh.fullname" $extraConfVolScope }}-extraconfig-{{ .name }}
+      {{ end }}
+      {{- end }}
+
+      - name: shared
+      {{- if .Values.persistence.enabled }}
+        persistentVolumeClaim:
+          {{- if .Values.persistence.shared.existingClaim }}
+          claimName: {{ .Values.persistence.shared.existingClaim }}
+          {{- else }}
+          claimName: {{ include "mesh.fullname" . }}-shared
+          {{- end }}
+      {{- else }}
+        emptyDir: {}
+      {{- end }}
+
+      {{- if .Values.ssl.enabled }}
+      - name: ssl-secret
+        secret:
+          secretName: {{ .Values.ssl.existingSecret }}
+      {{- end }}
+
+      {{- if .Values.extraVolumes }}
+      {{- tpl (toYaml .Values.extraVolumes) $ | nindent 6 }}
+      {{- end }}
+
+
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- if .Values.nodeName }}
+      nodeName: {{ .Values.nodeName }}
+    {{- end }}
+      affinity:
+    {{- with .Values.affinity }}
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100 
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: "app.kubernetes.io/instance"
+                  operator: In
+                  values:
+                  - {{ .Release.Name }}-cluster
+              topologyKey: "kubernetes.io/hostname"

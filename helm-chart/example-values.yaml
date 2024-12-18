@@ -1,0 +1,100 @@
+replicaCount: 3
+
+image:
+  repository: docker.gentics.com/gentics/mesh
+  tag: 1.6.21
+  pullPolicy: Always
+
+imagePullSecrets: 
+  - name: docker-gentics-com
+
+# extraConfig creates a configmap per name, which can hold multiple
+# items and can be mountad as a specified path
+#extraConfig:
+#  - name: myconfig
+#    items:
+#      - key: custom.yml
+#        mountPath: /plugins/myplugin/custom.yml
+#        value: |
+#          setup:
+#            customValue: value
+
+ingress:
+  enabled: true
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: 8m
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  #ingressClassName: nginx
+  hosts:
+    - host: gentics-mesh.apps-crc.testing
+      paths:
+        - "/"
+
+extraEnv:
+- name: JAVA_TOOL_OPTIONS
+  value: "-Xms512m -Xmx512m -XX:MaxDirectMemorySize=256m -Dstorage.diskCache.bufferSize=512"
+
+# You should adjust this to your needs. This just defines the absolute minimum defaults.
+# The memory values should be set in conjunction with the Java Xmx plus other Java memory settings like Direct memory
+# See: https://getmesh.io/docs/administration-guide/#_memory_settings
+resources:
+  requests:
+    memory: 1024Mi
+    cpu: 500m
+  limits:
+    memory: 2Gi
+    cpu: 500m
+
+persistence:
+  enabled: true
+
+  shared:
+    #storageClassName: ""
+    annotations:
+      test: "shared"
+    spec:
+      accessModes:
+        - ReadWriteOnce
+        - ReadOnlyMany
+      resources:
+        requests:
+          storage: 10Gi
+
+  # Volume for persisting cached images
+  # A volume will be created for each replica of Mesh
+  sharedImages:
+    enabled: false
+    annotations: {}
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      storageClassName: "nfs-nas"
+      resources:
+        requests:
+          storage: 5Gi
+
+keystore:
+  password: "secret"
+
+ssl:
+  enabled: false
+  # Client Authentication mode can be: none, request or require
+  # See https://getmesh.io/docs/references/#_client_certificate for details
+  clientAuthMode: "REQUEST"
+  serverKeyPath: "/certs/server.key"
+  serverCertPath: "/certs/server.pem"
+  trustedCertPaths: "/certs/server.pem"
+  existingSecret: "mesh-ssl-secret"
+
+credentials:
+  initialAdminPassword: "YOURPW"
+  forcePasswordReset: false
+
+cluster:
+  enabled: true
+  writeQuorum: 2
+  readQuorum: 1
+
+setulimit:
+  enabled: false

@@ -1,0 +1,6 @@
+apiVersion: v2
+name: gentics-mesh
+description: Gentics Mesh
+type: application
+version: 1.3.16
+appVersion: 1.7.18
