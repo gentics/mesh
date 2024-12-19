@@ -17,6 +17,14 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.10.37]]
+== 1.10.37 (19.12.2024)
+
+icon:check[] Core: The node deletion rules has been strictened, to avoid internal deletion API misusage.
+
+icon:check[] Cache: The Image Cache refactoring, which was done in a previous hotfix release introduced an error which caused creation of empty folders in the old structure as well. This has been fixed.
+Also the migration process has been fixed to really remove all folders of the old structure, even if they are empty or contain cache files of binaries that were deleted before.
+
 [[v1.10.36]]
 == 1.10.36 (23.10.2024)
 
