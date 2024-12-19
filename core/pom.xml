@@ -163,11 +163,6 @@
 
 		<!-- Hazelcast -->
 		<dependency>
-			<groupId>com.hazelcast</groupId>
-			<artifactId>hazelcast-kubernetes</artifactId>
-		</dependency>
-
-		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-mail-client</artifactId>
 		</dependency>
