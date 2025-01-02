@@ -390,9 +390,13 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				DataLoader<DataLoaderKey<HibNode>, List<NodeContent>> childrenLoader = env.getDataLoader(NodeDataLoader.CHILDREN_LOADER_KEY);
 				CompletableFuture<List<NodeContent>> future = childrenLoader.load(new DataLoaderKey<>(env, content.getNode()), dataLoaderContext);
 
+				boolean isPagedNatively = PersistingRootDao.shouldPage(pagingInfo) && (filters.getRight().isPresent() || PersistingRootDao.shouldSort(pagingInfo));
 				return future.thenApply(contents -> {
 					return applyNodeFilter(env, contents.stream().filter(item -> item.getContainer() != null), 
-							filters.getRight().isPresent() && PersistingRootDao.shouldPage(pagingInfo), filters.getRight().isPresent());
+							isPagedNatively, filters.getRight().isPresent(),
+							Optional.of(isPagedNatively)
+								.filter(paged -> paged)
+								.map(paged -> () -> Tx.get().nodeDao().countAllChildren(content.getNode(), Tx.get().getProject(context), gc, languageTags, type, filters.getRight(), Tx.get().getBranch(context).getUuid())));
 				});
 			}, NODE_PAGE_TYPE_NAME, true)
 				.argument(createLanguageTagArg(false))
