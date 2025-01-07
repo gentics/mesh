@@ -1,0 +1,103 @@
+{
+	fetch: rootNode {
+		children(lang: ["en", "de"],  perPage:2) {
+	    	elements {
+	    		uuid
+				displayName
+				schema {
+					name
+				}
+	    	}
+	    	# [$.data.fetch.children.totalCount=5]
+			# [$.data.fetch.children.perPage=2]
+			# [$.data.fetch.children.pageCount=3]
+			# [$.data.fetch.children.hasNextPage=true]
+			totalCount
+			perPage
+			pageCount
+			hasNextPage
+	    }
+	}
+	fetchFiltered: rootNode {
+		children(lang: ["en", "de"], filter: {schema: {is: folder}}, perPage:2) {
+	    	elements {
+	    		uuid
+				displayName
+				schema {
+					name
+				}
+	    	}
+	    	# [$.data.fetchFiltered.children.totalCount=4]
+			# [$.data.fetchFiltered.children.perPage=2]
+			# [$.data.fetchFiltered.children.pageCount=2]
+			# [$.data.fetchFiltered.children.hasNextPage=true]
+			totalCount
+			perPage
+			pageCount
+			hasNextPage
+	    }
+	}
+	fetchFilteredLegacy: rootNode {
+		children(lang: ["en", "de"], nativeFilter: NEVER, filter: {schema: {is: folder}}, perPage:2) {
+	    	elements {
+	    		uuid
+				displayName
+				schema {
+					name
+				}
+	    	}
+	    	# [$.data.fetchFiltered.children.totalCount=4]
+			# [$.data.fetchFiltered.children.perPage=2]
+			# [$.data.fetchFiltered.children.pageCount=2]
+			# [$.data.fetchFiltered.children.hasNextPage=true]
+			totalCount
+			perPage
+			pageCount
+			hasNextPage
+	    }
+	}
+	fetchFilteredNative: rootNode {
+		children(lang: ["en", "de"], nativeFilter: ONLY, filter: {schema: {is: folder}}, perPage:2) {
+	    	elements {
+	    		uuid
+				displayName
+				schema {
+					name
+				}
+	    	}
+	    	# [$.data.fetchFiltered.children.totalCount=4]
+			# [$.data.fetchFiltered.children.perPage=2]
+			# [$.data.fetchFiltered.children.pageCount=2]
+			# [$.data.fetchFiltered.children.hasNextPage=true]
+			totalCount
+			perPage
+			pageCount
+			hasNextPage
+	    }
+	}
+	fetchSorted: rootNode {
+		children(lang: ["en", "de"], sort: {fields: {folder: {name:ASCENDING}}}, perPage:2) {
+	    	elements {
+	    		uuid
+				displayName
+				schema {
+					name
+				}
+				fields {
+					...on folder {
+						name
+					}
+				}
+	    	}
+	    	# [$.data.fetchSorted.children.totalCount=5]
+			# [$.data.fetchSorted.children.perPage=2]
+			# [$.data.fetchSorted.children.pageCount=3]
+			# [$.data.fetchSorted.children.hasNextPage=true]
+			totalCount
+			perPage
+			pageCount
+			hasNextPage
+	    }
+	}
+}
+# [$.errors=<is-undefined>]

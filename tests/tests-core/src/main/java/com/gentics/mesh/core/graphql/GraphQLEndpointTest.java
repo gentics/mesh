@@ -159,6 +159,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 				// Arrays.asList("schema-projects-query", true, false, "draft"),
 				Arrays.asList("microschema-query", true, false, "draft"),
 				Arrays.asList("paging-query", true, false, "draft"),
+				Arrays.asList("node-children-paging-query", true, false, "draft"),
 				Arrays.asList("tagFamily-query", true, false, "draft"),
 				Arrays.asList("node-query", true, false, "draft"),
 				Arrays.asList("node-tag-query", true, false, "draft"),
