@@ -39,12 +39,6 @@ successfully in less time, no matter which technology you prefer.
 
 <br />
 
-<p align="center">
-  <a href="https://getmesh.io/">
-    <img src="https://getmesh.io/assets/mesh-heroimg.png" alt="Gentics Mesh Screenshot" style="max-width: 80%" />
-  </a>
-</p>
-
 # Quick Start
 
 Check out our [Getting Started Guide](https://getmesh.io/docs/getting-started/)
@@ -107,11 +101,6 @@ external applications which handle the content delivery to the client, meaning
 that the content can be (re-)used by multiple applications and channels (web,
 mobile app, audio guides, IOT).
 
-<p align="center">
-    <img src="https://getmesh.io/blog/gentics-mesh-1-0/headless-vs-coupled.png" alt="a coupled vs a headless CMS" style="max-width: 80%" />
-</p>
-
-
 ## Why pick Gentics Mesh?
 
 Gentics Mesh is the platform that holds your content, gives you great APIs to
@@ -131,18 +120,13 @@ What makes Gentics Mesh special over other headless CMSes is:
 * it thinks in content trees (just like websites do), which brings you many
   things for free: automatic navigation menus, automatic beautiful URLs,
   built-in link resolving, …​
-* it is scalable and built for clustering, so your deployment can grow with
+* it is scalable and clustering-friendly, so your deployment can grow with
   your project’s success.
-
 
 # Status
 
 Gentics Mesh is actively developed by a dedicated team at Gentics Software GmbH in Vienna,
 Austria.
-
-<p align="center">
-    <img src="https://getmesh.io/blog/JPGs/CMP-DEV.jpg" alt="CMP DEV" style="max-width: 80%" />
-</p>
 
 The Gentics Mesh core team consists of the following members:
 
@@ -178,39 +162,6 @@ The Gentics Mesh core team consists of the following members:
     <a href="https://github.com/plyhun">
      <!-- <img src="https://avatars.githubusercontent.com/pschulzk?size=150" width="150" /><br /> -->
      Serhii Plyhun<br /><i>Backend developer</i>
-    </a>
-   </td>
-  </tr>
-    </tr>
-    </tr>
-    <tr>
-   <td align="center">
-    <a href="https://github.com/guggi">
-     <!-- <img src="https://avatars.githubusercontent.com/pschulzk?size=150" width="150" /><br /> -->
-     Oliver Guggenberger<br /><i>Backend developer</i>
-    </a>
-   </td>
-  </tr>
-    </tr>
-    </tr>
-    </tr>
-    <tr>
-   <td align="center">
-    <a href="https://github.com/netwarex">
-     <!-- <img src="https://avatars.githubusercontent.com/pschulzk?size=150" width="150" /><br /> -->
-     Péter Nyári<br /><i>Frontend developer</i>
-    </a>
-   </td>
-  </tr>
-    </tr>
-    </tr>
-    </tr>
-    </tr>
-    <tr>
-   <td align="center">
-    <a href="https://github.com/enizhou">
-     <!-- <img src="https://avatars.githubusercontent.com/pschulzk?size=150" width="150" /><br /> -->
-     En Qiang Zhou<br /><i>Product Owner</i>
     </a>
    </td>
   </tr>
@@ -305,17 +256,14 @@ authenticate using basic auth.
 
 ## Using the REST API
 
-Some sample API requests:
-
-* List users [/users](https://demo.getmesh.io/api/v2/users)
-* List nodes [/demo/nodes?perPage=5](https://demo.getmesh.io/api/v2/demo/nodes?perPage=5)
-* Load by path [/demo/webroot/yachts/indian-empress](https://demo.getmesh.io/api/v2/demo/webroot/yachts/indian-empress)
-* Load Image [/demo/webroot/images/yacht-pelorus.jpg?w=700](https://demo.getmesh.io/api/v2/demo/webroot/images/yacht-pelorus.jpg?w=700)
-
+The full REST API documentation is available at the [Gentics Infoportal](https://getmesh.io/docs/api/#).
 
 ## Using the GraphQL API
 
-[A sample GraphQL query](https://demo.getmesh.io/api/v2/demo/graphql/browser/#query=query%20webroot(%24path%3A%20String)%20%7B%0A%20%20node(path%3A%20%24path)%20%7B%0A%20%20%20%20...%20on%20vehicle%20%7B%0A%20%20%20%20%20%20fields%20%7B%0A%20%20%20%20%20%20%20%20name%0A%20%20%20%20%20%20%20%20description%0A%20%20%20%20%20%20%20%20vehicleImage%20%7B%0A%20%20%20%20%20%20%20%20%20%20uuid%0A%20%20%20%20%20%20%20%20%20%20path%0A%20%20%20%20%20%20%20%20%20%20...%20on%20vehicleImage%20%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20fields%20%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20image%20%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20height%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20width%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20dominantColor%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%7D%0A%20%20%7D%0A%7D%0A&variables=%7B%22path%22%3A%20%22%2Fyachts%2Fpelorus%22%7D)
+The data fetching [GraphQL API](https://getmesh.io/docs/api/#project__graphql__post) is a part of the public REST API. 
+The `IntrospectionQuery` is supported as well, so one can use a REST API tool with GraphQL support to have a code-assisted experience while writing own GraphQL queries. 
+
+An example of a GraphQL query looks as follows:
 
 ```
 query webroot($path: String) {
@@ -357,10 +305,9 @@ Gentics Mesh is currently split into two repositories:
 * https://github.com/gentics/mesh contains the backend code
 * https://github.com/gentics/mesh-ui contains the frontend code
 
-
 # Copyright & License
 
-Copyright (c) 2014-2023 Gentics Software GmbH. Licensed under the
+Copyright (c) 2014-2025 Gentics Software GmbH. Licensed under the
 Apache License, Version 2.0.
 
 Gentics is a registered trade mark of Gentics Software GmbH.
