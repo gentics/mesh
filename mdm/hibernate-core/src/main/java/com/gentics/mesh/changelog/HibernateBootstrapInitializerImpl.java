@@ -296,9 +296,6 @@ public class HibernateBootstrapInitializerImpl extends AbstractBootstrapInitiali
 			clusterOptions.setNetworkHost(localIp);
 		}
 
-		// This setting will be referenced by the hazelcast configuration
-		System.setProperty("mesh.clusterName", clusterOptions.getClusterName());
-
 		final String defaultHazelcastConfigPath = new File("").getAbsolutePath() + File.separator + "config" + File.separator + "hazelcast.xml";
 		final String hazelcastConfig = System.getProperty("hazelcast.config", defaultHazelcastConfigPath);
 		// This setting is used by the HazelcastClusterManager to identify the path of the hazelcast configuration file
