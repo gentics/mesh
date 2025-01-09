@@ -1,0 +1,56 @@
+{
+	perPage5Page1: nodes(filter: {
+		schema: {is: folder}
+	} perPage: 5 page: 1) {
+		# [$.data.perPage5Page1.totalCount=9]
+		totalCount
+		# [$.data.perPage5Page1.currentPage=1]
+		currentPage
+		# [$.data.perPage5Page1.perPage=5]
+		perPage
+		# [$.data.perPage5Page1.pageCount=2]
+		pageCount
+		# [$.data.perPage5Page1.hasNextPage=true]
+		hasNextPage
+		# [$.data.perPage5Page1.elements.length()=5]
+		elements {
+			uuid
+			schema {
+				name
+			}
+			fields {
+				... on folder {
+					name
+				}
+			}
+		}
+	}
+
+	perPage5Page2: nodes(filter: {
+		schema: {is: folder}
+	} perPage: 5 page: 2) {
+		# [$.data.perPage5Page2.totalCount=9]
+		totalCount
+		# [$.data.perPage5Page2.currentPage=2]
+		currentPage
+		# [$.data.perPage5Page2.perPage=5]
+		perPage
+		# [$.data.perPage5Page2.pageCount=2]
+		pageCount
+		# [$.data.perPage5Page2.hasNextPage=false]
+		hasNextPage
+		# [$.data.perPage5Page2.elements.length()=4]
+		elements {
+			uuid
+			schema {
+				name
+			}
+			fields {
+				... on folder {
+					name
+				}
+			}
+		}
+	}
+}
+# [$.errors=<is-undefined>]
