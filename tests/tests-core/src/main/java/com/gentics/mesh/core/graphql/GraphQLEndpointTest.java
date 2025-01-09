@@ -195,6 +195,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 				Arrays.asList("permissions", true, false, "draft"),
 				Arrays.asList("user-node-reference", true, false, "draft"),
 				Arrays.asList("filtering/children", true, false, "draft"),
+				Arrays.asList("filtering/children-paged", true, false, "draft"),
 				Arrays.asList("filtering/nodes-creator-editor", true, false, "draft"),
 				Arrays.asList("filtering/groups", true, false, "draft"),
 				Arrays.asList("filtering/roles", true, false, "draft"),
@@ -216,7 +217,8 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 				Arrays.asList("filtering/nodes-micronodelist-field-native", true, false, "draft"),
 				Arrays.asList("filtering/nodes-sorted-micronode", true, false, "draft"),
 				Arrays.asList("filtering/nodes-sorted-binary", true, false, "draft"),
-				Arrays.asList("filtering/nodes-sorted-node-field", true, false, "draft")
+				Arrays.asList("filtering/nodes-sorted-node-field", true, false, "draft"),
+				Arrays.asList("filtering/nodes-paged", true, false, "draft")
 			);
 	}
 
