@@ -1,6 +1,6 @@
 <h1 align="center">
-  <a href="https://getmesh.io">
-    <img src="https://getmesh.io/assets/gentics-mesh-logo.png" width="420" alt="Gentics Mesh" />
+  <a href="https://gentics.com/mesh">
+    <img src="https://www.gentics.com/mesh/assets/gentics-mesh-logo.png" width="420" alt="Gentics Mesh" />
   </a>
 </h1>
 
@@ -41,7 +41,7 @@ successfully in less time, no matter which technology you prefer.
 
 # Quick Start
 
-Check out our [Getting Started Guide](https://getmesh.io/docs/getting-started/)
+Check out our [Getting Started Guide](https://www.gentics.com/mesh/docs/getting-started/)
 for an explanation of the basic concepts of Gentics Mesh.
 
 # Table of Contents
@@ -176,29 +176,29 @@ For your first steps, please refer to the [Quick Start](#quick-start) which
 shows you how to run the demo application.
 
 When you're ready to run your own CMS installation, check out our
-[Administration Guide](https://getmesh.io/docs/administration-guide/) where you
+[Administration Guide](https://www.gentics.com/mesh/docs/administration-guide/) where you
 will find everything you need to know, and much more.
 
 
 # Features
 
-* [GraphQL API](https://getmesh.io/docs/graphql/)
-* [content events via websocket](https://getmesh.io/docs/events/)
-* [user, role and permission management](https://getmesh.io/docs/features/#_permissions)
-* [document-level permissions](https://getmesh.io/docs/features/#_permissions)
-* [versioned content](https://getmesh.io/docs/features/#versioning)
-* [a webroot API for easy integration with modern routing frameworks](https://getmesh.io/docs/features/#webroot)
-* [a search API powered by Elasticsearch](https://getmesh.io/docs/elasticsearch/)
-* [an image manipulation API](https://getmesh.io/docs/features/#imagemanipulation)
-* [a tagging API](https://getmesh.io/docs/building-blocks/#_tag)
-* [clustering support](https://getmesh.io/docs/clustering/)
-* [monitoring support](https://getmesh.io/docs/monitoring/)
+* [GraphQL API](https://www.gentics.com/mesh/docs/graphql/)
+* [content events via websocket](https://www.gentics.com/mesh/docs/events/)
+* [user, role and permission management](https://www.gentics.com/mesh/docs/features/#_permissions)
+* [document-level permissions](https://www.gentics.com/mesh/docs/features/#_permissions)
+* [versioned content](https://www.gentics.com/mesh/docs/features/#versioning)
+* [a webroot API for easy integration with modern routing frameworks](https://www.gentics.com/mesh/docs/features/#webroot)
+* [a search API powered by Elasticsearch](https://www.gentics.com/mesh/docs/elasticsearch/)
+* [an image manipulation API](https://www.gentics.com/mesh/docs/features/#imagemanipulation)
+* [a tagging API](https://www.gentics.com/mesh/docs/building-blocks/#_tag)
+* [clustering support](https://www.gentics.com/mesh/docs/clustering/)
+* [monitoring support](https://www.gentics.com/mesh/docs/monitoring/)
 * an embedded graph database at its core
-* support for [Docker](https://getmesh.io/docs/deployment/#_docker)
+* support for [Docker](https://www.gentics.com/mesh/docs/deployment/#_docker)
 
 # Documentation
 
-You can find our extensive documentation at https://getmesh.io/docs/
+You can find our extensive documentation at https://www.gentics.com/mesh/docs/
 
 # Getting Help
 
@@ -256,11 +256,11 @@ authenticate using basic auth.
 
 ## Using the REST API
 
-The full REST API documentation is available at the [Gentics Infoportal](https://getmesh.io/docs/api/#).
+The full REST API documentation is available at the [Gentics Infoportal](https://www.gentics.com/mesh/docs/api/#).
 
 ## Using the GraphQL API
 
-The data fetching [GraphQL API](https://getmesh.io/docs/api/#project__graphql__post) is a part of the public REST API. 
+The data fetching [GraphQL API](https://www.gentics.com/mesh/docs/api/#project__graphql__post) is a part of the public REST API. 
 The `IntrospectionQuery` is supported as well, so one can use a REST API tool with GraphQL support to have a code-assisted experience while writing own GraphQL queries. 
 
 An example of a GraphQL query looks as follows:
@@ -297,7 +297,7 @@ query webroot($path: String) {
 
 # Contributing to Gentics Mesh
 
-Please read our [Contributing Guidelines](https://getmesh.io/docs/contributing/) if you intend to contribute to the project. The guidelines will tell you the
+Please read our [Contributing Guidelines](https://www.gentics.com/mesh/docs/contributing/) if you intend to contribute to the project. The guidelines will tell you the
 legal information, give you instructions on how to set up your IDE in order to build Gentics Mesh, and will tell you necessary knowledge to understand the codebase.
 
 Gentics Mesh is currently split into two repositories:
