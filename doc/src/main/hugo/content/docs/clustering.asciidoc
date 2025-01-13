@@ -91,7 +91,7 @@ Alternatively it is also possible to hardcode the IP addresses of the cluster in
 
 === Kubernetes
 
-Autodiscovery of nodes in a kubernetes environment is built in to hazelcast and just needs to be configured in the `hazelcast.xml` file.
+Autodiscovery of nodes in a kubernetes environment is built into Hazelcast and just needs to be configured in the `hazelcast.xml` file.
 
 Example configuration:
 
