@@ -8,16 +8,17 @@ replicaCount: 1
 
 image:
   repository: docker.gentics.com/gentics/mesh
-  tag: 1.6.21
+  tag: 3.0.0
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
-licenseKey: null
-licenseKeyPath: "/license"
-licenseKeyFileName: "license.key"
+license:
+  key: null
+  path: "/license"
+  filename: "license.key"
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -154,6 +155,14 @@ persistence:
 #   periodSeconds: 5
 #   failureThreshold: 5
 
+database:
+  # host: ""
+  # port: 0
+  # name: ""
+  # username: ""
+  # password: ""
+  # extraParams: ""
+
 vertxOptions:
   workerPoolSize: 20
   eventLoopSize: 10
@@ -182,8 +191,6 @@ ssl:
 cluster:
   enabled: true
   coordinatorRegex: "gentics-mesh-[0-9]"
-  writeQuorum: "\"majority\""
-  readQuorum: 1
   podDisruptionBudget:
     maxUnavailable: false
 
@@ -210,13 +217,12 @@ monitoring:
 # Elasticsearch settings
 elasticsearch:
   url: "null" ## ES integration disabled by default
+  # complianceMode: "ES_8"
+  # prefix: "mesh-"
 
 # Upload settings
 upload:
   limit: "262144000" ## 260 MB
-
-setulimit:
-  enabled: true
 
 logging:
   defaultLogLevel: INFO

@@ -74,6 +74,14 @@ persistence:
         requests:
           storage: 5Gi
 
+database:
+  host: "gentics-mesh-mariadb"
+  port: 3306
+  name: "meshdb"
+  username: "meshdbuser"
+  password: "supersecret"
+  extraParams: ""
+
 keystore:
   password: "secret"
 
@@ -93,8 +101,6 @@ credentials:
 
 cluster:
   enabled: true
-  writeQuorum: 2
-  readQuorum: 1
 
-setulimit:
-  enabled: false
+elasticsearch:
+

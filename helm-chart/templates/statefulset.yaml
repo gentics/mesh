@@ -28,14 +28,6 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       terminationGracePeriodSeconds: 60
-      initContainers:
-      {{- if .Values.setulimit.enabled }}
-        - name: increase-ulimit
-          image: busybox
-          command: [ "sh", "-c", "ulimit -l unlimited" ]
-          securityContext:
-            privileged: true
-      {{- end }}
       containers:
       - name: mesh
         {{- if .Values.securityContext }}
@@ -126,9 +118,9 @@ spec:
             name: shared
             subPath: binaryImageCache
           {{- end }}
-          {{- if .Values.licenseKey }}
+          {{- if or .Values.license.key .Values.license.secret }}
           - name: shared
-            mountPath: {{ .Values.licenseKeyPath }}
+            mountPath: {{ .Values.license.path }}
             subPath: license
           {{- end }}
           {{ if .Values.extraConfig }}
@@ -161,6 +153,13 @@ spec:
         configMap:
           name: {{ template "mesh.fullname" $extraConfVolScope }}-extraconfig-{{ .name }}
       {{ end }}
+      {{- end }}
+
+      - name: data
+      {{- if .Values.persistence.enabled }}
+        persistentVolumeClaim:
+      {{- else }}
+        emptyDir: {}
       {{- end }}
 
       - name: shared
