@@ -1074,11 +1074,13 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting node {" + node.getUuid() + "}");
 		}
-		if (recursive) {
-			// No need to check the branch since this delete must affect all branches
-			for (HibNode child : getChildren(node)) {
-				delete(child, bac, false, true);
+		// No need to check the branch since this delete must affect all branches
+		for (HibNode child : getChildren(node)) {
+			if (recursive) {
+				delete(child, bac, ignoreChecks, recursive);
 				bac.process();
+			} else if (!ignoreChecks) {
+				throw error(BAD_REQUEST, "node_error_delete_failed_node_has_children");
 			}
 		}
 		ContentDao contentDao = Tx.get().contentDao();
@@ -1134,7 +1136,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 
 		// 3. Now check if the node has no more field containers in any branch. We can delete it in those cases
 		if (Tx.get().contentDao().getFieldContainerCount(node) == 0) {
-			delete(node, bac, false, true);
+			delete(node, bac, ignoreChecks, parameters.isRecursive());
 		} else {
 			removeParent(node, branchUuid);
 		}

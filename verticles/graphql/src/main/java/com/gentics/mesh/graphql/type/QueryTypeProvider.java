@@ -38,6 +38,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -282,7 +283,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			.filter(content -> content.getContainer() != null)
 			.filter(content1 -> gc.hasReadPerm(content1, type)).collect(Collectors.toList());
 
-		return DataFetcherResult.<Page<NodeContent>>newResult().data(applyNodeFilter(env, contents.stream(), false, false)).errors(errors).build();
+		return DataFetcherResult.<Page<NodeContent>>newResult().data(applyNodeFilter(env, contents.stream(), false, false, Optional.empty())).errors(errors).build();
 	}
 
 	/**
