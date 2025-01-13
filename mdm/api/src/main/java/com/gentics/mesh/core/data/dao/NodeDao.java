@@ -490,6 +490,20 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	long countAllContent(HibProject project, InternalActionContext ac, List<String> languageTags, ContainerType type, Optional<FilterOperation<?>> maybeFilter);
 
 	/**
+	 * Count all children for the contents for the provided parent in the target branch and the container type.
+	 * If the content is published, checks for read published permissions, otherwise check for read permissions. An optional initial data filtering may be applied.
+	 * @param parent 
+	 * @param project
+	 * @param ac
+	 * @param languageTags
+	 * @param type
+	 * @param maybeFilter
+	 * @param branchUuid
+	 * @return
+	 */
+	long countAllChildren(HibNode parent, HibProject project, InternalActionContext ac, List<String> languageTags, ContainerType type, Optional<FilterOperation<?>> maybeFilter, String branchUuid);
+
+	/**
 	 * Fetch all contents for the provided schemaVersion in the action context branch and the container type.
 	 * If the content is published, checks for read published permissions, otherwise check for read permissions
 	 * @param schemaVersion

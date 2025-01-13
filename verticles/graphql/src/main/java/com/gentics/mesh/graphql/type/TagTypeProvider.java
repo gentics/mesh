@@ -10,6 +10,7 @@ import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -89,7 +90,7 @@ public class TagTypeProvider extends AbstractTypeProvider {
 						.filter(content -> content.getContainer() != null)
 						.filter(content1 -> gc.hasReadPerm(content1, type));
 
-					return applyNodeFilter(env, contents, false, false);
+					return applyNodeFilter(env, contents, false, false, Optional.empty());
 
 				}));
 

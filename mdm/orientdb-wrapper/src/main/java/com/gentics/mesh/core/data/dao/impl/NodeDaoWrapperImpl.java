@@ -152,11 +152,11 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	public Map<HibNode, List<NodeContent>> getChildren(Set<HibNode> nodes, InternalActionContext ac, String branchUuid, List<String> languageTags, ContainerType type, PagingParameters sorting, Optional<FilterOperation<?>> maybeFilter) {
 		HibUser user = ac.getUser();
 		return nodes.stream()
-				.map(node -> Pair.of(node, getContentFromNode(Tx.get(), user, node, branchUuid, languageTags, type, sorting, maybeFilter)))
+				.map(node -> Pair.of(node, getNodeChildrenWithContent(Tx.get(), user, node, branchUuid, languageTags, type, sorting, maybeFilter)))
 				.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
 	}
 
-	private List<NodeContent> getContentFromNode(Tx tx, HibUser user, HibNode sourceNode, String branchUuid, List<String> languageTags, ContainerType type, PagingParameters sorting, Optional<FilterOperation<?>> maybeFilter) {
+	private List<NodeContent> getNodeChildrenWithContent(Tx tx, HibUser user, HibNode sourceNode, String branchUuid, List<String> languageTags, ContainerType type, PagingParameters sorting, Optional<FilterOperation<?>> maybeFilter) {
 		UserDao userDao = tx.userDao();
 		ContentDao contentDao = tx.contentDao();
 		return toGraph(sourceNode).getChildren(branchUuid, type, sorting, maybeFilter, Optional.of(user))
@@ -182,6 +182,11 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	@Override
 	public long countAllContent(HibProject project, InternalActionContext ac, List<String> languageTags, ContainerType type, Optional<FilterOperation<?>> maybeFilter) {
 		return toGraph(project).getNodeRoot().countAll(ac, type == ContainerType.PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM, Optional.ofNullable(type), maybeFilter);
+	}
+
+	@Override
+	public long countAllChildren(HibNode parent, HibProject project, InternalActionContext ac, List<String> languageTags, ContainerType type, Optional<FilterOperation<?>> maybeFilter, String branchUuid) {
+		return getChildren(Set.of(parent), ac, branchUuid, languageTags, type, null, maybeFilter).entrySet().stream().flatMap(e -> e.getValue().stream()).count();
 	}
 
 	@Override
