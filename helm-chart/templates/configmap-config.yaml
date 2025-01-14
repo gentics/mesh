@@ -16,6 +16,21 @@ data:
 
 {{ (.Files.Glob "config/common/hazelcast.xml").AsConfig | indent 2 }}
 
+  backup.sh: |-
+{{- if .Values.backup.backupScript }}
+{{ tpl .Values.backup.backupScript . | indent 6 }}
+{{- else }}
+{{- $file := .Files.Get "scripts/backup.sh" | indent 6 }}
+{{ tpl $file . }}
+{{- end }}
+
+  restore.sh: |-
+{{- if .Values.backup.restoreScript }}
+{{ tpl .Values.backup.restoreScript . | indent 6 }}
+{{- else }}
+{{- $file := .Files.Get "scripts/restore.sh" | indent 6 }}
+{{ tpl $file . }}
+{{- end }}
 
   public-keys.json: |-
 {{ .Values.config.publicKeys | indent 4 }}

@@ -33,7 +33,7 @@ ingress:
 
 extraEnv:
 - name: JAVA_TOOL_OPTIONS
-  value: "-Xms512m -Xmx512m -XX:MaxDirectMemorySize=256m -Dstorage.diskCache.bufferSize=512"
+  value: "-Xms512m -Xmx512m"
 
 # You should adjust this to your needs. This just defines the absolute minimum defaults.
 # The memory values should be set in conjunction with the Java Xmx plus other Java memory settings like Direct memory
@@ -101,6 +101,3 @@ credentials:
 
 cluster:
   enabled: true
-
-elasticsearch:
-

@@ -22,9 +22,9 @@
 
 2. Download the API key (using the commercial Gentics Mesh CLI):
   kubectl run {{ template "mesh.fullname" . }}-cli --rm --tty -i --restart='Never' \
-    --image {{ .Values.image.repository }}:{{ .Values.image.tag }} \
+    --image {{ .Values.tools.image.repository }}:{{ .Values.tools.image.tag }} \
     --namespace {{ .Release.Namespace }} \
-    --command -- sh -c "unset JAVA_TOOL_OPTIONS ; java -jar /mesh-cli.jar --username admin --password {{ .Values.credentials.initialAdminPassword | default "GENERATED_ADMIN_PASSWORD" }} --url http://{{ include "mesh.fullname" . }}:{{ .Values.service.mesh.port }}/api/v2 user apikey admin"
+    --command -- sh -c "unset JAVA_TOOL_OPTIONS ; java -jar /mesh/mesh-cli.jar --username admin --password {{ .Values.credentials.initialAdminPassword | default "GENERATED_ADMIN_PASSWORD" }} --url http://{{ include "mesh.fullname" . }}:{{ .Values.service.mesh.port }}/api/v2 user apikey admin"
 {{- if not .Values.credentials.initialAdminPassword}}
 
    (you can find the generated admin password in the logs)

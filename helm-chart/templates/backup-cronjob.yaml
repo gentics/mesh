@@ -1,0 +1,97 @@
+{{- if .Values.backup.enabled }}
+{{- if semverCompare "<=1.21-0" .Capabilities.KubeVersion.GitVersion -}}
+apiVersion: batch/v1beta1
+{{- else -}}
+apiVersion: batch/v1
+{{- end }}
+kind: CronJob
+metadata:
+  name: {{ include "mesh.fullname" . }}-backup
+  labels:
+    {{- include "mesh.labels" . | nindent 4 }}
+spec:
+  schedule: "{{ .Values.backup.cron.schedule }}"
+  suspend: {{ .Values.backup.suspended }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: {{ .Values.backup.cron.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.backup.cron.failedJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      activeDeadlineSeconds: {{ .Values.backup.cron.timeLimitSeconds }}
+      template:
+        spec:
+          securityContext:
+            {{- toYaml .Values.podSecurityContext | nindent 12 }}
+          restartPolicy: Never
+          serviceAccountName: {{ include "mesh.serviceAccountName" . }}
+          {{- if .Values.tools.image.pullSecret }}
+          imagePullSecrets:
+          - name: {{ .Values.tools.image.pullSecret }}
+          {{- end }}
+          containers:
+          - name: backup
+            securityContext:
+              {{- toYaml .Values.securityContext | nindent 14 }}
+            image: "{{ .Values.tools.image.repository }}:{{ .Values.tools.image.tag }}"
+            imagePullPolicy: {{ .Values.tools.image.pullPolicy }}
+            command: ["/bin/sh"]
+            args:
+              - "/backup.sh"
+            resources:
+              {{- toYaml .Values.backup.resources | nindent 14 }}
+            volumeMounts:
+              - mountPath: /target
+                name: snapshots
+                subPath: backups
+              - mountPath: /keystore
+                name: shared
+                subPath: keystore
+                readOnly: true
+              - mountPath: /uploads
+                name: shared
+                subPath: uploads
+                readOnly: true
+
+              - mountPath: /backup.sh
+                name: config
+                subPath: backup.sh
+          volumes:
+            - name: config
+              configMap:
+                name: {{ include "mesh.fullname" . }}-config
+            - name: shared
+            {{- if .Values.persistence.enabled }}
+              persistentVolumeClaim:
+                {{- if .Values.persistence.shared.existingClaim }}
+                claimName: {{ .Values.persistence.shared.existingClaim }}
+                {{- else }}
+                claimName: {{ include "mesh.fullname" . }}-shared
+                {{- end }}
+            {{- else }}
+              emptyDir: {}
+            {{- end }}
+            - name: snapshots
+            {{- if .Values.persistence.enabled }}
+              persistentVolumeClaim:
+                {{- if .Values.persistence.backup.snapshots.existingClaim }}
+                claimName: {{ .Values.persistence.backup.snapshots.existingClaim }}
+                {{- else }}
+                claimName: {{ include "mesh.fullname" . }}-snapshots
+                {{- end }}
+            {{- else }}
+              emptyDir: {}
+            {{- end }}
+          {{- with .Values.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 8 }}
+          {{- end }}
+        {{- with .Values.affinity }}
+          affinity:
+            {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 8 }}
+        {{- end }}
+{{- end }}

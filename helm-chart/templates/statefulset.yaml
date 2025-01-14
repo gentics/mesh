@@ -28,6 +28,29 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       terminationGracePeriodSeconds: 60
+      initContainers:
+      {{- if and (.Values.restore.enabled) (eq (.Values.replicaCount | int) 1) }}
+        - name: restore-from-snapshot
+          image: "{{ .Values.tools.image.repository }}:{{ .Values.tools.image.tag }}"
+          imagePullPolicy: {{ .Values.tools.image.pullPolicy }}
+          command: ["/bin/sh"]
+          args:
+            - "/restore.sh"
+            - "{{ .Values.restore.snapshotName }}"
+          volumeMounts:
+            - mountPath: /snapshots
+              name: snapshots
+              subPath: backups
+            - mountPath: "/keystore"
+              name: shared
+              subPath: keystore
+            - mountPath: "/uploads"
+              name: shared
+              subPath: uploads
+            - mountPath: /restore.sh
+              name: config
+              subPath: restore.sh
+      {{- end }}
       containers:
       - name: mesh
         {{- if .Values.securityContext }}
@@ -56,9 +79,6 @@ spec:
             protocol: TCP
           - name: vertx
             containerPort: 4848
-            protocol: TCP
-          - name: http-monitoring
-            containerPort: 8081
             protocol: TCP
         livenessProbe:
           {{- if .Values.livenessProbe }}
@@ -160,6 +180,16 @@ spec:
         persistentVolumeClaim:
       {{- else }}
         emptyDir: {}
+      {{- end }}
+
+      {{- if eq .Values.backup.enabled true }}
+      - name: snapshots
+        persistentVolumeClaim:
+          {{- if .Values.persistence.backup.snapshots.existingClaim }}
+          claimName: {{ .Values.persistence.backup.snapshots.existingClaim }}
+          {{- else }}
+          claimName: {{ include "mesh.fullname" . }}-snapshots
+          {{- end }}
       {{- end }}
 
       - name: shared

@@ -120,6 +120,20 @@ persistence:
   ## If defined, the PVC must be created manually before volume will be bound
   cluster:
 
+  backup:
+    ##  Storage for database snapshots
+    snapshots:
+      # Use existingClaim if you don't have a storage provisioner for your NFS
+      # existingClaim: ""
+      annotations: {}
+      spec:
+        accessModes:
+          - ReadWriteMany
+        # storageClassName: ""
+        resources:
+          requests:
+            storage: 10Gi
+
   # Volume for shared data (uploads, keystore)
   # This volume should be a network volume (NFS) and will be shared across all instances
   shared:
@@ -194,6 +208,58 @@ cluster:
   podDisruptionBudget:
     maxUnavailable: false
 
+  resources:
+    requests:
+      memory: 500Mi
+      cpu: 100m
+    limits:
+      memory: 1Gi
+      cpu: 250m
+
+# Tools settings, which are used for backup/restore and in the NOTES for generation of an api key
+tools:
+  image:
+    repository: docker.gentics.com/gentics/mesh/mesh-tools
+    tag: 1.0.2
+    pullPolicy: IfNotPresent
+    pullSecret: docker-gentics-com
+
+# Restore settings. The restore operation is invoked when the initial cluster is being setup.
+# The restore will utilize the backup snapshot to populate the keystore and uploads folders.
+restore:
+  enabled: false
+  # Which parts to restore?
+  allowedParts: 
+    uploads: true
+    keystore: true
+  snapshotName: "current"
+
+# Configure backup related settings
+backup: 
+  # Per default, backup is not enabled
+  enabled: false
+  # Backup may be suspended
+  suspended: false
+  # Which parts to backup?
+  allowedParts:
+    uploads: true
+    keystore: true
+  # in some installations the backup target is e.g. a NFS and files cannot be rsynced
+  # in this case the files can be tared to preserve file permissions
+  # useTar: true
+  cron:
+    # Daily at 22 pm
+    schedule: "0 22 * * *"
+    # Define the time limit for the backup in seconds
+    timeLimitSeconds: 3600
+
+    successfulJobsHistoryLimit: 3
+    failedJobsHistoryLimit: 3
+
+  #allow to override default backup.sh script
+  #backupScript: |-
+  #allow to override default restore.sh script
+  #restoreScript: |-
   resources:
     requests:
       memory: 500Mi
