@@ -19,6 +19,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -654,7 +655,9 @@ public abstract class AbstractTypeProvider {
 			} else {
 				stream = nodeDao.findAllContent(project, gc, languageTags, type);
 			}
-			return applyNodeFilter(stream, pagingInfo, filters.getLeft(), filters.getRight().isPresent());
+			boolean isPagedNatively = PersistingRootDao.shouldPage(pagingInfo) && (filters.getRight().isPresent() || PersistingRootDao.shouldSort(pagingInfo));
+			return applyNodeFilter(stream, pagingInfo, filters.getLeft(), filters.getRight().isPresent(), 
+					Optional.of(isPagedNatively).filter(paged -> paged).map(paged -> () -> nodeDao.countAllContent(project, gc, languageTags, type, filters.getRight())));
 		}
 	}
 
@@ -727,8 +730,12 @@ public abstract class AbstractTypeProvider {
 	 * @param ignorePaging
 	 * @return
 	 */
-	protected DynamicStreamPageImpl<NodeContent> applyNodeFilter(Stream<? extends NodeContent> stream, PagingParameters pagingInfo, Predicate<NodeContent> javaFilter, boolean ignorePaging) {
-		return new DynamicStreamPageImpl<>(stream, pagingInfo, javaFilter, ignorePaging);
+	@SuppressWarnings("unchecked")
+	protected Page<NodeContent> applyNodeFilter(Stream<? extends NodeContent> stream, PagingParameters pagingInfo, Predicate<NodeContent> javaFilter, boolean ignorePaging, Optional<Supplier<Long>> maybeCountSupplier) {
+		return maybeCountSupplier
+				.filter(unused -> PersistingRootDao.shouldPage(pagingInfo) && (ignorePaging || PersistingRootDao.shouldSort(pagingInfo)))
+				.map(countSupplier -> (Page<NodeContent>) new PageImpl<>(stream.collect(Collectors.toList()), pagingInfo, countSupplier.get()))
+				.orElseGet(() -> new DynamicStreamPageImpl<>(stream, pagingInfo, javaFilter, ignorePaging));
 	}
 
 	/**
@@ -739,7 +746,7 @@ public abstract class AbstractTypeProvider {
 	 * @param ignorePaging
 	 * @return
 	 */
-	protected DynamicStreamPageImpl<NodeContent> applyNodeFilter(DataFetchingEnvironment env, Stream<? extends NodeContent> stream, boolean ignorePaging, boolean ignoreFiltering) {
+	protected Page<NodeContent> applyNodeFilter(DataFetchingEnvironment env, Stream<? extends NodeContent> stream, boolean ignorePaging, boolean ignoreFiltering, Optional<Supplier<Long>> maybeCountSupplier) {
 		Map<String, ?> filterArgument = ignoreFiltering ? null : env.getArgument("filter");
 		GraphQLContext gc = env.getContext();
 		Predicate<NodeContent> predicate = null;
@@ -747,7 +754,7 @@ public abstract class AbstractTypeProvider {
 		if (filterArgument != null) {
 			predicate = NodeFilter.filter(gc).createPredicate(filterArgument);
 		}
-		return applyNodeFilter(stream, getPagingInfo(env), predicate, ignorePaging);
+		return applyNodeFilter(stream, getPagingInfo(env), predicate, ignorePaging, maybeCountSupplier);
 	}
 
 	/**

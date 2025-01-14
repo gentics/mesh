@@ -58,6 +58,7 @@ public class HibClusterManager implements ClusterManager {
 			config.setInstanceName(options.getNodeName());
 			config.setClusterName(options.getClusterOptions().getClusterName());
 			config.setClassLoader(Thread.currentThread().getContextClassLoader());
+			config.getMemberAttributeConfig().setAttribute("__vertx.nodeId", options.getNodeName());
 			hazelcastInstance = Hazelcast.getOrCreateHazelcastInstance(config);
 		}
 		return hazelcastInstance;

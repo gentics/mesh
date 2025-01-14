@@ -1,0 +1,1 @@
+Core: The paged data sets contain different data, when being produced by native and legacy filtering, and/or sorting, under some circumstances. This has been fixed.

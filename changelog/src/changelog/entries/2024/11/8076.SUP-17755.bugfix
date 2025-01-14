@@ -1,0 +1,1 @@
+Core: The node deletion rules has been strictened, to avoid internal deletion API misusage.
