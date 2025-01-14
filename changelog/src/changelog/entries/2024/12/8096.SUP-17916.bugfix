@@ -1,0 +1,1 @@
+Clustering: Autodiscovery of cluster member nodes in a kubernetes environment did not work (Mesh instances failed to start) due to an incorrect dependency, which has been removed now.
