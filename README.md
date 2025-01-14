@@ -300,10 +300,7 @@ query webroot($path: String) {
 Please read our [Contributing Guidelines](https://www.gentics.com/mesh/docs/contributing/) if you intend to contribute to the project. The guidelines will tell you the
 legal information, give you instructions on how to set up your IDE in order to build Gentics Mesh, and will tell you necessary knowledge to understand the codebase.
 
-Gentics Mesh is currently split into two repositories:
-
-* https://github.com/gentics/mesh contains the backend code
-* https://github.com/gentics/mesh-ui contains the frontend code
+* https://github.com/gentics/mesh contains the Gentics Mesh code
 
 # Copyright & License
 
