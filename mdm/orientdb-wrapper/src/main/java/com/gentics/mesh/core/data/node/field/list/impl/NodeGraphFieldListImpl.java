@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.impl.NodeGraphFieldImpl;
@@ -39,7 +38,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<Hi
 	}
 
 	@Override
-	public void delete(BulkActionContext context) {
+	public void delete() {
 		// We only need to remove the vertex. The entry are edges which will automatically be removed.
 		getElement().remove();
 	}

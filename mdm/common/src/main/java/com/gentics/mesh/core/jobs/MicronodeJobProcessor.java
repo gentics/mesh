@@ -84,7 +84,7 @@ public class MicronodeJobProcessor implements SingleJobProcessor {
 				MicronodeMigrationContextImpl context = new MicronodeMigrationContextImpl();
 				context.setStatus(status);
 
-				tx.createBatch().add(createEvent(job, tx, MICROSCHEMA_MIGRATION_START, STARTING)).dispatch();
+				tx.batch().add(createEvent(job, tx, MICROSCHEMA_MIGRATION_START, STARTING)).dispatch();
 
 				HibBranch branch = job.getBranch();
 				if (branch == null) {
@@ -148,7 +148,7 @@ public class MicronodeJobProcessor implements SingleJobProcessor {
 					}).doOnError(err -> {
 						db.tx(tx -> {
 							context.getStatus().error(err, "Error in micronode migration.");
-							tx.createBatch().add(createEvent(job, tx, BRANCH_MIGRATION_FINISHED, FAILED)).dispatch();
+							tx.batch().add(createEvent(job, tx, BRANCH_MIGRATION_FINISHED, FAILED)).dispatch();
 						});
 					});
 		});
@@ -156,7 +156,7 @@ public class MicronodeJobProcessor implements SingleJobProcessor {
 
 	private void finalizeMigration(HibJob job, MicronodeMigrationContext context) {
 		db.tx(tx -> {
-			tx.createBatch().add(createEvent(job, tx, MICROSCHEMA_MIGRATION_FINISHED, COMPLETED)).dispatch();
+			tx.batch().add(createEvent(job, tx, MICROSCHEMA_MIGRATION_FINISHED, COMPLETED)).dispatch();
 		});
 	}
 }

@@ -11,6 +11,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.dao.TagFamilyDao;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -36,7 +37,8 @@ public class TagFamilyTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			TagFamilyDao tagFamilyDao = tx.tagFamilyDao();
 			BulkActionContext bac = createBulkContext();
-			tagFamilyDao.delete(tagFamily, bac);
+			tx.<CommonTx>unwrap().data().setBulkActionContext(bac);
+			tagFamilyDao.delete(tagFamily);
 			bac.process(true);
 			tx.success();
 		}

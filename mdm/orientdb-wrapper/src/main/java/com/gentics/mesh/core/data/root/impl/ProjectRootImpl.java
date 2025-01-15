@@ -13,7 +13,6 @@ import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.Project;
@@ -123,7 +122,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 	}
 
 	@Override
-	public void delete(BulkActionContext bac) {
+	public void delete() {
 		throw new NotImplementedException("The project root should never be deleted.");
 	}
 

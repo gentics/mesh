@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data.node.field.list.impl;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.field.HibHtmlField;
 import com.gentics.mesh.core.data.node.field.HtmlGraphField;
@@ -49,7 +48,7 @@ public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HibHtmlF
 	}
 
 	@Override
-	public void delete(BulkActionContext bac) {
+	public void delete() {
 		getElement().remove();
 	}
 }

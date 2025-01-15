@@ -6,7 +6,6 @@ import java.util.Optional;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.Micronode;
@@ -51,9 +50,9 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 	}
 
 	@Override
-	public void delete(BulkActionContext bac) {
+	public void delete() {
 		getList().stream().map(HibMicronodeField::getMicronode).forEach(micronode -> {
-			toGraph(micronode).delete(bac);
+			toGraph(micronode).delete();
 		});
 		getElement().remove();
 	}

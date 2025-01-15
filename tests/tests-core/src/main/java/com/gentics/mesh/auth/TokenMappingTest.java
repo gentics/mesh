@@ -976,7 +976,7 @@ public class TokenMappingTest extends AbstractMeshTest {
 		public void test() {
 			List<MeshEventModel> caughtEvents = new ArrayList<>();
 			boolean success = tx(tx -> {
-				EventQueueBatch eqb = tx.createBatch();
+				EventQueueBatch eqb = tx.batch();
 				HibUser admin = tx.userDao().findByName("admin");
 				HibUser testUser = tx.userDao().findByName(TESTUSER_NAME);
 

@@ -9,7 +9,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractCoreDaoWrapper;
@@ -78,8 +77,8 @@ public class JobDaoWrapperImpl extends AbstractCoreDaoWrapper<JobResponse, HibJo
 	}
 	
 	@Override
-	public void delete(HibJob job, BulkActionContext bac) {
-		toGraph(job).delete(bac);
+	public void delete(HibJob job) {
+		toGraph(job).delete();
 	}
 
 	@Override

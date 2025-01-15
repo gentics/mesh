@@ -38,7 +38,6 @@ import org.apache.commons.lang3.NotImplementedException;
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.BranchParentEntry;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
@@ -327,8 +326,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void delete(BulkActionContext bac) {
-		Tx.get().nodeDao().delete(this, bac, false, true);
+	public void delete() {
+		Tx.get().nodeDao().delete(this, false, true);
 	}
 
 	@Override

@@ -12,7 +12,6 @@ import javax.inject.Inject;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
@@ -167,9 +166,9 @@ public class TagFamilyDaoWrapperImpl extends AbstractRootDaoWrapper<TagFamilyRes
 	}
 
 	@Override
-	public void onRootDeleted(HibProject root, BulkActionContext bac) {
-		TagFamilyDaoWrapper.super.onRootDeleted(root, bac);
-		toGraph(root).getTagFamilyRoot().delete(bac);
+	public void onRootDeleted(HibProject root) {
+		TagFamilyDaoWrapper.super.onRootDeleted(root);
+		toGraph(root).getTagFamilyRoot().delete();
 	}
 
 	@Override

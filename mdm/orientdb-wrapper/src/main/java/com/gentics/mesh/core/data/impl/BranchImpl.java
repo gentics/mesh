@@ -16,7 +16,6 @@ import java.util.List;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
@@ -47,6 +46,7 @@ import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.branch.BranchReference;
@@ -385,8 +385,8 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 	}
 
 	@Override
-	public void delete(BulkActionContext bac) {
-		bac.add(onDeleted());
+	public void delete() {
+		CommonTx.get().batch().add(onDeleted());
 		getVertex().remove();
 	}
 

@@ -15,7 +15,6 @@ import javax.inject.Singleton;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
@@ -198,9 +197,9 @@ public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse,
 	}
 
 	@Override
-	public void onRootDeleted(HibProject root, BulkActionContext bac) {
+	public void onRootDeleted(HibProject root) {
 		// Delete all leaf data
-		super.onRootDeleted(root, bac);
+		super.onRootDeleted(root);
 		// Delete the root itself
 		getRoot(root).delete();
 	}

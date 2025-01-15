@@ -19,6 +19,7 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
+import com.gentics.mesh.core.db.CommonTx;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -69,17 +70,19 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 	}
 
 	@Override
-	public void delete(BulkActionContext bac) {
+	public void delete() {
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting tagFamilyRoot {" + getUuid() + "}");
 		}
 		for (TagFamily tagFamily : findAll()) {
-			tagFamily.delete(bac);
-			bac.process();
+			tagFamily.delete();
+			CommonTx.get().data().maybeGetBulkActionContext().ifPresent(BulkActionContext::process);
 		}
 		getElement().remove();
-		bac.inc();
-		bac.process();
+		CommonTx.get().data().maybeGetBulkActionContext().ifPresent(bac -> {
+			bac.inc();
+			bac.process();
+		});
 	}
 
 	@Override

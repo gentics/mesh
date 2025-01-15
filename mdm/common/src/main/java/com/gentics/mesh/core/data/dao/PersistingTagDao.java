@@ -224,28 +224,28 @@ public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<HibTag>, P
 	}
 
 	@Override
-	default void delete(HibTagFamily tagFamily, HibTag tag, BulkActionContext bac) {
-		delete(tag, bac);
+	default void delete(HibTagFamily tagFamily, HibTag tag) {
+		delete(tag);
 	}
 
 	@Override
-	default void delete(HibTag tag, BulkActionContext bac) {
+	default void delete(HibTag tag) {
 		String uuid = tag.getUuid();
 		String name = tag.getName();
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting tag {" + uuid + ":" + name + "}");
 		}
-		bac.add(tag.onDeleted());
+		CommonTx.get().batch().add(tag.onDeleted());
 
 		NodeDao nodeDao = Tx.get().nodeDao();
 		// For node which have been previously tagged we need to fire the untagged event.
 		for (HibBranch branch : Tx.get().branchDao().findAll(tag.getProject())) {
 			for (HibNode node : getNodes(tag, branch)) {
-				bac.add(nodeDao.onTagged(node, tag, branch, UNASSIGNED));
+				CommonTx.get().batch().add(nodeDao.onTagged(node, tag, branch, UNASSIGNED));
 			}
 		}
 		deletePersisted(tag);
-		bac.process();
+		CommonTx.get().data().maybeGetBulkActionContext().ifPresent(BulkActionContext::process);
 	}
 
 	@Override

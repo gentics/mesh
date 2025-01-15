@@ -80,7 +80,7 @@ public class BranchDAOActionsImpl implements BranchDAOActions {
 	}
 
 	@Override
-	public void delete(Tx tx, HibBranch element, BulkActionContext bac) {
+	public void delete(Tx tx, HibBranch element) {
 		throw new RuntimeException("Branches are currently not deletable");
 	}
 

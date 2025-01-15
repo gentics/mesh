@@ -9,7 +9,6 @@ import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.root.MicroschemaRoot;
@@ -56,7 +55,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	}
 
 	@Override
-	public void delete(BulkActionContext bac) {
+	public void delete() {
 		throw new NotImplementedException("The microschema container root can't be deleted");
 	}
 

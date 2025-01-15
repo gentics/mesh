@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data.node.field.impl;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.node.field.AbstractBasicField;
 import com.gentics.mesh.core.data.node.field.DateGraphField;
@@ -36,7 +35,7 @@ public class DateGraphFieldImpl extends AbstractBasicField<DateField> implements
 	}
 
 	@Override
-	public void removeField(BulkActionContext bac, HibFieldContainer container) {
+	public void removeField(HibFieldContainer container) {
 		setFieldProperty("date", null);
 		setFieldKey(null);
 	}

@@ -105,7 +105,7 @@ public interface JobDao extends DaoGlobal<HibJob>, DaoTransformable<HibJob, JobR
 	 * @param job
 	 * @param bac
 	 */
-	void delete(HibJob job, BulkActionContext bac);
+	void delete(HibJob job);
 
 	/**
 	 * Create a new job.

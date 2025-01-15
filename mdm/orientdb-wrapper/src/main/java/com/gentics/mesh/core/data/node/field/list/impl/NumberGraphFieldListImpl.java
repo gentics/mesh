@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data.node.field.list.impl;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.field.HibNumberField;
 import com.gentics.mesh.core.data.node.field.NumberGraphField;
@@ -50,7 +49,7 @@ public class NumberGraphFieldListImpl extends AbstractBasicGraphFieldList<HibNum
 	}
 
 	@Override
-	public void delete(BulkActionContext context) {
+	public void delete() {
 		getElement().remove();
 	}
 }

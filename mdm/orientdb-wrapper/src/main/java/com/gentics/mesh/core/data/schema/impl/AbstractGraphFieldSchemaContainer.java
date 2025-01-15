@@ -12,7 +12,6 @@ import java.util.Map;
 
 import org.apache.commons.lang.NotImplementedException;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
@@ -20,6 +19,7 @@ import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaElement;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
@@ -120,9 +120,9 @@ public abstract class AbstractGraphFieldSchemaContainer<
 	}
 
 	@Override
-	public void delete(BulkActionContext bac) {
+	public void delete() {
 		// TODO should all references be updated to a new fallback schema?
-		bac.add(onDeleted());
+		CommonTx.get().batch().add(onDeleted());
 		getElement().remove();
 		// TODO delete versions and nodes as well
 	}

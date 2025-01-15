@@ -5,7 +5,6 @@ import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.dao.RoleDao;
@@ -61,9 +60,9 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse> implements Ro
 	}
 
 	@Override
-	public void delete(BulkActionContext bac) {
+	public void delete() {
 		RoleDao roleDao = Tx.get().roleDao();
-		roleDao.delete(this, bac);
+		roleDao.delete(this);
 	}
 
 	@Override

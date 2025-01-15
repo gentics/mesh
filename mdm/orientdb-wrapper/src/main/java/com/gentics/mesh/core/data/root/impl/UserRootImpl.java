@@ -7,7 +7,6 @@ import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
@@ -91,7 +90,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 	}
 
 	@Override
-	public void delete(BulkActionContext context) {
+	public void delete() {
 		throw new NotImplementedException("The user root should never be deleted");
 	}
 }

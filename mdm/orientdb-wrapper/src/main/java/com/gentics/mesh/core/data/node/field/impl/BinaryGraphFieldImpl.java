@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.HibFieldContainer;
@@ -80,7 +79,7 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 	 * the binary storage as well.
 	 */
 	@Override
-	public void removeField(BulkActionContext bac, HibFieldContainer container) {
+	public void removeField(HibFieldContainer container) {
 		GraphFieldContainer graphContainer = toGraph(container);
 		for (BinaryGraphFieldVariant variant : graphContainer.findImageVariants(getFieldKey())) {
 			graphContainer.detachImageVariant(getFieldKey(), variant.getVariant());
@@ -92,7 +91,7 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 			for (ImageVariant variant : graphBinary.getVariants()) {
 				CommonTx.get().imageVariantDao().deletePersistedVariant(graphBinary, variant, true);
 			}
-			graphBinary.delete(bac);
+			graphBinary.delete();
 		}
 	}
 

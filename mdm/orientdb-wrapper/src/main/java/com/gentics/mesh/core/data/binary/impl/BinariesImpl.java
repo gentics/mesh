@@ -47,6 +47,11 @@ public class BinariesImpl implements Binaries {
 	}
 
 	@Override
+	public Transactional<HibBinary> findByUuid(String uuid) {
+		return database.transactional(tx -> database.getVerticesTraversal(BinaryImpl.class, Binary.UUID_KEY, uuid).nextOrNull());
+	}
+
+	@Override
 	public Transactional<HibBinary> findByHash(String hash) {
 		return database.transactional(tx -> database.getVerticesTraversal(BinaryImpl.class, Binary.SHA512SUM_KEY, hash).nextOrNull());
 	}

@@ -5,15 +5,17 @@ import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.HibBinaryDataElement;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.impl.S3BinaryGraphFieldImpl;
 import com.gentics.mesh.core.data.s3binary.S3Binary;
+import com.gentics.mesh.core.data.storage.S3BinaryStorage;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.madl.field.FieldType;
-import com.gentics.mesh.core.data.storage.S3BinaryStorage;
+
+import io.reactivex.Completable;
 
 /**
  * @see S3Binary
@@ -39,10 +41,11 @@ public class S3BinaryImpl extends MeshVertexImpl implements S3Binary {
 	}
 
 	@Override
-	public void delete(BulkActionContext bac) {
+	public void delete() {
 		S3BinaryStorage storage = mesh().s3binaryStorage();
-		bac.add(storage.delete(getS3ObjectKey()));
-		bac.add(onDeleted(getUuid(), getS3ObjectKey()));
+		Completable deletableAction = storage.delete(getS3ObjectKey());
+		CommonTx.get().data().maybeGetBulkActionContext().ifPresentOrElse(bac -> bac.add(deletableAction), () -> CommonTx.get().batch().add(() -> deletableAction.blockingGet()));
+		CommonTx.get().batch().add(onDeleted(getUuid(), getS3ObjectKey()));
 		getElement().remove();
 	}
 

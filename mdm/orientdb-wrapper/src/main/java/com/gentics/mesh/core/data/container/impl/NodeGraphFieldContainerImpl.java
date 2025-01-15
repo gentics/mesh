@@ -50,12 +50,12 @@ import com.gentics.mesh.core.data.node.field.list.impl.MicronodeGraphFieldListIm
 import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.search.BucketableElementHelper;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -127,34 +127,34 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public void delete(BulkActionContext bac) {
-		delete(bac, true);
+	public void delete() {
+		delete(true);
 	}
 
 	@Override
-	public void delete(BulkActionContext bac, boolean deleteNext) {
+	public void delete(boolean deleteNext) {
 		ContentDao contentDao = Tx.get().contentDao();
 
 		if (deleteNext) {
 			// Recursively delete all versions of the container
 			for (HibNodeFieldContainer next : getNextVersions()) {
-				contentDao.delete(next, bac);
+				contentDao.delete(next);
 			}
 		}
 
 		// Invoke common field removal operations
-		super.delete(bac);
+		super.delete();
 
 		for (BinaryGraphField binaryField : outE(HAS_FIELD).has(BinaryGraphFieldImpl.class).frameExplicit(BinaryGraphFieldImpl.class)) {
-			binaryField.removeField(bac, this);
+			binaryField.removeField(this);
 		}
 
 		for (S3BinaryGraphField s3binaryField : outE(HAS_FIELD).has(S3BinaryGraphFieldImpl.class).frameExplicit(S3BinaryGraphFieldImpl.class)) {
-			s3binaryField.removeField(bac, this);
+			s3binaryField.removeField(this);
 		}
 
 		for (MicronodeGraphField micronodeField : outE(HAS_FIELD).has(MicronodeGraphFieldImpl.class).frameExplicit(MicronodeGraphFieldImpl.class)) {
-			micronodeField.removeField(bac, this);
+			micronodeField.removeField(this);
 		}
 
 		// Delete the container from all branches and types
@@ -162,23 +162,23 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			String branchUuid = tuple.v1();
 			ContainerType type = tuple.v2();
 			if (type != ContainerType.INITIAL) {
-				bac.add(contentDao.onDeleted(this, branchUuid, type));
+				Tx.get().batch().add(contentDao.onDeleted(this, branchUuid, type));
 			}
 		});
 
 		// We don't need to handle node fields since those are only edges and will automatically be removed
 		getElement().remove();
-		bac.inc();
+		GraphDBTx.getGraphTx().data().maybeGetBulkActionContext().ifPresent(BulkActionContext::inc);
 	}
 
 	@Override
-	public void deleteFromBranch(HibBranch branch, BulkActionContext bac) {
+	public void deleteFromBranch(HibBranch branch) {
 		ContentDao contentDao = Tx.get().contentDao();
 		String branchUuid = branch.getUuid();
 
-		bac.batch().add(contentDao.onDeleted(this, branchUuid, DRAFT));
+		Tx.get().batch().add(contentDao.onDeleted(this, branchUuid, DRAFT));
 		if (contentDao.isPublished(this, branchUuid)) {
-			bac.batch().add(contentDao.onDeleted(this, branchUuid, PUBLISHED));
+			Tx.get().batch().add(contentDao.onDeleted(this, branchUuid, PUBLISHED));
 		}
 		// Remove the edge between the node and the container that matches the branch
 		inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).or(

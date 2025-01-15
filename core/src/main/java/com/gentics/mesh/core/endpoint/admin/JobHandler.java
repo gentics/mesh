@@ -23,7 +23,6 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.action.JobDAOActions;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.JobDao;
@@ -177,7 +176,7 @@ public class JobHandler extends AbstractCrudHandler<HibJob, JobResponse> {
 				HibJob job = root.loadObjectByUuidNoPerm(uuid, true);
 				db.tx(() -> {
 					if (job.hasFailed()) {
-						root.delete(job, new DummyBulkActionContext());
+						root.delete(job);
 					} else {
 						throw error(BAD_REQUEST, "job_error_invalid_state", uuid);
 					}

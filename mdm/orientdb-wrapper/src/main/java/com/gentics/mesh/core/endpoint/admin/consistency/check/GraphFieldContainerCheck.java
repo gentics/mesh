@@ -13,7 +13,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
@@ -32,11 +31,9 @@ import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.consistency.AbstractConsistencyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
-import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.core.rest.admin.consistency.InconsistencyInfo;
 import com.gentics.mesh.core.rest.admin.consistency.RepairAction;
 import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.FramedGraph;
 
@@ -180,7 +177,6 @@ public class GraphFieldContainerCheck extends AbstractConsistencyCheck {
 	 */
 	public boolean repair(HibNodeFieldContainer hibContainer) {
 		NodeGraphFieldContainer container = toGraph(hibContainer);
-		MeshComponent mesh = container.getGraphAttribute(GraphAttribute.MESH_COMPONENT);
 		// Pick the first project we find to fetch the initial branchUuid
 		HibProject project = Tx.get().projectDao().findAll().iterator().next();
 		String branchUuid = Tx.get().branchDao().getInitialBranch(project).getUuid();
@@ -251,8 +247,7 @@ public class GraphFieldContainerCheck extends AbstractConsistencyCheck {
 		initialEdge.setBranchUuid(branchUuid);
 		initialEdge.setType(INITIAL);
 
-		BulkActionContext bac = mesh.bulkProvider().get();
-		node.delete(bac);
+		node.delete();
 		return true;
 	}
 

@@ -8,7 +8,6 @@ import java.util.Collections;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.binary.ImageVariant;
 import com.gentics.mesh.core.data.dao.PersistingImageVariantDao;
@@ -19,6 +18,8 @@ import com.gentics.mesh.core.data.storage.BinaryStorage;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.madl.field.FieldType;
+
+import io.reactivex.Completable;
 
 /**
  * @see Binary
@@ -46,12 +47,13 @@ public class BinaryImpl extends MeshVertexImpl implements Binary {
 	}
 
 	@Override
-	public void delete(BulkActionContext bac) {
+	public void delete() {
 		if (PersistingImageVariantDao.isImage(this)) {
 			CommonTx.get().imageVariantDao().retainVariants(this, Collections.emptyList(), null, true);
 		}
 		BinaryStorage storage = mesh().binaryStorage();
-		bac.add(storage.delete(getUuid()));
+		Completable deleteAction = storage.delete(getUuid());
+		CommonTx.get().data().maybeGetBulkActionContext().ifPresentOrElse(bac -> bac.add(deleteAction), () -> CommonTx.get().batch().add(() -> deleteAction.blockingGet()));
 		getElement().remove();
 	}
 

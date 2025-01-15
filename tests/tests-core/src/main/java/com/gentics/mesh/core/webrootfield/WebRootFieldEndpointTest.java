@@ -5,10 +5,10 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.parameter.LinkType.MEDIUM;
 import static com.gentics.mesh.parameter.LinkType.SHORT;
+import static com.gentics.mesh.test.AWSTestMode.MINIO;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.AWSTestMode.MINIO;
 import static com.gentics.mesh.test.context.MeshTestHelper.awaitConcurrentRequests;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
@@ -22,13 +22,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 
-import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
-import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
@@ -43,6 +40,8 @@ import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.json.JsonUtil;
@@ -439,9 +438,8 @@ public class WebRootFieldEndpointTest extends AbstractMeshTest {
 		// 2. Publish nodes
 		try (Tx tx = tx()) {
 			NodeDao nodeDao = tx.nodeDao();
-			BulkActionContext bac = createBulkContext();
-			nodeDao.publish(folder("news"), mockActionContext(), bac);
-			nodeDao.publish(folder("2015"), mockActionContext(), bac);
+			nodeDao.publish(folder("news"), mockActionContext());
+			nodeDao.publish(folder("2015"), mockActionContext());
 			tx.success();
 		}
 
@@ -487,9 +485,8 @@ public class WebRootFieldEndpointTest extends AbstractMeshTest {
 		// 1. Publish nodes
 		tx(tx -> {
 			NodeDao nodeDao = tx.nodeDao();
-			BulkActionContext bac = createBulkContext();
-			nodeDao.publish(folder("news"), mockActionContext(), bac);
-			nodeDao.publish(folder("2015"), mockActionContext(), bac);
+			nodeDao.publish(folder("news"), mockActionContext());
+			nodeDao.publish(folder("2015"), mockActionContext());
 		});
 
 		// 2. Change names

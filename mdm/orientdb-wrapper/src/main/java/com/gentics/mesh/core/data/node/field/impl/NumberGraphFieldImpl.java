@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data.node.field.impl;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.node.field.AbstractBasicField;
 import com.gentics.mesh.core.data.node.field.NumberGraphField;
@@ -27,7 +26,7 @@ public class NumberGraphFieldImpl extends AbstractBasicField<NumberField> implem
 	}
 
 	@Override
-	public void removeField(BulkActionContext bac, HibFieldContainer container) {
+	public void removeField(HibFieldContainer container) {
 		setFieldProperty("number", null);
 		setFieldKey(null);
 	}

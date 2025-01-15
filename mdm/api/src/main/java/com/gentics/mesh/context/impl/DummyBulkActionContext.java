@@ -37,4 +37,7 @@ public class DummyBulkActionContext implements BulkActionContext {
 	public void add(Completable action) {
 	}
 
+	@Override
+	public void setBatch(EventQueueBatch batch) {
+	}
 }

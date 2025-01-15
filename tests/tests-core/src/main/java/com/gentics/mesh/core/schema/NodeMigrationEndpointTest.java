@@ -628,7 +628,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			englishContainer.createString(oldFieldName).setString("777");
 			englishContainer.createString("name").setString("a_name");
 			InternalActionContext ac = new InternalRoutingActionContextImpl(mockRoutingContext());
-			nodeDao.publish(node, ac, createBulkContext(), "en");
+			nodeDao.publish(node, ac, "en");
 			tx.success();
 		}
 
@@ -694,7 +694,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			englishContainer.createString(oldFieldName).setString("content");
 			englishContainer.createString("name").setString("someName");
 			InternalActionContext ac = new InternalRoutingActionContextImpl(mockRoutingContext());
-			nodeDao.publish(node, ac, createBulkContext(), "en");
+			nodeDao.publish(node, ac, "en");
 
 			branchDao.assignSchemaVersion(project().getLatestBranch(), user(), versionB, batch);
 			tx.success();

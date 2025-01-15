@@ -7,10 +7,29 @@ import static com.gentics.mesh.test.TestDataProvider.CONTENT_UUID;
 import static com.gentics.mesh.test.TestDataProvider.NEWS_UUID;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static java.util.Objects.hash;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.assertj.impl.JsonObjectAssert;
-import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
@@ -77,28 +96,12 @@ import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.util.UUIDUtil;
+
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.reactivex.functions.Function;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
 @MeshTestSetting(testSize = TestSize.FULL, startServer = true)
@@ -255,7 +258,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		} else {
 			try (Tx tx = tx()) {
 				for (HibMicroschema microschema : tx.microschemaDao().findAll()) {
-					tx.microschemaDao().delete(microschema, new DummyBulkActionContext());
+					tx.microschemaDao().delete(microschema);
 				}
 				tx.success();
 			}

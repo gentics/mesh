@@ -122,7 +122,7 @@ public interface PersistingTagFamilyDao extends TagFamilyDao, PersistingRootDao<
 	}
 
 	@Override
-	default void delete(HibTagFamily tagFamily, BulkActionContext bac) {
+	default void delete(HibTagFamily tagFamily) {
 		TagDao tagDao = Tx.get().tagDao();
 
 		if (log.isDebugEnabled()) {
@@ -131,14 +131,14 @@ public interface PersistingTagFamilyDao extends TagFamilyDao, PersistingRootDao<
 
 		// Delete all the tags of the tag root
 		for (HibTag tag : tagDao.findAll(tagFamily).list()) {
-			tagDao.delete(tag, bac);
+			tagDao.delete(tag);
 		}
 
-		bac.add(tagFamily.onDeleted());
+		CommonTx.get().batch().add(tagFamily.onDeleted());
 
 		// Now delete the tag root element'
 		deletePersisted(tagFamily.getProject(), tagFamily);
-		bac.process();
+		CommonTx.get().data().maybeGetBulkActionContext().ifPresent(BulkActionContext::process);
 	}
 
 	@Override
@@ -170,8 +170,8 @@ public interface PersistingTagFamilyDao extends TagFamilyDao, PersistingRootDao<
 	}
 
 	@Override
-	default void delete(HibProject root, HibTagFamily element, BulkActionContext bac) {
-		delete(element, bac);
+	default void delete(HibProject root, HibTagFamily element) {
+		delete(element);
 	}
 
 	@Override

@@ -7,7 +7,6 @@ import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
@@ -69,7 +68,7 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse> imple
 	}
 
 	@Override
-	public void delete(BulkActionContext bac) {
+	public void delete() {
 		throw new NotImplementedException();
 	}
 

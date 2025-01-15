@@ -15,7 +15,6 @@ import org.apache.commons.lang.NotImplementedException;
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -86,7 +85,7 @@ public class LanguageRootImpl extends AbstractRootVertex<Language> implements La
 	}
 
 	@Override
-	public void delete(BulkActionContext bac) {
+	public void delete() {
 		throw new NotImplementedException("The language root should never be deleted.");
 	}
 

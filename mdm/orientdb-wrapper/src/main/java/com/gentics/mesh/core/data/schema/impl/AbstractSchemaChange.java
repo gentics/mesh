@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.HibSchemaChange;
@@ -117,10 +116,10 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 	}
 
 	@Override
-	public void delete(BulkActionContext bc) {
+	public void delete() {
 		HibSchemaChange<?> next = getNextChange();
 		if (next != null) {
-			toGraph(next).delete(bc);
+			toGraph(next).delete();
 		}
 		getElement().remove();
 	}

@@ -32,7 +32,6 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
@@ -537,9 +536,8 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		// 2. Publish nodes
 		try (Tx tx = tx()) {
 			NodeDao nodeDao = tx.nodeDao();
-			BulkActionContext bac = createBulkContext();
-			nodeDao.publish(folder("news"), mockActionContext(), bac);
-			nodeDao.publish(folder("2015"), mockActionContext(), bac);
+			nodeDao.publish(folder("news"), mockActionContext());
+			nodeDao.publish(folder("2015"), mockActionContext());
 			tx.success();
 		}
 
@@ -584,9 +582,8 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		// 1. Publish nodes
 		tx(tx -> {
 			NodeDao nodeDao = tx.nodeDao();
-			BulkActionContext bac = createBulkContext();
-			nodeDao.publish(folder("news"), mockActionContext(), bac);
-			nodeDao.publish(folder("2015"), mockActionContext(), bac);
+			nodeDao.publish(folder("news"), mockActionContext());
+			nodeDao.publish(folder("2015"), mockActionContext());
 		});
 
 		// 2. Change names

@@ -4,7 +4,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
@@ -110,9 +109,8 @@ public interface NodeGraphFieldContainer extends HibNodeFieldContainer, GraphFie
 	 * Delete the field container. This will also delete linked elements like lists. If the container has a "next" container, that container will be deleted as
 	 * well.
 	 * 
-	 * @param bac
 	 */
-	void delete(BulkActionContext bac);
+	void delete();
 
 	/**
 	 * Delete the field container. This will also delete linked elements like lists.
@@ -121,7 +119,7 @@ public interface NodeGraphFieldContainer extends HibNodeFieldContainer, GraphFie
 	 * @param deleteNext
 	 *            true to also delete all "next" containers, false to only delete this container
 	 */
-	void delete(BulkActionContext bac, boolean deleteNext);
+	void delete(boolean deleteNext);
 
 	/**
 	 * "Delete" the field container from the branch. This will not actually delete the container itself, but will remove DRAFT and PUBLISHED edges
@@ -129,7 +127,7 @@ public interface NodeGraphFieldContainer extends HibNodeFieldContainer, GraphFie
 	 * @param branch
 	 * @param bac
 	 */
-	void deleteFromBranch(HibBranch branch, BulkActionContext bac);
+	void deleteFromBranch(HibBranch branch);
 
 	@Override
 	default boolean isValid() {

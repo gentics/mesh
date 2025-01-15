@@ -40,7 +40,7 @@ public interface CommonTx extends Tx, TxEntityPersistenceManager {
 	}
 
 	@Override
-	default EventQueueBatch createBatch() {
+	default EventQueueBatch batch() {
 		return data().getOrCreateEventQueueBatch();
 	}
 

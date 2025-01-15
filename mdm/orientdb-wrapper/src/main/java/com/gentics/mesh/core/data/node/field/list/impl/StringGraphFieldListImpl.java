@@ -50,7 +50,7 @@ public class StringGraphFieldListImpl extends AbstractBasicGraphFieldList<HibStr
 	}
 
 	@Override
-	public void delete(BulkActionContext bac) {
+	public void delete() {
 		getElement().remove();
 	}
 }

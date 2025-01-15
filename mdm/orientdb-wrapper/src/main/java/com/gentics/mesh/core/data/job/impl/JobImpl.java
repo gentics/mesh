@@ -8,7 +8,6 @@ import static com.gentics.mesh.core.rest.job.JobStatus.UNKNOWN;
 
 import org.apache.commons.lang.NotImplementedException;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
@@ -160,7 +159,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse> implem
 	}
 
 	@Override
-	public void delete(BulkActionContext bac) {
+	public void delete() {
 		remove();
 	}
 

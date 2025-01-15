@@ -6,7 +6,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.action.TagFamilyDAOActions;
@@ -83,9 +82,9 @@ public class TagFamilyDAOActionsImpl implements TagFamilyDAOActions {
 	}
 
 	@Override
-	public void delete(Tx tx, HibTagFamily tagFamily, BulkActionContext bac) {
+	public void delete(Tx tx, HibTagFamily tagFamily) {
 		TagFamilyDao tagFamilyDao = tx.tagFamilyDao();
-		tagFamilyDao.delete(tagFamily, bac);
+		tagFamilyDao.delete(tagFamily);
 	}
 
 	@Override

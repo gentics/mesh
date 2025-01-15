@@ -92,7 +92,7 @@ public interface DaoGlobal<T extends HibBaseElement> extends Dao<T> {
 	 * @param element
 	 * @param bac
 	 */
-	void delete(T element, BulkActionContext bac);
+	void delete(T element);
 
 	/**
 	 * Update the element.

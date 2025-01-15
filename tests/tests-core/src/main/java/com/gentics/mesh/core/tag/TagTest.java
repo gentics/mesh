@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
-import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -38,6 +37,7 @@ import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.migration.BranchMigration;
+import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.error.InvalidArgumentException;
@@ -393,7 +393,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertEquals(tagsSize, tagDao.count(tagFamily));
 			tagDao.addItem(tagFamily, tag);
 			assertEquals(tagsSize, tagDao.count(tagFamily));
-			tagDao.onRootDeleted(tagFamily, createBulkContext());
+			tagDao.onRootDeleted(tagFamily);
 		}
 	}
 
@@ -478,7 +478,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			HibTag tag = tagDao.create(tagFamily, "someTag", project(), user());
 			String uuid = tag.getUuid();
 			assertNotNull(tx.tagDao().findByUuid(uuid));
-			tagDao.delete(tag, createBulkContext());
+			tagDao.delete(tag);
 			assertNull(tx.tagDao().findByUuid(uuid));
 		}
 	}
@@ -517,11 +517,12 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testDelete() throws Exception {
 		BulkActionContext bac = createBulkContext();
 		try (Tx tx = tx()) {
+			tx.<CommonTx>unwrap().data().setBulkActionContext(bac);
 			TagDao tagDao = tx.tagDao();
 			HibTag tag = tag("red");
 
 			// Deletion of a tag must remove the tag from the index and update the nodes which reference the tag
-			tagDao.delete(tag, bac);
+			tagDao.delete(tag);
 		}
 		// 2 = 1 tag + 1 tagged node
 		assertEquals(2, bac.batch().size());

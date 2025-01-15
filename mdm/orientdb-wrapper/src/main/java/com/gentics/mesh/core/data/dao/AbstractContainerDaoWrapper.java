@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaElement;
@@ -57,8 +56,8 @@ public abstract class AbstractContainerDaoWrapper<
 	}
 
 	@Override
-	public void deleteChange(HibSchemaChange<? extends FieldSchemaContainer> change, BulkActionContext bac) {
-		toGraph(change).delete(bac);
+	public void deleteChange(HibSchemaChange<? extends FieldSchemaContainer> change) {
+		toGraph(change).delete();
 	}
 
 	@Override

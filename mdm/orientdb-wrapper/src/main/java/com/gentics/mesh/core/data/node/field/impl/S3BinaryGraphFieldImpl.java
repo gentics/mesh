@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
@@ -74,12 +73,12 @@ public class S3BinaryGraphFieldImpl extends MeshEdgeImpl implements S3BinaryGrap
 	 * the binary storage as well.
 	 */
 	@Override
-	public void removeField(BulkActionContext bac, HibFieldContainer container) {
+	public void removeField(HibFieldContainer container) {
 		S3Binary graphBinary = toGraph(getBinary());
 		remove();
 		// Only get rid of the binary as well if no other fields are using the binary.
 		if (!graphBinary.findFields().hasNext()) {
-			graphBinary.delete(bac);
+			graphBinary.delete();
 		}
 	}
 

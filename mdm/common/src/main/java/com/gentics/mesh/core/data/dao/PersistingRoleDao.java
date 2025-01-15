@@ -213,10 +213,10 @@ public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole>
 	}
 
 	@Override
-	default void delete(HibRole role, BulkActionContext bac) {
-		bac.add(role.onDeleted());
+	default void delete(HibRole role) {
+		CommonTx.get().batch().add(role.onDeleted());
 		deletePersisted(role);
-		bac.process();
+		CommonTx.get().data().maybeGetBulkActionContext().ifPresent(BulkActionContext::process);
 		PermissionCache permissionCache = Tx.get().permissionCache();
 
 		permissionCache.clear();

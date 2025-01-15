@@ -529,8 +529,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			String uuid = role.getUuid();
 			role = roleDao.findByUuid(uuid);
 			assertNotNull(role);
-			BulkActionContext context = createBulkContext();
-			roleDao.delete(role, context);
+			roleDao.delete(role);
 			HibRole foundRole = roleDao.findByUuid(uuid);
 			assertNull(foundRole);
 		}
@@ -585,9 +584,10 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			BulkActionContext context = createBulkContext();
 			try (Tx tx2 = tx()) {
 				RoleDao roleDao = tx2.roleDao();
+				tx.<CommonTx>unwrap().data().setBulkActionContext(context);
 				HibRole role = tx.roleDao().findByUuid(role().getUuid());
 				uuid = role.getUuid();
-				roleDao.delete(role, context);
+				roleDao.delete(role);
 				tx2.success();
 			}
 			assertNull(tx.roleDao().findByUuid(uuid));

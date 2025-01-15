@@ -6,7 +6,6 @@ import static com.gentics.mesh.madl.type.EdgeTypeDefinition.edgeType;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
@@ -52,14 +51,14 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 	}
 
 	@Override
-	public void removeField(BulkActionContext bac, HibFieldContainer container) {
+	public void removeField(HibFieldContainer container) {
 		HibMicronode micronode = getMicronode();
 		// Remove the edge to get rid of the reference
 		remove();
 		if (micronode != null) {
 			// Remove the micronode if this was the last edge to the micronode
 			if (!toGraph(micronode).in(HAS_FIELD).hasNext()) {
-				toGraph(micronode).delete(bac);
+				toGraph(micronode).delete();
 			}
 		}
 	}

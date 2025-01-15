@@ -578,7 +578,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	}
 
 	@Override
-	default void delete(HibUser user, BulkActionContext bac) {
+	default void delete(HibUser user) {
 		// TODO unhardcode the admin name
 		if ("admin".equals(user.getUsername())) {
 			throw error(FORBIDDEN, "error_illegal_admin_deletion");
@@ -591,9 +591,9 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 		// user will be just disabled and removed from all groups.");
 		// }
 		// outE(HAS_USER).removeAll();
-		bac.add(user.onDeleted());
+		CommonTx.get().batch().add(user.onDeleted());
 		deletePersisted(user);
-		bac.process();
+		CommonTx.get().data().maybeGetBulkActionContext().ifPresent(BulkActionContext::process);
 		Tx.get().permissionCache().clear();
 	}
 

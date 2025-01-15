@@ -417,7 +417,7 @@ public interface Database extends TxFactory {
 	default <T> Single<T> singleTxWriteLock(TxEventAction<T> action) {
 		AtomicReference<EventQueueBatch> lazyBatch = new AtomicReference<>();
 		Function<Tx, T> handler = tx -> {
-			EventQueueBatch batch = tx.createBatch();
+			EventQueueBatch batch = tx.batch();
 			lazyBatch.set(batch);
 			return action.handle(batch, tx);
 		};

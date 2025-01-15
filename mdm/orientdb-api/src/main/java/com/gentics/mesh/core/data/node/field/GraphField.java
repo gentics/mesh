@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.node.field;
 
-import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.HibFieldContainer;
 
@@ -19,14 +17,5 @@ public interface GraphField extends HibField {
 	 * @param container
 	 *            container
 	 */
-	void removeField(BulkActionContext bac, HibFieldContainer container);
-
-	/**
-	 * Remove the field and use a dummy bulk action context.
-	 * 
-	 * @param container
-	 */
-	default void removeField(HibFieldContainer container) {
-		removeField(new DummyBulkActionContext(), container);
-	}
+	void removeField(HibFieldContainer container);
 }

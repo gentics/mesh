@@ -20,7 +20,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
@@ -311,9 +310,9 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 	}
 
 	@Override
-	public void delete(BulkActionContext bac) {
+	public void delete() {
 		UserDao userDao = Tx.get().userDao();
-		userDao.delete(this, bac);
+		userDao.delete(this);
 	}
 
 	@Override

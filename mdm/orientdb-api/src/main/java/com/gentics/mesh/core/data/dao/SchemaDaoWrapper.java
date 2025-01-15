@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data.dao;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.SchemaRoot;
 import com.gentics.mesh.core.data.schema.HibSchema;
@@ -20,7 +19,7 @@ public interface SchemaDaoWrapper extends PersistingSchemaDao {
 	Result<? extends SchemaRoot> getRoots(HibSchema schema);
 
 	@Override
-	default void onRootDeleted(HibProject root, BulkActionContext bac) {
-		HibClassConverter.toGraph(root).getSchemaContainerRoot().delete(bac);
+	default void onRootDeleted(HibProject root) {
+		HibClassConverter.toGraph(root).getSchemaContainerRoot().delete();
 	}
 }

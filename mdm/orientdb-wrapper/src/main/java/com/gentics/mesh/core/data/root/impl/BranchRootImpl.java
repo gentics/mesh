@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.root.impl;
 
+import static com.gentics.mesh.core.data.dao.ElementResolver.log;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_INITIAL_BRANCH;
@@ -16,6 +17,7 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.BranchImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.root.BranchRoot;
+import com.gentics.mesh.core.db.CommonTx;
 
 /**
  * @see BranchRoot
@@ -80,7 +82,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 	}
 
 	@Override
-	public void delete(BulkActionContext bac) {
+	public void delete() {
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting branch root {" + getUuid() + "}");
 		}
@@ -88,13 +90,13 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 		// Delete all branches. Should not fire, if called from DAO.
 		for (Branch branch : findAll()) {
 			log.debug("Deleting branch {" + branch.getUuid() + "}");
-			branch.delete(bac);
-			bac.process();
+			branch.delete();
+			CommonTx.get().data().maybeGetBulkActionContext().ifPresent(BulkActionContext::process);
 		}
 
 		// All branches are gone. Now delete the root.
 		getElement().remove();
-		bac.process();
+		CommonTx.get().data().maybeGetBulkActionContext().ifPresent(BulkActionContext::process);
 	}
 
 	/**
