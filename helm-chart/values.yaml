@@ -2,13 +2,13 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-# Setting this higher than 1 will enable master clustering automatically
+# Setting this higher than 1 will enable clustering automatically
 # In this case, be sure you have correctly configured a network storage for the uploads
 replicaCount: 1
 
 image:
-  repository: docker.gentics.com/gentics/mesh
-  tag: 3.0.0
+  repository: docker.gentics.com/gentics/mesh-enterprise-hsqldb
+  # tag: 3.0.0
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
@@ -17,6 +17,7 @@ fullnameOverride: ""
 
 license:
   key: null
+  # secret:
   path: "/license"
   filename: "license.key"
 
@@ -115,10 +116,19 @@ extraEnv:
 persistence:
   enabled: true
 
-  ## A manually managed Persistent Volume and Claim
-  ## Requires persistence.enabled: true
-  ## If defined, the PVC must be created manually before volume will be bound
-  cluster:
+  # Volume for shared data (uploads, keystore)
+  # This volume should be a network volume (NFS) and will be shared across all instances
+  shared:
+    # Use existingClaim if you don't have a storage provisioner for your NFS
+    # existingClaim: ""
+    annotations: {}
+    spec:
+      accessModes:
+        - ReadWriteMany
+      # storageClassName: ""
+      resources:
+        requests:
+          storage: 10Gi
 
   backup:
     ##  Storage for database snapshots
@@ -133,20 +143,6 @@ persistence:
         resources:
           requests:
             storage: 10Gi
-
-  # Volume for shared data (uploads, keystore)
-  # This volume should be a network volume (NFS) and will be shared across all instances
-  shared:
-    # Use existingClaim if you don't have a storage provisioner for your NFS
-    # existingClaim: ""
-    annotations: {}
-    spec:
-      accessModes:
-        - ReadWriteMany
-      # storageClassName: ""
-      resources:
-        requests:
-          storage: 10Gi
 
   # persisting cached images to shared volume
   imageCache:
@@ -184,10 +180,7 @@ vertxOptions:
   orderedBlockingHandlers: true
 
 keystore:
-  # The name of an existing Kubernetes secret that contains the keystore
-  # The keystore will also be automatically generated and persisted when clustering is not enabled.
-  # The secret has to contain the following keys: "keystore.jceks", "password"
-  # secret: ""
+  # passwordSecret: ""
   # Change this password. This will be used if no custom keystore secret has been specified.
   password: "secret"
 

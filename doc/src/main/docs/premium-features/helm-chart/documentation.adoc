@@ -56,10 +56,10 @@ Once the database is setup and the basic configuration is done, you can start th
 
 ```bash
 #!/bin/bash
-helm upgrade --wait -f values.yaml gentics-mesh gentics/gentics-mesh
+helm upgrade --wait -f values.yaml gentics-mesh gentics/gentics-mesh --version=x.x.x
 ```
 
-Gentics Mesh will automatically create the necessary tables and data in the database if necessary.
+Gentics Mesh will automatically create tables and data in the database if necessary.
 
 === Default Configuration
 
@@ -182,20 +182,6 @@ extraEnv:
 persistence:
   enabled: true
 
-  backup:
-    ##  Storage for database snapshots
-    snapshots:
-      # Use existingClaim if you don't have a storage provisioner for your NFS
-      # existingClaim: ""
-      annotations: {}
-      spec:
-        accessModes:
-          - ReadWriteMany
-        # storageClassName: ""
-        resources:
-          requests:
-            storage: 10Gi
-
   # Volume for shared data (uploads, keystore)
   # This volume will only be created when replicaCount > 1
   # This volume should be a network volume (NFS) and will be shared across all instances
@@ -211,21 +197,36 @@ persistence:
         requests:
           storage: 10Gi
 
-livenessProbe:
-  httpGet:
-    path: /api/v2/health/live
-    port: http
-  initialDelaySeconds: 120
-  periodSeconds: 30
-  failureThreshold: 20
+  backup:
+    ##  Storage for database snapshots
+    snapshots:
+      # Use existingClaim if you don't have a storage provisioner for your NFS
+      # existingClaim: ""
+      annotations: {}
+      spec:
+        accessModes:
+          - ReadWriteMany
+        # storageClassName: ""
+        resources:
+          requests:
+            storage: 10Gi
 
-readinessProbe:
-  httpGet:
-    path: /api/v2/health/ready
-    port: http
-  initialDelaySeconds: 120
-  periodSeconds: 30
-  failureThreshold: 20
+# livenessProbe:
+#   exec:
+#     command:
+#     - /bin/sh
+#     - live.sh
+  # initialDelaySeconds: 10
+  # periodSeconds: 8
+  # failureThreshold: 3
+
+# readinessProbe:
+#   httpGet:
+#     path: /api/v2/health/ready
+#     port: http
+#   initialDelaySeconds: 10
+#   periodSeconds: 5
+#   failureThreshold: 5
 
 vertxOptions:
   workerPoolSize: 20
@@ -233,10 +234,7 @@ vertxOptions:
   verticleCount: 10
 
 keystore:
-  # The name of an existing Kubernetes secret that contains the keystore
-  # The keystore will also be automatically generated and persisted when clustering is not enabled.
-  # The secret has to contain the following keys: "keystore.jceks", "password"
-  # secret: ""
+  # passwordSecret: ""
   # Change this password. This will be used if no custom keystore secret has been specified.
   password: "secret"
 
@@ -306,7 +304,8 @@ upload:
 ==== Backup
 
 When enabled via `backup.enabled` an automatic backup cronjob will be created.
-This cronjob will create filesystem backups and store those in the `gentics-mesh-snapshots` PVC. 
+This cronjob will create filesystem backups and store those in the `gentics-mesh-snapshots` PVC.
+Backup of the database is not part of this helm chart and must be configured separately.
 
 ==== Clustering
 
@@ -334,7 +333,4 @@ COPY plugins /plugins
 # Optionally: Add custom languages 
 ENV MESH_LANGUAGES_FILE_PATH=/languages.json
 COPY config/languages.json /languages.json
-
-# Optionally: Add Mesh CLI
-COPY mesh-cli-1.0.2.jar /mesh-cli.jar
 ```

@@ -2,5 +2,5 @@ apiVersion: v2
 name: gentics-mesh
 description: Gentics Mesh
 type: application
-version: 0.0.1
-appVersion: 1.7.18
+version: 0.0.0
+appVersion: 0.0.0
