@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.NoSuchFileException;
 import java.security.cert.CertificateException;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -524,7 +525,15 @@ public class MeshTestContext implements TestRule {
 
 	private void cleanupFolders() throws IOException {
 		for (File folder : tmpFolders) {
-			FileUtils.deleteDirectory(folder);
+			try {
+				FileUtils.deleteDirectory(folder);
+			} catch (IOException e) {
+				if (e instanceof NoSuchFileException || (e.getCause() instanceof NoSuchFileException)) {
+					LOG.debug("Suppressing inexisting directory deletion error", e);
+				} else {
+					throw e;
+				}
+			}
 		}
 		if (meshDagger != null && meshDagger.permissionCache() != null) {
 			meshDagger.permissionCache().clear(false);
