@@ -22,8 +22,6 @@ public enum Validator {
 	email(v -> isEmail(v)), datepicker(v -> isDatepicker(v)), zaehlerpunkt(v -> isZaehlerpunkt(v));
 
 	private static Pattern TELEPHONE_PATTERN = Pattern.compile("^[\\s\\d\\+\\/]*$");
-
-	private static Pattern SOCIALSECURITY_PATTERN = Pattern.compile("^\\s*(\\d{4})(?<date>\\d{6})\\s*$");
 	
 	private static Pattern ZAEHLERPUNKT_PATTERN = Pattern.compile("^.*\\.\\d{8}$");
 
@@ -54,19 +52,29 @@ public enum Validator {
 	 * Check whether the value is a social security number
 	 * @param value value to check
 	 * @return true for social security number
+	 * Validation rules can be found at:
+	 * https://www.sozialversicherung.at/cdscontent/?contentid=10007.820902&viewmode=content#topsprungmarke
 	 */
 	private static boolean isSocialSecurity(String value) {
-		Matcher matcher = SOCIALSECURITY_PATTERN.matcher(value);
-		if (!matcher.matches()) {
+		// trim string
+		value = value.replaceAll("\\s+", "");
+
+		if (value.length() != 10 || Character.getNumericValue(value.charAt(0)) == 0) {
 			return false;
 		}
-		SimpleDateFormat format = new SimpleDateFormat("ddMMyy");
-		try {
-			Date date = format.parse(matcher.group("date"));
-			return date.before(new Date());
-		} catch (ParseException e) {
-			return false;
+
+		int checkDigit = Character.getNumericValue(value.charAt(3));
+		int[] multipliers = {3, 7, 9, 5, 8, 4, 2, 1, 6};
+		int sum = 0;
+
+		for (int i = 0, j = 0; i < value.length(); i++) {
+			if (i == 3) continue;
+			sum += Character.getNumericValue(value.charAt(i)) * multipliers[j++];
 		}
+
+		int calculatedCheckDigit = sum % 11;
+
+		return checkDigit == calculatedCheckDigit;
 	}
 	
 	/**
