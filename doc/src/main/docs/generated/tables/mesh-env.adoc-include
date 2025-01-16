@@ -104,29 +104,29 @@
 | *MESH_HTTP_ENABLE*
 | Override the configured http server flag.
 
-| *MESH_HTTP_SERVER_MAX_FORM_ATTRIBUTE_SIZE*
-| Override the max form attribute size
-
 | *MESH_BINARY_UPLOAD_LIMIT*
 | Override the configured binary byte upload limit.
+
+| *MESH_HTTP_SERVER_MAX_FORM_ATTRIBUTE_SIZE*
+| Override the max form attribute size
 
 | *MESH_STORAGE_DISK_QUOTA_WARN_THRESHOLD*
 | Overwrite the disk quota warn threshold.
 
-| *MESH_MONITORING_ENABLED*
-| Override the configured monitoring enabled flag.
-
 | *MESH_PLUGIN_USE_HTTP2*
 | Override the HTTP/2 usage flag for plugins.
+
+| *MESH_MONITORING_ENABLED*
+| Override the configured monitoring enabled flag.
 
 | *MESH_S3_CORS_ALLOWED_HEADERS*
 | Override the configured AWS S3 CORS allowed headers.
 
-| *MESH_DEBUGINFO_LOG_ENABLED*
-| Enables the debug info log
-
 | *MESH_IMAGE_CACHE_DIRECTORY*
 | Override the path for image cache directory.
+
+| *MESH_DEBUGINFO_LOG_ENABLED*
+| Enables the debug info log
 
 | *MESH_ELASTICSEARCH_BULK_LENGTH_LIMIT*
 | Override the batch bulk length limit. Default: 5000000
@@ -269,11 +269,11 @@
 | *MESH_IMAGE_MAX_HEIGHT*
 | Override the max height for image resize operations.
 
-| *MESH_DEBUGINFO_LOG_FOLDER*
-| Override the path to the debug info log folder
-
 | *MESH_ELASTICSEARCH_WAIT_FOR_IDLE*
 | Override the search idle wait flag.
+
+| *MESH_DEBUGINFO_LOG_FOLDER*
+| Override the path to the debug info log folder
 
 | *MESH_GRAPH_SYNC_WRITES*
 | Override the graph database sync writes flag.
@@ -296,23 +296,23 @@
 | *MESH_ELASTICSEARCH_PREFIX*
 | Override the configured elasticsearch prefix.
 
-| *MESH_AUTH_KEYSTORE_PASS*
-| Override the configured keystore password.
+| *MESH_BINARY_DOCUMENT_PARSER*
+| Override the document parser enabled flag.
 
 | *MESH_CLUSTER_TOPOLOGY_LOCK_DELAY*
 | Override the cluster topology lock delay in ms.
 
-| *MESH_BINARY_DOCUMENT_PARSER*
-| Override the document parser enabled flag.
-
-| *MESH_GRAPHQL_SLOW_THRESHOLD*
-| Override the configured slow graphQl query threshold.
+| *MESH_AUTH_KEYSTORE_PASS*
+| Override the configured keystore password.
 
 | *MESH_ELASTICSEARCH_PASSWORD*
 | Override the configured Elasticsearch connection password.
 
 | *MESH_ELASTICSEARCH_INDEX_MAPPING_CACHE_TIMEOUT*
 | Override the timeout for the cache if index mappings
+
+| *MESH_GRAPHQL_SLOW_THRESHOLD*
+| Override the configured slow graphQl query threshold.
 
 | *MESH_S3_BINARY_BUCKET*
 | Override the configured AWS S3 bucket.
@@ -341,11 +341,11 @@
 | *MESH_S3_BINARY_LINK_RESOLVER*
 | Override the configured AWS S3 link resolver.
 
-| *MESH_UPDATECHECK*
-| Override the configured updatecheck flag.
-
 | *MESH_BINARY_DIR*
 | Override the configured binary data directory.
+
+| *MESH_UPDATECHECK*
+| Override the configured updatecheck flag.
 
 | *MESH_AUTH_JWT_ALGO*
 | Override the configured algorithm which is used to sign the JWT.
@@ -374,20 +374,20 @@
 | *MESH_HTTPS_PORT*
 | Override the configured server https port.
 
-| *MESH_CONTENT_BATCH_SIZE*
-| Override the batch page size. Default: 5000
-
 | *MESH_IMAGE_MAX_WIDTH*
 | Override the max width for image resize operations.
+
+| *MESH_CONTENT_BATCH_SIZE*
+| Override the batch page size. Default: 5000
 
 | *MESH_CLUSTER_INIT*
 | Enable or disable the initial cluster database setup. This is useful for testing.
 
-| *MESH_GRAPHQL_SCHEMA_CACHE_SIZE*
-| Override the configured graphQl schema cache size.
-
 | *MESH_BINARY_UPLOAD_TEMP_DIR*
 | Override the configured upload temporary directory.
+
+| *MESH_GRAPHQL_SCHEMA_CACHE_SIZE*
+| Override the configured graphQl schema cache size.
 
 | *MESH_GRAPH_DB_DIRECTORY*
 | Override the graph database storage directory.
@@ -407,10 +407,10 @@
 | *MESH_S3_BINARY_CACHE_REGION*
 | Override the configured AWS S3 region.
 
-| *MESH_AUTH_KEYSTORE_PATH*
-| Override the configured keystore path.
-
 | *MESH_BINARY_METADATA_WHITELIST*
 | Override the metadata whitelist
+
+| *MESH_AUTH_KEYSTORE_PATH*
+| Override the configured keystore path.
 
 |======

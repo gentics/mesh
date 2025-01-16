@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "2.1.12-SNAPSHOT"
+version: "2.1.12"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -706,7 +706,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "b8275bbddbbd432eb2268682c0a94809"
+                            "uuid" : "08d08a6698eb47c3ab6fd3b7c4d2c995"
                           } ]
                         }
             responses: 
@@ -1354,7 +1354,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "c2f68c860ab44961bcf502cdd1243ad8"
+                            "uuid" : "0e820eb17edb418f830776370bc649bb"
                           } ]
                         }
             responses: 
@@ -1893,7 +1893,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "dc0583469d2b4a20865c5ce746bc074b"
+                            "uuid" : "d79603871c9040b784a5f4a6513e608d"
                           } ]
                         }
             responses: 
@@ -2868,7 +2868,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "97888ad94f194b5da68f6b8d667063e4"
+                            "uuid" : "fdce48140a1748dab97f349741e8d945"
                           } ]
                         }
             responses: 
@@ -3446,6 +3446,12 @@ mediaType: application/json
         post: 
             description: Update the schema.
             queryParameters: 
+                strictValidation: 
+                    description: Validate the Elasticsearch settings in the schema. When this parameter is set, a schema update or creation will fail, when the respective Elasticsearch index cannot be created.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    default: false
                 updateAssignedBranches: 
                     description: Update the schema version for all branches which already utilize the schema.
                     type: boolean
@@ -3458,12 +3464,6 @@ mediaType: application/json
                     required: false
                     repeat: false
                     example: summerBranch,winterBranch
-                strictValidation: 
-                    description: Validate the Elasticsearch settings in the schema. When this parameter is set, a schema update or creation will fail, when the respective Elasticsearch index cannot be created.
-                    type: boolean
-                    required: false
-                    repeat: false
-                    default: false
             body: 
                 application/json: 
                     schema: |
@@ -3897,7 +3897,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "5090c6e65e174c9790931268569b73e7"
+                            "uuid" : "f02f1284fc744b8eb4d7e597a9ccac8b"
                           } ]
                         }
             responses: 
@@ -4571,7 +4571,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "d7500b125fd648baa0993744b5edd209"
+                            "uuid" : "b4011ea276af454a85190abd742ee1f8"
                           } ]
                         }
             responses: 
@@ -7805,7 +7805,7 @@ mediaType: application/json
                                 | vertxVersion | false | string | Used Vert.x version. |
                             example: |
                                 {
-                                  "meshVersion" : "2.1.12-SNAPSHOT",
+                                  "meshVersion" : "2.1.12",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",
@@ -10550,7 +10550,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "100936060e164ab0898c74c614659985"
+                            "uuid" : "e52bb4543fb342e38ec087239267a123"
                           } ]
                         }
             responses: 
@@ -12059,7 +12059,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "8b0e83e923a04b5eaaff095e6aa3ada8"
+                            "uuid" : "6915fe5aba404b4faab5ba2b9a9a521d"
                           } ]
                         }
             responses: 
@@ -12875,7 +12875,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "b1177a850ce9443d8ffac81025233629"
+                            "uuid" : "c691ad508d7b4d9ab5cab2ffacfb2531"
                           } ]
                         }
             responses: 
@@ -14664,7 +14664,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "a156b18df4f643238504928f37c4b8d9"
+                            "uuid" : "903a7eb257dc4cea84baf2cabc6dacd0"
                           } ]
                         }
             responses: 

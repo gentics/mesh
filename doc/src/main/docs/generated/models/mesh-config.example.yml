@@ -5,7 +5,7 @@ languagesFilePath: null
 updateCheck: true
 vertxOptions:
   workerPoolSize: 20
-  eventPoolSize: 24
+  eventPoolSize: 2
   orderedBlockingHandlers: true
   eventBus:
     checkInterval: 30000
@@ -60,7 +60,7 @@ httpServer:
   keyPath: "config/key.pem"
   clientAuthMode: "NONE"
   trustedCertPaths: []
-  verticleAmount: 24
+  verticleAmount: 2
   minifyJson: true
   maxFormAttributeSize: -1
   serverTokens: true
