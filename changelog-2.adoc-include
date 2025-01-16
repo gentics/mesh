@@ -6,6 +6,14 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v3.0.1]]
+== 3.0.1 (16.01.2025)
+
+icon:check[] Clustering: Autodiscovery of cluster member nodes in a kubernetes environment did not work (Mesh instances failed to start) due to an incorrect dependency, which has been removed now.
+
+
+icon:check[] Core: The paged data sets contain different data, when being produced by native and legacy filtering, and/or sorting, under some circumstances. This has been fixed.
+
 [[v3.0.0]]
 == 3.0.0 (09.12.2024)
 
@@ -21,6 +29,22 @@ icon:plus[] Clustering: The Hazelcast library, responsible for the cluster insta
 
 icon:plus[] Some library dependencies have been updated to the latest hotfix versions.
 
+
+[[v2.1.12]]
+== 2.1.12 (16.01.2025)
+
+icon:check[] GraphQL: Data fetchers have been speed up on native filtering of the nodes with node fields, by fixing the proper context detection, so complex multi-inclusion queries (navigation) run up to 10x faster.
+
+
+icon:check[] Core: The node deletion rules has been strictened, to avoid internal deletion API misusage.
+
+icon:check[] Auth: A crash on retrieving principal user's referenced node has been fixed.
+
+icon:check[] Cache: The Image Cache refactoring, which was done in a previous hotfix release introduced an error which caused creation of empty folders in the old structure as well. This has been fixed.
+Also the migration process has been fixed to really remove all folders of the old structure, even if they are empty or contain cache files of binaries that were deleted before.
+
+
+icon:check[] GraphQL: A natively filtered paginated data set contains incorrect values for current page and total page number. This has been fixed.
 
 [[v2.1.10]]
 == 2.1.10 (06.11.2024)
