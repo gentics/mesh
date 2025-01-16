@@ -121,39 +121,41 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 
 		String baseFolder = Paths.get(options.getImageCacheDirectory(), buffer.toString()).toString();
 		String baseName = "image-" + parameters.getCacheKey();
+		String retPath = Paths.get(baseFolder, baseName).toString();
 
-		return fs.rxMkdirs(baseFolder)
-		// Vert.x uses Files.createDirectories internally, which will not fail when the folder already exists.
-		// See https://github.com/eclipse-vertx/vert.x/issues/3029
-		.andThen(fs.rxReadDir(baseFolder, baseName + "(\\..*)?"))
-		.map(foundFiles -> {
-			int numFiles = foundFiles.size();
-			if (numFiles == 0) {
-				String retPath = Paths.get(baseFolder, baseName).toString();
-				if (log.isDebugEnabled()) {
-					log.debug("No cache file found for base path {" + retPath + "}");
-				}
-				return new CacheFileInfo(maybeNewPath.orElse(retPath), false);
+		return fs.rxExists(baseFolder).flatMap(exists -> {
+			if (exists) {
+				return fs.rxReadDir(baseFolder, baseName + "(\\..*)?").flatMap(foundFiles -> {
+					int numFiles = foundFiles.size();
+					if (numFiles == 0) {
+						if (log.isDebugEnabled()) {
+							log.debug("No cache file found for base path {" + retPath + "}");
+						}
+						return Single.just(new CacheFileInfo(maybeNewPath.orElse(retPath), false));
+					}
+
+					if (numFiles > 1) {
+						String indent = System.lineSeparator() + "    - ";
+
+						log.warn(
+							"More than one cache file found:"
+								+ System.lineSeparator() + "  hash: " + sha512sum
+								+ System.lineSeparator() + "  key: " + parameters.getCacheKey()
+								+ System.lineSeparator() + "  files:"
+								+ indent
+								+ String.join(indent, foundFiles)
+								+ System.lineSeparator()
+								+ "The cache directory {" + options.getImageCacheDirectory() + "} should be cleared");
+					}
+
+					if (log.isDebugEnabled()) {
+						log.debug("Using cache file {" + foundFiles.size() + "}");
+					}
+					return Single.just(new CacheFileInfo(foundFiles.get(0), true));
+				});
+			} else {
+				return Single.just(new CacheFileInfo(maybeNewPath.orElse(retPath), false));
 			}
-
-			if (numFiles > 1) {
-				String indent = System.lineSeparator() + "    - ";
-
-				log.warn(
-					"More than one cache file found:"
-						+ System.lineSeparator() + "  hash: " + sha512sum
-						+ System.lineSeparator() + "  key: " + parameters.getCacheKey()
-						+ System.lineSeparator() + "  files:"
-						+ indent
-						+ String.join(indent, foundFiles)
-						+ System.lineSeparator()
-						+ "The cache directory {" + options.getImageCacheDirectory() + "} should be cleared");
-			}
-
-			if (log.isDebugEnabled()) {
-				log.debug("Using cache file {" + foundFiles.size() + "}");
-			}
-			return new CacheFileInfo(foundFiles.get(0), true);
 		});
 	}
 
