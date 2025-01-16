@@ -121,13 +121,13 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 
 		String baseFolder = Paths.get(options.getImageCacheDirectory(), buffer.toString()).toString();
 		String baseName = "image-" + parameters.getCacheKey();
+		String retPath = Paths.get(baseFolder, baseName).toString();
 
 		return fs.rxExists(baseFolder).flatMap(exists -> {
 			if (exists) {
 				return fs.rxReadDir(baseFolder, baseName + "(\\..*)?").flatMap(foundFiles -> {
 					int numFiles = foundFiles.size();
 					if (numFiles == 0) {
-						String retPath = Paths.get(baseFolder, baseName).toString();
 						if (log.isDebugEnabled()) {
 							log.debug("No cache file found for base path {" + retPath + "}");
 						}
@@ -154,7 +154,7 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 					return Single.just(new CacheFileInfo(foundFiles.get(0), true));
 				});
 			} else {
-				return Single.just(new CacheFileInfo(baseName, false));
+				return Single.just(new CacheFileInfo(maybeNewPath.orElse(retPath), false));
 			}
 		});
 	}
