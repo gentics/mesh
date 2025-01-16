@@ -1,6 +1,9 @@
 package com.gentics.mesh.hibernate.data.dao;
 
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_REFERENCE_UPDATED;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,6 +24,7 @@ import com.gentics.mesh.contentoperation.ContentKey;
 import com.gentics.mesh.contentoperation.ContentStorage;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.PersistingNodeDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
@@ -54,10 +58,12 @@ public class NodeDeleteDaoImpl {
 
 	private final CurrentTransaction currentTransaction;
 	private final ContentStorage contentStorage;
+	private final PersistingNodeDao nodeDao;
 
-	public NodeDeleteDaoImpl(CurrentTransaction currentTransaction, ContentStorage contentStorage) {
+	public NodeDeleteDaoImpl(CurrentTransaction currentTransaction, ContentStorage contentStorage, PersistingNodeDao nodeDao) {
 		this.currentTransaction = currentTransaction;
 		this.contentStorage = contentStorage;
+		this.nodeDao = nodeDao;
 	}
 
 	/**
@@ -146,7 +152,21 @@ public class NodeDeleteDaoImpl {
 	 * @param bac
 	 * @param ignoreChecks
 	 */
-	public void deleteRecursiveFromBranch(HibNode node, HibBranch branch, BulkActionContext bac, boolean ignoreChecks) {
+	public void deleteRecursiveFromBranch(HibNode node, HibBranch branch, BulkActionContext bac, boolean ignoreChecks, boolean recursive) {
+		// 0. Dumb checks
+		if (!ignoreChecks) {
+			// Prevent deletion of basenode
+			if (node.getProject().getBaseNode().getUuid().equals(node.getUuid())) {
+				throw error(METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
+			}
+			// Prevent deletion of node parent, if not recursive
+			if (!recursive) {
+				if (nodeDao.getChildren(node, branch.getUuid()).hasNext()) {
+					throw error(BAD_REQUEST, "node_error_delete_failed_node_has_children");
+				}
+			}
+		}
+
 		// 1. get descendants in branch, fetching the edges as well
 		ContentDaoImpl contentDao = HibernateTx.get().contentDao();
 		EntityGraph<?> entityGraph = em().getEntityGraph("node.content");

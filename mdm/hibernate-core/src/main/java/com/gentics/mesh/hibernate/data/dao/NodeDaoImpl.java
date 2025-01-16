@@ -148,7 +148,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 		super(rootDaoHelper, permissionRoots, commonDaoHelper, currentTransaction, eventFactory, vertx);
 		this.contentStorage = contentStorage;
 		this.databaseConnector = databaseConnector;
-		this.nodeDeleteDao = new NodeDeleteDaoImpl(currentTransaction, contentStorage);
+		this.nodeDeleteDao = new NodeDeleteDaoImpl(currentTransaction, contentStorage, this);
 	}
 
 	@Override
@@ -1176,7 +1176,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 	public void deleteFromBranch(HibNode node, InternalActionContext ac, HibBranch branch, BulkActionContext bac, boolean ignoreChecks) {
 		DeleteParameters parameters = ac.getDeleteParameters();
 		if (parameters.isRecursive()) {
-			nodeDeleteDao.deleteRecursiveFromBranch(node, branch, bac, ignoreChecks);
+			nodeDeleteDao.deleteRecursiveFromBranch(node, branch, bac, ignoreChecks, parameters.isRecursive());
 		} else {
 			PersistingNodeDao.super.deleteFromBranch(node, ac, branch, bac, ignoreChecks);
 		}
