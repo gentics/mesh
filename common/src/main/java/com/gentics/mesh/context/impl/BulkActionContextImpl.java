@@ -25,7 +25,7 @@ public class BulkActionContextImpl implements BulkActionContext {
 
 	private static final Logger log = LoggerFactory.getLogger(BulkActionContextImpl.class);
 
-	private static final int DEFAULT_BATCH_SIZE = 100;
+	public static final int DEFAULT_BATCH_SIZE = 100;
 
 	private final AtomicLong batchCounter = new AtomicLong(1);
 	private final AtomicLong elementCounter = new AtomicLong(0);

@@ -29,6 +29,11 @@ public class S3BinariesImpl implements S3Binaries {
 	}
 
 	@Override
+	public Transactional<S3HibBinary> findByUuid(String uuid) {
+		return database.transactional(tx -> database.getVerticesTraversal(S3BinaryImpl.class, S3Binary.UUID_KEY, uuid).nextOrNull());
+	}
+
+	@Override
 	public Transactional<S3HibBinary> create(String uuid, String objectKey, String fileName, BinaryCheckStatus checkStatus) {
 		return database.transactional(tx -> {
 			S3BinaryImpl binary = ((GraphDBTx) tx).getGraph().addFramedVertex(S3BinaryImpl.class);

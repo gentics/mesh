@@ -25,6 +25,9 @@ import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.core.data.storage.BinaryStorage;
+import com.gentics.mesh.core.db.CommonTx;
+import com.gentics.mesh.core.db.GraphDBTx;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.core.rest.node.field.image.ImageVariantRequest;
 import com.gentics.mesh.core.result.Result;
@@ -33,6 +36,7 @@ import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 import dagger.Lazy;
+import io.reactivex.Completable;
 
 /**
  * @See {@link ImageVariantDao}
@@ -48,6 +52,11 @@ public class ImageVariantDaoWrapperImpl extends AbstractDaoWrapper<HibImageVaria
 		super(boot);
 		this.imageManipulator = imageManipulator;
 		this.binaryStorage = binaryStorage;
+	}
+
+	@Override
+	public HibImageVariant findByUuid(String uuid) {
+		return GraphDBTx.getGraphTx().binaries().findAll().runInExistingTx(Tx.get()).flatMap(bin -> toGraph(bin).getVariants().stream()).filter(v -> v.getUuid().equals(uuid)).findAny().orElse(null);
 	}
 
 	@Override
@@ -73,8 +82,9 @@ public class ImageVariantDaoWrapperImpl extends AbstractDaoWrapper<HibImageVaria
 		String variantUuid = variant.getUuid();
 		ImageVariant imageVariant = toGraph(variant);
 		toGraph(binary).unlinkOut(imageVariant, GraphRelationships.HAS_VARIANTS);
+		Completable deleteAction = binaryStorage.get().delete(variantUuid);
 		imageVariant.remove();
-		binaryStorage.get().delete(variantUuid).blockingGet();
+		CommonTx.get().data().maybeGetBulkActionContext().ifPresentOrElse(bac -> bac.add(deleteAction), () -> CommonTx.get().batch().add(() -> deleteAction.blockingGet()));
 		return true;
 	}
 

@@ -55,7 +55,9 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 
 		String sha512 = binary.getSHA512Sum();
 		return getCacheFilePathNew(binary, parameters).onErrorResumeNext(e -> {
-			log.debug("New Image Cache miss", e);
+			if (log.isDebugEnabled()) {
+				log.debug("New Image Cache miss", e);
+			}
 			return getCacheFilePathOld(
 					sha512, 
 					parameters, 

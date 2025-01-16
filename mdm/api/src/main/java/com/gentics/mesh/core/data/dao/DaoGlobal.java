@@ -10,7 +10,6 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.page.Page;

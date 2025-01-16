@@ -4,7 +4,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.stream.Collectors;
 
+import com.gentics.mesh.context.impl.BulkActionContextImpl;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Transactional;
 import com.gentics.mesh.core.db.Tx;
@@ -26,43 +30,49 @@ public class UploadsConsistencyCheck implements ConsistencyCheck {
 			ConsistencyCheckResult result = new ConsistencyCheckResult();
 			Path uploadsPath = Path.of(tx.data().options().getUploadOptions().getDirectory());
 			Path tmpPath = Path.of(tx.data().options().getUploadOptions().getTempDirectory());
-			Files.walk(uploadsPath)
-				.filter(path -> Files.isRegularFile(path))
-				.map(path -> {
-					String filename = uploadsPath.relativize(path.getParent()).toString();
-					String binaryUuid = null;
-					if (filename.lastIndexOf(".") < 1 || (binaryUuid = filename.substring(0, filename.lastIndexOf("."))).isBlank() || !UUIDUtil.isUUID(binaryUuid) || tx.binaries().findByUuid(binaryUuid).runInExistingTx(Tx.get()) == null) {
-						if (attemptRepair) {
-							log.info("Binary data is invalid and will be moved to the tmpdir: " + path);
-
-							String segments = getSegmentedPath(binaryUuid);
-							Path tmpSegmentsPath = tmpPath.resolve(segments);
-							try {
-								Files.createDirectories(tmpSegmentsPath);
-								Files.move(path, tmpSegmentsPath.resolve(filename));
-								result.addInconsistency("No binary record found for " + path, binaryUuid, InconsistencySeverity.LOW, attemptRepair, RepairAction.DELETE);
-							} catch (IOException e) {
-								log.error("Could not copy file " + path, e);
-							}
+			int count = 0;
+			do {
+				List<Path> deletable = Files.walk(uploadsPath)
+					.filter(path -> Files.isRegularFile(path))
+					.filter(path -> {
+						String filename = path.getFileName().toString();
+						String binaryUuid = null;
+						if (filename.lastIndexOf(".") < 1 
+								|| (binaryUuid = filename.substring(0, filename.lastIndexOf("."))).isBlank() 
+								|| !UUIDUtil.isUUID(binaryUuid) 
+								|| (tx.binaries().findByUuid(binaryUuid).runInExistingTx(Tx.get()) == null && tx.<CommonTx>unwrap().imageVariantDao().findByUuid(binaryUuid) == null)) {
+							result.addInconsistency("No binary record found for " + path, binaryUuid, InconsistencySeverity.LOW, attemptRepair, RepairAction.DELETE);
+							return true;
 						} else {
-							result.addInconsistency("No binary record found for " + path, binaryUuid, InconsistencySeverity.LOW);
+							if (log.isDebugEnabled()) {
+								log.debug("Binary data valid: " + path);
+							}
+							return false;
 						}
-					} else {
-						if (log.isDebugEnabled()) {
-							log.debug("Binary data valid: " + path);
-						}
-					}
-					return path;
-				}).forEach(path -> {
-					Path parent = path.getParent().toAbsolutePath();
-					try {
-						while (parent != null && parent.compareTo(uploadsPath) != 0 && Files.list(parent).count() < 1 && Files.deleteIfExists(parent)) {
-							parent = parent.getParent();
-						}
-					} catch (IOException e) {
-						log.error("Error cleaning up binary dir trace for " + path, e);
-					}
-				});
+					}).limit(BulkActionContextImpl.DEFAULT_BATCH_SIZE)
+					.collect(Collectors.toList());
+					count = deletable.size();
+
+					deletable.stream()
+						.forEach(path -> {
+							if (attemptRepair) {
+								log.info("Binary data is invalid and will be moved to the tmpdir: " + path);
+		
+								String segments = uploadsPath.relativize(path.getParent()).toString();
+								Path tmpSegmentsPath = tmpPath.resolve(segments);
+								try {
+									Files.createDirectories(tmpSegmentsPath);
+									Files.move(path, tmpSegmentsPath.resolve(path.getFileName()));
+									Path parent = path.getParent().toAbsolutePath();
+									while (parent != null && parent.compareTo(uploadsPath) != 0 && Files.list(parent).count() < 1 && Files.deleteIfExists(parent)) {
+										parent = parent.getParent();
+									}
+								} catch (IOException e) {
+									log.error("Could not copy file " + path, e);
+								}
+							}
+						});
+			} while (count >= BulkActionContextImpl.DEFAULT_BATCH_SIZE);
 			log.info("Uploads cleanup finished successfully. Please clean your tmpdir right away, if required.");
 			return result;
 		});

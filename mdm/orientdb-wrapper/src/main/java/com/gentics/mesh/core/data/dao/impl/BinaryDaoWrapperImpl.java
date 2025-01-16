@@ -11,6 +11,7 @@ import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.result.Result;
 
 import dagger.Lazy;
