@@ -27,6 +27,7 @@ import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.database.connector.DatabaseConnector;
 import com.gentics.mesh.hibernate.util.QueryCounter;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
@@ -172,7 +173,10 @@ public class GraphQLBreadcrumbQueryCountingTest extends AbstractMeshTest {
 	protected <T> T doTest(ClientHandler<T> handler, int numQueries) {
 		long periodicId = 0;
 		long millis = 0;
-		try (QueryCounter queryCounter = QueryCounter.Builder.get().clear()
+		DatabaseConnector dc = tx(tx -> {
+			return tx.<HibernateTx>unwrap().data().getDatabaseConnector();
+		});
+		try (QueryCounter queryCounter = QueryCounter.Builder.get().withDatabaseConnector(dc).clear()
 				.assertNotMoreThan(numQueries).build()) {
 			if (DEBUG) {
 				AtomicLong currentCount = new AtomicLong();
