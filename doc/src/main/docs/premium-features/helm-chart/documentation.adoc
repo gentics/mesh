@@ -47,7 +47,7 @@ image:
 
 Before starting Gentics Mesh for the first time, an empty database needs to be created.
 See link:{{<relref "administration-guide.asciidoc">}}#_use_mariadb_connected_container[Use MariaDB-connected container]
-or link:{{<relref "premium-features/premium-db"}}[Commercial DB connectors] for details.
+or link:{{<relref "premium-features/premium-db">}}[Commercial DB connectors] for details.
 
 Then the database configuration needs to be added the the *values.yaml* file so that Gentics Mesh can access the database.
 When using one of the commercial database connectors, also a valid license key needs to be provided.
