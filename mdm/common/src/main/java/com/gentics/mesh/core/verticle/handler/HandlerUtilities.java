@@ -449,6 +449,23 @@ public class HandlerUtilities {
 	}
 
 	/**
+	 * Invoke a bulkable action which returns a result.
+	 *
+	 * @param function
+	 * @return
+	 */
+	public <T> T syncTxBulkable(BiFunction<Tx, BulkActionContext, T> function) {
+		BulkActionContext bac = bulkProvider.get();
+		T t = database.tx(tx -> {
+			tx.<CommonTx>unwrap().data().setBulkActionContext(bac);
+			T result = function.apply(tx, bac);
+			return result;
+		});
+		bac.process(true);
+		return t;
+	}
+
+	/**
 	 * Invoke a bulkable action.
 	 * 
 	 * @param function

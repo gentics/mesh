@@ -96,6 +96,7 @@ import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.cluster.ClusterManager;
 import com.gentics.mesh.core.endpoint.admin.AdminHandler;
 import com.gentics.mesh.core.endpoint.admin.OrientDBAdminHandler;
+import com.gentics.mesh.core.endpoint.admin.consistency.BinariesConsistencyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.UploadsConsistencyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.BinaryCheck;
@@ -378,6 +379,7 @@ public abstract class OrientDBModule {
 	public static List<ConsistencyCheck> consistencyCheckList() {
 		return Arrays.asList(
 			new UploadsConsistencyCheck(),
+			new BinariesConsistencyCheck(),
 			new GroupCheck(),
 			new MicroschemaContainerCheck(),
 			new NodeCheck(),

@@ -12,6 +12,7 @@ import com.gentics.mesh.core.data.node.field.impl.S3BinaryGraphFieldImpl;
 import com.gentics.mesh.core.data.s3binary.S3Binary;
 import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 import com.gentics.mesh.core.db.CommonTx;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.madl.field.FieldType;
 
@@ -43,8 +44,7 @@ public class S3BinaryImpl extends MeshVertexImpl implements S3Binary {
 	@Override
 	public void delete() {
 		S3BinaryStorage storage = mesh().s3binaryStorage();
-		Completable deletableAction = storage.delete(getS3ObjectKey());
-		CommonTx.get().data().maybeGetBulkActionContext().ifPresentOrElse(bac -> bac.add(deletableAction), () -> CommonTx.get().batch().add(() -> deletableAction.blockingGet()));
+		storage.deleteOnTxSuccess(getS3ObjectKey(), Tx.get());
 		CommonTx.get().batch().add(onDeleted(getUuid(), getS3ObjectKey()));
 		getElement().remove();
 	}

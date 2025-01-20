@@ -26,7 +26,7 @@ public class UploadsConsistencyCheck implements ConsistencyCheck {
 	@Override
 	public ConsistencyCheckResult invoke(Database db, Tx tx1, boolean attemptRepair) {
 		Transactional<ConsistencyCheckResult> action = db.transactional(tx -> {
-			log.info("Uploads cleanup started, repair: " + attemptRepair);
+			log.info("Uploads consistency " + (attemptRepair ? "repair" : "check") + " started");
 			ConsistencyCheckResult result = new ConsistencyCheckResult();
 			Path uploadsPath = Path.of(tx.data().options().getUploadOptions().getDirectory());
 			Path tmpPath = Path.of(tx.data().options().getUploadOptions().getTempDirectory());
@@ -73,7 +73,7 @@ public class UploadsConsistencyCheck implements ConsistencyCheck {
 							}
 						});
 			} while (count >= BulkActionContextImpl.DEFAULT_BATCH_SIZE);
-			log.info("Uploads cleanup finished successfully. Please clean your tmpdir right away, if required.");
+			log.info("Uploads consistency " + (attemptRepair ? "repair" : "check") + " finished successfully. Please clean your tmpdir right away, if required.");
 			return result;
 		});
 		return action.runInExistingTx(tx1);

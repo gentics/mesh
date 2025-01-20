@@ -368,7 +368,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 
 	private NodeResponse updateNodeInGraph(InternalActionContext ac, S3UploadContext s3UploadContext, TransformationResult result, String nodeUuid,
 										   String languageTag, String fieldName, ImageManipulationParameters parameters) {
-		return utils.eventAction((tx, batch) -> {
+		return utils.syncTxBulkable((tx, bac) -> {
 			PersistingContentDao contentDao = tx.<CommonTx>unwrap().contentDao();
 			NodeDao nodeDao = tx.nodeDao();
 			HibProject project = tx.getProject(ac);
@@ -422,15 +422,14 @@ public class BinaryTransformHandler extends AbstractHandler {
 			if (ac.isPurgeAllowed() && contentDao.isAutoPurgeEnabled(newDraftVersion) && contentDao.isPurgeable(latestDraftVersion)) {
 				contentDao.purge(latestDraftVersion);
 			}
-
-			batch.add(contentDao.onCreated(newDraftVersion, branchUuid, DRAFT));
+			bac.add(contentDao.onCreated(newDraftVersion, branchUuid, DRAFT));
 			return tx.nodeDao().transformToRestSync(node, ac, 0);
 		});
 	}
 
 	private NodeResponse updateNodeInGraph(InternalActionContext ac, UploadContext context, TransformationResult result, String nodeUuid,
 		String languageTag, String fieldName, ImageManipulationParameters parameters) {
-		return utils.eventAction((tx, batch) -> {
+		return utils.syncTxBulkable((tx, bac) -> {
 			NodeDao nodeDao = tx.nodeDao();
 			HibProject project = tx.getProject(ac);
 			HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, UPDATE_PERM);
@@ -493,8 +492,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 			if (ac.isPurgeAllowed() && contentDao.isAutoPurgeEnabled(newDraftVersion) && contentDao.isPurgeable(latestDraftVersion)) {
 				contentDao.purge(latestDraftVersion);
 			}
-
-			batch.add(contentDao.onCreated(newDraftVersion, branchUuid, DRAFT));
+			bac.add(contentDao.onCreated(newDraftVersion, branchUuid, DRAFT));
 			return tx.nodeDao().transformToRestSync(node, ac, 0);
 		});
 	}

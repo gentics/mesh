@@ -54,7 +54,6 @@ public interface TxData {
 	 */
 	BinaryStorage binaryStorage();
 
-
 	/**
 	 * S3 binary storage
 	 * @return

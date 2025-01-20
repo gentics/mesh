@@ -16,10 +16,9 @@ import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
 import com.gentics.mesh.core.data.storage.BinaryStorage;
 import com.gentics.mesh.core.db.CommonTx;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.madl.field.FieldType;
-
-import io.reactivex.Completable;
 
 /**
  * @see Binary
@@ -52,8 +51,7 @@ public class BinaryImpl extends MeshVertexImpl implements Binary {
 			CommonTx.get().imageVariantDao().retainVariants(this, Collections.emptyList(), null, true);
 		}
 		BinaryStorage storage = mesh().binaryStorage();
-		Completable deleteAction = storage.delete(getUuid());
-		CommonTx.get().data().maybeGetBulkActionContext().ifPresentOrElse(bac -> bac.add(deleteAction), () -> CommonTx.get().batch().add(() -> deleteAction.blockingGet()));
+		storage.deleteOnTxSuccess(getUuid(), Tx.get());
 		getElement().remove();
 	}
 
