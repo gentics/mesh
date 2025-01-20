@@ -334,28 +334,36 @@ public class BinaryTransformHandler extends AbstractHandler {
 			// Update graph with the new image information
 			return updateNodeInGraph(ac, context, r, uuid, languageTag, fieldName, parameters);
 		}).onErrorResumeNext(e -> {
+			Single<NodeResponse> se = Single.error(e);
 			if (context.isInvokeStore()) {
 				if (log.isDebugEnabled()) {
 					log.debug("Error detected. Purging previously stored upload for tempId {}", temporaryId, e);
 				}
 				return binaryStorage.purgeTemporaryUpload(temporaryId).doOnError(e1 -> {
 					log.error("Error while purging temporary upload for tempId {}", temporaryId, e1);
-				}).onErrorComplete().andThen(Single.error(e));
+				}).onErrorComplete().andThen(se);
 			} else {
-				return Single.error(e);
+				return se;
 			}
 		}).flatMap(n -> {
+			Single<NodeResponse> sn = Single.just(n);
 			if (context.isInvokeStore()) {
 				String binaryUuid = context.getBinaryUuid();
 				if (log.isDebugEnabled()) {
 					log.debug("Moving upload with uuid {} and tempId {} into place", binaryUuid, temporaryId);
 				}
-				return binaryStorage.moveInPlace(binaryUuid, temporaryId).andThen(Single.just(n));
+				return binaryStorage.moveInPlace(binaryUuid, temporaryId).andThen(sn);
 			} else {
-				return Single.just(n);
+				return sn;
+			}
+		}).onErrorResumeNext(e -> {
+			Single<NodeResponse> se = Single.error(e);
+			if (context.isInvokeStore()) {
+				return binaryStorage.delete(context.getBinaryUuid()).onErrorComplete().andThen(se);
+			} else {
+				return se;
 			}
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
-
 	}
 
 	private NodeResponse updateNodeInGraph(InternalActionContext ac, S3UploadContext s3UploadContext, TransformationResult result, String nodeUuid,
