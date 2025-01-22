@@ -215,6 +215,8 @@ The demo app includes a navigation object showing just the top-level elements _A
 
 === Response Sample
 
+Retrieving a navigation object using the projects root node ```/``` including the top level navigation menu items. The same can be achieved using the node specific navigation endpoint. In this case you can specify the root node of your navigation by providing the node uuid.
+
 [source,json]
 ----
 {
@@ -891,7 +893,7 @@ Loading the node with the given UUID using API endpoint ```GET {apiLatest}/:proj
 
 ==== Fetch node with WebRoot path
 
-```GET {apiLatest}/:projectName/webroot/path/to/the/image/image?resolveLinks=short```
+Accessing the node located at `path/to/the/image/image` looks like following ```GET {apiLatest}/:projectName/webroot/path/to/the/image/image?resolveLinks=short```
 
 === Query binary content by path
 The WebRoot API, furthermore, directly supports delivering binary content (e.g., images, documents, etc.) using the ```fileName``` meta-data field of the ```binary``` field.
@@ -902,13 +904,11 @@ NOTE: Downloads of resized images currently do not support byte range requests.
 
 ==== Fetch an image with UUID
 
-```GET {apiLatest}/:projectName/nodes/:imageNodeUuid/binary/:binaryFieldName```
-
 Downloading a node's binary field with the given name using API endpoint ```GET {apiLatest}/:projectName/nodes/:nodeUuid/binary/:fieldName```.
 
 ==== Fetch an image with WebRoot path
 
-```GET {apiLatest}/:projectName/webroot/path/to/the/image/image.jpg```
+Same as above, but over the node's path `path/to/the/image/image.jpg` is ```GET {apiLatest}/:projectName/webroot/path/to/the/image/image.jpg```
 
 TIP: When using a routing framework, in order to find out if a requested resource is binary data or JSON data you need to check the HTTP Content-Disposition response header. If it is set, it’s binary data.
 
@@ -918,11 +918,11 @@ link:{{<relref "image-manipulation.asciidoc">}}[Image Manipulation] such as crop
 
 ==== Crop and resize an image with UUID
 
-```GET {apiLatest}/:projectName/nodes/:imageNodeUuid/binary/:binaryFieldName?rect=10,100,800,400&w=300&crop=rect```
+API call example: ```GET {apiLatest}/:projectName/nodes/:imageNodeUuid/binary/:binaryFieldName?rect=10,100,800,400&w=300&crop=rect```
 
 ==== Crop and resize an image with WebRoot path
 
-```GET {apiLatest}/:projectName/webroot/path/to/the/image/image.jpg?rect=10,100,800,400&w=300&crop=rect```
+API call example: ```GET {apiLatest}/:projectName/webroot/path/to/the/image/image.jpg?rect=10,100,800,400&w=300&crop=rect```
 
 == Link Resolving
 
@@ -1507,6 +1507,7 @@ POST {apiLatest}/roles/:roleUuid/permissions/users
 
 You can query the updated permissions with user ```admin```:
 
+[source,bash,subs=attributes]
 -----
 GET {apiLatest}/roles/:roleUuid/permissions/users
 -----
@@ -1567,8 +1568,8 @@ POST {apiLatest}/roles/:roleUuid/permissions/groups/:groupUuid
 
 You can query the updated permissions with user ```admin```:
 
-* `{apiLatest}/roles/:roleUuid/permissions/groups/:groupUuid`
-* `{apiLatest}/roles/:roleUuid/permissions/users`
+* ```{apiLatest}/roles/:roleUuid/permissions/groups/:groupUuid```
+* ```{apiLatest}/roles/:roleUuid/permissions/users```
 
 ===== Role permissions
 All possible role permissions on groups are summarized in the following table.
@@ -1625,7 +1626,11 @@ POST {apiLatest}/roles/:roleUuid/permissions/roles
 }
 -----
 
-You can query the updated permissions with user ```admin```.
+You can query the updated permissions with user ```admin```:
+
+* '''GET {apiLatest}/roles/:adminRoleUuid/permissions/roles```
+
+* Or alternatively with ```GET {apiLatest}/roles?role=:adminRoleUuid```
 
 ===== Role permissions
 All possible role permissions on roles are summarized in the following table.
@@ -1897,8 +1902,6 @@ Versions of a node can be listed via the ```{apiLatest}/:projectName/nodes/:uuid
       "draft" : true,
       "published" : true,
       "branchRoot" : false
-    }
-    …
   } ]
 }
 ```
