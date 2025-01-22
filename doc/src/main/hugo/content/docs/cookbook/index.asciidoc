@@ -14,7 +14,7 @@ Handling contents is fairly easy. You can either identify and load content using
 
 By Path: ```GET {apiLatest}/:projectName/webroot/path/to/the/node```
 
-By Uuid: ```{apiLatest}/:projectName/nodes/:nodeUuid```
+By Uuid: ```GET {apiLatest}/:projectName/nodes/:nodeUuid```
 
 You can either place the path or uuid to your content in a fragment `/:projectName#nodes/:nodeUuid` or in the regular web path `/:projectName/nodes/:nodeUuid`. Most modern single page application frameworks like angular or react support both variations.
 
