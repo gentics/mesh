@@ -148,11 +148,11 @@ Once the container has been setup, start the docker container and login `http://
 docker run -v mesh-graphdb:/graphdb -v mesh-uploads:/uploads -p 8080:8080 gentics/mesh
 ----
 
-You can also skip Step 3 if you want and use our demo instance which already contains the demo content.
+You can also skip Step 3 if you want and use our test instance, with no requirement of an external database.
 
 [source,bash]
 ----
-docker run -p 8080:8080 gentics/mesh-demo
+docker run -p 8080:8080 gentics/mesh-hsqldb
 ----
 
 == Step 3 - Schemas
