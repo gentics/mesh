@@ -843,6 +843,7 @@ By prepending the path with a forward slash, the same request will resolve the n
 | Request
 | API endpoint
 | Response code
+
 | GET
 | {apiLatest}/docs/hello-world/example-page.html
 | 200
@@ -854,18 +855,7 @@ Possible applications for the `urlFields` property are:
 * Nice URL handling
 * Redirection handling
 
-Using the WebRoot API it is possible to easily integrate Gentics Mesh with many known routing frameworks.
-
-[options="header"]
-|======
-| Framework                           | Language       | Example
-| http://silex.sensiolabs.org/[Silex] | PHP            | https://gentics.com/mesh/Blog/Building+an+API-first+Web+App+with+Gentics+Mesh+and+the+PHP+Microframework+Silex[blog post]
-| http://expressjs.com/[ExpressJS]    | JS             | https://gentics.com/mesh/Blog/Getting+started+with+Express+and+the+API-first+CMS+Gentics+Mesh[blog post]
-| http://vertx.io/[Vert.x]            | Java,JS,Ceylon | http://vertx.io/blog/data-driven-apps-made-easy-with-vert-x-3-4-0-and-headless-cms-gentics-mesh/[blog post]
-| http://lotusrb.org/[Lotus]          | Ruby           | -
-|======
-
-//TODO blog post on WebRoot API
+Using the WebRoot API it is possible to easily integrate Gentics Mesh with many known routing frameworks. An example of API usage in https://vertx.io/[Vert.x] Java framework is shown in the http://vertx.io/blog/data-driven-apps-made-easy-with-vert-x-3-4-0-and-headless-cms-gentics-mesh/[blog post].
 
 === API endpoints
 
