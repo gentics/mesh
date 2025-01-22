@@ -12,14 +12,13 @@ This document aims to provide you with suggestions and hints on how to deal with
 
 Handling contents is fairly easy. You can either identify and load content using the UUIDs or a regular web path. 
 
-By Path: https://demo.getmesh.io{apiLatest}/demo/webroot/yachts/indian-empress
+By Path: ```GET {apiLatest}/:projectName/webroot/path/to/the/node```
 
-By Uuid: https://demo.getmesh.io{apiLatest}/demo/nodes/079ae5d5467447b99ae5d5467447b934
+By Uuid: ```{apiLatest}/:projectName/nodes/:nodeUuid```
 
-You can either place the path or uuid to your content in a fragment `/demo#category/079ae5d5467447b99ae5d5467447b934` or in the regular web path `/demo/category/079ae5d5467447b99ae5d5467447b934`. Most modern single page application frameworks like angular or react support both variations.
+You can either place the path or uuid to your content in a fragment `/:projectName#nodes/:nodeUuid` or in the regular web path `/:projectName/nodes/:nodeUuid`. Most modern single page application frameworks like angular or react support both variations.
 
 If you choose to use a server side webframework like link:https://laravel.com/[Laravel] or link:https://expressjs.com/de/[Express] you can setup routes to handle the inbound request. The request path can be used to build the webroot path for Gentics Mesh. Using that path you can query Gentics Mesh and check whether content for the given path can be found.
-
 
 == Binaries
 

@@ -854,7 +854,7 @@ icon:plus[] Core: It is now possible to use Gentics Mesh in read only mode. Take
 
 icon:check[] REST: The `/health/live` and `/health/ready` endpoints have been added to the REST API. These endpoints are also available on the monitoring server, but adding them to the REST server makes it possible for load balancers to monitor the server on the same port that used to proxy the requests.
 
-icon:check[] REST: The link:https://getmesh.io/docs/api/#users__userUuid__token_post[`/user/:uuid/token`] endpoint now has the Cache-Control header set to private.
+icon:check[] REST: The link:https://gentics.com/mesh/docs/api/#users__userUuid__token_post[`/user/:uuid/token`] endpoint now has the Cache-Control header set to private.
 
 icon:check[] Java Rest Client: Fixed a bug that caused `MeshOkHttpRequestImpl#getResponse` to always return null.
 
@@ -896,7 +896,7 @@ icon:check[] UI: The UI has been updated to version link:https://github.com/gent
 
 icon:plus[] GraphQL: The GraphQL Endpoint now supports the `wait` query-parameter like the Search Endpoint does. link:https://github.com/gentics/mesh/issues/805[#805]
 
-icon:plus[] Clustering: The role of an instance has been added to the link:https://getmesh.io/docs/api/#admin_cluster_status_get[cluster status response].
+icon:plus[] Clustering: The role of an instance has been added to the link:https://gentics.com/mesh/docs/api/#admin_cluster_status_get[cluster status response].
 
 icon:plus[] Plugins: It is now possible to specify the API Version that should be used when creating a new admin client. link:https://github.com/gentics/mesh-incubator/issues/216[#216]
 
@@ -909,7 +909,7 @@ icon:check[] UI: The UI has been updated to version link:https://github.com/gent
 [[v1.1.0]]
 == 1.1.0 (29.10.2019)
 
-WARNING: The internal monitoring library has been changed from dropwizard to link:https://micrometer.io/[micrometer]. This allows better labeling of various metrics for link:https://prometheus.io/[Prometheus]. With this change, some metrics names from Vert.x have been changed. See link:https://vertx.io/docs/vertx-micrometer-metrics/java/#_vert_x_core_tools_metrics[here] for the new list of Vert.x metrics. By default, JVM metrics are also recorded. This can be configured in the link:{{< relref "administration-guide.asciidoc" >}}#_monitoring_options[monitoring options]. Also, the response structure in the `/search/status` endpoint has changed. Take a look at the link:https://getmesh.io/docs/api/#search_status_get[API docs] for a new example.
+WARNING: The internal monitoring library has been changed from dropwizard to link:https://micrometer.io/[micrometer]. This allows better labeling of various metrics for link:https://prometheus.io/[Prometheus]. With this change, some metrics names from Vert.x have been changed. See link:https://vertx.io/docs/vertx-micrometer-metrics/java/#_vert_x_core_tools_metrics[here] for the new list of Vert.x metrics. By default, JVM metrics are also recorded. This can be configured in the link:{{< relref "administration-guide.asciidoc" >}}#_monitoring_options[monitoring options]. Also, the response structure in the `/search/status` endpoint has changed. Take a look at the link:https://gentics.com/mesh/docs/api/#search_status_get[API docs] for a new example.
 
 icon:plus[] Search: A new setting has been added which can be used to enable Elasticsearch 7 support. The `search.complianceMode` setting in the `mesh.yml` file can be used to control the compliance mode for Elasticsearch support. The setting can also be controlled via the `MESH_ELASTICSEARCH_COMPLIANCE_MODE` environment variable. Currently there are two modes: `ES_7` for Elasticsearch 7.x and `ES_6` for Elasticsearch 6.x.
 By default `ES_6` will be used thus no changes are required for existing installations.
@@ -1517,7 +1517,7 @@ icon:check[] REST: Fixed a bug which prevented the `DELETE /api/v1/admin/jobs/:j
 [[v0.31.2]]
 == 0.31.2 (22.03.2019)
 
-icon:plus[] Docker: Default memory settings for the server and demo docker images were updated. The `-Dstorage.diskCache.bufferSize=256` setting has been added for the server image. The setting can be changed using the `JAVA_TOOL_OPTIONS` environment variable. See link:https://getmesh.io/docs/administration-guide/#_memory_settings[Memory documentation] for more information and recommendations.
+icon:plus[] Docker: Default memory settings for the server and demo docker images were updated. The `-Dstorage.diskCache.bufferSize=256` setting has been added for the server image. The setting can be changed using the `JAVA_TOOL_OPTIONS` environment variable. See link:https://gentics.com/mesh/docs/administration-guide/#_memory_settings[Memory documentation] for more information and recommendations.
 
 icon:plus[] OrientDB: The included OrientDB version has been updated to version 3.0.18.
 
@@ -1573,7 +1573,7 @@ icon:check[] Fixed a bug in the consistency checks which claimed missing user ro
 
 icon:check[] Schema: A bug was fixed which prevented the update of the schema field `elasticsearch` property to value null.
 
-icon:plus[] Docker: Default memory settings for the server and demo docker images were added. Default for server is set to `-Xms512m -Xmx512m -XX:MaxDirectMemorySize=256m`. The setting can be changed using the `JAVA_TOOL_OPTIONS` environment variable. See link:https://getmesh.io/docs/administration-guide/#_memory_settings[Memory documentation] for more information.
+icon:plus[] Docker: Default memory settings for the server and demo docker images were added. Default for server is set to `-Xms512m -Xmx512m -XX:MaxDirectMemorySize=256m`. The setting can be changed using the `JAVA_TOOL_OPTIONS` environment variable. See link:https://gentics.com/mesh/docs/administration-guide/#_memory_settings[Memory documentation] for more information.
 
 icon:check[] The `.vertx` cache folder was moved to the configurable `data/tmp` folder.
 
@@ -1598,7 +1598,7 @@ icon:check[] Java Rest Client: Fixed a bug in the MeshRestClient#isOneOf helper 
 [[v0.30.0]]
 == 0.30.0 (12.02.2019)
 
-CAUTION: Java Rest Client: The Gentics Mesh Java REST client which was based on Vert.x was replaced with a `OkHttpClient` implementation. Some changes to the client interface were necessary to make the client independent of Vert.x. See link:https://getmesh.io/docs/platforms/#_java[this example] and the Javadoc for more information.
+CAUTION: Java Rest Client: The Gentics Mesh Java REST client which was based on Vert.x was replaced with a `OkHttpClient` implementation. Some changes to the client interface were necessary to make the client independent of Vert.x. See link:https://gentics.com/mesh/docs/platforms/#_java[this example] and the Javadoc for more information.
 
 icon:check[] Clustering: The mesh version will no longer be appended  to the node name used for OrientDB clustering. It is recommended to sanitize the `data/graphdb/storage/distributed-db-config.json` file and remove/rename entries which reference older mesh nodes. Only the active nodes should be listed in the file.
 
@@ -1744,7 +1744,7 @@ icon:plus[] Core: Deletion of micronode and list field data has been implemented
 
 icon:check[] Changelog: Fixed a bug in the webroot index database migration entry which caused a `ORecordDuplicatedException` changelog error and prevented update and startup of older databases. link:https://github.com/gentics/mesh/issues/554[#554], link:https://github.com/gentics/mesh/issues/546[#546]
 
-icon:check[] Core: Fixed a bug that caused link:https://getmesh.io/docs/api/#project__branches__branchUuid__migrateSchemas_post[/migrateSchemas] to fail when a newer schema version was not assigned to the branch. link:https://github.com/gentics/mesh/issues/532[#532]
+icon:check[] Core: Fixed a bug that caused link:https://gentics.com/mesh/docs/api/#project__branches__branchUuid__migrateSchemas_post[/migrateSchemas] to fail when a newer schema version was not assigned to the branch. link:https://github.com/gentics/mesh/issues/532[#532]
 
 icon:check[] Core: Nodes are now migrated to the newest schema version when a new branch is created. link:https://github.com/gentics/mesh/issues/521[#521]
 
@@ -2241,7 +2241,7 @@ icon:check[] REST: In some cases parallel file uploads of multiple images could 
 
 CAUTION: Search: The raw search endpoints now wraps a multisearch request. The endpoint response will now include the elasticsearch responses array. The query stays the same.
 
-icon:plus[] Demo: The link:https://demo.getmesh.io/demo[demo application] was updated to use Angular 5.
+icon:plus[] Demo: The demo application was updated to use Angular 5.
 
 icon:plus[] Core: Gentics Mesh can now be downgraded if the link:{{< relref "administration-guide.asciidoc" >}}#database-revisions[database revision] matches the needed revision of Gentics Mesh.
 
@@ -3226,14 +3226,14 @@ icon:bullhorn[] Content releases support
 
 [quote]
 ____
-This version of Gentics Mesh introduces _Content Releases_. A detailed description of this feature can be found in our https://getmesh.io/docs[Documentation].
+This version of Gentics Mesh introduces _Content Releases_. A detailed description of this feature can be found in our https://gentics.com/mesh/docs[Documentation].
 ____
 
 icon:bullhorn[] Versioning support
 
 [quote]
 ____
-This version of Gentics Mesh introduces versioning of contents. A detailed description of the versioning feature can be found in our https://getmesh.io/docs[Documentation].
+This version of Gentics Mesh introduces versioning of contents. A detailed description of the versioning feature can be found in our https://gentics.com/mesh/docs[Documentation].
 
 Important changes summary:
 

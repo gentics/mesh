@@ -26,7 +26,7 @@ The following changes can be applied on the `guide-step-2` branch.
 
 The fully working example can be found in the `guide-step-3` branch of the link:https://github.com/gentics/mesh-react-example/tree/guide-step-3[mesh-react-example] repository.
 
-TIP: The `proxy` field in the `package.json` file specifies the Gentics Mesh server to be proxied into the app server. By default `https://demo.getmesh.io` will be used.
+TIP: The `proxy` field in the `package.json` file specifies the Gentics Mesh server to be proxied into the app server.
 
 First we need to add the `vertx3-eventbus-client` which provides the connection to the websocket endpoint of Gentics Mesh.
 

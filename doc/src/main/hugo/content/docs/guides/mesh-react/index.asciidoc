@@ -177,7 +177,7 @@ The `displayField` controls what field should be used to display in the UI node 
 
 The `segmentField` controls which field should be used to identify the node for the webroot API. Nodes can be nested in each other and thus each node can provide a segment for path. This way it is possible to load nodes via a path resolving system.
 
-For the images the `binary` field will provide the segment. This way the filename of the uploaded binary will be used. The image will be loadable via the https://demo.getmesh.io{apiLatest}/demo/webroot/images/sts.jpg?w=800[`/images/sts.jpg`] path.
+For the images the `binary` field will provide the segment. This way the filename of the uploaded binary will be used. The image will be loadable via the `/path/to/the/image/image.jpg` path.
 
 
 The `container` property controls whether the node can contain children. For images this is not needed but `folders` would need to be containers.
