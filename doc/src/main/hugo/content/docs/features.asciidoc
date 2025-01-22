@@ -855,7 +855,7 @@ Possible applications for the `urlFields` property are:
 * Nice URL handling
 * Redirection handling
 
-Using the WebRoot API it is possible to easily integrate Gentics Mesh with many known routing frameworks. An example of API usage in https://vertx.io/[Vert.x] Java framework is shown in the http://vertx.io/blog/data-driven-apps-made-easy-with-vert-x-3-4-0-and-headless-cms-gentics-mesh/[blog post].
+Using the WebRoot API it is possible to easily integrate Gentics Mesh with many known routing frameworks. An example of API usage in https://vertx.io/[Vert.x] Java framework is described in the http://vertx.io/blog/data-driven-apps-made-easy-with-vert-x-3-4-0-and-headless-cms-gentics-mesh/[blog post]. Some other code examples can be found in the {{<relref "platforms.asciidoc">}}[Platforms] overview.
 
 === API endpoints
 
