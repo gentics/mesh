@@ -95,6 +95,7 @@ import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.NoConsistencyCheck;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.reactivex.Completable;
@@ -105,6 +106,7 @@ import io.vertx.core.json.JsonObject;
 
 @RunWith(Parameterized.class)
 @MeshTestSetting(testSize = TestSize.FULL, startServer = true)
+@NoConsistencyCheck
 public class GraphQLEndpointTest extends AbstractMeshTest {
 
 	protected static final String NODE_WITH_LINKS_UUID = "8d2f5769fe114353af5769fe11e35355";
