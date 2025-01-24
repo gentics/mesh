@@ -191,4 +191,12 @@ public interface ContainerDao<
 	 * @param batch
 	 */
 	void unassign(SC schema, HibProject project, EventQueueBatch batch);
+
+	/**
+	 * Find all projects which reference the schema.
+	 * 
+	 * @param schema
+	 * @return
+	 */
+	Result<HibProject> findLinkedProjects(SC schema);
 }

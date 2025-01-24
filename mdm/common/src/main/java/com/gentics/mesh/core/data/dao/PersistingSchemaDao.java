@@ -223,12 +223,7 @@ public interface PersistingSchemaDao
 		return mergeIntoPersisted(container);
 	}
 
-	/**
-	 * Find all projects which reference the schema.
-	 * 
-	 * @param schema
-	 * @return
-	 */
+	@Override
 	default Result<HibProject> findLinkedProjects(HibSchema schema) {
 		return new TraversalResult<>(Tx.get().projectDao()
 				.findAll().stream().filter(project -> isLinkedToProject(schema, project)));

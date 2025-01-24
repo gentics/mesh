@@ -41,6 +41,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.junit.After;
 import org.junit.Ignore;
@@ -52,6 +53,7 @@ import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.CommonTx;
@@ -70,7 +72,10 @@ import com.gentics.mesh.core.rest.event.node.SchemaMigrationCause;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
+import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
+import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectReference;
+import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -303,6 +308,93 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			SchemaResponse restSchema = call(() -> client().findSchemaByUuid(container.getUuid()));
 			assertThat(restSchema).matches(schemaVersion).isValid();
 		}
+	}
+
+	@Test
+	public void testReadAssignedProjects() {
+		String schemaUuid = tx(tx -> { 
+			return schemaContainer("content").getUuid();
+		});
+		ProjectListResponse projects = call(() -> client().findSchemaProjects(schemaUuid));
+		assertNotNull(projects.getData());
+		assertThat(projects.getData()).hasSize(1);
+	}
+
+	@Test
+	public void testReadAssignedProjectsFalseSchema() {
+		call(() -> client().findSchemaProjects("bogus"), NOT_FOUND, "object_not_found_for_uuid", "bogus");		
+	}
+
+	@Test
+	public void testReadJustAssignedProject() {
+		String schemaUuid = tx(tx -> { 
+			return schemaContainer("content").getUuid();
+		});
+		ProjectListResponse projects = client().createProject(new ProjectCreateRequest().setSchemaRef("folder").setName("SchemaAssignmentTest")).toSingle()
+			.flatMap(project -> client().assignSchemaToProject(project.getName(), schemaUuid).toSingle())
+			.flatMap(unused -> client().findSchemaProjects(schemaUuid).toSingle())
+			.blockingGet();
+		assertNotNull(projects.getData());
+		assertThat(projects.getData().stream().map(ProjectResponse::getName)).contains("SchemaAssignmentTest");
+	}
+
+	@Test
+	public void testReadPagedProjects() {
+		String schemaUuid = tx(tx -> { 
+			return schemaContainer("content").getUuid();
+		});
+		Observable.range(0, 7)
+			.flatMapSingle(index -> client().createProject(new ProjectCreateRequest().setSchemaRef("folder").setName("SchemaAssignmentPagingTest" + index)).toSingle())
+			.flatMapSingle(project -> client().assignSchemaToProject(project.getName(), schemaUuid).toSingle())
+			.ignoreElements()
+			.blockingAwait();
+		
+		ProjectListResponse projects = call(() -> client().findSchemaProjects(schemaUuid, new PagingParametersImpl(2, 5L)));
+		assertNotNull(projects.getData());
+		assertThat(projects.getData()).hasSize(3);
+	}
+
+	@Test
+	public void testReadJustUnassignedProject() {
+		testReadJustAssignedProject();
+
+		String schemaUuid = tx(tx -> { 
+			return schemaContainer("content").getUuid();
+		});
+		ProjectListResponse projects = client().unassignSchemaFromProject("SchemaAssignmentTest", schemaUuid).toSingle()
+			.flatMap(unused -> client().findSchemaProjects(schemaUuid).toSingle())
+			.blockingGet();
+		assertNotNull(projects.getData());
+		assertThat(projects.getData().stream().map(ProjectResponse::getName)).doesNotContain("SchemaAssignmentTest");
+	}
+
+	@Test
+	public void testReadNotPermittedProject() {
+		testReadJustAssignedProject();
+
+		String schemaUuid = tx(tx -> {
+			assertTrue(tx.roleDao().revokePermissions(role(), tx.projectDao().findByName("SchemaAssignmentTest"), READ_PERM));
+			String uuid = schemaContainer("content").getUuid();
+			tx.success();
+			return uuid;
+		});
+		ProjectListResponse projects = call(() -> client().findSchemaProjects(schemaUuid));
+		assertNotNull(projects.getData());
+		assertThat(projects.getData().stream().map(ProjectResponse::getName)).doesNotContain("SchemaAssignmentTest");
+	}
+
+	@Test
+	public void testReadProjectsOfNotPermittedSchema() {
+		testReadJustAssignedProject();
+
+		String schemaUuid = tx(tx -> {
+			HibSchema schema = schemaContainer("content");
+			assertTrue(tx.roleDao().revokePermissions(role(), schema, READ_PERM));
+			String uuid = schema.getUuid();
+			tx.success();
+			return uuid;
+		});
+		call(() -> client().findSchemaProjects(schemaUuid), FORBIDDEN, "error_missing_perm", schemaUuid, "read");
 	}
 
 	@Test

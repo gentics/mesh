@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.rest.Messages.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
@@ -21,6 +22,9 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.dao.UserDao;
+import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.PageTransformer;
+import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
@@ -29,15 +33,19 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.SchemaUpdateParameters;
 import com.gentics.mesh.util.UUIDUtil;
+import com.gentics.mesh.util.ValidationUtil;
 
 import dagger.Lazy;
 
@@ -52,13 +60,16 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<HibMicroschema, 
 
 	private final ProjectMicroschemaLoadAllActionImpl projectMicroschemaLoadAllAction;
 
+	private final PageTransformer pageTransformer;
+
 	@Inject
 	public MicroschemaCrudHandler(Database db, MicroschemaComparatorImpl comparator, Lazy<BootstrapInitializer> boot, HandlerUtilities utils,
-		WriteLock writeLock, ProjectMicroschemaLoadAllActionImpl projectMicroschemaLoadAllAction, MicroschemaDAOActions microschemaActions) {
+		WriteLock writeLock, ProjectMicroschemaLoadAllActionImpl projectMicroschemaLoadAllAction, MicroschemaDAOActions microschemaActions, PageTransformer pageTransformer) {
 		super(db, utils, writeLock, microschemaActions);
 		this.comparator = comparator;
 		this.boot = boot;
 		this.projectMicroschemaLoadAllAction = projectMicroschemaLoadAllAction;
+		this.pageTransformer = pageTransformer;
 	}
 
 	@Override
@@ -250,5 +261,37 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<HibMicroschema, 
 				microschemaDao.unassign(microschema, project, batch);
 			}
 		}, () -> ac.send(NO_CONTENT));
+	}
+
+	/**
+	 * Handle the request for the project, linked to the schema with the given UUID.
+	 * 
+	 * @param ac
+	 * @param microschemaUuid
+	 */
+	public void handleGetLinkedProjects(InternalActionContext ac, String microschemaUuid) {
+		validateParameter(microschemaUuid, "microschemaUuid");
+
+		PagingParameters pagingInfo = ac.getPagingParameters();
+		ValidationUtil.validate(pagingInfo);
+
+		utils.syncTx(ac, tx -> {
+			MicroschemaDao microschemaDao = tx.microschemaDao();
+			UserDao userDao = tx.userDao();
+			HibMicroschema microschema = microschemaDao.loadObjectByUuid(ac, microschemaUuid, READ_PERM);
+
+			Result<HibProject> result = microschemaDao.findLinkedProjects(microschema);
+			Page<? extends HibProject> page = new DynamicStreamPageImpl<>(result.stream().filter(p -> userDao.hasPermission(ac.getUser(), p, READ_PERM)), pagingInfo);
+
+			// Handle etag
+			if (ac.getGenericParameters().getETag()) {
+				String etag = pageTransformer.getETag(page, ac);
+				ac.setEtag(etag, true);
+				if (ac.matches(etag, true)) {
+					throw new NotModifiedException();
+				}
+			}
+			return pageTransformer.transformToRestSync(page, ac, 0);
+		}, m -> ac.send(m, OK));
 	}
 }
