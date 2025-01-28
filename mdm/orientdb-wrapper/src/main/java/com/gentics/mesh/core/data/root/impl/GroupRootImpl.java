@@ -12,7 +12,6 @@ import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
@@ -84,7 +83,7 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 	}
 
 	@Override
-	public void delete(BulkActionContext bac) {
+	public void delete() {
 		throw new NotImplementedException("The group root node can't be deleted");
 	}
 

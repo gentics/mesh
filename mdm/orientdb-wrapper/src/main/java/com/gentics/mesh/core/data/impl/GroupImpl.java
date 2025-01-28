@@ -4,7 +4,6 @@ import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.dao.GroupDao;
@@ -53,9 +52,9 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse> implements 
 	}
 
 	@Override
-	public void delete(BulkActionContext bac) {
+	public void delete() {
 		GroupDao groupRoot = Tx.get().groupDao();
-		groupRoot.delete(this, bac);
+		groupRoot.delete(this);
 	}
 
 	@Override

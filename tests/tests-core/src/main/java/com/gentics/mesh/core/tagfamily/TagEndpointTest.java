@@ -151,9 +151,10 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	public void testDelete() {
 		BulkActionContext context = createBulkContext();
 		try (Tx tx = tx()) {
+			tx.<CommonTx>unwrap().data().setBulkActionContext(context);
 			TagFamilyDao tagFamilyDao = tx.tagFamilyDao();
 			HibTagFamily tagFamily = tagFamily("colors");
-			tagFamilyDao.delete(tagFamily, context);
+			tagFamilyDao.delete(tagFamily);
 			tx.success();
 		}
 		// 6 = 1 Tag family + 3 color tags + 2 tagged nodes
@@ -231,8 +232,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 			String uuid = tagFamily.getUuid();
 			HibTagFamily foundTagFamily = tagFamilyDao.findByUuid(uuid);
 			assertNotNull(foundTagFamily);
-			BulkActionContext bac = createBulkContext();
-			tagFamilyDao.delete(tagFamily, bac);
+			tagFamilyDao.delete(tagFamily);
 			// TODO check for attached nodes
 			HibProject project = tx.projectDao().findByUuid(uuid);
 			assertNull(project);

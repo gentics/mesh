@@ -8,6 +8,7 @@ import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.S3BinaryDaoWrapper;
 import com.gentics.mesh.core.data.s3binary.S3Binaries;
 import com.gentics.mesh.core.data.s3binary.S3HibBinary;
+import com.gentics.mesh.core.db.Tx;
 
 import dagger.Lazy;
 

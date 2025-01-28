@@ -24,7 +24,6 @@ import java.util.Map.Entry;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
@@ -65,9 +64,8 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 			InternalActionContext ac = mockActionContext("recursive=true");
 			HibNode subFolder = folder("2015");
 			HibNode parentFolder = folder("news");
-			BulkActionContext bac = createBulkContext();
-			nodeDao.publish(parentFolder, ac, bac);
-			nodeDao.takeOffline(subFolder, ac, bac);
+			nodeDao.publish(parentFolder, ac);
+			nodeDao.takeOffline(subFolder, ac);
 			subFolderUuid = subFolder.getUuid();
 			parentFolderUuid = parentFolder.getUuid();
 			tx.success();

@@ -21,7 +21,6 @@ import java.util.stream.Stream;
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.Project;
@@ -184,7 +183,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public void delete(BulkActionContext bac) {
+	public void delete() {
 		getElement().remove();
 	}
 

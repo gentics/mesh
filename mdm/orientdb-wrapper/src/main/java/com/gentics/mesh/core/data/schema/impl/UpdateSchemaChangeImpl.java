@@ -15,7 +15,6 @@ import java.util.Map;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.UpdateSchemaChange;
 import com.gentics.mesh.core.rest.common.FieldContainer;
@@ -155,7 +154,7 @@ public class UpdateSchemaChangeImpl extends AbstractFieldSchemaContainerUpdateCh
 	}
 
 	@Override
-	public void delete(BulkActionContext context) {
+	public void delete() {
 		getElement().remove();
 	}
 

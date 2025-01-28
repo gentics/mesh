@@ -25,6 +25,8 @@ import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.core.data.storage.BinaryStorage;
+import com.gentics.mesh.core.db.GraphDBTx;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.core.rest.node.field.image.ImageVariantRequest;
 import com.gentics.mesh.core.result.Result;
@@ -51,6 +53,11 @@ public class ImageVariantDaoWrapperImpl extends AbstractDaoWrapper<HibImageVaria
 	}
 
 	@Override
+	public HibImageVariant findByUuid(String uuid) {
+		return GraphDBTx.getGraphTx().binaries().findAll().runInExistingTx(Tx.get()).flatMap(bin -> toGraph(bin).getVariants().stream()).filter(v -> v.getUuid().equals(uuid)).findAny().orElse(null);
+	}
+
+	@Override
 	public Result<? extends ImageVariant> getVariants(HibBinary binary, InternalActionContext ac) {
 		return toGraph(binary).getVariants();
 	}
@@ -73,8 +80,7 @@ public class ImageVariantDaoWrapperImpl extends AbstractDaoWrapper<HibImageVaria
 		String variantUuid = variant.getUuid();
 		ImageVariant imageVariant = toGraph(variant);
 		toGraph(binary).unlinkOut(imageVariant, GraphRelationships.HAS_VARIANTS);
-		imageVariant.remove();
-		binaryStorage.get().delete(variantUuid).blockingGet();
+		binaryStorage.get().deleteOnTxSuccess(variantUuid, Tx.get());
 		return true;
 	}
 

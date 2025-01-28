@@ -17,7 +17,6 @@ import java.util.stream.Stream;
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.Project;
@@ -139,9 +138,9 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 	}
 
 	@Override
-	public void delete(BulkActionContext bac) {
+	public void delete() {
 		TagFamilyDao tagFamilyDao = Tx.get().tagFamilyDao();
-		tagFamilyDao.delete(this, bac);
+		tagFamilyDao.delete(this);
 	}
 
 	@Override

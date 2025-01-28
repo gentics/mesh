@@ -291,7 +291,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 	}
 
 	@Override
-	default void delete(HibProject project, BulkActionContext bac) {
+	default void delete(HibProject project) {
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting project {" + project.getName() + "}");
 		}
@@ -304,38 +304,38 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 
 		// Remove the nodes in the project hierarchy
 		HibNode base = project.getBaseNode();
-		nodeDao.delete(base, bac, true, true);
+		nodeDao.delete(base, true, true);
 
 		// Remove the tagfamilies from the index
-		tagFamilyDao.onRootDeleted(project, bac);
+		tagFamilyDao.onRootDeleted(project);
 
 		// Remove all nodes in this project
 		for (HibNode node : findNodes(project)) {
-			nodeDao.delete(node, bac, true, false);
-			bac.inc();
+			nodeDao.delete(node, true, false);
+			CommonTx.get().data().maybeGetBulkActionContext().ifPresent(BulkActionContext::inc);
 		}
 
 		// Finally also remove the node root
-		nodeDao.onRootDeleted(project, bac);
+		nodeDao.onRootDeleted(project);
 
 		// Unassign the schemas from the container
 		for (HibSchema container : project.getSchemas().list()) {
-			schemaDao.unassign(container, project, bac.batch());
+			schemaDao.unassign(container, project, CommonTx.get().batch());
 		}
 
 		// Unassign the microschemas from the container
 		for (HibMicroschema container : project.getMicroschemas().list()) {
-			microschemaDao.unassign(container, project, bac.batch());
+			microschemaDao.unassign(container, project, CommonTx.get().batch());
 		}
 
 		// Remove the project schema root from the index
-		schemaDao.onRootDeleted(project, bac);
+		schemaDao.onRootDeleted(project);
 
 		// Remove the branch root and all branches
-		branchDao.onRootDeleted(project, bac);
+		branchDao.onRootDeleted(project);
 
 		// Remove the project from the index
-		bac.add(project.onDeleted());
+		CommonTx.get().batch().add(project.onDeleted());
 
 		// Remove the jobs referencing the job
 		jobDao.deleteByProject(project);
@@ -343,7 +343,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		// Finally remove the project node
 		deletePersisted(project);
 
-		bac.process(true);
+		CommonTx.get().data().maybeGetBulkActionContext().ifPresent(bac -> bac.process(true));
 	}
 
 	@Override

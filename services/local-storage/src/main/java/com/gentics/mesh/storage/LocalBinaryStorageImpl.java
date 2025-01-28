@@ -18,6 +18,8 @@ import javax.inject.Singleton;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.storage.AbstractBinaryStorage;
 import com.gentics.mesh.core.data.storage.LocalBinaryStorage;
+import com.gentics.mesh.core.db.CommonTx;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.util.RxUtil;
@@ -249,4 +251,9 @@ public class LocalBinaryStorageImpl extends AbstractBinaryStorage implements Loc
 			});
 	}
 
+	@Override
+	public void deleteOnTxSuccess(String uuid, Tx tx) {
+		Completable deletion = delete(uuid);
+		tx.<CommonTx>unwrap().data().maybeGetBulkActionContext().ifPresentOrElse(bac -> bac.add(deletion), () -> tx.batch().add(() -> deletion.blockingAwait()));
+	}
 }

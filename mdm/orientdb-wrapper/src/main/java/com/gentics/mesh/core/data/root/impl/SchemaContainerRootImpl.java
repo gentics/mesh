@@ -24,6 +24,7 @@ import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.tinkerpop.blueprints.Vertex;
@@ -62,7 +63,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<Schema> implemen
 	}
 
 	@Override
-	public void delete(BulkActionContext bac) {
+	public void delete() {
 		if (mesh().boot().meshRoot().getSchemaContainerRoot() == this) {
 			throw error(INTERNAL_SERVER_ERROR, "Deletion of the global schema root is not possible");
 		}
@@ -70,7 +71,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<Schema> implemen
 			log.debug("Deleting schema container root {" + getUuid() + "}");
 		}
 		getElement().remove();
-		bac.inc();
+		CommonTx.get().data().maybeGetBulkActionContext().ifPresent(BulkActionContext::inc);
 	}
 
 	/**

@@ -32,6 +32,7 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.result.Result;
@@ -96,18 +97,18 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	}
 
 	@Override
-	public void delete(BulkActionContext bac) {
+	public void delete() {
 		// TODO add check to prevent deletion of MeshRoot.tagRoot
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting tag root {" + getUuid() + "}");
 		}
 		// Delete all the tags of the tag root
 		for (Tag tag : findAll()) {
-			tag.delete(bac);
+			tag.delete();
 		}
 		// Now delete the tag root element
 		getElement().remove();
-		bac.process();
+		CommonTx.get().data().maybeGetBulkActionContext().ifPresent(BulkActionContext::process);
 	}
 
 	@Override

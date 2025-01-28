@@ -10,7 +10,6 @@ import java.util.Optional;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.dao.TagDao;
@@ -90,8 +89,8 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse> implements Tag 
 
 	@Deprecated
 	@Override
-	public void delete(BulkActionContext bac) {
-		Tx.get().tagDao().delete(this, bac);
+	public void delete() {
+		Tx.get().tagDao().delete(this);
 	}
 
 	@Override

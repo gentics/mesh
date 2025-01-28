@@ -6,8 +6,6 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
-import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -34,18 +32,8 @@ public interface MeshVertex extends MeshElement, VertexFrame, HibBaseElement {
 
 	/**
 	 * Delete the element. Additional entries will be added to the batch to keep the search index in sync.
-	 * 
-	 * @param bac
-	 *            Deletion context which keeps track of the deletion process
 	 */
-	void delete(BulkActionContext bac);
-
-	/**
-	 * Invoke deletion without any given bulk action context.
-	 */
-	default void delete() {
-		delete(new DummyBulkActionContext());
-	}
+	void delete();
 
 	/**
 	 * Sets the cached uuid for the vertex.

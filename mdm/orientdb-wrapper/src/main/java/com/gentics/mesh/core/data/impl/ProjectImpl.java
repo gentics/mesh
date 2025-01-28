@@ -13,7 +13,6 @@ import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibLanguage;
@@ -162,9 +161,9 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 	 */
 	@Override
 	@Deprecated
-	public void delete(BulkActionContext bac) {
+	public void delete() {
 		ProjectDao projectDao = Tx.get().projectDao();
-		projectDao.delete(this, bac);
+		projectDao.delete(this);
 	}
 
 	@Override

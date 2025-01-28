@@ -11,7 +11,6 @@ import javax.inject.Singleton;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.Language;
@@ -112,8 +111,8 @@ public class LanguageDaoWrapperImpl extends AbstractCoreDaoWrapper<LanguageRespo
 	}
 
 	@Override
-	public void delete(HibLanguage element, BulkActionContext bac) {
-		boot.get().meshRoot().getLanguageRoot().delete(bac);
+	public void delete(HibLanguage element) {
+		boot.get().meshRoot().getLanguageRoot().delete();
 	}
 
 	@Override

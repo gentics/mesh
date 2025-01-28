@@ -15,9 +15,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
@@ -134,16 +132,7 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	 * 
 	 * @param fieldKey
 	 */
-	void removeField(String fieldKey, BulkActionContext bac);
-
-	/**
-	 * Remove the field with the given key and use a dummy bulk action context.
-	 * 
-	 * @param fieldKey
-	 */
-	default void removeField(String fieldKey) {
-		removeField(fieldKey, new DummyBulkActionContext());
-	}
+	void removeField(String fieldKey);
 
 	/**
 	 * Remove the field.

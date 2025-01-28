@@ -1,4 +1,4 @@
-package com.gentics.mesh.context.impl;
+package com.gentics.mesh.test.context;
 
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.rest.event.EventCauseAction;

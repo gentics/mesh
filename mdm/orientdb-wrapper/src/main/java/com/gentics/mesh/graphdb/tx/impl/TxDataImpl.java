@@ -5,6 +5,7 @@ import java.util.Optional;
 import javax.inject.Inject;
 
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.HibMeshVersion;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
@@ -27,6 +28,7 @@ public class TxDataImpl implements CommonTxData {
 	private final OrientDBMeshOptions options;
 	private final PermissionRoots permissionRoots;
 	private Optional<EventQueueBatch> qBatch;
+	private Optional<BulkActionContext> bac;
 
 	@Inject
 	public TxDataImpl(OrientDBMeshOptions options, OrientDBBootstrapInitializer boot,
@@ -35,6 +37,7 @@ public class TxDataImpl implements CommonTxData {
 		this.boot = boot;
 		this.permissionRoots = permissionRoots;
 		this.qBatch = Optional.empty();
+		this.bac = Optional.empty();
 	}
 
 	@Override
@@ -90,5 +93,15 @@ public class TxDataImpl implements CommonTxData {
 	@Override
 	public Optional<EventQueueBatch> maybeGetEventQueueBatch() {
 		return qBatch;
+	}
+
+	@Override
+	public void setBulkActionContext(BulkActionContext bac) {
+		this.bac = Optional.ofNullable(bac);
+	}
+
+	@Override
+	public Optional<BulkActionContext> maybeGetBulkActionContext() {
+		return bac;
 	}
 }

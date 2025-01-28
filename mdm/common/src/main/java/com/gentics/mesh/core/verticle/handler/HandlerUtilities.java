@@ -11,6 +11,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -41,7 +42,6 @@ import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UUIDUtil;
 import com.gentics.mesh.util.ValidationUtil;
 
@@ -124,7 +124,7 @@ public class HandlerUtilities {
 		String uuid) {
 		ac.setHttpServerConfig(meshOptions.getHttpServerOptions());
 		try (WriteLock lock = writeLock.lock(ac)) {
-			syncTx(ac, tx -> {
+			syncTxBulkable(ac, (tx, bac) -> {
 				Object parent = null;
 				if (parentLoader != null) {
 					parent = parentLoader.apply(tx);
@@ -133,10 +133,8 @@ public class HandlerUtilities {
 
 				// Load the name and uuid of the element. We need this info after deletion.
 				String elementUuid = element.getUuid();
-				bulkableAction(bac -> {
-					bac.setRootCause(element.getTypeInfo().getType(), elementUuid, DELETE);
-					actions.delete(tx, element, bac);
-				});
+				bac.setRootCause(element.getTypeInfo().getType(), elementUuid, DELETE);
+				actions.delete(tx, element);
 				log.info("Deleted element {" + elementUuid + "} for type {" + element.getClass().getSimpleName() + "}");
 			}, () -> ac.send(NO_CONTENT));
 		}
@@ -191,7 +189,7 @@ public class HandlerUtilities {
 		ac.setHttpServerConfig(meshOptions.getHttpServerOptions());
 		try (WriteLock lock = writeLock.lock(ac)) {
 			AtomicBoolean created = new AtomicBoolean(false);
-			syncTx(ac, (batch, tx) -> {
+			syncTxBulkable(ac, (tx, bac) -> {
 				// 1. Load the element from the root element using the given uuid (if not null)
 				T element = null;
 				if (uuid != null) {
@@ -208,12 +206,12 @@ public class HandlerUtilities {
 				// Check whether we need to update a found element or whether we need to create a new one.
 				if (element != null) {
 					final T updateElement = element;
-					actions.update(tx, updateElement, ac, batch);
+					actions.update(tx, updateElement, ac, bac.batch());
 					RM model = actions.transformToRestSync(tx, updateElement, ac, 0);
 					return model;
 				} else {
 					created.set(true);
-					T createdElement =  actions.create(tx, ac, batch, uuid);
+					T createdElement =  actions.create(tx, ac, bac.batch(), uuid);
 					RM model = actions.transformToRestSync(tx, createdElement, ac, 0);
 					String path = actions.getAPIPath(tx, ac, createdElement);
 					ac.setLocation(path);
@@ -411,6 +409,60 @@ public class HandlerUtilities {
 		} catch (Throwable t) {
 			ac.fail(t);
 		}
+	}
+
+	/**
+	 * Invoke a sync action in a tx, and a bulkable context processing, if no tx failure happened.
+	 * 
+	 * @param ac
+	 * @param handler
+	 * @param function
+	 */
+	public void syncTxBulkable(InternalActionContext ac, BiConsumer<Tx, BulkActionContext> function, Runnable action) {
+		BulkActionContext bac = bulkProvider.get();
+		syncTx(ac, tx -> {
+			tx.<CommonTx>unwrap().data().setBulkActionContext(bac);
+			function.accept(tx, bac);
+		}, () -> {
+			bac.process(true);
+			action.run();
+		});
+	}
+
+
+	/**
+	 * Invoke a sync action in a tx, returning a model, a bulkable context processing, and an after-tx action on the returned model, if no tx failure happened.
+	 * 
+	 * @param ac
+	 * @param handler
+	 * @param function
+	 */
+	public <RM> void syncTxBulkable(InternalActionContext ac, BiFunction<Tx, BulkActionContext, RM> function, Consumer<RM> action) {
+		BulkActionContext bac = bulkProvider.get();
+		syncTx(ac, tx -> {
+			tx.<CommonTx>unwrap().data().setBulkActionContext(bac);
+			return function.apply(tx, bac);
+		}, model -> {
+			bac.process(true);
+			action.accept(model);
+		});
+	}
+
+	/**
+	 * Invoke a bulkable action which returns a result.
+	 *
+	 * @param function
+	 * @return
+	 */
+	public <T> T syncTxBulkable(BiFunction<Tx, BulkActionContext, T> function) {
+		BulkActionContext bac = bulkProvider.get();
+		T t = database.tx(tx -> {
+			tx.<CommonTx>unwrap().data().setBulkActionContext(bac);
+			T result = function.apply(tx, bac);
+			return result;
+		});
+		bac.process(true);
+		return t;
 	}
 
 	/**

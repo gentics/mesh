@@ -34,7 +34,6 @@ import com.gentics.mesh.ElementType;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.annotation.Getter;
 import com.gentics.mesh.annotation.Setter;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
@@ -172,7 +171,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 	}
 
 	@Override
-	public void delete(BulkActionContext context) {
+	public void delete() {
 		throw new NotImplementedException("The deletion behaviour for this vertex was not implemented.");
 	}
 

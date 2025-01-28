@@ -15,7 +15,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.HibField;
@@ -151,11 +150,11 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	}
 
 	@Override
-	public void removeField(String fieldKey, BulkActionContext bac) {
+	public void removeField(String fieldKey) {
 		if (StringUtils.isNotBlank(fieldKey)) {
 			HibField field = getField(fieldKey);
 			if (field != null) {
-				toGraph(field).removeField(bac, this);
+				toGraph(field).removeField(this);
 			}
 		}
 	}
@@ -492,10 +491,10 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	}
 
 	@Override
-	public void delete(BulkActionContext bac) {
+	public void delete() {
 		// Lists
 		for (GraphField field : out(HAS_LIST).frame(GraphField.class)) {
-			field.removeField(bac, this);
+			field.removeField(this);
 		}
 	}
 

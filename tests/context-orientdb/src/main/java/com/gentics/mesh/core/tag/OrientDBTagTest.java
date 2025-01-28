@@ -29,7 +29,7 @@ public class OrientDBTagTest extends AbstractMeshTest {
 			assertEquals(tags().size(), root.computeCount());
 			root.addTag(tag);
 			assertEquals(tags().size(), root.computeCount());
-			root.delete(createBulkContext());
+			root.delete();
 		}
 	}
 }

@@ -40,7 +40,7 @@ public abstract class AbstractGraphQLNodeTest extends AbstractMeshTest {
 					continue;
 				} else {
 					tag = tx.tagDao().findByUuid(tag.getUuid());
-					tx.tagDao().delete(tag, createBulkContext());
+					tx.tagDao().delete(tag);
 				}
 			}
 		});

@@ -25,7 +25,6 @@ import com.gentics.mesh.cache.NameCache;
 import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.context.impl.DummyEventQueueBatch;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
@@ -493,7 +492,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 
 	@Override
 	default boolean updateDry(HibUser user, InternalActionContext ac) {
-		return update(user, ac, new DummyEventQueueBatch(), true);
+		return update(user, ac, Tx.get().batch(), true);
 	}
 
 	@Override
@@ -578,7 +577,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	}
 
 	@Override
-	default void delete(HibUser user, BulkActionContext bac) {
+	default void delete(HibUser user) {
 		// TODO unhardcode the admin name
 		if ("admin".equals(user.getUsername())) {
 			throw error(FORBIDDEN, "error_illegal_admin_deletion");
@@ -591,9 +590,9 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 		// user will be just disabled and removed from all groups.");
 		// }
 		// outE(HAS_USER).removeAll();
-		bac.add(user.onDeleted());
+		CommonTx.get().batch().add(user.onDeleted());
 		deletePersisted(user);
-		bac.process();
+		CommonTx.get().data().maybeGetBulkActionContext().ifPresent(BulkActionContext::process);
 		Tx.get().permissionCache().clear();
 	}
 

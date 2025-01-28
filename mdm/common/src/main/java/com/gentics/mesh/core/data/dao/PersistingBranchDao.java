@@ -231,16 +231,16 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 	}
 
 	@Override
-	default void onRootDeleted(HibProject project, BulkActionContext bac) {
+	default void onRootDeleted(HibProject project) {
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting branches of project {" + project.getUuid() + "}");
 		}
 
 		// Delete all branches
 		for (HibBranch branch : findAll(project).list()) {
-			bac.add(branch.onDeleted());
+			CommonTx.get().batch().add(branch.onDeleted());
 			deletePersisted(project, branch);
-			bac.process();
+			CommonTx.get().data().maybeGetBulkActionContext().ifPresent(BulkActionContext::process);
 		}
 	}
 
@@ -351,8 +351,8 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 	}
 
 	@Override
-	default void delete(HibProject project, HibBranch branch, BulkActionContext bac) {
-		bac.add(branch.onDeleted());
+	default void delete(HibProject project, HibBranch branch) {
+		CommonTx.get().batch().add(branch.onDeleted());
 		deletePersisted(project, branch);
 	}
 

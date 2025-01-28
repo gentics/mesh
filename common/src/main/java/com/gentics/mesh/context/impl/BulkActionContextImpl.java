@@ -25,7 +25,7 @@ public class BulkActionContextImpl implements BulkActionContext {
 
 	private static final Logger log = LoggerFactory.getLogger(BulkActionContextImpl.class);
 
-	private static final int DEFAULT_BATCH_SIZE = 100;
+	public static final int DEFAULT_BATCH_SIZE = 100;
 
 	private final AtomicLong batchCounter = new AtomicLong(1);
 	private final AtomicLong elementCounter = new AtomicLong(0);
@@ -51,17 +51,24 @@ public class BulkActionContextImpl implements BulkActionContext {
 	}
 
 	@Override
+	public void setBatch(EventQueueBatch batch) {
+		batch.addAll(this.batch);
+		this.batch = batch;
+	}
+
+	@Override
 	public void process(boolean force) {
 		if (elementCounter.incrementAndGet() >= DEFAULT_BATCH_SIZE || force) {
-			log.info("Processing transaction batch {" + batchCounter.get() + "}. I counted {" + elementCounter.get() + "} elements.");
+			log.info("Processing transaction batch {" + batchCounter.get() + "}. I counted {" + elementCounter.get() + "} elements. {" + asyncActions.size() + "} to be executed.");
 			// Check before commit to ensure we are 100% safe
 			db.blockingTopologyLockCheck();
-			Tx.get().commit();
+			Tx.maybeGet().ifPresent(Tx::commit);
 			Completable.merge(asyncActions).subscribe(() -> {
 				log.trace("Async action processed");
 			});
 			batch().dispatch();
-			// Reset the counter back to zero
+			// Reset the context
+			asyncActions.clear();
 			elementCounter.set(0);
 			batchCounter.incrementAndGet();
 		}
@@ -76,5 +83,4 @@ public class BulkActionContextImpl implements BulkActionContext {
 	public void add(Completable action) {
 		asyncActions.add(action);
 	}
-
 }

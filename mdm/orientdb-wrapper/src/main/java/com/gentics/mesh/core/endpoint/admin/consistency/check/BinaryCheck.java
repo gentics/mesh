@@ -51,7 +51,6 @@ public class BinaryCheck extends AbstractConsistencyCheck {
 			}
 			result.addInconsistency(info);
 		}
-
 	}
 
 }

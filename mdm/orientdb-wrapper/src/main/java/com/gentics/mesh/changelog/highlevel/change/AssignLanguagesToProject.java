@@ -67,6 +67,6 @@ public class AssignLanguagesToProject extends AbstractHighLevelChange {
 					throw new IllegalStateException("No Language [" + langTag + "] is installed!");
 				}
 				return Pair.of(projectLang.getKey(), language);
-			})).forEach(projectLang -> languageDao.assign(projectLang.getValue(), projectLang.getKey(), ctx.createBatch(), false));
+			})).forEach(projectLang -> languageDao.assign(projectLang.getValue(), projectLang.getKey(), ctx.batch(), false));
 	}
 }

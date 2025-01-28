@@ -24,7 +24,9 @@ import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.endpoint.admin.consistency.UploadsConsistencyCheck;
 import com.gentics.mesh.core.endpoint.node.TransformationResult;
 import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.image.ImageInfo;
@@ -79,6 +81,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 			mesh().binaryStorage().store(Flowable.just(Buffer.buffer(input)), binary.getUuid()).blockingAwait();
 			String base64 = tx.binaryDao().getBase64ContentSync(binary);
 			assertEquals(input.toString(), new String(BASE64.decode(base64)));
+			mesh().binaryStorage().delete(binary.getUuid()).blockingGet();
 		}
 	}
 
@@ -90,6 +93,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 			mesh().binaryStorage().store(Flowable.just(Buffer.buffer(input)), binary.getUuid()).blockingAwait();
 			String base64 = tx.binaryDao().getBase64ContentSync(binary);
 			assertEquals(input.toString(), new String(BASE64.decode(base64)));
+			mesh().binaryStorage().delete(binary.getUuid()).blockingGet();
 		}
 	}
 
@@ -275,6 +279,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 			invokeRemoveFieldViaNullTestcase(BINARY_FIELD, FETCH, FILL_BASIC, (node) -> {
 				updateContainer(ac, node, BINARY_FIELD, null);
 			});
+			tx.<CommonTx>unwrap().data().maybeGetBulkActionContext().ifPresentOrElse(bac -> bac.process(true), () -> tx.batch().dispatch());
 		}
 	}
 
@@ -287,6 +292,9 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 				updateContainer(ac, container, BINARY_FIELD, null);
 			});
 		}
+		tx(tx -> {
+			new UploadsConsistencyCheck().invoke(mesh().database(), tx, true);
+		});
 	}
 
 	@Test
@@ -334,5 +342,9 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 		assertNotNull(result.getHash());
 		assertEquals(1376, result.getImageInfo().getHeight().intValue());
 		assertEquals(1160, result.getImageInfo().getWidth().intValue());
+
+		tx(tx -> {
+			new UploadsConsistencyCheck().invoke(mesh().database(), tx, true);
+		});
 	}
 }

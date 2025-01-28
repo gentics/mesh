@@ -39,7 +39,6 @@ public class ConsistencyRule extends TestWatcher {
 				ConsistencyCheckResult result = check.invoke(mesh.database(), tx, false);
 				response.getInconsistencies().addAll(result.getResults());
 			}
-
 			assertThat(response.getInconsistencies()).as("Inconsistencies").isEmpty();
 		}
 	}

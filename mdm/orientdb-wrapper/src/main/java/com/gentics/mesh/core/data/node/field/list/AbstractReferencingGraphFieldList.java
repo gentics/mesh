@@ -8,7 +8,6 @@ import static com.gentics.mesh.util.StreamUtil.toStream;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -63,13 +62,13 @@ public abstract class AbstractReferencingGraphFieldList<T extends HibListableFie
 	}
 
 	@Override
-	public void removeField(BulkActionContext bac, HibFieldContainer container) {
+	public void removeField(HibFieldContainer container) {
 		// Detach the list from the given graph field container
 		toGraph(container).unlinkOut(this, HAS_LIST);
 
 		// Remove the field if no more containers are attached to it
 		if (!in(HAS_LIST).hasNext()) {
-			delete(bac);
+			delete();
 		}
 	}
 

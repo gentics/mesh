@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.NodeDao;
@@ -60,9 +59,8 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 
 			// publish the node and its parent
 			InternalActionContext ac = mockActionContext();
-			BulkActionContext bac = createBulkContext();
-			nodeDao.publish(nodeDao.getParentNode(content("concorde"), project().getLatestBranch().getUuid()), ac, bac);
-			nodeDao.publish(content("concorde"), ac, bac);
+			nodeDao.publish(nodeDao.getParentNode(content("concorde"), project().getLatestBranch().getUuid()), ac);
+			nodeDao.publish(content("concorde"), ac);
 		}
 
 		nodeList = call(() -> client().findNodesForTag(PROJECT_NAME, colorsUuid, redUuid));

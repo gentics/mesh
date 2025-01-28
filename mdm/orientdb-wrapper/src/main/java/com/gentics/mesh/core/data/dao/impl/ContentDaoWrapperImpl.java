@@ -20,7 +20,6 @@ import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.HibDeletableField;
@@ -121,18 +120,18 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	}
 
 	@Override
-	public void delete(HibNodeFieldContainer content, BulkActionContext bac) {
-		toGraph(content).delete(bac);
+	public void delete(HibNodeFieldContainer content) {
+		toGraph(content).delete();
 	}
 
 	@Override
-	public void delete(HibNodeFieldContainer content, BulkActionContext bac, boolean deleteNext) {
-		toGraph(content).delete(bac, deleteNext);
+	public void delete(HibNodeFieldContainer content, boolean deleteNext) {
+		toGraph(content).delete(deleteNext);
 	}
 
 	@Override
-	public void deleteFromBranch(HibNodeFieldContainer content, HibBranch branch, BulkActionContext bac) {
-		toGraph(content).deleteFromBranch(branch, bac);
+	public void deleteFromBranch(HibNodeFieldContainer content, HibBranch branch) {
+		toGraph(content).deleteFromBranch(branch);
 	}
 
 	@Override
