@@ -239,14 +239,17 @@ public class LocalBinaryStorageImpl extends AbstractBinaryStorage implements Loc
 	@Override
 	public Completable delete(String binaryUuid) {
 		String path = getFilePath(binaryUuid);
+		boolean deleteFolderTrace = Tx.get().data().options().getUploadOptions().isDeleteFolderTrace();
 		return rxVertx.fileSystem()
 			.rxDelete(path)
 			// Remove the folder trace, if empty
 			.andThen(Completable.fromAction(() -> {
-				Path parent = Path.of(path).getParent().toAbsolutePath();
-				Path root = Path.of(options.getDirectory()).toAbsolutePath();
-				while (parent != null && parent.compareTo(root) != 0 && Files.list(parent).count() < 1 && Files.deleteIfExists(parent)) {
-					parent = parent.getParent();
+				if (deleteFolderTrace) {
+					Path parent = Path.of(path).getParent().toAbsolutePath();
+					Path root = Path.of(options.getDirectory()).toAbsolutePath();
+					while (parent != null && parent.compareTo(root) != 0 && Files.list(parent).count() < 1 && Files.deleteIfExists(parent)) {
+						parent = parent.getParent();
+					}
 				}
 			}))
 			// Don't fail if the file is not even in the local storage
