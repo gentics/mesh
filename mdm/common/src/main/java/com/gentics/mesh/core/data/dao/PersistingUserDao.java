@@ -25,7 +25,6 @@ import com.gentics.mesh.cache.NameCache;
 import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.context.impl.DummyEventQueueBatch;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
@@ -493,7 +492,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 
 	@Override
 	default boolean updateDry(HibUser user, InternalActionContext ac) {
-		return update(user, ac, new DummyEventQueueBatch(), true);
+		return update(user, ac, Tx.get().batch(), true);
 	}
 
 	@Override

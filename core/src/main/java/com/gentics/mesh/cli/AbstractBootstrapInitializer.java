@@ -654,7 +654,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 				tx.jobDao().enqueueImageCacheMigration(tx.userDao().findByUsername("admin"));
 				MeshEvent.triggerJobWorker(mesh);
 				return bac;
-			}).doOnSuccess(bac -> bac.process(true)).blockingGet();
+			}).doOnSuccess(bac -> bac.process(true)).subscribe();
 		}
 	}
 

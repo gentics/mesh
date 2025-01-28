@@ -31,7 +31,8 @@ public class BinariesConsistencyCheck implements ConsistencyCheck {
 
 	@Override
 	public String getName() {
-		return "uploads";
+		// `binaries` key belongs to `BinaryCheck` :(
+		return "binarydata";
 	}
 
 	@Override

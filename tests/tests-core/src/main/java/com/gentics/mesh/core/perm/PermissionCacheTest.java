@@ -11,7 +11,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.context.impl.DummyEventQueueBatch;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -21,6 +20,7 @@ import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.DummyEventQueueBatch;
 import com.gentics.mesh.util.UUIDUtil;
 
 /**

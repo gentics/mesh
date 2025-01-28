@@ -45,6 +45,8 @@ public enum MeshCoreOptionChanger implements MeshOptionChanger {
 		options.setNativeQueryFiltering(NativeQueryFiltering.NEVER);
 	}), SHORT_BINARY_CHECK_INTERVAL(options -> {
 		options.getUploadOptions().setCheckInterval(5_000);
+	}), KEEP_UPLOADS_FOLDER_TRACE(options -> {
+		options.getUploadOptions().setDeleteFolderTrace(false);
 	});
 
 	private final Consumer<MeshOptions> changer;

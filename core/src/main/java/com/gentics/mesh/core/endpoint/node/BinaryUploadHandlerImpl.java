@@ -258,7 +258,9 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 		}).onErrorResumeNext(e -> {
 			Single<NodeResponse> se = Single.error(e);
 			if (ctx.isInvokeStore()) {
-				return binaryStorage.delete(ctx.getBinaryUuid()).onErrorComplete().andThen(se);
+				return binaryStorage.delete(ctx.getBinaryUuid()).onErrorComplete()
+						.andThen(binaryStorage.purgeTemporaryUpload(ctx.getTemporaryId())).onErrorComplete()
+						.andThen(se);
 			} else {
 				return se;
 			}

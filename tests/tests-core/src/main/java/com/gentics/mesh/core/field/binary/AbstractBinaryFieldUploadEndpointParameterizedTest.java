@@ -15,7 +15,6 @@ import org.junit.runners.Parameterized;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.endpoint.admin.consistency.UploadsConsistencyCheck;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 

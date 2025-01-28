@@ -359,7 +359,9 @@ public class BinaryTransformHandler extends AbstractHandler {
 		}).onErrorResumeNext(e -> {
 			Single<NodeResponse> se = Single.error(e);
 			if (context.isInvokeStore()) {
-				return binaryStorage.delete(context.getBinaryUuid()).onErrorComplete().andThen(se);
+				return binaryStorage.delete(context.getBinaryUuid()).onErrorComplete()
+						.andThen(binaryStorage.purgeTemporaryUpload(context.getTemporaryId())).onErrorComplete()
+						.andThen(se);
 			} else {
 				return se;
 			}

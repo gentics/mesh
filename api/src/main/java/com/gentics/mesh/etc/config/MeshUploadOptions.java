@@ -21,6 +21,7 @@ public class MeshUploadOptions implements Option {
 	public static final String DEFAULT_TEMP_DIR = "data" + File.separator + "tmp" + File.separator + "file-uploads";;
 	public static final int DEFAULT_DOCUMENT_PARSER_LIMIT = 40_000;
 	public static final boolean DEFAULT_UPLOAD_PARSER_FLAG = true;
+	public static final boolean DEFAULT_UPLOAD_DELETE_FOLDER_TRACE_FLAG = true;
 	public static final long DEFAULT_CHECK_INTERVAL = 60_000;
 
 	public static final String MESH_BINARY_DIR_ENV = "MESH_BINARY_DIR";
@@ -28,6 +29,7 @@ public class MeshUploadOptions implements Option {
 	public static final String MESH_BINARY_UPLOAD_LIMIT_ENV = "MESH_BINARY_UPLOAD_LIMIT";
 	public static final String MESH_BINARY_DOCUMENT_PARSER_LIMIT_ENV = "MESH_BINARY_DOCUMENT_PARSER_LIMIT";
 	public static final String MESH_BINARY_DOCUMENT_PARSER_ENV = "MESH_BINARY_DOCUMENT_PARSER";
+	public static final String MESH_BINARY_DELETE_FOLDER_TRACE_ENV = "MESH_BINARY_DELETE_FOLDER_TRACE";
 	public static final String MESH_BINARY_METADATA_WHITELIST_ENV = "MESH_BINARY_METADATA_WHITELIST";
 	public static final String MESH_BINARY_CHECK_INTERVAL = "MESH_BINARY_CHECK_INTERVAL";
 
@@ -67,6 +69,12 @@ public class MeshUploadOptions implements Option {
 	@JsonPropertyDescription("Interval in milliseconds for performing binary check requests for binary fields where a check service URL is defined. For values less than one the check is disabled. (default: 60000).")
 	@EnvironmentVariable(name = MESH_BINARY_CHECK_INTERVAL, description = "Override the binary check interval")
 	private long checkInterval = DEFAULT_CHECK_INTERVAL;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("If true, the folder trace of every binary being deleted, will be deleted as well. Default: "
+		+ DEFAULT_UPLOAD_DELETE_FOLDER_TRACE_FLAG)
+	@EnvironmentVariable(name = MESH_BINARY_DELETE_FOLDER_TRACE_ENV, description = "Override the folder trace deletion flag.")
+	private boolean deleteFolderTrace = DEFAULT_UPLOAD_DELETE_FOLDER_TRACE_FLAG;
 
 	/**
 	 * Return the upload limit in bytes.
@@ -207,6 +215,26 @@ public class MeshUploadOptions implements Option {
 	 */
 	public MeshUploadOptions setCheckInterval(long checkInterval) {
 		this.checkInterval = checkInterval;
+		return this;
+	}
+
+	/**
+	 * Get the folder trace deletion (when the binary is deleted) flag.
+	 * 
+	 * @return
+	 */
+	public boolean isDeleteFolderTrace() {
+		return deleteFolderTrace;
+	}
+
+	/**
+	 * Set the folder trace deletion (when the binary is deleted) flag.
+	 * 
+	 * @param deleteFolderTrace
+	 * @return
+	 */
+	public MeshUploadOptions setDeleteFolderTrace(boolean deleteFolderTrace) {
+		this.deleteFolderTrace = deleteFolderTrace;
 		return this;
 	}
 }
