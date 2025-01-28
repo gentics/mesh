@@ -1,6 +1,4 @@
 package com.gentics.mesh.hibernate.data.node.field.impl;
-
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.hibernate.data.domain.HibUnmanagedFieldContainer;
@@ -25,9 +23,8 @@ public abstract class AbstractHibField implements HibField {
 	 * Cleanup the referenced data, if required. Does nothing by default.
 	 * 
 	 * @param tx current transaction
-	 * @param bac action context to report into.
 	 */
-	public void onFieldDeleted(HibernateTx tx, BulkActionContext bac) {}
+	public void onFieldDeleted(HibernateTx tx) {}
 
 	/**
 	 * Get the container the field is currently attached to. May be either node content or micronode.

@@ -11,8 +11,6 @@ import io.vertx.core.Vertx;
 
 public abstract class AbstractImageDataHibDao<T extends HibImageDataElement> extends AbstractHibDao<T> {
 
-	
-
 	public AbstractImageDataHibDao(HibPermissionRoots permissionRoots, CommonDaoHelper commonDaoHelper,
 			CurrentTransaction currentTransaction, EventFactory eventFactory, Lazy<Vertx> vertx) {
 		super(permissionRoots, commonDaoHelper, currentTransaction, eventFactory, vertx);

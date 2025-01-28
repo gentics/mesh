@@ -48,7 +48,6 @@ import com.gentics.graphqlfilter.filter.operation.JoinPart;
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.cache.TotalsCache;
 import com.gentics.mesh.contentoperation.CommonContentColumn;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.HibBaseElement;
@@ -2057,10 +2056,10 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void delete(T element, BulkActionContext bac) {
+	public void delete(T element) {
 		currentTransaction.getTx().delete(element);
 		if (element instanceof HibCoreElement) {
-			bac.add(eventFactory.onDeleted(((HibCoreElement<? extends RestModel>) element)));
+			currentTransaction.getTx().batch().add(eventFactory.onDeleted(((HibCoreElement<? extends RestModel>) element)));
 		} else {
 			log.warn("Couldn't emit event. Class of element: " + element.getClass());
 		}

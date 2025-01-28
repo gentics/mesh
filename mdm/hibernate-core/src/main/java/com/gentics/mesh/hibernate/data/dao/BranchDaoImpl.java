@@ -15,7 +15,6 @@ import javax.inject.Singleton;
 import org.hibernate.jpa.QueryHints;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.branch.HibBranchMicroschemaVersion;
@@ -76,7 +75,7 @@ public class BranchDaoImpl extends AbstractHibRootDao<HibBranch, BranchResponse,
 	}
 
 	@Override
-	public void onRootDeleted(HibProject root, BulkActionContext bac) {
+	public void onRootDeleted(HibProject root) {
 		// before deleting all branches of the project, unset the initial and latest branch in the project
 		HibProjectImpl hibProject = (HibProjectImpl) root;
 		hibProject.setInitialBranch(null);
@@ -85,7 +84,7 @@ public class BranchDaoImpl extends AbstractHibRootDao<HibBranch, BranchResponse,
 		// also unset the "previousBranch" relation of all branches
 		findAll(root).forEach(branch -> branch.setPreviousBranch(null));
 
-		super.onRootDeleted(root, bac);
+		super.onRootDeleted(root);
 	}
 
 	@Override

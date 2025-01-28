@@ -14,7 +14,6 @@ import jakarta.persistence.UniqueConstraint;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
@@ -119,8 +118,8 @@ public class HibMicronodeFieldEdgeImpl extends AbstractFieldEdgeImpl<UUID> imple
 	}
 
 	@Override
-	public void onEdgeDeleted(HibernateTx tx, BulkActionContext bac) {
-		tx.contentDao().tryDelete(getMicronode(), this, bac);
+	public void onEdgeDeleted(HibernateTx tx) {
+		tx.contentDao().tryDelete(getMicronode(), this);
 	}
 
 	@Override

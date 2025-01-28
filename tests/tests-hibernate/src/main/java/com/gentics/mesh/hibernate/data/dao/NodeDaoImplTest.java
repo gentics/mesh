@@ -9,12 +9,12 @@ import java.util.UUID;
 
 import jakarta.persistence.EntityManager;
 
+import org.assertj.core.api.Assertions;
+import org.junit.Test;
+
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.context.impl.DummyBulkActionContext;
-import com.gentics.mesh.context.impl.DummyEventQueueBatch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
-import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.list.HibBooleanFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibDateFieldList;
@@ -42,9 +42,8 @@ import com.gentics.mesh.hibernate.data.domain.HibUnmanagedFieldContainer;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.DummyEventQueueBatch;
 import com.gentics.mesh.util.CoreTestUtils;
-import org.assertj.core.api.Assertions;
-import org.junit.Test;
 
 @MeshTestSetting(testSize = TestSize.PROJECT)
 public class NodeDaoImplTest extends AbstractMeshTest {
@@ -124,7 +123,7 @@ public class NodeDaoImplTest extends AbstractMeshTest {
 
 		tx(() -> {
 			NodeDaoImpl nodeDaoImpl = HibernateTx.get().nodeDao();
-			nodeDaoImpl.delete(nodeDaoImpl.findByUuid(projectToTest, sourceNode.getUuid()), new DummyBulkActionContext(), true, true);
+			nodeDaoImpl.delete(nodeDaoImpl.findByUuid(projectToTest, sourceNode.getUuid()), true, true);
 		});
 
 		try (Tx tx = tx()) {
@@ -216,7 +215,7 @@ public class NodeDaoImplTest extends AbstractMeshTest {
 			Assertions.assertThat(microListCount).isGreaterThan(0);
 
 			NodeDaoImpl nodeDaoImpl = HibernateTx.get().nodeDao();
-			nodeDaoImpl.deleteAllFromProject(projectToBeDeleted, new DummyBulkActionContext());
+			nodeDaoImpl.deleteAllFromProject(projectToBeDeleted);
 
 			// assert that half of the fields were deleted
 			Assertions.assertThat(tableCount("nodefieldcontainer")).isEqualTo(edgeCount - 4);

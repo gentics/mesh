@@ -8,7 +8,6 @@ import java.util.stream.IntStream;
 import jakarta.persistence.EntityManager;
 
 import com.gentics.mesh.contentoperation.CommonContentColumn;
-import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.node.HibMicronode;
@@ -86,7 +85,7 @@ public class HibMicronodeListFieldImpl
 				.setParameter("micronodeUuid", value.getId())
 				.setParameter("micronodeVersion", value.getSchemaContainerVersion())
 				.executeUpdate() == 1) {
-			HibernateTx.get().contentDao().delete(value, new DummyBulkActionContext());
+			HibernateTx.get().contentDao().delete(value);
 		} else {
 			HibMicronodeField.log.debug("The micronode { " + value + " } has not been deleted");
 		}

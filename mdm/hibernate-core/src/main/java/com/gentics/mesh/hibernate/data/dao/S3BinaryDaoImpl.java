@@ -6,7 +6,6 @@ import java.util.UUID;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.dao.PersistingS3BinaryDao;
 import com.gentics.mesh.core.data.s3binary.S3Binaries;
@@ -56,14 +55,14 @@ public class S3BinaryDaoImpl extends AbstractImageDataHibDao<S3HibBinary> implem
                 .orElse(null);
     }
 
-    public void removeField(BulkActionContext bac, HibField field) {
+    public void removeField(HibField field) {
         S3HibBinaryField s3BinaryRef = (S3HibBinaryField) field;
         HibS3BinaryImpl s3Binary = (HibS3BinaryImpl) s3BinaryRef.getBinary();
 
         em().remove(s3BinaryRef);
         long fieldCount = ((Number) em().createNamedQuery("s3Binary.getFieldCount").setParameter("uuid", s3Binary.getId()).getSingleResult()).longValue();
         if (fieldCount == 0) {
-            bac.add(currentTransaction.getTx().data().s3BinaryStorage().delete(s3Binary.getUuid()));
+            currentTransaction.getTx().data().s3BinaryStorage().deleteOnTxSuccess(s3Binary.getUuid(), currentTransaction.getTx());
             em().remove(s3Binary);
         }
     }

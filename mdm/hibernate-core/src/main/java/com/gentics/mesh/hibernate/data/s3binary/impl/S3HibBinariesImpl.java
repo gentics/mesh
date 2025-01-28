@@ -1,5 +1,11 @@
 package com.gentics.mesh.hibernate.data.s3binary.impl;
 
+import java.util.Set;
+import java.util.stream.Stream;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.core.data.s3binary.S3Binaries;
 import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 import com.gentics.mesh.core.db.Transactional;
@@ -8,10 +14,6 @@ import com.gentics.mesh.database.HibernateDatabase;
 import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.hibernate.data.domain.HibS3BinaryImpl;
 import com.gentics.mesh.util.UUIDUtil;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.util.stream.Stream;
 
 /**
  * Amazon S3 binary manager component implementation.
@@ -27,6 +29,17 @@ public class S3HibBinariesImpl implements S3Binaries {
 	@Inject
 	public S3HibBinariesImpl(HibernateDatabase database) {
 		this.database = database;
+	}
+
+	@Override
+	public Transactional<S3HibBinary> findByUuid(String uuid) {
+		return database.transactional((tx) -> tx.<HibernateTx>unwrap()
+				.entityManager()
+				.createNamedQuery("s3binary.findByUuids", S3HibBinary.class)
+				.setParameter("uuids", Set.of(UUIDUtil.toJavaUuid(uuid)))
+				.getResultStream()
+				.findAny()
+				.orElse(null));
 	}
 
 	@Override

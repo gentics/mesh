@@ -34,6 +34,7 @@ import com.gentics.mesh.hibernate.data.node.field.impl.HibBinaryFieldBase;
 import com.gentics.mesh.hibernate.data.permission.HibPermissionRoots;
 import com.gentics.mesh.hibernate.event.EventFactory;
 import com.gentics.mesh.parameter.image.ImageManipulation;
+import com.gentics.mesh.util.UUIDUtil;
 
 import dagger.Lazy;
 import io.vertx.core.Vertx;
@@ -59,6 +60,11 @@ public class ImageVariantDaoImpl extends AbstractImageDataHibDao<HibImageVariant
 		super(permissionRoots, commonDaoHelper, currentTransaction, eventFactory, vertx);
 		this.imageManipulator = imageManipulator;
 		this.binaryStorage = binaryStorage;
+	}
+
+	@Override
+	public HibImageVariant findByUuid(String uuid) {
+		return em().find(HibImageVariantImpl.class, UUIDUtil.toJavaUuid(uuid));
 	}
 
 	@Override
@@ -117,8 +123,7 @@ public class ImageVariantDaoImpl extends AbstractImageDataHibDao<HibImageVariant
 			}
 		}
 		String variantUuid = variant.getUuid();
-		HibernateTx.get().delete(variant);
-		binaryStorage.get().delete(variantUuid).blockingGet();
+		binaryStorage.get().deleteOnTxSuccess(variantUuid, currentTransaction.getTx());
 		return true;
 	}
 

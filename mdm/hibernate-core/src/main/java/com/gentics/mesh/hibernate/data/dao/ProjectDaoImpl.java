@@ -8,7 +8,6 @@ import java.util.Stack;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.dao.BranchDao;
@@ -24,7 +23,6 @@ import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.result.Result;
-import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.data.dao.util.CommonDaoHelper;
 import com.gentics.mesh.database.CurrentTransaction;
 import com.gentics.mesh.database.HibernateTx;
@@ -87,7 +85,7 @@ public class ProjectDaoImpl extends AbstractHibDaoGlobal<HibProject, ProjectResp
 	}
 
 	@Override
-	public void delete(HibProject project, BulkActionContext bac) {
+	public void delete(HibProject project) {
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting project {" + project.getName() + "}");
 		}
@@ -99,12 +97,12 @@ public class ProjectDaoImpl extends AbstractHibDaoGlobal<HibProject, ProjectResp
 		JobDaoImpl jobDao = HibernateTx.get().jobDao();
 
 		// Remove the tagfamilies from the index
-		tagFamilyDao.onRootDeleted(project, bac);
+		tagFamilyDao.onRootDeleted(project);
 
 		// Remove all the nodes
-		bac.add(nodeDao.onDeleted(project.getBaseNode()));
+		HibernateTx.get().batch().add(nodeDao.onDeleted(project.getBaseNode()));
 		project.setBaseNode(null);
-		nodeDao.deleteAllFromProject(project, bac);
+		nodeDao.deleteAllFromProject(project);
 		// Since we are about to do bulk deletions, we want to first flush all pending operations
 		// and then removing everything from the persistence context (except for the project). This is because hibernate
 		// doesn't know how to reflect hql deletion to the persistence context.
@@ -115,22 +113,22 @@ public class ProjectDaoImpl extends AbstractHibDaoGlobal<HibProject, ProjectResp
 
 		// Unassign the schemas from the container
 		for (HibSchema container : project.getSchemas().list()) {
-			schemaDao.unassign(container, project, bac.batch());
+			schemaDao.unassign(container, project, HibernateTx.get().batch());
 		}
 
 		// Unassign the microschemas from the container
 		for (HibMicroschema container : project.getMicroschemas().list()) {
-			microschemaDao.unassign(container, project, bac.batch());
+			microschemaDao.unassign(container, project, HibernateTx.get().batch());
 		}
 
 		// Remove the project schema root from the index
-		schemaDao.onRootDeleted(project, bac);
+		schemaDao.onRootDeleted(project);
 
 		// Remove the branch root and all branches
-		branchDao.onRootDeleted(project, bac);
+		branchDao.onRootDeleted(project);
 
 		// Remove the project from the index
-		bac.add(project.onDeleted());
+		HibernateTx.get().batch().add(project.onDeleted());
 
 		// Remove all jobs referencing project
 		jobDao.deleteByProject(project);
@@ -138,7 +136,7 @@ public class ProjectDaoImpl extends AbstractHibDaoGlobal<HibProject, ProjectResp
 		// Remove the project node
 		deletePersisted(project);
 
-		bac.process(true);
+		CommonTx.get().data().maybeGetBulkActionContext().ifPresent(bac -> bac.process(true));
 	}
 
 	@Override

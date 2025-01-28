@@ -44,7 +44,7 @@ public interface HibFieldEdge extends HibDatabaseElement, HibField {
 	 * @param tx the transaction
 	 * @param bac action content to report into about the possible data changes.
 	 */
-	void onEdgeDeleted(HibernateTx tx, BulkActionContext bac);
+	void onEdgeDeleted(HibernateTx tx);
 
 	/**
 	 * Get the owner container type of this edge.

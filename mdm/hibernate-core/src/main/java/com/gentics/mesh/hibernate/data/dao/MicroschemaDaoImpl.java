@@ -11,7 +11,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.contentoperation.ContentStorage;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.PersistingMicroschemaDao;
 import com.gentics.mesh.core.data.job.HibJob;
@@ -47,6 +46,7 @@ import com.gentics.mesh.hibernate.event.EventFactory;
 import com.gentics.mesh.hibernate.util.HibernateUtil;
 import com.gentics.mesh.hibernate.util.SplittingUtils;
 import com.gentics.mesh.util.UUIDUtil;
+
 import dagger.Lazy;
 import io.vertx.core.Vertx;
 
@@ -156,15 +156,15 @@ public class MicroschemaDaoImpl
 	}
 
 	@Override
-	public void deleteVersion(HibMicroschemaVersion version, BulkActionContext bac) {
+	public void deleteVersion(HibMicroschemaVersion version) {
 		HibernateTx tx = HibernateTx.get();
 
 		// Delete referenced jobs
 		for (HibJob job : version.referencedJobsViaFrom()) {
-			tx.jobDao().delete(job, bac);
+			tx.jobDao().delete(job);
 		}
 		for (HibJob job : version.referencedJobsViaTo()) {
-			tx.jobDao().delete(job, bac);
+			tx.jobDao().delete(job);
 		}
 
 		// Drop references from the branches
@@ -190,7 +190,7 @@ public class MicroschemaDaoImpl
 		tx.contentDao().deleteContentTable(version);
 
 		// Make the events, drop the version itself
-		super.deleteVersion(version, bac);
+		super.deleteVersion(version);
 	}
 
 	@Override

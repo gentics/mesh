@@ -70,7 +70,7 @@ final def testPart(partName, current, branches) {
 								sh "mvn -pl :mesh-database-connector-mariadb docker:start -Dskip.mariadb.tests=${noMariadb} "
 								}
 								// run the tests
-								withEnv(["TESTCONTAINERS_RYUK_DISABLED=true", "MESH_CONSISTENCY_CHECKS=" + (Boolean.valueOf(params.consistencyChecks) ? "true" : "false")]) {
+								withEnv(["TESTCONTAINERS_RYUK_DISABLED=true", "MESH_CONSISTENCY_CHECKS=" + (Boolean.valueOf(params.consistencyChecks) ? "true" : "false"), "MAVEN_OPTS=-Xmx1g -XX:MaxMetaspaceSize=128m "]) {
 									sh ".jenkins/run-splits.sh includes-${postfix} ${jacoco} ${partName} ${partId}"
 								}
 							} finally {

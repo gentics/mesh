@@ -30,7 +30,7 @@ public abstract class AbstractHibPrimitiveListFieldEdgeImpl<LF extends HibListab
 	}
 
 	@Override
-	public void onEdgeDeleted(HibernateTx tx, BulkActionContext bac) {
+	public void onEdgeDeleted(HibernateTx tx) {
 		// no extra actions for primitives
 	}
 }
