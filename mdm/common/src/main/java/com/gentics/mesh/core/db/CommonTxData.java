@@ -62,7 +62,7 @@ public interface CommonTxData extends TxData {
 	 * @param batch
 	 */
 	default void suppressEventQueueBatch() {
-		maybeGetEventQueueBatch().ifPresent(EventQueueBatch::clear);
+		getOrCreateEventQueueBatch().clear();
 	}
 
 	/**
@@ -71,11 +71,11 @@ public interface CommonTxData extends TxData {
 	 * @return
 	 */
 	default EventQueueBatch getOrCreateEventQueueBatch() {
-		return maybeGetEventQueueBatch().orElseGet(() -> maybeGetBulkActionContext().map(BulkActionContext::batch).orElseGet(() -> {
-				EventQueueBatch b = mesh().batchProvider().get();
-				setEventQueueBatch(b);
-				return b;
-			}));
+		return maybeGetBulkActionContext().map(BulkActionContext::batch).or(() -> maybeGetEventQueueBatch()).orElseGet(() -> {
+			EventQueueBatch b = mesh().batchProvider().get();
+			setEventQueueBatch(b);
+			return b;
+		});
 	}
 
 	/**

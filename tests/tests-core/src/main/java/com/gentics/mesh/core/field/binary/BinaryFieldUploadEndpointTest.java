@@ -350,14 +350,14 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testPlainTextExtractionForDocuments() throws IOException {
-		expectPlainText("test.pdf", "application/pdf", "Enemenemu");
-		expectPlainText("test.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-			"Das ist ein Word Dokument für den Johannes");
-		expectPlainText("small.mp4", "application/pdf", "HandBrake 0.9.4 2009112300");
-	}
+	public void testMetadataExtractionForDocuments() throws IOException {
+               expectMetadataOrPlainText("test.pdf", "application/pdf", Map.of("", "Enemenemu"));
+               expectMetadataOrPlainText("test.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                       Map.of("", "Das ist ein Word Dokument für den Johannes"));
+               expectMetadataOrPlainText("small.mp4", "video/mp4", Map.of("xmp_CreatorTool", "HandBrake 0.9.4 2009112300"));
+		        }
 
-	private void expectPlainText(String fileName, String mimeType, String plainText) throws IOException {
+	private void expectMetadataOrPlainText(String fileName, String mimeType, Map<String, String> metadata) throws IOException {
 		String parentNodeUuid = tx(() -> project().getBaseNode().getUuid());
 
 		Buffer buffer = getBuffer("/testfiles/" + fileName);
@@ -366,6 +366,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "0.1", "binary", new ByteArrayInputStream(buffer.getBytes()),
 				buffer.length(), fileName, mimeType));
 		BinaryField binaryField = node2.getFields().getBinaryField("binary");
+		String plainText = metadata.get("");
 		assertEquals("The plain text of file {" + fileName + "} did not match", plainText, binaryField.getPlainText());
 	}
 
