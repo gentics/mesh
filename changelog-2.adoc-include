@@ -6,6 +6,9 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v3.0.2]]
+== 3.0.2 (29.01.2025)
+
 [[v3.0.1]]
 == 3.0.1 (16.01.2025)
 
@@ -29,6 +32,11 @@ icon:plus[] Clustering: The Hazelcast library, responsible for the cluster insta
 
 icon:plus[] Some library dependencies have been updated to the latest hotfix versions.
 
+
+[[v2.1.13]]
+== 2.1.13 (28.01.2025)
+
+icon:check[] Core: The processing of binaries has been refactored, targeting possible binary data leftovers being eliminated after the binary content is updated or deleted. Also, two new async consistency check have been added, for the detection of binary data with no corresponding database records (repairable) and binary database records with no corresponding binary data (for the automated testing purposes, not repairable).
 
 [[v2.1.12]]
 == 2.1.12 (16.01.2025)
