@@ -6,16 +6,19 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ElasticsearchTestMode.CONTAINER_ES6;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+
 import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.HttpErrorException;
-import com.gentics.mesh.context.impl.BulkActionContextImpl;
-import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.PersistingMicroschemaDao;
@@ -50,20 +53,16 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.search.EntityMetrics;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.helper.ExpectedEvent;
 import com.gentics.mesh.test.helper.UnexpectedEvent;
+
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Flowable;
 import io.vertx.core.json.JsonObject;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.mockito.Mockito;
 /**
  * Test differential sync of elasticsearch.
  */
@@ -333,9 +332,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		// Now manually delete the project
 		tx(tx -> {
 			HibProject project = tx.projectDao().findByName("project_2");
-			BulkActionContextImpl context = Mockito.mock(BulkActionContextImpl.class);
-			Mockito.when(context.batch()).thenReturn(Mockito.mock(EventQueueBatch.class));
-			tx.projectDao().delete(project, context);
+			tx.projectDao().delete(project);
 		});
 		boot().globalCacheClear();
 		// Assert that the deletion was detected
@@ -374,7 +371,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		tx(tx -> {
 			ContentDao contentDao = tx.contentDao();
 			HibNodeFieldContainer draft = contentDao.getFieldContainer(folder("2015"), german(), latestBranch(), ContainerType.DRAFT);
-			contentDao.delete(draft, new DummyBulkActionContext());
+			contentDao.delete(draft);
 
 			// suppress publishing of events
 			CommonTx.get().data().suppressEventQueueBatch();
@@ -416,7 +413,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		tx(tx -> {
 			PersistingSchemaDao schemaDao = ((CommonTx) tx).schemaDao();
 			HibSchema schema = schemaDao.findByName("schema_3");
-			schemaDao.deleteVersion(schema.getLatestVersion(), new DummyBulkActionContext());
+			schemaDao.deleteVersion(schema.getLatestVersion());
 			schemaDao.deletePersisted(schema);
 
 			// suppress publishing of events
@@ -456,7 +453,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		tx(tx -> {
 			PersistingMicroschemaDao microschemaDao = ((CommonTx) tx).microschemaDao();
 			HibMicroschema microschema = microschemaDao.findByName("microschema_101");
-			microschemaDao.deleteVersion(microschema.getLatestVersion(), new DummyBulkActionContext());
+			microschemaDao.deleteVersion(microschema.getLatestVersion());
 			microschemaDao.deletePersisted(microschema);
 
 			// suppress publishing of events

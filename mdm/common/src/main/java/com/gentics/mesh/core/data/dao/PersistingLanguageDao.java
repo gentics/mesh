@@ -7,7 +7,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 
 import java.util.Collections;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -123,7 +122,7 @@ public interface PersistingLanguageDao extends LanguageDao, PersistingDaoGlobal<
 	}
 
 	@Override
-	default void delete(HibLanguage element, BulkActionContext bac) {
+	default void delete(HibLanguage element) {
 		throw error(METHOD_NOT_ALLOWED, "error_language_deletion_forbidden");
 	}
 }

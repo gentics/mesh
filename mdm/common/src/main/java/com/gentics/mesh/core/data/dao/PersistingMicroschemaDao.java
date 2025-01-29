@@ -14,7 +14,6 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang.NotImplementedException;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -302,14 +301,14 @@ public interface PersistingMicroschemaDao
 	}
 
 	@Override
-	default void delete(HibMicroschema microschema, BulkActionContext bac) {
+	default void delete(HibMicroschema microschema) {
 		for (HibMicroschemaVersion version : findAllVersions(microschema)) {
 			if (findMicronodes(version).hasNext()) {
 				throw error(BAD_REQUEST, "microschema_delete_still_in_use", microschema.getUuid());
 			}
-			deleteVersion(version, bac);
+			deleteVersion(version);
 		}
-		bac.add(microschema.onDeleted());
+		CommonTx.get().batch().add(microschema.onDeleted());
 		deletePersisted(microschema);
 	}
 
@@ -320,9 +319,10 @@ public interface PersistingMicroschemaDao
 	}
 
 	@Override
-	default void delete(HibProject root, HibMicroschema element, BulkActionContext bac) {
-		unassign(element, root, bac.batch());
-		assignEvents(element, UNASSIGNED).forEach(bac::add);
+	default void delete(HibProject root, HibMicroschema element) {
+		EventQueueBatch batch = CommonTx.get().batch();
+		unassign(element, root, batch);
+		assignEvents(element, UNASSIGNED).forEach(batch::add);
 		// TODO should we delete the schema completely?
 		//delete(element, bac);
 	}

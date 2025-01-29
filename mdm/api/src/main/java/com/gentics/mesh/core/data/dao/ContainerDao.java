@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data.dao;
 
 import java.util.Map;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -54,7 +53,7 @@ public interface ContainerDao<
 	 * @param version
 	 * @param bac
 	 */
-	void deleteVersion(SCV version, BulkActionContext bac);
+	void deleteVersion(SCV version);
 
 	/**
 	 * Load the schema version via the schema and version.
@@ -171,7 +170,7 @@ public interface ContainerDao<
 	 * @param change
 	 * @param bac
 	 */
-	void deleteChange(HibSchemaChange<? extends FieldSchemaContainer> change, BulkActionContext bc);
+	void deleteChange(HibSchemaChange<? extends FieldSchemaContainer> change);
 
 	/**
 	 * Assign the schema to the project.

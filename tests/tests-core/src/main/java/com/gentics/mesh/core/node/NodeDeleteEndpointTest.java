@@ -32,7 +32,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.NodeDao;
@@ -283,8 +282,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 		HibBranch newBranch = tx(tx -> {
 			NodeDao nodeDao = tx.nodeDao();
 			// Publish the node
-			BulkActionContext bac = createBulkContext();
-			nodeDao.publish(node, mockActionContext(), bac);
+			nodeDao.publish(node, mockActionContext());
 
 			// Create new branch
 			HibBranch b = createBranch("newbranch");

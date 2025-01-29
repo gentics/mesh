@@ -235,7 +235,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param bac
 	 * @return
 	 */
-	void publish(HibNode node, InternalActionContext ac, BulkActionContext bac);
+	void publish(HibNode node, InternalActionContext ac);
 
 	/**
 	 * Take the node offline (all languages)
@@ -244,7 +244,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param bac
 	 * @return
 	 */
-	void takeOffline(HibNode node, InternalActionContext ac, BulkActionContext bac);
+	void takeOffline(HibNode node, InternalActionContext ac);
 
 	/**
 	 * Transform the node language into a publish status response rest model.
@@ -263,7 +263,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param languageTag
 	 * @return
 	 */
-	void publish(HibNode node, InternalActionContext ac, BulkActionContext bac, String languageTag);
+	void publish(HibNode node, InternalActionContext ac, String languageTag);
 
 	/**
 	 * Remove published edges for each container found
@@ -271,7 +271,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param branchUuid
 	 * @param bac
 	 */
-	void removePublishedEdges(HibNode node, String branchUuid, BulkActionContext bac);
+	void removePublishedEdges(HibNode node, String branchUuid);
 
 	/**
 	 * Take a language of the node offline.
@@ -281,7 +281,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param branch
 	 * @param languageTag
 	 */
-	void takeOffline(HibNode node, InternalActionContext ac, BulkActionContext bac, HibBranch branch, String languageTag);
+	void takeOffline(HibNode node, InternalActionContext ac, HibBranch branch, String languageTag);
 
 	/**
 	 * Return a string path for each of the provided node for the current branch, container type with language fallbacks
@@ -340,7 +340,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param ignoreChecks
 	 * @param recursive
 	 */
-	void delete(HibNode node, BulkActionContext bac, boolean ignoreChecks, boolean recursive);
+	void delete(HibNode node, boolean ignoreChecks, boolean recursive);
 
 	/**
 	 * Return the breadcrumb nodes.
@@ -577,7 +577,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param bac
 	 * @param ignoreChecks
 	 */
-	void deleteFromBranch(HibNode node, InternalActionContext ac, HibBranch branch, BulkActionContext bac, boolean ignoreChecks);
+	void deleteFromBranch(HibNode node, InternalActionContext ac, HibBranch branch, boolean ignoreChecks);
 
 	/**
 	 * Remove branch parent of the node
@@ -592,7 +592,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param node
 	 * @param bac
 	 */
-	void addReferenceUpdates(HibNode node, BulkActionContext bac);
+	void addReferenceUpdates(HibNode node);
 
 	/**
 	 * Gets all NodeField edges that reference this node.

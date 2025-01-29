@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.rest.SortOrder.UNSORTED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.util.TestUtils.size;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -12,17 +13,10 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-import com.gentics.mesh.context.impl.DummyBulkActionContext;
-import com.gentics.mesh.context.impl.DummyEventQueueBatch;
-import com.gentics.mesh.core.data.dao.PersistingNodeDao;
-import com.gentics.mesh.core.db.CommonTx;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -34,6 +28,7 @@ import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.PersistingNodeDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.dao.UserDao;
@@ -46,6 +41,7 @@ import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -242,9 +238,8 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			HibNode folder = folder("2015");
 			HibNode subNode = nodeDao.create(folder, user(), getSchemaContainer().getLatestVersion(), project());
 			assertNotNull(subNode.getUuid());
-			BulkActionContext context = createBulkContext();
 			InternalActionContext ac = mockActionContext("");
-			tx.nodeDao().deleteFromBranch(subNode, ac, project().getLatestBranch(), context, false);
+			tx.nodeDao().deleteFromBranch(subNode, ac, project().getLatestBranch(), false);
 		}
 	}
 
@@ -331,7 +326,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			InternalActionContext ac = mockActionContext("");
 			ac.getDeleteParameters().setRecursive(true);
 			try (Tx tx2 = tx()) {
-				tx.nodeDao().deleteFromBranch(node, ac, project().getLatestBranch(), createBulkContext(), false);
+				tx.nodeDao().deleteFromBranch(node, ac, project().getLatestBranch(), false);
 				tx2.success();
 			}
 
@@ -393,7 +388,6 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
 	public void testDeleteWithChildren() {
-		BulkActionContext bac = createBulkContext();
 		AtomicReference<String> folderUuid = new AtomicReference<>();
 		AtomicReference<String> subFolderUuid = new AtomicReference<>();
 		AtomicReference<String> subSubFolderUuid = new AtomicReference<>();
@@ -425,7 +419,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			InternalActionContext ac = mockActionContext("");
 			ac.getDeleteParameters().setRecursive(true);
-			tx.nodeDao().deleteFromBranch(subFolder, ac, initialBranch, bac, false);
+			tx.nodeDao().deleteFromBranch(subFolder, ac, initialBranch, false);
 		});
 
 		// 3. assert that subfolder and subsubfolder were deleted
@@ -449,7 +443,6 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			HibBranch initialBranch = reloadBranch(initialBranch());
 			HibProject project = tx.projectDao().findByUuid(projectUuid());
 			NodeDao nodeDao = tx.nodeDao();
-			BulkActionContext bac = createBulkContext();
 			HibSchemaVersion folderSchema = schemaContainer("folder").getLatestVersion();
 
 			// 1. create folder with subfolder and subsubfolder
@@ -495,7 +488,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 8. delete folder for initial release
 			InternalActionContext ac = mockActionContext("");
 			ac.getDeleteParameters().setRecursive(true);
-			tx.nodeDao().deleteFromBranch(subFolder, ac, initialBranch, bac, false);
+			tx.nodeDao().deleteFromBranch(subFolder, ac, initialBranch, false);
 
 			// 9. assert for new branch
 			assertThat(folder).as("folder").hasChildren(newBranch, subSubFolder);
@@ -526,9 +519,10 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 				RoleDao roleDao = tx2.roleDao();
 				HibNode folder = nodeDao.create(project.getBaseNode(), user(), folderSchema, project);
 				BulkActionContext bac2 = createBulkContext();
+				tx2.<CommonTx>unwrap().data().setBulkActionContext(bac);
 				tx2.roleDao().grantPermissions(role(), folder, InternalPermission.READ_PERM, InternalPermission.READ_PUBLISHED_PERM);
 				tx.contentDao().createFieldContainer(folder, english(), initialBranch, user()).createString("name").setString("Folder");
-				nodeDao.publish(folder, mockActionContext(), bac2);
+				nodeDao.publish(folder, mockActionContext());
 				assertEquals(1, bac2.batch().size());
 				return folder.getUuid();
 			});
@@ -550,7 +544,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 3. delete
 			InternalActionContext ac = mockActionContext("");
 			tx(tx2 -> {
-				tx2.nodeDao().deleteFromBranch(tx.nodeDao().findByUuid(project(), folderUuid), ac, initialBranch, bac, false);
+				tx2.nodeDao().deleteFromBranch(tx.nodeDao().findByUuid(project(), folderUuid), ac, initialBranch, false);
 			});
 
 			// 4. assert published and draft gone
@@ -580,11 +574,10 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			String folderUuid = tx(tx2 -> {
 				NodeDao nodeDao = tx2.nodeDao();
 				HibNode folder = nodeDao.create(project.getBaseNode(), user(), folderSchema, project);
-				BulkActionContext bac = createBulkContext();
 				RoleDao roleDao = tx.roleDao();
 				tx2.roleDao().grantPermissions(role(), folder, InternalPermission.READ_PERM, InternalPermission.READ_PUBLISHED_PERM);
 				tx.contentDao().createFieldContainer(folder, english(), initialBranch, user()).createString("name").setString("Folder");
-				nodeDao.publish(folder, mockActionContext(), bac);
+				nodeDao.publish(folder, mockActionContext());
 				return folder.getUuid();
 			});
 
@@ -599,8 +592,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 3. delete from initial branch
 			InternalActionContext ac = mockActionContext("");
 			tx(() -> {
-				tx.nodeDao().deleteFromBranch(tx.nodeDao().findByUuid(project(), folderUuid), ac, initialBranch, createBulkContext(),
-					false);
+				tx.nodeDao().deleteFromBranch(tx.nodeDao().findByUuid(project(), folderUuid), ac, initialBranch, false);
 			});
 
 			// 4. assert published and draft gone from initial branch
@@ -682,7 +674,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 		// delete node from new branch
 		tx((tx) -> {
 			HibNode reAttachedNode = nodeDao.findByUuidGlobal(node.getUuid());
-			tx.nodeDao().deleteFromBranch(reAttachedNode, mockActionContext(""), newBranch, new DummyBulkActionContext(), true);
+			tx.nodeDao().deleteFromBranch(reAttachedNode, mockActionContext(""), newBranch, true);
 		});
 
 		// assert the versions for the old branch

@@ -52,4 +52,12 @@ public interface S3Binaries {
 	default Transactional<S3HibBinary> create(String uuid, String objectKey, String fileName) {
 		return create(uuid, objectKey, fileName, BinaryCheckStatus.ACCEPTED);
 	}
+
+	/**
+	 * Find a binary with given UUID.
+	 * 
+	 * @param uuid
+	 * @return
+	 */
+	Transactional<S3HibBinary> findByUuid(String uuid);
 }

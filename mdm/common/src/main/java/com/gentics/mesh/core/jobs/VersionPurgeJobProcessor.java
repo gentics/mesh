@@ -56,7 +56,7 @@ public class VersionPurgeJobProcessor implements SingleJobProcessor {
 					});
 					db.tx(tx -> {
 						log.info("Version purge job {" + purgeJob.getUuid() + "} for project {" + project.getName() + "} completed.");
-						tx.createBatch().add(createEvent(PROJECT_VERSION_PURGE_FINISHED, COMPLETED, project.getName(), project.getUuid()))
+						tx.batch().add(createEvent(PROJECT_VERSION_PURGE_FINISHED, COMPLETED, project.getName(), project.getUuid()))
 								.dispatch();
 					});
 				}).doOnError(error -> {
@@ -68,7 +68,7 @@ public class VersionPurgeJobProcessor implements SingleJobProcessor {
 					});
 					db.tx(tx -> {
 						log.error("Version purge job {" + purgeJob.getUuid() + "} for project {" + project.getName() + "} failed.", error);
-						tx.createBatch().add(createEvent(PROJECT_VERSION_PURGE_FINISHED, FAILED, project.getName(), project.getUuid()))
+						tx.batch().add(createEvent(PROJECT_VERSION_PURGE_FINISHED, FAILED, project.getName(), project.getUuid()))
 								.dispatch();
 					});
 				});

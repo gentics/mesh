@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.reactivex.Completable;
@@ -121,6 +122,14 @@ public interface BinaryStorage {
 	 * @param uuid
 	 */
 	Completable delete(String uuid);
+
+	/**
+	 * Delete the binary with the given UUID if the transaction succeeds.
+	 * 
+	 * @param uuid
+	 * @param tx
+	 */
+	void deleteOnTxSuccess(String uuid, Tx tx);
 
 	/**
 	 * Delete the temporary upload with the given id.

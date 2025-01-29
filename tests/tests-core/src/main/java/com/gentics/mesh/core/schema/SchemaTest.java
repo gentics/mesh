@@ -20,7 +20,6 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -208,20 +207,18 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 		// delete all nodes of the schema
 		tx(tx -> {
 			SchemaDao schemaDao = tx.schemaDao();
-			BulkActionContext context = createBulkContext();
 			String uuid = getSchemaContainer().getUuid();
 			NodeDao nodeDao = tx.nodeDao();
 			HibSchema schema = tx.schemaDao().findByUuid(uuid);
 			for (HibNode node : schemaDao.getNodes(schema)) {
-				nodeDao.delete(node, context, false, true);
+				nodeDao.delete(node, false, true);
 			}
 		});
 		tx(tx -> {
 			SchemaDao schemaDao = tx.schemaDao();
-			BulkActionContext context = createBulkContext();
 			String uuid = getSchemaContainer().getUuid();
 			HibSchema schema = tx.schemaDao().findByUuid(uuid);
-			schemaDao.delete(schema, context);
+			schemaDao.delete(schema);
 			assertNull("The schema should have been deleted", tx.schemaDao().findByUuid(uuid));
 		});
 	}
@@ -250,7 +247,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 			HibSchema newContainer = schemaDao.create(schema, user());
 			assertNotNull(newContainer);
 			String uuid = newContainer.getUuid();
-			schemaDao.delete(newContainer, createBulkContext());
+			schemaDao.delete(newContainer);
 			assertNull("The container should have been deleted", tx.schemaDao().findByUuid(uuid));
 		}
 	}

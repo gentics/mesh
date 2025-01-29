@@ -50,18 +50,18 @@ public class ProjectVersionPurgeHandlerImpl implements ProjectVersionPurgeHandle
 			db.tx(tx -> {
 				BulkActionContext bac = bulkProvider.get();
 				for (HibNode node : tx.nodeDao().findAll(project)) {
-					purgeNode(tx, node, maxAge, bac);
+					purgeNode(tx, node, maxAge);
 				}
 				bac.process(true);
 			});
 		});
 	}
 
-	private void purgeNode(Tx tx, HibNode node, ZonedDateTime maxAge, BulkActionContext bac) {
+	private void purgeNode(Tx tx, HibNode node, ZonedDateTime maxAge) {
 		Iterable<? extends HibNodeFieldContainer> initials = tx.contentDao().getFieldContainers(node, ContainerType.INITIAL);
 		for (HibNodeFieldContainer initial : initials) {
 			Long counter = 0L;
-			purgeVersion(tx, counter, bac, initial, initial, false, maxAge);
+			purgeVersion(tx, counter, initial, initial, false, maxAge);
 		}
 	}
 
@@ -80,7 +80,7 @@ public class ProjectVersionPurgeHandlerImpl implements ProjectVersionPurgeHandle
 	 *            Flag which indicated whether the previous version has been removed
 	 * @param maxAge
 	 */
-	private void purgeVersion(Tx tx, Long txCounter, BulkActionContext bac, HibNodeFieldContainer lastRemaining, HibNodeFieldContainer version,
+	private void purgeVersion(Tx tx, Long txCounter, HibNodeFieldContainer lastRemaining, HibNodeFieldContainer version,
 		boolean previousRemoved, ZonedDateTime maxAge) {
 
 		ContentDao contentDao = tx.contentDao();
@@ -92,7 +92,7 @@ public class ProjectVersionPurgeHandlerImpl implements ProjectVersionPurgeHandle
 		if (isInTimeFrame && contentDao.isPurgeable(version)) {
 			log.info("Purging container " + version.getUuid() + "@" + version.getVersion());
 			// Delete this version - This will also take care of removing the version references
-			contentDao.delete(version, bac, false);
+			contentDao.delete(version, false);
 			previousRemoved = true;
 			txCounter++;
 		} else {
@@ -120,7 +120,7 @@ public class ProjectVersionPurgeHandlerImpl implements ProjectVersionPurgeHandle
 		} else {
 			// Continue with next versions
 			for (HibNodeFieldContainer next : nextVersions) {
-				purgeVersion(tx, txCounter, bac, lastRemaining, next, previousRemoved, maxAge);
+				purgeVersion(tx, txCounter, lastRemaining, next, previousRemoved, maxAge);
 			}
 		}
 	}

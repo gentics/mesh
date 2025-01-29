@@ -207,6 +207,7 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 			return maybeExisting.map(existing -> Single.just(existing))
 					.orElseGet(() -> storeUploadInTemp(ctx, ul, hash).andThen(Single.defer(() -> storeUploadInGraph(ac, modifierList, ctx, nodeUuid, languageTag, nodeVersion, fieldName, publish))));
 		}).onErrorResumeNext(e -> {
+			Single<NodeResponse> se = Single.error(e);
 			if (ctx.isInvokeStore()) {
 				String tmpId = ctx.getTemporaryId();
 				if (log.isDebugEnabled()) {
@@ -214,24 +215,33 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 				}
 				return binaryStorage.purgeTemporaryUpload(tmpId).doOnError(e1 -> {
 					log.error("Error while purging temporary upload for tempId " + tmpId, e1);
-				}).onErrorComplete().andThen(Single.error(e));
+				}).onErrorComplete().andThen(se);
 			} else {
-				return Single.error(e);
+				return se;
 			}
 		}).flatMap(n -> {
+			Single<NodeResponse> sn = Single.just(n);
 			if (ctx.isInvokeStore()) {
 				String binaryUuid = ctx.getBinaryUuid();
 				String tmpId = ctx.getTemporaryId();
 				if (log.isDebugEnabled()) {
 					log.debug("Moving upload with binaryUuid {} and tempId {} into place", binaryUuid, tmpId);
 				}
-				return binaryStorage.moveInPlace(binaryUuid, tmpId).andThen(Single.just(n));
+				return binaryStorage.moveInPlace(binaryUuid, tmpId).andThen(sn);
 			} else {
-				return Single.just(n);
+				return sn;
+			}
+		}).onErrorResumeNext(e -> {
+			Single<NodeResponse> se = Single.error(e);
+			if (ctx.isInvokeStore()) {
+				return binaryStorage.delete(ctx.getBinaryUuid()).onErrorComplete()
+						.andThen(binaryStorage.purgeTemporaryUpload(ctx.getTemporaryId())).onErrorComplete()
+						.andThen(se);
+			} else {
+				return se;
 			}
 		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
 	}
-
 
 	private boolean fileNotExists(String binaryUuid) {
 		return !new File(binaryStorage.getFilePath(binaryUuid)).exists();

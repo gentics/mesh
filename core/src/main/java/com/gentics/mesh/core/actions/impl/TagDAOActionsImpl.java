@@ -6,7 +6,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.action.TagDAOActions;
@@ -99,9 +98,9 @@ public class TagDAOActionsImpl implements TagDAOActions {
 	}
 
 	@Override
-	public void delete(Tx tx, HibTag tag, BulkActionContext bac) {
+	public void delete(Tx tx, HibTag tag) {
 		TagDao tagDao = tx.tagDao();
-		tagDao.delete(tag, bac);
+		tagDao.delete(tag);
 	}
 
 	@Override

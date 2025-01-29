@@ -3,6 +3,7 @@ package com.gentics.mesh.core.db;
 import java.util.Optional;
 
 import com.gentics.mesh.cache.CacheCollection;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -87,11 +88,11 @@ public interface Tx extends BaseTransaction, DaoCollection, CacheCollection, Sec
 	TxData data();
 
 	/**
-	 * Create a new event queue batch for CUD operations.
+	 * Get installed or create a new event queue batch for CUD operations. If a {@link BulkActionContext} is already set, the entries of its queue batch will be migrated onto a new one.
 	 * 
 	 * @return
 	 */
-	EventQueueBatch createBatch();
+	EventQueueBatch batch();
 
 	Binaries binaries();
 

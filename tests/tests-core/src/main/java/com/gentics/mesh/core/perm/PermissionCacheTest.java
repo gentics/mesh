@@ -10,11 +10,7 @@ import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.mesh.cache.PermissionCache;
-import com.gentics.mesh.cache.PermissionCacheImpl;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.context.impl.DummyBulkActionContext;
-import com.gentics.mesh.context.impl.DummyEventQueueBatch;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -24,6 +20,7 @@ import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.DummyEventQueueBatch;
 import com.gentics.mesh.util.UUIDUtil;
 
 /**
@@ -124,7 +121,7 @@ public class PermissionCacheTest extends AbstractMeshTest {
 		// delete the role
 		db().tx(tx -> {
 			HibRole role = tx.roleDao().findByUuid(roleUuid());
-			tx.roleDao().delete(role, new DummyBulkActionContext());
+			tx.roleDao().delete(role);
 		});
 
 		assertPermissions("deleting role");
@@ -138,7 +135,7 @@ public class PermissionCacheTest extends AbstractMeshTest {
 		// delete the group
 		db().tx(tx -> {
 			HibGroup group = tx.groupDao().findByUuid(groupUuid());
-			tx.groupDao().delete(group, new DummyBulkActionContext());
+			tx.groupDao().delete(group);
 		});
 
 		assertPermissions("deleting group");
@@ -155,7 +152,7 @@ public class PermissionCacheTest extends AbstractMeshTest {
 		assertThat(getPermissionCacheSize()).as("Cache size before deleting user").isEqualTo(1);
 		db().tx(tx -> {
 			HibUser user = tx.userDao().findByUuid(userUuid);
-			tx.userDao().delete(user, new DummyBulkActionContext());
+			tx.userDao().delete(user);
 		});
 		assertThat(getPermissionCacheSize()).as("Cache size after deleting user").isEqualTo(0);
 	}

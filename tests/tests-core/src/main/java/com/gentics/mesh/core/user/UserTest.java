@@ -24,7 +24,6 @@ import java.util.function.Consumer;
 
 import org.junit.Test;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.dao.GroupDao;
@@ -290,8 +289,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertTrue(user.isEnabled());
 			assertNotNull(user);
 			String uuid = user.getUuid();
-			BulkActionContext bac = createBulkContext();
-			userDao.delete(user, bac);
+			userDao.delete(user);
 			HibUser foundUser = userDao.findByUuid(uuid);
 			assertNull(foundUser);
 		}
@@ -480,11 +478,10 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			assertEquals(1, userDao.getGroups(user).count());
 			assertTrue(user.isEnabled());
-			BulkActionContext bac = createBulkContext();
 
 			HibUser userToDelete = userDao.create("username", user);
 			HibUser foundUser = userDao.findByUuid(userToDelete.getUuid());
-			assertNotNull(foundUser);userDao.delete(userToDelete, bac);
+			assertNotNull(foundUser);userDao.delete(userToDelete);
 			foundUser = userDao.findByUuid(userToDelete.getUuid());
 			assertNull(foundUser);
 		}
