@@ -130,7 +130,8 @@ public class AbstractBinaryUploadHandler extends AbstractHandler {
 				binary.setCheckStatus(request.getStatus());
 
 				if (request.getStatus() == BinaryCheckStatus.DENIED) {
-					batch.add(() -> binaryStorage.delete(binary.getUuid()).andThen(binaryStorage.store(Flowable.empty(), binary.getUuid())).blockingGet());
+					String binaryUuid = binary.getUuid();
+					batch.add(() -> binaryStorage.delete(binaryUuid).andThen(binaryStorage.store(Flowable.empty(), binaryUuid)).blockingGet());
 				}
 				ctx.persist(binary);
 
