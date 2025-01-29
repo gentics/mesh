@@ -507,7 +507,6 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testDeletePublished() throws InvalidArgumentException {
 		HibProject project = project();
-		BulkActionContext bac = createBulkContext();
 
 		try (Tx tx = tx()) {
 			HibBranch initialBranch = reloadBranch(initialBranch());
@@ -518,10 +517,9 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 				NodeDao nodeDao = tx2.nodeDao();
 				RoleDao roleDao = tx2.roleDao();
 				HibNode folder = nodeDao.create(project.getBaseNode(), user(), folderSchema, project);
-				BulkActionContext bac2 = createBulkContext();
-				tx2.<CommonTx>unwrap().data().setBulkActionContext(bac);
-				tx2.roleDao().grantPermissions(role(), folder, InternalPermission.READ_PERM, InternalPermission.READ_PUBLISHED_PERM);
+				roleDao.grantPermissions(role(), folder, InternalPermission.READ_PERM, InternalPermission.READ_PUBLISHED_PERM);
 				tx.contentDao().createFieldContainer(folder, english(), initialBranch, user()).createString("name").setString("Folder");
+				BulkActionContext bac2 = tx2.<CommonTx>unwrap().data().getOrCreateBulkActionContext();
 				nodeDao.publish(folder, mockActionContext());
 				assertEquals(1, bac2.batch().size());
 				return folder.getUuid();
