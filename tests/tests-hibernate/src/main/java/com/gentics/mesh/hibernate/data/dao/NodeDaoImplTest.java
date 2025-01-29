@@ -13,6 +13,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -182,7 +183,8 @@ public class NodeDaoImplTest extends AbstractMeshTest {
 		});
 
 		// delete from project
-		tx(() -> {
+		tx(tx -> {
+			BulkActionContext bac = tx.<HibernateTx>unwrap().data().getOrCreateBulkActionContext();
 			// count before deletion
 			long edgeCount = tableCount("nodefieldcontainer");
 			long versionCount = tableCount("nodefieldcontainer_versions_edge");
@@ -232,7 +234,8 @@ public class NodeDaoImplTest extends AbstractMeshTest {
 			Assertions.assertThat(tableCount("datelistitem")).isEqualTo(dateListCount / 2);
 			Assertions.assertThat(tableCount("boollistitem")).isEqualTo(boolListCount / 2);
 			Assertions.assertThat(tableCount("micronodelistitem")).isEqualTo(microListCount / 2);
-		});
+			return bac;
+		}).process(true);
 	}
 
 	private HibSchema createFatSchema() {
