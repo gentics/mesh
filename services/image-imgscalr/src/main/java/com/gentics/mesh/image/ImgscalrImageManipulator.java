@@ -64,6 +64,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.WorkerExecutor;
+import io.vertx.reactivex.core.file.FileSystem;
 
 /**
  * The ImgScalr Manipulator uses a pure java imageio image resizer.
@@ -340,6 +341,9 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
 		return getCacheFilePath(binary, parameters).flatMap(cacheFileInfo -> {
 			if (cacheFileInfo.exists) {
+				if (options.isImageCacheTouch()) {
+					new File(cacheFileInfo.path).setLastModified(System.currentTimeMillis());
+				}
 				return Single.just(cacheFileInfo.path);
 			} else {
 				// TODO handle execution timeout
