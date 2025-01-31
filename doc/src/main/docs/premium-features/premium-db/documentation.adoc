@@ -20,7 +20,8 @@ As of now the following RDBMSs are supported as a premium feature:
 
 ## Mesh Database Connector.
 
-In order to have Gentics Mesh working with a particular database, a database connector module is required. The connector for MariaDB is freely distributed at our link:https://github.com/gentics/mesh/releases/[Github Releases].
+In order to have Gentics Mesh working with a particular database, a database connector module is required. 
+The connector for MariaDB is freely distributed at our link:https://github.com/gentics/mesh/releases/[Github Releases], and its instructions may be found at link:{{<relref "administration-guide.asciidoc">}}#_use_mariadb_connected_container[the administration guide].
 The connectors for Oracle, Microsoft SQL Server, PostgreSQL require a valid Gentics License. Please contact link:https://www.gentics.com/kontakt.html[Gentics Sales] to get one, and you wiil be provided a database connector JAR file.
 
 ### Examples:
@@ -29,7 +30,7 @@ The connectors for Oracle, Microsoft SQL Server, PostgreSQL require a valid Gent
 
 .JDBC Driver
 
-Download *postgresql-X.Y.Z.jar* from https://jdbc.postgresql.org/download.html , place it at the server into the folder, reachable by Gentics Mesh. Place the database connector JAR file in this folder as well.
+Download *postgresql-X.Y.Z.jar* from https://jdbc.postgresql.org/download.html[an official PostgreSQL website] , place it at the server into the folder, reachable by Gentics Mesh. Place the database connector JAR file in this folder as well.
 
 .DB configuration
 
@@ -70,14 +71,33 @@ storageOptions:
   synchronizeWrites: false
   synchronizeWritesTimeout: 6000
 ```
+Gentics provides the pre-build Docker images, which already contain the database connector, so only the JDBC driver is to be provided. 
+Please note that an access to the Gentics' commercial repository is required to obtain the image. Its `docker-compose` configuration may look like as follows:
 
-#### MSSQL
+[source,yaml]
+----
+  mesh:
+    image: docker.gentics.com/gentics/mesh-postgres
+    volumes:
+      - mesh-uploads:/uploads
+      - /whatever/path/you/chose/for/the/postgresql-X.Y.Z.jar:/mesh/database/postgres.jar
+    ports:
+      - '8080:8080'
+    environment:
+      MESH_DATABASE_ADDRESS: <host:port of a PostgreSQL. For instance, if address/name is `postgres`, the content here will be `postgres:5432`>
+      MESH_JDBC_DATABASE_NAME: mesh
+      MESH_JDBC_CONNECTION_USERNAME: "meshdbuser"
+      MESH_JDBC_CONNECTION_PASSWORD: "admin"
+---- 
+The Enterprise Edition image of Gentics Mesh, capable of Gentics License management feature, is available inder the name `docker.gentics.com/gentics/mesh-enterprise-postgres`.
+
+#### Microsoft SQL Server
 
 This example uses inbuilt "SA" user.
 
 .JDBC Driver
 
-Download *sqljdbc_X.Y.Z.W_enu.zip* from https://docs.microsoft.com/en-us/sql/connect/jdbc/download-microsoft-jdbc-driver-for-sql-server?view=sql-server-ver16 , unpack mssql-jdbc-X.Y.Z.jre11.jar at the server into the folder, reachable by Gentics Mesh. Place the database connector JAR file in this folder as well.
+Download *sqljdbc_X.Y.Z.W_enu.zip* from https://docs.microsoft.com/en-us/sql/connect/jdbc/download-microsoft-jdbc-driver-for-sql-server?view=sql-server-ver16[Official SQL Server JDBC driver webpage] , unpack mssql-jdbc-X.Y.Z.jre11.jar at the server into the folder, reachable by Gentics Mesh. Place the database connector JAR file in this folder as well.
 
 .DB configuration
 
@@ -120,12 +140,31 @@ storageOptions:
   synchronizeWrites: false
   synchronizeWritesTimeout: 6000
 ```
+Gentics provides the pre-build Docker images, which already contain the database connector, so only the JDBC driver is to be provided. 
+Please note that an access to the Gentics' commercial repository is required to obtain the image. Its `docker-compose` configuration may look like as follows:
+
+[source,yaml]
+----
+  mesh:
+    image: docker.gentics.com/gentics/mesh-mssql
+    volumes:
+      - mesh-uploads:/uploads
+      - /whatever/path/you/chose/for/the/mssql-jdbc-X.Y.Z.jre11.jar:/mesh/database/mssql.jar
+    ports:
+      - '8080:8080'
+    environment:
+      MESH_DATABASE_ADDRESS: <host:port of a SQL Server. For instance, if its address/name is `sqlserver`, the content here will be `sqlserver:1433`>
+      MESH_JDBC_DATABASE_NAME: mesh
+      MESH_JDBC_CONNECTION_USERNAME: "SA"
+      MESH_JDBC_CONNECTION_PASSWORD: "admin"
+---- 
+The Enterprise Edition image of Gentics Mesh, capable of Gentics License management feature, is available inder the name `docker.gentics.com/gentics/mesh-enterprise-mssql`.
 
 #### Oracle XE
 
 .JDBC Driver
 
-Download *ojdbc11.jar* from https://www.oracle.com/database/technologies/appdev/jdbc-downloads.html , place it at the server into the folder, reachable by Mesh.  Place the database connector JAR file in this folder as well.
+Download *ojdbc11.jar* from https://www.oracle.com/database/technologies/appdev/jdbc-downloads.html[the official Oracle JDBC driver webpage], place it at the server into the folder, reachable by Mesh. Place the database connector JAR file in this folder as well.
 
 .DB configuration
 
@@ -174,3 +213,23 @@ storageOptions:
   synchronizeWrites: false
   synchronizeWritesTimeout: 6000
 ```
+Gentics provides the pre-build Docker images, which already contain the database connector, so only the JDBC driver is to be provided. 
+Please note that an access to the Gentics' commercial repository is required to obtain the image. Its `docker-compose` configuration may look like as follows:
+
+[source,yaml]
+----
+  mesh:
+    image: docker.gentics.com/gentics/mesh-oracle
+    volumes:
+      - mesh-uploads:/uploads
+      - /whatever/path/you/chose/for/the/ojdbc11.jar:/mesh/database/oracle.jar
+    ports:
+      - '8080:8080'
+    environment:
+      MESH_DATABASE_ADDRESS: <host:port of an Oracle DB. For instance, if its address/name is `oracle`, the content here will be `oracle:1521`>
+      MESH_JDBC_DATABASE_NAME: mesh
+      MESH_JDBC_CONNECTION_USERNAME: "meshdbuser"
+      MESH_JDBC_CONNECTION_PASSWORD: "admin"
+---- 
+The Enterprise Edition image of Gentics Mesh, capable of Gentics License management feature, is available inder the name `docker.gentics.com/gentics/mesh-enterprise-oracle`.
+
