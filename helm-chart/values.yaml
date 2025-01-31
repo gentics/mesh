@@ -1,0 +1,338 @@
+# Default values for Gentics Mesh.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Setting this higher than 1 will enable clustering automatically
+# In this case, be sure you have correctly configured a network storage for the uploads
+replicaCount: 1
+
+image:
+  repository: docker.gentics.com/gentics/mesh-enterprise-hsqldb
+  # tag: 3.0.0
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+license:
+  key: null
+  # secret:
+  path: "/license"
+  filename: "license.key"
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: false
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name:
+
+podSecurityContext: {}
+
+securityContext: {}
+
+service:
+  type: ClusterIP
+
+  mesh:
+    port: 80
+        # nodePort is only available when using service type NodePort
+    # nodePort: 80
+    useHttp2: false
+    name: mesh
+
+  meshSSL:
+    useHttp2: false
+    port: 443
+    # nodePort is only available when using service type NodePort
+    # nodePort: 80
+
+  monitoring:
+    port: 8081
+    # nodePort is only available when using service type NodePort
+    # nodePort: 80
+
+#podAnnotations:
+#  - customAnnotation: "whatever"
+
+# extraConfig creates a configmap per name, which can hold multiple
+# items and can be mountad as a specified path
+#extraConfig:
+#  - name: myconfig
+#    items:
+#      - key: custom.yml
+#        mountPath: /plugins/myplugin/custom.yml
+#        value: |
+#          setup:
+#            customValue: value
+
+# Ingress for Gentics Mesh API
+ingress:
+  enabled: true
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: 8m
+    # kubernetes.io/ingress.class: nginx # Kubernetes <1.19
+    # kubernetes.io/tls-acme: "true"
+  #ingressClassName: nginx # Kubernetes >=1.19
+  hosts:
+    - host: mesh.local
+      paths:
+        - "/"
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+# You should adjust this to your needs. This just defines the absolute minimum defaults.
+# The memory values should be set in conjunction with the Java Xmx plus other Java memory settings like Direct memory
+# See: https://gentics.com/mesh/docs/administration-guide/#_memory_settings
+resources:
+  limits:
+    memory: 2Gi
+    cpu: 2000m
+  requests:
+    memory: 256Mi
+    cpu: 500m
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Settings for clustering will be configured automatically
+extraEnv:
+- name: JAVA_TOOL_OPTIONS
+  value: "-Xms128m -Xmx128m"
+
+# - name: MESH_ELASTICSEARCH_URL
+#   value: "http://elasticsearch:9200"
+
+# By default, a default configmap will be created
+# existingConfigmap: "mesh-custom-config"
+# All settings in mesh.yml are configurable with env vars (See: extraEnv)
+
+persistence:
+  enabled: true
+
+  # Volume for shared data (uploads, keystore)
+  # This volume should be a network volume (NFS) and will be shared across all instances
+  shared:
+    # Use existingClaim if you don't have a storage provisioner for your NFS
+    # existingClaim: ""
+    annotations: {}
+    spec:
+      accessModes:
+        - ReadWriteMany
+      # storageClassName: ""
+      resources:
+        requests:
+          storage: 10Gi
+
+  backup:
+    ##  Storage for database snapshots
+    snapshots:
+      # Use existingClaim if you don't have a storage provisioner for your NFS
+      # existingClaim: ""
+      annotations: {}
+      spec:
+        accessModes:
+          - ReadWriteMany
+        # storageClassName: ""
+        resources:
+          requests:
+            storage: 10Gi
+
+  # persisting cached images to shared volume
+  imageCache:
+    enabled: false
+
+# livenessProbe:
+#   exec:
+#     command:
+#     - /bin/sh
+#     - live.sh
+  # initialDelaySeconds: 10
+  # periodSeconds: 8
+  # failureThreshold: 3
+
+# readinessProbe:
+#   httpGet:
+#     path: /api/v2/health/ready
+#     port: http
+#   initialDelaySeconds: 10
+#   periodSeconds: 5
+#   failureThreshold: 5
+
+database:
+  # host: ""
+  # port: 0
+  # name: ""
+  # username: ""
+  # password: ""
+  # extraParams: ""
+
+vertxOptions:
+  workerPoolSize: 20
+  eventLoopSize: 10
+  verticleCount: 10
+  orderedBlockingHandlers: true
+
+keystore:
+  # passwordSecret: ""
+  # Change this password. This will be used if no custom keystore secret has been specified.
+  password: "secret"
+
+ssl:
+  enabled: false
+  # Client Authentication mode can be: NONE, REQUEST or REQUIRE
+  # See https://gentics.com/mesh/docs/references/#_client_certificate for details
+  clientAuthMode: "NONE"
+  serverKeyPath: "/certs/key.pem"
+  serverCertPath: "/certs/cert.pem"
+  #trustedCertPaths: ""
+  existingSecret: "mesh-ssl-secret"
+
+# Configure clustering related settings
+cluster:
+  enabled: true
+  coordinatorRegex: "gentics-mesh-[0-9]"
+  podDisruptionBudget:
+    maxUnavailable: false
+
+  resources:
+    requests:
+      memory: 500Mi
+      cpu: 100m
+    limits:
+      memory: 1Gi
+      cpu: 250m
+
+# Tools settings, which are used for backup/restore and in the NOTES for generation of an api key
+tools:
+  image:
+    repository: docker.gentics.com/gentics/mesh/mesh-tools
+    tag: 1.0.2
+    pullPolicy: IfNotPresent
+    pullSecret: docker-gentics-com
+
+# Restore settings. The restore operation is invoked when the initial cluster is being setup.
+# The restore will utilize the backup snapshot to populate the keystore and uploads folders.
+restore:
+  enabled: false
+  # Which parts to restore?
+  allowedParts: 
+    uploads: true
+    keystore: true
+  snapshotName: "current"
+
+# Configure backup related settings
+backup: 
+  # Per default, backup is not enabled
+  enabled: false
+  # Backup may be suspended
+  suspended: false
+  # Which parts to backup?
+  allowedParts:
+    uploads: true
+    keystore: true
+  # in some installations the backup target is e.g. a NFS and files cannot be rsynced
+  # in this case the files can be tared to preserve file permissions
+  # useTar: true
+  cron:
+    # Daily at 22 pm
+    schedule: "0 22 * * *"
+    # Define the time limit for the backup in seconds
+    timeLimitSeconds: 3600
+
+    successfulJobsHistoryLimit: 3
+    failedJobsHistoryLimit: 3
+
+  #allow to override default backup.sh script
+  #backupScript: |-
+  #allow to override default restore.sh script
+  #restoreScript: |-
+  resources:
+    requests:
+      memory: 500Mi
+      cpu: 100m
+    limits:
+      memory: 1Gi
+      cpu: 250m
+
+# Configure credentials
+credentials:
+  initialAdminPassword: ""
+  forcePasswordReset: false
+
+config:
+  publicKeys: ""
+
+# Monitoring related settings
+monitoring:
+  enabled: true
+
+# Elasticsearch settings
+elasticsearch:
+  url: "null" ## ES integration disabled by default
+  # complianceMode: "ES_8"
+  # prefix: "mesh-"
+
+# Upload settings
+upload:
+  limit: "262144000" ## 260 MB
+
+logging:
+  defaultLogLevel: INFO
+  #allows you to inject your own logback.xml - otherwise default configured logback.xml will be used
+  #logback: |-
+
+customjobs:
+  ### REQUIRED for a job ###
+  #- name: test-cron
+  #  image:
+  #    repository: docker.gentics.com/gentics/mesh/mesh-tools
+  #    tag: 1.0.2
+  #    imagePullPolicy: IfNotPresent
+  #    #optional secret
+  #    #pullSecret: docker-gentics-com
+  #  schedule: "0 23 * * *"
+  #  failedJobsHistoryLimit: 2
+  #  successfulJobsHistoryLimit: 2
+  #  concurrencyPolicy: Forbid
+  #  restartPolicy: Never
+  #  timeLimitSeconds: 3600
+  #  backoffLimit: 1
+  #  ttlSecondsAfterFinished: 86400
+  ### OPTIONAL for a job ###
+  #  env:
+  #  - name: MESH_CLI_PASSWORD
+  #    value: "admin"
+  #  - name: MESH_CLI_USERNAME
+  #    value: "admin"
+    #envFrom:
+    #- secretRef:
+    #  name: <secret_name>
+    #- configMapRef:
+    #  name: <configmap_name>
+  #  command: ["/bin/sh"]
+  #  args:
+  #  - "/runme.sh"
+  #
+  #  resources:
+  #    limits:
+  #      cpu: 200m
+  #      memory: 500Mi
+  #    requests:
+  #      cpu: 100m
+  #      memory: 200Mi
+  #  #volumes:
+  #  #  - name: config
+  #  #    configMap:
+  #  #      name: extraconfig
+  #  #volumeMounts:
+  #  #  - mountPath: /runme.sh
+  #  #    name: config
+  #  #    subPath: runme.sh
+
