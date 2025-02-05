@@ -193,6 +193,19 @@
 			...output
 		}
 	}
+	nameIsNotUUID: nodes(filter: {
+		schema: {is: folder}
+		fields: {
+			folder: {
+				name: {notEquals: "b660375495454667b34e385ab6fa7e4c"}
+			}
+		}
+	}) {
+		# [$.data.nameIsNotUUID.elements.length()=9]
+		elements {
+			...output
+		}
+	}
 }
 # [$.errors=<is-undefined>]
 
