@@ -1,6 +1,7 @@
 package com.gentics.mesh.hibernate.util;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -18,11 +19,17 @@ public final class HibernateFilter {
 	private final String sqlFilter;
 	private final Set<NativeJoin> sqlJoin;
 	private final Map<String, Object> parameters;
+	private final Optional<String> maybeFieldType;
 
 	public HibernateFilter(String sqlFilter, Set<NativeJoin> sqlJoin, Map<String, Object> parameters) {
+		this(sqlFilter, sqlJoin, parameters, Optional.empty());
+	}
+
+	public HibernateFilter(String sqlFilter, Set<NativeJoin> sqlJoin, Map<String, Object> parameters, Optional<String> maybeFieldType) {
 		this.sqlFilter = sqlFilter;
 		this.sqlJoin = sqlJoin;
 		this.parameters = parameters;
+		this.maybeFieldType = maybeFieldType;
 	}
 
 	/**
@@ -66,5 +73,9 @@ public final class HibernateFilter {
 				Stream.of(sqlJoin, other.sqlJoin).flatMap(j -> j.stream()).collect(Collectors.toSet()), 
 				Stream.of(parameters, other.parameters).flatMap(m -> m.entrySet().stream()).collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue(), (a,b) -> a))
 			);
+	}
+
+	public Optional<String> getMaybeFieldType() {
+		return maybeFieldType;
 	}
 }

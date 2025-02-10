@@ -1,0 +1,1 @@
+GraphQL: A case of using a GraphQL native filter for a string field against a UUID value, resulting in an exception, has been fixed. 
