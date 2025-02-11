@@ -87,6 +87,11 @@ public interface ImageManipulator {
 	Single<Map<String, String>> getMetadata(InputStream ins);
 
 	/**
+	 * Shut down the image manipulator
+	 */
+	void shutdown();
+
+	/**
 	 * Apply the default manipulation to the image variant being created.
 	 * 
 	 * @param <T>
