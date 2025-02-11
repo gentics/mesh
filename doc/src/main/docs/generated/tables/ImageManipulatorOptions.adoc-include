@@ -7,10 +7,25 @@
 | Description
 
 
+| imageCacheCleanInterval
+| false
+| string
+| Image cache clean interval in ISO 8601 duration format. Setting this to PT0S will disable the image cache cleanup. Default: PT0S
+
 | imageCacheDirectory
 | false
 | string
 | Configure the path for image cache directory. Default: data/binaryImageCache
+
+| imageCacheMaxIdle
+| false
+| string
+| Image cache maximum idle time in ISO 8601 duration format. Default: PT1M
+
+| imageCacheTouch
+| false
+| boolean
+| Whether the Image cache files should be touched when accessed. Default: false
 
 | jpegQuality
 | false

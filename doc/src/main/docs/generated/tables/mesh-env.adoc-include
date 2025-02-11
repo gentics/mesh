@@ -14,6 +14,9 @@
 | *MESH_GRAPH_CLUSTER_JOIN_TIMEOUT*
 | Override the graphdb cluster join timeout. Default: 500000 ms
 
+| *MESH_IMAGE_CACHE_CLEAN_INTERVAL*
+| Overwrite the image cache max idle time.
+
 | *MESH_GRAPH_NATIVE_QUERY_FILTERING*
 | Override the configured native query filtering.
 
@@ -335,6 +338,9 @@
 | *MESH_S3_BINARY_ENABLED_KEY*
 | Override cluster enabled flag.
 
+| *MESH_IMAGE_CACHE_CLEAN_INTERVAL*
+| Overwrite the image cache clean interval.
+
 | *MESH_ELASTICSEARCH_URL*
 | Override the configured elasticsearch server url. The value can be set to null in order to disable the Elasticsearch support.
 
@@ -358,6 +364,9 @@
 
 | *MESH_S3_BINARY_CACHE_EXPIRATION_TIME_DOWNLOAD*
 | Override the configured AWS S3 download time.
+
+| *MESH_IMAGE_CACHE_TOUCH*
+| Overwrite the image cache touch behaviour.
 
 | *MESH_HTTP_CORS_ORIGIN_PATTERN*
 | Override the configured CORS allowed origin pattern.
