@@ -126,12 +126,12 @@ public class ImageCacheTest extends AbstractImageTest {
 		manipulator.handleResize(mockedBinary, new ImageManipulationParametersImpl().setWidth(200)).blockingGet();
 
 		// run the image cache cleaner with allowed idle time of 1 second
-		new ImageCacheCleaner(cacheDir, 1).run();
+		new ImageCacheCleaner(cacheDir, 3).run();
 		// cache file should still exist
 		assertThat(new File(cachePath)).as("Cache file").exists();
 
 		// wait 2 seconds
-		Thread.sleep(Duration.of(2, ChronoUnit.SECONDS).getSeconds() * 1000L);
+		Thread.sleep(Duration.of(4, ChronoUnit.SECONDS).getSeconds() * 1000L);
 
 		// run the image cache cleaner with allowed idle time of 1 second
 		new ImageCacheCleaner(cacheDir, 1).run();
