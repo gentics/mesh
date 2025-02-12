@@ -1,0 +1,2 @@
+Core: When running in the massive concurrent publishing process, it is possible to run into a race condition when some field containers are already processed while being referenced by the edge, 
+throwing an NPE. This has now been fixed.

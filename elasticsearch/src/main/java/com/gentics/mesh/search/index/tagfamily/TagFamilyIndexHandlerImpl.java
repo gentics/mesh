@@ -1,5 +1,6 @@
 package com.gentics.mesh.search.index.tagfamily;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,6 +14,8 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.dao.ProjectDao;
@@ -37,16 +40,16 @@ import io.reactivex.Flowable;
 @Singleton
 public class TagFamilyIndexHandlerImpl extends AbstractIndexHandler<HibTagFamily> implements TagFamilyIndexHandler {
 
-	@Inject
-	TagFamilyTransformer transformer;
+	protected final TagFamilyTransformer transformer;
 
-	@Inject
-	TagFamilyMappingProvider mappingProvider;
+	protected final TagFamilyMappingProvider mappingProvider;
 
 	@Inject
 	public TagFamilyIndexHandlerImpl(SearchProvider searchProvider, Database db, MeshHelper helper, MeshOptions options,
-		SyncMetersFactory syncMetricsFactory, BucketManager bucketManager) {
+		SyncMetersFactory syncMetricsFactory, BucketManager bucketManager, TagFamilyTransformer transformer, TagFamilyMappingProvider mappingProvider) {
 		super(searchProvider, db, helper, options, syncMetricsFactory, bucketManager);
+		this.transformer = transformer;
+		this.mappingProvider = mappingProvider;
 	}
 
 	@Override
@@ -77,13 +80,13 @@ public class TagFamilyIndexHandlerImpl extends AbstractIndexHandler<HibTagFamily
 	}
 
 	@Override
-	public Map<String, IndexInfo> getIndices() {
+	public Map<String, Optional<IndexInfo>> getIndices() {
 		return db.tx(tx -> {
-			Map<String, IndexInfo> indexInfo = new HashMap<>();
+			Map<String, Optional<IndexInfo>> indexInfo = new HashMap<>();
 			for (HibProject project : tx.projectDao().findAll()) {
 				String indexName = HibTagFamily.composeIndexName(project.getUuid());
 				IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "tagFamily");
-				indexInfo.put(indexName, info);
+				indexInfo.put(indexName, Optional.of(info));
 			}
 			return indexInfo;
 		});
@@ -135,8 +138,18 @@ public class TagFamilyIndexHandlerImpl extends AbstractIndexHandler<HibTagFamily
 	}
 
 	@Override
+	public Function<Collection<String>, Stream<Pair<String, HibTagFamily>>> elementsLoader() {
+		return (uuids) -> Tx.get().tagFamilyDao().findByUuids(uuids);
+	}
+
+	@Override
 	public Stream<? extends HibTagFamily> loadAllElements() {
 		return Tx.get().tagFamilyDao().findAll().stream();
 	}
 
+	@Override
+	public boolean isDefinitionDataDependent() {
+		// We depend on the project.
+		return true;
+	}
 }

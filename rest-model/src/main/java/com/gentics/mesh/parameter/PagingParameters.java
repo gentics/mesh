@@ -1,18 +1,14 @@
 package com.gentics.mesh.parameter;
 
-import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.util.NumberUtils;
 
 /**
  * Interface for paging query parameters.
  */
-public interface PagingParameters extends ParameterProvider {
+public interface PagingParameters extends ParameterProvider, SortingParameters {
 
 	public static final String PAGE_PARAMETER_KEY = "page";
 	public static final String PER_PAGE_PARAMETER_KEY = "perPage";
-	public static final String SORT_BY_PARAMETER_KEY = "sortBy";
-	public static final String SORT_ORDER_PARAMETER_KEY = "order";
-
 	public static final int DEFAULT_PAGE = 1;
 
 	/**
@@ -60,54 +56,12 @@ public interface PagingParameters extends ParameterProvider {
 	}
 
 	/**
-	 * Return the sort by parameter value.
-	 * 
-	 * @return Field to be sorted by
-	 * @deprecated not yet implemented
-	 */
-	@Deprecated
-	default String getSortBy() {
-		return getParameter(SORT_BY_PARAMETER_KEY);
-	}
-
-	/**
-	 * Return the sortorder.
+	 * Get zero-based page value. Useful to insert into the zero-based paged data fetching mechanisms.
 	 * 
 	 * @return
-	 * @deprecated not yet implemented
 	 */
-	@Deprecated
-	default SortOrder getOrder() {
-		return SortOrder.valueOfName(getParameter(SORT_ORDER_PARAMETER_KEY));
-
+	default int getActualPage() {
+		int page = getPage();
+		return page < 1 ? 0 : (page - 1);
 	}
-
-	/**
-	 * Set the order by parameter.
-	 * 
-	 * @param orderBy
-	 * @return
-	 * @deprecated not yet implemented
-	 */
-	@Deprecated
-	default PagingParameters setOrderBy(String orderBy) {
-		setParameter(SORT_BY_PARAMETER_KEY, orderBy);
-		return this;
-	}
-
-	/**
-	 * Set the used sort order.
-	 * 
-	 * @param sortBy
-	 *            Sort order
-	 * @return Fluent API
-	 * @deprecated not yet implemented
-	 * 
-	 */
-	@Deprecated
-	default PagingParameters setSortOrder(String sortBy) {
-		setParameter(SORT_BY_PARAMETER_KEY, sortBy);
-		return this;
-	}
-
 }

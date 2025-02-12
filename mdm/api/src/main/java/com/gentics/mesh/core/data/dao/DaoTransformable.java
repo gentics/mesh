@@ -17,6 +17,12 @@ import io.reactivex.Single;
  *            Rest model type
  */
 public interface DaoTransformable<T, R extends RestModel> {
+	/**
+	 * Invoked before transforming the elements in the page to their REST models
+	 * @param page page of elements
+	 * @param ac action context
+	 */
+	default void beforeTransformToRestSync(Page<? extends HibCoreElement<? extends RestModel>> page, InternalActionContext ac) {}
 
 	/**
 	 * Transform the element into the matching rest model response asynchronously.

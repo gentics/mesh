@@ -14,11 +14,12 @@ import com.gentics.mesh.rest.RestAPIVerticle;
 import com.gentics.mesh.search.verticle.ElasticsearchProcessVerticle;
 import com.gentics.mesh.util.RxUtil;
 
+import com.gentics.mesh.verticle.BinaryCheckVerticle;
 import io.reactivex.Completable;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
 
 /**
@@ -29,35 +30,41 @@ public class CoreVerticleLoader {
 
 	private static Logger log = LoggerFactory.getLogger(CoreVerticleLoader.class);
 
-	@Inject
-	public Provider<RestAPIVerticle> restVerticle;
+	protected final Provider<RestAPIVerticle> restVerticle;
 
-	@Inject
-	public Provider<MonitoringServerVerticle> monitoringServerVerticle;
+	protected final Provider<MonitoringServerVerticle> monitoringServerVerticle;
 
-	@Inject
-	public JobWorkerVerticleImpl jobWorkerVerticle;
+	protected final JobWorkerVerticleImpl jobWorkerVerticle;
 
-	@Inject
-	public Provider<ElasticsearchProcessVerticle> elasticsearchProcessVerticleProvider;
+	protected final BinaryCheckVerticle binaryCheckVerticle;
+
+	protected final Provider<ElasticsearchProcessVerticle> elasticsearchProcessVerticleProvider;
 	private ElasticsearchProcessVerticle elasticsearchProcessVerticle;
 
-	@Inject
-	public MeshOptions meshOptions;
+	protected final MeshOptions meshOptions;
 
 	private final Vertx rxVertx;
 	private String searchVerticleId;
 
 	@Inject
-	public CoreVerticleLoader(Vertx rxVertx) {
+	public CoreVerticleLoader(Vertx rxVertx, Provider<RestAPIVerticle> restVerticle,
+			Provider<MonitoringServerVerticle> monitoringServerVerticle, JobWorkerVerticleImpl jobWorkerVerticle,
+			BinaryCheckVerticle binaryCheckVerticle, Provider<ElasticsearchProcessVerticle> elasticsearchProcessVerticleProvider,
+			MeshOptions meshOptions) {
 		this.rxVertx = rxVertx;
+		this.restVerticle = restVerticle;
+		this.monitoringServerVerticle = monitoringServerVerticle;
+		this.jobWorkerVerticle = jobWorkerVerticle;
+		this.binaryCheckVerticle = binaryCheckVerticle;
+		this.elasticsearchProcessVerticleProvider = elasticsearchProcessVerticleProvider;
+		this.meshOptions = meshOptions;
 	}
 
 	private JsonObject defaultConfig;
 
 	/**
 	 * Load verticles that are configured within the mesh configuration.
-	 * 
+	 *
 	 * @param initialProjects
 	 */
 	public Completable loadVerticles(List<String> initialProjects) {
@@ -70,6 +77,7 @@ public class CoreVerticleLoader {
 			deployRestVerticle(),
 			deployMonitoringVerticle(),
 			deployJobWorkerVerticle(),
+			deployBinaryCheckVerticle(),
 			deploySearchVerticle());
 	}
 
@@ -98,6 +106,10 @@ public class CoreVerticleLoader {
 			.ignoreElement();
 	}
 
+	private Completable deployBinaryCheckVerticle() {
+		return rxVertx.rxDeployVerticle(binaryCheckVerticle, new DeploymentOptions().setInstances(1)).ignoreElement();
+	}
+
 	private Completable deploySearchVerticle() {
 		// Only deploy search sync verticle if we actually have a configured ES
 		ElasticSearchOptions searchOptions = meshOptions.getSearchOptions();
@@ -116,7 +128,7 @@ public class CoreVerticleLoader {
 
 	/**
 	 * Dedeploy the serarch verticle.
-	 * 
+	 *
 	 * @return
 	 */
 	public Completable redeploySearchVerticle() {

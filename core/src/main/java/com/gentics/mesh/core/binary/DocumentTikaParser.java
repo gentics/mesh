@@ -42,7 +42,7 @@ public class DocumentTikaParser {
 	private static final Parser[] PARSERS = new Parser[] {
 		// documents
 		new org.apache.tika.parser.html.HtmlParser(),
-		new org.apache.tika.parser.rtf.RTFParser(),
+		new org.apache.tika.parser.microsoft.rtf.RTFParser(),
 		new org.apache.tika.parser.pdf.PDFParser(),
 		new org.apache.tika.parser.txt.TXTParser(),
 		new org.apache.tika.parser.microsoft.OfficeParser(),
@@ -63,7 +63,7 @@ public class DocumentTikaParser {
 
 		// images
 		new org.apache.tika.parser.image.ImageParser(),
-		new org.apache.tika.parser.jpeg.JpegParser(),
+		new org.apache.tika.parser.image.JpegParser(),
 		new org.apache.tika.parser.image.WebPParser(),
 
 		// ogg (audio/video)

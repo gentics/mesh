@@ -18,8 +18,8 @@ import com.gentics.mesh.test.MeshOptionsTypeUnawareContext;
 import com.gentics.mesh.test.docker.AWSContainer;
 
 import hu.akarnokd.rxjava2.interop.SingleInterop;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;

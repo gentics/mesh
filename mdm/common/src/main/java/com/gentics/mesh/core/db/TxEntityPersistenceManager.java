@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.db;
 
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import com.gentics.mesh.core.data.HibElement;
@@ -22,8 +23,22 @@ public interface TxEntityPersistenceManager {
 	 * @param classOfT the persistence class to use
 	 * @return
 	 */
-	<T extends HibElement> T create(String uuid, Class<? extends T> classOfT);
+	default <T extends HibElement> T create(String uuid, Class<? extends T> classOfT) {
+		return create(uuid, classOfT, unused -> {});
+	}
 	
+	/**
+	 * Create a new persisted entity with the given optional uuid, inflating it before the persisting. 
+	 * If uuid parameter is null, a new generated UUID will be used.<br>
+	 * 
+	 * @param <T>
+	 * @param uuid 
+	 * @param classOfT the persistence class to use
+	 * @param inflater the instance inflater
+	 * @return
+	 */
+	<T extends HibElement> T create(String uuid, Class<? extends T> classOfT, Consumer<T> inflater);
+
 	/**
 	 * Merge the data from given POJO into the persistent entity.<br>
 	 * 
@@ -77,5 +92,38 @@ public interface TxEntityPersistenceManager {
 	 */
 	default <T extends HibElement> T create(Class<? extends T> classOfT) {
 		return create(null, classOfT);
+	}
+
+	/**
+	 * Attach the POJO element into the database-driven persistence state, if possible. The default implementation does nothing, not telling apart both states.
+	 * 
+	 * @param element
+	 * @param pushIntoDb if true, the DB data is considered stale and is to be overwritten by the element data, otherwise vice versa. 
+	 * @return
+	 */
+	default <T> T attach(T element, boolean pushIntoDb) {
+		return element;
+	}
+
+	/**
+	 * Make a POJO from possibly database driven persistent element. The default implementation does nothing, not telling apart both states.
+	 * 
+	 * @param element
+	 * @return
+	 */
+	default <T> T detach(T element) {
+		return element;
+	}
+
+	/**
+	 * Return the persistence entity class of a given element.
+	 * 
+	 * @param <T>
+	 * @param element
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	default <T> Class<? super T> entityClassOf(T element) {
+		return (Class<? super T>) element.getClass();
 	}
 }

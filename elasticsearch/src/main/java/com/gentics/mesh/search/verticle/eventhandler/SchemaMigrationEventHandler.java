@@ -9,6 +9,7 @@ import static com.gentics.mesh.search.verticle.eventhandler.Util.toRequests;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -31,8 +32,8 @@ import com.gentics.mesh.search.index.node.NodeIndexHandlerImpl;
 import com.gentics.mesh.search.verticle.MessageEvent;
 
 import io.reactivex.Flowable;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Event handler that will catch schema migration events (assign, unassign, migration finished). The handler will for example drop old content indices when a
@@ -90,7 +91,7 @@ public class SchemaMigrationEventHandler implements EventHandler {
 	 * @return
 	 */
 	public Flowable<SearchRequest> migrationStart(BranchSchemaAssignEventModel model) {
-		Map<String, IndexInfo> map = helper.getDb().transactional(tx -> {
+		Map<String, Optional<IndexInfo>> map = helper.getDb().transactional(tx -> {
 			HibProject project = tx.projectDao().findByUuid(model.getProject().getUuid());
 			HibBranch branch = tx.branchDao().findByUuid(project, model.getBranch().getUuid());
 			HibSchemaVersion schema = getNewSchemaVersion(model).runInExistingTx(tx);

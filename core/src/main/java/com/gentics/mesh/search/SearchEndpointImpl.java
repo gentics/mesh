@@ -5,16 +5,18 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
+import java.util.Arrays;
 import java.util.function.Function;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.auth.MeshAuthChainImpl;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
@@ -26,6 +28,9 @@ import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.parameter.ParameterProvider;
+import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.IndexMaintenanceParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.SearchParametersImpl;
@@ -47,46 +52,58 @@ import com.gentics.mesh.search.index.user.UserSearchHandler;
  */
 public class SearchEndpointImpl extends AbstractInternalEndpoint implements SearchEndpoint {
 
-	@Inject
-	AdminIndexHandler adminHandler;
+	protected final AdminIndexHandler adminHandler;
+
+	protected final UserSearchHandler userSearchHandler;
+
+	protected final GroupSearchHandler groupSearchHandler;
+
+	protected final RoleSearchHandler roleSearchHandler;
+
+	protected final NodeSearchHandler nodeSearchHandler;
+
+	protected final TagSearchHandler tagSearchHandler;
+
+	protected final TagFamilySearchHandler tagFamilySearchHandler;
+
+	protected final ProjectSearchHandler projectSearchHandler;
+
+	protected final SchemaSearchHandler schemaContainerSearchHandler;
+
+	protected final MicroschemaSearchHandler microschemaContainerSearchHandler;
 
 	@Inject
-	UserSearchHandler userSearchHandler;
-
-	@Inject
-	GroupSearchHandler groupSearchHandler;
-
-	@Inject
-	RoleSearchHandler roleSearchHandler;
-
-	@Inject
-	NodeSearchHandler nodeSearchHandler;
-
-	@Inject
-	TagSearchHandler tagSearchHandler;
-
-	@Inject
-	TagFamilySearchHandler tagFamilySearchHandler;
-
-	@Inject
-	ProjectSearchHandler projectSearchHandler;
-
-	@Inject
-	SchemaSearchHandler schemaContainerSearchHandler;
-
-	@Inject
-	MicroschemaSearchHandler microschemaContainerSearchHandler;
-
-	@Inject
-	Database db;
-
-	@Inject
-	public SearchEndpointImpl(MeshAuthChainImpl chain, NodeSearchHandler searchHandler) {
-		super("search", chain);
+	public SearchEndpointImpl(MeshAuthChain chain, NodeSearchHandler searchHandler, AdminIndexHandler adminHandler,
+			UserSearchHandler userSearchHandler, GroupSearchHandler groupSearchHandler,
+			RoleSearchHandler roleSearchHandler, NodeSearchHandler nodeSearchHandler, TagSearchHandler tagSearchHandler,
+			TagFamilySearchHandler tagFamilySearchHandler, ProjectSearchHandler projectSearchHandler,
+			SchemaSearchHandler schemaContainerSearchHandler,
+			MicroschemaSearchHandler microschemaContainerSearchHandler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+		super("search", chain, localConfigApi, db, options);
+		this.adminHandler = adminHandler;
+		this.userSearchHandler = userSearchHandler;
+		this.groupSearchHandler = groupSearchHandler;
+		this.roleSearchHandler = roleSearchHandler;
+		this.nodeSearchHandler = nodeSearchHandler;
+		this.tagSearchHandler = tagSearchHandler;
+		this.tagFamilySearchHandler = tagFamilySearchHandler;
+		this.projectSearchHandler = projectSearchHandler;
+		this.schemaContainerSearchHandler = schemaContainerSearchHandler;
+		this.microschemaContainerSearchHandler = microschemaContainerSearchHandler;
 	}
 
 	public SearchEndpointImpl() {
-		super("search", null);
+		super("search", null, null, null, null);
+		this.adminHandler = null;
+		this.userSearchHandler = null;
+		this.groupSearchHandler = null;
+		this.roleSearchHandler = null;
+		this.nodeSearchHandler = null;
+		this.tagSearchHandler = null;
+		this.tagFamilySearchHandler = null;
+		this.projectSearchHandler = null;
+		this.schemaContainerSearchHandler = null;
+		this.microschemaContainerSearchHandler = null;
 	}
 
 	@Override
@@ -115,7 +132,7 @@ public class SearchEndpointImpl extends AbstractInternalEndpoint implements Sear
 		registerHandler("nodes", (uuid) -> {
 			HibNode node = Tx.get().nodeDao().findByUuidGlobal(uuid);
 			return node;
-		}, NodeListResponse.class, nodeSearchHandler, nodeExamples.getNodeListResponse(), true);
+		}, NodeListResponse.class, nodeSearchHandler, nodeExamples.getNodeListResponse(), true, GenericParametersImpl.class);
 
 		registerHandler("tags", (uuid) -> Tx.get().tagDao().findByUuid(uuid), TagListResponse.class, tagSearchHandler, tagExamples
 			.createTagListResponse(), false);
@@ -194,9 +211,10 @@ public class SearchEndpointImpl extends AbstractInternalEndpoint implements Sear
 	 * @param classOfRL
 	 *            Class of matching list response
 	 */
+	@SafeVarargs
 	private <T extends HibCoreElement<?>, TR extends RestModel, RL extends ListResponse<TR>> void registerHandler(String typeName,
 		Function<String, T> elementLoader, Class<RL> classOfRL, SearchHandler<T, TR> searchHandler, RL exampleListResponse,
-		boolean filterByLanguage) {
+		boolean filterByLanguage, Class<? extends ParameterProvider>... extraParameters) {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/" + typeName);
 		endpoint.method(POST);
@@ -206,6 +224,7 @@ public class SearchEndpointImpl extends AbstractInternalEndpoint implements Sear
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.addQueryParameters(PagingParametersImpl.class);
 		endpoint.addQueryParameters(SearchParametersImpl.class);
+		Arrays.stream(extraParameters).forEach(endpoint::addQueryParameters);
 		endpoint.exampleResponse(OK, exampleListResponse, "Paged search result for " + typeName);
 		endpoint.exampleRequest(miscExamples.getSearchQueryExample());
 		endpoint.handler(rc -> {

@@ -6,8 +6,8 @@ import com.gentics.mesh.search.verticle.MessageEvent;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;

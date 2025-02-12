@@ -3,8 +3,6 @@ target
 .classpath
 .project
 /build.sh
-/build8.sh
-/build11.sh
 .settings
 .bin
 .pmd*
@@ -26,6 +24,7 @@ npm-debug.log*
 server/data
 server/config
 server/data-*
+server/mesh.live
 examples/demo-java/data
 core/tmp
 orient-plugins
@@ -35,8 +34,6 @@ orientdb-plugins
 keystore.jceks
 /bower_components/
 mesh.lock
-mesh.live
-/build
 /dist
 /node
 /node_modules
@@ -52,11 +49,16 @@ inclusions.txt
 .idea
 *.iml
 elasticsearch-6.1.2
-build.sh
 debuginfo.log
 /.run
-/core/debuginfo
-mesh-mdm/config
+/data
 /config/
-/data/graphdb/storage/
+/dump.log
+/mesh.live
+server/hmac_store.jceks
+**/debuginfo.log
+**/mesh.live
+**/test.jpg
 .vscode
+.asciidoctorconfig.adoc
+*.patch

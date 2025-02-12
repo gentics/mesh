@@ -64,6 +64,7 @@ import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
@@ -127,9 +128,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 		waitForSearchIdleEvent();
 		assertThat(trackingSearchProvider()).hasCreate(ContentDao.composeIndexName(projectUuid(), initialBranchUuid(), versionUuid,
-			DRAFT, null));
+			DRAFT, null, null));
 		assertThat(trackingSearchProvider()).hasCreate(ContentDao.composeIndexName(projectUuid(), initialBranchUuid(), versionUuid,
-			PUBLISHED, null));
+			PUBLISHED, null, null));
 
 		/**
 		 * 2. Stop the job worker and update the schema again. The new version should be assigned to the branch and a migration job should be queued. Make sure
@@ -163,9 +164,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertEquals("The migration should be queued", QUEUED, assignment2.getMigrationStatus());
 			assertTrue("The assignment should be active.", assignment2.isActive());
 			assertThat(trackingSearchProvider()).hasCreate(ContentDao.composeIndexName(projectUuid(), initialBranchUuid(), versionBUuid,
-				DRAFT, null)).hasNoDropEvents();
+				DRAFT, null, null)).hasNoDropEvents();
 			assertThat(trackingSearchProvider()).hasCreate(ContentDao.composeIndexName(projectUuid(), initialBranchUuid(), versionBUuid,
-				PUBLISHED, null)).hasNoDropEvents();
+				PUBLISHED, null, null)).hasNoDropEvents();
 			assertThat(adminCall(() -> client().findJobs())).hasInfos(1);
 		}
 
@@ -208,7 +209,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		waitForSearchIdleEvent();
 
 		assertThat(trackingSearchProvider()).hasStore(
-			ContentDao.composeIndexName(projectUuid(), initialBranchUuid(), versionBUuid, DRAFT, null),
+			ContentDao.composeIndexName(projectUuid(), initialBranchUuid(), versionBUuid, DRAFT, null, null),
 			response.getUuid() + "-en");
 
 		updateRequest.addField(FieldUtil.createStringFieldSchema("text3"));
@@ -236,9 +237,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertTrue("The previous assignment should be active since it has not yet been migrated.", assignment2.isActive());
 			assertTrue("The assignment should be active.", edge3.isActive());
 			assertThat(trackingSearchProvider()).hasCreate(ContentDao.composeIndexName(projectUuid(), initialBranchUuid(), versionCUuid,
-				DRAFT, null)).hasNoDropEvents();
+				DRAFT, null, null)).hasNoDropEvents();
 			assertThat(trackingSearchProvider()).hasCreate(ContentDao.composeIndexName(projectUuid(), initialBranchUuid(), versionCUuid,
-				PUBLISHED, null)).hasNoDropEvents();
+				PUBLISHED, null, null)).hasNoDropEvents();
 			assertThat(adminCall(() -> client().findJobs())).hasInfos(2);
 		}
 
@@ -268,9 +269,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 		// The node should have been removed from the old index and placed in the new one
 		assertThat(trackingSearchProvider()).hasDelete(ContentDao.composeIndexName(projectUuid(), initialBranchUuid(), versionBUuid,
-			DRAFT, null), response.getUuid() + "-en");
+			DRAFT, null, null), response.getUuid() + "-en");
 		assertThat(trackingSearchProvider()).hasStore(
-			ContentDao.composeIndexName(projectUuid(), initialBranchUuid(), versionCUuid, DRAFT, null),
+			ContentDao.composeIndexName(projectUuid(), initialBranchUuid(), versionCUuid, DRAFT, null, null),
 			response.getUuid() + "-en");
 
 	}
@@ -298,9 +299,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		}
 
 		assertThat(trackingSearchProvider()).hasCreate(ContentDao.composeIndexName(projectUuid(), initialBranchUuid(), versionUuid,
-			DRAFT, null));
+			DRAFT, null, null));
 		assertThat(trackingSearchProvider()).hasCreate(ContentDao.composeIndexName(projectUuid(), initialBranchUuid(), versionUuid,
-			PUBLISHED, null));
+			PUBLISHED, null, null));
 	}
 
 	@Test
@@ -324,7 +325,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			HibSchemaVersion version = schemaContainer("content").getLatestVersion();
 			SchemaVersionModel schema = version.getSchema();
 			schema.getField("slug").setElasticsearch(setting);
-			version.setJson(schema.toJson());
+			version.setJson(schema.toJson(false));
 			return schema;
 		});
 		SchemaUpdateRequest request = JsonUtil.readValue(schemaModel.toJson(), SchemaUpdateRequest.class);
@@ -352,7 +353,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			HibSchemaVersion version = schemaContainer("content").getLatestVersion();
 			SchemaVersionModel schema = version.getSchema();
 			schema.setElasticsearch(setting);
-			version.setJson(schema.toJson());
+			version.setJson(schema.toJson(false));
 			return schema;
 		});
 		SchemaUpdateRequest request = JsonUtil.readValue(schemaModel.toJson(), SchemaUpdateRequest.class);
@@ -522,10 +523,8 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		int createIndex = 2;
 		assertThat(trackingSearchProvider()).hasEvents(store, update, delete, dropIndex, createIndex);
 		for (JsonObject mapping : trackingSearchProvider().getCreateIndexEvents().values()) {
-			String basePath = "$.mapping.default";
-			if (complianceMode() == ComplianceMode.ES_7) {
-				basePath = "$.mapping";
-			}
+			String basePath = complianceMode() == ComplianceMode.ES_6 ? "$.mapping.default" : "$.mapping";
+
 			assertThat(mapping).has(basePath + ".properties.fields.properties.teaser.fields.raw.type", "keyword",
 				"The mapping should include a raw field for the teaser field");
 			assertThat(mapping).hasNot(basePath + ".properties.fields.properties.title.fields.raw",
@@ -596,6 +595,74 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		JobListResponse status = adminCall(() -> client().findJobs());
 		assertThat(status).listsAll(COMPLETED).hasInfos(2);
 		assertThat(status).containsJobs(jobAUuid);
+	}
+
+	@Test
+	public void testMigrateSkippingVersions() throws Throwable {
+		String oldFieldName = "oldname";
+		String fieldName = "changedfield";
+		HibSchema container;
+		HibSchemaVersion versionA;
+		HibSchemaVersion versionB;
+		HibNode node;
+		String schemaUuid;
+
+		try (Tx tx = tx()) {
+			NodeDao nodeDao = tx.nodeDao();
+			BranchDao branchDao = tx.branchDao();
+			container = createDummySchemaWithChanges(oldFieldName, fieldName, false);
+			versionB = container.getLatestVersion();
+			versionA = versionB.getPreviousVersion();
+			schemaUuid = container.getUuid();
+
+			EventQueueBatch batch = createBatch();
+			branchDao.assignSchemaVersion(project().getLatestBranch(), user(), versionA, batch);
+			Tx.get().commit();
+
+			// create a node and publish
+			node = nodeDao.create(folder("2015"), user(), versionA, project());
+			HibNodeFieldContainer englishContainer = tx.contentDao().createFieldContainer(node, english(), project().getLatestBranch(),
+				user());
+			englishContainer.createString(oldFieldName).setString("777");
+			englishContainer.createString("name").setString("a_name");
+			InternalActionContext ac = new InternalRoutingActionContextImpl(mockRoutingContext());
+			nodeDao.publish(node, ac, createBulkContext(), "en");
+			tx.success();
+		}
+
+		SchemaChangesListModel changes = new SchemaChangesListModel();
+		changes.getChanges().add(new SchemaChangeModel(SchemaChangeOperation.UPDATEFIELD, fieldName).setProperty(SchemaChangeModel.NAME_KEY, "i_should_be_number"));
+		adminCall(() -> client().applyChangesToSchema(schemaUuid, changes));
+
+		SchemaChangesListModel changes2 = new SchemaChangesListModel();
+		changes2.getChanges().add(new SchemaChangeModel(SchemaChangeOperation.CHANGEFIELDTYPE, "i_should_be_number").setProperty(SchemaChangeModel.TYPE_KEY, "number"));
+		adminCall(() -> client().applyChangesToSchema(schemaUuid, changes2));
+
+		SchemaChangesListModel changes3 = new SchemaChangesListModel();
+		changes3.getChanges().add(new SchemaChangeModel(SchemaChangeOperation.ADDFIELD, "newfield").setProperty(SchemaChangeModel.TYPE_KEY, "string"));
+		adminCall(() -> client().applyChangesToSchema(schemaUuid, changes3));
+
+		try (Tx tx = tx()) {
+			container = tx.schemaDao().findByUuid(schemaUuid);
+			versionB = container.getLatestVersion();
+			EventQueueBatch batch = createBatch();
+			tx.branchDao().assignSchemaVersion(project().getLatestBranch(), user(), versionB, batch);
+			tx.success();
+		}
+		doSchemaMigration(versionA, versionB);
+
+		try (Tx tx = tx()) {
+			ContentDao contentDao = tx.contentDao();
+			assertThat(tx.contentDao().getFieldContainer(node, "en")).as("Migrated skipping draft").isOf(versionB).hasVersion("2.0");
+			assertThat(contentDao.getFieldContainer(node, "en", project().getLatestBranch().getUuid(), ContainerType.PUBLISHED))
+				.as("Migrated skipping published")
+				.isOf(versionB).hasVersion("2.0");
+			assertThat(contentDao.getFieldContainer(node, "en", project().getLatestBranch().getUuid(), ContainerType.PUBLISHED).getNumber("i_should_be_number").getNumber().longValue())
+				.isEqualTo(777L);
+		}
+
+		JobListResponse status = adminCall(() -> client().findJobs());
+		assertThat(status).listsAll(COMPLETED);
 	}
 
 	@Test
@@ -947,9 +1014,11 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParametersImpl().setRecursive(true)));
 
 			// create version 1 of the microschema
-			container = microschemaDao.createPersisted(UUIDUtil.randomUUID());
+			container = microschemaDao.createPersisted(UUIDUtil.randomUUID(), m -> {
+				m.setCreated(user());
+				m.setName(UUID.randomUUID().toString());
+			});
 			container.generateBucketId();
-			container.setCreated(user());
 			versionA = createMicroschemaVersion(tx, container, v-> {
 				container.setLatestVersion(v);					
 				MicroschemaModelImpl microschemaA = new MicroschemaModelImpl();
@@ -1058,9 +1127,11 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			PersistingMicroschemaDao microschemaDao = (PersistingMicroschemaDao) tx.microschemaDao();
 			ContentDao contentDao = tx.contentDao();
 			// create version 1 of the microschema
-			container = microschemaDao.createPersisted(UUIDUtil.randomUUID());
+			container = microschemaDao.createPersisted(UUIDUtil.randomUUID(), m -> {
+				m.setCreated(user());
+				m.setName(UUID.randomUUID().toString());
+			});
 			container.generateBucketId();
-			container.setCreated(user());
 			versionA = createMicroschemaVersion(tx, container, v -> {
 				container.setLatestVersion(v);
 				MicroschemaModelImpl microschemaA = new MicroschemaModelImpl();
@@ -1195,9 +1266,11 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			PersistingMicroschemaDao microschemaDao = (PersistingMicroschemaDao) tx.microschemaDao();
 			ContentDao contentDao = tx.contentDao();
 			// create version 1 of the microschema
-			container = microschemaDao.createPersisted(UUIDUtil.randomUUID());
+			container = microschemaDao.createPersisted(UUIDUtil.randomUUID(), m -> {
+				m.setCreated(user());
+				m.setName(UUID.randomUUID().toString());
+			});
 			container.generateBucketId();
-			container.setCreated(user());
 			versionA = createMicroschemaVersion(tx, container, v -> {
 				container.setLatestVersion(v);
 				MicroschemaModelImpl microschemaA = new MicroschemaModelImpl();
@@ -1301,7 +1374,10 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		PersistingSchemaDao schemaDao = CommonTx.get().schemaDao();
 
 		// create version 1 of the schema
-		HibSchema container = schemaDao.createPersisted(UUIDUtil.randomUUID());
+		HibSchema container = schemaDao.createPersisted(UUIDUtil.randomUUID(), s -> {
+			s.setName(UUID.randomUUID().toString());
+			s.setCreated(user());
+		});
 		HibSchemaVersion versionA = createSchemaVersion(Tx.get(), container, v -> {
 			SchemaVersionModel schemaA = new SchemaModelImpl();
 			schemaA.setName("migratedSchema");
@@ -1318,8 +1394,6 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			container.setLatestVersion(v);
 		});
 		container.generateBucketId();
-		container.setName(UUID.randomUUID().toString());
-		container.setCreated(user());
 		schemaDao.mergeIntoPersisted(container);
 		
 		// create version 2 of the schema (with the field renamed)

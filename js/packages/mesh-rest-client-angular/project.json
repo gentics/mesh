@@ -1,0 +1,51 @@
+{
+  "name": "mesh-rest-client-angular",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "prefix": "gtx",
+  "sourceRoot": "packages/mesh-rest-client-angular/src",
+  "tags": [
+    "lib",
+    "angular"
+  ],
+  "implicitDependencies": [
+    "mesh-models",
+    "mesh-rest-client"
+  ],
+  "targets": {
+    "build": {
+      "executor": "@nx/angular:ng-packagr-lite",
+      "options": {
+        "tsConfig": "packages/mesh-rest-client-angular/tsconfig.lib.json",
+        "project": "packages/mesh-rest-client-angular/ng-package.json"
+      }
+    },
+    "lint": {
+      "executor": "@nx/linter:eslint",
+      "outputs": [
+        "{options.outputFile}"
+      ],
+      "options": {
+        "lintFilePatterns": [
+          "packages/mesh-rest-client-angular/**/*.ts",
+          "packages/mesh-rest-client-angular/**/*.html"
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": [
+        "{workspaceRoot}/coverage/{projectRoot}"
+      ],
+      "options": {
+        "jestConfig": "packages/mesh-rest-client/jest.config.ts"
+      }
+    },
+    "nx-release-publish": {
+      "executor": "@nx/js:release-publish",
+      "options": {
+        "packageRoot": "{workspaceRoot}/dist/mesh-rest-client-angular"
+      }
+    }
+  }
+}

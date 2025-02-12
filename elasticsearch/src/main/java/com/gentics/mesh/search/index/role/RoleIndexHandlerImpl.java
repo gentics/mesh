@@ -1,5 +1,6 @@
 package com.gentics.mesh.search.index.role;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
@@ -10,6 +11,8 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.role.HibRole;
@@ -33,16 +36,16 @@ import io.reactivex.Flowable;
 @Singleton
 public class RoleIndexHandlerImpl extends AbstractIndexHandler<HibRole>  implements RoleIndexHandler {
 
-	@Inject
-	RoleTransformer transformer;
+	protected final RoleTransformer transformer;
 
-	@Inject
-	RoleMappingProvider mappingProvider;
+	protected final RoleMappingProvider mappingProvider;
 
 	@Inject
 	public RoleIndexHandlerImpl(SearchProvider searchProvider, Database db, MeshHelper helper, MeshOptions options,
-		SyncMetersFactory syncMetricsFactory, BucketManager bucketManager) {
+		SyncMetersFactory syncMetricsFactory, BucketManager bucketManager, RoleTransformer transformer, RoleMappingProvider mappingProvider) {
 		super(searchProvider, db, helper, options, syncMetricsFactory, bucketManager);
+		this.transformer = transformer;
+		this.mappingProvider = mappingProvider;
 	}
 
 	@Override
@@ -73,10 +76,10 @@ public class RoleIndexHandlerImpl extends AbstractIndexHandler<HibRole>  impleme
 	}
 
 	@Override
-	public Map<String, IndexInfo> getIndices() {
+	public Map<String, Optional<IndexInfo>> getIndices() {
 		String indexName = HibRole.composeIndexName();
 		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "role");
-		return Collections.singletonMap(indexName, info);
+		return Collections.singletonMap(indexName, Optional.of(info));
 	}
 
 	@Override
@@ -97,6 +100,11 @@ public class RoleIndexHandlerImpl extends AbstractIndexHandler<HibRole>  impleme
 	@Override
 	public Function<String, HibRole> elementLoader() {
 		return (uuid) -> Tx.get().roleDao().findByUuid(uuid);
+	}
+
+	@Override
+	public Function<Collection<String>, Stream<Pair<String, HibRole>>> elementsLoader() {
+		return (uuids) -> Tx.get().roleDao().findByUuids(uuids);
 	}
 
 	@Override

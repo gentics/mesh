@@ -19,6 +19,9 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
@@ -28,24 +31,22 @@ import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.PageTransformer;
 import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
-import com.gentics.mesh.core.db.TxEventAction;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.db.TxAction;
 import com.gentics.mesh.core.db.TxAction0;
 import com.gentics.mesh.core.db.TxAction2;
+import com.gentics.mesh.core.db.TxEventAction;
 import com.gentics.mesh.core.db.TxEventAction0;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UUIDUtil;
 import com.gentics.mesh.util.ValidationUtil;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 
 /**
@@ -66,6 +67,8 @@ public class HandlerUtilities {
 
 	private final PageTransformer pageTransformer;
 
+	private final MeshOptions meshOptions;
+
 	@Inject
 	public HandlerUtilities(Database database, MeshOptions meshOptions, Provider<EventQueueBatch> queueProvider,
 		Provider<BulkActionContext> bulkProvider, WriteLock writeLock, PageTransformer pageTransformer) {
@@ -74,6 +77,7 @@ public class HandlerUtilities {
 		this.bulkProvider = bulkProvider;
 		this.writeLock = writeLock;
 		this.pageTransformer = pageTransformer;
+		this.meshOptions = meshOptions;
 	}
 
 	/**
@@ -118,6 +122,7 @@ public class HandlerUtilities {
 	public <T extends HibCoreElement<RM>, RM extends RestModel> void deleteElement(InternalActionContext ac, Function<Tx, Object> parentLoader,
 		DAOActions<T, RM> actions,
 		String uuid) {
+		ac.setHttpServerConfig(meshOptions.getHttpServerOptions());
 		try (WriteLock lock = writeLock.lock(ac)) {
 			syncTx(ac, tx -> {
 				Object parent = null;
@@ -183,6 +188,7 @@ public class HandlerUtilities {
 	 */
 	public <T extends HibCoreElement<RM>, RM extends RestModel> void createOrUpdateElement(InternalActionContext ac, Function<Tx, Object> parentLoader,
 		String uuid, DAOActions<T, RM> actions) {
+		ac.setHttpServerConfig(meshOptions.getHttpServerOptions());
 		try (WriteLock lock = writeLock.lock(ac)) {
 			AtomicBoolean created = new AtomicBoolean(false);
 			syncTx(ac, (batch, tx) -> {
@@ -247,7 +253,7 @@ public class HandlerUtilities {
 	 */
 	public <T extends HibCoreElement<RM>, RM extends RestModel> void readElement(InternalActionContext ac, Function<Tx, Object> parentLoader, String uuid,
 		DAOActions<T, RM> actions, InternalPermission perm) {
-
+		ac.setHttpServerConfig(meshOptions.getHttpServerOptions());
 		syncTx(ac, tx -> {
 			Object parent = null;
 			if (parentLoader != null) {
@@ -294,7 +300,7 @@ public class HandlerUtilities {
 		LoadAllAction<T> actions) {
 		PagingParameters pagingInfo = ac.getPagingParameters();
 		ValidationUtil.validate(pagingInfo);
-
+		ac.setHttpServerConfig(meshOptions.getHttpServerOptions());
 		syncTx(ac, tx -> {
 			Object parent = null;
 			if (parentLoader != null) {
@@ -324,6 +330,7 @@ public class HandlerUtilities {
 	 */
 	public <RM> void syncTx(InternalActionContext ac, TxAction<RM> handler, Consumer<RM> action) {
 		try {
+			ac.setHttpServerConfig(meshOptions.getHttpServerOptions());
 			RM model = database.tx(handler);
 			action.accept(model);
 		} catch (Throwable t) {
@@ -341,12 +348,13 @@ public class HandlerUtilities {
 	 */
 	public <RM> void syncTx(InternalActionContext ac, TxEventAction<RM> handler, Consumer<RM> action) {
 		try {
-			Tuple<EventQueueBatch, RM> tuple = database.tx((tx) -> {
+			ac.setHttpServerConfig(meshOptions.getHttpServerOptions());
+			RM rm = database.tx((tx) -> {
 				EventQueueBatch eventQueueBatch = queueProvider.get();
-				return Tuple.tuple(eventQueueBatch, handler.handle(eventQueueBatch, tx));
+				tx.<CommonTx>unwrap().data().setEventQueueBatch(eventQueueBatch);
+				return handler.handle(eventQueueBatch, tx);
 			});
-			tuple.v1().dispatch();
-			action.accept(tuple.v2());
+			action.accept(rm);
 		} catch (Throwable t) {
 			ac.fail(t);
 		}
@@ -360,12 +368,12 @@ public class HandlerUtilities {
 	 */
 	public void syncTx(InternalActionContext ac, TxEventAction0 handler, Runnable action) {
 		try {
-			EventQueueBatch batch = database.tx((tx) -> {
+			ac.setHttpServerConfig(meshOptions.getHttpServerOptions());
+			database.tx((tx) -> {
 				EventQueueBatch eventQueueBatch = queueProvider.get();
+				tx.<CommonTx>unwrap().data().setEventQueueBatch(eventQueueBatch);
 				handler.handle(eventQueueBatch, tx);
-				return eventQueueBatch;
 			});
-			batch.dispatch();
 			action.run();
 		} catch (Throwable t) {
 			ac.fail(t);
@@ -381,6 +389,7 @@ public class HandlerUtilities {
 	 */
 	public void syncTx(InternalActionContext ac, TxAction0 handler, Runnable action) {
 		try {
+			ac.setHttpServerConfig(meshOptions.getHttpServerOptions());
 			database.tx(handler);
 			action.run();
 		} catch (Throwable t) {
@@ -422,13 +431,13 @@ public class HandlerUtilities {
 	 * @return
 	 */
 	public <T> T eventAction(BiFunction<Tx, EventQueueBatch, T> function) {
-		Tuple<T, EventQueueBatch> tuple = database.tx(tx -> {
+		T t = database.tx(tx -> {
 			EventQueueBatch batch = queueProvider.get();
+			tx.<CommonTx>unwrap().data().setEventQueueBatch(batch);
 			T result = function.apply(tx, batch);
-			return Tuple.tuple(result, batch);
+			return result;
 		});
-		tuple.v2().dispatch();
-		return tuple.v1();
+		return t;
 	}
 
 	/**
@@ -437,8 +446,18 @@ public class HandlerUtilities {
 	 * @param context
 	 */
 	public void requiresAdminRole(RoutingContext context) {
-		InternalRoutingActionContextImpl rc = new InternalRoutingActionContextImpl(context);
-		if (database.tx(() -> !rc.getUser().isAdmin())) {
+		requiresAdminRole(context, meshOptions, database);
+	}
+
+	/**
+	 * Check whether the user is an admin. An error will be thrown otherwise.
+	 * 
+	 * @param context
+	 */
+	public static void requiresAdminRole(RoutingContext context, MeshOptions meshOptions, Database database) {
+		InternalRoutingActionContextImpl ac = new InternalRoutingActionContextImpl(context);
+		ac.setHttpServerConfig(meshOptions.getHttpServerOptions());
+		if (database.tx(() -> !ac.getUser().isAdmin())) {
 			throw error(FORBIDDEN, "error_admin_permission_required");
 		} else {
 			context.next();

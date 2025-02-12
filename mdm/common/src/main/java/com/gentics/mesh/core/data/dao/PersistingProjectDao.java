@@ -12,10 +12,14 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import javax.naming.InvalidNameException;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.gentics.mesh.cache.NameCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
@@ -39,10 +43,11 @@ import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.GenericParameters;
+import com.gentics.mesh.parameter.ProjectLoadParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A persisting extension to {@link ProjectDao}
@@ -50,7 +55,7 @@ import io.vertx.core.logging.LoggerFactory;
  * @author plyhun
  *
  */
-public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<HibProject> {
+public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<HibProject>, PersistingNamedEntityDao<HibProject> {
 	static final Logger log = LoggerFactory.getLogger(ProjectDao.class);
 
 	/**
@@ -92,6 +97,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 	@Override
 	default ProjectResponse transformToRestSync(HibProject project, InternalActionContext ac, int level, String... languageTags) {
 		GenericParameters generic = ac.getGenericParameters();
+		ProjectLoadParameters loadParams = ac.getProjectLoadParameters();
 		FieldsSet fields = generic.getFields();
 
 		ProjectResponse restProject = new ProjectResponse();
@@ -104,7 +110,9 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 
 		project.fillCommonRestFields(ac, fields, restProject);
 		Tx.get().roleDao().setRolePermissions(project, ac, restProject);
-
+		if (loadParams.getLangs()) {
+			restProject.setLanguages(project.getLanguages().stream().map(lang -> Tx.get().languageDao().transformToRestSync(lang, ac, level)).collect(Collectors.toList()));
+		}
 		return restProject;
 	}
 
@@ -119,8 +127,12 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		PersistingBranchDao branchDao = CommonTx.get().branchDao();
 		SchemaDao schemaDao = Tx.get().schemaDao();
 		
-		HibProject project = createPersisted(uuid);
-		project.setName(name);
+		HibProject project = createPersisted(uuid, p -> {
+			p.setName(name);
+		});		
+
+		// add the default language
+		project.addLanguage(Tx.get().languageDao().findByLanguageTag(Tx.get().data().options().getDefaultLanguage()));
 
 		// triggering node permission root creation
 		getNodePermissionRoot(project);
@@ -155,7 +167,9 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 
 		//root.addItem(project);
 
-		return project;
+		addBatchEvent(project.onCreated());
+		uncacheSync(project);
+		return mergeIntoPersisted(project);
 	}
 
 	@Override
@@ -166,11 +180,16 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		BranchDao branchDao = ctx.branchDao();
 		PersistingNodeDao nodeDao = ctx.nodeDao();
 		if (baseNode == null) {
-			baseNode = nodeDao.createPersisted(project, null);
-			baseNode.setSchemaContainer(schemaVersion.getSchemaContainer());
-			baseNode.setProject(project);
-			baseNode.setCreated(creator);
-			HibLanguage language = ctx.languageDao().findByLanguageTag(ctx.data().options().getDefaultLanguage());
+			baseNode = nodeDao.createPersisted(project, null, n -> {
+				n.setSchemaContainer(schemaVersion.getSchemaContainer());
+				n.setProject(project);
+				n.setCreated(creator);
+			});
+			HibLanguage language = ctx.languageDao().findByLanguageTag(project, ctx.data().options().getDefaultLanguage());
+			if (language == null) {
+				language = ctx.languageDao().findByLanguageTag(ctx.data().options().getDefaultLanguage());
+				project.addLanguage(language);
+			}
 			contentDao.createFieldContainer(baseNode, language.getLanguageTag(), branchDao.getLatestBranch(project), creator);
 			project.setBaseNode(baseNode);
 		}
@@ -231,13 +250,8 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		try {
 			CommonTx.get().data().mesh().routerStorageRegistry().addProject(project.getName());
 		} catch (InvalidNameException e) {
-			log.error("Failed to register project {" + project.getName() + "}");
 			throw error(BAD_REQUEST, "project_error_name_already_reserved", project.getName());
 		}
-
-		// Store the project and the branch in the index
-		batch.add(project.onCreated());
-		batch.add(initialBranch.onCreated());
 
 		// Add events for created basenode
 		batch.add(project.getBaseNode().onCreated());
@@ -361,5 +375,10 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		model.setProject(project.transformToReference());
 		model.setMicroschema(microschema.transformToReference());
 		return model;
+	}
+
+	@Override
+	default Optional<NameCache<HibProject>> maybeGetCache() {
+		return Tx.maybeGet().map(CommonTx.class::cast).map(tx -> tx.data().mesh().projectNameCache());
 	}
 }

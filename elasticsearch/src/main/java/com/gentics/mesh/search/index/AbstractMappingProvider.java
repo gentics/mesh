@@ -59,6 +59,7 @@ public abstract class AbstractMappingProvider implements MappingProvider {
 			mapping.put(DEFAULT_TYPE, typeMapping);
 			return mapping;
 		case ES_7:
+		case ES_8:
 			return typeMapping;
 		default:
 			throw new RuntimeException("Unknown mode {" + complianceMode + "}");

@@ -126,6 +126,15 @@ public class JsonUtilTest {
 	}
 
 	@Test
+	public void testMinify() {
+		UserResponse user = new UserResponse();
+		String minUser = JsonUtil.toJson(user, true);
+		assertEquals(-1, minUser.indexOf("\n"));
+		assertEquals(-1, minUser.indexOf("\t"));
+		assertEquals(-1, minUser.indexOf(" "));
+	}
+
+	@Test
 	public void testJsonFormatError() throws IOException {
 		try {
 			String json = "{broken}";
@@ -133,7 +142,7 @@ public class JsonUtilTest {
 			fail("json parsing should fail");
 		} catch (GenericRestException e) {
 			assertEquals("error_json_malformed", e.getI18nKey());
-			assertThat(e.getI18nParameters()).containsExactly("1", "3",
+			assertThat(e.getI18nParameters()).containsExactly("1", "2",
 				"Unexpected character ('b' (code 98)): was expecting double-quote to start field name");
 		}
 	}

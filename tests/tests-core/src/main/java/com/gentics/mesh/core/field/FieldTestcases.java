@@ -15,6 +15,13 @@ public interface FieldTestcases {
 	void testFieldUpdate() throws Exception;
 
 	/**
+	 * Create a field with multiple values, if applicable.
+	 * 
+	 * @throws Exception
+	 */
+	default void testBulkFieldUpdate() throws Exception {}
+
+	/**
 	 * Transform the node that contains the field.
 	 * 
 	 * Assert that the response object contains the expected data.

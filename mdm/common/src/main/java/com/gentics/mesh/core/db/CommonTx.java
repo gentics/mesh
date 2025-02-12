@@ -1,8 +1,10 @@
 package com.gentics.mesh.core.db;
 
+import com.gentics.mesh.core.data.dao.PersistingBinaryDao;
 import com.gentics.mesh.core.data.dao.PersistingBranchDao;
 import com.gentics.mesh.core.data.dao.PersistingContentDao;
 import com.gentics.mesh.core.data.dao.PersistingGroupDao;
+import com.gentics.mesh.core.data.dao.PersistingImageVariantDao;
 import com.gentics.mesh.core.data.dao.PersistingJobDao;
 import com.gentics.mesh.core.data.dao.PersistingLanguageDao;
 import com.gentics.mesh.core.data.dao.PersistingMicroschemaDao;
@@ -13,6 +15,7 @@ import com.gentics.mesh.core.data.dao.PersistingSchemaDao;
 import com.gentics.mesh.core.data.dao.PersistingTagDao;
 import com.gentics.mesh.core.data.dao.PersistingTagFamilyDao;
 import com.gentics.mesh.core.data.dao.PersistingUserDao;
+import com.gentics.mesh.event.EventQueueBatch;
 
 /**
  * A developer API of {@link Tx}.
@@ -35,6 +38,17 @@ public interface CommonTx extends Tx, TxEntityPersistenceManager {
 	default int txId() {
 		return hashCode();
 	}
+
+	@Override
+	default EventQueueBatch createBatch() {
+		return data().getOrCreateEventQueueBatch();
+	}
+
+	@Override
+	PersistingImageVariantDao imageVariantDao();
+
+	@Override
+	PersistingBinaryDao binaryDao();
 
 	@Override
 	PersistingNodeDao nodeDao();

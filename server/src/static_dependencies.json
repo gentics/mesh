@@ -1,0 +1,32 @@
+{
+  "components": [
+    {
+      "name": "Mesh",
+      "modules": [
+        {
+          "name": "External",
+          "dependencies": [
+            {
+              "name": "Java Runtime",
+              "description": "Version included in the container images.",
+              "current": "17",
+              "latest": "17"
+            },
+            {
+              "name": "Elasticsearch",
+              "description": "Version used by automated tests.",
+              "current": "7.4.0",
+              "latest": "8.12"
+            },
+            {
+              "name": "MariaDB",
+              "description": "Version used by automated tests.",
+              "current": "10.7",
+              "latest": "11.3"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

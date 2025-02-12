@@ -9,14 +9,12 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Iterator;
+import java.util.Arrays;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.FileImageOutputStream;
-import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -24,6 +22,10 @@ import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 
 import com.gentics.mesh.core.data.binary.HibBinary;
+import com.gentics.mesh.util.UUIDUtil;
+import com.sksamuel.scrimage.ImmutableImage;
+import com.sksamuel.scrimage.webp.WebpImageReader;
+
 
 public final class ImageTestUtil {
 	private ImageTestUtil() {
@@ -33,6 +35,7 @@ public final class ImageTestUtil {
 		HibBinary mock = mock(HibBinary.class);
 		when(mock.openBlockingStream()).thenReturn(() -> ImageTestUtil.class.getResourceAsStream(filePath));
 		when(mock.getSHA512Sum()).thenReturn(filePath);
+		when(mock.getUuid()).thenReturn(UUIDUtil.randomUUID());
 		return mock;
 	}
 
@@ -73,14 +76,58 @@ public final class ImageTestUtil {
 	}
 
 	public static BufferedImage readImage(String imageName, String fromResourcePath) throws IOException {
-		InputStream is = ImageTestUtil.class.getResourceAsStream(fromResourcePath + "/" + imageName);
-		ImageInputStream ins = ImageIO.createImageInputStream(is);
-		Iterator<ImageReader> it = ImageIO.getImageReaders(ins);
-		ImageReader reader = it.next();
-		reader.setInput(ins, true);
-		return reader.read(0);
+		BufferedImage image = null;
+		try (InputStream is = ImageTestUtil.class.getResourceAsStream(fromResourcePath + "/" + imageName)) {
+			image = ImageIO.read(is);
+		}
+
+		if (image == null) {
+			try (InputStream is = ImageTestUtil.class.getResourceAsStream(fromResourcePath + "/" + imageName)) {
+				ImmutableImage immutableImage = ImmutableImage.loader().withImageReaders(Arrays.asList(new WebpImageReader())).fromStream(is);
+				if (immutableImage != null) {
+					image = immutableImage.awt();
+				}
+			}
+		}
+
+		return image;
 	}
-	
+
+	/**
+	 * Read the given input stream into a buffered image
+	 * @param is input stream
+	 * @return buffered image
+	 * @throws IOException
+	 */
+	public static BufferedImage read(InputStream is) throws IOException {
+		BufferedImage bufferedImage = ImageIO.read(is);
+		if (bufferedImage == null) {
+			is.reset();
+			ImmutableImage immutableImage = ImmutableImage.loader().fromStream(is);
+			if (immutableImage != null) {
+				bufferedImage = immutableImage.awt();
+			}
+		}
+		return bufferedImage;
+	}
+
+	/**
+	 * Read the given file into a buffered image
+	 * @param imageFile image file
+	 * @return buffered image
+	 * @throws IOException
+	 */
+	public static BufferedImage read(File imageFile) throws IOException {
+		BufferedImage bufferedImage = ImageIO.read(imageFile);
+		if (bufferedImage == null) {
+			ImmutableImage immutableImage = ImmutableImage.loader().fromFile(imageFile);
+			if (immutableImage != null) {
+				bufferedImage = immutableImage.awt();
+			}
+		}
+		return bufferedImage;
+	}
+
 	public static void writePngImage(BufferedImage output, File target) throws IOException {
 		try(ImageOutputStream out = new FileImageOutputStream(target)) {
 			ImageWriter imageWriter = ImageIO.getImageWritersByFormatName("png").next();

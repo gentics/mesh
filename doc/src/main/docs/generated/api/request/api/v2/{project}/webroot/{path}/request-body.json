@@ -26,7 +26,8 @@
       "focalPoint" : {
         "x" : 0.1,
         "y" : 0.2
-      }
+      },
+      "checkStatus" : "POSTPONED"
     },
     "names" : [ "Jack", "Joe", "Mary", "Tom" ],
     "categoryIds" : [ 1, 42, 133, 7 ],
@@ -57,5 +58,7 @@
       }
     } ]
   },
-  "version" : "1.0"
+  "version" : "1.0",
+  "publish" : false,
+  "assignLanguage" : true
 }

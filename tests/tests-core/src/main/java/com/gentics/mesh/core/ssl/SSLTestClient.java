@@ -1,14 +1,15 @@
 package com.gentics.mesh.core.ssl;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 
 import com.gentics.mesh.rest.client.MeshRestClientConfig;
 import com.gentics.mesh.rest.client.impl.OkHttpClientUtil;
 import com.gentics.mesh.test.context.MeshTestHelper;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -39,21 +40,27 @@ public class SSLTestClient {
 		OkHttpClient client = client(clientCertName, trustAll);
 		Request request = new Request.Builder().url(String.format(FMT_TEST_URL, httpsPort)).build();
 
-		log.info("Performing request: " + request);
+		log.debug("Performing request: " + request);
 		Response response = client.newCall(request).execute();
-		log.info("Received response: " + response);
+		log.debug("Received response: " + response);
 	}
 
-	public static OkHttpClient client(ClientCert clientCertName, boolean trustAll) throws URISyntaxException {
+	public static OkHttpClient client(ClientCert clientCertName, boolean trustAll) throws URISyntaxException, IOException {
 		com.gentics.mesh.rest.client.MeshRestClientConfig.Builder builder = new MeshRestClientConfig.Builder();
 
 		builder.setHost("localhost");
 		if (clientCertName != null) {
-			builder.setClientKey(MeshTestHelper.getResourcePath(CERT_PATH + clientCertName.name().toLowerCase() + ".key"));
-			builder.setClientCert(MeshTestHelper.getResourcePath(CERT_PATH + clientCertName.name().toLowerCase() + ".pem"));
+			try (InputStream in = MeshTestHelper.class.getResourceAsStream(CERT_PATH + clientCertName.name().toLowerCase() + ".key")) {
+				builder.setClientKey(in);
+			}
+			try (InputStream in = MeshTestHelper.class.getResourceAsStream(CERT_PATH + clientCertName.name().toLowerCase() + ".pem")) {
+				builder.setClientCert(in);
+			}
 		}
 		if (!trustAll) {
-			builder.addTrustedCA(MeshTestHelper.getResourcePath(CERT_PATH + "server.pem"));
+			try (InputStream in = MeshTestHelper.class.getResourceAsStream(CERT_PATH + "server.pem")) {
+				builder.addTrustedCA(in);
+			}
 		}
 		return OkHttpClientUtil.createClient(builder.build());
 

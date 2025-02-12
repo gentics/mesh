@@ -1,0 +1,45 @@
+<settings>
+	<mirrors>
+		<mirror>
+			<id>gentics.nexus.maven-central</id>
+			<name>Gentics Nexus Maven Mirror</name>
+			<url>https://repo.gentics.com/repository/maven-central/</url>
+			<mirrorOf>central,maven2</mirrorOf>
+		</mirror>
+	</mirrors>
+	<servers>
+		<server>
+			<id>gentics.nexus.maven-central</id>
+			<username>${env.repoUsername}</username>
+			<password>${env.repoPassword}</password>
+		</server>
+		<server>
+			<id>gentics.nexus.releases-oss</id>
+			<username>${env.repoUsername}</username>
+			<password>${env.repoPassword}</password>
+		</server>
+		<server>
+			<id>gentics.nexus.releases</id>
+			<username>${env.repoUsername}</username>
+			<password>${env.repoPassword}</password>
+		</server>
+		<server>
+			<id>gentics.nexus.snapshots</id>
+			<username>${env.repoUsername}</username>
+			<password>${env.repoPassword}</password>
+		</server>
+	</servers>
+
+	<profiles>
+		<profile>
+			<id>gentics.gpg</id>
+			<properties>
+				<gpg.keyname>${env.gpgKeyName}</gpg.keyname>
+				<gpg.passphrase>${env.gpgKeyPass}</gpg.passphrase>
+			</properties>
+		</profile>
+	</profiles>
+	<activeProfiles>
+		<activeProfile>gentics.gpg</activeProfile>
+	</activeProfiles>
+</settings>

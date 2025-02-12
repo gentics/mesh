@@ -9,6 +9,7 @@ import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.DaoTransformable;
 import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.dao.JobDao;
+import com.gentics.mesh.core.data.dao.LanguageDao;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.ProjectDao;
@@ -95,4 +96,8 @@ public abstract class DaoTransformableModule {
 	@ElementTypeKey(ElementType.JOB)
 	abstract DaoTransformable<? extends HibCoreElement<? extends RestModel>, ? extends RestModel> job(JobDao dao);
 
+	@Binds
+	@IntoMap
+	@ElementTypeKey(ElementType.LANGUAGE)
+	abstract DaoTransformable<? extends HibCoreElement<? extends RestModel>, ? extends RestModel> language(LanguageDao dao);
 }

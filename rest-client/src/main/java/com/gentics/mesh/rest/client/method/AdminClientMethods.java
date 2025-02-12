@@ -1,14 +1,12 @@
 package com.gentics.mesh.rest.client.method;
 
-import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
-import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
-import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfig;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorMasterResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.parameter.BackupParameters;
+import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.monitoring.MonitoringRestClient;
@@ -35,22 +33,6 @@ public interface AdminClientMethods {
 	 */
 	@Deprecated
 	MeshRequest<ClusterStatusResponse> clusterStatus();
-
-	/**
-	 * Return the cluster configuration.
-	 * 
-	 * @return
-	 */
-	MeshRequest<ClusterConfigResponse> loadClusterConfig();
-
-	/**
-	 * Update the cluster configuration.
-	 * 
-	 * @param request
-	 *            New configuration
-	 * @return Updated configuration
-	 */
-	MeshRequest<ClusterConfigResponse> updateClusterConfig(ClusterConfigRequest request);
 
 	/**
 	 * Invoke a graph database backup.
@@ -93,16 +75,18 @@ public interface AdminClientMethods {
 	/**
 	 * Invoke a consistency check of the graph database.
 	 * 
+	 * @param parameters optional parameters
 	 * @return
 	 */
-	MeshRequest<ConsistencyCheckResponse> checkConsistency();
+	MeshRequest<ConsistencyCheckResponse> checkConsistency(ParameterProvider... parameters);
 
 	/**
 	 * Invoke a consistency check and repair of the graph database.
 	 * 
+	 * @param parameters optional parameters
 	 * @return
 	 */
-	MeshRequest<ConsistencyCheckResponse> repairConsistency();
+	MeshRequest<ConsistencyCheckResponse> repairConsistency(ParameterProvider... parameters);
 
 	/**
 	 * Gets zip file containing debug information.
@@ -121,19 +105,6 @@ public interface AdminClientMethods {
 	 * @return
 	 */
 	MeshRequest<GenericMessageResponse> setCoordinationMaster();
-
-	/**
-	 * Returns the currently active coordination configuration.
-	 * @return
-	 */
-	MeshRequest<CoordinatorConfig> loadCoordinationConfig();
-
-	/**
-	 * Update the coordinator configuration of this instance. Note that the updated config will not be persisted.
-	 * @param coordinatorConfig
-	 * @return
-	 */
-	MeshRequest<CoordinatorConfig> updateCoordinationConfig(CoordinatorConfig coordinatorConfig);
 
 	/**
 	 * Clear the caches (cluster wide)

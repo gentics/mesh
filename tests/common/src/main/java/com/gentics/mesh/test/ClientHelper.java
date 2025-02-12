@@ -11,6 +11,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.Locale;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import com.gentics.mesh.core.data.i18n.I18NUtil;
@@ -21,6 +23,7 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 import com.gentics.mesh.rest.client.impl.EmptyResponse;
 import com.gentics.mesh.test.context.ClientHandler;
+import com.gentics.mesh.test.util.TestUtils;
 import com.gentics.mesh.util.ETag;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -44,6 +47,39 @@ public final class ClientHelper {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	/**
+	 * Variant of {@link #call(ClientHandler)} which repeats calling the handler, as long as it fails with the given response status.
+	 * If the given timeout occurs while waiting for the handler to succeed, the last error will be returned
+	 * @param <T> type of the response
+	 * @param handler handler to be called
+	 * @param status anticipated error status (at least for a while)
+	 * @param timeout timeout of waiting for success
+	 * @param unit unit of the waiting timeout
+	 * @return return value (in case of success)
+	 */
+	public static <T> T call(ClientHandler<T> handler, HttpResponseStatus status, long timeout, TimeUnit unit) {
+		long start = System.currentTimeMillis();
+		long timeoutMs = unit.toMillis(timeout);
+		long waitMs = timeoutMs / 10L;
+		RuntimeException lastThrown;
+
+		do {
+			try {
+				return call(handler);
+			} catch (RuntimeException e) {
+				lastThrown = e;
+				if (!isFailureMessage(e, status)) {
+					throw e;
+				}
+
+				// sleep
+				TestUtils.sleep(waitMs);
+			}
+		} while (System.currentTimeMillis() - start < timeoutMs);
+
+		throw lastThrown;
 	}
 
 	/**
@@ -244,6 +280,20 @@ public final class ClientHelper {
 		} else {
 			e.printStackTrace();
 			fail("Unhandled exception");
+		}
+	}
+
+	public static boolean isFailureMessage(Throwable e, HttpResponseStatus status) {
+		if (e instanceof GenericRestException) {
+			GenericRestException exception = (GenericRestException) e;
+			return Objects.equals(status, exception.getStatus());
+		} else if (e instanceof MeshRestClientMessageException) {
+			MeshRestClientMessageException exception = (MeshRestClientMessageException) e;
+			return Objects.equals(status.code(), exception.getStatusCode());
+		} else if (e != null && e.getCause() != null && e.getCause() != e) {
+			return isFailureMessage(e.getCause(), status);
+		} else {
+			return false;
 		}
 	}
 }

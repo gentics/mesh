@@ -8,9 +8,12 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 
-import com.gentics.mesh.auth.MeshAuthChainImpl;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
@@ -19,8 +22,8 @@ import com.gentics.mesh.router.route.AbstractInternalEndpoint;
  */
 public abstract class RolePermissionHandlingEndpoint extends AbstractInternalEndpoint {
 
-	protected RolePermissionHandlingEndpoint(String basePath, MeshAuthChainImpl chain) {
-		super(basePath, chain);
+	protected RolePermissionHandlingEndpoint(String basePath, MeshAuthChain chain, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+		super(basePath, chain, localConfigApi, db, options);
 	}
 
 	/**
@@ -61,7 +64,7 @@ public abstract class RolePermissionHandlingEndpoint extends AbstractInternalEnd
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().getParam(uuidParameterName);
 			crudHandler.handleGrantPermissions(ac, uuid);
-		});
+		}, isOrderedBlockingHandlers());
 
 		InternalEndpointRoute revokePermissionsEndpoint = createRoute();
 		revokePermissionsEndpoint.path(path);
@@ -77,7 +80,7 @@ public abstract class RolePermissionHandlingEndpoint extends AbstractInternalEnd
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().getParam(uuidParameterName);
 			crudHandler.handleRevokePermissions(ac, uuid);
-		});
+		}, isOrderedBlockingHandlers());
 
 		InternalEndpointRoute revokePermissionsEndpointStandard = createRoute();
 		revokePermissionsEndpointStandard.path(path);
@@ -93,6 +96,6 @@ public abstract class RolePermissionHandlingEndpoint extends AbstractInternalEnd
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().getParam(uuidParameterName);
 			crudHandler.handleRevokePermissions(ac, uuid);
-		});
+		}, isOrderedBlockingHandlers());
 	}
 }

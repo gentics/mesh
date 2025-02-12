@@ -4,11 +4,12 @@ import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.POST;
 
+import java.util.Arrays;
 import java.util.function.Function;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.auth.MeshAuthChainImpl;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
@@ -16,11 +17,17 @@ import com.gentics.mesh.core.data.dao.TagFamilyDao;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.parameter.ParameterProvider;
+import com.gentics.mesh.parameter.impl.GenericParametersImpl;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.parameter.impl.SearchParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 import com.gentics.mesh.search.index.node.NodeSearchHandler;
@@ -41,7 +48,7 @@ public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implement
 	public final TagFamilySearchHandler tagFamilySearchHandler;
 
 	public ProjectSearchEndpointImpl() {
-		super("search", null, null);
+		super("search", null, null, null, null, null);
 		this.db = null;
 		this.nodeSearchHandler = null;
 		this.tagSearchHandler = null;
@@ -49,9 +56,9 @@ public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implement
 	}
 
 	@Inject
-	public ProjectSearchEndpointImpl(MeshAuthChainImpl chain, BootstrapInitializer boot, Database db, TagFamilySearchHandler tagFamilySearchHandler,
-		TagSearchHandler tagSearchHandler, NodeSearchHandler nodeSearchHandler) {
-		super("search", chain, boot);
+	public ProjectSearchEndpointImpl(MeshAuthChain chain, BootstrapInitializer boot, Database db, TagFamilySearchHandler tagFamilySearchHandler,
+		TagSearchHandler tagSearchHandler, NodeSearchHandler nodeSearchHandler, LocalConfigApi localConfigApi, MeshOptions options) {
+		super("search", chain, boot, localConfigApi, db, options);
 		this.db = db;
 		this.nodeSearchHandler = nodeSearchHandler;
 		this.tagSearchHandler = tagSearchHandler;
@@ -76,7 +83,7 @@ public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implement
 	private void addSearchEndpoints() {
 		registerSearchHandler("nodes", (uuid) -> {
 			return Tx.get().nodeDao().findByUuidGlobal(uuid);
-		}, NodeListResponse.class, nodeSearchHandler, nodeExamples.getNodeListResponse(), true);
+		}, NodeListResponse.class, nodeSearchHandler, nodeExamples.getNodeListResponse(), true, GenericParametersImpl.class);
 
 		registerSearchHandler("tags", uuid -> {
 			HibTag tag = Tx.get().tagDao().findByUuid(uuid);
@@ -105,8 +112,9 @@ public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implement
 	 * @param filterByLanguage
 	 *            Whether to append the language filter
 	 */
+	@SafeVarargs
 	private <T extends HibCoreElement<?>, TR extends RestModel, RL extends ListResponse<TR>> void registerSearchHandler(String typeName,
-		Function<String, T> elementLoader, Class<RL> classOfRL, SearchHandler<T, TR> searchHandler, RL exampleResponse, boolean filterByLanguage) {
+		Function<String, T> elementLoader, Class<RL> classOfRL, SearchHandler<T, TR> searchHandler, RL exampleResponse, boolean filterByLanguage, Class<? extends ParameterProvider>... extraParameters) {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/" + typeName);
 		endpoint.method(POST);
@@ -114,6 +122,9 @@ public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implement
 		endpoint.setMutating(false);
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
+		endpoint.addQueryParameters(PagingParametersImpl.class);
+		endpoint.addQueryParameters(SearchParametersImpl.class);
+		Arrays.stream(extraParameters).forEach(endpoint::addQueryParameters);
 		endpoint.exampleResponse(OK, exampleResponse, "Paged search result list.");
 		endpoint.exampleRequest(miscExamples.getSearchQueryExample());
 		endpoint.handler(rc -> {

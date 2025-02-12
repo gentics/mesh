@@ -10,8 +10,11 @@ import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.auth.MeshAuthChainImpl;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
@@ -25,12 +28,12 @@ public class WebRootEndpoint extends AbstractProjectEndpoint {
 	private WebRootHandler handler;
 
 	public WebRootEndpoint() {
-		super("webroot", null, null);
+		super("webroot", null, null, null, null, null);
 	}
 
 	@Inject
-	public WebRootEndpoint(MeshAuthChainImpl chain, BootstrapInitializer boot, WebRootHandler handler) {
-		super("webroot", chain, boot);
+	public WebRootEndpoint(MeshAuthChain chain, BootstrapInitializer boot, WebRootHandler handler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+		super("webroot", chain, boot, localConfigApi, db, options);
 		this.handler = handler;
 	}
 
@@ -80,7 +83,7 @@ public class WebRootEndpoint extends AbstractProjectEndpoint {
 		endpoint.description("Update or create a node for the given path.");
 		endpoint.blockingHandler(rc -> {
 			handler.handleUpdateCreatePath(rc, POST);
-		});
+		}, isOrderedBlockingHandlers());
 	}
 
 	private void addErrorHandlers() {

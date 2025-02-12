@@ -596,44 +596,11 @@ public enum MeshEvent {
 		null,
 		"Event which will cause all search indices to be refreshed, so that changes can be queried."),
 
-	// Backup & Restore Events
-
-	GRAPH_BACKUP_START("mesh.graph.backup.start",
-		null, "Emitted once the backup process starts."),
-
-	GRAPH_BACKUP_FINISHED("mesh.graph.backup.finished",
-		null,
-		"Emitted once the backup process finishes."),
-
-	GRAPH_RESTORE_START("mesh.graph.restore.start",
-		null,
-		"Emitted once the restore process starts."),
-
-	GRAPH_RESTORE_FINISHED("mesh.graph.restore.finished",
-		null,
-		"Emitted once the restore process finishes."),
-
-	GRAPH_EXPORT_START("mesh.graph.export.start",
-		null,
-		"Emitted once the graph database export process starts."),
-
-	GRAPH_EXPORT_FINISHED("mesh.graph.export.finished",
-		null,
-		"Emitted once the graph database export process finishes"),
-
-	GRAPH_IMPORT_START("mesh.graph.import.start",
-		null,
-		"Emitted once the graph database import process starts."),
-
-	GRAPH_IMPORT_FINISHED("mesh.graph.import.finished",
-		null,
-		"Emitted once the graph database import process finishes."),
-
-	REPAIR_START("mesh.graph.repair.start",
+	REPAIR_START("mesh.db.repair.start",
 		null,
 		"Emitted once the repair operation is started."),
 
-	REPAIR_FINISHED("mesh.graph.repair.finished",
+	REPAIR_FINISHED("mesh.db.repair.finished",
 		null,
 		"Emitted once the repair operation finishes."),
 
@@ -679,7 +646,11 @@ public enum MeshEvent {
 
 	S3BINARY_METADATA_EXTRACTED("mesh.s3binary.metadata.extracted",
 			S3BinaryEventModel.class,
-		"Emitted when the metadata of a S3 binary field is extracted.");
+		"Emitted when the metadata of a S3 binary field is extracted."),
+
+	BINARY_CHECK_REQUEST("mesh.binary.check.request",
+		null,
+		"Event will cause requests to the binary check service for binary fields which are marked as POSTPONED");
 
 	public final String address;
 	public final Class<? extends MeshEventModel> bodyModel;
@@ -718,7 +689,7 @@ public enum MeshEvent {
 
 	/**
 	 * Invoke the given runnable and wait for the event.
-	 * 
+	 *
 	 * @param mesh
 	 * @param event
 	 * @param runnable
@@ -730,7 +701,7 @@ public enum MeshEvent {
 
 	/**
 	 * Invoke the given runnable and wait for the event.
-	 * 
+	 *
 	 * @param vertx
 	 * @param event
 	 * @param runnable
@@ -756,7 +727,7 @@ public enum MeshEvent {
 
 	/**
 	 * Async await for the given event.
-	 * 
+	 *
 	 * @param mesh
 	 * @param event
 	 * @return
@@ -773,7 +744,7 @@ public enum MeshEvent {
 
 	/**
 	 * Trigger the job processing event via the mesh server API. This is only possible in embedded mode or within plugins.
-	 * 
+	 *
 	 * @param mesh
 	 */
 	public static void triggerJobWorker(Mesh mesh) {
@@ -782,9 +753,9 @@ public enum MeshEvent {
 
 	/**
 	 * Trigger the job processing event via the Vert.x API. This is only possible in embedded mode or within plugins.
-	 * 
+	 *
 	 * @param eb event bus
-	 * @param options current Mesh options 
+	 * @param options current Mesh options
 	 */
 	public static void triggerJobWorker(EventBus eb, MeshOptions options) {
 		eb.publish(JOB_WORKER_ADDRESS + options.getNodeName(), null);
@@ -792,7 +763,7 @@ public enum MeshEvent {
 
 	/**
 	 * Returns a list of all events which are publicly exposed via the eventbus websocket bridge.
-	 * 
+	 *
 	 * @return
 	 */
 	public static List<MeshEvent> publicEvents() {
@@ -815,7 +786,7 @@ public enum MeshEvent {
 
 	/**
 	 * Return the example model for the event.
-	 * 
+	 *
 	 * @return
 	 */
 	public MeshEventModel example() {

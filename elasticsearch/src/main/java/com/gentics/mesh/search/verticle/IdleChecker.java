@@ -5,8 +5,8 @@ import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import io.reactivex.Observable;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.util.concurrent.TimeUnit;
@@ -78,7 +78,10 @@ public class IdleChecker {
 	 * @return
 	 */
 	public int incrementAndGetTransformations() {
-		return transformations.incrementAndGet();
+		int current = transformations.incrementAndGet();
+		log.trace("Incremented transformations. Remaining requests: {}, remaining transformations: {}",
+				requests.get(), transformations.get());
+		return current;
 	}
 
 	/**
@@ -118,5 +121,17 @@ public class IdleChecker {
 	 */
 	public void resetTransformations() {
 		transformations.set(0);
+		log.trace("Reset transformations. Remaining requests: {}, remaining transformations: {}",
+				requests.get(), transformations.get());
+	}
+
+	/**
+	 * Resets the amount of pending transformations and requests
+	 */
+	public void reset() {
+		transformations.set(0);
+		requests.set(0);
+		log.trace("Reset transformations and requests. Remaining requests: {}, remaining transformations: {}",
+				requests.get(), transformations.get());
 	}
 }

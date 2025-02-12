@@ -23,7 +23,7 @@ import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.core.rest.event.search.SearchIndexSyncEventModel;
-import com.gentics.mesh.distributed.RequestDelegator;
+import com.gentics.mesh.distributed.MasterInfoProvider;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -46,8 +46,8 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.eventbus.MessageConsumer;
 
@@ -73,7 +73,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	private final IdleChecker idleChecker;
 	private final SyncEventHandler syncEventHandler;
 	private final ElasticSearchOptions options;
-	private final RequestDelegator delegator;
+	private final MasterInfoProvider masterInfoProvider;
 	private final String nodeName;
 	private final boolean clusteringEnabled;
 
@@ -90,13 +90,13 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 		IdleChecker idleChecker,
 		SyncEventHandler syncEventHandler,
 										MeshOptions options,
-										RequestDelegator delegator) {
+										MasterInfoProvider masterInfoProvider) {
 		this.mainEventhandler = mainEventhandler;
 		this.searchProvider = searchProvider;
 		this.idleChecker = idleChecker;
 		this.syncEventHandler = syncEventHandler;
 		this.options = options.getSearchOptions();
-		this.delegator = delegator;
+		this.masterInfoProvider = masterInfoProvider;
 		this.nodeName = options.getNodeName();
 		this.clusteringEnabled = options.getClusterOptions().isEnabled();
 	}
@@ -107,7 +107,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 		assemble();
 		idleChecker.idling()
 			.subscribe(ignore -> {
-				log.trace("All requests completed. Sending idle event");
+				log.debug("All requests completed. Sending idle event");
 				vertx.eventBus().publish(MeshEvent.SEARCH_IDLE.address, null);
 			});
 
@@ -125,7 +125,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 						.firstOrError()
 						.subscribe(ignore -> {
 							waitForSync.set(false);
-							log.trace(String.format("Received event message on address {%s}:\n%s", message.address(), message.body()));
+							log.trace("Received event message on address {}:\n{}", message.address(), message.body());
 							requests.onNext(new MessageEvent(event, MeshEventModel.fromMessage(message)));
 						});
 				}
@@ -141,7 +141,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 			// periodically send the event to check the indices
 			vertx.setPeriodic(options.getIndexCheckInterval(), id -> {
 				// only do this for the current master
-				if (!clusteringEnabled || delegator.isMaster()) {
+				if (!clusteringEnabled || masterInfoProvider.isMaster()) {
 					vertx.eventBus().publish(INDEX_CHECK_REQUEST.address, null);
 				}
 			});
@@ -203,8 +203,8 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	 */
 	public Completable refresh() {
 		return searchProvider.refreshIndex()
-			.doOnSubscribe(ignore -> log.trace("Refreshing all Elasticsearch indices..."))
-			.doOnComplete(() -> log.trace("Refresh complete."));
+			.doOnSubscribe(ignore -> log.info("Refreshing all Elasticsearch indices"))
+			.doOnComplete(() -> log.info("Refresh complete"));
 	}
 
 	/**
@@ -223,7 +223,11 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 				// To make sure the subscription stays alive
 				.onErrorResumeNext(Flowable.empty()), 1)
 			// To make sure the subscription stays alive
-			.doOnError(err -> log.info("Error at end of ES process chain", err))
+			.doOnError(err -> {
+				log.info("Error at end of ES process chain", err);
+				idleChecker.reset();
+				startSync();
+			})
 			.retry()
 			.subscribe();
 	}
@@ -269,7 +273,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 				log.info("Elasticsearch is available again. Starting sync.");
 				elasticsearchAvailable.onNext(available);
 			});
-		vertx.eventBus().publish(INDEX_SYNC_REQUEST.address, new JsonObject(JsonUtil.toJson(new SearchIndexSyncEventModel())));
+		vertx.eventBus().publish(INDEX_SYNC_REQUEST.address, new JsonObject(JsonUtil.toJson(new SearchIndexSyncEventModel(), true)));
 	}
 
 	/**
@@ -289,13 +293,10 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 			? Flowable.empty()
 			: request.execute(searchProvider)
 				.doOnSubscribe(ignore -> {
-					log.trace("Sending request to Elasticsearch: {}", request);
+					log.trace("Sending request to Elasticsearch:\n{}", request);
 				})
-				.doOnComplete(() -> log.trace("Request completed: {}", request))
-				.doOnError(err -> logElasticSearchError(err, () -> {
-					log.error("Error for request: {}", request);
-					log.error("Error after sending request to Elasticsearch", err);
-				}))
+				.doOnComplete(() -> log.trace("Request completed"))
+				.doOnError(err -> logElasticSearchError(err, () -> log.error("Error for request:\n" + request.toString(), err)))
 				.andThen(Flowable.just(request))
 				.onErrorResumeNext(ignoreDeleteOnMissingIndexError(request))
 				.onErrorResumeNext(this::syncIndices)
@@ -304,7 +305,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 					Duration.ofMillis(options.getRetryInterval()),
 					options.getRetryLimit()))
 				.doFinally(() -> {
-					log.trace("Request-{}", request);
+					log.debug("Request: {}", request);
 					idleChecker.addAndGetRequests(-request.requestCount());
 				});
 	}
@@ -326,7 +327,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 					// If there are other errors left, throw
 					.map(ignore -> Flowable.<SearchRequest>error(error))
 					.orElseGet(() -> {
-						log.info("Tried to delete document on missing index. This error will be ignored.");
+						log.debug("Tried to delete document on missing index. This error will be ignored.");
 						return Flowable.just(request);
 					});
 			} else {
@@ -348,10 +349,10 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 			if (indexNotFound && !stopped.get()) {
 				return syncEventHandler.generateSyncRequests(null)
 					.doOnNext(request -> {
-						log.trace("SyncRequest+{}", request);
+						log.trace("SyncRequest:\n{}", request);
 						idleChecker.addAndGetRequests(request.requestCount());
 					})
-					.doOnSubscribe(ignore -> log.trace("Index not found. Resyncing."))
+					.doOnSubscribe(ignore -> log.debug("Index not found. Resyncing."))
 					.concatMap(this::sendRequest, 1);
 			}
 		}
@@ -367,7 +368,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	private io.reactivex.functions.Function<Throwable, Flowable<SearchRequest>> ignoreElasticsearchErrors(SearchRequest request) {
 		return error -> {
 			if (error instanceof ElasticsearchResponseErrorStreamable) {
-				log.error("Not retrying because it is an error inside elasticsearch.");
+				log.error("Not retrying because it is an error inside elasticsearch.", error);
 				return Flowable.just(request);
 			} else {
 				return Flowable.error(error);
@@ -388,16 +389,13 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 		try {
 			return this.mainEventhandler.handle(messageEvent)
 				.doOnNext(request -> {
-					if (log.isTraceEnabled()) {
-						log.trace("Request+{}", request);
-					}
+					log.trace("Request:\n{}", request);
 					idleChecker.addAndGetRequests(request.requestCount());
 				})
 				.retryWhen(retryWithDelay(
 					Duration.ofMillis(options.getRetryInterval()),
 					options.getRetryLimit()))
-				.doOnComplete(
-					() -> log.trace("Done transforming event {}. Transformations pending: {}", messageEvent.event, idleChecker.getTransformations()))
+				.doOnComplete(() -> log.trace("Done transforming event {}. Transformations pending: {}", messageEvent.event, idleChecker.getTransformations()))
 				.doOnTerminate(idleChecker::decrementAndGetTransformations);
 		} catch (Exception e) {
 			// For safety to keep the verticle always running

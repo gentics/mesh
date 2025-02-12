@@ -1,8 +1,7 @@
 package com.gentics.mesh.distributed;
 
 import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.util.TokenUtil.randomToken;
-import static com.gentics.mesh.util.UUIDUtil.randomUUID;
+import static com.gentics.mesh.test.TestSize.FULL;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,14 +10,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.RuleChain;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.context.impl.LoggingConfigurator;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
@@ -27,79 +24,37 @@ import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.category.ClusterTests;
-import com.gentics.mesh.test.docker.MeshContainer;
+import com.gentics.mesh.test.context.MeshTestContext.MeshTestInstance;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 @Category(ClusterTests.class)
-public class ClusterConcurrencyTest extends AbstractClusterTest {
+@MeshTestSetting(testSize = FULL, startServer = true, clusterMode = true, clusterName = "ClusterConcurrencyTest", clusterInstances = 3)
+public class ClusterConcurrencyTest extends AbstractMeshClusteringTest {
 
 	private static final Logger log = LoggerFactory.getLogger(ClusterConcurrencyTest.class);
 
 	private static final int TEST_DATA_SIZE = 100;
 
-	private static String clusterPostFix = randomUUID();
+	public static MeshTestInstance serverA;
 
-	public static MeshContainer serverA = createDefaultMeshContainer()
-		.withClusterName("dockerCluster" + clusterPostFix)
-		.withNodeName("nodeA")
-		.withDataPathPostfix(randomToken())
-		.withInitCluster()
-		.waitForStartup()
-		.withFilesystem()
-		.withClearFolders();
+	public static MeshTestInstance serverB;
 
-	public static MeshContainer serverB = createDefaultMeshContainer()
-		.withClusterName("dockerCluster" + clusterPostFix)
-		.withNodeName("nodeB")
-		.withDataPathPostfix(randomToken())
-		.withFilesystem()
-		.withClearFolders();
-
-	public static MeshContainer serverC = createDefaultMeshContainer()
-		.withClusterName("dockerCluster" + clusterPostFix)
-		.withNodeName("nodeC")
-		.withDataPathPostfix(randomToken())
-		.withFilesystem()
-		.withClearFolders();
-	
-//	public static MeshContainer serverD = new MeshContainer(vertx)
-//		.withClusterName("dockerCluster" + clusterPostFix)
-//		.withNodeName("nodeD")
-//		.withDataPathPostfix(randomToken())
-//		.withClearFolders();
-	
-//	public static MeshContainer serverE = new MeshContainer(vertx)
-//		.withClusterName("dockerCluster" + clusterPostFix)
-//		.withNodeName("nodeE")
-//		.withDataPathPostfix(randomToken())
-//		.withClearFolders();
-
+	public static MeshTestInstance serverC;
 
 	public static MeshRestClient clientA;
 	public static MeshRestClient clientB;
 
-	@ClassRule
-	public static RuleChain chain = RuleChain.outerRule(serverC).around(serverB).around(serverA);
-
-	@BeforeClass
-	public static void waitForNodes() throws InterruptedException {
-		LoggingConfigurator.init();
-		serverB.awaitStartup(200);
-		clientA = serverA.client();
-		clientB = serverB.client();
-	}
-
 	@Before
 	public void setupLogin() {
-		clientA.setLogin("admin", "admin");
-		clientA.login().blockingGet();
-		clientB.setLogin("admin", "admin");
-		clientB.login().blockingGet();
+		serverA = getInstance(0);
+		serverB = getInstance(1);
+		serverC = getInstance(2);
+		clientA = serverA.getHttpClient();
+		clientB = serverB.getHttpClient();
 	}
 
 	@Test

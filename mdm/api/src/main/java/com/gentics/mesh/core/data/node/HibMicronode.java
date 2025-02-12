@@ -44,7 +44,16 @@ public interface HibMicronode extends HibFieldContainer, HibBaseElement, HibTran
 	 *
 	 * @return container
 	 */
-	Result<? extends HibNodeFieldContainer> getContainers();
+	default Result<? extends HibNodeFieldContainer> getContainers() {
+		return getContainers(true, true);
+	}
+
+	/**
+	 * Get the container of this micronode which can either be referenced via a micronode list or a directly to the container.
+	 *
+	 * @return container
+	 */
+	Result<? extends HibNodeFieldContainer> getContainers(boolean lookupInFields, boolean lookupInLists);
 
 	/**
 	 * Compare the micronode and return a list of changes which identify the changes.
@@ -160,8 +169,8 @@ public interface HibMicronode extends HibFieldContainer, HibBaseElement, HibTran
 	}
 
 	@Override
-	default Stream<? extends HibNodeFieldContainer> getContents() {
-		return getContainers().stream();
+	default Stream<? extends HibNodeFieldContainer> getContents(boolean lookupInFields, boolean lookupInLists) {
+		return getContainers(lookupInFields, lookupInLists).stream();
 	}
 
 	@Override

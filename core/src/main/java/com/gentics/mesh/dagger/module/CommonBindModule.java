@@ -9,6 +9,8 @@ import com.gentics.mesh.cache.CacheCollection;
 import com.gentics.mesh.cache.CacheCollectionImpl;
 import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.cache.PermissionCacheImpl;
+import com.gentics.mesh.cache.TotalsCache;
+import com.gentics.mesh.cache.TotalsCacheImpl;
 import com.gentics.mesh.cache.WebrootPathCache;
 import com.gentics.mesh.cache.WebrootPathCacheImpl;
 import com.gentics.mesh.context.BulkActionContext;
@@ -17,6 +19,7 @@ import com.gentics.mesh.core.action.BranchDAOActions;
 import com.gentics.mesh.core.action.DAOActionsCollection;
 import com.gentics.mesh.core.action.GroupDAOActions;
 import com.gentics.mesh.core.action.JobDAOActions;
+import com.gentics.mesh.core.action.LanguageDAOActions;
 import com.gentics.mesh.core.action.MicroschemaDAOActions;
 import com.gentics.mesh.core.action.NodeDAOActions;
 import com.gentics.mesh.core.action.ProjectDAOActions;
@@ -29,6 +32,7 @@ import com.gentics.mesh.core.actions.impl.BranchDAOActionsImpl;
 import com.gentics.mesh.core.actions.impl.DAOActionsCollectionImpl;
 import com.gentics.mesh.core.actions.impl.GroupDAOActionsImpl;
 import com.gentics.mesh.core.actions.impl.JobDAOActionsImpl;
+import com.gentics.mesh.core.actions.impl.LanguageDAOActionsImpl;
 import com.gentics.mesh.core.actions.impl.MicroschemaDAOActionsImpl;
 import com.gentics.mesh.core.actions.impl.NodeDAOActionsImpl;
 import com.gentics.mesh.core.actions.impl.ProjectDAOActionsImpl;
@@ -41,6 +45,38 @@ import com.gentics.mesh.core.binary.BinaryProcessorRegistry;
 import com.gentics.mesh.core.binary.BinaryProcessorRegistryImpl;
 import com.gentics.mesh.core.context.ContextDataRegistry;
 import com.gentics.mesh.core.context.impl.ContextDataRegistryImpl;
+import com.gentics.mesh.core.data.dao.BinaryDao;
+import com.gentics.mesh.core.data.dao.BranchDao;
+import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.data.dao.GroupDao;
+import com.gentics.mesh.core.data.dao.ImageVariantDao;
+import com.gentics.mesh.core.data.dao.JobDao;
+import com.gentics.mesh.core.data.dao.LanguageDao;
+import com.gentics.mesh.core.data.dao.MicroschemaDao;
+import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.PersistingBinaryDao;
+import com.gentics.mesh.core.data.dao.PersistingBranchDao;
+import com.gentics.mesh.core.data.dao.PersistingContentDao;
+import com.gentics.mesh.core.data.dao.PersistingGroupDao;
+import com.gentics.mesh.core.data.dao.PersistingImageVariantDao;
+import com.gentics.mesh.core.data.dao.PersistingJobDao;
+import com.gentics.mesh.core.data.dao.PersistingLanguageDao;
+import com.gentics.mesh.core.data.dao.PersistingMicroschemaDao;
+import com.gentics.mesh.core.data.dao.PersistingNodeDao;
+import com.gentics.mesh.core.data.dao.PersistingProjectDao;
+import com.gentics.mesh.core.data.dao.PersistingRoleDao;
+import com.gentics.mesh.core.data.dao.PersistingS3BinaryDao;
+import com.gentics.mesh.core.data.dao.PersistingSchemaDao;
+import com.gentics.mesh.core.data.dao.PersistingTagDao;
+import com.gentics.mesh.core.data.dao.PersistingTagFamilyDao;
+import com.gentics.mesh.core.data.dao.PersistingUserDao;
+import com.gentics.mesh.core.data.dao.ProjectDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
+import com.gentics.mesh.core.data.dao.S3BinaryDao;
+import com.gentics.mesh.core.data.dao.SchemaDao;
+import com.gentics.mesh.core.data.dao.TagDao;
+import com.gentics.mesh.core.data.dao.TagFamilyDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparatorImpl;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
@@ -53,6 +89,8 @@ import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 import com.gentics.mesh.core.data.storage.s3.S3BinaryStorageImpl;
 import com.gentics.mesh.core.db.CommonTxData;
 import com.gentics.mesh.core.db.TxData;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApiImpl;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandlerImpl;
 import com.gentics.mesh.core.endpoint.node.S3BinaryUploadHandler;
@@ -61,15 +99,9 @@ import com.gentics.mesh.core.endpoint.role.RoleCrudHandler;
 import com.gentics.mesh.core.endpoint.role.RoleCrudHandlerImpl;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.link.WebRootLinkReplacerImpl;
-import com.gentics.mesh.core.migration.BranchMigration;
-import com.gentics.mesh.core.migration.impl.BranchMigrationImpl;
-import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandler;
-import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandlerImpl;
 import com.gentics.mesh.core.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticleImpl;
-import com.gentics.mesh.distributed.TopologyChangeReadonlyHandler;
-import com.gentics.mesh.distributed.TopologyChangeReadonlyHandlerImpl;
 import com.gentics.mesh.event.EventBusLivenessManagerImpl;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.event.impl.EventQueueBatchImpl;
@@ -127,6 +159,9 @@ import dagger.Module;
 public abstract class CommonBindModule {
 
 	@Binds
+	abstract LocalConfigApi localConfigApi(LocalConfigApiImpl e);
+
+	@Binds
 	abstract TxData txData(CommonTxData e);
 
 	@Binds
@@ -149,6 +184,9 @@ public abstract class CommonBindModule {
 
 	@Binds
 	abstract PermissionCache bindPermissionCache(PermissionCacheImpl e);
+
+	@Binds
+	abstract TotalsCache totalsCache(TotalsCacheImpl e);
 
 	@Binds
 	abstract PluginEnvironment bindPluginEnv(PluginEnvironmentImpl e);
@@ -241,6 +279,9 @@ public abstract class CommonBindModule {
 	abstract JobWorkerVerticle jobWorkerVerticle(JobWorkerVerticleImpl e);
 
 	@Binds
+	abstract LanguageDAOActions languageDAOActions(LanguageDAOActionsImpl e);
+
+	@Binds
 	abstract UserDAOActions userDAOActions(UserDAOActionsImpl e);
 
 	@Binds
@@ -283,9 +324,6 @@ public abstract class CommonBindModule {
 	abstract SecurityUtils bindSecurityUtils(SecurityUtilsImpl e);
 
 	@Binds
-	abstract TopologyChangeReadonlyHandler bindTopologyChangeReadonlyHandler(TopologyChangeReadonlyHandlerImpl e);
-
-	@Binds
 	abstract LivenessManager bindLivenessManager(LivenessManagerImpl e);
 
 	@Binds
@@ -293,4 +331,52 @@ public abstract class CommonBindModule {
 
 	@Binds
 	abstract SearchMappingsCache searchMappingsCache(SearchMappingsCacheImpl e);
+
+	@Binds
+	abstract ImageVariantDao bindImageVariantDao(PersistingImageVariantDao e);
+
+	@Binds
+	abstract UserDao bindUserDao(PersistingUserDao e);
+
+	@Binds
+	abstract RoleDao bindRoleDao(PersistingRoleDao e);
+
+	@Binds
+	abstract GroupDao bindGroupDao(PersistingGroupDao e);
+
+	@Binds
+	abstract ProjectDao bindProjectDao(PersistingProjectDao e);
+
+	@Binds
+	abstract NodeDao bindNodeDao(PersistingNodeDao e);
+
+	@Binds
+	abstract ContentDao bindContentDao(PersistingContentDao e);
+
+	@Binds
+	abstract JobDao bindJobDao(PersistingJobDao e);
+
+	@Binds
+	abstract TagDao bindTagDao(PersistingTagDao e);
+
+	@Binds
+	abstract TagFamilyDao bindTagFamilyDao(PersistingTagFamilyDao e);
+
+	@Binds
+	abstract BinaryDao bindBinaryDao(PersistingBinaryDao e);
+
+	@Binds
+	abstract S3BinaryDao s3BinaryDao(PersistingS3BinaryDao e);
+
+	@Binds
+	abstract BranchDao bindBranchDao(PersistingBranchDao e);
+
+	@Binds
+	abstract SchemaDao bindSchemaDao(PersistingSchemaDao e);
+
+	@Binds
+	abstract MicroschemaDao bindMicroschemaDao(PersistingMicroschemaDao e);
+
+	@Binds
+	abstract LanguageDao bindLanguageDao(PersistingLanguageDao e);
 }

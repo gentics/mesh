@@ -1,7 +1,7 @@
 package com.gentics.mesh.search;
 
 import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.MeshOptionChanger.EXCLUDE_BINARY_SEARCH;
+import static com.gentics.mesh.test.MeshCoreOptionChanger.EXCLUDE_BINARY_SEARCH;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.getRangeQuery;
@@ -84,7 +84,7 @@ public class NodeBinaryDisabledSearchTest extends AbstractNodeSearchEndpointTest
 			HibNode nodeA = content("concorde");
 			String schemaVersionUuid = nodeA.getSchemaContainer().getLatestVersion().getUuid();
 			String indexName = ContentDao.composeIndexName(projectUuid(), initialBranchUuid(),
-				schemaVersionUuid, ContainerType.DRAFT, nodeA.getSchemaContainer().getLatestVersion().getMicroschemaVersionHash(initialBranch()));
+				schemaVersionUuid, ContainerType.DRAFT, null, nodeA.getSchemaContainer().getLatestVersion().getMicroschemaVersionHash(initialBranch()));
 			String id = ContentDao.composeDocumentId(nodeA.getUuid(), "en");
 			JsonObject doc = getProvider().getDocument(indexName, id).blockingGet();
 			assertFalse("The information should not have been added to the search document.",
@@ -131,7 +131,7 @@ public class NodeBinaryDisabledSearchTest extends AbstractNodeSearchEndpointTest
 		try (Tx tx = tx()) {
 			HibNode nodeA = content("concorde");
 			String indexName = ContentDao.composeIndexName(projectUuid(), initialBranchUuid(),
-				nodeA.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT, null);
+				nodeA.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT, null, null);
 			String id = ContentDao.composeDocumentId(nodeUuid, "en");
 			JsonObject doc = getProvider().getDocument(indexName, id).blockingGet();
 			assertFalse("The binary content should not be part of the document",

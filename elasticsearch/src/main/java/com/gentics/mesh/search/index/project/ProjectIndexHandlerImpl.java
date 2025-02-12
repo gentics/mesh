@@ -1,5 +1,6 @@
 package com.gentics.mesh.search.index.project;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
@@ -11,6 +12,8 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -33,16 +36,16 @@ import io.reactivex.Flowable;
 @Singleton
 public class ProjectIndexHandlerImpl extends AbstractIndexHandler<HibProject> implements ProjectIndexHandler {
 
-	@Inject
-	ProjectTransformer transformer;
+	protected final ProjectTransformer transformer;
 
-	@Inject
-	ProjectMappingProvider mappingProvider;
+	protected final ProjectMappingProvider mappingProvider;
 
 	@Inject
 	public ProjectIndexHandlerImpl(SearchProvider searchProvider, Database db, MeshHelper helper, MeshOptions options,
-		SyncMetersFactory syncMetricsFactory, BucketManager bucketManager) {
+		SyncMetersFactory syncMetricsFactory, BucketManager bucketManager, ProjectTransformer transformer, ProjectMappingProvider mappingProvider) {
 		super(searchProvider, db, helper, options, syncMetricsFactory, bucketManager);
+		this.transformer = transformer;
+		this.mappingProvider = mappingProvider;
 	}
 
 	@Override
@@ -96,15 +99,20 @@ public class ProjectIndexHandlerImpl extends AbstractIndexHandler<HibProject> im
 	}
 
 	@Override
+	public Function<Collection<String>, Stream<Pair<String, HibProject>>> elementsLoader() {
+		return (uuids) -> Tx.get().projectDao().findByUuids(uuids);
+	}
+
+	@Override
 	public Stream<? extends HibProject> loadAllElements() {
 		return Tx.get().projectDao().findAll().stream();
 	}
 
 	@Override
-	public Map<String, IndexInfo> getIndices() {
+	public Map<String, Optional<IndexInfo>> getIndices() {
 		String indexName = HibProject.composeIndexName();
 		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "project");
-		return Collections.singletonMap(indexName, info);
+		return Collections.singletonMap(indexName, Optional.of(info));
 	}
 
 }

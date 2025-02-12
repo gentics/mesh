@@ -18,6 +18,9 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -51,9 +54,8 @@ import com.gentics.mesh.util.NodeUtil;
 
 import io.reactivex.Observable;
 import io.reactivex.Single;
+import io.vertx.core.Future;
 import io.vertx.core.http.impl.MimeMapping;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.reactivex.core.Vertx;
 
@@ -169,6 +171,12 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 										public boolean cancel() {
 											return false;
 										}
+
+										@Override
+										public Future<Void> delete() {
+											return vertx.getDelegate().fileSystem().delete(tmpFile.getAbsolutePath());
+										}
+
 									};
 									ctx.setFileUpload(fileUpload);
 									ctx.setS3ObjectKey(nodeUuid + "/" + fieldName);
@@ -181,7 +189,6 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 								.flatMap(postProcess -> storeUploadInGraph(ac, postProcess, ctx, nodeUuid, languageTag,
 										nodeVersion, fieldName));
 					} else {
-						log.error("Could not read input image");
 						return Single.error(error(INTERNAL_SERVER_ERROR, "image_error_reading_failed"));
 					}
 				}).onErrorResumeNext(e -> Single.error(e)).subscribe(model -> ac.send(model, OK), ac::fail);
@@ -206,7 +213,7 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 			if (s3binary == null) {
 				s3binary = s3binaries.create(nodeUuid, s3ObjectKey, fileName).runInExistingTx(tx);
 			}
-			HibLanguage language = tx.languageDao().findByLanguageTag(languageTag);
+			HibLanguage language = tx.languageDao().findByLanguageTag(project, languageTag);
 			if (language == null) {
 				throw error(NOT_FOUND, "error_language_not_found", languageTag);
 			}
@@ -326,13 +333,11 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 		String contentType = upload.contentType();
 		List<S3BinaryDataProcessor> processors = s3binaryProcessorRegistry.getProcessors(contentType);
 
-		return Observable.fromIterable(processors).flatMapMaybe(p -> p.process(ctx).doOnSuccess(s -> {
-			log.info("Processing of upload {" + upload.fileName() + "/" + upload.uploadedFileName() + "} in handler {"
-					+ p.getClass() + "} completed.");
-		}).doOnComplete(() -> {
-			log.warn("Processing of upload {" + upload.fileName() + "/" + upload.uploadedFileName() + "} in handler {"
-					+ p.getClass() + "} completed.");
-		}));
+		return Observable.fromIterable(processors)
+				.flatMapMaybe(p -> p.process(ctx)
+						.doOnSuccess(s -> log.info("Processing of upload {" + upload.fileName() + "/" + upload.uploadedFileName() + "} in handler {" + p.getClass() + "} succeeded."))
+						.doOnComplete(() -> log.trace("Processing of upload {}/{} in handler {} completed.", upload.fileName(), upload.uploadedFileName(), p.getClass())
+					)
+			);
 	}
-
 }

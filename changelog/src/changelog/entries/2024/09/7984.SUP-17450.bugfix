@@ -1,0 +1,1 @@
+Core: A crash, caused by duplicated nodes in a GraphQL resulting set, has been fixed.

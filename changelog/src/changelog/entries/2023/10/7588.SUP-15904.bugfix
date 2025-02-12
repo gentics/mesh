@@ -1,0 +1,1 @@
+GraphQL: Parent loading has been speeded up by using a batch data loading.

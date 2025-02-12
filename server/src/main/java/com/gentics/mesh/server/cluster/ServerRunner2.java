@@ -2,11 +2,8 @@ package com.gentics.mesh.server.cluster;
 
 import java.io.File;
 
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.etc.config.HibernateMeshOptions;
 
-/**
- * Cluster Runner 2
- */
 public class ServerRunner2 extends ClusterServer {
 
 	static {
@@ -16,18 +13,16 @@ public class ServerRunner2 extends ClusterServer {
 
 	/**
 	 * Run the server.
-	 * 
+	 *
 	 * @param args
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
-		OrientDBMeshOptions options = init(args);
+		HibernateMeshOptions options = init(args);
 		options.setNodeName("gentics-mesh-2");
-		options.getStorageOptions().setDirectory("data2/graphdb");
 		options.getClusterOptions().setVertxPort(6152);
 		options.getHttpServerOptions().setPort(8082);
 		options.getMonitoringOptions().setPort(8882);
 		run(options);
 	}
-
 }

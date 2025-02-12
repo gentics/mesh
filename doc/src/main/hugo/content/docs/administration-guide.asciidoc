@@ -1,0 +1,536 @@
+---
+title: Administration Guide
+---
+
+include::content/docs/variables.adoc-include[]
+
+== Software Stack
+
+[options="header"]
+|======
+| Component                                                    | Type                 | Version
+| https://docs.jboss.org/hibernate/orm/6.5/introduction/html_single/Hibernate_Introduction.html[Hibernate]                              | ORM       | 6.5.x
+| https://www.elastic.co/products/elasticsearch[Elasticsearch] | Search Engine        | 6.1.x
+| http://vertx.io/[Vert.x]                                     | Core Framework       | 4.5.x
+| https://hazelcast.com/[Hazelcast]                            | Cluster management | 3.12.x
+| https://google.github.io/dagger/[Dagger 2]                   | Dependency Injection | 2.11.x
+|======
+
+== Run with Docker
+=== Run empty demo container
+
+The https://hub.docker.com/r/gentics/mesh/[mesh] image contains an empty Gentics Mesh server without any content. It, however, requires a tuning of a database storage, accessible from the image. In order to simplify things at the jumpstart, we have prepared a set of Docker images containing supported RDBMS drivers, among which is the one perfectly suitable for the demonstration purposes: https://hub.docker.com/r/gentics/mesh-hsqldb/[mesh-sqldb], which contains a self-hosted, in-memory based HSQL database to play around with.
+
+[source,bash]
+----
+docker run -p 8080:8080 gentics/mesh-hsqldb
+or
+docker run \
+ -v mesh-uploads:/uploads \
+ -p 8080:8080 \
+ gentics/mesh-hsqldb
+----
+
+=== Use MariaDB-connected container
+
+Other variant for an easy, yet production ready start is to use https://hub.docker.com/r/gentics/mesh-mariadb/[mesh-mariadb] image, providing along an external instance of MariaDB 10.3+ database as a data storage, and a JDBC connector, which can be downloaded from the https://mariadb.com/downloads/connectors/connectors-data-access/java8-connector [official website]. For instance, below is how a dedicated `docker-compose` setup may look like.
+
+First, initialize an empty database in your MariaDB, as well as its user. Example setup:
+
+[source,bash]
+----
+export MYSQL_DATABASE=mymeshdb
+export MYSQL_USER=meshdbuser
+export MYSQL_PASSWORD=no_one_can_guess
+----
+
+Install the isolation level for the database on start with the startup parameter.
+
+[source,bash]
+----
+--transaction-isolation=READ-COMMITTED
+----
+
+Alternatively, this can be done via SQL:
+
+[source,sql]
+----
+SET GLOBAL TRANSACTION ISOLATION LEVEL READ COMMITTED;
+----
+
+Set the database and access permissions up.
+
+[source,sql]
+----
+CREATE DATABASE mymeshdb CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
+GRANT ALL PRIVILEGES ON mymeshdb.* TO 'meshdbuser'@'%';
+----
+
+Include the following `mesh` container into your `docker-compose.yml`:
+
+[source,yaml]
+----
+  mesh:
+    image: gentics/mesh-mariadb
+    volumes:
+      - mesh-uploads:/uploads
+    ports:
+      - '8080:8080'
+    environment:
+      MESH_DATABASE_ADDRESS: <host:port of a MariaDB. For instance, if the name of MariaDB container is `mariadb`, the content here will be `mariadb:3306`>
+      MESH_JDBC_DATABASE_NAME: mymeshdb
+      MESH_JDBC_CONNECTION_USERNAME: "meshdbuser"
+      MESH_JDBC_CONNECTION_PASSWORD: "no_one_can_guess"
+      MESH_INITIAL_ADMIN_PASSWORD: "admin"
+      MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET: "false"
+      MESH_BINARY_DIR: "/uploads"
+----
+
+Alternatively, the database configuration can be provided via `mesh.yml` config file.
+
+[source,yaml]
+----
+storageOptions:
+  retryLimit: 10
+  retryDelayMillis: 2000
+  databaseAddress: "mariadb:3306"
+  databaseName: "mymeshdb"
+  databaseConnectorClasspath: <path/to/downloaded/driver/and/connector>
+  connectionUsername: "meshdbuser"
+  connectionPassword: "no_one_can_guess"
+  showSql: false
+  formatSql: false
+  hikariOptions:
+    autocommit: false
+    connectionTimeout: 10000
+    idleTimeout: 600000
+    maxLifetime: 1800000
+    minimumIdleConnection: 10
+    maxPoolSize: 10
+    poolName: "MeshHikariCP"
+    registerMBeans: false
+    transactionIsolationLevel: null
+    leakDetectionThreshold: 0
+  synchronizeWrites: false
+  synchronizeWritesTimeout: 6000
+----
+
+=== Volumes / Locations
+
+[options="header"]
+|======
+| Name             | Description                          | Default Environment Setting
+| `/uploads`       | Location for fileuploads             | `MESH_BINARY_DIR=/uploads`
+| `/config`        | Location for configuration files     | -
+| `/keystore`      | Location for the main keystore file which contains the cryptographic keys which are used to sign the JWT. | `MESH_AUTH_KEYSTORE_PATH=/keystore/keystore.jks`
+| `/plugins`       | Plugin data and configuration location | `MESH_PLUGIN_DIR=/plugins`
+| `/mesh/data`     | Remaining data files (e.g. temp dirs, caches) | -
+|======
+
+=== Docker Compose
+
+We also provide a ready to go link:https://docs.docker.com/compose/[docker-compose] example stack for Gentics Mesh:
+
+Single node setup with included Elasticsearch container:
+
+* https://github.com/gentics/mesh-compose/
+
+Multi node clustering setup:
+
+* https://github.com/gentics/mesh-compose/tree/clustering
+
+== Run with JAR File
+
+There is no dedicated installation procedure for Gentics Mesh. However, you will need to download https://github.com/gentics/mesh/releases[a Gentics Mesh JAR and a database connector JAR file]. An example of starting Mesh along with the HSQL in-memory mode database, assuming having both downloaded JARs in the same folder, looks as following:
+
+=== For Unix/Linux/MacOS
+
+[source,bash]
+----
+java -cp mesh-database-connector-hsqldb-X.X.X.jar:mesh-server-X.X.X.jar com.gentics.mesh.server.ServerRunner
+----
+
+=== For Windows
+
+[source,bash]
+----
+java -cp mesh-database-connector-hsqldb-X.X.X.jar;mesh-server-X.X.X.jar com.gentics.mesh.server.ServerRunner
+----
+
+On first startup, Gentics Mesh will create the data folder and subfolders, set a password for the keystore file and provide the `mesh.yml` configuration file. See <<Installation Directory>> for a detailed discussion on Gentics Mesh files & folders.
+
+[[cli]]
+== Command Line Arguments
+
+Various command line arguments can be used to override or supplement previously configured settings.
+
+[source,text]
+----
+include::content/docs/examples/models/mesh-cli-help.txt[]
+----
+
+[[installdir]]
+== Installation Directory
+On first startup, Gentics Mesh will create all files and folders.
+
+ data
+    binaryFiles                # Folder for uploads
+    binaryImageCache           # Folder for resized and cached images
+    tmp                        # Temporary directory
+ config
+    mesh.yml                   # Main Gentics Mesh configuration
+    hazelcast.xml              # Hazelcast cluster configuration
+    keystore.jceks             # Gentics Mesh keystore used to generate and validate JWT's
+    logback.xml                # Logging configuration file
+
+Gentics Mesh ships with two configuration files:
+
+. The main configuration file ```mesh.yml``` contains all settings for configuring the Gentics Mesh server. All settings are explained in the <<conf,Configuration & Settings>> section.
+
+All data of your Gentics Mesh instance can be found in the respective subfolders of ```data```.
+
+The folder ```binaryFiles``` contains all media assets of your projects including images and other files. ```binaryImageCache``` keeps resized versions of requested images.  ```tmp``` is used by Vert.x and other components e.g. for file uploads.
+
+NOTE: This folder structure is the default. All paths can be configured in the main configuration file ```mesh.yml```.
+
+The keystore file, by default, is named ```keystore.jceks```. On first startup, a password for the keystore file is created randomly and stored in ```mesh.yml```.
+
+The ```elasticsearch``` folder contains the included Elasticsearch installation which will be started by default.
+
+== System Requirements
+
+=== Server Requirements
+
+There are no external dependencies besides Java Runtime 11.
+
+Production servers must be run on Linux. Work on Windows is neither guaranteed nor eligible for support. Running Gentics Mesh on Windows is encouraged via link:https://docs.docker.com/docker-for-windows/[Docker Windows].
+
+==== Cluster Requirements
+
+* Each Gentics Mesh instance needs at least 1.5 GB heap memory.
+* A shared filesystem needs to be provided for the upload folder. This folder needs to be shared among all cluster instances. Using NFS is a typical choice for these folders.
+
+=== Client Requirements
+
+The Gentics Mesh user interface has been designed mobile-first and does not impose any specific requirements other than enabled JavaScript. It can be used with any "modern" browser, i.e. IE11+ and latest versions of Chrome, Firefox, and Safari.
+
+[[env]]
+== Environment Variables
+
+Environment variables will override settings within the `mesh.yml`.
+
+include::content/docs/examples/tables/mesh-env.adoc-include[]
+
+[[conf]]
+== Configuration & Settings
+
+All settings can be found in the main ```mesh.yml``` configuration file, that contains various settings for configuring HTTP & SSL, the database connection and configuration, and file upload.
+
+Both files are located directly in the <<installdir, installation directory>>.
+
+[source,json]
+----
+include::content/docs/examples/models/mesh-config.example.yml[]
+----
+
+=== General Settings
+
+include::content/docs/snippets/config/general.inc[]
+
+==== Custom Language
+
+By default Gentics Mesh already contains all link:https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes[ISO 639-1] (two letter) language codes. By using the `languagesFilePath` setting it is possible to provide a custom languages file which can include additional language definitions.
+
+[source,json]
+----
+include::content/docs/examples/example-languages.json[]
+----
+
+TIP: The link:https://github.com/gentics/mesh-compose/tree/extra-language[mesh-compose] project contains a full example configuration which shows how to add a custom language.
+
+
+=== HTTPS/SSL
+
+See link:{{< relref "references.asciidoc" >}}#_https[HTTPs configuration].
+
+=== Server Options
+
+include::content/docs/examples/tables/HttpServerConfig.adoc-include[]
+
+=== Cluster Options
+
+include::content/docs/examples/tables/ClusterOptions.adoc-include[]
+
+=== Storage Options
+
+By default all specified directories are relative to the installation directory.
+
+include::content/docs/examples/tables/HibernateStorageOptions.adoc-include[]
+
+==== Disk Quota Check Options
+
+include::content/docs/examples/tables/DiskQuotaOptions.adoc-include[]
+
+=== Search Options
+
+include::content/docs/examples/tables/ElasticSearchOptions.adoc-include[]
+
+=== Upload Options
+
+include::content/docs/examples/tables/MeshUploadOptions.adoc-include[]
+
+=== Security Options
+
+include::content/docs/examples/tables/AuthenticationOptions.adoc-include[]
+
+==== Public Keys
+
+A file with additional public keys can be specified via the `publicKeysPath` property. The public keys from this file will be used to validate JWT's which were not issued by Gentics Mesh. This is especially useful when using Gentics Mesh with external OIDC / OAuth2 providers.
+
+The keys have to be specified in the link:https://tools.ietf.org/html/rfc7517[JWK format].
+
+[source,json]
+----
+include::content/docs/examples/example-public-keys.json[]
+----
+
+=== Monitoring Options
+
+include::content/docs/examples/tables/MonitoringConfig.adoc-include[]
+
+=== Image Options
+
+include::content/docs/examples/tables/ImageManipulatorOptions.adoc-include[]
+
+=== Cache Options
+
+include::content/docs/examples/tables/CacheConfig.adoc-include[]
+
+=== Debug Information Options
+
+include::content/docs/examples/tables/DebugInfoOptions.adoc-include[]
+
+=== GraphQL Options
+
+include::content/docs/examples/tables/GraphQLOptions.adoc-include[]
+
+=== S3 Storage Options
+
+include::content/docs/examples/tables/S3Options.adoc-include[]
+
+include::content/docs/examples/tables/S3CacheOptions.adoc-include[]
+
+=== Memory Settings
+
+Memory settings can be defined using the `JAVA_TOOL_OPTIONS` environment variable.
+
+[options="header"]
+|======
+| Setting                           | Description
+| `-Xmx`                            | Maximum heap size of the Gentics Mesh Java process
+| `-Xms`                            | Initial heap size of the Gentics Mesh Java process
+| `-Xss`                            | Stack size. A larger stack size may be required when deleting deep datasets. The default value is 1MB.
+| `-XX:MaxDirectMemorySize`         | Maximum direct memory limit. Direct memory is mostly used for IO buffers.
+|======
+
+The total amount of required memory is the roughly sum of `heap memory` + `direct memory` + `disk cache` + (`stack size` * `thread count`) + `256 MB (JVM base memory)`.
+
+==== Recommendations (Single Node)
+
+The following numbers serve the purpose to roughly estimate the memory requirements for different sized projects in a **non-clustered** setup.
+
+[options="header"]
+|======
+| Node Count           | Memory Setting
+| 0 to 100             | `-Xms128m -Xmx128m -XX:MaxDirectMemorySize=128m  -Dstorage.diskCache.bufferSize=128`
+| 100 to 1_000         | `-Xms512m -Xmx512m -XX:MaxDirectMemorySize=128m  -Dstorage.diskCache.bufferSize=256`
+| 1_000 to 10_000      | `-Xms786m -Xmx786m -XX:MaxDirectMemorySize=128m  -Dstorage.diskCache.bufferSize=384`
+| 10_000 to 100_000    | `-Xms1250m -Xmx1250m -XX:MaxDirectMemorySize=128m -Dstorage.diskCache.bufferSize=512`
+| 100_000 to 1_000_000 | `-Xms2500m -Xmx2500m -XX:MaxDirectMemorySize=128m -Dstorage.diskCache.bufferSize=1024`
+|======
+
+==== Recommendations (Clustered Node)
+
+The following numbers serve the purpose to roughly estimate the memory requirements for different sized projects in a *clustered* setup.
+
+[options="header"]
+|======
+| Node Count           | Memory Setting
+| 0 to 100             | `-Xms1124m -Xmx1124m -Xss1m -XX:MaxDirectMemorySize=628m  -Dstorage.diskCache.bufferSize=628`
+| 100 to 1_000         | `-Xms1512m -Xmx1512m -Xss2m -XX:MaxDirectMemorySize=856m  -Dstorage.diskCache.bufferSize=856`
+| 1_000 to 10_000      | `-Xms1786m -Xmx1786m -Xss2m -XX:MaxDirectMemorySize=984m  -Dstorage.diskCache.bufferSize=984`
+| 10_000 to 100_000    | `-Xms2250m -Xmx2250m -Xss2m -XX:MaxDirectMemorySize=1024m  -Dstorage.diskCache.bufferSize=1024`
+| 100_000 to 1_000_000 | `-Xms3500m -Xmx3500m -Xss4m -XX:MaxDirectMemorySize=2048m -Dstorage.diskCache.bufferSize=2048`
+|======
+
+== Admin Access
+
+By default an `admin` user will be created during initial startup. The password of this user will be printed in the log. 
+It is mandatory to update the admin password during the first login.
+
+NOTE: For demo installations the password is `admin`.
+
+Additional admin users can be created by setting the `admin` flag the users.
+
+NOTE: The admin access can be restored via the use of the `resetAdminPassword` link:#cli[mesh server argument].
+
+== Backup & Recovery
+
+There are currently fours components which can be included in a backup:
+
+* *Database* - The database contains the main content of Gentics Mesh.
+    The backup process of a database depends on an actual RDBMS (MariaDB, HSQLDB etc...) used, and is not a part of Gentics Mesh.
+
+* *Binary files* - Binaries are currently stored in the filesystem and need to be backed up separately data/binaryFiles)
+
+* *Elasticsearch Index* - Optionally you can also backup the Elasticsearch index.
+    The index can also be re-created anytime using the `POST {apiLatest}/search/sync` endpoint.
+
+* *Configuration* - The Gentics Mesh configuration files should be part of a backup. Especially the `keystore.jks` file is important since it contains the cryptographic keys which are needed to authenticate issued tokens which includes also the API key.
+                    The `mesh.yaml` file contains the autogenerated password for the keystore file. The keystore file and the password to open it are required by Gentics Mesh to authenticate tokens.
+
+[[debuginfo]]
+== Debug Information
+
+The debug info endpoint (GET {apiLatest}/admin/debuginfo) starts a zip download containing various useful data about the system.
+
+The documentation below lists all files that are included in the zip.
+
+Per default everything except the consistency check is included in the zip. You can use the `?include` query parameter to include or exclude specific parts.
+For example `{apiLatest}/admin/debuginfo?include=-backup,consistencyCheck` will exclude the database backup and include the consistency checks.
+
+=== Active Config
+Query name: `activeConfig`
+
+The effective link:{{< relref "administration-guide.asciidoc" >}}#conf[configuration] that is currently used in the system. This includes overrides by command line argument and environment variables.
+
+=== Binary Disk Usage
+Query name: `binaryDiskUsage`
+
+The total file size of all stored binaries and cached images.
+
+=== Configurations
+Query name: `config`
+
+The following files from the `config` folder:
+
+- `mesh.yml`
+- `hazelcast.xml`
+- `logback.xml`
+
+=== Consistency Check
+Query name: `consistencyCheck`
+
+Performs a link:{{< relref "administration-guide.asciidoc" >}}#_database_consistency[consistency check] and includes the result.
+
+=== Entities
+Query name: `entities`
+
+Includes the following entities as json:
+
+- All jobs
+- All Schemas
+- All Microschemas
+- All Projects
+- All Branches
+
+=== Log
+Query name: `log`
+
+Includes the latest debug log output of Gentics Mesh. Check the link:{{< relref "administration-guide.asciidoc" >}}#_debug_information_options[debug info options] for more options.
+
+=== Migration Status
+Query name: `migrationStatus`
+
+Includes the
+link:../api/#project__branches__branchUuid__schemas_get[schema migration status]
+and
+link:../api/#project__branches__branchUuid__microschemas_get[mircoschema migration status]
+for every branch of every project.
+
+=== Plugins
+Query name: `plugins`
+
+Includes the link:../api/#admin_plugins_get[currently deployed plugins].
+
+=== Status
+Query name: `status`
+
+Includes the
+link:../api/#_get[version],
+link:../api/#admin_cluster_status_get[cluster status]
+and
+link:../api/#search_status_get[elastic search status].
+
+=== System Information
+Query name: `systemInfo`
+
+Contains the following informations about the system:
+
+- System load average
+- JVM memory usage
+- JVM arguments
+- Disk space usage (of the file system where Gentics Mesh is running)
+
+=== Thread Dump
+Query name: `threadDump`
+
+A dump of all threads including all stack traces.
+
+[[readonly]]
+== Read Only Mode
+
+Gentics Mesh can be put into read only mode. In this mode, all requests that would change data (create, update, delete) are not allowed and return a `405´ status code instead.
+
+This is useful in cluster situations when having instances as replicas or when performing rolling updates.
+
+=== Activating Read Only Mode
+
+Read only mode can be activated in one of the following ways:
+
+* Setting the entry `startInReadOnly` to `true` in the link:#conf[configuration file] before starting will start Gentics Mesh in read only mode.
+* Setting the environment variable `MESH_START_IN_READ_ONLY` to `true` before starting will start Gentics Mesh in read only mode.
+* Using the link:../api/#admin_config_post[REST API]. Changing read only mode in this way will take immediate effect.
+
+== link:{{< relref "changelog.asciidoc" >}}[Changelog]
+
+== Update handling
+
+Updating Gentics Mesh is very simple. You stop the current instance and start it again using the new version.
+A process is invoked which will check whether any automatic changes need to be applied.
+
+=== Downgrading
+
+Downgrading is possible but not recommended. You can however downgrade your Gentics Mesh instance
+if the database revision hash of the current database matches up with the revision which is required
+by the version which is being started. You can check your current database revision via the `{apiLatest}` endpoint.
+
+[[database-revisions]]
+=== Database Revisions
+
+The database revisions are automatically controlled by Liquibase. No user managed functionality is available.
+
+== Database Consistency
+
+It is possible to verify the database integrity via the `GET {apiLatest}/admin/consistency/check` endpoint.
+
+The response contains information about the found inconsistencies and whether they have a repair action.
+
+[source,json]
+----
+include::content/docs/api/response{apiLatest}/admin/consistency/check/200/example.json[]
+----
+
+The `POST {apiLatest}/admin/consistency/repair` endpoint can be used to invoke a check and repair of repairable inconsistencies.
+
+The `repaired` property will be set to true if the inconsistency could be fixed.
+
+[source,json]
+----
+include::content/docs/api/response{apiLatest}/admin/consistency/repair/200/example.json[]
+----
+
+== License
+
+* Gentics Mesh is published under Apache 2.0 license.
+* https://github.com/graphql/graphiql[GraphiQL] is owned and developed by Facebook Inc. Usage is subject to the https://github.com/gentics/mesh/blob/d69b94d4b9bd8e3dbbba06dcdf8fac9b09593f13/verticles/graphql/src/main/resources/graphiql/LICENSE[LICENSE AGREEMENT For GraphiQL software].

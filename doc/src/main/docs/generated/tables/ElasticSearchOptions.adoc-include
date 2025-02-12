@@ -35,7 +35,7 @@
 | complianceMode
 | false
 | string
-| This setting controls the compliance mode for Elasticsearch. When set to ES_7 it will support Elasticsearch 7.x - In PRE_ES_7 mode it will support Elasticsearch 6.x - Default: PRE_ES_7
+| This setting controls the compliance mode for Elasticsearch. Currently supported modes are ES_6, ES_7 and ES_8. Default: ES_6
 
 | eventBufferSize
 | false

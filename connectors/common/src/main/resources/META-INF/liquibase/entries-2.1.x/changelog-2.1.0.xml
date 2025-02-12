@@ -1,0 +1,14 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+	xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.6.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd">
+    <changeSet author="s.plyhun@gentics.com" id="dev-gpu-1249-1">
+    	<dropUniqueConstraint constraintName="uk_bh97tf0clarl5xbp3q6fvi5c6" tableName="mesh_project_language"/>
+    </changeSet>
+	<changeSet id="dev-gpu-1249-2" author="s.plyhun@gentics.com">
+		<customChange class="com.gentics.mesh.liquibase.changelog.v2_1_0.LanguageToProjectAssignment"></customChange>
+	</changeSet>
+</databaseChangeLog>

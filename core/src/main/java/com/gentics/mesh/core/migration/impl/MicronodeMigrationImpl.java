@@ -16,6 +16,9 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.context.MicronodeMigrationContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.HibField;
@@ -42,14 +45,14 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
+import com.gentics.mesh.distributed.MasterInfoProvider;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.util.VersionNumber;
+
 import io.reactivex.Completable;
 import io.reactivex.exceptions.CompositeException;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 /**
  * @see MicronodeMigration
@@ -62,8 +65,10 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 	private final WriteLock writeLock;
 
 	@Inject
-	public MicronodeMigrationImpl(Database db, BinaryUploadHandlerImpl binaryFieldHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider, WriteLock writeLock, MeshOptions options) {
-		super(db, binaryFieldHandler, metrics, batchProvider, options);
+	public MicronodeMigrationImpl(Database db, BinaryUploadHandlerImpl binaryFieldHandler, MetricsService metrics,
+			Provider<EventQueueBatch> batchProvider, WriteLock writeLock, MeshOptions options,
+			MasterInfoProvider masterInfoProvider) {
+		super(db, binaryFieldHandler, metrics, batchProvider, options, masterInfoProvider);
 		this.writeLock = writeLock;
 	}
 
@@ -76,13 +81,19 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 			HibMicroschemaVersion toVersion = context.getToVersion();
 			MigrationStatusHandler status = context.getStatus();
 			MicroschemaMigrationCause cause = context.getCause();
+			String toUuid = db.tx(() -> toVersion.getUuid());
 
 			// Collect the migration scripts
 			NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
 			Set<String> touchedFields = new HashSet<>();
 			try {
-				db.tx(() -> {
-					prepareMigration(reloadVersion(fromVersion), touchedFields);
+				db.tx(tx -> {
+					ac.setHttpServerConfig(tx.data().options().getHttpServerOptions());
+					HibMicroschemaVersion currentVersion = reloadVersion(fromVersion);
+					do {
+						prepareMigration(currentVersion, touchedFields);
+						currentVersion = currentVersion.getNextVersion();
+					} while (currentVersion != null && !currentVersion.getUuid().equals(toUuid));
 					ac.setProject(branch.getProject());
 					ac.setBranch(branch);
 
@@ -130,7 +141,11 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 						log.error("Encountered migration error.", error);
 					}
 				}
-				result = Completable.error(new CompositeException(errorsDetected));
+				if (errorsDetected.size() == 1) {
+					result = Completable.error(errorsDetected.get(0));
+				} else {
+					result = Completable.error(new CompositeException(errorsDetected));
+				}
 			}
 			return result;
 		});

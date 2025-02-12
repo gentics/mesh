@@ -74,6 +74,10 @@
         }
       }
     },
+    "noIndex" : {
+      "type" : "boolean",
+      "description" : "'Exclude from indexing' flag."
+    },
     "fields" : {
       "type" : "array",
       "required" : true,
@@ -82,6 +86,20 @@
         "type" : "object",
         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
         "properties" : {
+          "required" : {
+            "type" : "boolean"
+          },
+          "noIndex" : {
+            "type" : "boolean"
+          },
+          "elasticsearch" : {
+            "type" : "object",
+            "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+          },
+          "label" : {
+            "type" : "string",
+            "description" : "Label of the field."
+          },
           "name" : {
             "type" : "string",
             "required" : true,
@@ -91,20 +109,12 @@
             "type" : "string",
             "required" : true,
             "description" : "Type of the field."
-          },
-          "required" : {
-            "type" : "boolean"
-          },
-          "label" : {
-            "type" : "string",
-            "description" : "Label of the field."
-          },
-          "elasticsearch" : {
-            "type" : "object",
-            "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
           }
         }
       }
+    },
+    "microschema" : {
+      "type" : "boolean"
     },
     "permissions" : {
       "type" : "object",

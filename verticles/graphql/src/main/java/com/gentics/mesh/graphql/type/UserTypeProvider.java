@@ -37,12 +37,12 @@ public class UserTypeProvider extends AbstractTypeProvider {
 
 	public static final String USER_PAGE_TYPE_NAME = "UsersPage";
 
-	@Inject
-	public InterfaceTypeProvider interfaceTypeProvider;
+	protected final InterfaceTypeProvider interfaceTypeProvider;
 
 	@Inject
-	public UserTypeProvider(MeshOptions options) {
+	public UserTypeProvider(MeshOptions options, InterfaceTypeProvider interfaceTypeProvider) {
 		super(options);
+		this.interfaceTypeProvider = interfaceTypeProvider;
 	}
 
 	public GraphQLObjectType createType() {

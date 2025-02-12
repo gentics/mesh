@@ -11,14 +11,13 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>1.10.0-SNAPSHOT</version>
+		<version>3.0.1-SNAPSHOT</version>
 	</parent>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<mesh.version>${project.version}</mesh.version>
 		<mesh.mdm.provider.groupId>${project.groupId}</mesh.mdm.provider.groupId>
-		<mesh.mdm.provider.artifactId>mesh-orientdb</mesh.mdm.provider.artifactId>
 		<mesh.mdm.provider.version>${project.version}</mesh.mdm.provider.version>
 		<mesh.mdm.provider.factory>TODO</mesh.mdm.provider.factory>
 	</properties>
@@ -37,11 +36,6 @@
 
 
 	<dependencies>
-		<!-- <dependency> -->
-		<!-- <groupId>${mesh.mdm.provider.groupId}</groupId> -->
-		<!-- <artifactId>${mesh.mdm.provider.artifactId}</artifactId> -->
-		<!-- <version>${mesh.mdm.provider.version}</version> -->
-		<!-- </dependency> -->
 
 		<!-- Internal dependencies -->
 		<dependency>
@@ -65,6 +59,12 @@
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-graphql</artifactId>
+		</dependency>
+
+		<!-- Plugin dependency -->
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-web-templ-handlebars</artifactId>
 		</dependency>
 
 		<!-- Common Tools -->
@@ -99,11 +99,37 @@
 		<!-- Attachment parsing -->
 		<dependency>
 			<groupId>org.apache.tika</groupId>
-			<artifactId>tika-parsers</artifactId>
+			<artifactId>tika-parsers-standard-package</artifactId>
 			<exclusions>
 				<exclusion>
 					<groupId>com.zaxxer</groupId>
 					<artifactId>HikariCP-java7</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>jcl-over-slf4j</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.tika</groupId>
+			<artifactId>tika-core</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>com.zaxxer</groupId>
+					<artifactId>HikariCP-java7</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>jcl-over-slf4j</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -135,23 +161,7 @@
 			<artifactId>vertx-codegen</artifactId>
 		</dependency>
 
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>hazelcast3-cluster-manager</artifactId>
-			<!-- Use the specified hazelcast version instead -->
-			<exclusions>
-				<exclusion>
-					<groupId>com.hazelcast</groupId>
-					<artifactId>hazelcast</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<!-- Hazelcast (the cluster manager for orientdb) -->
-		<dependency>
-			<groupId>com.hazelcast</groupId>
-			<artifactId>hazelcast-kubernetes</artifactId>
-		</dependency>
-
+		<!-- Hazelcast -->
 		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-mail-client</artifactId>
@@ -165,6 +175,10 @@
 					<groupId>commons-logging</groupId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.openjdk.nashorn</groupId>
+			<artifactId>nashorn-core</artifactId>
 		</dependency>
 
 		<!-- Test dependencies -->
@@ -192,6 +206,7 @@
 		<dependency>
 			<groupId>org.reflections</groupId>
 			<artifactId>reflections</artifactId>
+			<version>0.10.2</version>
 		</dependency>
 		<dependency>
 			<groupId>jakarta.xml.bind</groupId>
@@ -242,21 +257,6 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<forceJavacCompilerUse>true</forceJavacCompilerUse>
-				</configuration>
-				<dependencies>
-					<dependency>
-						<groupId>com.google.dagger</groupId>
-						<artifactId>dagger-compiler</artifactId>
-						<version>${dagger.version}</version>
-						<optional>true</optional>
-					</dependency>
-				</dependencies>
 			</plugin>
 		</plugins>
 		<pluginManagement>

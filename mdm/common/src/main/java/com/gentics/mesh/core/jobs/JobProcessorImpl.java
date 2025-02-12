@@ -17,12 +17,12 @@ import javax.inject.Singleton;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.job.JobType;
+
 import io.reactivex.Completable;
 import io.reactivex.CompletableSource;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is responsible for fetching all jobs and running them
@@ -34,6 +34,8 @@ public class JobProcessorImpl implements JobProcessor {
 
 	final Map<JobType, SingleJobProcessor> jobProcessors;
 	private Database db;
+
+	private boolean processing = false;
 
 	@Inject
 	public JobProcessorImpl(Map<JobType, SingleJobProcessor> jobProcessors, Database db) {
@@ -47,12 +49,21 @@ public class JobProcessorImpl implements JobProcessor {
 				.map(this::process)
 				.collect(Collectors.toList());
 
-		return Completable.concat(jobsActions);
+		return Completable.concat(jobsActions).doOnSubscribe(d -> {
+			processing = true;
+		}).doAfterTerminate(() -> {
+			processing = false;
+		});
+	}
+
+	@Override
+	public boolean isProcessing() {
+		return processing;
 	}
 
 	private List<? extends HibJob> getJobsToExecute() {
 		return db.tx((tx) -> {
-			return Tx.get().jobDao().findAll().stream()
+			return tx.jobDao().findAll().stream()
 					// Don't execute failed or completed jobs again
 					.filter(job -> !(job.hasFailed() || (job.getStatus() == COMPLETED || job.getStatus() == FAILED || job.getStatus() == UNKNOWN)))
 					.collect(Collectors.toList());

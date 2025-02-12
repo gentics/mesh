@@ -1,0 +1,27 @@
+{
+  endsWithRole: roles(filter:{
+    name: { regex: "role$"}
+  }) {
+    # [$.data.endsWithRole.totalCount=3]
+    totalCount
+    elements {
+      name
+      uuid
+    }
+  }
+
+  endsWithRoleAndAdmin: roles(filter:{
+    or: [
+    	{name: { equals:"admin"}}
+    	{name: { regex: "role$"}}
+    ]
+  }) {
+    # [$.data.endsWithRoleAndAdmin.totalCount=4]
+    totalCount
+    elements {
+      name
+      uuid
+    }
+  }
+}
+# [$.errors=<is-undefined>]

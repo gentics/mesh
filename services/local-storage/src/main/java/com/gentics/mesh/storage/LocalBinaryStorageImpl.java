@@ -6,6 +6,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
@@ -25,8 +26,8 @@ import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.OpenOptions;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.file.FileSystem;
 
@@ -50,22 +51,34 @@ public class LocalBinaryStorageImpl extends AbstractBinaryStorage implements Loc
 	}
 
 	@Override
-	public Completable moveInPlace(String uuid, String temporaryId) {
+	public Completable moveInPlace(String uuid, String path, boolean isTempId) {
 		return Completable.defer(() -> {
-			if (log.isDebugEnabled()) {
-				log.debug("Move temporary upload for uuid '{}' into place using temporaryId '{}'", uuid, temporaryId);
-			}
-			String source = getTemporaryFilePath(temporaryId);
+			log.debug("Move temporary upload for uuid '{}' into place using temporaryId '{}'", uuid, path);
+			String source = isTempId ? getTemporaryFilePath(path) : path;
 			String target = getFilePath(uuid);
-			if (log.isDebugEnabled()) {
-				log.debug("Moving '{}' to '{}'", source, target);
-			}
+
+			log.debug("Moving '{}' to '{}'", source, target);
 			File uploadFolder = new File(options.getDirectory(), getSegmentedPath(uuid));
 			return createParentPath(uploadFolder.getAbsolutePath())
-				.andThen(fileSystem.rxMove(source, target).doOnError(e -> {
-					log.error("Error while moving binary from temp upload dir {} to final dir {}", source, target);
+				.andThen(fileSystem.rxMove(source, target).onErrorComplete(this::isCausedByFileAlreadyExists).doOnError(e -> {
+					log.error("Error while moving binary from temp upload dir " + source + " to final dir " + target, e);
 				}));
 		});
+	}
+
+	/**
+	 * Check whether the given throwable either is itself a {@link FileAlreadyExistsException} or is caused by one
+	 * @param t throwable to check
+	 * @return true, when the throwable is itself or is caused by a FileAlreadyExistsException
+	 */
+	protected boolean isCausedByFileAlreadyExists(Throwable t) {
+		if (t instanceof FileAlreadyExistsException) {
+			return true;
+		} else if (t.getCause() != null && t.getCause() != t) {
+			return isCausedByFileAlreadyExists(t.getCause());
+		} else {
+			return false;
+		}
 	}
 
 	@Override
@@ -99,8 +112,12 @@ public class LocalBinaryStorageImpl extends AbstractBinaryStorage implements Loc
 			File tempFolder = new File(options.getDirectory(), "temp");
 			return createParentPath(tempFolder.getAbsolutePath())
 				.andThen(fileSystem.rxMove(sourceFilePath, path).doOnError(e -> {
-					log.error("Failed to move upload file {} to temp dir {}", sourceFilePath, path, e);
-				}));
+					if (e instanceof FileAlreadyExistsException) {
+						log.error("File " + sourceFilePath + " already exists at the temp dir " + path);
+					} else {
+						log.error("Failed to move upload file " + sourceFilePath + " to the temp dir " + path, e);
+					}
+				}).onErrorComplete(e -> e instanceof FileAlreadyExistsException));
 		});
 	}
 
@@ -133,7 +150,7 @@ public class LocalBinaryStorageImpl extends AbstractBinaryStorage implements Loc
 				} else {
 					return fileSystem.rxMkdirs(folderPath)
 						.onErrorResumeNext(e -> {
-							log.error("Failed to create target folder {}", folderPath);
+							log.error("Failed to create target folder " + folderPath, e);
 							return Completable.error(error(INTERNAL_SERVER_ERROR, "node_error_upload_failed"));
 						}).doOnComplete(() -> {
 							if (log.isDebugEnabled()) {
@@ -200,7 +217,7 @@ public class LocalBinaryStorageImpl extends AbstractBinaryStorage implements Loc
 	}
 
 	/**
-	 * Generate the segmented path for the given binary uuid.
+	 * Generate the segmented path for the given binary uuid. Unrelated to the implementation of AbstractImageManipulator.
 	 * 
 	 * @param binaryUuid
 	 * @return

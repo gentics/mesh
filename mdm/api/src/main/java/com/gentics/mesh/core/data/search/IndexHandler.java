@@ -1,11 +1,14 @@
 package com.gentics.mesh.core.data.search;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
@@ -49,6 +52,14 @@ public interface IndexHandler<T extends HibBaseElement> {
 	 */
 	Function<String, T> elementLoader();
 
+
+	/**
+	 * Returns loader function which can be used to find and load multiple elements by uuids. The order of input/output is not guaranteed to be preserved? as well as the processing of duplicates.
+	 * 
+	 * @return
+	 */
+	Function<Collection<String>, Stream<Pair<String, T>>> elementsLoader();
+
 	/**
 	 * Load all elements from the graph that are needed for the index handler.
 	 * 
@@ -82,11 +93,11 @@ public interface IndexHandler<T extends HibBaseElement> {
 	Set<String> filterUnknownIndices(Set<String> indices);
 
 	/**
-	 * Load a map which contains the applicable indices. The key of the map is the index name.
+	 * Load a map which contains the applicable indices. The key of the map is the index name. If the value is empty, the indexing is disabled and has to be removed, if exists.
 	 * 
 	 * @return Map with index information
 	 */
-	Map<String, IndexInfo> getIndices();
+	Map<String, Optional<IndexInfo>> getIndices();
 
 	/**
 	 * Get the names of all indices for searching purposes. The action context will be examined to determine the project scope and the branch scope. If possible
@@ -154,4 +165,13 @@ public interface IndexHandler<T extends HibBaseElement> {
 	 * @return completable
 	 */
 	Completable check();
+
+	/**
+	 * Does definition of the index of this type depend on the data?
+	 * 
+	 * @return
+	 */
+	default boolean isDefinitionDataDependent() {
+		return false;
+	}
 }

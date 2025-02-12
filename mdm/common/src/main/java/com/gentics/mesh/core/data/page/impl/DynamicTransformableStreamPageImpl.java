@@ -15,10 +15,14 @@ import com.gentics.mesh.parameter.PagingParameters;
 public class DynamicTransformableStreamPageImpl<T extends HibTransformableElement<? extends RestModel>> extends DynamicStreamPageImpl<T> {
 
 	public DynamicTransformableStreamPageImpl(Stream<? extends T> stream, PagingParameters pagingInfo) {
-		super(stream, pagingInfo);
+		this(stream, pagingInfo, null);
 	}
 
 	public DynamicTransformableStreamPageImpl(Stream<? extends T> stream, PagingParameters pagingInfo, Predicate<T> filter) {
-		super(stream, pagingInfo, filter);
+		this(stream, pagingInfo, filter, false);
+	}
+
+	public DynamicTransformableStreamPageImpl(Stream<? extends T> stream, PagingParameters pagingInfo, Predicate<T> filter, boolean ignorePaging) {
+		super(stream, pagingInfo, filter, ignorePaging);
 	}
 }

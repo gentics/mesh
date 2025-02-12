@@ -94,6 +94,97 @@
           }
         }
       }
+    },
+    "publish" : {
+      "type" : "boolean",
+      "description" : "Whether the publish the node after creation."
+    },
+    "assignLanguage" : {
+      "type" : "boolean",
+      "description" : "Assign a requested language to the project, if none was so far. Default is 'true'."
+    },
+    "grant" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:com:gentics:mesh:core:rest:common:ObjectPermissionGrantRequest",
+      "description" : "Permissions to be granted to roles on the created node.",
+      "properties" : {
+        "create" : {
+          "type" : "array",
+          "required" : true,
+          "description" : "Roles to which the create permission is granted.",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:com:gentics:mesh:core:rest:role:RoleReference",
+            "properties" : {
+              "name" : {
+                "type" : "string",
+                "description" : "Name of the referenced element"
+              },
+              "uuid" : {
+                "type" : "string",
+                "required" : true,
+                "description" : "Uuid of the referenced element"
+              }
+            }
+          }
+        },
+        "read" : {
+          "type" : "array",
+          "required" : true,
+          "description" : "Roles to which the read permission is granted.",
+          "items" : {
+            "type" : "object",
+            "$ref" : "urn:jsonschema:com:gentics:mesh:core:rest:role:RoleReference"
+          }
+        },
+        "update" : {
+          "type" : "array",
+          "required" : true,
+          "description" : "Roles to which the update permission is granted.",
+          "items" : {
+            "type" : "object",
+            "$ref" : "urn:jsonschema:com:gentics:mesh:core:rest:role:RoleReference"
+          }
+        },
+        "delete" : {
+          "type" : "array",
+          "required" : true,
+          "description" : "Roles to which the delete permission is granted.",
+          "items" : {
+            "type" : "object",
+            "$ref" : "urn:jsonschema:com:gentics:mesh:core:rest:role:RoleReference"
+          }
+        },
+        "publish" : {
+          "type" : "array",
+          "description" : "Roles to which the publish permission is granted.",
+          "items" : {
+            "type" : "object",
+            "$ref" : "urn:jsonschema:com:gentics:mesh:core:rest:role:RoleReference"
+          }
+        },
+        "readPublished" : {
+          "type" : "array",
+          "description" : "Roles to which the read published permission is granted.",
+          "items" : {
+            "type" : "object",
+            "$ref" : "urn:jsonschema:com:gentics:mesh:core:rest:role:RoleReference"
+          }
+        },
+        "exclusive" : {
+          "type" : "boolean",
+          "description" : "Flag which indicates whether the permissions granted to only the given roles (will be revoked from all other roles)."
+        },
+        "ignore" : {
+          "type" : "array",
+          "required" : true,
+          "description" : "Roles which are ignored when the exclusive flag is set.",
+          "items" : {
+            "type" : "object",
+            "$ref" : "urn:jsonschema:com:gentics:mesh:core:rest:role:RoleReference"
+          }
+        }
+      }
     }
   }
 }

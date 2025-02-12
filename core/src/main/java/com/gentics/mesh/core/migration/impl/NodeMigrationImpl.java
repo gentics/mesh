@@ -25,6 +25,10 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.HibField;
@@ -46,10 +50,12 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandlerImpl;
 import com.gentics.mesh.core.migration.AbstractMigrationHandler;
+import com.gentics.mesh.core.migration.MigrationAbortedException;
 import com.gentics.mesh.core.migration.NodeMigration;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.event.node.SchemaMigrationCause;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
+import com.gentics.mesh.distributed.MasterInfoProvider;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.metric.MetricsService;
@@ -57,9 +63,6 @@ import com.gentics.mesh.util.VersionNumber;
 
 import io.reactivex.Completable;
 import io.reactivex.exceptions.CompositeException;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * Handler for node migrations after schema updates.
@@ -74,8 +77,8 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 
 	@Inject
 	public NodeMigrationImpl(Database db, BinaryUploadHandlerImpl nodeFieldAPIHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider,
-							 WriteLock writeLock, MeshOptions options) {
-		super(db, nodeFieldAPIHandler, metrics, batchProvider, options);
+							 WriteLock writeLock, MeshOptions options, MasterInfoProvider masterInfoProvider) {
+		super(db, nodeFieldAPIHandler, metrics, batchProvider, options, masterInfoProvider);
 		migrationGauge = metrics.longGauge(NODE_MIGRATION_PENDING);
 		this.writeLock = writeLock;
 	}
@@ -153,66 +156,97 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 		context.validate();
 		return Completable.defer(() -> {
 			HibSchemaVersion fromVersion = context.getFromVersion();
+			HibSchemaVersion toVersion = context.getToVersion();
 			SchemaMigrationCause cause = context.getCause();
 			HibBranch branch = context.getBranch();
 			MigrationStatusHandler status = context.getStatus();
+			String branchUuid = db.tx(() -> branch.getUuid());
+			String fromUuud = db.tx(() -> fromVersion.getUuid());
+			String toUuid = db.tx(() -> toVersion.getUuid());
 
 			// Prepare the migration - Collect the migration scripts
 			Set<String> touchedFields = new HashSet<>();
 			try {
 				db.tx(() -> {
-					prepareMigration(reloadVersion(fromVersion), touchedFields);
+					HibSchemaVersion currentVersion = reloadVersion(fromVersion);
+					do {
+						prepareMigration(currentVersion, touchedFields);
+						currentVersion = currentVersion.getNextVersion();
+					} while (currentVersion != null && !currentVersion.getUuid().equals(toUuid));
+
 					if (status != null) {
 						status.setStatus(RUNNING);
 						status.commit();
 					}
 				});
 			} catch (Exception e) {
-				log.error("Error while preparing migration");
 				return Completable.error(e);
 			}
 
-			// Get the draft containers that need to be transformed. Containers which need to be transformed are those which are still linked to older schema
-			// versions. We'll work on drafts. The migration code will later on also handle publish versions.
-			Queue<? extends HibNodeFieldContainer> containers = db.tx(tx -> {
-				SchemaDao schemaDao = tx.schemaDao();
-				return schemaDao.findDraftFieldContainers(fromVersion, branch.getUuid()).stream()
-						.collect(Collectors.toCollection(ArrayDeque::new));
-			});
+			int batchSize = options.getContentOptions().getBatchSize();
+			long batched = 0;
+			int currentBatch = 0;
+			List<Exception> errorsDetected;
 
-			if (metrics.isEnabled()) {
-				migrationGauge.set(containers.size());
-			}
+			do {
+				// Get the draft containers that need to be transformed. Containers which need to be transformed are those which are still linked to older schema
+				// versions. We'll work on drafts. The migration code will later on also handle publish versions.
+				Queue<? extends HibNodeFieldContainer> containers = db.tx(tx -> {
+					SchemaDao schemaDao = tx.schemaDao();
+					return schemaDao.findDraftFieldContainers(fromVersion, branchUuid, batchSize).stream()
+							.collect(Collectors.toCollection(ArrayDeque::new));
+				});
+				currentBatch = containers.size();
+				batched += currentBatch;
 
-			// No field containers, migration is done
-			if (containers.isEmpty()) {
-				if (status != null) {
-					db.tx(() -> {
-						status.setStatus(COMPLETED);
-						status.commit();
-					});
-				}
-				return Completable.complete();
-			}
-
-			List<Exception> errorsDetected = migrateLoop(containers, cause, status, (batch, containerList, errors) -> {
-				try (WriteLock lock = writeLock.lock(context)) {
-					beforeBatchMigration(containerList, context);
-					List<Pair<HibNodeFieldContainer, HibNodeFieldContainer>> toPurge = new ArrayList<>();
-					for (HibNodeFieldContainer container : containerList) {
-						Pair<HibNodeFieldContainer, HibNodeFieldContainer> toPurgePair = migrateContainer(context, batch, container, errors, touchedFields);
-						if (toPurgePair != null) {
-							toPurge.add(toPurgePair);
-						}
-					}
-
-					List<HibNodeFieldContainer> toPurgeList = filterPurgeable(toPurge);
-					bulkPurge(toPurgeList);
+				if (metrics.isEnabled()) {
+					migrationGauge.set(batched);
 				}
 				if (metrics.isEnabled()) {
-					migrationGauge.decrementAndGet();
+					log.info("Batch: {} fetched, from {} to {}, branch {}", batched, fromUuud, toUuid, branchUuid);
 				}
-			});
+
+				// No field containers, migration is done
+				if (containers.isEmpty()) {
+					if (status != null) {
+						db.tx(() -> {
+							status.setStatus(COMPLETED);
+							status.commit();
+						});
+					}
+					return Completable.complete();
+				}
+
+				errorsDetected = migrateLoop(containers, cause, status, (batch, containerList, errors) -> {
+					try (WriteLock lock = writeLock.lock(context)) {
+						beforeBatchMigration(containerList, context);
+						List<Pair<HibNodeFieldContainer, HibNodeFieldContainer>> toPurge = new ArrayList<>();
+						for (HibNodeFieldContainer container : containerList) {
+							Pair<HibNodeFieldContainer, HibNodeFieldContainer> toPurgePair = migrateContainer(context, batch, container, errors, touchedFields);
+							if (toPurgePair != null) {
+								toPurge.add(toPurgePair);
+							}
+						}
+
+						List<HibNodeFieldContainer> toPurgeList = filterPurgeable(toPurge);
+						bulkPurge(toPurgeList);
+					}
+					if (metrics.isEnabled()) {
+						migrationGauge.decrementAndGet();
+					}
+				});
+
+				// when containers is not empty, something bad happened and we need to let the migration fail immediately
+				if (!containers.isEmpty()) {
+					if (errorsDetected.size() > 1) {
+						return Completable.error(new CompositeException(errorsDetected));
+					} else if (errorsDetected.size() == 1) {
+						return Completable.error(errorsDetected.get(0));
+					} else {
+						return Completable.error(new MigrationAbortedException("Not all containers of the current batch were migrated."));
+					}
+				}
+			} while (batchSize > 0 && currentBatch > 0 && currentBatch >= batchSize);
 
 			// TODO prepare errors. They should be easy to understand and to grasp
 			Completable result = Completable.complete();
@@ -222,7 +256,11 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 						log.error("Encountered migration error.", error);
 					}
 				}
-				result = Completable.error(new CompositeException(errorsDetected));
+				if (errorsDetected.size() == 1) {
+					result = Completable.error(errorsDetected.get(0));
+				} else {
+					result = Completable.error(new CompositeException(errorsDetected));
+				}
 			}
 			return result;
 		});

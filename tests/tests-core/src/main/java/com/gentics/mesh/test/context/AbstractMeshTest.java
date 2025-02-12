@@ -1,5 +1,6 @@
 package com.gentics.mesh.test.context;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -9,11 +10,16 @@ import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -22,35 +28,25 @@ import org.junit.rules.Timeout;
 
 import com.gentics.mesh.cli.AbstractBootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.dao.DaoTransformable;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.test.context.event.EventAsserter;
 import com.gentics.mesh.test.docker.ElasticsearchContainer;
 import com.gentics.mesh.test.util.MeshAssert;
 
 import eu.rekawek.toxiproxy.model.ToxicList;
 import io.reactivex.functions.Action;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.logging.SLF4JLogDelegateFactory;
 import io.vertx.ext.web.RoutingContext;
 import okhttp3.OkHttpClient;
 
 public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelper, PluginHelper, WrapperHelper {
-
-	static {
-		// New OrientDBs have aggressive memory preallocation, which can eat the whole RAM with an eventual crash, so we disable it.
-		System.setProperty("memory.directMemory.preallocate", "false");
-		// Use slf4j instead of JUL
-		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
-		// Disable direct IO (My dev system uses ZFS. Otherwise the test will not run)
-		if ("jotschi".equalsIgnoreCase(System.getProperty("user.name"))) {
-			System.setProperty("storage.wal.allowDirectIO", "false");
-		}
-
-	}
 
 	private OkHttpClient httpClient;
 
@@ -78,6 +74,7 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 	@Before
 	public void setupEventAsserter() {
 		eventAsserter = new EventAsserter(getTestContext());
+		testContext.waitAndClearSearchIdleEvents();
 	}
 
 	@After
@@ -87,7 +84,7 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 
 	@After
 	public void resetSearchVerticle() throws Exception {
-		((AbstractBootstrapInitializer) boot()).loader.get().redeploySearchVerticle().blockingAwait();
+		((AbstractBootstrapInitializer) boot()).getCoreVerticleLoader().redeploySearchVerticle().blockingAwait();
 	}
 
 	public OkHttpClient httpClient() {
@@ -110,7 +107,7 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 	public String getJson(HibNode node) throws Exception {
 		InternalActionContext ac = mockActionContext("lang=en&version=draft");
 		return tx(tx -> {
-			return tx.nodeDao().transformToRestSync(node, ac, 0).toJson();
+			return tx.nodeDao().transformToRestSync(node, ac, 0).toJson(false);
 		});
 	}
 
@@ -225,4 +222,46 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 		return eventAsserter;
 	}
 
+	/**
+	 * Transform the entity into its REST Model (using the given dao instance).
+	 * Assert that the REST Model contains the given attributes with values (which
+	 * are extracted from the entity). This will also set restricting the returned
+	 * fields with the {@link GenericParameters#FIELDS_PARAM_KEY}, which is set to
+	 * subsets of the given attribute names.
+	 * 
+	 * @param <T>        type of the entity
+	 * @param <R>        type of the Rest model
+	 * @param dao        dao instance
+	 * @param entity     entity
+	 * @param attributes list of pairs of attribute names and functions, which will
+	 *                   extract the attribute value from the entity
+	 */
+	@SafeVarargs
+	protected final <T, R extends RestModel> void doTransformationTests(DaoTransformable<T, R> dao, T entity,
+			Pair<String, Function<T, Object>>... attributes) {
+		RoutingContext rc = mockRoutingContext();
+		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+		R restModel = dao.transformToRestSync(entity, ac, 0);
+
+		List<Pair<String, Function<T, Object>>> attributeList = Arrays.asList(attributes);
+
+		assertThat(restModel).as("Rest Model").isNotNull();
+		for (Pair<String, Function<T, Object>> attr : attributeList) {
+			assertThat(restModel).as("Rest Model").hasFieldOrPropertyWithValue(attr.getLeft(),
+					attr.getRight().apply(entity));
+		}
+
+		for (Pair<String, Function<T, Object>> missing : attributeList) {
+			String fieldsParameterValue = attributeList.stream().filter(pair -> !Objects.equals(pair, missing)).map(Pair::getLeft).collect(Collectors.joining(","));
+			ac.setParameter(GenericParameters.FIELDS_PARAM_KEY, fieldsParameterValue);
+
+			restModel = dao.transformToRestSync(entity, ac, 0);
+			assertThat(restModel).as("Rest Model with fields parameter '" + fieldsParameterValue + "'").isNotNull();
+			for (Pair<String, Function<T, Object>> attr : attributeList) {
+				boolean isMissingAttribute = Objects.equals(attr, missing);
+				assertThat(restModel).as("Rest Model with fields parameter '" + fieldsParameterValue + "'")
+						.hasFieldOrPropertyWithValue(attr.getLeft(), isMissingAttribute ? null : attr.getRight().apply(entity));
+			}
+		}
+	}
 }

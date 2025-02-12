@@ -8,6 +8,9 @@
         "type" : "object",
         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:admin:cluster:ClusterInstanceInfo",
         "properties" : {
+          "uuid" : {
+            "type" : "string"
+          },
           "address" : {
             "type" : "string"
           },

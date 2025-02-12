@@ -18,6 +18,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -39,6 +40,7 @@ import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -49,6 +51,7 @@ import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
+import com.gentics.mesh.parameter.impl.SortingParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
@@ -331,6 +334,26 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertEquals(nRoles + initialRolesCount, response.getMetainfo().getTotalCount());
 		assertEquals(25, response.getMetainfo().getPerPage().longValue());
 
+		verifySorting(param -> call(() -> client().findRoles(param)), RoleResponse::getName, "name", "List of role names");
+	}
+
+	@Test
+	@Override
+	public void testReadPermittedSorted() throws Exception {
+		for (int i = 0; i < 10; i++) {
+			final String name = "test12345_" + i;
+			RoleCreateRequest request = new RoleCreateRequest();
+			request.setName(name);
+			RoleResponse response = call(() -> client().createRole(request));
+			if ((i % 2) == 0) {
+				tx(tx -> {
+					tx.roleDao().revokePermissions(role(), tx.roleDao().findByUuid(response.getUuid()), READ_PERM);
+				});
+			}
+		}
+		RoleListResponse list = call(() -> client().findRoles(new SortingParametersImpl("name", SortOrder.DESCENDING)));
+		assertEquals("Total data size should be 8", 8, list.getData().size());
+		assertThat(list.getData()).isSortedAccordingTo((a, b) -> b.getName().compareTo(a.getName()));
 	}
 
 	@Test
@@ -456,7 +479,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertThat(event).hasName("extra role").hasUuid(extraRoleUuid);
 		});
 
-		trackingSearchProvider().clear().blockingAwait();
+		waitAndClearSearchIdleEvents();
 		call(() -> client().deleteRole(extraRoleUuid));
 
 		awaitEvents();

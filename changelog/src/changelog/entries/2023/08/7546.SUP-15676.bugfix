@@ -1,0 +1,1 @@
+GraphQL: Link resolving in graphql queries ignored the language tags in the links. This has been fixed.

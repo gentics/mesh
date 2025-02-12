@@ -1,0 +1,2 @@
+Java Rest Client: After logging in with the `login()` method, the login token was never refreshed, which caused it to expire after the configured token expiration time (per default 1 hour),
+even if the client was used to do requests. This has been changed now, so that the login token in the client will be refreshed on every request to mesh.

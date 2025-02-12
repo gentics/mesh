@@ -3,14 +3,15 @@ package com.gentics.mesh.core.perm;
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.EnumSet;
 import java.util.Set;
+import java.util.UUID;
 
 import org.junit.Before;
 import org.junit.Test;
 
+import com.gentics.mesh.cache.PermissionCache;
+import com.gentics.mesh.cache.PermissionCacheImpl;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.context.impl.DummyEventQueueBatch;
@@ -23,6 +24,7 @@ import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.util.UUIDUtil;
 
 /**
  * Test cases for usage and clearing of PermissionCache
@@ -219,6 +221,34 @@ public class PermissionCacheTest extends AbstractMeshTest {
 			tx.userDao().update(user, ac, new DummyEventQueueBatch());
 		});
 		assertPermissions("revoking admin flag");
+	}
+
+	/**
+	 * Test that mutations of permission entries fetched from the cache will not change the cached entry itself
+	 */
+	@Test
+	public void testMutateCachedEntry() {
+		UUID userId = UUIDUtil.toJavaUuid(UUIDUtil.randomUUID());
+		UUID elementId = UUIDUtil.toJavaUuid(UUIDUtil.randomUUID());
+
+		// store permission in the cache
+		db().tx(tx -> {
+			EnumSet<InternalPermission> cached = EnumSet.of(InternalPermission.CREATE_PERM, InternalPermission.UPDATE_PERM);
+			tx.permissionCache().store(userId, cached, elementId);
+		});
+
+		// get stored permission and mutate
+		EnumSet<InternalPermission> cached = db().tx(tx -> {
+			return tx.permissionCache().get(userId, elementId);
+		});
+		assertThat(cached).as("Cached permissions").isNotNull().containsOnly(InternalPermission.CREATE_PERM, InternalPermission.UPDATE_PERM);
+		cached.add(InternalPermission.READ_PERM);
+
+		// get again
+		cached =  db().tx(tx -> {
+			return tx.permissionCache().get(userId, elementId);
+		});
+		assertThat(cached).as("Cached permissions").isNotNull().containsOnly(InternalPermission.CREATE_PERM, InternalPermission.UPDATE_PERM);
 	}
 
 	/**

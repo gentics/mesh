@@ -13,8 +13,8 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.event.EventQueueBatch;
 
 import io.reactivex.Completable;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Context which tracks recursive and bulk actions.
@@ -54,8 +54,6 @@ public class BulkActionContextImpl implements BulkActionContext {
 	public void process(boolean force) {
 		if (elementCounter.incrementAndGet() >= DEFAULT_BATCH_SIZE || force) {
 			log.info("Processing transaction batch {" + batchCounter.get() + "}. I counted {" + elementCounter.get() + "} elements.");
-			// Check before commit to ensure we are 100% safe
-			db.blockingTopologyLockCheck();
 			Tx.get().commit();
 			Completable.merge(asyncActions).subscribe(() -> {
 				log.trace("Async action processed");

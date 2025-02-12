@@ -5,8 +5,11 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.auth.MeshAuthChainImpl;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
@@ -23,13 +26,13 @@ public class ProjectInfoEndpoint extends AbstractInternalEndpoint {
 	private ProjectCrudHandler crudHandler;
 
 	@Inject
-	public ProjectInfoEndpoint(MeshAuthChainImpl chain, ProjectCrudHandler crudHandler) {
-		super(null, chain);
+	public ProjectInfoEndpoint(MeshAuthChain chain, ProjectCrudHandler crudHandler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+		super(null, chain, localConfigApi, db, options);
 		this.crudHandler = crudHandler;
 	}
 
 	public ProjectInfoEndpoint() {
-		super("", null);
+		super("", null, null, null, null);
 	}
 
 	@Override

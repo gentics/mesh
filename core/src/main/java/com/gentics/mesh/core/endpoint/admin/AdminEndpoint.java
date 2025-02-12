@@ -1,13 +1,5 @@
 package com.gentics.mesh.core.endpoint.admin;
 
-import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_BACKUP_FINISHED;
-import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_BACKUP_START;
-import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_EXPORT_FINISHED;
-import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_EXPORT_START;
-import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_IMPORT_FINISHED;
-import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_IMPORT_START;
-import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_RESTORE_FINISHED;
-import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_RESTORE_START;
 import static com.gentics.mesh.core.rest.MeshEvent.PLUGIN_DEPLOYED;
 import static com.gentics.mesh.core.rest.MeshEvent.PLUGIN_DEPLOYING;
 import static com.gentics.mesh.core.rest.MeshEvent.PLUGIN_UNDEPLOYED;
@@ -26,17 +18,17 @@ import static io.vertx.core.http.HttpMethod.POST;
 
 import java.util.function.BiConsumer;
 
-import javax.inject.Inject;
-
 import com.gentics.mesh.MeshStatus;
-import com.gentics.mesh.auth.MeshAuthChainImpl;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoHandler;
 import com.gentics.mesh.core.endpoint.admin.plugin.PluginHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.parameter.impl.BackupParametersImpl;
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.parameter.impl.ConsistencyCheckParametersImpl;
 import com.gentics.mesh.parameter.impl.JobParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
@@ -47,29 +39,28 @@ import io.vertx.ext.web.RoutingContext;
 /**
  * The admin verticle provides core administration rest endpoints.
  */
-public class AdminEndpoint extends AbstractInternalEndpoint {
+public abstract class AdminEndpoint extends AbstractInternalEndpoint {
 
-	private AdminHandler adminHandler;
+	protected AdminHandler adminHandler;
 
-	private JobHandler jobHandler;
+	protected JobHandler jobHandler;
 
-	private ConsistencyCheckHandler consistencyHandler;
+	protected ConsistencyCheckHandler consistencyHandler;
 
-	private PluginHandler pluginHandler;
+	protected PluginHandler pluginHandler;
 
-	private DebugInfoHandler debugInfoHandler;
+	protected DebugInfoHandler debugInfoHandler;
 
-	private LocalConfigHandler localConfigHandler;
+	protected LocalConfigHandler localConfigHandler;
 
-	private ShutdownHandler shutdownHandler;
+	protected ShutdownHandler shutdownHandler;
 
-	private HandlerUtilities handlerUtilities;
+	protected HandlerUtilities handlerUtilities;
 
-	@Inject
-	public AdminEndpoint(MeshAuthChainImpl chain, AdminHandler adminHandler, JobHandler jobHandler, ConsistencyCheckHandler consistencyHandler,
+	public AdminEndpoint(MeshAuthChain chain, AdminHandler adminHandler, JobHandler jobHandler, ConsistencyCheckHandler consistencyHandler,
 		PluginHandler pluginHandler, DebugInfoHandler debugInfoHandler, LocalConfigHandler localConfigHandler, ShutdownHandler shutdownHandler,
-		HandlerUtilities handlerUtilities) {
-		super("admin", chain);
+		HandlerUtilities handlerUtilities, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+		super("admin", chain, localConfigApi, db, options);
 		this.adminHandler = adminHandler;
 		this.jobHandler = jobHandler;
 		this.consistencyHandler = consistencyHandler;
@@ -80,8 +71,8 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		this.handlerUtilities = handlerUtilities;
 	}
 
-	public AdminEndpoint() {
-		super("admin", null);
+	protected AdminEndpoint() {
+		super("admin", null, null, null, null);
 	}
 
 	@Override
@@ -98,15 +89,12 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 
 		addSecurityLogger();
 
-		addBackupHandler();
-		addRestoreHandler();
+		//addBackupHandler();
+		//addRestoreHandler();
 		addClusterStatusHandler();
-		addClusterConfigHandler();
 		addConsistencyCheckHandler();
-		addImportHandler();
-		addExportHandler();
-		// addVerticleHandler();
-		// addServiceHandler();
+		//addImportHandler();
+		//addExportHandler();
 		addJobHandler();
 		addPluginHandler();
 		addDebugInfoHandler();
@@ -116,14 +104,14 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		addCacheHandler();
 	}
 
-	private void addSecurityLogger() {
+	protected void addSecurityLogger() {
 		getRouter().route().handler(internalHandler((rc, ac) -> {
 			ac.getSecurityLogger().info("Accessed path " + rc.request().path());
 			rc.next();
 		}));
 	}
 
-	private void addPluginHandler() {
+	protected void addPluginHandler() {
 		InternalEndpointRoute deployEndpoint = createRoute();
 		deployEndpoint.path("/plugins");
 		deployEndpoint.method(POST);
@@ -135,7 +123,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		deployEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			pluginHandler.handleDeploy(ac);
-		});
+		}, isOrderedBlockingHandlers());
 
 		InternalEndpointRoute undeployEndpoint = createRoute();
 		undeployEndpoint.path("/plugins/:id");
@@ -149,7 +137,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("id");
 			pluginHandler.handleUndeploy(ac, uuid);
-		});
+		}, isOrderedBlockingHandlers());
 
 		InternalEndpointRoute readEndpoint = createRoute();
 		readEndpoint.path("/plugins/:uuid");
@@ -179,7 +167,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 	 * @deprecated Use monitoring server endpoint instead
 	 */
 	@Deprecated
-	private void addClusterStatusHandler() {
+	protected void addClusterStatusHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/cluster/status");
 		endpoint.method(GET);
@@ -191,37 +179,17 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		}, false);
 	}
 
-	private void addClusterConfigHandler() {
-		InternalEndpointRoute endpoint = createRoute();
-		endpoint.path("/cluster/config");
-		endpoint.method(GET);
-		endpoint.description("Loads the cluster configuration.");
-		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(OK, adminExamples.createClusterConfigResponse(), "Currently active cluster configuration.");
-		endpoint.blockingHandler(rc -> {
-			adminHandler.handleLoadClusterConfig(wrap(rc));
-		}, false);
-
-		InternalEndpointRoute updateEndpoint = createRoute();
-		updateEndpoint.path("/cluster/config");
-		updateEndpoint.method(POST);
-		updateEndpoint.description("Update the cluster configuration.");
-		updateEndpoint.produces(APPLICATION_JSON);
-		updateEndpoint.exampleRequest(adminExamples.createClusterConfigRequest());
-		updateEndpoint.exampleResponse(OK, adminExamples.createClusterConfigResponse(), "Updated cluster configuration.");
-		updateEndpoint.blockingHandler(rc -> {
-			adminHandler.handleUpdateClusterConfig(wrap(rc));
-		});
-	}
-
-	private void addConsistencyCheckHandler() {
+	protected void addConsistencyCheckHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/consistency/check");
 		endpoint.method(GET);
 		endpoint.description(
-			"Invokes a consistency check of the graph database without attempting to repairing the found issues. A list of found issues will be returned.");
+			"Invokes a consistency check of the graph database without attempting to repairing the found issues. A list of found issues will be returned. "
+					+ "When an `async=true` query parameter is used, a new consistency check Job is queued, and the check results should be obtained with the call to the link:#admin_jobs__jobUuid__get[corresponding job]."
+					+ "Please note that some checks do require an `async` flag set.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, adminExamples.createConsistencyCheckResponse(false), "Consistency check report");
+		endpoint.addQueryParameters(ConsistencyCheckParametersImpl.class);
 		endpoint.blockingHandler(rc -> {
 			consistencyHandler.invokeCheck(wrap(rc));
 		}, false);
@@ -230,71 +198,16 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		repairEndpoint.path("/consistency/repair");
 		repairEndpoint.method(POST);
 		repairEndpoint
-			.description("Invokes a consistency check and repair of the graph database and returns a list of found issues and their state.");
+			.description("Invokes a consistency check and repair of the graph database and returns a list of found issues and their state. "
+					+ "When an `async=true` query parameter is used, a new consistency repair Job is queued, and the repair results should be obtained with the call to the link:#admin_jobs__jobUuid__get[corresponding job]. "
+					+ "Please note that some repairs do require an `async` flag set.");
 		repairEndpoint.produces(APPLICATION_JSON);
 		repairEndpoint.exampleResponse(OK, adminExamples.createConsistencyCheckResponse(true), "Consistency check and repair report");
 		repairEndpoint.events(REPAIR_START, REPAIR_FINISHED);
+		repairEndpoint.addQueryParameters(ConsistencyCheckParametersImpl.class);
 		repairEndpoint.blockingHandler(rc -> {
 			consistencyHandler.invokeRepair(wrap(rc));
-		});
-	}
-
-	private void addExportHandler() {
-		InternalEndpointRoute endpoint = createRoute();
-		endpoint.path("/graphdb/export");
-		endpoint.method(POST);
-		endpoint.setMutating(false);
-		endpoint.description("Invoke a orientdb graph database export. Irrelevant for non-OrientDB server.");
-		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Export process was invoked.");
-		endpoint.events(GRAPH_EXPORT_START, GRAPH_EXPORT_FINISHED);
-		endpoint.blockingHandler(rc -> {
-			adminHandler.handleExport(wrap(rc));
-		}, false);
-	}
-
-	private void addImportHandler() {
-		InternalEndpointRoute endpoint = createRoute();
-		endpoint.path("/graphdb/import");
-		endpoint.method(POST);
-		endpoint.description(
-			"Invoke a orientdb graph database import. The latest import file from the import directory will be used for this operation. Irrelevant for non-OrientDB server.");
-		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Database import command was invoked.");
-		endpoint.events(GRAPH_IMPORT_START, GRAPH_IMPORT_FINISHED);
-		endpoint.blockingHandler(rc -> {
-			adminHandler.handleImport(wrap(rc));
-		});
-	}
-
-	private void addRestoreHandler() {
-		InternalEndpointRoute endpoint = createRoute();
-		endpoint.path("/graphdb/restore");
-		endpoint.description(
-			"Invoke a graph database restore. The latest dump from the backup directory will be inserted. Please note that this operation will block all current operation and effectively destroy all previously stored data. Irrelevant for non-OrientDB server.");
-		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Database restore command was invoked.");
-		endpoint.method(POST);
-		endpoint.events(GRAPH_RESTORE_START, GRAPH_RESTORE_FINISHED);
-		endpoint.blockingHandler(rc -> {
-			adminHandler.handleRestore(wrap(rc));
-		});
-	}
-
-	private void addBackupHandler() {
-		InternalEndpointRoute endpoint = createRoute();
-		endpoint.path("/graphdb/backup");
-		endpoint.method(POST);
-		endpoint.setMutating(false);
-		endpoint.addQueryParameters(BackupParametersImpl.class);
-		endpoint.description(
-			"Invoke a graph database backup and dump the data to the configured backup location. Note that this operation will block all current operation. Irrelevant for non-OrientDB server.");
-		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Incremental backup was invoked.");
-		endpoint.events(GRAPH_BACKUP_START, GRAPH_BACKUP_FINISHED);
-		endpoint.blockingHandler(rc -> {
-			adminHandler.handleBackup(wrap(rc));
-		});
+		}, isOrderedBlockingHandlers());
 	}
 
 	/**
@@ -303,7 +216,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 	 * @deprecated Use monitoring server status endpoint instead
 	 */
 	@Deprecated
-	private void addMeshStatusHandler() {
+	protected void addMeshStatusHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.description("Return the Gentics Mesh server status.");
 		endpoint.path("/status");
@@ -318,8 +231,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 
 	}
 
-	private void addJobHandler() {
-
+	protected void addJobHandler() {
 		InternalEndpointRoute invokeJobWorker = createRoute();
 		invokeJobWorker.path("/processJobs");
 		invokeJobWorker.method(POST);
@@ -329,7 +241,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		invokeJobWorker.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			jobHandler.handleInvokeJobWorker(ac);
-		});
+		}, isOrderedBlockingHandlers());
 
 		InternalEndpointRoute readJobList = createRoute();
 		readJobList.path("/jobs");
@@ -366,7 +278,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("jobUuid");
 			jobHandler.handleDelete(ac, uuid);
-		});
+		}, isOrderedBlockingHandlers());
 
 		InternalEndpointRoute processJob = createRoute();
 		processJob.path("/jobs/:jobUuid/process");
@@ -378,7 +290,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("jobUuid");
 			jobHandler.handleProcess(ac, uuid);
-		});
+		}, isOrderedBlockingHandlers());
 
 		InternalEndpointRoute resetJob = createRoute();
 		resetJob.path("/jobs/:jobUuid/error");
@@ -390,10 +302,10 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("jobUuid");
 			jobHandler.handleResetJob(ac, uuid);
-		});
+		}, isOrderedBlockingHandlers());
 	}
 
-	private void addDebugInfoHandler() {
+	protected void addDebugInfoHandler() {
 		InternalEndpointRoute route = createRoute();
 		route.path("/debuginfo");
 		route.method(GET);
@@ -404,7 +316,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		route.handler(rc -> debugInfoHandler.handle(rc));
 	}
 
-	private void addRuntimeConfigHandler() {
+	protected void addRuntimeConfigHandler() {
 		InternalEndpointRoute getRoute = createRoute();
 		getRoute.path("/config");
 		getRoute.method(GET);
@@ -423,7 +335,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		postRoute.handler(rc -> localConfigHandler.handleSetActiveConfig(wrap(rc)));
 	}
 
-	private void addShutdownHandler() {
+	protected void addShutdownHandler() {
 		InternalEndpointRoute postRoute = createRoute();
 		postRoute.path("/shutdown");
 		postRoute.method(POST);
@@ -431,11 +343,11 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		postRoute.description("Initiates shutdown of this instance.");
 		postRoute.exampleResponse(OK, miscExamples.createMessageResponse(), "Shutdown initiated.");
 		postRoute
-			.blockingHandler(rc -> handlerUtilities.requiresAdminRole(rc))
+			.blockingHandler(rc -> handlerUtilities.requiresAdminRole(rc), isOrderedBlockingHandlers())
 			.handler(rc -> shutdownHandler.shutdown(wrap(rc)));
 	}
 
-	private void addCoordinatorHandler() {
+	protected void addCoordinatorHandler() {
 		InternalEndpointRoute loadMaster = createRoute();
 		loadMaster.path("/coordinator/master");
 		loadMaster.method(GET);
@@ -451,26 +363,9 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		electMaster.description("Make this instance the coordination master.");
 		electMaster.exampleResponse(OK, miscExamples.createMessageResponse(), "Election status message.");
 		electMaster.handler(rc -> adminHandler.handleSetCoordinationMaster(wrap(rc)));
-
-		InternalEndpointRoute loadConfig = createRoute();
-		loadConfig.path("/coordinator/config");
-		loadConfig.method(GET);
-		loadConfig.produces(APPLICATION_JSON);
-		loadConfig.description("Returns the currently active coordination configuration.");
-		loadConfig.exampleResponse(OK, adminExamples.createCoordinatorConfig(), "The currently active coordination config on this instance.");
-		loadConfig.handler(rc -> adminHandler.handleLoadCoordinationConfig(wrap(rc)));
-
-		InternalEndpointRoute updateConfig = createRoute();
-		updateConfig.path("/coordinator/config");
-		updateConfig.method(POST);
-		updateConfig.produces(APPLICATION_JSON);
-		updateConfig.description("Update the coordinator configuration of this instance. Note that the updated config will not be persisted.");
-		updateConfig.exampleResponse(OK, adminExamples.createCoordinatorConfig(), "The currently active config on this instance.");
-		updateConfig.exampleRequest(adminExamples.createCoordinatorConfigRequest());
-		updateConfig.handler(rc -> adminHandler.handleUpdateCoordinationConfig(wrap(rc)));
 	}
 
-	private void addCacheHandler() {
+	protected void addCacheHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/cache");
 		endpoint.method(DELETE);
@@ -487,6 +382,4 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 	static Handler<RoutingContext> internalHandler(BiConsumer<RoutingContext, InternalActionContext> handler) {
 		return ctx -> handler.accept(ctx, new InternalRoutingActionContextImpl(ctx));
 	}
-
-
 }

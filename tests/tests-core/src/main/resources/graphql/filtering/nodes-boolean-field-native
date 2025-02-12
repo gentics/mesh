@@ -1,0 +1,66 @@
+{
+	booleanEqualsTrue: nodes(filter: {
+		schema: {is: folder}
+		fields: {
+			folder: {
+				boolean: true
+			}
+		}
+	}) {
+		# [$.data.booleanEqualsTrue.elements.length()=1]
+		elements {
+			...output
+		}
+	}
+
+	notBooleanEqualsTrue: nodes(filter: {
+		schema: {is: folder}
+		not: {
+			fields: {
+				folder: {
+					boolean: true
+				}
+			}
+		}
+	}) {
+		# [$.data.notBooleanEqualsTrue.elements.length()=8]
+		elements {
+			...output
+		}
+	}
+
+	booleanEqualsFalse: nodes(filter: {
+		schema: {is: folder}
+		fields: {
+			folder: {
+				boolean: false
+			}
+		}
+	}) {
+		# [$.data.booleanEqualsFalse.elements.length()=0]
+		elements {
+			...output
+		}
+	}
+
+	notBooleanEqualsFalse: nodes(filter: {
+		schema: {is: folder}
+		not: {
+			fields: {
+				folder: {
+					boolean: false
+				}
+			}
+		}
+	}) {
+		# [$.data.notBooleanEqualsFalse.elements.length()=9]
+		elements {
+			...output
+		}
+	}
+}
+# [$.errors=<is-undefined>]
+
+fragment output on Node {
+	uuid
+}

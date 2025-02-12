@@ -13,10 +13,10 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 
-import io.vertx.core.http.*;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
@@ -30,20 +30,19 @@ import com.gentics.mesh.util.VersionUtil;
 import io.reactivex.Completable;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpClientOptions;
+import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.http.HttpClientResponse;
+import io.vertx.core.http.HttpMethod;
+import io.vertx.core.http.RequestOptions;
 import io.vertx.core.impl.launcher.commands.VersionCommand;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.logging.SLF4JLogDelegateFactory;
 
 /**
  * @see Mesh
  */
 public class MeshImpl implements Mesh {
-
-	private static AtomicLong instanceCounter = new AtomicLong(0);
-
-	private static final Logger log;
+	private static final Logger log = LoggerFactory.getLogger(MeshImpl.class);
 	private final MeshComponent.Builder builder;
 
 	private MeshCustomLoader<Vertx> verticleLoader;
@@ -58,20 +57,8 @@ public class MeshImpl implements Mesh {
 
 	boolean shutdown = false;
 
-	static {
-		// Use slf4j instead of jul
-		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
-		log = LoggerFactory.getLogger(MeshImpl.class);
-	}
-
 	public MeshImpl(MeshOptions options, MeshComponent.Builder builder) {
 		this.builder = builder;
-		long current = instanceCounter.incrementAndGet();
-		if (current >= 2) {
-			if (options.getClusterOptions().isEnabled()) {
-				throw new RuntimeException("Clustering is currently limited to a single instance mode.");
-			}
-		}
 		Objects.requireNonNull(options, "Please specify a valid options object.");
 		this.options = options;
 	}
@@ -136,7 +123,7 @@ public class MeshImpl implements Mesh {
 		try {
 			meshInternal.boot().init(this, forceIndexSync, options, verticleLoader);
 		} catch (Throwable e1) {
-			log.fatal("Fatal error on Mesh init", e1);
+			log.error("FATAL: error on Mesh init", e1);
 			shutdown();
 			return this;
 		}
@@ -144,9 +131,7 @@ public class MeshImpl implements Mesh {
 			try {
 				invokeUpdateCheck();
 			} catch (Exception e) {
-				if (log.isTraceEnabled()) {
-					log.trace("Error while checking for updates", e);
-				}
+				log.debug("Error while checking for updates", e);
 			}
 		}
 
@@ -162,7 +147,7 @@ public class MeshImpl implements Mesh {
 		File keystoreFile = new File(keyStorePath);
 		// Copy the demo keystore file to the destination
 		if (!keystoreFile.exists()) {
-			log.info("Could not find keystore {" + keyStorePath + "}. Creating one for you..");
+			log.info("Could not find keystore {" + keyStorePath + "}. Creating one for you...");
 			if (keystoreFile.getParentFile() == null) {
 				log.debug("No parent directory for keystore found. Trying to create the keystore in the mesh root directory.");
 			} else {
@@ -189,11 +174,11 @@ public class MeshImpl implements Mesh {
 	 */
 	private void checkSystemRequirements() {
 		try {
-			// The needed nashorn classfilter was added in JRE 1.8.0 40
-			getClass().getClassLoader().loadClass("jdk.nashorn.api.scripting.ClassFilter");
+			// The needed nashorn classfilter was removed from the JRE 15 (https://openjdk.org/jeps/372)
+			getClass().getClassLoader().loadClass("org.openjdk.nashorn.api.scripting.ClassFilter");
 		} catch (ClassNotFoundException e) {
 			log.error(
-				"The nashorn classfilter could not be found. You are most likely using an outdated JRE 8. Please update to at least JRE 1.8.0_40");
+				"The nashorn classfilter could not be found. Make sure the required dependencies are in the classpath");
 			System.exit(10);
 		}
 	}
@@ -248,13 +233,11 @@ public class MeshImpl implements Mesh {
 									});
 								}
 							} else {
-								log.info("Failed to check for updates.");
-								log.debug("Reason for failed update check", ar2.cause());
+								log.info("Failed to check for updates ", ar2.cause());
 							}
 						});
 					} else {
-						log.info("Failed to check for updates.");
-						log.debug("Reason for failed update check", ar.cause());
+						log.info("Failed to check for updates", ar.cause());
 					}
 				});
 	}
@@ -335,7 +318,7 @@ public class MeshImpl implements Mesh {
 			log.info("///");
 			log.info("###############################################################");
 		} catch (Exception e) {
-			log.error(e);
+			log.error("April fool joke error :(", e);
 		}
 	}
 
@@ -507,6 +490,7 @@ public class MeshImpl implements Mesh {
 		return meshInternal.pluginManager().getPluginIds();
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T internal() {
 		return (T) meshInternal;

@@ -25,8 +25,8 @@ import dagger.Lazy;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of the {@link EventBusLivenessManager}, which will regularly publish events, which are consumed both
@@ -161,6 +161,9 @@ public final class EventBusLivenessManagerImpl implements EventBusLivenessManage
 						long sinceLastPing = System.currentTimeMillis() - lastNodePingTimestamp;
 						if (errorThreshold > 0 && sinceLastPing > errorThreshold) {
 							log.error("Last ping from {} received {} ms ago", nodeName, sinceLastPing);
+							if (nodeName.equals(options.getNodeName())) {
+								livenessManager.setLive(false, "Last own cluster ping received " + sinceLastPing + " ms ago");
+							}
 						} else if (warnThreshold > 0 && sinceLastPing > warnThreshold) {
 							log.warn("Last ping from {} received {} ms ago", nodeName, sinceLastPing);
 						} else {

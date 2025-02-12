@@ -8,8 +8,8 @@ import java.util.function.BiFunction;
 
 import com.gentics.mesh.core.data.HibBaseElement;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A persisted leaf entity resolver upon the root entity.

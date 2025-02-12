@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh-tests</artifactId>
-		<version>1.10.0-SNAPSHOT</version>
+		<version>3.0.1-SNAPSHOT</version>
 	</parent>
 
 	<dependencies>
@@ -76,6 +76,16 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<dependency>
+			<groupId>org.mock-server</groupId>
+			<artifactId>mockserver-junit-rule</artifactId>
+			<version>5.9.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpcore</artifactId>
+			<version>4.4.13</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -110,6 +120,8 @@
 							<skipInvocation>${skip.test-plugins}</skipInvocation>
 							<properties>
 								<mesh.version>${project.version}</mesh.version>
+								<maven.compiler.source>17</maven.compiler.source>
+   								<maven.compiler.target>17</maven.compiler.target>
 								<skipTests>true</skipTests>
 							</properties>
 							<!-- Somehow invalid build hook are configured -->
@@ -123,21 +135,6 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<forceJavacCompilerUse>true</forceJavacCompilerUse>
-				</configuration>
-				<dependencies>
-					<dependency>
-						<groupId>com.google.dagger</groupId>
-						<artifactId>dagger-compiler</artifactId>
-						<version>${dagger.version}</version>
-						<optional>true</optional>
-					</dependency>
-				</dependencies>
 			</plugin>
 		</plugins>
 	</build>

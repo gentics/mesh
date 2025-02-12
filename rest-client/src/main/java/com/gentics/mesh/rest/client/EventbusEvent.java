@@ -15,13 +15,20 @@ public class EventbusEvent {
 
 	/**
 	 * Parses a websocket text frame.
-	 * @param rawText
+	 * @param rawText The text frame to process.
 	 * @throws IOException
 	 */
 	public EventbusEvent(String rawText) throws IOException {
-		ObjectNode parsed = (ObjectNode) JsonUtil.getMapper().readTree(rawText);
-		address = parsed.get("address").textValue();
-		body = parsed.get("body");
+		this((ObjectNode) JsonUtil.getMapper().readTree(rawText));
+	}
+
+	/**
+	 * Extract address and body from an already parsed text frame.
+	 * @param parsedMessage The parsed text frame.
+	 */
+	public EventbusEvent(ObjectNode parsedMessage) {
+		address = parsedMessage.get("address").textValue();
+		body = parsedMessage.get("body");
 	}
 
 	/**

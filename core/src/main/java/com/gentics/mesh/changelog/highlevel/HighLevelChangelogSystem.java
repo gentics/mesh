@@ -6,8 +6,8 @@ import com.gentics.mesh.cli.PostProcessFlags;
 import com.gentics.mesh.core.data.changelog.HighLevelChange;
 import com.gentics.mesh.core.data.dao.ChangelogDao;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The {@link HighLevelChangelogSystem} is the second layer of changelog processing in Gentics Mesh. In contrast to the low level system does the high level

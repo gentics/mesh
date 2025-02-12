@@ -30,8 +30,8 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeReference;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * GraphQL type provider for plugin types.
@@ -71,14 +71,14 @@ public class PluginTypeProvider extends AbstractTypeProvider {
 				if (p instanceof MeshPlugin) {
 					return p;
 				} else {
-					log.warn("The found plugin is not a Gentics Mesh Plugin");
+					log.error("The found plugin is not a Gentics Mesh Plugin");
 				}
 				return null;
 			}).build();
 	}
 
 	public GraphQLFieldDefinition createPluginPageField() {
-		return newFieldDefinition().name("plugins").description("Load plugins").argument(createPagingArgs())
+		return newFieldDefinition().name("plugins").description("Load plugins").argument(createPagingArgs(false))
 			.type(new GraphQLTypeReference(PLUGIN_PAGE_TYPE_NAME)).dataFetcher(env -> {
 				GraphQLContext gc = env.getContext();
 				if (!gc.getUser().isAdmin()) {

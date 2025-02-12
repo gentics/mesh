@@ -8,11 +8,16 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.jobs.JobProcessor;
+import com.gentics.mesh.distributed.MasterInfoProvider;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.verticle.AbstractJobVerticle;
 
 import dagger.Lazy;
 import io.reactivex.Completable;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.shareddata.Lock;
 
 /**
  * Dedicated verticle which will process jobs.
@@ -35,12 +40,37 @@ public class JobWorkerVerticleImpl extends AbstractJobVerticle implements JobWor
 	private Lazy<BootstrapInitializer> boot;
 	private JobProcessor jobProcessor;
 	private Database db;
+	private final MasterInfoProvider masterInfoProvider;
+	private final boolean clusteringEnabled;
 
 	@Inject
-	public JobWorkerVerticleImpl(Database db, Lazy<BootstrapInitializer> boot, JobProcessor jobProcessor) {
+	public JobWorkerVerticleImpl(Database db, Lazy<BootstrapInitializer> boot, JobProcessor jobProcessor,
+			MeshOptions options, MasterInfoProvider masterInfoProvider) {
 		this.db = db;
 		this.boot = boot;
 		this.jobProcessor = jobProcessor;
+		this.masterInfoProvider = masterInfoProvider;
+		this.clusteringEnabled = options.getClusterOptions().isEnabled();
+	}
+
+	@Override
+	public void start() throws Exception {
+		super.start();
+
+		long migrationTriggerInterval = boot.get().mesh().getOptions().getMigrationTriggerInterval();
+
+		if (migrationTriggerInterval > 0) {
+			vertx.setPeriodic(migrationTriggerInterval, id -> {
+				if (!isCurrentMaster()) {
+					log.debug("Not invoking job processing, because instance is not the current master");
+				} else if (jobProcessor.isProcessing()) {
+					log.debug("Not invoking job processing, because jobs are currently processed");
+				} else {
+					log.debug("Invoke job processing");
+					vertx.eventBus().publish(getJobAdress(), null);
+				}
+			});
+		}
 	}
 
 	@Override
@@ -58,4 +88,20 @@ public class JobWorkerVerticleImpl extends AbstractJobVerticle implements JobWor
 		return Completable.defer(() -> jobProcessor.process());
 	}
 
+	@Override
+	public void doWithLock(long timeout, Handler<AsyncResult<Lock>> resultHandler) {
+		vertx.sharedData().getLockWithTimeout(getLockName(), timeout, resultHandler);
+	}
+
+	/**
+	 * Check whether the instance is currently the master
+	 * @return true for the master (or clustering not enabled)
+	 */
+	private boolean isCurrentMaster() {
+		if (clusteringEnabled) {
+			return masterInfoProvider.isMaster();
+		} else {
+			return true;
+		}
+	}
 }

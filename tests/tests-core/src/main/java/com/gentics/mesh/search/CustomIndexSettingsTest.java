@@ -43,8 +43,8 @@ import com.gentics.mesh.util.IndexOptionHelper;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RunWith(Parameterized.class)
 @MeshTestSetting(testSize = FULL, startServer = true)
@@ -66,7 +66,7 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 		request.addField(FieldUtil.createStringFieldSchema("text").setElasticsearch(new JsonObject().put("bogus", "value")));
 		call(() -> client().createSchema(request, new SchemaUpdateParametersImpl().setStrictValidation(true)), BAD_REQUEST,
 			"schema_error_index_validation",
-			"Failed to parse mapping [" + typeName() + "]: illegal field [bogus], only fields can be specified inside fields");
+			"Failed to parse mapping" + (currentMode == ElasticsearchTestMode.CONTAINER_ES8 ? "" : " [" + typeName() + "]") + ": illegal field [bogus], only fields can be specified inside fields");
 	}
 
 	@Test
@@ -81,7 +81,7 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 		updateRequest.addField(FieldUtil.createStringFieldSchema("text").setElasticsearch(new JsonObject().put("bogus", "value")));
 		call(() -> client().updateSchema(response.getUuid(), updateRequest, new SchemaUpdateParametersImpl().setStrictValidation(true)), BAD_REQUEST,
 			"schema_error_index_validation",
-			"Failed to parse mapping [" + typeName() + "]: illegal field [bogus], only fields can be specified inside fields");
+			"Failed to parse mapping" + (currentMode == ElasticsearchTestMode.CONTAINER_ES8 ? "" : " [" + typeName() + "]") + ": illegal field [bogus], only fields can be specified inside fields");
 	}
 
 	@Test
@@ -168,7 +168,7 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 		assertEquals(ValidationStatus.INVALID, response.getStatus());
 
 		String message = I18NUtil.get(Locale.ENGLISH, "schema_error_index_validation",
-			"Failed to parse mapping [" + typeName() + "]: illegal field [bogus], only fields can be specified inside fields");
+				"Failed to parse mapping" + (currentMode == ElasticsearchTestMode.CONTAINER_ES8 ? "" : " [" + typeName() + "]") + ": illegal field [bogus], only fields can be specified inside fields");
 		assertEquals(message, response.getMessage().getMessage());
 		assertEquals("schema_error_index_validation", response.getMessage().getInternalMessage());
 
@@ -338,10 +338,7 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 	}
 
 	private String typeName() {
-		String name = "default";
-		if (complianceMode() == ComplianceMode.ES_7) {
-			name = "_doc";
-		}
-		return name;
+		// Mapping types have been removed in ES 7 and ES 7+ uses "_doc" as dummy.
+        return complianceMode() == ComplianceMode.ES_6 ? "default" : "_doc";
 	}
 }

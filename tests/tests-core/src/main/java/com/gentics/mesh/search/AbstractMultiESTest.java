@@ -12,6 +12,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import com.gentics.mesh.test.AWSTestMode;
 import com.gentics.mesh.test.ElasticsearchTestMode;
+import com.gentics.mesh.test.MeshCoreOptionChanger;
 import com.gentics.mesh.test.MeshOptionChanger;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.SSLTestMode;
@@ -23,26 +24,20 @@ import com.gentics.mesh.test.context.TestHttpMethods;
 import com.gentics.mesh.test.context.event.EventAsserter;
 import com.gentics.mesh.test.util.MeshAssert;
 
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.logging.SLF4JLogDelegateFactory;
 import okhttp3.OkHttpClient;
 
 public abstract class AbstractMultiESTest implements TestHttpMethods, TestGraphHelper, PluginHelper {
 
-	static {
-		// Use slf4j instead of JUL
-		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
-	}
+	protected OkHttpClient httpClient;
 
-	private OkHttpClient httpClient;
-
-	private static ElasticsearchTestMode currentMode = null;
+	protected static ElasticsearchTestMode currentMode = null;
 
 	@Parameters(name = "{index}: ({0})")
-	public static Collection esVersions() {
+	public static Collection<Object[]> esVersions() {
 		return Arrays.asList(new Object[][] {
 			{ ElasticsearchTestMode.CONTAINER_ES6 },
 			{ ElasticsearchTestMode.CONTAINER_ES7 },
+			{ ElasticsearchTestMode.CONTAINER_ES8 },
 		});
 	}
 
@@ -72,9 +67,9 @@ public abstract class AbstractMultiESTest implements TestHttpMethods, TestGraphH
 
 		// Invoke setup once the first time and when the setting changes
 		if (currentMode == null || currentMode != elasticsearch) {
+			AbstractMultiESTest.currentMode = elasticsearch;
 			getTestContext().setupOnce(settings);
 		}
-		AbstractMultiESTest.currentMode = elasticsearch;
 		// Register the cleanup action with the current settings.
 		cleanupAction = () -> {
 			try {
@@ -154,6 +149,21 @@ public abstract class AbstractMultiESTest implements TestHttpMethods, TestGraphH
 		}
 
 		@Override
+		public String clusterName() {
+			return delegate.clusterName();
+		}
+
+		@Override
+		public int clusterInstances() {
+			return delegate.clusterInstances();
+		}
+
+		@Override
+		public String[] nodeNames() {
+			return delegate.nodeNames();
+		}
+
+		@Override
 		public SSLTestMode ssl() {
 			return delegate.ssl();
 		}
@@ -164,8 +174,23 @@ public abstract class AbstractMultiESTest implements TestHttpMethods, TestGraphH
 		}
 
 		@Override
-		public MeshOptionChanger optionChanger() {
+		public boolean synchronizeWrites() {
+			return delegate.synchronizeWrites();
+		}
+
+		@Override
+		public MeshCoreOptionChanger optionChanger() {
 			return delegate.optionChanger();
+		}
+
+		@Override
+		public Class<? extends MeshOptionChanger> customOptionChanger() {
+			return delegate.customOptionChanger();
+		}
+
+		@Override
+		public boolean resetBetweenTests() {
+			return delegate.resetBetweenTests();
 		}
 	}
 

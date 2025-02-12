@@ -2,10 +2,10 @@ package com.gentics.mesh.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -14,8 +14,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Test;
 
 import com.gentics.mesh.parameter.NodeParameters;
+import com.gentics.mesh.parameter.client.GenericParametersImpl;
 import com.gentics.mesh.rest.client.AbstractMeshRestHttpClient;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.rest.client.MeshRestClientConfig;
 
 public class RestClientTest {
 
@@ -31,7 +33,8 @@ public class RestClientTest {
 		when(parameters1.getLanguages()).thenReturn(new String[] { "en" });
 		assertThat(parameters1.getLanguages()).contains("en");
 		when(parameters1.getQueryParameters()).thenReturn("lang=en");
-		assertEquals("?lang=en", AbstractMeshRestHttpClient.getQuery(parameters1));
+		when(parameters1.getParameters()).thenReturn(Map.of("lang", "en"));
+		assertEquals("?lang=en", AbstractMeshRestHttpClient.getQuery(null, parameters1));
 
 		NodeParameters parameters2 = mock(NodeParameters.class);
 
@@ -39,9 +42,10 @@ public class RestClientTest {
 		assertThat(parameters2.getExpandedFieldNames()).contains("test");
 
 		when(parameters2.getQueryParameters()).thenReturn("expand=test");
-		assertEquals("?lang=en&expand=test", AbstractMeshRestHttpClient.getQuery(parameters1, parameters2));
+		when(parameters2.getParameters()).thenReturn(Map.of("expand", "test"));
+		assertEquals("?lang=en&expand=test", AbstractMeshRestHttpClient.getQuery(null, parameters1, parameters2));
 
-		assertEquals("", AbstractMeshRestHttpClient.getQuery());
+		assertEquals("", AbstractMeshRestHttpClient.getQuery(null));
 	}
 
 	/**
@@ -64,8 +68,8 @@ public class RestClientTest {
 
 		latch.await(10, TimeUnit.SECONDS);
 		assertThat(success.get()).isFalse();
-		assertThat(caught.get()).as("Caught exception").isNotNull().hasMessage(
-				"I/O Error in GET http://does.not.exist:4711/api/v1/ : UnknownHostException (does.not.exist: Name or service not known)");
+		assertThat(caught.get()).as("Caught exception").isNotNull().hasMessageStartingWith(
+				"I/O Error in GET http://does.not.exist:4711/api/v1/ : UnknownHostException");
 	}
 
 	/**
@@ -88,7 +92,32 @@ public class RestClientTest {
 
 		latch.await(10, TimeUnit.SECONDS);
 		assertThat(success.get()).isFalse();
-		assertThat(caught.get()).as("Caught exception").isNotNull().hasMessage(
-				"I/O Error in GET http://localhost:4711/api/v1/ : ConnectException (Failed to connect to localhost/127.0.0.1:4711)");
+		assertThat(caught.get()).as("Caught exception").isNotNull().hasMessageStartingWith(
+				"I/O Error in GET http://localhost:4711/api/v1/ : ConnectException");
+	}
+
+	/**
+	 * Test that default parameters in the config are handled correctly
+	 */
+	@Test
+	public void testDefaultParameter() {
+		// generate a minimal config with setting etag=false per default
+		MeshRestClientConfig config = MeshRestClientConfig
+				.newConfig()
+				.setHost("localhost")
+				.setDefaultParameters(new GenericParametersImpl().setETag(false))
+				.build();
+
+		// get query without additional parameters
+		assertThat(AbstractMeshRestHttpClient.getQuery(config)).as("Query").isEqualTo("?etag=false");
+
+		// get query with additional other parameter
+		assertThat(AbstractMeshRestHttpClient.getQuery(config, new GenericParametersImpl().setFields("uuid"))).as("Query").isEqualTo("?etag=false&fields=uuid");
+
+		// get query with overridden default parameter
+		assertThat(AbstractMeshRestHttpClient.getQuery(config, new GenericParametersImpl().setETag(true))).as("Query").isEqualTo("?etag=true");
+
+		// get query with overridden default parameter
+		assertThat(AbstractMeshRestHttpClient.getQuery(config, new GenericParametersImpl().setETag(true).setFields("fields,perms"))).as("Query").isEqualTo("?etag=true&fields=fields,perms");
 	}
 }

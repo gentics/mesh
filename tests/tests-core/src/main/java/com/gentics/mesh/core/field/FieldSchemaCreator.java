@@ -11,6 +11,7 @@ import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 @FunctionalInterface
 public interface FieldSchemaCreator {
 	public final static FieldSchemaCreator CREATEBINARY = name -> FieldUtil.createBinaryFieldSchema(name);
+	public final static FieldSchemaCreator CREATEBINARY_WITH_CHECK_URL = name -> FieldUtil.createBinaryFieldSchema(name, "http://localhost/check");
 	public final static FieldSchemaCreator CREATEBOOLEAN = name -> FieldUtil.createBooleanFieldSchema(name);
 	public final static FieldSchemaCreator CREATEBOOLEANLIST = name -> FieldUtil.createListFieldSchema(name, "boolean");
 	public final static FieldSchemaCreator CREATEDATE = name -> FieldUtil.createDateFieldSchema(name);

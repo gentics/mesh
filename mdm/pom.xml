@@ -7,13 +7,13 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>1.10.0-SNAPSHOT</version>
+		<version>3.0.1-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>mesh-mdm</artifactId>
 	<packaging>pom</packaging>
 
-	<description>MDM</description>
+	<name>Gentics Mesh - MDM</name>
 
 	<dependencyManagement>
 		<dependencies>
@@ -30,7 +30,7 @@
 	<modules>
 		<module>api</module>
 		<module>common</module>
-		<module>orientdb-api</module>
-		<module>orientdb-wrapper</module>
+		<module>hibernate-api</module>
+		<module>hibernate-core</module>
 	</modules>
 </project>

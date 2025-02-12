@@ -74,8 +74,8 @@ import com.gentics.mesh.util.ETag;
 import io.reactivex.Observable;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Transformer which can be used to transform a {@link HibNodeFieldContainer} into a elasticsearch document. Additionally the matching mapping can also be
@@ -266,7 +266,10 @@ public class NodeContainerTransformer extends AbstractTransformer<HibNodeFieldCo
 						if (graphNodeList != null) {
 							List<String> nodeItems = new ArrayList<>();
 							for (HibNodeField listItem : graphNodeList.getList()) {
-								nodeItems.add(listItem.getNode().getUuid());
+								HibNode node = listItem.getNode();
+								if (node != null) {
+									nodeItems.add(node.getUuid());
+								}
 							}
 							fieldsMap.put(fieldSchema.getName(), nodeItems);
 						}
@@ -571,8 +574,7 @@ public class NodeContainerTransformer extends AbstractTransformer<HibNodeFieldCo
 		addFields(document, "fields", container, contentDao.getSchemaContainerVersion(container).getSchema().getFields());
 		if (log.isTraceEnabled()) {
 			String json = document.toString();
-			log.trace("Search index json:");
-			log.trace(json);
+			log.trace("Search index json:\n{}", json);
 		}
 
 		// Add display field value

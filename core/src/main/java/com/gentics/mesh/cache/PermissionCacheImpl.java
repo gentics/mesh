@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -17,10 +18,10 @@ import com.gentics.mesh.cache.impl.EventAwareCacheFactory;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.etc.config.MeshOptions;
-
 import com.gentics.mesh.event.EventBusStore;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Central LRU permission cache which is used to quickly lookup cached permissions.
@@ -73,8 +74,8 @@ public class PermissionCacheImpl extends AbstractMeshCache<String, EnumSet<Inter
 
 	@Override
 	public Boolean hasPermission(Object userId, InternalPermission permission, Object elementId) {
-		String key = createCacheKey(userId, elementId);
-		EnumSet<InternalPermission> cachedPermissions = cache.get(key);
+		// note: we access the cache instance directly here to avoid cloning of the returned entry (which we will not mutate)
+		EnumSet<InternalPermission> cachedPermissions = cache.get(createCacheKey(userId, elementId));
 		if (cachedPermissions != null) {
 			return cachedPermissions.contains(permission);
 		} else {
@@ -120,6 +121,33 @@ public class PermissionCacheImpl extends AbstractMeshCache<String, EnumSet<Inter
 	}
 
 	@Override
+	public EnumSet<InternalPermission> get(Object userId, Object elementId) {
+		return get(createCacheKey(userId, elementId));
+	}
+
+	@Override
+	public EnumSet<InternalPermission> get(String key) {
+		EnumSet<InternalPermission> cached = super.get(key);
+		if (cached != null) {
+			// since the EnumSet is mutable, we return a clone of the instance
+			return EnumSet.copyOf(cached);
+		} else {
+			return null;
+		}
+	}
+
+	@Override
+	public EnumSet<InternalPermission> get(String key, Function<String, EnumSet<InternalPermission>> mappingFunction) {
+		EnumSet<InternalPermission> cached = super.get(key, mappingFunction);
+		if (cached != null) {
+			// since the EnumSet is mutable, we return a clone of the instance
+			return EnumSet.copyOf(cached);
+		} else {
+			return null;
+		}
+	}
+
+	@Override
 	public void store(Object userId, EnumSet<InternalPermission> permission, Object elementId) {
 		// deduplicate the permission EnumSet and put it into the cache
 		cache.put(createCacheKey(userId, elementId), deduplicate(permission));
@@ -138,5 +166,10 @@ public class PermissionCacheImpl extends AbstractMeshCache<String, EnumSet<Inter
 
 		// either get the already used instance from the map or put the clone in the map, if this is the first occurrance
 		return uniqueMap.computeIfAbsent(clone, key -> clone);
+	}
+
+	@Override
+	public void invalidate(Object userId, Object elementId) {
+		cache.invalidate(createCacheKey(userId, elementId));
 	}
 }

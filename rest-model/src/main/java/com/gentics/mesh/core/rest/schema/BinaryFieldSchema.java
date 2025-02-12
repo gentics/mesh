@@ -10,14 +10,14 @@ public interface BinaryFieldSchema extends FieldSchema {
 
 	/**
 	 * Return list of allowed mime types. When empty all types will be accepted.
-	 * 
+	 *
 	 * @return
 	 */
 	String[] getAllowedMimeTypes();
 
 	/**
 	 * Set the list of allowed mime types.
-	 * 
+	 *
 	 * @param allowedMimeTypes
 	 * @return Fluent API
 	 */
@@ -41,9 +41,23 @@ public interface BinaryFieldSchema extends FieldSchema {
 
 	/**
 	 * Set the binary extract options.
-	 * 
+	 *
 	 * @param extract
 	 * @return
 	 */
 	BinaryFieldSchema setBinaryExtractOptions(BinaryExtractOptions extract);
+
+	/**
+	 * Returns the check service URL.
+	 *
+	 * @return The check service URL.
+	 */
+	String getCheckServiceUrl();
+
+	/**
+	 * Set the check service URL.
+	 * @param checkServiceUrl The check service URL.
+	 * @return Fluent API.
+	 */
+	BinaryFieldSchema setCheckServiceUrl(String checkServiceUrl);
 }

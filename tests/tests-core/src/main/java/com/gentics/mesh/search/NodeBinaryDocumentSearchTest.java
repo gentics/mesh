@@ -96,7 +96,7 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 
 		try (Tx tx = tx()) {
 			String indexName = ContentDao.composeIndexName(projectUuid(), initialBranchUuid(),
-				nodeB.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT, null);
+				nodeB.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT, null, null);
 			String id = ContentDao.composeDocumentId(nodeB.getUuid(), "en");
 			JsonObject doc = getProvider().getDocument(indexName, id).blockingGet();
 			assertFalse(doc.getJsonObject("_source").getJsonObject("fields").getJsonObject("binary").containsKey("file"));
@@ -158,7 +158,7 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 
 		try (Tx tx = tx()) {
 			String indexName = ContentDao.composeIndexName(projectUuid(), initialBranchUuid(),
-				nodeB.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT, null);
+				nodeB.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT, null, null);
 			String id = ContentDao.composeDocumentId(nodeB.getUuid(), "en");
 			JsonObject doc = getProvider().getDocument(indexName, id).blockingGet();
 			assertFalse(doc.getJsonObject("_source").getJsonObject("fields").getJsonObject("binary").containsKey("file"));

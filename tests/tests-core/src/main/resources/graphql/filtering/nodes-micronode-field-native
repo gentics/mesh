@@ -1,0 +1,36 @@
+{
+	micronodeAddressLike: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        micronode: {micronode: {microschema: {is: vcard} fields: { vcard: { address: { equals: "Somewhere" } } }}}
+	      }
+	    }
+	  }) {
+	    # [$.data.micronodeAddressLike.elements.length()=1]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	
+	micronodeIsNull: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        micronode: {isNull:true}
+	      }
+	    }
+	  }) {
+	    # [$.data.micronodeIsNull.elements.length()=7]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+}
+# [$.errors=<is-undefined>]

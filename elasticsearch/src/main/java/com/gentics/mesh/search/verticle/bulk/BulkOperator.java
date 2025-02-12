@@ -3,11 +3,15 @@ package com.gentics.mesh.search.verticle.bulk;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.skipIfMultipleThreads;
 
 import java.time.Duration;
+import java.util.List;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
@@ -19,8 +23,8 @@ import com.gentics.mesh.core.data.search.request.SearchRequest;
 import io.reactivex.FlowableOperator;
 import io.reactivex.internal.util.BackpressureHelper;
 import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An operator for Observables that bulks elastic search requests together.
@@ -44,6 +48,11 @@ public class BulkOperator implements FlowableOperator<SearchRequest, SearchReque
 	private final int requestLimit;
 	private final long lengthLimit;
 	private ActualBulkOperator<SearchRequest> operator;
+
+	/**
+ 	 * This package-protected switch is for testing purposes only. Avoid using it during runtime.
+    	 */
+	final AtomicBoolean flushActive = new AtomicBoolean(true);
 
 	public BulkOperator(Vertx vertx, Duration bulkTime, int requestLimit, long lengthLimit) {
 		this.vertx = vertx;
@@ -82,21 +91,31 @@ public class BulkOperator implements FlowableOperator<SearchRequest, SearchReque
 			public void drain() {
 				// Drain can be run by multiple threads, we should skip draining if one is already in progress.
 				skipIfMultipleThreads(lock, () -> {
-					if (!canceled.get() && requested.get() > 0 && !bulkableRequests.isEmpty() && flushing.compareAndSet(true, false)) {
+					if (!canceled.get() && requested.get() > 0 && !bulkableRequests.isEmpty() && flushActive.get() && flushing.compareAndSet(true, false)) {
 						timer.stop();
-						log.trace("Emitting bulk of size {} to subscriber", bulkableRequests.size());
-						BulkRequest request = new BulkRequest(bulkableRequests.asList());
-						bulkableRequests.clear();
-						if (log.isDebugEnabled()) {
-							log.debug("Sending bulk to elasticsearch:\n{}", request);
-						}
-						subscriber.onNext(request);
-						BackpressureHelper.produced(requested, 1);
+						log.debug("Emitting bulk of size {} to subscriber", bulkableRequests.size());
+						do {
+							AtomicLong bulkLength = new AtomicLong(0);
+							List<Bulkable> requests = IntStream.range(0, requestLimit)
+								.mapToObj(index -> bulkableRequests.poll())
+								.takeWhile(maybeBulkable -> maybeBulkable
+										.filter(bulkable -> bulkLength.get() < lengthLimit)
+										.isPresent())
+								.map(Optional::get)
+								.peek(bulkable -> bulkLength.addAndGet(bulkable.bulkLength()))
+								.collect(Collectors.toList());
+							BulkRequest request = new BulkRequest(requests);
+							log.trace("Sending bulk to elasticsearch:\n{}", request);
+							subscriber.onNext(request);
+							BackpressureHelper.produced(requested, 1);
+						} while (!bulkableRequests.isEmpty());
 					}
 
 					if (!canceled.get() && requested.get() > 0 && !nonBulkableRequests.isEmpty()) {
 						SearchRequest request = nonBulkableRequests.remove();
-						log.trace("Emitting remaining non bulkable request to subscriber: {}", request);
+						if (log.isTraceEnabled()) {
+							log.trace("Emitting remaining non bulkable request to subscriber: {}", request);
+						}
 						subscriber.onNext(request);
 						BackpressureHelper.produced(requested, 1);
 					}
@@ -130,8 +149,7 @@ public class BulkOperator implements FlowableOperator<SearchRequest, SearchReque
 
 			@Override
 			public void onNext(SearchRequest searchRequest) {
-				log.trace("Search request of class [{}] received from upstream.",
-					searchRequest.getClass());
+				log.trace("Search request of class [{}] received from upstream.", searchRequest.getClass());
 
 				if (canceled.get()) {
 					return;

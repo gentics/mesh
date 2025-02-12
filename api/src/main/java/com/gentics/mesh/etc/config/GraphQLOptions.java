@@ -12,16 +12,34 @@ import com.gentics.mesh.etc.config.env.Option;
 @GenerateDocumentation
 public class GraphQLOptions implements Option {
 	public static final long DEFAULT_SLOW_THRESHOLD = 60_000L;
+	public static final long DEFAULT_ASYNC_WAIT_TIMEOUT = 120_000L;
+
+	public static final long DEFAULT_SCHEMA_CACHE_SIZE = 1000L;
 
 	public static final String MESH_GRAPHQL_SLOW_THRESHOLD_ENV = "MESH_GRAPHQL_SLOW_THRESHOLD";
+	public static final String MESH_GRAPHQL_ASYNC_WAIT_TIMEOUT_ENV = "MESH_GRAPHQL_ASYNC_WAIT_TIMEOUT";
+
+	public static final String MESH_GRAPHQL_SCHEMA_CACHE_SIZE_ENV = "MESH_GRAPHQL_SCHEMA_CACHE_SIZE";
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Threshold for logging slow graphql queries. Default: " + DEFAULT_SLOW_THRESHOLD + "ms")
 	@EnvironmentVariable(name = MESH_GRAPHQL_SLOW_THRESHOLD_ENV, description = "Override the configured slow graphQl query threshold.")
 	private Long slowThreshold = DEFAULT_SLOW_THRESHOLD;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Threshold for waiting for asynchronous graphql queries. Default: "
+			+ DEFAULT_ASYNC_WAIT_TIMEOUT + "ms")
+	@EnvironmentVariable(name = MESH_GRAPHQL_ASYNC_WAIT_TIMEOUT_ENV, description = "Override the configured graphQl async wait timeout.")
+	private Long asyncWaitTimeout = DEFAULT_ASYNC_WAIT_TIMEOUT;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Cache size for graphQl Schema instances. Setting this to 0 will disable the cache. Default: " + DEFAULT_SCHEMA_CACHE_SIZE)
+	@EnvironmentVariable(name = MESH_GRAPHQL_SCHEMA_CACHE_SIZE_ENV, description = "Override the configured graphQl schema cache size.")
+	private long schemaCacheSize = DEFAULT_SCHEMA_CACHE_SIZE;
+
 	/**
 	 * Get the threshold for logging slow graphQl queries (in milliseconds)
+	 * 
 	 * @return threshold in milliseconds
 	 */
 	public Long getSlowThreshold() {
@@ -30,11 +48,54 @@ public class GraphQLOptions implements Option {
 
 	/**
 	 * Set the threshold for logging slow graqhQl queries (in milliseconds)
+	 * 
 	 * @param slowThreshold threshold
 	 * @return fluent API
 	 */
 	public GraphQLOptions setSlowThreshold(Long slowThreshold) {
 		this.slowThreshold = slowThreshold;
+		return this;
+	}
+
+	/**
+	 * Async wait timeout for graphQl queries (in milliseconds)
+	 * 
+	 * @return wait timeout in milliseconds
+	 */
+	public Long getAsyncWaitTimeout() {
+		return asyncWaitTimeout;
+	}
+
+	/**
+	 * Set the async wait timeout in milliseconds
+	 * 
+	 * @param asyncWaitTimeout timeout
+	 * @return fluent API
+	 */
+	public GraphQLOptions setAsyncWaitTimeout(Long asyncWaitTimeout) {
+		this.asyncWaitTimeout = asyncWaitTimeout;
+		// make sure the value is not set to null
+		if (this.asyncWaitTimeout == null) {
+			this.asyncWaitTimeout = DEFAULT_ASYNC_WAIT_TIMEOUT;
+		}
+		return this;
+	}
+
+	/**
+	 * Get the schema cache size
+	 * @return schema cache size
+	 */
+	public long getSchemaCacheSize() {
+		return schemaCacheSize;
+	}
+
+	/**
+	 * Set the schema cache size
+	 * @param schemaCacheSize schema cache size
+	 * @return fluent API
+	 */
+	public GraphQLOptions setSchemaCacheSize(long schemaCacheSize) {
+		this.schemaCacheSize = schemaCacheSize;
 		return this;
 	}
 }

@@ -27,12 +27,12 @@ public class BranchTypeProvider extends AbstractTypeProvider {
 
 	public static final String BRANCH_TYPE_NAME = "Branch";
 
-	@Inject
-	public InterfaceTypeProvider interfaceTypeProvider;
+	protected final InterfaceTypeProvider interfaceTypeProvider;
 
 	@Inject
-	public BranchTypeProvider(MeshOptions options) {
+	public BranchTypeProvider(MeshOptions options, InterfaceTypeProvider interfaceTypeProvider) {
 		super(options);
+		this.interfaceTypeProvider = interfaceTypeProvider;
 	}
 
 	public GraphQLObjectType createType() {
@@ -72,7 +72,7 @@ public class BranchTypeProvider extends AbstractTypeProvider {
 
 		// .tags
 		branchType
-			.field(newFieldDefinition().name("tags").argument(createPagingArgs()).type(new GraphQLTypeReference(TAG_PAGE_TYPE_NAME)).dataFetcher((
+			.field(newFieldDefinition().name("tags").argument(createPagingArgs(false)).type(new GraphQLTypeReference(TAG_PAGE_TYPE_NAME)).dataFetcher((
 				env) -> {
 				GraphQLContext gc = env.getContext();
 				HibBranch branch = env.getSource();

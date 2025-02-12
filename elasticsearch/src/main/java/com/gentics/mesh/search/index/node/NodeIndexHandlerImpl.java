@@ -7,6 +7,7 @@ import static com.gentics.mesh.search.index.node.NodeIndexUtil.getLanguageOverri
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,6 +24,7 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -68,8 +70,8 @@ import io.reactivex.Single;
 import io.reactivex.functions.Action;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Handler for the node specific search index.
@@ -86,16 +88,16 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 
 	private static final Logger log = LoggerFactory.getLogger(NodeIndexHandlerImpl.class);
 
-	@Inject
-	public NodeContainerTransformer transformer;
+	protected final NodeContainerTransformer transformer;
 
-	@Inject
-	public NodeContainerMappingProviderImpl mappingProvider;
+	protected final NodeContainerMappingProviderImpl mappingProvider;
 
 	@Inject
 	public NodeIndexHandlerImpl(SearchProvider searchProvider, Database db, MeshHelper helper, MeshOptions options,
-		SyncMetersFactory syncMetersFactory, BucketManager bucketManager) {
+		SyncMetersFactory syncMetersFactory, BucketManager bucketManager, NodeContainerTransformer transformer, NodeContainerMappingProviderImpl mappingProvider) {
 		super(searchProvider, db, helper, options, syncMetersFactory, bucketManager);
+		this.transformer = transformer;
+		this.mappingProvider = mappingProvider;
 	}
 
 	@Override
@@ -126,9 +128,9 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	}
 
 	@Override
-	public Map<String, IndexInfo> getIndices() {
+	public Map<String, Optional<IndexInfo>> getIndices() {
 		return db.tx(tx -> {
-			Map<String, IndexInfo> indexInfo = new HashMap<>();
+			Map<String, Optional<IndexInfo>> indexInfo = new HashMap<>();
 
 			// Iterate over all projects and construct the index names
 			for (HibProject project : tx.projectDao().findAll()) {
@@ -149,9 +151,9 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	 * @param branch
 	 * @return
 	 */
-	public Transactional<Map<String, IndexInfo>> getIndices(HibProject project, HibBranch branch) {
+	public Transactional<Map<String, Optional<IndexInfo>>> getIndices(HibProject project, HibBranch branch) {
 		return db.transactional(tx -> {
-			Map<String, IndexInfo> indexInfo = new HashMap<>();
+			Map<String, Optional<IndexInfo>> indexInfo = new HashMap<>();
 			// Each branch specific index has also document type specific mappings
 			for (HibSchemaVersion containerVersion : branch.findActiveSchemaVersions()) {
 				indexInfo.putAll(getIndices(project, branch, containerVersion).runInExistingTx(tx));
@@ -168,7 +170,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	 * @param containerVersion
 	 * @return
 	 */
-	public Transactional<Map<String, IndexInfo>> getIndices(HibProject project, HibBranch branch, HibSchemaVersion containerVersion) {
+	public Transactional<Map<String, Optional<IndexInfo>>> getIndices(HibProject project, HibBranch branch, HibSchemaVersion containerVersion) {
 		return getIndices(project, branch, containerVersion, Collections.emptyMap());
 	}
 
@@ -182,9 +184,9 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	 * @param replacementMap map of microschema names to microschema version uuids (may be empty, but not null)
 	 * @return transactional
 	 */
-	public Transactional<Map<String, IndexInfo>> getIndices(HibProject project, HibBranch branch, HibSchemaVersion containerVersion, Map<String, String> replacementMap) {
+	public Transactional<Map<String, Optional<IndexInfo>>> getIndices(HibProject project, HibBranch branch, HibSchemaVersion containerVersion, Map<String, String> replacementMap) {
 		return db.transactional(tx -> {
-			Map<String, IndexInfo> indexInfos = new HashMap<>();
+			Map<String, Optional<IndexInfo>> indexInfos = new HashMap<>();
 			SchemaVersionModel schema = containerVersion.getSchema();
 
 			// Add all language specific indices (might be none)
@@ -192,16 +194,16 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 				String indexName = ContentDao.composeIndexName(project.getUuid(), branch.getUuid(), containerVersion
 					.getUuid(), version, language, containerVersion.getMicroschemaVersionHash(branch, replacementMap));
 				log.debug("Adding index to map of known indices {" + indexName + "}");
-				// Load the index mapping information for the index
+				// Load the index mapping information for the index, if applicable
 				indexInfos.put(indexName, createIndexInfo(branch, schema, language, indexName, schema.getName() + "@" + schema.getVersion()));
 			}));
 
 			// And all default indices
 			Stream.of(DRAFT, PUBLISHED).forEach(version -> {
 				String indexName = ContentDao.composeIndexName(project.getUuid(), branch.getUuid(), containerVersion
-					.getUuid(), version, containerVersion.getMicroschemaVersionHash(branch, replacementMap));
+					.getUuid(), version, null, containerVersion.getMicroschemaVersionHash(branch, replacementMap));
 				log.debug("Adding index to map of known indices {" + indexName + "}");
-				// Load the index mapping information for the index
+				// Load the index mapping information for the index, if applicable
 				indexInfos.put(indexName, createIndexInfo(branch, schema, null, indexName, schema.getName() + "@" + schema.getVersion()));
 			});
 			return indexInfos;
@@ -252,9 +254,9 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 				// And all default indices
 				Stream.of(DRAFT, PUBLISHED).forEach(version -> {
 					String oldIndexName = ContentDao.composeIndexName(project.getUuid(), branch.getUuid(),
-							containerVersion.getUuid(), version, oldHash);
+							containerVersion.getUuid(), version, null, oldHash);
 					String newIndexName = ContentDao.composeIndexName(project.getUuid(), branch.getUuid(),
-							containerVersion.getUuid(), version, newHash);
+							containerVersion.getUuid(), version, null, newHash);
 					indexTripleList.add(Triple.of(oldIndexName, newIndexName, query));
 				});
 			}
@@ -278,12 +280,14 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	 *            Human readable name of the source of the index settings (often used for debug information)
 	 * @return
 	 */
-	public IndexInfo createIndexInfo(HibBranch branch, SchemaModel schema, String language, String indexName, String sourceInfo) {
-		JsonObject mapping = getMappingProvider().getMapping(schema, branch, language);
-		JsonObject settings = language == null
-			? getDefaultSetting(schema.getElasticsearch())
-			: getLanguageOverride(schema.getElasticsearch(), language);
-		return new IndexInfo(indexName, settings, mapping, sourceInfo);
+	public Optional<IndexInfo> createIndexInfo(HibBranch branch, SchemaModel schema, String language, String indexName, String sourceInfo) {
+		Optional<JsonObject> maybeMapping = getMappingProvider().getMapping(schema, branch, language);
+		return maybeMapping.map(mapping -> {
+			JsonObject settings = language == null
+					? getDefaultSetting(schema.getElasticsearch())
+					: getLanguageOverride(schema.getElasticsearch(), language);
+			return new IndexInfo(indexName, settings, mapping, sourceInfo);
+		});
 	}
 
 	@Override
@@ -305,13 +309,13 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 						version.getSchema().findOverriddenSearchLanguages()
 								.forEach(language -> Stream.of(DRAFT, PUBLISHED).forEach(type -> {
 									activeIndices.add(ContentDao.composeIndexName(currentProject.getUuid(),
-											branch.getUuid(), version.getUuid(), type, language));
+											branch.getUuid(), version.getUuid(), type, language, version.getMicroschemaVersionHash(branch)));
 								}));
 
 						Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED).forEach(type -> {
 							activeIndices
 								.add(ContentDao.composeIndexName(currentProject.getUuid(), branch.getUuid(), version.getUuid(),
-									type, version.getMicroschemaVersionHash(branch)));
+									type, null, version.getMicroschemaVersionHash(branch)));
 						});
 					}
 				}
@@ -378,8 +382,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 						indexLanguages.contains(languageTag)
 							? languageTag
 							: null, version.getMicroschemaVersionHash(branch));
-				},
-					Collectors.toMap(c -> contentDao.getNode(c).getUuid() + "-" + c.getLanguageTag(), Function.identity())));
+				}, Collectors.toMap(c -> contentDao.getNode(c).getUuid() + "-" + c.getLanguageTag(), Function.identity())));
 		});
 	}
 
@@ -416,7 +419,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 		// Sync each bucket individually
 		Flowable<Bucket> buckets = bucketManager.getBuckets(getTotalCountFromGraph());
 		return buckets.flatMap(bucket -> {
-			log.info("Handling sync of {} for project {}, branch {}, version {} of schema {}, type {}", bucket,
+			log.debug("Handling sync of {} for project {}, branch {}, version {} of schema {}, type {}", bucket,
 					projectName, branchName, versionNumber, schemaName, typeName);
 			return diffAndSync(project, branch, version, type, bucket, indexPattern);
 		}, 1);
@@ -491,7 +494,9 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 				project.getUuid(),
 				branch.getUuid(),
 				version.getUuid(),
-				type, version.getMicroschemaVersionHash(branch)));
+				type,
+				null,
+				version.getMicroschemaVersionHash(branch)));
 			return Stream.concat(languageIndices, defaultIndex)
 				.collect(Collectors.toList());
 		});
@@ -539,7 +544,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 		HibSchemaVersion version = contentDao.getSchemaContainerVersion(container);
 		HibBranch branch = Tx.get().branchDao().findByUuid(project, branchUuid);
 		String indexName = ContentDao.composeIndexName(project.getUuid(), branchUuid, version.getUuid(), 
-				type, version.getMicroschemaVersionHash(branch));
+				type, null, version.getMicroschemaVersionHash(branch));
 		if (log.isDebugEnabled()) {
 			log.debug("Storing node {" + contentDao.getNode(container).getUuid() + "} into index {" + indexName + "}");
 		}
@@ -569,7 +574,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 			return Flowable.fromIterable(schema.findOverriddenSearchLanguages()::iterator);
 		}).map(language -> createDummyIndexInfo(schema, language))
 			.startWith(createDummyIndexInfo(schema, null))
-			.flatMapCompletable(searchProvider::validateCreateViaTemplate);
+			.flatMapCompletable(ii -> ii.map(searchProvider::validateCreateViaTemplate).orElse(Completable.complete()));
 	}
 
 	/**
@@ -578,7 +583,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	 * @param schema
 	 * @return
 	 */
-	public JsonObject createIndexSettings(SchemaModel schema) {
+	public Optional<JsonObject> createIndexSettings(SchemaModel schema) {
 		return createIndexSettings(schema, null);
 	}
 
@@ -588,11 +593,11 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	 * @param schema
 	 * @return
 	 */
-	public JsonObject createIndexSettings(SchemaModel schema, String language) {
-		return searchProvider.createIndexSettings(createDummyIndexInfo(schema, language));
+	public Optional<JsonObject> createIndexSettings(SchemaModel schema, String language) {
+		return createDummyIndexInfo(schema, language).map(searchProvider::createIndexSettings);
 	}
 
-	private IndexInfo createDummyIndexInfo(SchemaModel schema, String language) {
+	private Optional<IndexInfo> createDummyIndexInfo(SchemaModel schema, String language) {
 		String indexName = language != null
 			? "validationDummy-" + language
 			: "validationDummy";
@@ -613,16 +618,22 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 
 	@Override
 	public Function<String, HibNode> elementLoader() {
-		// TODO override in OrientDB implementation to use index for performance, if required
-		//return (uuid) -> HibClassConverter.toGraph(db).index().findByUuid(HibNode.class, uuid);
 		return uuid -> CommonTx.get().nodeDao().findByUuidGlobal(uuid);
 	}
 
 	@Override
+	public Function<Collection<String>, Stream<Pair<String, HibNode>>> elementsLoader() {
+		return (uuids) -> CommonTx.get().nodeDao().findByUuidGlobal(uuids).stream().map(node -> Pair.of(node.getUuid(), node));
+	}	
+
+	@Override
 	public Stream<? extends HibNode> loadAllElements() {
-		// TODO override in OrientDB implementation to use index for performance, if required
-		//return HibClassConverter.toGraph(db).type().findAll(HibNode.class);
 		return CommonTx.get().nodeDao().findAllGlobal();
 	}
 
+	@Override
+	public boolean isDefinitionDataDependent() {
+		// We depend on the project.
+		return true;
+	}
 }

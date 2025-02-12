@@ -1,0 +1,1 @@
+GraphQL: A regression of missing common `and`, `or`, `not` top level filters has been fixed.

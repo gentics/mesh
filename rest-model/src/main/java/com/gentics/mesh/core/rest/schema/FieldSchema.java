@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.rest.schema;
 
 import java.util.Map;
+import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -79,6 +80,21 @@ public interface FieldSchema extends RestModel {
 	FieldSchema setRequired(boolean isRequired);
 
 	/**
+	 * Return the 'excluded from indexing' flag of the field schema.
+	 * 
+	 * @return
+	 */
+	boolean isNoIndex();
+
+	/**
+	 * Set the 'excluded from indexing' flag.
+	 * 
+	 * @param isNoIndex
+	 * @return Fluent API
+	 */
+	FieldSchema setNoIndex(boolean isNoIndex);
+
+	/**
 	 * Compare the field schema with the given field schema.
 	 * 
 	 * @param fieldSchema
@@ -141,7 +157,15 @@ public interface FieldSchema extends RestModel {
 	 */
 	@JsonIgnore
 	default boolean isMappingRequired(ElasticSearchOptions options) {
+		if (isNoIndex()) {
+			return false;
+		}
 		MappingMode mode = options.getMappingMode();
 		return mode == MappingMode.DYNAMIC || mode == MappingMode.STRICT && getElasticsearch() != null;
+	}
+
+	@JsonIgnore
+	default Optional<ListFieldSchema> maybeGetListField() {
+		return Optional.empty();
 	}
 }

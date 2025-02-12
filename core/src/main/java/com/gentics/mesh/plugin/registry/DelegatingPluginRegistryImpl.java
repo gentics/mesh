@@ -26,8 +26,8 @@ import dagger.Lazy;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.eventbus.EventBus;
 import io.vertx.reactivex.core.eventbus.MessageConsumer;
@@ -122,7 +122,7 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 
 		String id = plugin.id();
 		JsonObject payload = toEventPayload(plugin);
-		optionalDatabaseReadyCheck().andThen(optionalLock(registerAndInitializePlugin(plugin), id)).subscribe(() -> {
+		optionalLock(registerAndInitializePlugin(plugin), id).subscribe(() -> {
 			log.info("Completed handling of pre-registered plugin {" + id + "}");
 			manager.get().setStatus(id, REGISTERED);
 
@@ -130,8 +130,7 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 			eb.publish(MeshEvent.PLUGIN_DEPLOYED.getAddress(), payload);
 		}, err -> {
 			if (err instanceof TimeoutException) {
-				log.error("The registration of plugin {" + id + "} did not complete within {" + timeout
-					+ "} seconds. Unloading plugin.");
+				log.error("The registration of plugin {" + id + "} did not complete within {" + timeout	+ "} seconds. Unloading plugin.");
 			} else {
 				log.error("Plugin init and register failed for plugin {" + id + "}", err);
 			}
@@ -179,14 +178,6 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 		}
 	}
 
-	private Completable optionalDatabaseReadyCheck() {
-		if (options.getClusterOptions().isEnabled()) {
-			return db.clusterManager().waitUntilDistributedDatabaseReady();
-		} else {
-			return Completable.complete();
-		}
-	}
-
 	private Duration getPluginTimeout() {
 		int timeoutInSeconds = options.getPluginTimeout();
 		return Duration.ofSeconds(timeoutInSeconds);
@@ -202,7 +193,7 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 		PluginEventModel model = new PluginEventModel();
 		model.setId(plugin.id());
 		model.setOrigin(options.getNodeName());
-		return new JsonObject(model.toJson());
+		return new JsonObject(model.toJson(true));
 	}
 
 }

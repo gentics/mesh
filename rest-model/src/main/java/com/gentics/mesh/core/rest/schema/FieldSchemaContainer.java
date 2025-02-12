@@ -58,6 +58,21 @@ public interface FieldSchemaContainer extends RestModel {
 	FieldSchemaContainer setDescription(String description);
 
 	/**
+	 * Return the 'exclude from indexing' flag.
+	 * 
+	 * @return flag
+	 */
+	Boolean getNoIndex();
+
+	/**
+	 * Set the 'exclude from indexing' flag.
+	 * 
+	 * @param flag
+	 * @return self
+	 */
+	FieldSchemaContainer setNoIndex(Boolean noIndex);
+
+	/**
 	 * Return the field with the given name.
 	 * 
 	 * @param fieldName
@@ -192,6 +207,13 @@ public interface FieldSchemaContainer extends RestModel {
 	FieldSchemaContainer setFields(List<FieldSchema> fields);
 
 	/**
+	 * Does this model describe a microschema?
+	 * 
+	 * @return
+	 */
+	boolean isMicroschema();
+
+	/**
 	 * Validate the schema for correctness.
 	 */
 	default void validate() {
@@ -229,5 +251,14 @@ public interface FieldSchemaContainer extends RestModel {
 		if (allFieldsOfRequest.size() > 0) {
 			throw error(BAD_REQUEST, "node_unhandled_fields", getName(), Arrays.toString(allFieldsOfRequest.toArray()));
 		}
+	}
+
+	/**
+	 * Remove the fields from FieldMap, that have either changed name/type, or completely removed.
+	 * 
+	 * @param fieldMap
+	 */
+	default void removeUnhandledFields(FieldMap fieldMap) {
+		fieldMap.keySet().stream().filter(key -> getField(key) == null).forEach(toRemove -> fieldMap.remove(toRemove));
 	}
 }

@@ -38,18 +38,19 @@ public class ProjectTypeProvider extends AbstractTypeProvider {
 
 	public static final String PROJECT_PAGE_TYPE_NAME = "ProjectsPage";
 
-	@Inject
-	public NodeTypeProvider nodeTypeProvider;
+	protected final NodeTypeProvider nodeTypeProvider;
+
+	protected final UserTypeProvider userTypeProvider;
+
+	protected final InterfaceTypeProvider interfaceTypeProvider;
 
 	@Inject
-	public UserTypeProvider userTypeProvider;
-
-	@Inject
-	public InterfaceTypeProvider interfaceTypeProvider;
-
-	@Inject
-	public ProjectTypeProvider(MeshOptions options) {
+	public ProjectTypeProvider(MeshOptions options, NodeTypeProvider nodeTypeProvider,
+			UserTypeProvider userTypeProvider, InterfaceTypeProvider interfaceTypeProvider) {
 		super(options);
+		this.nodeTypeProvider = nodeTypeProvider;
+		this.userTypeProvider = userTypeProvider;
+		this.interfaceTypeProvider = interfaceTypeProvider;
 	}
 
 	/**

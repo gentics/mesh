@@ -1,0 +1,56 @@
+{
+  "name": "mesh-rest-client",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/mesh-rest-client/src",
+  "projectType": "library",
+  "tags": [
+    "lib"
+  ],
+  "implicitDependencies": [
+    "mesh-models"
+  ],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": [
+        "{options.outputPath}"
+      ],
+      "options": {
+        "outputPath": "dist/mesh-rest-client",
+        "tsConfig": "packages/mesh-rest-client/tsconfig.lib.json",
+        "packageJson": "packages/mesh-rest-client/package.json",
+        "main": "packages/mesh-rest-client/src/public-api.ts",
+        "assets": [
+          "packages/mesh-rest-client/*.md"
+        ]
+      }
+    },
+    "lint": {
+      "executor": "@nx/linter:eslint",
+      "outputs": [
+        "{options.outputFile}"
+      ],
+      "options": {
+        "lintFilePatterns": [
+          "packages/mesh-rest-client/**/*.ts",
+          "packages/mesh-rest-client/package.json"
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": [
+        "{workspaceRoot}/coverage/{projectRoot}"
+      ],
+      "options": {
+        "jestConfig": "packages/mesh-rest-client/jest.config.ts"
+      }
+    },
+    "nx-release-publish": {
+      "executor": "@nx/js:release-publish",
+      "options": {
+        "packageRoot": "{workspaceRoot}/dist/mesh-rest-client"
+      }
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+    "extends": "../../tsconfig.json",
+    "angularCompilerOptions": {
+        "enableResourceInlining": true,
+        "skipTemplateCodegen": true,
+        "compilationMode": "partial"
+    }
+}

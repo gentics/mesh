@@ -6,18 +6,19 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.raml.model.ParamType;
 import org.raml.model.parameter.QueryParameter;
 
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.handler.ActionContext;
-import com.gentics.mesh.parameter.AbstractParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 
 /**
  * A {@link PagingParametersImpl} can be used to add additional paging parameters to the rest requests.
  */
-public class PagingParametersImpl extends AbstractParameters implements PagingParameters {
+public class PagingParametersImpl extends SortingParametersImpl implements PagingParameters {
+
 
 	public PagingParametersImpl(ActionContext ac) {
 		super(ac);
@@ -34,11 +35,9 @@ public class PagingParametersImpl extends AbstractParameters implements PagingPa
 	}
 
 	public PagingParametersImpl(long page, Long perPage, String sortBy, SortOrder order) {
-		super();
+		super(sortBy, order);
 		setPage(page);
 		setPerPage(perPage);
-		setSortOrder(order.toString());
-		setOrderBy(sortBy);
 	}
 
 	/**
@@ -67,7 +66,7 @@ public class PagingParametersImpl extends AbstractParameters implements PagingPa
 	 *            Per page count
 	 */
 	public PagingParametersImpl(int page, Long perPage) {
-		this(page, perPage, "uuid", SortOrder.ASCENDING);
+		this(page, perPage, StringUtils.EMPTY, SortOrder.UNSORTED);
 	}
 
 	@Override
@@ -81,7 +80,7 @@ public class PagingParametersImpl extends AbstractParameters implements PagingPa
 
 	@Override
 	public Map<? extends String, ? extends QueryParameter> getRAMLParameters() {
-		Map<String, QueryParameter> parameters = new HashMap<>();
+		Map<String, QueryParameter> parameters = new HashMap<>(super.getRAMLParameters());
 		// page
 		QueryParameter pageParameter = new QueryParameter();
 		pageParameter.setDefaultValue(String.valueOf(DEFAULT_PAGE));
@@ -98,6 +97,7 @@ public class PagingParametersImpl extends AbstractParameters implements PagingPa
 		perPageParameter.setRequired(false);
 		perPageParameter.setType(ParamType.NUMBER);
 		parameters.put(PER_PAGE_PARAMETER_KEY, perPageParameter);
+
 		return parameters;
 	}
 

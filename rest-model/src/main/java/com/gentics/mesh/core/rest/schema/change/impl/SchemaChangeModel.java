@@ -25,6 +25,8 @@ public class SchemaChangeModel implements RestModel {
 
 	public static final String REQUIRED_KEY = "required";
 
+	public static final String NO_INDEX_KEY = "noIndex";
+
 	public static final String ELASTICSEARCH_KEY = "elasticsearch";
 
 	public static final String SEGMENT_FIELD_KEY = "segmentFieldname";
@@ -133,9 +135,11 @@ public class SchemaChangeModel implements RestModel {
 	 * 
 	 * @param key
 	 * @param value
+	 * @return fluent
 	 */
-	public void setProperty(String key, Object value) {
+	public SchemaChangeModel setProperty(String key, Object value) {
 		properties.put(key, value);
+		return this;
 	}
 
 	/**

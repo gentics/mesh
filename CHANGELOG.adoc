@@ -15,21 +15,129 @@ include::content/docs/variables.adoc-include[]
 
 = Gentics Mesh Changelog
 
-[[expected]]
-== Planned Future Changes
+[[no_orientdb]]
+== OrientDB is gone
 
-* With the release of `/api/v2` of the API, v1 has been deprecated. Version 2 introduced changes in the GraphQL API only. See the note in the changelog for link:#v0.35.0[v0.35.0] for details. The `/api/v1` still works like before, we will however cease support for `/api/v1` in the future. The Java REST client still uses v1 per default but can be set to v2. We advise to do so while `/api/v1` is still supported to prevent failures in the future.
+Starting with version 3.0.0 OrientDB is no longer part of Gentics Mesh, and is replaced by RDBMS-based solutions. The integration with link:https://mariadb.org/[MariaDB] is available for public use.
 
-* The `html` field type will be removed in the future. Instead the `string` type will be used in combination with an additional configuration property for this field in the schema. Of course, your existing schemas will be migrated for you.
+[[v2.1.x]]
+== 2.1.x Changelog
+
+Mesh 2.1.x is part of the Gentics Content Management Platform 8.1: link:https://www.gentics.com/cmp/changelog/8.1.0/merged_changelog.html?show=mesh,meshplugins[Changelog]
+
+[[v2.0.x]]
+== 2.0.x Changelog
+
+Mesh 2.0.x is part of the Gentics Content Management Platform 8.0: link:https://www.gentics.com/cmp/changelog/8.0.0/merged_changelog.html?show=mesh,meshplugins[Changelog]
+
+[[v1.10.10]]
+== 1.10.10 (28.06.2023)
+
+icon:check[] Core: The internal check for uniqueness of values in webroot fields has been improved.
+
+[[v1.10.9]]
+== 1.10.9 (12.06.2023)
+
+icon:check[] Core: An API for permission cache fine tuning (distinct items management) has been added.
+
+[[v1.10.8]]
+== 1.10.8 (30.05.2023)
+
+icon:check[] Core: The requests to create, update or upsert a node have been extended to allow immediate publishing of the modified/created node and to set role permissions on the node.
+
+icon:check[] Core: The request to upload binary data into a binary field has been extended to allow immediate publishing of the modified/created node.
+
+[[v1.10.7]]
+== 1.10.7 (22.05.2023)
+
+icon:check[] GraphQL: Link resolving in graphql queries could cause an internal error (due to a DuplicateKeyException), which has been fixed now.
+
+[[v1.10.6]]
+== 1.10.6 (10.05.2023)
+
+icon:check[] GraphQL: Performance of queries that return large amounts of nodes with link resolving in fields or getting node fields has been improved.
+
+[[v1.10.5]]
+== 1.10.5 (19.04.2023)
+
+icon:check[] Core: The name of a Mesh user is now forced to be unique on a database level, to prevent creating users with an already existing username. The duplicated username detection mechanism has also been improved.
+
+CAUTION: Duplicate usernames must be removed before the update, otherwise Mesh will fail to start!
+
+icon:check[] Monitoring: Calling the `/health/ready` endpoint while restoring an OrientDB backup would block the request. If too many requests were blocked in this way, Mesh would
+be considered not live any more. This has been fixed now, during a restore, the endpoint `/health/ready` will now fail immediately while the liveness status will be maintained.
+
+icon:check[] Monitoring: Failing calls to any `/health/...` endpoints will no longer log the whole stacktrace, since this does not contain useful information.
+
+icon:check[] Core: Migration jobs have been made more robust: Migration jobs will now be aborted, in cases were the storage is no longer ready to be written to
+(e.g. write quorum is not reached, or the storage is read-only due to insufficient disk space available). A periodic check (interval can be configured via setting `migrationTriggerInterval`)
+will continue processing of aborted jobs.
+
+icon:check[] Clustering: when running in CUD coordination mode, the requests to trigger job migration were not delegated to the current master. This has been fixed now.
+
+[[v1.10.4]]
+== 1.10.4 (23.03.2023)
+
+icon:check[] Core: If a node has more that one INITIAL content for a language in a branch, this can now be repaired with the consistency repair tool.
+
+[[v1.10.3]]
+== 1.10.3 (08.03.2023)
+
+icon:plus[] Docker: Additional command line tools have been added to the Mesh Docker image: `rsync`, `curl`, `iputils`, `busybox-extras`, `tar`, `nano`.
+
+[[v1.10.2]]
+== 1.10.2 (22.02.2023)
+
+icon:check[] Search: The search endpoints (like e.g. `/api/v1/search/nodes`) were incorrectly treated as not "read-only", which caused them to fail during a cluster topology change,
+if the setting `cluster.topologyChangeReadOnly` was set to `true`. This has been changed now, the real search endpoints are read-only now. It is important to note, that this does still
+not apply to the index maintenance endpoints `/api/v1/search/sync`, `/api/v1/search/clear` and `/api/v1/search/status`.
+
+[[v1.10.1]]
+== 1.10.1 (26.01.2023)
+
+icon:check[] GraphQL: In rare cases, GraphQL statements could "hang" forever, which caused the corresponding worker thread to be blocked forever.
+This has been fixed now by introducing a configurable timeout.
+
+icon:check[] GraphQL: The graphql library has been updated to version 20.0.
+
+icon:check[] Core: The node migration process has been improved to reduce resources footprint on large workloads, by chunking the data. An additional configuration item `content.batchSize` has been added.
+
+icon:check[] Core: Corner case of updating the webroot info might throw a false conflict exception, when the segment field value is reset for a schema. This has been fixed.
 
 [[v1.10.0]]
-== 1.10.0 (TBD)
+== 1.10.0 (11.01.2023)
 
 icon:plus[] Core: The OrientDB database as been updated to version 3.2.10.
 
 icon:plus[] Rest: The new endpoints `/api/v2/.../rolePermissions` allow getting, granting and revoking permissions on entities for multiple roles in a single request.
 
 icon:plus[] Core: The core Vert.x library was updated to version `4.3.2`.
+
+[[v1.9.9]]
+== 1.9.9 (15.12.2022)
+
+icon:check[] Clustering: Liveness check now marks an instance as dead, if the event bus did not get its own cluster instance ping within the timeout period, even if the non-cluster ping comes in time.
+
+icon:check[] Search: When using language specific index settings, nodes were incorrectly indexed in the language unspecific index when they were moved or tagged causing the node to be present in both the language specific and language unspecific index. This has been fixed.
+
+[[v1.9.8]]
+== 1.9.8 (01.12.2022)
+
+icon:check[] Core: Having a binary non-segment field update might break the uniqueness of the segment field value, allowing creation of multiple nodes with the same segment/webroot value. This has now been fixed.
+
+[[v1.9.7]]
+== 1.9.7 (22.11.2022)
+
+icon:check[] Logging: Remove superfluous error messages for HTTP status 4xx errors. These are logged by the logger handler as warnings.
+
+[[v1.9.6]]
+== 1.9.6 (17.11.2022)
+
+icon:check[] Docker-Image: The base images have been updated to a newer JDK minor version (`11.0.16`).
+
+icon:check[] Core: On Elasticsearch index resync the indices for additional languages were deleted, ignoring the actual ES language schema setup. This has been fixed.
+
+icon:check[] Core: The included Mesh UI has been updated to version `1.3.6`.
 
 [[v1.9.5]]
 == 1.9.5 (24.10.2022)
@@ -496,7 +604,7 @@ icon:check[] Core: Fixed a bug which caused a `NullPointerException` when loadin
 CAUTION: Java 10: This version of Gentics Mesh will only be executable using Java 10 or newer JVM versions.
 		The Java APIs for `mesh-api`, `mesh-rest-model`, `mesh-rest-client` and `mesh-test-common` are still be usable with Java 8.
     Plugins need to be upgraded to Java 10 in order to be compatible with this version.
-		
+
 icon:plus[] Internal: The maven package structure for internal code has been changed.
 
 icon:plus[] Internal: The internal code has been cleaned up.
@@ -675,13 +783,13 @@ More information can be found in the link:{{< relref "references.asciidoc" >}}#_
 
 icon:plus[] Java Rest Client: The client configuration has been enhanced. It is now possible to specify a client certificate and key to be used by the REST client.
 
-The following methods have been added to the config builder for `MeshRestClientConfig`:  
+The following methods have been added to the config builder for `MeshRestClientConfig`:
 
 Methods to set the client key which will be used during SSL handshake:
 
   * `MeshRestClientConfig.Builder#setClientKey(String path)`
-  * `MeshRestClientConfig.Builder#setClientKey(InputStream ins)` 
-  * `MeshRestClientConfig.Builder#setClientKey(byte[] data)` 
+  * `MeshRestClientConfig.Builder#setClientKey(InputStream ins)`
+  * `MeshRestClientConfig.Builder#setClientKey(byte[] data)`
 
 Methods to set the client certificate which will be used during SSL handshake:
 
@@ -2367,7 +2475,7 @@ icon:plus[] UI: Add multi binary upload dialogue. Users can now upload multiple 
 icon:plus[] UI: Binary fields can now be used as display fields. The filename is used as the display name for the node. link:https://github.com/gentics/mesh-ui/issues/11[#11]
 
 icon:plus[] UI: It is now possible to specify the URL to the front end of a system. This allows users to quickly go to the page that represents the node in the system.
-  See the default `mesh-ui-config.js` or the link:{{< relref "user-interface.asciidoc" >}}#_configuration[online documentation] for more details. link:https://github.com/gentics/mesh-ui/issues/14[#14]
+  See the default `mesh-ui-config.js` for more details. link:https://github.com/gentics/mesh-ui/issues/14[#14]
 
 icon:plus[] Upload: The upload handling code has been refactored in order to process the uploaded data in-parallel.
 

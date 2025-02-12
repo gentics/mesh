@@ -17,6 +17,7 @@ import static com.gentics.mesh.example.ExampleUuids.TAG_RED_UUID;
 import static com.gentics.mesh.example.ExampleUuids.UUID_1;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_OCTET_STREAM;
+import static com.gentics.mesh.http.HttpConstants.MULTIPART_FORM_DATA;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
@@ -31,14 +32,18 @@ import javax.inject.Inject;
 import org.apache.commons.lang3.StringUtils;
 import org.raml.model.Resource;
 
-import com.gentics.mesh.auth.MeshAuthChainImpl;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.RolePermissionHandlingProjectEndpoint;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
+import com.gentics.mesh.parameter.impl.ImageManipulationRetrievalParametersImpl;
 import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -58,7 +63,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 
 	private NodeCrudHandler crudHandler;
 
-	private BinaryUploadHandlerImpl binaryUploadHandler;
+	private BinaryUploadHandler binaryUploadHandler;
 
 	private BinaryTransformHandler binaryTransformHandler;
 
@@ -68,21 +73,25 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 
 	private S3BinaryMetadataExtractionHandlerImpl s3BinaryMetadataExtractionHandler;
 
+	private BinaryVariantsHandler binaryVariantsHandler;
+
 	public NodeEndpoint() {
-		super("nodes", null, null);
+		super("nodes", null, null, null, null, null);
 	}
 
 	@Inject
-	public NodeEndpoint(MeshAuthChainImpl chain, BootstrapInitializer boot, NodeCrudHandler crudHandler, BinaryUploadHandlerImpl binaryUploadHandler,
+	public NodeEndpoint(MeshAuthChain chain, BootstrapInitializer boot, NodeCrudHandler crudHandler, BinaryUploadHandler binaryUploadHandler,
 		BinaryTransformHandler binaryTransformHandler, BinaryDownloadHandler binaryDownloadHandler, S3BinaryUploadHandlerImpl s3binaryUploadHandler,
-						S3BinaryMetadataExtractionHandlerImpl s3BinaryMetadataExtractionHandler) {
-		super("nodes", chain, boot);
+						S3BinaryMetadataExtractionHandlerImpl s3BinaryMetadataExtractionHandler, BinaryVariantsHandler binaryVariantsHandler, 
+						LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+		super("nodes", chain, boot, localConfigApi, db, options);
 		this.crudHandler = crudHandler;
 		this.binaryUploadHandler = binaryUploadHandler;
 		this.binaryTransformHandler = binaryTransformHandler;
 		this.binaryDownloadHandler = binaryDownloadHandler;
 		this.s3binaryUploadHandler = s3binaryUploadHandler;
 		this.s3BinaryMetadataExtractionHandler = s3BinaryMetadataExtractionHandler;
+		this.binaryVariantsHandler = binaryVariantsHandler;
 	}
 
 	@Override
@@ -112,6 +121,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		addNavigationHandlers();
 		addPublishHandlers();
 		addVersioningHandlers();
+		addBinaryVariantsHandlers();
 		addRolePermissionHandler("nodeUuid", NODE_DELOREAN_UUID, "node", crudHandler, true);
 	}
 
@@ -174,7 +184,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 			String uuid = ac.getParameter("nodeUuid");
 			String languageTag = ac.getParameter("language");
 			crudHandler.handleDeleteLanguage(ac, uuid, languageTag);
-		});
+		}, isOrderedBlockingHandlers());
 	}
 
 	private void addBinaryHandlers() {
@@ -182,7 +192,9 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		fieldUpdate.path("/:nodeUuid/binary/:fieldName");
 		fieldUpdate.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
 		fieldUpdate.addUriParameter("fieldName", "Name of the field which should be created.", "stringField");
+		fieldUpdate.addUriParameter("publish", "Whether the node shall be published after updating the binary field", "true");
 		fieldUpdate.method(POST);
+		fieldUpdate.consumes(MULTIPART_FORM_DATA);
 		fieldUpdate.produces(APPLICATION_JSON);
 		fieldUpdate.exampleRequest(nodeExamples.getExampleBinaryUploadFormParameters());
 		fieldUpdate.exampleResponse(OK, nodeExamples.getNodeResponseWithAllFields(), "The response contains the updated node.");
@@ -195,7 +207,25 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 			MultiMap attributes = rc.request().formAttributes();
 			InternalActionContext ac = wrap(rc);
 			binaryUploadHandler.handleUpdateField(ac, uuid, fieldName, attributes);
-		});
+		}, isOrderedBlockingHandlers());
+
+		InternalEndpointRoute checkCallback = createRoute();
+		checkCallback.path("/:nodeUuid/binary/:fieldName/checkCallback");
+		checkCallback.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
+		checkCallback.addUriParameter("fieldName", "Name of the field for which the check status is to be updated.", "stringField");
+		checkCallback.method(POST);
+		checkCallback.produces(APPLICATION_JSON);
+		checkCallback.exampleRequest(nodeExamples.getExampleBinaryCheckCallbackParameters());
+		checkCallback.exampleResponse(NO_CONTENT, "");
+		checkCallback.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the field could not be found.");
+		checkCallback.description("Set the check status for the binaryfield with the given name.");
+		checkCallback.events(NODE_UPDATED);
+		checkCallback.blockingHandler(rc -> {
+			String uuid = rc.request().getParam("nodeUuid");
+			String fieldName = rc.request().getParam("fieldName");
+			InternalActionContext ac = wrap(rc);
+			binaryUploadHandler.handleBinaryCheckResult(ac, uuid, fieldName);
+		}, false);
 
 		InternalEndpointRoute imageTransform = createRoute();
 		imageTransform.path("/:nodeUuid/binaryTransform/:fieldName");
@@ -213,7 +243,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 			String uuid = rc.request().getParam("nodeUuid");
 			String fieldName = rc.request().getParam("fieldName");
 			binaryTransformHandler.handle(rc, uuid, fieldName);
-		});
+		}, isOrderedBlockingHandlers());
 
 		InternalEndpointRoute fieldGet = createRoute();
 		fieldGet.path("/:nodeUuid/binary/:fieldName");
@@ -231,7 +261,61 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 			String fieldName = rc.request().getParam("fieldName");
 			binaryDownloadHandler.handleReadBinaryField(rc, uuid, fieldName);
 		}, false);
+	}
 
+	private void addBinaryVariantsHandlers() {
+		InternalEndpointRoute fieldGet = createRoute();
+		fieldGet.path("/:nodeUuid/binary/:fieldName/variants");
+		fieldGet.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
+		fieldGet.addUriParameter("fieldName", "Name of the image field", "image");
+		fieldGet.addQueryParameters(VersioningParametersImpl.class);
+		fieldGet.addQueryParameters(ImageManipulationRetrievalParametersImpl.class);
+		fieldGet.produces(APPLICATION_JSON);
+		fieldGet.exampleResponse(OK, nodeExamples.createImageVariantsResponse(), "A list of image variants have been returned.");
+		fieldGet.method(GET);
+		fieldGet.description(
+			"Get the list of image manipulation variants of the binary, possessed by a field with the given name.");
+		fieldGet.blockingHandler(rc -> {
+			String uuid = rc.request().getParam("nodeUuid");
+			String fieldName = rc.request().getParam("fieldName");
+			binaryVariantsHandler.handleListBinaryFieldVariants(wrap(rc), uuid, fieldName);
+		}, false);
+
+		InternalEndpointRoute fieldDelete = createRoute();
+		fieldDelete.path("/:nodeUuid/binary/:fieldName/variants");
+		fieldDelete.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
+		fieldDelete.addUriParameter("fieldName", "Name of the image field", "image");
+		fieldDelete.addQueryParameters(VersioningParametersImpl.class);
+		fieldDelete.addQueryParameters(ImageManipulationRetrievalParametersImpl.class);
+		fieldDelete.produces(APPLICATION_JSON);
+		fieldDelete.method(DELETE);
+		fieldDelete.exampleResponse(NO_CONTENT, "Image variants have been deleted.");
+		fieldDelete.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
+		fieldDelete.description(
+			"Delete unused image manipulation variants of the binary, referenced by a field with the given name.");
+		fieldDelete.blockingHandler(rc -> {
+			String uuid = rc.request().getParam("nodeUuid");
+			String fieldName = rc.request().getParam("fieldName");
+			binaryVariantsHandler.handleDeleteBinaryFieldVariants(wrap(rc), uuid, fieldName);
+		}, isOrderedBlockingHandlers());
+
+		InternalEndpointRoute fieldPut = createRoute();
+		fieldPut.path("/:nodeUuid/binary/:fieldName/variants");
+		fieldPut.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
+		fieldPut.addUriParameter("fieldName", "Name of the image field.", "image");
+		fieldPut.addQueryParameters(VersioningParametersImpl.class);
+		fieldPut.addQueryParameters(ImageManipulationRetrievalParametersImpl.class);
+		fieldPut.method(POST);
+		fieldPut.produces(APPLICATION_JSON);
+		fieldPut.exampleRequest(nodeExamples.createImageManipulationRequest());
+		fieldPut.exampleResponse(OK, nodeExamples.createImageVariantsResponse(), "An updated list of variants is returned");
+		fieldPut.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the field could not be found.");
+		fieldPut.description("Add new image variants to the binary, referenced by a field with the given name.");
+		fieldPut.blockingHandler(rc -> {
+			String uuid = rc.request().getParam("nodeUuid");
+			String fieldName = rc.request().getParam("fieldName");
+			binaryVariantsHandler.handleUpsertBinaryFieldVariants(wrap(rc), uuid, fieldName);
+		}, isOrderedBlockingHandlers());
 	}
 
 	private void addS3BinaryHandlers() {
@@ -251,7 +335,25 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 			String fieldName = rc.request().getParam("fieldName");
 			InternalActionContext ac = wrap(rc);
 			s3binaryUploadHandler.handleUpdateField(ac, uuid, fieldName);
-		});
+		}, isOrderedBlockingHandlers());
+
+		InternalEndpointRoute checkCallback = createRoute();
+		checkCallback.path("/:nodeUuid/s3binary/:fieldName/checkCallback");
+		checkCallback.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
+		checkCallback.addUriParameter("fieldName", "Name of the field which should be created.", "stringField");
+		checkCallback.method(POST);
+		checkCallback.produces(APPLICATION_JSON);
+		checkCallback.exampleRequest(nodeExamples.getExampleBinaryCheckCallbackParameters());
+		checkCallback.exampleResponse(NO_CONTENT, "");
+		checkCallback.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the field could not be found.");
+		checkCallback.description("Set the check status for the binaryfield with the given name.");
+		checkCallback.events(NODE_UPDATED);
+		checkCallback.blockingHandler(rc -> {
+			String uuid = rc.request().getParam("nodeUuid");
+			String fieldName = rc.request().getParam("fieldName");
+			InternalActionContext ac = wrap(rc);
+			s3binaryUploadHandler.handleBinaryCheckResult(ac, uuid, fieldName);
+		}, false);
 
 		InternalEndpointRoute fieldMetadataExtraction = createRoute();
 		fieldMetadataExtraction.path("/:nodeUuid/s3binary/:fieldName/parseMetadata");
@@ -269,7 +371,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 			String fieldName = rc.request().getParam("fieldName");
 			InternalActionContext ac = wrap(rc);
 			s3BinaryMetadataExtractionHandler.handleMetadataExtraction(ac, uuid, fieldName);
-		});
+		}, isOrderedBlockingHandlers());
 	}
 
 	private void addMoveHandler() {
@@ -289,7 +391,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 			String uuid = ac.getParameter("nodeUuid");
 			String toUuid = ac.getParameter("toUuid");
 			crudHandler.handleMove(ac, uuid, toUuid);
-		});
+		}, isOrderedBlockingHandlers());
 	}
 
 	private void addChildrenHandler() {
@@ -343,7 +445,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String nodeUuid = ac.getParameter("nodeUuid");
 			crudHandler.handleBulkTagUpdate(ac, nodeUuid);
-		});
+		}, isOrderedBlockingHandlers());
 
 		InternalEndpointRoute addTag = createRoute();
 		addTag.path("/:nodeUuid/tags/:tagUuid");
@@ -361,7 +463,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 			String uuid = ac.getParameter("nodeUuid");
 			String tagUuid = ac.getParameter("tagUuid");
 			crudHandler.handleAddTag(ac, uuid, tagUuid);
-		});
+		}, isOrderedBlockingHandlers());
 
 		// TODO fix error handling. This does not fail when tagUuid could not be found
 		InternalEndpointRoute removeTag = createRoute();
@@ -379,7 +481,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 			String uuid = ac.getParameter("nodeUuid");
 			String tagUuid = ac.getParameter("tagUuid");
 			crudHandler.handleRemoveTag(ac, uuid, tagUuid);
-		});
+		}, isOrderedBlockingHandlers());
 
 	}
 
@@ -398,7 +500,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 			InternalActionContext ac = wrap(rc);
 			ac.getVersioningParameters().setVersion("draft");
 			crudHandler.handleCreate(ac);
-		});
+		}, isOrderedBlockingHandlers());
 	}
 
 	private void addReadHandler() {
@@ -457,7 +559,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");
 			crudHandler.handleDelete(ac, uuid);
-		});
+		}, isOrderedBlockingHandlers());
 	}
 
 	// TODO filter by project name
@@ -483,7 +585,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 			String uuid = ac.getParameter("nodeUuid");
 			ac.getVersioningParameters().setVersion("draft");
 			crudHandler.handleUpdate(ac, uuid);
-		});
+		}, isOrderedBlockingHandlers());
 	}
 
 	private void addPublishHandlers() {
@@ -502,21 +604,21 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 			crudHandler.handleGetPublishStatus(ac, uuid);
 		}, false);
 
-		InternalEndpointRoute putEndpoint = createRoute();
-		putEndpoint.description("Publish all language specific contents of the node with the given uuid.");
-		putEndpoint.path("/:nodeUuid/published");
-		putEndpoint.addUriParameter("nodeUuid", "Uuid of the node", NODE_DELOREAN_UUID);
-		putEndpoint.method(POST);
-		putEndpoint.produces(APPLICATION_JSON);
-		putEndpoint.exampleResponse(OK, versioningExamples.createPublishStatusResponse(), "Publish status of the node.");
-		putEndpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
-		putEndpoint.addQueryParameters(PublishParametersImpl.class);
-		putEndpoint.events(NODE_PUBLISHED);
-		putEndpoint.blockingHandler(rc -> {
+		InternalEndpointRoute postEndpoint = createRoute();
+		postEndpoint.description("Publish all language specific contents of the node with the given uuid.");
+		postEndpoint.path("/:nodeUuid/published");
+		postEndpoint.addUriParameter("nodeUuid", "Uuid of the node", NODE_DELOREAN_UUID);
+		postEndpoint.method(POST);
+		postEndpoint.produces(APPLICATION_JSON);
+		postEndpoint.exampleResponse(OK, versioningExamples.createPublishStatusResponse(), "Publish status of the node.");
+		postEndpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
+		postEndpoint.addQueryParameters(PublishParametersImpl.class);
+		postEndpoint.events(NODE_PUBLISHED);
+		postEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().getParam("nodeUuid");
 			crudHandler.handlePublish(ac, uuid);
-		});
+		}, isOrderedBlockingHandlers());
 
 		InternalEndpointRoute deleteEndpoint = createRoute();
 		deleteEndpoint.description("Unpublish the given node.");
@@ -532,7 +634,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().getParam("nodeUuid");
 			crudHandler.handleTakeOffline(ac, uuid);
-		});
+		}, isOrderedBlockingHandlers());
 
 		// Language specific
 
@@ -567,7 +669,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 			String uuid = rc.request().getParam("nodeUuid");
 			String lang = rc.request().getParam("language");
 			crudHandler.handlePublish(ac, uuid, lang);
-		});
+		}, isOrderedBlockingHandlers());
 
 		InternalEndpointRoute deleteLanguageRoute = createRoute();
 		deleteLanguageRoute.description("Take the language of the node offline.");
@@ -583,7 +685,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 			String uuid = rc.request().getParam("nodeUuid");
 			String lang = rc.request().getParam("language");
 			crudHandler.handleTakeOffline(ac, uuid, lang);
-		});
+		}, isOrderedBlockingHandlers());
 
 	}
 

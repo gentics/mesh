@@ -4,13 +4,16 @@
 		    fields {
 				# [$.data.node.fields.html=some html]
 				html(linkType: FULL)
-	
+
 				# [$.data.node.fields.htmlLink=Link: /api/v2/dummy/webroot/News/News%20Overview.en.html]
 				htmlLink(linkType: FULL)
-	
+
+				# [$.data.node.fields.emptyLink=Link to nowhere: /api/v2/dummy/webroot/error/404]
+				emptyLink(linkType: FULL)
+
 				# [$.data.node.fields.string=some string]
 				string(linkType: FULL)
-	
+
 				# [$.data.node.fields.stringLink=Link: /api/v2/dummy/webroot/News/News%20Overview.en.html]
 				stringLink(linkType: FULL)
 

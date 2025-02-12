@@ -27,6 +27,11 @@
 | string
 | Node name of the Gentics Mesh instance.
 
+| meshRevision
+| false
+| string
+| Mesh revision name.
+
 | meshVersion
 | false
 | string

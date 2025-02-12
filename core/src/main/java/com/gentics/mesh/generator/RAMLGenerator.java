@@ -20,14 +20,14 @@ import org.raml.model.Protocol;
 import org.raml.model.Raml;
 import org.raml.model.Resource;
 import org.raml.model.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
 import io.vertx.core.http.HttpMethod;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 /**
  * Generator for RAML documentation. The generation mocks all endpoint classes and extracts the routes from these endpoints in order to generate the RAML.
@@ -85,6 +85,7 @@ public class RAMLGenerator extends AbstractEndpointGenerator<Map<String, Resourc
 		try {
 			addCoreEndpoints(raml.getResources());
 			addProjectEndpoints(raml.getResources());
+			addExtraEndpoints(raml.getResources());
 		} catch (IOException e) {
 			throw new RuntimeException("Could not add all verticles to raml generator", e);
 		}
@@ -105,7 +106,6 @@ public class RAMLGenerator extends AbstractEndpointGenerator<Map<String, Resourc
 	 * @throws IOException
 	 */
 	protected void addEndpoints(String basePath, Map<String, Resource> resources, AbstractInternalEndpoint verticle, boolean isProject) throws IOException {
-
 		String ramlPath = basePath + "/" + verticle.getBasePath();
 		// Check whether the resource was already added. Maybe we just need to extend it
 		Resource verticleResource = resources.get(ramlPath);
@@ -123,7 +123,6 @@ public class RAMLGenerator extends AbstractEndpointGenerator<Map<String, Resourc
 			}
 			Action action = new Action();
 			action.setIs(Arrays.asList(endpoint.getTraits()));
-			action.setDisplayName(endpoint.getDisplayName());
 			action.setDescription(endpoint.getDescription());
 			action.setQueryParameters(endpoint.getQueryParameters());
 
@@ -236,10 +235,18 @@ public class RAMLGenerator extends AbstractEndpointGenerator<Map<String, Resourc
 	 * @param method
 	 * @return
 	 */
-	private ActionType getActionType(HttpMethod method) {
+	protected ActionType getActionType(HttpMethod method) {
 		return ActionType.valueOf(method.name());
 	}
 
+	/**
+	 * Add any extra verticles to the map of RAML resources.
+	 * 
+	 * @param resources
+	 * @throws IOException
+	 */
+	protected void addExtraEndpoints(Map<String, Resource> resources) throws IOException {
+	}
 
 	/**
 	 * Start the generator.

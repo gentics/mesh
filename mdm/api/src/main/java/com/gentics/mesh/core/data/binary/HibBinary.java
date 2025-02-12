@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.binary;
 
 import java.io.InputStream;
 
+import com.gentics.mesh.core.data.HibAntivirableBinaryElement;
 import com.gentics.mesh.core.data.HibImageDataElement;
 import com.gentics.mesh.core.data.storage.BinaryStorage;
 import com.gentics.mesh.core.db.Supplier;
@@ -10,18 +11,18 @@ import com.gentics.mesh.core.db.Tx;
 /**
  * Domain model for binaries.
  */
-public interface HibBinary extends HibImageDataElement {
+public interface HibBinary extends HibImageDataElement, HibAntivirableBinaryElement {
 
 	/**
 	 * Return the SHA512Sum of the binary.
-	 * 
+	 *
 	 * @return
 	 */
 	String getSHA512Sum();
 
 	/**
 	 * Set the SHA 512 Checksum
-	 * 
+	 *
 	 * @param sha512sum
 	 * @return
 	 */

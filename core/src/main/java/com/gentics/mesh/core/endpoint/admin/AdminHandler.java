@@ -11,6 +11,11 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
 
+import java.util.UUID;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cache.CacheRegistry;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -21,8 +26,6 @@ import com.gentics.mesh.core.db.cluster.ClusterManager;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
-import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
-import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfig;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorMasterResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
@@ -37,11 +40,10 @@ import com.gentics.mesh.parameter.BackupParameters;
 import com.gentics.mesh.router.RouterStorageImpl;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.launcher.commands.VersionCommand;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 /**
  * Handler for admin request methods.
@@ -72,7 +74,7 @@ public abstract class AdminHandler extends AbstractHandler {
 
 	protected final ConsistencyCheckHandler consistencyCheckHandler;
 
-	private final CacheRegistry cacheRegistry;
+	protected final CacheRegistry cacheRegistry;
 
 	protected final ClusterManager clusterManager;
 
@@ -128,10 +130,9 @@ public abstract class AdminHandler extends AbstractHandler {
 			BackupParameters params = ac.getBackupParameters();
 			if (params.isConsistencyCheck()) {
 				log.info("Starting consistency check as requested.");
-				ConsistencyCheckResponse result = consistencyCheckHandler.checkConsistency(false).runInExistingTx(tx);
+				ConsistencyCheckResponse result = consistencyCheckHandler.checkConsistency(false, false).runInExistingTx(tx);
 				if (result.getResult() == INCONSISTENT) {
 					long count = result.getInconsistencies().size();
-					log.error("Backup aborted due to found inconsistencies: " + count);
 					throw error(INTERNAL_SERVER_ERROR, "backup_consistency_check_failed", String.valueOf(count));
 				}
 			}
@@ -225,6 +226,7 @@ public abstract class AdminHandler extends AbstractHandler {
 			info.setMeshVersion(Mesh.getPlainVersion());
 			info.setVertxVersion(VersionCommand.getVersion());
 			info.setMeshNodeName(options.getNodeName());
+			info.setMeshRevision("OSS");
 		}
 		return info;
 	}
@@ -247,40 +249,6 @@ public abstract class AdminHandler extends AbstractHandler {
 			ac.send(raml, OK, APPLICATION_YAML_UTF8);
 		} else {
 			throw error(FORBIDDEN, "error_admin_permission_required");
-		}
-	}
-
-	/**
-	 * Load the currently active cluster configuration.
-	 * 
-	 * @param ac
-	 */
-	public void handleLoadClusterConfig(InternalActionContext ac) {
-		utils.syncTx(ac, tx -> {
-			HibUser user = ac.getUser();
-			if (user != null && !user.isAdmin()) {
-				throw error(FORBIDDEN, "error_admin_permission_required");
-			}
-			return db.loadClusterConfig();
-		}, model -> ac.send(model, OK));
-	}
-
-	/**
-	 * Update the OrientDB cluster configuration.
-	 * 
-	 * @param ac
-	 */
-	public void handleUpdateClusterConfig(InternalActionContext ac) {
-		try (WriteLock lock = writeLock.lock(ac)) {
-			utils.syncTx(ac, tx -> {
-				HibUser user = ac.getUser();
-				if (user != null && !user.isAdmin()) {
-					throw error(FORBIDDEN, "error_admin_permission_required");
-				}
-				ClusterConfigRequest request = ac.fromJson(ClusterConfigRequest.class);
-				db.updateClusterConfig(request);
-				return db.loadClusterConfig();
-			}, model -> ac.send(model, OK));
 		}
 	}
 
@@ -329,41 +297,8 @@ public abstract class AdminHandler extends AbstractHandler {
 		String name = server.getName();
 		String host = server.getHost();
 		int port = server.getPort();
-		return new CoordinatorMasterResponse(name, port, host);
-	}
-
-	/**
-	 * Return the currently set coordinator config.
-	 * 
-	 * @param ac
-	 */
-	public void handleLoadCoordinationConfig(InternalActionContext ac) {
-		utils.syncTx(ac, tx -> {
-			HibUser user = ac.getUser();
-			if (user != null && !user.isAdmin()) {
-				throw error(FORBIDDEN, "error_admin_permission_required");
-			}
-			return coordinator.loadConfig();
-		}, model -> ac.send(model, OK));
-	}
-
-	/**
-	 * Update the coordination configuration.
-	 * 
-	 * @param ac
-	 */
-	public void handleUpdateCoordinationConfig(InternalActionContext ac) {
-		try (WriteLock lock = writeLock.lock(ac)) {
-			utils.syncTx(ac, tx -> {
-				HibUser user = ac.getUser();
-				if (user != null && !user.isAdmin()) {
-					throw error(FORBIDDEN, "error_admin_permission_required");
-				}
-				CoordinatorConfig request = ac.fromJson(CoordinatorConfig.class);
-				coordinator.updateConfig(request);
-				return coordinator.loadConfig();
-			}, model -> ac.send(model, OK));
-		}
+		UUID uuid = server.getUuid();
+		return new CoordinatorMasterResponse(UUIDUtil.toShortUuid(uuid), name, port, host);
 	}
 
 	/**

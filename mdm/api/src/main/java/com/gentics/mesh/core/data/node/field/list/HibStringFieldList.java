@@ -22,6 +22,15 @@ public interface HibStringFieldList extends HibMicroschemaListableField, HibList
 	HibStringField createString(String string);
 
 	/**
+	 * Create an ordered list of string fields from the values, adding all to the list.
+	 * 
+	 * @param strings
+	 */
+	default void createStrings(List<String> strings) {
+		strings.stream().forEach(this::createString);
+	}
+
+	/**
 	 * Return the string item at the given position.
 	 * 
 	 * @param index

@@ -1,0 +1,1 @@
+Clustering: Due to an incorrect check, it was possible that migration jobs could complete without actually migrating anything, when run in a clustered environment with disabled coordination mode.

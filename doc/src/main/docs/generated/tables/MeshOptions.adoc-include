@@ -57,6 +57,11 @@
 | integer
 | The maximum amount of entities to be migrated in a single transaction. This setting affects schema, microschema and branch migrations
 
+| migrationTriggerInterval
+| false
+| integer
+| Interval in ms for the automatic migration job trigger. Setting this to a non-positive value will disable automatic job triggering. Default: 60000 ms.
+
 | monitoring
 | false
 | object
@@ -76,6 +81,11 @@
 | false
 | integer
 | Timeout in seconds which is used for the plugin startup,initialization,de-initialization and stop processes. Default: 120 seconds.
+
+| pluginUseHttp2
+| false
+| boolean
+| If true, plugin HTTP client will be forced to use HTTP/2 protocol version.
 
 | s3options
 | false

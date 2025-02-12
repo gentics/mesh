@@ -6,20 +6,27 @@ import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.common.ContainerType.forVersion;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.DummyBulkActionContext;
+import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
+import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
@@ -42,27 +49,6 @@ import com.gentics.mesh.util.VersionNumber;
  * DAO for contained data.
  */
 public interface ContentDao {
-	/**
-	 * Construct the index name using the provided information.
-	 *
-	 * <p>
-	 * <ul>
-	 * <li>Document Index: [:indexPrefixnode-:projectUuid-:branchUuid-:schemaVersionUuid-:versionType]</li>
-	 * <li>Example: node-934ef7f2210e4d0e8ef7f2210e0d0ec5-fd26b3cf20fb4f6ca6b3cf20fbdf6cd6-draft</li>
-	 * </ul>
-	 * <p>
-	 *
-	 * @param projectUuid
-	 * @param branchUuid
-	 * @param schemaContainerVersionUuid
-	 * @param type
-	 * @param microSchemaVersionHash optional hash over all microschema versions, which are used by the schema version
-	 * @return
-	 */
-	static String composeIndexName(String projectUuid, String branchUuid, String schemaContainerVersionUuid, ContainerType type, String microSchemaVersionHash) {
-		return composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid, type, null, microSchemaVersionHash);
-	}
-
 	/**
 	 * Construct the index name using the provided information.
 	 *
@@ -223,7 +209,7 @@ public interface ContentDao {
 
 	/**
 	 * Return the mount of elements.
-	 * 
+	 *
 	 * @return
 	 */
 	long globalCount();
@@ -268,11 +254,12 @@ public interface ContentDao {
 
 	/**
 	 * Return a map with node as a key and all its field containers as values, filtering for the provided parameters.
-	 * This method does not check permission
-	 * @param nodes
-	 * @param branchUuid
-	 * @param type
-	 * @return
+	 * This method does not check permission.
+	 * @implNote This method may or may not return nodes, that do not have any field containers.
+	 * @param nodes set of nodes
+	 * @param branchUuid branch UUID
+	 * @param type container type for filtering containers
+	 * @return map of nodes to lists of field containers
 	 */
 	Map<HibNode, List<HibNodeFieldContainer>> getFieldsContainers(Set<HibNode> nodes, String branchUuid, ContainerType type);
 
@@ -285,6 +272,18 @@ public interface ContentDao {
 	 * @return
 	 */
 	Map<HibNode, List<HibNodeFieldContainer>> getFieldsContainers(Set<HibNode> nodes, String branchUuid, VersionNumber versionNumber);
+
+	/**
+	 * Return the field containers for the given nodes of language, type and branch.
+	 *
+	 * @param languageTag
+	 * @param branch
+	 * @param type
+	 * @return
+	 */
+	default Map<HibNode, HibNodeFieldContainer> getFieldsContainers(Collection<? extends HibNode> nodes, String languageTag, HibBranch branch, ContainerType type) {
+		return nodes.stream().map(node -> Pair.of(node, getFieldContainer(node, languageTag, branch, type))).collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+	}
 
 	/**
 	 * Create a new field container for the given language and assign the schema version of the branch to the container. The field container will be
@@ -509,10 +508,31 @@ public interface ContentDao {
 
 	/**
 	 * Gets all NodeField edges that reference this node.
+	 *
+	 * @return
+	 */
+	default Stream<HibNodeField> getInboundReferences(HibNode node) {
+		return getInboundReferences(node, true, true);
+	}
+
+	/**
+	 * Gets all NodeField edges that reference this node.
+	 * 
+	 * @param lookupInFields should we look for refs in direct references?
+	 * @param lookupInLists should we look for refs in reference lists?
+	 *
+	 * @return
+	 */
+	Stream<HibNodeField> getInboundReferences(HibNode node, boolean lookupInFields, boolean lookupInLists);
+
+	/**
+	 * Gets all NodeField edges that reference the nodes.
 	 * 
 	 * @return
 	 */
-	Stream<HibNodeField> getInboundReferences(HibNode node);
+	default Stream<Pair<HibNodeField, HibNode>> getInboundReferences(Collection<HibNode> nodes) {
+		return nodes.stream().flatMap(node -> getInboundReferences(node).map(ref -> Pair.of(ref, node)));
+	}
 
 	/**
 	 * Return the index name for the given parameters.
@@ -523,7 +543,7 @@ public interface ContentDao {
 	 * @return
 	 */
 	default String getIndexName(HibNodeFieldContainer content, String projectUuid, String branchUuid, ContainerType type) {
-		return ContentDao.composeIndexName(projectUuid, branchUuid, getSchemaContainerVersion(content).getUuid(), type, null);
+		return ContentDao.composeIndexName(projectUuid, branchUuid, getSchemaContainerVersion(content).getUuid(), type, null, null);
 	}
 
 	/**
@@ -533,6 +553,16 @@ public interface ContentDao {
 	 */
 	default String getDocumentId(HibNodeFieldContainer content) {
 		return ContentDao.composeDocumentId(getNode(content).getUuid(), getLanguageTag(content));
+	}
+
+	/**
+	 * Batch load the containers, referencing each of the field.
+	 *
+	 * @param fields
+	 * @return
+	 */
+	default Stream<Pair<HibNodeField, Collection<HibNodeFieldContainer>>> getReferencingContents(Collection<HibNodeField> fields) {
+		return fields.stream().map(field -> Pair.of(field, field.getReferencingContents().collect(Collectors.toSet())));
 	}
 
 	/**
@@ -575,6 +605,22 @@ public interface ContentDao {
 	HibNode getNode(HibNodeFieldContainer content);
 
 	/**
+	 * Get the node field container for the given field.
+	 * @param field The field to get the node field container for.
+	 * @return The node field container for the given field.
+	 */
+	HibNodeFieldContainer getNodeFieldContainer(HibField field);
+
+	/**
+	 * Get the parent nodes to which the containers belong.
+	 *
+	 * @return
+	 */
+	default Stream<Pair<HibNodeFieldContainer, HibNode>> getNodes(Collection<HibNodeFieldContainer>  contents) {
+		return contents.stream().map(content -> Pair.of(content, getNode(content)));
+	}
+
+	/**
 	 * Update the property webroot path info. This will also check for uniqueness conflicts of the webroot path and will throw a
 	 * {@link Errors#conflict(String, String, String, String...)} if one found.
 	 *
@@ -584,7 +630,21 @@ public interface ContentDao {
 	 * @param conflictI18n
 	 *            key of the message in case of conflicts
 	 */
-	void updateWebrootPathInfo(HibNodeFieldContainer content, InternalActionContext ac, String branchUuid, String conflictI18n);
+	default void updateWebrootPathInfo(HibNodeFieldContainer content, InternalActionContext ac, String branchUuid, String conflictI18n) {
+		updateWebrootPathInfo(content, ac, branchUuid, conflictI18n, true);
+	}
+
+	/**
+	 * Update the property webroot path info. This will optionally also check for uniqueness conflicts of the webroot path and will throw a
+	 * {@link Errors#conflict(String, String, String, String...)} if one found.
+	 * @param ac
+	 * @param branchUuid
+	 *            branch Uuid
+	 * @param conflictI18n
+	 *            key of the message in case of conflicts
+	 * @param checkForConflicts true to check for conflicts, false to omit the check
+	 */
+	void updateWebrootPathInfo(HibNodeFieldContainer content, InternalActionContext ac, String branchUuid, String conflictI18n, boolean checkForConflicts);
 
 	/**
 	 * Update the property webroot path info. This will also check for uniqueness conflicts of the webroot path and will throw a
@@ -594,7 +654,18 @@ public interface ContentDao {
 	 * @param conflictI18n
 	 */
 	default void updateWebrootPathInfo(HibNodeFieldContainer content, String branchUuid, String conflictI18n) {
-		updateWebrootPathInfo(content, null, branchUuid, conflictI18n);
+		updateWebrootPathInfo(content, null, branchUuid, conflictI18n, true);
+	}
+
+	/**
+	 * Update the property webroot path info. This will optionally also check for uniqueness conflicts of the webroot path and will throw a
+	 * {@link Errors#conflict(String, String, String, String...)} if one found.
+	 * @param branchUuid
+	 * @param conflictI18n
+	 * @param checkForConflicts true to check for conflicts, false to omit the check
+	 */
+	default void updateWebrootPathInfo(HibNodeFieldContainer content, String branchUuid, String conflictI18n, boolean checkForConflicts) {
+		updateWebrootPathInfo(content, null, branchUuid, conflictI18n, checkForConflicts);
 	}
 
 	/**
@@ -758,7 +829,7 @@ public interface ContentDao {
 
 	/**
 	 * Return the schema version for the given content
-	 * 
+	 *
 	 * @param content
 	 * @return
 	 */
@@ -929,11 +1000,19 @@ public interface ContentDao {
 
 	/**
 	 * Return a stream of all the edges of a container.
-	 * @param type
-	 * @param branchUuid
+	 * @param container
 	 * @return
 	 */
 	Stream<? extends HibNodeFieldContainerEdge> getContainerEdges(HibNodeFieldContainer container);
+
+	/**
+	 * Return a stream of all the edges of all containers.
+	 * @param container
+	 * @return
+	 */
+	default Stream<Pair<HibNodeFieldContainer, Collection<? extends HibNodeFieldContainerEdge>>> getContainerEdges(Collection<HibNodeFieldContainer> containers) {
+		return containers.stream().map(container -> Pair.of(container, getContainerEdges(container).collect(Collectors.toSet())));
+	}
 
 	/**
 	 * Retrieve a conflicting edge for the given segment info, branch uuid and type, or null if there's no conflicting
@@ -961,6 +1040,18 @@ public interface ContentDao {
 	HibNodeFieldContainerEdge getConflictingEdgeOfWebrootField(HibNodeFieldContainer content, HibNodeFieldContainerEdge edge, String urlFieldValue, String branchUuid, ContainerType type);
 
 	/**
+	 * 	Retrieve a conflicting edge for one of the given urlFieldValues, branch uuid and type, or null if there's no conflicting
+	 * 	edge
+	 * @param content
+	 * @param edge
+	 * @param urlFieldValues
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
+	HibNodeFieldContainerEdge getConflictingEdgeOfWebrootField(HibNodeFieldContainer content, HibNodeFieldContainerEdge edge, Set<String> urlFieldValues, String branchUuid, ContainerType type);
+
+	/**
 	 * Set the segment info which consists of :nodeUuid + "-" + segment. The property is indexed and used for the webroot path resolving mechanism.
 	 *
 	 * @param parentNode
@@ -978,8 +1069,18 @@ public interface ContentDao {
 	Result<? extends HibNodeFieldContainerEdge> getFieldEdges(HibNode node, String branchUuid, ContainerType type);
 
 	/**
+	 * Return the field edges for the given node, container type and current node project branch.
+	 * @param node
+	 * @param type
+	 * @return
+	 */
+	default Result<? extends HibNodeFieldContainerEdge> getFieldEdges(HibNode fieldNode, ContainerType version) {
+		return getFieldEdges(fieldNode, fieldNode.getProject().getLatestBranch().getUuid(), version);
+	}
+
+	/**
 	 * Create a {@link NodeFieldListItem} that contains the reference to the given node.
-	 * 
+	 *
 	 * @param node
 	 * @param ac
 	 * @param languageTags
@@ -997,4 +1098,64 @@ public interface ContentDao {
 	 * @return
 	 */
 	FieldMap getFieldMap(HibNodeFieldContainer fieldContainer, InternalActionContext ac, SchemaModel schema, int level, List<String> containerLanguageTags);
+
+	/**
+	 * Whether prefetching of list field values is supported. If this returns
+	 * <code>false</code>, the methods {@link #getBooleanListFieldValues(List)},
+	 * {@link #getDateListFieldValues(List)}, {@link #getNumberListFieldValues(List)},
+	 * {@link #getHtmlListFieldValues(List)} and {@link #getStringListFieldValues(List)} will
+	 * all throw a {@link NotImplementedException} when called.
+	 * 
+	 * @return true when prefetching list field values is supported, false if not
+	 */
+	boolean supportsPrefetchingListFieldValues();
+
+	/**
+	 * Get the boolean list field values for the given list UUIDs
+	 * @param listUuids list UUIDs
+	 * @return map of list UUIDs to lists of boolean values
+	 */
+	Map<String, List<Boolean>> getBooleanListFieldValues(List<String> listUuids);
+
+	/**
+	 * Get the date list field values for the given list UUIDs
+	 * @param listUuids list UUIDs
+	 * @return map of list UUIDs to lists of date field values
+	 */
+	Map<String, List<Long>> getDateListFieldValues(List<String> listUuids);
+
+	/**
+	 * Get the number list field values for the given list UUIDs
+	 * @param listUuids list UUIDs
+	 * @return map of list UUIDs to lists of number field values
+	 */
+	Map<String, List<Number>> getNumberListFieldValues(List<String> listUuids);
+
+	/**
+	 * Get the html list field values for the given list UUIDs
+	 * @param listUuids list UUIDs
+	 * @return map of list UUIDs to lists of html field values
+	 */
+	Map<String, List<String>> getHtmlListFieldValues(List<String> listUuids);
+
+	/**
+	 * Get the string list field values for the given list UUIDs
+	 * @param listUuids list UUIDs
+	 * @return map of list UUIDs to lists of string field values
+	 */
+	Map<String, List<String>> getStringListFieldValues(List<String> listUuids);
+
+	/**
+	 * Get the Micronode list field values for the given list UUIDs
+	 * @param listUuids list UUIDs
+	 * @return map of list UUIDs to lists of micronode field values
+	 */
+	Map<String, List<HibMicronode>> getMicronodeListFieldValues(List<String> listUuids);
+
+	/**
+	 * Load the micronodes for the given collection of micronode fields
+	 * @param micronodeFields micronode fields
+	 * @return map of field to micronode
+	 */
+	Map<HibMicronodeField, HibMicronode> getMicronodes(Collection<HibMicronodeField> micronodeFields);
 }

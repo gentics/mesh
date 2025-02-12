@@ -24,12 +24,14 @@ public abstract class MeshOptions implements Option {
 	public static final String DEFAULT_DIRECTORY_NAME = "graphdb";
 	public static final int DEFAULT_MAX_DEPTH = 10;
 	public static final int DEFAULT_PLUGIN_TIMEOUT = 120;
+	public static final long DEFAULT_MIGRATION_TRIGGER_INTERVAL = 60_000;
 
 	public static final String MESH_DEFAULT_LANG_ENV = "MESH_DEFAULT_LANG";
 	public static final String MESH_LANGUAGES_FILE_PATH_ENV = "MESH_LANGUAGES_FILE_PATH";
 	public static final String MESH_UPDATECHECK_ENV = "MESH_UPDATECHECK";
 	public static final String MESH_TEMP_DIR_ENV = "MESH_TEMP_DIR";
 	public static final String MESH_PLUGIN_DIR_ENV = "MESH_PLUGIN_DIR";
+	public static final String MESH_PLUGIN_USE_HTTP2_ENV = "MESH_PLUGIN_USE_HTTP2";
 	public static final String MESH_PLUGIN_TIMEOUT_ENV = "MESH_PLUGIN_TIMEOUT";
 	public static final String MESH_NODE_NAME_ENV = "MESH_NODE_NAME";
 	public static final String MESH_CLUSTER_INIT_ENV = "MESH_CLUSTER_INIT";
@@ -39,7 +41,9 @@ public abstract class MeshOptions implements Option {
 	public static final String MESH_INITIAL_ADMIN_PASSWORD_ENV = "MESH_INITIAL_ADMIN_PASSWORD";
 	public static final String MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET_ENV = "MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET";
 	public static final String MESH_MAX_PURGE_BATCH_SIZE = "MESH_MAX_PURGE_BATCH_SIZE";
-	private static final String MESH_MAX_MIGRATION_BATCH_SIZE = "MESH_MAX_MIGRATION_BATCH_SIZE";
+	public static final String MESH_MAX_MIGRATION_BATCH_SIZE = "MESH_MAX_MIGRATION_BATCH_SIZE";
+	public static final String MESH_MIGRATION_TRIGGER_INTERVAL = "MESH_MIGRATION_TRIGGER_INTERVAL";
+
 
 	// TODO remove this setting. There should not be a default max depth. This is no longer needed once we remove the expand all parameter
 	private int defaultMaxDepth = DEFAULT_MAX_DEPTH;
@@ -143,9 +147,19 @@ public abstract class MeshOptions implements Option {
 	@EnvironmentVariable(name = MESH_MAX_MIGRATION_BATCH_SIZE, description = "Override the maximum migration batch size")
 	private int migrationMaxBatchSize = 50;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Interval in ms for the automatic migration job trigger. Setting this to a non-positive value will disable automatic job triggering. Default: " + DEFAULT_MIGRATION_TRIGGER_INTERVAL + " ms.")
+	@EnvironmentVariable(name = MESH_MIGRATION_TRIGGER_INTERVAL, description = "Override the migration trigger interval")
+	private long migrationTriggerInterval = DEFAULT_MIGRATION_TRIGGER_INTERVAL;
+
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("GraphQL options.")
 	private GraphQLOptions graphQLOptions = new GraphQLOptions();
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("If true, plugin HTTP client will be forced to use HTTP/2 protocol version.")
+	@EnvironmentVariable(name = MESH_PLUGIN_USE_HTTP2_ENV, description = "Override the HTTP/2 usage flag for plugins.")
+	private boolean pluginUseHttp2 = false;
 
 	/* EXTRA Command Line Arguments */
 	@JsonIgnore
@@ -520,6 +534,36 @@ public abstract class MeshOptions implements Option {
 		this.migrationMaxBatchSize = migrationMaxBatchSize;
 	}
 
+	public boolean isPluginUseHttp2() {
+		return pluginUseHttp2;
+	}
+
+	@Setter
+	public MeshOptions setPluginUseHttp2(boolean pluginUseHttp2) {
+		this.pluginUseHttp2 = pluginUseHttp2;
+		return this;
+	}
+
+	@JsonIgnore
+	public abstract NativeQueryFiltering getNativeQueryFiltering();
+
+	@JsonIgnore
+	public abstract MeshOptions setNativeQueryFiltering(NativeQueryFiltering nativeQueryFiltering);
+
+	/**
+	 * Get the automatic job migration trigger interval in ms.
+	 * @return interval in ms
+	 */
+	public long getMigrationTriggerInterval() {
+		return migrationTriggerInterval;
+	}
+
+	@Setter
+	public MeshOptions setMigrationTriggerInterval(long migrationTriggerInterval) {
+		this.migrationTriggerInterval = migrationTriggerInterval;
+		return this;
+	}
+
 	/**
 	 * Validate this and the nested options.
 	 */
@@ -562,4 +606,6 @@ public abstract class MeshOptions implements Option {
 	public void validate(MeshOptions options) {
 		validate();
 	}
+
+	public abstract boolean hasDatabaseLevelCache();
 }

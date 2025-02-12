@@ -7,19 +7,9 @@
 | Description
 
 
-| readQuorum
-| false
-| integer
-| Global read quorum setting.
-
 | servers
 | false
 | array
 | List of server configurations.
-
-| writeQuorum
-| false
-| string
-| Global write quorum setting. Allowed values are numbers and &#x27;all&#x27;, &#x27;majority&#x27;.
 
 |======

@@ -1,0 +1,53 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.6.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd">
+
+    <changeSet id="gpu-1115-1"    author="s.plyhun@gentics.com">
+        <createTable tableName="mesh_binary_field_variant">
+            <column name="fields_dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_binary_field_variant_pkey"/>
+            </column>
+            <column name="variants_dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_binary_field_variant_pkey"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet id="gpu-1115-2"    author="s.plyhun@gentics.com">
+        <createTable tableName="mesh_imagevariant">
+            <column name="dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_imagevariant_pkey"/>
+            </column>
+            <column name="dbversion" type="BIGINT"/>
+            <column name="imageheight" type="INTEGER"/>
+            <column name="imagewidth" type="INTEGER"/>
+            <column name="filesize" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fpx" type="FLOAT"/>
+            <column name="fpy" type="FLOAT"/>
+            <column name="fpz" type="FLOAT"/>
+            <column name="cropx" type="INTEGER"/>
+            <column name="cropy" type="INTEGER"/>
+            <column name="cropmode" type="VARCHAR(255)"/>
+            <column name="resizemode" type="VARCHAR(255)"/>
+            <column name="binary_dbuuid" type="${uuid.type}"/>
+            <column name="fields_dbuuid" type="${uuid.type}"/>
+            <column name="auto" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addColumn tableName="mesh_binaryfieldref">
+            <column name="variants_dbuuid" type="${uuid.type}"/>
+        </addColumn>
+    </changeSet>
+    <changeSet id="gpu-1115-3"    author="s.plyhun@gentics.com">
+        <addColumn tableName="mesh_imagevariant">
+            <column name="cropwidth" type="INTEGER"/>
+            <column name="cropheight" type="INTEGER"/>
+        </addColumn>
+    </changeSet>
+</databaseChangeLog>

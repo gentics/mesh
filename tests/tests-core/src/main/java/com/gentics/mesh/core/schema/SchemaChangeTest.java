@@ -34,7 +34,9 @@ public class SchemaChangeTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			CommonTx ctx = (CommonTx) tx;
 			PersistingSchemaDao schemaDao = ctx.schemaDao();
-			HibSchema container = schemaDao.createPersisted(UUIDUtil.randomUUID());
+			HibSchema container = schemaDao.createPersisted(UUIDUtil.randomUUID(), s -> {
+				s.setName(s.getUuid());
+			});
 
 			HibSchemaVersion versionA = createSchemaVersion(ctx, container, v -> {
 				container.setLatestVersion(v);

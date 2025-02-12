@@ -1,0 +1,122 @@
+{
+	perPage2Page1: node(path:"/") {
+		children(filter: {
+			schema: {is: folder}
+		} perPage: 2 page: 1) {
+			# [$.data.perPage2Page1.children.totalCount=4]
+			totalCount
+			# [$.data.perPage2Page1.children.currentPage=1]
+			currentPage
+			# [$.data.perPage2Page1.children.perPage=2]
+			perPage
+			# [$.data.perPage2Page1.children.pageCount=2]
+			pageCount
+			# [$.data.perPage2Page1.children.hasNextPage=true]
+			hasNextPage
+			# [$.data.perPage2Page1.children.elements.length()=2]
+			elements {
+				uuid
+				schema {
+					name
+				}
+				fields {
+					... on content {
+						title
+						content
+					}
+				}
+			}
+		}
+	}
+
+	perPage2Page2: node(path:"/") {
+		children(filter: {
+			schema: {is: folder}
+		} perPage: 2 page: 2) {
+			# [$.data.perPage2Page2.children.totalCount=4]
+			totalCount
+			# [$.data.perPage2Page2.children.currentPage=2]
+			currentPage
+			# [$.data.perPage2Page2.children.perPage=2]
+			perPage
+			# [$.data.perPage2Page2.children.pageCount=2]
+			pageCount
+			# [$.data.perPage2Page2.children.hasNextPage=false]
+			hasNextPage
+			# [$.data.perPage2Page2.children.elements.length()=2]
+			elements {
+				uuid
+				schema {
+					name
+				}
+				fields {
+					... on content {
+						title
+						content
+					}
+				}
+			}
+		}
+	}
+
+	perPage3Page1: node(path:"/") {
+		children(filter: {
+			schema: {is: folder}
+		} perPage: 3 page: 1) {
+			# [$.data.perPage3Page1.children.totalCount=4]
+			totalCount
+			# [$.data.perPage3Page1.children.currentPage=1]
+			currentPage
+			# [$.data.perPage3Page1.children.perPage=3]
+			perPage
+			# [$.data.perPage3Page1.children.pageCount=2]
+			pageCount
+			# [$.data.perPage3Page1.children.hasNextPage=true]
+			hasNextPage
+			# [$.data.perPage3Page1.children.elements.length()=3]
+			elements {
+				uuid
+				schema {
+					name
+				}
+				fields {
+					... on content {
+						title
+						content
+					}
+				}
+			}
+		}
+	}
+
+	perPage3Page2: node(path:"/") {
+		children(filter: {
+			schema: {is: folder}
+		} perPage: 3 page: 2) {
+			# [$.data.perPage3Page2.children.totalCount=4]
+			totalCount
+			# [$.data.perPage3Page2.children.currentPage=2]
+			currentPage
+			# [$.data.perPage3Page2.children.perPage=3]
+			perPage
+			# [$.data.perPage3Page2.children.pageCount=2]
+			pageCount
+			# [$.data.perPage3Page2.children.hasNextPage=false]
+			hasNextPage
+			# [$.data.perPage3Page2.children.elements.length()=1]
+			elements {
+				uuid
+				schema {
+					name
+				}
+				fields {
+					... on content {
+						title
+						content
+					}
+				}
+			}
+		}
+	}
+}
+# [$.errors=<is-undefined>]

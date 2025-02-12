@@ -2,21 +2,27 @@ package com.gentics.mesh.core.image.spi;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Paths;
-import javax.imageio.ImageIO;
+import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.image.CacheFileInfo;
 import com.gentics.mesh.core.image.ImageInfo;
 import com.gentics.mesh.core.image.ImageManipulator;
+import com.gentics.mesh.core.jobs.ImageCacheMigrationProcessor;
+import com.gentics.mesh.etc.config.ImageManipulationMode;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
-import com.gentics.mesh.parameter.ImageManipulationParameters;
+import com.gentics.mesh.parameter.image.ImageManipulation;
 
 import io.reactivex.Maybe;
 import io.reactivex.Single;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.file.FileSystem;
 
@@ -37,7 +43,74 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 	}
 
 	@Override
-	public Single<CacheFileInfo> getCacheFilePath(String sha512sum, ImageManipulationParameters parameters) {
+	public Single<CacheFileInfo> getCacheFilePath(HibBinary binary, ImageManipulation parameters) {
+		ImageManipulationMode mode = options.getMode();
+
+		switch (mode) {
+		case OFF:
+			throw error(BAD_REQUEST, "image_error_turned_off");
+		case MANUAL:
+		case ON_DEMAND:
+			break;
+		}
+
+		String sha512 = binary.getSHA512Sum();
+		return getCacheFilePathNew(binary, parameters).onErrorResumeNext(e -> {
+			log.debug("New Image Cache miss", e);
+			return getCacheFilePathOld(
+					sha512, 
+					parameters, 
+					Optional.ofNullable(e)
+						.filter(CacheFileNotFoundException.class::isInstance)
+						.map(CacheFileNotFoundException.class::cast)
+						.map(CacheFileNotFoundException::getFilePath));
+		});
+	}
+
+	protected Single<CacheFileInfo> getCacheFilePathNew(HibBinary binary, ImageManipulation parameters) {
+		FileSystem fs = vertx.fileSystem();
+
+		String baseFolder = Paths.get(options.getImageCacheDirectory(), ImageCacheMigrationProcessor.getSegmentedPath(binary.getUuid())).toString();
+		String baseName = binary.getUuid() + "-" + parameters.getCacheKey();
+
+		return fs.rxMkdirs(baseFolder)
+			// Vert.x uses Files.createDirectories internally, which will not fail when the folder already exists.
+			// See https://github.com/eclipse-vertx/vert.x/issues/3029
+			.andThen(fs.rxReadDir(baseFolder, baseName + "(\\..*)?"))
+			.map(foundFiles -> {
+				int numFiles = foundFiles.size();
+				if (numFiles == 0) {
+					String retPath = Paths.get(baseFolder, baseName).toString();
+					if (log.isDebugEnabled()) {
+						log.debug("No cache file found for base path {" + retPath + "}");
+					}
+					// TODO uncomment when getCacheFilePathOld() is removed
+					//return new CacheFileInfo(retPath, false);
+					throw new CacheFileNotFoundException(retPath);
+				}
+	
+				if (numFiles > 1) {
+					String indent = System.lineSeparator() + "    - ";
+					log.warn(
+						"More than one cache file found:"
+							+ System.lineSeparator() + "  uuid: " + binary.getUuid()
+							+ System.lineSeparator() + "  key: " + parameters.getCacheKey()
+							+ System.lineSeparator() + "  files:"
+							+ indent
+							+ String.join(indent, foundFiles)
+							+ System.lineSeparator()
+							+ "The cache directory {" + options.getImageCacheDirectory() + "} should be cleared");
+				}
+	
+				if (log.isDebugEnabled()) {
+					log.debug("Using cache file {" + foundFiles.size() + "}");
+				}
+				return new CacheFileInfo(foundFiles.get(0), true);
+			});
+	}
+
+	@Deprecated
+	protected Single<CacheFileInfo> getCacheFilePathOld(String sha512sum, ImageManipulation parameters, Optional<String> maybeNewPath) {
 		FileSystem fs = vertx.fileSystem();
 
 		String[] parts = sha512sum.split("(?<=\\G.{8})");
@@ -61,7 +134,7 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 				if (log.isDebugEnabled()) {
 					log.debug("No cache file found for base path {" + retPath + "}");
 				}
-				return new CacheFileInfo(retPath, false);
+				return new CacheFileInfo(maybeNewPath.orElse(retPath), false);
 			}
 
 			if (numFiles > 1) {
@@ -98,19 +171,26 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 					bh.fail(error(BAD_REQUEST, "image_error_reading_failed"));
 					return;
 				}
-				BufferedImage image = ImageIO.read(file);
+				BufferedImage image = readFromFile(file);
 				if (image == null) {
 					bh.fail(error(BAD_REQUEST, "image_error_reading_failed"));
 				} else {
 					bh.complete(toImageInfo(image));
 				}
 			} catch (Exception e) {
-				log.error("Reading image information failed", e);
 				bh.fail(e);
 			}
 		}, false);
 		return result.toSingle();
 	}
+
+	/**
+	 * Read the image from the given file into a {@link BufferedImage}
+	 * @param imageFile image file
+	 * @return buffered image
+	 * @throws IOException
+	 */
+	abstract protected BufferedImage readFromFile(File imageFile) throws IOException;
 
 	/**
 	 * Extract the image information from the given buffered image.
@@ -132,4 +212,19 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 		return info;
 	}
 
+	@Deprecated
+	private static final class CacheFileNotFoundException extends RuntimeException {
+
+		private static final long serialVersionUID = -5565739543146663515L;
+
+		private final String filePath;
+
+		public String getFilePath() {
+			return filePath;
+}
+
+		public CacheFileNotFoundException(String filePath) {
+			this.filePath = filePath;
+		}
+	}
 }

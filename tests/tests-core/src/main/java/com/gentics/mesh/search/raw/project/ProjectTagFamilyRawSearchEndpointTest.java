@@ -37,10 +37,7 @@ public class ProjectTagFamilyRawSearchEndpointTest extends AbstractMeshTest {
 		assertNotNull(response);
 		assertThat(response).has("responses[0].hits.hits[0]._id", tagFamily2.getUuid(), "The correct element was not found.");
 
-		String path = "responses[0].hits.total";
-		if (complianceMode() == ComplianceMode.ES_7) {
-			path = "responses[0].hits.total.value";
-		}
+		String path = complianceMode() == ComplianceMode.ES_6 ? "responses[0].hits.total" : "responses[0].hits.total.value";
 		assertThat(response).has(path, "1", "Not exactly one item was found");
 	}
 }

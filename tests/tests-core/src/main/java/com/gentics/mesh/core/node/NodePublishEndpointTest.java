@@ -84,10 +84,11 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		requestA.getFields().put("teaser", FieldUtil.createStringField("nodeA"));
 		requestA.getFields().put("slug", FieldUtil.createStringField("nodeA"));
 		NodeResponse nodeA = call(() -> client().createNode(PROJECT_NAME, requestA));
+		String branchName = getBranch().getName();
 
 		// 3. Publish the created node - It should fail since the parentfolder is not published
 		trackingSearchProvider().clear().blockingAwait();
-		call(() -> client().publishNode(PROJECT_NAME, nodeA.getUuid()), BAD_REQUEST, "node_error_parent_containers_not_published", subFolderUuid);
+		call(() -> client().publishNode(PROJECT_NAME, nodeA.getUuid()), BAD_REQUEST, "node_error_parent_containers_not_published", subFolderUuid, branchName);
 		assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0, 0);
 
 		// 4. Publish the parent folder
@@ -191,7 +192,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			assertThat(trackingSearchProvider()).hasStore(ContentDao.composeIndexName(projectUuid(), branchUuid,
-				schemaContainerVersionUuid, PUBLISHED, null), ContentDao.composeDocumentId(nodeUuid, "en"));
+				schemaContainerVersionUuid, PUBLISHED, null, null), ContentDao.composeDocumentId(nodeUuid, "en"));
 			// The draft of the node must still remain in the index
 			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 		}
@@ -245,7 +246,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			assertThat(trackingSearchProvider()).hasStore(ContentDao.composeIndexName(projectUuid(), branchUuid,
-				schemaContainerVersionUuid, PUBLISHED, null), ContentDao.composeDocumentId(nodeUuid, "en"));
+				schemaContainerVersionUuid, PUBLISHED, null, null), ContentDao.composeDocumentId(nodeUuid, "en"));
 			// The draft of the node must still remain in the index
 			assertThat(trackingSearchProvider()).hasEvents(2, 0, 0, 0, 0);
 		}
@@ -423,8 +424,9 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 		// 2. Move the published node into the offline target node
 		String publishedNode = db().tx(() -> content("concorde").getUuid());
+		String branchName = getBranch().getName();
 		call(() -> client().moveNode(PROJECT_NAME, publishedNode, newsFolderUuid), BAD_REQUEST, "node_error_parent_containers_not_published",
-			newsFolderUuid);
+			newsFolderUuid, branchName);
 	}
 
 	@Test
@@ -561,7 +563,8 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 		// 2. Try to publish a node from within that subtree structure
 		String contentUuid = db().tx(() -> content("news_2015").getUuid());
-		call(() -> client().publishNode(PROJECT_NAME, contentUuid), BAD_REQUEST, "node_error_parent_containers_not_published", nodeUuid);
+		String branchName = getBranch().getName();
+		call(() -> client().publishNode(PROJECT_NAME, contentUuid), BAD_REQUEST, "node_error_parent_containers_not_published", nodeUuid, branchName);
 
 	}
 

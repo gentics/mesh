@@ -5,6 +5,8 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.FieldContainer;
+import com.gentics.mesh.core.rest.common.ObjectPermissionGrantRequest;
+import com.gentics.mesh.core.rest.node.field.image.ImageManipulationRequest;
 import com.gentics.mesh.core.rest.tag.TagReference;
 
 /**
@@ -12,11 +14,11 @@ import com.gentics.mesh.core.rest.tag.TagReference;
  */
 public class NodeUpdateRequest implements FieldContainer {
 
-	@JsonProperty(required = true)
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("ISO 639-1 language tag of the node content.")
 	private String language;
 
-	@JsonProperty(required = true)
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("Dynamic map with fields of the node content.")
 	private FieldMap fields = new FieldMapImpl();
 
@@ -27,6 +29,22 @@ public class NodeUpdateRequest implements FieldContainer {
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("List of tags that should be used to tag the node.")
 	private List<TagReference> tags;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Whether the publish the node after updating.")
+	private boolean publish = false;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Assign a requested language to the project, if none was so far.")
+	private boolean assignLanguage = true;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Permissions to be granted to roles on the updated node.")
+	private ObjectPermissionGrantRequest grant;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Image manipulation changes request.")
+	private ImageManipulationRequest manipulation;
 
 	public NodeUpdateRequest() {
 	}
@@ -109,4 +127,79 @@ public class NodeUpdateRequest implements FieldContainer {
 		return this;
 	}
 
+	/**
+	 * Whether the created node shall be published
+	 * @return true to publish
+	 */
+	public boolean isPublish() {
+		return publish;
+	}
+
+	/**
+	 * Set the publish flag
+	 * @param publish flag
+	 * @return Fluent API
+	 */
+	public NodeUpdateRequest setPublish(boolean publish) {
+		this.publish = publish;
+		return this;
+	}
+
+	/**
+	 * Get the request to grant role permissions
+	 * @return optional request
+	 */
+	public ObjectPermissionGrantRequest getGrant() {
+		return grant;
+	}
+
+	/**
+	 * Set the request to grant role permissions
+	 * @param grant optional request
+	 * @return Fluent API
+	 */
+	public NodeUpdateRequest setGrant(ObjectPermissionGrantRequest grant) {
+		this.grant = grant;
+		return this;
+	}
+
+	/**
+	 * Automatically assign the requested language to the project, if none was so far.
+	 *
+	 * @return
+	 */
+	public boolean isAssignLanguage() {
+		return assignLanguage;
+	}
+
+	/**
+	 * Set the flag to automatically assign the requested language to the project, if none was so far.
+	 *
+	 * @param assignLanguage
+	 * @return
+	 */
+	public NodeUpdateRequest setAssignLanguage(boolean assignLanguage) {
+		this.assignLanguage = assignLanguage;
+		return this;
+	}
+
+	/**
+	 * Get the image manipulation request.
+	 *
+	 * @return
+	 */
+	public ImageManipulationRequest getManipulation() {
+		return manipulation;
+	}
+
+	/**
+	 * Set the image manipulation.
+	 *
+	 * @param manipulation
+	 * @return
+	 */
+	public NodeUpdateRequest setManipulation(ImageManipulationRequest manipulation) {
+		this.manipulation = manipulation;
+		return this;
+	}
 }

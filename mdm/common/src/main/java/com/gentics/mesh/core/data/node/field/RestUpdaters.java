@@ -8,6 +8,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -32,6 +33,7 @@ import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.DateField;
@@ -54,14 +56,17 @@ import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryMetadata;
+import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
+import com.gentics.mesh.core.rest.schema.S3BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
+import com.gentics.mesh.util.DateUtils;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RestUpdaters {
 
@@ -141,8 +146,8 @@ public class RestUpdaters {
 			if (item == null) {
 				throw error(BAD_REQUEST, "field_list_error_null_not_allowed", fieldKey);
 			}
-			graphStringList.createString(item);
 		}
+		graphStringList.createStrings(stringList.getItems());
 	};
 
 	public static FieldUpdater NUMBER_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
@@ -211,9 +216,8 @@ public class RestUpdaters {
 			if (item == null) {
 				throw error(BAD_REQUEST, "field_list_error_null_not_allowed", fieldKey);
 			}
-			graphNumberFieldList.createNumber(item);
 		}
-
+		graphNumberFieldList.createNumbers(numberList.getItems());
 	};
 
 	public static FieldUpdater DATE_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
@@ -281,9 +285,8 @@ public class RestUpdaters {
 			if (item == null) {
 				throw error(BAD_REQUEST, "field_list_error_null_not_allowed", fieldKey);
 			}
-			graphDateFieldList.createDate(fromISO8601(item));
 		}
-
+		graphDateFieldList.createDates(dateList.getItems().stream().map(DateUtils::fromISO8601).collect(Collectors.toList()));
 	};
 
 	public static FieldUpdater BOOLEAN_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
@@ -352,9 +355,8 @@ public class RestUpdaters {
 			if (item == null) {
 				throw error(BAD_REQUEST, "field_list_error_null_not_allowed", fieldKey);
 			}
-			graphBooleanFieldList.createBoolean(item);
 		}
-
+		graphBooleanFieldList.createBooleans(booleanList.getItems());
 	};
 
 	public static FieldUpdater HTML_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
@@ -421,8 +423,8 @@ public class RestUpdaters {
 			if (item == null) {
 				throw error(BAD_REQUEST, "field_list_error_null_not_allowed", fieldKey);
 			}
-			graphHtmlFieldList.createHTML(item);
 		}
+		graphHtmlFieldList.createHTMLs(htmlList.getItems());
 	};
 
 	public static FieldUpdater MICRONODE_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
@@ -464,9 +466,7 @@ public class RestUpdaters {
 		// check whether microschema is allowed
 		if (!ArrayUtils.isEmpty(microschemaFieldSchema.getAllowedMicroSchemas())
 				&& !Arrays.asList(microschemaFieldSchema.getAllowedMicroSchemas()).contains(microschemaVersion.getName())) {
-			log.error("Node update not allowed since the microschema {" + microschemaVersion.getName()
-					+ "} is now allowed. Allowed microschemas {" + Arrays.toString(microschemaFieldSchema.getAllowedMicroSchemas()) + "}");
-			throw error(BAD_REQUEST, "node_error_invalid_microschema_field_value", fieldKey, microschemaVersion.getName());
+			throw error(BAD_REQUEST, "node_error_invalid_microschema_field_value", fieldKey, microschemaVersion.getName(), Arrays.toString(microschemaFieldSchema.getAllowedMicroSchemas()));
 		}
 
 		// Always create a new micronode field since each update must create a new field instance. The old field must be detached from the given container.
@@ -559,9 +559,7 @@ public class RestUpdaters {
 
 			if (!org.apache.commons.lang.ArrayUtils.isEmpty(nodeFieldSchema.getAllowedSchemas())
 					&& !Arrays.asList(nodeFieldSchema.getAllowedSchemas()).contains(schemaName)) {
-				log.error("Node update not allowed since the schema {" + schemaName
-						+ "} is not allowed. Allowed schemas {" + Arrays.toString(nodeFieldSchema.getAllowedSchemas()) + "}");
-				throw error(BAD_REQUEST, "node_error_invalid_schema_field_value", fieldKey, schemaName);
+				throw error(BAD_REQUEST, "node_error_invalid_schema_field_value", fieldKey, schemaName, Arrays.toString(nodeFieldSchema.getAllowedSchemas()));
 			}
 
 			// The old node edge is deleted on a new edge creation.
@@ -619,17 +617,19 @@ public class RestUpdaters {
 
 			if (!org.apache.commons.lang.ArrayUtils.isEmpty(listFieldSchema.getAllowedSchemas())
 					&& !Arrays.asList(listFieldSchema.getAllowedSchemas()).contains(schemaName)) {
-				log.error("Node update not allowed since the schema {" + schemaName
-						+ "} is not allowed. Allowed schemas {" + Arrays.toString(listFieldSchema.getAllowedSchemas()) + "}");
-				throw error(BAD_REQUEST, "node_error_invalid_schema_field_value", fieldKey, schemaName);
+				throw error(BAD_REQUEST, "node_error_invalid_schema_field_value", fieldKey, schemaName, Arrays.toString(listFieldSchema.getAllowedSchemas()));
 			}
 			int pos = integer.getAndIncrement();
 			if (log.isDebugEnabled()) {
 				log.debug("Adding item {" + item.getUuid() + "} at position {" + pos + "}");
 			}
-			graphNodeFieldList.addItem(graphNodeFieldList.createNode(pos, node));
+			HibNodeField nodeItem = graphNodeFieldList.createNode(pos, node);
+			if (nodeItem != null) {
+				graphNodeFieldList.addItem(nodeItem);
+			} else {
+				log.warn("The referenced node {" + item.getUuid() + "} does not exist for the field {" + fieldKey + "} of schema {" + schema.getName() + "}");
+			}
 		}
-
 	};
 
 	public static FieldUpdater BINARY_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
@@ -726,6 +726,13 @@ public class RestUpdaters {
 			graphBinaryField.setPlainText(text);
 		}
 
+		if (graphBinaryField != null && graphBinaryField.getBinary() != null) {
+			if (StringUtils.isBlank(((BinaryFieldSchema) fieldSchema).getCheckServiceUrl())) {
+				graphBinaryField.getBinary().setCheckStatus(BinaryCheckStatus.ACCEPTED);
+			} else {
+				graphBinaryField.getBinary().setCheckStatus(BinaryCheckStatus.POSTPONED);
+			}
+		}
 		// Don't update image width, height, SHA checksum - those are immutable
 	};
 
@@ -829,7 +836,13 @@ public class RestUpdaters {
 			graphS3BinaryField.setS3ObjectKey(key);
 		}
 
-
+		if (graphS3BinaryField != null && graphS3BinaryField.getBinary() != null) {
+			if (StringUtils.isBlank(((S3BinaryFieldSchema) fieldSchema).getCheckServiceUrl())) {
+				graphS3BinaryField.getBinary().setCheckStatus(BinaryCheckStatus.ACCEPTED);
+			} else {
+				graphS3BinaryField.getBinary().setCheckStatus(BinaryCheckStatus.POSTPONED);
+			}
+		}
 		// Don't update image width, height, SHA checksum - those are immutable
 	};
 }

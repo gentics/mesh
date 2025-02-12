@@ -9,17 +9,21 @@ import com.gentics.mesh.core.rest.common.RestModel;
  */
 public class LoginRequest implements RestModel {
 
-	@JsonProperty(required = true)
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("Username of the user which should be logged in.")
 	private String username;
 
-	@JsonProperty(required = true)
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("Password of the user which should be logged in.")
 	private String password;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("New password that will be set after successful login.")
 	private String newPassword;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("API key of the user to log in.")
+	private String apikey;
 
 	public LoginRequest() {
 	}
@@ -79,6 +83,25 @@ public class LoginRequest implements RestModel {
 	 */
 	public LoginRequest setNewPassword(String newPassword) {
 		this.newPassword = newPassword;
+		return this;
+	}
+
+	/**
+	 * Get API key.
+	 * 
+	 * @return
+	 */
+	public String getApiKey() {
+		return apikey;
+	}
+
+	/**
+	 * Set API key
+	 * @param apikey
+	 * @return fluent
+	 */
+	public LoginRequest setApiKey(String apikey) {
+		this.apikey = apikey;
 		return this;
 	}
 }

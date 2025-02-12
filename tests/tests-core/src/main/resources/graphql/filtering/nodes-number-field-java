@@ -1,0 +1,36 @@
+{
+	numberCloseToUltimateAnswer: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        number: {closeTo: { value: 42  maxDifference: 1}}
+	      }
+	    }
+	  }) {
+	    # [$.data.numberCloseToUltimateAnswer.elements.length()=1]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	
+	numberDivisibleByEight: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        number: {divisibleBy: 8}
+	      }
+	    }
+	  }) {
+	    # [$.data.numberDivisibleByEight.elements.length()=0]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+}
+# [$.errors=<is-undefined>]

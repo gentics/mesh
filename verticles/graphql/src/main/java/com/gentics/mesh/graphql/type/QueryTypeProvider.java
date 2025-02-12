@@ -11,13 +11,13 @@ import static com.gentics.mesh.graphql.type.NodeReferenceTypeProvider.NODE_REFER
 import static com.gentics.mesh.graphql.type.NodeReferenceTypeProvider.NODE_REFERENCE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.NodeTypeProvider.NODE_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.NodeTypeProvider.NODE_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.NodeTypeProvider.createNodeContentWithSoftPermissions;
 import static com.gentics.mesh.graphql.type.PluginTypeProvider.PLUGIN_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.PluginTypeProvider.PLUGIN_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.ProjectReferenceTypeProvider.PROJECT_REFERENCE_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.ProjectReferenceTypeProvider.PROJECT_REFERENCE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.ProjectTypeProvider.PROJECT_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.ProjectTypeProvider.PROJECT_TYPE_NAME;
-import static com.gentics.mesh.graphql.type.NodeTypeProvider.createNodeContentWithSoftPermissions;
 import static com.gentics.mesh.graphql.type.RoleTypeProvider.ROLE_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.RoleTypeProvider.ROLE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.SchemaTypeProvider.SCHEMA_PAGE_TYPE_NAME;
@@ -29,7 +29,7 @@ import static com.gentics.mesh.graphql.type.TagTypeProvider.TAG_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.UserTypeProvider.USER_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.UserTypeProvider.USER_TYPE_NAME;
 import static graphql.Scalars.GraphQLBoolean;
-import static graphql.Scalars.GraphQLLong;
+import static graphql.scalars.java.JavaPrimitives.GraphQLLong;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 
@@ -38,6 +38,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -45,10 +46,11 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import graphql.GraphQLError;
-import graphql.execution.DataFetcherResult;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
+import com.gentics.graphqlfilter.Sorting;
+import com.gentics.mesh.cache.GraphQLSchemaCache;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.action.DAOActionsCollection;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -62,6 +64,7 @@ import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.PermissionException;
@@ -69,7 +72,9 @@ import com.gentics.mesh.core.rest.error.UuidNotFoundException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.filter.GroupFilter;
+import com.gentics.mesh.graphql.filter.MicronodeFilter;
 import com.gentics.mesh.graphql.filter.NodeFilter;
+import com.gentics.mesh.graphql.filter.NodeReferenceFilter;
 import com.gentics.mesh.graphql.filter.RoleFilter;
 import com.gentics.mesh.graphql.filter.UserFilter;
 import com.gentics.mesh.graphql.type.field.FieldDefinitionProvider;
@@ -85,6 +90,8 @@ import com.gentics.mesh.search.index.tagfamily.TagFamilySearchHandler;
 import com.gentics.mesh.search.index.user.UserSearchHandler;
 
 import graphql.ExceptionWhileDataFetching;
+import graphql.GraphQLError;
+import graphql.execution.DataFetcherResult;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
@@ -106,90 +113,113 @@ import graphql.schema.GraphQLTypeReference;
 @Singleton
 public class QueryTypeProvider extends AbstractTypeProvider {
 
-	@Inject
-	public MeshTypeProvider meshTypeProvider;
+	protected final MeshTypeProvider meshTypeProvider;
+
+	protected final InterfaceTypeProvider interfaceTypeProvider;
+
+	protected final MicronodeFieldTypeProvider micronodeFieldTypeProvider;
+
+	protected final FieldDefinitionProvider fieldDefProvider;
+
+	protected final NodeTypeProvider nodeTypeProvider;
+
+	protected final NodeReferenceTypeProvider nodeReferenceTypeProvider;
+
+	protected final ProjectTypeProvider projectTypeProvider;
+
+	protected final ProjectReferenceTypeProvider projectReferenceTypeProvider;
+
+	protected final UserTypeProvider userTypeProvider;
+
+	protected final TagTypeProvider tagTypeProvider;
+
+	protected final TagFamilyTypeProvider tagFamilyTypeProvider;
+
+	protected final RoleTypeProvider roleTypeProvider;
+
+	protected final GroupTypeProvider groupTypeProvider;
+
+	protected final WebRootService webrootService;
+
+	protected final BootstrapInitializer boot;
+
+	protected final BranchTypeProvider branchTypeProvider;
+
+	protected final SchemaTypeProvider schemaTypeProvider;
+
+	protected final MicroschemaTypeProvider microschemaTypeProvider;
+
+	protected final UserSearchHandler userSearchHandler;
+
+	protected final RoleSearchHandler roleSearchHandler;
+
+	protected final GroupSearchHandler groupSearchHandler;
+
+	protected final ProjectSearchHandler projectSearchHandler;
+
+	protected final TagFamilySearchHandler tagFamilySearchHandler;
+
+	protected final TagSearchHandler tagSearchHandler;
+
+	protected final PluginTypeProvider pluginProvider;
+
+	protected final PluginApiTypeProvider pluginApiProvider;
+
+	protected final DAOActionsCollection actions;
+
+	protected final GraphQLSchemaCache cache;
 
 	@Inject
-	public InterfaceTypeProvider interfaceTypeProvider;
-
-	@Inject
-	public MicronodeFieldTypeProvider micronodeFieldTypeProvider;
-
-	@Inject
-	public FieldDefinitionProvider fieldDefProvider;
-
-	@Inject
-	public NodeTypeProvider nodeTypeProvider;
-
-	@Inject
-	public NodeReferenceTypeProvider nodeReferenceTypeProvider;
-
-	@Inject
-	public ProjectTypeProvider projectTypeProvider;
-
-	@Inject
-	public ProjectReferenceTypeProvider projectReferenceTypeProvider;
-
-	@Inject
-	public UserTypeProvider userTypeProvider;
-
-	@Inject
-	public TagTypeProvider tagTypeProvider;
-
-	@Inject
-	public TagFamilyTypeProvider tagFamilyTypeProvider;
-
-	@Inject
-	public RoleTypeProvider roleTypeProvider;
-
-	@Inject
-	public GroupTypeProvider groupTypeProvider;
-
-	@Inject
-	public WebRootService webrootService;
-
-	@Inject
-	public BootstrapInitializer boot;
-
-	@Inject
-	public BranchTypeProvider branchTypeProvider;
-
-	@Inject
-	public SchemaTypeProvider schemaTypeProvider;
-
-	@Inject
-	public MicroschemaTypeProvider microschemaTypeProvider;
-
-	@Inject
-	public UserSearchHandler userSearchHandler;
-
-	@Inject
-	public RoleSearchHandler roleSearchHandler;
-
-	@Inject
-	public GroupSearchHandler groupSearchHandler;
-
-	@Inject
-	public ProjectSearchHandler projectSearchHandler;
-
-	@Inject
-	public TagFamilySearchHandler tagFamilySearchHandler;
-
-	@Inject
-	public TagSearchHandler tagSearchHandler;
-
-	@Inject
-	public PluginTypeProvider pluginProvider;
-
-	@Inject
-	public PluginApiTypeProvider pluginApiProvider;
-
-	@Inject
-	public DAOActionsCollection actions;
-
-	@Inject
-	public QueryTypeProvider(MeshOptions options) {
+	public QueryTypeProvider(MeshOptions options, MeshTypeProvider meshTypeProvider,
+			InterfaceTypeProvider interfaceTypeProvider, MicronodeFieldTypeProvider micronodeFieldTypeProvider,
+			FieldDefinitionProvider fieldDefProvider, NodeTypeProvider nodeTypeProvider,
+			NodeReferenceTypeProvider nodeReferenceTypeProvider, ProjectTypeProvider projectTypeProvider,
+			ProjectReferenceTypeProvider projectReferenceTypeProvider, UserTypeProvider userTypeProvider,
+			TagTypeProvider tagTypeProvider, TagFamilyTypeProvider tagFamilyTypeProvider,
+			RoleTypeProvider roleTypeProvider, GroupTypeProvider groupTypeProvider, WebRootService webrootService,
+			BootstrapInitializer boot, BranchTypeProvider branchTypeProvider, SchemaTypeProvider schemaTypeProvider,
+			MicroschemaTypeProvider microschemaTypeProvider, UserSearchHandler userSearchHandler,
+			RoleSearchHandler roleSearchHandler, GroupSearchHandler groupSearchHandler,
+			ProjectSearchHandler projectSearchHandler, TagFamilySearchHandler tagFamilySearchHandler,
+			TagSearchHandler tagSearchHandler, PluginTypeProvider pluginProvider,
+			PluginApiTypeProvider pluginApiProvider, DAOActionsCollection actions, GraphQLSchemaCache cache) {
 		super(options);
+		this.meshTypeProvider = meshTypeProvider;
+		this.interfaceTypeProvider = interfaceTypeProvider;
+		this.micronodeFieldTypeProvider = micronodeFieldTypeProvider;
+		this.fieldDefProvider = fieldDefProvider;
+		this.nodeTypeProvider = nodeTypeProvider;
+		this.nodeReferenceTypeProvider = nodeReferenceTypeProvider;
+		this.projectTypeProvider = projectTypeProvider;
+		this.projectReferenceTypeProvider = projectReferenceTypeProvider;
+		this.userTypeProvider = userTypeProvider;
+		this.tagTypeProvider = tagTypeProvider;
+		this.tagFamilyTypeProvider = tagFamilyTypeProvider;
+		this.roleTypeProvider = roleTypeProvider;
+		this.groupTypeProvider = groupTypeProvider;
+		this.webrootService = webrootService;
+		this.boot = boot;
+		this.branchTypeProvider = branchTypeProvider;
+		this.schemaTypeProvider = schemaTypeProvider;
+		this.microschemaTypeProvider = microschemaTypeProvider;
+		this.userSearchHandler = userSearchHandler;
+		this.roleSearchHandler = roleSearchHandler;
+		this.groupSearchHandler = groupSearchHandler;
+		this.projectSearchHandler = projectSearchHandler;
+		this.tagFamilySearchHandler = tagFamilySearchHandler;
+		this.tagSearchHandler = tagSearchHandler;
+		this.pluginProvider = pluginProvider;
+		this.pluginApiProvider = pluginApiProvider;
+		this.actions = actions;
+		this.cache = cache;
+	}
+
+	/**
+	 * Get the field definition provider
+	 * @return field definition provider
+	 */
+	public FieldDefinitionProvider getFieldDefProvider() {
+		return fieldDefProvider;
 	}
 
 	/**
@@ -253,7 +283,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			.filter(content -> content.getContainer() != null)
 			.filter(content1 -> gc.hasReadPerm(content1, type)).collect(Collectors.toList());
 
-		return DataFetcherResult.<Page<NodeContent>>newResult().data(applyNodeFilter(env, contents.stream())).errors(errors).build();
+		return DataFetcherResult.<Page<NodeContent>>newResult().data(applyNodeFilter(env, contents.stream(), false, false, Optional.empty())).errors(errors).build();
 	}
 
 	/**
@@ -404,14 +434,17 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			.type(new GraphQLTypeReference(NODE_TYPE_NAME)).build());
 
 		// .nodes
+		NodeFilter nodeFilter = NodeFilter.filter(context);
 		root.field(newFieldDefinition().name("nodes")
 			.description("Load a page of nodes via the regular nodes list or via a search.")
-			.argument(createPagingArgs())
+			.argument(createPagingArgs(true))
 			.argument(createQueryArg())
 			.argument(createUuidsArg("Node uuids"))
 			.argument(createLanguageTagArg(true))
 			.argument(createNodeVersionArg())
-			.argument(NodeFilter.filter(context).createFilterArgument())
+			.argument(nodeFilter.createFilterArgument())
+			.argument(nodeFilter.createSortArgument())
+			.argument(createNativeFilterArg())
 			.type(new GraphQLTypeReference(NODE_PAGE_TYPE_NAME))
 			.dataFetcher(env -> {
 				String query = env.getArgument("query");
@@ -579,68 +612,112 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 * @return
 	 */
 	public GraphQLSchema getRootSchema(GraphQLContext context) {
-		HibProject project = Tx.get().getProject(context);
-		graphql.schema.GraphQLSchema.Builder builder = GraphQLSchema.newSchema();
+		CommonTx tx = CommonTx.get();
+		String cacheKey = getCacheKey(context);
 
-		Set<GraphQLType> additionalTypes = new HashSet<>();
+		return cache.get(cacheKey, key -> {
+			HibProject project = Tx.get().getProject(context);
+			graphql.schema.GraphQLSchema.Builder builder = GraphQLSchema.newSchema();
+			Set<GraphQLType> additionalTypes = new HashSet<>();
 
-		additionalTypes.add(schemaTypeProvider.createType(context));
-		additionalTypes.add(newPageType(SCHEMA_PAGE_TYPE_NAME, SCHEMA_TYPE_NAME));
+			additionalTypes.add(UserFilter.filter().createType());
+			additionalTypes.add(UserFilter.filter().createSortingType());
+			
+			additionalTypes.add(NodeFilter.filter(context).createType());
+			additionalTypes.add(NodeFilter.filter(context).createSortingType());
+			
+			for (byte features = 1; features <= NodeReferenceFilter.createLookupChange(true, true, true, true); features++) {
+				additionalTypes.add(NodeReferenceFilter.nodeReferenceFilter(context, features).createType());
+				additionalTypes.add(NodeReferenceFilter.nodeReferenceFilter(context, features).createSortingType());
+			}
+			
+			additionalTypes.add(MicronodeFilter.filter(context).createType());
+			additionalTypes.add(MicronodeFilter.filter(context).createSortingType());
+			
+			additionalTypes.add(schemaTypeProvider.createType(context));
+			additionalTypes.add(newPageType(SCHEMA_PAGE_TYPE_NAME, SCHEMA_TYPE_NAME));
 
-		additionalTypes.add(microschemaTypeProvider.createType());
-		additionalTypes.add(newPageType(MICROSCHEMA_PAGE_TYPE_NAME, MICROSCHEMA_TYPE_NAME));
+			additionalTypes.add(microschemaTypeProvider.createType());
+			additionalTypes.add(newPageType(MICROSCHEMA_PAGE_TYPE_NAME, MICROSCHEMA_TYPE_NAME));
 
-		additionalTypes.add(nodeTypeProvider.createVersionInfoType());
-		additionalTypes.add(nodeTypeProvider.createType(context).forVersion(context));
-		additionalTypes.add(newPageType(NODE_PAGE_TYPE_NAME, NODE_TYPE_NAME));
+			additionalTypes.add(nodeTypeProvider.createVersionInfoType());
+			additionalTypes.add(nodeTypeProvider.createType(context).forVersion(context));
+			additionalTypes.add(newPageType(NODE_PAGE_TYPE_NAME, NODE_TYPE_NAME));
 
-		additionalTypes.add(nodeReferenceTypeProvider.createType());
-		additionalTypes.add(newPageType(NODE_REFERENCE_PAGE_TYPE_NAME, NODE_REFERENCE_TYPE_NAME));
+			micronodeFieldTypeProvider.createType(context).forVersion(context).ifPresent(additionalTypes::add);
 
-		additionalTypes.add(micronodeFieldTypeProvider.createType(context).forVersion(context));
+			additionalTypes.add(nodeReferenceTypeProvider.createType());
+			additionalTypes.add(newPageType(NODE_REFERENCE_PAGE_TYPE_NAME, NODE_REFERENCE_TYPE_NAME));
 
-		additionalTypes.add(projectTypeProvider.createType(project));
-		additionalTypes.add(newPageType(PROJECT_PAGE_TYPE_NAME, PROJECT_TYPE_NAME));
+			additionalTypes.add(projectTypeProvider.createType(project));
+			additionalTypes.add(newPageType(PROJECT_PAGE_TYPE_NAME, PROJECT_TYPE_NAME));
 
-		additionalTypes.add(projectReferenceTypeProvider.createType());
-		additionalTypes.add(newPageType(PROJECT_REFERENCE_PAGE_TYPE_NAME, PROJECT_REFERENCE_TYPE_NAME));
+			additionalTypes.add(projectReferenceTypeProvider.createType());
+			additionalTypes.add(newPageType(PROJECT_REFERENCE_PAGE_TYPE_NAME, PROJECT_REFERENCE_TYPE_NAME));
 
-		additionalTypes.add(tagTypeProvider.createType());
-		additionalTypes.add(newPageType(TAG_PAGE_TYPE_NAME, TAG_TYPE_NAME));
+			additionalTypes.add(tagTypeProvider.createType());
+			additionalTypes.add(newPageType(TAG_PAGE_TYPE_NAME, TAG_TYPE_NAME));
 
-		additionalTypes.add(tagFamilyTypeProvider.createType());
-		additionalTypes.add(newPageType(TAG_FAMILY_PAGE_TYPE_NAME, TAG_FAMILY_TYPE_NAME));
+			additionalTypes.add(tagFamilyTypeProvider.createType());
+			additionalTypes.add(newPageType(TAG_FAMILY_PAGE_TYPE_NAME, TAG_FAMILY_TYPE_NAME));
 
-		additionalTypes.add(userTypeProvider.createType());
-		additionalTypes.add(newPageType(USER_PAGE_TYPE_NAME, USER_TYPE_NAME));
+			additionalTypes.add(userTypeProvider.createType());
+			additionalTypes.add(newPageType(USER_PAGE_TYPE_NAME, USER_TYPE_NAME));
 
-		additionalTypes.add(groupTypeProvider.createType());
-		additionalTypes.add(newPageType(GROUP_PAGE_TYPE_NAME, GROUP_TYPE_NAME));
+			additionalTypes.add(groupTypeProvider.createType());
+			additionalTypes.add(newPageType(GROUP_PAGE_TYPE_NAME, GROUP_TYPE_NAME));
 
-		additionalTypes.add(roleTypeProvider.createType());
-		additionalTypes.add(newPageType(ROLE_PAGE_TYPE_NAME, ROLE_TYPE_NAME));
+			additionalTypes.add(roleTypeProvider.createType());
+			additionalTypes.add(newPageType(ROLE_PAGE_TYPE_NAME, ROLE_TYPE_NAME));
 
-		additionalTypes.add(branchTypeProvider.createType());
+			additionalTypes.add(branchTypeProvider.createType());
 
-		additionalTypes.add(pluginProvider.createType());
-		additionalTypes.add(newPageType(PLUGIN_PAGE_TYPE_NAME, PLUGIN_TYPE_NAME));
+			additionalTypes.add(pluginProvider.createType());
+			additionalTypes.add(newPageType(PLUGIN_PAGE_TYPE_NAME, PLUGIN_TYPE_NAME));
 
-		additionalTypes.add(meshTypeProvider.createType());
-		additionalTypes.add(interfaceTypeProvider.createPermInfoType());
-		additionalTypes.add(fieldDefProvider.createBinaryFieldType());
-		additionalTypes.add(fieldDefProvider.createS3BinaryFieldType());
+			additionalTypes.add(meshTypeProvider.createType());
+			additionalTypes.add(interfaceTypeProvider.createPermInfoType());
+			additionalTypes.add(fieldDefProvider.createBinaryFieldType());
+			additionalTypes.add(fieldDefProvider.createS3BinaryFieldType());
 
-		// Shared argument types
-		additionalTypes.add(createLinkEnumType());
-		additionalTypes.add(createNodeEnumType());
+			Versioned.doSince(2, context, () -> {
+				List<GraphQLObjectType> schemaFieldTypes = context.getOrStore(NodeTypeProvider.SCHEMA_FIELD_TYPES, () -> nodeTypeProvider.generateSchemaFieldTypes(context).forVersion(context));
+				if (CollectionUtils.isNotEmpty(schemaFieldTypes)) {
+					additionalTypes.addAll(schemaFieldTypes);
+				}
+				List<GraphQLObjectType> microschemaFieldTypes = context.getOrStore(MicronodeFieldTypeProvider.MICROSCHEMA_FIELD_TYPES, () -> micronodeFieldTypeProvider.generateMicroschemaFieldTypes(context).forVersion(context));
 
-		Versioned.doSince(2, context, () -> {
-			additionalTypes.addAll(nodeTypeProvider.generateSchemaFieldTypes(context).forVersion(context));
-			additionalTypes.addAll(micronodeFieldTypeProvider.generateMicroschemaFieldTypes(context).forVersion(context));
+				if (CollectionUtils.isNotEmpty(microschemaFieldTypes)) {
+					additionalTypes.addAll(microschemaFieldTypes);
+				}
+			});
+
+			// Shared argument types
+			additionalTypes.add(createLinkEnumType());
+			additionalTypes.add(createNodeEnumType());
+			additionalTypes.add(createNativeFilterEnumType());
+			additionalTypes.add(Sorting.getSortingEnumType());
+
+			GraphQLSchema schema = builder.query(getRootType(context)).additionalTypes(additionalTypes).build();
+			return schema;
 		});
-
-		GraphQLSchema schema = builder.query(getRootType(context)).additionalTypes(additionalTypes).build();
-		return schema;
 	}
 
+	/**
+	 * Get the cache key for the context.
+	 * The cache key consists of
+	 * <ol>
+	 * <li>Project UUID</li>
+	 * <li>Branch UUID</li>
+	 * <li>API Version</li>
+	 * </ol>
+	 * @param context graphql context
+	 * @return cache key
+	 */
+	protected String getCacheKey(GraphQLContext context) {
+		HibProject project = Tx.get().getProject(context);
+		HibBranch branch = Tx.get().getBranch(context);
+
+		return String.format("%s-%s-%d", project.getUuid(), branch.getUuid(), context.getApiVersion());
+	}
 }

@@ -18,13 +18,16 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Stack;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -32,12 +35,16 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.dataloader.DataLoader;
 
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -55,15 +62,20 @@ import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
+import com.gentics.mesh.graphql.dataloader.DataLoaderKey;
+import com.gentics.mesh.graphql.dataloader.NodeContentWithOptionalRuntimeException;
 import com.gentics.mesh.graphql.dataloader.NodeDataLoader;
+import com.gentics.mesh.graphql.dataloader.NodeDataLoader.ParentNodeLoaderKey;
 import com.gentics.mesh.graphql.filter.NodeFilter;
 import com.gentics.mesh.graphql.model.NodeReferenceIn;
 import com.gentics.mesh.graphql.type.field.FieldDefinitionProvider;
 import com.gentics.mesh.handler.Versioned;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.path.impl.PathImpl;
@@ -89,6 +101,10 @@ import graphql.schema.GraphQLUnionType;
 @Singleton
 public class NodeTypeProvider extends AbstractTypeProvider {
 
+	public static final String SCHEMAS = "schemasCache";
+
+	public static final String SCHEMA_FIELD_TYPES = "schemaFieldTypes";
+
 	public static final String NODE_TYPE_NAME = "Node";
 
 	public static final String NODE_PAGE_TYPE_NAME = "NodesPage";
@@ -97,24 +113,26 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 	public static final String NODE_FIELDS_TYPE_NAME = "Fields";
 
-	@Inject
-	public NodeSearchHandler nodeSearchHandler;
+	protected final NodeSearchHandler nodeSearchHandler;
+
+	protected final InterfaceTypeProvider interfaceTypeProvider;
+
+	protected final TagTypeProvider tagTypeProvider;
+
+	protected final FieldDefinitionProvider fields;
+
+	protected final SearchWaitUtil waitUtil;
 
 	@Inject
-	public InterfaceTypeProvider interfaceTypeProvider;
-
-	@Inject
-	public TagTypeProvider tagTypeProvider;
-
-	@Inject
-	public FieldDefinitionProvider fields;
-
-	@Inject
-	public SearchWaitUtil waitUtil;
-
-	@Inject
-	public NodeTypeProvider(MeshOptions options) {
+	public NodeTypeProvider(MeshOptions options, NodeSearchHandler nodeSearchHandler,
+			InterfaceTypeProvider interfaceTypeProvider, TagTypeProvider tagTypeProvider,
+			FieldDefinitionProvider fields, SearchWaitUtil waitUtil) {
 		super(options);
+		this.nodeSearchHandler = nodeSearchHandler;
+		this.interfaceTypeProvider = interfaceTypeProvider;
+		this.tagTypeProvider = tagTypeProvider;
+		this.fields = fields;
+		this.waitUtil = waitUtil;
 	}
 
 	/**
@@ -143,10 +161,10 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		List<String> languageTags = getLanguageArgument(env, content);
 		ContainerType type = getNodeVersion(env);
 
-		NodeDataLoader.Context context = new NodeDataLoader.Context(type, languageTags);
-		DataLoader<HibNode, List<HibNodeFieldContainer>> contentLoader = env.getDataLoader(NodeDataLoader.CONTENT_LOADER_KEY);
+		NodeDataLoader.Context context = new NodeDataLoader.Context(type, languageTags, Optional.empty(), getPagingInfo(env));
+		DataLoader<DataLoaderKey<HibNode>, List<HibNodeFieldContainer>> contentLoader = env.getDataLoader(NodeDataLoader.CONTENT_LOADER_KEY);
 
-		return contentLoader.load(parentNode, context).thenApply((containers) -> {
+		return contentLoader.load(new DataLoaderKey<HibNode>(env, parentNode), context).thenApply((containers) -> {
 			HibNodeFieldContainer container = getContainerWithFallback(languageTags, containers);
 			return createNodeContentWithSoftPermissions(env, gc, parentNode, languageTags, type, container);
 		});
@@ -163,9 +181,9 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		HibNode node = content.getNode();
 		ContainerType type = getNodeVersion(env);
 
-		NodeDataLoader.Context context = new NodeDataLoader.Context(type, languageTags);
-		DataLoader<HibNode, List<HibNodeFieldContainer>> contentLoader = env.getDataLoader(NodeDataLoader.CONTENT_LOADER_KEY);
-		return contentLoader.load(node, context).thenApply((containers) -> {
+		NodeDataLoader.Context context = new NodeDataLoader.Context(type, languageTags, Optional.empty(), getPagingInfo(env));
+		DataLoader<DataLoaderKey<HibNode>, List<HibNodeFieldContainer>> contentLoader = env.getDataLoader(NodeDataLoader.CONTENT_LOADER_KEY);
+		return contentLoader.load(new DataLoaderKey<>(env, node), context).thenApply((containers) -> {
 			HibNodeFieldContainer container = getContainerWithFallback(languageTags, containers);
 			return createNodeContentWithSoftPermissions(env, gc, node, languageTags, type, container);
 		});
@@ -180,13 +198,12 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 		ContainerType type = getNodeVersion(env);
 		List<String> languageTags = getLanguageArgument(env, content);
-		NodeDataLoader.Context context = new NodeDataLoader.Context(type, languageTags);
+		NodeDataLoader.Context context = new NodeDataLoader.Context(type, languageTags, Optional.empty(), getPagingInfo(env));
 
-		DataLoader<HibNode, List<NodeContent>> breadcrumbLoader = env.getDataLoader(NodeDataLoader.BREADCRUMB_LOADER_KEY);
-		return breadcrumbLoader.load(content.getNode(), context).thenApply(contents -> {
+		DataLoader<DataLoaderKey<HibNode>, List<NodeContent>> breadcrumbLoader = env.getDataLoader(NodeDataLoader.BREADCRUMB_LOADER_KEY);
+		return breadcrumbLoader.load(new DataLoaderKey<>(env, content.getNode()), context).thenApply(contents -> {
 			return contents.stream()
-					.filter(item -> item != null && item.getContainer() != null)
-					.filter(content1 -> gc.hasReadPerm(content1, type))
+					.filter(item -> item != null && item.getContainer() != null && gc.hasReadPerm(item, type))
 					.collect(Collectors.toList());
 		});
 	}
@@ -214,9 +231,9 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		GraphQLContext gc = env.getContext();
 		ContainerType type = getNodeVersion(env);
 
-		NodeDataLoader.Context context = new NodeDataLoader.Context(type);
-		DataLoader<HibNode, List<HibNodeFieldContainer>> contentLoader = env.getDataLoader(NodeDataLoader.CONTENT_LOADER_KEY);
-		return contentLoader.load(node, context).thenApply(l -> l.stream()
+		NodeDataLoader.Context context = new NodeDataLoader.Context(type, Collections.emptyList(), Optional.empty(), new PagingParametersImpl());
+		DataLoader<DataLoaderKey<HibNode>, List<HibNodeFieldContainer>> contentLoader = env.getDataLoader(NodeDataLoader.CONTENT_LOADER_KEY);
+		return contentLoader.load(new DataLoaderKey<HibNode>(env, node), context).thenApply(l -> l.stream()
 				.filter(c -> gc.hasReadPerm(c, type))
 				.map(container -> new NodeContent(node, container, content.getLanguageFallback(), content.getType()))
 				.collect(Collectors.toList()));
@@ -229,7 +246,10 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			nodeType.description(
 				"A Node is the basic building block for contents. Nodes can contain multiple language specific contents. These contents contain the fields with the actual content.");
 			interfaceTypeProvider.addCommonFields(nodeType, true);
-			nodeType.fields(createNodeInterfaceFields(context).forVersion(context));
+			List<GraphQLFieldDefinition> fields = createNodeInterfaceFields(context).forVersion(context);
+			if (CollectionUtils.isNotEmpty(fields)) {
+				nodeType.fields(fields);
+			}
 			return nodeType.build();
 		}).since(2, () -> {
 			GraphQLInterfaceType.Builder nodeType = newInterface();
@@ -245,13 +265,17 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				return env.getSchema().getObjectType(schemaName);
 			});
 
-			nodeType.fields(createNodeInterfaceFields(context).forVersion(context));
-
+			List<GraphQLFieldDefinition> versionedFields = createNodeInterfaceFields(context).forVersion(context);
+			if (CollectionUtils.isNotEmpty(versionedFields)) {
+				nodeType.fields(versionedFields);
+			}
 			return nodeType.build();
 		}).build();
 	}
 
 	public Versioned<List<GraphQLFieldDefinition>> createNodeInterfaceFields(GraphQLContext context) {
+		NodeFilter nodeFilter = NodeFilter.filter(context);
+
 		List<GraphQLFieldDefinition> baseFields = Arrays.asList(
 			// .project
 			newFieldDefinition().name("project").description("Project of the node").type(new GraphQLTypeReference("Project")).dataFetcher((
@@ -360,19 +384,25 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 				List<String> languageTags = getLanguageArgument(env, content);
 				ContainerType type = getNodeVersion(env);
+				Pair<Predicate<NodeContent>, Optional<FilterOperation<?>>> filters = parseFilters(env, nodeFilter);
+				PagingParameters pagingInfo = getPagingInfo(env);
+				NodeDataLoader.Context dataLoaderContext = new NodeDataLoader.Context(type, languageTags, filters.getValue(), pagingInfo);
+				DataLoader<DataLoaderKey<HibNode>, List<NodeContent>> childrenLoader = env.getDataLoader(NodeDataLoader.CHILDREN_LOADER_KEY);
+				CompletableFuture<List<NodeContent>> future = childrenLoader.load(new DataLoaderKey<>(env, content.getNode()), dataLoaderContext);
 
-				NodeDataLoader.Context dataLoaderContext = new NodeDataLoader.Context(type, languageTags);
-				DataLoader<HibNode, List<NodeContent>> childrenLoader = env.getDataLoader(NodeDataLoader.CHILDREN_LOADER_KEY);
-				CompletableFuture<List<NodeContent>> future = childrenLoader.load(content.getNode(), dataLoaderContext);
-
+				boolean isPagedNatively = PersistingRootDao.shouldPage(pagingInfo) && (filters.getRight().isPresent() || PersistingRootDao.shouldSort(pagingInfo));
 				return future.thenApply(contents -> {
-					return applyNodeFilter(env, contents.stream()
-							.filter(item -> item.getContainer() != null)
-					);
+					return applyNodeFilter(env, contents.stream().filter(item -> item.getContainer() != null), 
+							isPagedNatively, filters.getRight().isPresent(),
+							Optional.of(isPagedNatively)
+								.filter(paged -> paged)
+								.map(paged -> () -> Tx.get().nodeDao().countAllChildren(content.getNode(), Tx.get().getProject(context), gc, languageTags, type, filters.getRight(), Tx.get().getBranch(context).getUuid())));
 				});
-			}, NODE_PAGE_TYPE_NAME)
+			}, NODE_PAGE_TYPE_NAME, true)
 				.argument(createLanguageTagArg(false))
-				.argument(NodeFilter.filter(context).createFilterArgument()).build(),
+				.argument(createNativeFilterArg())
+				.argument(nodeFilter.createSortArgument())
+				.argument(nodeFilter.createFilterArgument()).build(),
 
 			// .parent
 
@@ -382,11 +412,28 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				.type(new GraphQLTypeReference(NODE_TYPE_NAME))
 				.argument(createLanguageTagArg(false))
 				.argument(createNodeVersionArg())
-				.dataFetcher(this::parentNodeFetcher).build(),
+				.dataFetcher(env -> {
+					GraphQLContext gc = env.getContext();
+					NodeContent content = env.getSource();
+					if (content == null) {
+						return null;
+					}
+					HibNode node = content.getNode();
+					if (node == null) {
+						return null;
+					}
+
+					List<String> languageTags = getLanguageArgument(env, content);
+					ContainerType type = getNodeVersion(env);
+
+					DataLoader<DataLoaderKey<ParentNodeLoaderKey>, NodeContentWithOptionalRuntimeException> parentLoader = env.getDataLoader(NodeDataLoader.PARENT_LOADER_KEY);
+					return parentLoader.load(new DataLoaderKey<>(env, new ParentNodeLoaderKey(node, type, languageTags, getPagingInfo(env)))).thenApply(c -> c.getResult(env));
+				})
+				.build(),
 
 			// .tags
 			newFieldDefinition().name("tags")
-				.argument(createPagingArgs()).type(new GraphQLTypeReference(TAG_PAGE_TYPE_NAME))
+				.argument(createPagingArgs(false)).type(new GraphQLTypeReference(TAG_PAGE_TYPE_NAME))
 				.dataFetcher(env -> {
 					Tx tx = Tx.get();
 					TagDao tagDao = tx.tagDao();
@@ -416,21 +463,33 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			newFieldDefinition()
 				.name("referencedBy")
 				.description("Loads nodes that reference this node.")
-				.argument(createPagingArgs())
+				.argument(createPagingArgs(false))
 				.argument(nodeReferenceFilter(context).createFilterArgument())
 				.argument(createNodeVersionArg())
 				.type(new GraphQLTypeReference(NODE_REFERENCE_PAGE_TYPE_NAME))
 				.dataFetcher(env -> {
+					GraphQLContext gc = env.getContext();
 					NodeContent content = env.getSource();
-					ContainerType type = getNodeVersion(env);
-					Stream<NodeReferenceIn> stream = NodeReferenceIn.fromContent(context, content, type);
-					Map<String, ?> filterInput = env.getArgument("filter");
-					if (filterInput != null) {
-						stream = stream.filter(nodeReferenceFilter(context).createPredicate(filterInput));
+					if (content == null) {
+						return null;
 					}
+					HibNode node = content.getNode();
+					if (node == null) {
+						return null;
+					}
+					ContainerType type = getNodeVersion(env);
 
-					return new DynamicStreamPageImpl<>(stream, getPagingInfo(env));
-				}).build(),
+					DataLoader<DataLoaderKey<NodeContent>, Collection<NodeReferenceIn>> byRefLoader = env.getDataLoader(NodeDataLoader.REFERENCED_BY_LOADER_KEY);
+					return byRefLoader.load(new DataLoaderKey<>(env, new NodeContent(content.getNode(), content.getContainer(), content.getLanguageFallback(), type))).thenApply(c -> {
+						Stream<NodeReferenceIn> stream = c.stream();
+						Map<String, ?> filterInput = env.getArgument("filter");
+						if (filterInput != null) {
+							stream = stream.filter(nodeReferenceFilter(context).createPredicate(filterInput));
+						}
+						return new DynamicStreamPageImpl<>(stream, getPagingInfo(env));
+					});
+				})
+				.build(),
 
 			// Content specific fields
 
@@ -458,9 +517,9 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				ContainerType containerType = getNodeVersion(env);
 				String languageTag = container.getLanguageTag();
 
-				DataLoader<HibNodeFieldContainer, String> pathLoader = env.getDataLoader(NodeDataLoader.PATH_LOADER_KEY);
-				NodeDataLoader.Context dataLoaderContext = new NodeDataLoader.Context(containerType, Collections.singletonList(languageTag));
-				return pathLoader.load(container, dataLoaderContext);
+				DataLoader<DataLoaderKey<HibNodeFieldContainer>, String> pathLoader = env.getDataLoader(NodeDataLoader.PATH_LOADER_KEY);
+				NodeDataLoader.Context dataLoaderContext = new NodeDataLoader.Context(containerType, Collections.singletonList(languageTag), Optional.empty(), getPagingInfo(env));
+				return pathLoader.load(new DataLoaderKey<>(env, container), dataLoaderContext);
 			}).build(),
 
 			// .edited
@@ -481,14 +540,14 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			newFieldDefinition().name("schema").description("Schema of the node").type(new GraphQLTypeReference(SCHEMA_TYPE_NAME))
 				.dataFetcher(env -> {
 					NodeContent content = env.getSource();
-					if (content == null) {
+					if (content == null || content.getNode() == null) {
 						return null;
 					}
-					HibNodeFieldContainer container = content.getContainer();
-					if (container == null) {
-						return null;
+					if (content.getContainer() != null) {
+						return content.getContainer().getSchemaContainerVersion();
+					} else {
+						return content.getNode().getSchemaContainer().getLatestVersion();
 					}
-					return container.getSchemaContainerVersion();
 				}).build(),
 
 			// .isPublished
@@ -574,17 +633,18 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		Supplier<List<GraphQLFieldDefinition>> withNodeFieldsSupplier = () -> {
 			List<GraphQLFieldDefinition> withNodeFields = new ArrayList<>(baseFields);
 
-			withNodeFields.add(newFieldDefinition()
-				.name("fields")
-				.description("Contains the fields of the content.")
-				.type(createFieldsUnionType(context).forVersion(context))
-				.deprecate("Usage of fields has changed in /api/v2. See https://github.com/gentics/mesh/issues/428")
-				.dataFetcher(env -> {
-					// The fields can be accessed via the container so we can directly pass it along.
-					NodeContent content = env.getSource();
-					return content.getContainer();
-				}).build());
-
+			createFieldsUnionType(context).ifPresent(type -> {
+				withNodeFields.add(newFieldDefinition()
+					.name("fields")
+					.description("Contains the fields of the content.")
+					.type(type.forVersion(context))
+					.deprecate("Usage of fields has changed in /api/v2. See https://github.com/gentics/mesh/issues/428")
+					.dataFetcher(env -> {
+						// The fields can be accessed via the container so we can directly pass it along.
+						NodeContent content = env.getSource();
+						return content.getContainer();
+					}).build());
+			});
 			return withNodeFields;
 		};
 
@@ -705,26 +765,28 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		}
 	}
 
-	private Versioned<GraphQLUnionType> createFieldsUnionType(GraphQLContext context) {
-		GraphQLObjectType[] typeArray = generateSchemaFieldTypes(context).forVersion(context).toArray(new GraphQLObjectType[0]);
+	private Optional<Versioned<GraphQLUnionType>> createFieldsUnionType(GraphQLContext context) {
+		GraphQLObjectType[] typeArray = context.getOrStore(SCHEMA_FIELD_TYPES, () -> generateSchemaFieldTypes(context).forVersion(context)) .toArray(new GraphQLObjectType[0]);
 
-		GraphQLUnionType fieldType = newUnionType().name(NODE_FIELDS_TYPE_NAME).possibleTypes(typeArray).description("Fields of the node.")
-			.typeResolver(env -> {
-				Object object = env.getObject();
-				if (object instanceof HibNodeFieldContainer) {
-					HibNodeFieldContainer fieldContainer = (HibNodeFieldContainer) object;
-					String schemaName = fieldContainer.getSchemaContainerVersion().getName();
-					GraphQLObjectType foundType = env.getSchema().getObjectType(schemaName);
-					if (foundType == null) {
-						throw new GraphQLException("The type for the schema with name {" + schemaName
-							+ "} could not be found. Maybe the schema is not linked to the project.");
-					}
-					return foundType;
-				}
-				return null;
-			}).build();
+		return Optional.ofNullable(typeArray).filter(a -> a.length > 0).map(a -> {
+			GraphQLUnionType fieldType = newUnionType().name(NODE_FIELDS_TYPE_NAME).possibleTypes(a).description("Fields of the node.")
+					.typeResolver(env -> {
+						Object object = env.getObject();
+						if (object instanceof HibNodeFieldContainer) {
+							HibNodeFieldContainer fieldContainer = (HibNodeFieldContainer) object;
+							String schemaName = fieldContainer.getSchemaContainerVersion().getName();
+							GraphQLObjectType foundType = env.getSchema().getObjectType(schemaName);
+							if (foundType == null) {
+								throw new GraphQLException("The type for the schema with name {" + schemaName
+									+ "} could not be found. Maybe the schema is not linked to the project.");
+							}
+							return foundType;
+						}
+						return null;
+					}).build();
 
-		return Versioned.forVersion(1, fieldType).build();
+				return Versioned.forVersion(1, fieldType).build();
+		});
 	}
 
 	/**
@@ -746,7 +808,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 		HibProject project = tx.getProject(context);
 		List<GraphQLObjectType> schemaTypes = new ArrayList<>();
-		for (HibSchema container : schemaDao.findAll(project)) {
+		Result<? extends HibSchema> schemas = context.getOrStore(SCHEMAS + project.getName(), () -> schemaDao.findAll(project));
+		for (HibSchema container : schemas) {
 			HibSchemaVersion version = container.getLatestVersion();
 			SchemaModel schema = version.getSchema();
 			GraphQLObjectType.Builder root = newObject();
@@ -784,10 +847,10 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					break;
 				case LIST:
 					ListFieldSchema listFieldSchema = ((ListFieldSchema) fieldSchema);
-					root.field(fields.createListDef(context, listFieldSchema));
+					fields.createListDef(context, listFieldSchema, project).ifPresent(root::field);
 					break;
 				case MICRONODE:
-					root.field(fields.createMicronodeDef(fieldSchema, project));
+					fields.createMicronodeDef(context, fieldSchema, project).ifPresent(root::field);
 					break;
 				}
 			}
@@ -802,7 +865,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		HibProject project = tx.getProject(context);
 
 		SchemaDao schemaDao = Tx.get().schemaDao();
-		return schemaDao.findAll(project).stream().map(container -> {
+		return context.getOrStore(SCHEMAS + project.getName(), () -> schemaDao.findAll(project)).stream().map(container -> {
 			HibSchemaVersion version = container.getLatestVersion();
 			SchemaModel schema = version.getSchema();
 			GraphQLObjectType.Builder root = newObject();
@@ -810,54 +873,59 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			root.name(schema.getName());
 			root.description(schema.getDescription());
 
-			GraphQLFieldDefinition.Builder fieldsField = GraphQLFieldDefinition.newFieldDefinition();
-			GraphQLObjectType.Builder fieldsType = newObject();
-			fieldsType.name(nodeTypeName(schema.getName()));
-			fieldsField.dataFetcher(env -> {
-				NodeContent content = env.getSource();
-				return content.getContainer();
-			});
+			if (!schema.getFields().isEmpty()) {
+				GraphQLFieldDefinition.Builder fieldsField = GraphQLFieldDefinition.newFieldDefinition();
+				GraphQLObjectType.Builder fieldsType = newObject();
+				fieldsType.name(nodeTypeName(schema.getName()));
+				fieldsField.dataFetcher(env -> {
+					NodeContent content = env.getSource();
+					return content.getContainer();
+				});
 
-			// TODO add link resolving argument / code
-			for (FieldSchema fieldSchema : schema.getFields()) {
-				FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
-				switch (type) {
-				case STRING:
-					fieldsType.field(fields.createStringDef(fieldSchema));
-					break;
-				case HTML:
-					fieldsType.field(fields.createHtmlDef(fieldSchema));
-					break;
-				case NUMBER:
-					fieldsType.field(fields.createNumberDef(fieldSchema));
-					break;
-				case DATE:
-					fieldsType.field(fields.createDateDef(fieldSchema));
-					break;
-				case BOOLEAN:
-					fieldsType.field(fields.createBooleanDef(fieldSchema));
-					break;
-				case NODE:
-					fieldsType.field(fields.createNodeDef(fieldSchema));
-					break;
-				case BINARY:
-					fieldsType.field(fields.createBinaryDef(fieldSchema));
-					break;
-				case S3BINARY:
-					root.field(fields.createS3BinaryDef(fieldSchema));
-					break;
-				case LIST:
-					ListFieldSchema listFieldSchema = ((ListFieldSchema) fieldSchema);
-					fieldsType.field(fields.createListDef(context, listFieldSchema));
-					break;
-				case MICRONODE:
-					fieldsType.field(fields.createMicronodeDef(fieldSchema, project));
-					break;
+				// TODO add link resolving argument / code
+				for (FieldSchema fieldSchema : schema.getFields()) {
+					FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
+					switch (type) {
+					case STRING:
+						fieldsType.field(fields.createStringDef(fieldSchema));
+						break;
+					case HTML:
+						fieldsType.field(fields.createHtmlDef(fieldSchema));
+						break;
+					case NUMBER:
+						fieldsType.field(fields.createNumberDef(fieldSchema));
+						break;
+					case DATE:
+						fieldsType.field(fields.createDateDef(fieldSchema));
+						break;
+					case BOOLEAN:
+						fieldsType.field(fields.createBooleanDef(fieldSchema));
+						break;
+					case NODE:
+						fieldsType.field(fields.createNodeDef(fieldSchema));
+						break;
+					case BINARY:
+						fieldsType.field(fields.createBinaryDef(fieldSchema));
+						break;
+					case S3BINARY:
+						root.field(fields.createS3BinaryDef(fieldSchema));
+						break;
+					case LIST:
+						ListFieldSchema listFieldSchema = ((ListFieldSchema) fieldSchema);
+						fields.createListDef(context, listFieldSchema, project).ifPresent(fieldsType::field);
+						break;
+					case MICRONODE:
+						fields.createMicronodeDef(context, fieldSchema, project).ifPresent(fieldsType::field);
+						break;
+					}
 				}
+				fieldsField.name("fields").type(fieldsType);
+				root.field(fieldsField);
 			}
-			fieldsField.name("fields").type(fieldsType);
-			root.field(fieldsField);
-			root.fields(createNodeInterfaceFields(context).forVersion(context));
+			List<GraphQLFieldDefinition> nodeFields = createNodeInterfaceFields(context).forVersion(context);
+			if (CollectionUtils.isNotEmpty(nodeFields)) {
+				root.fields(nodeFields);
+			}
 			interfaceTypeProvider.addCommonFields(root, true);
 			return root.build();
 		}).collect(Collectors.toList());

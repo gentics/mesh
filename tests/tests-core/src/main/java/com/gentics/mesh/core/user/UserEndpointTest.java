@@ -29,6 +29,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static io.vertx.core.http.HttpHeaders.HOST;
 import static io.vertx.core.http.HttpHeaders.LOCATION;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -41,8 +42,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.db.CommonTx;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -55,9 +54,12 @@ import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -75,6 +77,7 @@ import com.gentics.mesh.parameter.client.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
+import com.gentics.mesh.parameter.impl.SortingParametersImpl;
 import com.gentics.mesh.parameter.impl.UserParametersImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
@@ -180,6 +183,26 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertNull("The token code should have been set to null since it is now used up", tx(updatedUser::getResetToken));
 
 		assertNotEquals("The password hash has not been updated.", oldHash, newHash);
+	}
+
+	@Test
+	@Override
+	public void testReadPermittedSorted() throws Exception {
+		for (int i = 0; i < 10; i++) {
+			final String name = "test12345_" + i;
+			UserCreateRequest request = new UserCreateRequest();
+			request.setUsername(name);
+			request.setPassword(name);
+			UserResponse response = call(() -> client().createUser(request));
+			if ((i % 2) == 0) {
+				tx(tx -> {
+					tx.roleDao().revokePermissions(role(), tx.userDao().findByUuid(response.getUuid()), READ_PERM);
+				});
+			}
+		}
+		UserListResponse list = call(() -> client().findUsers(new SortingParametersImpl("name", SortOrder.DESCENDING)));
+		assertEquals("Total data size should be 8", 8, list.getData().size());
+		assertThat(list.getData()).isSortedAccordingTo((a, b) -> b.getUsername().compareTo(a.getUsername()));
 	}
 
 	/**
@@ -569,6 +592,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		listResponse = call(() -> client().findUsers(new PagingParametersImpl(4242)));
 		assertNull(listResponse.getMetainfo().getPerPage());
 
+		verifySorting(param -> call(() -> client().findUsers(param)), UserResponse::getUsername, "username", "List of usernames");
 	}
 
 	@Test
@@ -1006,6 +1030,30 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	// }
 
 	@Test
+	public void testUpdatePasswordWithEmptyPassword() {
+		String uuid;
+		String oldHash;
+
+		try (Tx tx = tx()) {
+			tx.userDao().updatePasswordHash(user(), null);
+			uuid = user().getUuid();
+			oldHash = user().getPasswordHash();
+			tx.success();
+		}
+
+		UserUpdateRequest updateRequest = new UserUpdateRequest();
+		updateRequest.setPassword("   ");
+
+		UserResponse restUser = call(() -> client().updateUser(uuid, updateRequest));
+		assertThat(restUser).matches(updateRequest);
+
+		try (Tx tx = tx()) {
+			HibUser reloadedUser = tx.userDao().findByUuid(uuid);
+			assertEquals("The hash should not be different and thus the password stays old.", oldHash, reloadedUser.getPasswordHash());
+		}
+	}
+
+	@Test
 	public void testUpdatePasswordWithNoOldPassword() {
 		String uuid;
 		String oldHash;
@@ -1014,6 +1062,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			tx.userDao().updatePasswordHash(user(), null);
 			uuid = user().getUuid();
 			oldHash = user().getPasswordHash();
+			tx.success();
 		}
 
 		UserUpdateRequest updateRequest = new UserUpdateRequest();
@@ -1026,7 +1075,6 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			HibUser reloadedUser = tx.userDao().findByUuid(uuid);
 			assertNotEquals("The hash should be different and thus the password updated.", oldHash, reloadedUser.getPasswordHash());
 		}
-
 	}
 
 	@Test
@@ -1039,6 +1087,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			username = user.getUsername();
 			uuid = user.getUuid();
 			oldHash = user.getPasswordHash();
+			tx.success();
 		}
 		UserUpdateRequest updateRequest = new UserUpdateRequest();
 		updateRequest.setPassword("new_password");
@@ -1159,6 +1208,18 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		newUser.setFirstname("Joe");
 		newUser.setLastname("Doe");
 		newUser.setUsername("new_user_test123");
+		newUser.setGroupUuid(groupUuid());
+		call(() -> client().createUser(newUser), BAD_REQUEST, "user_missing_password");
+	}
+
+	@Test
+	public void testCreateUserWithEmptyPassword() throws Exception {
+		UserCreateRequest newUser = new UserCreateRequest();
+		newUser.setEmailAddress("n.user@spam.gentics.com");
+		newUser.setFirstname("Joe");
+		newUser.setLastname("Doe");
+		newUser.setUsername("new_user_test123");
+		newUser.setPassword("      ");
 		newUser.setGroupUuid(groupUuid());
 		call(() -> client().createUser(newUser), BAD_REQUEST, "user_missing_password");
 	}

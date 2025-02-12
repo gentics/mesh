@@ -1,0 +1,1 @@
+SQL: The Liquibase library, responsible for the fluent update of the low level relational database structure, has been updated to the version @4.29.2@.

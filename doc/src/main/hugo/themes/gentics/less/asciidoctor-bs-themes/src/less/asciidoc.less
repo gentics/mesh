@@ -1,0 +1,1070 @@
+// This is based on Dan Allen's _asciidoc.scss 
+// https://github.com/asciidoctor/asciidoctor-stylesheet-factory/tree/master/sass/components
+//
+// This defines styles for all AsciiDoc specific markup.
+// ------------------------------------------------------------------------------------------
+
+
+// clearfix compatible hack as used by asciidoctor 1.5
+.float-group:before, .float-group:after { content: " "; display: table; }
+.float-group:after { clear: both; }
+ 
+/***********************************************************
+ * Experimental macro kbd:[]
+ */
+ 
+kbd.keyseq {
+  color: lighten(@text-color, 20%);
+}
+
+
+kbd:not(.keyseq) {
+  /* Orig. styling from TBS code.less 
+  padding: 2px 4px;
+  font-size: 90%;
+  color: @kbd-color;
+  background-color: @kbd-bg;
+  border-radius: @border-radius-small;
+  box-shadow: inset 0 -1px 0 rgba(0,0,0,.25);
+  */
+}
+
+kbd kbd:first-child {
+  margin-left: 0;
+}
+
+kbd kbd:last-child {
+  margin-right: 0;
+}
+
+
+/***********************************************************
+ * Experimental macro menu:[]
+ */
+
+.menuseq, .menu {
+  color: darken(@text-color, 10%);
+}
+
+/***********************************************************
+ * Experimental macro btn:[]
+ */
+ 
+.button {
+   .btn;
+   .btn-primary;
+   .btn-xs;
+}
+
+
+/***********************************************************
+ * Special AsciiDoc elements
+ */
+ 
+#header,
+#content,
+#footnotes,
+#footer {
+  width: 100%; 
+  margin-left: auto; 
+  margin-right: auto; 
+  margin-top: 0; 
+  margin-bottom: 0; 
+  max-width: 62.5em; 
+  *zoom: 1; 
+  position: relative; 
+  padding-left: 0.9375em; 
+  padding-right: 0.9375em;
+}
+
+
+#header {
+  margin-top: @line-height-computed;
+  margin-bottom: (@line-height-computed / 2);
+
+  & > h1 {
+    color: @title-font-color;
+    font-weight: @title-font-weight;
+  }
+  
+  #revnumber {
+    text-transform: capitalize;
+  }
+
+  & > #author + br {
+    display: none;
+  }
+  
+  & > h1 + span {
+     padding-left: 3px;
+  }
+  
+  & > br {
+	
+    & + span {
+      padding-left: 3px;
+    }
+
+    & + span.email:before {
+      content: "\2013 \0020";
+    }
+
+    & + span.author {
+      padding-left: 0;
+    }
+
+    & + span.author:before {
+      content: ", ";
+    }
+  }
+}
+
+
+#toc {
+  margin-bottom: (@line-height-computed / 2);
+  padding-bottom: @block-padding-bottom;
+  & > ul {
+    margin-left: @gap-narrow;
+  }
+  
+  ul ul {
+    margin-left: 0;
+    padding-left: @toc-list-nested-padding * .8;
+  }
+	
+  ul.sectlevel0 > li > a {
+    font-style: italic; 
+  }
+  ul.sectlevel0 ul.sectlevel1 {
+    margin-left: 0;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+  }
+  
+  & > ul.sectlevel1 {
+    padding-left: 0;
+  }
+	
+  ul {
+    list-style-type: none;
+  }
+}
+
+
+#toctitle:extend(h3) {
+  margin-top: @line-height-computed;
+  margin-bottom: (@line-height-computed / 2);
+}
+
+
+@media @media-small {
+  body.toc2 {
+    padding-left: 15em;
+    padding-right: 0;
+  }
+
+  #toc.toc2 {
+    position: fixed;
+    width: 15em;
+    left: 0;
+    top: 0;
+    border-right: 1px solid @sect-divider-color;
+    border-bottom: 0;
+    z-index: 1000;
+    padding: 1em;
+    height: 100%;
+    overflow: auto;
+    #toctitle {
+      margin-top: 0;
+      font-size: 1.2em;
+    }
+    & > ul {
+      font-size: .90em;
+    }
+    ul ul {
+      margin-left: 0;
+      padding-left: @toc-list-nested-padding * .8;
+    }
+    ul.sectlevel0 ul.sectlevel1 {
+      padding-left: 0;
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+	
+	& > ul.sectlevel1 {
+	  padding-left: 0;
+	}
+  }
+
+  body.toc2.toc-right {
+    padding-left: 0;
+    padding-right: 15em;
+
+    #toc.toc2 {
+      border-right: 0;
+      border-left: 1px solid @sect-divider-color;
+      left: auto;
+      right: 0;
+    }
+  }
+}
+
+@media @media-medium {
+  body.toc2 {
+    padding-left: 20em;
+    padding-right: 0;
+  }
+
+  #toc.toc2 {
+    width: 20em;
+
+    #toctitle {
+      font-size: 1.375em;
+    }
+
+    & > ul {
+      font-size: 0.95em;
+    }
+
+    ul ul {
+      padding-left: @toc-list-nested-padding;
+    }
+  }
+
+  body.toc2.toc-right {
+    padding-left: 0;
+    padding-right: 20em;
+  }
+}
+
+
+// toc within content
+#content #toc {
+  .well;
+  a {
+    text-decoration: none;
+  }
+}
+
+#content #toctitle {
+  font-weight: bold;
+  font-size: 1em;
+  padding-left: @gap-narrow;
+}
+
+
+#footer {
+  max-width: 100%;
+  margin-top: @line-height-computed;
+  background-color: @gray-lighter;
+  padding: @block-padding;
+}
+
+#footer-text {
+  color: @text-color;
+  line-height: @line-height-computed * .9;
+}
+
+//.sect1 {
+//  padding-bottom: @gap-extra-wide;
+//}
+
+//.sect1 + .sect1 {
+//  border-top: @sect-divider-size @sect-divider-style @sect-divider-color;
+//}
+
+#content h1, h2, h3, #toctitle, .sidebarblock > .content > .title, h4, h5, h6 {
+  & > a.anchor {
+    position: absolute;
+    width: 1em;
+    margin-left: -1em;
+    display: block;
+    text-decoration: none;
+    visibility: hidden;
+    text-align: center;
+    font-weight: normal;
+
+    &:before {
+      content: '\00A7';
+      font-size: .85em;
+      vertical-align: text-top;
+      display: block;
+      margin-top: 0.05em;
+    }
+  }
+
+  &:hover > a.anchor,
+  & > a.anchor:hover {
+    visibility: visible;
+  }
+
+  & > a.link {
+    color: @text-color;
+    text-decoration: none;
+    &:hover {
+      color: darken(@text-color, 5%);
+    }
+  }
+}
+
+
+// AsciiDoc block styles
+
+// these blocks that don't inherit panel styles
+.audioblock,
+.imageblock,
+.literalblock,
+.listingblock,
+.mathblock,
+.stemblock,
+.verseblock,
+.videoblock {
+  margin-bottom: (@line-height-computed / 2);
+}
+
+/***********************************************************
+ * Titles and captions
+ */
+.admonitionblock td.content,
+.audioblock,
+.exampleblock,
+.imageblock,
+.listingblock,
+.literalblock,
+.stemblock,
+.openblock,
+.paragraph,
+.quoteblock,
+table.tableblock,
+.sidebarblock,
+.verseblock,
+.videoblock,
+.dlist,
+.olist,
+.ulist,
+.qlist,
+.hdlist {
+  & > .title {
+    text-align: left;
+    font-weight: bold;
+	margin-top: 0.5em;
+	margin-bottom: 0.3em;
+  }
+}
+
+.tableblock > caption {
+  text-align: left;
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: visible;
+  max-width: 0;
+}
+
+/***********************************************************
+ * Lead paragraph
+ */
+ 
+.paragraph.lead > p,
+#preamble > .sectionbody > .paragraph:first-of-type p {
+  .lead;
+}
+
+// nested AsciiDoc document (should put "nested" class on surrounding div)
+table.tableblock #preamble > .sectionbody > .paragraph:first-of-type p {
+  font-size: inherit;
+}
+
+/***********************************************************
+ * Admonition block
+ */
+ 
+.admonitionblock > table {
+  border: 0;
+  background: none;
+  width: 100%;
+  margin-bottom: (@line-height-computed / 2);
+  
+  td.icon {
+    text-align: center;
+    width: @icon-width;
+    img {
+      max-width: none;
+    }
+    .title {
+      text-transform: uppercase;
+    }
+  }
+
+  td.content {
+    padding-left: @gap-standard;
+    padding-right: @gap-standard;
+    border-left: @blockquote-border-width @blockquote-border-style @blockquote-border-color; 
+
+    //& > .paragraph:last-child > p {
+    & > :last-child > :last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+/***********************************************************
+ * Example and sidebar blocks
+ */
+ 
+.exampleblock > .content {
+  padding: (@line-height-computed / 2) @line-height-computed;
+  margin: 0 0 @line-height-computed;
+  border-left: @example-border-width @example-border-style @example-border-color;
+  border-right: 1px @example-border-style @example-border-color;
+  border-top: 1px @example-border-style @example-border-color;
+  border-bottom: 1px @example-border-style @example-border-color;
+  color: @example-font-color;
+  //margin-bottom: @line-height-computed / 2;
+}
+ 
+.sidebarblock {
+  & > .content {
+    & > .title {
+      font-size: @font-size-h4;
+      margin-bottom: (@line-height-computed / 2);
+      line-height: @line-height-computed;  
+    }
+    .well;
+  }
+}
+
+.exampleblock > .content,
+.sidebarblock > .content {
+  & > :last-child > :last-child,
+  .olist > ol > li:last-child > :last-child,
+  .ulist > ul > li:last-child > :last-child,
+  .qlist > ol > li:last-child > :last-child {
+    margin-bottom: 0;
+  }
+}
+
+/***********************************************************
+ * Literal block
+ */
+ 
+.literalblock {
+  & pre, & pre[class] {
+    color: @literalblock-color;
+    background-color: inherit;
+	
+    border: 0;
+    padding: 0;
+    word-wrap: break-word;
+
+    &.nowrap {
+      overflow-x: auto;
+      white-space: pre;
+      word-wrap: normal;
+    }
+    
+    & > code {
+      display: block;
+    }
+  }
+  
+  & + .colist {
+    margin-top: -0.5em;
+  }
+}
+
+/***********************************************************
+ * Code listing block
+ */
+ 
+ // Use role="prescrollable" in listingblock
+.listingblock.prescrollable {
+  & pre {
+      max-height: @pre-scrollable-max-height;
+      overflow-y: auto;
+  }
+}
+  
+.listingblock {
+  & pre {
+    &.nowrap {
+      overflow-x: auto;
+      white-space: pre;
+      word-wrap: normal;
+    }
+
+    & > code {
+      display: block;
+    }
+
+	& + .colist {
+      margin-top: -0.5em;
+    }
+  
+    @media @media-large {
+      font-size: @pre-font-size * .8; 
+    }
+
+    @media @media-small {
+      font-size: @pre-font-size * .9;
+    }
+
+    @media @media-medium {
+      font-size: @pre-font-size;
+    }
+  }
+}
+
+.listingblock pre.highlight {
+  padding: 3px; //hack
+  & > code {
+    padding: @pre-padding;
+  }
+}
+
+.listingblock > .content {
+  // if the floating language text a place to drop anchor
+  position: relative;
+}
+
+.listingblock:hover code[class*=" language-"]:before {
+  text-transform: uppercase;
+  font-size: 0.9em;
+  color: @pre-color;
+
+  //float: right;
+  //or
+  position: absolute;
+  top: @gap-narrow;
+  right: @gap-wide;
+
+  // use the next three styles to "cover-up"
+  //position: relative;
+  //background: @pre-bg;
+  //padding: 0 0.9em;
+}
+
+.listingblock.terminal pre .command:before {
+  content: attr(data-prompt); 
+  padding-right: 0.5em;
+  color: @pre-color;
+}
+
+.listingblock.terminal pre .command:not([data-prompt]):before {
+  content: '$'; 
+}
+
+.listingblock:hover code.asciidoc:before { content: "asciidoc"; }
+.listingblock:hover code.clojure:before { content: "clojure"; }
+.listingblock:hover code.css:before { content: "css"; }
+.listingblock:hover code.groovy:before { content: "groovy"; }
+.listingblock:hover code.html:before { content: "html"; }
+.listingblock:hover code.java:before { content: "java"; }
+.listingblock:hover code.javascript:before { content: "javascript"; }
+.listingblock:hover code.python:before { content: "python"; }
+.listingblock:hover code.ruby:before { content: "ruby"; }
+.listingblock:hover code.scss:before { content: "scss"; }
+.listingblock:hover code.xml:before { content: "xml"; }
+.listingblock:hover code.yaml:before { content: "yaml"; }
+
+/***********************************************************
+ * Quote block
+ */
+ 
+.quoteblock {
+  padding: (@line-height-computed / 2) @line-height-computed;
+  margin: 0 0 @line-height-computed;
+  font-size: (@font-size-base * 1.25);
+  border-left: @blockquote-border-width @blockquote-border-style @blockquote-border-color;
+	
+  blockquote {
+    padding: 0 0 @gap-narrow 0;
+    border: 0;
+	
+	& > .paragraph:not(:last-child) {
+      margin-bottom: (@line-height-computed / 2);
+    }
+  }
+  
+  .attribution {
+     .attribution-style;
+  };
+}
+
+/***********************************************************
+ * Verse block
+ */
+ 
+.verseblock {
+  padding: (@line-height-computed / 2) @line-height-computed;
+  margin: 0 0 @line-height-computed;
+  font-size: (@font-size-base * 1.25);
+  border-left: @blockquote-border-width @blockquote-border-style @blockquote-border-color;
+	
+  pre {
+    padding: 0 0 @gap-narrow 0;
+    border: 0;
+    color: @text-color;
+	background-color: @body-bg;
+	font-size: @font-size-base;
+	font-family: @font-family-base;
+	
+	& > .paragraph:not(:last-child) {
+      margin-bottom: (@line-height-computed / 2);
+    }
+  }
+  .attribution {
+     .attribution-style;
+  };
+}
+
+/***********************************************************
+ * Overrides for Pygments default styles
+ */
+table.pyhltable {
+  border: 0;
+  margin-bottom: 0;
+}
+
+table.pyhltable td {
+  vertical-align: top;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+table.pyhltable td.code {
+  padding-left: .75em;
+  padding-right: 0;
+}
+
+.highlight.pygments .lineno,
+table.pyhltable td:not(.code) {
+  color: @pre-color;
+  padding-left: 0;
+  padding-right: .5em;
+  border-right: 1px solid @blockquote-border-color;
+}
+
+.highlight.pygments .lineno {
+  display: inline-block;
+  margin-right: .25em;
+}
+
+table.pyhltable .linenodiv {
+  background-color: transparent !important;
+  padding-right: 0 !important;
+}
+
+
+/***********************************************************
+ * Tables
+ */
+
+table.tableblock {
+  .table-bordered;
+  margin-bottom: (@line-height-computed / 2);
+  
+  td .paragraph:last-child p,
+  th, td {
+    & > p:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+
+table.tableblock.grid-none {
+  & td, & th {
+     border: 0;
+  }
+}
+
+table.tableblock.grid-rows {
+   & td, & th {
+     border-left: 0;
+     border-right: 0;
+   }
+}
+
+table.tableblock.grid-cols {
+  & td, & th {
+     border-top: 0;
+     border-bottom: 0;
+   }
+}
+
+table.tableblock.frame-topbot,
+table.tableblock.frame-none {
+  border-left: 0;
+  border-right: 0;
+}
+
+table.tableblock.frame-sides,
+table.tableblock.frame-none {
+  border-top: 0;
+  border-bottom: 0;
+}
+
+th.tableblock.halign-left,
+td.tableblock.halign-left {
+   text-align: left;
+}
+  
+th.tableblock.halign-right,
+td.tableblock.halign-right {
+   text-align: right;
+}
+
+th.tableblock.halign-center,
+td.tableblock.halign-center {
+   text-align: center;
+}
+
+th.tableblock.valign-top,
+td.tableblock.valign-top {
+  vertical-align: top;
+}
+
+th.tableblock.valign-bottom,
+td.tableblock.valign-bottom {
+  vertical-align: bottom;
+}
+
+th.tableblock.valign-middle,
+td.tableblock.valign-middle {
+  vertical-align: middle;
+} 
+
+td > div.verse {
+  white-space: pre;
+}
+
+
+/***********************************************************
+ * AsciiDoc list styles
+ */
+
+dl dd {
+  margin-left: @definition-list-content-margin-left;
+}
+
+dl dd:last-child,
+dl dd:last-child > :last-child {
+  margin-bottom: 0;
+}
+
+ol > li p,
+ul > li p,
+ul dd,
+ol dd,
+.olist .olist,
+.ulist .ulist,
+.ulist .olist,
+.olist .ulist {
+  margin-bottom: (@line-height-computed / 2);
+}
+
+ul.unstyled,
+ol.unnumbered,
+ul.checklist,
+ul.none {
+  list-style-type: none;
+}
+
+ul.unstyled,
+ol.unnumbered,
+ul.checklist {
+  padding-left: 1.6em;
+}
+
+// give the checkbox some room
+ul.checklist li > p:first-child > fa-check-square-o:first-child,
+ul.checklist li > p:first-child > input[type="checkbox"]:first-child {
+  margin-right: 0.25em;
+}
+
+ul.checklist li > p:first-child > input[type="checkbox"]:first-child {
+  position: relative;
+  top: 1px;
+}
+
+ul.inline { 
+  margin: 0 auto 0.625em auto; 
+  margin-left: -1.375em; 
+  margin-right: 0; 
+  padding: 0; 
+  list-style: none; 
+  overflow: hidden; 
+}
+ul.inline > li { 
+  list-style: none; 
+  float: left; 
+  margin-left: 1.375em; 
+  display: block; 
+}
+ul.inline > li > * { 
+  display: block; 
+}
+
+// used when you need to style the term inline
+// or should we name it "natural"?
+.unstyled dl dt {
+  font-weight: normal;
+  font-style: normal;
+}
+
+.ordered-list-type(@class; @type) {
+  ol.@{class} {
+    list-style-type: @type;
+  }
+}
+
+.ordered-list-type(arabic, decimal);
+.ordered-list-type(decimal, decimal-leading-zero);
+.ordered-list-type(loweralpha, lower-alpha);
+.ordered-list-type(upperalpha, upper-alpha);
+.ordered-list-type(lowerroman, lower-roman);
+.ordered-list-type(upperroman, upper-roman);
+.ordered-list-type(lowergreek, lower-greek);
+//.ordered-list-type(armenian, armenian);
+//.ordered-list-type(georgian, georgian);
+
+.hdlist > table,
+.colist > table {
+  border: 0;
+  background: none;
+  & > tbody > tr {
+    background: none;
+  }
+}
+
+td.hdlist1 {
+  padding-right: .8em;
+  font-weight: bold;
+}
+
+td.hdlist1,
+td.hdlist2 {
+  vertical-align: top;
+}
+
+.colist > table {
+  tr > td:first-of-type {
+    padding: 0 .8em;
+    line-height: 1;
+  }
+
+  tr > td:last-of-type {
+    padding: 0.5em 0;
+  }
+}
+
+.qanda > ol > li > p > em:only-child {
+  color: darken(@brand-primary, 5%);
+}
+
+/***********************************************************
+ * Inline images
+ */
+
+.image {
+  &.left,
+  &.right {
+    margin-top: 0.4em;
+    margin-bottom: 0.4em;
+	
+    &.thumb {
+       margin-top: 0.4em;
+       margin-bottom: 0em;
+	}
+
+    display: inline-block;
+    line-height: 0;
+  }
+
+  &.left {
+    float: left;
+    margin-right: 0.8em;
+  }
+
+  &.right {
+    float: right;
+    margin-left: 0.8em;
+  }
+  
+  &.thumb img {
+    .thumbnail;
+    margin-bottom: @line-height-computed / 2;
+    text-decoration: none;
+  }
+}
+
+.thumb {
+  line-height: 0;
+  display: inline-block;
+}
+
+a.image img {
+  &:hover, &:focus, &:active {
+    border-color: @link-hover-color;
+  }
+}
+
+/***********************************************************
+ * Image block
+ */
+ 
+.imageblock {
+  &.left,
+  &[style*="float: left"] {
+    margin: 0.8em 0.8em (@line-height-computed / 2) 0;
+  }
+  &.right,
+  &[style*="float: right"] {
+    margin: 0.8em 0 (@line-height-computed / 2) 0.8em;
+  }
+
+  & > .title {
+    margin-bottom: 0;
+  }
+
+  &.thumb img {
+    .thumbnail;
+    margin-bottom: @line-height-computed;
+  }
+}
+
+/***********************************************************
+ * AsciiDoc footnote styles
+ */
+ 
+span.footnote,
+span.footnoteref {
+  vertical-align: super;
+  font-size: @font-size-small;
+  a {
+    text-decoration: none;
+  }
+}
+
+#footnotes {
+  padding-top: @gap-narrow;
+  padding-bottom: @gap-narrow;
+  margin-bottom: (@line-height-computed / 2);
+  hr {
+    width: 20%;
+    min-width: @gap-wide;
+    margin: -.25em 0 .75em 0;
+    border-width: 1px 0 0 0;
+  }
+  .footnote {
+    padding: 0 @gap-narrow;
+    line-height: 1.3;
+    font-size: @font-size-small;
+    margin-left: 1.2em;
+    text-indent: -1.2em;
+    margin-bottom: .2em;
+    a:first-of-type {
+      font-weight: bold;
+      text-decoration: none;
+    }
+  }
+
+  .footnote:last-of-type {
+    margin-bottom: 0;
+  }
+}
+
+// footnotes in embedded documents
+#content #footnotes {
+  margin-top: -(@line-height-computed / 2);
+  margin-bottom: 0;
+  padding: @gap-standard 0;
+}
+
+// for embedded gists
+.gist .file-data > table {
+  border: none;
+  background: #fff;
+  width: 100%;
+  margin-bottom: 0;
+  td.line-data {
+    width: 99%;
+  }
+}
+
+/***********************************************************
+ * AsciiDoc built-in roles
+ */
+
+div.unbreakable {
+  page-break-inside: avoid;
+}
+
+.big {
+   font-size: larger;
+}
+
+// Already defined by Bootstrap
+//.small {
+//  font-size: smaller;
+//}
+
+.underline {
+   text-decoration: underline;
+}
+
+.overline {
+   text-decoration: overline;
+}
+
+.line-through {
+   text-decoration: line-through;
+}
+
+.aqua { color: #00bfbf; }
+.aqua-background { background-color: #00fafa; }
+
+.black { color: black; }
+.black-background { background-color: black; }
+
+.blue { color: #0000bf; }
+.blue-background { background-color: #0000fa; }
+
+.fuchsia { color: #bf00bf; }
+.fuchsia-background { background-color: #fa00fa; }
+
+.gray { color: #606060; }
+.gray-background { background-color: #7d7d7d; }
+
+.green { color: #006000; }
+.green-background { background-color: #007d00; }
+
+.lime { color: #00bf00; }
+.lime-background { background-color: #00fa00; }
+
+.maroon { color: #600000; }
+.maroon-background { background-color: #7d0000; }
+
+.navy { color: #000060; }
+.navy-background { background-color: #00007d; }
+
+.olive { color: #606000; }
+.olive-background { background-color: #7d7d00; }
+
+.purple { color: #600060; }
+.purple-background { background-color: #7d007d; }
+
+.red { color: #bf0000; }
+.red-background { background-color: #fa0000; }
+
+.silver { color: #909090; }
+.silver-background { background-color: #bcbcbc; }
+
+.teal { color: #006060; }
+.teal-background { background-color: #007d7d; }
+
+.white { color: #bfbfbf; }
+.white-background { background-color: #fafafa; }
+
+.yellow { color: #bfbf00; }
+.yellow-background { background-color: #fafa00; }

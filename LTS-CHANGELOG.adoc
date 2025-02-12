@@ -17,6 +17,330 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.10.36]]
+== 1.10.36 (23.10.2024)
+
+icon:check[] Cache: Image cache has been refactored, utilizing now simpler structure with less folder depth.
+
+icon:check[] Core: A potential data loss on an edge case of node migration over several schema versions, including field name/type change, has been fixed.
+
+icon:check[] Documentation: A missing query parameters documentation for the `/search` and `/{{project}}/search` has been added.
+
+[[v1.10.35]]
+== 1.10.35 (27.09.2024)
+
+icon:check[] Core: A crash, caused by duplicated nodes in a GraphQL resulting set, has been fixed.
+
+[[v1.10.34]]
+== 1.10.34 (11.09.2024)
+
+icon:check[] Core: The Vert.x Handlebars engine dependency has been patched, to replace the vulnerable Apache `commons-text` dependency, targeting `CVE-2022-42889`.
+
+[[v1.10.33]]
+== 1.10.33 (28.08.2024)
+
+icon:check[] Core: A crash has been fixed on an attempt of (micro)node migration over non-adjacent (micro)schema versions.
+
+[[v1.10.32]]
+== 1.10.32 (07.08.2024)
+
+icon:check[] Documentation: The check/repair API calls are better documented in regards of an async processing. The logging documentation is extended with format examples.
+
+[[v1.10.31]]
+== 1.10.31 (26.06.2024)
+
+icon:check[] Elasticsearch: An Elasticsearch Java Client has been updated to the version 1.1.2, containing the corrections to the connection failure processing mechanism. The Elasticsearch activity idle checking has been improved to be more proof of the unstable connections.
+
+[[v1.10.30]]
+== 1.10.30 (13.05.2024)
+
+icon:check[] Core: Improvement of an error message of the webroot field URL conflict, now containing correct UUID, language and webroot URLS of a conflicting content.
+
+[[v1.10.29]]
+== 1.10.29 (06.03.2024)
+
+icon:check[] REST client: The configuration now allows adding default parameter provider for query parameters, that should be added to every request (unless overwritten).
+
+icon:check[] Tests: The tests API has been extended to allow tests which do not reset the database between test cases.
+
+[[v1.10.28]]
+== 1.10.28 (27.02.2024)
+
+icon:check[] GraphQL: In cases of long running GraphQL requests, some other GraphQL requests were queued and executed after the long running request, even if enough workers were still
+available. The behaviour has been changed, so that GraphQL requests will only be queued, if all workers are currently busy.
+
+icon:check[] Cache: The permission cache has been fixed to always return copies of the actually cached entries.
+
+[[v1.10.27]]
+== 1.10.27 (21.02.2024)
+
+icon:check[] A regression regarding OAuth user filtering has been fixed.
+
+icon:check[] Minor improvements in authentication-related utilities Java API, allowing more control over authentication URL management.
+
+icon:check[] Cache: A mechanism of reattaching the cached entity to the persistence context has been introduced, allowing implementations of smarter cache policies.
+
+icon:check[] Cache: Because of a flawed cache invalidation strategy, the project stayed on an old 'latest' branch, even if a new one has been assigned, until the caches are invalidated, or a restart is triggered. This has been fixed.
+
+icon:check[] Core: Creating a translation for the root node of a project always failed with a "Bad Request" error, which has been fixed.
+
+icon:check[] Elasticsearch: A full access to the data backed by ES has been given to the admin users.
+
+[[v1.10.26]]
+== 1.10.26 (07.02.2024)
+
+icon:check[] REST client: Improves error handling for WebSocket errors.
+
+icon:check[] GraphQL: When an inexisting language has been requested for a node, the schema info was not loaded as well. This has been fixed.
+
+icon:check[] Elasticsearch: A possibility of DDoSing the ES with a bulk request of too many items has been eliminated.
+
+icon:check[] Auth: Synchronization of users, groups and roles from AuthServicePlugin implementations (like the keycloak plugin) has been improved for performance and stability.
+
+icon:check[] REST: The endpoints for invoking a consistency check/repair now have a new query parameter `async` which allows to perform the action as a background job instead of synchronously.
+
+icon:check[] Core: Updating and publishing a node in a single request has been optimized to only create a single new version of the content.
+
+[[v1.10.25]]
+== 1.10.25 (17.01.2024)
+
+icon:check[] GraphQL: Fetching of micronode fields has been improved to allow batch loading.
+
+[[v1.10.24]]
+== 1.10.24 (10.01.2024)
+
+icon:check[] REST: The documentation of the generic parameter `fields` has been fixed. Now `fields` works over the Language entities as well, the values are `uuid`,`name`,`languageTag`,`nativeName`.
+
+icon:check[] GraphQL: Some of (micro)schema fields related queries rely on the target (micro)schema having at least one field, crashing in HTTP 500 otherwise. This has now been fixed.
+
+[[v1.10.23]]
+== 1.10.23 (20.12.2023)
+
+icon:check[] Core: Unnecessary uniqueness checks for segment fields will now be avoided, when updating nodes.
+
+icon:check[] Auth: The unnecessary logging of outdated/mismatched auth token has been removed.
+
+icon:check[] GraphQL: The overall performance of GraphQL requests has been improved by caching the GraphQL schemas.
+
+icon:check[] Core: Now it is not allowed to set a new password to an empty or invalid (e.g. spaces) string.
+
+[[v1.10.22]]
+== 1.10.22 (06.12.2023)
+
+icon:check[] Core: Improve the internal Java API for granting and revoking permissions.
+
+[[v1.10.21]]
+== 1.10.21 (29.11.2023)
+
+icon:check[] Core: A regression of creation of the named entities has been fixed.
+
+icon:check[] Core: Improve the internal Java API of the list field creation, targeting better batch performance.
+
+[[v1.10.20]]
+== 1.10.20 (17.11.2023)
+
+icon:check[] Core: Now caches treat NULL as a valid value, instead of a constant miss.
+
+icon:check[] Core: The cache internal Java API has been presented a new constructor, allowing using the weight instead of entity number for the cache size calculations, as well as some new statistics getters.
+
+icon:check[] Tests: Added set of tests of uniqueness of the named entities on a database level.
+
+icon:check[] GraphQL: `referencedBy` field fetcher has been refactored for more optimal batch loading.
+
+[[v1.10.19]]
+== 1.10.19 (02.11.2023)
+
+icon:check[] GraphQL: Performance optimizations of the Elasticsearch-based requests.
+
+== 1.10.18 (24.10.2023)
+
+icon:check[] Core: Requests to branches failed with an internal error, if monitoring was disabled. This has been fixed.
+
+icon:check[] Core: The new configuration option `vertxOptions.orderedBlockingHandlers` allows to change the behaviour of concurrent handling of "long running" requests
+(requests that modify data or GraphQL requests). If the option is set to `true` (default value) such requests will be run in order (per http verticle) and never concurrently.
+As a consequence, it may happen that e.g. GraphQL requests are queued for some time if some other requests are currently handled.
+If the option is set to `false`, blocking requests will only be queued, if all threads of the worker pool are currently busy.
+
+[[v1.10.17]]
+== 1.10.17 (18.10.2023)
+
+icon:check[] GraphQL: Parent loading has been speeded up by using a batch data loading.
+
+icon:check[] Search: Minor logging changes in the search engine, making it less annoying.
+
+[[v1.10.16]]
+== 1.10.16 (04.10.2023)
+
+icon:check[] Core: More NPE occurrences during the massive concurrent publishing process have been fixes.
+
+[[v1.10.15]]
+== 1.10.15 (20.09.2023)
+
+icon:check[] Core: When running in the massive concurrent publishing process, it is possible to run into a race condition when some field containers are already processed while being referenced by the edge,
+throwing an NPE. This has now been fixed.
+
+[[v1.10.14]]
+== 1.10.14 (04.09.2023)
+
+icon:check[] Clustering: Calling cluster specific REST Endpoints on non-clustered instances could cause internal server errors. The behaviour has been changed so that
+a "Bad Request" error is returned containing a proper error message.
+
+icon:check[] Java Rest Client: After logging in with the `login()` method, the login token was never refreshed, which caused it to expire after the configured token expiration time (per default 1 hour),
+even if the client was used to do requests. This has been changed now, so that the login token in the client will be refreshed on every request to mesh.
+
+icon:check[] GraphQL: The metadata request does not crash anymore on the empty (micro)schemas. The new related filter, `isEmpty`, has been added as well.
+
+icon:check[] GraphQL: Link resolving in graphql queries ignored the language tags in the links. This has been fixed.
+
+[[v1.10.13]]
+== 1.10.13 (10.08.2023)
+
+icon:check[] Core: All named instances have been presented an own cache.
+
+icon:check[] Plugins: Logging fixed upon false triggering of a warning of inexisting role/group connection.
+
+[[v1.10.12]]
+== 1.10.12 (26.07.2023)
+
+icon:check[] Core: Uniqueness checks for webroot url field values will now only be done, if those values actually change. This will improve performance of e.g. schema migrations, where the webroot url field values are likely to not change.
+
+icon:check[] Core: An internal API for efficient loading of list field values has been added.
+
+[[v1.10.11]]
+== 1.10.11 (12.07.2023)
+
+icon:check[] Clustering: Due to an incorrect check, it was possible that migration jobs could complete without actually migrating anything, when run in a clustered environment with disabled coordination mode.
+
+[[v1.9.16]]
+== 1.9.16 (22.05.2023)
+
+icon:check[] GraphQL: Link resolving in graphql queries could cause an internal error (due to a DuplicateKeyException), which has been fixed now.
+
+[[v1.9.15]]
+== 1.9.15 (10.05.2023)
+
+icon:check[] GraphQL: Performance of queries that return large amounts of nodes with link resolving in fields or getting node fields has been improved.
+
+[[v1.9.14]]
+== 1.9.14 (19.04.2023)
+
+icon:check[] Core: The name of a Mesh user is now forced to be unique on a database level, to prevent creating users with an already existing username. The duplicated username detection mechanism has also been improved.
+
+CAUTION: Duplicate usernames must be removed before the update, otherwise Mesh will fail to start!
+
+icon:check[] Monitoring: Calling the `/health/ready` endpoint while restoring an OrientDB backup would block the request. If too many requests were blocked in this way, Mesh would
+be considered not live any more. This has been fixed now, during a restore, the endpoint `/health/ready` will now fail immediately while the liveness status will be maintained.
+
+icon:check[] Monitoring: Failing calls to any `/health/...` endpoints will no longer log the whole stacktrace, since this does not contain useful information.
+
+icon:check[] Core: Migration jobs have been made more robust: Migration jobs will now be aborted, in cases were the storage is no longer ready to be written to
+(e.g. write quorum is not reached, or the storage is read-only due to insufficient disk space available). A periodic check (interval can be configured via setting `migrationTriggerInterval`)
+will continue processing of aborted jobs.
+
+icon:check[] Clustering: when running in CUD coordination mode, the requests to trigger job migration were not delegated to the current master. This has been fixed now.
+
+[[v1.9.13]]
+== 1.9.13 (22.03.2023)
+
+icon:check[] Core: If a node has more that one INITIAL content for a language in a branch, this can now be repaired with the consistency repair tool.
+
+[[v1.9.12]]
+== 1.9.12 (08.03.2023)
+
+icon:plus[] Docker: Additional command line tools have been added to the Mesh Docker image: `rsync`, `curl`, `iputils`, `busybox-extras`, `tar`, `nano`.
+
+[[v1.9.11]]
+== 1.9.11 (22.02.2023)
+
+icon:check[] Search: The search endpoints (like e.g. `/api/v1/search/nodes`) were incorrectly treated as not "read-only", which caused them to fail during a cluster topology change,
+if the setting `cluster.topologyChangeReadOnly` was set to `true`. This has been changed now, the real search endpoints are read-only now. It is important to note, that this does still
+not apply to the index maintenance endpoints `/api/v1/search/sync`, `/api/v1/search/clear` and `/api/v1/search/status`.
+
+[[v1.9.10]]
+== 1.9.10 (26.01.2023)
+
+icon:check[] GraphQL: In rare cases, GraphQL statements could "hang" forever, which caused the corresponding worker thread to be blocked forever.
+This has been fixed now by introducing a configurable timeout.
+
+icon:check[] GraphQL: The graphql library has been updated to version 20.0.
+
+icon:check[] Core: The node migration process has been improved to reduce resources footprint on large workloads, by chunking the data. An additional configuration item `content.batchSize` has been added.
+
+icon:check[] Core: Corner case of updating the webroot info might throw a false conflict exception, when the segment field value is reset for a schema. This has been fixed.
+
+[[v1.8.21]]
+== 1.8.21 (19.04.2023)
+
+icon:check[] Core: The name of a Mesh user is now forced to be unique on a database level, to prevent creating users with an already existing username. The duplicated username detection mechanism has also been improved.
+
+CAUTION: Duplicate usernames must be removed before the update, otherwise Mesh will fail to start!
+
+icon:check[] Monitoring: Calling the `/health/ready` endpoint while restoring an OrientDB backup would block the request. If too many requests were blocked in this way, Mesh would
+be considered not live any more. This has been fixed now, during a restore, the endpoint `/health/ready` will now fail immediately while the liveness status will be maintained.
+
+icon:check[] Monitoring: Failing calls to any `/health/...` endpoints will no longer log the whole stacktrace, since this does not contain useful information.
+
+icon:check[] Core: Migration jobs have been made more robust: Migration jobs will now be aborted, in cases were the storage is no longer ready to be written to
+(e.g. write quorum is not reached, or the storage is read-only due to insufficient disk space available). A periodic check (interval can be configured via setting `migrationTriggerInterval`)
+will continue processing of aborted jobs.
+
+icon:check[] Clustering: when running in CUD coordination mode, the requests to trigger job migration were not delegated to the current master. This has been fixed now.
+
+[[v1.8.20]]
+== 1.8.20 (22.03.2023)
+
+icon:check[] Core: If a node has more that one INITIAL content for a language in a branch, this can now be repaired with the consistency repair tool.
+
+[[v1.8.19]]
+== 1.8.19 (08.03.2023)
+
+icon:plus[] Docker: Additional command line tools have been added to the Mesh Docker image: `rsync`, `curl`, `iputils`, `busybox-extras`, `tar`, `nano`.
+
+[[v1.8.18]]
+== 1.8.18 (22.02.2023)
+
+icon:check[] Search: The search endpoints (like e.g. `/api/v1/search/nodes`) were incorrectly treated as not "read-only", which caused them to fail during a cluster topology change,
+if the setting `cluster.topologyChangeReadOnly` was set to `true`. This has been changed now, the real search endpoints are read-only now. It is important to note, that this does still
+not apply to the index maintenance endpoints `/api/v1/search/sync`, `/api/v1/search/clear` and `/api/v1/search/status`.
+
+[[v1.8.17]]
+== 1.8.17 (26.01.2023)
+
+icon:check[] GraphQL: In rare cases, GraphQL statements could "hang" forever, which caused the corresponding worker thread to be blocked forever.
+This has been fixed now by introducing a configurable timeout.
+
+icon:check[] GraphQL: The graphql library has been updated to version 20.0.
+
+icon:check[] Core: The node migration process has been improved to reduce resources footprint on large workloads, by chunking the data. An additional configuration item `content.batchSize` has been added.
+
+icon:check[] Core: Corner case of updating the webroot info might throw a false conflict exception, when the segment field value is reset for a schema. This has been fixed.
+
+[[v1.8.16]]
+== 1.8.16 (15.12.2022)
+
+icon:check[] Clustering: Liveness check now marks an instance as dead, if the event bus did not get its own cluster instance ping within the timeout period, even if the non-cluster ping comes in time.
+
+icon:check[] Search: When using language specific index settings, nodes were incorrectly indexed in the language unspecific index when they were moved or tagged causing the node to be present in both the language specific and language unspecific index. This has been fixed.
+
+[[v1.8.15]]
+== 1.8.15 (01.12.2022)
+
+icon:check[] Core: Having a binary non-segment field update might break the uniqueness of the segment field value, allowing creation of multiple nodes with the same segment/webroot value. This has now been fixed.
+
+[[v1.8.14]]
+== 1.8.14 (22.11.2022)
+
+icon:check[] Logging: Remove superfluous error messages for HTTP status 4xx errors. These are logged by the logger handler as warnings.
+
+[[v1.8.13]]
+== 1.8.13 (17.11.2022)
+
+icon:check[] Docker-Image: The base images have been updated to a newer JDK minor version (`11.0.16`).
+
+icon:check[] Core: On Elasticsearch index resync the indices for additional languages were deleted, ignoring the actual ES language schema setup. This has been fixed.
+
+icon:check[] Core: The included Mesh UI has been updated to version `1.3.6`.
+
 [[v1.8.12]]
 == 1.8.12 (24.10.2022)
 
@@ -83,6 +407,39 @@ icon:check[] Core: Schema field names are now checked for uniqueness regardless 
 enforced in the UI, and is now enforced in the REST API. The check is not performed for existing schemas.
 
 icon:check[] Core: When a project was deleted, its associated version purge jobs were not. This has been fixed.
+
+[[v1.6.41]]
+== 1.6.41 (26.01.2023)
+
+icon:check[] Core: The node migration process has been improved to reduce resources footprint on large workloads, by chunking the data. An additional configuration item `content.batchSize` has been added.
+
+icon:check[] Core: Updating the webroot info might throw a false conflict exception, when the segment field value is reset for a schema. This has been fixed.
+
+[[v1.6.40]]
+== 1.6.40 (15.12.2022)
+
+icon:check[] Clustering: Liveness check now marks an instance as dead, if the event bus did not get its own cluster instance ping within the timeout period, even if the non-cluster ping comes in time.
+
+icon:check[] Search: When using language specific index settings, nodes were incorrectly indexed in the language unspecific index when they were moved or tagged causing the node to be present in both the language specific and language unspecific index. This has been fixed.
+
+icon:check[] Core: When using segment fields, creating a node in a new branch would always fail with a 409 conflict error due to some incorrect uniqueness check for the segment field value. This bug was introduced in version 1.6.39 and has been fixed now.
+
+[[v1.6.39]]
+== 1.6.39 (01.12.2022)
+
+icon:check[] Core: Having a binary non-segment field update might break the uniqueness of the segment field value, allowing creation of multiple nodes with the same segment/webroot value. This has now been fixed.
+
+[[v1.6.38]]
+== 1.6.38 (22.11.2022)
+
+icon:check[] Logging: Remove superfluous error messages for HTTP status 4xx errors. These are logged by the logger handler as warnings.
+
+[[v1.6.37]]
+== 1.6.37 (17.11.2022)
+
+icon:check[] Docker-Image: The base images have been updated to a newer JDK minor version (`11.0.16`).
+
+icon:check[] Core: The included Mesh UI has been updated to version `1.3.6`.
 
 [[v1.6.36]]
 == 1.6.36 (24.10.2022)
@@ -639,7 +996,7 @@ icon:plus[] GraphQL: Queries, that take longer than the configured threshold wil
 
 icon:check[] Jobs: A race condition within the job processing mechanism has been fixed. In some cases newly created jobs would not be automatically invoked. This has been fixed now.
 
-[[v1.4.17]] 
+[[v1.4.17]]
 == 1.4.17 (27.10.2020)
 
 icon:check[] OrientDB: The included OrientDB version has been updated to version `3.1.4`.

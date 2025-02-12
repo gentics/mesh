@@ -14,6 +14,7 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.dagger.BaseMeshComponent;
+import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.router.route.SecurityLoggingHandler;
@@ -63,7 +64,7 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	public LocalActionContextImpl(BootstrapInitializer boot, MeshAuthUser user, Class<? extends T> classOfResponse,
 		ParameterProvider... requestParameters) {
 		this.boot = boot;
-		this.query = getQuery(requestParameters);
+		this.query = getQuery(null, requestParameters);
 		this.user = user;
 		this.classOfResponse = classOfResponse;
 		data.put(SecurityLoggingHandler.SECURITY_LOGGER_CONTEXT_KEY, securityLogger);
@@ -74,6 +75,11 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 				parameters.add(entry.getKey(), entry.getValue());
 			}
 		}
+	}
+
+	@Override
+	protected HttpServerConfig getHttpServerConfig() {
+		return boot.mesh().getOptions().getHttpServerOptions();
 	}
 
 	@Override
@@ -98,7 +104,7 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 
 	@Override
 	public String getBodyAsString() {
-		return payloadObject.toJson();
+		return payloadObject != null ? payloadObject.toJson(boot.mesh().getOptions().getHttpServerOptions().isMinifyJson()) : null;
 	}
 
 	@Override
@@ -258,5 +264,10 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	@Override
 	public int getApiVersion() {
 		return MeshVersion.CURRENT_API_VERSION;
+	}
+
+	@Override
+	public void setHttpServerConfig(HttpServerConfig config) {
+		// No-op
 	}
 }

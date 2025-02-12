@@ -1,0 +1,1 @@
+Core: A crash has been fixed on an attempt of (micro)node migration over non-adjacent (micro)schema versions.

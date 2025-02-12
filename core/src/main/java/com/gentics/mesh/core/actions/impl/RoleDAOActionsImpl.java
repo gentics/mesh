@@ -5,6 +5,7 @@ import java.util.function.Predicate;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.DAOActionContext;
@@ -90,4 +91,8 @@ public class RoleDAOActionsImpl implements RoleDAOActions {
 		return role.getETag(ac);
 	}
 
+	@Override
+	public Page<? extends HibRole> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, FilterOperation<?> extraFilter) {
+		return ctx.tx().roleDao().findAll(ctx.ac(), pagingInfo, extraFilter);
+	}
 }

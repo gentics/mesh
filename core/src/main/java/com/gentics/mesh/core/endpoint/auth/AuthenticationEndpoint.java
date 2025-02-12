@@ -7,8 +7,11 @@ import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.auth.MeshAuthChainImpl;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.auth.MeshBasicAuthLoginHandler;
+import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
@@ -22,14 +25,14 @@ public class AuthenticationEndpoint extends AbstractInternalEndpoint {
 	private MeshBasicAuthLoginHandler basicAuthLoginHandler;
 
 	@Inject
-	public AuthenticationEndpoint(MeshAuthChainImpl chain, AuthenticationRestHandler authRestHandler, MeshBasicAuthLoginHandler basicAuthHandler) {
-		super("auth", chain);
+	public AuthenticationEndpoint(MeshAuthChain chain, AuthenticationRestHandler authRestHandler, MeshBasicAuthLoginHandler basicAuthHandler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+		super("auth", chain, localConfigApi, db, options);
 		this.authRestHandler = authRestHandler;
 		this.basicAuthLoginHandler = basicAuthHandler;
 	}
 
 	public AuthenticationEndpoint() {
-		super("auth", null);
+		super("auth", null, null, null, null);
 	}
 
 	@Override
@@ -58,8 +61,9 @@ public class AuthenticationEndpoint extends AbstractInternalEndpoint {
 		InternalEndpointRoute basicAuthLoginEndpoint = createRoute();
 		basicAuthLoginEndpoint.path("/login");
 		basicAuthLoginEndpoint.method(GET);
-		// basicAuthLoginEndpoint.produces(APPLICATION_JSON);
-		basicAuthLoginEndpoint.description("Login via basic authentication.");
+		basicAuthLoginEndpoint.produces(APPLICATION_JSON);
+		basicAuthLoginEndpoint.exampleResponse(OK, miscExamples.getAuthTokenResponse(), "Generated login token.");
+		basicAuthLoginEndpoint.description("Login via basic or bearer authentication.");
 		basicAuthLoginEndpoint.exampleResponse(OK, "Login was sucessful");
 		basicAuthLoginEndpoint.handler(basicAuthLoginHandler);
 

@@ -1,0 +1,35 @@
+{
+  "create" : [ {
+    "name" : "editor",
+    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+  } ],
+  "read" : [ {
+    "name" : "translator",
+    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  }, {
+    "name" : "editor",
+    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+  } ],
+  "update" : [ {
+    "name" : "translator",
+    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  }, {
+    "name" : "editor",
+    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+  } ],
+  "delete" : [ {
+    "name" : "editor",
+    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+  } ],
+  "publish" : [ {
+    "name" : "editor",
+    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+  } ],
+  "readPublished" : [ {
+    "name" : "translator",
+    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  }, {
+    "name" : "editor",
+    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+  } ]
+}

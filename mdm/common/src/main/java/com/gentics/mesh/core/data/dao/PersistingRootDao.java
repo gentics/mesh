@@ -1,10 +1,17 @@
 package com.gentics.mesh.core.data.dao;
 
+import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.parameter.SortingParameters;
 
 /**
  * A sister interface to {@link PersistingDao}, applicable to the entities,
@@ -31,9 +38,10 @@ public interface PersistingRootDao<R extends HibCoreElement<? extends RestModel>
 	 * 
 	 * @param root
 	 * @param uuid if null, the generated UUID will be attached to the created element.
+	 * @param inflater the instance inflater
 	 * @return
 	 */
-	L createPersisted(R root, String uuid);
+	L createPersisted(R root, String uuid, Consumer<L> inflater);
 
 	/**
 	 * Merge the entity data into its persistent state.
@@ -60,5 +68,57 @@ public interface PersistingRootDao<R extends HibCoreElement<? extends RestModel>
 	@Override
 	default BiFunction<R, String, L> getFinder() {
 		return this::findByUuid;
+	}
+
+	/**
+	 * Check if the sort params request sorting. Used for choosing of picking the sort-enabled or unsorted (performant) data fetcher.
+	 * 
+	 * @param sortBy
+	 * @param sortOrder
+	 * @return
+	 */
+	static boolean shouldSort(String sortBy, SortOrder sortOrder) {
+		return StringUtils.isNotBlank(sortBy) && sortOrder != null && sortOrder != SortOrder.UNSORTED;
+	}
+
+	/**
+	 * Check if the sort params map request sorting. Used for choosing of picking the sort-enabled or unsorted (performant) data fetcher.
+	 * 
+	 * @param sorting
+	 * @return
+	 */
+	static boolean shouldSort(Map<String, SortOrder> sorting) {
+		return (sorting == null || sorting.size() < 1) ? false : sorting.entrySet().stream().allMatch(e -> shouldSort(e.getKey(), e.getValue()));
+	}
+
+	/**
+	 * Check if the REST API sort params request sorting. Used for choosing of picking the sort-enabled or unsorted (performant) data fetcher.
+	 * 
+	 * @param sorting
+	 * @return
+	 */
+	static boolean shouldSort(SortingParameters sorting) {
+		return sorting == null ? false : shouldSort(sorting.getSort());
+	}
+
+	/**
+	 * Check if REST API paging params actually request pagination.
+	 * 
+	 * @param paging
+	 * @return
+	 */
+	static boolean shouldPage(PagingParameters paging) {
+		return paging == null ? false : shouldPage(paging.getPerPage(), paging.getPage());
+	}
+
+	/**
+	 * Check if paging params actually request pagination.
+	 * 
+	 * @param perPage
+	 * @param page
+	 * @return
+	 */
+	static boolean shouldPage(Long perPage, int page) {
+		return perPage != null && perPage > 0 && page > 0;
 	}
 }

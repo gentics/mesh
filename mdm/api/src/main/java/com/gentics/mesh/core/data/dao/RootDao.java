@@ -4,9 +4,14 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
+import java.util.Collection;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.tuple.Pair;
+
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
@@ -19,9 +24,6 @@ import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
 /**
  * A DAO for the entities, that has an one-to-many connection to other entities,
  * i.e. root-leaves dependencies. This DAO allows operation on leaf entities, when a root entity is given. 
@@ -33,8 +35,6 @@ import io.vertx.core.logging.LoggerFactory;
  */
 public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extends HibCoreElement<? extends RestModel>> extends Dao<L> {
 
-	public static final Logger log = LoggerFactory.getLogger(RootDao.class);
-
 	/**
 	 * Return a of all elements. Only use this method if you know that the root->leaf relation only yields a specific kind of item.
 	 * 
@@ -43,15 +43,30 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	Result<? extends L> findAll(R root);
 
 	/**
-	 * Return an iterator of all elements. Only use this method if you know that the root->leaf relation only yields a specific kind of item. This also checks
-	 * permissions.
+	 * Return an iterator of all elements, considering the sorting parameters. Only use this method if you know that the root->leaf relation only yields a specific kind of item. This also checks
+	 * permissions. Paging/sorting data may also be applied.
 	 *
 	 * @param ac
 	 *            The context of the request
+	 * @param paging
+	 *            Paging information object that contains page / sort options
 	 * @param permission
 	 *            Needed permission
 	 */
-	Stream<? extends L> findAllStream(R root, InternalActionContext ac, InternalPermission permission);
+	Stream<? extends L> findAllStream(R root, InternalActionContext ac, InternalPermission permission, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter);
+
+	/**
+	 * Count all sorted/filtered elements natively. Only use this method if you know that the root->leaf relation only yields a specific kind of item. This also checks
+	 * permissions.
+	 * 
+	 * @param root
+	 * @param ac
+	 * @param readPerm
+	 * @param pagingInfo
+	 * @param maybeFilter
+	 * @return
+	 */
+	long countAll(R root, InternalActionContext ac, InternalPermission permission, PagingParameters pagingInfo, Optional<FilterOperation<?>> maybeFilter);
 
 	/**
 	 * Find the visible elements and return a paged result.
@@ -132,6 +147,17 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	 * @return Found element or null if the element could not be located
 	 */
 	L findByUuid(R root, String uuid);
+
+	/**
+	 * Stream the elements with the given uuids.
+	 * 
+	 * @param uuids
+	 *            Uuids of the elements to be located
+	 * @return a pair of uuid and the corresponding element or null value if the element could not be located
+	 */
+	default Stream<Pair<String, L>> findByUuids(R root, Collection<String> uuids) {
+		return uuids.stream().map(uuid -> Pair.of(uuid, findByUuid(root, uuid)));
+	}
 
 	/**
 	 * Load the object by uuid and check the given permission.
@@ -278,5 +304,16 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	 */
 	default boolean contains(R root, L element) {
 		return findByUuid(root, element.getUuid()) != null;
+	}
+
+	/**
+	 * Construct the cache key for a root entity. 
+	 * 
+	 * @param root
+	 * @param nameOrUuid
+	 * @return
+	 */
+	default String getCacheKey(R root, String nameOrUuid) {
+		return root.getId() + "-" + nameOrUuid;
 	}
 }

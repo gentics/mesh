@@ -12,9 +12,12 @@ import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.auth.MeshAuthChainImpl;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 
@@ -26,12 +29,12 @@ public class ProjectMicroschemaEndpoint extends AbstractProjectEndpoint {
 	private MicroschemaCrudHandler crudHandler;
 
 	public ProjectMicroschemaEndpoint() {
-		super("microschemas", null, null);
+		super("microschemas", null, null, null, null, null);
 	}
 
 	@Inject
-	public ProjectMicroschemaEndpoint(MeshAuthChainImpl chain, BootstrapInitializer boot, MicroschemaCrudHandler crudHandler) {
-		super("microschemas", chain, boot);
+	public ProjectMicroschemaEndpoint(MeshAuthChain chain, BootstrapInitializer boot, MicroschemaCrudHandler crudHandler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+		super("microschemas", chain, boot, localConfigApi, db, options);
 		this.crudHandler = crudHandler;
 	}
 

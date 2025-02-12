@@ -1,5 +1,8 @@
 package com.gentics.mesh.rest.client.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.rest.client.EventbusEvent;
 import com.gentics.mesh.rest.client.MeshRestClientConfig;
 import com.gentics.mesh.rest.client.MeshWebsocket;
@@ -9,8 +12,8 @@ import io.reactivex.Observable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -20,8 +23,10 @@ import okio.ByteString;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -30,7 +35,7 @@ import java.util.stream.Stream;
 import static com.gentics.mesh.rest.client.impl.Util.eventbusMessage;
 
 /**
- * Websocket client implementation for {@link OkHttpClient}. 
+ * Websocket client implementation for {@link OkHttpClient}.
  */
 public class OkHttpWebsocket implements MeshWebsocket {
 
@@ -59,6 +64,36 @@ public class OkHttpWebsocket implements MeshWebsocket {
 		errors.subscribe(err -> log.error("Error in Websocket", err));
 	}
 
+	/**
+	 * Create an {@link EventbusEvent} from the given WebSocket message text.
+	 *
+	 * @param text The WebSocket message.
+	 * @return An {@code Optional} with the created {@code EventbusEvent} if
+	 * 		successful or an empty {@code Optional} when {@code text} does not
+	 * 		contain the expected fields.
+	 * @throws IOException
+	 */
+	private Optional<EventbusEvent> createEvent(String text) throws IOException {
+		ObjectNode parsed = (ObjectNode) JsonUtil.getMapper().readTree(text);
+		JsonNode type = parsed.get("type");
+
+		if (type != null && type.isTextual() && "err".equals(type.asText())) {
+			log.warn("WebSocket error: {}", parsed.get("body"));
+
+			return Optional.empty();
+		}
+
+		JsonNode address = parsed.get("address");
+
+		if (address == null || !address.isTextual()) {
+			log.warn("Unexpected WebSocket message: {}", text);
+
+			return Optional.empty();
+		}
+
+		return Optional.of(new EventbusEvent(parsed));
+	}
+
 	private void connect() {
 		Request request = new Request.Builder()
 			.url(config.getBaseUrl() + "/eventbus/websocket")
@@ -74,7 +109,7 @@ public class OkHttpWebsocket implements MeshWebsocket {
 			@Override
 			public void onOpen(WebSocket webSocket, Response response) {
 				connected.set(true);
-				sendRegisterEvents();
+				sendRegisterEvents(registeredEventAddresses);
 				log.debug("Connection established, sending connection event");
 				connections.onNext(connectionDummy);
 			}
@@ -82,9 +117,8 @@ public class OkHttpWebsocket implements MeshWebsocket {
 			@Override
 			public void onMessage(WebSocket webSocket, String text) {
 				log.trace("Received message: {}", text);
-
 				try {
-					events.onNext(new EventbusEvent(text));
+					createEvent(text).ifPresent(events::onNext);
 				} catch (IOException e) {
 					errors.onNext(new Exception("Could not parse message from mesh", e));
 				}
@@ -149,8 +183,9 @@ public class OkHttpWebsocket implements MeshWebsocket {
 
 	@Override
 	public void registerEvents(String... eventNames) {
-		registeredEventAddresses.addAll(Arrays.asList(eventNames));
-		sendRegisterEvents();
+		Set<String> newAddresses = addEventAddresses(eventNames);
+
+		sendRegisterEvents(newAddresses);
 	}
 
 	@Override
@@ -158,8 +193,26 @@ public class OkHttpWebsocket implements MeshWebsocket {
 		Stream.of(eventNames).forEach(registeredEventAddresses::remove);
 	}
 
-	private void sendRegisterEvents() {
-		registeredEventAddresses.forEach(address -> send(eventbusMessage(EventbusMessageType.REGISTER, address)));
+	/**
+	 * Adds all given event addresses to {@link #registeredEventAddresses} and
+	 * returns a {@code Set} containing only new addresses.
+	 *
+	 * @param eventAddresses The event addresses to add.
+	 * @return A {@code Set} containing all input addresses that were not
+	 * 		already registered.
+	 */
+	private synchronized Set<String> addEventAddresses(String[] eventAddresses) {
+		Set<String> newEventAddresses = new HashSet<>(eventAddresses.length);
+
+		Collections.addAll(newEventAddresses, eventAddresses);
+		newEventAddresses.removeAll(registeredEventAddresses);
+		registeredEventAddresses.addAll(newEventAddresses);
+
+		return newEventAddresses;
+	}
+
+	private void sendRegisterEvents(Collection<String> eventAddresses) {
+		eventAddresses.forEach(address -> send(eventbusMessage(EventbusMessageType.REGISTER, address)));
 	}
 
 	private void send(String text) {

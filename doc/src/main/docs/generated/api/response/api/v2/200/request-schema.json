@@ -33,6 +33,10 @@
     "databaseRevision" : {
       "type" : "string",
       "description" : "Database structure revision hash."
+    },
+    "meshRevision" : {
+      "type" : "string",
+      "description" : "Mesh revision name."
     }
   }
 }

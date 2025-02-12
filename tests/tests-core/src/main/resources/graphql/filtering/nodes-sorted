@@ -1,0 +1,23 @@
+{
+	nodes(filter: {
+	    schema: {is: folder} fields: {folder: {name: {isNull: false}}}
+	  } sort: {fields: {folder: {name:DESCENDING}}} ) {
+	    # [$.data.nodes.elements.length()=6]
+	    elements {
+	      uuid
+	      edited
+	      ... on folder {
+	        fields {
+			  # [$.data.nodes.elements[0].fields.name=Products]
+			  # [$.data.nodes.elements[1].fields.name=News]
+			  # [$.data.nodes.elements[2].fields.name=March]
+			  # [$.data.nodes.elements[3].fields.name=Deals]
+			  # [$.data.nodes.elements[4].fields.name=2015]
+			  # [$.data.nodes.elements[5].fields.name=2014]
+			  name
+	        }
+	      }
+	    }
+	}
+}
+# [$.errors=<is-undefined>]

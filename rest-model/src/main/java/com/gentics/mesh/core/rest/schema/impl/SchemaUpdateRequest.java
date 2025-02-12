@@ -56,6 +56,10 @@ public class SchemaUpdateRequest implements SchemaVersionModel {
 	@JsonPropertyDescription("Auto purge flag of the schema. Controls whether contents of this schema should create new versions.")
 	private Boolean autoPurge;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("'Exclude from indexing' schema flag.")
+	private Boolean noIndex;
+
 	@Override
 	public String getName() {
 		return name;
@@ -64,6 +68,17 @@ public class SchemaUpdateRequest implements SchemaVersionModel {
 	@Override
 	public SchemaUpdateRequest setName(String name) {
 		this.name = name;
+		return this;
+	}
+
+	@Override
+	public Boolean getNoIndex() {
+		return noIndex;
+	}
+
+	@Override
+	public SchemaUpdateRequest setNoIndex(Boolean noIndex) {
+		this.noIndex = noIndex;
 		return this;
 	}
 

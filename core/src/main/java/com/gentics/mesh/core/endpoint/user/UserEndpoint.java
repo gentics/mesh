@@ -14,9 +14,12 @@ import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.auth.MeshAuthChainImpl;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.RolePermissionHandlingEndpoint;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -37,12 +40,12 @@ public class UserEndpoint extends RolePermissionHandlingEndpoint {
 	private UserTokenAuthHandler userTokenHandler;
 
 	public UserEndpoint() {
-		super("users", null);
+		super("users", null, null, null, null);
 	}
 
 	@Inject
-	public UserEndpoint(MeshAuthChainImpl chain, UserCrudHandler userCrudHandler, UserTokenAuthHandler userTokenHandler) {
-		super("users", chain);
+	public UserEndpoint(MeshAuthChain chain, UserCrudHandler userCrudHandler, UserTokenAuthHandler userTokenHandler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+		super("users", chain, localConfigApi, db, options);
 		this.crudHandler = userCrudHandler;
 		this.userTokenHandler = userTokenHandler;
 	}
@@ -82,7 +85,7 @@ public class UserEndpoint extends RolePermissionHandlingEndpoint {
 			String uuid = ac.getParameter("userUuid");
 			rc.response().headers().set(HttpHeaders.CACHE_CONTROL, "private");
 			crudHandler.handleIssueAPIToken(ac, uuid);
-		});
+		}, isOrderedBlockingHandlers());
 
 		InternalEndpointRoute deleteEndpoint = createRoute();
 		deleteEndpoint.path("/:userUuid/token");
@@ -97,7 +100,7 @@ public class UserEndpoint extends RolePermissionHandlingEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("userUuid");
 			crudHandler.handleDeleteAPIToken(ac, uuid);
-		});
+		}, isOrderedBlockingHandlers());
 	}
 
 	private void addReadPermissionHandler() {
@@ -188,7 +191,7 @@ public class UserEndpoint extends RolePermissionHandlingEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("userUuid");
 			crudHandler.handleDelete(ac, uuid);
-		});
+		}, isOrderedBlockingHandlers());
 	}
 
 	private void addUpdateHandler() {
@@ -216,7 +219,7 @@ public class UserEndpoint extends RolePermissionHandlingEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("userUuid");
 			crudHandler.handleUpdate(ac, uuid);
-		});
+		}, isOrderedBlockingHandlers());
 	}
 
 	private void addCreateHandler() {
@@ -233,6 +236,6 @@ public class UserEndpoint extends RolePermissionHandlingEndpoint {
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleCreate(ac);
-		});
+		}, isOrderedBlockingHandlers());
 	}
 }

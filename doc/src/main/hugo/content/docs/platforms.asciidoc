@@ -1,0 +1,26 @@
+---
+title: Platforms & Clients
+---
+
+include::content/docs/variables.adoc-include[]
+
+== JavaScript
+
+* link:https://github.com/gentics/mesh-js-api[Gentics Mesh JavaScript Client] - A work-in-progress client for Gentics Mesh written in TypeScript.
+* link:https://github.com/gentics/mesh-angular-example[Gentics Mesh Angular Example]
+* link:https://github.com/gentics/mesh-express-example[Gentics Mesh Express Example]
+
+== PHP
+
+* link:https://github.com/gentics/mesh-php-client[Gentics Mesh PHP Client] - a client for Gentics Mesh written in PHP.
+* link:https://github.com/gentics/mesh-silex-example[Gentics Mesh PHP Example] - This example shows how to use Gentics Mesh in combination with the Silex PHP routing framework.
+
+== Go
+
+* link:https://github.com/gentics/mesh-go-example[Gentics Mesh Go Example]
+
+== Java
+
+* link:{{< relref "java-rest-client.asciidoc" >}}[Gentics Mesh Java Client] - a client for Gentics Mesh written in Java
+* link:https://github.com/gentics/mesh-vertx-example[Gentics Mesh Vert.x Example]
+* link:https://github.com/gentics/mesh-upload-check-example[Gentics Mesh Upload Check Example]

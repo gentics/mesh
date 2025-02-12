@@ -12,8 +12,8 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
 
 import dagger.Lazy;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Changelog entry which migrates from admin role to admin user flag.
@@ -43,7 +43,6 @@ public class SetAdminUserFlag extends AbstractHighLevelChange {
 
 	@Override
 	public void apply() {
-		log.info("Applying change: " + getName());
 		GroupDao groupDao = Tx.get().groupDao();
 		for (HibRole role : Tx.get().roleDao().findAll()) {
 			if (!"admin".equals(role.getName())) {

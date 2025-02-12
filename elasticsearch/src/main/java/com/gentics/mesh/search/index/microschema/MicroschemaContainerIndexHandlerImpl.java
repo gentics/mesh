@@ -1,5 +1,6 @@
 package com.gentics.mesh.search.index.microschema;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
@@ -10,6 +11,8 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBucketableElement;
@@ -33,19 +36,19 @@ import io.reactivex.Flowable;
 @Singleton
 public class MicroschemaContainerIndexHandlerImpl extends AbstractIndexHandler<HibMicroschema> implements MicroschemaIndexHandler {
 
-	@Inject
-	MicroschemaTransformer transformer;
+	protected final MicroschemaTransformer transformer;
 
-	@Inject
-	MicroschemaMappingProvider mappingProvider;
+	protected final MicroschemaMappingProvider mappingProvider;
 
-	@Inject
-	SyncMetersFactory syncMetersFactory;
+	protected final SyncMetersFactory syncMetersFactory;
 
 	@Inject
 	public MicroschemaContainerIndexHandlerImpl(SearchProvider searchProvider, Database db, MeshHelper helper,
-		MeshOptions options, SyncMetersFactory syncMetricsFactory, BucketManager bucketManager) {
+		MeshOptions options, SyncMetersFactory syncMetricsFactory, BucketManager bucketManager, MicroschemaTransformer transformer, MicroschemaMappingProvider mappingProvider, SyncMetersFactory syncMetersFactory) {
 		super(searchProvider, db, helper, options, syncMetricsFactory, bucketManager);
+		this.transformer = transformer;
+		this.mappingProvider = mappingProvider;
+		this.syncMetersFactory = syncMetersFactory;
 	}
 
 	@Override
@@ -96,15 +99,20 @@ public class MicroschemaContainerIndexHandlerImpl extends AbstractIndexHandler<H
 	}
 
 	@Override
+	public Function<Collection<String>, Stream<Pair<String, HibMicroschema>>> elementsLoader() {
+		return (uuids) -> Tx.get().microschemaDao().findByUuids(uuids);
+	}
+
+	@Override
 	public Stream<? extends HibMicroschema> loadAllElements() {
 		return Tx.get().microschemaDao().findAll().stream();
 	}
 
 	@Override
-	public Map<String, IndexInfo> getIndices() {
+	public Map<String, Optional<IndexInfo>> getIndices() {
 		String indexName = HibMicroschema.composeIndexName();
 		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "microschema");
-		return Collections.singletonMap(indexName, info);
+		return Collections.singletonMap(indexName, Optional.of(info));
 	}
 
 }

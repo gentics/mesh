@@ -38,7 +38,7 @@ public interface HibNodeFieldContainer extends HibFieldContainer, HibEditorTrack
 	 * @return
 	 */
 	default String getIndexName(String projectUuid, String branchUuid, ContainerType type) {
-		return ContentDao.composeIndexName(projectUuid, branchUuid, getSchemaContainerVersion().getUuid(), type, 
+		return ContentDao.composeIndexName(projectUuid, branchUuid, getSchemaContainerVersion().getUuid(), type, null,
 				getSchemaContainerVersion().getMicroschemaVersionHash(Tx.get().branchDao().findByUuid(getNode().getProject(), branchUuid)));
 	}
 
@@ -143,7 +143,7 @@ public interface HibNodeFieldContainer extends HibFieldContainer, HibEditorTrack
 	}
 
 	@Override
-	default Stream<HibNodeFieldContainer> getContents() {
+	default Stream<HibNodeFieldContainer> getContents(boolean lookupInFields, boolean lookupInLists) {
 		return Stream.of(this);
 	}
 

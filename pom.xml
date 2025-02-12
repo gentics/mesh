@@ -6,7 +6,7 @@
 
 	<groupId>com.gentics.mesh</groupId>
 	<artifactId>mesh</artifactId>
-	<version>1.10.0-SNAPSHOT</version>
+	<version>3.0.1-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
 	<name>Gentics Mesh</name>
@@ -14,18 +14,23 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<projectRoot>${project.basedir}</projectRoot>
-		<mesh.admin-ui.version>0.9.2</mesh.admin-ui.version>
-		<mesh.admin-ui2.version>1.3.5</mesh.admin-ui2.version>
+		<mesh.build.version>${project.version}</mesh.build.version>
+		<mesh.build.timestamp>${maven.build.timestamp}</mesh.build.timestamp>
+		<license.checker.version>1.0.0</license.checker.version>
 
+		<vertx.version>4.5.11</vertx.version>
 		<dagger.version>2.24</dagger.version>
+		<compiler.plugin.version>3.11.0</compiler.plugin.version>
 
 		<!-- Tests -->
+		<surefire.version>3.0.0-M5</surefire.version>
 		<surefire.forkcount>1</surefire.forkcount>
 		<surefire.jvm.postfix></surefire.jvm.postfix>
 		<skip.unit.tests>false</skip.unit.tests>
 		<skip.cluster.tests>false</skip.cluster.tests>
 		<surefire.excludedGroups></surefire.excludedGroups>
 		<surefire.groups></surefire.groups>
+		<skip.vertx-hazelcast>true</skip.vertx-hazelcast>
 
 		<!-- Jacoco -->
 		<jacoco.skip.merge>true</jacoco.skip.merge>
@@ -33,8 +38,12 @@
 		<jacoco.skip>true</jacoco.skip>
 		<jacoco.env></jacoco.env>
 
+		<!-- Miscellaneous -->
 		<mesh.image.provider>mesh-service-image-imgscalr</mesh.image.provider>
-		<mesh.build.timestamp>${maven.build.timestamp}</mesh.build.timestamp>
+
+		<!-- Database tests -->
+		<skip.mariadb.tests>true</skip.mariadb.tests>
+		<skip.hsqlmemory.tests>true</skip.hsqlmemory.tests>
 	</properties>
 
 	<scm>
@@ -45,17 +54,13 @@
 	</scm>
 
 	<parent>
-		<groupId>com.gentics.vertx</groupId>
-		<artifactId>maven-vertx-parent</artifactId>
-		<version>4.3.2.0</version>
+		<groupId>com.gentics</groupId>
+		<artifactId>maven-parent</artifactId>
+		<version>5.1.0</version>
 	</parent>
-
-	<developers>
-	</developers>
-
 	<organization>
 		<name>Gentics Software</name>
-		<url>http://www.gentics.com</url>
+		<url>https://www.gentics.com</url>
 	</organization>
 
 	<licenses>
@@ -70,7 +75,7 @@
 
 	<modules>
 		<module>bom</module>
-		<module>ferma</module>
+		<module>changelog</module>
 		<module>rest-model</module>
 		<module>api</module>
 		<module>plugin-api</module>
@@ -78,25 +83,23 @@
 		<module>plugin-dep</module>
 		<module>plugin-parent</module>
 		<module>common-api</module>
-		<module>madl</module>
 		<module>mdm</module>
 		<module>common</module>
 		<module>elasticsearch</module>
 		<module>rest-client</module>
-		<module>changelog-system</module>
-		<module>databases</module>
 		<module>services</module>
 		<module>distributed</module>
 		<module>distributed-coordinator</module>
 		<module>core</module>
 		<module>verticles</module>
-		<module>server</module>
-		<module>demo</module>
 		<module>doc</module>
+		<module>server</module>
 		<module>tests</module>
+		<module>database-tests</module>
+		<module>test-scanner</module>
+		<module>connectors</module>
 		<module>performance-tests</module>
-        <module>hazelcast3-cluster-manager</module>
-    </modules>
+	</modules>
 
 	<dependencies>
 		<dependency>
@@ -111,8 +114,26 @@
 			<plugins>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>${compiler.plugin.version}</version>
+					<configuration>
+						<forceJavacCompilerUse>true</forceJavacCompilerUse>
+						<verbose>false</verbose>
+						<release>17</release>
+					</configuration>
+					<dependencies>
+						<dependency>
+							<groupId>com.google.dagger</groupId>
+							<artifactId>dagger-compiler</artifactId>
+							<version>${dagger.version}</version>
+							<optional>true</optional>
+						</dependency>
+					</dependencies>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
-					<version>3.0.0-M5</version>
+					<version>${surefire.version}</version>
 					<configuration>
 						<skip>${skip.unit.tests}</skip>
 					</configuration>
@@ -159,19 +180,43 @@
 						</execution>
 					</executions>
 				</plugin>
+				<plugin>
+					<groupId>com.gentics</groupId>
+					<artifactId>changelog-manager-plugin</artifactId>
+					<version>3.0.0</version>
+				</plugin>
+				<plugin>
+					<groupId>com.gentics</groupId>
+					<artifactId>dependency-reporting-plugin</artifactId>
+					<version>1.0.0</version>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>versions-maven-plugin</artifactId>
+					<version>2.16.2</version>
+				</plugin>
 			</plugins>
 		</pluginManagement>
-
 		<plugins>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>versions-maven-plugin</artifactId>
-				<version>2.1</version>
+				<executions>
+					<execution>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>dependency-updates-aggregate-report</goal>
+						</goals>
+						<configuration>
+							<formats>xml</formats>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
-			<plugin>
+			<!--plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-gpg-plugin</artifactId>
-			</plugin>
+			</plugin-->
 			<plugin>
 				<artifactId>maven-scm-plugin</artifactId>
 				<version>1.8.1</version>
@@ -179,8 +224,8 @@
 					<tag>${project.artifactId}-${project.version}</tag>
 				</configuration>
 			</plugin>
-			<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-gpg-plugin</artifactId> 
-				<executions> <execution> <id>sign-artifacts</id> <phase>verify</phase> <goals> 
+			<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-gpg-plugin</artifactId>
+				<executions> <execution> <id>sign-artifacts</id> <phase>verify</phase> <goals>
 				<goal>sign</goal> </goals> </execution> </executions> </plugin> -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -208,16 +253,6 @@
 				<artifactId>maven-javadoc-plugin</artifactId>
 			</plugin>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<verbose>false</verbose>
-					<compilerVersion>11</compilerVersion>
-					<source>11</source>
-					<target>11</target>
-				</configuration>
-			</plugin>
-			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
 				<executions>
@@ -236,40 +271,27 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<skip>${skip.unit.tests}</skip>
-					<jvm>${env.JAVA_HOME}/bin/java</jvm>
-					<argLine>-Xms128m -Xmx256m -XX:MaxDirectMemorySize=128m
-						-Dstorage.diskCache.bufferSize=128 ${jacoco.env}</argLine>
-					<forkedProcessTimeoutInSeconds>2700</forkedProcessTimeoutInSeconds>
-					<rerunFailingTestsCount>0</rerunFailingTestsCount>
-					<reuseForks>false</reuseForks>
-					<forkCount>${surefire.forkcount}</forkCount>
-					<trimStackTrace>false</trimStackTrace>
-					<useSystemClassLoader>false</useSystemClassLoader>
-					<excludes>
-						<include>**/*AbstractTest.java</include>
-						<include>**/*Abstract*Test.java</include>
-						<exclude>**/*Abstract*.java</exclude>
-						<exclude>**/Abstract*.java</exclude>
-					</excludes>
-					<groups>${surefire.groups}</groups>
-					<excludedGroups>${surefire.excludedGroups}</excludedGroups>
-				</configuration>
-			</plugin>
 		</plugins>
 	</build>
 
 	<repositories>
 		<repository>
-			<id>maven.gentics.com</id>
-			<name>Gentics Maven Repository</name>
-			<url>https://maven.gentics.com/maven2</url>
+			<id>gentics.nexus.releases-oss</id>
+			<name>Gentics Nexus OSS Maven Repository</name>
+			<url>https://repo.gentics.com/repository/maven-releases-oss/</url>
 			<releases>
 				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>gentics.nexus.snapshots</id>
+			<name>Gentics Snapshots Repository</name>
+			<url>https://repo.gentics.com/repository/maven-snapshots/</url>
+			<releases>
+				<enabled>false</enabled>
 			</releases>
 			<snapshots>
 				<enabled>true</enabled>
@@ -279,9 +301,9 @@
 
 	<pluginRepositories>
 		<pluginRepository>
-			<id>maven.gentics.com</id>
-			<name>Gentics Maven Repository</name>
-			<url>https://maven.gentics.com/maven2</url>
+			<id>gentics.nexus.releases-oss</id>
+			<name>Gentics Nexus OSS Maven Repository</name>
+			<url>https://repo.gentics.com/repository/maven-releases-oss/</url>
 			<releases>
 				<enabled>true</enabled>
 			</releases>
@@ -293,14 +315,14 @@
 
 	<distributionManagement>
 		<repository>
-			<id>lan.releases</id>
-			<name>Gentics Releases Repository</name>
-			<url>https://repo.apa-it.at/artifactory/gtx-maven-releases-staging-mesh</url>
+			<id>gentics.nexus.releases-oss</id>
+			<name>Gentics Nexus OSS Maven Repository</name>
+			<url>https://repo.gentics.com/repository/maven-releases-oss/</url>
 		</repository>
 		<snapshotRepository>
-			<id>lan.snapshots</id>
+			<id>gentics.nexus.snapshots</id>
 			<name>Gentics Snapshots Repository</name>
-			<url>https://repo.apa-it.at/artifactory/gtx-maven-snapshots-mesh</url>
+			<url>https://repo.gentics.com/repository/maven-snapshots/</url>
 		</snapshotRepository>
 	</distributionManagement>
 </project>

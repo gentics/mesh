@@ -10,7 +10,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>1.10.0-SNAPSHOT</version>
+		<version>3.0.1-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -26,11 +26,10 @@
 		<module>tests-api</module>
 		<module>tests-core</module>
 		<module>tests-common</module>
+        <module>tests-hibernate</module>
 		<module>tests-rest-model</module>
 		<module>tests-rest-client</module>
 		<module>tests-plugin-api</module>
-		<module>tests-server</module>
-		<module>tests-changelog-system</module>
 		<module>tests-elasticsearch</module>
 		<module>tests-distributed</module>
 		<module>tests-distributed-coordinator</module>
@@ -39,19 +38,12 @@
 		<module>tests-service-jwt-auth</module>
 		<module>tests-service-local-storage</module>
 		<module>tests-service-metrics-prometheus</module>
-		<module>tests-admin-gui</module>
 
 		<!-- Other tests -->
 <!-- Move here from the root as soon as https://issues.jenkins.io/browse/JENKINS-26472 is fixed -->
 <!--		<module>tests-performance</module>
 		<module>tests-integration</module>
 -->
-		
-		<!-- Default context - OrientDB -->
-		<module>context-orientdb</module>
-		
-		<!-- Tests runner over OrientDB default context -->
-		<module>orientdb-runner</module>
 	</modules>
 
 	<dependencyManagement>
@@ -71,7 +63,6 @@
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-api</artifactId>
 		</dependency>
-
 		<!-- Additional test dependencies -->
 		<dependency>
 			<groupId>junit</groupId>
@@ -105,12 +96,10 @@
 		<dependency>
 			<groupId>org.testcontainers</groupId>
 			<artifactId>testcontainers</artifactId>
-			<version>1.11.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.testcontainers</groupId>
 			<artifactId>toxiproxy</artifactId>
-			<version>1.11.1</version>
 		</dependency>
 		<dependency>
 			<groupId>io.takari.junit</groupId>
@@ -120,8 +109,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.jdom</groupId>
-			<artifactId>jdom</artifactId>
-			<version>1.1</version>
+			<artifactId>jdom2</artifactId>
 			<type>jar</type>
 		</dependency>
 	</dependencies>
@@ -131,6 +119,9 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<argLine>--add-opens java.base/java.util=ALL-UNNAMED ${jacoco.env}</argLine>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

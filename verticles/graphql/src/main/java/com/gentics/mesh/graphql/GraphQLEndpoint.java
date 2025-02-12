@@ -6,16 +6,20 @@ import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.auth.MeshAuthChainImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.context.impl.GraphQLContextImpl;
 import com.gentics.mesh.parameter.impl.SearchParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.handler.StaticHandler;
 
 public class GraphQLEndpoint extends AbstractProjectEndpoint {
@@ -25,12 +29,12 @@ public class GraphQLEndpoint extends AbstractProjectEndpoint {
 	private GraphQLHandler queryHandler;
 
 	public GraphQLEndpoint() {
-		super("graphql", null, null);
+		super("graphql", null, null, null, null, null);
 	}
 
 	@Inject
-	public GraphQLEndpoint(MeshAuthChainImpl chain, BootstrapInitializer boot, GraphQLHandler queryHandler) {
-		super("graphql", chain, boot);
+	public GraphQLEndpoint(MeshAuthChain chain, BootstrapInitializer boot, GraphQLHandler queryHandler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+		super("graphql", chain, boot, localConfigApi, db, options);
 		this.queryHandler = queryHandler;
 	}
 
@@ -48,7 +52,7 @@ public class GraphQLEndpoint extends AbstractProjectEndpoint {
 		// TODO Change this when mutations are implemented
 		queryEndpoint.setMutating(false);
 		queryEndpoint.blockingHandler(rc -> {
-			GraphQLContext gc = new GraphQLContextImpl(rc);
+			GraphQLContext gc = new GraphQLContextImpl(rc, boot.mesh().getOptions().getHttpServerOptions());
 			String body = gc.getBodyAsString();
 			queryHandler.handleQuery(gc, body);
 		}, false);

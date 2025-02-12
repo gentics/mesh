@@ -5,7 +5,8 @@ languagesFilePath: null
 updateCheck: true
 vertxOptions:
   workerPoolSize: 20
-  eventPoolSize: 16
+  eventPoolSize: 24
+  orderedBlockingHandlers: true
   eventBus:
     checkInterval: 30000
     warnThreshold: 60000
@@ -43,12 +44,51 @@ nodeName: null
 startInReadOnly: false
 versionPurgeMaxBatchSize: 10
 migrationMaxBatchSize: 50
+migrationTriggerInterval: 60000
+pluginUseHttp2: false
+storageOptions:
+  nativeQueryFiltering: "ON_DEMAND"
+  retryLimit: 10
+  retryDelayMillis: 2000
+  driverClass: null
+  dialectClass: null
+  databaseAddress: null
+  connectionUrlExtraParams: ""
+  databaseName: "mesh"
+  databaseConnectorClasspath: ""
+  connectionUsername: "admin"
+  connectionPassword: "admin"
+  showSql: false
+  formatSql: false
+  hikariOptions:
+    autocommit: false
+    connectionTimeout: 10000
+    idleTimeout: 600000
+    maxLifetime: 1800000
+    minimumIdleConnection: 20
+    maxPoolSize: 20
+    poolName: "MeshHikariCP"
+    registerMBeans: false
+    transactionIsolationLevel: null
+    leakDetectionThreshold: 0
+  synchronizeWrites: false
+  synchronizeWritesTimeout: 60000
+  secondLevelCacheEnabled: false
+  generateStatistics: false
+  queryTimeout: 0
+  slowSqlThreshold: 60000
+  jdbcBatchSize: 5
+  sqlParametersLimit: "definedByDatabase"
+  staleTxCheckInterval: 10000
+licenseKeyPath: "license.key"
+licenseKey: null
 httpServer:
   port: 8080
   sslPort: 8443
   host: "0.0.0.0"
   corsAllowedOriginPattern: ""
   corsAllowCredentials: false
+  useAlpn: false
   enableCors: false
   http: true
   ssl: false
@@ -56,9 +96,10 @@ httpServer:
   keyPath: "config/key.pem"
   clientAuthMode: "NONE"
   trustedCertPaths: []
-  verticleAmount: 16
-  serverTokens: true
+  verticleAmount: 24
+  minifyJson: true
   maxFormAttributeSize: -1
+  serverTokens: true
 monitoring:
   enabled: true
   port: 8081
@@ -69,12 +110,7 @@ cluster:
   enabled: false
   clusterName: null
   vertxPort: 4848
-  coordinatorMode: "DISABLED"
   coordinatorRegex: null
-  topologyLockTimeout: 0
-  topologyLockDelay: 20000
-  coordinatorTopology: "UNMANAGED"
-  topologyChangeReadOnly: false
 search:
   url: "http://localhost:9200"
   username: null
@@ -105,6 +141,7 @@ upload:
   parserLimit: 40000
   parser: true
   metadataWhitelist: null
+  checkInterval: 60000
 security:
   tokenExpirationTime: 3600
   keystorePassword: "<Your Password>"
@@ -113,6 +150,7 @@ security:
   enableAnonymousAccess: true
   publicKeysPath: "config/public-keys.json"
 image:
+  mode: "ON_DEMAND"
   imageCacheDirectory: "data/binaryImageCache"
   maxWidth: 2048
   maxHeight: 2048
@@ -120,8 +158,11 @@ image:
   resampleFilter: "LANCZOS"
 content:
   autoPurge: true
+  batchSize: 5000
 cache:
   pathCacheSize: 20000
+  fieldContainerCacheSize: "50_000"
+  listFieldCacheSize: "50_000"
 debugInfo:
   logFolder: "debuginfo"
   logFileSize: "5MB"
@@ -129,19 +170,5 @@ debugInfo:
   logPattern: "%d{HH:mm:ss.SSS} [%meshName] %-5level [%thread] [%file:%line] - %msg%n"
 graphQL:
   slowThreshold: 60000
-storage:
-  directory: "data/graphdb"
-  backupDirectory: "data/backup"
-  exportDirectory: "data/export"
-  startServer: false
-  synchronizeWrites: true
-  synchronizeWritesTimeout: 60000
-  txRetryDelay: 10
-  txRetryLimit: 10
-  txCommitTimeout: 0
-  parameters: {}
-  clusterJoinTimeout: 500000
-  diskQuota:
-    checkInterval: 10000
-    warnThreshold: "3G"
-    readOnlyThreshold: "1G"
+  asyncWaitTimeout: 120000
+  schemaCacheSize: 1000

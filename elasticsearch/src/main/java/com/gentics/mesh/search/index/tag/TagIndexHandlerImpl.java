@@ -1,5 +1,6 @@
 package com.gentics.mesh.search.index.tag;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,6 +14,8 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.dao.ProjectDao;
@@ -42,16 +45,16 @@ public class TagIndexHandlerImpl extends AbstractIndexHandler<HibTag> implements
 	 */
 	public final static String CUSTOM_PROJECT_UUID = "projectUuid";
 
-	@Inject
-	TagTransformer transforer;
+	protected final TagTransformer transforer;
 
-	@Inject
-	TagMappingProvider mappingProvider;
+	protected final TagMappingProvider mappingProvider;
 
 	@Inject
 	public TagIndexHandlerImpl(SearchProvider searchProvider, Database db, MeshHelper helper, MeshOptions options,
-		SyncMetersFactory syncMetricsFactory, BucketManager bucketManager) {
+		SyncMetersFactory syncMetricsFactory, BucketManager bucketManager, TagTransformer transforer, TagMappingProvider mappingProvider) {
 		super(searchProvider, db, helper, options, syncMetricsFactory, bucketManager);
+		this.transforer = transforer;
+		this.mappingProvider = mappingProvider;
 	}
 
 	@Override
@@ -82,12 +85,12 @@ public class TagIndexHandlerImpl extends AbstractIndexHandler<HibTag> implements
 	}
 
 	@Override
-	public Map<String, IndexInfo> getIndices() {
+	public Map<String, Optional<IndexInfo>> getIndices() {
 		return db.tx(tx -> {
-			Map<String, IndexInfo> indexInfo = new HashMap<>();
+			Map<String, Optional<IndexInfo>> indexInfo = new HashMap<>();
 			for (HibProject project : tx.projectDao().findAll()) {
 				IndexInfo info = getIndex(project.getUuid());
-				indexInfo.put(info.getIndexName(), info);
+				indexInfo.put(info.getIndexName(), Optional.of(info));
 			}
 			return indexInfo;
 		});
@@ -147,8 +150,18 @@ public class TagIndexHandlerImpl extends AbstractIndexHandler<HibTag> implements
 	}
 
 	@Override
+	public Function<Collection<String>, Stream<Pair<String, HibTag>>> elementsLoader() {
+		return (uuids) -> Tx.get().tagDao().findByUuids(uuids);
+	}
+
+	@Override
 	public Stream<? extends HibTag> loadAllElements() {
 		return Tx.get().tagDao().findAll().stream();
 	}
 
+	@Override
+	public boolean isDefinitionDataDependent() {
+		// We depend on the project.
+		return true;
+	}
 }

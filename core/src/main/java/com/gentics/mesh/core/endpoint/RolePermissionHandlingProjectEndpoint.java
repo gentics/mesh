@@ -7,10 +7,13 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
-import com.gentics.mesh.auth.MeshAuthChainImpl;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 
@@ -19,9 +22,9 @@ import com.gentics.mesh.router.route.AbstractProjectEndpoint;
  */
 public abstract class RolePermissionHandlingProjectEndpoint extends AbstractProjectEndpoint {
 
-	protected RolePermissionHandlingProjectEndpoint(String basePath, MeshAuthChainImpl chain,
-			BootstrapInitializer boot) {
-		super(basePath, chain, boot);
+	protected RolePermissionHandlingProjectEndpoint(String basePath, MeshAuthChain chain,
+			BootstrapInitializer boot, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+		super(basePath, chain, boot, localConfigApi, db, options);
 	}
 
 	/**
@@ -62,7 +65,7 @@ public abstract class RolePermissionHandlingProjectEndpoint extends AbstractProj
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().getParam(uuidParameterName);
 			crudHandler.handleGrantPermissions(ac, uuid);
-		});
+		}, isOrderedBlockingHandlers());
 
 		InternalEndpointRoute revokePermissionsEndpoint = createRoute();
 		revokePermissionsEndpoint.path(path);
@@ -78,6 +81,6 @@ public abstract class RolePermissionHandlingProjectEndpoint extends AbstractProj
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().getParam(uuidParameterName);
 			crudHandler.handleRevokePermissions(ac, uuid);
-		});
+		}, isOrderedBlockingHandlers());
 	}
 }

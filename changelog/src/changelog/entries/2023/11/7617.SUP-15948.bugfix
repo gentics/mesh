@@ -1,0 +1,1 @@
+Core: Now caches treat NULL as a valid value, instead of a constant miss.

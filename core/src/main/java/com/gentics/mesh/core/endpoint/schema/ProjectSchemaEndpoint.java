@@ -14,9 +14,12 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.gentics.mesh.auth.MeshAuthChainImpl;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 
@@ -28,12 +31,12 @@ public class ProjectSchemaEndpoint extends AbstractProjectEndpoint {
 	private SchemaCrudHandler crudHandler;
 
 	public ProjectSchemaEndpoint() {
-		super("schemas", null, null);
+		super("schemas", null, null, null, null, null);
 	}
 
 	@Inject
-	public ProjectSchemaEndpoint(MeshAuthChainImpl chain, BootstrapInitializer boot, SchemaCrudHandler crudHandler) {
-		super("schemas", chain, boot);
+	public ProjectSchemaEndpoint(MeshAuthChain chain, BootstrapInitializer boot, SchemaCrudHandler crudHandler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+		super("schemas", chain, boot, localConfigApi, db, options);
 		this.crudHandler = crudHandler;
 	}
 
@@ -94,7 +97,7 @@ public class ProjectSchemaEndpoint extends AbstractProjectEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("schemaUuid");
 			crudHandler.handleAddSchemaToProject(ac, uuid);
-		});
+		}, isOrderedBlockingHandlers());
 	}
 
 	private void addDeleteHandlers() {
@@ -111,6 +114,6 @@ public class ProjectSchemaEndpoint extends AbstractProjectEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("schemaUuid");
 			crudHandler.handleRemoveSchemaFromProject(ac, uuid);
-		});
+		}, isOrderedBlockingHandlers());
 	}
 }

@@ -5,6 +5,7 @@ import java.util.function.Predicate;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.DAOActionContext;
@@ -92,4 +93,8 @@ public class ProjectDAOActionsImpl implements ProjectDAOActions {
 		return projectDao.getETag(project, ac);
 	}
 
+	@Override
+	public Page<? extends HibProject> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, FilterOperation<?> extraFilter) {
+		return ctx.tx().projectDao().findAll(ctx.ac(), pagingInfo, extraFilter);
+	}
 }

@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.EL
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.LABEL_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.LIST_TYPE_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.NAME_KEY;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.NO_INDEX_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.REQUIRED_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.TYPE_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.CHANGEFIELDTYPE;
@@ -50,6 +51,10 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 	private boolean required = false;
 
 	@JsonProperty(required = false)
+	@JsonPropertyDescription("Flag which indicates whether the field is excluded from indexing or not.")
+	private boolean noIndex = false;
+
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("Additional elasticsearch index field configuration. This can be used to add custom fields with custom analyzers to the search index.")
 	private JsonObject elasticsearch;
 
@@ -87,6 +92,17 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 	}
 
 	@Override
+	public boolean isNoIndex() {
+		return noIndex;
+	}
+
+	@Override
+	public FieldSchema setNoIndex(boolean isNoIndex) {
+		this.noIndex = isNoIndex;
+		return this;
+	}
+
+	@Override
 	public JsonObject getElasticsearch() {
 		return elasticsearch;
 	}
@@ -101,6 +117,9 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 	public void apply(Map<String, Object> fieldProperties) {
 		if (fieldProperties.get(SchemaChangeModel.REQUIRED_KEY) != null) {
 			setRequired(Boolean.valueOf(String.valueOf(fieldProperties.get(REQUIRED_KEY))));
+		}
+		if (fieldProperties.get(SchemaChangeModel.NO_INDEX_KEY) != null) {
+			setNoIndex(Boolean.valueOf(String.valueOf(fieldProperties.get(NO_INDEX_KEY))));
 		}
 		if (fieldProperties.get(SchemaChangeModel.ELASTICSEARCH_KEY) != null) {
 			Object value = fieldProperties.get(ELASTICSEARCH_KEY);
@@ -179,6 +198,7 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 		Map<String, Object> map = new HashMap<>();
 		map.put(LABEL_KEY, getLabel());
 		map.put(REQUIRED_KEY, isRequired());
+		map.put(NO_INDEX_KEY, isNoIndex());
 		// empty object and null/missing should be treated the same
 		map.put(ELASTICSEARCH_KEY, getElasticsearch() == null || getElasticsearch().size() == 0 ? new JsonObject() : getElasticsearch());
 		return map;

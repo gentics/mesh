@@ -7,8 +7,8 @@ import static com.gentics.mesh.search.index.metric.SyncMetric.Operation.UPDATE;
 import com.gentics.mesh.core.rest.search.EntityMetrics;
 import com.gentics.mesh.metric.MetricsService;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Container for index sync metric counters.

@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.link;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -115,4 +117,26 @@ public interface WebRootLinkReplacer {
 	String replace(InternalActionContext ac, String branch, ContainerType edgeType, String content, LinkType type, String projectName,
 		List<String> languageTags);
 
+	/**
+	 * Replace the links in a list of contents
+	 * @param ac action context
+	 * @param branch branch Uuid or name
+	 * @param edgeType edge type
+	 * @param contents list of contents containing links to replace
+	 * @param linkType link type
+	 * @param projectName project name (used for 404 links)
+	 * @param languageTags optional language tags
+	 * @return map of the original contents to the contents with replaced links
+	 */
+	Map<String, String> replaceMany(InternalActionContext ac, String branch, ContainerType edgeType,
+			Set<String> contents, LinkType linkType, String projectName, String... languageTags);
+
+	/**
+	 * Tokenize the content into a list of {@link ContentSegment}s
+	 * @param content content to tokenize
+	 * @param branch branch Uuid or name
+	 * @param languageTags optional language tags
+	 * @return list of ContentSegments
+	 */
+	List<ContentSegment> tokenize(String content, String branch, String... languageTags);
 }

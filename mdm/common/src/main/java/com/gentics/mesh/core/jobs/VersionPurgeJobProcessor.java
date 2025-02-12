@@ -21,8 +21,8 @@ import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.job.ProjectVersionPurgeEventModel;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import io.reactivex.Completable;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is responsible for starting a version purge from a job
@@ -67,7 +67,7 @@ public class VersionPurgeJobProcessor implements SingleJobProcessor {
 						jobDao.mergeIntoPersisted(purgeJob);
 					});
 					db.tx(tx -> {
-						log.info("Version purge job {" + purgeJob.getUuid() + "} for project {" + project.getName() + "} failed.", error);
+						log.error("Version purge job {" + purgeJob.getUuid() + "} for project {" + project.getName() + "} failed.", error);
 						tx.createBatch().add(createEvent(PROJECT_VERSION_PURGE_FINISHED, FAILED, project.getName(), project.getUuid()))
 								.dispatch();
 					});

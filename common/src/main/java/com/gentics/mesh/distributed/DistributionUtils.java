@@ -6,8 +6,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import io.vertx.core.http.HttpMethod;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility methods for distributed computing
@@ -93,8 +93,12 @@ public class DistributionUtils {
 		patterns.add(Pattern.compile("/api/v[0-9]+/.*/graphql/?"));
 		patterns.add(Pattern.compile("/api/v[0-9]+/search/?"));
 		patterns.add(Pattern.compile("/api/v[0-9]+/rawSearch/?"));
+		patterns.add(Pattern.compile("/api/v[0-9]+/search/.*"));
+		patterns.add(Pattern.compile("/api/v[0-9]+/rawSearch/.*"));
 		patterns.add(Pattern.compile("/api/v[0-9]+/.*/search/?"));
 		patterns.add(Pattern.compile("/api/v[0-9]+/.*/rawSearch/?"));
+		patterns.add(Pattern.compile("/api/v[0-9]+/.*/search/.*"));
+		patterns.add(Pattern.compile("/api/v[0-9]+/.*/rawSearch/.*"));
 		patterns.add(Pattern.compile("/api/v[0-9]+/utilities/linkResolver/?"));
 		patterns.add(Pattern.compile("/api/v[0-9]+/utilities/validateSchema/?"));
 		patterns.add(Pattern.compile("/api/v[0-9]+/utilities/validateMicroschema/?"));

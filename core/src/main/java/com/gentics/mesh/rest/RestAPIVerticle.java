@@ -23,8 +23,10 @@ import com.gentics.mesh.core.endpoint.microschema.MicroschemaEndpoint;
 import com.gentics.mesh.core.endpoint.microschema.ProjectMicroschemaEndpoint;
 import com.gentics.mesh.core.endpoint.navroot.NavRootEndpoint;
 import com.gentics.mesh.core.endpoint.node.NodeEndpoint;
+import com.gentics.mesh.core.endpoint.project.LanguageEndpoint;
 import com.gentics.mesh.core.endpoint.project.ProjectEndpoint;
 import com.gentics.mesh.core.endpoint.project.ProjectInfoEndpoint;
+import com.gentics.mesh.core.endpoint.project.ProjectLanguageEndpoint;
 import com.gentics.mesh.core.endpoint.role.RoleEndpoint;
 import com.gentics.mesh.core.endpoint.schema.ProjectSchemaEndpoint;
 import com.gentics.mesh.core.endpoint.schema.SchemaEndpoint;
@@ -67,101 +69,122 @@ public class RestAPIVerticle extends AbstractVerticle {
 
 	private HttpServer httpServer;
 
-	@Inject
-	public Provider<RouterStorageImpl> routerStorage;
+	protected final Provider<RouterStorageImpl> routerStorage;
+
+	protected final Provider<UserEndpoint> userEndpoint;
+
+	protected final Provider<LanguageEndpoint> languageEndpoint;
+
+	protected final Provider<ProjectLanguageEndpoint> projectLanguageEndpoint;
+
+	protected final Provider<RoleEndpoint> roleEndpoint;
+
+	protected final Provider<GroupEndpoint> groupEndpoint;
+
+	protected final Provider<ProjectEndpoint> projectEndpoint;
+
+	protected final Provider<NodeEndpoint> nodeEndpoint;
+
+	protected final Provider<TagFamilyEndpoint> tagFamilyEndpoint;
+
+	protected final Provider<BranchEndpoint> branchEndpoint;
+
+	protected final Provider<SchemaEndpoint> schemaEndpoint;
+
+	protected final Provider<ProjectSearchEndpointImpl> projectSearchEndpoint;
+
+	protected final Provider<ProjectRawSearchEndpointImpl> projectRawSearchEndpoint;
+
+	protected final Provider<ProjectSchemaEndpoint> projectSchemaEndpoint;
+
+	protected final Provider<ProjectInfoEndpoint> projectInfoEndpoint;
+
+	protected final Provider<ProjectMicroschemaEndpoint> projectMicroschemaEndpoint;
+
+	protected final Provider<WebRootEndpoint> webrootEndpoint;
+
+	protected final Provider<WebRootFieldEndpoint> webrootFieldEndpoint;
+
+	protected final Provider<RestInfoEndpoint> restInfoEndpoint;
+
+	protected final Provider<UtilityEndpoint> utilityEndpoint;
+
+	protected final Provider<MicroschemaEndpoint> microschemaEndpoint;
+
+	protected final Provider<EventbusEndpoint> eventbusEndpoint;
+
+	protected final Provider<NavRootEndpoint> navrootEndpoint;
+
+	protected final Provider<AuthenticationEndpoint> authenticationEndpoint;
+
+	protected final Provider<SearchEndpointImpl> searchEndpoint;
+
+	protected final Provider<RawSearchEndpointImpl> rawSearchEndpoint;
+
+	protected final Provider<GraphQLEndpoint> graphqlEndpoint;
+
+	protected final Provider<AdminEndpoint> adminEndpoint;
+
+	protected final Provider<HealthEndpoint> healthEndpoint;
+
+	protected final RouterStorageRegistryImpl routerStorageRegistry;
+
+	protected final io.vertx.reactivex.core.Vertx rxVertx;
+
+	protected final Vertx vertx;
+
+	protected final MeshOptions meshOptions;
 
 	@Inject
-	public Provider<UserEndpoint> userEndpoint;
-
-	@Inject
-	public Provider<RoleEndpoint> roleEndpoint;
-
-	@Inject
-	public Provider<GroupEndpoint> groupEndpoint;
-
-	@Inject
-	public Provider<ProjectEndpoint> projectEndpoint;
-
-	@Inject
-	public Provider<NodeEndpoint> nodeEndpoint;
-
-	@Inject
-	public Provider<TagFamilyEndpoint> tagFamilyEndpoint;
-
-	@Inject
-	public Provider<BranchEndpoint> branchEndpoint;
-
-	@Inject
-	public Provider<SchemaEndpoint> schemaEndpoint;
-
-	@Inject
-	public Provider<ProjectSearchEndpointImpl> projectSearchEndpoint;
-
-	@Inject
-	public Provider<ProjectRawSearchEndpointImpl> projectRawSearchEndpoint;
-
-	@Inject
-	public Provider<ProjectSchemaEndpoint> projectSchemaEndpoint;
-
-	@Inject
-	public Provider<ProjectInfoEndpoint> projectInfoEndpoint;
-
-	@Inject
-	public Provider<ProjectMicroschemaEndpoint> projectMicroschemaEndpoint;
-
-	@Inject
-	public Provider<WebRootEndpoint> webrootEndpoint;
-
-	@Inject
-	public Provider<WebRootFieldEndpoint> webrootFieldEndpoint;
-
-	@Inject
-	public Provider<RestInfoEndpoint> restInfoEndpoint;
-
-	@Inject
-	public Provider<UtilityEndpoint> utilityEndpoint;
-
-	@Inject
-	public Provider<MicroschemaEndpoint> microschemaEndpoint;
-
-	@Inject
-	public Provider<EventbusEndpoint> eventbusEndpoint;
-
-	@Inject
-	public Provider<NavRootEndpoint> navrootEndpoint;
-
-	@Inject
-	public Provider<AuthenticationEndpoint> authenticationEndpoint;
-
-	@Inject
-	public Provider<SearchEndpointImpl> searchEndpoint;
-
-	@Inject
-	public Provider<RawSearchEndpointImpl> rawSearchEndpoint;
-
-	@Inject
-	public Provider<GraphQLEndpoint> graphqlEndpoint;
-
-	@Inject
-	public Provider<AdminEndpoint> adminEndpoint;
-
-	@Inject
-	public Provider<HealthEndpoint> healthEndpoint;
-
-	@Inject
-	public RouterStorageRegistryImpl routerStorageRegistry;
-
-	@Inject
-	public io.vertx.reactivex.core.Vertx rxVertx;
-
-	@Inject
-	public Vertx vertx;
-
-	@Inject
-	public MeshOptions meshOptions;
-
-	@Inject
-	public RestAPIVerticle() {
+	public RestAPIVerticle(Provider<RouterStorageImpl> routerStorage, Provider<UserEndpoint> userEndpoint,
+			Provider<RoleEndpoint> roleEndpoint, Provider<GroupEndpoint> groupEndpoint, Provider<LanguageEndpoint> languageEndpoint,
+			Provider<ProjectEndpoint> projectEndpoint, Provider<NodeEndpoint> nodeEndpoint, Provider<ProjectLanguageEndpoint> projectLanguageEndpoint,
+			Provider<TagFamilyEndpoint> tagFamilyEndpoint, Provider<BranchEndpoint> branchEndpoint,
+			Provider<SchemaEndpoint> schemaEndpoint, Provider<ProjectSearchEndpointImpl> projectSearchEndpoint,
+			Provider<ProjectRawSearchEndpointImpl> projectRawSearchEndpoint,
+			Provider<ProjectSchemaEndpoint> projectSchemaEndpoint, Provider<ProjectInfoEndpoint> projectInfoEndpoint,
+			Provider<ProjectMicroschemaEndpoint> projectMicroschemaEndpoint, Provider<WebRootEndpoint> webrootEndpoint,
+			Provider<WebRootFieldEndpoint> webrootFieldEndpoint, Provider<RestInfoEndpoint> restInfoEndpoint,
+			Provider<UtilityEndpoint> utilityEndpoint, Provider<MicroschemaEndpoint> microschemaEndpoint,
+			Provider<EventbusEndpoint> eventbusEndpoint, Provider<NavRootEndpoint> navrootEndpoint,
+			Provider<AuthenticationEndpoint> authenticationEndpoint, Provider<SearchEndpointImpl> searchEndpoint,
+			Provider<RawSearchEndpointImpl> rawSearchEndpoint, Provider<GraphQLEndpoint> graphqlEndpoint,
+			Provider<AdminEndpoint> adminEndpoint, Provider<HealthEndpoint> healthEndpoint,
+			RouterStorageRegistryImpl routerStorageRegistry, io.vertx.reactivex.core.Vertx rxVertx, Vertx vertx,
+			MeshOptions meshOptions) {
+		this.routerStorage = routerStorage;
+		this.languageEndpoint = languageEndpoint;
+		this.projectLanguageEndpoint = projectLanguageEndpoint;
+		this.userEndpoint = userEndpoint;
+		this.roleEndpoint = roleEndpoint;
+		this.groupEndpoint = groupEndpoint;
+		this.projectEndpoint = projectEndpoint;
+		this.nodeEndpoint = nodeEndpoint;
+		this.tagFamilyEndpoint = tagFamilyEndpoint;
+		this.branchEndpoint = branchEndpoint;
+		this.schemaEndpoint = schemaEndpoint;
+		this.projectSearchEndpoint = projectSearchEndpoint;
+		this.projectRawSearchEndpoint = projectRawSearchEndpoint;
+		this.projectSchemaEndpoint = projectSchemaEndpoint;
+		this.projectInfoEndpoint = projectInfoEndpoint;
+		this.projectMicroschemaEndpoint = projectMicroschemaEndpoint;
+		this.webrootEndpoint = webrootEndpoint;
+		this.webrootFieldEndpoint = webrootFieldEndpoint;
+		this.restInfoEndpoint = restInfoEndpoint;
+		this.utilityEndpoint = utilityEndpoint;
+		this.microschemaEndpoint = microschemaEndpoint;
+		this.eventbusEndpoint = eventbusEndpoint;
+		this.navrootEndpoint = navrootEndpoint;
+		this.authenticationEndpoint = authenticationEndpoint;
+		this.searchEndpoint = searchEndpoint;
+		this.rawSearchEndpoint = rawSearchEndpoint;
+		this.graphqlEndpoint = graphqlEndpoint;
+		this.adminEndpoint = adminEndpoint;
+		this.healthEndpoint = healthEndpoint;
+		this.routerStorageRegistry = routerStorageRegistry;
+		this.rxVertx = rxVertx;
+		this.vertx = vertx;
+		this.meshOptions = meshOptions;
 	}
 
 	@Override
@@ -246,6 +269,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 		options.setHost(host);
 		options.setCompressionSupported(true);
 		options.setHandle100ContinueAutomatically(true);
+		options.setUseAlpn(serverConfig.isUseAlpn());
 		// options.setLogActivity(true);
 
 		// TCP options
@@ -275,9 +299,10 @@ public class RestAPIVerticle extends AbstractVerticle {
 	 */
 	private void registerEndPoints(RouterStorageImpl storage) throws Exception {
 
-		List<AbstractInternalEndpoint> endpoints = new ArrayList<>();
+		List<InternalEndpoint> endpoints = new ArrayList<>();
 		endpoints.add(restInfoEndpoint.get());
 		// verticles.add(projectInfoVerticle());
+		endpoints.add(languageEndpoint.get());
 
 		// User Group Role verticles
 		endpoints.add(userEndpoint.get());
@@ -291,6 +316,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 		endpoints.add(projectMicroschemaEndpoint.get());
 		endpoints.add(projectSearchEndpoint.get());
 		endpoints.add(projectRawSearchEndpoint.get());
+		endpoints.add(projectLanguageEndpoint.get());
 		endpoints.add(branchEndpoint.get());
 		endpoints.add(graphqlEndpoint.get());
 
@@ -310,10 +336,9 @@ public class RestAPIVerticle extends AbstractVerticle {
 		endpoints.add(projectInfoEndpoint.get());
 		endpoints.add(healthEndpoint.get());
 
-		for (AbstractInternalEndpoint endpoint : endpoints) {
+		for (InternalEndpoint endpoint : endpoints) {
 			endpoint.init(vertx, storage);
 			endpoint.registerEndPoints();
 		}
 	}
-
 }

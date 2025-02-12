@@ -1,0 +1,4 @@
+Core: The on-demand image manipulation feature has been refactored for DDoS protection. The new image manipulator option, `mode`, has been added with the following values: 
+`ON_DEMAND` keeps already existing behaviour with creating/reusing the image variant automatically on each request, 
+`MANUAL` requires an extra step of calling the image variant creation REST API prior to the variant serve, `OFF` disables the feature completely. A set of REST API calls has been added for the image variants manipulation. 
+The GraphQL `nodes` call has been extended to filter/serve over the image variants of a selected binary field, if applicable.

@@ -1,0 +1,366 @@
+{
+	dateEquals: nodes(filter: {
+		schema: {is: folder}
+		fields: {
+			folder: {
+				date: {equals: "2012-07-11T08:55:21Z"}
+			}
+		}
+	}) {
+		# [$.data.dateEquals.elements.length()=1]
+		elements {
+			...output
+		}
+	}
+
+	notDateEquals: nodes(filter: {
+		schema: {is: folder}
+		not: {
+			fields: {
+				folder: {
+					date: {equals: "2012-07-11T08:55:21Z"}
+				}
+			}
+		}
+	}) {
+		# [$.data.notDateEquals.elements.length()=8]
+		elements {
+			...output
+		}
+	}
+
+	dateNotEquals: nodes(filter: {
+		schema: {is: folder}
+		fields: {
+			folder: {
+				date: {notEquals: "2013-07-11T08:55:21Z"}
+			}
+		}
+	}) {
+		# [$.data.dateNotEquals.elements.length()=9]
+		elements {
+			...output
+		}
+	}
+
+	notDateNotEquals: nodes(filter: {
+		schema: {is: folder}
+		not: {
+			fields: {
+				folder: {
+					date: {notEquals: "2013-07-11T08:55:21Z"}
+				}
+			}
+		}
+	}) {
+		# [$.data.notDateNotEquals.elements.length()=0]
+		elements {
+			...output
+		}
+	}
+
+	dateIsBefore: nodes(filter: {
+		schema: {is: folder}
+		fields: {
+			folder: {
+				date: {before: "2012-07-11T08:55:22Z"}
+			}
+		}
+	}) {
+		# [$.data.dateIsBefore.elements.length()=1]
+		elements {
+			...output
+		}
+	}
+
+	notDateIsBefore: nodes(filter: {
+		schema: {is: folder}
+		not: {
+			fields: {
+				folder: {
+					date: {before: "2012-07-11T08:55:22Z"}
+				}
+			}
+		}
+	}) {
+		# [$.data.notDateIsBefore.elements.length()=8]
+		elements {
+			...output
+		}
+	}
+
+	dateIsAfter: nodes(filter: {
+		schema: {is: folder}
+		fields: {
+			folder: {
+				date: {after: "2012-07-11T08:55:20Z"}
+			}
+		}
+	}) {
+		# [$.data.dateIsAfter.elements.length()=1]
+		elements {
+			...output
+		}
+	}
+
+	notDateIsAfter: nodes(filter: {
+		schema: {is: folder}
+		not: {
+			fields: {
+				folder: {
+					date: {after: "2012-07-11T08:55:20Z"}
+				}
+			}
+		}
+	}) {
+		# [$.data.notDateIsAfter.elements.length()=8]
+		elements {
+			...output
+		}
+	}
+
+	dateIsPast: nodes(filter: {
+		schema: {is: folder}
+		fields: {
+			folder: {
+				date: {isPast: true}
+			}
+		}
+	}) {
+		# [$.data.dateIsPast.elements.length()=1]
+		elements {
+			...output
+		}
+	}
+
+	notDateIsPast: nodes(filter: {
+		schema: {is: folder}
+		not: {
+			fields: {
+				folder: {
+					date: {isPast: true}
+				}
+			}
+		}
+	}) {
+		# [$.data.notDateIsPast.elements.length()=8]
+		elements {
+			...output
+		}
+	}
+
+	dateIsNotPast: nodes(filter: {
+		schema: {is: folder}
+		fields: {
+			folder: {
+				date: {isPast: false}
+			}
+		}
+	}) {
+		# [$.data.dateIsNotPast.elements.length()=0]
+		elements {
+			...output
+		}
+	}
+
+	notDateIsNotPast: nodes(filter: {
+		schema: {is: folder}
+		not: {
+			fields: {
+				folder: {
+					date: {isPast: false}
+				}
+			}
+		}
+	}) {
+		# [$.data.notDateIsNotPast.elements.length()=9]
+		elements {
+			...output
+		}
+	}
+
+	dateIsFuture: nodes(filter: {
+		schema: {is: folder}
+		fields: {
+			folder: {
+				date: {isFuture: true}
+			}
+		}
+	}) {
+		# [$.data.dateIsFuture.elements.length()=0]
+		elements {
+			...output
+		}
+	}
+
+	notDateIsFuture: nodes(filter: {
+		schema: {is: folder}
+		not: {
+			fields: {
+				folder: {
+					date: {isFuture: true}
+				}
+			}
+		}
+	}) {
+		# [$.data.notDateIsFuture.elements.length()=9]
+		elements {
+			...output
+		}
+	}
+
+	dateIsNotFuture: nodes(filter: {
+		schema: {is: folder}
+		fields: {
+			folder: {
+				date: {isFuture: false}
+			}
+		}
+	}) {
+		# [$.data.dateIsNotFuture.elements.length()=1]
+		elements {
+			...output
+		}
+	}
+
+	notDateIsNotFuture: nodes(filter: {
+		schema: {is: folder}
+		not: {
+			fields: {
+				folder: {
+					date: {isFuture: false}
+				}
+			}
+		}
+	}) {
+		# [$.data.notDateIsNotFuture.elements.length()=8]
+		elements {
+			...output
+		}
+	}
+
+	dateIsNull: nodes(filter: {
+		schema: {is: folder}
+		fields: {
+			folder: {
+				date: {isNull: true}
+			}
+		}
+	}) {
+		# [$.data.dateIsNull.elements.length()=8]
+		elements {
+			...output
+		}
+	}
+
+	notDateIsNull: nodes(filter: {
+		schema: {is: folder}
+		not: {
+			fields: {
+				folder: {
+					date: {isNull: true}
+				}
+			}
+		}
+	}) {
+		# [$.data.notDateIsNull.elements.length()=1]
+		elements {
+			...output
+		}
+	}
+
+	dateIsNotNull: nodes(filter: {
+		schema: {is: folder}
+		fields: {
+			folder: {
+				date: {isNull: false}
+			}
+		}
+	}) {
+		# [$.data.dateIsNotNull.elements.length()=1]
+		elements {
+			...output
+		}
+	}
+
+	notDateIsNotNull: nodes(filter: {
+		schema: {is: folder}
+		not: {
+			fields: {
+				folder: {
+					date: {isNull: false}
+				}
+			}
+		}
+	}) {
+		# [$.data.notDateIsNotNull.elements.length()=8]
+		elements {
+			...output
+		}
+	}
+
+	dateOneOfFail: nodes(filter: {
+		schema: {is: folder}
+		fields: {
+			folder: {
+				date: {oneOf: ["2012-07-11T08:55:20Z", "2012-07-11T08:55:22Z"]}
+			}
+		}
+	}) {
+		# [$.data.dateOneOfFail.elements.length()=0]
+		elements {
+			...output
+		}
+	}
+
+	notDateOneOfFail: nodes(filter: {
+		schema: {is: folder}
+		not: {
+			fields: {
+				folder: {
+					date: {oneOf: ["2012-07-11T08:55:20Z", "2012-07-11T08:55:22Z"]}
+				}
+			}
+		}
+	}) {
+		# [$.data.notDateOneOfFail.elements.length()=9]
+		elements {
+			...output
+		}
+	}
+
+	dateOneOfSuccess: nodes(filter: {
+		schema: {is: folder}
+		fields: {
+			folder: {
+				date: {oneOf: ["2012-07-11T08:55:20Z", "2012-07-11T08:55:21Z", "2012-07-11T08:55:22Z"]}
+			}
+		}
+	}) {
+		# [$.data.dateOneOfSuccess.elements.length()=1]
+		elements {
+			...output
+		}
+	}
+
+	notDateOneOfSuccess: nodes(filter: {
+		schema: {is: folder}
+		not: {
+			fields: {
+				folder: {
+					date: {oneOf: ["2012-07-11T08:55:20Z", "2012-07-11T08:55:21Z", "2012-07-11T08:55:22Z"]}
+				}
+			}
+		}
+	}) {
+		# [$.data.notDateOneOfSuccess.elements.length()=8]
+		elements {
+			...output
+		}
+	}
+}
+# [$.errors=<is-undefined>]
+
+fragment output on Node {
+	uuid
+}
