@@ -18,6 +18,7 @@ import java.util.Base64;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.binary.HibBinary;
@@ -102,6 +103,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	public void testFieldTransformation() throws Exception {
 		String hash = "6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc";
 		try (Tx tx = tx()) {
+			BulkActionContext bac = tx.<CommonTx>unwrap().data().getOrCreateBulkActionContext();
 			ContentDao contentDao = tx.contentDao();
 			// Update the schema and add a binary field
 			HibNode node = folder("2015");
@@ -111,11 +113,13 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 					node.getProject().getLatestBranch(), user(),
 					contentDao.getLatestDraftFieldContainer(node, english()), true);
 			HibBinary binary = tx.binaries().create(hash, 10L).runInExistingTx(tx);
+			mesh().binaryStorage().store(Flowable.just(Buffer.buffer(" ")), binary.getUuid()).blockingAwait();
 			HibBinaryField field = container.createBinary(BINARY_FIELD, binary);
 			field.setMimeType("image/jpg");
 			binary.setImageHeight(200);
 			binary.setImageWidth(300);
 			tx.success();
+			bac.process(true);
 		}
 
 		try (Tx tx = tx()) {

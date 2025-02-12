@@ -7,7 +7,14 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,16 +37,41 @@ import io.vertx.reactivex.core.file.FileSystem;
  * Abstract image manipulator implementation.
  */
 public abstract class AbstractImageManipulator implements ImageManipulator {
+	private static final String IMAGE_CACHE_CLEANER_THREAD_NAME = "mesh-image-cache-cleaner";
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractImageManipulator.class);
 
 	protected ImageManipulatorOptions options;
 
+	protected long imageCacheCleanIntervalInSeconds;
+
+	protected long imageCacheMaxIdleInSeconds;
+
 	protected Vertx vertx;
+
+	/**
+	 * Executor service for running the image cache cleaner
+	 */
+	private ScheduledExecutorService imageCacheCleanerService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
+		@Override
+		public Thread newThread(Runnable r) {
+			return new Thread(r, IMAGE_CACHE_CLEANER_THREAD_NAME);
+		}
+	});
+
+	/**
+	 * scheduled image cache cleaner
+	 */
+	private ScheduledFuture<?> imageCacheCleaner;
 
 	public AbstractImageManipulator(Vertx vertx, ImageManipulatorOptions options) {
 		this.vertx = vertx;
 		this.options = options;
+
+		imageCacheCleanIntervalInSeconds = Duration.parse(options.getImageCacheCleanInterval()).get(ChronoUnit.SECONDS);
+		imageCacheMaxIdleInSeconds = Duration.parse(options.getImageCacheMaxIdle()).get(ChronoUnit.SECONDS);
+
+		startImageCacheCleaner();
 	}
 
 	@Override
@@ -67,6 +99,11 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 						.map(CacheFileNotFoundException.class::cast)
 						.map(CacheFileNotFoundException::getFilePath));
 		});
+	}
+
+	@Override
+	public void shutdown() {
+		stopImageCacheCleaner();
 	}
 
 	protected Single<CacheFileInfo> getCacheFilePathNew(HibBinary binary, ImageManipulation parameters) {
@@ -214,6 +251,34 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 		}
 		info.setDominantColor(colorHex);
 		return info;
+	}
+
+	/**
+	 * Start the image cache cleaner, if configured to do so and not started before
+	 */
+	private void startImageCacheCleaner() {
+		if (imageCacheCleaner == null && options.getImageCacheDirectory() != null
+				&& imageCacheCleanIntervalInSeconds > 0) {
+			if (log.isDebugEnabled()) {
+				log.debug("Starting image cache cleaner");
+			}
+			imageCacheCleaner = imageCacheCleanerService.scheduleAtFixedRate(
+					new ImageCacheCleaner(new File(options.getImageCacheDirectory()), imageCacheMaxIdleInSeconds), 0,
+					imageCacheCleanIntervalInSeconds, TimeUnit.SECONDS);
+		}
+	}
+
+	/**
+	 * Stop the image cache cleaner (if started before)
+	 */
+	private void stopImageCacheCleaner() {
+		if (imageCacheCleaner != null) {
+			if (log.isDebugEnabled()) {
+				log.debug("Stopping image cache cleaner");
+			}
+			imageCacheCleaner.cancel(true);
+			imageCacheCleaner = null;
+		}
 	}
 
 	@Deprecated

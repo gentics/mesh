@@ -50,6 +50,7 @@ import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.endpoint.admin.consistency.UploadsConsistencyCheck;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
@@ -250,6 +251,9 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			assertNotNull(binaryField.getHeight());
 			assertEquals("image/jpeg", binaryField.getMimeType());
 		}
+		tx(tx -> {
+			new UploadsConsistencyCheck().invoke(mesh().database(), tx, true);
+		});
 	}
 
 	@Test

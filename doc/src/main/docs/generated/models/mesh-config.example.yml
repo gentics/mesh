@@ -152,6 +152,9 @@ security:
 image:
   mode: "ON_DEMAND"
   imageCacheDirectory: "data/binaryImageCache"
+  imageCacheCleanInterval: "PT0S"
+  imageCacheMaxIdle: "PT1M"
+  imageCacheTouch: false
   maxWidth: 2048
   maxHeight: 2048
   jpegQuality: 0.95
