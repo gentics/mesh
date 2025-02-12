@@ -6,6 +6,11 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v3.0.3]]
+== 3.0.3 (12.02.2025)
+
+icon:check[] GraphQL: A case of using a GraphQL native filter for a string field against a UUID value, resulting in an exception, has been fixed. 
+
 [[v3.0.2]]
 == 3.0.2 (29.01.2025)
 
@@ -31,6 +36,15 @@ icon:plus[] Core: An Apache Tika file parsing dependency has been updated to the
 icon:plus[] Clustering: The Hazelcast library, responsible for the cluster instances orchestration, has been updated to the version @5.5.0@.
 
 icon:plus[] Some library dependencies have been updated to the latest hotfix versions.
+
+
+[[v2.1.14]]
+== 2.1.14 (11.02.2025)
+
+icon:check[] Image Manipulation: A periodic cleanup for files in the image cache has been added, which can be
+configured with the new configuration options `image.imageCacheCleanInterval` (for the interval for running the cleanup)
+and `image.imageCacheMaxIdle` (for the maximum allowed file age). Both values must be set in ISO 8601 duration format.
+By default, `image.imageCacheCleanInterval` is set to `PT0S` (0 seconds), which deactivates the periodic cleanup.
 
 
 [[v2.1.13]]
