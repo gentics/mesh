@@ -51,8 +51,8 @@ import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 import com.hazelcast.core.HazelcastInstance;
 
-import io.swagger.v3.core.util.Json31;
-import io.swagger.v3.core.util.Yaml31;
+import io.swagger.v3.core.util.Json;
+import io.swagger.v3.core.util.Yaml;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -140,7 +140,8 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 		case "yaml":
 			try {
 				mime = APPLICATION_YAML_UTF8;
-				formatted = ac.isMinify(httpServerConfig) ? Yaml31.mapper().writer().writeValueAsString(openApi) : Yaml31.pretty().writeValueAsString(openApi);
+				//formatted = ac.isMinify(httpServerConfig) ? Yaml31.mapper().writer().writeValueAsString(openApi) : Yaml31.pretty().writeValueAsString(openApi);
+				formatted = ac.isMinify(httpServerConfig) ? Yaml.mapper().writer().writeValueAsString(openApi) : Yaml.pretty().writeValueAsString(openApi);
 			} catch (JsonProcessingException e) {
 				throw new RuntimeException("Could not generate YAML", e);
 			}
@@ -148,7 +149,8 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 		case "json":
 			mime = APPLICATION_JSON_UTF8;
 			try {
-				formatted = ac.isMinify(httpServerConfig) ? Json31.mapper().writer().writeValueAsString(openApi) : Json31.pretty(openApi);
+				//formatted = ac.isMinify(httpServerConfig) ? Json31.mapper().writer().writeValueAsString(openApi) : Json31.pretty(openApi);
+				formatted = ac.isMinify(httpServerConfig) ? Json.mapper().writer().writeValueAsString(openApi) : Json.pretty(openApi);
 			} catch (JsonProcessingException e) {
 				throw new RuntimeException(e);
 			}
@@ -201,6 +203,7 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 			return;
 		}
 		Schema<?> schema = components.getSchemas().getOrDefault(cls.getSimpleName(), new Schema<String>());
+		schema.setType("object");
 		schema.setName(cls.getSimpleName());
 		List<Stream<Field>> fieldStreams = new ArrayList<>();
 		final List<Type> generics = new ArrayList<>();
@@ -242,6 +245,7 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 				String name = f.getName();
 				log.debug(" - Field: " + f);
 				Schema<?> fieldSchema = new Schema<String>();
+				fieldSchema.setName(name);
 				JsonPropertyDescription description = f.getAnnotation(JsonPropertyDescription.class);
 				if (description != null) {
 					fieldSchema.setDescription(description.value());
@@ -271,6 +275,7 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 					}
 					fillType(components, t, fieldSchema, generics);
 				}
+				fieldSchema.setTypes(Collections.singleton(fieldSchema.getType()));
 				return new UnmodifiableMapEntry<>(name, fieldSchema);
 			}).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 		schema.setProperties(properties);
