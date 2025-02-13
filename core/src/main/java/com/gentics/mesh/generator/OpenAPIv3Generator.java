@@ -15,12 +15,16 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Deque;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -30,29 +34,30 @@ import org.apache.commons.lang.StringUtils;
 import org.raml.model.MimeType;
 import org.raml.model.parameter.AbstractParam;
 import org.reflections.Reflections;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonSerializable;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.endpoint.eventbus.EventbusEndpoint;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.http.HttpConstants;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 import com.hazelcast.core.HazelcastInstance;
 
 import io.swagger.v3.core.util.Json31;
-import io.swagger.v3.core.util.OpenAPI30To31;
 import io.swagger.v3.core.util.Yaml31;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
-import io.swagger.v3.oas.models.SpecVersion;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.MediaType;
@@ -63,10 +68,9 @@ import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.servers.Server;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 /**
  * OpenAPI v3 API definition generator. Outputs JSON and YAML schemas.
@@ -81,19 +85,23 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 	private static final Logger log = LoggerFactory.getLogger(OpenAPIv3Generator.class);
 
 	private final HazelcastInstance hz;
+	private final HttpServerConfig httpServerConfig;
 
-	public OpenAPIv3Generator(HazelcastInstance hz) {
+	public OpenAPIv3Generator(HazelcastInstance hz, HttpServerConfig httpServerConfig) {
 		this.hz = hz;
+		this.httpServerConfig = httpServerConfig;
 	}
 
-	public OpenAPIv3Generator(HazelcastInstance hz, File outputFolder, boolean cleanup) throws IOException {
+	public OpenAPIv3Generator(HazelcastInstance hz, HttpServerConfig httpServerConfig, File outputFolder, boolean cleanup) throws IOException {
 		super(outputFolder, cleanup);
 		this.hz = hz;
+		this.httpServerConfig = httpServerConfig;
 	}
 
-	public OpenAPIv3Generator(HazelcastInstance hz, File outputFolder) throws IOException {
+	public OpenAPIv3Generator(HazelcastInstance hz, HttpServerConfig httpServerConfig, File outputFolder) throws IOException {
 		super(outputFolder);
 		this.hz = hz;
+		this.httpServerConfig = httpServerConfig;
 	}
 
 	public void generate(InternalActionContext ac, String format) {
@@ -102,11 +110,18 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 		Info info = new Info();
 		info.setTitle("Gentics Mesh REST API");
 		info.setVersion(MeshVersion.getBuildInfo().getVersion());
-//		if (hz != null) {
-//			Server server = new Server();
-//			hz.getCluster().getMembers().stream().forEach(m -> server.setUrl(m.getAddress().toString()));
-//			openApi.servers(Collections.singletonList(server));
-//		}
+		if (hz != null) {
+			List<Server> servers = hz.getCluster().getMembers().stream().map(m -> {
+				Server server = new Server();
+				server.setUrl(m.getAddress().toString());
+				return server;
+			}).collect(Collectors.toList());
+			openApi.servers(servers);
+		} else {
+			Server server = new Server();
+			server.setUrl((httpServerConfig.isSsl() ? "https://" : "http://") + httpServerConfig.getHost() + ":" + (httpServerConfig.isSsl() ? httpServerConfig.getSslPort() : httpServerConfig.getPort()));
+			openApi.servers(Collections.singletonList(null));
+		}
 		openApi.setInfo(info);		
 		try {
 			addSecurity(openApi);
@@ -125,14 +140,18 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 		case "yaml":
 			try {
 				mime = APPLICATION_YAML_UTF8;
-				formatted = Yaml31.pretty().writeValueAsString(openApi);
+				formatted = ac.isMinify(httpServerConfig) ? Yaml31.mapper().writer().writeValueAsString(openApi) : Yaml31.pretty().writeValueAsString(openApi);
 			} catch (JsonProcessingException e) {
 				throw new RuntimeException("Could not generate YAML", e);
 			}
 			break;
 		case "json":
 			mime = APPLICATION_JSON_UTF8;
-			formatted = Json31.pretty(openApi);
+			try {
+				formatted = ac.isMinify(httpServerConfig) ? Json31.mapper().writer().writeValueAsString(openApi) : Json31.pretty(openApi);
+			} catch (JsonProcessingException e) {
+				throw new RuntimeException(e);
+			}
 			break;
 		default:
 			throw error(BAD_REQUEST, "Please specify a response format: YAML or JSON");
@@ -159,7 +178,10 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 		openApi.addSecurityItem(reqBearerAuth);
 	}
 
-	@SuppressWarnings("rawtypes")
+	private String makeSchemaName(Class<?> cls) {
+		return "Mesh" + cls.getSimpleName();
+	}
+
 	private void addComponents(OpenAPI openApi) {
 		Components components;
 		if (openApi.getComponents() == null) {
@@ -168,21 +190,43 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 		} else {
 			components = openApi.getComponents();
 		}
+		components.setSchemas(new HashMap<>(Map.of("AnyJson", new Schema<String>())));
 		Reflections reflections = new Reflections("com.gentics.mesh");
 		reflections.getSubTypesOf(RestModel.class).stream().forEach(cls -> fillComponent(cls, components));
 	}
 
+	@SuppressWarnings("rawtypes")
 	private void fillComponent(Class<?> cls, Components components) {
-		Schema<?> schema = new Schema<String>();
+		if (!cls.getPackageName().startsWith("com.gentics.mesh") || StringUtils.isBlank(cls.getSimpleName())) {
+			return;
+		}
+		Schema<?> schema = components.getSchemas().getOrDefault(cls.getSimpleName(), new Schema<String>());
+		schema.setName(cls.getSimpleName());
 		List<Stream<Field>> fieldStreams = new ArrayList<>();
-		Class<?> tclass = cls;
-		log.debug("Class: " + tclass.getCanonicalName());
 		final List<Type> generics = new ArrayList<>();
 		generics.addAll(Arrays.asList(ParameterizedType.class.isInstance(cls) ? ParameterizedType.class.cast(cls).getActualTypeArguments() : new Type[0]));
-		while (tclass != null) {
+		Deque<Class<?>> dq = new ArrayDeque<>(2);
+		dq.addLast(cls);
+		while(!dq.isEmpty()) {
+			Class<?> tclass = dq.pop();
+			log.debug("Class: " + tclass.getCanonicalName());
+			/*if (tclass != cls) {
+				Schema<?> tschema = components.getSchemas().computeIfAbsent(tclass.getSimpleName(), key -> new Schema<String>());
+				tschema.setName(tclass.getSimpleName());
+				Schema<?> refSchema = new Schema<>();
+				refSchema.$ref("#/components/schemas/" + tclass.getSimpleName());
+				schema.addAllOfItem(refSchema);
+				refSchema = new Schema<>();
+				refSchema.$ref("#/components/schemas/" + cls.getSimpleName());
+				tschema.addAnyOfItem(refSchema);
+			}*/
 			fieldStreams.add(Arrays.stream(tclass.getDeclaredFields()));
 			generics.addAll(Arrays.asList(ParameterizedType.class.isInstance(tclass.getGenericSuperclass()) ? ParameterizedType.class.cast(tclass.getGenericSuperclass()).getActualTypeArguments() : new Type[0]));
+			dq.addAll(Arrays.stream(tclass.getInterfaces()).filter(i -> i.getPackageName().startsWith("com.gentics.mesh")).collect(Collectors.toList()));
 			tclass = tclass.getSuperclass();
+			if (tclass != null) {
+				dq.addLast(tclass);
+			}
 		}
 		if (generics.size() > 0) {
 			log.debug(" - Generics: " + Arrays.toString(generics.toArray()));
@@ -342,9 +386,13 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 							responseBody.addMediaType("*/*", mediaType);
 							response.setContent(responseBody);
 						} else {
-							e.getValue().getBody().entrySet().stream().filter(r -> Objects.nonNull(r.getValue()))
-								.map(r -> fillMediaType(r.getKey(), r.getValue(), ref))
-								.filter(Objects::nonNull).forEach(r -> responseBody.addMediaType(r.getKey(), r.getValue()));
+							if (e.getValue().getBody() != null) {
+								e.getValue().getBody().entrySet().stream().filter(r -> Objects.nonNull(r.getValue()))
+									.map(r -> fillMediaType(r.getKey(), r.getValue(), ref))
+									.filter(Objects::nonNull).forEach(r -> responseBody.addMediaType(r.getKey(), r.getValue()));
+							} else {
+								log.warn("Body of " + e.getKey() + " is null!");
+							}
 							response.setContent(responseBody);
 						}
 					}							
@@ -438,13 +486,56 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 //			fieldSchema.setType("string");
 //			fieldSchema.setEnum(Arrays.stream(t.getEnumConstants()).collect(Collectors.toList()));
 		} else {
-			fieldSchema.setType("object");
-			fieldSchema.set$ref("#/components/schemas/" + t.getSimpleName());
 			if (t.isEnum()) {
 				Schema enumSchema = new Schema<String>();
 				enumSchema.setType("string");
 				enumSchema.setEnum(Arrays.stream(t.getEnumConstants()).collect(Collectors.toList()));
 				components.addSchemas(t.getSimpleName(), enumSchema);
+			}
+			if (Map.class.isAssignableFrom(t)) {
+				if (generics.size() == 2) {
+					BiConsumer<Type, Schema> innerTypeMapper = (ty, tfieldSchema) -> {
+						Class<?> tt = Class.class.isInstance(ty) ? Class.class.cast(ty) : generics.get(1).getClass();
+						if (tt.isPrimitive() || Number.class.isAssignableFrom(tt) || Boolean.class.isAssignableFrom(tt)) {
+							if (int.class.isAssignableFrom(tt) || Integer.class.isAssignableFrom(tt)) {
+								tfieldSchema.setType("integer");
+								tfieldSchema.setFormat("int32");
+							} else if (boolean.class.isAssignableFrom(tt) || Boolean.class.isAssignableFrom(tt)) {
+								tfieldSchema.setType("boolean");
+							} else if (float.class.isAssignableFrom(tt) || Float.class.isAssignableFrom(tt)) {
+								tfieldSchema.setType("number");
+								tfieldSchema.setFormat("float");
+							} else if (long.class.isAssignableFrom(tt) || Long.class.isAssignableFrom(tt)) {
+								tfieldSchema.setType("integer");
+								tfieldSchema.setFormat("int64");
+							} else if (double.class.isAssignableFrom(tt) || Double.class.isAssignableFrom(tt)) {
+								tfieldSchema.setType("number");
+								tfieldSchema.setFormat("double");
+							} else if (BigDecimal.class.isAssignableFrom(tt) || Number.class.isAssignableFrom(tt)) {
+								tfieldSchema.setType("number");
+							} else {
+								tfieldSchema.setType("object");
+							}
+						} else if (CharSequence.class.isAssignableFrom(tt)) {
+							tfieldSchema.setType("string");
+						} else {
+							tfieldSchema.setType("object");
+						}
+					};
+					fieldSchema.setType("object"); // TODO why object?
+					//innerTypeMapper.accept(generics.get(0).getClass(), fieldSchema);
+					Schema<?> valueSchema = new Schema<>();
+					innerTypeMapper.accept(generics.get(1), valueSchema);
+					fieldSchema.setAdditionalProperties(valueSchema);
+				} else {
+					fieldSchema.setType("object");
+					fieldSchema.setAdditionalProperties(new Schema<String>().type("object"));
+				}
+			} else if (JsonObject.class.isAssignableFrom(t) || JsonSerializable.class.isAssignableFrom(t)) {
+				fieldSchema.set$ref("#/components/schemas/AnyJson");
+			} else {
+				fieldSchema.setType("object");
+				fieldSchema.set$ref("#/components/schemas/" + t.getSimpleName());
 			}
 		}
 	}
