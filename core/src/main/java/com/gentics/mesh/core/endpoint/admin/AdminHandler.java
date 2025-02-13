@@ -232,7 +232,7 @@ public abstract class AdminHandler extends AbstractHandler {
 	}
 
 	public void handleOpenAPIv3(InternalActionContext ac, String format) {
-		OpenAPIv3Generator generator = new OpenAPIv3Generator(clusterManager.getHazelcast());
+		OpenAPIv3Generator generator = new OpenAPIv3Generator(clusterManager.getHazelcast(), options.getHttpServerOptions());
 		generator.generate(ac, format);
 	}
 
