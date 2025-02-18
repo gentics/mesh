@@ -369,5 +369,10 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 		public AWSTestMode awsContainer() {
 			return AWSTestMode.NONE;
 		}
+
+		@Override
+		public boolean loginClients() {
+			return true;
+		}
 	};
 }
