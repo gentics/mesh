@@ -15,7 +15,18 @@ include::content/docs/variables.adoc-include[]
 = Gentics Mesh LTS Changelog
 
 The LTS changelog lists releases which are only accessible via a commercial subscription.
-All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
+All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0, and so on.
+
+////
+Note: Do not add changelog entries for versions 2.x here, but create the entries as files
+in changelog/src/changelog/entries/...
+
+Running
+mvn -pl changelog install
+will then create the new inclusion file changelog-2.adoc-include
+////
+
+include::content/docs/changelog-2.adoc-include[]
 
 [[v1.10.37]]
 == 1.10.37 (15.01.2025)
