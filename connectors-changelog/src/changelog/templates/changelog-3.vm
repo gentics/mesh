@@ -10,6 +10,8 @@ mvn -pl changelog install
 [[v${changelog.version}]]
 == ${changelog.version} ($changelog.date)
 
+icon:check[] Database Connector API: The API has been updated to the version ${changelog.version}.
+
 #foreach($entry in $changelog.getChangelogEntries())
 #if($entry.type == "enhancement")
 #set($icon = "icon:plus[]")
