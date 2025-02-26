@@ -10,9 +10,6 @@ rm includes*
 echo
 echo  "Collecting all tests"
 find -name "*Test.java" | grep -v Abstract | shuf | sed  's/.*java\/\(.*\)/\1/' > alltests
-
-echo "com.gentics.mesh.core.schema.SchemaEndpointNoEsTest" > alltests
-
 tests=$(cat alltests | wc -l)
 
 echo "Found $tests tests"
