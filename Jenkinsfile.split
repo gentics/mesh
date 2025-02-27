@@ -1,5 +1,5 @@
 // The GIT repository for this pipeline lib is defined in the global Jenkins setting
-@Library('jenkins-pipeline-library@nexus')
+@Library('jenkins-pipeline-library')
 import com.gentics.*
 
 // Make the helpers aware of this jobs environment
@@ -458,7 +458,6 @@ stage("Setup Build Environment") {
 		} finally {
 			deleteDir()
 			githubBuildEnded()
-			notifyMattermostUsers()
 		}
 	}
 }
