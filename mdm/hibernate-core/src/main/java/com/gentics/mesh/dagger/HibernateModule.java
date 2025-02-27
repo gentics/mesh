@@ -74,8 +74,9 @@ import com.gentics.mesh.core.data.s3binary.S3Binaries;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.cluster.ClusterManager;
-import com.gentics.mesh.core.endpoint.admin.AdminHandler;
+import com.gentics.mesh.core.endpoint.admin.consistency.BinariesConsistencyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.UploadsConsistencyCheck;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
 import com.gentics.mesh.core.migration.BranchMigration;
 import com.gentics.mesh.core.migration.MicronodeMigration;
@@ -89,7 +90,6 @@ import com.gentics.mesh.database.HibernateDatabase;
 import com.gentics.mesh.database.cluster.HibClusterManager;
 import com.gentics.mesh.distributed.MasterInfoProvider;
 import com.gentics.mesh.distributed.MasterInfoProviderImpl;
-import com.gentics.mesh.endpoint.admin.HibAdminHandler;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.hibernate.HibernateRootResolver;
@@ -314,7 +314,10 @@ public abstract class HibernateModule {
 	 * therefore some consistency checks need to be excluded from the list when running tests
 	 */
 	protected static List<ConsistencyCheck> consistencyChecks = new ArrayList<>(
-			Arrays.asList(new HibernateBranchCheck(),
+			Arrays.asList(
+					new UploadsConsistencyCheck(),
+					new BinariesConsistencyCheck(),
+					new HibernateBranchCheck(),
 					new BinaryFieldRefCheck(),
 					new BoolListItemCheck(),
 					new DateListItemCheck(),
@@ -328,7 +331,8 @@ public abstract class HibernateModule {
 					new StringListItemCheck(),
 					new NodeFieldContainerCheck(),
 					new NodeFieldContainerVersionsEdgeCheck(),
-					new ContentRefCheck()));
+					new ContentRefCheck())
+			);
 
 	@Provides
 	public static List<ConsistencyCheck> consistencyCheckList() {

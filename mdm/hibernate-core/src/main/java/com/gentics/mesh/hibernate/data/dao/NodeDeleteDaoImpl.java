@@ -1,6 +1,9 @@
 package com.gentics.mesh.hibernate.data.dao;
 
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_REFERENCE_UPDATED;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,12 +24,14 @@ import com.gentics.mesh.contentoperation.ContentKey;
 import com.gentics.mesh.contentoperation.ContentStorage;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.PersistingNodeDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.ReferenceType;
@@ -54,10 +59,12 @@ public class NodeDeleteDaoImpl {
 
 	private final CurrentTransaction currentTransaction;
 	private final ContentStorage contentStorage;
+	private final PersistingNodeDao nodeDao;
 
-	public NodeDeleteDaoImpl(CurrentTransaction currentTransaction, ContentStorage contentStorage) {
+	public NodeDeleteDaoImpl(CurrentTransaction currentTransaction, ContentStorage contentStorage, PersistingNodeDao nodeDao) {
 		this.currentTransaction = currentTransaction;
 		this.contentStorage = contentStorage;
+		this.nodeDao = nodeDao;
 	}
 
 	/**
@@ -65,12 +72,12 @@ public class NodeDeleteDaoImpl {
 	 * @param project
 	 * @param bac
 	 */
-	public void deleteAllFromProject(HibProject project, BulkActionContext bac) {
+	public void deleteAllFromProject(HibProject project) {
 		ContentDaoImpl contentDao = HibernateTx.get().contentDao();
 		((HibProjectImpl) project).getHibSchemas()
 				.stream()
 				.flatMap(this::getVersions)
-				.forEach(version -> contentDao.delete(version, project, bac));
+				.forEach(version -> contentDao.delete(version, project));
 
 		((HibProjectImpl) project).getHibMicroschemas()
 				.stream()
@@ -94,7 +101,7 @@ public class NodeDeleteDaoImpl {
 	 * @param bac
 	 * @param ignoreChecks
 	 */
-	public void deleteRecursive(HibNode node, BulkActionContext bac, boolean ignoreChecks) {
+	public void deleteRecursive(HibNode node, boolean ignoreChecks) {
 		ContentDaoImpl contentDao = HibernateTx.get().contentDao();
 		Set<HibNodeImpl> descendants = em().createNamedQuery("nodeBranchParents.findDescendants", HibNodeImpl.class)
 				.setParameter("node", node)
@@ -107,11 +114,11 @@ public class NodeDeleteDaoImpl {
 				.collect(Collectors.toSet());
 
 		// Send Node Updated events
-		addNodeUpdateReferenceEvents(nodesUuidsToDelete, bac);
+		addNodeUpdateReferenceEvents(nodesUuidsToDelete);
 
-		contentDao.delete(versions, descendants, bac);
+		contentDao.delete(versions, descendants);
 
-		descendants.forEach(n -> bac.add(onDeleted(n)));
+		descendants.forEach(n -> HibernateTx.get().batch().add(onDeleted(n)));
 
 		// clear entity manager before performing bulk delete queries
 		em().clear();
@@ -136,7 +143,7 @@ public class NodeDeleteDaoImpl {
 					.setParameter("nodesUuid", slice)
 					.executeUpdate();
 		});
-		bac.process();
+		CommonTx.get().data().maybeGetBulkActionContext().ifPresent(BulkActionContext::process);
 	}
 
 	/**
@@ -146,7 +153,21 @@ public class NodeDeleteDaoImpl {
 	 * @param bac
 	 * @param ignoreChecks
 	 */
-	public void deleteRecursiveFromBranch(HibNode node, HibBranch branch, BulkActionContext bac, boolean ignoreChecks) {
+	public void deleteRecursiveFromBranch(HibNode node, HibBranch branch, boolean ignoreChecks, boolean recursive) {
+		// 0. Dumb checks
+		if (!ignoreChecks) {
+			// Prevent deletion of basenode
+			if (node.getProject().getBaseNode().getUuid().equals(node.getUuid())) {
+				throw error(METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
+			}
+			// Prevent deletion of node parent, if not recursive
+			if (!recursive) {
+				if (nodeDao.getChildren(node, branch.getUuid()).hasNext()) {
+					throw error(BAD_REQUEST, "node_error_delete_failed_node_has_children");
+				}
+			}
+		}
+
 		// 1. get descendants in branch, fetching the edges as well
 		ContentDaoImpl contentDao = HibernateTx.get().contentDao();
 		EntityGraph<?> entityGraph = em().getEntityGraph("node.content");
@@ -170,11 +191,11 @@ public class NodeDeleteDaoImpl {
 		// ones belonging to the provided branch that are not referenced in other branches
 		Set<ContentKey> deletableContainersForBranch = findDeletableContainersForBranch(relatedContainers, descendants, branch);
 		// before deleting the containers, we must submit reference updates events
-		addNodeUpdateReferenceEvents(nodesUuidsToDelete, bac);
+		addNodeUpdateReferenceEvents(nodesUuidsToDelete);
 		// clear entity manager before performing bulk queries
 		em().clear();
 		// delete the containers
-		contentDao.delete(deletableContainersForBranch, bac);
+		contentDao.delete(deletableContainersForBranch);
 		// note: we need to use half the split-size here, because at least one of the queries will inject the slice twice.
 		List<HibNodeImpl> deletableNodes = SplittingUtils.splitAndMergeInList(nodesUuidsToDelete, HibernateUtil.inQueriesLimitForSplitting(2) / 2, slice -> {
 			// delete edges
@@ -193,7 +214,7 @@ public class NodeDeleteDaoImpl {
 		});
 		// create delete events
 		deletableNodes.forEach(n -> {
-			bac.add(onDeleted(n));
+			HibernateTx.get().batch().add(onDeleted(n));
 			em().detach(n); // make sure the elements are not stored in the persistence context, otherwise em().find() will still return them after deletion
 		});
 		// finally delete the nodes
@@ -267,18 +288,18 @@ public class NodeDeleteDaoImpl {
 		return ret;
 	}
 
-	private void addNodeUpdateReferenceEvents(List<UUID> nodesUuidsToDelete, BulkActionContext bac) {
+	private void addNodeUpdateReferenceEvents(List<UUID> nodesUuidsToDelete) {
 		Set<String> handledNodeUuids = new HashSet<>();
 		// node reference updates events for nodes and node list referencing the to be deleted nodes.
-		addNodeUpdateReferenceEventsForReferencingFields(nodesUuidsToDelete, bac, handledNodeUuids);
-		addNodeUpdateReferenceEventsForReferencingListItems(nodesUuidsToDelete, bac, handledNodeUuids);
+		addNodeUpdateReferenceEventsForReferencingFields(nodesUuidsToDelete, handledNodeUuids);
+		addNodeUpdateReferenceEventsForReferencingListItems(nodesUuidsToDelete, handledNodeUuids);
 		// node reference updates events for micronodes and micronodes list referencing the to be deleted nodes.
 		List<UUID> micronodesReferencingNodes = micronodesReferencingNodes(nodesUuidsToDelete);
-		addNodeUpdateReferenceEventsForReferencingMicroFields(micronodesReferencingNodes, bac, handledNodeUuids);
-		addNodeUpdateReferenceEventsForReferencingMicroListItems(micronodesReferencingNodes, bac, handledNodeUuids);
+		addNodeUpdateReferenceEventsForReferencingMicroFields(micronodesReferencingNodes, handledNodeUuids);
+		addNodeUpdateReferenceEventsForReferencingMicroListItems(micronodesReferencingNodes, handledNodeUuids);
 	}
 
-	private void addNodeUpdateReferenceEventsForReferencingFields(List<UUID> nodesUuidsToDelete, BulkActionContext bac, Set<String> handledNodeUuids) {
+	private void addNodeUpdateReferenceEventsForReferencingFields(List<UUID> nodesUuidsToDelete, Set<String> handledNodeUuids) {
 		SplittingUtils.splitAndConsume(nodesUuidsToDelete, HibernateUtil.inQueriesLimitForSplitting(3), slice -> em().createQuery(
 				"select e.languageTag, e.branch.dbUuid, e.type, p, c, n.dbUuid from nodefieldcontainer e " +
 						" join nodefieldref ref on e.contentUuid = ref.containerUuid " +
@@ -289,10 +310,10 @@ public class NodeDeleteDaoImpl {
 						" and (e.type = 'DRAFT' or e.type = 'PUBLISHED')", Tuple.class)
 				.setParameter("nodeUuids", slice)
 				.getResultList()
-				.forEach(tuple -> addReferenceUpdateEvent(handledNodeUuids, bac, tuple)));
+				.forEach(tuple -> addReferenceUpdateEvent(handledNodeUuids, tuple)));
 	}
 
-	private void addNodeUpdateReferenceEventsForReferencingListItems(List<UUID> nodesUuidsToDelete, BulkActionContext bac, Set<String> handledNodeUuids) {
+	private void addNodeUpdateReferenceEventsForReferencingListItems(List<UUID> nodesUuidsToDelete, Set<String> handledNodeUuids) {
 		SplittingUtils.splitAndConsume(nodesUuidsToDelete, HibernateUtil.inQueriesLimitForSplitting(3), slice -> em().createQuery(
 				"select e.languageTag, e.branch.dbUuid, e.type, p, c, n.dbUuid from nodefieldcontainer e " +
 						" join nodelistitem l on e.contentUuid = l.containerUuid " +
@@ -303,7 +324,7 @@ public class NodeDeleteDaoImpl {
 						" and (e.type = 'DRAFT' or e.type = 'PUBLISHED')", Tuple.class)
 				.setParameter("nodeUuids", slice)
 				.getResultList()
-				.forEach(tuple -> addReferenceUpdateEvent(handledNodeUuids, bac, tuple)));
+				.forEach(tuple -> addReferenceUpdateEvent(handledNodeUuids, tuple)));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -329,7 +350,7 @@ public class NodeDeleteDaoImpl {
 		});
 	}
 
-	private void addNodeUpdateReferenceEventsForReferencingMicroFields(List<UUID> micronodesReferencingNodes, BulkActionContext bac, Set<String> handledNodeUuids) {
+	private void addNodeUpdateReferenceEventsForReferencingMicroFields(List<UUID> micronodesReferencingNodes, Set<String> handledNodeUuids) {
 		SplittingUtils.splitAndConsume(micronodesReferencingNodes, HibernateUtil.inQueriesLimitForSplitting(3), slice -> em().createQuery(
 					"select e.languageTag, e.branch.dbUuid, e.type, p, c, n.dbUuid from nodefieldcontainer e " +
 							" join micronodefieldref ref on e.contentUuid = ref.containerUuid " +
@@ -340,10 +361,10 @@ public class NodeDeleteDaoImpl {
 							" and (e.type = 'DRAFT' or e.type = 'PUBLISHED')", Tuple.class)
 					.setParameter("micronodeUuids", slice)
 					.getResultList()
-					.forEach(tuple -> addReferenceUpdateEvent(handledNodeUuids, bac, tuple)));
+					.forEach(tuple -> addReferenceUpdateEvent(handledNodeUuids, tuple)));
 	}
 
-	private void addNodeUpdateReferenceEventsForReferencingMicroListItems(List<UUID> micronodesReferencingNodes, BulkActionContext bac, Set<String> handledNodeUuids) {
+	private void addNodeUpdateReferenceEventsForReferencingMicroListItems(List<UUID> micronodesReferencingNodes, Set<String> handledNodeUuids) {
 		SplittingUtils.splitAndConsume(micronodesReferencingNodes, HibernateUtil.inQueriesLimitForSplitting(3), slice -> em().createQuery(
 				"select e.languageTag, e.branch.dbUuid, e.type, p, c, n.dbUuid from nodefieldcontainer e " +
 						" join micronodelistitem ref on e.contentUuid = ref.containerUuid " +
@@ -354,7 +375,7 @@ public class NodeDeleteDaoImpl {
 						" and (e.type = 'DRAFT' or e.type = 'PUBLISHED')", Tuple.class)
 				.setParameter("micronodeUuids", slice)
 				.getResultList()
-				.forEach(tuple -> addReferenceUpdateEvent(handledNodeUuids, bac, tuple)));
+				.forEach(tuple -> addReferenceUpdateEvent(handledNodeUuids, tuple)));
 	}
 
 	private NodeMeshEventModel onDeleted(HibNode node) {
@@ -372,20 +393,20 @@ public class NodeDeleteDaoImpl {
 		return event;
 	}
 
-	private void addReferenceUpdateEvent(Set<String> handledNodeUuids, BulkActionContext bac, Tuple tuple) {
+	private void addReferenceUpdateEvent(Set<String> handledNodeUuids, Tuple tuple) {
 		String languageTag = (String) tuple.get(0);
 		UUID branchUuid = (UUID) tuple.get(1);
 		ContainerType ctype = (ContainerType) tuple.get(2);
 		HibProjectImpl project = (HibProjectImpl) tuple.get(3);
 		HibSchema schema = (HibSchema) tuple.get(4);
 		UUID uuid = (UUID) tuple.get(5);
-		addReferenceUpdateEvent(handledNodeUuids, UUIDUtil.toShortUuid(uuid), schema, languageTag, UUIDUtil.toShortUuid(branchUuid), ctype, bac, project);
+		addReferenceUpdateEvent(handledNodeUuids, UUIDUtil.toShortUuid(uuid), schema, languageTag, UUIDUtil.toShortUuid(branchUuid), ctype, project);
 	}
    
-	private void addReferenceUpdateEvent(Set<String> handledNodeUuids, String referencingNodeUuid, HibSchema schema, String languageTag, String branchUuid, ContainerType type, BulkActionContext bac, HibProject project) {
+	private void addReferenceUpdateEvent(Set<String> handledNodeUuids, String referencingNodeUuid, HibSchema schema, String languageTag, String branchUuid, ContainerType type, HibProject project) {
 		String key = referencingNodeUuid + languageTag + branchUuid + type.getCode();
 		if (!handledNodeUuids.contains(key)) {
-			bac.add(onReferenceUpdated(referencingNodeUuid, schema, branchUuid, type, languageTag, project));
+			HibernateTx.get().batch().add(onReferenceUpdated(referencingNodeUuid, schema, branchUuid, type, languageTag, project));
 			handledNodeUuids.add(key);
 		}
 	}

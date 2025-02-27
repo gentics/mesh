@@ -61,4 +61,12 @@ public interface Binaries {
 	 * @return
 	 */
 	Transactional<Stream<HibBinary>> findAll();
+
+	/**
+	 * Find a binary with given UUID.
+	 * 
+	 * @param uuid
+	 * @return
+	 */
+	Transactional<HibBinary> findByUuid(String uuid);
 }

@@ -4,7 +4,6 @@ import java.util.UUID;
 
 import javax.annotation.Nonnull;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.hibernate.data.domain.HibFieldEdge;
@@ -56,10 +55,10 @@ public abstract class AbstractReferenceHibField<T extends HibFieldEdge> extends 
 	abstract public T getReferencedEdge();
 
 	@Override
-	public void onFieldDeleted(HibernateTx tx, BulkActionContext bac) {
+	public void onFieldDeleted(HibernateTx tx) {
 		T referenced = getReferencedEdge();
 		if (referenced != null) {
-			referenced.onEdgeDeleted(tx, bac);
+			referenced.onEdgeDeleted(tx);
 			tx.forceDelete(referenced, "dbUuid", e -> e.getId());
 		}
 	}

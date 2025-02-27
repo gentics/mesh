@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.storage;
 
 import java.io.File;
 
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3RestResponse;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
@@ -91,4 +92,12 @@ public interface S3BinaryStorage {
 	 * @param s3ObjectKey
 	 */
 	Completable delete(String s3ObjectKey);
+
+	/**
+	 * Delete the binary with the given S3 key if the transaction succeeds.
+	 * 
+	 * @param s3ObjectKey
+	 * @param tx
+	 */
+	void deleteOnTxSuccess(String s3ObjectKey, Tx tx);
 }

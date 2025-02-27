@@ -59,7 +59,7 @@ public class NodeJobProcessor implements SingleJobProcessor {
 					}).doOnError(err -> {
 						db.tx(tx -> {
 							context.getStatus().error(err, "Error in node migration.");
-							tx.createBatch().add(handler.createEvent(job, tx, SCHEMA_MIGRATION_FINISHED, FAILED)).dispatch();
+							tx.batch().add(handler.createEvent(job, tx, SCHEMA_MIGRATION_FINISHED, FAILED)).dispatch();
 						});
 					});
 
@@ -81,7 +81,7 @@ public class NodeJobProcessor implements SingleJobProcessor {
 			}
 		});
 		db.tx(tx -> {
-			tx.createBatch().add(handler.createEvent(job, tx, SCHEMA_MIGRATION_FINISHED, COMPLETED)).dispatch();
+			tx.batch().add(handler.createEvent(job, tx, SCHEMA_MIGRATION_FINISHED, COMPLETED)).dispatch();
 		});
 	}
 }

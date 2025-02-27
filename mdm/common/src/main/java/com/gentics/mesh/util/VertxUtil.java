@@ -13,6 +13,7 @@ import com.gentics.mesh.etc.config.MeshUploadOptions;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.SingleObserver;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Action;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.FileUpload;
 
@@ -31,8 +32,34 @@ public final class VertxUtil {
 	 * @param rc
 	 * @return
 	 */
-	public static SingleObserver<RestModel> restModelSender(InternalActionContext rc) {
+	public static final SingleObserver<RestModel> restModelSender(InternalActionContext rc) {
 		return restModelSender(rc, OK);
+	}
+
+	/**
+	 * Convert a {@link Runnable} into {@link Action};
+	 * 
+	 * @param r
+	 * @return
+	 */
+	public static final Action intoAction(Runnable r) {
+		return () -> r.run();
+	}
+
+	/**
+	 * Convert a {@link Action} into {@link Runnable}, wrapping its exception with {@link IllegalStateException}
+	 * 
+	 * @param r
+	 * @return
+	 */
+	public static final Runnable intoRunnable(Action r) {
+		return () -> {
+			 try {
+				r.run();
+			} catch (Exception e) {
+				throw new IllegalStateException(e);
+			}
+		};
 	}
 
 	/**
@@ -44,7 +71,7 @@ public final class VertxUtil {
 	 * @param statusCode
 	 * @return
 	 */
-	public static SingleObserver<RestModel> restModelSender(InternalActionContext rc, HttpResponseStatus statusCode) {
+	public static final SingleObserver<RestModel> restModelSender(InternalActionContext rc, HttpResponseStatus statusCode) {
 		return new SingleObserver<RestModel>() {
 			@Override
 			public void onSubscribe(Disposable d) {

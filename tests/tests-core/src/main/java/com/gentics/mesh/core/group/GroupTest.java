@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -144,7 +145,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 			HibGroup group = groupDao.create("newGroup", user());
 			assertNotNull(group);
 			String uuid = group.getUuid();
-			groupDao.delete(group, createBulkContext());
+			groupDao.delete(group);
 			group = groupDao.findByUuid(uuid);
 			assertNull(group);
 		}
@@ -205,7 +206,8 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 
 			// TODO add users to group?
 			BulkActionContext bac = createBulkContext();
-			groupDao.delete(group, bac);
+			tx.<CommonTx>unwrap().data().setBulkActionContext(bac);
+			groupDao.delete(group);
 			assertElement(tx.groupDao(), uuid, false);
 			assertElement(tx.userDao(), userUuid, true);
 			assertEquals(1, bac.batch().getEntries().size());

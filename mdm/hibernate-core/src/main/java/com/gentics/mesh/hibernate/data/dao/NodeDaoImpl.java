@@ -52,7 +52,6 @@ import com.gentics.mesh.contentoperation.CommonContentColumn;
 import com.gentics.mesh.contentoperation.ContentColumn;
 import com.gentics.mesh.contentoperation.ContentStorage;
 import com.gentics.mesh.contentoperation.JoinedContentColumn;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -148,7 +147,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 		super(rootDaoHelper, permissionRoots, commonDaoHelper, currentTransaction, eventFactory, vertx);
 		this.contentStorage = contentStorage;
 		this.databaseConnector = databaseConnector;
-		this.nodeDeleteDao = new NodeDeleteDaoImpl(currentTransaction, contentStorage);
+		this.nodeDeleteDao = new NodeDeleteDaoImpl(currentTransaction, contentStorage, this);
 	}
 
 	@Override
@@ -1168,25 +1167,25 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 	 * @param project
 	 * @param bac
 	 */
-	public void deleteAllFromProject(HibProject project, BulkActionContext bac) {
-		nodeDeleteDao.deleteAllFromProject(project, bac);
+	public void deleteAllFromProject(HibProject project) {
+		nodeDeleteDao.deleteAllFromProject(project);
 	}
 
 	@Override
-	public void deleteFromBranch(HibNode node, InternalActionContext ac, HibBranch branch, BulkActionContext bac, boolean ignoreChecks) {
+	public void deleteFromBranch(HibNode node, InternalActionContext ac, HibBranch branch, boolean ignoreChecks) {
 		DeleteParameters parameters = ac.getDeleteParameters();
 		if (parameters.isRecursive()) {
-			nodeDeleteDao.deleteRecursiveFromBranch(node, branch, bac, ignoreChecks);
+			nodeDeleteDao.deleteRecursiveFromBranch(node, branch, ignoreChecks, parameters.isRecursive());
 		} else {
-			PersistingNodeDao.super.deleteFromBranch(node, ac, branch, bac, ignoreChecks);
+			PersistingNodeDao.super.deleteFromBranch(node, ac, branch, ignoreChecks);
 		}
 	}
 	@Override
-	public void delete(HibNode node, BulkActionContext bac, boolean ignoreChecks, boolean recursive) {
+	public void delete(HibNode node, boolean ignoreChecks, boolean recursive) {
 		if (recursive) {
-			nodeDeleteDao.deleteRecursive(node, bac, ignoreChecks);
+			nodeDeleteDao.deleteRecursive(node, ignoreChecks);
 		} else {
-			PersistingNodeDao.super.delete(node, bac, ignoreChecks, recursive);
+			PersistingNodeDao.super.delete(node, ignoreChecks, recursive);
 		}
 	}
 

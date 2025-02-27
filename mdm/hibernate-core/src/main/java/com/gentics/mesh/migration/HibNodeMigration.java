@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.contentoperation.CommonContentColumn;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -87,8 +86,8 @@ public class HibNodeMigration extends NodeMigrationImpl {
 
 	@Override
 	public void bulkPurge(List<HibNodeFieldContainer> toPurge) {
-		ContentDaoImpl contentDao = HibernateTx.get().contentDao();
-
-		contentDao.purge(toPurge, new DummyBulkActionContext());
+		HibernateTx tx = HibernateTx.get();
+		ContentDaoImpl contentDao = tx.contentDao();
+		contentDao.purge(toPurge);
 	}
 }

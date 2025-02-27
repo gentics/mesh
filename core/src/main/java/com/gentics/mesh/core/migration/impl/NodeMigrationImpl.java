@@ -92,7 +92,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 				NodeMigrationActionContextImpl context = new NodeMigrationActionContextImpl();
 				context.setStatus(status);
 
-				tx.createBatch().add(createEvent(hibJob, tx, SCHEMA_MIGRATION_START, STARTING)).dispatch();
+				tx.batch().add(createEvent(hibJob, tx, SCHEMA_MIGRATION_START, STARTING)).dispatch();
 
 				HibBranch branch = hibJob.getBranch();
 				if (branch == null) {

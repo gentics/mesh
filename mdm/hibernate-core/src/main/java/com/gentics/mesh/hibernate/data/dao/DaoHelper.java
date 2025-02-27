@@ -48,7 +48,6 @@ import com.gentics.graphqlfilter.filter.operation.JoinPart;
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.cache.TotalsCache;
 import com.gentics.mesh.contentoperation.CommonContentColumn;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.HibBaseElement;
@@ -840,8 +839,8 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 				FilterOperand<?> left = operands.first;
 				FilterOperand<?> right = operands.second;
 
-				HibernateFilter leftSql = makeSqlComparisonOperand(left, ownerAlias, true, myJoin, maybeBranch, maybeTopLevelFilter, maybeContainerType, callStack);
-				HibernateFilter rightSql = makeSqlComparisonOperand(right, ownerAlias, true, myJoin, maybeBranch, maybeTopLevelFilter, maybeContainerType, callStack);
+				HibernateFilter leftSql = makeSqlComparisonOperand(left, ownerAlias, true, myJoin, maybeBranch, maybeTopLevelFilter, maybeContainerType, callStack, Optional.empty());
+				HibernateFilter rightSql = makeSqlComparisonOperand(right, ownerAlias, true, myJoin, maybeBranch, maybeTopLevelFilter, maybeContainerType, callStack, leftSql.getMaybeFieldType());
 				String filter1;
 				if (right.isLiteral() && !StringUtils.equals(filter.getOperator(), "IS") && !StringUtils.equals(filter.getOperator(), "IS NOT") && !StringUtils.equals(filter.getOperator(), "<>")) {
 				    // when we compare a value in the DB with a literal (not with IS or IS NOT), then we should add the "AND [column] IS NOT NULL" clause.
@@ -1072,7 +1071,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 				JoinType.LEFT, versionAlias);
 	}
 
-	private Optional<HibernateFilter> maybeMakeLiteralOperand(FilterOperand<?> operand, String ownerAlias) {
+	private Optional<HibernateFilter> maybeMakeLiteralOperand(FilterOperand<?> operand, String ownerAlias, Optional<String> maybeOperandType) {
 		return Optional.ofNullable(operand).filter(FilterOperand::isLiteral).map(op -> {
 			HibernateFilter nf;
 			Object value = op.getValue();
@@ -1082,7 +1081,9 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 				String paramName = makeParamName(value);
 				if (value != null) {
 					if (UUIDUtil.isUUID(value.toString())) {
-						value = UUIDUtil.toJavaUuid(value.toString());
+						if (maybeOperandType.filter(otype -> "string".equalsIgnoreCase(otype) || "html".equalsIgnoreCase(otype)).isEmpty()) {
+							value = UUIDUtil.toJavaUuid(value.toString());
+						}
 					} else if (value.getClass().isEnum()) {
 						value = Enum.class.cast(value).name();
 					}
@@ -1547,10 +1548,10 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 		}
 		// At last, in the case of content, get the right owner table and field name, if applicable
 		String schemaKeySuffix = "." + actualFieldName;
-		String fieldSuffix = maybeOwner.flatMap(o -> joins.stream()
-					.filter(j -> j.getLeft().getTable().equals(o) && j.getRight().getTable().equals(j.getLeft().getField() + schemaKeySuffix))
-					.map(j -> j.getRight().getField()).findAny())
-				.map(v -> "-" + v).orElse(StringUtils.EMPTY);
+		Optional<String> maybeFieldType = maybeOwner.flatMap(o -> joins.stream()
+				.filter(j -> j.getLeft().getTable().equals(o) && j.getRight().getTable().equals(j.getLeft().getField() + schemaKeySuffix))
+				.map(j -> j.getRight().getField()).findAny());
+		String fieldSuffix = maybeFieldType.map(v -> "-" + v).orElse(StringUtils.EMPTY);
 		// Wrap the field name according the dialect, if it exists, and the field name is not an expression or a placeholder.
 		Optional<String> maybeFieldName = Optional.ofNullable(actualFieldName).map(fieldName -> (StringUtils.isBlank(fieldName) || fieldName.contains(" ")) ? fieldName : databaseConnector.renderNonContentColumn(fieldName + fieldSuffix));
 		// Check both table alias / field name for existence 
@@ -1561,7 +1562,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 		if (maybeOwner.filter(owner -> !owner.endsWith("FIELD")).isPresent()) {
 			String declaredOwnerAlias = makeAlias(maybeOwner.get());
 			// If we came from the reference field builder and have already joined the (micro)content alias, the typename alias is present in an owner twice in the end.
-			// TODO FIXME this is error-prone for bigger recursion levels.
+			// TODO FIXME this is error-prone at the bigger recursion levels.
 			if (!ownerAlias.endsWith(declaredOwnerAlias + declaredOwnerAlias) && !ReferencedNodesFilterJoin.ALIAS_CONTENTFIELDKEY.equals(actualFieldName)) {
 				sb.append(declaredOwnerAlias);
 			}
@@ -1576,7 +1577,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 		} else {
 			sb.append(maybeFieldName.get());
 		}
-		return new HibernateFilter(HibernateTx.get().data().getDatabaseConnector().installStringContentColumn(sb.toString(), false, false), localJoins, paramsMap);
+		return new HibernateFilter(HibernateTx.get().data().getDatabaseConnector().installStringContentColumn(sb.toString(), false, false), localJoins, paramsMap, maybeFieldType);
 	}
 
 	private HibernateFilter buildReferenceFieldOperand(FilterOperand<?> op, Optional<String> maybeOwner, String ownerAlias, Map<String, Object> paramsMap, 
@@ -1619,8 +1620,8 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 	}
 
 	private HibernateFilter makeSqlComparisonOperand(FilterOperand<?> op, String ownerAlias, boolean isNative, NativeJoin join, 
-			Optional<UUID> maybeBranch, Optional<HibernateFilter> maybeTopLevelFilter, Optional<ContainerType> maybeContainerType, Deque<FilterOperation<?>> callStack) {
-		return maybeMakeLiteralOperand(op, ownerAlias).orElseGet(() -> makeParameterOperand(op, ownerAlias, isNative, join, maybeBranch, maybeTopLevelFilter, maybeContainerType, callStack));
+			Optional<UUID> maybeBranch, Optional<HibernateFilter> maybeTopLevelFilter, Optional<ContainerType> maybeContainerType, Deque<FilterOperation<?>> callStack, Optional<String> maybeOperandType) {
+		return maybeMakeLiteralOperand(op, ownerAlias, maybeOperandType).orElseGet(() -> makeParameterOperand(op, ownerAlias, isNative, join, maybeBranch, maybeTopLevelFilter, maybeContainerType, callStack));
 	}
 
 	private boolean doOwnerAndJoinMatchContentTrait(String joinOwner, String currentJoin) {
@@ -2057,10 +2058,10 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void delete(T element, BulkActionContext bac) {
+	public void delete(T element) {
 		currentTransaction.getTx().delete(element);
 		if (element instanceof HibCoreElement) {
-			bac.add(eventFactory.onDeleted(((HibCoreElement<? extends RestModel>) element)));
+			currentTransaction.getTx().batch().add(eventFactory.onDeleted(((HibCoreElement<? extends RestModel>) element)));
 		} else {
 			log.warn("Couldn't emit event. Class of element: " + element.getClass());
 		}

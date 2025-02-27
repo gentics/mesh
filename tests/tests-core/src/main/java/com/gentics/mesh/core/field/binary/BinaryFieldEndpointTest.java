@@ -27,10 +27,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
+import java.util.function.Predicate;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -71,6 +74,22 @@ import io.vertx.test.core.TestUtils;
 public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	private static final String FIELD_NAME = "binaryField";
+
+	/**
+	 * Predicate to filter out directories belonging to the old binaryImageCache structure
+	 */
+	private static final Predicate<Path> IS_OLD_STRUCTURE = p -> {
+		File f = p.toFile();
+		return f.isDirectory() && StringUtils.length(f.getName()) == 8;
+	};
+
+	/**
+	 * Predicate to filter out directories belonging to the new binaryImageCache structure
+	 */
+	private static final Predicate<Path> IS_NEW_STRUCTURE = p ->  {
+		File f = p.toFile();
+		return f.isDirectory() && StringUtils.length(f.getName()) == 2;
+	};
 
 	/**
 	 * Update the schema and add a binary field.
@@ -361,33 +380,33 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 		}
 		tx(tx -> {
 			tx.binaryDao().findAll().runInExistingTx(tx).forEach(binary -> {
-				String sha512sum = binary.getSHA512Sum();
-				String[] parts = sha512sum.split("(?<=\\G.{8})");
-				StringBuffer buffer = new StringBuffer();
-				buffer.append(File.separator);
-				for (String part : parts) {
-					buffer.append(part + File.separator);
-				}
-				String baseFolder = Paths.get(imageCache, buffer.toString()).toString();
-				String baseName = "image-" + randomImageManipulation().getCacheKey() + ".jpg";
 				try {
-					Files.createDirectories(Path.of(baseFolder));
-					try (InputStream i = binary.openBlockingStream().get(); OutputStream o = new BufferedOutputStream(new FileOutputStream(new File(Paths.get(baseFolder, baseName).toString())))) {
+					Path baseFolder = createOldBinaryImageCacheStructure(imageCache, binary.getSHA512Sum());
+					String baseName = "image-" + randomImageManipulation().getCacheKey() + ".jpg";
+					try (InputStream i = binary.openBlockingStream().get(); OutputStream o = new BufferedOutputStream(new FileOutputStream(new File(baseFolder.toFile(), baseName).toString()))) {
 						i.transferTo(o);
 					}
 				} catch (Exception e) {
 					throw new RuntimeException(e);
 				}
 			});
+
+			// also create an empty folder structure (old structure)
+			createOldBinaryImageCacheStructure(imageCache, createRandomSha512Sum());
+
+			// and create a folder structure for a binary, which does not exist
+			Path baseFolder = createOldBinaryImageCacheStructure(imageCache, createRandomSha512Sum());
+			String baseName = "image-" + randomImageManipulation().getCacheKey() + ".jpg";
+			new File(baseFolder.toFile(), baseName).createNewFile();
 		});
 		assertThat(Files.walk(Path.of(imageCache)).filter(path -> {
 			File file = new File(path.toString());
 			return file.exists() && file.isFile() && file.getName().startsWith("image-");
-		}).count()).isEqualTo(4);
+		}).count()).isEqualTo(5);
 		assertThat(Files.walk(Path.of(imageCache)).filter(path -> {
 			File file = new File(path.toString());
 			return file.exists() && file.isFile() && file.getName().endsWith(".jpg");
-		}).count()).isEqualTo(4);
+		}).count()).isEqualTo(5);
 
 		grantAdmin();
 		HibJob job = tx(tx -> { return tx.jobDao().enqueueImageCacheMigration(user()); });
@@ -407,6 +426,64 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 			File file = new File(path.toString());
 			return file.exists() && file.isFile() && file.getName().endsWith(".jpg");
 		}).count()).isEqualTo(4);
+
+		assertThat(Files.walk(Path.of(imageCache)).filter(IS_OLD_STRUCTURE)).as("Directories/Files in binaryImageCache of the old structure").isEmpty();
+	}
+
+	/**
+	 * Create a random sha512sum
+	 * @return sha512sum
+	 */
+	protected String createRandomSha512Sum() {
+		Buffer dummyContent = Buffer.buffer(RandomStringUtils.random(100));
+		return com.gentics.mesh.util.FileUtils.hash(dummyContent).blockingGet();
+	}
+
+	/**
+	 * Create the old folder structure for the given sha512sum
+	 * @param imageCache base image cache directory
+	 * @param sha512sum sha512sum
+	 * @return path to the deepest folder
+	 * @throws IOException
+	 */
+	protected Path createOldBinaryImageCacheStructure(String imageCache, String sha512sum) throws IOException {
+		String[] parts = sha512sum.split("(?<=\\G.{8})");
+		StringBuffer buffer = new StringBuffer();
+		buffer.append(File.separator);
+		for (String part : parts) {
+			buffer.append(part + File.separator);
+		}
+		Path dir = Paths.get(imageCache, buffer.toString());
+		Files.createDirectories(dir);
+		return dir;
+	}
+
+	/**
+	 * Test that getting an image variant of an existing binary will put the file into the new structure of the binaryImageCache, but not the old one
+	 * @throws IOException
+	 */
+	@Test
+	public void testImageCacheUsage() throws IOException {
+		String imageCache = options().getImageOptions().getImageCacheDirectory();
+
+		// assert that image cache directory is empty
+		assertThat(Files.list(Path.of(imageCache))).as("Directories/Files in binaryImageCache").isEmpty();
+
+		// first create an image
+		byte[] bytes = getBinary("/pictures/blume.jpg");
+		NodeResponse nodeResponse = createBinaryNode();
+		call(() -> client().updateNodeBinaryField(PROJECT_NAME, nodeResponse.getUuid(), "en", nodeResponse.getVersion(), "binary",
+			new ByteArrayInputStream(bytes), bytes.length, "blume.jpg","image/jpg"));
+
+		// assert that image cache directory is still empty
+		assertThat(Files.list(Path.of(imageCache))).as("Directories/Files in binaryImageCache").isEmpty();
+
+		// get a resized variant of the image
+		call(() -> client().downloadBinaryField(PROJECT_NAME, nodeResponse.getUuid(), "en", "binary", randomImageManipulation()));
+
+		// assert that the image cache contains exactly two (nested) directories of the new structure, but none of the old structure
+		assertThat(Files.walk(Path.of(imageCache)).filter(IS_OLD_STRUCTURE)).as("Directories/Files in binaryImageCache of the old structure").isEmpty();
+		assertThat(Files.walk(Path.of(imageCache)).filter(IS_NEW_STRUCTURE)).as("Directories/Files in binaryImageCache of the new structure").hasSize(2);
 	}
 
 	private ImageManipulationParameters randomImageManipulation() {

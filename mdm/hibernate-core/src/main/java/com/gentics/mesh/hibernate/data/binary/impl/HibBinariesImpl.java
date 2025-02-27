@@ -1,5 +1,6 @@
 package com.gentics.mesh.hibernate.data.binary.impl;
 
+import java.util.Set;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -28,6 +29,17 @@ public class HibBinariesImpl implements Binaries {
 	@Inject
 	public HibBinariesImpl(HibernateDatabase database) {
 		this.database = database;
+	}
+
+	@Override
+	public Transactional<HibBinary> findByUuid(String uuid) {
+		return database.transactional((tx) -> tx.<HibernateTx>unwrap()
+				.entityManager()
+				.createNamedQuery("binary.findByUuids", HibBinary.class)
+				.setParameter("uuids", Set.of(UUIDUtil.toJavaUuid(uuid)))
+				.getResultStream()
+				.findAny()
+				.orElse(null));
 	}
 
 	@Override

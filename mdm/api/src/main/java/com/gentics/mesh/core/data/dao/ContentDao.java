@@ -18,9 +18,7 @@ import java.util.stream.Stream;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.tuple.Pair;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
@@ -487,7 +485,7 @@ public interface ContentDao {
 	 * @param failForLastContainer
 	 *            Whether to execute the last container check and fail or not.
 	 */
-	void deleteLanguageContainer(HibNode node, InternalActionContext ac, HibBranch branch, String languageTag, BulkActionContext bac,
+	void deleteLanguageContainer(HibNode node, InternalActionContext ac, HibBranch branch, String languageTag,
 		boolean failForLastContainer);
 
 
@@ -571,7 +569,7 @@ public interface ContentDao {
 	 *
 	 * @param bac
 	 */
-	void delete(HibNodeFieldContainer content, BulkActionContext bac);
+	void delete(HibNodeFieldContainer content);
 
 	/**
 	 * Delete the field container. This will also delete linked elements like lists.
@@ -580,7 +578,7 @@ public interface ContentDao {
 	 * @param deleteNext
 	 *            true to also delete all "next" containers, false to only delete this container
 	 */
-	void delete(HibNodeFieldContainer content, BulkActionContext bac, boolean deleteNext);
+	void delete(HibNodeFieldContainer content, boolean deleteNext);
 
 	/**
 	 * "Delete" the field container from the branch. This will not actually delete the container itself, but will remove DRAFT and PUBLISHED edges
@@ -588,7 +586,7 @@ public interface ContentDao {
 	 * @param branch
 	 * @param bac
 	 */
-	void deleteFromBranch(HibNodeFieldContainer content, HibBranch branch, BulkActionContext bac);
+	void deleteFromBranch(HibNodeFieldContainer content, HibBranch branch);
 
 	/**
 	 * Return the display field value for this container.
@@ -960,14 +958,7 @@ public interface ContentDao {
 	 * @param bac
 	 *            Action context for the deletion process
 	 */
-	void purge(HibNodeFieldContainer content, BulkActionContext bac);
-
-	/**
-	 * Purge the container from the version without the use of a Bulk Action Context.
-	 */
-	default void purge(HibNodeFieldContainer content) {
-		purge(content, new DummyBulkActionContext());
-	}
+	void purge(HibNodeFieldContainer content);
 
 	/**
 	 * Return all versions.

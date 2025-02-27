@@ -79,7 +79,9 @@ public class HibProjectVersionPurge implements ProjectVersionPurgeHandler {
 
 		AtomicInteger deletedCount = new AtomicInteger();
 		while (!nodesUuid.isEmpty()) {
-			db.tx(() -> {
+			BulkActionContext bac = bulkProvider.get();
+			db.asyncTx(() -> {
+				HibernateTx.get().data().setBulkActionContext(bac);
 				EntityManager em = HibernateTx.get().entityManager();
 				Set<HibNode> nodesBatch = fetchNextNodeBatch(nodesUuid);
 				List<HibNodeFieldContainerImpl> currentContainers = contentDao.getFieldsContainers(nodesBatch, ContainerType.INITIAL);
@@ -98,7 +100,7 @@ public class HibProjectVersionPurge implements ProjectVersionPurgeHandler {
 					List<HibNodeFieldContainer> toPurge = currentContainers.stream()
 							.filter(container -> isPurgeable(container, maxAge))
 							.collect(Collectors.toList());
-					contentDao.purge(toPurge, bulkProvider.get());
+					contentDao.purge(toPurge);
 					deletedCount.addAndGet(toPurge.size());
 					if (toPurge.size() > 0) {
 						log.info("Deleted containers: " + deletedCount);
@@ -107,7 +109,7 @@ public class HibProjectVersionPurge implements ProjectVersionPurgeHandler {
 					// 3. load containers to be deleted in next loop iteration
 					currentContainers = contentStorage.findMany(nextContentKeys);
 				} while (!currentContainers.isEmpty());
-			});
+			}).doOnComplete(() -> bac.process(true)).blockingGet();
 		}
 	}
 

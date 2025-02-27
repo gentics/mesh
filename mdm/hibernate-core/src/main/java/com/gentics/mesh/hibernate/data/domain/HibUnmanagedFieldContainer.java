@@ -19,9 +19,7 @@ import com.gentics.mesh.contentoperation.CommonContentColumn;
 import com.gentics.mesh.contentoperation.ContentColumn;
 import com.gentics.mesh.contentoperation.ContentStorage;
 import com.gentics.mesh.contentoperation.DynamicContentColumn;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.PersistingContentDao;
@@ -513,12 +511,12 @@ public interface HibUnmanagedFieldContainer<
 	}
 
 	@Override
-	default void removeField(String fieldKey, BulkActionContext bac) {
+	default void removeField(String fieldKey) {
 		AbstractBasicHibField<?> field = (AbstractBasicHibField<?>) getField(fieldKey);
 		if (field == null) {
 			return;
 		}
-		field.onFieldDeleted(HibernateTx.get(), bac);
+		field.onFieldDeleted(HibernateTx.get());
 		DynamicContentColumn column = new DynamicContentColumn(getFieldSchema(fieldKey));
 		remove(column);
 	}
@@ -597,7 +595,7 @@ public interface HibUnmanagedFieldContainer<
 						"Value exists at { mesh_content_" + getSchemaContainerVersion().getUuid() + "/" + getUuid() + "/" + fieldKey + " }: " + field.toString());
 			} else {
 				// Cleanup the reference field
-				field.onFieldDeleted(tx, new DummyBulkActionContext());
+				field.onFieldDeleted(tx);
 			}
 		}
 	}
@@ -640,9 +638,9 @@ public interface HibUnmanagedFieldContainer<
 						removeField(fieldKey);
 					} else {
 						if (AbstractHibField.class.isInstance(field)) {
-							AbstractHibField.class.cast(field).onFieldDeleted(tx, new DummyBulkActionContext());
+							AbstractHibField.class.cast(field).onFieldDeleted(tx);
 						} else if (HibFieldEdge.class.isInstance(field)) {
-							HibFieldEdge.class.cast(field).onEdgeDeleted(tx, new DummyBulkActionContext());
+							HibFieldEdge.class.cast(field).onEdgeDeleted(tx);
 						}
 						if (HibDatabaseElement.class.isInstance(field)) {
 							tx.delete(HibDatabaseElement.class.cast(field));

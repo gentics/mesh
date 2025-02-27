@@ -39,6 +39,6 @@ public interface PersistingNamedEntityDao<T extends HibNamedElement> {
 	 * @param event
 	 */
 	default void addBatchEvent(MeshEventModel event) {
-		Tx.maybeGet().filter(tx -> tx.<CommonTx>unwrap().data().isVertxReady()).map(tx -> tx.createBatch()).ifPresent(bp -> bp.add(event));
+		Tx.maybeGet().filter(tx -> tx.<CommonTx>unwrap().data().isVertxReady()).map(tx -> tx.batch()).ifPresent(bp -> bp.add(event));
 	}
 }

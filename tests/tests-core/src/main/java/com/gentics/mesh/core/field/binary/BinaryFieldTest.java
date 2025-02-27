@@ -18,13 +18,16 @@ import java.util.Base64;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.endpoint.admin.consistency.UploadsConsistencyCheck;
 import com.gentics.mesh.core.endpoint.node.TransformationResult;
 import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.image.ImageInfo;
@@ -79,6 +82,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 			mesh().binaryStorage().store(Flowable.just(Buffer.buffer(input)), binary.getUuid()).blockingAwait();
 			String base64 = tx.binaryDao().getBase64ContentSync(binary);
 			assertEquals(input.toString(), new String(BASE64.decode(base64)));
+			mesh().binaryStorage().delete(binary.getUuid()).blockingGet();
 		}
 	}
 
@@ -90,6 +94,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 			mesh().binaryStorage().store(Flowable.just(Buffer.buffer(input)), binary.getUuid()).blockingAwait();
 			String base64 = tx.binaryDao().getBase64ContentSync(binary);
 			assertEquals(input.toString(), new String(BASE64.decode(base64)));
+			mesh().binaryStorage().delete(binary.getUuid()).blockingGet();
 		}
 	}
 
@@ -98,6 +103,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	public void testFieldTransformation() throws Exception {
 		String hash = "6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc";
 		try (Tx tx = tx()) {
+			BulkActionContext bac = tx.<CommonTx>unwrap().data().getOrCreateBulkActionContext();
 			ContentDao contentDao = tx.contentDao();
 			// Update the schema and add a binary field
 			HibNode node = folder("2015");
@@ -107,11 +113,13 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 					node.getProject().getLatestBranch(), user(),
 					contentDao.getLatestDraftFieldContainer(node, english()), true);
 			HibBinary binary = tx.binaries().create(hash, 10L).runInExistingTx(tx);
+			mesh().binaryStorage().store(Flowable.just(Buffer.buffer(" ")), binary.getUuid()).blockingAwait();
 			HibBinaryField field = container.createBinary(BINARY_FIELD, binary);
 			field.setMimeType("image/jpg");
 			binary.setImageHeight(200);
 			binary.setImageWidth(300);
 			tx.success();
+			bac.process(true);
 		}
 
 		try (Tx tx = tx()) {
@@ -275,6 +283,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 			invokeRemoveFieldViaNullTestcase(BINARY_FIELD, FETCH, FILL_BASIC, (node) -> {
 				updateContainer(ac, node, BINARY_FIELD, null);
 			});
+			tx.<CommonTx>unwrap().data().maybeGetBulkActionContext().ifPresentOrElse(bac -> bac.process(true), () -> tx.batch().dispatch());
 		}
 	}
 
@@ -287,6 +296,9 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 				updateContainer(ac, container, BINARY_FIELD, null);
 			});
 		}
+		tx(tx -> {
+			new UploadsConsistencyCheck().invoke(mesh().database(), tx, true);
+		});
 	}
 
 	@Test
@@ -334,5 +346,9 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 		assertNotNull(result.getHash());
 		assertEquals(1376, result.getImageInfo().getHeight().intValue());
 		assertEquals(1160, result.getImageInfo().getWidth().intValue());
+
+		tx(tx -> {
+			new UploadsConsistencyCheck().invoke(mesh().database(), tx, true);
+		});
 	}
 }

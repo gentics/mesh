@@ -53,7 +53,7 @@ public abstract class AbstractConsistencyCheckProcessor implements SingleJobProc
 			ConsistencyCheckResponse result = handler.checkConsistency(attemptRepair, true).runInNewTx();
 			return Single.just(result);
 		}).flatMapCompletable(result -> {
-			db.tx(() -> {
+			db.tx(tx -> {
 				List<JobWarning> warnings = result.getInconsistencies().stream().map(inconsistency -> {
 					JobWarning warning = new JobWarning();
 					warning.setType("inconsistency");

@@ -18,7 +18,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -86,8 +85,7 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 		recreateIndices();
 		try (Tx tx = tx()) {
 			NodeDao nodeDao = tx.nodeDao();
-			BulkActionContext context = createBulkContext();
-			nodeDao.delete(content("honda nr"), context, false, true);
+			nodeDao.delete(content("honda nr"), false, true);
 			tx.success();
 		}
 

@@ -9,7 +9,6 @@ import java.util.function.Predicate;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.PersistingJobDao;
@@ -172,7 +171,7 @@ public class JobDaoImpl extends AbstractHibDaoGlobal<HibJob, JobResponse, HibJob
 	}
 
 	@Override
-	public void delete(HibJob job, BulkActionContext bac) {
+	public void delete(HibJob job) {
 		em().remove(job);
 	}
 
@@ -193,7 +192,7 @@ public class JobDaoImpl extends AbstractHibDaoGlobal<HibJob, JobResponse, HibJob
 				.getResultList();
 		long count = 0;
 		for (HibJob job : failedJobs) {
-			delete(job, null);
+			delete(job);
 			count++;
 		}
 		log.info(count + "} failed jobs purged.");

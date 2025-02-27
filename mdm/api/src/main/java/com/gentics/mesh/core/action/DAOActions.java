@@ -116,7 +116,7 @@ public interface DAOActions<T extends HibCoreElement<RM>, RM extends RestModel> 
 	 * @param element
 	 * @param bac
 	 */
-	void delete(Tx tx, T element, BulkActionContext bac);
+	void delete(Tx tx, T element);
 
 	/**
 	 * Transform the given element to a REST model.

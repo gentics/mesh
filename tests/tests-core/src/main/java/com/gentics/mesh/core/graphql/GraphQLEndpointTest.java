@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.graphql;
 
-import static com.gentics.mesh.MeshVersion.CURRENT_API_VERSION;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.CONTENT_UUID;
@@ -27,8 +26,8 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.assertj.impl.JsonObjectAssert;
-import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
@@ -94,6 +93,7 @@ import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.NoConsistencyCheck;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.reactivex.Completable;
@@ -104,6 +104,7 @@ import io.vertx.core.json.JsonObject;
 
 @RunWith(Parameterized.class)
 @MeshTestSetting(testSize = TestSize.FULL, startServer = true)
+@NoConsistencyCheck
 public class GraphQLEndpointTest extends AbstractMeshTest {
 
 	protected static final String NODE_WITH_LINKS_UUID = "8d2f5769fe114353af5769fe11e35355";
@@ -227,7 +228,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 	public static Collection<Object[]> paramData() {
 		return Stream.of(GraphQLEndpointTest.queries(), JavaGraphQLEndpointTest.queries(), NativeGraphQLEndpointTest.queries())
 				.flatMap(java.util.function.Function.identity())
-				.flatMap(testCase -> IntStream.rangeClosed(1, CURRENT_API_VERSION)
+				.flatMap(testCase -> IntStream.rangeClosed(1, MeshVersion.CURRENT_API_VERSION)
 				.mapToObj(version -> {
 					// Make sure all testData entries have six parts.
 					Object[] array = testCase.toArray(new Object[6]);
@@ -257,7 +258,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		} else {
 			try (Tx tx = tx()) {
 				for (HibMicroschema microschema : tx.microschemaDao().findAll()) {
-					tx.microschemaDao().delete(microschema, new DummyBulkActionContext());
+					tx.microschemaDao().delete(microschema);
 				}
 				tx.success();
 			}

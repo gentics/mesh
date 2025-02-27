@@ -9,7 +9,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.action.NodeDAOActions;
@@ -83,9 +82,9 @@ public class NodeDAOActionsImpl implements NodeDAOActions {
 	}
 
 	@Override
-	public void delete(Tx tx, HibNode node, BulkActionContext bac) {
+	public void delete(Tx tx, HibNode node) {
 		NodeDao nodeDao = tx.nodeDao();
-		nodeDao.delete(node, bac, false, true);
+		nodeDao.delete(node, false, true);
 	}
 
 	@Override

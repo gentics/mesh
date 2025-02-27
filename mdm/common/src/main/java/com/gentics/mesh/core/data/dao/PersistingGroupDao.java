@@ -143,14 +143,14 @@ public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGro
 	}
 
 	@Override
-	default void delete(HibGroup group, BulkActionContext bac) {
+	default void delete(HibGroup group) {
 		PersistingUserDao userDao = CommonTx.get().userDao();
 
 		// TODO unhardcode the admin name
 		if ("admin".equals(group.getName())) {
 			throw error(FORBIDDEN, "error_illegal_admin_deletion");
 		}
-		bac.batch().add(group.onDeleted());
+		CommonTx.get().batch().add(group.onDeleted());
 
 		Set<? extends HibUser> affectedUsers = getUsers(group).stream().collect(Collectors.toSet());
 
@@ -158,10 +158,10 @@ public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGro
 
 		for (HibUser affectedUser : affectedUsers) {
 			userDao.updateShortcutEdges(affectedUser);
-			bac.add(affectedUser.onUpdated());
-			bac.inc();
+			CommonTx.get().batch().add(affectedUser.onUpdated());
+			CommonTx.get().data().maybeGetBulkActionContext().ifPresent(BulkActionContext::inc);
 		}
-		bac.process();
+		CommonTx.get().data().maybeGetBulkActionContext().ifPresent(BulkActionContext::process);
 
 		Tx.get().permissionCache().clear();
 	}

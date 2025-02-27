@@ -6,11 +6,16 @@ import static com.gentics.mesh.core.rest.job.JobStatus.FAILED;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.DirectoryNotEmptyException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
 
 import javax.inject.Inject;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.BinaryDao;
@@ -51,41 +56,68 @@ public class ImageCacheMigrationProcessor implements SingleJobProcessor {
 			return db.asyncTx(() -> {
 				log.info("Image cache migration started");
 				Path imageCachePath = Path.of(options.getImageOptions().getImageCacheDirectory());
-				Files.walk(imageCachePath)
-					.filter(path -> path.getFileName().toString().startsWith("image-") && Files.isRegularFile(path))
-					.map(path -> {
-						String sha512Hash = imageCachePath.relativize(path.getParent()).toString().replace("/", "").replace("\\", "");
-						HibBinary binary = null;
-						if (sha512Hash.length() == 128 && (binary = dao.findByHash(sha512Hash).runInExistingTx(Tx.get())) != null) {
-							String uuid = binary.getUuid();
-							String segments = getSegmentedPath(uuid);
-							Path segmentsPath = Path.of(options.getImageOptions().getImageCacheDirectory(), segments);
-							try {
-								Files.createDirectories(segmentsPath);
-								Files.move(path, segmentsPath.resolve(uuid + "-" + path.getFileName().toString().replace("image-", "")));
-							} catch (IOException e) {
-								log.error("Could not copy old cached file " + path, e);
-							}
-						} else {
-							log.error("Not a SHA512 hash or binary not found: " + sha512Hash);
+
+				// walk the whole tree
+				Files.walkFileTree(imageCachePath, new FileVisitor<Path>() {
+
+					@Override
+					public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+						// continue from the root directory
+						if (dir.equals(imageCachePath)) {
+							return FileVisitResult.CONTINUE;
 						}
-						return path;
-					}).forEach(path -> {
-						while (path != null && !path.equals(imageCachePath)) {
-							try {
-								Files.delete(path);
-							} catch (DirectoryNotEmptyException e) {
-								// fair
-								return;
-							} catch (NoSuchFileException e) {
-								// fair, but continue with parent
-							} catch (IOException e) {
-								log.error("Could not delete image cache " + path, e);
-								return;
+						// continue with directories, which are of the old structure (identifiable by directory names with 8 characters)
+						return StringUtils.length(dir.toFile().getName()) == 8 ? FileVisitResult.CONTINUE : FileVisitResult.SKIP_SUBTREE;
+					}
+
+					@Override
+					public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+						String fileName = file.toFile().getName();
+						// files that start with "image-" and are located in the old structure need to be migrated
+						if (fileName.startsWith("image-")) {
+							String sha512Hash = imageCachePath.relativize(file.getParent()).toString().replace("/", "").replace("\\", "");
+							HibBinary binary = null;
+							if (sha512Hash.length() == 128 && (binary = dao.findByHash(sha512Hash).runInExistingTx(Tx.get())) != null) {
+								String uuid = binary.getUuid();
+								String segments = getSegmentedPath(uuid);
+								Path segmentsPath = Path.of(options.getImageOptions().getImageCacheDirectory(), segments);
+								try {
+									Files.createDirectories(segmentsPath);
+									Files.move(file, segmentsPath.resolve(uuid + "-" + fileName.replace("image-", "")));
+								} catch (IOException e) {
+									log.error("Could not copy old cached file " + file, e);
+								}
+							} else if (sha512Hash.length() == 128) {
+								log.info("Binary not found: " + sha512Hash + " deleting file " + file);
+								Files.delete(file);
+							} else {
+								log.info("Not a SHA512: " + sha512Hash);
 							}
-							path = path.getParent();
 						}
-					});
+
+						return FileVisitResult.CONTINUE;
+					}
+
+					@Override
+					public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+						return FileVisitResult.CONTINUE;
+					}
+
+					@Override
+					public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+						try {
+							Files.delete(dir);
+						} catch (DirectoryNotEmptyException e) {
+							// fair
+						} catch (NoSuchFileException e) {
+							// fair
+						} catch (IOException e) {
+							log.error("Could not delete image cache " + dir, e);
+						}
+						return FileVisitResult.CONTINUE;
+					}
+				});
+
 				log.info("Image cache migration finished successfully");
 			});
 		}).doOnComplete(() -> {

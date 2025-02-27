@@ -19,7 +19,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -179,8 +178,7 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 			HibMicroschema container = createMicroschema(schema);
 			tx.commit();
 			assertNotNull(microschemaDao.findByName("test"));
-			BulkActionContext bac = createBulkContext();
-			microschemaDao.delete(container, bac);
+			microschemaDao.delete(container);
 			assertNull(microschemaDao.findByName("test"));
 		}
 	}

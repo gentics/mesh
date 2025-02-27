@@ -6,7 +6,6 @@ import static org.junit.Assert.assertNotNull;
 
 import java.util.List;
 
-import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.dao.PersistingGroupDao;
 import com.gentics.mesh.core.data.group.HibGroup;
 import org.junit.Test;
@@ -18,6 +17,7 @@ import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.DummyBulkActionContext;
 import com.gentics.mesh.util.MathUtil;
 
 @MeshTestSetting(testSize = FULL, startServer = false)

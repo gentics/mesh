@@ -2,6 +2,7 @@ package com.gentics.mesh.core.db;
 
 import java.util.Optional;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.dagger.BaseMeshComponent;
 import com.gentics.mesh.event.EventQueueBatch;
 
@@ -28,11 +29,25 @@ public interface CommonTxData extends TxData {
 	void setEventQueueBatch(EventQueueBatch batch);
 
 	/**
+	 * Install a bulk action context into the transaction.
+	 * 
+	 * @param bac
+	 */
+	void setBulkActionContext(BulkActionContext bac);
+
+	/**
 	 * Get a queue batch, if previously set.
 	 * 
 	 * @return
 	 */
 	Optional<EventQueueBatch> maybeGetEventQueueBatch();
+
+	/**
+	 * Get a bulk action context, if previously set.
+	 * 
+	 * @return
+	 */
+	Optional<BulkActionContext> maybeGetBulkActionContext();
 
 	/**
 	 * Check if Vert.x is settled
@@ -47,19 +62,36 @@ public interface CommonTxData extends TxData {
 	 * @param batch
 	 */
 	default void suppressEventQueueBatch() {
-		setEventQueueBatch(null);
+		getOrCreateEventQueueBatch().clear();
 	}
 
 	/**
-	 * Get a queue batch, if previously set. Otherwise create and set a new batch.
+	 * Get a queue batch, if previously set, either explicitly or within the bulk context. Otherwise create and set a new batch.
 	 * 
 	 * @return
 	 */
 	default EventQueueBatch getOrCreateEventQueueBatch() {
-		return maybeGetEventQueueBatch().orElseGet(() -> {
-			EventQueueBatch batch = mesh().batchProvider().get();
-			setEventQueueBatch(batch);
-			return batch;
+		return maybeGetBulkActionContext().map(BulkActionContext::batch).or(() -> maybeGetEventQueueBatch()).orElseGet(() -> {
+			EventQueueBatch b = mesh().batchProvider().get();
+			setEventQueueBatch(b);
+			return b;
+		});
+	}
+
+	/**
+	 * Get a bulk action context, if previously set. Otherwise create and set a new one. If a queue batch is already set, keep it inside the bulk ctx.
+	 * 
+	 * @return
+	 */
+	default BulkActionContext getOrCreateBulkActionContext() {
+		return maybeGetBulkActionContext().orElseGet(() -> {
+			BulkActionContext bac = mesh().bulkProvider().get();
+			maybeGetEventQueueBatch().ifPresent(batch -> {
+				bac.setBatch(batch);
+				setEventQueueBatch(null);
+			});
+			setBulkActionContext(bac);
+			return bac;
 		});
 	}
 }

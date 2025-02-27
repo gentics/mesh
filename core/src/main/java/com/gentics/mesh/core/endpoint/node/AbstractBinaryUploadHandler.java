@@ -130,11 +130,9 @@ public class AbstractBinaryUploadHandler extends AbstractHandler {
 				binary.setCheckStatus(request.getStatus());
 
 				if (request.getStatus() == BinaryCheckStatus.DENIED) {
-					binaryStorage.delete(binary.getUuid())
-						.andThen(binaryStorage.store(Flowable.empty(), binary.getUuid()))
-						.subscribe();
+					String binaryUuid = binary.getUuid();
+					batch.add(() -> binaryStorage.delete(binaryUuid).andThen(binaryStorage.store(Flowable.empty(), binaryUuid)).blockingGet());
 				}
-
 				ctx.persist(binary);
 
 				return nodeDao.transformToRestSync(node, ac, 0);

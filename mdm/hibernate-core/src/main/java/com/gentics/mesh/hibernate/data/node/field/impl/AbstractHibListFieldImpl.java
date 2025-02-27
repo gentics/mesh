@@ -13,8 +13,6 @@ import org.openjdk.tools.sjavac.Log;
 import org.slf4j.Logger;
 
 import com.gentics.mesh.cache.ListableFieldCache;
-import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.list.HibListField;
 import com.gentics.mesh.core.data.node.field.list.HibNodeFieldList;
@@ -179,10 +177,9 @@ public abstract class AbstractHibListFieldImpl<
 	 * @param tx current transaction
 	 */
 	public void removeAll(HibernateTx tx) {
-		BulkActionContext bac = new DummyBulkActionContext();
 		UUID listUuid = valueOrNull();
 		int actual = stream(tx).map(edge -> {
-			edge.onEdgeDeleted(tx, bac);
+			edge.onEdgeDeleted(tx);
 			return 1;
 		}).mapToInt(Integer::intValue).sum();
 		if (actual > 0) {
@@ -277,7 +274,7 @@ public abstract class AbstractHibListFieldImpl<
 	}
 
 	@Override
-	public void onFieldDeleted(HibernateTx tx, BulkActionContext bac) {
+	public void onFieldDeleted(HibernateTx tx) {
 		removeAll(tx);
 	}
 

@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.NoSuchFileException;
 import java.security.cert.CertificateException;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -86,10 +87,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.http.ClientAuth;
 import io.vertx.core.json.JsonObject;
-import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
 
 public class MeshTestContext implements TestRule {
 
@@ -434,7 +432,15 @@ public class MeshTestContext implements TestRule {
 
 	private void cleanupFolders() throws IOException {
 		for (File folder : tmpFolders) {
-			FileUtils.deleteDirectory(folder);
+			try {
+				FileUtils.deleteDirectory(folder);
+			} catch (IOException e) {
+				if (e instanceof NoSuchFileException || (e.getCause() instanceof NoSuchFileException)) {
+					LOG.debug("Suppressing inexisting directory deletion error", e);
+				} else {
+					throw e;
+				}
+			}
 		}
 		for (MeshTestInstance instance : instances) {
 			if (instance.meshDagger != null && instance.meshDagger.permissionCache() != null) {

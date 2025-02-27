@@ -10,7 +10,6 @@ import javax.inject.Singleton;
 import org.apache.commons.lang.NotImplementedException;
 import org.hibernate.jpa.QueryHints;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.dao.PersistingLanguageDao;
@@ -54,7 +53,7 @@ public class LanguageDaoImpl extends AbstractHibDaoGlobal<HibLanguage, LanguageR
 	}
 
 	@Override
-	public void delete(HibLanguage element, BulkActionContext bac) {
+	public void delete(HibLanguage element) {
 		throw new NotImplementedException("Languages cannot be deleted");
 	}
 

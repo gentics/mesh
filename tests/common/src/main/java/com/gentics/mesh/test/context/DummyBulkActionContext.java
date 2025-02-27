@@ -1,4 +1,4 @@
-package com.gentics.mesh.context.impl;
+package com.gentics.mesh.test.context;
 
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.context.BulkActionContext;
@@ -37,4 +37,7 @@ public class DummyBulkActionContext implements BulkActionContext {
 	public void add(Completable action) {
 	}
 
+	@Override
+	public void setBatch(EventQueueBatch batch) {
+	}
 }

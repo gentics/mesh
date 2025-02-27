@@ -7,14 +7,15 @@ import java.util.concurrent.atomic.AtomicLong;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.event.EventQueueBatch;
 
 import io.reactivex.Completable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Context which tracks recursive and bulk actions.
@@ -25,7 +26,7 @@ public class BulkActionContextImpl implements BulkActionContext {
 
 	private static final Logger log = LoggerFactory.getLogger(BulkActionContextImpl.class);
 
-	private static final int DEFAULT_BATCH_SIZE = 100;
+	public static final int DEFAULT_BATCH_SIZE = 100;
 
 	private final AtomicLong batchCounter = new AtomicLong(1);
 	private final AtomicLong elementCounter = new AtomicLong(0);
@@ -51,15 +52,22 @@ public class BulkActionContextImpl implements BulkActionContext {
 	}
 
 	@Override
+	public void setBatch(EventQueueBatch batch) {
+		batch.addAll(this.batch);
+		this.batch = batch;
+	}
+
+	@Override
 	public void process(boolean force) {
 		if (elementCounter.incrementAndGet() >= DEFAULT_BATCH_SIZE || force) {
-			log.info("Processing transaction batch {" + batchCounter.get() + "}. I counted {" + elementCounter.get() + "} elements.");
-			Tx.get().commit();
+			log.info("Processing transaction batch {" + batchCounter.get() + "}. I counted {" + elementCounter.get() + "} elements. {" + asyncActions.size() + "} to be executed.");
+			Tx.maybeGet().ifPresent(Tx::commit);
 			Completable.merge(asyncActions).subscribe(() -> {
 				log.trace("Async action processed");
 			});
 			batch().dispatch();
-			// Reset the counter back to zero
+			// Reset the context
+			asyncActions.clear();
 			elementCounter.set(0);
 			batchCounter.incrementAndGet();
 		}
@@ -74,5 +82,4 @@ public class BulkActionContextImpl implements BulkActionContext {
 	public void add(Completable action) {
 		asyncActions.add(action);
 	}
-
 }

@@ -69,7 +69,7 @@ public class HibNodeListFieldEdgeImpl
 	}
 
 	@Override
-	public void onEdgeDeleted(HibernateTx tx, BulkActionContext bac) {
+	public void onEdgeDeleted(HibernateTx tx) {
 		// No strong reference from the node = nothing to care about
 	}
 

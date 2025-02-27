@@ -17,7 +17,6 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang.NotImplementedException;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -292,16 +291,16 @@ public interface PersistingSchemaDao
 	}
 
 	@Override
-	default void delete(HibSchema schema, BulkActionContext bac) {
+	default void delete(HibSchema schema) {
 		// Check whether the schema is currently being referenced by nodes.
 		Iterator<? extends HibNode> it = getNodes(schema).iterator();
 		if (!it.hasNext()) {
-
-			assignEvents(schema, UNASSIGNED).forEach(bac::add);
-			bac.add(schema.onDeleted());
+			EventQueueBatch q = CommonTx.get().batch();
+			assignEvents(schema, UNASSIGNED).forEach(q::add);
+			q.add(schema.onDeleted());
 
 			for (HibSchemaVersion v : findAllVersions(schema)) {
-				deleteVersion(v, bac);
+				deleteVersion(v);
 			}
 			deletePersisted(schema);
 		} else {
@@ -310,9 +309,10 @@ public interface PersistingSchemaDao
 	}
 
 	@Override
-	default void delete(HibProject root, HibSchema element, BulkActionContext bac) {
-		unassign(element, root, bac.batch());
-		assignEvents(element, UNASSIGNED).forEach(bac::add);
+	default void delete(HibProject root, HibSchema element) {
+		EventQueueBatch q = CommonTx.get().batch();
+		unassign(element, root, q);
+		assignEvents(element, UNASSIGNED).forEach(q::add);
 		// TODO should we delete the schema completely?
 		//delete(element, bac);
 	}

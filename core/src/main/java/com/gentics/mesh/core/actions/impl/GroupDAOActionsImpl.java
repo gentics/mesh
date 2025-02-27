@@ -6,7 +6,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.action.GroupDAOActions;
@@ -67,8 +66,8 @@ public class GroupDAOActionsImpl implements GroupDAOActions {
 	}
 
 	@Override
-	public void delete(Tx tx, HibGroup group, BulkActionContext bac) {
-		tx.groupDao().delete(group, bac);
+	public void delete(Tx tx, HibGroup group) {
+		tx.groupDao().delete(group);
 	}
 
 	@Override

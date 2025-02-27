@@ -41,6 +41,14 @@ public interface PersistingImageVariantDao extends ImageVariantDao {
 	static final Logger log = LoggerFactory.getLogger(PersistingImageVariantDao.class);
 
 	/**
+	 * Find the element globally.
+	 * 
+	 * @param uuid
+	 * @return
+	 */
+	HibImageVariant findByUuid(String uuid);
+
+	/**
 	 * Create a database entity for image variant of the given binary.
 	 * 
 	 * @param binary

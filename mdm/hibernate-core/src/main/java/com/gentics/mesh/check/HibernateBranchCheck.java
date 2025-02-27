@@ -6,7 +6,6 @@ import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.gentics.mesh.context.impl.DummyEventQueueBatch;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -83,7 +82,7 @@ public class HibernateBranchCheck extends AbstractHibernateConsistencyCheck {
 		PersistingContentDao contentDao = tx.<CommonTx>unwrap().contentDao();
 		TagDao tagDao = tx.tagDao();
 
-		EventQueueBatch batch = new DummyEventQueueBatch();
+		EventQueueBatch batch = tx.batch();
 
 		Result<HibNodeFieldContainer> drafts = contentDao.getFieldContainers(node, oldBranch, DRAFT);
 		Result<HibNodeFieldContainer> published = contentDao.getFieldContainers(node, oldBranch, PUBLISHED);

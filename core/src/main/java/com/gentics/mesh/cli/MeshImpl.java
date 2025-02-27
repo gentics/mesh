@@ -394,6 +394,10 @@ public class MeshImpl implements Mesh {
 			log.error("Error while stopping Vert.x", t);
 		}
 
+		// image manipulator
+		log.info("Stopping image manipulator");
+		meshInternal.imageManipulator().shutdown();
+
 		// database
 		try {
 			log.info("Stopping and closing database provider");

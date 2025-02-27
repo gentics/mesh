@@ -221,6 +221,9 @@
 | *MESH_MAX_MIGRATION_BATCH_SIZE*
 | Override the maximum migration batch size
 
+| *MESH_IMAGE_CACHE_TOUCH*
+| Overwrite the image cache touch behaviour.
+
 | *MESH_HTTP_SSL_CLIENT_AUTH_MODE*
 | Override the configured client certificate handling mode.
 
@@ -235,6 +238,9 @@
 
 | *MESH_AUTH_PUBLIC_KEYS_PATH*
 | Override the configured public keys file path.
+
+| *MESH_IMAGE_CACHE_CLEAN_INTERVAL*
+| Overwrite the image cache clean interval.
 
 | *MESH_S3_BINARY_ACCESS_KEY_ID*
 | Override the configured AWS S3 access key id.
@@ -265,6 +271,9 @@
 
 | *MESH_MONITORING_ENABLED*
 | Override the configured monitoring enabled flag.
+
+| *MESH_IMAGE_CACHE_CLEAN_INTERVAL*
+| Overwrite the image cache max idle time.
 
 | *MESH_HTTP_CORS_ENABLE*
 | Override the configured CORS enable flag.

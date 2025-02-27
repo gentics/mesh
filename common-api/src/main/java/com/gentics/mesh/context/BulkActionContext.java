@@ -43,6 +43,13 @@ public interface BulkActionContext {
 	EventQueueBatch batch();
 
 	/**
+	 * Override the installed batch with the new one, transferring all its entries.
+	 * 
+	 * @param batch
+	 */
+	void setBatch(EventQueueBatch batch);
+
+	/**
 	 * Shortcut for {@link #batch()#add(MeshEventModel)}
 	 * 
 	 * @param event
@@ -68,5 +75,4 @@ public interface BulkActionContext {
 	 * @param action
 	 */
 	void add(Completable action);
-
 }

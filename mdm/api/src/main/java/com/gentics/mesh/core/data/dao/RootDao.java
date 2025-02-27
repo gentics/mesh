@@ -276,7 +276,7 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	 * @param bac
 	 *            Deletion context which keeps track of the deletion process
 	 */
-	void delete(R root, L element, BulkActionContext bac);
+	void delete(R root, L element);
 
 	/**
 	 * Update the element using the action context information.
@@ -294,7 +294,7 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	 * @param bac
 	 *            the context which keeps track of the process
 	 */
-	default void onRootDeleted(R root, BulkActionContext bac) {}
+	default void onRootDeleted(R root) {}
 
 	/**
 	 * Check whether the given element is assigned to this root node.

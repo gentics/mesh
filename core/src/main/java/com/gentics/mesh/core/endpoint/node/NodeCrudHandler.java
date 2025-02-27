@@ -67,7 +67,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 		validateParameter(uuid, "uuid");
 
 		try (WriteLock lock = writeLock.lock(ac)) {
-			utils.syncTx(ac, tx -> {
+			utils.syncTxBulkable(ac, (tx, bac) -> {
 				NodeDao nodeDao = tx.nodeDao();
 				HibProject project = tx.getProject(ac);
 				HibNode node = nodeDao.loadObjectByUuid(project, ac, uuid, DELETE_PERM);
@@ -75,10 +75,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 					throw error(METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
 				}
 				// Create the batch first since we can't delete the container and access it later in batch creation
-				utils.bulkableAction(bac -> {
-					HibBranch branch = tx.getBranch(ac);
-					nodeDao.deleteFromBranch(node, ac, branch, bac, false);
-				});
+				nodeDao.deleteFromBranch(node, ac, tx.getBranch(ac), false);
 			}, () -> ac.send(NO_CONTENT));
 		}
 	}
@@ -97,15 +94,13 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 		validateParameter(uuid, "uuid");
 
 		try (WriteLock lock = writeLock.lock(ac)) {
-			utils.syncTx(ac, tx -> {
+			utils.syncTxBulkable(ac, (tx, bac) -> {
 				HibNode node = crudActions().loadByUuid(context(tx, ac), uuid, DELETE_PERM, true);
 				HibLanguage language = tx.languageDao().findByLanguageTag(tx.getProject(ac), languageTag);
 				if (language == null) {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
 				}
-				utils.bulkableAction(bac -> {
-					tx.contentDao().deleteLanguageContainer(node, ac, tx.getBranch(ac), languageTag, bac, true);
-				});
+				tx.contentDao().deleteLanguageContainer(node, ac, tx.getBranch(ac), languageTag, true);
 			}, () -> ac.send(NO_CONTENT));
 		}
 	}
@@ -349,13 +344,11 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 		validateParameter(uuid, "uuid");
 
 		try (WriteLock lock = writeLock.lock(ac)) {
-			utils.syncTx(ac, tx -> {
+			utils.syncTxBulkable(ac, (tx, bac) -> {
 				NodeDao nodeDao = tx.nodeDao();
 
 				HibNode node = nodeDao.loadObjectByUuid(tx.getProject(ac), ac, uuid, PUBLISH_PERM);
-				utils.bulkableAction(bac -> {
-					nodeDao.publish(node, ac, bac);
-				});
+				nodeDao.publish(node, ac);
 
 				return nodeDao.transformToPublishStatus(node, ac);
 			}, model -> ac.send(model, OK));
@@ -374,13 +367,11 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 		validateParameter(uuid, "uuid");
 
 		try (WriteLock lock = writeLock.lock(ac)) {
-			utils.syncTx(ac, tx -> {
+			utils.syncTxBulkable(ac, (tx, bac) -> {
 				NodeDao nodeDao = tx.nodeDao();
 
 				HibNode node = nodeDao.loadObjectByUuid(tx.getProject(ac), ac, uuid, PUBLISH_PERM);
-				utils.bulkableAction(bac -> {
-					nodeDao.takeOffline(node, ac, bac);
-				});
+				nodeDao.takeOffline(node, ac);
 			}, () -> ac.send(NO_CONTENT));
 		}
 	}
@@ -420,15 +411,13 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 		validateParameter(uuid, "uuid");
 
 		try (WriteLock lock = writeLock.lock(ac)) {
-			utils.syncTx(ac, tx -> {
+			utils.syncTxBulkable(ac, (tx, bac) -> {
 				NodeDao nodeDao = tx.nodeDao();
 
 				HibNode node = nodeDao.loadObjectByUuid(tx.getProject(ac), ac, uuid, PUBLISH_PERM);
-				utils.bulkableAction(bac -> {
-					nodeDao.publish(node, ac, bac, languageTag);
-				});
-				return nodeDao.transformToPublishStatus(node, ac, languageTag);
+				nodeDao.publish(node, ac, languageTag);
 
+				return nodeDao.transformToPublishStatus(node, ac, languageTag);
 			}, model -> ac.send(model, OK));
 		}
 	}
@@ -447,14 +436,12 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 		validateParameter(uuid, "uuid");
 
 		try (WriteLock lock = writeLock.lock(ac)) {
-			utils.syncTx(ac, tx -> {
+			utils.syncTxBulkable(ac, (tx, bac) -> {
 				NodeDao nodeDao = tx.nodeDao();
 
 				HibNode node = nodeDao.loadObjectByUuid(tx.getProject(ac), ac, uuid, PUBLISH_PERM);
-				utils.bulkableAction(bac -> {
-					HibBranch branch = tx.getBranch(ac, tx.getProject(ac));
-					nodeDao.takeOffline(node, ac, bac, branch, languageTag);
-				});
+				HibBranch branch = tx.getBranch(ac, tx.getProject(ac));
+				nodeDao.takeOffline(node, ac, branch, languageTag);
 			}, () -> ac.send(NO_CONTENT));
 		}
 	}

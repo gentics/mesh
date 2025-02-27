@@ -6,7 +6,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.action.RoleDAOActions;
@@ -72,8 +71,8 @@ public class RoleDAOActionsImpl implements RoleDAOActions {
 	}
 
 	@Override
-	public void delete(Tx tx, HibRole role, BulkActionContext bac) {
-		tx.roleDao().delete(role, bac);
+	public void delete(Tx tx, HibRole role) {
+		tx.roleDao().delete(role);
 	}
 
 	@Override
