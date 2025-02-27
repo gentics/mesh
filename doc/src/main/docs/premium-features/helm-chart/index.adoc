@@ -1,0 +1,26 @@
+---
+title: Gentics Mesh Helm Chart
+image: noun_businessplan_1013772.svg
+sort-key: 7
+teaser: The best way to install, manage and upgrade Gentics Mesh in a Kubernetes cluster.
+fineprint: The plugin requires Helm 3 and an up-to-date Kubernetes version.
+status: details
+version: 3.0.x
+licence: commercial
+author: Gentics
+pageType: feature
+---
+
+Installing and managing an enterprise application like Gentics Mesh in a Kubernetes cluster can be a challenging task, as there are so many details to consider. We take the heavy lifting off your shoulders by providing you with a battle-tested Helm chart that takes care of all aspects of the application lifecycle management:
+
+* initialization of a new installation of Gentics Mesh
+* scaling a single node to a multi-master cluster
+* performing rolling upgrades
+* keeping the cluster up and running with liveness and readiness checks
+* running regular backups
+* exposing the Mesh API and the monitoring API as a service
+* configuring an ingress
+* configuring SSL
+* specifying resource limits
+
+All in all, that's roughly 1000 lines of YAML that you *don't* have to write and maintain!

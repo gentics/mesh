@@ -1,0 +1,65 @@
+{{- range $job := .Values.customjobs }}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: "{{ include "mesh.fullname" $ }}-cronjobs-{{ $job.name}}"
+  labels:
+    {{- include "mesh.labels" $ | nindent 4 }}
+
+spec:
+  concurrencyPolicy: {{ $job.concurrencyPolicy }}
+  failedJobsHistoryLimit: {{ $job.failedJobsHistoryLimit }}
+  successfulJobsHistoryLimit: {{ $job.successfulJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      backoffLimit: {{ $job.backoffLimit }}
+      activeDeadlineSeconds: {{ $job.timeLimitSeconds }}
+      ttlSecondsAfterFinished: {{ $job.ttlSecondsAfterFinished }}
+      template:
+        spec:
+          serviceAccountName: {{ include "mesh.serviceAccountName" $ }}
+          securityContext:
+            {{- toYaml $.Values.podSecurityContext | nindent 12 }}
+          {{- if $job.image.pullSecret }}
+          imagePullSecrets:
+          - name: {{ $job.image.pullSecret }}
+          {{- end }}
+
+          containers:
+          - image: "{{ $job.image.repository }}:{{ $job.image.tag }}"
+            imagePullPolicy: {{ $job.image.imagePullPolicy }}
+            name: {{ $job.name }}
+            securityContext:
+              {{- toYaml $.Values.securityContext | nindent 14 }}
+            {{- with $job.env }}
+            env:
+{{ toYaml . | indent 12 }}
+            {{- end }}
+            {{- with $job.envFrom }}
+            envFrom:
+{{ toYaml . | indent 12 }}
+            {{- end }}
+            {{- if $job.command }}
+            command: {{ $job.command }}
+            {{- end }}
+            {{- with $job.args }}
+            args:
+{{ toYaml . | indent 12 }}
+            {{- end }}
+            {{- with $job.resources }}
+            resources:
+{{ toYaml . | indent 14 }}
+            {{- end }}
+            {{- with $job.volumeMounts }}
+            volumeMounts:
+{{ toYaml . | indent 12 }}
+            {{- end }}
+          restartPolicy: {{ $job.restartPolicy }}
+          {{- with $job.volumes }}
+          volumes:
+{{ toYaml . | indent 10 }}
+          {{- end }}
+  schedule: {{ $job.schedule | quote }}
+
+{{- end }}

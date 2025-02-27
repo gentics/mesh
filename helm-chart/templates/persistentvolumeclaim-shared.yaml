@@ -1,0 +1,17 @@
+{{- if not .Values.persistence.shared.existingClaim }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ include "mesh.fullname" . }}-shared
+
+  labels:
+    {{- include "mesh.labels" . | nindent 4 }}
+
+  {{- with .Values.persistence.shared.annotations }}
+  annotations:
+    {{ toYaml . }}
+  {{- end }}
+
+spec:
+  {{- toYaml .Values.persistence.shared.spec | nindent 2 }}
+{{- end }}

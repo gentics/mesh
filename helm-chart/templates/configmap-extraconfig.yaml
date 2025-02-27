@@ -1,0 +1,14 @@
+{{ $confScope := . }}
+{{- if .Values.extraConfig }}
+{{- range .Values.extraConfig }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "mesh.fullname" $confScope }}-extraconfig-{{ .name }}
+data:
+{{- range .items }}
+  {{ .key }}: {{ tpl (toYaml .value) $ | indent 2 | trim }}
+{{ end }}
+{{ end }}
+{{- end }}

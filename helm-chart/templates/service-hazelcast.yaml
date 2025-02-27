@@ -1,0 +1,15 @@
+#see https://github.com/hazelcast/hazelcast-kubernetes
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "mesh.fullname" . }}-hazelcast
+  labels:
+    {{- include "mesh.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+  - name: hazelcast
+    port: 5701
+  selector:
+    mesh-cluster: {{ include "mesh.fullname" . }}

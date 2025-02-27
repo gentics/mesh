@@ -1,0 +1,12 @@
+---
+{{- if and (.Values.cluster.enabled) (.Values.cluster.podDisruptionBudget.maxUnavailable) }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: "{{ include "mesh.fullname" . }}-pdb"
+spec:
+  maxUnavailable: {{ .Values.cluster.podDisruptionBudget.maxUnavailable }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: "{{ include "mesh.fullname" . }}-cluster"
+{{- end }}

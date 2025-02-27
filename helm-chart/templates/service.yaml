@@ -1,0 +1,100 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "mesh.fullname" . }}
+  labels:
+    {{- include "mesh.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.mesh.port }}
+      targetPort: http
+      {{- if .Values.service.mesh.nodePort}}
+      nodePort: {{ .Values.service.mesh.nodePort }}
+      {{- end }}
+      protocol: TCP
+      name: http
+      {{- if .Values.service.mesh.useHttp2 }}
+      appProtocol: h2c
+      {{- end }}
+    {{- if .Values.ssl.enabled }}
+    - port: {{ .Values.service.meshSSL.port }}
+      targetPort: https
+      {{- if .Values.service.meshSSL.nodePort}}
+      nodePort: {{ .Values.service.meshSSL.nodePort }}
+      {{- end }}
+      protocol: TCP
+      name: https
+      {{- if .Values.service.meshSSL.useHttp2 }}
+      appProtocol: h2
+      {{- end }}
+    {{- end }}
+    - port: {{ .Values.service.monitoring.port }}
+      targetPort: monitoring
+      {{- if .Values.service.monitoring.nodePort}}
+      nodePort: {{ .Values.service.monitoring.nodePort }}
+      {{- end }}
+      protocol: TCP
+      name: monitoring
+  selector:
+    {{- include "mesh.selectorLabels" . | nindent 4 }}-cluster
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.service.mesh.name }}
+  labels:
+    {{- include "mesh.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    {{- include "mesh.selectorLabels" . | nindent 4 }}-cluster
+---
+{{ $count := (.Values.replicaCount | int) }}
+{{- range $i := untilStep 0 $count 1 }}
+{{- with $}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "mesh.fullname" . }}-{{ $i }}
+  labels:
+    {{- include "mesh.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.mesh.port }}
+      targetPort: http
+      {{- if .Values.service.mesh.nodePort}}
+      nodePort: {{ .Values.service.mesh.nodePort }}
+      {{- end }}
+      protocol: TCP
+      name: http
+      {{- if .Values.service.mesh.useHttp2 }}
+      appProtocol: h2c
+      {{- end }}
+    {{- if .Values.ssl.enabled }}
+    - port: {{ .Values.service.meshSSL.port }}
+      targetPort: https
+      {{- if .Values.service.meshSSL.nodePort}}
+      nodePort: {{ .Values.service.meshSSL.nodePort }}
+      {{- end }}
+      protocol: TCP
+      name: https
+      {{- if .Values.service.meshSSL.useHttp2 }}
+      appProtocol: h2
+      {{- end }}
+    {{- end }}
+    - port: {{ .Values.service.monitoring.port }}
+      targetPort: monitoring
+      {{- if .Values.service.monitoring.nodePort}}
+      nodePort: {{ .Values.service.monitoring.nodePort }}
+      {{- end }}
+      protocol: TCP
+      name: monitoring
+  selector:
+    statefulset.kubernetes.io/pod-name: {{ include "mesh.fullname" . }}-{{ $i }}
+---
+{{- end }}
+{{- end }}
+
