@@ -116,6 +116,8 @@ storageOptions:
   synchronizeWritesTimeout: 6000
 ----
 
+Please refer to the https://mariadb.org/documentation/[official MariaDB documentation] for the database-specific topics.
+
 === Volumes / Locations
 
 [options="header"]
@@ -381,7 +383,7 @@ NOTE: The admin access can be restored via the use of the `resetAdminPassword` l
 There are currently fours components which can be included in a backup:
 
 * *Database* - The database contains the main content of Gentics Mesh.
-    The backup process of a database depends on an actual RDBMS (MariaDB, HSQLDB etc...) used, and is not a part of Gentics Mesh.
+    The backup process of a database depends on an actual RDBMS (MariaDB, HSQLDB etc...) used, and is _not_ a part of Gentics Mesh. In the case of MariaDB, please refer to the https://mariadb.com/kb/en/backup-and-restore-overview/[official backup/restore documentation]. For all the other cases, a link:../premium-features/premium-db[premium DB documentation] is a good place to start looking.
 
 * *Binary files* - Binaries are currently stored in the filesystem and need to be backed up separately data/binaryFiles)
 
