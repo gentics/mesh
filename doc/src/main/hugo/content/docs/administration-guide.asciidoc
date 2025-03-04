@@ -383,7 +383,7 @@ NOTE: The admin access can be restored via the use of the `resetAdminPassword` l
 There are currently fours components which can be included in a backup:
 
 * *Database* - The database contains the main content of Gentics Mesh.
-    The backup process of a database depends on an actual RDBMS (MariaDB, HSQLDB etc...) used, and is _not_ a part of Gentics Mesh. In the case of MariaDB, please refer to the https://mariadb.com/kb/en/backup-and-restore-overview/[official backup/restore documentation]. For all the other cases, a link:../premium-features/premium-db[premium DB documentation] is a good place to start looking.
+    The backup process of a database depends on an actual RDBMS (MariaDB, HSQLDB etc...) used, and is _not_ a part of Gentics Mesh. In the case of MariaDB, please refer to the https://mariadb.com/kb/en/backup-and-restore-overview/[official backup/restore documentation]. For all the other cases, a link:../../premium-features/premium-db[premium DB documentation] is a good place to start looking.
 
 * *Binary files* - Binaries are currently stored in the filesystem and need to be backed up separately data/binaryFiles)
 
@@ -396,12 +396,12 @@ There are currently fours components which can be included in a backup:
 [[debuginfo]]
 == Debug Information
 
-The debug info endpoint (GET {apiLatest}/admin/debuginfo) starts a zip download containing various useful data about the system.
+The debug info endpoint `GET {apiLatest}/admin/debuginfo` starts a zip download containing various useful data about the system.
 
 The documentation below lists all files that are included in the zip.
 
 Per default everything except the consistency check is included in the zip. You can use the `?include` query parameter to include or exclude specific parts.
-For example `{apiLatest}/admin/debuginfo?include=-backup,consistencyCheck` will exclude the database backup and include the consistency checks.
+For example `{apiLatest}/admin/debuginfo?include=-log,consistencyCheck` will exclude application logs and include the consistency checks.
 
 === Active Config
 Query name: `activeConfig`
