@@ -132,12 +132,10 @@ stage("Setup Build Environment") {
 					}
 				}
 
-				if (Boolean.valueOf(params.runDeployTesting)) {
-					if (params.testingVersion?.trim()) {
-						version = params.testingVersion.trim()
-						echo "Building version test build with name: " + version
-						MavenHelper.setVersion(version)
-					}
+				if (params.testingVersion?.trim()) {
+					version = params.testingVersion.trim()
+					echo "Building version test build with name: " + version
+					MavenHelper.setVersion(version)
 				}
 			}
 
