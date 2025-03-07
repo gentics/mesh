@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -30,8 +31,6 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.db.Database;
-import com.gentics.mesh.core.db.cluster.ClusterManager;
 import org.apache.commons.collections4.map.HashedMap;
 import org.pf4j.AbstractPluginManager;
 import org.pf4j.CompoundPluginLoader;
@@ -58,7 +57,10 @@ import org.pf4j.PluginStatusProvider;
 import org.pf4j.PluginWrapper;
 import org.pf4j.VersionManager;
 import org.pf4j.util.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
 import com.gentics.mesh.core.rest.plugin.PluginStatus;
@@ -78,8 +80,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * The implementation of an {@link MeshPluginManager}.
@@ -104,7 +104,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 
 	private final DelegatingPluginRegistry pluginRegistry;
 
-	private final ClusterManager clusterManager;
+	private Optional<Boolean> scriptingInitialized = Optional.empty();
 
 	@Inject
 	public MeshPluginManagerImpl(MeshOptions options, MeshPluginFactory pluginFactory, DelegatingPluginRegistry pluginRegistry, Database database, Lazy<Vertx> vertx) {
@@ -112,7 +112,6 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 		this.options = options;
 		this.pluginRegistry = pluginRegistry;
 		this.vertx = vertx;
-		this.clusterManager = database.clusterManager();
 		delayedInitialize();
 	}
 
@@ -455,6 +454,14 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 		String pluginClassName = clazz.getName();
 		log.debug("Class '{}' for plugin", pluginClassName);
 
+		if (scriptingInitialized.isEmpty()) {
+			// Nashorn JS engine, after being removed from a JDK 15 bundle, has to be explicitly initialized, otherwise is wiped off Mesh bundle by Maven Shade plugin.
+			boolean haveScriptingEngine = null == new org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory().getScriptEngine();
+			if (haveScriptingEngine) {
+				log.warn("Nashorn scripting engine is not found. The templating feature in the plugins will not work!");
+			};
+			scriptingInitialized = Optional.of(haveScriptingEngine);
+		}
 		PluginClassLoader pluginClassLoader = new PluginClassLoader(this, pluginDescriptor, getClass().getClassLoader());
 
 		// create the plugin wrapper

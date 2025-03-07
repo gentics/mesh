@@ -1,0 +1,1 @@
+Plugins: An explicit reference to the Nashorn scripting engine has been added, targeting the plugins that have Handlebars templating engine, as since JDK 15 Nashorn is not anymore bundled.

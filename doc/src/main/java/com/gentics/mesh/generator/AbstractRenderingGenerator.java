@@ -23,6 +23,7 @@ public class AbstractRenderingGenerator extends AbstractGenerator {
 	}
 
 	protected String renderTable(Map<String, Object> context, String templateSource) throws IOException {
+		new org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory().getScriptEngine();
 		Handlebars handlebars = new Handlebars();
 		Template template = handlebars.compileInline(templateSource);
 		return template.apply(context);
