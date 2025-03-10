@@ -17,7 +17,8 @@
 	  }
 	) {
 	    # [$.data.nodeRefSlugLike.elements.length()=2]
-	    elements {
+	    # [$.data.nodeRefSlugLike.elements=<is-sorted-by:fields.nodeRef.fields.slug:asc>]
+		elements {
 	      uuid
 	      schema {
 	        name
@@ -43,10 +44,8 @@
 	  }
 	) {
 	    # [$.data.nodeRefIsNotNull.elements.length()=3]
-	    # [$.data.nodeRefIsNotNull.elements[0].fields.nodeRef=<is-empty>]
-	    # [$.data.nodeRefIsNotNull.elements[1].fields.nodeRef.fields.slug=News Overview.en.html]
-	    # [$.data.nodeRefIsNotNull.elements[2].fields.nodeRef.fields.slug=News Overview.en.html]
-	    elements {
+	    # [$.data.nodeRefIsNotNull.elements=<is-sorted-by:fields.nodeRef.fields.slug:asc>]
+		elements {
 	      uuid
 	      ... on folder {
 	        fields {

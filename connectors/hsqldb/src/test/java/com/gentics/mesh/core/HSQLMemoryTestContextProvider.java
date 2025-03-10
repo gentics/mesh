@@ -13,6 +13,7 @@ import com.gentics.mesh.hibernate.MeshTablePrefixStrategy;
 import com.gentics.mesh.test.MeshOptionsProvider;
 import com.gentics.mesh.test.MeshTestContextProvider;
 import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.context.SortModeItem;
 import com.gentics.mesh.test.docker.InMemoryDatabase;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -73,5 +74,10 @@ public class HSQLMemoryTestContextProvider extends HibernateTestContextProvider 
 			});
 		}
 		return true;
+	}
+
+	@Override
+	public SortModeItem[] sortMode() {
+		return new SortModeItem[] {SortModeItem.NULLS, SortModeItem.CHAR_CAPITALS_FIRST, SortModeItem.DIGITS};
 	}
 }

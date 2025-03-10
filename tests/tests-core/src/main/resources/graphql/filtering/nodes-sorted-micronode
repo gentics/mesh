@@ -26,7 +26,8 @@
 	    # [$.data.nodes.elements.length()=2]
 	    # [$.data.nodes.elements[0].fields.micronode.fields.address=Somewhere]
 	    # [$.data.nodes.elements[1].fields.micronode.fields.address=Overthere]
-	    elements {
+	    # [$.data.nodes.elements=<is-sorted-by:fields.micronode.fields.address:desc>]
+		elements {
 	      uuid
 	      schema {
 	        name

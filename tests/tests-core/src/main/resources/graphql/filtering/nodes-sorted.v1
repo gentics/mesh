@@ -8,6 +8,7 @@
       edited
     fields {
      ... on folder {
+		  # [$.data.nodes.elements=<is-sorted-by:fields.name:desc>]
 		  # [$.data.nodes.elements[0].fields.name=Products]
 		  # [$.data.nodes.elements[1].fields.name=News]
 		  # [$.data.nodes.elements[2].fields.name=March]
