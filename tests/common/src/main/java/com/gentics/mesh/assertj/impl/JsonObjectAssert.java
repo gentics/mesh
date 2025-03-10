@@ -13,22 +13,28 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.api.AbstractAssert;
 import org.jetbrains.annotations.NotNull;
 
+import com.gentics.mesh.test.context.SortModeItem;
 import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.UUIDUtil;
 import com.google.common.collect.ImmutableMap;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
+import com.jayway.jsonpath.spi.json.GsonJsonProvider;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -38,6 +44,7 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 	 * Key to check
 	 */
 	protected String key;
+	protected SortModeItem[] sortModes = new SortModeItem[] {};
 
 	private static Map<String, String> staticVariables = ImmutableMap.<String, String>builder()
 			.put("CURRENT_API_BASE_PATH", CURRENT_API_BASE_PATH)
@@ -45,12 +52,19 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 
 	private Map<String, String> dynamicVariables = new HashMap<>();
 
+	private static final String SORT_PATTERN = "<is-sorted-by:(?<id>[a-zA-Z0-9\\._\\-]*):(?<ord>asc|desc)>";
+
 	public JsonObjectAssert(JsonObject actual) {
 		super(actual, JsonObjectAssert.class);
 	}
 
 	public JsonObjectAssert key(String key) {
 		this.key = key;
+		return this;
+	}
+
+	public JsonObjectAssert withSortMode(SortModeItem[] sortMode) {
+		this.sortModes = sortMode;
 		return this;
 	}
 
@@ -82,6 +96,7 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 		return this;
 	}
 
+	@SuppressWarnings("unchecked")
 	public JsonObjectAssert has(String path, String value, String msg) {
 		try {
 			Object actualValue = getByPath(path);
@@ -228,8 +243,197 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 			pathIsUndefined(path, msg);
 		} else if ("<is-empty>".equals(value)) {
 			pathIsEmpty(path, msg);
+		} else if (Pattern.matches(SORT_PATTERN, value)) {
+			Matcher matcher = Pattern.compile(SORT_PATTERN).matcher(value);
+			assert matcher.matches();
+			String sortBy = matcher.group("id");
+			String order = matcher.group("ord");
+			pathMustBeSorted(path, sortBy, order, msg);
 		} else {
 			has(path, replaceVariables(value), msg);
+		}
+		return this;
+	}
+
+	private boolean areOrdered(String previous, String current, String order) {
+		for (int i = 0; i < sortModes.length; i++) {
+			SortModeItem sortModeItem = sortModes[i];
+			switch (sortModeItem) {
+			case OFF:
+				return true;
+			case ALL_CAPITALS_FIRST:
+				switch (order) {
+				case "desc":
+					if (StringUtils.isNotBlank(previous) && StringUtils.isNotBlank(current) 
+							&& Character.isUpperCase(previous.charAt(0)) && Character.isLowerCase(current.charAt(0))) {
+						return false;
+					}
+					break;
+				default:
+				case "asc":
+					if (StringUtils.isNotBlank(previous) && StringUtils.isNotBlank(current) 
+							&& Character.isUpperCase(current.charAt(0)) && Character.isLowerCase(previous.charAt(0))) {
+						fail("ALL_CAPITALS_FIRST order violated: prev = " + previous + ", next = " + current);
+					}
+					break;
+				}
+				break;
+			case ALL_CAPITALS_LAST:
+				switch (order) {
+				case "desc":
+					if (StringUtils.isNotBlank(previous) && StringUtils.isNotBlank(current) 
+							&& Character.isUpperCase(current.charAt(0)) && Character.isLowerCase(previous.charAt(0))) {
+						fail("ALL_CAPITALS_FIRST order violated: prev = " + previous + ", next = " + current);
+					}
+					break;
+				default:
+					System.out.println("WARN: ALL_CAPITALS_LAST sort order `" + order + "` falls back to ASC");
+				case "asc":
+					if (StringUtils.isNotBlank(previous) && StringUtils.isNotBlank(current) 
+							&& Character.isUpperCase(previous.charAt(0)) && Character.isLowerCase(current.charAt(0))) {
+						fail("ALL_CAPITALS_LAST order violated: prev = " + previous + ", next = " + current);
+					}
+					break;
+				}
+				break;
+			case CHAR_CAPITALS_FIRST:
+				switch (order) {
+				case "desc":
+					if (StringUtils.isNotBlank(previous) && StringUtils.isNotBlank(current) 
+							&& Character.toLowerCase(current.charAt(0)) == Character.toLowerCase(previous.charAt(0))
+							&& Character.isUpperCase(previous.charAt(0)) && Character.isLowerCase(current.charAt(0))) {
+						fail("CHAR_CAPITALS_FIRST order violated: prev = " + previous + ", next = " + current);
+					}
+					break;
+				default:
+					System.out.println("WARN: CHAR_CAPITALS_FIRST sort order `" + order + "` falls back to ASC");
+				case "asc":
+					if (StringUtils.isNotBlank(previous) && StringUtils.isNotBlank(current) 
+							&& Character.toLowerCase(current.charAt(0)) == Character.toLowerCase(previous.charAt(0))
+							&& Character.isUpperCase(current.charAt(0)) && Character.isLowerCase(previous.charAt(0))) {
+						fail("CHAR_CAPITALS_FIRST order violated: prev = " + previous + ", next = " + current);
+					}
+					break;
+				}
+				break;
+			case CHAR_CAPITALS_LAST:
+				switch (order) {
+				case "desc":
+					if (StringUtils.isNotBlank(previous) && StringUtils.isNotBlank(current) 
+							&& Character.toLowerCase(current.charAt(0)) == Character.toLowerCase(previous.charAt(0))
+							&& Character.isUpperCase(current.charAt(0)) && Character.isLowerCase(previous.charAt(0))) {
+						fail("CHAR_CAPITALS_LAST order violated: prev = " + previous + ", next = " + current);
+					}
+					break;
+				default:
+					System.out.println("WARN: CHAR_CAPITALS_LAST sort order `" + order + "` falls back to ASC");
+				case "asc":
+					if (StringUtils.isNotBlank(previous) && StringUtils.isNotBlank(current) 
+							&& Character.toLowerCase(current.charAt(0)) == Character.toLowerCase(previous.charAt(0))
+							&& Character.isUpperCase(previous.charAt(0)) && Character.isLowerCase(current.charAt(0))) {
+						fail("CHAR_CAPITALS_LAST order violated: prev = " + previous + ", next = " + current);
+					}
+					break;
+				}
+				break;
+			case DIGITS:
+				switch (order) {
+				case "desc":
+					if (i == 0 && StringUtils.isNotBlank(previous) && StringUtils.isNotBlank(current) 
+							&& Character.isDigit(current.charAt(0)) && !Character.isDigit(previous.charAt(0))) {
+						fail("DIGITS order violated: prev = " + previous + ", next = " + current);
+					}
+					if (i == sortModes.length-1 && StringUtils.isNotBlank(previous) && StringUtils.isNotBlank(current) 
+							&& Character.isDigit(previous.charAt(0)) && !Character.isDigit(current.charAt(0))) {
+						fail("DIGITS order violated: prev = " + previous + ", next = " + current);
+					}
+					break;
+				default:
+					System.out.println("WARN: DIGITS sort order `" + order + "` falls back to ASC");
+				case "asc":
+					if (i == 0 && StringUtils.isNotBlank(previous) && StringUtils.isNotBlank(current) 
+							&& Character.isDigit(previous.charAt(0)) && !Character.isDigit(current.charAt(0))) {
+						fail("DIGITS order violated: prev = " + previous + ", next = " + current);
+					}
+					if (i == sortModes.length-1 && StringUtils.isNotBlank(previous) && StringUtils.isNotBlank(current) 
+							&& Character.isDigit(current.charAt(0)) && !Character.isDigit(previous.charAt(0))) {
+						fail("DIGITS order violated: prev = " + previous + ", next = " + current);
+					}
+					break;
+				}
+				break;
+			case NULLS:
+				switch (order) {
+				case "desc":
+					if (i == 0 && previous == null && current != null) {
+						fail("NULL order violated: prev = " + previous + ", next = " + current);
+					}
+					if (i == sortModes.length-1 && previous != null && current == null) {
+						fail("NULL order violated: prev = " + previous + ", next = " + current);
+					}
+					break;
+				default:
+					System.out.println("WARN: NULLS sort order `" + order + "` falls back to ASC");
+				case "asc":
+					if (i == 0 && previous != null && current == null) {
+						fail("NULLS order violated: prev = " + previous + ", next = " + current);
+					}
+					if (i == sortModes.length-1 && previous == null && current != null) {
+						fail("NULLS order violated: prev = " + previous + ", next = " + current);
+					}
+					break;
+				}
+				break;
+			default:
+				break;
+			}
+		}
+		if (previous == null) {
+			// null order cases are already passed
+			return true;
+		} else {
+			int diff = previous.compareToIgnoreCase(current);
+			switch (order) {
+			case "desc":
+				return diff >= 0;
+			default:
+				System.out.println("WARN: Sort order `" + order + "` falls back to ASC");
+			case "asc":
+				return diff <= 0;
+			}
+		}		
+	}
+
+	public JsonObjectAssert pathMustBeSorted(String path, String sortBy, String order, String msg) {
+		try {
+			String object = actual.toString();
+			com.google.gson.JsonArray arr = JsonPath.using(new GsonJsonProvider()).parse(object).read(path);
+			List<String> sorted = IntStream.range(0, arr.size())
+					.mapToObj(i -> {
+						try {
+							return Objects.toString(JsonPath.read(object, path + "[" + i + "]." + sortBy));
+						} catch (Exception e) {
+							return null;
+						}
+					})
+					.collect(Collectors.toList());
+			if (sorted.size() < 2) {
+				System.out.println("WARN: too few elements to assert sorting in `" + path + "`: " + sorted);
+				return this;
+			}
+			System.out.println(sorted);			
+			
+			Iterator<String> iter = sorted.iterator();
+		    String current, previous = iter.next();
+		    while (iter.hasNext()) {
+		        current = iter.next();
+		        if (!areOrdered(previous, current, order)) {
+		        	fail("Order violated: prev = " + previous + ", next = " + current);
+		        }
+		        previous = current;
+		    }			
+		} catch (PathNotFoundException e) {
+			fail(msg + " The value at path {" + path + "} must be sorted by {" + sortBy + "} : {" + order + "}.");
 		}
 		return this;
 	}

@@ -4,6 +4,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.test.MeshInstanceProvider;
 import com.gentics.mesh.test.MeshOptionsProvider;
 import com.gentics.mesh.test.MeshTestContextProvider;
+import com.gentics.mesh.test.context.SortModeItem;
 
 public class OrientDBTestContextProvider extends OrientDBMeshOptionsProvider implements MeshTestContextProvider {
 	
@@ -20,5 +21,10 @@ public class OrientDBTestContextProvider extends OrientDBMeshOptionsProvider imp
 	@Override
 	public MeshInstanceProvider<? extends MeshOptions> getInstanceProvider() {
 		return instanceProvider;
+	}
+
+	@Override
+	public SortModeItem[] sortMode() {
+		return new SortModeItem[] { SortModeItem.OFF };
 	}
 }

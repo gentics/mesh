@@ -9,6 +9,7 @@
 					# [$.data.rootNode.children.elements[2].schema.name=folder]
 					# [$.data.rootNode.children.elements[3].schema.name=folder]
 					# [$.data.rootNode.children.elements[4].schema.name=content]
+					# [$.data.rootNode.children.elements=<is-sorted-by:schema.name:desc>]
 					name
 				}
 			}

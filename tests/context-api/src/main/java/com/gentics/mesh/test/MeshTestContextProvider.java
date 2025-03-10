@@ -1,6 +1,7 @@
 package com.gentics.mesh.test;
 
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.test.context.SortModeItem;
 
 /**
  * A runtime provider of context-specific {@link MeshInstanceProvider}. 
@@ -30,5 +31,14 @@ public interface MeshTestContextProvider extends MeshOptionsProvider {
 	 */
 	public static MeshTestContextProvider getProvider() {
 		return MeshOptionsProvider.spawnProviderInstance(System.getProperty(ENV_TEST_CONTEXT_PROVIDER_CLASS), MeshTestContextProvider.class);
+	}
+
+	/**
+	 * Get a sorting mode, that current Mesh instance or its database implements.
+	 * 
+	 * @return
+	 */
+	default SortModeItem[] sortMode() {
+		return new SortModeItem[] {SortModeItem.NULLS, SortModeItem.CHAR_CAPITALS_FIRST, SortModeItem.DIGITS};
 	}
 }

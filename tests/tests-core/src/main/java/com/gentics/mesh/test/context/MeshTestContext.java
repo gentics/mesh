@@ -901,6 +901,10 @@ public class MeshTestContext implements TestRule {
 		return meshTestContextProvider.getInstanceProvider();
 	}
 
+	public SortModeItem[] getSortMode() {
+		return meshTestContextProvider.sortMode();
+	}
+
 	public MeshOptions getOptions() {
 		return meshTestContextProvider.getOptions();
 	}
