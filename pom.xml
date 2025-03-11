@@ -10,14 +10,14 @@
 	<parent>
 		<artifactId>mesh-plugin-parent</artifactId>
 		<groupId>com.gentics.mesh</groupId>
-		<version>2.1.0</version>
+		<version>2.1.16</version>
 	</parent>
 
 	<properties>
 		<plugin.license>Commercial</plugin.license>
 		<plugin.author>Gentics</plugin.author>
 		<!--  Don't forget to also update dependencyManagement section! -->
-		<mesh.version>2.1.0</mesh.version>
+		<mesh.version>2.1.16</mesh.version>
 		<netty.version>4.1.108.Final</netty.version>
 		<jackson.version>2.17.0</jackson.version>
 		<license.checker.version>1.0.0</license.checker.version>
@@ -93,11 +93,6 @@
 				<groupId>com.fasterxml.jackson.datatype</groupId>
 				<artifactId>jackson-datatype-jsr310</artifactId>
 				<version>${jackson.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.openjdk.nashorn</groupId>
-				<artifactId>nashorn-core</artifactId>
-				<version>15.4</version>
 			</dependency>
 
 			<!-- This is necessary, since some transitive (test) dependencies would add a dependency to another version of netty-codec, which lets the test fail -->
