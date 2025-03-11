@@ -4,11 +4,6 @@
 			# [$.data.rootNode.children.elements.length()=5]
 			elements {
 				schema {
-					# [$.data.rootNode.children.elements[0].schema.name=folder]
-					# [$.data.rootNode.children.elements[1].schema.name=folder]
-					# [$.data.rootNode.children.elements[2].schema.name=folder]
-					# [$.data.rootNode.children.elements[3].schema.name=folder]
-					# [$.data.rootNode.children.elements[4].schema.name=content]
 					# [$.data.rootNode.children.elements=<is-sorted-by:schema.name:desc>]
 					name
 				}
