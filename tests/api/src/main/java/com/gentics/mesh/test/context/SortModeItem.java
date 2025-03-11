@@ -13,6 +13,10 @@ public enum SortModeItem {
 	 */
 	NULLS_ORDER_INDEPENDENT(false),
 	/**
+	 * Now come nulls, independently of the requested sort order
+	 */
+	NULLS_ORDER_INDEPENDENT,
+	/**
 	 * Now come all the capital letters, and lowercase come afterwards.
 	 */
 	ALL_CAPITALS_FIRST(true),
