@@ -10,14 +10,14 @@
 	<parent>
 		<artifactId>mesh-plugin-parent</artifactId>
 		<groupId>com.gentics.mesh</groupId>
-		<version>3.0.0</version>
+		<version>3.0.5</version>
 	</parent>
 
 	<properties>
 		<plugin.license>Commercial</plugin.license>
 		<plugin.author>Gentics</plugin.author>
 		<!--  Don't forget to also update dependencyManagement section! -->
-		<mesh.version>3.0.0</mesh.version>
+		<mesh.version>3.0.5</mesh.version>
 		<netty.version>4.1.115.Final</netty.version>
 		<hsqldb.version>2.7.3</hsqldb.version>
 		<commons-beanutils.version>1.9.4</commons-beanutils.version>
@@ -95,11 +95,6 @@
 				<groupId>com.fasterxml.jackson.datatype</groupId>
 				<artifactId>jackson-datatype-jsr310</artifactId>
 				<version>${jackson.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.openjdk.nashorn</groupId>
-				<artifactId>nashorn-core</artifactId>
-				<version>15.4</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hsqldb</groupId>
