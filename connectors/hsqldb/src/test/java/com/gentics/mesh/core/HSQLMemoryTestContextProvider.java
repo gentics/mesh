@@ -78,6 +78,6 @@ public class HSQLMemoryTestContextProvider extends HibernateTestContextProvider 
 
 	@Override
 	public SortModeItem[] sortMode() {
-		return new SortModeItem[] {SortModeItem.NULLS, SortModeItem.CHAR_CAPITALS_FIRST, SortModeItem.DIGITS};
+		return new SortModeItem[] {SortModeItem.NULLS_ORDER_INDEPENDENT, SortModeItem.CHAR_CAPITALS_FIRST, SortModeItem.DIGITS};
 	}
 }
