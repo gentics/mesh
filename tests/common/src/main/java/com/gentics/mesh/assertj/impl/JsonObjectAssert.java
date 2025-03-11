@@ -266,7 +266,7 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 				case "desc":
 					if (StringUtils.isNotBlank(previous) && StringUtils.isNotBlank(current) 
 							&& Character.isUpperCase(previous.charAt(0)) && Character.isLowerCase(current.charAt(0))) {
-						return false;
+						fail("ALL_CAPITALS_FIRST order violated: prev = " + previous + ", next = " + current);
 					}
 					break;
 				default:
@@ -283,7 +283,7 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 				case "desc":
 					if (StringUtils.isNotBlank(previous) && StringUtils.isNotBlank(current) 
 							&& Character.isUpperCase(current.charAt(0)) && Character.isLowerCase(previous.charAt(0))) {
-						fail("ALL_CAPITALS_FIRST order violated: prev = " + previous + ", next = " + current);
+						fail("ALL_CAPITALS_LAST order violated: prev = " + previous + ", next = " + current);
 					}
 					break;
 				default:
@@ -363,15 +363,18 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 				}
 				break;
 			case NULLS:
+			case NULLS_ORDER_INDEPENDENT:
 				switch (order) {
 				case "desc":
-					if (i == 0 && previous == null && current != null) {
-						fail("NULL order violated: prev = " + previous + ", next = " + current);
+					if (sortModeItem != SortModeItem.NULLS_ORDER_INDEPENDENT) {
+						if (i == 0 && previous == null && current != null) {
+							fail("NULLS order violated: prev = " + previous + ", next = " + current);
+						}
+						if (i == sortModes.length-1 && previous != null && current == null) {
+							fail("NULLS order violated: prev = " + previous + ", next = " + current);
+						}
+						break;
 					}
-					if (i == sortModes.length-1 && previous != null && current == null) {
-						fail("NULL order violated: prev = " + previous + ", next = " + current);
-					}
-					break;
 				default:
 					System.out.println("WARN: NULLS sort order `" + order + "` falls back to ASC");
 				case "asc":
@@ -388,7 +391,7 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 				break;
 			}
 		}
-		if (previous == null) {
+		if (previous == null || current == null) {
 			// null order cases are already passed
 			return true;
 		} else {
