@@ -337,24 +337,24 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 			case DIGITS:
 				switch (order) {
 				case "desc":
-					if (i == 0 && StringUtils.isNotBlank(previous) && StringUtils.isNotBlank(current) 
-							&& Character.isDigit(current.charAt(0)) && !Character.isDigit(previous.charAt(0))) {
+					if (i > 0 && sortModes[i-1].isCharBased() && StringUtils.isNotBlank(previous) && StringUtils.isNotBlank(current) 
+							&& Character.isDigit(previous.charAt(0)) && !Character.isDigit(current.charAt(0))) {
 						fail("DIGITS order violated: prev = " + previous + ", next = " + current);
 					}
-					if (i == sortModes.length-1 && StringUtils.isNotBlank(previous) && StringUtils.isNotBlank(current) 
-							&& Character.isDigit(previous.charAt(0)) && !Character.isDigit(current.charAt(0))) {
+					if (i < sortModes.length-2 && sortModes[i+1].isCharBased() && StringUtils.isNotBlank(previous) && StringUtils.isNotBlank(current) 
+							&& Character.isDigit(current.charAt(0)) && !Character.isDigit(previous.charAt(0))) {
 						fail("DIGITS order violated: prev = " + previous + ", next = " + current);
 					}
 					break;
 				default:
 					System.out.println("WARN: DIGITS sort order `" + order + "` falls back to ASC");
 				case "asc":
-					if (i == 0 && StringUtils.isNotBlank(previous) && StringUtils.isNotBlank(current) 
-							&& Character.isDigit(previous.charAt(0)) && !Character.isDigit(current.charAt(0))) {
+					if (i > 0 && sortModes[i-1].isCharBased() && StringUtils.isNotBlank(previous) && StringUtils.isNotBlank(current) 
+							&& Character.isDigit(current.charAt(0)) && !Character.isDigit(previous.charAt(0))) {
 						fail("DIGITS order violated: prev = " + previous + ", next = " + current);
 					}
-					if (i == sortModes.length-1 && StringUtils.isNotBlank(previous) && StringUtils.isNotBlank(current) 
-							&& Character.isDigit(current.charAt(0)) && !Character.isDigit(previous.charAt(0))) {
+					if (i < sortModes.length-2 && sortModes[i+1].isCharBased() && StringUtils.isNotBlank(previous) && StringUtils.isNotBlank(current) 
+							&& Character.isDigit(previous.charAt(0)) && !Character.isDigit(current.charAt(0))) {
 						fail("DIGITS order violated: prev = " + previous + ", next = " + current);
 					}
 					break;
@@ -374,7 +374,7 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 						break;
 					}
 				default:
-					System.out.println("WARN: NULLS sort order `" + order + "` falls back to ASC");
+					System.out.println("WARN: " + sortModeItem.name() + " sort order `" + order + "` falls back to ASC");
 				case "asc":
 					if (i == 0 && previous != null && current == null) {
 						fail("NULLS order violated: prev = " + previous + ", next = " + current);

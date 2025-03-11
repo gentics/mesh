@@ -5,31 +5,46 @@ package com.gentics.mesh.test.context;
  */
 public enum SortModeItem {
 	/**
-	 * Now come nulls
+	 * Now come nulls. Currently can be placed at either first or last position.
 	 */
-	NULLS,
+	NULLS(false),
 	/**
-	 * Now come nulls, independently of the requested sort order
+	 * Now come nulls, independently of the requested sort order. Currently can be placed at either first or last position.
 	 */
-	NULLS_ORDER_INDEPENDENT,
+	NULLS_ORDER_INDEPENDENT(false),
 	/**
 	 * Now come all the capital letters, and lowercase come afterwards.
 	 */
-	ALL_CAPITALS_FIRST,
+	ALL_CAPITALS_FIRST(true),
 	/**
 	 * Now come letters by groups `capital,lowercase`.
 	 */
-	CHAR_CAPITALS_FIRST,
+	CHAR_CAPITALS_FIRST(true),
 	/**
 	 * Now come all the lowercase letters, and capitals come afterwards
 	 */
-	ALL_CAPITALS_LAST,
+	ALL_CAPITALS_LAST(true),
 	/**
 	 * Now come letters by groups `lowercase,capital`.
 	 */
-	CHAR_CAPITALS_LAST,
+	CHAR_CAPITALS_LAST(true),
 	/**
-	 * Now come digits
+	 * Now come digits. Currently can be placed before or after one of the char based sort mode items.
 	 */
-	DIGITS,
+	DIGITS(false);
+
+	private final boolean isCharBased;
+
+	private SortModeItem(boolean isCharBased) {
+		this.isCharBased = isCharBased;
+	}
+
+	/**
+	 * Does this item rely on chars existing in the sorted items around?
+	 * 
+	 * @return
+	 */
+	public boolean isCharBased() {
+		return isCharBased;
+	}
 }
