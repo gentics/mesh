@@ -565,6 +565,8 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 		call(() -> client().transformNodeBinaryField(PROJECT_NAME, updatedResponse.getUuid(), updatedResponse.getLanguage(), updatedResponse.getVersion(),
 			"binary", new ImageManipulationParametersImpl().setWidth(250)),
 			NOT_FOUND, "node_error_binary_data_not_found");
+
+		call(() -> client().deleteNode(PROJECT_NAME, createResponse.getUuid()));
 	}
 
 	@Test
