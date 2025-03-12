@@ -31,7 +31,11 @@ public enum SortModeItem {
 	/**
 	 * Now come digits. Currently can be placed before or after one of the char based sort mode items.
 	 */
-	DIGITS(false);
+	DIGITS(false),
+	/**
+	 * Sorting test should be skipped.
+	 */
+	OFF(false);
 
 	private final boolean isCharBased;
 

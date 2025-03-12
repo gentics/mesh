@@ -259,6 +259,8 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 		for (int i = 0; i < sortModes.length; i++) {
 			SortModeItem sortModeItem = sortModes[i];
 			switch (sortModeItem) {
+			case OFF:
+				return true;
 			case ALL_CAPITALS_FIRST:
 				switch (order) {
 				case "desc":
