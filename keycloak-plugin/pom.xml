@@ -33,6 +33,7 @@
 		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-rx-java2</artifactId>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.codehaus.groovy</groupId>
