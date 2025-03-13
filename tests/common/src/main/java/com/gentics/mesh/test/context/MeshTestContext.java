@@ -6,6 +6,7 @@ import static com.gentics.mesh.test.ElasticsearchTestMode.UNREACHABLE;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
 import java.security.cert.CertificateException;
@@ -20,6 +21,7 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -29,6 +31,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOExceptionList;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.junit.rules.TestRule;
@@ -431,12 +434,25 @@ public class MeshTestContext implements TestRule {
 	}
 
 	private void cleanupFolders() throws IOException {
+		Predicate<Throwable> isFileNotFound = e -> 
+				(e instanceof NoSuchFileException) 
+				|| (e.getCause() instanceof NoSuchFileException)
+				|| (e instanceof FileNotFoundException) 
+				|| (e.getCause() instanceof FileNotFoundException);
+
 		for (File folder : tmpFolders) {
 			try {
 				FileUtils.deleteDirectory(folder);
 			} catch (IOException e) {
-				if (e instanceof NoSuchFileException || (e.getCause() instanceof NoSuchFileException)) {
+				if (isFileNotFound.test(e)) {
 					LOG.debug("Suppressing inexisting directory deletion error", e);
+				} else if (e instanceof IOExceptionList) {
+					IOExceptionList el = IOExceptionList.class.cast(e);
+					if (el.getCauseList().stream().allMatch(isFileNotFound)) {
+						LOG.debug("Suppressing inexisting directory deletion errors", el);
+					} else {
+						throw el;
+					}
 				} else {
 					throw e;
 				}
