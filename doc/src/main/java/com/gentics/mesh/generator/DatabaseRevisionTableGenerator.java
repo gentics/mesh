@@ -54,31 +54,28 @@ public class DatabaseRevisionTableGenerator extends AbstractRenderingGenerator {
 	public void run() throws MalformedURLException, Exception {
 		MavenMetadata metadata = MavenUtilities
 			.getMavenMetadata(new URL(BASE_PATH + "maven-metadata.xml"));
+		String myVersion = Mesh.getPlainVersion();
+		VersionNumber myParsedVersion = VersionNumber.parse(myVersion);
 
 		List<Map<String, String>> entries = new ArrayList<>();
 		for (String version : metadata.getVersions()) {
 			// 0.16.1 introduced the revision artifact
 			System.out.println("Checking: " + version);
 			VersionNumber parsedVersion = VersionNumber.parse(version);
-			if (parsedVersion != null && parsedVersion.compareTo(VersionNumber.parse("0.16.1")) >= 0) {
+			if (parsedVersion != null && parsedVersion.compareTo(VersionNumber.parse("0.16.1")) >= 0 && parsedVersion.compareTo(myParsedVersion) < 0) {
 				URL revisionFileUrl = new URL(BASE_PATH + version + "/" + "mesh-orientdb-" + version + "-revision.txt");
-				try {
-					String hash = IOUtils.toString(revisionFileUrl.openStream(), Charset.forName("UTF-8"));
-					System.out.println("Found version {" + version + "} with hash {" + hash + "}");
-					Map<String, String> map = new HashMap<>();
-					map.put("version", version);
-					map.put("revision", hash);
-					entries.add(map);
-				} catch (Throwable e) {
-					System.err.println("Error by reading " + revisionFileUrl + ":\n\t" + e.getMessage());
-				}
+				String hash = IOUtils.toString(revisionFileUrl.openStream(), Charset.forName("UTF-8"));
+				System.out.println("Found version {" + version + "} with hash {" + hash + "}");
+				Map<String, String> map = new HashMap<>();
+				map.put("version", version);
+				map.put("revision", hash);
+				entries.add(map);
 			}
 		}
 		// Add the local version as well.
 		Map<String, String> local = new HashMap<>();
-		String version = Mesh.getPlainVersion();
-		if (!version.endsWith("-SNAPSHOT")) {
-			local.put("version", version);
+		if (!myVersion.endsWith("-SNAPSHOT")) {
+			local.put("version", myVersion);
 			local.put("revision",
 				new OrientDBDatabase(null, null, null, null, null, null, null, null, null, null, null, null, null, null).getDatabaseRevision());
 			entries.add(local);
