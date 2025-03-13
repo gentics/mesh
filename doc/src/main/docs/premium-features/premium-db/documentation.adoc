@@ -21,7 +21,8 @@ As of now the following RDBMSs are supported as a premium feature:
 ## Mesh Database Connector.
 
 In order to have Gentics Mesh working with a particular database, a database connector module is required. 
-The connector for MariaDB is freely distributed at our link:https://github.com/gentics/mesh/releases/[Github Releases], and its instructions may be found at link:{{<relref "administration-guide.asciidoc">}}#_use_mariadb_connected_container[the administration guide].
+The connector for MariaDB is freely distributed at our link:https://github.com/gentics/mesh/releases/[Github Releases], and its instructions may be found at link:{{<relref "administration-guide.asciidoc">}}#_use_mariadb_connected_container[the administration guide], 
+as well as link:{{<relref "administration-guide.asciidoc">}}#_backup_recovery[the backup/restore section].
 The connectors for Oracle, Microsoft SQL Server, PostgreSQL require a valid Gentics License. Please contact link:https://www.gentics.com/kontakt.html[Gentics Sales] to get one, and you wiil be provided a database connector JAR file.
 
 ### Examples:
@@ -91,6 +92,8 @@ Please note that an access to the Gentics' commercial repository is required to 
 ---- 
 The Enterprise Edition image of Gentics Mesh, capable of Gentics License management feature, is available inder the name `docker.gentics.com/gentics/mesh-enterprise-postgres`.
 
+The backup/restore documentation is available at https://www.postgresql.org/docs/current/backup.html[the official PostgreSQL website].
+
 #### Microsoft SQL Server
 
 This example uses inbuilt "SA" user.
@@ -159,6 +162,8 @@ Please note that an access to the Gentics' commercial repository is required to 
       MESH_JDBC_CONNECTION_PASSWORD: "admin"
 ---- 
 The Enterprise Edition image of Gentics Mesh, capable of Gentics License management feature, is available inder the name `docker.gentics.com/gentics/mesh-enterprise-mssql`.
+
+The backup/restore documentation is available at https://learn.microsoft.com/en-us/sql/relational-databases/backup-restore/back-up-and-restore-of-sql-server-databases?view=sql-server-ver16[the official Microsoft SQL Server website].
 
 #### Oracle XE
 
@@ -233,3 +238,4 @@ Please note that an access to the Gentics' commercial repository is required to 
 ---- 
 The Enterprise Edition image of Gentics Mesh, capable of Gentics License management feature, is available inder the name `docker.gentics.com/gentics/mesh-enterprise-oracle`.
 
+The backup/restore documentation is available at https://docs.oracle.com/en/engineered-systems/oracle-database-appliance/19.26/cmtxn/backup-recover-restore.html[the official Oracle website].
