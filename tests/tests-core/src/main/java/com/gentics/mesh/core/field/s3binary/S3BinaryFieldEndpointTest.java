@@ -243,7 +243,7 @@ public class S3BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
         s3BinaryStorage().createBucket("test-cache-bucket").blockingGet();
         s3BinaryStorage().uploadFile("test-bucket", s3binaryNode.getUuid() + "/s3", tempFile, false).blockingGet();
         client().extractMetadataNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "s3", METADATA_REQUEST).blockingGet();
-        NodeResponse call = call(() -> client().transformNodeBinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "en", "1.0", "s3", new ImageManipulationParametersImpl().setWidth(250)));
+        NodeResponse call = call(() -> client().transformNodeBinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "en", "draft", "s3", new ImageManipulationParametersImpl().setWidth(250)));
         assertNotNull(call);
         assertEquals(250, call.getFields().getS3BinaryField(FIELD_NAME).getWidth().intValue());
     }
