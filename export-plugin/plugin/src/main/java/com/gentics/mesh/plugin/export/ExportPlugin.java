@@ -2,6 +2,25 @@ package com.gentics.mesh.plugin.export;
 
 import static io.vertx.ext.web.Router.router;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.validation.ConstraintViolation;
+
+import org.apache.commons.io.IOUtils;
+import org.pf4j.PluginWrapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.gentics.mesh.RestAPIVersion;
@@ -14,8 +33,8 @@ import com.gentics.mesh.plugin.common.license.LicensedPlugin;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.export.dagger.DaggerExportPluginComponent;
 import com.gentics.mesh.plugin.export.dagger.ExportPluginComponent;
-import com.gentics.mesh.plugin.export.extension.ExportConfigValuePlugin;
 import com.gentics.mesh.plugin.export.extension.ConfigValueProvider;
+import com.gentics.mesh.plugin.export.extension.ExportConfigValuePlugin;
 import com.gentics.mesh.plugin.export.handler.CsvHandler;
 import com.gentics.mesh.plugin.export.handler.DecodeValidateHandler;
 import com.gentics.mesh.plugin.export.handler.RoleCheckHandler;
@@ -23,28 +42,12 @@ import com.gentics.mesh.plugin.export.model.CsvRequest;
 import com.gentics.mesh.plugin.export.model.PluginConfiguration;
 import com.gentics.mesh.plugin.export.validaton.ConstraintViolationSerializer;
 import com.gentics.mesh.rest.client.MeshRestClient;
+
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.vertx.core.http.HttpMethod;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
-import org.apache.commons.io.IOUtils;
-import org.pf4j.PluginWrapper;
-
-import javax.validation.ConstraintViolation;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 public class ExportPlugin extends AbstractPlugin implements RestPlugin, ExportConfigValuePlugin {
 
@@ -62,6 +65,9 @@ public class ExportPlugin extends AbstractPlugin implements RestPlugin, ExportCo
 			try {
 				// Setup the configuration
 				PluginConfiguration config = readConfig(PluginConfiguration.class);
+				if (config == null) {
+					config = new PluginConfiguration();
+				}
 				config.overrideWithEnv();
 
 				LicenseService licenseService = new LicenseService(config);

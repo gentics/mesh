@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.gentics.mesh.plugin.commercial</groupId>
 		<artifactId>mesh-commercial-plugins</artifactId>
-		<version>3.0.2-SNAPSHOT</version>
+		<version>3.0.3-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -37,7 +37,6 @@
 		<dependency>
 			<groupId>com.gentics.mesh.plugin.commercial</groupId>
 			<artifactId>mesh-commercial-plugins-common</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.vertx</groupId>
