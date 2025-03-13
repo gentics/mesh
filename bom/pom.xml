@@ -11,7 +11,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>3.0.5-SNAPSHOT</version>
+		<version>3.0.6-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -730,7 +730,7 @@
 			<dependency>
 				<groupId>org.openjdk.nashorn</groupId>
 				<artifactId>nashorn-core</artifactId>
-				<version>15.0</version>
+				<version>15.6</version>
 			</dependency>
 
 			<!-- WebP Support-->

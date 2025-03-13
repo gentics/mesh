@@ -23,6 +23,7 @@ properties([
 		booleanParam(name: 'runDocker',           defaultValue: false, description: "Whether to run the docker steps."),
 		booleanParam(name: 'omitScan',            defaultValue: false, description: "Omit scanning the docker images"),
 		booleanParam(name: 'runMavenBuild',       defaultValue: false, description: "Whether to run the maven build steps."),
+		booleanParam(name: 'setBranchAsVersion',  defaultValue: false, description: "Whether to set the branch name as project version (unless runDeploy is true). Use this together with runMavenBuild to install the maven artifacts to the local repository (changelog and documentation will be skipped)."),
 		booleanParam(name: 'runIntegrationTests', defaultValue: false, description: "Whether to run integration tests."),
 		booleanParam(name: 'consistencyChecks',   defaultValue: false, description: "Whether to do consistency checks for every test. Enabling this will increase overall test runtime."),
 		string(	     name: 'testingVersion',      defaultValue: "",    description: "Version for testing"),
@@ -129,15 +130,17 @@ stage("Setup Build Environment") {
 						sh 'git add .'
 						sh "git commit -m 'Raise version'"
 						GitHelper.addTag(version, 'Release of version ' + version)
+					} else if (Boolean.valueOf(params.setBranchAsVersion)) {
+						version = branchName
+						echo "Building version " + version
+						MavenHelper.setVersion(version)
 					}
 				}
 
-				if (Boolean.valueOf(params.runDeployTesting)) {
-					if (params.testingVersion?.trim()) {
-						version = params.testingVersion.trim()
-						echo "Building version test build with name: " + version
-						MavenHelper.setVersion(version)
-					}
+				if (params.testingVersion?.trim()) {
+					version = params.testingVersion.trim()
+					echo "Building version test build with name: " + version
+					MavenHelper.setVersion(version)
 				}
 			}
 
@@ -290,6 +293,10 @@ stage("Setup Build Environment") {
 							// sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-secret-key.asc"
 							withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
 								sh "mvn -U -B -DskipTests -Dgpg.skip=false clean deploy"
+							}
+						} else if (Boolean.valueOf(params.setBranchAsVersion)) {
+							withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
+								sh "mvn -U -B -DskipTests -Dgpg.skip=false -pl '!doc,!changelog' clean install"
 							}
 						} else {
 							withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {

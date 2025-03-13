@@ -1,5 +1,7 @@
 {
-  "changeLogEntryFileNames": [],
+  "changeLogEntryFileNames": [
+    "8146.SUP-14730.bugfix"
+  ],
   "version": "3.0.4",
   "date": "26.02.2025",
   "genericProperties": {}

@@ -47,7 +47,7 @@ public class AuthenticationOptions implements Option {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("The Java keystore password for the keystore file.")
-	@EnvironmentVariable(name = MESH_AUTH_KEYSTORE_PASS_ENV, description = "Override the configured keystore password.")
+	@EnvironmentVariable(name = MESH_AUTH_KEYSTORE_PASS_ENV, description = "Override the configured keystore password.", isSensitive = true)
 	private String keystorePassword = null;
 
 	@JsonProperty(required = true)

@@ -1,0 +1,2 @@
+The dependency on nashorn-core has been updated to 15.6.
+This fixes startup errors in plugins (like the comment plugin) which uses precompilation of handlebars templates to javascript.
