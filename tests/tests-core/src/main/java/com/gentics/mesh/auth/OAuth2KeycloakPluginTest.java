@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.MeshVersion;
@@ -35,12 +34,10 @@ import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.plugin.auth.AuthServicePluginUtils;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.gentics.mesh.test.MeshTestSetting;
-import com.gentics.mesh.test.category.FailingTests;
 import com.gentics.mesh.test.context.MeshTestContext;
 
 import io.vertx.core.json.JsonObject;
 
-@Category({ FailingTests.class })
 @MeshTestSetting(testSize = PROJECT_AND_NODE, startServer = true, useKeycloak = true)
 public class OAuth2KeycloakPluginTest extends AbstractOAuthTest {
 
