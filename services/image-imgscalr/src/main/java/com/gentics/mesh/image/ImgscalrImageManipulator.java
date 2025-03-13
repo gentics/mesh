@@ -378,7 +378,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 				.flatMapSingle(originalFile -> workerPool.<File>rxExecuteBlocking(bh -> {
 					Supplier<InputStream> stream = () -> new ByteArrayInputStream(originalFile.getBytes());
 					try {
-						String cacheFilePath = resize(stream, parameters, extension -> options.getImageCacheDirectory()  + File.pathSeparator + filename);
+						String cacheFilePath = resize(stream, parameters, extension -> options.getImageCacheDirectory()  + File.separator + filename);
 						File outCacheFile = new File(cacheFilePath);
 
 						// Return buffer to written cache file
