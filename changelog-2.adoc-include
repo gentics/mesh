@@ -6,8 +6,16 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v3.0.5]]
+== 3.0.5 (13.03.2025)
+
+icon:plus[] Documentation: References to the MariaDB official documentation have been added.
+
 [[v3.0.4]]
 == 3.0.4 (26.02.2025)
+
+icon:check[] Auth: The JWT auth cookie will now have the `HTTPOnly` flag set.
+
 
 [[v3.0.3]]
 == 3.0.3 (12.02.2025)
@@ -42,6 +50,15 @@ icon:plus[] Clustering: The Hazelcast library, responsible for the cluster insta
 
 icon:plus[] Some library dependencies have been updated to the latest hotfix versions.
 
+
+[[v2.1.16]]
+== 2.1.16 (12.03.2025)
+
+icon:check[] The dependency on nashorn-core has been updated to 15.6.
+This fixes startup errors in plugins (like the comment plugin) which uses precompilation of handlebars templates to javascript.
+
+
+icon:check[] Logging: Some sensitive configuration entries were eliminated from the logging.
 
 [[v2.1.15]]
 == 2.1.15 (25.02.2025)
