@@ -9,6 +9,7 @@ import static org.junit.Assert.assertNull;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.HibNamedElement;
@@ -27,6 +28,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 @MeshTestSetting(testSize = FULL, startServer = true)
 public class NameCacheTest extends AbstractMeshTest {
 
+	@Before
 	public void clearCache() {
 		adminCall(() -> client().clearCache());
 	}
@@ -105,6 +107,7 @@ public class NameCacheTest extends AbstractMeshTest {
 
 			assertNotNull(entity);
 			assertEquals(entity.getName(), name);
+			tx.success();
 		});
 
 		tx(tx -> {
