@@ -64,7 +64,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.WorkerExecutor;
-import io.vertx.reactivex.core.file.FileSystem;
 
 /**
  * The ImgScalr Manipulator uses a pure java imageio image resizer.
@@ -378,7 +377,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 				.flatMapSingle(originalFile -> workerPool.<File>rxExecuteBlocking(bh -> {
 					Supplier<InputStream> stream = () -> new ByteArrayInputStream(originalFile.getBytes());
 					try {
-						String cacheFilePath = resize(stream, parameters, extension -> options.getImageCacheDirectory()  + File.pathSeparator + filename);
+						String cacheFilePath = resize(stream, parameters, extension -> getS3CachePath() + File.separator + filename);
 						File outCacheFile = new File(cacheFilePath);
 
 						// Return buffer to written cache file
@@ -406,7 +405,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 					if (res)
 						return s3BinaryStorage.read(cacheBucketName, cacheS3ObjectKey)
 								.flatMapCompletable(cacheFileInfo -> {
-									if (nonNull(cacheFileInfo) || cacheFileInfo.getBytes().length > 0) {
+									if (nonNull(cacheFileInfo) && cacheFileInfo.getBytes().length > 0) {
 										return Completable.complete();
 									} else {
 										log.error("Could not read input image");
@@ -419,7 +418,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 								.flatMapSingle(originalFile -> workerPool.<File>rxExecuteBlocking(bh -> {
 									Supplier<InputStream> stream = () -> new ByteArrayInputStream(originalFile.getBytes());
 									try {
-										String cacheFilePath = resize(stream, parameters, extension -> options.getImageCacheDirectory()  + File.pathSeparator + filename);
+										String cacheFilePath = resize(stream, parameters, extension -> getS3CachePath() + File.separator + filename);
 										File outCacheFile = new File(cacheFilePath);
 
 										// Return buffer to written cache file
@@ -432,6 +431,14 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 						s3BinaryStorage.uploadFile(cacheBucketName, cacheS3ObjectKey, file, true)).ignoreElements();
 					}
 				});
+	}
+
+	private String getS3CachePath() {
+		File cacheFile = new File(options.getImageCacheDirectory() + File.separator + "S3");
+		if (!cacheFile.exists()) {
+			cacheFile.mkdirs();
+		}
+		return cacheFile.getPath();
 	}
 
 	private ImageWriteParam getImageWriteparams(String extension) {

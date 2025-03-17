@@ -226,11 +226,12 @@ public class BinaryTransformHandler extends AbstractHandler {
 				.handleS3Resize(options.getS3Options().getBucket(), s3ObjectKey, fileName, parameters)
 				.flatMap(file -> {
 					// The image was stored and hashed. Now we need to load the stored file again and check the image properties
-					Single<ImageInfo> info = imageManipulator.readImageInfo(file.getName());
-					Single<FileProps> fileProps = fs.rxProps(file.getName());
+					String filePath = file.getAbsolutePath();
+					Single<ImageInfo> info = imageManipulator.readImageInfo(filePath);
+					Single<FileProps> fileProps = fs.rxProps(filePath);
 					return Single.zip(info, fileProps, (infoV, props) -> {
 						// Return a POJO which hold all information that is needed to update the field
-						return new TransformationResult(null, props.size(), infoV, file.getName());
+						return new TransformationResult(null, props.size(), infoV, filePath);
 					});
 				})
 				.flatMap(transformationResult ->  Single.just(updateNodeInGraph(ac, s3UploadContext, transformationResult, uuid, languageTag, fieldName, parameters)))
