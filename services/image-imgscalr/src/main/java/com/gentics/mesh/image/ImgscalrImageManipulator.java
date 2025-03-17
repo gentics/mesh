@@ -36,8 +36,6 @@ import org.apache.tika.parser.Parser;
 import org.apache.tika.sax.BodyContentHandler;
 import org.imgscalr.Scalr;
 import org.imgscalr.Scalr.Mode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.storage.BinaryStorage;
