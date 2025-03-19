@@ -1,0 +1,1 @@
+Indexing: At some circumstances an indexing engine crash is possible, when the changes, triggering the (re)indexing on updated or deleted data, come too quickly. This has been fixed.
