@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "3.0.4"
+version: "3.0.5"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -706,7 +706,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "690cdbd7c4b64319986dbd039a2e5ae0"
+                            "uuid" : "4d46ebd36803409a8d3041a05a6b3286"
                           } ]
                         }
             responses: 
@@ -1354,7 +1354,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "e68609c50f2b41f99da5121dc101c3d8"
+                            "uuid" : "4bf09129ed0e47c48e69ae703de1c12a"
                           } ]
                         }
             responses: 
@@ -1893,7 +1893,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "2d86e43963924bb98796feb16260f16d"
+                            "uuid" : "cab1f16dee3a4d3d83a65ebf05fac90e"
                           } ]
                         }
             responses: 
@@ -2868,7 +2868,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "1b9912083f794c6fb781461a8574b9ef"
+                            "uuid" : "6b87b8a661784d15953e5921de2d83c7"
                           } ]
                         }
             responses: 
@@ -3897,7 +3897,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "559ef609bcbd4b04b4cd5d60f3702f8d"
+                            "uuid" : "5c2bcec0e6f64a1e93f14582e63d2565"
                           } ]
                         }
             responses: 
@@ -4571,7 +4571,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "7a9f7fe100154ed284c4cb72a8f6b7c6"
+                            "uuid" : "624f37c889f6471398546d4d7feeb5d9"
                           } ]
                         }
             responses: 
@@ -4884,11 +4884,11 @@ mediaType: application/json
             description: Downloads a zip file of various [debug information](/docs/administration-guide/#debuginfo) files.
             queryParameters: 
                 include: 
-                    description: Information to include. See the [documentation](/docs/administration-guide/#debuginfo) for possible values.
+                    description: Information to include. See the [documentation](/docs/administration-guide/#debuginfo) for possible usages.
                     type: string
                     required: false
                     repeat: false
-                    example: "-backup,consistencyCheck"
+                    example: "-log,consistencyCheck"
     /jobs: 
         get: 
             description: List all currently queued jobs.
@@ -7606,7 +7606,7 @@ mediaType: application/json
                                 | vertxVersion | false | string | Used Vert.x version. |
                             example: |
                                 {
-                                  "meshVersion" : "3.0.4",
+                                  "meshVersion" : "3.0.5",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "mariadb",
                                   "databaseVersion" : "10.7",
@@ -10351,7 +10351,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "0b7431b97753404b9d763ff5e97af636"
+                            "uuid" : "0821da28108a4d418b424d801439fa93"
                           } ]
                         }
             responses: 
@@ -11860,7 +11860,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "f98854807e7a4d6cae7ea904de290182"
+                            "uuid" : "8154a26fb5a147a48b1fb867dbf3374e"
                           } ]
                         }
             responses: 
@@ -12676,7 +12676,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "654bea9f8b3e4c998d738e5182ad9c44"
+                            "uuid" : "a0e8ecce912847c1a825f6b1d9e74283"
                           } ]
                         }
             responses: 
@@ -14465,7 +14465,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "d2b71f6818a64fd2978892a92387c302"
+                            "uuid" : "3db1016561bb40109a95065edde8f107"
                           } ]
                         }
             responses: 
