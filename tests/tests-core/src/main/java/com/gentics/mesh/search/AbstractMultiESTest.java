@@ -10,6 +10,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.runners.Parameterized.Parameters;
 
+import com.gentics.mesh.cli.AbstractBootstrapInitializer;
 import com.gentics.mesh.test.AWSTestMode;
 import com.gentics.mesh.test.ElasticsearchTestMode;
 import com.gentics.mesh.test.MeshCoreOptionChanger;
@@ -89,10 +90,12 @@ public abstract class AbstractMultiESTest implements TestHttpMethods, TestGraphH
 	@Before
 	public void setup() throws Throwable {
 		getTestContext().setup(settings);
+		((AbstractBootstrapInitializer) boot()).getCoreVerticleLoader().redeploySearchVerticle().blockingAwait();
 	}
 
 	@After
 	public void tearDown() throws Throwable {
+		((AbstractBootstrapInitializer) boot()).getCoreVerticleLoader().undeploySearchVerticle().blockingAwait();
 		getTestContext().tearDown(settings);
 	}
 

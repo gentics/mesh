@@ -283,7 +283,10 @@ public class MeshTestContext implements TestRule {
 			undeployAndReset();
 			closeClient();
 		}
-		idleConsumer.unregister();
+		if (idleConsumer != null) {
+			idleConsumer.unregister();
+			idleConsumer = null;
+		}
 		switch (settings.elasticsearch()) {
 		case CONTAINER_ES7:
 		case CONTAINER_ES6:
@@ -300,8 +303,15 @@ public class MeshTestContext implements TestRule {
 	}
 
 	public void tearDownOnce(MeshTestSetting settings) throws Exception {
+		if (idleConsumer != null) {
+			idleConsumer.unregister();
+			idleConsumer = null;
+		}
 		if (mesh != null) {
 			mesh.shutdown();
+		}
+		if (meshDagger != null) {
+			meshDagger.eventbusLivenessManager().shutdown();
 		}
 		removeConfigDirectory();
 		if (elasticsearch != null) {
@@ -564,6 +574,11 @@ public class MeshTestContext implements TestRule {
 		MeshInstanceProvider<? extends MeshOptions> meshInstanceProvider = meshTestContextProvider.getInstanceProvider();
 
 		MeshOptions meshOptions = meshInstanceProvider.getOptions();
+
+		// restrict number of verticles and threads
+		meshOptions.getHttpServerOptions().setVerticleAmount(10);
+		meshOptions.getVertxOptions().setWorkerPoolSize(5);
+		meshOptions.getVertxOptions().setEventPoolSize(10);
 
 		if (settings.synchronizeWrites()) {
 			meshInstanceProvider.setSyncWrites(true);

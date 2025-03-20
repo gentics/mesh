@@ -127,14 +127,31 @@ public class CoreVerticleLoader {
 	}
 
 	/**
-	 * Dedeploy the serarch verticle.
+	 * Undeploy search verticle
 	 *
 	 * @return
 	 */
-	public Completable redeploySearchVerticle() {
+	public Completable undeploySearchVerticle() {
 		return RxUtil.fromNullable(searchVerticleId)
 			.flatMapCompletable(rxVertx::rxUndeploy)
-			.andThen(deploySearchVerticle());
+			.andThen(resetSearchVerticle());
+	}
+
+	/**
+	 * Redeploy the search verticle, if it is not deployed
+	 * @return completable
+	 */
+	public Completable redeploySearchVerticle() {
+		if (searchVerticleId == null) {
+			return deploySearchVerticle();
+		} else {
+			return Completable.complete();
+		}
+	}
+
+	private Completable resetSearchVerticle() {
+		searchVerticleId = null;
+		return Completable.complete();
 	}
 
 	public ElasticsearchProcessVerticle getSearchVerticle() {
