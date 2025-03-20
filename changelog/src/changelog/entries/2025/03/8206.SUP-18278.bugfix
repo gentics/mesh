@@ -1,0 +1,1 @@
+S3: When a S3 image is transformed, the transformation result can be never returned to the client at some cases, because of a false cache path provided by the transformation service. This has been fixed.

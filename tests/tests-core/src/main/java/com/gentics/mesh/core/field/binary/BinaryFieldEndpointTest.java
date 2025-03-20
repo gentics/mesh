@@ -10,6 +10,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -566,6 +567,20 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 			"binary", new ImageManipulationParametersImpl().setWidth(250)),
 			NOT_FOUND, "node_error_binary_data_not_found");
 	}
+
+	@Test
+    public void testTransformBinarySuccessful() throws IOException {
+		String fileName = "blume.jpg";
+		byte[] bytes = getBinary("/pictures/blume.jpg");
+		NodeResponse createResponse = createBinaryNode();
+        //creating
+        call(() -> client().updateNodeBinaryField(PROJECT_NAME, createResponse.getUuid(), "en", createResponse.getVersion(), "binary",
+    			new ByteArrayInputStream(bytes), bytes.length, fileName, "image/jpg"));
+        //uploading
+        NodeResponse call = call(() -> client().transformNodeBinaryField(PROJECT_NAME, createResponse.getUuid(), "en", "draft", "binary", new ImageManipulationParametersImpl().setWidth(250)));
+        assertNotNull(call);
+        assertEquals(250, call.getFields().getBinaryField("binary").getWidth().intValue());
+    }
 
 	@Test
 	public void testUploadEmptyFile() {
