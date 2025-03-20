@@ -12,4 +12,4 @@ author: Gentics
 pageType: feature
 ---
 
-The following RDBMSs are supported on a premium basis: MSSQL 2019+, Oracle 19+, PostgreSQL 14.4+ (DBs not included).
+There is an enterprise feature available to use a wider variety of Relational Databases as storage for Gentics Mesh. The used Relational Database has to be provided and is not included or managed by Gentics Mesh.

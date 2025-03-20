@@ -62,7 +62,7 @@
 			<plugin>
 				<groupId>com.gentics.mesh</groupId>
 				<artifactId>test-scanner-maven-plugin</artifactId>
-				<version>${project.version}</version>
+				<version>${mesh.version}</version>
 				<configuration>
 					<splits>${test.scanner.splits}</splits>
 					<dependenciesToScan>
