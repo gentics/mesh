@@ -202,8 +202,7 @@ public final class EventBusLivenessManagerImpl implements EventBusLivenessManage
 		if (schedule != null) {
 			schedule.cancel(true);
 			schedule = null;
-}
-
+		}
 		if (localConsumer != null) {
 			localConsumer.unregister();
 			localConsumer = null;
