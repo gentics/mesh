@@ -899,7 +899,8 @@ public class MeshTestContext implements TestRule {
 			}
 
 			if (settings.useKeycloak()) {
-				keycloak = new KeycloakContainer("/keycloak/realm.json").waitingFor(Wait.forHttp("/auth/realms/master-test"));
+				keycloak = new KeycloakContainer("/keycloak/realm.json", "keycloak/keycloak", "22.0.5", Arrays.asList("start-dev"), true)
+						.waitingFor(Wait.forHttp("/realms/master-test"));
 				if (!keycloak.isRunning()) {
 					keycloak.start();
 				}

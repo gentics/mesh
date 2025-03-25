@@ -14,6 +14,9 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.core.db.cluster.ClusterManager;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterInstanceInfo;
@@ -27,8 +30,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.MessageConsumer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 
 /**
  * Implementation of the {@link EventBusLivenessManager}, which will regularly publish events, which are consumed both
