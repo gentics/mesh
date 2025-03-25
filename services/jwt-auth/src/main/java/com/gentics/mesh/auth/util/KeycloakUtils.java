@@ -29,8 +29,8 @@ public final class KeycloakUtils {
 
 	private static final String DEFAULT_REALM_URL_FORMAT = "%s://%s:%d%s/realms/%s";
 
-	// TODO consider updating this to the default of KC 17+: empty string
-	public static final String DEFAULT_REALM_URL_PREFIX = "/auth";
+	// before KC 17+: /auth
+	public static final String DEFAULT_REALM_URL_PREFIX = "";
 
 	private KeycloakUtils() {
 	}
