@@ -59,7 +59,7 @@ public abstract class AbstractReferenceHibField<T extends HibFieldEdge> extends 
 		T referenced = getReferencedEdge();
 		if (referenced != null) {
 			referenced.onEdgeDeleted(tx);
-			tx.forceDelete(referenced, "dbUuid", e -> e.getId());
+			tx.delete(referenced);
 		}
 	}
 }

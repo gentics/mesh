@@ -66,7 +66,7 @@ public abstract class AbstractHibUserTrackedElement<R extends RestModel> extends
 
 	@Override
 	public Long getLastEditedTimestamp() {
-		return nullSafe(EditorTracking::getLastEditedTimestamp);
+		return nullSafe(UserTracking::getLastEditedTimestamp);
 	}
 
 	@Override

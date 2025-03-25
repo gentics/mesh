@@ -409,7 +409,11 @@ public class HibernateTxImpl implements HibernateTx {
 
 	@Override
 	public <T extends HibElement> void delete(T element) {
-		em.remove(element);
+		if (em.contains(element)) {
+			em.remove(element);
+		} else {
+			forceDelete(element, "dbUuid", e -> e.getId(), false);
+		}
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -450,17 +454,17 @@ public class HibernateTxImpl implements HibernateTx {
 	}
 
 	@Override
-	public <T> void forceDelete(T element, String uuidFieldName, Function<T, Object> idGetter) {
-		if (em.contains(element)) {
-			Entity entity = element.getClass().getAnnotation(Entity.class);
-			String entityName = entity != null ? entity.name() : element.getClass().getSimpleName();
-			int deleted = em.createQuery("delete from " + entityName + " e where e." + uuidFieldName + " = :uuid").setParameter("uuid", idGetter.apply(element)).executeUpdate();
-			if (1 != deleted) {
+	public <T> void forceDelete(T element, String uuidFieldName, Function<T, Object> idGetter, boolean throwIfFailed) {
+		Entity entity = element.getClass().getAnnotation(Entity.class);
+		String entityName = entity != null ? entity.name() : element.getClass().getSimpleName();
+		int deleted = em.createQuery("delete from " + entityName + " e where e." + uuidFieldName + " = :uuid").setParameter("uuid", idGetter.apply(element)).executeUpdate();
+		if (1 != deleted) {
+			if (throwIfFailed) {
 				throw new IllegalStateException("Cannot delete " + entityName + " / " + idGetter.apply(element));
+			} else {
+				log.debug("Force deletion {}#{} result: {}", entityName, idGetter.apply(element), deleted);
 			}
-		} else {
-			em.remove(element);
-		}		
+		}	
 	}
 
 	@SuppressWarnings("unchecked")

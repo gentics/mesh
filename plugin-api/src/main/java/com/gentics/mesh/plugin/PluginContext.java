@@ -5,13 +5,13 @@ import static io.vertx.core.http.HttpHeaders.AUTHORIZATION;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.http.HttpConstants;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.rest.client.MeshRestClient;
+
 import io.reactivex.annotations.Nullable;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -26,7 +26,13 @@ import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.User;
-import io.vertx.ext.web.*;
+import io.vertx.ext.web.FileUpload;
+import io.vertx.ext.web.ParsedHeaderValues;
+import io.vertx.ext.web.RequestBody;
+import io.vertx.ext.web.Route;
+import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.Session;
+import io.vertx.ext.web.UserContext;
 
 /**
  * Wrapper for the regular Vert.x routing context.
@@ -416,5 +422,10 @@ public class PluginContext implements RoutingContext {
 	@Override
 	public boolean isSessionAccessed() {
 		return rc.isSessionAccessed();
+	}
+
+	@Override
+	public UserContext userContext() {
+		return rc.userContext();
 	}
 }

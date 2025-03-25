@@ -80,7 +80,7 @@ public abstract class AbstractHibListFieldImpl<
 	 */
 	protected T makeFromValueAndIndex(U value, int index, HibernateTx tx) {
 		get(index, tx).ifPresent(existing -> {
-			tx.forceDelete(existing, "dbUuid", e -> e.getId());
+			tx.delete(existing);
 		});
 		T item = getItemConstructor().provide(HibernateTx.get(), valueOrNull(), index, getFieldKey(), value, getContainer());
 		put(index, item, tx);
