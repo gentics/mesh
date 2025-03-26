@@ -6,6 +6,9 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v3.0.6]]
+== 3.0.6 (26.03.2025)
+
 [[v3.0.5]]
 == 3.0.5 (13.03.2025)
 
@@ -50,6 +53,17 @@ icon:plus[] Clustering: The Hazelcast library, responsible for the cluster insta
 
 icon:plus[] Some library dependencies have been updated to the latest hotfix versions.
 
+
+[[v2.1.17]]
+== 2.1.17 (25.03.2025)
+
+icon:check[] S3: When a S3 image is transformed, the transformation result can be never returned to the client at some cases, because of a false cache path provided by the transformation service. This has been fixed.
+
+icon:check[] Core: When an empty payload is sent to the binary field update function, a new version of a content, being updated, is produced, containing no changes. This has been now fixed, and the content stays old in this case. 
+
+icon:check[] OAuth: If a new set of groups/roles has been attached to the Mesh user during the OAuth login session, these groups/roles are not used in the filtering during the same session. This has been fixed. 
+
+icon:check[] Indexing: At some circumstances an indexing engine crash is possible, when the changes, triggering the (re)indexing on updated or deleted data, come too quickly. This has been fixed.
 
 [[v2.1.16]]
 == 2.1.16 (12.03.2025)
