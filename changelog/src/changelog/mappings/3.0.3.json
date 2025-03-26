@@ -1,6 +1,7 @@
 {
   "changeLogEntryFileNames": [
-    "8130.SUP-18069.bugfix"
+    "8130.SUP-18069.bugfix",
+    "8119.SUP-17797.bugfix"
   ],
   "version": "3.0.3",
   "date": "12.02.2025",
