@@ -28,7 +28,7 @@ import io.vertx.core.json.JsonObject;
 
 @Category({ NativeGraphQLFilterTests.class })
 @RunWith(Parameterized.class)
-@MeshTestSetting(testSize = TestSize.FULL, startServer = true, optionChanger = MeshCoreOptionChanger.GRAPHQL_FORCE_NATIVE_FILTER, resetBetweenTests = false)
+@MeshTestSetting(testSize = TestSize.FULL, startServer = true, optionChanger = MeshCoreOptionChanger.GRAPHQL_FORCE_NATIVE_FILTER)
 @NoConsistencyCheck
 public class NativeGraphQLEndpointTest extends GraphQLEndpointTest {
 

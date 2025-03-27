@@ -24,7 +24,7 @@ import com.gentics.mesh.test.context.NoConsistencyCheck;
 import io.vertx.core.json.JsonObject;
 
 @RunWith(Parameterized.class)
-@MeshTestSetting(testSize = TestSize.FULL, startServer = true, optionChanger = MeshCoreOptionChanger.GRAPHQL_FORCE_JAVA_FILTER, resetBetweenTests = false)
+@MeshTestSetting(testSize = TestSize.FULL, startServer = true, optionChanger = MeshCoreOptionChanger.GRAPHQL_FORCE_JAVA_FILTER)
 @NoConsistencyCheck
 public class JavaGraphQLEndpointTest extends GraphQLEndpointTest {
 

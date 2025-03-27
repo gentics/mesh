@@ -105,7 +105,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 @RunWith(Parameterized.class)
-@MeshTestSetting(testSize = TestSize.FULL, startServer = true, resetBetweenTests = false)
+@MeshTestSetting(testSize = TestSize.FULL, startServer = true)
 @NoConsistencyCheck
 public class GraphQLEndpointTest extends AbstractMeshTest {
 
