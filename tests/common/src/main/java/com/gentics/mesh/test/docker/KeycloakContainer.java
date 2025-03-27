@@ -62,7 +62,7 @@ public class KeycloakContainer extends GenericContainer<KeycloakContainer> {
 
 		withExposedPorts(8080);
 		withLogConsumer(logConsumer);
-		withStartupTimeout(Duration.ofSeconds(120));
+		withStartupTimeout(Duration.ofMinutes(5));
 		setStartupAttempts(1);
 
 		List<String> args = new ArrayList<>();
