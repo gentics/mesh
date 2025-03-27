@@ -154,22 +154,12 @@ public interface HibBinaryField extends HibImageDataField, HibBasicField<BinaryF
 				matchingMetadata = Objects.equals(graphMetadata, restMetadata);
 			}
 
-			boolean matchingCheckStatus = true;
-
-			if (binaryField.getCheckStatus() != null) {
-				BinaryCheckStatus statusA = getBinary() != null ? getBinary().getCheckStatus() : null;
-				BinaryCheckStatus statusB = binaryField.getCheckStatus();
-
-				matchingCheckStatus = Objects.equals(statusA, statusB);
-			}
-
 			return matchingFilename
 				&& matchingMimetype
 				&& matchingFocalPoint
 				&& matchingDominantColor
 				&& matchingSha512sum
-				&& matchingMetadata
-				&& matchingCheckStatus;
+				&& matchingMetadata;
 		}
 
 		return false;

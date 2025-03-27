@@ -66,7 +66,7 @@ public class BinaryFieldImpl implements BinaryField {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Status of the external binary check (one of ACCEPTED, DENIED or POSTPONED). The binary field is only accessible when the status is ACCEPTED.")
-	private BinaryCheckStatus checkStatus = BinaryCheckStatus.ACCEPTED;
+	private BinaryCheckStatus checkStatus = BinaryCheckStatus.POSTPONED;
 
 	@JsonIgnore
 	private String checkSecret;
