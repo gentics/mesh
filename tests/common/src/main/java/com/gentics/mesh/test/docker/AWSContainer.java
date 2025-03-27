@@ -39,7 +39,7 @@ public class AWSContainer extends GenericContainer<AWSContainer> {
         setWaitStrategy(new HttpWaitStrategy()
                 .forPort(DEFAULT_PORT)
                 .forPath(HEALTH_ENDPOINT)
-                .withStartupTimeout(Duration.ofMinutes(2)));
+                .withStartupTimeout(Duration.ofMinutes(5)));
     }
 
     public String getHostAddress() {

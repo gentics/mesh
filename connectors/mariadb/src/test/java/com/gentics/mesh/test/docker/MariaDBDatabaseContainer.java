@@ -34,7 +34,7 @@ public class MariaDBDatabaseContainer extends PreparingDatabaseContainer<MariaDB
 		waitingFor(Wait
 				.forLogMessage(".*socket: '/run/mysqld/mysqld.sock'  port: 3306  mariadb.org binary distribution*\\n",
 						1)
-				.withStartupTimeout(Duration.ofMinutes(2)));
+				.withStartupTimeout(Duration.ofMinutes(5)));
 	}
 
 	@Override
