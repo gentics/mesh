@@ -1,7 +1,8 @@
 package com.gentics.mesh.test;
 
+import java.util.Comparator;
+
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.test.context.SortModeItem;
 
 /**
  * A runtime provider of context-specific {@link MeshInstanceProvider}. 
@@ -34,11 +35,28 @@ public interface MeshTestContextProvider extends MeshOptionsProvider {
 	}
 
 	/**
-	 * Get a sorting mode, that current Mesh instance or its database implements.
+	 * Get a sorting mode, that current Mesh instance or its database implements. The default value does nothing, assuming everything is ordered.
 	 * 
 	 * @return
 	 */
-	default SortModeItem[] sortMode() {
-		return new SortModeItem[] {SortModeItem.NULLS, SortModeItem.CHAR_CAPITALS_FIRST, SortModeItem.DIGITS};
+	default Comparator<String> sortComparator() {
+		return (a,b) -> {
+			if (a == b) {
+				return 0;
+			}
+			if (a == null) {
+				return -1;
+			}
+			if (b == null) {
+				return 1;
+			}
+			if (!Character.isDigit(a.charAt(0)) && Character.isDigit(b.charAt(0))) {
+				return -1;
+			}
+			if (Character.isDigit(a.charAt(0)) && !Character.isDigit(b.charAt(0))) {
+				return 1;
+			}
+			return a.compareTo(b);
+		};
 	}
 }

@@ -12,6 +12,7 @@ import java.security.cert.CertificateException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -917,8 +918,8 @@ public class MeshTestContext implements TestRule {
 		return meshTestContextProvider.getInstanceProvider();
 	}
 
-	public SortModeItem[] getSortMode() {
-		return meshTestContextProvider.sortMode();
+	public Comparator<String> getSortComparator() {
+		return meshTestContextProvider.sortComparator();
 	}
 
 	public MeshOptions getOptions() {

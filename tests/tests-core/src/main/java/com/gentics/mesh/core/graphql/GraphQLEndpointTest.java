@@ -105,7 +105,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 @RunWith(Parameterized.class)
-@MeshTestSetting(testSize = TestSize.FULL, startServer = true)
+@MeshTestSetting(testSize = TestSize.FULL, startServer = true, resetBetweenTests = false)
 @NoConsistencyCheck
 public class GraphQLEndpointTest extends AbstractMeshTest {
 
@@ -564,7 +564,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		try {
 			if (assertion == null) {
 				assertThat(jsonResponse)
-						.withSortMode(testContext.getSortMode())
+						.withSortComparator(testContext.getSortComparator())
 						.replacingPlaceholderVariable(SCHEMA_UUID, schemaContainer("folder").getUuid())
 						.compliesToAssertions(queryName, apiVersion);
 			} else {
