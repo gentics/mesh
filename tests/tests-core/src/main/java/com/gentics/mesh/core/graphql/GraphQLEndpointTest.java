@@ -560,7 +560,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		try {
 			if (assertion == null) {
 				assertThat(jsonResponse)
-						.withSortMode(testContext.getSortMode())
+						.withSortComparator(testContext.getSortComparator())
 						.replacingPlaceholderVariable(SCHEMA_UUID, schemaContainer("folder").getUuid())
 						.compliesToAssertions(queryName, apiVersion);
 			} else {

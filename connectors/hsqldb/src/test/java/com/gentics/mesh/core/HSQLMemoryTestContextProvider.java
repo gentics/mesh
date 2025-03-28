@@ -2,6 +2,7 @@ package com.gentics.mesh.core;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,7 +14,6 @@ import com.gentics.mesh.hibernate.MeshTablePrefixStrategy;
 import com.gentics.mesh.test.MeshOptionsProvider;
 import com.gentics.mesh.test.MeshTestContextProvider;
 import com.gentics.mesh.test.MeshTestSetting;
-import com.gentics.mesh.test.context.SortModeItem;
 import com.gentics.mesh.test.docker.InMemoryDatabase;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -77,7 +77,51 @@ public class HSQLMemoryTestContextProvider extends HibernateTestContextProvider 
 	}
 
 	@Override
-	public SortModeItem[] sortMode() {
-		return new SortModeItem[] {SortModeItem.NULLS_ORDER_INDEPENDENT, SortModeItem.CHAR_CAPITALS_FIRST, SortModeItem.DIGITS};
+	public Comparator<String> sortComparator() {
+		return new Comparator<String>() {
+			
+			@Override
+			public int compare(String a, String b) {
+				if (a == b) {
+					return 0;
+				}
+				if (a == null) {
+					return -1;
+				}
+				if (b == null) {
+					return 1;
+				}
+				if (!Character.isDigit(a.charAt(0)) && Character.isDigit(b.charAt(0))) {
+					return 1;
+				}
+				if (Character.isDigit(a.charAt(0)) && !Character.isDigit(b.charAt(0))) {
+					return -1;
+				}
+				return a.compareTo(b);
+			}
+
+			@Override
+			public Comparator<String> reversed() {
+				return (a, b) -> {
+					if (a == b) {
+						return 0;
+					}
+					if (a == null) {
+						return -1;
+					}
+					if (b == null) {
+						return 1;
+					}
+					if (!Character.isDigit(a.charAt(0)) && Character.isDigit(b.charAt(0))) {
+						return -1;
+					}
+					if (Character.isDigit(a.charAt(0)) && !Character.isDigit(b.charAt(0))) {
+						return 1;
+					}
+					return -(a.compareTo(b));
+				};
+			}
+		};
 	}
+
 }
