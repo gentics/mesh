@@ -51,10 +51,10 @@ public interface MeshTestContextProvider extends MeshOptionsProvider {
 				return 1;
 			}
 			if (!Character.isDigit(a.charAt(0)) && Character.isDigit(b.charAt(0))) {
-				return -1;
+				return 1;
 			}
 			if (Character.isDigit(a.charAt(0)) && !Character.isDigit(b.charAt(0))) {
-				return 1;
+				return -1;
 			}
 			return a.compareTo(b);
 		};
