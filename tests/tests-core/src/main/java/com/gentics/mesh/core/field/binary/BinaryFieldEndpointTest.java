@@ -80,6 +80,10 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 	 */
 	private static final Predicate<Path> IS_OLD_STRUCTURE = p -> {
 		File f = p.toFile();
+		if (!f.isDirectory()) {
+			f = f.getParentFile();
+		}
+
 		return f.isDirectory() && StringUtils.length(f.getName()) == 8;
 	};
 
@@ -88,6 +92,9 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 	 */
 	private static final Predicate<Path> IS_NEW_STRUCTURE = p ->  {
 		File f = p.toFile();
+		if (!f.isDirectory()) {
+			f = f.getParentFile();
+		}
 		return f.isDirectory() && StringUtils.length(f.getName()) == 2;
 	};
 
@@ -484,7 +491,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 
 		// assert that the image cache contains exactly two (nested) directories of the new structure, but none of the old structure
 		assertThat(Files.walk(Path.of(imageCache)).filter(IS_OLD_STRUCTURE)).as("Directories/Files in binaryImageCache of the old structure").isEmpty();
-		assertThat(Files.walk(Path.of(imageCache)).filter(IS_NEW_STRUCTURE)).as("Directories/Files in binaryImageCache of the new structure").hasSize(2);
+		assertThat(Files.walk(Path.of(imageCache)).filter(IS_NEW_STRUCTURE)).as("Directories/Files in binaryImageCache of the new structure").hasSize(3);
 	}
 
 	private ImageManipulationParameters randomImageManipulation() {

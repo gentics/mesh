@@ -556,6 +556,11 @@ public class MeshTestContext implements TestRule {
 
 		MeshOptions meshOptions = meshInstanceProvider.getOptions();
 
+		// restrict number of verticles and threads
+		meshOptions.getHttpServerOptions().setVerticleAmount(10);
+		meshOptions.getVertxOptions().setWorkerPoolSize(5);
+		meshOptions.getVertxOptions().setEventPoolSize(10);
+
 		if (settings.synchronizeWrites()) {
 			meshInstanceProvider.setSyncWrites(true);
 		}
