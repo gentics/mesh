@@ -24,6 +24,10 @@ public abstract class AbstractMeshOptionsDemoContext<T extends MeshOptions> impl
 
 	public AbstractMeshOptionsDemoContext(String[] args, Class<? extends T> optionsClass) {
 		options = OptionsLoader.createOrloadOptions(optionsClass, args);
+
+		options.getHttpServerOptions().setVerticleAmount(2);
+		options.getVertxOptions().setWorkerPoolSize(2);
+		options.getVertxOptions().setEventPoolSize(2);
 	}
 
 	@Override
