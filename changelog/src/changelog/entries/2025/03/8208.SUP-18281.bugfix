@@ -1,0 +1,1 @@
+OAuth: If a new set of groups/roles has been attached to the Mesh user during the OAuth login session, these groups/roles are not used in the filtering during the same session. This has been fixed. 

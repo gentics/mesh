@@ -299,7 +299,10 @@ public class MeshTestContext implements TestRule {
 				instance.closeClient();
 			}
 		}
-		idleConsumer.unregister();
+		if (idleConsumer != null) {
+			idleConsumer.unregister();
+			idleConsumer = null;
+		}
 		switch (settings.elasticsearch()) {
 		case CONTAINER_ES7:
 		case CONTAINER_ES8:
@@ -317,9 +320,16 @@ public class MeshTestContext implements TestRule {
 	}
 
 	public void tearDownOnce(MeshTestSetting settings) throws Exception {
+		if (idleConsumer != null) {
+			idleConsumer.unregister();
+			idleConsumer = null;
+		}
 		for (MeshTestInstance instance : instances) {
 			if (instance.mesh != null) {
 				instance.mesh.shutdown();
+			}
+			if (instance.meshDagger != null) {
+				instance.meshDagger.eventbusLivenessManager().shutdown();
 			}
 		}
 		instances.clear();
@@ -694,6 +704,11 @@ public class MeshTestContext implements TestRule {
 				throw new RuntimeException("Settings could not be found. Did you forget to add the @MeshTestSetting annotation to your test?");
 			}
 
+			// restrict number of verticles and threads
+			meshOptions.getHttpServerOptions().setVerticleAmount(10);
+			meshOptions.getVertxOptions().setWorkerPoolSize(5);
+			meshOptions.getVertxOptions().setEventPoolSize(10);
+
 			// disable usage of "ordered" blocking handlers (which seems to be useless anyways)
 			meshOptions.getVertxOptions().setOrderedBlockingHandlers(false);
 
@@ -884,7 +899,8 @@ public class MeshTestContext implements TestRule {
 			}
 
 			if (settings.useKeycloak()) {
-				keycloak = new KeycloakContainer("/keycloak/realm.json").waitingFor(Wait.forHttp("/auth/realms/master-test"));
+				keycloak = new KeycloakContainer("/keycloak/realm.json", "keycloak/keycloak", "22.0.5", Arrays.asList("start-dev"), true)
+						.waitingFor(Wait.forHttp("/realms/master-test"));
 				if (!keycloak.isRunning()) {
 					keycloak.start();
 				}

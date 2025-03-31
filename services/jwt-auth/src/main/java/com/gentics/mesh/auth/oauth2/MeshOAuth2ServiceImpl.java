@@ -449,6 +449,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		});
 
 		// check which groups are not yet assigned to the user and add them
+		boolean assignedGroupsEdited = false;
 		List<? extends HibGroup> assignedGroups = new ArrayList<>(userDao.getGroups(authUser).list());
 		List<HibGroup> toAssign = new ArrayList<>(groupsHelper.getMappedEntities());
 		toAssign.removeAll(assignedGroups);
@@ -461,6 +462,11 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 			if (!groupsHelper.wasCreated(group)) {
 				batch.add(group.onUpdated());
 			}
+			assignedGroupsEdited = true;
+		}
+
+		if (assignedGroupsEdited) {
+			assignedGroups = new ArrayList<>(userDao.getGroups(authUser).list());
 		}
 
 		// collect information about groups <-> roles assignment
@@ -507,6 +513,8 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		if (roleFilter != null) {
 			groupUuids.addAll(groupsHelper.getMappedEntities().stream().map(HibGroup::getUuid).collect(Collectors.toSet()));
 		}
+
+		boolean rolesPerGroupEdited = false;
 		Map<HibGroup, Collection<? extends HibRole>> rolesPerGroup = groupDao.getRoles(groupsHelper.getEntities(groupUuids));
 
 		// check which group <-> role assignement is not yet present and assign
@@ -522,7 +530,13 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 					groupDao.addRole(group, role);
 					batch.add(groupDao.createRoleAssignmentEvent(group, role, ASSIGNED));
 				}
+				rolesPerGroupEdited = true;
 			}
+		}
+
+		if (rolesPerGroupEdited) {
+			// update roles per group to consider newly added roles
+			rolesPerGroup = groupDao.getRoles(groupsHelper.getEntities(groupUuids));
 		}
 
 		// if a role filter is given, remove the filtered group <-> role assignments for the mapped groups
