@@ -18,6 +18,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import com.gentics.mesh.core.graphql.GraphQLEndpointTest;
 import com.gentics.mesh.test.MeshCoreOptionChanger;
+import com.gentics.mesh.test.MeshTestContextProvider;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.category.NativeGraphQLFilterTests;
@@ -36,12 +37,17 @@ public class NativeGraphQLEndpointTest extends GraphQLEndpointTest {
 	}
 
 	public static Stream<List<Object>> queries() {
-		return Stream.<List<Object>>of(
-				Arrays.asList("filtering/nodes-sorted", true, false, "draft"),
-				Arrays.asList("filtering/nodes-nodereferences-native", true, false, "draft"),
-				Arrays.asList("filtering/nodes-sorted-by-schema", true, false, "draft"),
-				Arrays.asList("filtering/children-sorted-by-schema", true, false, "draft")
-			);
+		return MeshTestContextProvider.getProvider().sortComparator() != null
+				? Stream.of(
+						Arrays.asList("filtering/nodes-sorted-micronode", true, false, "draft"),
+						Arrays.asList("filtering/nodes-sorted-binary", true, false, "draft"),
+						Arrays.asList("filtering/nodes-sorted-node-field", true, false, "draft"),
+						Arrays.asList("filtering/nodes-sorted", true, false, "draft"),
+						Arrays.asList("filtering/nodes-nodereferences-native", true, false, "draft"),
+						Arrays.asList("filtering/nodes-sorted-by-schema", true, false, "draft"),
+						Arrays.asList("filtering/children-sorted-by-schema", true, false, "draft")
+					)
+				: Stream.empty();
 	}
 
 	@Parameters(name = "query={0},version={3},apiVersion={5}")

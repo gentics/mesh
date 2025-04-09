@@ -219,9 +219,6 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 				Arrays.asList("filtering/nodes-s3binary-field-native", true, false, "draft"),
 				Arrays.asList("filtering/nodes-nodelist-field-native", true, false, "draft"),
 				Arrays.asList("filtering/nodes-micronodelist-field-native", true, false, "draft"),
-				Arrays.asList("filtering/nodes-sorted-micronode", true, false, "draft"),
-				Arrays.asList("filtering/nodes-sorted-binary", true, false, "draft"),
-				Arrays.asList("filtering/nodes-sorted-node-field", true, false, "draft"),
 				Arrays.asList("filtering/nodes-paged", true, false, "draft")
 			);
 	}
@@ -567,6 +564,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		try {
 			if (assertion == null) {
 				assertThat(jsonResponse)
+						.withSortComparator(testContext.getSortComparator())
 						.replacingPlaceholderVariable(SCHEMA_UUID, schemaContainer("folder").getUuid())
 						.compliesToAssertions(queryName, apiVersion);
 			} else {

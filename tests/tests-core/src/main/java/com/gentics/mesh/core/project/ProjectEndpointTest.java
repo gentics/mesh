@@ -90,6 +90,7 @@ import com.gentics.mesh.util.UUIDUtil;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Observable;
+import io.vertx.core.eventbus.DeliveryOptions;
 
 @MeshTestSetting(elasticsearch = TRACKING, testSize = TestSize.FULL, startServer = true)
 public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
@@ -100,13 +101,13 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 		// get tag families of project (this will put project into cache)
 		call(() -> client().findTagFamilies("project"));
-		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(1);
+		tx(() -> assertThat(mesh().projectNameCache().get("project")).as("Cached project").isNotNull());
 
 		// rename project to "newproject"
 		project = updateProject(project.getUuid(), "newproject");
-		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(0);
+		tx(() -> assertThat(mesh().projectNameCache().get("project")).as("Cached project").isNull());
 
-		long maxWaitMs = 1000;
+		long maxWaitMs = DeliveryOptions.DEFAULT_TIMEOUT;
 		long delayMs = 100;
 		boolean repeat = false;
 

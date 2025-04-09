@@ -1,5 +1,7 @@
 package com.gentics.mesh.test.orientdb;
 
+import java.util.Comparator;
+
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.test.MeshInstanceProvider;
 import com.gentics.mesh.test.MeshOptionsProvider;
@@ -20,5 +22,10 @@ public class OrientDBTestContextProvider extends OrientDBMeshOptionsProvider imp
 	@Override
 	public MeshInstanceProvider<? extends MeshOptions> getInstanceProvider() {
 		return instanceProvider;
+	}
+
+	@Override
+	public Comparator<String> sortComparator() {
+		return null;
 	}
 }
