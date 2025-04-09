@@ -32,7 +32,7 @@ public class OracleDatabaseContainer extends PreparingDatabaseContainer<OracleDa
 		addEnv("ORACLE_PASSWORD", DEFAULT_PASSWORD);
 		addEnv("APP_USER", DEFAULT_USERNAME);
 		addEnv("APP_USER_PASSWORD", DEFAULT_PASSWORD);
-		waitingFor(Wait.forLogMessage(".*DATABASE IS READY TO USE!*\\n", 1).withStartupTimeout(Duration.ofMinutes(2)));
+		waitingFor(Wait.forLogMessage(".*DATABASE IS READY TO USE!*\\n", 1).withStartupTimeout(Duration.ofMinutes(5)));
 	}
 
 	@Override
