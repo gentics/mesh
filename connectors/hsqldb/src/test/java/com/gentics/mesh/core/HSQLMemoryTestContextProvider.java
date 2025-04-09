@@ -2,6 +2,7 @@ package com.gentics.mesh.core;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -74,4 +75,53 @@ public class HSQLMemoryTestContextProvider extends HibernateTestContextProvider 
 		}
 		return true;
 	}
+
+	@Override
+	public Comparator<String> sortComparator() {
+		return new Comparator<String>() {
+			
+			@Override
+			public int compare(String a, String b) {
+				if (a == b) {
+					return 0;
+				}
+				if (a == null) {
+					return -1;
+				}
+				if (b == null) {
+					return 1;
+				}
+				if (!Character.isDigit(a.charAt(0)) && Character.isDigit(b.charAt(0))) {
+					return 1;
+				}
+				if (Character.isDigit(a.charAt(0)) && !Character.isDigit(b.charAt(0))) {
+					return -1;
+				}
+				return a.compareTo(b);
+			}
+
+			@Override
+			public Comparator<String> reversed() {
+				return (a, b) -> {
+					if (a == b) {
+						return 0;
+					}
+					if (a == null) {
+						return -1;
+					}
+					if (b == null) {
+						return 1;
+					}
+					if (!Character.isDigit(a.charAt(0)) && Character.isDigit(b.charAt(0))) {
+						return -1;
+					}
+					if (Character.isDigit(a.charAt(0)) && !Character.isDigit(b.charAt(0))) {
+						return 1;
+					}
+					return -(a.compareTo(b));
+				};
+			}
+		};
+	}
+
 }

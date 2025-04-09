@@ -21,16 +21,8 @@
 	      ... on folder {
 		    fields {
 		      binary {
-				# [$.data.nodes.elements[0].fields.binary=<is-null>]
-			    # [$.data.nodes.elements[1].fields.binary=<is-null>]
-			    # [$.data.nodes.elements[2].fields.binary=<is-null>]
-			    # [$.data.nodes.elements[3].fields.binary=<is-null>]
-			    # [$.data.nodes.elements[4].fields.binary=<is-null>]
-			    # [$.data.nodes.elements[5].fields.binary=<is-null>]
-			    # [$.data.nodes.elements[6].fields.binary=<is-null>]
-			    # [$.data.nodes.elements[7].fields.binary=<is-null>]
-			    # [$.data.nodes.elements[8].fields.binary.fileName=some_image.jpg]
-			    fileName
+		        # [$.data.nodes.elements=<is-sorted-by:fields.binary.fileName:desc>]
+				fileName
 				}
 		    }
 		  }

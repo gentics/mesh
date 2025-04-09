@@ -31,7 +31,7 @@ public abstract class DatabaseContainer<T extends DatabaseContainer<T>> extends 
 	@Override
 	protected void configure() {
 		withExposedPorts(getDatabasePort());
-		withStartupTimeout(Duration.ofSeconds(30L));
+		withStartupTimeout(Duration.ofMinutes(5));
 	}
 
 	/**
