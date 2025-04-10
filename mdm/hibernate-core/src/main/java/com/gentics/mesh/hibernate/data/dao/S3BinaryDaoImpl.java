@@ -63,7 +63,7 @@ public class S3BinaryDaoImpl extends AbstractImageDataHibDao<S3HibBinary> implem
         long fieldCount = ((Number) em().createNamedQuery("s3Binary.getFieldCount").setParameter("uuid", s3Binary.getId()).getSingleResult()).longValue();
         if (fieldCount == 0) {
             currentTransaction.getTx().data().s3BinaryStorage().deleteOnTxSuccess(s3Binary.getUuid(), currentTransaction.getTx());
-            em().remove(s3Binary);
+            currentTransaction.getTx().delete(s3Binary);
         }
     }
 

@@ -453,8 +453,12 @@ public class HibernateTxImpl implements HibernateTx {
 		deferredActions.add(action);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public <T> void forceDelete(T element, String uuidFieldName, Function<T, Object> idGetter, boolean throwIfFailed) {
+		if (element instanceof HibernateProxy) {
+			element = (T) ((HibernateProxy) element).getHibernateLazyInitializer().getImplementation();
+		}
 		Entity entity = element.getClass().getAnnotation(Entity.class);
 		String entityName = entity != null ? entity.name() : element.getClass().getSimpleName();
 		int deleted = em.createQuery("delete from " + entityName + " e where e." + uuidFieldName + " = :uuid").setParameter("uuid", idGetter.apply(element)).executeUpdate();

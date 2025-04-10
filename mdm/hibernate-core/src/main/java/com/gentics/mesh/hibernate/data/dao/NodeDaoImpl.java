@@ -930,7 +930,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 	@Override
 	public void deletePersisted(HibProject root, HibNode entity) {
 		beforeDeletedFromDatabase(entity);
-		em().remove(entity);
+		currentTransaction.getTx().delete(entity);
 		afterDeletedFromDatabase(entity);
 	}
 
