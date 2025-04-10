@@ -31,7 +31,6 @@ import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.MessageConsumer;
 
-
 /**
  * Implementation of the {@link EventBusLivenessManager}, which will regularly publish events, which are consumed both
  * locally and in the cluster to check, whether the eventBus works.

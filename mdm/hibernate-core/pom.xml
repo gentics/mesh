@@ -65,7 +65,7 @@
 			<artifactId>auto-factory</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.hibernate</groupId>
+			<groupId>org.hibernate.orm</groupId>
 			<artifactId>hibernate-hikaricp</artifactId>
 		</dependency>
 		<dependency>
@@ -85,7 +85,7 @@
 		    <artifactId>jakarta.persistence-api</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.hibernate</groupId>
+			<groupId>org.hibernate.orm</groupId>
 			<artifactId>hibernate-micrometer</artifactId>
 		</dependency>
 		<!--Force to use the hibernate byte-buddy version, otherwise in test the mockito byte-buddy version will be loaded-->
@@ -99,7 +99,7 @@
 			<artifactId>vertx-hazelcast</artifactId>
 		</dependency>
 		<dependency>
-		    <groupId>org.hibernate</groupId>
+		    <groupId>org.hibernate.orm</groupId>
 			<artifactId>hibernate-jcache</artifactId>
 		</dependency>
 		<dependency>

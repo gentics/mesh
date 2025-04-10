@@ -49,8 +49,8 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 		withTmpFs(Collections.singletonMap("/usr/share/elasticsearch/data", "rw,size=64m"));
 		// addEnv("xpack.security.enabled", "false");
 		withExposedPorts(9200);
-		withStartupTimeout(Duration.ofSeconds(30L));
-		waitingFor(Wait.forLogMessage(".*started.*", 1).withStartupTimeout(Duration.ofMinutes(2)));
+		withStartupTimeout(Duration.ofMinutes(5));
+		waitingFor(Wait.forLogMessage(".*started.*", 1).withStartupTimeout(Duration.ofMinutes(5)));
 	}
 
 	public ElasticsearchContainer dropTraffic() throws UnsupportedOperationException, IOException, InterruptedException {
