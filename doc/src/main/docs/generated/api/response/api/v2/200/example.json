@@ -1,5 +1,5 @@
 {
-  "meshVersion" : "3.0.7-SNAPSHOT",
+  "meshVersion" : "3.0.7",
   "meshNodeName" : "Reminiscent Tirtouga",
   "databaseVendor" : "mariadb",
   "databaseVersion" : "10.7",
