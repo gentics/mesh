@@ -182,7 +182,7 @@
 						</goals>
 						<configuration>
 							<reportFile>../target/dependency-updates-aggregate-report.xml</reportFile>
-							<componentName>Mesh SQL</componentName>
+							<componentName>Mesh</componentName>
 							<moduleName>Java Backend</moduleName>
 							<staticInput>${project.basedir}/src/static_dependencies.json</staticInput>
 							<ignoredNames>
