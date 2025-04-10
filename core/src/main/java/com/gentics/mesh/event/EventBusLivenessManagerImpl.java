@@ -6,12 +6,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.core.db.cluster.ClusterManager;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -25,8 +29,7 @@ import dagger.Lazy;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.vertx.core.eventbus.MessageConsumer;
 
 /**
  * Implementation of the {@link EventBusLivenessManager}, which will regularly publish events, which are consumed both
@@ -77,12 +80,25 @@ public final class EventBusLivenessManagerImpl implements EventBusLivenessManage
 	/**
 	 * Executor service for running the eventBus check
 	 */
-	private ScheduledExecutorService eventBusCheckerService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
-		@Override
-		public Thread newThread(Runnable r) {
-			return new Thread(r, MESH_EVENTBUS_CHECKER_THREAD_NAME);
-		}
-	});
+	/**
+	 * Executor service for running the eventBus check
+	 */
+	private ScheduledExecutorService eventBusCheckerService;
+
+	/**
+	 * Local consumer
+	 */
+	private MessageConsumer<Object> localConsumer;
+
+	/**
+	 * Cluster consumer
+	 */
+	private MessageConsumer<Object> clusterConsumer;
+
+	/**
+	 * Schedule
+	 */
+	private ScheduledFuture<?> schedule;
 
 	/**
 	 * Create the instance
@@ -106,14 +122,21 @@ public final class EventBusLivenessManagerImpl implements EventBusLivenessManage
 			return;
 		}
 
+		eventBusCheckerService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
+			@Override
+			public Thread newThread(Runnable r) {
+				return new Thread(r, MESH_EVENTBUS_CHECKER_THREAD_NAME);
+			}
+		});
+
 		EventBus eb = vertx.get().eventBus();
-		eb.localConsumer(MeshEvent.PING_LOCAL.address, message -> {
+		localConsumer =eb.localConsumer(MeshEvent.PING_LOCAL.address, message -> {
 			log.debug("Handling local ping");
 			lastPingTimestamp = System.currentTimeMillis();
 		});
 
 		if (options.getClusterOptions().isEnabled()) {
-			eb.consumer(MeshEvent.PING_CLUSTER.address, message -> {
+			clusterConsumer = eb.consumer(MeshEvent.PING_CLUSTER.address, message -> {
 				String sender = message.headers().get(EventQueueBatch.SENDER_HEADER);
 				if (sender != null) {
 					log.debug("Handling cluster ping from {}", sender);
@@ -122,7 +145,7 @@ public final class EventBusLivenessManagerImpl implements EventBusLivenessManage
 			});
 		}
 
-		eventBusCheckerService.scheduleAtFixedRate(() -> {
+		schedule = eventBusCheckerService.scheduleAtFixedRate(() -> {
 			log.debug("Sending local ping");
 			eb.publish(MeshEvent.PING_LOCAL.address, null);
 
@@ -173,5 +196,25 @@ public final class EventBusLivenessManagerImpl implements EventBusLivenessManage
 				});
 			}
 		}, 0, checkInterval, TimeUnit.MILLISECONDS);
+	}
+
+	@Override
+	public void shutdown() {
+		if (schedule != null) {
+			schedule.cancel(true);
+			schedule = null;
+		}
+		if (localConsumer != null) {
+			localConsumer.unregister();
+			localConsumer = null;
+		}
+		if (clusterConsumer != null) {
+			clusterConsumer.unregister();
+			clusterConsumer = null;
+		}
+		if (eventBusCheckerService != null) {
+			eventBusCheckerService.shutdown();
+			eventBusCheckerService = null;
+		}
 	}
 }

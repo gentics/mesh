@@ -12,13 +12,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.api.AbstractAssert;
@@ -29,6 +33,7 @@ import com.gentics.mesh.util.UUIDUtil;
 import com.google.common.collect.ImmutableMap;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
+import com.jayway.jsonpath.spi.json.GsonJsonProvider;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -38,6 +43,7 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 	 * Key to check
 	 */
 	protected String key;
+	protected Comparator<String> sortComparator = (a,b) -> 0;
 
 	private static Map<String, String> staticVariables = ImmutableMap.<String, String>builder()
 			.put("CURRENT_API_BASE_PATH", CURRENT_API_BASE_PATH)
@@ -45,12 +51,19 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 
 	private Map<String, String> dynamicVariables = new HashMap<>();
 
+	private static final String SORT_PATTERN = "<is-sorted-by:(?<id>[a-zA-Z0-9\\._\\-]*):(?<ord>asc|desc)>";
+
 	public JsonObjectAssert(JsonObject actual) {
 		super(actual, JsonObjectAssert.class);
 	}
 
 	public JsonObjectAssert key(String key) {
 		this.key = key;
+		return this;
+	}
+
+	public JsonObjectAssert withSortComparator(Comparator<String> comparator) {
+		this.sortComparator = comparator;
 		return this;
 	}
 
@@ -82,6 +95,7 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 		return this;
 	}
 
+	@SuppressWarnings("unchecked")
 	public JsonObjectAssert has(String path, String value, String msg) {
 		try {
 			Object actualValue = getByPath(path);
@@ -228,8 +242,48 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 			pathIsUndefined(path, msg);
 		} else if ("<is-empty>".equals(value)) {
 			pathIsEmpty(path, msg);
+		} else if (Pattern.matches(SORT_PATTERN, value)) {
+			Matcher matcher = Pattern.compile(SORT_PATTERN).matcher(value);
+			assert matcher.matches();
+			String sortBy = matcher.group("id");
+			String order = matcher.group("ord");
+			pathMustBeSorted(path, sortBy, order, msg);
 		} else {
 			has(path, replaceVariables(value), msg);
+		}
+		return this;
+	}
+
+	public JsonObjectAssert pathMustBeSorted(String path, String sortBy, String order, String msg) {
+		try {
+			String object = actual.toString();
+			com.google.gson.JsonArray arr = JsonPath.using(new GsonJsonProvider()).parse(object).read(path);
+			List<String> sorted = IntStream.range(0, arr.size())
+					.mapToObj(i -> {
+						try {
+							return Objects.toString(JsonPath.read(object, path + "[" + i + "]." + sortBy));
+						} catch (Exception e) {
+							return null;
+						}
+					})
+					.collect(Collectors.toList());
+			if (sorted.size() < 2) {
+				System.out.println("WARN: too few elements to assert sorting in `" + path + "`: " + sorted);
+				return this;
+			}
+			System.out.println(sorted);
+
+			switch (order) {
+			case "desc":
+				assertThat(sorted).isSortedAccordingTo(sortComparator.reversed());
+				break;
+			default:
+			case "asc":
+				assertThat(sorted).isSortedAccordingTo(sortComparator);
+				break;
+			}		
+		} catch (PathNotFoundException e) {
+			fail(msg + " The value at path {" + path + "} must be sorted by {" + sortBy + "} : {" + order + "}.");
 		}
 		return this;
 	}

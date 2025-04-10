@@ -73,6 +73,7 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 
 	@Before
 	public void setupEventAsserter() {
+		((AbstractBootstrapInitializer) boot()).getCoreVerticleLoader().redeploySearchVerticle().blockingAwait();
 		eventAsserter = new EventAsserter(getTestContext());
 		testContext.waitAndClearSearchIdleEvents();
 	}
@@ -84,7 +85,7 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 
 	@After
 	public void resetSearchVerticle() throws Exception {
-		((AbstractBootstrapInitializer) boot()).getCoreVerticleLoader().redeploySearchVerticle().blockingAwait();
+		((AbstractBootstrapInitializer) boot()).getCoreVerticleLoader().undeploySearchVerticle().blockingAwait();
 	}
 
 	public OkHttpClient httpClient() {

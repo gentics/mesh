@@ -11,4 +11,9 @@ public interface EventBusLivenessManager {
 	 * Start the regular checks, if checkInterval is greater than 0
 	 */
 	void startRegularChecks();
+
+	/**
+	 * Shutdown the regular checks
+	 */
+	void shutdown();
 }

@@ -1,0 +1,1 @@
+Core: When an empty payload is sent to the binary field update function, a new version of a content, being updated, is produced, containing no changes. This has been now fixed, and the content stays old in this case. 

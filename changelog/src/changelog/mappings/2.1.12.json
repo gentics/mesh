@@ -1,10 +1,7 @@
 {
   "changeLogEntryFileNames": [
     "8098.SUP-17945.bugfix",
-    "8074.SUP-17869.bugfix",
-    "8076.SUP-17755.bugfix",
-    "8095.SUP-17176.bugfix",
-    "8054.SUP-17710.bugfix"
+    "8095.SUP-17176.bugfix"
   ],
   "version": "2.1.12",
   "date": "16.01.2025",

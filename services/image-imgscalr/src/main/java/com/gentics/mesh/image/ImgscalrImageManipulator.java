@@ -36,6 +36,8 @@ import org.apache.tika.parser.Parser;
 import org.apache.tika.sax.BodyContentHandler;
 import org.imgscalr.Scalr;
 import org.imgscalr.Scalr.Mode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.storage.BinaryStorage;
@@ -60,11 +62,8 @@ import com.twelvemonkeys.image.ResampleOp;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.WorkerExecutor;
-import io.vertx.reactivex.core.file.FileSystem;
 
 /**
  * The ImgScalr Manipulator uses a pure java imageio image resizer.
@@ -378,7 +377,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 				.flatMapSingle(originalFile -> workerPool.<File>rxExecuteBlocking(bh -> {
 					Supplier<InputStream> stream = () -> new ByteArrayInputStream(originalFile.getBytes());
 					try {
-						String cacheFilePath = resize(stream, parameters, extension -> options.getImageCacheDirectory()  + File.pathSeparator + filename);
+						String cacheFilePath = resize(stream, parameters, extension -> getS3CachePath() + File.separator + filename);
 						File outCacheFile = new File(cacheFilePath);
 
 						// Return buffer to written cache file
@@ -406,7 +405,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 					if (res)
 						return s3BinaryStorage.read(cacheBucketName, cacheS3ObjectKey)
 								.flatMapCompletable(cacheFileInfo -> {
-									if (nonNull(cacheFileInfo) || cacheFileInfo.getBytes().length > 0) {
+									if (nonNull(cacheFileInfo) && cacheFileInfo.getBytes().length > 0) {
 										return Completable.complete();
 									} else {
 										return Completable.error(error(INTERNAL_SERVER_ERROR, "image_error_reading_failed"));
@@ -417,7 +416,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 								.flatMapSingle(originalFile -> workerPool.<File>rxExecuteBlocking(bh -> {
 									Supplier<InputStream> stream = () -> new ByteArrayInputStream(originalFile.getBytes());
 									try {
-										String cacheFilePath = resize(stream, parameters, extension -> options.getImageCacheDirectory()  + File.pathSeparator + filename);
+										String cacheFilePath = resize(stream, parameters, extension -> getS3CachePath() + File.separator + filename);
 										File outCacheFile = new File(cacheFilePath);
 
 										// Return buffer to written cache file
@@ -430,6 +429,14 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 						s3BinaryStorage.uploadFile(cacheBucketName, cacheS3ObjectKey, file, true)).ignoreElements();
 					}
 				});
+	}
+
+	private String getS3CachePath() {
+		File cacheFile = new File(options.getImageCacheDirectory() + File.separator + "S3");
+		if (!cacheFile.exists()) {
+			cacheFile.mkdirs();
+		}
+		return cacheFile.getPath();
 	}
 
 	private ImageWriteParam getImageWriteparams(String extension) {

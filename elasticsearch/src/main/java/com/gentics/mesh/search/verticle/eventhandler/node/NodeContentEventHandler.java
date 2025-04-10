@@ -28,6 +28,7 @@ import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.DeleteDocumentRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.db.Transactional;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.EventCauseInfo;
 import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
@@ -42,12 +43,17 @@ import com.gentics.mesh.search.verticle.eventhandler.EventHandler;
 import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
 
 import io.reactivex.Flowable;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 /**
  * Handler for node content events which will be processed into {@link SearchRequest} for Elasticsearch synchronization.
  */
 @Singleton
 public class NodeContentEventHandler implements EventHandler {
+
+	private static final Logger log = LoggerFactory.getLogger(NodeContentEventHandler.class);
+
 	private final MeshHelper helper;
 	private final MeshEntities entities;
 	private final ComplianceMode complianceMode;
@@ -85,7 +91,12 @@ public class NodeContentEventHandler implements EventHandler {
 				if (EventCauseHelper.isProjectDeleteCause(message)) {
 					return Flowable.empty();
 				} else {
-					return Flowable.just(deleteNodes(message, getSchemaVersionUuid(message).runInNewTx()));
+					HibSchemaVersion schemaVersion = findLatestSchemaVersion(message).runInNewTx();
+					if (schemaVersion != null) {
+						return Flowable.just(deleteNodes(message, helper.getDb().tx(() -> schemaVersion.getUuid())));
+					} else {
+						return Flowable.empty();
+					}
 				}
 			default:
 				throw new RuntimeException("Unexpected event " + event.address);
@@ -145,17 +156,24 @@ public class NodeContentEventHandler implements EventHandler {
 		return helper.getDb().transactional(tx -> {
 			HibSchema schema = tx.schemaDao().findByUuid(message.getSchema().getUuid());
 			HibProject project = tx.projectDao().findByUuid(message.getProject().getUuid());
-			return tx.branchDao().findByUuid(project, message.getBranchUuid())
-				.findLatestSchemaVersion(schema);
+			if (project != null) {
+				return tx.branchDao().findByUuid(project, message.getBranchUuid()).findLatestSchemaVersion(schema);
+			} else {
+				log.warn("Could not find the project for UUID {" + message.getProject().getUuid() + "}");
+				return getSchemaVersion(message.getSchema(), tx);
+			}
 		});
+	}
+
+	private HibSchemaVersion getSchemaVersion(SchemaReference reference, Tx tx) {
+		SchemaDao schemaDao = tx.schemaDao();
+		HibSchema schema = schemaDao.findByUuid(reference.getUuid());
+		return schemaDao.findVersionByRev(schema, reference.getVersion());
 	}
 
 	private String getSchemaVersionUuid(SchemaReference reference) {
 		return helper.getDb().tx(tx -> {
-			SchemaDao schemaDao = tx.schemaDao();
-			HibSchema schema = schemaDao
-				.findByUuid(reference.getUuid());
-			return schemaDao.findVersionByRev(schema, reference.getVersion()).getUuid();
+			return getSchemaVersion(reference, tx).getUuid();
 		});
 	}
 
@@ -163,9 +181,14 @@ public class NodeContentEventHandler implements EventHandler {
 		return helper.getDb().tx(tx -> {
 			HibSchema schema = tx.schemaDao().findByUuid(message.getSchema().getUuid());
 			HibProject project = tx.projectDao().findByUuid(message.getProject().getUuid());
-			HibBranch branch = tx.branchDao().findByUuid(project, message.getBranchUuid());
-			HibSchemaVersion schemaVersion = tx.schemaDao().findVersionByUuid(schema, schemaVersionUuid);
-			return schemaVersion.getMicroschemaVersionHash(branch);
+			if (project != null) {
+				HibBranch branch = tx.branchDao().findByUuid(project, message.getBranchUuid());
+				HibSchemaVersion schemaVersion = tx.schemaDao().findVersionByUuid(schema, schemaVersionUuid);
+				return schemaVersion.getMicroschemaVersionHash(branch);
+			} else {
+				log.warn("Could not find the project for UUID {" + message.getProject().getUuid() + "}");
+				return null;
+			}
 		});
 	}
 }
