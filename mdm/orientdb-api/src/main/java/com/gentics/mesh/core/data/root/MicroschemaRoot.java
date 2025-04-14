@@ -1,7 +1,9 @@
 package com.gentics.mesh.core.data.root;
 
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 
 /**
@@ -24,4 +26,18 @@ public interface MicroschemaRoot extends RootVertex<Microschema> {
 	 * @return
 	 */
 	boolean contains(HibMicroschema microschema);
+
+	/**
+	 * Get the project.
+	 * 
+	 * @return project
+	 */
+	HibProject getProject();
+
+	/**
+	 * Return a list of all microschema container roots to which the microschema container was added.
+	 *
+	 * @return
+	 */
+	Result<? extends MicroschemaRoot> getRoots(Microschema schema);
 }
