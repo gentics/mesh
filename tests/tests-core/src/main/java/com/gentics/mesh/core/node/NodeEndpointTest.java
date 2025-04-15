@@ -46,6 +46,8 @@ import java.util.stream.Stream;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.HibLanguage;
@@ -108,8 +110,6 @@ import com.gentics.mesh.util.UUIDUtil;
 import com.gentics.mesh.util.VersionNumber;
 
 import io.reactivex.Observable;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 @MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true, synchronizeWrites = true)
 public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
@@ -263,14 +263,9 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			if (fa == fb) {
 				return 0;
 			}
-			// TODO FIXME we ignore null order for now, since each DBMS has an own null order
-			if (fb == null) {
-				return 0;// -1;
-			}
-			if (fa == null) {
-				return 0;// 1;
-			}
-			return fb.getString().compareTo(fa.getString());
+			return getTestContext().getSortComparator().reversed().compare(
+						fa != null ? fa.getString() : null,
+						fb != null ? fb.getString() : null);
 		});
 	}
 
