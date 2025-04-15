@@ -5,6 +5,7 @@ import java.util.Comparator;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.test.MeshInstanceProvider;
 import com.gentics.mesh.test.MeshOptionsProvider;
+import com.gentics.mesh.test.MeshSortComparators;
 import com.gentics.mesh.test.MeshTestContextProvider;
 
 public class OrientDBTestContextProvider extends OrientDBMeshOptionsProvider implements MeshTestContextProvider {
@@ -26,6 +27,6 @@ public class OrientDBTestContextProvider extends OrientDBMeshOptionsProvider imp
 
 	@Override
 	public Comparator<String> sortComparator() {
-		return null;
+		return MeshSortComparators.NO_COMPARATOR;
 	}
 }
