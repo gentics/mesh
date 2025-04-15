@@ -16,22 +16,22 @@ public class MavenVersionNumber implements Comparable<MavenVersionNumber> {
 	/**
 	 * Major number
 	 */
-	protected int major;
+	protected int major = 0;
 
 	/**
 	 * Minor number
 	 */
-	protected int minor;
+	protected int minor = 0;
 
 	/**
 	 * Patch level
 	 */
-	protected int patch;
+	protected int patch = 0;
 
 	/**
 	 * True for snapshots
 	 */
-	protected boolean isSnapshot;
+	protected boolean isSnapshot = true;
 
 	/**
 	 * Postfix in the version
@@ -60,15 +60,15 @@ public class MavenVersionNumber implements Comparable<MavenVersionNumber> {
 		if (versionNumberString == null) {
 			return null;
 		}
-		Matcher m = snapshotVersion.matcher(versionNumberString);
-
-		if (!m.matches()) {
-			return null;
-		}
 
 		MavenVersionNumber versionNumber = new MavenVersionNumber();
-
 		versionNumber.fullVersion = versionNumberString;
+
+		Matcher m = snapshotVersion.matcher(versionNumberString);
+		if (!m.matches()) {
+			return versionNumber;
+		}
+
 		versionNumber.major = Integer.parseInt(m.group(1));
 		versionNumber.minor = Integer.parseInt(m.group(2));
 		versionNumber.patch = Integer.parseInt(m.group(3));
