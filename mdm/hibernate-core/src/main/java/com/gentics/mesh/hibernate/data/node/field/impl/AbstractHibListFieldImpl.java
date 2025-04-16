@@ -144,7 +144,11 @@ public abstract class AbstractHibListFieldImpl<
 		} catch (NumberFormatException e) {
 			Log.warn("Invalid field key: " + field.getFieldKey());
 		}
-		makeFromListableFieldAndIndex(field, index, HibernateTx.get());
+		// Force deleting the existing item to avoid double inserts at Hibernate 6.6+
+		HibernateTx tx = HibernateTx.get();
+		get(index, tx).ifPresent(existing -> tx.forceDelete(existing, "dbUuid", e -> e.getId(), false));
+		// Create anew
+		makeFromListableFieldAndIndex(field, index, tx);
 	}
 
 	@Override
@@ -235,7 +239,6 @@ public abstract class AbstractHibListFieldImpl<
 		}
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void putAll(int startAt, List<T> items, HibernateTx tx) {
 		if (items.size() > 0) {
 			EntityManager em = tx.entityManager();
