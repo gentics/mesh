@@ -103,7 +103,9 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 		}
 		MicroschemaListResponse list = call(() -> client().findMicroschemas(new SortingParametersImpl("name", SortOrder.DESCENDING)));
 		assertEquals("Total data size should be 7", 7, list.getData().size());
-		assertThat(list.getData()).isSortedAccordingTo((a, b) -> b.getName().compareTo(a.getName()));
+		assertThat(list.getData()).isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().reversed().compare(
+				fa != null ? fa.getName() : null,
+				fb != null ? fb.getName() : null));
 	}
 
 	@Ignore("Not yet implemented")
