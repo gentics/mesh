@@ -30,7 +30,7 @@ public class PostgresDatabaseContainer extends PreparingDatabaseContainer<Postgr
 		addEnv("POSTGRES_PASSWORD", DEFAULT_PASSWORD);
 		super.configure();
 		waitingFor(Wait.forLogMessage(".*PostgreSQL init process complete; ready for start up.*\\n", 1)
-				.withStartupTimeout(Duration.ofMinutes(2)));
+				.withStartupTimeout(Duration.ofMinutes(5)));
 	}
 
 	@Override

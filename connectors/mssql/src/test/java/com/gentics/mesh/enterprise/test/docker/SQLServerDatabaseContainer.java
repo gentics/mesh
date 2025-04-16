@@ -28,7 +28,7 @@ public class SQLServerDatabaseContainer extends PreparingDatabaseContainer<SQLSe
 		addEnv("ACCEPT_EULA", "Y");
 		addEnv("SA_PASSWORD", DEFAULT_PASSWORD);
 		super.configure();		
-		waitingFor(Wait.forLogMessage(".*SQL Server is now ready for client connections.*\\n", 1).withStartupTimeout(Duration.ofMinutes(2)));
+		waitingFor(Wait.forLogMessage(".*SQL Server is now ready for client connections.*\\n", 1).withStartupTimeout(Duration.ofMinutes(5)));
 	}
 
 	@Override
