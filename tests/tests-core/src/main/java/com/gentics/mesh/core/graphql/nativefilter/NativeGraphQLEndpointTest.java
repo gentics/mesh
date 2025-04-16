@@ -18,6 +18,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import com.gentics.mesh.core.graphql.GraphQLEndpointTest;
 import com.gentics.mesh.test.MeshCoreOptionChanger;
+import com.gentics.mesh.test.MeshSortComparators;
 import com.gentics.mesh.test.MeshTestContextProvider;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
@@ -37,7 +38,7 @@ public class NativeGraphQLEndpointTest extends GraphQLEndpointTest {
 	}
 
 	public static Stream<List<Object>> queries() {
-		return MeshTestContextProvider.getProvider().sortComparator() != null
+		return MeshTestContextProvider.getProvider().sortComparator() != MeshSortComparators.NO_COMPARATOR
 				? Stream.of(
 						Arrays.asList("filtering/nodes-sorted-micronode", true, false, "draft"),
 						Arrays.asList("filtering/nodes-sorted-binary", true, false, "draft"),
