@@ -2,6 +2,7 @@ package com.gentics.mesh.enterprise.core;
 
 import com.gentics.mesh.core.ManagedBy;
 import com.gentics.mesh.core.ManagedDatabaseTestContextProvider;
+import com.gentics.mesh.enterprise.dagger.DaggerEnterpriseHibernateMeshComponent;
 import com.gentics.mesh.enterprise.database.connector.OracleConnector;
 
 /**
@@ -9,6 +10,10 @@ import com.gentics.mesh.enterprise.database.connector.OracleConnector;
  */
 @ManagedBy(name = "oracle", connector = OracleConnector.class)
 public class ManagedOracleTestContextProvider extends ManagedDatabaseTestContextProvider {
+
+	public ManagedOracleTestContextProvider() {
+		super(DaggerEnterpriseHibernateMeshComponent.builder());
+	}
 
 	@Override
 	protected String getConnectionUsername() {

@@ -2,6 +2,7 @@ package com.gentics.mesh.enterprise.core;
 
 import com.gentics.mesh.core.ManagedBy;
 import com.gentics.mesh.core.ManagedDatabaseTestContextProvider;
+import com.gentics.mesh.enterprise.dagger.DaggerEnterpriseHibernateMeshComponent;
 import com.gentics.mesh.enterprise.database.connector.SQLServerConnector;
 
 /**
@@ -9,6 +10,10 @@ import com.gentics.mesh.enterprise.database.connector.SQLServerConnector;
  */
 @ManagedBy(name = "mssql", connector = SQLServerConnector.class)
 public class ManagedSQLServerTestContextProvider extends ManagedDatabaseTestContextProvider {
+
+	public ManagedSQLServerTestContextProvider() {
+		super(DaggerEnterpriseHibernateMeshComponent.builder());
+	}
 
 	@Override
 	protected String getConnectionUrlExtraParams() {
