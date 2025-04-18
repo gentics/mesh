@@ -102,8 +102,8 @@ public class S3BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler imple
 		}
 
 		S3UploadContext s3UploadContext = new S3UploadContext();
-		// Create a new s3 binary uuid if the data was not already stored
 		s3UploadContext.setS3ObjectKey(S3BinaryStorage.makeObjectKey(nodeUuid, fieldName, languageTag));
+		// Create a new s3 binary uuid if the data was not already stored
 		s3UploadContext.setS3BinaryUuid(UUIDUtil.randomUUID());
 		s3UploadContext.setFileName(fileName);
 

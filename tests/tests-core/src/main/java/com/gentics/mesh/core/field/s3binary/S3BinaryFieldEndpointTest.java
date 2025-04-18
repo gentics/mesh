@@ -25,6 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.Tx;
@@ -145,7 +146,7 @@ public class S3BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
         S3RestResponse s3RestResponse = new S3RestResponse();
         s3RestResponse.setVersion("1");
         NodeResponse s3binaryNode = createNodeWithField();
-        call(() -> client().updateNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "s3", UPLOAD_REQUEST));
+        call(() -> client().updateNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), FIELD_NAME, UPLOAD_REQUEST));
         //uploading
         File tempFile = createTempFile();
         s3BinaryStorage().createBucket("test-bucket").blockingGet();
@@ -153,7 +154,7 @@ public class S3BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
         s3BinaryStorage().exists("test-bucket", s3binaryNode.getUuid() + "/s3/en").blockingGet();
 
         // 2. Download the data using the REST API
-        MeshBinaryResponse response = call(() -> client().downloadBinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "en", "s3"));
+        MeshBinaryResponse response = call(() -> client().downloadBinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "en", FIELD_NAME));
         assertNotNull(response);
         assertEquals("image/jpeg", response.getContentType());
         response.close();
@@ -165,13 +166,13 @@ public class S3BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
         s3RestResponse.setVersion("1");
         NodeResponse s3binaryNode = createNodeWithField();
         //creating
-        call(() -> client().updateNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "s3", UPLOAD_REQUEST));
+        call(() -> client().updateNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), FIELD_NAME, UPLOAD_REQUEST));
         //uploading
         File tempFile = createTempFile();
         s3BinaryStorage().createBucket("test-bucket").blockingGet();
         s3BinaryStorage().createBucket("test-cache-bucket").blockingGet();
         s3BinaryStorage().uploadFile("test-bucket", s3binaryNode.getUuid() + "/s3/en", tempFile, false).blockingGet();
-        NodeResponse s3 = call(() -> client().extractMetadataNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "s3", METADATA_REQUEST));
+        NodeResponse s3 = call(() -> client().extractMetadataNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), FIELD_NAME, METADATA_REQUEST));
         assertEquals("test.jpg", s3.getFields().getS3BinaryField(FIELD_NAME).getFileName());
         assertEquals("image/jpeg", s3.getFields().getS3BinaryField(FIELD_NAME).getMimeType());
         assertEquals(1376, s3.getFields().getS3BinaryField(FIELD_NAME).getHeight().intValue());
@@ -183,14 +184,14 @@ public class S3BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
         s3RestResponse.setVersion("1");
         NodeResponse s3binaryNode = createNodeWithField();
         //creating
-        call(() -> client().updateNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "s3", UPLOAD_REQUEST));
+        call(() -> client().updateNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), FIELD_NAME, UPLOAD_REQUEST));
         //uploading
         createTempFile();
         s3BinaryStorage().createBucket("test-bucket").blockingGet();
         s3BinaryStorage().createBucket("test-cache-bucket").blockingGet();
         //here the call should fail since there is no file uploaded.
         try {
-            client().extractMetadataNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "s3", METADATA_REQUEST).blockingGet();
+            client().extractMetadataNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), FIELD_NAME, METADATA_REQUEST).blockingGet();
             fail("This test muste fail because of no file provided for an upload.");
         } catch (Exception ex) {
             assertTrue(ex instanceof RuntimeException);
@@ -204,7 +205,7 @@ public class S3BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
         NodeResponse s3binaryNode = createNodeWithField();
         BufferedImage buf = null;
         //creating
-        call(() -> client().updateNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "s3", UPLOAD_REQUEST));
+        call(() -> client().updateNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), FIELD_NAME, UPLOAD_REQUEST));
         //uploading
         File tempFile = createTempFile();
         s3BinaryStorage().createBucket("test-bucket").blockingGet();
@@ -213,10 +214,10 @@ public class S3BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
         s3BinaryStorage().exists("test-bucket", s3binaryNode.getUuid() + "/s3/en").blockingGet();
 
         //extracting metadata in order to resize img
-        call(() -> client().extractMetadataNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "s3", METADATA_REQUEST));
+        call(() -> client().extractMetadataNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), FIELD_NAME, METADATA_REQUEST));
 
         // 2. Download the data using the REST API
-        MeshBinaryResponse response = call(() -> client().downloadBinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "en", "s3",
+        MeshBinaryResponse response = call(() -> client().downloadBinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "en", FIELD_NAME,
                 new ImageManipulationParametersImpl().setWidth(100)));
 
         assertNotNull(response);
@@ -247,7 +248,7 @@ public class S3BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
         BufferedImage bufDe = null;
         {
         	//creating English
-            call(() -> client().updateNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "s3", new S3BinaryUploadRequest()
+            call(() -> client().updateNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), FIELD_NAME, new S3BinaryUploadRequest()
             		.setFilename("test.jpg").setLanguage(english()).setVersion("1.0")));
             //uploading
             File tempFile = createTempFile("blume.jpg");
@@ -257,10 +258,10 @@ public class S3BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
             s3BinaryStorage().exists("test-bucket", s3binaryNode.getUuid() + "/s3/en").blockingGet();
 
             //extracting metadata in order to resize img
-            call(() -> client().extractMetadataNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "s3", METADATA_REQUEST));
+            call(() -> client().extractMetadataNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), FIELD_NAME, METADATA_REQUEST));
 
             // 2. Download the data using the REST API
-            MeshBinaryResponse response = call(() -> client().downloadBinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "en", "s3"));
+            MeshBinaryResponse response = call(() -> client().downloadBinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "en", FIELD_NAME));
 
             assertNotNull(response);
             try {
@@ -276,7 +277,7 @@ public class S3BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
         }
         {
         	//creating German
-            call(() -> client().updateNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "s3", new S3BinaryUploadRequest()
+            call(() -> client().updateNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), FIELD_NAME, new S3BinaryUploadRequest()
             		.setFilename("test.jpg").setLanguage(german()).setVersion("0.1")));
             //uploading
             File tempFile = createTempFile("blume_large.jpg");
@@ -286,10 +287,10 @@ public class S3BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
             s3BinaryStorage().exists("test-bucket", s3binaryNode.getUuid() + "/s3/de").blockingGet();
 
             //extracting metadata in order to resize img
-            call(() -> client().extractMetadataNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "s3", new S3BinaryMetadataRequest().setLanguage(german()).setVersion("0.2")));
+            call(() -> client().extractMetadataNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), FIELD_NAME, new S3BinaryMetadataRequest().setLanguage(german()).setVersion("0.2")));
 
             // 2. Download the data using the REST API
-            MeshBinaryResponse response = call(() -> client().downloadBinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "de", "s3"));
+            MeshBinaryResponse response = call(() -> client().downloadBinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "de", FIELD_NAME));
 
             assertNotNull(response);
             try {
@@ -311,14 +312,14 @@ public class S3BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
         s3RestResponse.setVersion("1");
         NodeResponse s3binaryNode = createNodeWithField();
         //creating
-        call(() -> client().updateNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "s3", UPLOAD_REQUEST));
+        call(() -> client().updateNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), FIELD_NAME, UPLOAD_REQUEST));
         //uploading
         File tempFile = createTempFile();
         s3BinaryStorage().createBucket("test-bucket").blockingGet();
         s3BinaryStorage().createBucket("test-cache-bucket").blockingGet();
         s3BinaryStorage().uploadFile("test-bucket", s3binaryNode.getUuid() + "/s3/en", tempFile, false).blockingGet();
-        client().extractMetadataNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "s3", METADATA_REQUEST).blockingGet();
-        NodeResponse call = call(() -> client().transformNodeBinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "en", "draft", "s3", new ImageManipulationParametersImpl().setWidth(250)));
+        client().extractMetadataNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), FIELD_NAME, METADATA_REQUEST).blockingGet();
+        NodeResponse call = call(() -> client().transformNodeBinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "en", "draft", FIELD_NAME, new ImageManipulationParametersImpl().setWidth(250)));
         assertNotNull(call);
         assertEquals(250, call.getFields().getS3BinaryField(FIELD_NAME).getWidth().intValue());
     }
@@ -334,7 +335,7 @@ public class S3BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
             call(() -> client().updateNodeS3BinaryField(
                     PROJECT_NAME,
                     s3binaryNode.getUuid(),
-                    "s3",
+                    FIELD_NAME,
                     UPLOAD_REQUEST
             ));
             //uploading
@@ -347,7 +348,7 @@ public class S3BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
         assertNotNull(s3RestResponse1);
         NodeResponse s3binaryNode1 = call(() -> client().findNodeByUuid(PROJECT_NAME, s3binaryNode.getUuid()));
         assertNotNull(s3binaryNode1);
-        assertNotNull(s3binaryNode1.getFields().getS3BinaryField("s3"));
+        assertNotNull(s3binaryNode1.getFields().getS3BinaryField(FIELD_NAME));
     }
 
     @Test
@@ -360,14 +361,22 @@ public class S3BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
         call(() -> client().updateNodeS3BinaryField(
                 PROJECT_NAME,
                 s3binaryNode.getUuid(),
-                "s3",
+                FIELD_NAME,
                 UPLOAD_REQUEST
         ));
+        // some very illegal stuff
+        try (Tx tx = tx()) {
+        	S3HibBinaryField s3Field = tx.contentDao().findVersion(tx.nodeDao().findByUuidGlobal(s3binaryNode.getUuid()), english(), initialBranchUuid(), "1.1").getS3Binary(FIELD_NAME);
+        	s3Field.getBinary().setS3ObjectKey(s3binaryNode.getUuid() + "/s3");
+        	tx.success();
+        }
         //uploading
+        long length;
         try (Tx tx = tx()) {
             File tempFile = createTempFile();
             s3BinaryStorage().createBucket("test-bucket").blockingGet();
             s3RestResponse1 = s3BinaryStorage().uploadFile("test-bucket", s3binaryNode.getUuid() + "/s3", tempFile, false).blockingGet();
+            length = tempFile.length();
         }
         assertNotNull(s3RestResponse1);
         //new format has not been uploaded
@@ -377,9 +386,18 @@ public class S3BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
         doesObjectExists = s3BinaryStorage().exists("test-bucket", s3binaryNode.getUuid() + "/s3").blockingGet();
         assertTrue(doesObjectExists);
         // but the node does not care
-        NodeResponse s3binaryNode1 = call(() -> client().findNodeByUuid(PROJECT_NAME, s3binaryNode.getUuid()));
-        assertNotNull(s3binaryNode1);
-        assertNotNull(s3binaryNode1.getFields().getS3BinaryField("s3"));
+        // 2. Download the data using the REST API
+        MeshBinaryResponse response = call(() -> client().downloadBinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "en", FIELD_NAME));
+
+        assertNotNull(response);
+        try {
+            byte[] downloadBytes = IOUtils.toByteArray(response.getStream());
+            assertEquals(length, downloadBytes.length);
+        } catch (IOException ioException) {
+            fail();
+        } finally {
+        	response.close();
+        }
     }
    
     @Test
@@ -392,7 +410,7 @@ public class S3BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
             client().updateNodeS3BinaryField(
                     PROJECT_NAME,
                     s3binaryNode.getUuid(),
-                    "s3",
+                    FIELD_NAME,
                     request
             ).blockingAwait();
             fail("Empty file name should not pass");
