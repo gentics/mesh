@@ -7,16 +7,13 @@ import static com.gentics.mesh.rest.client.impl.HttpMethod.POST;
 import static com.gentics.mesh.rest.client.impl.HttpMethod.PUT;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.io.SequenceInputStream;
-import java.io.UnsupportedEncodingException;
 import java.security.InvalidParameterException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Vector;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -1198,7 +1195,11 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 
-		String path = "/" + encodeSegment(projectName) + "/nodes/" + nodeUuid + "/binary/" + fieldKey + getQuery(getConfig(), parameters);
+		String path = "/" + encodeSegment(projectName) + "/nodes/" + nodeUuid + "/binary/" + fieldKey 
+				+ getQuery(getConfig(), Stream.of(
+						// the provided node params are ignored
+						Stream.of(parameters).filter(p -> !NodeParametersImpl.class.isInstance(p)), 
+						Stream.of(new NodeParametersImpl().setLanguages(languageTag))).flatMap(Function.identity()));
 
 		return prepareRequest(GET, path, MeshBinaryResponse.class);
 	}
@@ -1214,7 +1215,11 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 			throw new InvalidParameterException(String.format("Parameter to must be equal or greater then from. Given values: %d-%d", from, to));
 		}
 
-		String path = "/" + encodeSegment(projectName) + "/nodes/" + nodeUuid + "/binary/" + fieldKey + getQuery(getConfig(), parameters);
+		String path = "/" + encodeSegment(projectName) + "/nodes/" + nodeUuid + "/binary/" + fieldKey 
+				+ getQuery(getConfig(), Stream.of(
+						// the provided node params are ignored
+						Stream.of(parameters).filter(p -> !NodeParametersImpl.class.isInstance(p)), 
+						Stream.of(new NodeParametersImpl().setLanguages(languageTag))).flatMap(Function.identity()));
 
 		MeshRequest<MeshBinaryResponse> request = prepareRequest(GET, path, MeshBinaryResponse.class);
 		request.setHeader("Range", String.format("bytes=%d-%d", from, to));

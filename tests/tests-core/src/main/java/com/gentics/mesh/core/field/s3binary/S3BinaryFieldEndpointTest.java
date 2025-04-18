@@ -32,6 +32,7 @@ import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryMetadataRequest;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryUploadRequest;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3RestResponse;
@@ -40,6 +41,7 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.test.ElasticsearchTestMode;
 import com.gentics.mesh.test.MeshTestSetting;
@@ -123,7 +125,7 @@ public class S3BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 
     @Override
     public NodeResponse createNodeWithField() {
-        String parentUuid = tx(() -> folder("2015").getUuid());
+    	String parentUuid = tx(() -> folder("2015").getUuid());
 
         grantAdmin();
 
@@ -231,6 +233,78 @@ public class S3BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
         response.close();
     }
 
+    @Test
+    public void testDownloadBinaryDifferentLanguages() {
+    	S3RestResponse s3RestResponse = new S3RestResponse();
+        s3RestResponse.setVersion("1");
+        NodeResponse s3binaryNode = createNodeWithField();
+        NodeUpdateRequest updRequest = s3binaryNode.toRequest().setLanguage(german());
+        updRequest.getFields().put("slug", FieldUtil.createStringField("ordner" + 1));
+        updRequest.getFields().put("title", FieldUtil.createStringField("ordner" + 2));
+        updRequest.getFields().put("teaser", FieldUtil.createStringField("ordner" + 2));
+        call(() -> client().updateNode(PROJECT_NAME, s3binaryNode.getUuid(), updRequest, new NodeParametersImpl().setLanguages("de")));
+        BufferedImage bufEn = null;
+        BufferedImage bufDe = null;
+        {
+        	//creating English
+            call(() -> client().updateNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "s3", new S3BinaryUploadRequest()
+            		.setFilename("test.jpg").setLanguage(english()).setVersion("1.0")));
+            //uploading
+            File tempFile = createTempFile("blume.jpg");
+            s3BinaryStorage().createBucket("test-bucket").blockingGet();
+            s3BinaryStorage().createBucket("test-cache-bucket").blockingGet();
+            s3BinaryStorage().uploadFile("test-bucket", s3binaryNode.getUuid() + "/s3/en", tempFile, false).blockingGet();
+            s3BinaryStorage().exists("test-bucket", s3binaryNode.getUuid() + "/s3/en").blockingGet();
+
+            //extracting metadata in order to resize img
+            call(() -> client().extractMetadataNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "s3", METADATA_REQUEST));
+
+            // 2. Download the data using the REST API
+            MeshBinaryResponse response = call(() -> client().downloadBinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "en", "s3"));
+
+            assertNotNull(response);
+            try {
+                byte[] downloadBytes = IOUtils.toByteArray(response.getStream());
+                InputStream in = new ByteArrayInputStream(downloadBytes);
+                bufEn = ImageIO.read(in);
+            } catch (IOException ioException) {
+                fail();
+            }
+            assertEquals("image/jpeg", response.getContentType());
+            assertEquals(1160, bufEn.getWidth());
+            response.close();
+        }
+        {
+        	//creating German
+            call(() -> client().updateNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "s3", new S3BinaryUploadRequest()
+            		.setFilename("test.jpg").setLanguage(german()).setVersion("0.1")));
+            //uploading
+            File tempFile = createTempFile("blume_large.jpg");
+            s3BinaryStorage().createBucket("test-bucket").blockingGet();
+            s3BinaryStorage().createBucket("test-cache-bucket").blockingGet();
+            s3BinaryStorage().uploadFile("test-bucket", s3binaryNode.getUuid() + "/s3/de", tempFile, false).blockingGet();
+            s3BinaryStorage().exists("test-bucket", s3binaryNode.getUuid() + "/s3/de").blockingGet();
+
+            //extracting metadata in order to resize img
+            call(() -> client().extractMetadataNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "s3", new S3BinaryMetadataRequest().setLanguage(german()).setVersion("0.2")));
+
+            // 2. Download the data using the REST API
+            MeshBinaryResponse response = call(() -> client().downloadBinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "de", "s3"));
+
+            assertNotNull(response);
+            try {
+                byte[] downloadBytes = IOUtils.toByteArray(response.getStream());
+                InputStream in = new ByteArrayInputStream(downloadBytes);
+                bufDe = ImageIO.read(in);
+            } catch (IOException ioException) {
+                fail();
+            }
+            assertEquals("image/jpeg", response.getContentType());
+            assertEquals(2000, bufDe.getWidth());
+            response.close();
+        }
+    }
+   
     @Test
     public void testTransformS3BinarySuccessful() {
         S3RestResponse s3RestResponse = new S3RestResponse();
