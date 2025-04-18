@@ -356,7 +356,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 			// uploading
 			File tempFile = createTempFile();
 			s3BinaryStorage().createBucket(s3Bucket)
-					.flatMap(unused -> s3BinaryStorage().uploadFile(s3Bucket, uuid + "/s3binary", tempFile, false))
+					.flatMap(unused -> s3BinaryStorage().uploadFile(s3Bucket, uuid + "/s3binary/" + english(), tempFile, false))
 					.blockingGet();
 
 			// Render the link

@@ -156,8 +156,7 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 	}
 
 	@Override
-	public Single<S3RestResponse> createUploadPresignedUrl(String bucketName, String nodeUuid, String fieldName,
-			String nodeVersion, boolean isCache) {
+	public Single<S3RestResponse> createUploadPresignedUrl(String bucketName, String objectKey, String nodeVersion, boolean isCache) {
 		return initIfRequiredAndExecute(unused -> {
 			int expirationTimeUpload;
 			// we need to establish a fixed expiration time upload for the cache
@@ -166,14 +165,12 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 			else {
 				expirationTimeUpload = s3Options.getExpirationTimeUpload();
 			}
-			String objectKey = nodeUuid + "/" + fieldName;
-	
 			PresignedPutObjectRequest presignedRequest = presigner
 					.presignPutObject(r -> r.signatureDuration(Duration.ofSeconds(expirationTimeUpload))
 							.putObjectRequest(por -> por.bucket(bucketName).key(objectKey)));
 	
 			if (log.isDebugEnabled()) {
-				log.debug("Creating presigned URL for nodeUuid '{}' and fieldName '{}'", nodeUuid, fieldName);
+				log.debug("Creating presigned URL for objectKey '{}'", objectKey);
 			}
 	
 			S3RestResponse s3RestResponse = new S3RestResponse(presignedRequest.url().toString(),
@@ -237,12 +234,11 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 	
 			PutObjectRequest objectRequest = PutObjectRequest.builder().bucket(bucket).key(objectKey)
 					.contentType(mimeTypeForFilename).build();
-			String[] split = objectKey.split("/");
-	
+
 			// Put the object into the bucket
 			Completable completable = CompletableInterop
 					.fromFuture(client.putObject(objectRequest, AsyncRequestBody.fromFile(file)));
-			return completable.andThen(createUploadPresignedUrl(bucket, split[0], split[1], null, isCache))
+			return completable.andThen(createUploadPresignedUrl(bucket, objectKey, null, isCache))
 					.doOnError(err -> Single.error(err));
 		});
 	}
