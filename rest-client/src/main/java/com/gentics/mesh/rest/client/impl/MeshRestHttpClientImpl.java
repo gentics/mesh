@@ -10,12 +10,15 @@ import static com.gentics.mesh.util.URIUtils.encodeSegment;
 import java.io.InputStream;
 import java.security.InvalidParameterException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.apache.commons.lang.StringUtils;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
@@ -111,6 +114,7 @@ import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.core.rest.validation.SchemaValidationResponse;
 import com.gentics.mesh.parameter.BackupParameters;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
+import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.parameter.client.BinaryCheckParametersImpl;
@@ -1195,11 +1199,22 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 
+		// Make a language parameter, if applicable
+		NodeParametersImpl npi = Stream.of(parameters).filter(NodeParametersImpl.class::isInstance).map(NodeParametersImpl.class::cast).findAny().orElseGet(NodeParametersImpl::new);
+		if (StringUtils.isNotBlank(languageTag)) {
+			npi.setMultivalueParameter(NodeParameters.LANGUAGES_QUERY_PARAM_KEY, npi.getLanguages() != null 
+					? Stream.of(
+							Stream.of(languageTag), 
+							Stream.of(npi.getLanguages()))
+						.flatMap(Function.identity())
+						.collect(Collectors.toSet()) 
+					: Collections.singleton(languageTag));
+		}
 		String path = "/" + encodeSegment(projectName) + "/nodes/" + nodeUuid + "/binary/" + fieldKey 
 				+ getQuery(getConfig(), Stream.of(
 						// the provided node params are ignored
 						Stream.of(parameters).filter(p -> !NodeParametersImpl.class.isInstance(p)), 
-						Stream.of(new NodeParametersImpl().setLanguages(languageTag))).flatMap(Function.identity()));
+						Stream.of(npi)).flatMap(Function.identity()));
 
 		return prepareRequest(GET, path, MeshBinaryResponse.class);
 	}
@@ -1215,11 +1230,22 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 			throw new InvalidParameterException(String.format("Parameter to must be equal or greater then from. Given values: %d-%d", from, to));
 		}
 
+		// Make a language parameter, if applicable
+		NodeParametersImpl npi = Stream.of(parameters).filter(NodeParametersImpl.class::isInstance).map(NodeParametersImpl.class::cast).findAny().orElseGet(NodeParametersImpl::new);
+		if (StringUtils.isNotBlank(languageTag)) {
+			npi.setMultivalueParameter(NodeParameters.LANGUAGES_QUERY_PARAM_KEY, npi.getLanguages() != null 
+					? Stream.of(
+							Stream.of(languageTag), 
+							Stream.of(npi.getLanguages()))
+						.flatMap(Function.identity())
+						.collect(Collectors.toSet()) 
+					: Collections.singleton(languageTag));
+		}
 		String path = "/" + encodeSegment(projectName) + "/nodes/" + nodeUuid + "/binary/" + fieldKey 
 				+ getQuery(getConfig(), Stream.of(
 						// the provided node params are ignored
 						Stream.of(parameters).filter(p -> !NodeParametersImpl.class.isInstance(p)), 
-						Stream.of(new NodeParametersImpl().setLanguages(languageTag))).flatMap(Function.identity()));
+						Stream.of(npi)).flatMap(Function.identity()));
 
 		MeshRequest<MeshBinaryResponse> request = prepareRequest(GET, path, MeshBinaryResponse.class);
 		request.setHeader("Range", String.format("bytes=%d-%d", from, to));
