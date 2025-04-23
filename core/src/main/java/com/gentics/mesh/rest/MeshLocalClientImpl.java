@@ -1281,7 +1281,7 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	}
 
 	@Override
-	public MeshRequest<MeshBinaryResponse> downloadBinaryField(String projectName, String nodeUuid, String fieldKey,
+	public MeshRequest<MeshBinaryResponse> downloadBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey,
 		ParameterProvider... parameters) {
 		// LocalActionContextImpl<NodeResponse> ac = createContext();
 		// return new MeshLocalRequestImpl<>( ac.getFuture());
@@ -1289,7 +1289,7 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	}
 
 	@Override
-	public MeshRequest<MeshBinaryResponse> downloadBinaryField(String projectName, String nodeUuid, String fieldKey, long from,
+	public MeshRequest<MeshBinaryResponse> downloadBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey, long from,
 		long to, ParameterProvider... parameters) {
 		return null;
 	}

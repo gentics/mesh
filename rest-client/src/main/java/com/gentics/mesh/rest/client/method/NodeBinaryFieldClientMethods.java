@@ -7,7 +7,6 @@ import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 import com.gentics.mesh.core.rest.node.field.image.ImageManipulationRequest;
 import com.gentics.mesh.core.rest.node.field.image.ImageVariantsResponse;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
-import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshRequest;
@@ -76,47 +75,12 @@ public interface NodeBinaryFieldClientMethods {
 	 *
 	 * @param projectName
 	 * @param nodeUuid
-	 * @param languageTag
-	 * @param fieldKey
-	 * @param parameters
-	 * @return Mesh request which provides a download response that contains a reference to the byte buffer with the binary data
-	 * @deprecated Use {@link NodeBinaryFieldClientMethods#downloadBinaryField(String, String, String, ParameterProvider...)} with the {@link NodeParameters} for the language tags instead.
-	 */
-	@Deprecated
-	default MeshRequest<MeshBinaryResponse> downloadBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey,
-														ParameterProvider... parameters) {
-		return downloadBinaryField(projectName, nodeUuid, fieldKey, parameters);
-	}
-
-	/**
-	 * Download a part of the binary field of the given node in the given project.
-	 *
-	 * @param projectName
-	 * @param nodeUuid
-	 * @param languageTag
-	 * @param fieldKey
-	 * @param from Start byte of the range (inclusive)
-	 * @param to End byte of the range (inclusive)
-	 * @param parameters
-	 * @return Mesh request which provides a download response that contains a reference to the byte buffer with the binary data
-	 * @deprecated Use {@link NodeBinaryFieldClientMethods#downloadBinaryField(String, String, String, long, long, ParameterProvider...)} with the {@link NodeParameters} for the language tags instead.
-	 */
-	@Deprecated
-	default MeshRequest<MeshBinaryResponse> downloadBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey,
-														long from, long to, ParameterProvider... parameters) {
-		return downloadBinaryField(projectName, nodeUuid, fieldKey, from, to, parameters);
-	}
-
-	/**
-	 * Download the binary field of the given node in the given project.
-	 *
-	 * @param projectName
-	 * @param nodeUuid
+	 * @param languageTag currently not used, will be removed in the forthcoming feature release
 	 * @param fieldKey
 	 * @param parameters
 	 * @return Mesh request which provides a download response that contains a reference to the byte buffer with the binary data
 	 */
-	MeshRequest<MeshBinaryResponse> downloadBinaryField(String projectName, String nodeUuid, String fieldKey,
+	MeshRequest<MeshBinaryResponse> downloadBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey,
 														ParameterProvider... parameters);
 
 	/**
@@ -124,13 +88,14 @@ public interface NodeBinaryFieldClientMethods {
 	 *
 	 * @param projectName
 	 * @param nodeUuid
+	 * @param languageTag currently not used, will be removed in the forthcoming feature release
 	 * @param fieldKey
 	 * @param from Start byte of the range (inclusive)
 	 * @param to End byte of the range (inclusive)
 	 * @param parameters
 	 * @return Mesh request which provides a download response that contains a reference to the byte buffer with the binary data
 	 */
-	MeshRequest<MeshBinaryResponse> downloadBinaryField(String projectName, String nodeUuid, String fieldKey,
+	MeshRequest<MeshBinaryResponse> downloadBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey,
 														long from, long to, ParameterProvider... parameters);
 
 	/**
