@@ -125,7 +125,7 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 			String s3Bucket = getTestContext().getOptions().getS3Options().getBucket();
 			File tempFile = createTempFile();
 			s3BinaryStorage().createBucket(s3Bucket)
-					.flatMap(unused -> s3BinaryStorage().uploadFile(s3Bucket, nodeUuid + "/s3binary", tempFile, false))
+					.flatMap(unused -> s3BinaryStorage().uploadFile(s3Bucket, nodeUuid + "/s3binary/en", tempFile, false))
 					.blockingGet();
 		}) : Optional.empty();
 
