@@ -261,7 +261,7 @@ public class S3BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
             call(() -> client().extractMetadataNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), FIELD_NAME, METADATA_REQUEST));
 
             // 2. Download the data using the REST API
-            MeshBinaryResponse response = call(() -> client().downloadBinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "en", FIELD_NAME));
+            MeshBinaryResponse response = call(() -> client().downloadBinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "en", FIELD_NAME, new NodeParametersImpl().setLanguages("en")));
 
             assertNotNull(response);
             try {
@@ -286,11 +286,11 @@ public class S3BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
             s3BinaryStorage().uploadFile("test-bucket", s3binaryNode.getUuid() + "/s3/de", tempFile, false).blockingGet();
             s3BinaryStorage().exists("test-bucket", s3binaryNode.getUuid() + "/s3/de").blockingGet();
 
-            //extracting metadata in order to resize img
+            //extracting metadata in order to resize imgnull
             call(() -> client().extractMetadataNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), FIELD_NAME, new S3BinaryMetadataRequest().setLanguage(german()).setVersion("0.2")));
 
             // 2. Download the data using the REST API
-            MeshBinaryResponse response = call(() -> client().downloadBinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "de", FIELD_NAME));
+            MeshBinaryResponse response = call(() -> client().downloadBinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "de", FIELD_NAME, new NodeParametersImpl().setLanguages("de")));
 
             assertNotNull(response);
             try {
