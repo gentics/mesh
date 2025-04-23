@@ -7,16 +7,12 @@ import static com.gentics.mesh.rest.client.impl.HttpMethod.POST;
 import static com.gentics.mesh.rest.client.impl.HttpMethod.PUT;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.io.SequenceInputStream;
-import java.io.UnsupportedEncodingException;
 import java.security.InvalidParameterException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Vector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 

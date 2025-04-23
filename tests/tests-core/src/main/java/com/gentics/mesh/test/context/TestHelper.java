@@ -692,11 +692,15 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	}
 
 	default public File createTempFile() {
+		return createTempFile("blume.jpg");
+	}
+
+	default public File createTempFile(String pictureResourceFileName) {
 		try {
-			InputStream ins = getClass().getResourceAsStream("/pictures/blume.jpg");
+			InputStream ins = getClass().getResourceAsStream("/pictures/" + pictureResourceFileName);
 			byte[] bytes = IOUtils.toByteArray(ins);
 			Flowable<Buffer> obs = Flowable.just(Buffer.buffer(bytes)).publish().autoConnect(2);
-			File file = new File("target", "blume.jpg");
+			File file = new File("target", pictureResourceFileName);
 			try (FileOutputStream fos = new FileOutputStream(file)) {
 				IOUtils.write(bytes, fos);
 				fos.flush();

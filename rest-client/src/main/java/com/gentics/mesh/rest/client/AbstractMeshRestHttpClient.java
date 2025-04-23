@@ -159,6 +159,17 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 	 * @return
 	 */
 	public static String getQuery(MeshRestClientConfig config, ParameterProvider... parameters) {
+		return getQuery(config, Stream.of(parameters));
+	}
+
+	/**
+	 * Return the query aggregated parameter string for the given providers stream.
+	 * @param config configuration object (may be null)
+	 * @param parameters
+	 * 
+	 * @return
+	 */
+	public static String getQuery(MeshRestClientConfig config, Stream<ParameterProvider> parameters) {
 		Map<String, String> params = new LinkedHashMap<>();
 		if (config != null) {
 			// get the default parameters from the configuration (if any)
@@ -170,7 +181,7 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 			}
 
 		// put all non-blank parameters from the given providers to the map
-		Stream.of(parameters).flatMap(provider -> provider.getParameters().entrySet().stream())
+		parameters.flatMap(provider -> provider.getParameters().entrySet().stream())
 				.filter(entry -> StringUtils.isNotBlank(entry.getKey()) && StringUtils.isNotBlank(entry.getValue()))
 				.forEach(entry -> params.put(entry.getKey(), entry.getValue()));
 
