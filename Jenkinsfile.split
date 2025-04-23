@@ -305,9 +305,6 @@ stage("Setup Build Environment") {
 					}
 
 					dir(path: 'js') {
-						// Init
-						sh "npm install --no-audit --no-fund"
-
 						// Install dependencies
 						sh 'npm ci --no-audit --no-fund'
 
