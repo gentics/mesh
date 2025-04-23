@@ -6,6 +6,11 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v2.1.18]]
+== 2.1.18 (23.04.2025)
+
+icon:check[] S3: Now the language specific S3 fields are correctly processed.
+
 [[v2.1.17]]
 == 2.1.17 (25.03.2025)
 
