@@ -1,5 +1,7 @@
 package com.gentics.mesh.enterprise.core;
 
+import java.util.Comparator;
+
 import com.gentics.mesh.core.PreparingDatabaseTestContextProvider;
 import com.gentics.mesh.enterprise.dagger.DaggerEnterpriseHibernateMeshComponent;
 import com.gentics.mesh.enterprise.test.docker.SQLServerDatabaseContainer;
@@ -24,5 +26,49 @@ public class SQLServerTestContextProvider extends PreparingDatabaseTestContextPr
 		options.getStorageOptions().setDatabaseName(current);
 		options.getStorageOptions().setConnectionUsername("SA");
 		options.getStorageOptions().setConnectionPassword(DatabaseContainer.DEFAULT_PASSWORD);
+	}
+
+	@Override
+	public Comparator<String> sortComparator() {
+		Comparator<Character> charComparator = (a, b) -> {
+			if (a == b) {
+				return 0;
+			}
+			if (a == null) {
+				return -1;
+			}
+			if (b == null) {
+				return 1;
+			}
+			if (!Character.isDigit(a) && Character.isDigit(b)) {
+				return 1;
+			}
+			if (Character.isDigit(a) && !Character.isDigit(b)) {
+				return -1;
+			}
+			return Character.valueOf(Character.toLowerCase(a)).compareTo(Character.toLowerCase(b));
+		};
+		return (a,b) -> {
+			if (a == b) {
+				return 0;
+			}
+			if (a == null) {
+				return -1;
+			}
+			if (b == null) {
+				return 1;
+			}
+			int lenA = a.length();
+			int lenB = b.length();
+			for (int i = 0; i < Math.max(lenA, lenB); i++) {
+				Character ca = i < lenA ? a.charAt(i) : null;
+				Character cb = i < lenB ? b.charAt(i) : null;
+				int res = charComparator.compare(ca, cb);
+				if (res != 0) {
+					return res;
+				}
+			}
+			return 0;
+		};
 	}
 }
