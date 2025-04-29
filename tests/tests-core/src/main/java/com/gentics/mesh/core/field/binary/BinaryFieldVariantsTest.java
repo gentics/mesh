@@ -76,7 +76,7 @@ public class BinaryFieldVariantsTest extends AbstractMeshTest implements MeshOpt
 				defaultAutoVariant1 = new ImageVariantResponse();
 				defaultAutoVariant1.setHeight(null).setWidth(8).setAuto(true);
 				defaultAutoVariant2 = new ImageVariantResponse();
-				defaultAutoVariant2.setHeight(24).setWidth(null).setAuto(true);
+				defaultAutoVariant2.setHeight(24).setWidth(null).setAuto(true).setFocalZoom(Float.valueOf(1.4f));
 			}
 		} else {
 			call(() -> client().clearNodeBinaryFieldImageVariants(PROJECT_NAME, nodeUuid, "binary"));
@@ -164,7 +164,7 @@ public class BinaryFieldVariantsTest extends AbstractMeshTest implements MeshOpt
 		BufferedImage image1 = ImageIO.read(binary1response.getStream());
 		assertThat(image1.getWidth()).isEqualTo(8);
 
-		MeshBinaryResponse binary2response = call(() -> client().downloadBinaryField(PROJECT_NAME, nodeUuid, "en", "binary", new ImageManipulationParametersImpl().setHeight(24)));
+		MeshBinaryResponse binary2response = call(() -> client().downloadBinaryField(PROJECT_NAME, nodeUuid, "en", "binary", new ImageManipulationParametersImpl().setHeight(24).setFocalPointZoom(Float.valueOf(1.4f))));
 		BufferedImage image2 = ImageIO.read(binary2response.getStream());
 		assertThat(image2.getHeight()).isEqualTo(24);
 
@@ -183,7 +183,7 @@ public class BinaryFieldVariantsTest extends AbstractMeshTest implements MeshOpt
 		BufferedImage image1 = ImageIO.read(binary1response.getBinaryResponse().getStream());
 		assertThat(image1.getWidth()).isEqualTo(8);
 
-		MeshWebrootFieldResponse binary2response = call(() -> client().webrootField(PROJECT_NAME, "binary", nodePath.getPath(), new ImageManipulationParametersImpl().setHeight(24)));
+		MeshWebrootFieldResponse binary2response = call(() -> client().webrootField(PROJECT_NAME, "binary", nodePath.getPath(), new ImageManipulationParametersImpl().setHeight(24).setFocalPointZoom(Float.valueOf(1.4f))));
 		BufferedImage image2 = ImageIO.read(binary2response.getBinaryResponse().getStream());
 		assertThat(image2.getHeight()).isEqualTo(24);
 
@@ -202,7 +202,7 @@ public class BinaryFieldVariantsTest extends AbstractMeshTest implements MeshOpt
 		BufferedImage image1 = ImageIO.read(binary1response.getBinaryResponse().getStream());
 		assertThat(image1.getWidth()).isEqualTo(8);
 
-		MeshWebrootResponse binary2response = call(() -> client().webroot(PROJECT_NAME, nodePath.getPath(), new ImageManipulationParametersImpl().setHeight(24)));
+		MeshWebrootResponse binary2response = call(() -> client().webroot(PROJECT_NAME, nodePath.getPath(), new ImageManipulationParametersImpl().setHeight(24).setFocalPointZoom(Float.valueOf(1.4f))));
 		BufferedImage image2 = ImageIO.read(binary2response.getBinaryResponse().getStream());
 		assertThat(image2.getHeight()).isEqualTo(24);
 
