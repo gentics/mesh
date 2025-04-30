@@ -107,6 +107,7 @@ public class MeshBasicAuthLoginHandler extends AuthenticationHandlerImpl<MeshJWT
 								InternalActionContext ac = new InternalRoutingActionContextImpl(context);
 								String jwtToken = authProvider.generateToken(authenticatedUser);
 								ac.addCookie(Cookie.cookie(SharedKeys.TOKEN_COOKIE_KEY, jwtToken)
+										.setHttpOnly(true)
 										.setMaxAge(meshOptions.getAuthenticationOptions().getTokenExpirationTime()).setPath("/"));
 								ac.send(new TokenResponse(jwtToken).toJson());
 							} else {

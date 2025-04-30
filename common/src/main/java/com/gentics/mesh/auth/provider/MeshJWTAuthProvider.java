@@ -320,6 +320,7 @@ public class MeshJWTAuthProvider implements AuthenticationProvider, JWTAuth {
 				User authenticatedUser = result.getUser();
 				String token = generateToken(authenticatedUser);
 				ac.addCookie(Cookie.cookie(SharedKeys.TOKEN_COOKIE_KEY, token)
+						.setHttpOnly(true)
 						.setMaxAge(meshOptions.getAuthenticationOptions().getTokenExpirationTime()).setPath("/"));
 					ac.send(new TokenResponse(token).toJson());
 			} else {

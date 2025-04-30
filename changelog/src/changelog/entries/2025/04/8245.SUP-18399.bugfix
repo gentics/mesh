@@ -1,0 +1,1 @@
+Auth: More occurrences of setting the `mesh.token` cookies have been secured with `HTTPOnly` flag.
