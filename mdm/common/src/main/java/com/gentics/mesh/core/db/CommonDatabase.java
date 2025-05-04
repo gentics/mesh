@@ -7,6 +7,7 @@ import static com.gentics.mesh.metric.SimpleMetric.TX_TIME;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
+import com.gentics.mesh.core.rest.error.BackupInProgressException;
 import com.gentics.mesh.metric.MetricsService;
 
 import io.micrometer.core.instrument.Counter;
@@ -48,6 +49,8 @@ public abstract class CommonDatabase implements Database {
 		case READY:
 		case STARTING:
 			return;
+		case BACKUP:
+			throw new BackupInProgressException();
 		default:
 			throw new RuntimeException("Mesh is not ready. Current status " + status.name() + ". Aborting transaction.");
 		}
