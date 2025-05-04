@@ -43,11 +43,11 @@ In this guide we will mainly focus on loading, creating and updating vehicle con
 
 === Setup
 
-We can quickly start-up a Gentics Mesh instance using Docker. Alternativly we can also use `demo.getmesh.io` which will however be reset once a day.
+We can quickly start-up a Gentics Mesh instance using Docker.
 
 [source,bash]
 ----
-docker run -p 8080:8080 --rm gentics/mesh-demo:0.33.1
+docker run -p 8080:8080 --rm gentics/mesh-hsqldb:latest
 ----
 
 Now lets set the base so we can reuse it in our examples:
@@ -55,8 +55,6 @@ Now lets set the base so we can reuse it in our examples:
 [source,bash,subs="+attributes"]
 ----
 export MESH_BASE="http://localhost:8080{apiLatest}"
-or
-export MESH_BASE="https://demo.getmesh.io{apiLatest}"
 ----
 
 In this guide we only use `curl` and `jq` which is just used to increase readability.
