@@ -6,6 +6,15 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v3.0.9]]
+== 3.0.9 (07.05.2025)
+
+icon:check[] Auth: More occurrences of setting the `mesh.token` cookies have been secured with `HTTPOnly` flag.
+
+icon:check[] Image Manipulation: Creating image variants with a focal point or focal zoom value failed with an internal server error when using MariaDB.
+This has been fixed.
+
+
 [[v3.0.8]]
 == 3.0.8 (24.04.2025)
 
@@ -97,6 +106,11 @@ icon:plus[] Clustering: The Hazelcast library, responsible for the cluster insta
 
 icon:plus[] Some library dependencies have been updated to the latest hotfix versions.
 
+
+[[v2.1.19]]
+== 2.1.19 (07.05.2025)
+
+icon:check[] Auth: More occurrences of setting the `mesh.token` cookies have been secured with `HTTPOnly` flag.
 
 [[v2.1.18]]
 == 2.1.18 (23.04.2025)
