@@ -1,5 +1,24 @@
 package com.gentics.mesh.plugin.forms.model;
 
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Function;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.tika.config.TikaConfig;
+import org.apache.tika.detect.Detector;
+import org.apache.tika.io.TikaInputStream;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.metadata.TikaCoreProperties;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -10,7 +29,7 @@ import com.gentics.mesh.plugin.forms.config.FileUploadOptions;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
 import com.gentics.mesh.plugin.forms.util.RxUtil;
-import com.gentics.mesh.plugin.common.util.ReadInputStream;
+
 import io.reactivex.Maybe;
 import io.reactivex.Single;
 import io.vertx.core.MultiMap;
@@ -18,15 +37,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.reactivex.core.Vertx;
 import okhttp3.OkHttpClient;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.tika.config.TikaConfig;
-import org.apache.tika.detect.Detector;
-import org.apache.tika.io.TikaInputStream;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.metadata.TikaCoreProperties;
-
-import java.util.*;
-import java.util.function.Function;
 
 /**
  * Element for file uploads
@@ -215,17 +225,16 @@ public class FileElement extends FormElement {
 		TikaConfig tikaConfig = TikaConfig.getDefaultConfig();
 		Detector detector = tikaConfig.getDetector();
 
-		return rxVertx.fileSystem().rxOpen(uploadedFileName, new io.vertx.core.file.OpenOptions().setRead(true))
-				.map(file -> {
-					try (ReadInputStream inputStream = new ReadInputStream(file); TikaInputStream tikaInputStream = TikaInputStream.get(inputStream)) {
-						Metadata metadata = new Metadata();
-						metadata.add(TikaCoreProperties.RESOURCE_NAME_KEY, providedFileName);
-						String mimeType = detector.detect(tikaInputStream, metadata).toString();
+		return Single.fromCallable(() -> {
+			try (TikaInputStream tikaInputStream = TikaInputStream.get(new BufferedInputStream(new FileInputStream(uploadedFileName)))) {
+				Metadata metadata = new Metadata();
+				metadata.add(TikaCoreProperties.RESOURCE_NAME_KEY, providedFileName);
+				String mimeType = detector.detect(tikaInputStream, metadata).toString();
 
-						log.debug(String.format("Tika detected mime type %s", mimeType));
-						return mimeType;
-					}
-				});
+				log.debug(String.format("Tika detected mime type %s", mimeType));
+				return mimeType;
+			}
+		});
 	}
 
 	/**
