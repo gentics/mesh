@@ -373,7 +373,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		// try uploading an image (not allowed)
 		RequestBody requestBody = new MultipartBody.Builder()
 			.setType(MultipartBody.FORM)
-			.addFormDataPart("file1", "fake-filename-actually-png.json", requestBodyFromFile("file-uploads/test.png"))
+			.addFormDataPart("file1", "fake-filename-actually-zip.json", requestBodyFromFile("file-uploads/test.zip"))
 			.build();
 
 		Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data")).header("Referer", "ref").post(requestBody).build();
@@ -388,7 +388,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		// try again with text file (allowed)
 		requestBody = new MultipartBody.Builder()
 			.setType(MultipartBody.FORM)
-			.addFormDataPart("file1", "test.txt", requestBodyFromFile("file-uploads/test.txt"))
+			.addFormDataPart("file1", "test.json", requestBodyFromFile("file-uploads/test.json"))
 			.build();
 		postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data/" + dataNode.getUuid())).header("Referer", "ref").post(requestBody).build();
 		response = client().newCall(postRequest).execute();
