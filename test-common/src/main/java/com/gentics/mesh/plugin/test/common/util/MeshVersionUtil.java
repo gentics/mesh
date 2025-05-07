@@ -25,9 +25,9 @@ public final class MeshVersionUtil {
 	 */
 	public static boolean isOSS(String version) {
 		try {
-			URL url = new URL("https://maven.gentics.com/maven2/com/gentics/mesh/mesh-server/" + version + "/");
+			URL url = new URL("https://repo.gentics.com/repository/maven-releases-oss/com/gentics/mesh/mesh-server/" + version + "/mesh-server-" + version + ".jar");
 			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-			connection.setRequestMethod("GET");
+			connection.setRequestMethod("HEAD");
 			connection.connect();
 			int code = connection.getResponseCode();
 			return code == 200;
@@ -43,11 +43,11 @@ public final class MeshVersionUtil {
 	 */
 	public static String getMatchingImage() {
 		String version = MeshVersion.getPlainVersion();
-		if (isOSS(version)) {
-			return OSS_IMAGE + ":" + version;
-		} else {
+//		if (isOSS(version)) {
+//			return OSS_IMAGE + ":" + version;
+//		} else {
 			return LTS_IMAGE + ":" + version;
-		}
+//		}
 	}
 
 }
