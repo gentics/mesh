@@ -6,6 +6,11 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v2.1.19]]
+== 2.1.19 (07.05.2025)
+
+icon:check[] Auth: More occurrences of setting the `mesh.token` cookies have been secured with `HTTPOnly` flag.
+
 [[v2.1.18]]
 == 2.1.18 (23.04.2025)
 

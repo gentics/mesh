@@ -1,10 +1,10 @@
 {
   "name": "@gentics/mesh-rest-client-angular",
-  "version": "2.1.18",
+  "version": "2.1.19",
   "license": "Apache-2.0",
   "dependencies": {
-    "@gentics/mesh-models": "^2.1.18",
-    "@gentics/mesh-rest-client": "^2.1.18"
+    "@gentics/mesh-models": "^2.1.19",
+    "@gentics/mesh-rest-client": "^2.1.19"
   },
   "peerDependencies": {
     "@angular/common": "^16.0.0",
