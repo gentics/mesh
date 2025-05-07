@@ -8,6 +8,8 @@ import com.gentics.mesh.plugin.forms.service.FormDataService;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Objects;
+
 /**
  * Checkbox field
  */
@@ -59,5 +61,10 @@ public class CheckboxElement extends FormElement {
 	@Override
 	protected FormElement clone(boolean deep) {
 		return new CheckboxElement(this, deep);
+	}
+
+	@Override
+	protected boolean isInvalidValue(String value) {
+		return !Objects.equals(value, getValue());
 	}
 }

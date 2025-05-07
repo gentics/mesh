@@ -31,6 +31,7 @@ import okhttp3.MultipartBody;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.RecordedRequest;
 import org.apache.commons.io.IOUtils;
@@ -601,6 +602,65 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		assertThat(content)
 			.as("Mail content")
 			.isEqualTo(fromFile("admin_mail_element_mail_multiple.html"));
+	}
+
+	/**
+	 * Test if value list elements and checkboxes reject unexpected values.
+	 */
+	@Test
+	public void testSelectionInvalidValues() throws IOException, MessagingException {
+		String uuid = createForm("selection.json");
+		ResponseWithCookies rs = submit(uuid, true, false, false, true,
+			"checkbox1", "Y",
+			"radiobuttons1", "r_Nope",
+			"singleselect1", "s_Nope",
+			"multiselect1", "m_1", "multiselect1", "m_Nope", "multiselect1", "m_3");
+
+		var rsBody = new JsonObject(rs.response.body().string());
+
+		assertThat(rsBody.getJsonObject("errors").getMap())
+			.as("Field errors on submit")
+			.containsOnlyKeys("radiobuttons1", "multiselect1", "checkbox1", "singleselect1");
+
+		var errors = rsBody.getJsonObject("errors");
+
+		assertError(errors, "checkbox1", "Y");
+		assertError(errors, "radiobuttons1", "r_Nope");
+		assertError(errors, "singleselect1", "s_Nope");
+		assertError(errors, "multiselect1", "m_Nope");
+
+		var formDataUuid = rsBody.getString("dataUuid");
+		var formDataNode = getFormDataNode(formDataUuid);
+
+		var fields = new JsonObject(formDataNode.getFields().toJson());
+
+		assertThat(fields.getMap())
+			.as("Form data node fields")
+			.containsOnlyKeys("multiselect1", "errors");
+
+		assertThat(formDataNode.getFields().getStringFieldList("multiselect1").getItems())
+			.as("Saved multiselect values")
+			.containsExactly("m_1", "m_3");
+
+		errors = new JsonObject(fields.getString("errors"));
+
+		assertError(errors, "checkbox1", "Y");
+		assertError(errors, "radiobuttons1", "r_Nope");
+		assertError(errors, "singleselect1", "s_Nope");
+		assertError(errors, "multiselect1", "m_Nope");
+	}
+
+	/**
+	 * Check if the errors object contains an error message for the given field and value.
+	 *
+	 * @param errors The errors.
+	 * @param field The erroneous field.
+	 * @param value The invalid value for the field.
+	 */
+	private void assertError(JsonObject errors, String field, String value) {
+		assertThat(errors.getJsonObject(field).getString("message"))
+			.as("Error for field \"%s\"".formatted(field))
+			.isEqualTo("Der Wert \"%s\" is nicht erlaubt für das Feld \"%s\"".formatted(value, field));
 	}
 
 	/**

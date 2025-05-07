@@ -1,5 +1,6 @@
 package com.gentics.mesh.plugin.forms.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -8,16 +9,19 @@ import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
 
 import io.vertx.core.json.JsonObject;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
@@ -38,6 +42,9 @@ public class ValueListElement extends FormElement {
 	@JsonProperty
 	private List<ValueListItem> options = new ArrayList<>();
 
+	@JsonIgnore
+	private Set<String> validValues = new HashSet<>();
+
 	public ValueListElement() {
 	}
 
@@ -45,6 +52,7 @@ public class ValueListElement extends FormElement {
 		super(other, deep);
 
 		this.options = cloneField(other.options, deep);
+		updateValidValues();
 	}
 
 	/**
@@ -55,6 +63,7 @@ public class ValueListElement extends FormElement {
 	public List<ValueListItem> getOptions() {
 		if (options == null) {
 			options = new ArrayList<>();
+			updateValidValues();
 		}
 
 		return options;
@@ -66,6 +75,7 @@ public class ValueListElement extends FormElement {
 	 */
 	public void setOptions(List<ValueListItem> options) {
 		this.options = options;
+		updateValidValues();
 	}
 
 	@JsonProperty
@@ -81,6 +91,7 @@ public class ValueListElement extends FormElement {
 	public void setListelements(List<LegacyValueListItem> listelements) {
 		if (listelements == null) {
 			this.options = new ArrayList<>();
+			updateValidValues();
 
 			return;
 		}
@@ -88,6 +99,8 @@ public class ValueListElement extends FormElement {
 		this.options = listelements.stream()
 			.map(i -> new ValueListItem().setKey(i.getValue()).setValue(i.getLabel()))
 			.collect(Collectors.toList());
+
+		updateValidValues();
 	}
 
 	/**
@@ -183,5 +196,23 @@ public class ValueListElement extends FormElement {
 		int count = results.getInteger(value, 0) + 1;
 
 		results.put(value, count);
+	}
+
+	@Override
+	protected boolean isInvalidValue(String value) {
+		// This is also checked in validateForm(), but just to be sure.
+		if (CollectionUtils.isEmpty(options)) {
+			return true;
+		}
+
+		return !validValues.contains(value);
+	}
+
+	/**
+	 * Prepare the set of valid values from the current collection of options.
+	 */
+	private void updateValidValues() {
+		validValues.clear();
+		validValues.addAll(options.stream().map(ValueListItem::getKey).collect(Collectors.toSet()));
 	}
 }

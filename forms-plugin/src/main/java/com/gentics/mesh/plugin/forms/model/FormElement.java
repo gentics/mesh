@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -44,27 +45,27 @@ public abstract class FormElement implements RestModel {
 
 	protected final Logger log = LoggerFactory.getLogger(getClass());
 
-	private String name;
+	protected String name;
 
-	private String label;
+	protected String label;
 
-	private String type;
+	protected String type;
 
-	private boolean active = true;
+	protected boolean active = true;
 
-	private boolean mandatory;
+	protected boolean mandatory;
 
-	private String validation;
+	protected String validation;
 
-	private List<FormElement> elements = new ArrayList<>();
+	protected List<FormElement> elements = new ArrayList<>();
 
-	private Map<String, Object> properties = new LinkedHashMap<>();
-
-	@JsonIgnore
-	private FormElement container;
+	protected Map<String, Object> properties = new LinkedHashMap<>();
 
 	@JsonIgnore
-	private FormsConfig configuration;
+	protected FormElement container;
+
+	@JsonIgnore
+	protected FormsConfig configuration;
 
 	public FormElement() {
 	}
@@ -339,6 +340,17 @@ public abstract class FormElement implements RestModel {
 			return validator.validate(getName(), values);
 		}
 
+		// Apart from user defined validation rules, some elements might have restrictions on the values that can
+		// be submitted (e.g. value list elements, like select boxes, only accepting values from their defined options).
+		var invalidValue = values.stream().filter(this::isInvalidValue).findAny();
+
+		if (invalidValue.isPresent()) {
+			return new ValidationError()
+				.setName(getName())
+				.setTitle(I18nHelper.get(Locale.GERMAN, "error.invalid_value.title"))
+				.setMessage(I18nHelper.get(Locale.GERMAN, "error.invalid_value", getName(), invalidValue.get()));
+		}
+
 		return null;
 	}
 
@@ -356,11 +368,12 @@ public abstract class FormElement implements RestModel {
 		if (isMultivalue()) {
 			List<String> values = getMultiFormData(postedData);
 			if (values != null) {
+				values.removeIf(this::isInvalidValue);
 				container.getFields().put(getName(), new StringFieldListImpl().setItems(values));
 			}
 		} else {
 			String value = getSingleFormData(postedData);
-			if (value != null) {
+			if (value != null && !isInvalidValue(value)) {
 				container.getFields().put(getName(), new StringFieldImpl().setString(value));
 			}
 		}
@@ -687,5 +700,25 @@ public abstract class FormElement implements RestModel {
 		}
 
 		return deep ? new LinkedHashMap<>(other) : other;
+	}
+
+	/**
+	 * Check whether the given value is valid for this element.
+	 *
+	 * <p>
+	 *     Unlike the checks in {@link #validate(MultiMap, Set, NodeResponse)}, this checks implicit restrictions
+	 *     for fields, like for example that only available options for a value list element can be submitted.
+	 * </p>
+	 *
+	 * <p>
+	 *     By default, all values are valid for form elements. If a form element has certain restrictions
+	 *     that are not covered by user defined validation, its implementation must override this method
+	 *     to check the restrictions.
+	 * </p>
+	 * @param value The value to check.
+	 * @return Whether {@code value} is valid for this element.
+	 */
+	protected boolean isInvalidValue(String value) {
+		return false;
 	}
 }
