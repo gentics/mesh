@@ -10,6 +10,7 @@ import com.gentics.mesh.core.rest.common.FieldContainer;
 import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.apache.commons.collections.CollectionUtils;
 
 /**
  * Element for select groups
@@ -125,4 +126,15 @@ public class SelectgroupElement extends CombiElement {
 	public FormElement clone(boolean deep) {
 		return new SelectgroupElement(this, deep);
 	}
+
+	@Override
+	protected boolean isInvalidValue(String value) {
+		if (!super.isInvalidValue(value)) {
+			return false;
+		}
+
+		// If the value is not one of the defined values, it is only valid, if additional elements are allowed.
+		return !additionalElement;
+	}
+
 }

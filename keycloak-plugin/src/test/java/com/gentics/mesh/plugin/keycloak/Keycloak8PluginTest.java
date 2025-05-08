@@ -2,12 +2,14 @@ package com.gentics.mesh.plugin.keycloak;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.rules.TestRule;
 import org.testcontainers.containers.wait.strategy.Wait;
 
 import com.gentics.mesh.plugin.keycloak.config.KeycloakPluginConfig;
 import com.gentics.mesh.test.docker.KeycloakContainer;
 
+@Ignore("Target image unavailable")
 public class Keycloak8PluginTest extends AbstractKeycloakPluginTest {
 
 	static {
