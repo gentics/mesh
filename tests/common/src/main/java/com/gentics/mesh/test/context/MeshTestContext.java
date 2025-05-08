@@ -975,7 +975,9 @@ public class MeshTestContext implements TestRule {
 
 				MeshRestClient httpClient = MeshRestClient.create(httpConfigBuilder.build(), okHttp);
 				httpClient.setLogin(getData().user().getUsername(), getData().getUserInfo().getPassword());
-				httpClient.login().blockingGet();
+				if (settings.loginClients()) {
+					httpClient.login().blockingGet();
+				}
 				clients.put("http_v" + CURRENT_API_VERSION, httpClient);
 
 				// Setup SSL client if needed
@@ -1012,7 +1014,9 @@ public class MeshTestContext implements TestRule {
 				if (httpsConfig != null) {
 					MeshRestClient httpsClient = MeshRestClient.create(httpsConfig);
 					httpsClient.setLogin(getData().user().getUsername(), getData().getUserInfo().getPassword());
-					httpsClient.login().blockingGet();
+					if (settings.loginClients()) {
+						httpsClient.login().blockingGet();
+					}
 					clients.put("https_v" + CURRENT_API_VERSION, httpsClient);
 				}
 

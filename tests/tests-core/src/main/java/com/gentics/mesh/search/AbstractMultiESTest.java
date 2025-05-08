@@ -195,6 +195,11 @@ public abstract class AbstractMultiESTest implements TestHttpMethods, TestGraphH
 		public boolean resetBetweenTests() {
 			return delegate.resetBetweenTests();
 		}
+
+		@Override
+		public boolean loginClients() {
+			return true;
+		}
 	}
 
 	@Override
