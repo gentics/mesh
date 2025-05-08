@@ -17,12 +17,13 @@
 		<plugin.license>Commercial</plugin.license>
 		<plugin.author>Gentics</plugin.author>
 		<!--  Don't forget to also update dependencyManagement section! -->
-		<mesh.version>3.0.5</mesh.version>
-		<netty.version>4.1.115.Final</netty.version>
+		<mesh.version>3.1.0-SNAPSHOT</mesh.version>
+		<netty.version>4.1.118.Final</netty.version>
 		<hsqldb.version>2.7.3</hsqldb.version>
-		<commons-beanutils.version>1.9.4</commons-beanutils.version>
+		<commons-beanutils.version>1.10.0</commons-beanutils.version>
 		<jackson.version>2.17.0</jackson.version>
-		<license.checker.version>2.0.0</license.checker.version>
+		<tika.version>2.9.2</tika.version>
+		<license.checker.version>2.0.3</license.checker.version>
 		<dependency.report.component.name>Plugins</dependency.report.component.name>
 	</properties>
 
@@ -52,9 +53,17 @@
 			</dependency>
 			<dependency>
 				<groupId>org.apache.tika</groupId>
-				<artifactId>tika-parsers</artifactId>
-				<version>1.26</version>
+				<artifactId>tika-core</artifactId>
+				<version>${tika.version}</version>
 				<exclusions>
+					<exclusion>
+						<groupId>org.slf4j</groupId>
+  						<artifactId>slf4j-api</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.slf4j</groupId>
+  						<artifactId>jcl-over-slf4j</artifactId>
+					</exclusion>
 					<exclusion>
 						<groupId>xml-apis</groupId>
 						<artifactId>xml-apis</artifactId>
