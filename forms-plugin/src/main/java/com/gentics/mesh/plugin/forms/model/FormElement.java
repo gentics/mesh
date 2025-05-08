@@ -367,7 +367,9 @@ public abstract class FormElement implements RestModel {
 
 		if (isMultivalue()) {
 			List<String> values = getMultiFormData(postedData);
+
 			if (values != null) {
+				values = new ArrayList<>(values);
 				values.removeIf(this::isInvalidValue);
 				container.getFields().put(getName(), new StringFieldListImpl().setItems(values));
 			}

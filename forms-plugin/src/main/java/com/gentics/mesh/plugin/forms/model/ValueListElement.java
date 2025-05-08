@@ -40,10 +40,10 @@ public class ValueListElement extends FormElement {
 		LinkedHashMap::new);
 
 	@JsonProperty
-	private List<ValueListItem> options = new ArrayList<>();
+	protected List<ValueListItem> options = new ArrayList<>();
 
 	@JsonIgnore
-	private Set<String> validValues = new HashSet<>();
+	protected Set<String> validValues = new HashSet<>();
 
 	public ValueListElement() {
 	}

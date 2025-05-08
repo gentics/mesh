@@ -65,6 +65,6 @@ public class CheckboxElement extends FormElement {
 
 	@Override
 	protected boolean isInvalidValue(String value) {
-		return !Objects.equals(value, getValue());
+		return this.value != null && !this.value.equals(value);
 	}
 }
