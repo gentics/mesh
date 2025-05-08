@@ -1,6 +1,8 @@
 package com.gentics.mesh.plugin.common.service;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collection;
@@ -32,7 +34,6 @@ import com.gentics.mesh.parameter.client.GenericParametersImpl;
 import com.gentics.mesh.plugin.MeshPlugin;
 import com.gentics.mesh.plugin.common.model.SchemaCreateOrUpdateResponse;
 import com.gentics.mesh.plugin.common.util.MiscUtil;
-import com.gentics.mesh.plugin.common.util.ReadInputStream;
 import com.gentics.mesh.plugin.common.util.RxUtil;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.google.common.collect.Sets;
@@ -42,7 +43,6 @@ import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.functions.Predicate;
-import io.vertx.core.file.OpenOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.eventbus.EventBus;
@@ -299,7 +299,7 @@ public class MeshPluginService {
 	 * @return A single with an <code>InputStream</code> containing the loaded data
 	 */
 	public Single<InputStream> loadFromStorage(String path) {
-		return vertx.fileSystem().rxOpen(storageDirPath + path, new OpenOptions().setRead(true)).map(ReadInputStream::new);
+		return Single.fromCallable(() -> new BufferedInputStream(new FileInputStream(storageDirPath + path)));
 	}
 
 	/**
