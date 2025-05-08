@@ -118,7 +118,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		String s3Bucket = getTestContext().getOptions().getS3Options().getBucket();
 		File tempFile = createTempFile();
 		s3BinaryStorage().createBucket(s3Bucket)
-				.flatMap(unused -> s3BinaryStorage().uploadFile(s3Bucket, nodeUuid + "/s3", tempFile, false))
+				.flatMap(unused -> s3BinaryStorage().uploadFile(s3Bucket, nodeUuid + "/s3/en", tempFile, false))
 				.blockingGet();
 
 		// 3. Try to resolve the path

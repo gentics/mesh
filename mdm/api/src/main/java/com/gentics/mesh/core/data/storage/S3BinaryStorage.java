@@ -27,11 +27,12 @@ public interface S3BinaryStorage {
 	/**
 	 * Create a presigned URL that can be used for a given time period.
 	 *
-	 * @param nodeUuid
-	 * @param fieldName
+	 * @param bucketName
+	 * @param objectKey
+	 * @param isCache
 	 * @return
 	 */
-	Single<S3RestResponse> createUploadPresignedUrl(String bucketName, String nodeUuid, String fieldName, String nodeVersion, boolean isCache);
+	Single<S3RestResponse> createUploadPresignedUrl(String bucketName, String objectKey, String nodeVersion, boolean isCache);
 
 	/**
 	 * Get a presigned URL that can be used for a given time period.
@@ -100,4 +101,17 @@ public interface S3BinaryStorage {
 	 * @param tx
 	 */
 	void deleteOnTxSuccess(String s3ObjectKey, Tx tx);
+
+
+	/**
+	 * Make a S3 Object key from the params.
+	 * 
+	 * @param nodeUuid
+	 * @param fieldName
+	 * @param languageTag
+	 * @return
+	 */
+	static String makeObjectKey(String nodeUuid, String fieldName, String languageTag) {
+		return nodeUuid + "/" + fieldName + "/" + languageTag;
+	}
 }
