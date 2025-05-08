@@ -423,21 +423,29 @@ stage("Setup Build Environment") {
 						}
 					}
 
-					// if (Boolean.valueOf(params.runDeploy)) {
-					// 	dir(path: 'js') {
-					// 		// Install dependencies
-					// 		sh 'npm ci --no-audit --no-fund'
+					// Add private repository credentials and scopes
+					withCredentials([string(credentialsId: 'nexus-npm', variable: 'NPM_TOKEN')]) {
+						sh "echo //repo.gentics.com/repository/npm-products/:_auth=${env.NPM_TOKEN} >> js/.npmrc"
+					}
 
-					// 		// Set the version for the packages
-					// 		sh "npm run nx -- release version ${version}"
+					def npmDeployParams = ''
+					if (Boolean.valueOf(params.runDeployTesting)) {
+						npmDeployParams = '--dry-run'
+					}
 
-					// 		// Build all JS packages
-					// 		sh 'npm run nx -- run-many --targets build'
+					dir(path: 'js') {
+						// Install dependencies
+						sh 'npm ci --no-audit --no-fund'
 
-					// 		// Publish the pacakges to artifactory
-					// 		sh 'npm run nx -- release publish'
-					// 	}
-					// }
+						// Set the version for the packages
+						sh "npm run nx -- release version ${version}"
+
+						// Build all JS packages
+						sh 'npm run nx -- run-many --targets build'
+
+						// Publish the pacakges to artifactory
+						sh "npm run nx -- release publish ${npmDeployParams}"
+					}
 				} else {
 					echo "Deploy skipped.."
 				}

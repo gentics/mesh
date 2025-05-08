@@ -148,9 +148,9 @@ import com.gentics.mesh.parameter.image.ResizeMode;
 )
 public class HibImageVariantImpl extends AbstractImageDataImpl implements HibImageVariantSetter, Serializable {
 
-	static final String COMMON_FETCH_FILTER = " ((:fpx is null and v.fpx is null) or v.fpx = :fpx) and "
-			+ " ((:fpy is null and v.fpy is null) or v.fpy = :fpy) and "
-			+ " ((:fpz is null and v.fpz is null) or v.fpz = :fpz) and "
+	static final String COMMON_FETCH_FILTER = " ((:fpx is null and v.fpx is null) or abs(v.fpx - :fpx) < 0.0000001) and "
+			+ " ((:fpy is null and v.fpy is null) or abs(v.fpy - :fpy) < 0.0000001) and "
+			+ " ((:fpz is null and v.fpz is null) or abs(v.fpz - :fpz) < 0.0000001) and "
 			+ " ((:cropX is null and v.cropX is null) or v.cropX = :cropX) and "
 			+ " ((:cropY is null and v.cropY is null) or v.cropY = :cropY) and "
 			+ " ((:cropWidth is null and v.cropWidth is null) or v.cropWidth = :cropWidth) and "

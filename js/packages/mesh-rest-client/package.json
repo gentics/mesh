@@ -1,11 +1,11 @@
 {
   "name": "@gentics/mesh-rest-client",
-  "version": "2.2.0-SNAPSHOT",
+  "version": "3.0.9",
   "license": "Apache-2.0",
   "peerDependencies": {
     "@gentics/mesh-models": "^2.2.0-SNAPSHOT"
   },
   "devDependencies": {
-    "@gentics/mesh-models": "^2.2.0-SNAPSHOT"
+    "@gentics/mesh-models": "^3.0.9"
   }
 }

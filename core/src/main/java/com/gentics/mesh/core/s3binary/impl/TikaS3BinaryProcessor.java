@@ -134,7 +134,7 @@ public class TikaS3BinaryProcessor implements S3BinaryDataProcessor {
 	@Override
 	public Maybe<Consumer<S3HibBinaryField>> process(S3BinaryDataProcessorContext ctx) {
 		FileUpload upload = ctx.getUpload();
-		return getExtractOptions(ctx.getActionContext(), ctx.getNodeUuid(), ctx.getFieldName())
+		return getExtractOptions(ctx.getActionContext(), ctx.getNodeUuid(), ctx.getFieldName(), ctx.getLanguageTag())
 			.flatMap(
 				extractOptions -> process(extractOptions, upload),
 				Maybe::error,
@@ -147,9 +147,10 @@ public class TikaS3BinaryProcessor implements S3BinaryDataProcessor {
 	 * @param ac
 	 * @param nodeUuid
 	 * @param fieldName
+	 * @param languageTag 
 	 * @return
 	 */
-	private Maybe<S3BinaryExtractOptions> getExtractOptions(InternalActionContext ac, String nodeUuid, String fieldName) {
+	private Maybe<S3BinaryExtractOptions> getExtractOptions(InternalActionContext ac, String nodeUuid, String fieldName, String languageTag) {
 		return db.maybeTx(tx -> {
 			NodeDao nodeDao = tx.nodeDao();
 			ContentDao contentDao = tx.contentDao();
@@ -158,7 +159,7 @@ public class TikaS3BinaryProcessor implements S3BinaryDataProcessor {
 			HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, InternalPermission.UPDATE_PERM);
 
 			// Load the current latest draft
-			HibNodeFieldContainer latestDraftVersion = contentDao.getFieldContainers(node, branch, ContainerType.DRAFT).next();
+			HibNodeFieldContainer latestDraftVersion = contentDao.getFieldContainer(node, languageTag, branch, ContainerType.DRAFT);
 
 			FieldSchema fieldSchema = latestDraftVersion.getSchemaContainerVersion()
 				.getSchema()

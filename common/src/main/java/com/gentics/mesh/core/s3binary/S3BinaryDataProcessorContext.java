@@ -11,12 +11,14 @@ public class S3BinaryDataProcessorContext {
 	private final InternalActionContext ac;
 	private final String nodeUuid;
 	private final String fieldName;
+	private final String languageTag;
 	private final FileUpload upload;
 
-	public S3BinaryDataProcessorContext(InternalActionContext actionContext, String nodeUuid, String fieldName, FileUpload upload) {
+	public S3BinaryDataProcessorContext(InternalActionContext actionContext, String nodeUuid, String fieldName, String languageTag, FileUpload upload) {
 		this.ac = actionContext;
 		this.nodeUuid = nodeUuid;
 		this.fieldName = fieldName;
+		this.languageTag = languageTag;
 		this.upload = upload;
 	}
 
@@ -34,5 +36,9 @@ public class S3BinaryDataProcessorContext {
 
 	public FileUpload getUpload() {
 		return upload;
+	}
+
+	public String getLanguageTag() {
+		return languageTag;
 	}
 }

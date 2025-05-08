@@ -13,6 +13,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -110,19 +111,28 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 
 		S3UploadContext ctx = new S3UploadContext();
 		String bucket = options.getS3Options().getBucket();
-		String objectKey = nodeUuid + "/" + fieldName;
-		s3BinaryStorage.exists(bucket, objectKey)
+		AtomicReference<String> objectKey = new AtomicReference<>(S3BinaryStorage.makeObjectKey(nodeUuid, fieldName, languageTag));
+		s3BinaryStorage.exists(bucket, objectKey.get())
+				.flatMap(res -> {
+					if (res) {
+						return Single.just(res);
+					} else {
+						// Old format, required for the pre-fix environments
+						objectKey.set(nodeUuid + "/" + fieldName);
+						return s3BinaryStorage.exists(bucket, objectKey.get());
+					}
+				})
 				// read from aws and return buffer with data
 				.flatMap(res -> {
 					if (res) {
-						return s3BinaryStorage.read(bucket, objectKey).singleOrError();
+						return s3BinaryStorage.read(bucket, objectKey.get()).singleOrError();
 					} else {
 						return Single.error(error(BAD_REQUEST, "image_error_reading_failed"));
 					}
 				}).onErrorResumeNext(e -> Single.error(e))
 				.flatMap(fileBuffer -> {
 					if (nonNull(fileBuffer) && fileBuffer.getBytes().length > 0) {
-						return db.singleTx(tx -> s3binaries.findByS3ObjectKey(nodeUuid + "/" + fieldName)
+						return db.singleTx(tx -> s3binaries.findByS3ObjectKey(objectKey.get())
 								.runInExistingTx(tx).getFileName()).flatMap(fileName -> {
 									String mimeTypeForFilename = MimeMapping.getMimeTypeForFilename(fileName);
 									File tmpFile = new File(System.getProperty("java.io.tmpdir"), fileName);
@@ -179,13 +189,13 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 
 									};
 									ctx.setFileUpload(fileUpload);
-									ctx.setS3ObjectKey(nodeUuid + "/" + fieldName);
+									ctx.setS3ObjectKey(objectKey.get());
 									ctx.setFileName(fileName);
 									ctx.setFileSize(fileData.length);
 									return Single.just(fileUpload);
 								})
 								.flatMap(fileUpload -> postProcessUpload(
-										new S3BinaryDataProcessorContext(ac, nodeUuid, fieldName, fileUpload)).toList())
+										new S3BinaryDataProcessorContext(ac, nodeUuid, fieldName, languageTag, fileUpload)).toList())
 								.flatMap(postProcess -> storeUploadInGraph(ac, postProcess, ctx, nodeUuid, languageTag,
 										nodeVersion, fieldName));
 					} else {

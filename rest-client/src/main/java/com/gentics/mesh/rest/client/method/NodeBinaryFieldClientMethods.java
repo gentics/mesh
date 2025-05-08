@@ -75,7 +75,7 @@ public interface NodeBinaryFieldClientMethods {
 	 *
 	 * @param projectName
 	 * @param nodeUuid
-	 * @param languageTag
+	 * @param languageTag currently not used, will be removed in the forthcoming feature release
 	 * @param fieldKey
 	 * @param parameters
 	 * @return Mesh request which provides a download response that contains a reference to the byte buffer with the binary data
@@ -88,7 +88,7 @@ public interface NodeBinaryFieldClientMethods {
 	 *
 	 * @param projectName
 	 * @param nodeUuid
-	 * @param languageTag
+	 * @param languageTag currently not used, will be removed in the forthcoming feature release
 	 * @param fieldKey
 	 * @param from Start byte of the range (inclusive)
 	 * @param to End byte of the range (inclusive)
