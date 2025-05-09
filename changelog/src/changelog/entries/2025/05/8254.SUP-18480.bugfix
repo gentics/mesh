@@ -1,0 +1,1 @@
+Forms: Invalid values for value list items (e.g. radio buttons, select elements) are no longer stored and will be marked as errors by validation. Only values listed in the value list items @options@ are allowed. The same validation check is performed for checkbox elements where only the defined value is allowed to be submitted.

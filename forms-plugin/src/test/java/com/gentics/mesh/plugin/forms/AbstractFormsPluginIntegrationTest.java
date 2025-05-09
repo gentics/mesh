@@ -594,4 +594,13 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 
 		return dataNodes.get(0);
 	}
+
+	/**
+	 * Load the form data with the given UUID.
+	 * @param formDataUuid The form data UUID.
+	 * @return The loaded form data node.
+	 */
+	protected NodeResponse getFormDataNode(String formDataUuid) {
+		return call(() -> server.client().findNodeByUuid(PROJECT_NAME, formDataUuid));
+	}
 }

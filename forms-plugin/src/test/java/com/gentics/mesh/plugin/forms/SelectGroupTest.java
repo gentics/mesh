@@ -21,19 +21,20 @@ import com.gentics.mesh.plugin.forms.test.ResponseWithCookies;
 public class SelectGroupTest extends AbstractFormsPluginIntegrationTest {
 	private final static Random random = new Random();
 
-	private final static List<String> AVAILABLE_KEYS = Arrays.asList("single_key_1", "single_key_2", "single_key_3");
+	private final static List<String> AVAILABLE_SINGLE_KEYS = Arrays.asList("single_key_1", "single_key_2", "single_key_3");
+	private final static List<String> AVAILABLE_MULTI_KEYS = Arrays.asList("multi_key_1", "multi_key_2", "multi_key_3");
 
 	private String formUuid;
 
-	private final static String getRandomKey() {
-		return AVAILABLE_KEYS.get(random.nextInt(AVAILABLE_KEYS.size()));
+	private static String getRandomKey(List<String> keys) {
+		return keys.get(random.nextInt(keys.size()));
 	}
 
-	private final static List<String> getRandomKeys(int number) {
+	private static List<String> getRandomKeys(List<String> keys, int number) {
 		List<String> randomKeys = new ArrayList<>();
 
 		while (randomKeys.size() < number) {
-			String next = getRandomKey();
+			String next = getRandomKey(keys);
 			if (!randomKeys.contains(next)) {
 				randomKeys.add(next);
 			}
@@ -56,7 +57,7 @@ public class SelectGroupTest extends AbstractFormsPluginIntegrationTest {
 
 	@Test
 	public void testSingle() throws IOException {
-		String key = getRandomKey();
+		String key = getRandomKey(AVAILABLE_SINGLE_KEYS);
 
 		ResponseWithCookies response = submit(formUuid, "single", key);
 		assertThat(response.response.isSuccessful()).as("Response is success").isTrue();
@@ -78,7 +79,7 @@ public class SelectGroupTest extends AbstractFormsPluginIntegrationTest {
 
 	@Test
 	public void testMulti() throws IOException {
-		List<String> keys = getRandomKeys(2);
+		List<String> keys = getRandomKeys(AVAILABLE_MULTI_KEYS, 2);
 
 		ResponseWithCookies response = submit(formUuid, "multi", keys.get(0), "multi", keys.get(1));
 		assertThat(response.response.isSuccessful()).as("Response is success").isTrue();
@@ -89,7 +90,7 @@ public class SelectGroupTest extends AbstractFormsPluginIntegrationTest {
 
 	@Test
 	public void testMultiWithAdditional() throws IOException  {
-		List<String> keys = getRandomKeys(2);
+		List<String> keys = getRandomKeys(AVAILABLE_MULTI_KEYS, 2);
 		String additionalKey = "somethingelse";
 
 		ResponseWithCookies response = submit(formUuid, "multi_with", keys.get(0), "multi_with", keys.get(1), "multi_with", additionalKey);
