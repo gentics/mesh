@@ -25,6 +25,7 @@
 		<tika.version>2.9.2</tika.version>
 		<license.checker.version>2.0.3</license.checker.version>
 		<dependency.report.component.name>Plugins</dependency.report.component.name>
+		<junit.version>4.13.2</junit.version>
 	</properties>
 
 	<modules>
@@ -121,6 +122,13 @@
 				<groupId>io.netty</groupId>
 				<artifactId>netty-codec</artifactId>
 				<version>${netty.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>junit</groupId>
+				<artifactId>junit</artifactId>
+				<version>${junit.version}</version>
+				<scope>test</scope>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
