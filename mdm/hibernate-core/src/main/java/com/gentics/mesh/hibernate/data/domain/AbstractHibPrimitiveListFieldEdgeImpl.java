@@ -2,11 +2,10 @@ package com.gentics.mesh.hibernate.data.domain;
 
 import java.util.UUID;
 
-import jakarta.persistence.MappedSuperclass;
-
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.node.field.nesting.HibListableField;
 import com.gentics.mesh.database.HibernateTx;
+
+import jakarta.persistence.MappedSuperclass;
 
 /**
  * A base for the storeable list item of primitive lists. 

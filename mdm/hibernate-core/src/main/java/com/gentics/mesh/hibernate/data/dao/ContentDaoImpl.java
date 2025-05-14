@@ -1737,7 +1737,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 		AbstractDeletableHibField<?> impl = (AbstractDeletableHibField<?>) field;
 		HibFieldEdge referenced = impl.getReferencedEdge();
 		if (referenced != null) {
-			currentTransaction.getEntityManager().remove(referenced);
+			currentTransaction.getTx().delete(referenced);
 		}
 	}
 

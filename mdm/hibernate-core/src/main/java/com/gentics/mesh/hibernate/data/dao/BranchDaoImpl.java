@@ -93,7 +93,7 @@ public class BranchDaoImpl extends AbstractHibRootDao<HibBranch, BranchResponse,
 				.setParameter("branch", entity)
 				.getResultStream()
 				.forEach(job -> job.setBranch(null));
-		em().remove(entity);
+		currentTransaction.getTx().delete(entity);
 	}
 
 	@Override

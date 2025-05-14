@@ -92,7 +92,6 @@ public class HibMicronodeListFieldImpl
 	}
 
 	@Override
-	// TODO do we need real BulkActionContext here?
 	public HibMicronode createMicronodeAt(Optional<Integer> maybeIndex, HibMicroschemaVersion microschemaVersion) {
 		HibernateTx tx = HibernateTx.get();
 
@@ -130,7 +129,7 @@ public class HibMicronodeListFieldImpl
 	protected HibMicronodeListFieldEdgeImpl makeFromValueAndIndex(HibMicronode micronode, int index, HibernateTx tx) {
 		EntityManager em = tx.entityManager();
 		get(index, tx).ifPresent(existing -> {
-			tx.forceDelete(existing, "dbUuid", e -> e.getId());
+			tx.delete(existing);
 		});
 		HibMicronodeListFieldEdgeImpl item = getItemConstructor().provide(tx, valueOrNull(), index, getFieldKey(), micronode, getContainer());
 		em.persist(item);

@@ -387,7 +387,7 @@ public class HibBranchImpl extends AbstractHibUserTrackedElement<BranchResponse>
 		toRemove.stream()
 				.forEach(edge -> {
 					versions.remove(edge);
-					tx.entityManager().remove(edge);
+					tx.delete(edge);
 				});
 		return !toRemove.isEmpty();
 	}

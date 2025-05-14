@@ -17,7 +17,6 @@ import com.gentics.mesh.core.data.user.HibUser;
  *
  */
 @Embeddable
-@MappedSuperclass
 public class EditorTracking {
 
 	@ManyToOne(targetEntity = HibUserImpl.class, fetch = FetchType.LAZY)

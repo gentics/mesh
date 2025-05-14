@@ -9,6 +9,9 @@ import java.util.function.Predicate;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.PersistingJobDao;
@@ -31,8 +34,6 @@ import com.gentics.mesh.parameter.PagingParameters;
 
 import dagger.Lazy;
 import io.vertx.core.Vertx;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Job DAO implementation for Gentics Mesh.
@@ -172,7 +173,7 @@ public class JobDaoImpl extends AbstractHibDaoGlobal<HibJob, JobResponse, HibJob
 
 	@Override
 	public void delete(HibJob job) {
-		em().remove(job);
+		currentTransaction.getTx().delete(job);
 	}
 
 	/**

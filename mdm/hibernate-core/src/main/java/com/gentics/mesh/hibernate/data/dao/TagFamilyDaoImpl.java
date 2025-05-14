@@ -167,7 +167,7 @@ public class TagFamilyDaoImpl extends AbstractHibRootDao<HibTagFamily, TagFamily
 	public void deletePersisted(HibProject root, HibTagFamily entity) {
 		HibProjectImpl project = (HibProjectImpl) root;
 		project.removeTagFamily(entity);
-		em().remove(entity);
+		currentTransaction.getTx().delete(entity);
 	}
 
 	@Override
