@@ -423,28 +423,25 @@ stage("Setup Build Environment") {
 						}
 					}
 
-					// Add private repository credentials and scopes
-					withCredentials([string(credentialsId: 'nexus-npm', variable: 'NPM_TOKEN')]) {
-						sh "echo //repo.gentics.com/repository/npm-products/:_auth=${env.NPM_TOKEN} >> js/.npmrc"
-					}
+					if (Boolean.valueOf(params.runDeploy)) {
+						// Add private repository credentials and scopes
+						withCredentials([string(credentialsId: 'nexus-npm', variable: 'NPM_TOKEN')]) {
+							sh "echo //repo.gentics.com/repository/npm-products/:_auth=${env.NPM_TOKEN} >> js/.npmrc"
+						}
 
-					def npmDeployParams = ''
-					if (Boolean.valueOf(params.runDeployTesting)) {
-						npmDeployParams = '--dry-run'
-					}
+						dir(path: 'js') {
+							// Install dependencies
+							sh 'npm ci --no-audit --no-fund'
 
-					dir(path: 'js') {
-						// Install dependencies
-						sh 'npm ci --no-audit --no-fund'
+							// Set the version for the packages
+							sh "npm run nx -- release version ${version}"
 
-						// Set the version for the packages
-						sh "npm run nx -- release version ${version}"
+							// Build all JS packages
+							sh 'npm run nx -- run-many --targets build'
 
-						// Build all JS packages
-						sh 'npm run nx -- run-many --targets build'
-
-						// Publish the pacakges to artifactory
-						sh "npm run nx -- release publish ${npmDeployParams}"
+							// Publish the pacakges to artifactory
+							sh "npm run nx -- release publish"
+						}
 					}
 				} else {
 					echo "Deploy skipped.."
