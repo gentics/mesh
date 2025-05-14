@@ -1,1 +1,9 @@
-Core: The `Hibernate` dependency has been updated to the version `6.6.11.Final`. The `Vert.x` dependency has been updated to the version `4.5.13`.
+Some dependencies have been updated:
+* Hibernate: 6.6.11.Final
+* Vert.x: 4.5.13
+* Netty: 4.1.118.Final
+* Spring Security: 6.3.5
+* Guava: 32.0.0-jre
+* Zip4j: 2.11.3
+* Logback: 1.5.18
+* Okio: 1.17.6
