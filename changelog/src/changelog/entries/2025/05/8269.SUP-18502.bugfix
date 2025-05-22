@@ -1,0 +1,1 @@
+Plugins: If a static file handler fails to unpack the static resource to the plugin storage folder, currently a misleading `HTTP 404 binary_data_not_found` is thrown. This has been now changed to `HTTP 500` with a detailed failure description.
