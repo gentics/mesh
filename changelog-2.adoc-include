@@ -6,6 +6,11 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v2.1.20]]
+== 2.1.20 (22.05.2025)
+
+icon:check[] Plugins: If a static file handler fails to unpack the static resource to the plugin storage folder, currently a misleading `HTTP 404 binary_data_not_found` is thrown. This has been now changed to `HTTP 500` with a detailed failure description.
+
 [[v2.1.19]]
 == 2.1.19 (07.05.2025)
 
