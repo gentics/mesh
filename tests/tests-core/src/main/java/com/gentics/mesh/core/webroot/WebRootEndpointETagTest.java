@@ -9,19 +9,18 @@ import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.LinkType;
@@ -39,7 +38,6 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 		String path = "/News/2015/blume.jpg";
 		HibNode node;
 		try (Tx tx = tx()) {
-			ContentDao contentDao = tx.contentDao();
 			node = content("news_2015");
 
 			// 1. Transform the node into a binary content
@@ -70,8 +68,6 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 		String fileName = "somefile.dat";
 
 		try (Tx tx = tx()) {
-			ContentDao contentDao = tx.contentDao();
-
 			// 1. Transform the node into a binary content
 			prepareSchema(node, "image/*", "binary");
 			tx.success();
@@ -109,14 +105,13 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 			actions().updateSchemaVersion(schemaVersion);
 		});
 
-		try (Tx tx = tx()) {
-			NodeResponse response = call(() -> client().findNodeByUuid(projectName(), content("news_2015").getUuid()));
-			NodeUpdateRequest request = response.toRequest();
-			request.getFields()
-					.put("reference", new NodeFieldImpl().setUuid(folder("2015").getUuid()));
-			call(() -> client().updateNode(projectName(), content("news_2015").getUuid(), request));
-			tx.success();
-		}
+		NodeResponse response = call(() -> client().findNodeByUuid(projectName(), content("news_2015").getUuid()));
+		NodeUpdateRequest request = response.toRequest();
+		request.getFields()
+				.put("reference", new NodeFieldImpl().setUuid(tx(() -> folder("2015").getUuid())));
+		call(() -> client().updateNode(projectName(), tx(() -> content("news_2015").getUuid()), request));
+
+		awaitEvents();
 
 		String responseTag = callETag(
 			() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(), new NodeParametersImpl().setLanguages("en", "de")));
