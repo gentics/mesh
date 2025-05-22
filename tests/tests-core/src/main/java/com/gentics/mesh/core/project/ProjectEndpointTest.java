@@ -98,6 +98,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	public void testRenameDeleteCreateProject() throws InterruptedException, TimeoutException {
 		// create project named "project"
 		ProjectResponse project = createProject("project");
+		awaitEvents();
 
 		// get tag families of project (this will put project into cache)
 		call(() -> client().findTagFamilies("project"));
@@ -105,6 +106,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 		// rename project to "newproject"
 		project = updateProject(project.getUuid(), "newproject");
+		awaitEvents();
 		tx(() -> assertThat(mesh().projectNameCache().get("project")).as("Cached project").isNull());
 
 		long maxWaitMs = DeliveryOptions.DEFAULT_TIMEOUT;
@@ -130,10 +132,13 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 		// delete "newproject"
 		deleteProject(project.getUuid());
+		awaitEvents();
+
 		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(0);
 
 		// create (again)
 		project = createProject("project");
+		awaitEvents();
 		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(0);
 
 		// get tag families of project
@@ -564,6 +569,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		// Test slashes
 		request.setName("Bla/blub");
 		call(() -> client().updateProject(uuid, request));
+		awaitEvents();
 		call(() -> client().findNodes(request.getName()));
 
 		try (Tx tx = tx()) {
@@ -573,17 +579,18 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	}
 
 	@Test
-	@Ignore("Fails on CI pipeline. See https://github.com/gentics/mesh/issues/608")
 	public void testUpdateByAppendingToName() {
 		String uuid = projectUuid();
 
 		ProjectUpdateRequest request = new ProjectUpdateRequest();
 		request.setName("abc");
 		call(() -> client().updateProject(uuid, request));
+		awaitEvents();
 		call(() -> client().findNodes(request.getName()));
 
 		request.setName("abcd");
 		call(() -> client().updateProject(uuid, request));
+		awaitEvents();
 		call(() -> client().findNodes(request.getName()));
 	}
 
