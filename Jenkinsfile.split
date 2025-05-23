@@ -295,6 +295,10 @@ stage("Setup Build Environment") {
 					}
 
 					if (Boolean.valueOf(params.runDeploy)) {
+						sh "echo @gentics:registry=https://repo.gentics.com/repository/npm-products/ > js/.npmrc"
+						sh "echo 'git-tag-version = false' >> js/.npmrc"
+						sh "echo 'allow-same-version = true' >> js/.npmrc"
+
 						// Add private repository credentials and scopes
 						withCredentials([string(credentialsId: 'nexus-npm', variable: 'NPM_TOKEN')]) {
 							sh "echo //repo.gentics.com/repository/npm-products/:_auth=${env.NPM_TOKEN} >> js/.npmrc"
@@ -313,6 +317,8 @@ stage("Setup Build Environment") {
 							// Publish the pacakges to artifactory
 							sh "npm run nx -- release publish"
 						}
+
+						sh "rm js/.npmrc"
 					}
 				} else {
 					echo "Deploy skipped.."
