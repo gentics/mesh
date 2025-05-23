@@ -131,7 +131,12 @@ public interface RestPlugin extends MeshPlugin {
 			if (url != null) {
 				// this is the handler, which will copy the file
 				Handler<Promise<Object>> copy = prom -> {
-					storageFile.getParentFile().mkdirs();
+					if (!storageFile.getParentFile().exists()) {
+						if (!storageFile.getParentFile().mkdirs()) {
+							prom.fail(new IllegalStateException("Could not create folders for the cached static file: " + storageFile.getPath()));
+							return;
+						}
+					}
 					try (InputStream in = getClass().getClassLoader().getResourceAsStream(filePath)) {
 						Files.copy(in, storageFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 						prom.complete();

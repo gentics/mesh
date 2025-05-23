@@ -58,6 +58,7 @@ import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
@@ -86,6 +87,7 @@ import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
+import com.gentics.mesh.test.helper.ExpectedEvent;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -553,7 +555,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	// Update Tests
 
 	@Test
-	public void testUpdateWithBogusNames() {
+	public void testUpdateWithBogusNames() throws TimeoutException {
 		String uuid = projectUuid();
 
 		tx(() -> createProject("Test234", "folder"));
@@ -563,7 +565,9 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 		// Test slashes
 		request.setName("Bla/blub");
-		call(() -> client().updateProject(uuid, request));
+		try (ExpectedEvent ee = expectEvent(MeshEvent.PROJECT_UPDATED, 10_000)) {
+			call(() -> client().updateProject(uuid, request));
+		}
 		call(() -> client().findNodes(request.getName()));
 
 		try (Tx tx = tx()) {
@@ -573,17 +577,20 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	}
 
 	@Test
-	@Ignore("Fails on CI pipeline. See https://github.com/gentics/mesh/issues/608")
-	public void testUpdateByAppendingToName() {
+	public void testUpdateByAppendingToName() throws TimeoutException {
 		String uuid = projectUuid();
 
 		ProjectUpdateRequest request = new ProjectUpdateRequest();
 		request.setName("abc");
-		call(() -> client().updateProject(uuid, request));
+		try (ExpectedEvent ee = expectEvent(MeshEvent.PROJECT_UPDATED, 10_000)) {
+			call(() -> client().updateProject(uuid, request));
+		}
 		call(() -> client().findNodes(request.getName()));
 
 		request.setName("abcd");
-		call(() -> client().updateProject(uuid, request));
+		try (ExpectedEvent ee = expectEvent(MeshEvent.PROJECT_UPDATED, 10_000)) {
+			call(() -> client().updateProject(uuid, request));
+		}
 		call(() -> client().findNodes(request.getName()));
 	}
 
