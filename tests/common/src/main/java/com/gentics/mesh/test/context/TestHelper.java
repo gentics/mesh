@@ -4,6 +4,7 @@ import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
@@ -44,6 +46,7 @@ import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.common.FieldTypes;
@@ -104,6 +107,7 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.test.context.helper.ClientHelper;
 import com.gentics.mesh.test.context.helper.EventHelper;
+import com.gentics.mesh.test.helper.ExpectedEvent;
 import com.gentics.mesh.util.VersionNumber;
 import com.google.common.io.Resources;
 
@@ -521,15 +525,31 @@ public interface TestHelper extends EventHelper, ClientHelper {
 			() -> client().createNode(nodeResponse.getUuid(), projectName, create, new VersioningParametersImpl().setBranch(targetBranchName)));
 	}
 
+	/**
+	 * Create a project with random name. This will also wait for the event {@link MeshEvent#PROJECT_CREATED} and fail,
+	 * if the event is not fired within 10 seconds
+	 * @return project response
+	 */
 	default ProjectResponse createProject() {
 		return createProject(RandomStringUtils.randomAlphabetic(10));
 	}
 
+	/**
+	 * Create a project with given name. This will also wait for the event {@link MeshEvent#PROJECT_CREATED} and fail,
+	 * if the event is not fired within 10 seconds
+	 * @param projectName project name
+	 * @return project response
+	 */
 	default public ProjectResponse createProject(String projectName) {
 		ProjectCreateRequest projectCreateRequest = new ProjectCreateRequest();
 		projectCreateRequest.setName(projectName);
 		projectCreateRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
-		return call(() -> client().createProject(projectCreateRequest));
+		try (ExpectedEvent ee = expectEvent(MeshEvent.PROJECT_CREATED, 10_000)) {
+			return call(() -> client().createProject(projectCreateRequest));
+		} catch (TimeoutException e) {
+			fail("The event %s was not fired after project %s was created".formatted(MeshEvent.PROJECT_CREATED, projectName));
+			return null;
+		}
 	}
 
 	default public ProjectResponse getProject() {
@@ -540,14 +560,35 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return call(() -> client().findProjectByUuid(uuid));
 	}
 
+	/**
+	 * Update the project by giving it a new name. This will also wait for the event {@link MeshEvent#PROJECT_UPDATED} and fail,
+	 * if the event is not fired within 10 seconds
+	 * @param uuid project uuid
+	 * @param projectName new project name
+	 * @return project response
+	 */
 	default public ProjectResponse updateProject(String uuid, String projectName) {
 		ProjectUpdateRequest projectUpdateRequest = new ProjectUpdateRequest();
 		projectUpdateRequest.setName(projectName);
-		return call(() -> client().updateProject(uuid, projectUpdateRequest));
+		try (ExpectedEvent ee = expectEvent(MeshEvent.PROJECT_UPDATED, 10_000)) {
+			return call(() -> client().updateProject(uuid, projectUpdateRequest));
+		} catch (TimeoutException e) {
+			fail("The event %s was not fired after project %d was updated".formatted(MeshEvent.PROJECT_UPDATED, uuid));
+			return null;
+		}
 	}
 
+	/**
+	 * Delete the project with given uuid. This will also wait for the event {@link MeshEvent#PROJECT_DELETED} and fail,
+	 * if the event is not fired within 10 seconds
+	 * @param uuid project uuid
+	 */
 	default public void deleteProject(String uuid) {
-		call(() -> client().deleteProject(uuid));
+		try (ExpectedEvent ee = expectEvent(MeshEvent.PROJECT_DELETED, 10_000)) {
+			call(() -> client().deleteProject(uuid));
+		} catch (TimeoutException e) {
+			fail("The event %s was not fired after project %d was deleted".formatted(MeshEvent.PROJECT_DELETED, uuid));
+		}
 	}
 
 	default SchemaResponse createSchema(SchemaCreateRequest request) {
