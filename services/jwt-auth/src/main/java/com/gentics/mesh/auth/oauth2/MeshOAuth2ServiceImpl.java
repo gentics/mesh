@@ -69,6 +69,7 @@ import io.vertx.ext.auth.User;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.JWTAuthHandler;
+import io.vertx.ext.web.impl.UserContextInternal;
 
 /**
  * @see MeshOAuthService
@@ -192,7 +193,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 				}
 			}
 			syncUser(rc, decodedToken).subscribe(syncedUser -> {
-				rc.setUser(syncedUser);
+				((UserContextInternal) rc.userContext()).setUser(syncedUser);
 				rc.next();
 			}, error -> {
 				// if the current instance is not writable, we redirect the request to the master instance
@@ -201,7 +202,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 				// the reason is that the error might be caused by a race condition (when parallel requests try to sync the same objects)
 				// trying again (once) increases the chance of the request to actually succeed.
 				syncUser(rc, decodedToken).subscribe(syncedUser -> {
-					rc.setUser(syncedUser);
+					((UserContextInternal) rc.userContext()).setUser(syncedUser);
 					rc.next();
 				}, rc::fail);
 			});

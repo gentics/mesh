@@ -41,7 +41,7 @@ public class ProjectRouterImpl implements ProjectRouter {
 			projectRouter = Router.router(vertx);
 			projectRouters.put(name, projectRouter);
 			log.info("Added project subrouter {" + name + "}");
-			router.mountSubRouter("/" + name, projectRouter);
+			router.route("/" + name).subRouter(projectRouter);
 		}
 		return projectRouter;
 	}

@@ -19,11 +19,11 @@ import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.parameter.UserParameters;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
+import io.vertx.core.Future;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.impl.AuthenticationHandlerImpl;
+import io.vertx.ext.web.impl.UserContextInternal;
 
 /**
  * The user token authentication handler grants access to routes by validating the provides token query parameter value.
@@ -42,11 +42,6 @@ public class UserTokenAuthHandler extends AuthenticationHandlerImpl<MeshJWTAuthP
 	public UserTokenAuthHandler(MeshJWTAuthProvider authProvider, Database db) {
 		super(authProvider);
 		this.db = db;
-	}
-
-	@Override
-	public void authenticate(RoutingContext routingContext, Handler<AsyncResult<User>> handler) {
-		// Not needed
 	}
 
 	@Override
@@ -82,7 +77,7 @@ public class UserTokenAuthHandler extends AuthenticationHandlerImpl<MeshJWTAuthP
 			if (lastEditor == null) {
 				throw error(UNAUTHORIZED, "user_error_provided_token_invalid");
 			}
-			rc.setUser(lastEditor);
+			((UserContextInternal) rc.userContext()).setUser(lastEditor);
 
 			// Token found and validated. Lets continue
 			rc.next();
@@ -91,6 +86,11 @@ public class UserTokenAuthHandler extends AuthenticationHandlerImpl<MeshJWTAuthP
 			// which should be added to the original request route.
 			rc.next();
 		}
+	}
+
+	@Override
+	public Future<User> authenticate(RoutingContext context) {
+		return Future.succeededFuture(context.user());
 	}
 
 }

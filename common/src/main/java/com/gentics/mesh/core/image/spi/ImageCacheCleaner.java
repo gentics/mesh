@@ -11,10 +11,10 @@ import java.nio.file.attribute.FileTime;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.gentics.mesh.etc.config.ImageManipulatorOptions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 
 /**
  * The Image Cache Cleaner will check all files in the configured image cache directory.

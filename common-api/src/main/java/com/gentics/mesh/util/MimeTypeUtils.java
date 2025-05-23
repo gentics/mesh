@@ -2,7 +2,7 @@ package com.gentics.mesh.util;
 
 import java.util.Optional;
 
-import io.vertx.core.http.impl.MimeMapping;
+import io.vertx.core.http.MimeMapping;
 
 /**
  * Utility for mimetype operations.
@@ -24,6 +24,6 @@ public class MimeTypeUtils {
 	 */
 	public static Optional<String> getMimeTypeForFilename(String filename) {
 		return Optional.ofNullable(filename)
-			.map(MimeMapping::getMimeTypeForFilename);
+			.map(MimeMapping::mimeTypeForFilename);
 	}
 }

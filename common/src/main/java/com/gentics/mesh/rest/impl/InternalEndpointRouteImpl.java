@@ -28,8 +28,6 @@ import org.raml.model.parameter.FormParameter;
 import org.raml.model.parameter.Header;
 import org.raml.model.parameter.QueryParameter;
 import org.raml.model.parameter.UriParameter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
@@ -52,8 +50,6 @@ import io.vertx.ext.web.handler.PlatformHandler;
  * @see InternalEndpointRoute
  */
 public class InternalEndpointRouteImpl implements InternalEndpointRoute {
-
-	private static final Logger log = LoggerFactory.getLogger(InternalEndpointRoute.class);
 
 	private static final Map<Class<?>, String> SCHEMA_CACHE = new ConcurrentHashMap<>();
 
@@ -245,7 +241,7 @@ public class InternalEndpointRouteImpl implements InternalEndpointRoute {
 
 	@Override
 	public InternalEndpointRoute useNormalisedPath(boolean useNormalisedPath) {
-		route.useNormalisedPath(useNormalisedPath);
+		route.useNormalizedPath(useNormalisedPath);
 		return this;
 	}
 

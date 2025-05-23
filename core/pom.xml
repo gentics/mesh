@@ -197,6 +197,11 @@
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-service-aws-s3-storage</artifactId>
 		</dependency>
+
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-transport</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>

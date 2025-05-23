@@ -1,7 +1,8 @@
 package com.gentics.mesh.log;
 
-import io.vertx.core.impl.logging.Logger;
-import io.vertx.core.impl.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.vertx.ext.web.handler.LoggerFormat;
 import io.vertx.ext.web.handler.impl.LoggerHandlerImpl;
 

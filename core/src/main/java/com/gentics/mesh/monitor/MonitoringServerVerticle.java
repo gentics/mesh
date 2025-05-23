@@ -2,6 +2,9 @@ package com.gentics.mesh.monitor;
 
 import javax.inject.Inject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MonitoringConfig;
 
@@ -9,8 +12,6 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.vertx.ext.web.Router;
 
 /**
@@ -47,26 +48,23 @@ public class MonitoringServerVerticle extends AbstractVerticle {
 		log.info("Starting monitoring http server in verticle {" + getClass().getName() + "} on port {" + options.getPort() + "}");
 		server = vertx.createHttpServer(options);
 		server.requestHandler(router);
-		server.listen(rh -> {
-			if (rh.failed()) {
-				promise.fail(rh.cause());
-			} else {
-				if (log.isInfoEnabled()) {
-					log.info("Started monitoring http server. Port: " + options.getPort());
-				}
-				promise.complete();
+		server.listen().onComplete(res -> {
+			if (log.isInfoEnabled()) {
+				log.info("Started monitoring http server. Port: " + options.getPort());
 			}
+		}, err -> {
+			promise.fail(err);
 		});
 	}
 
 	@Override
 	public void stop(Promise<Void> promise) throws Exception {
-		server.close(rh -> {
-			if (rh.failed()) {
-				promise.fail(rh.cause());
-			} else {
-				promise.complete();
+		server.close().onComplete(res -> {
+			if (log.isInfoEnabled()) {
+				log.info("Monitoring http server stopped.");
 			}
+		}, err -> {
+			promise.fail(err);
 		});
 	}
 

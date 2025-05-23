@@ -15,6 +15,9 @@ import java.util.Objects;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.storage.AbstractBinaryStorage;
 import com.gentics.mesh.core.data.storage.LocalBinaryStorage;
@@ -28,8 +31,6 @@ import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.OpenOptions;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.file.FileSystem;
 
@@ -135,7 +136,6 @@ public class LocalBinaryStorageImpl extends AbstractBinaryStorage implements Loc
 			File tempFolder = new File(options.getDirectory(), "temp");
 			return createParentPath(tempFolder.getAbsolutePath())
 				.andThen(fileSystem.rxOpen(path, new OpenOptions()).flatMapCompletable(file -> stream
-					.map(io.vertx.reactivex.core.buffer.Buffer::new)
 					.doOnNext(file::write)
 					.ignoreElements()
 					.andThen(file.rxFlush())

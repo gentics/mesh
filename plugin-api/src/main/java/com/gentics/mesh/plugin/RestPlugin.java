@@ -5,16 +5,17 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.concurrent.Callable;
 
-import io.vertx.core.AsyncResult;
+import org.apache.commons.lang.StringUtils;
+
 import io.vertx.core.Handler;
-import io.vertx.core.Promise;
 import io.vertx.core.file.FileSystem;
-import io.vertx.core.http.impl.HttpUtils;
-import io.vertx.core.net.impl.URIDecoder;
+import io.vertx.core.internal.net.RFC3986;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.handler.FileSystemAccess;
 import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.ext.web.impl.Utils;
 
@@ -107,8 +108,7 @@ public interface RestPlugin extends MeshPlugin {
 				break;
 			}
 		}
-		StaticHandler staticHandler = StaticHandler.create().setAllowRootFileSystemAccess(allowRootAccess)
-				.setWebRoot(webRoot);
+		StaticHandler staticHandler = StaticHandler.create(allowRootAccess ? FileSystemAccess.ROOT : FileSystemAccess.RELATIVE, webRoot);;
 		if (prepareStaticHandler != null) {
 			prepareStaticHandler.handle(staticHandler);
 		}
@@ -117,8 +117,8 @@ public interface RestPlugin extends MeshPlugin {
 		// handler serve the file
 		route.handler(rc ->  {
 			FileSystem fs = vertx().fileSystem();
-			String uriDecodedPath = URIDecoder.decodeURIComponent(rc.normalisedPath(), false);
-			String path = HttpUtils.removeDots(uriDecodedPath.replace('\\', '/'));
+			String uriDecodedPath = RFC3986.decodeURIComponent(rc.normalizedPath(), false);
+			String path = RFC3986.removeDotSegments(uriDecodedPath.replace('\\', '/'));
 
 			// filePath is something like "webroot/get/the/file.txt" (if get/the/file.txt is requested from the route)
 			String filePath = base + Utils.pathOffset(path, rc);
@@ -130,35 +130,24 @@ public interface RestPlugin extends MeshPlugin {
 			URL url = getClass().getClassLoader().getResource(filePath);
 			if (url != null) {
 				// this is the handler, which will copy the file
-				Handler<Promise<Object>> copy = prom -> {
+				Callable<Object> copy = () -> {
 					storageFile.getParentFile().mkdirs();
 					try (InputStream in = getClass().getClassLoader().getResourceAsStream(filePath)) {
 						Files.copy(in, storageFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-						prom.complete();
-					} catch (Exception e) {
-						prom.fail(e);
-					}
-				};
-
-				// result handler after copying
-				Handler<AsyncResult<Object>> result = res -> {
-					if (res.failed()) {
-						rc.fail(res.cause());
-					} else {
-						rc.next();
+						return StringUtils.EMPTY;
 					}
 				};
 
 				// check whether the file already exists in the storage dir
-				fs.exists(storagePath, handler -> {
+				fs.exists(storagePath).onComplete(handler -> {
 					if (handler.succeeded()) {
 						if (handler.result()) {
 							// file exists, so check, whether it is too old
-							fs.props(storagePath, props -> {
+							fs.props(storagePath).onComplete(props -> {
 								if (props.succeeded()) {
 									// if the file is too old, copy it again from the classpath
 									if (props.result().lastModifiedTime() < handlerCreationTime) {
-										vertx().executeBlocking(copy, result);
+										vertx().executeBlocking(copy).onComplete(unused -> rc.next(), e -> rc.fail(e));
 									} else {
 										rc.next();
 									}
@@ -168,7 +157,7 @@ public interface RestPlugin extends MeshPlugin {
 							});
 						} else {
 							// file does not exist, so copy it from the classpath
-							vertx().executeBlocking(copy, result);
+							vertx().executeBlocking(copy).onComplete(unused -> rc.next(), e -> rc.fail(e));
 						}
 					} else {
 						rc.fail(handler.cause());
@@ -177,11 +166,11 @@ public interface RestPlugin extends MeshPlugin {
 			} else {
 				// resource does not exist in the classpath, so check whether the file
 				// exists in the storage dir
-				fs.exists(storagePath, handler -> {
+				fs.exists(storagePath).onComplete(handler -> {
 					if (handler.succeeded()) {
 						if (handler.result()) {
 							// if the file (still) exists in the storage dir, remove it
-							fs.delete(storagePath, delHandler -> {
+							fs.delete(storagePath).onComplete(delHandler -> {
 								rc.next();
 							});
 						} else {

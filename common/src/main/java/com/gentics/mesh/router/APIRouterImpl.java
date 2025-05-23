@@ -1,16 +1,18 @@
 package com.gentics.mesh.router;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.handler.VersionUtils;
-import io.vertx.core.Vertx;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import io.vertx.ext.web.Router;
 
-import java.util.HashMap;
-import java.util.Map;
+import io.vertx.core.Vertx;
+import io.vertx.ext.web.Router;
 
 /**
  * @see APIRouter
@@ -45,7 +47,7 @@ public class APIRouterImpl implements APIRouter {
 		this.router = Router.router(vertx);
 
 		VersionUtils.generateVersionMountpoints()
-			.forEach(mountPoint -> root.getRouter().mountSubRouter(mountPoint, router));
+			.forEach(mountPoint -> root.getRouter().route(mountPoint).subRouter(router));
 
 		initHandlers(root.getStorage());
 
@@ -98,7 +100,7 @@ public class APIRouterImpl implements APIRouter {
 			if (log.isDebugEnabled()) {
 				log.debug("Creating API subrouter for {" + mountPoint + "}");
 			}
-			router.mountSubRouter("/" + mountPoint, apiSubRouter);
+			router.route("/" + mountPoint).subRouter(apiSubRouter);
 			apiRouters.put(mountPoint, apiSubRouter);
 		}
 		return apiSubRouter;

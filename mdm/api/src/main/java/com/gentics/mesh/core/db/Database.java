@@ -23,7 +23,6 @@ import io.reactivex.Maybe;
 import io.reactivex.Single;
 import io.reactivex.functions.BiFunction;
 import io.reactivex.functions.Function;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Vertx;
 
 /**
@@ -281,13 +280,7 @@ public interface Database extends TxFactory {
 					}
 					throw e;
 				}
-			}, false, done -> {
-				if (done.failed()) {
-					sub.onError(done.cause());
-				} else {
-					sub.onComplete();
-				}
-			});
+			}, false).onComplete(done -> sub.onComplete(), err -> sub.onError(err));
 		});
 	}
 
@@ -332,13 +325,7 @@ public interface Database extends TxFactory {
 					}
 					throw e;
 				}
-			}, false, (AsyncResult<T> done) -> {
-				if (done.failed()) {
-					sub.onError(done.cause());
-				} else {
-					sub.onSuccess(done.result());
-				}
-			});
+			}, false).onComplete(done -> sub.onSuccess(done), err -> sub.onError(err));
 		});
 	}
 

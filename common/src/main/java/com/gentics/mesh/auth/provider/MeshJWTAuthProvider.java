@@ -10,6 +10,8 @@ import javax.inject.Singleton;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.auth.AuthenticationResult;
@@ -29,12 +31,12 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.Cookie;
 import io.vertx.core.json.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.vertx.ext.auth.JWTOptions;
 import io.vertx.ext.auth.KeyStoreOptions;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.auth.authentication.AuthenticationProvider;
+import io.vertx.ext.auth.authentication.Credentials;
+import io.vertx.ext.auth.authentication.TokenCredentials;
 import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.auth.jwt.JWTAuthOptions;
 
@@ -91,37 +93,29 @@ public class MeshJWTAuthProvider implements AuthenticationProvider, JWTAuth {
 	 * @param authInfo
 	 * @param resultHandler
 	 */
-	public void authenticateJWT(JsonObject authInfo, Handler<AsyncResult<AuthenticationResult>> resultHandler) {
+	public void authenticateJWT(Credentials authInfo, Handler<AsyncResult<AuthenticationResult>> resultHandler) {
 		// Decode and validate the JWT. A JWTUser will be returned which contains the decoded token.
 		// We will use this information to load the Mesh User from the graph.
-		jwtProvider.authenticate(authInfo, rh -> {
-			if (rh.failed()) {
-				if (log.isDebugEnabled()) {
-					log.debug("Could not authenticate token.", rh.cause());
-				}
-				resultHandler.handle(Future.failedFuture("Invalid Token"));
-			} else {
-				JsonObject decodedJwt = rh.result().principal();
-				try {
-					User user = loadUserByJWT(decodedJwt);
-					AuthenticationResult result = new AuthenticationResult(user);
+		jwtProvider.authenticate(authInfo).onComplete(res -> {
+			JsonObject decodedJwt = res.principal();
+			try {
+				User user = loadUserByJWT(decodedJwt);
+				AuthenticationResult result = new AuthenticationResult(user);
 
-					// Check whether an api key was used to authenticate the user.
-					if (decodedJwt.containsKey(API_KEY_TOKEN_CODE_FIELD_NAME)) {
-						result.setUsingAPIKey(true);
-					}
-					resultHandler.handle(Future.succeededFuture(result));
-				} catch (Exception e) {
-					resultHandler.handle(Future.failedFuture(e));
+				// Check whether an api key was used to authenticate the user.
+				if (decodedJwt.containsKey(API_KEY_TOKEN_CODE_FIELD_NAME)) {
+					result.setUsingAPIKey(true);
 				}
+				resultHandler.handle(Future.succeededFuture(result));
+			} catch (Exception e) {
+				resultHandler.handle(Future.failedFuture(e));
 			}
+		}, err -> {
+			if (log.isDebugEnabled()) {
+				log.debug("Could not authenticate token.", err);
+			}
+			resultHandler.handle(Future.failedFuture("Invalid Token"));
 		});
-	}
-
-	@Override
-	public void authenticate(JsonObject authInfo, Handler<AsyncResult<User>> resultHandler) {
-		// The mesh auth provider is not using this method to authenticate a user.
-		throw new NotImplementedException();
 	}
 
 	@Override
@@ -312,7 +306,7 @@ public class MeshJWTAuthProvider implements AuthenticationProvider, JWTAuth {
 	 *            Mesh API token
 	 */
 	public void login(InternalActionContext ac, String apiToken) {
-		JsonObject authInfo = new JsonObject().put("token", apiToken).put("options", new JsonObject());
+		Credentials authInfo = new TokenCredentials(apiToken);
 		authenticateJWT(authInfo, res -> {
 			// Authentication was successful.
 			if (res.succeeded()) {
@@ -332,5 +326,11 @@ public class MeshJWTAuthProvider implements AuthenticationProvider, JWTAuth {
 				throw error(UNAUTHORIZED, "auth_login_failed");
 			}
 		});
+	}
+
+	@Override
+	public Future<User> authenticate(Credentials credentials) {
+		// The mesh auth provider is not using this method to authenticate a user.
+		throw new NotImplementedException();
 	}
 }

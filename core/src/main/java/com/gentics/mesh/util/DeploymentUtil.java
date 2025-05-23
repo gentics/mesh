@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
+import io.vertx.core.ThreadingModel;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 
@@ -42,19 +43,15 @@ public final class DeploymentUtil {
 		if (config != null) {
 			options = new DeploymentOptions(new JsonObject().put("config", config));
 		}
-		options.setWorker(worker);
-		vertx.deployVerticle(verticle, options, handler -> {
-			if (handler.succeeded()) {
-				String deploymentId = handler.result();
-				if (log.isDebugEnabled()) {
-					log.debug("Deployed verticle {" + verticle.getClass().getName() + "} => " + deploymentId);
-				}
-				fut.complete(deploymentId);
-			} else {
-				Throwable error = handler.cause();
-				log.error("Error:", error);
-				fut.completeExceptionally(error);
+		options.setThreadingModel(worker ? ThreadingModel.WORKER : DeploymentOptions.DEFAULT_MODE);
+		vertx.deployVerticle(verticle, options).onComplete(deploymentId -> {
+			if (log.isDebugEnabled()) {
+				log.debug("Deployed verticle {" + verticle.getClass().getName() + "} => " + deploymentId);
 			}
+			fut.complete(deploymentId);
+		}, error -> {
+			log.error("Error:", error);
+			fut.completeExceptionally(error);
 		});
 		return fut.get(DEFAULT_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
 	}

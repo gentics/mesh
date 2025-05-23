@@ -15,6 +15,7 @@ import io.reactivex.SingleObserver;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.impl.VertxImpl;
 import io.vertx.ext.web.FileUpload;
 
 /**
@@ -22,6 +23,15 @@ import io.vertx.ext.web.FileUpload;
  */
 public final class VertxUtil {
 	private VertxUtil() {
+	}
+
+	/**
+	 * Return the version of Vert.x framework.
+	 * 
+	 * @return
+	 */
+	public static final String vertxVersion() {
+		return VertxImpl.version();
 	}
 
 	/**

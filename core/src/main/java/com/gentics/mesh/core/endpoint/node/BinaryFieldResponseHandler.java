@@ -32,7 +32,7 @@ import com.gentics.mesh.util.VertxUtil;
 
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.http.impl.MimeMapping;
+import io.vertx.core.http.MimeMapping;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.reactivex.core.Vertx;
 
@@ -105,7 +105,7 @@ public class BinaryFieldResponseHandler {
 
 		// Try to guess the contenttype via the filename
 		if (contentType == null) {
-			contentType = MimeMapping.getMimeTypeForFilename(fileName);
+			contentType = MimeMapping.mimeTypeForFilename(fileName);
 		}
 
 		response.putHeader(MeshHeaders.WEBROOT_RESPONSE_TYPE, "binary");

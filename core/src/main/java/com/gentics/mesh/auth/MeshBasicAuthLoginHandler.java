@@ -1,5 +1,12 @@
 package com.gentics.mesh.auth;
 
+import java.util.Base64;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
@@ -7,22 +14,16 @@ import com.gentics.mesh.core.rest.auth.TokenResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.shared.SharedKeys;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
+import io.vertx.core.Future;
 import io.vertx.core.http.Cookie;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.User;
+import io.vertx.ext.auth.authentication.Credentials;
+import io.vertx.ext.auth.authentication.TokenCredentials;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.impl.AuthenticationHandlerImpl;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
-import org.apache.commons.lang3.StringUtils;
-
-import java.util.Base64;
+import io.vertx.ext.web.impl.UserContextInternal;
 
 /**
  * Extended Vert.x {@link AuthHandler}.
@@ -49,11 +50,6 @@ public class MeshBasicAuthLoginHandler extends AuthenticationHandlerImpl<MeshJWT
 	private void authorizeUser(RoutingContext ctx, User user) {
 		// authorization is done with roles
 		ctx.next();
-	}
-
-	@Override
-	public void authenticate(RoutingContext routingContext, Handler<AsyncResult<User>> handler) {
-		// Not needed
 	}
 
 	@Override
@@ -95,14 +91,14 @@ public class MeshBasicAuthLoginHandler extends AuthenticationHandlerImpl<MeshJWT
 					} else if (StringUtils.equalsIgnoreCase("Bearer", sscheme)) {
 						// TODO check whether there are additional parts
 						String token = parts[1];
-						JsonObject authInfo = new JsonObject().put("token", token).put("options", new JsonObject());
+						Credentials authInfo = new TokenCredentials(token);
 						authProvider.authenticateJWT(authInfo, res -> {
 
 							// Authentication was successful.
 							if (res.succeeded()) {
 								AuthenticationResult result = res.result();
 								User authenticatedUser = result.getUser();
-								context.setUser(authenticatedUser);
+								((UserContextInternal) context.userContext()).setUser(authenticatedUser);
 
 								InternalActionContext ac = new InternalRoutingActionContextImpl(context);
 								String jwtToken = authProvider.generateToken(authenticatedUser);
@@ -134,4 +130,9 @@ public class MeshBasicAuthLoginHandler extends AuthenticationHandlerImpl<MeshJWT
 		context.fail(401);
 	}
 
+	@Override
+	public Future<User> authenticate(RoutingContext context) {
+		// not needed, returning existing data
+		return Future.succeededFuture(context.user());
+	}
 }

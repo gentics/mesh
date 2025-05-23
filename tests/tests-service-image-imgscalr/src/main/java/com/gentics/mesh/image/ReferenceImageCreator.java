@@ -58,7 +58,7 @@ public class ReferenceImageCreator {
 			fs.moveBlocking(file, targetPath);
 		});
 
-		fs.deleteRecursiveBlocking(tmpDir, true);
+		fs.deleteRecursiveBlocking(tmpDir);
 
 		vertx.close();
 	}

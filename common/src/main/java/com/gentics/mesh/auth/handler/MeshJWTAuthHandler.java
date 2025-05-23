@@ -9,22 +9,25 @@ import java.util.regex.Pattern;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.auth.AuthenticationResult;
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.shared.SharedKeys;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
+import io.vertx.core.Future;
 import io.vertx.core.http.Cookie;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.vertx.ext.auth.User;
+import io.vertx.ext.auth.authentication.Credentials;
+import io.vertx.ext.auth.authentication.TokenCredentials;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.JWTAuthHandler;
 import io.vertx.ext.web.handler.impl.AuthenticationHandlerImpl;
+import io.vertx.ext.web.impl.UserContextInternal;
 
 /**
  * This class extends the Vert.x AuthenticationHandlerImpl, so that it also works when the token is set as a cookie.
@@ -77,11 +80,6 @@ public class MeshJWTAuthHandler extends AuthenticationHandlerImpl<MeshJWTAuthPro
 		handleJWTAuth(context, ignoreDecodeErrors);
 	}
 
-	@Override
-	public void authenticate(RoutingContext routingContext, Handler<AsyncResult<User>> handler) {
-		// Not needed for this handler
-	}
-
 	/**
 	 * Handle the JWT authentication part.
 	 * 
@@ -99,7 +97,7 @@ public class MeshJWTAuthHandler extends AuthenticationHandlerImpl<MeshJWTAuthPro
 		// Mesh accepts JWT tokens via the cookie as well in order to handle JWT even for regular HTTP Download requests (eg. non ajax requests (static file
 		// downloads)).
 		// Store the found token value into the authentication header value. This will effectively overwrite the AUTHORIZATION header value.
-		Cookie tokenCookie = context.getCookie(SharedKeys.TOKEN_COOKIE_KEY);
+		Cookie tokenCookie = context.request().getCookie(SharedKeys.TOKEN_COOKIE_KEY);
 		if (tokenCookie != null) {
 			context.request().headers().set(AUTHORIZATION, "Bearer " + tokenCookie.getValue());
 		}
@@ -136,14 +134,14 @@ public class MeshJWTAuthHandler extends AuthenticationHandlerImpl<MeshJWTAuthPro
 		}
 
 		// 4. Authenticate the found token using JWT
-		JsonObject authInfo = new JsonObject().put("token", token).put("options", options);
+		Credentials authInfo = new TokenCredentials(token);
 		authProvider.authenticateJWT(authInfo, res -> {
 
 			// Authentication was successful.
 			if (res.succeeded()) {
 				AuthenticationResult result = res.result();
 				User authenticatedUser = result.getUser();
-				context.setUser(authenticatedUser);
+				((UserContextInternal) context.userContext()).setUser(authenticatedUser);
 
 				// Lets update the token cookie if this is request is using a regular token (e.g. not an api token) to keep it alive
 				if (!result.isUsingAPIKey()) {
@@ -185,5 +183,10 @@ public class MeshJWTAuthHandler extends AuthenticationHandlerImpl<MeshJWTAuthPro
 	@Override
 	public JWTAuthHandler withScopes(List<String> list) {
 		return this;
+	}
+
+	@Override
+	public Future<User> authenticate(RoutingContext context) {
+		return Future.succeededFuture(context.user());
 	}
 }

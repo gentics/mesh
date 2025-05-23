@@ -26,16 +26,14 @@ import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.util.VersionUtil;
+import com.gentics.mesh.util.VertxUtil;
 
 import io.reactivex.Completable;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClientOptions;
-import io.vertx.core.http.HttpClientRequest;
-import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.RequestOptions;
-import io.vertx.core.impl.launcher.commands.VersionCommand;
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -195,50 +193,42 @@ public class MeshImpl implements Mesh {
 		requestOptions.setSsl(true);
 		requestOptions.setHost("getmesh.io/api/updatecheck?v=" + Mesh.getPlainVersion());
 		getVertx().createHttpClient(new HttpClientOptions().setSsl(true).setTrustAll(false))
-				.request(HttpMethod.GET, 443, "getmesh.io", "/api/updatecheck?v=" + Mesh.getPlainVersion(), ar -> {
-					if (ar.succeeded()) {
-						HttpClientRequest req = ar.result();
-
-						MultiMap headers = req.headers();
-						headers.set("content-type", "application/json");
-						String hostname = getHostname();
-						if (!isEmpty(hostname)) {
-							headers.set("X-Hostname", hostname);
-						}
-
-						req.send(ar2 -> {
-							if (ar2.succeeded()) {
-								HttpClientResponse response = ar2.result();
-								int code = response.statusCode();
-								if (code < 200 || code >= 299) {
-									log.error("Update check failed with status code {" + code + "}");
-								} else {
-									response.bodyHandler(bh -> {
-										JsonObject info = bh.toJsonObject();
-										String latestVersion = info.getString("latest");
-
-										if (currentVersion.contains("-SNAPSHOT")) {
-											log.warn("You are using a SNAPSHOT version {" + currentVersion
-													+ "}. This is potentially dangerous because this version has never been officially released.");
-											log.info("The latest version of Gentics Mesh is {" + latestVersion + "}");
-										} else {
-											int result = VersionUtil.compareVersions(latestVersion, currentVersion);
-											if (result == 0) {
-												log.info("Great! You are using the latest version");
-											} else if (result > 0) {
-												log.warn("Your Gentics Mesh version is outdated. You are using {" + currentVersion + "} but version {"
-														+ latestVersion + "} is available.");
-											}
-										}
-									});
-								}
-							} else {
-								log.info("Failed to check for updates ", ar2.cause());
-							}
-						});
-					} else {
-						log.info("Failed to check for updates", ar.cause());
+				.request(HttpMethod.GET, 443, "getmesh.io", "/api/updatecheck?v=" + Mesh.getPlainVersion()).onComplete(req -> {
+					MultiMap headers = req.headers();
+					headers.set("content-type", "application/json");
+					String hostname = getHostname();
+					if (!isEmpty(hostname)) {
+						headers.set("X-Hostname", hostname);
 					}
+					req.send().onComplete(response -> {
+						int code = response.statusCode();
+						if (code < 200 || code >= 299) {
+							log.error("Update check failed with status code {" + code + "}");
+						} else {
+							response.bodyHandler(bh -> {
+								JsonObject info = bh.toJsonObject();
+								String latestVersion = info.getString("latest");
+
+								if (currentVersion.contains("-SNAPSHOT")) {
+									log.warn("You are using a SNAPSHOT version {" + currentVersion
+											+ "}. This is potentially dangerous because this version has never been officially released.");
+									log.info("The latest version of Gentics Mesh is {" + latestVersion + "}");
+								} else {
+									int result = VersionUtil.compareVersions(latestVersion, currentVersion);
+									if (result == 0) {
+										log.info("Great! You are using the latest version");
+									} else if (result > 0) {
+										log.warn("Your Gentics Mesh version is outdated. You are using {" + currentVersion + "} but version {"
+												+ latestVersion + "} is available.");
+									}
+								}
+							});
+						}
+					}, err -> {
+						log.info("Failed to check for updates ", err);
+					});
+				}, err -> {
+					log.info("Failed to check for updates", err);
 				});
 	}
 
@@ -328,7 +318,7 @@ public class MeshImpl implements Mesh {
 	 * @return
 	 */
 	private String getVertxVersion() {
-		return VersionCommand.getVersion();
+		return VertxUtil.vertxVersion();
 	}
 
 	private static String infoLine(String text) {

@@ -1,12 +1,11 @@
 package com.gentics.mesh.router;
 
 import java.util.Set;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.naming.InvalidNameException;
-
-import io.vertx.core.impl.ConcurrentHashSet;
 
 /**
  * @see RouterStorageRegistry
@@ -14,7 +13,7 @@ import io.vertx.core.impl.ConcurrentHashSet;
 @Singleton
 public class RouterStorageRegistryImpl implements RouterStorageRegistry {
 
-	private Set<RouterStorage> instances = new ConcurrentHashSet<>();
+	private Set<RouterStorage> instances = new ConcurrentSkipListSet<>();
 
 	@Inject
 	public RouterStorageRegistryImpl() {

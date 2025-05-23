@@ -2,6 +2,9 @@ package com.gentics.mesh.util;
 
 import java.util.function.Function;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.reactivex.Completable;
 import io.reactivex.CompletableSource;
 import io.reactivex.Flowable;
@@ -13,8 +16,6 @@ import io.reactivex.functions.Action;
 import io.reactivex.functions.BiFunction;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.AsyncFile;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Utility for RXJava methods.
@@ -79,7 +80,6 @@ public final class RxUtil {
 	 */
 	public static Flowable<Buffer> toBufferFlow(io.vertx.reactivex.core.file.AsyncFile file) {
 		return file.toFlowable()
-			.map(io.vertx.reactivex.core.buffer.Buffer::getDelegate)
 			.doOnTerminate(file::close)
 			.doOnCancel(file::close);
 	}

@@ -203,7 +203,7 @@ public class FailureHandler implements Handler<RoutingContext> {
 
 	private String toPath(RoutingContext rc) {
 		StringBuilder b = new StringBuilder();
-		b.append(rc.normalisedPath());
+		b.append(rc.normalizedPath());
 		String query = rc.request().query();
 		if (query != null) {
 			b.append("?" + rc.request().query());

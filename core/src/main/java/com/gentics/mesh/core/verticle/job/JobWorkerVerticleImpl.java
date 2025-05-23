@@ -90,7 +90,7 @@ public class JobWorkerVerticleImpl extends AbstractJobVerticle implements JobWor
 
 	@Override
 	public void doWithLock(long timeout, Handler<AsyncResult<Lock>> resultHandler) {
-		vertx.sharedData().getLockWithTimeout(getLockName(), timeout, resultHandler);
+		vertx.sharedData().getLockWithTimeout(getLockName(), timeout).onComplete(resultHandler);
 	}
 
 	/**

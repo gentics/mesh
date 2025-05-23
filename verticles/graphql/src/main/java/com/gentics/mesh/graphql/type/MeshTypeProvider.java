@@ -22,7 +22,6 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLTypeReference;
-import io.vertx.core.impl.launcher.commands.VersionCommand;
 
 /**
  * GraphQL type provider for the mesh type.
@@ -111,7 +110,7 @@ public class MeshTypeProvider {
 		// .vertxVersion
 		root.field(newFieldDefinition().name("vertxVersion").description("Vert.x version").type(GraphQLString).dataFetcher((env) -> {
 			if (isTokenAllowed(env)) {
-				return VersionCommand.getVersion();
+				return "5.0.0t";
 			} else {
 				return null;
 			}

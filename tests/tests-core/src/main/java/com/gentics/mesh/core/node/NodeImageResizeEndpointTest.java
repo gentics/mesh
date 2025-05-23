@@ -649,7 +649,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 		CountDownLatch latch = new CountDownLatch(1);
 		byte[] bytes = IOUtils.toByteArray(download.getStream());
 		download.close();
-		vertx().fileSystem().writeFile(targetFile.getAbsolutePath(), Buffer.buffer(bytes), rh -> {
+		vertx().fileSystem().writeFile(targetFile.getAbsolutePath(), Buffer.buffer(bytes)).onComplete(rh -> {
 			assertTrue(rh.succeeded());
 			latch.countDown();
 		});

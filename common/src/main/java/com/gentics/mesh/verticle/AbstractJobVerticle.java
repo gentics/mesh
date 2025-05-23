@@ -11,7 +11,6 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.shareddata.Lock;
 import io.vertx.reactivex.RxHelper;
 
 /**
@@ -48,12 +47,11 @@ public abstract class AbstractJobVerticle extends AbstractVerticle {
 	private void registerJobHandler() {
 		jobConsumer = vertx.eventBus().consumer(getJobAdress(), message -> {
 			// execute blocking, because the verticle itself is not a worker verticle (any more)
-			vertx.executeBlocking(prom -> {
+			vertx.executeBlocking(() -> {
 				invokeJobAction(message);
-			}, rh -> {
-				if (rh.failed()) {
-					log.error(messageToString(message));
-				}
+				return null;
+			}).onFailure(e -> {
+				log.error(messageToString(message));
 			});
 		});
 	}
@@ -110,20 +108,13 @@ public abstract class AbstractJobVerticle extends AbstractVerticle {
 	protected void executeLocked(Completable action, Message<Object> message) {
 		String lockName = getLockName();
 		try {
-			vertx.sharedData().getLockWithTimeout(lockName, 1000, rh -> {
-				if (rh.failed()) {
-					Throwable cause = rh.cause();
-					log.error("Error while acquiring global lock {" + lockName + "}", cause);
-					if (message != null) {
-						message.reply(new JsonObject().put("status", STATUS_REJECTED));
-					}
-				} else if (stopped) {
+			vertx.sharedData().getLockWithTimeout(lockName, 1000).onComplete(lock -> {
+				if (stopped) {
 					log.warn("Not executing locked action, because processing was stopped");
 					if (message != null) {
 						message.reply(new JsonObject().put("status", STATUS_REJECTED));
 					}
 				} else {
-					Lock lock = rh.result();
 					if (message != null) {
 						message.reply(new JsonObject().put("status", STATUS_ACCEPTED));
 					}
@@ -138,6 +129,11 @@ public abstract class AbstractJobVerticle extends AbstractVerticle {
 					}, error -> {
 						log.error("Error while executing locked action", error);
 					});
+				}
+			}, err -> {
+				log.error("Error while acquiring global lock {" + lockName + "}", err);
+				if (message != null) {
+					message.reply(new JsonObject().put("status", STATUS_REJECTED));
 				}
 			});
 		} catch (Exception e) {

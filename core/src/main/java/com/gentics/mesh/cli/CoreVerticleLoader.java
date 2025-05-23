@@ -6,6 +6,9 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticleImpl;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
@@ -13,13 +16,11 @@ import com.gentics.mesh.monitor.MonitoringServerVerticle;
 import com.gentics.mesh.rest.RestAPIVerticle;
 import com.gentics.mesh.search.verticle.ElasticsearchProcessVerticle;
 import com.gentics.mesh.util.RxUtil;
-
 import com.gentics.mesh.verticle.BinaryCheckVerticle;
+
 import io.reactivex.Completable;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.json.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
 
 /**
@@ -101,8 +102,7 @@ public class CoreVerticleLoader {
 	private Completable deployJobWorkerVerticle() {
 		// the verticle is not deployed as worker verticle (any more). See comments of AbstractJobVerticle for details
 		return rxVertx.rxDeployVerticle(jobWorkerVerticle, new DeploymentOptions()
-			.setInstances(1)
-			.setWorker(false))
+			.setInstances(1))
 			.ignoreElement();
 	}
 

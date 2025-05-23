@@ -70,16 +70,6 @@ public class SecurityLogger implements LogDelegate {
 	}
 
 	@Override
-	public void fatal(Object message) {
-		delegate.error("FATAL: " + withUserInfo(message));
-	}
-
-	@Override
-	public void fatal(Object message, Throwable t) {
-		delegate.error("FATAL: " + withUserInfo(message), t);
-	}
-
-	@Override
 	public void error(Object message) {
 		delegate.error(withUserInfo(message));
 	}
@@ -87,17 +77,6 @@ public class SecurityLogger implements LogDelegate {
 	@Override
 	public void error(Object message, Throwable t) {
 		delegate.error(withUserInfo(message), t);
-	}
-
-	@Override
-	public void error(Object message, Object... objects) {
-		delegate.error(withUserInfo(message), objects);
-	}
-
-	@Override
-	public void error(Object message, Throwable t, Object... objects) {
-		delegate.error(withUserInfo(message), objects);
-		delegate.error("\t with error", t);
 	}
 
 	@Override
@@ -111,17 +90,6 @@ public class SecurityLogger implements LogDelegate {
 	}
 
 	@Override
-	public void warn(Object message, Object... objects) {
-		delegate.warn(withUserInfo(message), objects);
-	}
-
-	@Override
-	public void warn(Object message, Throwable t, Object... objects) {
-		delegate.warn(withUserInfo(message), objects);
-		delegate.warn("\t with error", t);
-	}
-
-	@Override
 	public void info(Object message) {
 		delegate.info(withUserInfo(message));
 	}
@@ -129,17 +97,6 @@ public class SecurityLogger implements LogDelegate {
 	@Override
 	public void info(Object message, Throwable t) {
 		delegate.info(withUserInfo(message), t);
-	}
-
-	@Override
-	public void info(Object message, Object... objects) {
-		delegate.info(withUserInfo(message), objects);
-	}
-
-	@Override
-	public void info(Object message, Throwable t, Object... objects) {
-		delegate.info(withUserInfo(message), objects);
-		delegate.info("\t with error", t);
 	}
 
 	@Override
@@ -153,17 +110,6 @@ public class SecurityLogger implements LogDelegate {
 	}
 
 	@Override
-	public void debug(Object message, Object... objects) {
-		delegate.debug(withUserInfo(message), objects);
-	}
-
-	@Override
-	public void debug(Object message, Throwable t, Object... objects) {
-		delegate.debug(withUserInfo(message), objects);
-		delegate.debug("\t with error", t);
-	}
-
-	@Override
 	public void trace(Object message) {
 		delegate.trace(withUserInfo(message));
 	}
@@ -174,13 +120,7 @@ public class SecurityLogger implements LogDelegate {
 	}
 
 	@Override
-	public void trace(Object message, Object... objects) {
-		delegate.trace(withUserInfo(message), objects);
-	}
-
-	@Override
-	public void trace(Object message, Throwable t, Object... objects) {
-		delegate.trace(withUserInfo(message), objects);
-		delegate.trace("\t with error", t);
+	public String implementation() {
+		return "security";
 	}
 }

@@ -30,7 +30,7 @@ public class CustomRouterImpl implements CustomRouter {
 		this.vertx = vertx;
 		Router rootRouter = root.getRouter();
 		router = Router.router(vertx);
-		rootRouter.mountSubRouter(CUSTOM_MOUNTPOINT, router);
+		rootRouter.route(CUSTOM_MOUNTPOINT).subRouter(router);
 	}
 
 	/**
@@ -56,7 +56,7 @@ public class CustomRouterImpl implements CustomRouter {
 			log.info("Added custom subrouter {" + name + "}");
 			customRouters.put(name, router);
 		}
-		router.mountSubRouter("/" + name, router);
+		router.route("/" + name).subRouter(router);
 		return router;
 	}
 

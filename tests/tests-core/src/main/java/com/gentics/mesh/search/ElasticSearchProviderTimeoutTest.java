@@ -16,6 +16,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.user.UserListResponse;
@@ -24,13 +26,11 @@ import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
-import io.vertx.reactivex.core.buffer.Buffer;
 import io.vertx.reactivex.core.http.HttpServer;
 import io.vertx.reactivex.ext.web.client.HttpRequest;
 import io.vertx.reactivex.ext.web.client.WebClient;
@@ -80,12 +80,12 @@ public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 						).putHeaders(rh.headers());
 					realRequest.queryParams().addAll(rh.params());
 					if (HttpMethod.POST == rh.method() || HttpMethod.PUT == rh.method()) {
-						rh.bodyHandler(body -> realRequest.sendBuffer(body, rs -> {
+						rh.bodyHandler(body -> realRequest.sendBuffer(body).onComplete(rs -> {
 							log.info(rh.toString() + " body sent");
 							rh.response().end(rs.result().body());
 						}));
 					} else {
-						realRequest.send(rs -> {
+						realRequest.send().onComplete(rs -> {
 							log.info(rh.toString() + " sent");
 							rh.response().end(rs.result().body());
 						});

@@ -1,21 +1,22 @@
 
 package com.gentics.mesh;
 
+import java.util.ServiceLoader;
 import java.util.Set;
 
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.reactivex.Completable;
-import io.vertx.core.ServiceHelper;
 import io.vertx.core.Vertx;
+import io.vertx.core.impl.ServiceHelper;
 
 /**
  * The main mesh interface which exposes various methods that can be used to initialize mesh and startup a new instance.
  */
 public interface Mesh {
 
-	static MeshFactory factory = ServiceHelper.loadFactory(MeshFactory.class);
+	static MeshFactory factory = ServiceHelper.loadFactory(ServiceLoader.load(MeshFactory.class));
 
 	/**
 	 * Returns the initialized instance.

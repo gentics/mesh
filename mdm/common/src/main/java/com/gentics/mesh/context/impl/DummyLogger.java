@@ -28,22 +28,7 @@ public class DummyLogger implements LogDelegate {
 	}
 
 	@Override
-	public void fatal(Object message) {
-
-	}
-
-	@Override
-	public void fatal(Object message, Throwable t) {
-
-	}
-
-	@Override
 	public void error(Object message) {
-
-	}
-
-	@Override
-	public void error(Object message, Object... params) {
 
 	}
 
@@ -53,17 +38,7 @@ public class DummyLogger implements LogDelegate {
 	}
 
 	@Override
-	public void error(Object message, Throwable t, Object... params) {
-
-	}
-
-	@Override
 	public void warn(Object message) {
-
-	}
-
-	@Override
-	public void warn(Object message, Object... params) {
 
 	}
 
@@ -73,17 +48,7 @@ public class DummyLogger implements LogDelegate {
 	}
 
 	@Override
-	public void warn(Object message, Throwable t, Object... params) {
-
-	}
-
-	@Override
 	public void info(Object message) {
-
-	}
-
-	@Override
-	public void info(Object message, Object... params) {
 
 	}
 
@@ -93,17 +58,7 @@ public class DummyLogger implements LogDelegate {
 	}
 
 	@Override
-	public void info(Object message, Throwable t, Object... params) {
-
-	}
-
-	@Override
 	public void debug(Object message) {
-
-	}
-
-	@Override
-	public void debug(Object message, Object... params) {
 
 	}
 
@@ -113,17 +68,7 @@ public class DummyLogger implements LogDelegate {
 	}
 
 	@Override
-	public void debug(Object message, Throwable t, Object... params) {
-
-	}
-
-	@Override
 	public void trace(Object message) {
-
-	}
-
-	@Override
-	public void trace(Object message, Object... params) {
 
 	}
 
@@ -133,7 +78,7 @@ public class DummyLogger implements LogDelegate {
 	}
 
 	@Override
-	public void trace(Object message, Throwable t, Object... params) {
-
+	public String implementation() {
+		return "dummy";
 	}
 }

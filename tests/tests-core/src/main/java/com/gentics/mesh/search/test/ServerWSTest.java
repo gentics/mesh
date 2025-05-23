@@ -3,11 +3,11 @@ package com.gentics.mesh.search.test;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.WebSocket;
+import io.vertx.core.http.WebSocketClient;
+import io.vertx.core.http.WebSocketClientOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.bridge.PermittedOptions;
 import io.vertx.ext.web.Router;
@@ -33,7 +33,7 @@ public class ServerWSTest extends AbstractVerticle {
 
 		// 2. Create a sub router for some nested endpoints
 		Router subrouter = Router.router(vertx);
-		router.mountSubRouter("/test", subrouter);
+		router.route("/test").subRouter(subrouter);
 
 		// 3. Setup the SockJS Handler and add a route for it in our API
 		SockJSHandlerOptions sockJSoptions = new SockJSHandlerOptions().setHeartbeatInterval(2000);
@@ -41,11 +41,11 @@ public class ServerWSTest extends AbstractVerticle {
 		SockJSBridgeOptions bridgeOptions = new SockJSBridgeOptions();
 		bridgeOptions.addInboundPermitted(new PermittedOptions().setAddress("dummy"));
 		bridgeOptions.addOutboundPermitted(new PermittedOptions().setAddress("dummy"));
-		handler.bridge(bridgeOptions, event -> {
+		Router bridge = handler.bridge(bridgeOptions, event -> {
 			System.out.println("Got event!");
 			event.complete(true);
 		});
-		subrouter.route("/*").handler(handler);
+		subrouter.route("/*").subRouter(bridge);
 
 		// 4. Setup the HTTP server
 		HttpServerOptions options = new HttpServerOptions();
@@ -55,19 +55,19 @@ public class ServerWSTest extends AbstractVerticle {
 		HttpServer server = vertx.createHttpServer(options);
 		server.requestHandler(router);
 
-		server.listen(rh -> {
+		server.listen().onComplete(rh -> {
 			if (rh.failed()) {
 				startFuture.fail(rh.cause());
 			} else {
 				try {
 					startFuture.complete();
 					// Startup is done - Now setup the client
-					HttpClientOptions clientOptions = new HttpClientOptions();
+					WebSocketClientOptions clientOptions = new WebSocketClientOptions();
 					clientOptions.setDefaultPort(4444).setDefaultHost("localhost");
-					HttpClient client = vertx.createHttpClient(clientOptions);
+					WebSocketClient client = vertx.createWebSocketClient(clientOptions);
 
 					// Connect to the created websocket endpoint and log the bridged events
-					client.webSocket("/test/websocket", wsHandler -> {
+					client.connect("/test/websocket").onComplete(wsHandler -> {
 						WebSocket ws = wsHandler.result();
 						System.out.println("WS Connected");
 
@@ -93,7 +93,5 @@ public class ServerWSTest extends AbstractVerticle {
 			}
 
 		});
-
 	}
-
 }

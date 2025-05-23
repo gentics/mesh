@@ -3,6 +3,9 @@ package com.gentics.mesh.router;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Database;
@@ -10,8 +13,6 @@ import com.gentics.mesh.shared.SharedKeys;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.vertx.ext.web.Router;
 
 /**
@@ -53,13 +54,13 @@ public class PluginRouterImpl implements PluginRouter {
 			rc.next();
 		});
 
-		parentRouter.mountSubRouter(PLUGINS_MOUNTPOINT, router);
+		parentRouter.route(PLUGINS_MOUNTPOINT).subRouter(router);
 	}
 
 	@Override
 	public void addRouter(String name, Router pluginRouter) {
 		pluginRouters.put(name, pluginRouter);
-		router.mountSubRouter("/" + name, pluginRouter);
+		router.route("/" + name).subRouter(pluginRouter);
 		log.info("Added plugin subrouter {" + name + "}");
 	}
 

@@ -2,6 +2,8 @@ package com.gentics.mesh.dagger.module;
 
 import javax.inject.Singleton;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -17,8 +19,6 @@ import dagger.Module;
 import dagger.Provides;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.impl.BodyHandlerImpl;
 
@@ -67,7 +67,7 @@ public class MeshModule {
 	public static CorsHandler corsHandler(MeshOptions options) {
 		HttpServerConfig serverOptions = options.getHttpServerOptions();
 		String pattern = serverOptions.getCorsAllowedOriginPattern();
-		CorsHandler corsHandler = CorsHandler.create(pattern);
+		CorsHandler corsHandler = CorsHandler.create().addOriginWithRegex(pattern);
 		boolean allowCredentials = serverOptions.getCorsAllowCredentials();
 		corsHandler.allowCredentials(allowCredentials);
 		corsHandler.allowedMethod(HttpMethod.GET);
