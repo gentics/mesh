@@ -3,9 +3,12 @@ package com.gentics.mesh.router;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.vertx.core.Vertx;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.gentics.mesh.util.VertxUtil;
+
+import io.vertx.core.Vertx;
 import io.vertx.ext.web.Router;
 
 /**
@@ -30,7 +33,7 @@ public class CustomRouterImpl implements CustomRouter {
 		this.vertx = vertx;
 		Router rootRouter = root.getRouter();
 		router = Router.router(vertx);
-		rootRouter.route(CUSTOM_MOUNTPOINT).subRouter(router);
+		VertxUtil.mountSubRouter(rootRouter, CUSTOM_MOUNTPOINT, router);
 	}
 
 	/**
@@ -56,7 +59,7 @@ public class CustomRouterImpl implements CustomRouter {
 			log.info("Added custom subrouter {" + name + "}");
 			customRouters.put(name, router);
 		}
-		router.route("/" + name).subRouter(router);
+		VertxUtil.mountSubRouter(router, "/" + name, router);
 		return router;
 	}
 

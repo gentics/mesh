@@ -19,6 +19,7 @@ import com.gentics.mesh.handler.VersionUtils;
 import com.gentics.mesh.monitor.liveness.LivenessManager;
 import com.gentics.mesh.router.route.DefaultNotFoundHandler;
 import com.gentics.mesh.router.route.FailureHandler;
+import com.gentics.mesh.util.VertxUtil;
 
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.Router;
@@ -56,7 +57,7 @@ public class MonitoringRoutes {
 		this.monitoringCrudHandler = monitoringCrudHandler;
 		this.liveness = liveness;
 		VersionUtils.generateVersionMountpoints()
-			.forEach(mountPoint -> router.route(mountPoint).subRouter(apiRouter));
+			.forEach(mountPoint -> VertxUtil.mountSubRouter(router, mountPoint, apiRouter));
 		this.adminHandler = adminHandler;
 		init();
 	}

@@ -10,6 +10,7 @@ import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.shared.SharedKeys;
+import com.gentics.mesh.util.VertxUtil;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -54,13 +55,13 @@ public class PluginRouterImpl implements PluginRouter {
 			rc.next();
 		});
 
-		parentRouter.route(PLUGINS_MOUNTPOINT).subRouter(router);
+		VertxUtil.mountSubRouter(parentRouter, PLUGINS_MOUNTPOINT, router);
 	}
 
 	@Override
 	public void addRouter(String name, Router pluginRouter) {
 		pluginRouters.put(name, pluginRouter);
-		router.route("/" + name).subRouter(pluginRouter);
+		VertxUtil.mountSubRouter(router, "/" + name, pluginRouter);
 		log.info("Added plugin subrouter {" + name + "}");
 	}
 

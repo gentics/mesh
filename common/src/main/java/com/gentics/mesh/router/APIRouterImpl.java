@@ -10,6 +10,7 @@ import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.handler.VersionUtils;
+import com.gentics.mesh.util.VertxUtil;
 
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.Router;
@@ -47,7 +48,7 @@ public class APIRouterImpl implements APIRouter {
 		this.router = Router.router(vertx);
 
 		VersionUtils.generateVersionMountpoints()
-			.forEach(mountPoint -> root.getRouter().route(mountPoint).subRouter(router));
+			.forEach(mountPoint -> VertxUtil.mountSubRouter(root.getRouter(), mountPoint, router));
 
 		initHandlers(root.getStorage());
 
@@ -100,7 +101,7 @@ public class APIRouterImpl implements APIRouter {
 			if (log.isDebugEnabled()) {
 				log.debug("Creating API subrouter for {" + mountPoint + "}");
 			}
-			router.route("/" + mountPoint).subRouter(apiSubRouter);
+			VertxUtil.mountSubRouter(router, "/" + mountPoint, apiSubRouter);
 			apiRouters.put(mountPoint, apiSubRouter);
 		}
 		return apiSubRouter;

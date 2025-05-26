@@ -86,6 +86,20 @@
 		<dependency>
 			<groupId>org.hibernate.orm</groupId>
 			<artifactId>hibernate-micrometer</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>io.micrometer</groupId>
+					<artifactId>micrometer-commons</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>io.micrometer</groupId>
+					<artifactId>micrometer-observation</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>io.micrometer</groupId>
+					<artifactId>micrometer-core</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<!--Force to use the hibernate byte-buddy version, otherwise in test the mockito byte-buddy version will be loaded-->
 		<!--and this will break hibernate-->

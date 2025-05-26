@@ -17,12 +17,29 @@ import io.reactivex.functions.Action;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.impl.VertxImpl;
 import io.vertx.ext.web.FileUpload;
+import io.vertx.ext.web.Route;
+import io.vertx.ext.web.Router;
 
 /**
  * Various utility functions regarding Vert.x
  */
 public final class VertxUtil {
 	private VertxUtil() {
+	}
+
+	/**
+	 * Utility method from Vert.x 4.x, simplifying creation of the subrouters. 
+	 * 
+	 * @param base
+	 * @param mountPoint
+	 * @param subRouter
+	 * @return
+	 */
+	public static final Route mountSubRouter(Router base, String mountPoint, Router subRouter) {
+		if (mountPoint.endsWith("*")) {
+			throw new IllegalArgumentException("Don't include * when mounting a sub router");
+		}
+		return base.route(mountPoint + "*").subRouter(subRouter);
 	}
 
 	/**
@@ -35,7 +52,8 @@ public final class VertxUtil {
 	}
 
 	/**
-	 * Sends a {@link RestModel} to the client. Propagates any error to the failure handler.
+	 * Sends a {@link RestModel} to the client. Propagates any error to the failure
+	 * handler.
 	 *
 	 * Usage: <code>.subscribe(restModelSender(ac))</code>
 	 *
@@ -57,14 +75,15 @@ public final class VertxUtil {
 	}
 
 	/**
-	 * Convert a {@link Action} into {@link Runnable}, wrapping its exception with {@link IllegalStateException}
+	 * Convert a {@link Action} into {@link Runnable}, wrapping its exception with
+	 * {@link IllegalStateException}
 	 * 
 	 * @param r
 	 * @return
 	 */
 	public static final Runnable intoRunnable(Action r) {
 		return () -> {
-			 try {
+			try {
 				r.run();
 			} catch (Exception e) {
 				throw new IllegalStateException(e);
@@ -73,7 +92,8 @@ public final class VertxUtil {
 	}
 
 	/**
-	 * Sends a {@link RestModel} to the client. Propagates any error to the failure handler.
+	 * Sends a {@link RestModel} to the client. Propagates any error to the failure
+	 * handler.
 	 *
 	 * Usage: <code>.subscribe(restModelSender(ac, OK))</code>
 	 *
@@ -81,7 +101,8 @@ public final class VertxUtil {
 	 * @param statusCode
 	 * @return
 	 */
-	public static final SingleObserver<RestModel> restModelSender(InternalActionContext rc, HttpResponseStatus statusCode) {
+	public static final SingleObserver<RestModel> restModelSender(InternalActionContext rc,
+			HttpResponseStatus statusCode) {
 		return new SingleObserver<RestModel>() {
 			@Override
 			public void onSubscribe(Disposable d) {
@@ -109,7 +130,7 @@ public final class VertxUtil {
 	public static void addContentDispositionHeader(HttpServerResponse response, String fileName, String type) {
 		String encodedFileNameUTF8 = EncodeUtil.encodeForRFC5597(fileName);
 		String encodedFileNameISO = EncodeUtil.toISO88591(fileName);
-	
+
 		StringBuilder value = new StringBuilder();
 		value.append(type + ";");
 		value.append(" filename=\"" + encodedFileNameISO + "\";");
@@ -127,13 +148,13 @@ public final class VertxUtil {
 	public static void validateFileUpload(FileUpload ul, String fieldName, MeshOptions options) {
 		MeshUploadOptions uploadOptions = options.getUploadOptions();
 		long byteLimit = uploadOptions.getByteLimit();
-	
+
 		if (ul.size() > byteLimit) {
 			String humanReadableFileSize = org.apache.commons.io.FileUtils.byteCountToDisplaySize(ul.size());
 			String humanReadableUploadLimit = org.apache.commons.io.FileUtils.byteCountToDisplaySize(byteLimit);
 			throw error(BAD_REQUEST, "node_error_uploadlimit_reached", humanReadableFileSize, humanReadableUploadLimit);
 		}
-	
+
 		if (isEmpty(ul.fileName())) {
 			throw error(BAD_REQUEST, "field_binary_error_emptyfilename", fieldName);
 		}

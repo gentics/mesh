@@ -1,5 +1,7 @@
 package com.gentics.mesh.search.test;
 
+import com.gentics.mesh.util.VertxUtil;
+
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -33,7 +35,7 @@ public class ServerWSTest extends AbstractVerticle {
 
 		// 2. Create a sub router for some nested endpoints
 		Router subrouter = Router.router(vertx);
-		router.route("/test").subRouter(subrouter);
+		VertxUtil.mountSubRouter(router, "/test", subrouter);
 
 		// 3. Setup the SockJS Handler and add a route for it in our API
 		SockJSHandlerOptions sockJSoptions = new SockJSHandlerOptions().setHeartbeatInterval(2000);
@@ -45,7 +47,7 @@ public class ServerWSTest extends AbstractVerticle {
 			System.out.println("Got event!");
 			event.complete(true);
 		});
-		subrouter.route("/*").subRouter(bridge);
+		VertxUtil.mountSubRouter(subrouter, "/*", bridge);
 
 		// 4. Setup the HTTP server
 		HttpServerOptions options = new HttpServerOptions();

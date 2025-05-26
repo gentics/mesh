@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.shared.SharedKeys;
+import com.gentics.mesh.util.VertxUtil;
 
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.Router;
@@ -46,7 +47,7 @@ public class ProjectsRouterImpl implements ProjectsRouter {
 		this.apiRouter = apiRouter;
 		this.router = Router.router(vertx);
 		this.projectRouter = new ProjectRouterImpl(vertx, apiRouter.getRoot().getStorage());
-		apiRouter.getRouter().route("/").subRouter(router);
+		VertxUtil.mountSubRouter(apiRouter.getRouter(), "/", router);
 	}
 
 	@Override
@@ -84,8 +85,8 @@ public class ProjectsRouterImpl implements ProjectsRouter {
 			// Note: the end slash in the subrouter mount point is important, otherwise the subrouter for e.g. /project
 			// (for a project named "project") would also match for the route /projects, which will cause problems,
 			// if the project "project" is deleted
-			router.route("/" + encodedName + "/").subRouter(projectRouter);
-			projectRouter.route("/").subRouter(this.projectRouter.getRouter());
+			VertxUtil.mountSubRouter(router, "/" + encodedName + "/", projectRouter);
+			VertxUtil.mountSubRouter(projectRouter, "/", this.projectRouter.getRouter());
 			// mountSubRoutersForProjectRouter(projectRouter, encodedName);
 		}
 		return projectRouter;

@@ -24,7 +24,7 @@ import io.vertx.ext.web.handler.CorsHandler;
  * Project routers are automatically bound to all projects. This way only a single node verticle is needed to handle all project requests.
  * 
  */
-public interface RouterStorage {
+public interface RouterStorage extends Comparable<RouterStorage> {
 
 	/**
 	 * Return the router.
@@ -70,4 +70,12 @@ public interface RouterStorage {
 	Database getDb();
 
 	LocalConfigApi getLocalConfigApi();
+
+	@Override
+	default int compareTo(RouterStorage arg0) {
+		if (arg0 == null) {
+			return 1;
+		}
+		return arg0 == this ? 0 : (hashCode() - arg0.hashCode());
+	}
 }
