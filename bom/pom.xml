@@ -29,7 +29,7 @@
 		<hazelcast.version>5.5.0</hazelcast.version>
 		<jackson.version>2.17.0</jackson.version>
 		<jackson-databind.version>2.17.0</jackson-databind.version>
-		<netty.version>4.1.115.Final</netty.version>
+		<netty.version>4.1.118.Final</netty.version>
 		<tika.version>2.9.2</tika.version>
 		<aws.sdk.version>2.16.83</aws.sdk.version>
 		<snakeyaml.version>2.2</snakeyaml.version>
@@ -126,7 +126,7 @@
 			<dependency>
 				<groupId>commons-beanutils</groupId>
 				<artifactId>commons-beanutils</artifactId>
-				<version>1.10.0</version>
+				<version>1.11.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.commons</groupId>
