@@ -52,7 +52,7 @@ public class MonitoringClientConfig {
 		}
 
 		/**
-		 * Sets the host to connect to. Example: "demo.getmesh.io"
+		 * Sets the host to connect to. Example: "localhost"
 		 *
 		 * This configuration is required.
 		 *
