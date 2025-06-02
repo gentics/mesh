@@ -16,12 +16,37 @@ import com.gentics.mesh.core.data.user.HibUser;
  *
  */
 @Embeddable
-public class UserTracking extends EditorTracking {
+public class UserTracking {
 
 	@ManyToOne(targetEntity = HibUserImpl.class, fetch = FetchType.LAZY)
 	private HibUser creator;
 
 	private Instant created;
+
+	@ManyToOne(targetEntity = HibUserImpl.class, fetch = FetchType.LAZY)
+	private HibUser editor;
+
+	private Instant edited;
+
+	public HibUser getEditor() {
+		return editor;
+	}
+
+	public void setEditor(HibUser user) {
+		this.editor = user;
+	}
+
+	public Long getLastEditedTimestamp() {
+		return edited != null ? edited.toEpochMilli() : null;
+	}
+
+	public void setLastEditedTimestamp(Long timestamp) {
+		edited = timestamp != null ? Instant.ofEpochMilli(timestamp) : null;
+	}
+
+	protected void setEdited(Instant edited) {
+		this.edited = edited;
+	}
 
 	public HibUser getCreator() {
 		return creator;

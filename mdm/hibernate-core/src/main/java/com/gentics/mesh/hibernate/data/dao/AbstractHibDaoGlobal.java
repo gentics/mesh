@@ -127,7 +127,7 @@ public abstract class AbstractHibDaoGlobal<T extends HibCoreElement<R>, R extend
 	@Override
 	public void deletePersisted(T entity) {
 		entity = beforeDeletedFromDatabase(entity);
-		em().remove(entity);
+		currentTransaction.getTx().delete(entity);
 		afterDeletedFromDatabase(entity);
 	}
 

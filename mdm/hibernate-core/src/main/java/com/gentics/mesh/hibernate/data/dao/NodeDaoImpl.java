@@ -616,8 +616,26 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 		select.setTableName(databaseConnector.maybeGetPhysicalTableName(getPersistenceClass()).get() + " " + nodeAlias);
 		List<String> columns = new ArrayList<>();
 		columns.addAll(nodeColumns);
-		maybeParents.map(parents -> makeAlias(databaseConnector.maybeGetDatabaseEntityName(HibBranchNodeParent.class).get()) + ".*").ifPresent(columns::add);
-		Optional.of(noContainerEdgeFetch).filter(noFetch -> !noFetch).flatMap(fetch -> maybeContainerLanguages).or(() -> maybeContentColumns.map(contentColumns -> Collections.emptyList())).map(yes -> makeAlias("CONTAINER") + ".*").ifPresent(columns::add);
+
+		// Ask for the parent edge columns, if parent/chilren requested
+		maybeParents.ifPresent(parents -> {
+			String parentAlias = makeAlias(databaseConnector.maybeGetDatabaseEntityName(HibBranchNodeParent.class).get());
+			List<String> parentColumns = databaseConnector.getDatabaseColumnNames(HibBranchNodeParent.class).map(columns1 -> columns1.stream().map(column -> parentAlias + "." + column).collect(Collectors.toList())).get();
+			columns.addAll(parentColumns);
+		});
+
+		// Ask for the container edge columns, if the language edges or content columns provided, unless the edges fetch is explicitly disallowed
+		Optional.of(noContainerEdgeFetch)
+			.filter(noFetch -> !noFetch)
+			.flatMap(fetch -> maybeContainerLanguages)
+			.or(() -> maybeContentColumns.map(contentColumns -> Collections.emptyList()))
+			.ifPresent(yes -> {
+				String containerAlias = makeAlias("CONTAINER");
+				List<String> parentColumns = databaseConnector.getDatabaseColumnNames(HibNodeFieldContainerEdgeImpl.class).map(columns1 -> columns1.stream().map(column -> containerAlias + "." + column).collect(Collectors.toList())).get();
+				columns.addAll(parentColumns);
+			});
+
+		// Ask for the content columns, if requested
 		maybeContentColumns.ifPresent(contentColumns -> streamContentSelectClause(databaseConnector, contentColumns, Optional.of(makeAlias("CONTENT")), true).forEach(columns::add));
 		if (!countOnly && !sortJoins.getValue().isEmpty()) {
 			sortJoins.getValue().keySet().stream()
@@ -683,10 +701,13 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 		}
 
 		// Construct the query
-		NativeQuery query = (NativeQuery) (countOnly ? em().createNativeQuery(sqlQuery) : em().createNativeQuery(sqlQuery, HibNodeImpl.class));
+		NativeQuery query = (NativeQuery) em().createNativeQuery(sqlQuery);
 		query.setParameter("project", project.getId());
 
 		if (!countOnly) {
+			// Add a root entity
+			query.addEntity(getPersistenceClass());
+
 			// Add an extra parent edge entity to fetch, if applicable
 			maybeParents.ifPresent(unused -> query.addEntity(HibBranchNodeParent.class));
 
@@ -909,7 +930,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 	@Override
 	public void deletePersisted(HibProject root, HibNode entity) {
 		beforeDeletedFromDatabase(entity);
-		em().remove(entity);
+		currentTransaction.getTx().delete(entity);
 		afterDeletedFromDatabase(entity);
 	}
 

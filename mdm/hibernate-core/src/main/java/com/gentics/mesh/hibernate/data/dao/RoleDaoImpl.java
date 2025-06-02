@@ -272,7 +272,7 @@ public class RoleDaoImpl extends AbstractHibDaoGlobal<HibRole, RoleResponse, Hib
 
 	@Override
 	public void removeRole(HibRole role) {
-		em().remove(role);
+		currentTransaction.getTx().delete(role);
 	}
 
 	@Override

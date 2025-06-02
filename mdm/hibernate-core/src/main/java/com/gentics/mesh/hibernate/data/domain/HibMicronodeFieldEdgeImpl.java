@@ -2,6 +2,17 @@ package com.gentics.mesh.hibernate.data.domain;
 
 import java.io.Serializable;
 import java.util.UUID;
+import java.util.stream.Stream;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.gentics.mesh.core.data.HibField;
+import com.gentics.mesh.core.data.HibFieldContainer;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.database.HibernateTx;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -10,14 +21,6 @@ import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-
-import com.gentics.mesh.core.data.HibField;
-import com.gentics.mesh.core.data.HibFieldContainer;
-import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
-import com.gentics.mesh.database.HibernateTx;
 
 /**
  * Micronode field reference.
@@ -57,6 +60,9 @@ import com.gentics.mesh.database.HibernateTx;
 	@NamedQuery(
 			name = "micronodefieldref.removeByContainerUuids",
 			query =  "delete from micronodefieldref where containerUuid in :containerUuids"),
+	@NamedQuery(
+			name = "micronodefieldref.findDuplicate",
+			query =  "select edge from micronodefieldref edge where containerUuid = :containerUuid and fieldKey = :fieldKey and containerType = :containerType and containerVersionUuid = :containerVersionUuid and microschemaVersion = :microschemaVersion"),
 
 })
 @Table(uniqueConstraints = { 
@@ -67,6 +73,7 @@ import com.gentics.mesh.database.HibernateTx;
 })
 public class HibMicronodeFieldEdgeImpl extends AbstractFieldEdgeImpl<UUID> implements HibMicronodeFieldEdge, Serializable {
 
+	public static final Logger log = LoggerFactory.getLogger(HibMicronodeFieldEdgeImpl.class);
 	private static final long serialVersionUID = -2372898533722905670L;
 
 	@ManyToOne(optional = false, fetch = FetchType.LAZY, targetEntity = HibMicroschemaVersionImpl.class)
@@ -84,10 +91,14 @@ public class HibMicronodeFieldEdgeImpl extends AbstractFieldEdgeImpl<UUID> imple
 
 	@Override
 	public HibField cloneTo(HibFieldContainer container) {
-		HibMicronodeFieldEdgeImpl field = new HibMicronodeFieldEdgeImpl(
-				HibernateTx.get(), getFieldKey(), 
-				valueOrUuid, microschemaVersion, (HibUnmanagedFieldContainer<?,?,?,?,?>) container);
-		return field;
+		return (HibField) findEdgesOf(HibernateTx.get(), (HibUnmanagedFieldContainer<?, ?, ?, ?, ?>) container, getFieldKey(), getMicronode()).findAny().map(existing -> {
+			throw new IllegalStateException("Existing edge found on creation request: " + existing);
+		}).orElseGet(() -> {
+			HibMicronodeFieldEdgeImpl field = new HibMicronodeFieldEdgeImpl(
+					HibernateTx.get(), getFieldKey(), 
+					valueOrUuid, microschemaVersion, (HibUnmanagedFieldContainer<?,?,?,?,?>) container);
+			return field;
+		});
 	}
 
 	@Override
@@ -110,11 +121,35 @@ public class HibMicronodeFieldEdgeImpl extends AbstractFieldEdgeImpl<UUID> imple
 	 * @return
 	 */
 	public static HibMicronodeFieldEdgeImpl fromContainer(HibernateTx tx, HibUnmanagedFieldContainer<?, ?, ?, ?, ?> container, String fieldKey, HibMicronodeContainerImpl micronode) {
-		HibMicronodeFieldEdgeImpl edge = new HibMicronodeFieldEdgeImpl(
-				tx, fieldKey, 
-				micronode.getDbUuid(), (HibMicroschemaVersionImpl) micronode.getSchemaContainerVersion(), container);
-		tx.entityManager().persist(edge);
-		return edge;
+		return (HibMicronodeFieldEdgeImpl) findEdgesOf(tx, container, fieldKey, micronode).findAny().map(existing -> {
+			throw new IllegalStateException("Existing edge found on creation request: " + existing);
+		}).orElseGet(() -> {
+			HibMicronodeFieldEdgeImpl edge = new HibMicronodeFieldEdgeImpl(
+					tx, fieldKey, 
+					micronode.getDbUuid(), (HibMicroschemaVersionImpl) micronode.getSchemaContainerVersion(), container);
+			tx.entityManager().persist(edge);
+			return edge;
+		});
+	}
+
+	/**
+	 * Look for an already existing edge for the given conditions.
+	 * 
+	 * @param tx
+	 * @param container
+	 * @param fieldKey
+	 * @param micronode
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public static Stream<HibMicronodeFieldEdgeImpl> findEdgesOf(HibernateTx tx, HibUnmanagedFieldContainer<?, ?, ?, ?, ?> container, String fieldKey, HibMicronodeContainerImpl micronode) {
+		return HibernateTx.get().entityManager().createNamedQuery("micronodefieldref.findDuplicate")
+				.setParameter("containerUuid", container.getId())
+				.setParameter("fieldKey", fieldKey)
+				.setParameter("containerType", container.getReferenceType())
+				.setParameter("microschemaVersion", (HibMicroschemaVersionImpl) micronode.getSchemaContainerVersion())
+				.setParameter("containerVersionUuid", container.getSchemaContainerVersion().getId())
+				.getResultStream();
 	}
 
 	@Override

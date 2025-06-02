@@ -73,8 +73,9 @@ public interface HibernateTx extends CommonTx {
 	 * @param element element to delete
 	 * @param uuidFieldName UUID field name of an element
 	 * @param idGetter UUID getter
+	 * @param throwIfFailed throw an exception if a single element has not been deleted
 	 */
-	<T> void forceDelete(T element, String uuidFieldName, Function<T, Object> idGetter);
+	<T> void forceDelete(T element, String uuidFieldName, Function<T, Object> idGetter, boolean throwIfFailed);
 
 	/**
 	 * Get the session form of an entity manager.

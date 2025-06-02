@@ -132,7 +132,7 @@ public class BinaryDaoImpl extends AbstractImageDataHibDao<HibBinary> implements
 				imageVariantDao.deletePersistedVariant(binary, variant, true);
 			};
 			currentTransaction.getTx().data().binaryStorage().deleteOnTxSuccess(binary.getUuid(), currentTransaction.getTx());
-			em().remove(binary);
+			currentTransaction.getTx().delete(binary);
 		}
 	}
 
