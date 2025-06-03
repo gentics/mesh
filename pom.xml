@@ -16,7 +16,6 @@
 		<projectRoot>${project.basedir}</projectRoot>
 		<mesh.build.version>${project.version}</mesh.build.version>
 		<mesh.build.timestamp>${maven.build.timestamp}</mesh.build.timestamp>
-		<license.checker.version>1.0.0</license.checker.version>
 
 		<vertx.version>4.5.14</vertx.version>
 		<dagger.version>2.24</dagger.version>
