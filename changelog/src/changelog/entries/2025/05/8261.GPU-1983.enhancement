@@ -1,1 +1,5 @@
-Mesh Plugin base has been updated to `v3.1.0`. Various dependencies have been updated: Apache Tika to `v2.9.2`, Netty to `v4.1.118.Final`, Apache `commons-beanutils` to `v1.11.0`.
+Some dependencies have been updated:
+* Mesh Plugin Base: 3.1.0
+* Apache Tika: 2.9.2
+* Netty: 4.1.118.Final
+* Apache Commons Beanutils: 1.11.0
