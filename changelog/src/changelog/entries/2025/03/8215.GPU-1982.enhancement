@@ -7,3 +7,4 @@ Some dependencies have been updated:
 * Zip4j: 2.11.3
 * Logback: 1.5.18
 * Okio: 1.17.6
+* Dagger: 2.56.2

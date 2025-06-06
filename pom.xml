@@ -18,7 +18,7 @@
 		<mesh.build.timestamp>${maven.build.timestamp}</mesh.build.timestamp>
 
 		<vertx.version>4.5.14</vertx.version>
-		<dagger.version>2.24</dagger.version>
+		<dagger.version>2.56.2</dagger.version>
 		<compiler.plugin.version>3.11.0</compiler.plugin.version>
 
 		<!-- Tests -->
@@ -119,6 +119,10 @@
 						<forceJavacCompilerUse>true</forceJavacCompilerUse>
 						<verbose>false</verbose>
 						<release>17</release>
+						<compilerArgs>
+							<!-- See https://github.com/google/dagger/releases/tag/dagger-2.48-->
+							<arg>-Adagger.ignoreProvisionKeyWildcards=DISABLED</arg>
+						</compilerArgs>
 					</configuration>
 					<dependencies>
 						<dependency>
