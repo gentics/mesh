@@ -18,6 +18,8 @@
 		<plugin.author>Gentics</plugin.author>
 		<!--  Don't forget to also update dependencyManagement section! -->
 		<mesh.version>3.1.0</mesh.version>
+		<spring.security.version>6.3.9</spring.security.version>
+		<json-smart.version>2.5.2</json-smart.version>
 		<netty.version>4.1.118.Final</netty.version>
 		<hsqldb.version>2.7.3</hsqldb.version>
 		<commons-beanutils.version>1.11.0</commons-beanutils.version>
@@ -115,6 +117,23 @@
 				<groupId>commons-beanutils</groupId>
 				<artifactId>commons-beanutils</artifactId>
 				<version>${commons-beanutils.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>net.minidev</groupId>
+				<artifactId>json-smart</artifactId>
+				<version>${json-smart.version}</version>
+			</dependency>
+			<!-- https://mvnrepository.com/artifact/org.springframework.security/spring-security-core -->
+			<dependency>
+				<groupId>org.springframework.security</groupId>
+				<artifactId>spring-security-core</artifactId>
+				<version>${spring.security.version}</version>
+			</dependency>
+			<!-- https://mvnrepository.com/artifact/org.springframework.security/spring-security-crypto -->
+			<dependency>
+				<groupId>org.springframework.security</groupId>
+				<artifactId>spring-security-crypto</artifactId>
+				<version>${spring.security.version}</version>
 			</dependency>
 
 			<!-- This is necessary, since some transitive (test) dependencies would add a dependency to another version of netty-codec, which lets the test fail -->
