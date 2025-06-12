@@ -123,4 +123,11 @@ public @interface MeshTestSetting {
 	 * @return
 	 */
 	boolean resetBetweenTests() default true;
+
+	/**
+	 * If it should login the clients after initialization at the beginning of the test.
+	 *
+	 * @return
+	 */
+	boolean loginClients() default true;
 }

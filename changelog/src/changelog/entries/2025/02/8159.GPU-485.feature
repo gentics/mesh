@@ -1,0 +1,1 @@
+Authentication: Added JWT options to configure token content (`issuer` - `"iss"`, `audience` - `"aud"`) and token verification (`leeway` and `ignoreExpiration`).
