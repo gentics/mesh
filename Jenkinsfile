@@ -2,5 +2,5 @@
 JobContext.set(this)
 
 javaPipelineWithImage imageName: "java-worker:17.2", sonarProjectKey: "mesh-commercial-plugins", {
-    scanFilesystem path: "$PWD", exitCode: 1
+    scanRootFilesystem path: "$PWD", exitCode: 1, offline: true
 }
