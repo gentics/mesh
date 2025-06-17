@@ -19,7 +19,6 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
@@ -32,6 +31,7 @@ import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
+import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.example.GraphQLExamples;
 import com.gentics.mesh.json.JsonUtil;
@@ -81,7 +81,7 @@ public class JsonUtilTest {
 
 	@Test
 	public void testJsonList() {
-		ListResponse<UserResponse> list = new ListResponse<>();
+		UserListResponse list = new UserListResponse();
 		UserResponse user = new UserResponse();
 		list.getData().add(user);
 		assertNotNull(list.toJson());
