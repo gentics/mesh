@@ -278,7 +278,7 @@
 			"color": null,
 			"created": 1492520447982,
 			"data": {
-				"baseurl": "https://demo.getmesh.io/api/v2",
+				"baseurl": "https://localhost:8080/api/v2",
 				"password": "admin",
 				"project": "demo",
 				"username": "admin"
@@ -1457,7 +1457,7 @@
 			"authentication": {},
 			"body": {
 				"mimeType": "application/json",
-				"text": "{\n\t\"hostname\":\"demo.getmesh.io\"\n}"
+				"text": "{\n\t\"hostname\":\"localhost\"\n}"
 			},
 			"created": 1532335215556,
 			"description": "",

@@ -6,7 +6,7 @@ include::content/docs/variables.adoc-include[]
 
 == JavaScript
 
-* link:https://github.com/gentics/mesh-js-api[Gentics Mesh JavaScript Client] - A work-in-progress client for Gentics Mesh written in TypeScript.
+* link:https://github.com/gentics/mesh-ui[Gentics Mesh UI]
 * link:https://github.com/gentics/mesh-angular-example[Gentics Mesh Angular Example]
 * link:https://github.com/gentics/mesh-express-example[Gentics Mesh Express Example]
 
