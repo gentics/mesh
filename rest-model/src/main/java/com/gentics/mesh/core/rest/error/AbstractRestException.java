@@ -11,7 +11,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 /**
  * Abstract class for regular rest exceptions. This class should be used when returning the exception information via a JSON response.
  */
-@JsonIgnoreProperties({ "suppressed", "cause", "detailMessage", "stackTrace", "localizedMessage" })
+@JsonIgnoreProperties({ "suppressed", "cause", "detailMessage", "stackTrace", "localizedMessage", "logStackTrace" })
 public abstract class AbstractRestException extends RuntimeException {
 
 	private static final long serialVersionUID = 2209919403583173663L;
