@@ -10,7 +10,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -20,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
+import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -207,16 +211,59 @@ public class MeshPluginService {
 	 * 		to the project
 	 */
 	public InitializationAction ensureSchemas(String prefix, List<String> schemaNames) {
+		return ensureSchemas(prefix, schemaNames, Optional.empty());
+	}
+
+
+	/**
+	 * Returns a function that will make sure the specified schemas exist and
+	 * are assigned to the project.
+	 *
+	 * @param schemaNames Names of the schemas to check for existence and
+	 * 		assignment
+	 * @param alreadyCheckedSchemas a possible result of the schema check,
+	 *      performed earlier
+	 * @return A function that will make sure the schemas exist and are assigned
+	 * 		to the project
+	 */
+	public InitializationAction ensureSchemas(String prefix, List<String> schemaNames, Optional<SchemaListResponse> alreadyCheckedSchemas) {
+		return project -> alreadyCheckedSchemas.map(Single::just).orElseGet(() -> ensureSchemasGlobal(prefix, schemaNames))
+				.flatMap(existing -> {
+					log.info("Checking schemas for project {}", project);
+					return Single.zip(
+							existing.getData().stream()
+								.map(schemaResponse -> ensureSchemaAssigned(project, schemaResponse, prefix, Function.identity()))
+								.collect(Collectors.toList()),
+							values -> values
+					);
+				})
+				.ignoreElement();
+	}
+
+	/**
+	 * Returns a function that will make sure the specified schemas exist and
+	 * are assigned to the project.
+	 *
+	 * @param schemaNames Names of the schemas to check for existence and
+	 * 		assignment
+	 * @param alreadyCheckedSchemas a possible result of the schema check,
+	 *      performed earlier
+	 * @return A function that will make sure the schemas exist and are assigned
+	 * 		to the project
+	 */
+	public Single<SchemaListResponse> ensureSchemasGlobal(String prefix, List<String> schemaNames) {
 		Observable<Message<JsonObject>> events = registerEvent(MeshEvent.SCHEMA_MIGRATION_FINISHED, false);
 
-		return project -> adminClient.findSchemas().toSingle()
-			.doOnSubscribe(ignored -> log.info("Checking schemas for project {}", project))
+		return adminClient.findSchemas().toSingle()
 			.flatMapObservable(existing -> Observable.fromIterable(schemaNames)
-				.flatMapSingle(schema -> ensureSchemaExists(project, existing, prefix, schema)))
-			.filter(SchemaCreateOrUpdateResponse::isUpdated)
-			.map(s -> s.getSchema().getUuid())
+				.flatMapSingle(schema -> ensureSchemaExists(existing, prefix, schema)))
 			.toList()
-			.flatMapCompletable(migratedSchemas -> {
+			.flatMap(allSchemas -> {
+				List<String> migratedSchemas = allSchemas.stream()
+						.filter(SchemaCreateOrUpdateResponse::isUpdated)
+						.map(s -> s.getSchema().getUuid())
+						.collect(Collectors.toList());
+
 				if (log.isInfoEnabled()) {
 					int count = migratedSchemas.size();
 
@@ -234,7 +281,17 @@ public class MeshPluginService {
 				return events
 					.filter(schemaMigrationFinishedFilter(migratedSchemas))
 					.take(migratedSchemas.size())
-					.ignoreElements();
+					.all(msg -> msg.body().mapTo(SchemaMigrationMeshEventModel.class).getStatus().equals(JobStatus.COMPLETED))
+					.flatMap(completed -> {
+						if (completed) {
+							SchemaListResponse schemas = new SchemaListResponse();
+							allSchemas.forEach(schema -> schemas.add(schema.getSchema()));
+							return Single.just(schemas);
+						} else {
+							return Single.error(() -> new IllegalStateException("The schema migration process has not succeeded for: "
+									+ migratedSchemas.stream().collect(Collectors.joining(", "))));
+						}
+					});
 			});
 	}
 
@@ -394,6 +451,33 @@ public class MeshPluginService {
 	}
 
 	/**
+	 * Make sure the schema with the specified name exists.
+	 *
+	 * <p>
+	 *     When the schema already exists, it will be updated, otherwise it will
+	 *     be created.
+	 * </p>
+	 *
+	 * @param existing The existing schemas
+	 * @param schemaName The schema name to check
+	 * @return An <code>Single</code> with the updated or created schema
+	 * 		response
+	 */
+	private Single<SchemaCreateOrUpdateResponse> ensureSchemaExists(SchemaListResponse existing, String prefix, String schemaName) {
+		List<SchemaResponse> schemas = existing.getData();
+
+		if (schemas == null) {
+			schemas = Collections.emptyList();
+		}
+
+		return schemas.stream()
+			.filter(schema -> schema.getName().equals(prefix + schemaName))
+			.findAny()
+			.map(response -> updateSchema(schemaName, response))
+			.orElseGet(() -> createSchema(prefix, schemaName));
+	}
+
+	/**
 	 * Make sure the schema with the specified name exists and is assigned to
 	 * the given project.
 	 *
@@ -409,25 +493,32 @@ public class MeshPluginService {
 	 * 		response
 	 */
 	private Single<SchemaCreateOrUpdateResponse> ensureSchemaExists(String project, SchemaListResponse existing, String prefix, String schemaName) {
-		List<SchemaResponse> schemas = existing.getData();
+		return ensureSchemaExists(existing, prefix, schemaName)
+			.flatMap(schema -> ensureSchemaAssigned(project, schema, prefix, SchemaCreateOrUpdateResponse::getSchema));
+	}
 
-		if (schemas == null) {
-			schemas = Collections.emptyList();
+	/**
+	 * Make sure the schema with the specified name is assigned to
+	 * the given project.
+	 *
+	 * <p>
+	 *     When the schema already exists, it will be updated, otherwise it will
+	 *     be created.
+	 * </p>
+	 *
+	 * @param project The project to check
+	 * @param existing The existing schemas
+	 * @param schemaResponse The schema to check
+	 * @return An <code>Single</code> with the updated or created schema
+	 * 		response
+	 */
+	private <T> Single<T> ensureSchemaAssigned(String project, T schemaResponse, String prefix, Function<T, SchemaResponse> schemaGetter) {
+		if (log.isInfoEnabled()) {
+			log.info("Assigning schema \"{}\" to \"{}\"", schemaGetter.apply(schemaResponse).getName(), project);
 		}
 
-		return schemas.stream()
-			.filter(schema -> schema.getName().equals(prefix + schemaName))
-			.findAny()
-			.map(response -> updateSchema(schemaName, response))
-			.orElseGet(() -> createSchema(prefix, schemaName))
-			.flatMap(schema -> {
-				if (log.isInfoEnabled()) {
-					log.info("Assigning schema \"{}\" to \"{}\"", schema.getSchema().getName(), project);
-				}
-
-				return adminClient.assignSchemaToProject(project, schema.getSchema().getUuid()).toSingle()
-					.map(ignored -> schema);
-			});
+		return adminClient.assignSchemaToProject(project, schemaGetter.apply(schemaResponse).getUuid()).toSingle()
+			.map(ignored -> schemaResponse);
 	}
 
 	/**

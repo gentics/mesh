@@ -1,6 +1,29 @@
 package com.gentics.mesh.plugin.forms.service;
 
-import com.gentics.mesh.core.rest.admin.cluster.ServerRole;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+
+import javax.annotation.Nullable;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -8,6 +31,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.client.GenericParametersImpl;
 import com.gentics.mesh.parameter.client.PublishParametersImpl;
@@ -27,6 +51,7 @@ import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
+
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
@@ -35,28 +60,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.Vertx;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Service for handling activation status of the plugin for projects
@@ -112,8 +115,9 @@ public class StatusService {
 	 */
 	public Completable initialize(String storageDirPath) {
 		return rxVertx.fileSystem().rxMkdirs(storageDirPath)
-			.andThen(projectsWithPluginActive()
-				.flatMapCompletable(project -> initializeProject(project.getName())));
+			.andThen(meshPluginService.ensureSchemasGlobal(StringUtils.EMPTY, SchemaInitializer.PLUGIN_SCHEMAS))
+			.flatMapCompletable(schemas -> projectsWithPluginActive()
+				.flatMapCompletable(project -> initializeProject(project.getName(), Optional.of(schemas))));
 	}
 
 	/**
@@ -144,8 +148,18 @@ public class StatusService {
 	 * @param projectName project name
 	 * @return activation response
 	 */
+	@Deprecated
 	public Single<StatusResponse> activate(String projectName) {
-		return initializeProject(projectName).andThen(publish(projectName));
+		return activate(projectName, Optional.empty());
+	}
+	
+	/**
+	 * Activate the plugin in the project
+	 * @param projectName project name
+	 * @return activation response
+	 */
+	public Single<StatusResponse> activate(String projectName, Optional<SchemaListResponse> maybeExistingSchemas) {
+		return initializeProject(projectName, maybeExistingSchemas).andThen(publish(projectName));
 	}
 
 	/**
@@ -154,11 +168,11 @@ public class StatusService {
 	 * @param projectName
 	 * @return
 	 */
-	protected Completable initializeProject(String projectName) {
-		return schemaInitializer.initialize(projectName).toObservable().flatMap(unused -> adminClient.loadCoordinationMaster().toObservable()
+	protected Completable initializeProject(String projectName, Optional<SchemaListResponse> maybeExistingSchemas) {
+		return schemaInitializer.initialize(projectName, maybeExistingSchemas).andThen(adminClient.loadCoordinationMaster().toObservable()
 			.flatMap(coordMaster -> adminClient.getApiInfo().toObservable()
 				// Skip the download purge, if we are in the cluster mode, but not as Master
-				.map(serverInfo -> !serverInfo.getMeshNodeName().equals(coordMaster.getName())))
+				.map(serverInfo -> coordMaster.getName() != null && !coordMaster.getName().equals(serverInfo.getMeshNodeName())))
 			.onErrorReturn(e -> {
 				// Either the failure is 400 BAD_REQUEST (no cluster) or any else, we skip no purges
 				return false;
