@@ -417,4 +417,9 @@ public class PluginContext implements RoutingContext {
 	public boolean isSessionAccessed() {
 		return rc.isSessionAccessed();
 	}
+
+	@Override
+	public UserContext userContext() {
+		return rc.userContext();
+	}
 }

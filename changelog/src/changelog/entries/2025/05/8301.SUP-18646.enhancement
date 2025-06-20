@@ -1,0 +1,3 @@
+Core: The following dependencies have been updated, to eliminate vulnerable versions:
+ * Vert.x - to version `4.5.14`
+ * Netty - to version `4.1.118.Final`
