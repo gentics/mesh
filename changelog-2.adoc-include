@@ -6,6 +6,18 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v3.0.11]]
+== 3.0.11 (20.06.2025)
+
+icon:plus[] Core: The following dependencies have been updated, to eliminate vulnerable versions:
+ * Vert.x - to version `4.5.14`
+ * Netty - to version `4.1.118.Final`
+
+icon:check[] Some dependencies have been updated:
+* Netty: 4.1.118.Final
+* Commons Beanutils: 1.11.0
+
+
 [[v3.0.10]]
 == 3.0.10 (22.05.2025)
 
@@ -111,6 +123,13 @@ icon:plus[] Clustering: The Hazelcast library, responsible for the cluster insta
 
 icon:plus[] Some library dependencies have been updated to the latest hotfix versions.
 
+
+[[v2.1.21]]
+== 2.1.21 (20.06.2025)
+
+icon:plus[] Core: The following dependencies have been updated, to eliminate vulnerable versions:
+ * Vert.x - to version `4.5.14`
+ * Netty - to version `4.1.118.Final`
 
 [[v2.1.20]]
 == 2.1.20 (22.05.2025)

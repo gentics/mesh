@@ -1,9 +1,9 @@
 {
-  "meshVersion" : "3.0.10",
+  "meshVersion" : "3.0.11",
   "meshNodeName" : "Reminiscent Tirtouga",
   "databaseVendor" : "mariadb",
   "databaseVersion" : "10.7",
   "searchVendor" : "elasticsearch",
   "searchVersion" : "2.4.3",
-  "vertxVersion" : "4.5.11"
+  "vertxVersion" : "4.5.14"
 }
