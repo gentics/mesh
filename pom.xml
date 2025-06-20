@@ -15,7 +15,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<projectRoot>${project.basedir}</projectRoot>
 
-		<vertx.version>4.5.7</vertx.version>
+		<vertx.version>4.5.14</vertx.version>
 		<dagger.version>2.24</dagger.version>
 		<compiler.plugin.version>3.11.0</compiler.plugin.version>
 		<!-- Tests -->

@@ -31,7 +31,7 @@
 		<hazelcast.version>3.12.13</hazelcast.version>
 		<jackson.version>2.17.0</jackson.version>
 		<jackson-databind.version>2.17.0</jackson-databind.version>
-		<netty.version>4.1.108.Final</netty.version>
+		<netty.version>4.1.118.Final</netty.version>
 		<tika.version>1.26</tika.version>
 		<aws.sdk.version>2.16.83</aws.sdk.version>
 		<snakeyaml.version>2.2</snakeyaml.version>
