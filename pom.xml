@@ -18,12 +18,17 @@
 		<plugin.author>Gentics</plugin.author>
 		<!--  Don't forget to also update dependencyManagement section! -->
 		<mesh.version>3.0.11</mesh.version>
+		<spring.security.version>6.3.9</spring.security.version>
+		<json-smart.version>2.5.2</json-smart.version>
 		<netty.version>4.1.118.Final</netty.version>
 		<hsqldb.version>2.7.3</hsqldb.version>
 		<commons-beanutils.version>1.11.0</commons-beanutils.version>
+		<commons-text.version>1.12.0</commons-text.version>
 		<jackson.version>2.17.0</jackson.version>
-		<license.checker.version>2.0.0</license.checker.version>
+		<tika.version>2.9.2</tika.version>
+		<license.checker.version>2.0.3</license.checker.version>
 		<dependency.report.component.name>Plugins</dependency.report.component.name>
+		<junit.version>4.13.2</junit.version>
 	</properties>
 
 	<modules>
@@ -43,18 +48,7 @@
 
 	<dependencyManagement>
 		<dependencies>
-			<!-- TODO: Re-check later. Explicitly managed because the version used by json-path contains a vulnerability. -->
-			<dependency>
-				<groupId>net.minidev</groupId>
-				<artifactId>json-smart</artifactId>
-				<version>2.5.2</version>
-			</dependency>
-			<!-- TODO: Re-check later. Explicitly managed because the version used by json-path contains a vulnerability. -->
-			<dependency>
-				<groupId>org.apache.commons</groupId>
-				<artifactId>commons-text</artifactId>
-				<version>1.12.0</version>
-			</dependency>
+
 			<dependency>
 				<groupId>com.gentics.mesh</groupId>
 				<artifactId>mesh-bom</artifactId>
@@ -118,6 +112,28 @@
 				<artifactId>commons-beanutils</artifactId>
 				<version>${commons-beanutils.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-text</artifactId>
+				<version>${commons-text.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>net.minidev</groupId>
+				<artifactId>json-smart</artifactId>
+				<version>${json-smart.version}</version>
+			</dependency>
+			<!-- https://mvnrepository.com/artifact/org.springframework.security/spring-security-core -->
+			<dependency>
+				<groupId>org.springframework.security</groupId>
+				<artifactId>spring-security-core</artifactId>
+				<version>${spring.security.version}</version>
+			</dependency>
+			<!-- https://mvnrepository.com/artifact/org.springframework.security/spring-security-crypto -->
+			<dependency>
+				<groupId>org.springframework.security</groupId>
+				<artifactId>spring-security-crypto</artifactId>
+				<version>${spring.security.version}</version>
+			</dependency>
 
 			<!-- This is necessary, since some transitive (test) dependencies would add a dependency to another version of netty-codec, which lets the test fail -->
 			<dependency>
@@ -125,6 +141,13 @@
 				<artifactId>netty-codec</artifactId>
 				<version>${netty.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>junit</groupId>
+				<artifactId>junit</artifactId>
+				<version>${junit.version}</version>
+				<scope>test</scope>
+			</dependency>
+
 		</dependencies>
 	</dependencyManagement>
 
