@@ -9,6 +9,7 @@ import com.gentics.mesh.plugin.common.license.LicensedPlugin;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.function.Function;
 
 import org.pf4j.PluginWrapper;
@@ -151,11 +152,13 @@ public class CommentPlugin extends AbstractPlugin implements RestPlugin {
 
 			this.templateService = component.templateService();
 			MeshPluginService pluginService = component.meshPluginService();
-			return Completable.mergeArray(
-				pluginService.prepareProjects(configuration.getProjectNames(),
-					pluginService.ensureSchemas(configuration.getSchemaPrefix(), Arrays.asList("comment", "section", "folder"))
-				),
-				templateService.initialize());
+			return pluginService.ensureSchemasGlobal(configuration.getSchemaPrefix(), Arrays.asList("comment", "section", "folder"))
+					.flatMapCompletable(schemas -> Completable.mergeArray(
+							pluginService.prepareProjects(configuration.getProjectNames(),
+									pluginService.ensureSchemas(configuration.getSchemaPrefix(), Arrays.asList("comment", "section", "folder"), Optional.of(schemas))
+								),
+								templateService.initialize()));
+			
 		} catch (Exception e) {
 			return Completable.error(e);
 		}

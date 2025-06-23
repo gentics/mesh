@@ -22,12 +22,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+
+import org.apache.commons.lang3.StringUtils;
 import org.pf4j.PluginWrapper;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
@@ -78,10 +81,13 @@ public class FavoritePlugin extends AbstractPlugin implements RestPlugin {
 	}
 
 	private Completable initializeMeshProjects(List<String> projectName) {
-		return meshPluginService.prepareProjects(
-				projectName,
-				meshPluginService.ensureSchemas(FavoriteService.PLUGIN_SCHEMA_NAME, FavoriteService.FAVORITE_SCHEMA_NAME, FavoriteService.SECTION_SCHEMA_NAME),
-				meshPluginService.ensureFolders(FavoriteService.PLUGIN_SCHEMA_NAME, "/" + FavoriteService.FAVORITE_PLUGIN_NAME));
+		List<String> pluginSchemas = List.of(FavoriteService.PLUGIN_SCHEMA_NAME, FavoriteService.FAVORITE_SCHEMA_NAME, FavoriteService.SECTION_SCHEMA_NAME);
+
+		return meshPluginService.ensureSchemasGlobal(StringUtils.EMPTY, pluginSchemas)
+			.flatMapCompletable(schemas -> meshPluginService.prepareProjects(
+					projectName,
+					meshPluginService.ensureSchemas(StringUtils.EMPTY, pluginSchemas, Optional.of(schemas)),
+					meshPluginService.ensureFolders(FavoriteService.PLUGIN_SCHEMA_NAME, "/" + FavoriteService.FAVORITE_PLUGIN_NAME)));
 	}
 
 	private Handler<RoutingContext> fromComponent(Function<FavoritePluginComponent, AbstractFavoriteHandler> handler) {
