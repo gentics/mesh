@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="description" content="">
+		<meta name="author" content="">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+
+		<!-- Bootstrap -->
+        <link href="Constructs_files/bootstrap.min.css" rel="stylesheet">
+        <link href="Constructs_files/font-awesome.min.css" rel="stylesheet">
+        <script src="Constructs_files/bootstrap.min.js"></script>
+
+        <!-- Hightlight JS -->
+        <link href="Constructs_files/hljs-foundation.min.css" rel="stylesheet">
+        <script src="Constructs_files/highlight.min.js"></script>
+
+        <!-- App -->
+        <link href="Constructs_files/custom_styles.min.css" media="screen" rel="stylesheet">
+        <link href="Constructs_files/style.css" media="screen" rel="stylesheet">
+        <link rel="icon" href="https://www.gentics.com/static/infoportal/files/images/favicon.ico">
+
+        <title>	Constructs
+</title>
+	</head>
+    <body>
+        <!-- Header with Logo and Navbar Toggle -->
+        <header class="header">
+            <div class="d-flex align-items-center">
+                <img src="Constructs_files/logo-gentics.webp" alt="Gentics Logo">
+                <h1 class="h4 ms-3 mb-0">CMP 8.1</h1>
+            </div>
+
+            <button class="navbar-toggler d-md-none" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+                            <div class="versions-switch">
+                    <button class="current-version">
+                        <span class="version-name">
+                            CMP 8.1
+                        </span>
+                        <i class="fa fa-angle-down dropdown-indicator" aria-hidden="true"></i>
+                    </button>
+
+                    <div class="version-entries">
+                                                                                    <a class="version-entry link" href="https://www.gentics.com/implementation/cmp8.0/constructs/constructs">
+                                    CMP 8.0
+                                </a>
+                                                        <hr>
+                                                                                    <span class="version-entry active">CMP 8.1</span>
+                                                        <hr>
+                                                                                    <a class="version-entry link" href="https://www.gentics.com/implementation/cmp8.2/constructs/constructs">
+                                    CMP 8.2
+                                </a>
+                                                        <hr>
+                                            </div>
+                </div>
+                    </header>
+
+        <div class="container-fluid">
+            <div class="row">
+                <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+	<div class="position-sticky">
+	<ul class="nav flex-column">
+	    <li class="nav-item nav-item-level-1">
+		<a class="nav-link active" href="https://www.gentics.com/">Home</a>
+	    </li>
+		<li class="nav-item nav-item-level-1">
+	                        <a class="nav-link active" href="https://www.gentics.com/implementation/cmp8.1/startpage">
+                Constructs
+            </a>
+             
+</li>
+<li class="nav-item nav-item-level-1">
+	                        <a class="nav-link" href="https://www.gentics.com/implementation/cmp8.1/startpage">
+                Images
+            </a>
+             
+</li>
+<li class="nav-item nav-item-level-1">
+	                        <a class="nav-link" href="https://www.gentics.com/implementation/cmp8.1/overviews/overviews">
+                Overviews
+            </a>
+             
+</li>
+<li class="nav-item nav-item-level-1">
+	                        <a class="nav-link" href="https://www.gentics.com/implementation/cmp8.1/startpage">
+                Portal
+            </a>
+             
+</li>
+<li class="nav-item nav-item-level-1">
+	                        <a class="nav-link" href="https://www.gentics.com/implementation/cmp8.1/startpage">
+                From HTML Design into CMS building bocks
+            </a>
+             
+</li>
+<li class="nav-item nav-item-level-1">
+	                        <a class="nav-link" href="https://www.gentics.com/implementation/cmp8.1/startpage">
+                From CMS building blocks into a webpage
+            </a>
+             
+</li>
+<li class="nav-item nav-item-level-1">
+	                        <a class="nav-link" href="https://www.gentics.com/implementation/cmp8.1/startpage">
+                How CMS works
+            </a>
+             
+</li>
+<li class="nav-item nav-item-level-1">
+	                        <a class="nav-link" href="https://www.gentics.com/implementation/cmp8.1/startpage">
+                Aloha Editor documentation
+            </a>
+             
+</li>
+<li class="nav-item nav-item-level-1">
+	                        <a class="nav-link" href="https://www.gentics.com/implementation/cmp8.1/startpage">
+                Mesh as headless structured content storage
+            </a>
+             
+</li>
+<li class="nav-item nav-item-level-1">
+	                        <a class="nav-link" href="https://www.gentics.com/implementation/cmp8.1/startpage">
+                Publishing
+            </a>
+             
+</li>
+        </ul>
+    </div>
+    </nav>
+                <!-- Content Area -->
+                <main class="col-md-9 ms-sm-auto col-lg-10 content">
+                    	<section>
+            			<h1>Constructs</h1>
+		        </section>
+        <section class="docs-content">
+			            <h2 id="heading_summary">Summary</h2><p>Here we describe a common internal structure of a construct (aka tag type).</p><p>Normally, a construct consists of a <code>gentics_structure.json</code> file, containing the basic construct features, and zero or more <code>part.&lt;part_keyword&gt;.&lt;part_type_extension&gt;</code> files with the values for an each construct part, enclosed in the same folder.</p><h2 id="heading_file_structure">File structure</h2><h3 id="heading_construct_s_gentics_structure_file">Construct's gentics_structure file</h3><p>The <code>gentics_structure.json</code> file is a JSON file with the following fields:</p><div class="table-responsive aloha-table-container"><table class="table programm"><tbody><tr><th scope="row">Field</th><th scope="row">Description</th><th scope="row">Mandatory</th><th scope="row">Allowed values</th><th scope="row">Default value</th><th scope="row">Example&nbsp;</th></tr><tr><td><code>globalId</code></td><td>A globally unique, automatically generated identifier.</td><td>Yes</td><td>Must follow the Regexp format:&nbsp;<code>[0-9a-z]{4}\\.[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}</code></td><td></td><td>&nbsp;</td></tr><tr><td><code>keyword</code></td><td>A construct identifier, unique across all constructs.</td><td>Yes</td><td>Alphanumerical value, max 255 characters long</td><td></td><td style="">&nbsp;</td></tr><tr><td><code>name</code></td><td>A set of human readable construct names.</td><td>Yes</td><td><code>key</code>:<code>value</code> pair, where <code>key</code> corresponds to the language&nbsp;ISO 639-1:2002 code, and <code>value</code> is an arbitrary string in this language</td><td>At least one pair has to be defined</td><td>&nbsp;<code>{ "en": "Semver", "de": "Semantische Version" }</code></td></tr><tr><td><code>description</code></td><td>A set of human readable construct descriptions.</td><td>No</td><td><code>key</code>:<code>value</code> pair, where <code>key</code> corresponds to the language&nbsp;ISO 639-1:2002 code, and <code>value</code></td><td></td><td><code>{
+ "en": "A description of a version in a format of `major.minor.patch` 
+numbers", "de": "Eine Beschreibung der Version laut Nummern mit 
+Formatierung `major.minor.patch`" }</code>&nbsp;</td></tr><tr><td><code data-highlighted="yes">mayBeSubtag</code></td><td>A flag, marking this construct as allowed to be inserted into other constructs.</td><td>No</td><td><code>true</code> or <code>false</code></td><td><code>false</code></td><td>&nbsp;</td></tr><tr><td><code data-highlighted="yes">mayContainsSubtags</code></td><td>A flag, marking this construct as allowed to contain other constructs.&nbsp;</td><td>No</td><td><code>true</code> or <code>false</code></td><td><code>false</code></td><td>&nbsp;</td></tr><tr><td><code data-highlighted="yes">editOnInsert</code></td><td>A flag, marking the instance of this construct to open its editor upon its initialization in a page.</td><td>No</td><td><code>true</code> or <code>false</code></td><td><code>false</code></td><td>&nbsp;</td></tr><tr><td><code data-highlighted="yes">editorControlStyle</code></td><td>A
+ definition of how the controls, that belong to this construct, should 
+be drawn in the edit mode, for an optimal edit mode UX.&nbsp;</td><td>No</td><td>- <code>ABOVE</code> (controls are above the construct instance, default value)<br>- <code>ASIDE</code> (controls are placed left to the construct instance),&nbsp;<br>- <code>CLICK</code>&nbsp;(no controls, shown, the tag editor is opened with a click on the control instance)</td><td><code>ABOVE</code></td><td>&nbsp;</td></tr><tr><td style=""><code data-highlighted="yes">editorControlsInside</code></td><td>A
+ flag, telling if the controls of an instance of this construct should 
+be drawn inside the instance, for an optimal edit mode UX.&nbsp;</td><td>No</td><td><code>true</code> or <code>false</code></td><td><code>false</code></td><td>&nbsp;</td></tr><tr><td style=""><code data-highlighted="yes">autoEnable</code></td><td style="">A flag, marking the instance of this construct to be automatically enabled upon its initialization in a page.&nbsp;</td><td>No</td><td><code>true</code> or <code>false</code></td><td><code>false</code></td><td style="">&nbsp;</td></tr><tr><td><code data-highlighted="yes">externalEditorUrl</code></td><td style="">A string value of an URL of an external editor for the instances of this construct.&nbsp;</td><td>No</td><td>A valid URL</td><td></td><td style="">&nbsp;</td></tr><tr><td><code>parts</code></td><td style="">An array of zero or more construct part definitions (see below).</td><td style="">Yes</td><td style="">An array of construct part definitions</td><td style=""><p>A JSON array, may be empty</p></td><td style="">&nbsp;</td></tr></tbody></table></div><h3 id="heading_part_definition_structure">Part definition structure</h3><p>Each of the definition of a construct part consists of a definition in the parts array of a <code>gentics_structure.json</code> file, and a default value, contained in an own&nbsp;<code>part.&lt;part_keyword&gt;.&lt;part_type_extension&gt;</code> file. The JSON structure of a part definition looks like following:</p><div class="table-responsive aloha-table-container"><table class="table programm"><tbody><tr><th scope="row">Field</th><th scope="row" style="">Description</th><th scope="row" style="">Mandatory</th><th scope="row" style="">Allowed values</th><th scope="row" style="">Default value</th><th style="" scope="row">&nbsp;Example</th></tr><tr><td><span></span><code>globalId</code></td><td>A globally unique, automatically generated identifier.</td><td>Yes</td><td style="">Must follow the Regexp format:<code> [0-9a-z]{4}\\.[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}</code></td><td style=""></td><td style="">&nbsp;</td></tr><tr><td><code>keyword</code></td><td>A construct identifier, unique across all constructs.</td><td>Yes</td><td style="">Alphanumerical value, max 255 characters long</td><td style=""></td><td style="">&nbsp;</td></tr><tr><td><code>name</code></td><td>A set of human readable construct names.</td><td>Yes</td><td><code>key</code>:<code>value</code> pair, where <code>key</code> corresponds to the language ISO 639-1:2002 code, and <code>value</code> is an arbitrary string in this language</td><td style="">At least one pair has to be defined</td><td style=""><code>{ "en": "Major version", "de": "Majorversion" }</code>&nbsp;</td></tr><tr><td><code>typeId</code></td><td>An ID of the <i>type</i> of this construct part.</td><td>Yes</td><td>An integer. See <a target="_blank" rel="noopener noreferrer" class="" data-gentics-gcn-url="https://www.gentics.com/Content.Node/cmp8/guides/gcn_part_types.html" href="https://www.gentics.com/Content.Node/cmp8/guides/gcn_part_types.html#gsc.tab=0">list of type IDs and their descriptions</a>.</td><td></td><td style="">&nbsp;</td></tr><tr><td><code>order</code></td><td>A value of a part's order within the parts array, unique for this construct.</td><td>Yes</td><td>An integer. Typically the count numbers are chosen as a value.</td><td></td><td style="">&nbsp;</td></tr><tr><td><code>mlId</code></td><td>An ID of a markup language, used in this part.</td><td>Yes</td><td></td><td style="">0</td><td>&nbsp;</td></tr><tr><td><code>visible</code></td><td>A flag, marking this part as visible during rendering of the construct instance.</td><td>No</td><td><code>true</code> or <code>false</code></td><td><code>false</code></td><td>&nbsp;</td></tr><tr><td><code>required</code></td><td>A flag, marking this part as one that must have a value filled.</td><td>No</td><td><code>true</code> or <code>false</code></td><td><code>false</code></td><td>&nbsp;</td></tr><tr><td><code>inlineEditable</code></td><td>A flag, marking the value of this part being editable directly in the page in edit mode, with no modal editor window popping up.</td><td>No</td><td><code>true</code> or <code>false</code></td><td><code>false</code></td><td>&nbsp;</td></tr><tr><td><code>hideInEditor</code></td><td>A flag, marking this part being removed from the modal editor window, during the edit mode.</td><td>No</td><td><code>true</code> or <code>false</code></td><td><code>false</code></td><td>&nbsp;</td></tr><tr><td><code data-highlighted="yes">externalEditorUrl</code></td><td>A string value of an URL of an external editor for the instances of this construct.&nbsp;</td><td>No</td><td>A valid URL</td><td></td><td>&nbsp;</td></tr><tr><td><code>regexId</code></td><td>If a type of this part is either Text (<code>typeId</code> == 1) or HTML (<code>typeId</code> == 21), its value can additionally be limited by a provided <i>regular expression</i> aka Regex.</td><td>No</td><td>An integer. (TODO: possible values?)</td><td>&nbsp;</td><td>&nbsp;</td></tr></tbody></table></div><p id="heading_examples">Each construct part has a <code>part.&lt;part_keyword&gt;.&lt;part_type_extension&gt;</code> file, which contains a default value for the part. For instance, if a part is named <code>semver</code>, and has a type Text (<code>typeId</code> == 1), its value file will be named <code>part.semver.txt</code>. If there is no default value required for <code>semver</code>, this file still has to exist, though remain empty. (TODO: describe all the possible types and extensions).</p><h2 id="heading_examples_2">Examples</h2><p>Examples can be observed at the construct implementation pages:</p>
+
+
+
+<ul class="list-group list-group-flush">
+
+    <li class="list-group-item">
+        <a href="https://www.gentics.com/implementation/cmp8.1/overviews/overviews">overviews</a>
+    </li>
+
+    <li class="list-group-item">
+        <a href="https://www.gentics.com/implementation/cmp8.1/images/images">Images</a>
+    </li>
+
+</ul>
+<p><br></p>        </section>
+                </main>
+            </div>
+        </div>
+
+        <!-- Custom Script to Ensure Sidebar Toggling in Mobile View -->
+        <script src="Constructs_files/custom_script.min.js"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                                    if (window.hljs) {
+                        hljs.highlightAll();
+                    }
+                                const toggleButton = document.querySelector(".navbar-toggler");
+                const sidebarMenu = document.getElementById("sidebarMenu");
+                // Add click event listener to toggle visibility of sidebar
+                toggleButton.addEventListener("click", function() {
+                    sidebarMenu.classList.toggle("show");
+                });
+            });
+        </script>
+
+            
+
+</body></html>
