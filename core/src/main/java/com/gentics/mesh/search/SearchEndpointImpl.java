@@ -34,6 +34,7 @@ import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.IndexMaintenanceParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.SearchParametersImpl;
+import com.gentics.mesh.parameter.impl.BranchParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 import com.gentics.mesh.search.index.AdminIndexHandler;
@@ -132,7 +133,7 @@ public class SearchEndpointImpl extends AbstractInternalEndpoint implements Sear
 		registerHandler("nodes", (uuid) -> {
 			HibNode node = Tx.get().nodeDao().findByUuidGlobal(uuid);
 			return node;
-		}, NodeListResponse.class, nodeSearchHandler, nodeExamples.getNodeListResponse(), true, GenericParametersImpl.class);
+		}, NodeListResponse.class, nodeSearchHandler, nodeExamples.getNodeListResponse(), true, GenericParametersImpl.class, BranchParametersImpl.class);
 
 		registerHandler("tags", (uuid) -> Tx.get().tagDao().findByUuid(uuid), TagListResponse.class, tagSearchHandler, tagExamples
 			.createTagListResponse(), false);

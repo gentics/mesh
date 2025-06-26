@@ -5,6 +5,6 @@ import com.gentics.mesh.parameter.VersioningParameters;
 /**
  * @see VersioningParameters
  */
-public class VersioningParametersImpl  extends AbstractParameters implements VersioningParameters {
+public class VersioningParametersImpl extends BranchParametersImpl implements VersioningParameters {
 
 }

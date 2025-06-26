@@ -29,6 +29,7 @@ import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.endpoint.RolePermissionHandlingProjectEndpoint;
 import com.gentics.mesh.core.endpoint.tag.TagCrudHandler;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.parameter.impl.BranchParametersImpl;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
@@ -242,6 +243,7 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Load all nodes that have been tagged with the tag and return a paged list response.");
 		endpoint.addQueryParameters(PagingParametersImpl.class);
+		endpoint.addQueryParameters(BranchParametersImpl.class);
 		endpoint.exampleResponse(OK, nodeExamples.getNodeListResponse(), "List of nodes which were tagged using the provided tag.");
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
