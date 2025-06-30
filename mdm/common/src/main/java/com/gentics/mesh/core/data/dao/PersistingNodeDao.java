@@ -46,6 +46,8 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.BulkActionContext;
@@ -115,9 +117,6 @@ import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.URIUtils;
-
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject, HibNode> {
 	static final Logger log = LoggerFactory.getLogger(NodeDao.class);
@@ -849,7 +848,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 
 	@Override
 	default Result<? extends HibNode> getBreadcrumbNodes(HibNode node, InternalActionContext ac) {
-		return new TraversalResult<>(() -> getBreadcrumbNodeStream(node, ac).iterator());
+		return new TraversalResult<>(() -> getBreadcrumbNodeStream(node, ac).map(HibNode.class::cast).iterator());
 	}
 
 	@Override
