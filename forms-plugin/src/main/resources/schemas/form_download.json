@@ -36,6 +36,12 @@
 				"content": false,
 				"metadata": false
 			}
+		},
+		{
+			"name": "error",
+			"label": "",
+			"type": "string",
+			"required": false
 		}
 	]
 }
