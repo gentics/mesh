@@ -3,8 +3,6 @@ package com.gentics.mesh.auth;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
-
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.web.RoutingContext;
@@ -24,8 +22,6 @@ public class MeshOAuthJWTHandler extends JWTAuthHandlerImpl {
 
 	@Override
 	protected void processException(RoutingContext ctx, Throwable exception) {
-		log.error("Error at OAuth JWT handler", exception);
-
 		if (exception != null) {
 			if (exception instanceof HttpException) {
 				final int statusCode = ((HttpException) exception).getStatusCode();
@@ -43,6 +39,7 @@ public class MeshOAuthJWTHandler extends JWTAuthHandlerImpl {
 					ctx.fail(401, exception);
 					return;
 				default:
+					log.error("HTTP Error at OAuth JWT handler", exception);
 					if (statusCode > 399 && statusCode < 500) {
 						ctx.next();
 					} else {
@@ -54,6 +51,7 @@ public class MeshOAuthJWTHandler extends JWTAuthHandlerImpl {
 		}
 		
 		// fallback 500+
+		log.error("Error at OAuth JWT handler", exception);
 		ctx.fail(exception);
 	}
 }
