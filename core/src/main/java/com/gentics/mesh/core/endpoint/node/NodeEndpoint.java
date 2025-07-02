@@ -40,6 +40,7 @@ import com.gentics.mesh.core.endpoint.RolePermissionHandlingProjectEndpoint;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.parameter.impl.BranchParametersImpl;
 import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
@@ -321,6 +322,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		fieldUpdate.path("/:nodeUuid/s3binary/:fieldName");
 		fieldUpdate.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
 		fieldUpdate.addUriParameter("fieldName", "Name of the field which should be created.", "stringField");
+		fieldUpdate.addQueryParameters(VersioningParametersImpl.class);
 		fieldUpdate.method(POST);
 		fieldUpdate.produces(APPLICATION_JSON);
 		fieldUpdate.exampleRequest(nodeExamples.getExampleBinaryUploadFormParameters());
@@ -339,6 +341,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		checkCallback.path("/:nodeUuid/s3binary/:fieldName/checkCallback");
 		checkCallback.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
 		checkCallback.addUriParameter("fieldName", "Name of the field which should be created.", "stringField");
+		checkCallback.addQueryParameters(VersioningParametersImpl.class);
 		checkCallback.method(POST);
 		checkCallback.produces(APPLICATION_JSON);
 		checkCallback.exampleRequest(nodeExamples.getExampleBinaryCheckCallbackParameters());
@@ -357,6 +360,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		fieldMetadataExtraction.path("/:nodeUuid/s3binary/:fieldName/parseMetadata");
 		fieldMetadataExtraction.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
 		fieldMetadataExtraction.addUriParameter("fieldName", "Name of the field which should be created.", "stringField");
+		fieldMetadataExtraction.addQueryParameters(VersioningParametersImpl.class);
 		fieldMetadataExtraction.method(POST);
 		fieldMetadataExtraction.produces(APPLICATION_JSON);
 		fieldMetadataExtraction.exampleRequest(nodeExamples.getExampleBinaryUploadFormParameters());
@@ -550,6 +554,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		endpoint.method(DELETE);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.addQueryParameters(DeleteParametersImpl.class);
+		endpoint.addQueryParameters(BranchParametersImpl.class);
 		endpoint.exampleResponse(NO_CONTENT, "Deletion was successful.");
 		endpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
 		endpoint.events(NODE_DELETED);

@@ -50,7 +50,7 @@ public class ContextDataRegistryImpl implements ContextDataRegistry {
 			// TODO i18n
 			throw error(INTERNAL_SERVER_ERROR, "Cannot get branch without a project");
 		}
-		String branchNameOrUuid = ac.getVersioningParameters().getBranch();
+		String branchNameOrUuid = ac.getBranchParameters().getBranch();
 		return Tx.get().branchDao().findBranch(project, branchNameOrUuid);
 	}
 

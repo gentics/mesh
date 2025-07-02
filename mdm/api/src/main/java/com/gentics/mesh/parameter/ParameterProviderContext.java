@@ -2,6 +2,7 @@ package com.gentics.mesh.parameter;
 
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.impl.BackupParametersImpl;
+import com.gentics.mesh.parameter.impl.BranchParametersImpl;
 import com.gentics.mesh.parameter.impl.ConsistencyCheckParametersImpl;
 import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
 import com.gentics.mesh.parameter.impl.DisplayParametersImpl;
@@ -33,6 +34,10 @@ public interface ParameterProviderContext extends ActionContext {
 
 	default UserParameters getUserParameters() {
 		return new UserParametersImpl(this);
+	}
+
+	default BranchParameters getBranchParameters() {
+		return new BranchParametersImpl(this);
 	}
 
 	default VersioningParameters getVersioningParameters() {
