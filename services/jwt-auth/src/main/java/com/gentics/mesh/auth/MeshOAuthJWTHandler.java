@@ -32,6 +32,12 @@ public class MeshOAuthJWTHandler extends JWTAuthHandlerImpl {
 					ctx.response().putHeader(HttpHeaders.LOCATION, payload).setStatusCode(302)
 							.end("Redirecting to " + payload + ".");
 					return;
+				case 401:
+					if (!"XMLHttpRequest".equals(ctx.request().getHeader("X-Requested-With"))) {
+						setAuthenticateHeader(ctx);
+					}
+					ctx.fail(401, exception);
+					return;
 				default:
 					log.error("HTTP Error at OAuth JWT handler", exception);
 					if (statusCode > 399 && statusCode < 500) {
