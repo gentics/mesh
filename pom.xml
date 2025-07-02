@@ -17,7 +17,7 @@
 		<plugin.license>Commercial</plugin.license>
 		<plugin.author>Gentics</plugin.author>
 		<!--  Don't forget to also update dependencyManagement section! -->
-		<mesh.version>2.1.21</mesh.version>
+		<mesh.version>2.1.22</mesh.version>
 		<netty.version>4.1.118.Final</netty.version>
 		<jackson.version>2.17.0</jackson.version>
 		<license.checker.version>1.0.0</license.checker.version>
