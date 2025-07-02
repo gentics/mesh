@@ -6,6 +6,15 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v3.0.12]]
+== 3.0.12 (02.07.2025)
+
+icon:check[] REST: The query parameters for node versioning and branch targeting have been decoupled, to match the cases where a branch usage is allowed, but version is not.
+
+Documentation: The query parameterizing has been updated for the selected REST endpoints.
+
+icon:check[] Auth: Now a secondary auth provider (from Mesh plugins, for instance) allows proceeding with the request unauthenticated in a number of cases of errors, like provider denial or bad request, and logging the other cases.
+
 [[v3.0.11]]
 == 3.0.11 (20.06.2025)
 
@@ -123,6 +132,15 @@ icon:plus[] Clustering: The Hazelcast library, responsible for the cluster insta
 
 icon:plus[] Some library dependencies have been updated to the latest hotfix versions.
 
+
+[[v2.1.22]]
+== 2.1.22 (02.07.2025)
+
+icon:check[] REST: The query parameters for node versioning and branch targeting have been decoupled, to match the cases where a branch usage is allowed, but version is not.
+
+Documentation: The query parameterizing has been updated for the selected REST endpoints.
+
+icon:check[] Auth: Now a secondary auth provider (from Mesh plugins, for instance) allows proceeding with the request unauthenticated in a number of cases of errors, like provider denial or bad request, and logging the other cases.
 
 [[v2.1.21]]
 == 2.1.21 (20.06.2025)
