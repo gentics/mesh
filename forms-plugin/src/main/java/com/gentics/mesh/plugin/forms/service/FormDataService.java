@@ -123,6 +123,7 @@ public class FormDataService {
 	private static final Logger log = LoggerFactory.getLogger(FormDataService.class);
 	private static final String FIELD_DOWNLOAD_READY = "ready";
 	private static final String FIELD_DOWNLOAD_BINARY = "download";
+	private static final String FIELD_DOWNLOAD_ERROR = "error";
 	private static final String MESSAGE_DOWNLOAD_CHECK_PREFIX = "plugins.forms.download.";
 
 	/** DateTime formatter creating dates of the form "YYYY-MM-DD_HHmmss". */
@@ -351,12 +352,14 @@ public class FormDataService {
 					export = export.delay(TEST_DELAY_MS, TimeUnit.MILLISECONDS);
 				}
 
-				export.subscribe(exportData ->
-					saveDownloadData(projectName, exportNode, exportData.getExportFile(), exportData.getFormat().fileExtension, exportData.getFormat().mimeType)
-						.doFinally(consumer::rxUnregister)
-						.subscribe());
+				export.subscribe(exportData -> saveDownloadData(projectName, exportNode, exportData.getExportFile(),
+						exportData.getFormat().fileExtension, exportData.getFormat().mimeType)
+						.doFinally(consumer::rxUnregister).subscribe(), error -> {
+							setDownloadError(projectName, exportNode, error.getLocalizedMessage())
+									.doFinally(consumer::rxUnregister).subscribe();
+						});
 
-					return Single.just(exportNode);
+				return Single.just(exportNode);
 			});
 	}
 
@@ -389,6 +392,9 @@ public class FormDataService {
 								saveDownloadData(projectName, downloadNode, downloadFile, "zip", "application/zip")
 									.andThen(consumer.rxUnregister())
 									.subscribe();
+							}, error -> {
+								setDownloadError(projectName, downloadNode, error.getLocalizedMessage())
+									.andThen(consumer.rxUnregister()).subscribe();
 							});
 
 						return Single.just(downloadNode);
@@ -466,6 +472,19 @@ public class FormDataService {
 				fis.close();
 				file.delete();
 			});
+	}
+
+	/**
+	 * Save the download error in the download node
+	 * @param projectName project name
+	 * @param downloadNode download node
+	 * @param error error message to save
+	 * @return completable
+	 */
+	private Completable setDownloadError(String projectName, NodeResponse downloadNode, String error) {
+		NodeUpdateRequest update = new NodeUpdateRequest().setLanguage("en");
+		update.getFields().put(FIELD_DOWNLOAD_ERROR, new StringFieldImpl().setString(error));
+		return adminClient.updateNode(projectName, downloadNode.getUuid(), update).toCompletable();
 	}
 
 	/**
@@ -553,18 +572,28 @@ public class FormDataService {
 		String mostRecentDate = null;
 		String mostRecentDownloadUuid = null;
 
+		String mostRecentErrorDate = null;
+		String mostRecentError = null;
+
 		for (int ii = 0; ii < elements.size(); ii++) {
 			JsonObject download = elements.getJsonObject(ii);
+			boolean ready = download.getJsonObject("fields").getBoolean("ready");
+			String error = download.getJsonObject("fields").getString("error");
+			String curDate = download.getString("created");
 
-			if (download.getJsonObject("fields").getBoolean("ready")) {
-				String curDate = download.getString("created");
+			if (ready) {
 
 				if (mostRecentDate == null || mostRecentDate.compareTo(curDate) < 0) {
 					mostRecentDate = curDate;
 					mostRecentDownloadUuid = download.getString("uuid");
 				}
-			} else {
+			} else if (StringUtils.isEmpty(error)) {
 				pendingRequests.add(download.getString("uuid"));
+			} else {
+				if (mostRecentErrorDate == null || mostRecentErrorDate.compareTo(curDate) < 0) {
+					mostRecentErrorDate = curDate;
+					mostRecentError = error;
+				}
 			}
 		}
 
@@ -578,6 +607,10 @@ public class FormDataService {
 				.put("downloadReady", true)
 				.put("downloadUuid", mostRecentDownloadUuid)
 				.put("downloadTimestamp", mostRecentDate);
+		}
+
+		if (!StringUtils.isEmpty(mostRecentError)) {
+			downloadInfo.put("error", mostRecentError);
 		}
 
 		List<Completable> pendingRequestChecks = new ArrayList<>();
@@ -635,7 +668,7 @@ public class FormDataService {
 			.flatMap(langFallback -> formService.load(projectName, formUuid, langFallback))
 			.flatMap(formService::toForm)
 			.flatMap(form -> {
-				Exporter exporter = Exporter.create(configuration, userClient, context, storageDir, formUuid, SchemaService.getSchemaName(formUuid), configuration.getExportOptions(), getDownloadBaseUrl(form, projectName));
+				Exporter exporter = Exporter.create(configuration, userClient, context, new File(System.getProperty("java.io.tmpdir")), formUuid, SchemaService.getSchemaName(formUuid), configuration.getExportOptions(), getDownloadBaseUrl(form, projectName));
 
 				return exporter
 					.setFieldLabels(form.getReportableFields())
@@ -771,7 +804,7 @@ public class FormDataService {
 	 * @throws FileNotFoundException
 	 */
 	protected Single<File> zipBinaries(String projectName, List<Downloadable> downloadables) throws FileNotFoundException {
-		File zipFile = new File(storageDir, UUIDUtil.randomUUID() + ".zip");
+		File zipFile = new File(System.getProperty("java.io.tmpdir"), UUIDUtil.randomUUID() + ".zip");
 		ZipOutputStream out = new ZipOutputStream(new FileOutputStream(zipFile));
 
 		if (downloadables.isEmpty()) {
