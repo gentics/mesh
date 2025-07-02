@@ -13,6 +13,7 @@ query($folderUuid: String, $type: String, $options: String) {
             type
             ready
             options
+            error
           }
         }
       }
