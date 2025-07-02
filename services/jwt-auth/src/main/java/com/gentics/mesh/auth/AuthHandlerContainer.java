@@ -45,7 +45,7 @@ public class AuthHandlerContainer {
 			}
 			log.debug("Keys changed. Creating a new auth handler to be used.");
 			JWTAuth authProvider = JWTAuth.create(vertx, jwtOptions);
-			authHandler = JWTAuthHandler.create(authProvider);
+			authHandler = new MeshOAuthJWTHandler(authProvider);
 			hashCode = jwks.hashCode();
 		}
 		return authHandler;

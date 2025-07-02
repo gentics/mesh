@@ -8,9 +8,7 @@ import com.gentics.mesh.util.VersionNumber;
 /**
  * Interface for versioning query parameters.
  */
-public interface VersioningParameters extends ParameterProvider {
-
-	public static final String BRANCH_QUERY_PARAM_KEY = "branch";
+public interface VersioningParameters extends BranchParameters {
 
 	public static final String VERSION_QUERY_PARAM_KEY = "version";
 
@@ -58,27 +56,6 @@ public interface VersioningParameters extends ParameterProvider {
 	}
 
 	/**
-	 * Return the currently configured branch name.
-	 * 
-	 * @return
-	 */
-	default String getBranch() {
-		return getParameter(BRANCH_QUERY_PARAM_KEY);
-	}
-
-	/**
-	 * Set the branch by name or UUID.
-	 *
-	 * @param branch
-	 *            name or uuid
-	 * @return fluent API
-	 */
-	default VersioningParameters setBranch(String branch) {
-		setParameter(BRANCH_QUERY_PARAM_KEY, branch);
-		return this;
-	}
-
-	/**
 	 * Request the draft version. Alias for setVersion("draft")
 	 * 
 	 * @return fluent API
@@ -96,4 +73,9 @@ public interface VersioningParameters extends ParameterProvider {
 		return setVersion("published");
 	}
 
+	@Override
+	default VersioningParameters setBranch(String branch) {
+		BranchParameters.super.setBranch(branch);
+		return this;
+	}
 }

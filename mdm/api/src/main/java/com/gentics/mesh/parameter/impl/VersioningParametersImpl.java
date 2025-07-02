@@ -7,11 +7,9 @@ import org.raml.model.ParamType;
 import org.raml.model.parameter.QueryParameter;
 
 import com.gentics.mesh.handler.ActionContext;
-import com.gentics.mesh.parameter.AbstractParameters;
 import com.gentics.mesh.parameter.VersioningParameters;
 
-//TODO split this class into two since some actions are not versioning specific but branch specific 
-public class VersioningParametersImpl extends AbstractParameters implements VersioningParameters {
+public class VersioningParametersImpl extends BranchParametersImpl implements VersioningParameters {
 
 	public VersioningParametersImpl(ActionContext ac) {
 		super(ac);
@@ -22,7 +20,7 @@ public class VersioningParametersImpl extends AbstractParameters implements Vers
 
 	@Override
 	public void validate() {
-		// TODO validate version pattern and branch parameter value
+		// TODO validate version pattern
 	}
 
 	@Override
@@ -33,15 +31,6 @@ public class VersioningParametersImpl extends AbstractParameters implements Vers
 	@Override
 	public Map<? extends String, ? extends QueryParameter> getRAMLParameters() {
 		Map<String, QueryParameter> parameters = new HashMap<>();
-
-		// branch
-		QueryParameter pageParameter = new QueryParameter();
-		pageParameter.setDescription(
-				"Specifies the branch to be used for loading data. The latest project branch will be used if this parameter is omitted.");
-		pageParameter.setExample("24cf92691c7641158f92691c76c115ef");
-		pageParameter.setRequired(false);
-		pageParameter.setType(ParamType.STRING);
-		parameters.put(BRANCH_QUERY_PARAM_KEY, pageParameter);
 
 		// version
 		QueryParameter versionParameter = new QueryParameter();
