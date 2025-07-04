@@ -2,6 +2,7 @@ package com.gentics.mesh.test.context.helper;
 
 import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -626,5 +627,27 @@ public interface EventHelper extends BaseHelper {
 		}
 
 		return result;
+	}
+
+	/**
+	 * Assert that the project router for the project with the given name is
+	 * registered (after waiting no longer than 10_000 milliseconds).
+	 * 
+	 * @param name project name
+	 */
+	default void assertProjectRouter(String name) {
+		assertProjectRouter(name, 10_000);
+	}
+
+	/**
+	 * Assert that the project router for the project with the given name is
+	 * registered (after waiting no longer than then given number of milliseconds).
+	 * 
+	 * @param name project name
+	 * @param timeout maximum wait time in milliseconds
+	 */
+	default void assertProjectRouter(String name, int timeout) {
+		assertThat(waitFor(() -> mesh().routerStorageRegistry().hasProject(name), timeout))
+				.as("".formatted("Project router for %s is registered after waiting %d ms", name, timeout)).isTrue();
 	}
 }

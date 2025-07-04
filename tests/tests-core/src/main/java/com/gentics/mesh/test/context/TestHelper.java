@@ -557,8 +557,8 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	}
 
 	/**
-	 * Update the project by giving it a new name. This will also wait for the event {@link MeshEvent#PROJECT_UPDATED} and fail,
-	 * if the event is not fired within 10 seconds
+	 * Update the project by giving it a new name. This will also wait for the project router to be registered
+	 * fail if that did not happen within 10 seconds.
 	 * @param uuid project uuid
 	 * @param projectName new project name
 	 * @return project response
@@ -566,12 +566,10 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	default public ProjectResponse updateProject(String uuid, String projectName) {
 		ProjectUpdateRequest projectUpdateRequest = new ProjectUpdateRequest();
 		projectUpdateRequest.setName(projectName);
-		try (ExpectedEvent ee = expectEvent(MeshEvent.PROJECT_UPDATED, 10_000)) {
-			return call(() -> client().updateProject(uuid, projectUpdateRequest));
-		} catch (TimeoutException e) {
-			fail("The event %s was not fired after project %d was updated".formatted(MeshEvent.PROJECT_UPDATED, uuid));
-			return null;
-		}
+
+		ProjectResponse response = call(() -> client().updateProject(uuid, projectUpdateRequest));
+		assertProjectRouter(projectName);
+		return response;
 	}
 
 	/**
