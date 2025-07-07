@@ -21,6 +21,7 @@ import com.gentics.mesh.test.MeshCoreOptionChanger;
 import com.gentics.mesh.test.MeshSortComparators;
 import com.gentics.mesh.test.MeshTestContextProvider;
 import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.ResetTestDb;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.category.NativeGraphQLFilterTests;
 import com.gentics.mesh.test.context.NoConsistencyCheck;
@@ -29,7 +30,7 @@ import io.vertx.core.json.JsonObject;
 
 @Category({ NativeGraphQLFilterTests.class })
 @RunWith(Parameterized.class)
-@MeshTestSetting(testSize = TestSize.FULL, startServer = true, optionChanger = MeshCoreOptionChanger.GRAPHQL_FORCE_NATIVE_FILTER)
+@MeshTestSetting(testSize = TestSize.FULL, startServer = true, optionChanger = MeshCoreOptionChanger.GRAPHQL_FORCE_NATIVE_FILTER, resetBetweenTests = ResetTestDb.ON_HASH_CHANGE)
 @NoConsistencyCheck
 public class NativeGraphQLEndpointTest extends GraphQLEndpointTest {
 

@@ -101,8 +101,8 @@ public @interface MeshTestSetting {
 	Class<? extends MeshOptionChanger> customOptionChanger() default NoOptionChanger.class;
 
 	/**
-	 * Flag which indicates whether the database shall be reset between test runs (default is true)
+	 * Flag which indicates whether the database shall be reset between test runs (default is {@link ResetTestDb#ALWAYS})
 	 * @return
 	 */
-	boolean resetBetweenTests() default true;
+	ResetTestDb resetBetweenTests() default ResetTestDb.ALWAYS;
 }

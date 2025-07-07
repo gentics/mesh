@@ -18,13 +18,14 @@ import org.junit.runners.Parameterized.Parameters;
 import com.gentics.mesh.core.graphql.GraphQLEndpointTest;
 import com.gentics.mesh.test.MeshCoreOptionChanger;
 import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.ResetTestDb;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.NoConsistencyCheck;
 
 import io.vertx.core.json.JsonObject;
 
 @RunWith(Parameterized.class)
-@MeshTestSetting(testSize = TestSize.FULL, startServer = true, optionChanger = MeshCoreOptionChanger.GRAPHQL_FORCE_JAVA_FILTER)
+@MeshTestSetting(testSize = TestSize.FULL, startServer = true, optionChanger = MeshCoreOptionChanger.GRAPHQL_FORCE_JAVA_FILTER, resetBetweenTests = ResetTestDb.ON_HASH_CHANGE)
 @NoConsistencyCheck
 public class JavaGraphQLEndpointTest extends GraphQLEndpointTest {
 
