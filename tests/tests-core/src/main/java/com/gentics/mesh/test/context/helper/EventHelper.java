@@ -648,6 +648,6 @@ public interface EventHelper extends BaseHelper {
 	 */
 	default void assertProjectRouter(String name, int timeout) {
 		assertThat(waitFor(() -> mesh().routerStorageRegistry().hasProject(name), timeout))
-				.as("".formatted("Project router for %s is registered after waiting %d ms", name, timeout)).isTrue();
+				.as("Project router for %s is registered after waiting %d ms".formatted(name, timeout)).isTrue();
 	}
 }
