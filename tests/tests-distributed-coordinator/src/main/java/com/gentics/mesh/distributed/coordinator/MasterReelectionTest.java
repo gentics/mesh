@@ -12,6 +12,7 @@ import org.junit.experimental.categories.Category;
 import com.gentics.mesh.distributed.AbstractMeshClusteringTest;
 import com.gentics.mesh.distributed.AwaitMembershipEvent;
 import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.ResetTestDb;
 import com.gentics.mesh.test.category.ClusterTests;
 import com.gentics.mesh.test.util.TestUtils;
 import com.hazelcast.core.Hazelcast;
@@ -22,7 +23,7 @@ import com.hazelcast.core.HazelcastInstance;
  * This case is the only test case in this test class, because it will shut down the hazelcast instance of one of the cluster members.
  */
 @Category(ClusterTests.class)
-@MeshTestSetting(testSize = FULL, startServer = true, clusterMode = true, clusterName = "MasterReelectionTest", resetBetweenTests = false)
+@MeshTestSetting(testSize = FULL, startServer = true, clusterMode = true, clusterName = "MasterReelectionTest", resetBetweenTests = ResetTestDb.NEVER)
 public class MasterReelectionTest extends AbstractMeshClusteringTest {
 	/**
 	 * Test automatic re-election

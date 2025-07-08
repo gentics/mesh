@@ -6,6 +6,7 @@ import com.gentics.mesh.database.connector.DatabaseConnector;
 import com.gentics.mesh.hibernate.util.QueryCounter;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.ResetTestDb;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.ClientHandler;
@@ -13,7 +14,7 @@ import com.gentics.mesh.test.context.ClientHandler;
 /**
  * Test cases which count the number of executed queries (and assert that the number does not exceed a given limit). Please parameterize the implementors, as shown below!
  */
-@MeshTestSetting(testSize = TestSize.PROJECT, monitoring = true, startServer = true, customOptionChanger = QueryCounter.EnableHibernateStatistics.class, resetBetweenTests = false)
+@MeshTestSetting(testSize = TestSize.PROJECT, monitoring = true, startServer = true, customOptionChanger = QueryCounter.EnableHibernateStatistics.class, resetBetweenTests = ResetTestDb.NEVER)
 public abstract class AbstractCountingTest extends AbstractMeshTest {
 
 	/**

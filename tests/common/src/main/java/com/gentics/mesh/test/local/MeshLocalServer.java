@@ -24,6 +24,7 @@ import com.gentics.mesh.test.MeshOptionChanger.NoOptionChanger;
 import com.gentics.mesh.test.MeshTestContextProvider;
 import com.gentics.mesh.test.MeshTestServer;
 import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.ResetTestDb;
 import com.gentics.mesh.test.SSLTestMode;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.util.Tuple;
@@ -316,8 +317,8 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 		}
 		
 		@Override
-		public boolean resetBetweenTests() {
-			return false;
+		public ResetTestDb resetBetweenTests() {
+			return ResetTestDb.NEVER;
 		}
 		
 		@Override

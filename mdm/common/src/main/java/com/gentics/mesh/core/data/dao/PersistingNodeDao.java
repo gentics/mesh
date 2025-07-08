@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
+import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -1681,12 +1682,15 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		keyBuilder.append("expandFields:");
 		keyBuilder.append(expandedFields);
 
-		// branch specific tags
+		// branch specific tags. Since node.getTags() does not guarantee a specific order of the tags,
+		// we collect the etags of the tags in a TreeSet and use that to append the etags to the keyBuilder
+		Set<String> tagETags = new TreeSet<>();
 		for (HibTag tag : node.getTags(branch)) {
 			// Tags can't be moved across branches thus we don't need to add the
 			// tag family etag
-			keyBuilder.append(tagDao.getETag(tag, ac));
+			tagETags.add(tagDao.getETag(tag, ac));
 		}
+		tagETags.stream().forEach(tagETag -> keyBuilder.append(tagETag));
 
 		// branch specific children
 		for (HibNode child : getChildren(node, branch.getUuid())) {
