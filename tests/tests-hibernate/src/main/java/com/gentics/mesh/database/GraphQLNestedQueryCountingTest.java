@@ -26,13 +26,14 @@ import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.hibernate.util.QueryCounter;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.ResetTestDb;
 import com.gentics.mesh.test.TestSize;
 import com.github.jknack.handlebars.internal.lang3.StringUtils;
 
 /**
  * Test cases which count the number of executed GraphQL request queries.
  */
-@MeshTestSetting(testSize = TestSize.PROJECT, monitoring = true, startServer = true, customOptionChanger = QueryCounter.EnableHibernateStatistics.class, resetBetweenTests = false)
+@MeshTestSetting(testSize = TestSize.PROJECT, monitoring = true, startServer = true, customOptionChanger = QueryCounter.EnableHibernateStatistics.class, resetBetweenTests = ResetTestDb.NEVER)
 @RunWith(Parameterized.class)
 public class GraphQLNestedQueryCountingTest extends AbstractGraphQLChildrenQueryCountingTest {
 

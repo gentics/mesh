@@ -78,6 +78,7 @@ import com.gentics.mesh.test.MeshInstanceProvider;
 import com.gentics.mesh.test.MeshTestActions;
 import com.gentics.mesh.test.MeshTestContextProvider;
 import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.ResetTestDb;
 import com.gentics.mesh.test.SSLTestMode;
 import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.test.docker.AWSContainer;
@@ -132,6 +133,10 @@ public class MeshTestContext implements TestRule {
 
 	private boolean needsSetup = true;
 
+	private int lastDbHash;
+
+	private int currentDbHash;
+
 	private List<MeshTestInstance> instances = new ArrayList<>();
 
 	public List<MeshTestInstance> getInstances() {
@@ -167,6 +172,15 @@ public class MeshTestContext implements TestRule {
 	}
 
 	public void setup(MeshTestSetting settings) throws Exception {
+		// when the database needs to be reset when the hash changes, we compare the hashes now
+		if (settings.resetBetweenTests() == ResetTestDb.ON_HASH_CHANGE && lastDbHash != currentDbHash) {
+			// hash changed, so we need setup
+			needsSetup = true;
+			// and will force tearDown now
+			tearDown(settings, true);
+			lastDbHash = currentDbHash;
+		}
+
 		if (!needsSetup) {
 			// database has already been setup, so omit this step
 			return;
@@ -291,11 +305,27 @@ public class MeshTestContext implements TestRule {
 	}
 
 	public void tearDown(MeshTestSetting settings) throws Exception {
-		if (!settings.resetBetweenTests()) {
-			// the test does not require the database to be reset between test runs
-			needsSetup = false;
-			return;
+		tearDown(settings, false);
+	}
+
+	public void tearDown(MeshTestSetting settings, boolean force) throws Exception {
+		if (!force) {
+			switch (settings.resetBetweenTests()) {
+			case NEVER:
+				// the test does not require the database to be reset between test runs
+				needsSetup = false;
+				return;
+			case ON_HASH_CHANGE:
+				// we need to reset on a changed hash, which will be setup on test creation,
+				// so we do not remove the data right now
+				needsSetup = false;
+				return;
+			case ALWAYS:
+			default:
+				break;
+			}
 		}
+
 		cleanupFolders();
 		if (settings.startServer()) {
 			for (MeshTestInstance instance : instances) {
@@ -643,6 +673,18 @@ public class MeshTestContext implements TestRule {
 	 */
 	public boolean needsSetup() {
 		return needsSetup;
+	}
+
+	/**
+	 * Set the db hash for the current test run, which is used to determine, whether
+	 * the db needs to be reset (when {@link MeshTestSetting#resetBetweenTests()} is
+	 * set to {@link ResetTestDb#ON_HASH_CHANGE}).
+	 * This method must be called in the constructor of the test.
+	 * 
+	 * @param hash db hash for the current test
+	 */
+	public void setDbHash(int hash) {
+		this.currentDbHash = hash;
 	}
 
 	public class MeshTestInstance {
