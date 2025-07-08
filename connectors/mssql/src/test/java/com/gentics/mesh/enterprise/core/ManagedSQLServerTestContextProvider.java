@@ -1,5 +1,7 @@
 package com.gentics.mesh.enterprise.core;
 
+import java.util.Comparator;
+
 import com.gentics.mesh.core.ManagedBy;
 import com.gentics.mesh.core.ManagedDatabaseTestContextProvider;
 import com.gentics.mesh.enterprise.dagger.DaggerEnterpriseHibernateMeshComponent;
@@ -23,5 +25,10 @@ public class ManagedSQLServerTestContextProvider extends ManagedDatabaseTestCont
 	@Override
 	protected String getConnectionUsername() {
 		return "SA";
+	}
+
+	@Override
+	public Comparator<String> sortComparator() {
+		return SQLServerTestUtils.SORT_COMPARATOR;
 	}
 }
