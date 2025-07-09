@@ -22,11 +22,11 @@ public final class DateUtils {
 
 	private static final Logger log = LoggerFactory.getLogger(DateUtils.class);
 
-	static ZoneOffset zoneOffset;
+	public static final ZoneOffset ZONE_OFFSET;
 
 	static {
 		OffsetDateTime odt = OffsetDateTime.now(ZoneId.systemDefault());
-		zoneOffset = odt.getOffset();
+		ZONE_OFFSET = odt.getOffset();
 	}
 
 	/**
@@ -92,7 +92,7 @@ public final class DateUtils {
 			}
 			try {
 				// We also support date strings which do not include an offset. We apply the system offset in those cases.
-				Long date = LocalDateTime.parse(dateString).toInstant(zoneOffset).toEpochMilli();
+				Long date = LocalDateTime.parse(dateString).toInstant(ZONE_OFFSET).toEpochMilli();
 				return date;
 			} catch (DateTimeParseException e2) {
 				if (log.isDebugEnabled()) {
