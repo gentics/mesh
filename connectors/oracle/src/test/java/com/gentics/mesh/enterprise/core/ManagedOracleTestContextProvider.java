@@ -1,5 +1,7 @@
 package com.gentics.mesh.enterprise.core;
 
+import java.util.Comparator;
+
 import com.gentics.mesh.core.ManagedBy;
 import com.gentics.mesh.core.ManagedDatabaseTestContextProvider;
 import com.gentics.mesh.enterprise.dagger.DaggerEnterpriseHibernateMeshComponent;
@@ -18,5 +20,10 @@ public class ManagedOracleTestContextProvider extends ManagedDatabaseTestContext
 	@Override
 	protected String getConnectionUsername() {
 		return dbSettings.getSchema();
+	}
+
+	@Override
+	public Comparator<String> sortComparator() {
+		return OracleTestUtils.SORT_COMPARATOR;
 	}
 }

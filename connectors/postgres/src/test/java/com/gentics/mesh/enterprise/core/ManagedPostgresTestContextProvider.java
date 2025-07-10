@@ -1,5 +1,7 @@
 package com.gentics.mesh.enterprise.core;
 
+import java.util.Comparator;
+
 import com.gentics.mesh.core.ManagedBy;
 import com.gentics.mesh.core.ManagedDatabaseTestContextProvider;
 import com.gentics.mesh.enterprise.dagger.DaggerEnterpriseHibernateMeshComponent;
@@ -18,5 +20,10 @@ public class ManagedPostgresTestContextProvider extends ManagedDatabaseTestConte
 	@Override
 	protected String getConnectionUrlExtraParams() {
 		return "?autosave=always&currentSchema=" + dbSettings.getSchema();
+	}
+
+	@Override
+	public Comparator<String> sortComparator() {
+		return PostgresTestUtils.SORT_COMPARATOR;
 	}
 }
