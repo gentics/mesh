@@ -1,0 +1,2 @@
+Core: Generation of ETags for nodes containing tags was not stable and sometimes resulted in different ETags,
+even if nothing was changed. This has been fixed.

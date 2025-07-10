@@ -10,6 +10,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,6 +33,7 @@ import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.core.rest.schema.DateFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.util.DateUtils;
 
 @MeshTestSetting(testSize = FULL, startServer = true)
 public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
@@ -139,9 +144,29 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 	}
 
 	@Test
-	public void testDateFormat() {
+	public void testDateFormatInvalidValue() {
 		String invalidDate = "2017-08-21T10:46:26+0200";
 		updateNodeFailure(FIELD_NAME, new DateFieldImpl().setDate(invalidDate), BAD_REQUEST, "error_date_format_invalid", invalidDate);
+	}
+
+	@Test
+	public void testDateFormatValidInstant() {
+		Instant now = Instant.now();
+		String nowInstant = DateTimeFormatter.ISO_INSTANT.format(now);
+		Long nowEpoch = fromISO8601(toISO8601(now.toEpochMilli()));
+		NodeResponse response = createNode(FIELD_NAME, new DateFieldImpl().setDate(nowInstant));
+		DateField field = response.getFields().getDateField(FIELD_NAME);
+		assertEquals(toISO8601(nowEpoch), field.getDate());
+	}
+
+	@Test
+	public void testDateFormatValidLocal() {
+		LocalDateTime now = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC);
+		String nowInstant = DateTimeFormatter.ISO_DATE_TIME.format(now);
+		Long nowEpoch = fromISO8601(toISO8601(now.toInstant(DateUtils.ZONE_OFFSET).toEpochMilli()));
+		NodeResponse response = createNode(FIELD_NAME, new DateFieldImpl().setDate(nowInstant));
+		DateField field = response.getFields().getDateField(FIELD_NAME);
+		assertEquals(toISO8601(nowEpoch), field.getDate());
 	}
 
 	/**
