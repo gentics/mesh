@@ -6,6 +6,15 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v3.1.2]]
+== 3.1.2 (15.07.2025)
+
+icon:check[] Core: Generation of ETags for nodes containing tags was not stable and sometimes resulted in different ETags,
+even if nothing was changed. This has been fixed.
+
+
+icon:check[] REST API: Now Mesh accepts both ISO-8601 standards of a date/time string representation, with and without trailing Z or timezone value.
+
 [[v3.1.1]]
 == 3.1.1 (03.07.2025)
 
@@ -38,6 +47,15 @@ icon:check[] Some dependencies have been updated:
 * Netty: 4.1.118.Final
 * Commons Beanutils: 1.11.0
 
+
+[[v3.0.13]]
+== 3.0.13 (15.07.2025)
+
+icon:check[] Core: Generation of ETags for nodes containing tags was not stable and sometimes resulted in different ETags,
+even if nothing was changed. This has been fixed.
+
+
+icon:check[] REST API: Now Mesh accepts both ISO-8601 standards of a date/time string representation, with and without trailing Z or timezone value.
 
 [[v3.0.12]]
 == 3.0.12 (02.07.2025)
