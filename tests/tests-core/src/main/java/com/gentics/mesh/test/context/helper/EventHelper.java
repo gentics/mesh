@@ -630,6 +630,23 @@ public interface EventHelper extends BaseHelper {
 	}
 
 	/**
+	 * Wait for the given task to run without throwing an exception, but no longer than timeout milliseconds
+	 * @param task task to run
+	 * @param timeout timeout
+	 * @return true if the task succeeded without the timeout or false otherwise
+	 */
+	default boolean waitForSuccess(Runnable task, int timeout) {
+		return waitFor(() -> {
+			try {
+				task.run();
+				return true;
+			} catch (Throwable t) {
+				return false;
+			}
+		}, timeout);
+	}
+
+	/**
 	 * Assert that the project router for the project with the given name is
 	 * registered (after waiting no longer than 10_000 milliseconds).
 	 * 
