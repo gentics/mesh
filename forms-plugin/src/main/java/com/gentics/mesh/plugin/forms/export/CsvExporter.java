@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -119,7 +120,7 @@ public class CsvExporter extends Exporter {
 		}
 
 		try {
-			writer = new FileWriter(exportFile);
+			writer = new FileWriter(exportFile, Charset.forName("UTF8"));
 			// UTF-8 BOM to detect the correct encoding
 			writer.write("\ufeff");
 
