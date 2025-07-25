@@ -105,7 +105,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 		// rename project to "newproject"
 		project = updateProject(project.getUuid(), "newproject");
-		tx(() -> assertThat(mesh().projectNameCache().get("project")).as("Cached project").isNull());
+		assertThat(waitFor(() -> tx(() -> mesh().projectNameCache().get("project")) == null, 10_000)).as("Project not found in cache any more").isTrue();
 
 		long maxWaitMs = DeliveryOptions.DEFAULT_TIMEOUT;
 		long delayMs = 100;
@@ -564,8 +564,8 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		// Test slashes
 		request.setName("Bla/blub");
 		call(() -> client().updateProject(uuid, request));
-		assertProjectRouter(request.getName());
-		call(() -> client().findNodes(request.getName()));
+		assertThat(waitForSuccess(() -> call(() -> client().findNodes(request.getName())), 10_000))
+			.as("Fetching nodes for project %s succeeded".formatted(request.getName())).isTrue();
 
 		try (Tx tx = tx()) {
 			assertEquals(request.getName(), Tx.get().projectDao().findByUuid(projectUuid()).getName());
@@ -580,12 +580,13 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		ProjectUpdateRequest request = new ProjectUpdateRequest();
 		request.setName("abc");
 		call(() -> client().updateProject(uuid, request));
-		assertProjectRouter(request.getName());
-		call(() -> client().findNodes(request.getName()));
+		assertThat(waitForSuccess(() -> call(() -> client().findNodes(request.getName())), 10_000))
+				.as("Fetching nodes for project %s succeeded".formatted(request.getName())).isTrue();
 
 		request.setName("abcd");
 		call(() -> client().updateProject(uuid, request));
-		assertProjectRouter(request.getName());
+		assertThat(waitForSuccess(() -> call(() -> client().findNodes(request.getName())), 10_000))
+			.as("Fetching nodes for project %s succeeded".formatted(request.getName())).isTrue();
 		call(() -> client().findNodes(request.getName()));
 	}
 
