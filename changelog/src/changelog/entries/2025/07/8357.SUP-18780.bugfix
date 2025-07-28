@@ -1,0 +1,1 @@
+Forms: Delete file upload and return validation error if file does not match the allowed content types or file names. Previously, the file name was only checked if the content type was not allowed either.
