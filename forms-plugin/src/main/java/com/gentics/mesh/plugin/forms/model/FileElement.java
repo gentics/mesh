@@ -134,7 +134,7 @@ public class FileElement extends FormElement {
 					.setMessage(I18nHelper.get(Locale.GERMAN, "error.validation.file.type.check", fileUpload.fileName()));
 			}
 
-			if (!allowedContentType && !fileHasAllowedName(fileUpload, allowedTypes)) {
+			if (!allowedContentType || !fileHasAllowedName(fileUpload, allowedTypes)) {
 				fileUploads.remove(fileUpload);
 				return new ValidationError().setName(getName()).setTitle(I18nHelper.get(Locale.GERMAN, "error.validation.file.type.title"))
 					.setMessage(I18nHelper.get(Locale.GERMAN, "error.validation.file.type", fileUpload.fileName()));

@@ -10,6 +10,11 @@
 
 = Mesh Forms Plugin
 
+[[v1.10.18]]
+== 1.10.18 (2025-07-16)
+
+icon:check[] Forms: Delete file upload and return validation error if file does not match the allowed content types or file names. Previously, the file name was only checked if the content type was not allowed either.
+
 [[v1.10.17]]
 == 1.10.17 (2024-08-19)
 
