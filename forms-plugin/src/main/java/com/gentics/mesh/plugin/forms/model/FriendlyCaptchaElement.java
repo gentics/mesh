@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
@@ -33,8 +34,8 @@ import okhttp3.ResponseBody;
  * @TODO: Uses the same code as the ReCaptcha Element, we should rewrite this to use a utility class or an abstract class
  */
 public class FriendlyCaptchaElement extends FormElement {
-	protected final static String TITLE_KEY = "error.validation.captcha.title";
-	protected final static String MESSAGE_KEY = "error.validation.captcha";
+	public final static String TITLE_KEY = "error.validation.captcha.title";
+	public final static String MESSAGE_KEY = "error.validation.captcha";
 	protected final static List<String> FAST_FAILER_SOLUTIONS = Arrays.asList(".FETCHING", ".UNSTARTED", ".UNFINISHED");
 
 	public FriendlyCaptchaElement() {
@@ -68,9 +69,11 @@ public class FriendlyCaptchaElement extends FormElement {
 		String solution = postedData.get(this.getConfiguration().getFriendlyCaptcha().getSolutionKey());
 
 		return isValid(solution, httpClient).toMaybe()
-				.flatMap(valid -> valid 
-						? RxUtil.emptyMaybe()
-						: Maybe.just(new ValidationError().setName(getName()).setTitle(I18nHelper.get(Locale.GERMAN, TITLE_KEY)).setMessage(I18nHelper.get(Locale.GERMAN, MESSAGE_KEY))));
+				.flatMap(maybeError -> maybeError
+						.map(error -> Maybe.just(new ValidationError()
+							.setName(getName())
+							.setTitle(I18nHelper.get(Locale.GERMAN, TITLE_KEY)).setMessage(I18nHelper.get(Locale.GERMAN, MESSAGE_KEY) + " " + error)))
+						.orElse(RxUtil.emptyMaybe()));
 	}
 
 	/**
@@ -78,30 +81,27 @@ public class FriendlyCaptchaElement extends FormElement {
 	 *
 	 * @param captchaSolution captcha response
 	 * @param httpClient 
-	 * @return async true iff the captcha response is valid
+	 * @return async optional error message, if the captcha is not valid
 	 */
-	protected Single<Boolean> isValid(String captchaSolution, OkHttpClient httpClient) {
+	protected Single<Optional<String>> isValid(String captchaSolution, OkHttpClient httpClient) {
 		log.debug("Trying to validate captchaResponse: {}", captchaSolution);
 
 		if (StringUtils.isBlank(captchaSolution)) {
-			log.debug("Solution is empty");
-			return Single.just(false);
+			return Single.just(Optional.of("Solution is empty"));
 		} else if(FAST_FAILER_SOLUTIONS.contains(captchaSolution)) {
 			// Values that are per definition false and so we don't need to ask the endpoint
-			log.debug("Solution is a fast failer!");
-			return Single.just(false);
+			return Single.just(Optional.of("Unacceptable solution"));
 		} else {
 			// prepare request
 			FormBody formBody = new FormBody.Builder()
-					.addEncoded("secret", this.getConfiguration().getFriendlyCaptcha().getSecretKey())
-					.addEncoded("sitekey", this.getConfiguration().getFriendlyCaptcha().getSiteKey())
-					.addEncoded("solution", captchaSolution)
+					.add("secret", this.getConfiguration().getFriendlyCaptcha().getSecretKey())
+					.add("sitekey", this.getConfiguration().getFriendlyCaptcha().getSiteKey())
+					.add("solution", captchaSolution)
 					.build();
 
 			Request request = new Request.Builder()
 					.url(this.getConfiguration().getFriendlyCaptcha().getVerificationUrl())
 					.post(formBody)
-					.addHeader("Content-Type", "application/x-www-form-urlencoded")
 					.build();
 
 			// send request
@@ -142,13 +142,18 @@ public class FriendlyCaptchaElement extends FormElement {
 						if (log.isDebugEnabled()) {
 							log.debug("Response:\n{}", json.encodePrettily());
 						}
-						return json.getBoolean("success", false);
+						boolean valid = json.getBoolean("success", false);
+						if (valid) {
+							return Optional.<String>empty();
+						} else {
+							return Optional.of(json.getString("details", "Unknown failure"));
+						}
 					} else if(this.getConfiguration().getFriendlyCaptcha().isAcceptOnErrorStatus()) {
 						// With this configuration the recommendation from  here: https://docs.friendlycaptcha.com/#/verification_api?id=verification-best-practices
 						// can be activated
-						//log.debug("AcceptOnErrorActive therefor this request is considered correct");
+						//log.debug("AcceptOnErrorActive therefore this request is considered correct");
 						log.warn("Unexpected response status: {} of verification request", status);
-						return true;
+						return Optional.<String>empty();
 					} else {
 						throw new IllegalStateException(String.format("Unexpected response status: %d of verification request", status));
 					}
@@ -157,7 +162,7 @@ public class FriendlyCaptchaElement extends FormElement {
 				}
 			}).onErrorResumeNext(e -> {
 				log.error("Error while requesting " + this.getConfiguration().getFriendlyCaptcha().getSolutionKey(), e);
-				return Single.just(false);
+				return Single.just(Optional.of("Captcha validation request error"));
 			});
 		}
 	}

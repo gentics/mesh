@@ -107,11 +107,11 @@ public class ReCaptchaElement extends FormElement {
 
 			// prepare request
 			FormBody formBody = new FormBody.Builder()
-					.addEncoded("secret", getConfiguration().getReCaptcha().getSecretKey())
-					.addEncoded("response", captchaResponse)
+					.add("secret", getConfiguration().getReCaptcha().getSecretKey())
+					.add("response", captchaResponse)
 					.build();
 
-			Request request = new Request.Builder().url(url).post(formBody).addHeader("Content-Type", "application/x-www-form-urlencoded").build();
+			Request request = new Request.Builder().url(url).post(formBody).build();
 
 			// send request
 			Call call = httpClient.newCall(request);

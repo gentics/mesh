@@ -1,0 +1,1 @@
+Forms: The calls to 3rd party user validation services (ReCaptcha, FriendlyCaptcha) have been fixed. The error message from FriendlyCaptcha has been improved.
