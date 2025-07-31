@@ -1,4 +1,9 @@
-FROM eclipse-temurin:17-alpine
+FROM eclipse-temurin:17-alpine as eclipse-temurin-upgraded
+
+RUN apk upgrade --no-cache
+
+FROM scratch
+COPY --from=eclipse-temurin-upgraded / /
 
 ENV MESH_AUTH_KEYSTORE_PATH=/keystore/keystore.jks
 ENV MESH_PLUGIN_DIR=/plugins
