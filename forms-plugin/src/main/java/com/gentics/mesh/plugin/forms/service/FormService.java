@@ -692,8 +692,16 @@ public class FormService {
 	 *            the UUID of the form
 	 */
 	public Single<JsonObject> getFormSchemaWithCmsId(String projectName, String formUuid) {
-		Single<Optional<SchemaResponse>> schema = schemaService.loadSchemaByName(getSchemaName(formUuid), true);
+		String name = getSchemaName(formUuid);
+		// we do not let this single fail, if the schema cannot be loaded (e.g. due to lacking permission),
+		// because this would return a 404, but we want a 403 (coming from the load call below)
+		Single<Optional<SchemaResponse>> schema = schemaService.loadSchemaByName(name, false);
 		return Single.zip(schema, load(projectName, formUuid), (formSchemaResponse, formNodeResponse) -> {
+			if (formSchemaResponse.isEmpty()) {
+				String message = String.format("Schema with name \"%s\" could not be found.", name);
+				throw new FormsError(message, 404);
+			}
+
 			NumberField cmsIdField = formNodeResponse.getFields().getNumberField("cms_id");
 			JsonObject formSchema = new JsonObject(formSchemaResponse.get().toJson());
 			return formSchema.put("cms_id", cmsIdField != null ? cmsIdField.getNumber() : null);
