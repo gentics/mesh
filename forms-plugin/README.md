@@ -390,10 +390,10 @@ No extra properties.
 
 Element for file uploads.
 
-| Key | Type | Description | Default value |
-|-----|------|-------------|---------------|
-| `max_filesize` | integer | Maximum allowed file size in MB (0 means unlimited) | 0 |
-| `allowed_filetypes` | array of strings | Allowed filetypes (see configuration). `null` for using default configuration. | `null` |
+| Key | Type | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Default value |
+|-----|------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------|
+| `max_filesize` | integer | Maximum allowed file size in MB (0 means unlimited)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | 0 |
+| `allowed_filetypes` | array of strings | Allowed filetypes or filenames (see configuration). The values can be any of the keys of the settings `fileUpload.allowedFileTypes` and `fileUpload.allowedFileNames` (for example, when using the example configuration above, setting `allowed_filetypes` to `["image", "documents"]` will allow image uploads based on the determined filetype and will allow document uploads based on the given filename). Note that testing based on the actual filetype is safer than testing based on the filename. Set to `null` for using default configuration (defined by `fileUpload.defaultAllowed`). | `null` |
 
 ## `conditionalcontainer`
 
