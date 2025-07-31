@@ -1,0 +1,2 @@
+Forms Plugin: Loading the schema for a form without necessary permissions would sometimes return a 404 (Not found)
+instead of a 403 (Forbidden), which has been fixed.
