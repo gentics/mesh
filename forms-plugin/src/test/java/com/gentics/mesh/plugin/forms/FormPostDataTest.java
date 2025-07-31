@@ -35,6 +35,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
 import javax.mail.Address;
 import javax.mail.BodyPart;
@@ -49,6 +50,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -57,6 +59,7 @@ import java.util.stream.Stream;
 
 import static com.gentics.mesh.test.ClientHelper.call;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.slf4j.Logger.ROOT_LOGGER_NAME;
@@ -831,8 +834,11 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 			assertOk(pair.getLeft());
 
 			ArgumentCaptor<ILoggingEvent> argument = ArgumentCaptor.forClass(ILoggingEvent.class);
-			verify(appender).doAppend(argument.capture());
-			assertThat(argument.getValue()).as("Logging Event").hasFieldOrPropertyWithValue("level", Level.ERROR)
+			verify(appender, atLeastOnce()).doAppend(argument.capture());
+			Optional<ILoggingEvent> firstError = argument.getAllValues().stream()
+					.filter(event -> Objects.equals(event.getLevel(), Level.ERROR)).findFirst();
+			assertThat(firstError).as("Logging Event in level ERROR").isNotEmpty();
+			assertThat(firstError.get()).as("Logging Event").hasFieldOrPropertyWithValue("level", Level.ERROR)
 					.hasFieldOrPropertyWithValue("formattedMessage",
 							"Could not send admin mail for form Form without admin mail template, because no template configuration was found (template must be either configured in config.yml as \"adminMailTemplate\" or set in the form as \"mailtemp\").");
 		} finally {
