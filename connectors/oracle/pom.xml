@@ -21,9 +21,9 @@
 			<artifactId>mesh-enterprise-database-connector-common</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.oracle.ojdbc</groupId>
-			<artifactId>ojdbc10</artifactId>
-			<version>19.3.0.0</version>
+			<groupId>com.oracle.database.jdbc</groupId>
+			<artifactId>ojdbc11</artifactId>
+			<version>23.9.0.25.07</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -316,6 +316,11 @@
 									<APP_USER>meshdbuser</APP_USER>
 									<APP_USER_PASSWORD><![CDATA[changeitNow4567&]]></APP_USER_PASSWORD>
 								</env>
+								<volumes>
+									<bind>
+										<volume>${project.build.directory}/test-classes/1_init.sql:/container-entrypoint-initdb.d/1_init.sql</volume>
+									</bind>
+								</volumes>
 								<wait>
 									<log>.*DATABASE IS READY TO USE!*</log>
 									<time>240000</time>
