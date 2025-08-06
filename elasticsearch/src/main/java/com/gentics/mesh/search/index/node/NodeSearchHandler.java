@@ -185,6 +185,7 @@ public class NodeSearchHandler extends AbstractSearchHandler<HibNode, NodeRespon
 					break;
 				case ES_7:
 				case ES_8:
+				case ES_9:
 					hitsInfo.put("total", new JsonObject().put("value", totalCount.longValue()));
 					break;
 				default:
