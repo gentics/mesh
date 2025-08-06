@@ -36,7 +36,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
-import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -1679,30 +1678,23 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		keyBuilder.append(expandedFields);
 
 		// branch specific tags. Since node.getTags() does not guarantee a specific order of the tags,
-		// we collect the etags of the tags in a TreeSet and use that to append the etags to the keyBuilder
-		Set<String> tagETags = new TreeSet<>();
-		for (HibTag tag : node.getTags(branch)) {
-			// Tags can't be moved across branches thus we don't need to add the
-			// tag family etag
-			tagETags.add(tagDao.getETag(tag, ac));
-		}
-		tagETags.stream().forEach(tagETag -> keyBuilder.append(tagETag));
+		// we need to sort the etags
+		// Tags can't be moved across branches thus we don't need to add the
+		// tag family etag
+		node.getTags(branch).stream().map(tag -> tagDao.getETag(tag, ac)).sorted().forEach(keyBuilder::append);
 
 		// branch specific children
-		for (HibNode child : getChildren(node, branch.getUuid())) {
-			if (userDao.hasPermission(ac.getUser(), child, READ_PUBLISHED_PERM)) {
-				keyBuilder.append("-");
-				keyBuilder.append(child.getSchemaContainer().getName());
-			}
-		}
+		getChildren(node, branch.getUuid()).stream()
+			.filter(child -> userDao.hasPermission(ac.getUser(), child, READ_PUBLISHED_PERM))
+			.map(child -> "-%s".formatted(child.getSchemaContainer().getName()))
+			.sorted()
+			.forEachOrdered(keyBuilder::append);
 
 		// Publish state & availableLanguages
-		for (HibNodeFieldContainer c : contentDao.getFieldContainers(node, branch.getUuid(), PUBLISHED)) {
-			keyBuilder.append(c.getLanguageTag() + "published");
-		}
-		for (HibNodeFieldContainer c : contentDao.getFieldContainers(node, branch.getUuid(), DRAFT)) {
-			keyBuilder.append(c.getLanguageTag() + "draft");
-		}
+		contentDao.getFieldContainers(node, branch.getUuid(), PUBLISHED).stream()
+				.map(c -> c.getLanguageTag() + "published").sorted().forEachOrdered(keyBuilder::append);
+		contentDao.getFieldContainers(node, branch.getUuid(), DRAFT).stream()
+				.map(c -> c.getLanguageTag() + "draft").sorted().forEachOrdered(keyBuilder::append);
 
 		// breadcrumb
 		keyBuilder.append("-");
