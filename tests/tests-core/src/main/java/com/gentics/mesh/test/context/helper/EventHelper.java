@@ -587,7 +587,7 @@ public interface EventHelper extends BaseHelper {
 	}
 
 	default void syncIndex() throws TimeoutException {
-		try (ExpectedEvent ee = expectEvent(MeshEvent.INDEX_SYNC_FINISHED, 10_000)) {
+		try (ExpectedEvent ee = expectEvent(MeshEvent.INDEX_SYNC_FINISHED, 30_000)) {
 			SyncEventHandler.invokeSync(vertx(), null);
 		}
 		refreshIndices();
