@@ -840,7 +840,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		AtomicBoolean success = prepareCheckServiceMock(true, checkRequestLatch);
 		BinaryDownloadInfo downloadInfo = doTestFlowableDownload(true);
 
-		checkRequestLatch.await(10, TimeUnit.SECONDS);
+		assertThat(checkRequestLatch.await(30, TimeUnit.SECONDS)).as("Check request was performed within timeout").isTrue();
 
 		mockServerClient.verify(HttpRequest.request("/check"), VerificationTimes.atLeast(1));
 
@@ -869,7 +869,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		AtomicBoolean success = prepareCheckServiceMock(false, checkRequestLatch);
 		BinaryDownloadInfo downloadInfo = doTestFlowableDownload(true);
 
-		checkRequestLatch.await(10, TimeUnit.MINUTES);
+		assertThat(checkRequestLatch.await(30, TimeUnit.SECONDS)).as("Check request was performend within timeout").isTrue();
 
 		mockServerClient.verify(HttpRequest.request("/check"), VerificationTimes.atLeast(1));
 
