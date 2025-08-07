@@ -904,7 +904,7 @@ public class MeshTestContext implements TestRule {
 				} else {
 					searchOptions.setUrl("http://" + elasticsearch.getHost() + ":" + elasticsearch.getMappedPort(9200));
 				}
-				if (settings.elasticsearch() == ElasticsearchTestMode.CONTAINER_ES8) {
+				if (settings.elasticsearch().getOrder() >= 8) {
 					Thread.sleep(1000);
 					SearchProviderModule.searchClient(meshOptions).settings(new JsonObject("{\n"
 							+ "    \"persistent\": {\n"

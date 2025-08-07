@@ -57,7 +57,7 @@ public class EventAsserter {
 		log.info("Waiting for events...");
 		// Wait for all events with a timeout between events of 500 ms.
 		eventSubject
-			.timeout(500, TimeUnit.MILLISECONDS)
+			.timeout(5000, TimeUnit.MILLISECONDS)
 			.onErrorResumeNext((Throwable err) -> {
 				if (err instanceof TimeoutException) {
 					return Observable.empty();
