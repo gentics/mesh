@@ -67,8 +67,35 @@ public class RestInfoEndpoint extends AbstractInternalEndpoint {
 			adminHandler.handleRAML(ac);
 		}, false);
 
+		secure("/openapi.yaml");
+		InternalEndpointRoute openapiYml = createRoute();
+		openapiYml.path("/openapi.yaml");
+		openapiYml.method(GET);
+		openapiYml.description("Endpoint which provides a OpenAPIv3 YAML document for all registed endpoints.");
+		openapiYml.displayName("OpenAPI YAML specification");
+		openapiYml.exampleResponse(OK, "Not yet specified");
+		openapiYml.produces(APPLICATION_YAML);
+		openapiYml.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			adminHandler.handleOpenAPIv3(ac, "yaml");
+		}, false);
+
+		secure("/openapi.json");
+		InternalEndpointRoute openapiJson = createRoute();
+		openapiJson.path("/openapi.json");
+		openapiJson.method(GET);
+		openapiJson.description("Endpoint which provides a OpenAPIv3 JSON document for all registed endpoints.");
+		openapiJson.displayName("OpenAPI JSON specification");
+		openapiJson.exampleResponse(OK, "Not yet specified");
+		openapiJson.produces(APPLICATION_JSON);
+		openapiJson.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			adminHandler.handleOpenAPIv3(ac, "json");
+		}, false);
+
 		secure("/");
 		InternalEndpointRoute infoEndpoint = createRoute();
+		infoEndpoint.setInsecure(true);
 		infoEndpoint.path("/");
 		infoEndpoint.description("Endpoint which returns version information");
 		infoEndpoint.displayName("Version Information");
