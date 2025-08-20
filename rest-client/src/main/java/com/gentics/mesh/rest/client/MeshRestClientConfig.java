@@ -24,6 +24,7 @@ public class MeshRestClientConfig {
 	private final ProtocolVersion protocolVersion;
 	private final Duration websocketReconnectInterval;
 	private final Duration websocketPingInterval;
+	private final Duration timeout;
 	private final Set<byte[]> trustedCAs;
 	private final byte[] clientCert;
 	private final byte[] clientKey;
@@ -40,6 +41,7 @@ public class MeshRestClientConfig {
 		this.protocolVersion = builder.protocolVersion;
 		this.websocketReconnectInterval = builder.websocketReconnectInterval;
 		this.websocketPingInterval = builder.websocketPingInterval;
+		this.timeout = builder.timeout;
 		this.hostnameVerification = builder.hostnameVerification;
 		this.basePath = builder.basePath;
 		this.trustedCAs = builder.trustedCAs;
@@ -78,6 +80,10 @@ public class MeshRestClientConfig {
 
 	public Duration getWebsocketPingInterval() {
 		return websocketPingInterval;
+	}
+
+	public Duration getTimeout() {
+		return timeout;
 	}
 
 	public String getBasePath() {
@@ -146,6 +152,7 @@ public class MeshRestClientConfig {
 		private ProtocolVersion protocolVersion = ProtocolVersion.DEFAULT;
 		private Duration websocketReconnectInterval = Duration.ofSeconds(5);
 		private Duration websocketPingInterval = Duration.ofSeconds(2);
+		private Duration timeout = Duration.ofMinutes(1);
 		public boolean hostnameVerification = false;
 		private final Set<byte[]> trustedCAs;
 		private byte[] clientCert;
@@ -178,6 +185,7 @@ public class MeshRestClientConfig {
 			setProtocolVersion(config.getProtocolVersion());
 			setWebsocketReconnectInterval(config.getWebsocketReconnectInterval());
 			setWebsocketPingInterval(config.getWebsocketPingInterval());
+			setTimeout(config.getTimeout());
 			setHostnameVerification(config.isVerifyHostnames());
 			trustedCAs = new HashSet<>(config.trustedCAs);
 			if (config.getClientCert() != null) {
@@ -296,6 +304,21 @@ public class MeshRestClientConfig {
 		 */
 		public Builder setWebsocketPingInterval(Duration websocketPingInterval) {
 			this.websocketPingInterval = Objects.requireNonNull(websocketPingInterval);
+			return this;
+		}
+
+		/**
+		 * Sets the HTTP timeouts.
+		 * 
+		 * <p>
+		 * Default: 1 minute
+		 * </p>
+		 * 
+		 * @param timeout
+		 * @return
+		 */
+		public Builder setTimeout(Duration timeout) {
+			this.timeout = timeout;
 			return this;
 		}
 

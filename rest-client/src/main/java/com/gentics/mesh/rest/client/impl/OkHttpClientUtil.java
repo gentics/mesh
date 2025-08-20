@@ -60,12 +60,12 @@ public final class OkHttpClientUtil {
 		Dispatcher dispatcher = new Dispatcher();
 		dispatcher.setMaxRequestsPerHost(64);
 
-		// We need a long timeout per default since some requests take a long time. For all tests a 1 minute timeout works fine.
 		Builder builder = new OkHttpClient.Builder()
-			.callTimeout(Duration.ofMinutes(1))
+			// The connection should not take longer than 1 minute.
 			.connectTimeout(Duration.ofMinutes(1))
-			.writeTimeout(Duration.ofMinutes(1))
-			.readTimeout(Duration.ofMinutes(1))
+			.callTimeout(config.getTimeout())
+			.writeTimeout(config.getTimeout())
+			.readTimeout(config.getTimeout())
 			.dispatcher(dispatcher);
 
 		initializeHttpClient(builder, config);
