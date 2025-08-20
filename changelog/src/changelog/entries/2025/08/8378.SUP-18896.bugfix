@@ -1,0 +1,3 @@
+Forms: To avoid backend systems overload during the migration of a form data to the new folder structure, the process now can be fine-tuned with environment variables:
+ * MESH_FORMS_PLUGIN_MAX_CONCURRENT_MIGRATION_FETCH_NODES - the max amount of nodes to fetch at once for the migration, defaults to 2147483647
+ * MESH_FORMS_PLUGIN_MAX_CONCURRENT_MIGRATION_MOVE_CALLS - the max simultaneous node migration processes, defaults to 2147483647

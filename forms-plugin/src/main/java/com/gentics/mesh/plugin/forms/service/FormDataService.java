@@ -24,6 +24,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -103,6 +104,11 @@ import io.vertx.reactivex.core.eventbus.MessageConsumer;
 
 @Singleton
 public class FormDataService {
+	private static final int MAX_CONCURRENT_MIGRATION_MOVE_CALLS
+			= Integer.parseInt(System.getenv().getOrDefault("MESH_FORMS_PLUGIN_MAX_CONCURRENT_MIGRATION_MOVE_CALLS", Integer.toString(Integer.MAX_VALUE)));
+	private static final int MAX_CONCURRENT_MIGRATION_FETCH_NODES
+			= Integer.parseInt(System.getenv().getOrDefault("MESH_FORMS_PLUGIN_MAX_CONCURRENT_MIGRATION_FETCH_NODES", Integer.toString(Integer.MAX_VALUE)));
+
 	/**
 	 * Name of the cookie, the user will get when a form is partially filled (the cookie value is the uuid of the form data node)
 	 */
@@ -227,19 +233,26 @@ public class FormDataService {
 
 		GraphQLRequest request = new GraphQLRequest()
 				.setQuery(loadFormDataToMigrateGraphQl)
-				.setVariables(new JsonObject().put("uuid", formUuid).put("schema", schemaName));
+				.setVariables(new JsonObject().put("uuid", formUuid).put("schema", schemaName).put("perPage", MAX_CONCURRENT_MIGRATION_FETCH_NODES));
 		VersioningParameters params = new VersioningParametersImpl().draft();
 
-		return getFormDataFolderUuid(projectName, formUuid, lang).flatMapCompletable(formDataFolderUuid -> {
-			return adminClient.graphql(projectName, request, params).toSingle().flatMapObservable(response -> {
-				List<String> uuids = FormUtil.getFromResponse(response, "$.data.node.children.elements[*].uuid");
-				return Observable.fromIterable(uuids);
-			}).flatMapCompletable(
-					dataUuid -> adminClient.moveNode(projectName, dataUuid, formDataFolderUuid).toCompletable()
-							.doOnSubscribe(disp -> log
-									.debug(String.format("Move misplaced form data node %s for form %s in project %s",
-											dataUuid, formUuid, projectName))));
-		}).doOnSubscribe(disp -> log.debug(String.format("Checking misplaced form data nodes for form %s in project %s", formUuid, projectName)));
+		return getFormDataFolderUuid(projectName, formUuid, lang)
+			   .flatMapCompletable(formDataFolderUuid -> {
+					   AtomicBoolean hasMore = new AtomicBoolean(false);
+					   return adminClient.graphql(projectName, request, params).toSingle()
+							   .flatMapObservable(response -> {
+									   List<String> uuids = FormUtil.getFromResponse(response, "$.data.node.children.elements[*].uuid");
+									   log.info("{} form data nodes found for migration of project {} / form {}", uuids.size(), projectName, formUuid);
+									   hasMore.set(uuids.size() >= MAX_CONCURRENT_MIGRATION_FETCH_NODES);
+									   return Observable.fromIterable(uuids);
+							   })
+							   .flatMap(dataUuid -> adminClient.moveNode(projectName, dataUuid, formDataFolderUuid).toObservable()
+											   .doOnSubscribe(disp -> log.debug(String.format("Move misplaced form data node %s for form %s in project %s", dataUuid, formUuid, projectName))), 
+									   MAX_CONCURRENT_MIGRATION_MOVE_CALLS)
+							   .flatMapCompletable(disp -> Completable.complete())
+							   .repeatWhen(handler -> handler.takeWhile((o) -> hasMore.get()));
+			   }).doOnSubscribe(disp -> log.debug(String.format("Checking misplaced form data nodes for form %s in project %s", formUuid, projectName)));
+
 	}
 
 	/**
@@ -280,11 +293,11 @@ public class FormDataService {
 	 * Load the form data by uuid. Only unpublished form data nodes will be returned, otherwise a 404 response is returned.
 	 *
 	 * @param projectName
-	 *            project name
+	 *			project name
 	 * @param formUuid
-	 *            form uuid
+	 *			form uuid
 	 * @param formDataUuid
-	 *            form data uuid
+	 *			form data uuid
 	 * @return single noderesponse
 	 */
 	public Single<NodeResponse> load(String projectName, String formUuid, String formDataUuid) {
@@ -297,7 +310,7 @@ public class FormDataService {
 	 * @param formUuid form uuid
 	 * @param formDataUuid form data uuid
 	 * @param allowPublished
-	 *            Allow returning published form data. If not set to true, only unpublished form data nodes can be loaded, and for published nodes a 404 response is returned.
+	 *			Allow returning published form data. If not set to true, only unpublished form data nodes can be loaded, and for published nodes a 404 response is returned.
 	 * @return single noderesponse
 	 */
 	public Single<NodeResponse> load(String projectName, String formUuid, String formDataUuid, boolean allowPublished) {
@@ -399,7 +412,7 @@ public class FormDataService {
 	 * Create a download node in the node with the given root UUID.
 	 *
 	 * <p>
-	 *     The filename of the binary part will be constructed from {@code downloadPrefix_downloadName_currentDateTime}.
+	 *	 The filename of the binary part will be constructed from {@code downloadPrefix_downloadName_currentDateTime}.
 	 * </p>
 	 *
 	 * @param projectName The project name.
@@ -492,8 +505,8 @@ public class FormDataService {
 	 * </p>
 	 *
 	 * <p>
-	 *     If a download is currently prepared, the field {@code "downloadPending"}
-	 *     will be {@code true}.
+	 *	 If a download is currently prepared, the field {@code "downloadPending"}
+	 *	 will be {@code true}.
 	 * </p>
 	 *
 	 * <p>
@@ -532,17 +545,17 @@ public class FormDataService {
 	 * Create the download info from the given GraphQL response.
 	 *
 	 * <p>
-	 *     The info will contain if a download is currently being created
-	 *     (field {@code requestPending}), whether there is a download that is
-	 *     ready (field {@code downloadReady}), the UUID and creation timestamp
-	 *     of the most recent ready download (fields {@code downloadUuid} and
-	 *     {@code downloadTimestamp}).
+	 *	 The info will contain if a download is currently being created
+	 *	 (field {@code requestPending}), whether there is a download that is
+	 *	 ready (field {@code downloadReady}), the UUID and creation timestamp
+	 *	 of the most recent ready download (fields {@code downloadUuid} and
+	 *	 {@code downloadTimestamp}).
 	 * </p>
 	 *
 	 * <p>
-	 *     Before the info is returned each found pending request is checked if
-	 *     there is still some instance working on it (by requesting a message
-	 *     over the event bus). If not the request node is deleted.
+	 *	 Before the info is returned each found pending request is checked if
+	 *	 there is still some instance working on it (by requesting a message
+	 *	 over the event bus). If not the request node is deleted.
 	 * </p>
 	 *
 	 * @param projectName The project name.
