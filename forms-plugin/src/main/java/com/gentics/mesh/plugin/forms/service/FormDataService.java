@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -104,10 +105,9 @@ import io.vertx.reactivex.core.eventbus.MessageConsumer;
 
 @Singleton
 public class FormDataService {
-	private static final int MAX_CONCURRENT_MIGRATION_MOVE_CALLS
-			= Integer.parseInt(System.getenv().getOrDefault("MESH_FORMS_PLUGIN_MAX_CONCURRENT_MIGRATION_MOVE_CALLS", Integer.toString(Integer.MAX_VALUE)));
-	private static final int MAX_CONCURRENT_MIGRATION_FETCH_NODES
-			= Integer.parseInt(System.getenv().getOrDefault("MESH_FORMS_PLUGIN_MAX_CONCURRENT_MIGRATION_FETCH_NODES", Integer.toString(Integer.MAX_VALUE)));
+
+	private static final int MAX_CONCURRENT_MIGRATION_MOVE_CALLS = getOptionalConfig("MESH_FORMS_PLUGIN_MAX_CONCURRENT_MIGRATION_MOVE_CALLS", 10, Integer::parseInt, Object::toString);
+	private static final int MAX_CONCURRENT_MIGRATION_FETCH_NODES = getOptionalConfig("MESH_FORMS_PLUGIN_MAX_CONCURRENT_MIGRATION_FETCH_NODES", 10_000, Integer::parseInt, Object::toString);
 
 	/**
 	 * Name of the cookie, the user will get when a form is partially filled (the cookie value is the uuid of the form data node)
@@ -1389,6 +1389,28 @@ public class FormDataService {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Get an optional configuration from either the environment variable, or the system parameter.
+	 * 
+	 * TODO Maybe move off to Mesh Core / Plugin API
+	 * @param <T>
+	 * @param configName
+	 * @param defaultValue
+	 * @param parse
+	 * @param stringify
+	 * @return
+	 */
+	private static final <T> T getOptionalConfig(String configName, T defaultValue, Function<String, T> parse, Function<T, String> stringify) {
+		return parse.apply(System.getenv()
+				.entrySet().stream()
+				.filter(e -> e.getKey().equals(configName))
+				.map(e -> e.getValue())
+				.filter(Objects::nonNull)
+				.findAny()
+				.or(() -> Optional.ofNullable(System.getProperty(configName, stringify.apply(defaultValue))))
+				.orElseGet(() -> stringify.apply(defaultValue)));
 	}
 
 	/** Wrapper class for downloadable binaries. */
