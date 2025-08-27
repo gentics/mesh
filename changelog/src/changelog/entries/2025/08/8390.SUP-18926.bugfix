@@ -1,0 +1,5 @@
+Core: The following dependencies have been updated, to target the vulnerability CVE-2025-54988 :
+ * Apache Tika, to *3.2.2*
+ * Apache Commons Lang3, to *3.18.0*
+ * Apache Commons Compress, to *1.28.0*
+ * JSOUP, to *1.21.1*
