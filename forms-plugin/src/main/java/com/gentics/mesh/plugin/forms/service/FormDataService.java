@@ -105,9 +105,15 @@ import io.vertx.reactivex.core.eventbus.MessageConsumer;
 
 @Singleton
 public class FormDataService {
+	/**
+	 * Name of the env variable for configuring the maximum allowed parallel move calls for the data migration
+	 */
+	public final static String MESH_FORMS_PLUGIN_MAX_CONCURRENT_MIGRATION_MOVE_CALLS = "MESH_FORMS_PLUGIN_MAX_CONCURRENT_MIGRATION_MOVE_CALLS";
 
-	private static final int MAX_CONCURRENT_MIGRATION_MOVE_CALLS = getOptionalConfig("MESH_FORMS_PLUGIN_MAX_CONCURRENT_MIGRATION_MOVE_CALLS", 10, Integer::parseInt, Object::toString);
-	private static final int MAX_CONCURRENT_MIGRATION_FETCH_NODES = getOptionalConfig("MESH_FORMS_PLUGIN_MAX_CONCURRENT_MIGRATION_FETCH_NODES", 10_000, Integer::parseInt, Object::toString);
+	/**
+	 * Name of the env variable for configuring the number of nodes fetched per page for the data migration
+	 */
+	public final static String MESH_FORMS_PLUGIN_MAX_CONCURRENT_MIGRATION_FETCH_NODES = "MESH_FORMS_PLUGIN_MAX_CONCURRENT_MIGRATION_FETCH_NODES";
 
 	/**
 	 * Name of the cookie, the user will get when a form is partially filled (the cookie value is the uuid of the form data node)
@@ -228,12 +234,15 @@ public class FormDataService {
 	 * @return completable
 	 */
 	private Completable migrateFormDataNodes(ProjectResponse project, String formUuid, String...lang) {
+		int maxConcurrentMoveCalls = getOptionalConfig(MESH_FORMS_PLUGIN_MAX_CONCURRENT_MIGRATION_MOVE_CALLS, 10, Integer::parseInt, Object::toString);
+		int nodesPerPage = getOptionalConfig(MESH_FORMS_PLUGIN_MAX_CONCURRENT_MIGRATION_FETCH_NODES, 10_000, Integer::parseInt, Object::toString);
+
 		String schemaName = formService.getSchemaName(formUuid);
 		String projectName = project.getName();
 
 		GraphQLRequest request = new GraphQLRequest()
 				.setQuery(loadFormDataToMigrateGraphQl)
-				.setVariables(new JsonObject().put("uuid", formUuid).put("schema", schemaName).put("perPage", MAX_CONCURRENT_MIGRATION_FETCH_NODES));
+				.setVariables(new JsonObject().put("uuid", formUuid).put("schema", schemaName).put("perPage", nodesPerPage));
 		VersioningParameters params = new VersioningParametersImpl().draft();
 
 		return getFormDataFolderUuid(projectName, formUuid, lang)
@@ -243,12 +252,12 @@ public class FormDataService {
 							   .flatMapObservable(response -> {
 									   List<String> uuids = FormUtil.getFromResponse(response, "$.data.node.children.elements[*].uuid");
 									   log.info("{} form data nodes found for migration of project {} / form {}", uuids.size(), projectName, formUuid);
-									   hasMore.set(uuids.size() >= MAX_CONCURRENT_MIGRATION_FETCH_NODES);
+									   hasMore.set(uuids.size() >= nodesPerPage);
 									   return Observable.fromIterable(uuids);
 							   })
 							   .flatMap(dataUuid -> adminClient.moveNode(projectName, dataUuid, formDataFolderUuid).toObservable()
 											   .doOnSubscribe(disp -> log.debug(String.format("Move misplaced form data node %s for form %s in project %s", dataUuid, formUuid, projectName))), 
-									   MAX_CONCURRENT_MIGRATION_MOVE_CALLS)
+									   maxConcurrentMoveCalls)
 							   .flatMapCompletable(disp -> Completable.complete())
 							   .repeatWhen(handler -> handler.takeWhile((o) -> hasMore.get()));
 			   }).doOnSubscribe(disp -> log.debug(String.format("Checking misplaced form data nodes for form %s in project %s", formUuid, projectName)));
