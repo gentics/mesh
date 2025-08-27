@@ -115,7 +115,7 @@ Your instance of Gentics Mesh comes with the <<_graphiql_browser>> as well.
 There is a possibility to speed up the filtering by using a *native filtering* feature, that is applied on a database level. This means that initially less data will be fetched from the database, but at a cost of filtering flexibility, as not every Mesh filter is natively supported.
 
 The native filtering is enabled on Mesh level by The GraphQL Mesh options' new preference `nativeQueryFiltering` with possible values: 
-* `OFF` - old runtime filtering.
+* `NEVER` - old runtime filtering.
 * `ALWAYS` - DB filtering is forced.
 * `ON_DEMAND` - GraphQL parameter `nativeFilter` is considered for the filtering (default value)
 
