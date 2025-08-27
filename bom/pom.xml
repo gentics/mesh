@@ -30,7 +30,7 @@
 		<jackson.version>2.17.0</jackson.version>
 		<jackson-databind.version>2.17.0</jackson-databind.version>
 		<netty.version>4.1.118.Final</netty.version>
-		<tika.version>2.9.2</tika.version>
+		<tika.version>3.2.2</tika.version>
 		<aws.sdk.version>2.16.83</aws.sdk.version>
 		<snakeyaml.version>2.2</snakeyaml.version>
 		<testcontainers.version>1.17.6</testcontainers.version>
@@ -111,7 +111,7 @@
 			<dependency>
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-lang3</artifactId>
-				<version>3.14.0</version>
+				<version>3.18.0</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-io</groupId>
@@ -131,7 +131,7 @@
 			<dependency>
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-compress</artifactId>
-				<version>1.26.2</version>
+				<version>1.28.0</version>
 			</dependency>
 
 			<!-- HTTP Client -->
@@ -748,7 +748,7 @@
 			<dependency>
 				<groupId>org.jsoup</groupId>
 				<artifactId>jsoup</artifactId>
-				<version>1.17.2</version>
+				<version>1.21.1</version>
 			</dependency>
 
 			<!-- GraphQL -->
