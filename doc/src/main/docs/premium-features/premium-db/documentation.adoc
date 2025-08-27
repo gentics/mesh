@@ -34,12 +34,13 @@ Download *postgresql-X.Y.Z.jar* from https://jdbc.postgresql.org/download.html[a
 .DB configuration
 
 Define the database and Mesh user. This example uses environment variables.
+
+Since data structure in Postgres requires a definition of a schema as a part of a database, one can either define a schema and a database with the common name *mesh* ...
 ```
 export POSTGRES_DB=mesh
 export POSTGRES_USER=meshdbuser
 export POSTGRES_PASSWORD=admin
 ```
-Create the dedicated schema.
 ```
 CREATE SCHEMA mesh;
 ```
@@ -54,6 +55,35 @@ storageOptions:
   databaseConnectorClasspath: <path/to/downloaded/driver/and/connector>
   connectionUsername: "meshdbuser"
   connectionPassword: "admin"
+  showSql: false
+  formatSql: false
+  hikariOptions:
+    autocommit: false
+    connectionTimeout: 10000
+    idleTimeout: 600000
+    maxLifetime: 1800000
+    minimumIdleConnection: 10
+    maxPoolSize: 10
+    poolName: "MeshHikariCP"
+    registerMBeans: false
+    transactionIsolationLevel: null
+    leakDetectionThreshold: 0
+  synchronizeWrites: false
+  synchronizeWritesTimeout: 6000
+```
+...Or, if the users, database and/or schema is already defined:
+
+.Mesh Configuration
+```yml
+storageOptions:
+  retryLimit: 10
+  retryDelayMillis: 2000
+  databaseAddress: "<postgres_database_host>:5432"
+  databaseName: <your_database_name_for_mesh_storage>
+  databaseConnectorClasspath: <path/to/downloaded/driver/and/connector>
+  connectionUrlExtraParams: "?autosave=always&currentSchema=<your_schema_name_for_mesh_storage>"
+  connectionUsername: <your_user_for_mesh_storage>
+  connectionPassword: <password_of_your_user_for_mesh_storage>
   showSql: false
   formatSql: false
   hikariOptions:
