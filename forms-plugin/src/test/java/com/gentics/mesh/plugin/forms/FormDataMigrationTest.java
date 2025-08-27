@@ -9,11 +9,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.dagger.MeshComponent;
+import com.gentics.mesh.plugin.forms.service.FormDataService;
 import com.gentics.mesh.plugin.test.common.util.PluginTestUtil;
 
 /**
@@ -21,6 +23,16 @@ import com.gentics.mesh.plugin.test.common.util.PluginTestUtil;
  * to children of the form data folder
  */
 public class FormDataMigrationTest extends AbstractFormsPluginIntegrationTest {
+	/**
+	 * Number of data nodes to migrate
+	 */
+	protected final static int NUM_DATA = 105;
+
+	/**
+	 * Page size for migration
+	 */
+	protected final static int PER_PAGE = 10;
+
 	@Before
 	public void setup() {
 		super.setup();
@@ -37,21 +49,24 @@ public class FormDataMigrationTest extends AbstractFormsPluginIntegrationTest {
 	 */
 	@Test
 	public void testMigration() throws IOException, InterruptedException {
+		// set the page size for the migration
+		System.setProperty(FormDataService.MESH_FORMS_PLUGIN_MAX_CONCURRENT_MIGRATION_FETCH_NODES, Integer.toString(PER_PAGE));
+
 		// create a form
 		String formUuid = createForm("inputfield.json");
 
 		// post some data
-		submit(formUuid, true, true, "input1", "");
-		submit(formUuid, "input1", "one");
-		submit(formUuid, "input1", "two");
-		submit(formUuid, "input1", "three");
+		for (int i = 0; i < NUM_DATA; i++) {
+			boolean empty = RandomUtils.nextInt(0, 2) == 0;
+			submit(formUuid, true, empty, "input1", empty ? "" : "data %d".formatted(i));
+		}
 
 		// undeploy forms plugin
 		server.getMesh().<MeshComponent>internal().pluginManager().undeploy("forms").blockingAwait();
 
 		// move data nodes
 		List<NodeResponse> dataNodes = getFormDataNodes(formUuid);
-		assertThat(dataNodes).as("Form data nodes").isNotEmpty();
+		assertThat(dataNodes).as("Form data nodes").isNotEmpty().hasSize(NUM_DATA);
 		Set<String> formDataNodeUuids = dataNodes.stream().map(NodeResponse::getUuid).collect(Collectors.toSet());
 		dataNodes.stream().forEach(dataNode -> {
 			call(() -> server.client().moveNode(PROJECT_NAME, dataNode.getUuid(), formUuid));

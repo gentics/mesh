@@ -1,6 +1,6 @@
-query ($uuid: String, $schema: String) {
+query ($uuid: String, $schema: String, $perPage: Long) {
   node(uuid: $uuid) {
-    children (filter: {schema: {name: {equals: $schema}}}) {
+    children (filter: {schema: {name: {equals: $schema}}}, perPage: $perPage) {
       elements {
         uuid
       }
