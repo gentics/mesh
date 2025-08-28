@@ -1,5 +1,7 @@
 package com.gentics.mesh.dagger.module;
 
+import java.time.Duration;
+
 import javax.inject.Named;
 import javax.inject.Singleton;
 
@@ -30,12 +32,14 @@ public class PluginModule {
 	public static OkHttpClient pluginOkHttpClient(MeshOptions options) {
 		int port = options.getHttpServerOptions().getPort();
 		String host = options.getHttpServerOptions().getHost();
+		int timeout = options.getPluginTimeout();
 
 		MeshRestClientConfig config = new MeshRestClientConfig.Builder()
 			.setHost(host)
 			.setPort(port)
 			.setSsl(false)
 			.setProtocolVersion(options.isPluginUseHttp2() ? ProtocolVersion.HTTP_2 : ProtocolVersion.DEFAULT)
+			.setTimeout(Duration.ofSeconds(timeout))
 			.build();
 
 		// Create a fresh client for plugins to ensure independence between clients that are used within mesh.

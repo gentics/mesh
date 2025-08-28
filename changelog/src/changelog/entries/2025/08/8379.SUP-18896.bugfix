@@ -1,0 +1,1 @@
+Plugins: Now the plugin timeout value is also considered in the HTTP plugin client. This allows extending HTTP call timeouts when the plugin is expected to start longer.
