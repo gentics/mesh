@@ -91,7 +91,7 @@ public class ReCaptchaElement extends FormElement {
 			return null;
 		} else {
 			return new ValidationError().setName(getName()).setTitle(I18nHelper.get(Locale.GERMAN, TITLE_KEY))
-				.setMessage(I18nHelper.get(Locale.GERMAN, MESSAGE_KEY));
+				.setMessage(I18nHelper.get(Locale.GERMAN, MESSAGE_KEY)).setPreventStoring(true);
 		}
 	}
 

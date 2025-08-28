@@ -5,9 +5,37 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.Appender;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.mail.Address;
+import javax.mail.BodyPart;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
+import org.mockito.ArgumentCaptor;
+
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.json.JsonUtil;
@@ -18,6 +46,10 @@ import com.gentics.mesh.plugin.forms.service.MailService;
 import com.gentics.mesh.plugin.forms.test.ResponseWithCookies;
 import com.gentics.mesh.plugin.forms.util.RxUtil;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
+
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.Appender;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
@@ -31,38 +63,8 @@ import okhttp3.MultipartBody;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import okhttp3.ResponseBody;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.RecordedRequest;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.tuple.Pair;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
-import org.mockito.ArgumentCaptor;
-
-import javax.mail.Address;
-import javax.mail.BodyPart;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Test cases for posting data to a form for multiple languages.
@@ -486,7 +488,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 	@Test
 	public void testMailTemplate() throws IOException, MessagingException {
 		String uuid = createForm("mailsource.json");
-		ResponseWithCookies rs = submit(uuid, true, false, false, "usermail1", "user@test.com");
+		submit(uuid, true, false, false, "usermail1", "user@test.com");
 
 		assertThat(greenMail.waitForIncomingEmail(MAIL_TIMEOUT, 2))
 			.as("Mail sent in time")
@@ -516,7 +518,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 	@Test
 	public void testDateFormat() throws IOException, MessagingException {
 		String uuid = createForm("datefield.json");
-		ResponseWithCookies rs = submit(uuid, true, false, false, "date1", "23.05.1970");
+		submit(uuid, true, false, false, "date1", "23.05.1970");
 		assertThat(greenMail.waitForIncomingEmail(MAIL_TIMEOUT, 1))
 			.as("Mail sent in time")
 			.isTrue();
@@ -543,7 +545,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 	@Test
 	public void testAdminMailElement() throws IOException, MessagingException {
 		String uuid = createForm("admin_mail_element.json");
-		ResponseWithCookies rs = submit(uuid, true, false, false, "input1", "test input", "adminmail1", "Admin 1");
+		submit(uuid, true, false, false, "input1", "test input", "adminmail1", "Admin 1");
 
 		assertThat(greenMail.waitForIncomingEmail(MAIL_TIMEOUT, 1))
 			.as("Mail sent in time")
@@ -577,7 +579,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 	@Test
 	public void testAdminMailElementMultiple() throws IOException, MessagingException {
 		String uuid = createForm("admin_mail_element_multiselect.json");
-		ResponseWithCookies rs = submit(uuid, true, false, false, "input1", "test input", "adminmail1", "Admin 1", "adminmail1", "Admin 3");
+		submit(uuid, true, false, false, "input1", "test input", "adminmail1", "Admin 1", "adminmail1", "Admin 3");
 
 		assertThat(greenMail.waitForIncomingEmail(MAIL_TIMEOUT, 1))
 			.as("Mail sent in time")
@@ -669,7 +671,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 	@Test
 	public void testSelectionWithMail() throws IOException, MessagingException {
 		String uuid = createForm("selection_with_mail.json");
-		ResponseWithCookies rs = submit(uuid, true, false, false,
+		submit(uuid, true, false, false,
 			"checkbox1", "X",
 			"radiobuttons1", "r_2",
 			"singleselect1", "s_1",
@@ -700,7 +702,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 	@Test
 	public void testEmptySelectionWithMail() throws IOException, MessagingException {
 		String uuid = createForm("selection_with_mail.json");
-		ResponseWithCookies rs = submit(uuid, true, false, false,
+		submit(uuid, true, false, false,
 			// The body must contain at least one field
 			"checkbox1", "X");
 
@@ -726,7 +728,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 	@Test
 	public void testCheckboxWithMail() throws IOException, MessagingException {
 		String uuid = createForm("selection_with_mail.json");
-		ResponseWithCookies rs = submit(uuid, true, false, false,
+		submit(uuid, true, false, false,
 			"radiobuttons1", "r_2",
 			"singleselect1", "s_1",
 			"multiselect1", "m_1", "multiselect1", "m_2", "multiselect1", "m_3");
@@ -1076,14 +1078,11 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 
 		// we expect to be redirected back to the form
 		assertRedirect(pair.getLeft());
-		// data node must not be published
-		NodeResponse dataNode = assertSingleDataNode(uuid, n -> {
-			assertThat(n.getVersion()).as("Data Node Version").isEqualTo("0.1");
-			assertThat(n.getFields().getStringField("input1").getString()).as("Data Node Field").isEqualTo("someValue");
-		});
-		// form-data cookie must exist
-		assertThat(pair.getRight()).as("Cookie").isPresent();
-		assertThat(pair.getRight().get()).as("Cookie").matches(c -> dataNode.getUuid().equals(c.value()), "Value is not empty");
+		// data node must not be present
+		assertThat(getFormDataNodes(uuid)).as("Form Data Nodes").isEmpty();
+
+		// form-data cookie must not exist
+		assertThat(pair.getRight()).as("Cookie").isNotPresent();
 	}
 
 	/**
@@ -1114,14 +1113,11 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 
 		// we expect to be redirected back to the form
 		assertRedirect(pair.getLeft());
-		// data node must not be published
-		NodeResponse dataNode = assertSingleDataNode(uuid, n -> {
-			assertThat(n.getVersion()).as("Data Node Version").isEqualTo("0.1");
-			assertThat(n.getFields().getStringField("input1").getString()).as("Data Node Field").isEqualTo("someValue");
-		});
-		// form-data cookie must exist
-		assertThat(pair.getRight()).as("Cookie").isPresent();
-		assertThat(pair.getRight().get()).as("Cookie").matches(c -> dataNode.getUuid().equals(c.value()), "Value is not empty");
+		// data node must not be present
+		assertThat(getFormDataNodes(uuid)).as("Form Data Nodes").isEmpty();
+
+		// form-data cookie must not exist
+		assertThat(pair.getRight()).as("Cookie").isNotPresent();
 	}
 
 	/**
@@ -1176,15 +1172,11 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 
 		// we expect to be redirected back to the form
 		assertRedirect(pair.getLeft());
-		// data node must not be published and first page not completed
-		NodeResponse dataNode = assertSingleDataNode(uuid, n -> {
-			assertThat(n.getVersion()).as("Data Node Version").isEqualTo("0.1");
-			assertThat(n.getFields().getBooleanField("page1").getValue()).as("Page 1 completed").isFalse();
-			assertThat(n.getFields().getStringField("input1").getString()).as("Data Node Field").isEqualTo("someValue");
-		});
-		// form-data cookie must be present
-		assertThat(pair.getRight()).as("Cookie").isPresent();
-		assertThat(pair.getRight().get()).as("Cookie").matches(c -> c.value().equals(dataNode.getUuid() + "-page1"), "Cookie contains data node UUID and form page");
+		// no data must have been stored
+
+		assertThat(getFormDataNodes(uuid)).as("Form Data Nodes").isEmpty();
+		// form-data cookie must not be present
+		assertThat(pair.getRight()).as("Cookie").isNotPresent();
 	}
 
 	/**
@@ -1216,15 +1208,11 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 
 		// we expect to be redirected back to the form
 		assertRedirect(pair.getLeft());
-		// data node must not be published and first page is incomplete
-		NodeResponse dataNode = assertSingleDataNode(uuid, n -> {
-			assertThat(n.getVersion()).as("Data Node Version").isEqualTo("0.1");
-			assertThat(n.getFields().getBooleanField("page1").getValue()).as("Page 1 completed").isFalse();
-			assertThat(n.getFields().getStringField("input1").getString()).as("Data Node Field").isEqualTo("someValue");
-		});
-		// form-data cookie must be present
-		assertThat(pair.getRight()).as("Cookie").isPresent();
-		assertThat(pair.getRight().get()).as("Cookie").matches(c -> c.value().equals(dataNode.getUuid() + "-page1"), "Cookie contains data node UUID and form page");
+		// data node must not be present
+		assertThat(getFormDataNodes(uuid)).as("Form Data Nodes").isEmpty();
+
+		// form-data cookie must not exist
+		assertThat(pair.getRight()).as("Cookie").isNotPresent();
 	}
 
 	/**
