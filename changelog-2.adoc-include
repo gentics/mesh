@@ -6,6 +6,15 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v2.1.23]]
+== 2.1.23 (01.09.2025)
+
+icon:check[] Core: Generation of ETags for nodes containing tags was not stable and sometimes resulted in different ETags,
+even if nothing was changed. This has been fixed.
+
+
+icon:check[] Plugins: Now the plugin timeout value is also considered in the HTTP plugin client. This allows extending HTTP call timeouts when the plugin is expected to start longer.
+
 [[v2.1.22]]
 == 2.1.22 (02.07.2025)
 
