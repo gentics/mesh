@@ -6,6 +6,22 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v3.0.14]]
+== 3.0.14 (01.09.2025)
+
+icon:check[] Plugins: Now the plugin timeout value is also considered in the HTTP plugin client. This allows extending HTTP call timeouts when the plugin is expected to start longer.
+
+icon:check[] Some dependencies have been updated:
+* Netty: 4.1.124.Final
+* Vert.x: 4.5.18
+
+
+icon:check[] Core: The following dependencies have been updated, to target the vulnerability CVE-2025-54988 :
+ * Apache Tika, to *3.2.2*
+ * Apache Commons Lang3, to *3.18.0*
+ * Apache Commons Compress, to *1.28.0*
+ * JSOUP, to *1.21.1*
+
 [[v3.0.13]]
 == 3.0.13 (15.07.2025)
 
