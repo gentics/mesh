@@ -1,5 +1,7 @@
 package com.gentics.mesh.plugin.forms;
 
+import static io.vertx.core.http.HttpMethod.GET;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -8,8 +10,10 @@ import java.net.URISyntaxException;
 import org.pf4j.PluginWrapper;
 
 import com.gentics.mesh.plugin.env.PluginEnvironment;
-import com.gentics.mesh.plugin.forms.FormsPlugin;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
+import com.gentics.mesh.plugin.forms.dagger.FormsPluginComponent;
+
+import io.vertx.ext.web.Router;
 
 /**
  * Tested plugin, the configuration is loaded from the file "config.yml" in the classpath
@@ -28,6 +32,16 @@ public class FormsTestPlugin extends FormsPlugin {
 	public FormsTestPlugin(PluginWrapper wrapper, PluginEnvironment env) {
 		super(wrapper, env);
 		instance = this;
+	}
+
+	@Override
+	public Router createProjectRouter() {
+		Router projectRouter = super.createProjectRouter();
+
+		// add route to purge stale data
+		projectRouter.route("/test/purge/:seconds").method(GET).handler(fromComponent(FormsPluginComponent::purgeStaleDataHandler));
+
+		return projectRouter;
 	}
 
 	/**

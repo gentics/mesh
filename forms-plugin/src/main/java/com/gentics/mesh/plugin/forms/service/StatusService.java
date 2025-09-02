@@ -1,31 +1,17 @@
 package com.gentics.mesh.plugin.forms.service;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import com.gentics.mesh.core.rest.admin.cluster.ClusterServerConfig;
-import com.gentics.mesh.core.rest.admin.cluster.ServerRole;
-import com.gentics.mesh.core.rest.error.GenericRestException;
-import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
@@ -44,20 +30,16 @@ import com.gentics.mesh.plugin.forms.model.LanguagesModel;
 import com.gentics.mesh.plugin.forms.model.response.StatusResponse;
 import com.gentics.mesh.plugin.forms.util.FormUtil;
 import com.gentics.mesh.rest.client.MeshRestClient;
-import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
 
-import io.netty.handler.codec.http.HttpResponseStatus;
+import dagger.Lazy;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
-import io.vertx.core.Handler;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
@@ -75,27 +57,24 @@ public class StatusService {
 	private final MeshRestClient userClient;
 
 	private final SchemaInitializer schemaInitializer;
-	private final MeshPluginService meshPluginService;
+	private final Lazy<PurgeService> lazyPurgeService;
 
 	private final String pluginRootNodeQuery;
 	private final Vertx rxVertx;
-	private final int purgeInterval;
-	private final Map<String, Long> purgeSchedulers = new ConcurrentHashMap<>();
 
 	@Inject
 	public StatusService(
 			@AdminClient MeshRestClient adminClient,
 			@UserClient @Nullable MeshRestClient userClient,
 			SchemaInitializer schemaInitializer,
-			MeshPluginService meshPluginService,
+			Lazy<PurgeService> lazyPurgeService,
 			io.vertx.core.Vertx vertx,
 			FormsConfig config) {
 		this.adminClient = adminClient;
 		this.userClient = userClient;
 		this.schemaInitializer = schemaInitializer;
-		this.meshPluginService = meshPluginService;
+		this.lazyPurgeService = lazyPurgeService;
 		this.rxVertx = Vertx.newInstance(vertx);
-		this.purgeInterval = config.getDownloadPurgeInterval();
 
 		try {
 			pluginRootNodeQuery = IOUtils.toString(FormsPlugin.class.getResource("forms_plugin_node.graphql"), "UTF-8");
@@ -149,7 +128,7 @@ public class StatusService {
 	 * @return activation response
 	 */
 	public Single<StatusResponse> activate(String projectName) {
-		return initializeProject(projectName).andThen(publish(projectName));
+		return initializeProject(projectName).andThen(lazyPurgeService.get().initializeProject(projectName)).andThen(publish(projectName));
 	}
 
 	/**
@@ -159,36 +138,7 @@ public class StatusService {
 	 * @return
 	 */
 	protected Completable initializeProject(String projectName) {
-		return schemaInitializer.initialize(projectName).toObservable().flatMap(unused -> adminClient.loadClusterConfig().toObservable()
-			.flatMap(clusterConfig -> adminClient.getApiInfo().toObservable()
-					// Skip the download purge, if we are in the cluster mode, but not as Master
-					.map(serverInfo -> clusterConfig.getServers().stream().noneMatch(server -> server.getRole() == ServerRole.MASTER && serverInfo.getMeshNodeName().equals(server.getName()))))
-			.onErrorReturn(e -> {
-				// Either the failure is 400 BAD_REQUEST (no cluster) or any else, we skip no purges
-				return false;
-			})
-		).flatMapCompletable(skip -> {
-			if (skip) {
-				log.warn("Download purge is disabled due to being started over non-master cluster node");
-
-				return Completable.complete();
-			}
-			if (purgeInterval <= 0) {
-				log.warn("Download purge interval is less than 1, download purge disabled");
-
-				return Completable.complete();
-			}
-			purgeSchedulers.computeIfAbsent(projectName, name -> {
-				log.info("Starting periodic download purge for {}", name);
-				Handler<Long> purgeHandler = purgeDownloadsHandler(name);
-
-				// Start the first purge in a minute to make sure the purge is started at least once after startup  ...
-				rxVertx.setTimer(Duration.of(1, ChronoUnit.MINUTES).toMillis(), purgeHandler);
-				// ... and schedule one purge per day.
-				return rxVertx.setPeriodic(Duration.of(1, ChronoUnit.DAYS).toMillis(), purgeHandler);
-			});
-			return Completable.complete();
-		});
+		return schemaInitializer.initialize(projectName);
 	}
 
 	/**
@@ -233,13 +183,7 @@ public class StatusService {
 							.toCompletable())
 					.andThen(check(projectName));
 		}).doOnSuccess(unused -> {
-			purgeSchedulers.computeIfPresent(projectName, (name, id) -> {
-				if (!rxVertx.cancelTimer(id)) {
-					log.error("Could not cancel downloads purge for {}", name);
-				}
-				// this removes the scheduler mapping
-				return null;
-			});
+			lazyPurgeService.get().removePurgeHandler(projectName);
 		});
 	}
 
@@ -366,107 +310,5 @@ public class StatusService {
 				.flatMapObservable(branchesListResponse -> Observable.fromIterable(branchesListResponse.getData()))
 				.filter(branch -> branch.getLatest() != null && branch.getLatest())
 				.map(branch -> branch.getPathPrefix()).first("");
-	}
-
-	/**
-	 * Create a handler for {@link Vertx#setTimer(long, Handler)} or
-	 * {@link Vertx#setPeriodic(long, Handler)} that will delete old download
-	 * nodes.
-	 *
-	 * @param projectName The project to purge.
-	 * @return A timer/periodic handler that will delete old downloads.
-	 */
-	private Handler<Long> purgeDownloadsHandler(String projectName) {
-		return timerId -> purgeDownloads(projectName);
-	}
-
-	/**
-	 * Delete all download nodes (schema {@code form_download}) which are
-	 * older than one day.
-	 *
-	 * @param projectName The project to purge.
-	 */
-	private void purgeDownloads(String projectName) {
-		String graphQlQuery;
-		String purgeThreshold = ZonedDateTime.now(ZoneOffset.UTC)
-			.minus(Duration.ofDays(purgeInterval))
-			.truncatedTo(ChronoUnit.DAYS)
-			.format(DateTimeFormatter.ISO_DATE_TIME);
-		JsonObject graphQlVariables = new JsonObject().put("purgeThreshold", purgeThreshold);
-
-		try {
-			graphQlQuery = IOUtils.toString(FormsPlugin.class.getResource("findFormDownloadsToPurge.graphql"), StandardCharsets.UTF_8);
-		} catch (IOException e) {
-			log.error("Could not load GraphQL query for download purge: {}", e, e.getMessage());
-
-			return;
-		}
-
-		GraphQLRequest request = new GraphQLRequest().setQuery(graphQlQuery).setVariables(graphQlVariables);
-
-		adminClient.graphql(projectName, request).toSingle()
-			.flatMapCompletable(rs -> {
-				Optional<JsonObject> nodes = Optional.ofNullable(rs.getData())
-					.map(data -> data.getJsonObject("schema"))
-					.map(schema -> schema.getJsonObject("nodes"));
-				Optional<JsonArray> elements = nodes.map(n -> n.getJsonArray("elements")).filter(ar -> !ar.isEmpty());
-
-				if (!elements.isPresent()) {
-					log.debug("No download nodes to purge");
-
-					return Completable.complete();
-				}
-
-				return purgeElements(projectName, elements.get())
-					.andThen(purgeNextPage(projectName, nodes.get().getBoolean("hasNextPage")));
-			})
-			.doOnError(cause -> log.error("Error while purging old downloads: {}", cause.getMessage()))
-			.subscribe();
-	}
-
-	/**
-	 * Delete the given nodes from the given project.
-	 *
-	 * <p>
-	 * The JSON array {@code objects} must contain JSON objects with a
-	 * {@code uuid} field.
-	 * </p>
-	 *
-	 * @param projectName The project to purge.
-	 * @param objects The nodes to purge.
-	 * @return A {@code Completable} that completes when all nodes are deleted.
-	 */
-	private Completable purgeElements(String projectName, JsonArray objects) {
-		return Observable.fromIterable(objects)
-			.doOnSubscribe(ignored -> log.debug("Purging {} old download node(s)", objects.size()))
-			.cast(JsonObject.class)
-			.map(obj -> obj.getString("uuid"))
-			.flatMapCompletable(uuid -> adminClient.deleteNode(projectName, uuid).toCompletable().onErrorComplete(e -> {
-				if ((MeshRestClientMessageException.class.isInstance(e) && MeshRestClientMessageException.class.cast(e).getStatusCode() == HttpStatus.SC_NOT_FOUND) 
-						|| (MeshRestClientMessageException.class.isInstance(e.getCause()) && MeshRestClientMessageException.class.cast(e.getCause()).getStatusCode() == HttpStatus.SC_NOT_FOUND)
-						|| (GenericRestException.class.isInstance(e) && GenericRestException.class.cast(e).getStatus() == HttpResponseStatus.NOT_FOUND)
-						|| (GenericRestException.class.isInstance(e.getCause()) && GenericRestException.class.cast(e.getCause()).getStatus() == HttpResponseStatus.NOT_FOUND)) {
-					log.info("Node `" + projectName + "/" + uuid + "` is already deleted");
-					return true;
-				} else {
-					return false;
-				}
-			}));
-	}
-
-	/**
-	 * Call {@link #purgeDownloads(String)} for the given project again, if
-	 * there are still elements left.
-	 *
-	 * @param projectName The project to purge.
-	 * @param hasNextPage Whether there are still elements left to delete.
-	 * @return A {@code Completable} that completes when all remaining nodes are deleted.
-	 */
-	private Completable purgeNextPage(String projectName, boolean hasNextPage) {
-		return Completable.fromAction(() -> {
-			if (hasNextPage) {
-				purgeDownloads(projectName);
-			}
-		});
 	}
 }
