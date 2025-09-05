@@ -85,10 +85,7 @@ public interface ClientHelper extends EventHelper {
 	default HibBranch createBranch(String name, boolean latest) {
 		BranchCreateRequest request = new BranchCreateRequest();
 		request.setName(name);
-
-		if (latest) {
-			request.setLatest(latest);
-		}
+		request.setLatest(latest);
 
 		return createBranch(request);
 	}

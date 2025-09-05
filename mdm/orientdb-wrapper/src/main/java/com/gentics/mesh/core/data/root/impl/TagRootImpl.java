@@ -133,7 +133,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 			})
 			.filter(item -> userRoot.hasPermissionForId(user, item.getId(), perm));
 
-		return new TraversalResult<>(() -> s.iterator());
+		return new TraversalResult<>(s.iterator());
 	}
 
 	@Override

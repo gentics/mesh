@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.rest.node;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.annotation.Setter;
@@ -38,4 +40,18 @@ public class NodeChildrenInfo implements RestModel {
 		return this;
 	}
 
+	@Override
+	public String toString() {
+		return "uuid: %s, count: %d".formatted(schemaUuid, count);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof NodeChildrenInfo) {
+			NodeChildrenInfo other = NodeChildrenInfo.class.cast(obj);
+			return count == other.count && StringUtils.equals(schemaUuid, other.schemaUuid);
+		} else {
+			return false;
+		}
+	}
 }
