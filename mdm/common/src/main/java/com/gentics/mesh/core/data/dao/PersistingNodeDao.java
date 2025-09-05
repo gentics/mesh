@@ -513,12 +513,16 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	 * @param restNode
 	 *            Rest model which will be updated
 	 */
-	private void setChildrenInfo(HibNode node, InternalActionContext ac, HibBranch branch, NodeResponse restNode) {
+	default void setChildrenInfo(HibNode node, InternalActionContext ac, HibBranch branch, NodeResponse restNode) {
+		InternalPermission requiredPermission = "published".equals(ac.getVersioningParameters().getVersion())
+				? READ_PUBLISHED_PERM
+				: READ_PERM;
+
 		Map<String, NodeChildrenInfo> childrenInfo = new HashMap<>();
 		UserDao userDao = Tx.get().userDao();
 
 		for (HibNode child : getChildren(node, branch.getUuid())) {
-			if (userDao.hasPermission(ac.getUser(), child, READ_PERM)) {
+			if (userDao.hasPermission(ac.getUser(), child, requiredPermission)) {
 				String schemaName = child.getSchemaContainer().getName();
 				NodeChildrenInfo info = childrenInfo.get(schemaName);
 				if (info == null) {
