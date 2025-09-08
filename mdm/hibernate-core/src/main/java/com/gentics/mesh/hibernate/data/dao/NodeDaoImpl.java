@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -79,6 +80,7 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
@@ -1294,5 +1296,42 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 				.setParameter("project", project)
 				.setParameter("tags", languageTags)
 				.getResultStream().collect(Collectors.toSet());
+	}
+
+	@Override
+	public void setChildrenInfo(HibNode node, InternalActionContext ac, HibBranch branch, NodeResponse restNode) {
+		HibUser user = ac.getUser();
+
+		ContainerType type = "published".equals(ac.getVersioningParameters().getVersion()) ? ContainerType.PUBLISHED
+				: ContainerType.DRAFT;
+
+		List<Object[]> results;
+		if (user.isAdmin()) {
+			jakarta.persistence.Query query = em().createNamedQuery("node.countChildrenBySchema.admin");
+			query
+				.setParameter("parentUuid", UUIDUtil.toJavaUuid(node.getUuid()))
+				.setParameter("branchUuid", UUIDUtil.toJavaUuid(branch.getUuid()));
+			results = query.getResultList();
+		} else {
+			List<HibRole> roles = IteratorUtils.toList(Tx.get().userDao().getRoles(user).iterator());
+			String queryName = (type == ContainerType.DRAFT ? "node.countChildrenBySchema.read" : "node.countChildrenBySchema.read_published");
+			jakarta.persistence.Query query = em().createNamedQuery(queryName);
+			query
+				.setParameter("parentUuid", UUIDUtil.toJavaUuid(node.getUuid()))
+				.setParameter("branchUuid", UUIDUtil.toJavaUuid(branch.getUuid()))
+				.setParameter("roles", roles);
+			results = query.getResultList();
+		}
+
+		Map<String, NodeChildrenInfo> childrenInfo = new HashMap<>();
+		for (Object[] row : results) {
+			String schemaUuid = UUIDUtil.toShortUuid((UUID) row[0]);
+			Long count = (Long) row[1];
+			HibSchema schema = Tx.get().schemaDao().loadObjectByUuidNoPerm(schemaUuid, true);
+
+			childrenInfo.put(schema.getName(), new NodeChildrenInfo().setSchemaUuid(schemaUuid).setCount(count));
+		}
+
+		restNode.setChildrenInfo(childrenInfo);
 	}
 }

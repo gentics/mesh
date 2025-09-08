@@ -517,12 +517,16 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	 * @param restNode
 	 *            Rest model which will be updated
 	 */
-	private void setChildrenInfo(HibNode node, InternalActionContext ac, HibBranch branch, NodeResponse restNode) {
+	default void setChildrenInfo(HibNode node, InternalActionContext ac, HibBranch branch, NodeResponse restNode) {
+		InternalPermission requiredPermission = "published".equals(ac.getVersioningParameters().getVersion())
+				? READ_PUBLISHED_PERM
+				: READ_PERM;
+
 		Map<String, NodeChildrenInfo> childrenInfo = new HashMap<>();
 		UserDao userDao = Tx.get().userDao();
 
 		for (HibNode child : getChildren(node, branch.getUuid())) {
-			if (userDao.hasPermission(ac.getUser(), child, READ_PERM)) {
+			if (userDao.hasPermission(ac.getUser(), child, requiredPermission)) {
 				String schemaName = child.getSchemaContainer().getName();
 				NodeChildrenInfo info = childrenInfo.get(schemaName);
 				if (info == null) {
@@ -853,7 +857,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 
 	@Override
 	default Result<? extends HibNode> getBreadcrumbNodes(HibNode node, InternalActionContext ac) {
-		return new TraversalResult<>(() -> getBreadcrumbNodeStream(node, ac).iterator());
+		return new TraversalResult<>(getBreadcrumbNodeStream(node, ac).iterator());
 	}
 
 	@Override
@@ -1693,12 +1697,12 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		tagETags.stream().forEach(tagETag -> keyBuilder.append(tagETag));
 
 		// branch specific children
-		for (HibNode child : getChildren(node, branch.getUuid())) {
-			if (userDao.hasPermission(ac.getUser(), child, READ_PUBLISHED_PERM)) {
-				keyBuilder.append("-");
-				keyBuilder.append(child.getSchemaContainer().getName());
-			}
-		}
+		NodeResponse tmp = new NodeResponse();
+		setChildrenInfo(node, ac, branch, tmp);
+		tmp.getChildrenInfo().values().stream()
+				.sorted((info1, info2) -> info1.getSchemaUuid().compareTo(info2.getSchemaUuid())).forEachOrdered(info -> {
+					keyBuilder.append("-").append(info.getSchemaUuid()).append(":").append(info.getCount());
+				});
 
 		// Publish state & availableLanguages
 		for (HibNodeFieldContainer c : contentDao.getFieldContainers(node, branch.getUuid(), PUBLISHED)) {
