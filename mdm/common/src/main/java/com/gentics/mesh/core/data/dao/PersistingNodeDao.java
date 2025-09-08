@@ -1693,12 +1693,12 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		tagETags.stream().forEach(tagETag -> keyBuilder.append(tagETag));
 
 		// branch specific children
-		for (HibNode child : getChildren(node, branch.getUuid())) {
-			if (userDao.hasPermission(ac.getUser(), child, READ_PUBLISHED_PERM)) {
-				keyBuilder.append("-");
-				keyBuilder.append(child.getSchemaContainer().getName());
-			}
-		}
+		NodeResponse tmp = new NodeResponse();
+		setChildrenInfo(node, ac, branch, tmp);
+		tmp.getChildrenInfo().values().stream()
+				.sorted((info1, info2) -> info1.getSchemaUuid().compareTo(info2.getSchemaUuid())).forEachOrdered(info -> {
+					keyBuilder.append("-").append(info.getSchemaUuid()).append(":").append(info.getCount());
+				});
 
 		// Publish state & availableLanguages
 		for (HibNodeFieldContainer c : contentDao.getFieldContainers(node, branch.getUuid(), PUBLISHED)) {
