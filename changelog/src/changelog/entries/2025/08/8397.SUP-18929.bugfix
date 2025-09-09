@@ -1,0 +1,2 @@
+Forms Plugin: When the validation of POSTed data fails for a recaptcha or friendlycaptcha element in a form,
+storing of the form data will now be suppressed completely. This prevents spambots from creating garbage data in Mesh.

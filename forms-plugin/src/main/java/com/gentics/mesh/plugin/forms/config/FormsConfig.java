@@ -29,7 +29,7 @@ public class FormsConfig extends LicenseConfiguration {
 
 	private ReCaptchaOptions reCaptcha;
 
-	private FriendlyCaptchaOptions friendlyCaptcha;
+	private FriendlyCaptchaOptions friendlyCaptcha = new FriendlyCaptchaOptions();
 
 	private EyepinOptions eyepin;
 

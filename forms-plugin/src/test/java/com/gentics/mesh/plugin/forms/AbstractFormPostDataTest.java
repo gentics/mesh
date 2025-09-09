@@ -6,6 +6,7 @@ import static org.junit.Assert.fail;
 
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.plugin.forms.config.FriendlyCaptchaOptions;
 import com.gentics.mesh.plugin.forms.config.ReCaptchaOptions;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
 import okhttp3.Cookie;
@@ -25,6 +26,15 @@ import java.util.function.Consumer;
  * Base class for tests posting form data.
  */
 public class AbstractFormPostDataTest extends AbstractFormsPluginIntegrationTest {
+	/**
+	 * Friendly Captcha "Secret"
+	 */
+	public final static String FRIENDLY_CAPTCHA_SECRET_KEY = "secret";
+
+	/**
+	 * Friendly Captcha "Sitekey"
+	 */
+	public final static String FRIENDLY_CAPTCHA_SITE_KEY = "sitekey";
 
 	/**
 	 * web server mock which will act as verification server
@@ -34,7 +44,7 @@ public class AbstractFormPostDataTest extends AbstractFormsPluginIntegrationTest
 	public void setup() {
 		super.setup();
 
-		// start the mock recaptcha verification server
+		// start the mock recaptcha/friendlycaptcha verification server
 		webServer = new MockWebServer();
 		try {
 			webServer.start();
@@ -43,8 +53,15 @@ public class AbstractFormPostDataTest extends AbstractFormsPluginIntegrationTest
 		}
 
 		// modify the plugin configuration: set the recaptcha verification URL
+		String url = "http://%s:%s/".formatted(webServer.getHostName(), webServer.getPort());
 		ReCaptchaOptions reCaptchaOptions = FormsTestPlugin.instance.configuration.getReCaptcha();
-		reCaptchaOptions.setVerificationUrl(String.format("http://%s:%s/", webServer.getHostName(), webServer.getPort()));
+		reCaptchaOptions.setVerificationUrl(url);
+
+		// set the friendly captcha configuration
+		FriendlyCaptchaOptions friendlyCaptchaOptions = FormsTestPlugin.instance.configuration.getFriendlyCaptcha();
+		friendlyCaptchaOptions.setVerificationUrl(url);
+		friendlyCaptchaOptions.setSecretKey(FRIENDLY_CAPTCHA_SECRET_KEY);
+		friendlyCaptchaOptions.setSiteKey(FRIENDLY_CAPTCHA_SITE_KEY);
 
 		// activate plugin
 		assertThat(activate(PROJECT_NAME)).as("Activation status").isTrue();

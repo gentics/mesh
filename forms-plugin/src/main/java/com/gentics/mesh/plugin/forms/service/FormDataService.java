@@ -1084,40 +1084,62 @@ public class FormDataService {
 
 		errors.putAll(form.preventInjection(postedData, configuration.getSecurityOptions()));
 
-		String projectName = ctx.getProjectName();
-		NodeResponse formNode = ctx.getFormNode();
-		Single<String> dataFolderUuidSingle = getFormDataFolderUuid(projectName, formNode.getUuid(),
-				ParameterUtil.getLanguages(ctx.getContext()));
+		// check whether we have any validation errors, that prevent storing of the data
+		Optional<ValidationError> errorPreventingDataStorage = errors.values().stream()
+				.filter(ValidationError::isPreventStoring).findAny();
 
-		return dataFolderUuidSingle.flatMap(dataFolderUuid -> saveFormData(projectName, formNode, dataFolderUuid, ctx.getFormDataNode(), form, postedData, errors))
-			.flatMap(savedFormDataNode -> saveFileUploads(ctx.getProjectName(), form, savedFormDataNode, postedData, ctx.getFileUploads()))
-			.flatMap(savedFileUploads -> {
-				if (ctx.isPublish() && errors.isEmpty() && form.isCompleted(savedFileUploads)) {
-					return publishFormData(ctx, savedFileUploads, errors);
-				} else {
-					// set the data cookie
-					if (ctx.handleCookies()) {
-						Cookie cookie = Cookie.cookie(COOKIE_NAME_DATA, form.getDataCookie(savedFileUploads.getUuid()));
-						cookie.setPath(getPath(ctx.getReferer()));
-						cookie.setHttpOnly(true);
-						ctx.getContext().addCookie(cookie);
-					}
+		if (errorPreventingDataStorage.isPresent()) {
+			// log a warning
+			log.warn("Storing of POSTed data to form {} prevented by field {}. Validation error: {}", form.getUuid(),
+					errorPreventingDataStorage.get().getName(), errorPreventingDataStorage.get().getMessage());
 
-					PostDataResponse response = new PostDataResponse();
-					response.setDataUuid(savedFileUploads.getUuid());
-					response.setCreated(savedFileUploads.getCreated());
-					response.setErrors(errors);
-					// TODO Set this to false?
-					response.setFinished(true);
-					if (ctx.getReferer() != null) {
-						response.setRedirectUrl(ctx.getReferer());
+			// just return the errors in the response, but don't save anything
+			PostDataResponse response = new PostDataResponse();
+			response.setErrors(errors);
+			response.setFinished(false);
+			if (ctx.getReferer() != null) {
+				response.setRedirectUrl(ctx.getReferer());
+			} else {
+				response.setRedirectUrl("");
+			}
+
+			return Single.just(response);
+		} else {
+			String projectName = ctx.getProjectName();
+			NodeResponse formNode = ctx.getFormNode();
+			Single<String> dataFolderUuidSingle = getFormDataFolderUuid(projectName, formNode.getUuid(),
+					ParameterUtil.getLanguages(ctx.getContext()));
+
+			return dataFolderUuidSingle.flatMap(dataFolderUuid -> saveFormData(projectName, formNode, dataFolderUuid, ctx.getFormDataNode(), form, postedData, errors))
+				.flatMap(savedFormDataNode -> saveFileUploads(ctx.getProjectName(), form, savedFormDataNode, postedData, ctx.getFileUploads()))
+				.flatMap(savedFileUploads -> {
+					if (ctx.isPublish() && errors.isEmpty() && form.isCompleted(savedFileUploads)) {
+						return publishFormData(ctx, savedFileUploads, errors);
 					} else {
-						response.setRedirectUrl("");
-					}
+						// set the data cookie
+						if (ctx.handleCookies()) {
+							Cookie cookie = Cookie.cookie(COOKIE_NAME_DATA, form.getDataCookie(savedFileUploads.getUuid()));
+							cookie.setPath(getPath(ctx.getReferer()));
+							cookie.setHttpOnly(true);
+							ctx.getContext().addCookie(cookie);
+						}
 
-					return Single.just(response);
-				}
-			});
+						PostDataResponse response = new PostDataResponse();
+						response.setDataUuid(savedFileUploads.getUuid());
+						response.setCreated(savedFileUploads.getCreated());
+						response.setErrors(errors);
+						// TODO Set this to false?
+						response.setFinished(true);
+						if (ctx.getReferer() != null) {
+							response.setRedirectUrl(ctx.getReferer());
+						} else {
+							response.setRedirectUrl("");
+						}
+
+						return Single.just(response);
+					}
+				});
+		}
 	}
 
 	/**
