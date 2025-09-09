@@ -23,6 +23,7 @@ import com.gentics.mesh.plugin.forms.dagger.DaggerFormsPluginComponent;
 import com.gentics.mesh.plugin.forms.dagger.FormsPluginComponent;
 import com.gentics.mesh.plugin.forms.handler.AbstractFormsHandler;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
+import com.gentics.mesh.plugin.forms.service.PurgeService;
 import com.gentics.mesh.plugin.forms.service.StatusService;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshRestClientMessageException;
@@ -127,8 +128,9 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 			FormsPluginComponent component = component(null);
 			StatusService statusService = component.statusService();
 			FormDataService formDataService = component.formDataService();
+			PurgeService purgeService = component.purgeService();
 
-			return statusService.initialize(getStorageDir().getAbsolutePath()).andThen(formDataService.initialize());
+			return statusService.initialize(getStorageDir().getAbsolutePath()).andThen(formDataService.initialize()).andThen(purgeService.initialize());
 		} catch (Exception e) {
 			return Completable.error(e);
 		}
@@ -146,7 +148,7 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 			.build();
 	}
 
-	private Handler<RoutingContext> fromComponent(Function<FormsPluginComponent, AbstractFormsHandler> handler) {
+	protected Handler<RoutingContext> fromComponent(Function<FormsPluginComponent, AbstractFormsHandler> handler) {
 		return context -> {
 			PluginContext meshContext = wrap(context);
 			MeshRestClient userClient = meshContext.client();

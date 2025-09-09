@@ -1,0 +1,2 @@
+Forms Plugin: Stale user data (incompletetly POSTed user data older than a configurable amount of days) will now be purged by a
+periodic background job. The maximum allowed age for can be configured with the configuration attribute 'staleDataPurgeInterval' (in days).

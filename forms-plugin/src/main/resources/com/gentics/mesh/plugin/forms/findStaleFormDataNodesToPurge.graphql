@@ -1,0 +1,12 @@
+query($purgeThreshold: String, $perPage: Long) {
+  schema(name: "{{{ schemaName }}}") {
+    nodes(filter: {created: {before: $purgeThreshold}, fields: { {{{ schemaName }}}: {errors: {notEquals: ""}}}}, perPage: $perPage) {
+      hasNextPage
+      elements {
+        uuid
+        created
+        isPublished
+      }
+    }
+  }
+}
