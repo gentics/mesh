@@ -470,45 +470,6 @@ public class NodeReadPermissionTest extends AbstractMeshTest {
 		}
 
 		assertThat(folderNames).as("Folder names").containsOnlyElementsOf(expected);
-
-//		switch (version) {
-//		case "draft":
-//			if (includeOthers) {
-//				assertThat(folderNames).as("Folder names").containsOnly(
-//						"2015",
-//						"News",
-//						"Test Folder",
-//						"New with read",
-//						"Published with read",
-//						"Modified with read");
-//			} else {
-//				assertThat(folderNames).as("Folder names").containsOnly(
-//						"New with read",
-//						"Published with read",
-//						"Modified with read");
-//			}
-//			break;
-//		case "published":
-//			if (includeOthers) {
-//				assertThat(folderNames).as("Folder names").containsOnly(
-//						"2015",
-//						"News",
-//						"Test Folder",
-//						"Published",
-//						"Published with read",
-//						"Original",
-//						"Original with read");
-//			} else {
-//				assertThat(folderNames).as("Folder names").containsOnly(
-//						"Published",
-//						"Published with read",
-//						"Original",
-//						"Original with read");
-//			}
-//			break;
-//		default:
-//			fail("Unexpected version " + version);
-//		}
 	}
 
 	/**
