@@ -29,6 +29,7 @@ import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
 import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.hibernate.data.dao.ContentDaoImpl;
 import com.gentics.mesh.hibernate.data.node.field.impl.HibMicronodeFieldImpl;
@@ -75,6 +76,7 @@ public class DataLoaders {
 	private Map<HibNode, HibNode> parentNodes;
 	private Map<HibNode, List<HibNode>> children;
 	private Map<HibNode, List<HibNode>> breadcrumbs;
+	private Map<HibNode, Map<String, NodeChildrenInfo>> childrenInfo;
 
 	/**
 	 * Batch Loaded Micronodes (keys are pairs of contentUUID/fieldKey)
@@ -145,6 +147,18 @@ public class DataLoaders {
 	}
 
 	/**
+	 * Get an optional function that returns the children info map for a given {@link HibNode}
+	 * @return optional function
+	 */
+	public Optional<Function<HibNode, Map<String, NodeChildrenInfo>>> getChildrenInfoLoader() {
+		if (!loaders.contains(Loader.CHILDRENINFO_LOADER)) {
+			return Optional.empty();
+		}
+
+		return Optional.of(this::loadChildrenInfo);
+	}
+
+	/**
 	 * Get an optional function that given a {@link HibNode} returns its breadcrumbs
 	 * @return
 	 */
@@ -178,6 +192,9 @@ public class DataLoaders {
 	public enum Loader {
 		/** Loads children of a node */
 		CHILDREN_LOADER,
+
+		/** Loads children info for nodes */
+		CHILDRENINFO_LOADER,
 
 		/** Loads the breadcrumbs of a node */
 		BREADCRUMBS_LOADER,
@@ -275,6 +292,16 @@ public class DataLoaders {
 	}
 
 	/**
+	 * Load the children info of the node
+	 * The result will be cached so that if the method is called again it will return the same value immediately
+	 * @param node
+	 * @return children info
+	 */
+	private Map<String, NodeChildrenInfo> loadChildrenInfo(HibNode node) {
+		return load(node, this::loadChildrenInfo, () -> nodeDao.getChildrenInfo(node, ac, branch.getUuid(), false));
+	}
+
+	/**
 	 * Load the breadcrumb of the node
 	 * The result will be cached so that if the method is called again it will return the same value immediately
 	 * @param node
@@ -368,6 +395,13 @@ public class DataLoaders {
 		}
 
 		return children;
+	}
+
+	private Map<HibNode, Map<String, NodeChildrenInfo>> loadChildrenInfo() {
+		if (childrenInfo == null) {
+			childrenInfo = nodeDao.getChildrenInfo(nodes, ac, branch.getUuid());
+		}
+		return childrenInfo;
 	}
 
 	/**

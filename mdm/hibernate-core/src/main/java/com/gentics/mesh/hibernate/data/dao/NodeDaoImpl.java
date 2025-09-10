@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -79,6 +80,7 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
@@ -1093,6 +1095,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 		ContentInterceptor contentInterceptor = HibernateTx.get().getContentInterceptor();
 		List<DataLoaders.Loader> dataLoaderToInitialize = Arrays.asList(
 				DataLoaders.Loader.CHILDREN_LOADER,
+				DataLoaders.Loader.CHILDRENINFO_LOADER,
 				DataLoaders.Loader.PARENT_LOADER,
 				DataLoaders.Loader.FOR_VERSION_CONTENT_LOADER,
 				DataLoaders.Loader.FOR_TYPE_CONTENT_LOADER,
@@ -1118,6 +1121,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 		ContentInterceptor contentInterceptor = HibernateTx.get().getContentInterceptor();
 		List<DataLoaders.Loader> dataLoaderToInitialize = Arrays.asList(
 				DataLoaders.Loader.CHILDREN_LOADER,
+				DataLoaders.Loader.CHILDRENINFO_LOADER,
 				DataLoaders.Loader.PARENT_LOADER,
 				DataLoaders.Loader.FOR_VERSION_CONTENT_LOADER,
 				DataLoaders.Loader.FOR_TYPE_CONTENT_LOADER,
@@ -1276,6 +1280,12 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 		return contentInterceptor.getDataLoaders().flatMap(DataLoaders::getChildrenLoader);
 	}
 
+	private Optional<Function<HibNode, Map<String, NodeChildrenInfo>>> maybeChildrenInfoLoader() {
+		HibernateTx tx = HibernateTx.get();
+		ContentInterceptor contentInterceptor = tx.getContentInterceptor();
+		return contentInterceptor.getDataLoaders().flatMap(DataLoaders::getChildrenInfoLoader);
+	}
+
 	private Optional<Function<HibNode, List<HibNode>>> maybeBreadcrumbsLoader() {
 		HibernateTx tx = HibernateTx.get();
 		ContentInterceptor contentInterceptor = tx.getContentInterceptor();
@@ -1294,5 +1304,108 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 				.setParameter("project", project)
 				.setParameter("tags", languageTags)
 				.getResultStream().collect(Collectors.toSet());
+	}
+
+	@Override
+	public Map<String, NodeChildrenInfo> getChildrenInfo(HibNode node, InternalActionContext ac, String branchUuid, boolean allowDataLoader) {
+		if (allowDataLoader && maybeChildrenInfoLoader().isPresent()) {
+			return maybeChildrenInfoLoader().get().apply(node);
+		}
+
+		HibUser user = ac.getUser();
+
+		ContainerType type = "published".equals(ac.getVersioningParameters().getVersion()) ? ContainerType.PUBLISHED
+				: ContainerType.DRAFT;
+
+		List<Object[]> results;
+		if (user.isAdmin()) {
+			jakarta.persistence.Query query = em().createNamedQuery("node.countChildrenBySchema.admin");
+			query
+				.setParameter("parentUuid", UUIDUtil.toJavaUuid(node.getUuid()))
+				.setParameter("branchUuid", UUIDUtil.toJavaUuid(branchUuid));
+			results = query.getResultList();
+		} else {
+			List<HibRole> roles = IteratorUtils.toList(Tx.get().userDao().getRoles(user).iterator());
+			String queryName = (type == ContainerType.DRAFT ? "node.countChildrenBySchema.read" : "node.countChildrenBySchema.read_published");
+			jakarta.persistence.Query query = em().createNamedQuery(queryName);
+			query
+				.setParameter("parentUuid", UUIDUtil.toJavaUuid(node.getUuid()))
+				.setParameter("branchUuid", UUIDUtil.toJavaUuid(branchUuid))
+				.setParameter("roles", roles);
+			results = query.getResultList();
+		}
+
+		Map<String, NodeChildrenInfo> childrenInfo = new HashMap<>();
+		for (Object[] row : results) {
+			String schemaUuid = UUIDUtil.toShortUuid((UUID) row[0]);
+			Long count = (Long) row[1];
+			HibSchema schema = Tx.get().schemaDao().loadObjectByUuidNoPerm(schemaUuid, true);
+
+			childrenInfo.put(schema.getName(), new NodeChildrenInfo().setSchemaUuid(schemaUuid).setCount(count));
+		}
+
+		return childrenInfo;
+	}
+
+	@Override
+	public Map<HibNode, Map<String, NodeChildrenInfo>> getChildrenInfo(Collection<HibNode> nodes,
+			InternalActionContext ac, String branchUuid) {
+
+		HibUser user = ac.getUser();
+
+		ContainerType type = "published".equals(ac.getVersioningParameters().getVersion()) ? ContainerType.PUBLISHED
+				: ContainerType.DRAFT;
+
+		// Prepare a map of uuid -> node
+		Map<UUID, HibNode> nodeMap = nodes.stream().map(n -> Pair.of(UUIDUtil.toJavaUuid(n.getUuid()), n))
+				.collect(Collectors.toMap(Pair::getLeft, Pair::getRight));
+
+		// this is the extractor function
+		Function<List<Object[]>, Map<HibNode, Map<String, NodeChildrenInfo>>> resultExtractor = results -> {
+			Map<HibNode, Map<String, NodeChildrenInfo>> childrenInfo = new HashMap<>();
+			for (Object[] row : results) {
+				String schemaUuid = UUIDUtil.toShortUuid((UUID) row[0]);
+				UUID nodeUuid = (UUID) row[1];
+				HibNode node = nodeMap.get(nodeUuid);
+				Long count = (Long) row[2];
+				HibSchema schema = Tx.get().schemaDao().loadObjectByUuidNoPerm(schemaUuid, true);
+
+				childrenInfo.computeIfAbsent(node, key -> new HashMap<>()).put(schema.getName(),
+						new NodeChildrenInfo().setSchemaUuid(schemaUuid).setCount(count));
+			}
+			return childrenInfo;
+		};
+
+		// prepare a result map containing all nodes (mapping to empty maps)
+		Map<HibNode, Map<String, NodeChildrenInfo>> resultMap = new HashMap<>();
+		nodes.stream().forEach(n -> resultMap.put(n, Collections.emptyMap()));
+
+		if (user.isAdmin()) {
+			resultMap.putAll(SplittingUtils.splitAndMergeInMap(nodeMap.keySet(), inQueriesLimitForSplitting(1), split -> {
+				jakarta.persistence.Query query = em().createNamedQuery("node.countMultipleChildrenBySchema.admin");
+				query
+					.setParameter("parentUuids", split)
+					.setParameter("branchUuid", UUIDUtil.toJavaUuid(branchUuid));
+				List<Object[]> results = query.getResultList();
+
+				return resultExtractor.apply(results);
+			}));
+		} else {
+			List<HibRole> roles = IteratorUtils.toList(Tx.get().userDao().getRoles(user).iterator());
+			String queryName = (type == ContainerType.DRAFT ? "node.countMultipleChildrenBySchema.read" : "node.countMultipleChildrenBySchema.read_published");
+
+			resultMap.putAll(SplittingUtils.splitAndMergeInMap(nodeMap.keySet(), inQueriesLimitForSplitting(1 + roles.size()), split -> {
+				jakarta.persistence.Query query = em().createNamedQuery(queryName);
+				query
+					.setParameter("parentUuids", split)
+					.setParameter("branchUuid", UUIDUtil.toJavaUuid(branchUuid))
+					.setParameter("roles", roles);
+				List<Object[]> results = query.getResultList();
+
+				return resultExtractor.apply(results);
+			}));
+		}
+
+		return resultMap;
 	}
 }
