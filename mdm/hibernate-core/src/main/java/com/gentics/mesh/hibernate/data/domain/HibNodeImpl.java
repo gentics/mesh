@@ -165,7 +165,35 @@ import com.gentics.mesh.util.UUIDUtil;
 						" join node_branch_parent nbp on (nbp.id.childUuid = n.dbUuid) " +
 						" where nbp.distance = 1 and nbp.nodeParent.dbUuid = :parentUuid " +
 						" and edge.branch.dbUuid = :branchUuid " +
-						" group by n.schemaContainer.dbUuid")
+						" group by n.schemaContainer.dbUuid"),
+		@NamedQuery(
+				name = "node.countMultipleChildrenBySchema.read",
+				query = "select n.schemaContainer.dbUuid, nbp.nodeParent.dbUuid, count(distinct n) from node n " +
+						" join n.content edge " +
+						" join permission perm on (perm.element = n.dbUuid) " +
+						" join node_branch_parent nbp on (nbp.id.childUuid = n.dbUuid) " +
+						" where nbp.distance = 1 and nbp.nodeParent.dbUuid in :parentUuids " +
+						" and edge.branch.dbUuid = :branchUuid " +
+						" and perm.role in :roles and perm.readPerm = true " +
+						" group by n.schemaContainer.dbUuid, nbp.nodeParent.dbUuid"),
+		@NamedQuery(
+				name = "node.countMultipleChildrenBySchema.read_published",
+				query = "select n.schemaContainer.dbUuid, nbp.nodeParent.dbUuid, count(distinct n) from node n " +
+						" join n.content edge " +
+						" join permission perm on (perm.element = n.dbUuid) " +
+						" join node_branch_parent nbp on (nbp.id.childUuid = n.dbUuid) " +
+						" where nbp.distance = 1 and nbp.nodeParent.dbUuid in :parentUuids " +
+						" and edge.branch.dbUuid = :branchUuid " +
+						" and perm.role in :roles and (perm.readPerm = true or perm.readPublishedPerm = true)" +
+						" group by n.schemaContainer.dbUuid, nbp.nodeParent.dbUuid"),
+		@NamedQuery(
+				name = "node.countMultipleChildrenBySchema.admin",
+				query = "select n.schemaContainer.dbUuid, nbp.nodeParent.dbUuid, count(distinct n) from node n " +
+						" join n.content edge " +
+						" join node_branch_parent nbp on (nbp.id.childUuid = n.dbUuid) " +
+						" where nbp.distance = 1 and nbp.nodeParent.dbUuid in :parentUuids " +
+						" and edge.branch.dbUuid = :branchUuid " +
+						" group by n.schemaContainer.dbUuid, nbp.nodeParent.dbUuid")
 
 })
 public class HibNodeImpl extends AbstractHibBucketableElement implements HibNode, Serializable {

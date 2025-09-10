@@ -1095,6 +1095,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 		ContentInterceptor contentInterceptor = HibernateTx.get().getContentInterceptor();
 		List<DataLoaders.Loader> dataLoaderToInitialize = Arrays.asList(
 				DataLoaders.Loader.CHILDREN_LOADER,
+				DataLoaders.Loader.CHILDRENINFO_LOADER,
 				DataLoaders.Loader.PARENT_LOADER,
 				DataLoaders.Loader.FOR_VERSION_CONTENT_LOADER,
 				DataLoaders.Loader.FOR_TYPE_CONTENT_LOADER,
@@ -1120,6 +1121,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 		ContentInterceptor contentInterceptor = HibernateTx.get().getContentInterceptor();
 		List<DataLoaders.Loader> dataLoaderToInitialize = Arrays.asList(
 				DataLoaders.Loader.CHILDREN_LOADER,
+				DataLoaders.Loader.CHILDRENINFO_LOADER,
 				DataLoaders.Loader.PARENT_LOADER,
 				DataLoaders.Loader.FOR_VERSION_CONTENT_LOADER,
 				DataLoaders.Loader.FOR_TYPE_CONTENT_LOADER,
@@ -1278,6 +1280,12 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 		return contentInterceptor.getDataLoaders().flatMap(DataLoaders::getChildrenLoader);
 	}
 
+	private Optional<Function<HibNode, Map<String, NodeChildrenInfo>>> maybeChildrenInfoLoader() {
+		HibernateTx tx = HibernateTx.get();
+		ContentInterceptor contentInterceptor = tx.getContentInterceptor();
+		return contentInterceptor.getDataLoaders().flatMap(DataLoaders::getChildrenInfoLoader);
+	}
+
 	private Optional<Function<HibNode, List<HibNode>>> maybeBreadcrumbsLoader() {
 		HibernateTx tx = HibernateTx.get();
 		ContentInterceptor contentInterceptor = tx.getContentInterceptor();
@@ -1299,7 +1307,11 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 	}
 
 	@Override
-	public void setChildrenInfo(HibNode node, InternalActionContext ac, HibBranch branch, NodeResponse restNode) {
+	public Map<String, NodeChildrenInfo> getChildrenInfo(HibNode node, InternalActionContext ac, String branchUuid, boolean allowDataLoader) {
+		if (allowDataLoader && maybeChildrenInfoLoader().isPresent()) {
+			return maybeChildrenInfoLoader().get().apply(node);
+		}
+
 		HibUser user = ac.getUser();
 
 		ContainerType type = "published".equals(ac.getVersioningParameters().getVersion()) ? ContainerType.PUBLISHED
@@ -1310,7 +1322,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 			jakarta.persistence.Query query = em().createNamedQuery("node.countChildrenBySchema.admin");
 			query
 				.setParameter("parentUuid", UUIDUtil.toJavaUuid(node.getUuid()))
-				.setParameter("branchUuid", UUIDUtil.toJavaUuid(branch.getUuid()));
+				.setParameter("branchUuid", UUIDUtil.toJavaUuid(branchUuid));
 			results = query.getResultList();
 		} else {
 			List<HibRole> roles = IteratorUtils.toList(Tx.get().userDao().getRoles(user).iterator());
@@ -1318,7 +1330,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 			jakarta.persistence.Query query = em().createNamedQuery(queryName);
 			query
 				.setParameter("parentUuid", UUIDUtil.toJavaUuid(node.getUuid()))
-				.setParameter("branchUuid", UUIDUtil.toJavaUuid(branch.getUuid()))
+				.setParameter("branchUuid", UUIDUtil.toJavaUuid(branchUuid))
 				.setParameter("roles", roles);
 			results = query.getResultList();
 		}
@@ -1332,6 +1344,68 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 			childrenInfo.put(schema.getName(), new NodeChildrenInfo().setSchemaUuid(schemaUuid).setCount(count));
 		}
 
-		restNode.setChildrenInfo(childrenInfo);
+		return childrenInfo;
+	}
+
+	@Override
+	public Map<HibNode, Map<String, NodeChildrenInfo>> getChildrenInfo(Collection<HibNode> nodes,
+			InternalActionContext ac, String branchUuid) {
+
+		HibUser user = ac.getUser();
+
+		ContainerType type = "published".equals(ac.getVersioningParameters().getVersion()) ? ContainerType.PUBLISHED
+				: ContainerType.DRAFT;
+
+		// Prepare a map of uuid -> node
+		Map<UUID, HibNode> nodeMap = nodes.stream().map(n -> Pair.of(UUIDUtil.toJavaUuid(n.getUuid()), n))
+				.collect(Collectors.toMap(Pair::getLeft, Pair::getRight));
+
+		// this is the extractor function
+		Function<List<Object[]>, Map<HibNode, Map<String, NodeChildrenInfo>>> resultExtractor = results -> {
+			Map<HibNode, Map<String, NodeChildrenInfo>> childrenInfo = new HashMap<>();
+			for (Object[] row : results) {
+				String schemaUuid = UUIDUtil.toShortUuid((UUID) row[0]);
+				UUID nodeUuid = (UUID) row[1];
+				HibNode node = nodeMap.get(nodeUuid);
+				Long count = (Long) row[2];
+				HibSchema schema = Tx.get().schemaDao().loadObjectByUuidNoPerm(schemaUuid, true);
+
+				childrenInfo.computeIfAbsent(node, key -> new HashMap<>()).put(schema.getName(),
+						new NodeChildrenInfo().setSchemaUuid(schemaUuid).setCount(count));
+			}
+			return childrenInfo;
+		};
+
+		// prepare a result map containing all nodes (mapping to empty maps)
+		Map<HibNode, Map<String, NodeChildrenInfo>> resultMap = new HashMap<>();
+		nodes.stream().forEach(n -> resultMap.put(n, Collections.emptyMap()));
+
+		if (user.isAdmin()) {
+			resultMap.putAll(SplittingUtils.splitAndMergeInMap(nodeMap.keySet(), inQueriesLimitForSplitting(1), split -> {
+				jakarta.persistence.Query query = em().createNamedQuery("node.countMultipleChildrenBySchema.admin");
+				query
+					.setParameter("parentUuids", split)
+					.setParameter("branchUuid", UUIDUtil.toJavaUuid(branchUuid));
+				List<Object[]> results = query.getResultList();
+
+				return resultExtractor.apply(results);
+			}));
+		} else {
+			List<HibRole> roles = IteratorUtils.toList(Tx.get().userDao().getRoles(user).iterator());
+			String queryName = (type == ContainerType.DRAFT ? "node.countMultipleChildrenBySchema.read" : "node.countMultipleChildrenBySchema.read_published");
+
+			resultMap.putAll(SplittingUtils.splitAndMergeInMap(nodeMap.keySet(), inQueriesLimitForSplitting(1 + roles.size()), split -> {
+				jakarta.persistence.Query query = em().createNamedQuery(queryName);
+				query
+					.setParameter("parentUuids", split)
+					.setParameter("branchUuid", UUIDUtil.toJavaUuid(branchUuid))
+					.setParameter("roles", roles);
+				List<Object[]> results = query.getResultList();
+
+				return resultExtractor.apply(results);
+			}));
+		}
+
+		return resultMap;
 	}
 }
