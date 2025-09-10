@@ -511,13 +511,19 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	/**
 	 * Set the children info to the rest model.
 	 *
-	 * @param ac
+	 * @param node node
+	 * @param ac action context
 	 * @param branch
 	 *            Branch which will be used to identify the branch specific child nodes
 	 * @param restNode
 	 *            Rest model which will be updated
 	 */
-	default void setChildrenInfo(HibNode node, InternalActionContext ac, HibBranch branch, NodeResponse restNode) {
+	private void setChildrenInfo(HibNode node, InternalActionContext ac, HibBranch branch, NodeResponse restNode) {
+		restNode.setChildrenInfo(getChildrenInfo(node, ac, branch.getUuid(), true));
+	}
+
+	@Override
+	default Map<String, NodeChildrenInfo> getChildrenInfo(HibNode node, InternalActionContext ac, String branchUuid, boolean allowDataLoader) {
 		InternalPermission requiredPermission = "published".equals(ac.getVersioningParameters().getVersion())
 				? READ_PUBLISHED_PERM
 				: READ_PERM;
@@ -525,7 +531,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		Map<String, NodeChildrenInfo> childrenInfo = new HashMap<>();
 		UserDao userDao = Tx.get().userDao();
 
-		for (HibNode child : getChildren(node, branch.getUuid())) {
+		for (HibNode child : getChildren(node, branchUuid)) {
 			if (userDao.hasPermission(ac.getUser(), child, requiredPermission)) {
 				String schemaName = child.getSchemaContainer().getName();
 				NodeChildrenInfo info = childrenInfo.get(schemaName);
@@ -540,7 +546,13 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 				}
 			}
 		}
-		restNode.setChildrenInfo(childrenInfo);
+		return childrenInfo;
+	}
+
+	@Override
+	default Map<HibNode, Map<String, NodeChildrenInfo>> getChildrenInfo(Collection<HibNode> nodes,
+			InternalActionContext ac, String branchUuid) {
+		return nodes.stream().map(n -> Pair.of(n, getChildrenInfo(n, ac, branchUuid, false))).collect(Collectors.toMap(Pair::getLeft, Pair::getRight));
 	}
 
 	/**
