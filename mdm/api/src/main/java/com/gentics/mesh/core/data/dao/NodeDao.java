@@ -26,6 +26,7 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.node.NodeTaggedEventModel;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
+import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
@@ -134,6 +135,28 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @return
 	 */
 	Map<HibNode, List<HibNode>> getChildren(Collection<HibNode> nodes, String branchUuid);
+
+	/**
+	 * Get the children info for a single node. The children info is a map, keys are schema names and values are instances of
+	 * {@link NodeChildrenInfo} containing the schema uuid and number of children using the specific schema.
+	 * 
+	 * @param node node
+	 * @param ac action context
+	 * @param branchUuid branch uuid
+	 * @param allowDataLoader true to allow a data loader (if present), false to get the info directly
+	 * @return children info for the node
+	 */
+	Map<String, NodeChildrenInfo> getChildrenInfo(HibNode node, InternalActionContext ac, String branchUuid, boolean allowDataLoader);
+
+	/**
+	 * Get the children info for a collection of nodes.
+	 * 
+	 * @param nodes nodes
+	 * @param ac action context
+	 * @param branchUuid branch uuid
+	 * @return map of children info maps for the given nodes.
+	 */
+	Map<HibNode, Map<String, NodeChildrenInfo>> getChildrenInfo(Collection<HibNode> nodes, InternalActionContext ac, String branchUuid);
 
 	/**
 	 * Returns the parent node of this node.
