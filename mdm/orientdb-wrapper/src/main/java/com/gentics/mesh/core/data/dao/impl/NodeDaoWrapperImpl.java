@@ -308,4 +308,10 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	public Set<String> findUsedLanguages(HibProject project, Collection<String> languageTags, boolean assignedLanguagesOnly) {
 		return toGraph(project).getNodeRoot().findUsedLanguages(languageTags, assignedLanguagesOnly);
 	}
+
+	@Override
+	public boolean expectMassiveDeletion(HibNode node, HibBranch branch) {
+		// for orientdb, we do not support special handling of massive recursive deletion
+		return false;
+	}
 }

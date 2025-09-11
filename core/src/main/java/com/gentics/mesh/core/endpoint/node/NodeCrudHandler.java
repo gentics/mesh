@@ -37,6 +37,7 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.db.TxAction;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
@@ -99,9 +100,20 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 			// response handler
 			Runnable response = () -> ac.send(NO_CONTENT);
 
+			// prepare check for massive deletion
+			TxAction<Boolean> massiveDeletionCheck = tx -> {
+				NodeDao nodeDao = tx.nodeDao();
+				HibProject project = tx.getProject(ac);
+				HibNode node = nodeDao.loadObjectByUuidNoPerm(project, uuid, false);
+				if (node == null) {
+					return false;
+				}
+				return nodeDao.expectMassiveDeletion(node, tx.getBranch(ac));
+			};
+
 			// when deleting recursively, we use the single threaded executor service to do the work.
 			// otherwise, deletion is done in the worker pool
-			if (delParams.isRecursive()) {
+			if (delParams.isRecursive() && db.tx(massiveDeletionCheck)) {
 				utils.syncTxBulkable(ac, function, response, nodeDeletionExecutor);
 			} else {
 				utils.syncTxBulkable(ac, function, response);
