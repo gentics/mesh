@@ -72,9 +72,9 @@ public class FriendlyCaptchaElement extends FormElement {
 				.flatMap(maybeError -> maybeError
 						.map(error -> Maybe.just(new ValidationError()
 							.setName(getName())
-							.setTitle(I18nHelper.get(Locale.GERMAN, TITLE_KEY)).setMessage(I18nHelper.get(Locale.GERMAN, MESSAGE_KEY) + " " + error)))
+							.setTitle(I18nHelper.get(Locale.GERMAN, TITLE_KEY)).setMessage(I18nHelper.get(Locale.GERMAN, MESSAGE_KEY) + " " + error).setPreventStoring(true)))
 						.orElse(RxUtil.emptyMaybe()));
-	}
+		}
 
 	/**
 	 * Check validity of the captcha response

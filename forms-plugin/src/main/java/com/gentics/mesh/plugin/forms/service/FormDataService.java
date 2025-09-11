@@ -1125,45 +1125,69 @@ public class FormDataService {
 					return errors;
 				});
 
-		String projectName = ctx.getProjectName();
-		NodeResponse formNode = ctx.getFormNode();
-		Single<String> dataFolderUuidSingle = getFormDataFolderUuid(projectName, formNode.getUuid(),
-				ParameterUtil.getLanguages(ctx.getContext()));
+		return errorSingle.flatMap(errors1 -> {
+			// check whether we have any validation errors, that prevent storing of the data
+			Optional<ValidationError> errorPreventingDataStorage = errors1.values().stream()
+					.filter(ValidationError::isPreventStoring).findAny();
 
-		return errorSingle.zipWith(
-				dataFolderUuidSingle, 
-				(errors, dataFolderUuid) -> saveFormData(projectName, formNode, dataFolderUuid, ctx.getFormDataNode(), form, postedData, errors).map(formData -> Pair.of(formData, errors)))
-			.flatMap(single -> single)
-			.flatMap(savedFormDataNodePlusErrors -> saveFileUploads(ctx.getProjectName(), form, savedFormDataNodePlusErrors.getKey(), postedData, ctx.getFileUploads()).map(uploads -> Pair.of(uploads, savedFormDataNodePlusErrors.getValue())))
-			.flatMap(savedFileUploadsPlusErrors -> {
-				NodeResponse savedFileUploads = savedFileUploadsPlusErrors.getKey();
-				Map<String, ValidationError> errors = savedFileUploadsPlusErrors.getValue();
-				if (ctx.isPublish() && errors.isEmpty() && form.isCompleted(savedFileUploads)) {
-					return publishFormData(ctx, savedFileUploads, errors);
+			if (errorPreventingDataStorage.isPresent()) {
+				// log a warning
+				log.warn("Storing of POSTed data to form {} prevented by field {}. Validation error: {}", form.getUuid(),
+						errorPreventingDataStorage.get().getName(), errorPreventingDataStorage.get().getMessage());
+
+				// just return the errors in the response, but don't save anything
+				PostDataResponse response = new PostDataResponse();
+				response.setErrors(errors1);
+				response.setFinished(false);
+				if (ctx.getReferer() != null) {
+					response.setRedirectUrl(ctx.getReferer());
 				} else {
-					// set the data cookie
-					if (ctx.handleCookies()) {
-						Cookie cookie = Cookie.cookie(COOKIE_NAME_DATA, form.getDataCookie(savedFileUploads.getUuid()));
-						cookie.setPath(getPath(ctx.getReferer()));
-						cookie.setHttpOnly(true);
-						ctx.getContext().addCookie(cookie);
-					}
-
-					PostDataResponse response = new PostDataResponse();
-					response.setDataUuid(savedFileUploads.getUuid());
-					response.setCreated(savedFileUploads.getCreated());
-					response.setErrors(errors);
-					// TODO Set this to false?
-					response.setFinished(true);
-					if (ctx.getReferer() != null) {
-						response.setRedirectUrl(ctx.getReferer());
-					} else {
-						response.setRedirectUrl("");
-					}
-
-					return Single.just(response);
+					response.setRedirectUrl("");
 				}
-			});
+
+				return Single.just(response);
+			} else {
+				String projectName = ctx.getProjectName();
+				NodeResponse formNode = ctx.getFormNode();
+				Single<String> dataFolderUuidSingle = getFormDataFolderUuid(projectName, formNode.getUuid(),
+						ParameterUtil.getLanguages(ctx.getContext()));
+
+				return Single.just(errors1).zipWith(
+						dataFolderUuidSingle, 
+						(errors, dataFolderUuid) -> saveFormData(projectName, formNode, dataFolderUuid, ctx.getFormDataNode(), form, postedData, errors).map(formData -> Pair.of(formData, errors)))
+					.flatMap(single -> single)
+					.flatMap(savedFormDataNodePlusErrors -> saveFileUploads(ctx.getProjectName(), form, savedFormDataNodePlusErrors.getKey(), postedData, ctx.getFileUploads()).map(uploads -> Pair.of(uploads, savedFormDataNodePlusErrors.getValue())))
+					.flatMap(savedFileUploadsPlusErrors -> {
+						NodeResponse savedFileUploads = savedFileUploadsPlusErrors.getKey();
+						Map<String, ValidationError> errors = savedFileUploadsPlusErrors.getValue();
+						if (ctx.isPublish() && errors.isEmpty() && form.isCompleted(savedFileUploads)) {
+							return publishFormData(ctx, savedFileUploads, errors);
+						} else {
+							// set the data cookie
+							if (ctx.handleCookies()) {
+								Cookie cookie = Cookie.cookie(COOKIE_NAME_DATA, form.getDataCookie(savedFileUploads.getUuid()));
+								cookie.setPath(getPath(ctx.getReferer()));
+								cookie.setHttpOnly(true);
+								ctx.getContext().addCookie(cookie);
+							}
+
+							PostDataResponse response = new PostDataResponse();
+							response.setDataUuid(savedFileUploads.getUuid());
+							response.setCreated(savedFileUploads.getCreated());
+							response.setErrors(errors);
+							// TODO Set this to false?
+							response.setFinished(true);
+							if (ctx.getReferer() != null) {
+								response.setRedirectUrl(ctx.getReferer());
+							} else {
+								response.setRedirectUrl("");
+							}
+
+							return Single.just(response);
+						}
+					});
+			}
+		});
 	}
 
 	/**

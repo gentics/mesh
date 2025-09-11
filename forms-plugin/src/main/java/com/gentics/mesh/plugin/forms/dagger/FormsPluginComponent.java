@@ -16,6 +16,7 @@ import com.gentics.mesh.plugin.forms.handler.LoadFormDataBinaryHandler;
 import com.gentics.mesh.plugin.forms.handler.LoadFormDataHandler;
 import com.gentics.mesh.plugin.forms.handler.PostDataHandler;
 import com.gentics.mesh.plugin.forms.handler.PostJsonDataHandler;
+import com.gentics.mesh.plugin.forms.handler.PurgeStaleDataHandler;
 import com.gentics.mesh.plugin.forms.handler.RenderFormDataHandler;
 import com.gentics.mesh.plugin.forms.handler.UpdatePostedDataHandler;
 import com.gentics.mesh.plugin.forms.handler.UpdatePostedJsonDataHandler;
@@ -43,6 +44,7 @@ import com.gentics.mesh.plugin.forms.handler.status.DeactivateHandler;
 import com.gentics.mesh.plugin.forms.handler.status.GetLanguagesHandler;
 import com.gentics.mesh.plugin.forms.handler.status.SetLanguagesHandler;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
+import com.gentics.mesh.plugin.forms.service.PurgeService;
 import com.gentics.mesh.plugin.forms.service.StatusService;
 import com.gentics.mesh.rest.client.MeshRestClient;
 
@@ -56,6 +58,8 @@ public interface FormsPluginComponent {
 	StatusService statusService();
 
 	FormDataService formDataService();
+
+	PurgeService purgeService();
 
 	CheckStatusHandler checkStatusHandler();
 
@@ -121,6 +125,7 @@ public interface FormsPluginComponent {
 
 	RequestFilesZipHandler requestFilesZipHandler();
 
+	PurgeStaleDataHandler purgeStaleDataHandler();
 
 	@Component.Builder
 	interface Builder {

@@ -83,8 +83,8 @@ public class ReCaptchaElement extends FormElement {
 		return isValid(captchaResponse, httpClient).toMaybe()
 				.flatMap(valid -> valid 
 						? RxUtil.emptyMaybe()
-						: Maybe.just(new ValidationError().setName(getName()).setTitle(I18nHelper.get(Locale.GERMAN, TITLE_KEY)).setMessage(I18nHelper.get(Locale.GERMAN, MESSAGE_KEY))));
-	}
+						: Maybe.just(new ValidationError().setName(getName()).setTitle(I18nHelper.get(Locale.GERMAN, TITLE_KEY)).setMessage(I18nHelper.get(Locale.GERMAN, MESSAGE_KEY)).setPreventStoring(true)));
+		}
 
 	/**
 	 * Check validity of the captcha response
