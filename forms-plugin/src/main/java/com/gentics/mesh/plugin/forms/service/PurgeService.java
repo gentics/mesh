@@ -310,6 +310,7 @@ public class PurgeService {
 				if (!elements.isPresent()) {
 					log.debug("No download nodes to purge");
 
+					hasNext.set(false);
 					return Completable.complete();
 				}
 
