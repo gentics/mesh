@@ -1,143 +1,128 @@
 package com.gentics.mesh.plugin.forms;
 
-import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.plugin.forms.config.FormsConfig;
-import com.gentics.mesh.plugin.forms.config.FriendlyCaptchaOptions;
-import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
-import com.gentics.mesh.plugin.forms.model.FriendlyCaptchaElement;
-import com.gentics.mesh.plugin.forms.model.ValidationError;
-import io.vertx.core.http.HttpServer;
-import io.vertx.core.http.impl.headers.HeadersMultiMap;
-import io.vertx.core.json.JsonObject;
-import io.vertx.reactivex.core.Vertx;
-import okhttp3.OkHttpClient;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Locale;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.lang3.tuple.Pair;
+import org.junit.Test;
+
+import com.gentics.mesh.plugin.forms.model.FriendlyCaptchaElement;
+
+import okhttp3.Cookie;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.RecordedRequest;
+
 /**
- * Test Friendly Captcha validation.
+ * Test cases for the {@link FriendlyCaptchaElement}
  */
-public class FriendlyCaptchaTest {
-	private Vertx vertx;
-	private HttpServer mockServer;
-	private int port;
-
-	@Before
-	public void setUp() {
-		vertx = Vertx.vertx();
-		mockServer = vertx.getDelegate().createHttpServer();
-
-		mockServer.requestHandler(request -> request.bodyHandler(body -> {
-			String solutionKey = "solution=";
-			String solution = Arrays.stream(body.toString().split("&"))
-				.filter(param -> param.startsWith(solutionKey))
-				.map(param -> param.substring(solutionKey.length()))
-				.findFirst()
-				.orElse("");
-			JsonObject response = new JsonObject();
-
-			if (solution.equals("valid_solution")) {
-				response.put("success", true);
-			} else if (solution.equals("expired_solution")) {
-				response.put("success", false)
-					.put("details", "solution expired");
-			} else {
-				response.put("success", false)
-					.put("details", "invalid solution");
-			}
-
-			request.response()
-				.putHeader("content-type", "application/json")
-				.end(response.encode());
-		}));
-
-		mockServer.listen(0, "localhost", result -> {
-			if (result.succeeded()) {
-				port = result.result().actualPort();
-			}
-		});
-
-		try {
-			Thread.sleep(500);
-		} catch (InterruptedException e) {
-			throw new RuntimeException("Mock server did not start in time", e);
-		}
-	}
-
-	@After
-	public void tearDown() {
-		mockServer.close();
-		vertx.close();
-	}
-
-	/** Check validation for a valid solution. */
+public class FriendlyCaptchaTest extends AbstractFormPostDataTest {
+	/**
+	 * Test that with valid captcha, the data is stored
+	 * @throws IOException
+	 * @throws InterruptedException
+	 */
 	@Test
-	public void testValidSolution() {
-		var error = validateCaptcha("valid_solution");
+	public void testValidInput() throws IOException, InterruptedException {
+		String solution = "correct";
+		String formUuid = createForm("friendlycaptcha.json");
 
-		assertThat(error).isNull();
-	}
+		// let the captcha verification server answer with success: true
+		webServer.enqueue(new MockResponse().setBody("{\"success\": true}"));
 
-	/** Check validation for an expired solution. */
-	@Test
-	public void testExpiredSolution() {
-		var error = validateCaptcha("expired_solution");
+		// post some data for the input field and a solution to the friendly captcha
+		// (it does not matter, what we post here, because our fake verification server will accept anything)
+		RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
+				.addFormDataPart("input1", "some data")
+				.addFormDataPart("frc-captcha-solution", solution)
+				.build();
+		Pair<Response, Optional<Cookie>> pair = postToForm(formUuid, requestBody);
+		Response response = pair.getLeft();
 
-		assertThat(error).isNotNull();
-		assertThat(error.getMessage()).isEqualTo(I18nHelper.get(Locale.GERMAN, FriendlyCaptchaElement.MESSAGE_KEY) + " solution expired");
-	}
+		// we expect the post to succeed
+		assertThat(response.isSuccessful())
+				.as("Response success %d (%s)".formatted(response.code(), response.message())).isTrue();
 
-	/** Check validation for an invalid solution. */
-	@Test
-	public void testInvalidSolution() {
-		var error = validateCaptcha("invalid_solution");
-
-		assertThat(error).isNotNull();
-		assertThat(error.getMessage()).isEqualTo(I18nHelper.get(Locale.GERMAN, FriendlyCaptchaElement.MESSAGE_KEY) + " invalid solution");
+		// verification server must have answered one request
+		assertThat(webServer.getRequestCount()).as("Requests to recaptcha").isEqualTo(1);
+		RecordedRequest request = webServer.takeRequest(1, TimeUnit.SECONDS);
+		assertThat(request.getBody().toString()).as("Request body").isEqualTo("[text=secret=%s&sitekey=%s&solution=%s]"
+				.formatted(FRIENDLY_CAPTCHA_SECRET_KEY, FRIENDLY_CAPTCHA_SITE_KEY, solution));
 	}
 
 	/**
-	 * Create the options for the {@link FriendlyCaptchaElement} using the mock server for verification URL.
-	 * @return Options for the FriendlyCaptchaElement
+	 * Test that with empty captcha, no data is stored
+	 * @throws IOException
 	 */
-	private FriendlyCaptchaOptions createOptions() {
-		var options = new FriendlyCaptchaOptions();
+	@Test
+	public void testEmptyCaptcha() throws IOException {
+		String formUuid = createForm("friendlycaptcha.json");
 
-		options.setAcceptOnErrorStatus(false);
-		options.setSecretKey("fake_secret_key");
-		options.setSiteKey("fake_site_key");
-		options.setVerificationUrl("http://localhost:" + port);
+		// post some data for the input field, but nothing for the captcha
+		RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
+				.addFormDataPart("input1", "some data")
+				.build();
+		Pair<Response, Optional<Cookie>> pair = postToForm(formUuid, requestBody);
+		Response response = pair.getLeft();
+		Optional<Cookie> cookie = pair.getRight();
 
-		return options;
+		// we expect a redirect to the referer
+		assertThat(response.isRedirect()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+		assertThat(response.header("Location")).as("Location Header").isEqualTo("ref");
+
+		// we expect no data cookie to be set
+		assertThat(cookie).as("Data cookie").isEmpty();
+
+		// we expect not data being written
+		assertThat(getFormDataNodes(formUuid)).as("Form Data Nodes").isEmpty();
+
+		// we expect no calls to the recaptcha verification server
+		assertThat(webServer.getRequestCount()).as("Requests to recaptcha").isEqualTo(0);
+
 	}
 
 	/**
-	 * Validate a {@link FriendlyCaptchaElement} with the given solution.
-	 *
-	 * @param solution The solution to use for validation.
-	 * @return The result of the element validation.
+	 * Test that with an incorrect captcha, no data is stored
+	 * @throws IOException
+	 * @throws InterruptedException 
 	 */
-	private ValidationError validateCaptcha(String solution) {
-		var config = new FormsConfig();
-		var options = createOptions();
+	@Test
+	public void testIncorrectCaptcha() throws IOException, InterruptedException {
+		String solution = "incorrect";
+		String formUuid = createForm("friendlycaptcha.json");
 
-		config.setFriendlyCaptcha(options);
+		// let the captcha verification server answer with success: false
+		webServer.enqueue(new MockResponse().setBody("{\"success\": false}"));
 
-		var element = new FriendlyCaptchaElement();
+		// post some data for the input field, but nothing for the captcha
+		RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
+				.addFormDataPart("input1", "some data")
+				.addFormDataPart("frc-captcha-solution", solution)
+				.build();
+		Pair<Response, Optional<Cookie>> pair = postToForm(formUuid, requestBody);
+		Response response = pair.getLeft();
+		Optional<Cookie> cookie = pair.getRight();
 
-		element.setConfiguration(config);
+		// we expect a redirect to the referer
+		assertThat(response.isRedirect()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+		assertThat(response.header("Location")).as("Location Header").isEqualTo("ref");
 
-		var map = new HeadersMultiMap();
+		// we expect no data cookie to be set
+		assertThat(cookie).as("Data cookie").isEmpty();
 
-		map.add(options.getSolutionKey(), solution);
+		// we expect not data being written
+		assertThat(getFormDataNodes(formUuid)).as("Form Data Nodes").isEmpty();
 
-		return element.validate(map, Collections.emptySet(), new NodeResponse(), Vertx.vertx(), new OkHttpClient.Builder().build()).blockingGet();
+		// verification server must have answered one request
+		assertThat(webServer.getRequestCount()).as("Requests to recaptcha").isEqualTo(1);
+		RecordedRequest request = webServer.takeRequest(1, TimeUnit.SECONDS);
+		assertThat(request.getBody().toString()).as("Request body").isEqualTo("[text=secret=%s&sitekey=%s&solution=%s]"
+				.formatted(FRIENDLY_CAPTCHA_SECRET_KEY, FRIENDLY_CAPTCHA_SITE_KEY, solution));
+
 	}
 }

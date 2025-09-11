@@ -10,6 +10,8 @@ public class ValidationError {
 
 	private String message;
 
+	private boolean preventStoring = false;
+
 	/**
 	 * Name of the field
 	 * @return field name
@@ -61,6 +63,24 @@ public class ValidationError {
 	 */
 	public ValidationError setMessage(String message) {
 		this.message = message;
+		return this;
+	}
+
+	/**
+	 * Check whether storing shall be prevented due to this error
+	 * @return true to prevent storing
+	 */
+	public boolean isPreventStoring() {
+		return preventStoring;
+	}
+
+	/**
+	 * Set whether storing shall be prevented due to this error
+	 * @param preventStoring true to prevent storing
+	 * @return fluent API
+	 */
+	public ValidationError setPreventStoring(boolean preventStoring) {
+		this.preventStoring = preventStoring;
 		return this;
 	}
 }

@@ -26,11 +26,13 @@ public class FormsConfig extends LicenseConfiguration {
 
 	private int downloadPurgeInterval = 1;
 
+	private int staleDataPurgeInterval = 1;
+
 	private ExportFormat defaultExportFormat = ExportFormat.CSV;
 
 	private ReCaptchaOptions reCaptcha;
 
-	private FriendlyCaptchaOptions friendlyCaptcha;
+	private FriendlyCaptchaOptions friendlyCaptcha = new FriendlyCaptchaOptions();
 
 	private EyepinOptions eyepin;
 
@@ -115,6 +117,15 @@ public class FormsConfig extends LicenseConfiguration {
 	public FormsConfig setDownloadPurgeInterval(int downloadPurgeInterval) {
 		this.downloadPurgeInterval = downloadPurgeInterval;
 
+		return this;
+	}
+
+	public int getStaleDataPurgeInterval() {
+		return staleDataPurgeInterval;
+	}
+
+	public FormsConfig setStaleDataPurgeInterval(int staleDataPurgeInterval) {
+		this.staleDataPurgeInterval = staleDataPurgeInterval;
 		return this;
 	}
 
