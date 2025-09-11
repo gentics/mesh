@@ -90,11 +90,26 @@ import jakarta.persistence.QueryHint;
                 @NamedQuery(
                         name = "nodeBranchParents.findDescendants",
                         query = "select distinct(p.child) from node_branch_parent p " +
-                                "where p.nodeParent = :node "
+                                "where p.nodeParent = :node and p.distance = :distance"
                 ),
                 @NamedQuery(
                         name = "nodeBranchParents.findDescendantsInBranch",
                         query = "select distinct(p.child) from node_branch_parent p " +
+                                "where p.nodeParent = :node and p.branchParent = :branch and p.distance = :distance"
+                ),
+                @NamedQuery(
+                        name = "nodeBranchParents.countAllDescendantsInBranch",
+                        query = "select count(distinct p.child) from node_branch_parent p " +
+                                "where p.nodeParent = :node and p.branchParent = :branch"
+                ),
+                @NamedQuery(
+                        name = "nodeBranchParents.getMaxDistance",
+                        query = "select max(p.distance) from node_branch_parent p " +
+                                "where p.nodeParent = :node"
+                ),
+                @NamedQuery(
+                        name = "nodeBranchParents.getMaxDistanceInBranch",
+                        query = "select max(p.distance) from node_branch_parent p " +
                                 "where p.nodeParent = :node and p.branchParent = :branch"
                 ),
                 @NamedQuery(
