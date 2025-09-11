@@ -227,17 +227,26 @@ public class MeshPluginService {
 	 * 		to the project
 	 */
 	public InitializationAction ensureSchemas(String prefix, List<String> schemaNames, Optional<SchemaListResponse> alreadyCheckedSchemas) {
+//		return project -> alreadyCheckedSchemas.map(Single::just).orElseGet(() -> ensureSchemasGlobal(prefix, schemaNames))
+//				.flatMap(existing -> {
+//					log.info("Checking schemas for project {}", project);
+//					return Single.zip(
+//							existing.getData().stream()
+//								.map(schemaResponse -> ensureSchemaAssigned(project, schemaResponse, prefix, Function.identity()))
+//								.collect(Collectors.toList()),
+//							values -> values
+//					);
+//				})
+//				.ignoreElement();
+
 		return project -> alreadyCheckedSchemas.map(Single::just).orElseGet(() -> ensureSchemasGlobal(prefix, schemaNames))
-				.flatMap(existing -> {
+				.flatMapCompletable(existing -> {
 					log.info("Checking schemas for project {}", project);
-					return Single.zip(
-							existing.getData().stream()
-								.map(schemaResponse -> ensureSchemaAssigned(project, schemaResponse, prefix, Function.identity()))
-								.collect(Collectors.toList()),
-							values -> values
-					);
-				})
-				.ignoreElement();
+					return Flowable.fromIterable(existing.getData()).flatMapCompletable(
+							schemaResponse -> ensureSchemaAssigned(project, schemaResponse, prefix, Function.identity())
+									.ignoreElement(),
+							false, 1);
+				});
 	}
 
 	/**
@@ -255,8 +264,8 @@ public class MeshPluginService {
 		Observable<Message<JsonObject>> events = registerEvent(MeshEvent.SCHEMA_MIGRATION_FINISHED, false);
 
 		return adminClient.findSchemas().toSingle()
-			.flatMapObservable(existing -> Observable.fromIterable(schemaNames)
-				.flatMapSingle(schema -> ensureSchemaExists(existing, prefix, schema)))
+			.flatMapObservable(existing -> Flowable.fromIterable(schemaNames)
+				.flatMapSingle(schema -> ensureSchemaExists(existing, prefix, schema), false, 1).toObservable())
 			.toList()
 			.flatMap(allSchemas -> {
 				List<String> migratedSchemas = allSchemas.stream()
