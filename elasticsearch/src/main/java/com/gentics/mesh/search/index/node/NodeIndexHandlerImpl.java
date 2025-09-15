@@ -346,6 +346,9 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 			return projectDao.findAll().stream()
 				.flatMap(project -> branchDao.findAll(project).stream()
 					.flatMap(branch -> branch.findActiveSchemaVersions().stream()
+						.filter(version -> {
+							return version.getNoIndex() == null || !version.getNoIndex();
+						})
 						.flatMap(version -> Stream.of(DRAFT, PUBLISHED)
 							.map(type -> diffAndSync(project, branch, version, type, indexPattern)))))
 				.collect(Collectors.collectingAndThen(Collectors.toList(), Flowable::merge));
