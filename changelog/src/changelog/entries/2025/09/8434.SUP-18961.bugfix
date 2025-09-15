@@ -1,0 +1,2 @@
+Core: Implementations of the persistance layer may now choose to process recursive deletion of nodes
+in a separate thread instead of in the worker thread pool.
