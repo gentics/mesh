@@ -12,6 +12,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -19,6 +20,9 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.ElasticsearchTestMode;
 import com.gentics.mesh.test.MeshTestSetting;
 
+/**
+ * Test cases for disabling indexing on field or schema level
+ */
 @RunWith(Parameterized.class)
 @MeshTestSetting(testSize = FULL, startServer = true)
 public class NoIndexTest extends AbstractNodeSearchEndpointTest {
@@ -27,6 +31,11 @@ public class NoIndexTest extends AbstractNodeSearchEndpointTest {
 		super(elasticsearch);
 	}
 
+	/**
+	 * Enable/disable indexing of a field in the used schema
+	 * @param fieldName field name
+	 * @param disable true to disable, false to enable indexing
+	 */
 	protected void setNoFieldIndexing(String fieldName, boolean disable) {
 		tx(() -> {
 			HibNode nodeTmp = content("concorde");
@@ -37,16 +46,26 @@ public class NoIndexTest extends AbstractNodeSearchEndpointTest {
 		});
 	}
 
+	/**
+	 * Enable/disable indexing of the used schema
+	 * @param disable true to disable, false to enable indexing
+	 */
 	protected void setNoSchemaIndexing(boolean disable) {
 		tx(() -> {
 			HibNode nodeTmp = content("concorde");
-			SchemaModel schema = nodeTmp.getSchemaContainer().getLatestVersion().getSchema();
+			HibSchemaVersion latestVersion = nodeTmp.getSchemaContainer().getLatestVersion();
+			SchemaModel schema = latestVersion.getSchema();
 			schema.setNoIndex(disable);
+			latestVersion.setNoIndex(disable);
 			actions().updateSchemaVersion(nodeTmp.getSchemaContainer().getLatestVersion());
 			return nodeTmp;
 		});
 	}
 
+	/**
+	 * Test disabling indexing of a field
+	 * @throws Exception
+	 */
 	@Test
 	public void testNoFieldIndex() throws Exception {
 		String uuid = db().tx(() -> content("concorde").getUuid());
@@ -70,6 +89,10 @@ public class NoIndexTest extends AbstractNodeSearchEndpointTest {
 		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 	}
 
+	/**
+	 * Test disabling indexing of a schema
+	 * @throws Exception
+	 */
 	@Test
 	public void testNoSchemaIndex() throws Exception {
 		String uuid = db().tx(() -> content("concorde").getUuid());

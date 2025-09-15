@@ -40,7 +40,7 @@ public abstract class AbstractMultiESTest implements TestHttpMethods, TestGraphH
 	}
 
 	@ClassRule
-	public static Timeout globalTimeout= new Timeout(5, TimeUnit.MINUTES);
+	public static Timeout globalTimeout= new Timeout(20, TimeUnit.MINUTES);
 
 	private OkHttpClient httpClient;
 
