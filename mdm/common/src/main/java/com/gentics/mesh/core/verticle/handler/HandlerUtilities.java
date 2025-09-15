@@ -10,6 +10,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -48,6 +49,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.UUIDUtil;
 import com.gentics.mesh.util.ValidationUtil;
 
+import io.vertx.core.Vertx;
 import io.vertx.ext.web.RoutingContext;
 
 /**
@@ -70,15 +72,18 @@ public class HandlerUtilities {
 
 	private final MeshOptions meshOptions;
 
+	private final Vertx vertx;
+
 	@Inject
 	public HandlerUtilities(Database database, MeshOptions meshOptions, Provider<EventQueueBatch> queueProvider,
-		Provider<BulkActionContext> bulkProvider, WriteLock writeLock, PageTransformer pageTransformer) {
+		Provider<BulkActionContext> bulkProvider, WriteLock writeLock, PageTransformer pageTransformer, Vertx vertx) {
 		this.database = database;
 		this.queueProvider = queueProvider;
 		this.bulkProvider = bulkProvider;
 		this.writeLock = writeLock;
 		this.pageTransformer = pageTransformer;
 		this.meshOptions = meshOptions;
+		this.vertx = vertx;
 	}
 
 	/**
@@ -413,6 +418,30 @@ public class HandlerUtilities {
 	}
 
 	/**
+	 * Invoke sync action in a tx by submitting the task to the given executor service.
+	 * The given success callback and also failure handling will be run in the vertx context (i.e. in the event loop)
+	 * 
+	 * @param ac action context
+	 * @param handler handler to be called with the database tx
+	 * @param action success action
+	 * @param executor executor service
+	 */
+	public void syncTx(InternalActionContext ac, TxAction2 handler, Runnable action, ExecutorService executor) {
+		executor.submit(() -> {
+			try {
+				database.tx(handler);
+				vertx.runOnContext(v -> {
+					action.run();
+				});
+			} catch (Throwable t) {
+				vertx.runOnContext(v -> {
+					ac.fail(t);
+				});
+			}
+		});
+	}
+
+	/**
 	 * Invoke a sync action in a tx, and a bulkable context processing, if no tx failure happened.
 	 * 
 	 * @param ac
@@ -430,6 +459,24 @@ public class HandlerUtilities {
 		});
 	}
 
+	/**
+	 * Variant of {@link #syncTxBulkable(InternalActionContext, BiConsumer, Runnable)} which submits the task to the given executor service
+	 * @param ac action context
+	 * @param function function to be called
+	 * @param action success callback
+	 * @param executor executor service
+	 */
+	public void syncTxBulkable(InternalActionContext ac, BiConsumer<Tx, BulkActionContext> function, Runnable action,
+			ExecutorService executor) {
+		BulkActionContext bac = bulkProvider.get();
+		syncTx(ac, tx -> {
+			tx.<CommonTx>unwrap().data().setBulkActionContext(bac);
+			function.accept(tx, bac);
+		}, () -> {
+			bac.process(true);
+			action.run();
+		}, executor);
+	}
 
 	/**
 	 * Invoke a sync action in a tx, returning a model, a bulkable context processing, and an after-tx action on the returned model, if no tx failure happened.

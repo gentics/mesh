@@ -1,0 +1,3 @@
+Core: Deleting of nodes with more than 1000 descendants is now done
+in a separate thread. This will also cause those delete tasks to be done
+one after the other instead of in parallel.

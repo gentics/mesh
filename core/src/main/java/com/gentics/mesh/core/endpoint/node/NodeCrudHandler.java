@@ -14,8 +14,15 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.function.BiConsumer;
+
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
+
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.NodeDAOActions;
 import com.gentics.mesh.core.data.HibLanguage;
@@ -29,6 +36,8 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.db.TxAction;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
@@ -36,6 +45,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.parameter.DeleteParameters;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.VersioningParameters;
@@ -54,6 +64,12 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 
 	private static final Logger log = LoggerFactory.getLogger(NodeCrudHandler.class);
 
+	/**
+	 * Single threaded executor service, which is used for deleting nodes recursively
+	 */
+	private final static ExecutorService nodeDeletionExecutor = Executors
+			.newSingleThreadExecutor(new BasicThreadFactory.Builder().namingPattern("node-deletion-executor").build());
+
 	@Inject
 	public NodeCrudHandler(Database db, HandlerUtilities utils, MeshOptions options, WriteLock writeLock,
 		NodeDAOActions nodeActions, PageTransformer pageTransformer) {
@@ -67,7 +83,11 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 		validateParameter(uuid, "uuid");
 
 		try (WriteLock lock = writeLock.lock(ac)) {
-			utils.syncTxBulkable(ac, (tx, bac) -> {
+			// get the delete parameters
+			DeleteParameters delParams = ac.getDeleteParameters();
+
+			// prepare function to delete the node
+			BiConsumer<Tx, BulkActionContext> function = (tx, bac) -> {
 				NodeDao nodeDao = tx.nodeDao();
 				HibProject project = tx.getProject(ac);
 				HibNode node = nodeDao.loadObjectByUuid(project, ac, uuid, DELETE_PERM);
@@ -76,7 +96,28 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 				}
 				// Create the batch first since we can't delete the container and access it later in batch creation
 				nodeDao.deleteFromBranch(node, ac, tx.getBranch(ac), false);
-			}, () -> ac.send(NO_CONTENT));
+			};
+			// response handler
+			Runnable response = () -> ac.send(NO_CONTENT);
+
+			// prepare check for massive deletion
+			TxAction<Boolean> massiveDeletionCheck = tx -> {
+				NodeDao nodeDao = tx.nodeDao();
+				HibProject project = tx.getProject(ac);
+				HibNode node = nodeDao.loadObjectByUuidNoPerm(project, uuid, false);
+				if (node == null) {
+					return false;
+				}
+				return nodeDao.expectMassiveDeletion(node, tx.getBranch(ac));
+			};
+
+			// when deleting recursively, we use the single threaded executor service to do the work.
+			// otherwise, deletion is done in the worker pool
+			if (delParams.isRecursive() && db.tx(massiveDeletionCheck)) {
+				utils.syncTxBulkable(ac, function, response, nodeDeletionExecutor);
+			} else {
+				utils.syncTxBulkable(ac, function, response);
+			}
 		}
 	}
 

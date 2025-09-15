@@ -139,6 +139,12 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 	private final NodeDeleteDaoImpl nodeDeleteDao;
 	private final DatabaseConnector databaseConnector;
 
+	/**
+	 * Threshold of descendants for considering recursive deletion a "massive" deletion,
+	 * which will be done in a separate thread of a single threaded executor service
+	 */
+	private final static long MASSIVE_DELETION_THRESHOLD = 1000L;
+
 	private static final Logger log = getLogger(NodeDaoImpl.class);
 
 	@Inject
@@ -1407,5 +1413,16 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 		}
 
 		return resultMap;
+	}
+
+	@Override
+	public boolean expectMassiveDeletion(HibNode node, HibBranch branch) {
+		// count number of (all) children in the branch and return true, if it exceeds a certain threshold
+		TypedQuery<Long> query = em().createNamedQuery("nodeBranchParents.countAllDescendantsInBranch", Long.class);
+		long numDescendants = query
+			.setParameter("node", node)
+			.setParameter("branch", branch)
+			.getSingleResult();
+		return numDescendants >= MASSIVE_DELETION_THRESHOLD;
 	}
 }
