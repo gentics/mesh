@@ -347,7 +347,8 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 				.flatMap(project -> branchDao.findAll(project).stream()
 					.flatMap(branch -> branch.findActiveSchemaVersions().stream()
 						.filter(version -> {
-							return version.getNoIndex() == null || !version.getNoIndex();
+							SchemaVersionModel schema = version.getSchema();
+							return schema.getNoIndex() == null || !schema.getNoIndex();
 						})
 						.flatMap(version -> Stream.of(DRAFT, PUBLISHED)
 							.map(type -> diffAndSync(project, branch, version, type, indexPattern)))))
