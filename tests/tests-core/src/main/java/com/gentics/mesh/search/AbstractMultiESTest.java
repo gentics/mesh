@@ -8,6 +8,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.rules.Timeout;
 import org.junit.runners.Parameterized.Parameters;
 
 import com.gentics.mesh.cli.AbstractBootstrapInitializer;
@@ -36,6 +38,9 @@ public abstract class AbstractMultiESTest implements TestHttpMethods, TestGraphH
 		// Use slf4j instead of JUL
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
 	}
+
+	@ClassRule
+	public static Timeout globalTimeout= new Timeout(20, TimeUnit.MINUTES);
 
 	private OkHttpClient httpClient;
 
