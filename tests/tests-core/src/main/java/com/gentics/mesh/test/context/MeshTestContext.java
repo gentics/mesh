@@ -28,6 +28,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOExceptionList;
 import org.jetbrains.annotations.NotNull;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
@@ -571,6 +572,14 @@ public class MeshTestContext implements TestRule {
 			} catch (IOException e) {
 				if (e instanceof NoSuchFileException || (e.getCause() instanceof NoSuchFileException)) {
 					LOG.debug("Suppressing inexisting directory deletion error", e);
+				} else if (e instanceof IOExceptionList) {
+					for (Throwable throwable : IOExceptionList.class.cast(e).getCauseList()) {
+						if (throwable instanceof NoSuchFileException || (throwable.getCause() instanceof NoSuchFileException)) {
+							LOG.debug("Suppressing inexisting directory deletion error", throwable);
+						} else {
+							throw e;
+						}
+					}
 				} else {
 					throw e;
 				}
