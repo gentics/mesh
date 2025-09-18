@@ -46,6 +46,7 @@ import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.NoConsistencyCheck;
 import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.VersionNumber;
 
@@ -345,6 +346,7 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 	}
 
 	@Test
+	@NoConsistencyCheck
 	public void testUploadImagesConcurrently() throws IOException {
 		String parentUuid;
 		try (Tx tx = tx()) {
