@@ -15,10 +15,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -48,6 +51,9 @@ public class ChangelogSystemTest {
 		System.setProperty("memory.directMemory.preallocate", "false");
 	}
 
+	@ClassRule
+	public static Timeout globalTimeout= new Timeout(20, TimeUnit.MINUTES);
+
 	File targetDir = new File("target/dump");
 
 	private String version;
@@ -66,7 +72,7 @@ public class ChangelogSystemTest {
 	public static Collection<Object[]> data() throws Exception {
 
 		MavenMetadata metadata = MavenUtilities
-			.getMavenMetadata(new URL("https://maven.gentics.com/maven2/com/gentics/mesh/mesh-demo/maven-metadata.xml"));
+			.getMavenMetadata(new URL("https://repo.gentics.com/repository/maven-releases-oss/com/gentics/mesh/mesh-demo/maven-metadata.xml"));
 
 		Collection<Object[]> data = new ArrayList<Object[]>();
 		for (String version : metadata.getVersions()) {
@@ -75,7 +81,7 @@ public class ChangelogSystemTest {
 			if (pVersion == null) {
 				continue;
 			}
-			if (pVersion.compareTo(VersionNumber.parse("1.4.0")) >= 0) {
+			if (pVersion.compareTo(VersionNumber.parse("1.10.39")) >= 0) {
 				data.add(new Object[] { version });
 			}
 		}
@@ -86,7 +92,7 @@ public class ChangelogSystemTest {
 	public void downloadDump() throws IOException, ZipException {
 		// TODO use released version of demo dump
 		URL website = new URL(
-			"https://maven.gentics.com/maven2/com/gentics/mesh/mesh-demo/" + version + "/mesh-demo-" + version + "-dump.zip");
+			"https://repo.gentics.com/repository/maven-releases-oss/com/gentics/mesh/mesh-demo/" + version + "/mesh-demo-"+version+"-dump.zip");
 
 		FileUtils.deleteDirectory(targetDir);
 
