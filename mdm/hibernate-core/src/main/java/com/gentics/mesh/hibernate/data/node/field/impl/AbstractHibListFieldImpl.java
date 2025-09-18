@@ -186,7 +186,7 @@ public abstract class AbstractHibListFieldImpl<
 			int deleted = AbstractHibListFieldEdgeImpl.deleteItems(
 					tx, itemClass, getContainer().getDbUuid(), getContainer().getReferenceType(), getFieldKey());
 			if (deleted != actual) {
-				throw new IllegalStateException("Items sizes mismatch: actual " + actual + ", deleted " + deleted);
+				log.warn("Inconsistency: For [" + itemClass.getSimpleName() + "]/" + listUuid + ": items sizes mismatch: actual " + actual + ", deleted " + deleted);
 			}
 			ListableFieldCache<AbstractHibListFieldEdgeImpl<?>> cache = tx.data().getListableFieldCache();
 			cache.invalidate(listUuid);
