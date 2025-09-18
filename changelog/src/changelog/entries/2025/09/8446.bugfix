@@ -1,0 +1,2 @@
+Search: When a schema was completely excluded from indexing, the index sync operation still
+tried to put the nodes of that schema into the non-existent index, this has been fixed.

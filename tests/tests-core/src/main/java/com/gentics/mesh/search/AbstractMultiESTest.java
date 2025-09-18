@@ -8,6 +8,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.rules.Timeout;
 import org.junit.runners.Parameterized.Parameters;
 
 import com.gentics.mesh.cli.AbstractBootstrapInitializer;
@@ -31,6 +33,9 @@ import okhttp3.OkHttpClient;
 public abstract class AbstractMultiESTest implements TestHttpMethods, TestGraphHelper, PluginHelper {
 
 	protected OkHttpClient httpClient;
+
+	@ClassRule
+	public static Timeout globalTimeout= new Timeout(20, TimeUnit.MINUTES);
 
 	protected static ElasticsearchTestMode currentMode = null;
 
