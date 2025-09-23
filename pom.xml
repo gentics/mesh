@@ -10,7 +10,7 @@
 	<parent>
 		<artifactId>mesh-plugin-parent</artifactId>
 		<groupId>com.gentics.mesh</groupId>
-		<version>3.0.11</version>
+		<version>3.0.15</version>
 	</parent>
 
 	<properties>
