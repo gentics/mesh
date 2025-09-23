@@ -1,0 +1,16 @@
+{
+  "changeLogEntryFileNames": [
+    "8446.bugfix",
+    "8435.SUP-18961.bugfix",
+    "8424.SUP-18931.bugfix",
+    "8427.SUP-18860.bugfix",
+    "8434.SUP-18961.bugfix",
+    "8448.SUP-19010.bugfix",
+    "8423.SUP-18931.bugfix",
+    "8367.bugfix",
+    "8433.SUP-18961.bugfix"
+  ],
+  "version": "3.1.4",
+  "date": "23.09.2025",
+  "genericProperties": {}
+}
