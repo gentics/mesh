@@ -11,7 +11,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh-services</artifactId>
-		<version>3.0.15-SNAPSHOT</version>
+		<version>3.0.15</version>
 	</parent>
 
 	<properties>
