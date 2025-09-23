@@ -6,6 +6,39 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v3.0.15]]
+== 3.0.15 (23.09.2025)
+
+icon:check[] Core: Generation of ETags for nodes has generally been improved to be more stable.
+
+
+icon:check[] Core: Generation of childrenInfo and etag for nodes with many children has been refactored to support better performance.
+
+
+icon:check[] Core: Generation of childrenInfo and etag for nodes with many children has been made more performant.
+
+
+icon:check[] GraphQL: The performance of GraphQL queries returning larger hierachies of data has been improved.
+
+
+icon:check[] Core: The performance of deleting nodes recursively has been improved.
+
+
+icon:check[] Core: Implementations of the persistance layer may now choose to process recursive deletion of nodes
+in a separate thread instead of in the worker thread pool.
+
+
+icon:check[] Core: Deleting of nodes with more than 1000 descendants is now done
+in a separate thread. This will also cause those delete tasks to be done
+one after the other instead of in parallel.
+
+
+icon:check[] Search: When a schema was completely excluded from indexing, the index sync operation still
+tried to put the nodes of that schema into the non-existent index, this has been fixed.
+
+
+icon:check[] Core: It is now possible to delete a node with a list field that has data inconsistencies.
+
 [[v3.0.14]]
 == 3.0.14 (01.09.2025)
 
@@ -156,6 +189,26 @@ icon:plus[] Core: An Apache Tika file parsing dependency has been updated to the
 icon:plus[] Clustering: The Hazelcast library, responsible for the cluster instances orchestration, has been updated to the version @5.5.0@.
 
 icon:plus[] Some library dependencies have been updated to the latest hotfix versions.
+
+
+[[v2.1.24]]
+== 2.1.24 (22.09.2025)
+
+icon:check[] Core: Generation of ETags for nodes has generally been improved to be more stable.
+
+
+icon:check[] Core: Generation of childrenInfo and etag for nodes with many children has been refactored to support better performance.
+
+
+icon:check[] GraphQL: The performance of GraphQL queries returning larger hierachies of data has been improved.
+
+
+icon:check[] Core: Implementations of the persistance layer may now choose to process recursive deletion of nodes
+in a separate thread instead of in the worker thread pool.
+
+
+icon:check[] Search: When a schema was completely excluded from indexing, the index sync operation still
+tried to put the nodes of that schema into the non-existent index, this has been fixed.
 
 
 [[v2.1.23]]
