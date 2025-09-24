@@ -112,7 +112,6 @@ public class DefaultSQLDatabase implements DatabaseProvider {
 			.put(AvailableSettings.HBM2DDL_CHARSET_NAME, CHARSET)
 			.put(AvailableSettings.SHOW_SQL, Boolean.toString(options.getStorageOptions().isShowSql()))
 			.put(AvailableSettings.FORMAT_SQL, Boolean.toString(options.getStorageOptions().isFormatSql()))
-			.put(AvailableSettings.USE_SQL_COMMENTS, Boolean.toString(options.getStorageOptions().isFormatSql()))
 			.put(AvailableSettings.STATEMENT_BATCH_SIZE, String.valueOf(options.getStorageOptions().getJdbcBatchSize()))
 			.put(AvailableSettings.ORDER_INSERTS, "true")
 			.put(AvailableSettings.ORDER_UPDATES, "true")
