@@ -71,7 +71,7 @@ public abstract class AbstractListItemTableCheck extends AbstractContentReferenc
 						.setRepairAction(RepairAction.DELETE);
 				long deleted = 0;
 				if (attemptRepair) {
-					String delete = "DELETE FROM " + refTableName + " WHERE " + uuidColumn + " IN :dbuuids";
+					String delete = "DELETE FROM " + refTableName + " WHERE " + uuidColumn + " IN :" + fieldParam;
 					deleted += SplittingUtils.splitAndCount(orphanedListItems, HibernateUtil.inQueriesLimitForSplitting(1), slice -> Long.valueOf(em.createNativeQuery(delete).setParameter(fieldParam, slice).executeUpdate()));
 					info.setRepaired(deleted == orphanedListItems.size());
 				}
