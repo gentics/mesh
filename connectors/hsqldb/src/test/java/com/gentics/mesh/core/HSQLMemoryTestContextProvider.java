@@ -123,5 +123,4 @@ public class HSQLMemoryTestContextProvider extends HibernateTestContextProvider 
 			}
 		};
 	}
-
 }
