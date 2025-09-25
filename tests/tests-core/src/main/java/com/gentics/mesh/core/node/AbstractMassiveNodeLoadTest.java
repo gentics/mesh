@@ -44,6 +44,10 @@ public abstract class AbstractMassiveNodeLoadTest extends AbstractMeshTest {
 	}
 
 	protected void makeEmAll(long howMany, String parentNodeUuid) {
+		makeEmAll(howMany, parentNodeUuid, false);
+	}
+
+	protected void makeEmAll(long howMany, String parentNodeUuid, boolean publish) {
 		try (Tx tx = tx()) {
 			if (parentFolderUuid == null) {
 				SchemaReferenceImpl schemaReference = new SchemaReferenceImpl();
@@ -56,6 +60,7 @@ public abstract class AbstractMassiveNodeLoadTest extends AbstractMeshTest {
 				create2.setSchema(schemaReference);
 				create2.setLanguage("en");
 				create2.setParentNodeUuid(parentNodeUuid);
+				create2.setPublish(publish);
 				parentFolderUuid = call(() -> client().createNode(PROJECT_NAME, create2)).getUuid();
 			}
 			
