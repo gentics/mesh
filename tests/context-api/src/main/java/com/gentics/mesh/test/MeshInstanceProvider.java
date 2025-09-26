@@ -97,4 +97,12 @@ public interface MeshInstanceProvider<T extends MeshOptions> extends MeshOptions
 	default Double getMaxAllowedDouble() {
 		return Double.MAX_VALUE;
 	}
+
+	/**
+	 * Return true, when the database is case sensitive (regarding the stored values)
+	 * @return true for case sensitive
+	 */
+	default boolean isCaseSensitive() {
+		return true;
+	}
 }
