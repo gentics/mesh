@@ -3,6 +3,7 @@ package com.gentics.mesh.cache;
 import static com.gentics.mesh.test.ElasticsearchTestMode.TRACKING;
 import static com.gentics.mesh.test.TestSize.FULL;
 
+import java.math.BigInteger;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiFunction;
@@ -23,7 +24,7 @@ public class NodeMassiveOrderedPublishTestCached extends AbstractMassivePublishT
 
 	@Override
 	public void change(MeshOptions options) {
-		HibernateMeshOptions.class.cast(options).getStorageOptions().setSecondLevelCacheEnabled(false);
+		HibernateMeshOptions.class.cast(options).getStorageOptions().setSecondLevelCacheEnabled(true);
 	}
 
 	@Override
@@ -33,10 +34,10 @@ public class NodeMassiveOrderedPublishTestCached extends AbstractMassivePublishT
 				i = 0;
 				uuid = VERY_BASE_UUID;
 			}
-			long number = Long.parseLong(UUIDUtil.toShortUuid(uuid), 16);
+			BigInteger number = new BigInteger(UUIDUtil.toBytes(uuid));
 			// Minus!
-			number -= i;
-			return UUIDUtil.toJavaUuid(Long.toHexString(number));
+			number = number.subtract(BigInteger.valueOf(i));
+			return UUIDUtil.toJavaUuid(number.toByteArray());
 		});
 	}
 }

@@ -3,6 +3,7 @@ package com.gentics.mesh.cache;
 import static com.gentics.mesh.test.ElasticsearchTestMode.TRACKING;
 import static com.gentics.mesh.test.TestSize.FULL;
 
+import java.math.BigInteger;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiFunction;
@@ -33,10 +34,10 @@ public class NodeMassiveOrderedPublishTestNoCache extends AbstractMassivePublish
 				i = 0;
 				uuid = VERY_BASE_UUID;
 			}
-			long number = Long.parseLong(UUIDUtil.toShortUuid(uuid), 16);
+			BigInteger number = new BigInteger(UUIDUtil.toBytes(uuid));
 			// Plus!
-			number += i;
-			return UUIDUtil.toJavaUuid(Long.toHexString(number));
+			number = number.add(BigInteger.valueOf(i));
+			return UUIDUtil.toJavaUuid(number.toByteArray());
 		});
 	}
 }
