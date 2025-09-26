@@ -102,17 +102,12 @@ public abstract class AbstractMultiESTest implements TestHttpMethods, TestGraphH
 	@Before
 	public void setup() throws Throwable {
 		getTestContext().setup(settings);
-		((AbstractBootstrapInitializer) boot()).getCoreVerticleLoader().redeploySearchVerticle().blockingAwait();
+		redeploySearchVerticle();
 	}
 
 	@After
 	public void tearDown() throws Throwable {
-		if (!((AbstractBootstrapInitializer) boot()).getCoreVerticleLoader().undeploySearchVerticle().blockingAwait(1, TimeUnit.MINUTES)) {
-			ThreadMXBean bean = ManagementFactory.getThreadMXBean();
-			ThreadInfo[] infos = bean.dumpAllThreads(true, true);
-			System.out.println(Arrays.stream(infos).map(Object::toString).collect(Collectors.joining()));
-			fail("Failed to undeploy search verticle within 1 minute");
-		}
+		undeploySearchVerticle();
 		getTestContext().tearDown(settings);
 	}
 
