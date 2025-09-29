@@ -6,12 +6,13 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.schema.field.AbstractFieldMigrationTest.MicroschemaTest;
 import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.ResetTestDb;
 
 import static com.gentics.mesh.test.ElasticsearchTestMode.TRACKING;
 import static com.gentics.mesh.test.TestSize.FULL;
 
 @MicroschemaTest
-@MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = false)
+@MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = false, resetBetweenTests = ResetTestDb.NEVER)
 public class HtmlMicroFieldMigrationTest extends HtmlFieldMigrationTest {
 
 	@Test
