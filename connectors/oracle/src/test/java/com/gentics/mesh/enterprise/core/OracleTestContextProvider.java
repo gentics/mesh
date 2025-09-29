@@ -1,6 +1,7 @@
 package com.gentics.mesh.enterprise.core;
 
 import java.util.Comparator;
+import java.util.Locale;
 
 import com.gentics.mesh.core.PreparingDatabaseTestContextProvider;
 import com.gentics.mesh.enterprise.dagger.DaggerEnterpriseHibernateMeshComponent;
@@ -14,6 +15,8 @@ public class OracleTestContextProvider extends PreparingDatabaseTestContextProvi
 
 	static {
 		System.setProperty(MeshOptionsProvider.ENV_OPTIONS_PROVIDER_CLASS, OracleTestContextProvider.class.getCanonicalName());
+		// we set the default locale to english, because the jdbc driver depends on this when setting the sort collation
+		Locale.setDefault(Locale.ENGLISH);
 	}
 
 	public OracleTestContextProvider() {
@@ -31,5 +34,15 @@ public class OracleTestContextProvider extends PreparingDatabaseTestContextProvi
 	@Override
 	public Comparator<String> sortComparator() {
 		return OracleTestUtils.SORT_COMPARATOR;
+	}
+
+	@Override
+	public Double getMinAllowedDouble() {
+		return OracleTestUtils.getMinAllowedDouble();
+	}
+
+	@Override
+	public Double getMaxAllowedDouble() {
+		return OracleTestUtils.getMaxAllowedDouble();
 	}
 }
