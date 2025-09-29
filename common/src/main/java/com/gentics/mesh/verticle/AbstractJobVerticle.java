@@ -1,5 +1,7 @@
 package com.gentics.mesh.verticle;
 
+import java.util.Optional;
+
 import io.reactivex.Completable;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.Message;
@@ -114,6 +116,7 @@ public abstract class AbstractJobVerticle extends AbstractVerticle {
 						message.reply(new JsonObject().put("status", STATUS_REJECTED));
 					}
 				} else if (stopped) {
+					Optional.ofNullable(rh.result()).ifPresent(Lock::release);
 					log.error("Not executing locked action, because processing was stopped");
 					if (message != null) {
 						message.reply(new JsonObject().put("status", STATUS_REJECTED));

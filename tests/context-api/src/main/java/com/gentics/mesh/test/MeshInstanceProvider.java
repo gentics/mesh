@@ -81,4 +81,28 @@ public interface MeshInstanceProvider<T extends MeshOptions> extends MeshOptions
 	default boolean fastStorageCleanup(Database db) throws Exception {
 		return false;
 	}
+
+	/**
+	 * Get the database specific allowed minimum value for double
+	 * @return minimum value
+	 */
+	default Double getMinAllowedDouble() {
+		return Double.MIN_VALUE;
+	}
+
+	/**
+	 * Get the database specific allowed maximum value for double
+	 * @return maximum value
+	 */
+	default Double getMaxAllowedDouble() {
+		return Double.MAX_VALUE;
+	}
+
+	/**
+	 * Return true, when the database is case sensitive (regarding the stored values)
+	 * @return true for case sensitive
+	 */
+	default boolean isCaseSensitive() {
+		return true;
+	}
 }

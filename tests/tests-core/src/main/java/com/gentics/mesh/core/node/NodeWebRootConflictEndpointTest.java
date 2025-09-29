@@ -120,6 +120,10 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testCreateCaseSensitivityOfWebrootPath() {
+		// do not run the test, when the databsae is not case sensitive
+		if (!testContext.getInstanceProvider().isCaseSensitive()) {
+			return;
+		}
 		String conflictingName = "filename.html";
 		HibNode parent = tx(() -> folder("2015"));
 		HibSchema contentSchema = tx(() -> schemaContainer("content"));
