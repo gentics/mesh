@@ -227,18 +227,6 @@ public class MeshPluginService {
 	 * 		to the project
 	 */
 	public InitializationAction ensureSchemas(String prefix, List<String> schemaNames, Optional<SchemaListResponse> alreadyCheckedSchemas) {
-//		return project -> alreadyCheckedSchemas.map(Single::just).orElseGet(() -> ensureSchemasGlobal(prefix, schemaNames))
-//				.flatMap(existing -> {
-//					log.info("Checking schemas for project {}", project);
-//					return Single.zip(
-//							existing.getData().stream()
-//								.map(schemaResponse -> ensureSchemaAssigned(project, schemaResponse, prefix, Function.identity()))
-//								.collect(Collectors.toList()),
-//							values -> values
-//					);
-//				})
-//				.ignoreElement();
-
 		return project -> alreadyCheckedSchemas.map(Single::just).orElseGet(() -> ensureSchemasGlobal(prefix, schemaNames))
 				.flatMapCompletable(existing -> {
 					log.info("Checking schemas for project {}", project);
