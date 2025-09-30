@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomUtils;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -50,7 +51,7 @@ public final class CoreTestUtils {
 
 	public static SchemaVersionModel createSchema(FieldSchema... fields) {
 		SchemaVersionModel schema = new SchemaModelImpl();
-		schema.setName(RandomStringUtils.random(10, true, true));
+		schema.setName(RandomStringUtils.randomAlphabetic(RandomUtils.nextInt(10, 20)));
 		Arrays.stream(fields).forEach(field -> schema.addField(field));
 		return schema;
 	}
