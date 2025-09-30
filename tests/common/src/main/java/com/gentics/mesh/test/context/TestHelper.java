@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.api.Assertions;
 
@@ -419,7 +420,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	}
 
 	default public NodeResponse createNode(NodeResponse parent) {
-		return createNode(parent.getUuid(), "slug", new StringFieldImpl().setString(RandomStringUtils.randomAlphabetic(5)));
+		return createNode(parent.getUuid(), "slug", new StringFieldImpl().setString(RandomStringUtils.randomAlphabetic(RandomUtils.nextInt(10, 20))));
 	}
 
 	default public NodeResponse createNode(String fieldKey, Field field) {
