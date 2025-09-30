@@ -7,9 +7,11 @@ import java.util.stream.LongStream;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.elasticsearch.client.ElasticsearchClient;
+import com.gentics.mesh.etc.config.search.IndexSearchMode;
 
 import io.reactivex.Flowable;
 import io.reactivex.functions.Function;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -22,7 +24,26 @@ public final class RxUtil {
 	private static final Logger log = LoggerFactory.getLogger(RxUtil.class);
 
 	private RxUtil() {
+	}
 
+	/**
+	 * Executes a search request to elasticsearch base on the options. Then continues the search and fetches all documents from the request and returns
+	 * them in the flow.
+	 * 
+	 * @param options
+	 * @param client
+	 * @param query
+	 * @param scrollAge
+	 * @param indices
+	 * @return
+	 */
+	public static Flowable<JsonObject> searchAll(IndexSearchMode mode, ElasticsearchClient<JsonObject> client, JsonObject query, String scrollAge, String... indices) {
+		switch (mode) {
+		case SCROLL:
+			return scrollAll(client, query, scrollAge, indices);
+		default:
+			return searchAfterAll(client, query, indices);		
+		}
 	}
 
 	/**
@@ -39,7 +60,6 @@ public final class RxUtil {
 		return client.searchScroll(query, scrollAge, indices).async()
 			.flatMapPublisher(continueScroll(client, scrollAge));
 	}
-
 	private static Function<JsonObject, Flowable<JsonObject>> continueScroll(ElasticsearchClient<JsonObject> client, String scrollAge) {
 		return response -> {
 			String scrollId = response.getString("_scroll_id");
@@ -49,6 +69,33 @@ public final class RxUtil {
 			} else {
 				return client.scroll(scrollAge, scrollId).async()
 					.flatMapPublisher(continueScroll(client, scrollAge))
+					.startWith(response);
+			}
+		};
+	}
+
+	/**
+	 * Executes a search request to elasticsearch with the search_after option. Then continues the search and fetches all documents from the request and returns
+	 * them in the flow.
+	 *
+	 * @param client
+	 * @param query
+	 * @param indices
+	 * @return
+	 */
+	public static Flowable<JsonObject> searchAfterAll(ElasticsearchClient<JsonObject> client, JsonObject query, String... indices) {
+		return client.search(query, indices).async()
+			.flatMapPublisher(continueSearchAfter(client, query, indices));
+	}
+	private static Function<JsonObject, Flowable<JsonObject>> continueSearchAfter(ElasticsearchClient<JsonObject> client, JsonObject query, String... indices) {
+		return response -> {
+			JsonArray hits = response.getJsonObject("hits").getJsonArray("hits");
+			if (hits.isEmpty()) {
+				return Flowable.just(response);
+			} else {
+				query.put("search_after", hits.getJsonObject(hits.size()-1).getJsonArray("sort"));
+				return client.search(query, indices).async()
+					.flatMapPublisher(continueSearchAfter(client, query, indices))
 					.startWith(response);
 			}
 		};
