@@ -88,7 +88,7 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 	 * 
 	 * @return
 	 */
-	abstract protected Transformer getTransformer();
+	abstract protected Transformer<T> getTransformer();
 
 	@Override
 	abstract public MappingProvider getMappingProvider();
@@ -281,7 +281,7 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 					JsonArray hits = result.getJsonObject("hits").getJsonArray("hits");
 					JsonArray searchAfter = processHits(hits, versions);
 
-					// Check whether we need to process more scrolls
+					// Check whether we need to process further
 					if (hits.size() != 0) {
 						while (true) {
 							query.put("search_after", searchAfter);
