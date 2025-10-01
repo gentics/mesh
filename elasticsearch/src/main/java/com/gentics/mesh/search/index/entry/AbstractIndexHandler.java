@@ -56,7 +56,7 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractIndexHandler.class);
 
-	public static final int ES_SYNC_FETCH_BATCH_SIZE = 1;
+	public static final int ES_SYNC_FETCH_BATCH_SIZE = 10_000;
 
 	protected final SearchProvider searchProvider;
 
