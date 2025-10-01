@@ -303,6 +303,11 @@ public class PurgeService {
 				Optional<JsonObject> nodes = Optional.ofNullable(rs.getData())
 					.map(data -> data.getJsonObject("schema"))
 					.map(schema -> schema.getJsonObject("nodes"));
+				if (!nodes.isPresent()) {
+					log.warn("Could not get nodes for schema {}. Maybe schema does not exist.", schemaName);
+					hasNext.set(false);
+					return Completable.complete();
+				}
 				Optional<JsonArray> elements = nodes.map(n -> n.getJsonArray("elements")).filter(ar -> !ar.isEmpty());
 
 				hasNext.set(nodes.get().getBoolean("hasNextPage"));

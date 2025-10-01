@@ -1,5 +1,6 @@
 package com.gentics.mesh.plugin.forms;
 
+import static com.gentics.mesh.test.ClientHelper.call;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
@@ -8,11 +9,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.schema.SchemaListResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.parameter.client.PagingParametersImpl;
 
 import okhttp3.Request;
 
@@ -77,5 +82,46 @@ public class FormDataPurgeTest extends AbstractFormPostDataTest {
 			assertThat(published).as("Number of published data nodes for form %s after purge".formatted(formUuid)).isEqualTo(dataNodesPerForm.get(formUuid).getLeft());
 			assertThat(notPublished).as("Number of not published data nodes for form %s after purge".formatted(formUuid)).isEqualTo(0);
 		}
+	}
+
+	/**
+	 * Test that purging stale data does not fail when no data exist
+	 * @throws IOException
+	 * @throws InterruptedException
+	 */
+	@Test
+	public void testPurgeNoData() throws IOException, InterruptedException {
+		createForm("inputfield.json");
+
+		// call the purge
+		doRequest(new Request.Builder()
+				.url(projectUrl("/test/purge/1?perPage=3"))
+				.get()
+				.build(), true, true, JsonNode.class);
+	}
+
+	/**
+	 * Test that purging stale data does not fail when the schema of the form has already been deleted
+	 * @throws IOException
+	 * @throws InterruptedException
+	 */
+	@Test
+	public void testPurgeWithSchemaDeleted() throws IOException, InterruptedException {
+		String formUuid = createForm("inputfield.json");
+
+		// delete the schema
+		String schemaName = "form_%s".formatted(formUuid);
+		SchemaListResponse schemas = call(() -> server.client().findSchemas(new PagingParametersImpl().setPerPage(Long.MAX_VALUE)));
+		for (SchemaResponse schema : schemas.getData()) {
+			if (StringUtils.equals(schema.getName(), schemaName)) {
+				call(() -> server.client().deleteSchema(schema.getUuid()));
+			}
+		}
+
+		// call the purge
+		doRequest(new Request.Builder()
+				.url(projectUrl("/test/purge/1?perPage=3"))
+				.get()
+				.build(), true, true, JsonNode.class);
 	}
 }

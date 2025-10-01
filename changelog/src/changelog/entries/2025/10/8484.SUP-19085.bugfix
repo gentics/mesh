@@ -1,0 +1,2 @@
+Forms Plugin: If form nodes exist in Mesh without the corresponding schema, the purge of stale data nodes failed with an error.
+This has been fixed now, the purge will just output a warning (a form without schema is an inconsistency after all), but will not fail any more.
