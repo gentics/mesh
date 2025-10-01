@@ -47,11 +47,18 @@ public abstract class AbstractListItemTableCheck extends AbstractContentReferenc
 
 	@SuppressWarnings("unchecked")
 	protected void findOrphanedListItems(EntityManager em, ConsistencyCheckResult result, HibFieldSchemaVersionElement<?,?,?,?,?> version, String contentRefColumn, String schemaVersionRefColumn, boolean attemptRepair) {
+		if (getListFieldType() == null) {
+			// This type does not support being a list item
+			return;
+		}
 		DatabaseConnector dc = HibernateTx.get().data().getDatabaseConnector();
 		String contentTable = dc.getPhysicalTableName(UUIDUtil.toJavaUuid(version.getUuid()));
 		String uuidColumn = dc.renderColumn(CommonContentColumn.DB_UUID);
 
-		List<String> listFields = version.getSchema().getFields().stream().filter(f -> FieldTypes.valueByName(f.getType()).equals(FieldTypes.LIST) && FieldTypes.valueByName(((ListFieldSchema) f).getListType()).equals(getListFieldType())).map(f -> f.getName()).collect(Collectors.toList());
+		List<String> listFields = version.getSchema().getFields().stream()
+				.filter(f -> FieldTypes.valueByName(f.getType()).equals(FieldTypes.LIST) && FieldTypes.valueByName(((ListFieldSchema) f).getListType()).equals(getListFieldType()))
+				.map(f -> f.getName())
+				.collect(Collectors.toList());
 
 		for (String field : listFields) {
 			String fieldParam = HibernateUtil.makeParamName(field);
@@ -80,6 +87,11 @@ public abstract class AbstractListItemTableCheck extends AbstractContentReferenc
 		}
 	}
 
+	/**
+	 * Get a {@link FieldTypes} instance of the list field type we currently process.
+	 * 
+	 * @return type or null, if the type is not supporting being the list item
+	 */
 	protected abstract FieldTypes getListFieldType();
 
 	/**
