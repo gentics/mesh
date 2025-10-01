@@ -88,7 +88,7 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 	 * 
 	 * @return
 	 */
-	abstract protected Transformer<T> getTransformer();
+	abstract protected Transformer getTransformer();
 
 	@Override
 	abstract public MappingProvider getMappingProvider();
@@ -114,7 +114,7 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 		}, 1);
 		} else {
 			return Flowable.empty();
-	}
+		}
 	}
 
 	/**
