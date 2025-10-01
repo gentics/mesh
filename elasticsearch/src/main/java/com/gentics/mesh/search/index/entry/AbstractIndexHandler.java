@@ -21,6 +21,7 @@ import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.search.EntityMetrics;
+import com.gentics.mesh.etc.config.ConfigUtils;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -56,7 +57,7 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractIndexHandler.class);
 
-	public static final int ES_SYNC_FETCH_BATCH_SIZE = 10_000;
+	public static final int ES_SYNC_FETCH_BATCH_SIZE = ConfigUtils.getOptionalConfig("MESH_ES_SYNC_FETCH_BATCH_SIZE", 10_000, Integer::parseUnsignedInt, Object::toString);
 
 	protected final SearchProvider searchProvider;
 
