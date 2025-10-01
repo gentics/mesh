@@ -1,7 +1,7 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
 import static com.gentics.mesh.search.index.AbstractMappingProvider.ROLE_UUIDS;
-import static com.gentics.mesh.search.verticle.eventhandler.RxUtil.scrollAll;
+import static com.gentics.mesh.search.verticle.eventhandler.RxUtil.searchAll;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
 
 import java.util.Collection;
@@ -18,10 +18,12 @@ import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
+import com.gentics.mesh.etc.config.search.IndexSearchMode;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.verticle.MessageEvent;
 
 import io.reactivex.Flowable;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -36,11 +38,13 @@ public class RoleDeletedEventHandler implements EventHandler {
 
 	private final SearchProvider searchProvider;
 	private final ComplianceMode complianceMode;
+	private final IndexSearchMode searchMode;
 
 	@Inject
 	public RoleDeletedEventHandler(SearchProvider searchProvider, MeshOptions options) {
 		this.searchProvider = searchProvider;
 		this.complianceMode = options.getSearchOptions().getComplianceMode();
+		this.searchMode = options.getSearchOptions().getIndexSearchMode();
 	}
 
 	@Override
@@ -76,8 +80,7 @@ public class RoleDeletedEventHandler implements EventHandler {
 		if (client == null) {
 			return Flowable.empty();
 		}
-
-		return scrollAll(client, createSearchQuery(model), "1m")
+		return searchAll(searchMode, client, createSearchQuery(model), "1m")
 			.doOnNext(response -> {
 				if (log.isTraceEnabled()) {
 					log.trace("Found docs readable from role {}: {}", model.getUuid(), response);
@@ -90,6 +93,7 @@ public class RoleDeletedEventHandler implements EventHandler {
 	private JsonObject createSearchQuery(MeshElementEventModelImpl model) {
 		return new JsonObject()
 			.put("_source", ROLE_UUIDS)
+			.put("sort", new JsonArray().add("_doc"))
 			.put("size", ELASTIC_SEARCH_PAGE_SIZE)
 			.put("query", new JsonObject()
 				.put("term", new JsonObject()
