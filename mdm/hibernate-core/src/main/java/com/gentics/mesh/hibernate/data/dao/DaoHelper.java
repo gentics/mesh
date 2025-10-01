@@ -7,8 +7,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.firstOrNull;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.makeAlias;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.makeParamName;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static io.netty.handler.codec.http.HttpResponseStatus.*;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.time.Instant;
@@ -571,6 +570,14 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 		}
 		HibQueryFieldMapper mapper = daoCollection.get().maybeFindFieldMapper(domainClass).get();
 		Map<String, SortOrder> items = sorting.getSort();
+		Set<String> wrongColumns = items.keySet().stream()
+			.filter(item -> StringUtils.isNotBlank(item) && !item.contains(".") && databaseConnector.getDatabaseColumnNames(domainClass).map(columns -> !columns.contains(item)).orElse(true))
+			.collect(Collectors.toSet());
+		if (wrongColumns.size() > 0) {
+			throw error(BAD_REQUEST, "wrong_sorting_column_name", 
+					wrongColumns.stream().collect(Collectors.joining(", ")), 
+					databaseConnector.getDatabaseColumnNames(domainClass).map(columns -> columns.stream().filter(column -> StringUtils.isNotBlank(column) && !column.toLowerCase().endsWith("dbuuid")).collect(Collectors.joining(", "))).orElse(StringUtils.EMPTY));
+		}
 		items = items.entrySet().stream().map(entry -> {
 			String key = mapper.mapGraphQlFilterFieldName(entry.getKey());
 			String[] keyParts = key.split("\\.");
