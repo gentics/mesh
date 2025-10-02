@@ -109,7 +109,7 @@ public class MiscUtil {
 			return string;
 		}
 		int newlineIndex = StringUtils.indexOfAny(string, '\r', '\n');
-		if (StringUtils.indexOfAny(string, '\r', '\n') >= 0) {
+		if (newlineIndex >= 0) {
 			return StringUtils.substring(string, 0, newlineIndex);
 		} else {
 			return string;
