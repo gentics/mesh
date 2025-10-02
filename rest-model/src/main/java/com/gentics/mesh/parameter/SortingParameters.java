@@ -2,6 +2,7 @@ package com.gentics.mesh.parameter;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -27,8 +28,8 @@ public interface SortingParameters extends ParameterProvider {
 	default Map<String, SortOrder> getSort() {
 		String sortBy = getParameter(SortingParameters.SORT_BY_PARAMETER_KEY);
 		SortOrder sortOrder = SortOrder.valueOfName(getParameter(SortingParameters.SORT_ORDER_PARAMETER_KEY));
-		if (StringUtils.isNotBlank(sortBy) && sortOrder != null) {
-			return Collections.singletonMap(sortBy, sortOrder);
+		if (StringUtils.isNotBlank(sortBy)) {
+			return Collections.singletonMap(sortBy, Optional.ofNullable(sortOrder).orElse(SortOrder.ASCENDING));
 		} else {
 			return Collections.emptyMap();
 		}

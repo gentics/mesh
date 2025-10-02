@@ -242,7 +242,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Override
 	public void testReadPermittedSortedWrongField() throws Exception {
 		MeshRestClientMessageException error = call(() -> client().findSchemas(new SortingParametersImpl("existiertleidernicht", SortOrder.DESCENDING)), BAD_REQUEST);
-		assertThat(error.getLocalizedMessage()).as("Error message").startsWith("The following column names are not allowed for sorting:[existiertleidernicht].");
+		assertThat(error.getLocalizedMessage()).as("Error message").startsWith("The following column names are not allowed for sorting: [existiertleidernicht].");
 	}
 
 	@Test
