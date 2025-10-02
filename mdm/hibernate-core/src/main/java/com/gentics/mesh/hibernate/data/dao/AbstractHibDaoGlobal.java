@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.dao.DaoTransformable;
 import com.gentics.mesh.core.data.dao.PersistingDaoGlobal;
 import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.result.Result;
@@ -30,6 +31,7 @@ import com.gentics.mesh.hibernate.event.EventFactory;
 import com.gentics.mesh.hibernate.util.HibernateUtil;
 import com.gentics.mesh.hibernate.util.SplittingUtils;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.util.UUIDUtil;
 
 import dagger.Lazy;
@@ -94,7 +96,12 @@ public abstract class AbstractHibDaoGlobal<T extends HibCoreElement<R>, R extend
 
 	@Override
 	public Page<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<T> extraFilter) {
-		return daoHelper.findAll(ac, pagingInfo, extraFilter, true);
+		return PersistingRootDao.shouldSort(pagingInfo) 
+				? new DynamicStreamPageImpl<>(
+						// Since we do not know yet what the extra filter gives to us, we dare at this moment no paging - it will be applied at the PageImpl
+						daoHelper.findAll(ac, Optional.empty(), ((PagingParameters) new PagingParametersImpl().putSort(pagingInfo.getSort())), Optional.empty()).stream(), 
+						pagingInfo, extraFilter, false)
+				: daoHelper.findAll(ac, pagingInfo, extraFilter, true);
 	}
 
 	@Override

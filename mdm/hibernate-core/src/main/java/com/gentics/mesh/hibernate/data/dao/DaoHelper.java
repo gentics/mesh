@@ -7,6 +7,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.firstOrNull;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.makeAlias;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.makeParamName;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -422,7 +423,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 		return findAll(ac, maybePerm, pagingInfo, maybeExtraFilter, Optional.empty());
 	}
 
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private <R extends HibBaseElement> Pair<Stream<? extends T>, Long> query(InternalActionContext ac, Optional<InternalPermission> maybePerm, PagingParameters pagingInfo, Optional<FilterOperation<?>> maybeExtraFilter, Optional<Pair<RootJoin<D, R>, R>> maybeRoot, boolean countOnly) {
 		HibernateTxImpl tx = currentTransaction.getTx();
 
@@ -443,6 +444,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 				maybePermJoins.stream(),
 				maybeFilterJoin.map(filterJoin -> filterJoin.getRawSqlJoins().stream()).orElseGet(() -> Stream.empty())
 			).flatMap(Function.identity()).collect(Collectors.toSet()));
+		boolean shouldSort = !countOnly && !sortJoins.getValue().isEmpty();
 
 		// Make root joins, if requested
 		Optional<NativeJoin> maybeRootJoin = maybeRoot.map(joinEntity -> joinEntity.getLeft().makeJoin(myAlias, joinEntity.getRight()));
@@ -453,7 +455,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 		select.setTableName(databaseConnector.maybeGetPhysicalTableName(domainClass).get() + " " + myAlias);
 		List<String> columns = new ArrayList<>();
 		columns.addAll(domainColumns);
-		if (!countOnly && !sortJoins.getValue().isEmpty()) {
+		if (shouldSort) {
 			sortJoins.getValue().keySet().stream()
 				.filter(col -> columns.stream().noneMatch(acol -> col.equalsIgnoreCase(acol)))
 				.forEach(columns::add);
@@ -476,7 +478,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 		String wheres = allJoins.stream().flatMap(join -> join.getWhereClauses().stream()).collect(Collectors.joining(" AND "));
 		select.addRestriction(wheres + maybeFilterJoin.map(filterJoin -> (StringUtils.isBlank(wheres) ? StringUtils.EMPTY : " AND ") + filterJoin.getSqlFilter()).orElse(StringUtils.EMPTY));
 
-		if (!countOnly && !sortJoins.getValue().isEmpty()) {
+		if (shouldSort) {
 			select.setOrderBy(" order by " + sortJoins.getValue().entrySet().stream().map(entry -> {
 				return databaseConnector.findSortAlias(entry.getKey()) + " " + entry.getValue().getValue();
 			}).collect(Collectors.joining(", ")));
@@ -515,7 +517,12 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 			}
 		} catch (Throwable e) {
 			log.error("Failure at query: " + sqlQuery);
-			throw e;
+			// Sorting usually comes from the user input, so it is reasonable to inform back with the less severe status 
+			if (shouldSort) {
+				throw error(BAD_REQUEST, "error_invalid_parameter", "sortBy", pagingInfo.getSort().entrySet().stream().map(Map.Entry::getKey).collect(Collectors.joining(", ")));
+			} else {
+				throw e;
+			}
 		}
 	}
 
@@ -571,6 +578,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 		}
 		HibQueryFieldMapper mapper = daoCollection.get().maybeFindFieldMapper(domainClass).get();
 		Map<String, SortOrder> items = sorting.getSort();
+		Optional<Set<String>> domainColumns = databaseConnector.getDatabaseColumnNames(domainClass);
 		items = items.entrySet().stream().map(entry -> {
 			String key = mapper.mapGraphQlFilterFieldName(entry.getKey());
 			String[] keyParts = key.split("\\.");
@@ -659,13 +667,19 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 				} else {
 					String[] localKeyParts = keyParts;
 					if (i > 0) {
-						localKeyParts = Arrays.copyOfRange(localKeyParts, i, localKeyParts.length); // Collections.singletonList(IntStream.range(i, keyParts.length).mapToObj(start -> keyParts[start]).collect(Collectors.joining("."))).toArray(new String[keyParts.length-i]);
+						localKeyParts = Arrays.copyOfRange(localKeyParts, i, localKeyParts.length); 
 					}
 					boolean noAlias = StringUtils.isBlank(alias);
 					Pair<String, String> pair = makeSortJoins(alias, localKeyParts, mapper, ansiJoin, maybeContainerType, maybeBranch, baseJoin, otherJoins);
+					boolean noDomainColumn = (keyParts.length < 2) && domainColumns.map(columns -> columns.stream().allMatch(column -> !column.equalsIgnoreCase(pair.getRight()))).orElse(false);
+					if (noDomainColumn) {
+						throw error(BAD_REQUEST, "wrong_sorting_column_name", 
+								pair.getRight(), 
+								domainColumns.map(columns -> columns.stream().filter(column -> StringUtils.isNotBlank(column) && !column.toLowerCase().endsWith("dbuuid")).collect(Collectors.joining(", "))).orElse(StringUtils.EMPTY));
+					}
 					key = alias + Optional.ofNullable(pair.getLeft()).map(table -> table + ".").orElseGet(() -> noAlias ? StringUtils.EMPTY : ".") + databaseConnector.renderNonContentColumn(pair.getRight());
 					break;
-				}	
+				}
 			}
 			return Pair.of(key, entry.getValue());
 		}).collect(Collectors.toMap(Pair::getKey, Pair::getValue));

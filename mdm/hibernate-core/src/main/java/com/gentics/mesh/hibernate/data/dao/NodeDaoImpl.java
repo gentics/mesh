@@ -3,12 +3,14 @@ package com.gentics.mesh.hibernate.data.dao;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
+import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.collectVersionColumns;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.firstOrNull;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.inQueriesLimitForSplitting;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.makeAlias;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.makeParamName;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.streamContentSelectClause;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.ArrayDeque;
@@ -602,6 +604,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 				Stream.of(permJoins),
 				maybeFilterJoin.map(filterJoin -> filterJoin.getRawSqlJoins().stream()).orElse(Stream.empty())
 			).flatMap(Function.identity()).collect(Collectors.toSet()));
+		boolean shouldSort = !countOnly && !sortJoins.getValue().isEmpty();
 
 		// One of the provided schema parameters should have a version - extract it
 		maybeContentSchemaVersion = maybeContentSchemaVersion.or(() -> maybeContentSchema.map(schema -> schema.getLatestVersion()));
@@ -627,7 +630,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 		maybeParents.map(parents -> makeAlias(databaseConnector.maybeGetDatabaseEntityName(HibBranchNodeParent.class).get()) + ".*").ifPresent(columns::add);
 		Optional.of(noContainerEdgeFetch).filter(noFetch -> !noFetch).flatMap(fetch -> maybeContainerLanguages).or(() -> maybeContentColumns.map(contentColumns -> Collections.emptyList())).map(yes -> makeAlias("CONTAINER") + ".*").ifPresent(columns::add);
 		maybeContentColumns.ifPresent(contentColumns -> streamContentSelectClause(databaseConnector, contentColumns, Optional.of(makeAlias("CONTENT")), true).forEach(columns::add));
-		if (!countOnly && !sortJoins.getValue().isEmpty()) {
+		if (shouldSort) {
 			sortJoins.getValue().keySet().stream()
 				.map(col -> maybeContainerLanguages.map(columnsExplicitlyRequested -> col).orElseGet(() -> databaseConnector.makeSortDefinition(col, Optional.empty())))
 				.filter(col -> columns.stream().noneMatch(acol -> col.equalsIgnoreCase(acol)))
@@ -667,7 +670,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 				+ (wheres.size() > 0 ? wheres.stream().collect(Collectors.joining(" AND ", " AND ", StringUtils.EMPTY)) : StringUtils.EMPTY));
 
 		// Fill sorting, if applicable
-		if (!countOnly && !sortJoins.getValue().isEmpty()) {
+		if (shouldSort) {
 			String clause = sortJoins.getValue().entrySet().stream()
 					.map(entry -> {
 						String alias = databaseConnector.findSortAlias(entry.getKey());
@@ -752,7 +755,12 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 			}
 		} catch (Throwable e) {
 			log.error("Failure at query: " + sqlQuery);
-			throw e;
+			// Sorting usually comes from the user input, so it is reasonable to inform back with the less severe status 
+			if (shouldSort) {
+				throw error(BAD_REQUEST, "error_invalid_parameter", "sortBy", paging.getSort().entrySet().stream().map(Map.Entry::getKey).collect(Collectors.joining(", ")));
+			} else {
+				throw e;
+			}
 		}
 	}
 
