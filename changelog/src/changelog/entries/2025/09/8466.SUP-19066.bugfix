@@ -1,1 +1,1 @@
-Core: A sorting fetch functionality has been restored for some of the entities.
+Core: A sorting fetch functionality has been restored for some of the entities. The errors, caused by improper user input of sorting parameters, now result in `HTTP 400` with the meaningful error description.
