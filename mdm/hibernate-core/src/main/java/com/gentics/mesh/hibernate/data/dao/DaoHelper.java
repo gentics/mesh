@@ -570,14 +570,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 		}
 		HibQueryFieldMapper mapper = daoCollection.get().maybeFindFieldMapper(domainClass).get();
 		Map<String, SortOrder> items = sorting.getSort();
-		Set<String> wrongColumns = items.keySet().stream()
-			.filter(item -> StringUtils.isNotBlank(item) && !item.contains(".") && databaseConnector.getDatabaseColumnNames(domainClass).map(columns -> !columns.contains(item)).orElse(true))
-			.collect(Collectors.toSet());
-		if (wrongColumns.size() > 0) {
-			throw error(BAD_REQUEST, "wrong_sorting_column_name", 
-					wrongColumns.stream().collect(Collectors.joining(", ")), 
-					databaseConnector.getDatabaseColumnNames(domainClass).map(columns -> columns.stream().filter(column -> StringUtils.isNotBlank(column) && !column.toLowerCase().endsWith("dbuuid")).collect(Collectors.joining(", "))).orElse(StringUtils.EMPTY));
-		}
+		Optional<Set<String>> domainColumns = databaseConnector.getDatabaseColumnNames(domainClass);
 		items = items.entrySet().stream().map(entry -> {
 			String key = mapper.mapGraphQlFilterFieldName(entry.getKey());
 			String[] keyParts = key.split("\\.");
@@ -666,13 +659,19 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 				} else {
 					String[] localKeyParts = keyParts;
 					if (i > 0) {
-						localKeyParts = Arrays.copyOfRange(localKeyParts, i, localKeyParts.length); // Collections.singletonList(IntStream.range(i, keyParts.length).mapToObj(start -> keyParts[start]).collect(Collectors.joining("."))).toArray(new String[keyParts.length-i]);
+						localKeyParts = Arrays.copyOfRange(localKeyParts, i, localKeyParts.length); 
 					}
 					boolean noAlias = StringUtils.isBlank(alias);
 					Pair<String, String> pair = makeSortJoins(alias, localKeyParts, mapper, ansiJoin, maybeContainerType, maybeBranch, baseJoin, otherJoins);
+					boolean noDomainColumn = (keyParts.length < 2) && domainColumns.map(columns -> columns.stream().allMatch(column -> !column.equalsIgnoreCase(pair.getRight()))).orElse(false);
+					if (noDomainColumn) {
+						throw error(BAD_REQUEST, "wrong_sorting_column_name", 
+								pair.getRight(), 
+								domainColumns.map(columns -> columns.stream().filter(column -> StringUtils.isNotBlank(column) && !column.toLowerCase().endsWith("dbuuid")).collect(Collectors.joining(", "))).orElse(StringUtils.EMPTY));
+					}
 					key = alias + Optional.ofNullable(pair.getLeft()).map(table -> table + ".").orElseGet(() -> noAlias ? StringUtils.EMPTY : ".") + databaseConnector.renderNonContentColumn(pair.getRight());
 					break;
-				}	
+				}
 			}
 			return Pair.of(key, entry.getValue());
 		}).collect(Collectors.toMap(Pair::getKey, Pair::getValue));

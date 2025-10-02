@@ -101,6 +101,7 @@ import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.SortingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
+import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -267,6 +268,14 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 						fa != null ? fa.getString() : null,
 						fb != null ? fb.getString() : null);
 		});
+	}
+
+	@Test
+	@Override
+	public void testReadPermittedSortedWrongField() throws Exception {
+		MeshRestClientMessageException error = call(() -> client().findNodes(PROJECT_NAME, new SortingParametersImpl("existiertleidernicht", SortOrder.DESCENDING),
+				new VersioningParametersImpl().draft()), BAD_REQUEST);
+		assertThat(error.getResponseMessage().getMessage()).as("Error message").startsWith("The following column names are not allowed for sorting: [existiertleidernicht].");
 	}
 
 	@Test
