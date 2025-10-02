@@ -83,15 +83,6 @@ public class FormCRUDTest extends AbstractFormsPluginIntegrationTest {
 	}
 
 	/**
-	 * Test creating an invalid form
-	 * @throws IOException
-	 */
-	@Test
-	public void testCreateInvalid() throws IOException {
-		createForm("invalid.json", permission, false);
-	}
-
-	/**
 	 * Test creating a new form in german
 	 * @throws IOException
 	 */

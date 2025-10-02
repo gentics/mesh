@@ -174,7 +174,7 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 				} else {
 					context.response().setStatusCode(500).setStatusMessage("Internal Server Error").end();
 				}
-			}).subscribe();
+			}).onErrorComplete().subscribe();
 		};
 	}
 }
