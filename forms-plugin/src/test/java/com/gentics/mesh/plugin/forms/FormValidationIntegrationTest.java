@@ -18,14 +18,28 @@ import java.util.Collection;
  */
 @RunWith(Parameterized.class)
 public class FormValidationIntegrationTest extends AbstractFormsPluginIntegrationTest {
-	@Parameters(name = "{index}: form: {0}, expect success: {1}")
+	@Parameters(name = "{index}: form: {0}, expect success: {1}, validate: {2}")
 	public static Collection<Object[]> data() {
 		return Arrays.asList(
-			new Object[] { "invalid_form_no_list_elements.json", false },
-			new Object[] { "invalid_form_missing_value.json", false },
-			new Object[] { "invalid_form_missing_key.json", false },
-			new Object[] { "invalid_form_not_validated.json", true },
-			new Object[] { "selectgroup_legacy_listelements.json", true }
+			// test cases that fail the validation
+			new Object[] { "invalid_form_no_list_elements.json", false, true },
+			new Object[] { "invalid_form_missing_value.json", false, true },
+			new Object[] { "invalid_form_missing_key.json", false, true },
+			// test cases that pass the validation
+			new Object[] { "invalid_form_not_validated.json", true, true },
+			new Object[] { "selectgroup_legacy_listelements.json", true, true },
+			// test cases without validation
+			new Object[] { "invalid_form_no_list_elements.json", true, false },
+			new Object[] { "invalid_form_missing_value.json", true, false },
+			new Object[] { "invalid_form_missing_key.json", true, false },
+			new Object[] { "invalid_form_not_validated.json", true, false },
+			new Object[] { "selectgroup_legacy_listelements.json", true, false },
+			// test cases with invalid json
+			new Object[] { "invalid_form_json.json", false, true},
+			new Object[] { "invalid_form_json.json", false, false},
+			// test cases with elements that fail during deserialization
+			new Object[] { "invalid_form_deserialization_failure.json", false, true},
+			new Object[] { "invalid_form_deserialization_failure.json", false, false}
 		);
 	}
 
@@ -35,11 +49,17 @@ public class FormValidationIntegrationTest extends AbstractFormsPluginIntegratio
 	@Parameter(1)
 	public boolean expectSuccess;
 
+	@Parameter(2)
+	public boolean validate;
+
 	@Before
 	public void setup() {
 		super.setup();
 		// activate plugin
 		assertThat(activate(PROJECT_NAME)).as("Activation status").isTrue();
+
+		// set the validate flag
+		FormsTestPlugin.instance.configuration.setValidateElements(validate);
 	}
 
 	@Test

@@ -3,6 +3,7 @@ package com.gentics.mesh.plugin.common.util;
 import com.gentics.mesh.plugin.common.service.MeshPluginService;
 import com.google.common.base.Charsets;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.io.FileNotFoundException;
@@ -96,5 +97,22 @@ public class MiscUtil {
 			.map(i -> i * maxSize)
 			.mapToObj(i -> Arrays.copyOfRange(input, i, i + Math.min(maxSize, input.length - i)))
 			.collect(Collectors.toList());
+	}
+
+	/**
+	 * Get the first line of the given string
+	 * @param string string
+	 * @return first line
+	 */
+	public static String getFirstLine(String string) {
+		if (StringUtils.isBlank(string)) {
+			return string;
+		}
+		int newlineIndex = StringUtils.indexOfAny(string, '\r', '\n');
+		if (StringUtils.indexOfAny(string, '\r', '\n') >= 0) {
+			return StringUtils.substring(string, 0, newlineIndex);
+		} else {
+			return string;
+		}
 	}
 }

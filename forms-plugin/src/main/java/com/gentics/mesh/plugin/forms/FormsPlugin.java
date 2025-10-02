@@ -8,6 +8,8 @@ import static io.vertx.core.http.HttpMethod.PUT;
 
 import com.gentics.mesh.plugin.common.license.LicenseService;
 import com.gentics.mesh.plugin.common.license.LicensedPlugin;
+import com.gentics.mesh.plugin.common.util.MiscUtil;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
@@ -169,7 +171,7 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 					FormsError meshException = (FormsError) t;
 					context.response()
 						.setStatusCode(meshException.getStatusCode())
-						.setStatusMessage(meshException.getMessage())
+						.setStatusMessage(MiscUtil.getFirstLine(meshException.getMessage()))
 						.end(new JsonObject().put("error", meshException.getLocalizedMessage()).encodePrettily());
 				} else {
 					context.response().setStatusCode(500).setStatusMessage("Internal Server Error").end();

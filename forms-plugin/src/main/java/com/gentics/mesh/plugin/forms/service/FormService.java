@@ -238,12 +238,17 @@ public class FormService {
 	 * @return The respective error, when the form validation failed.
 	 */
 	private Optional<ValidationError> checkForm(JsonObject formData) {
-		if (!configuration.isValidateElements()) {
-			return Optional.empty();
-		}
-
 		try {
-			return toForm(formData.encode(), formData.getString("uuid"), null).validateForm();
+			// first try to deserialize the form
+			Form form = toForm(formData.encode(), formData.getString("uuid"), null);
+
+			if (!configuration.isValidateElements()) {
+				// no validation, so return empty optional
+				return Optional.empty();
+			} else {
+				// validate and return the result
+				return form.validateForm();
+			}
 		} catch (IOException e) {
 			log.error("Could not deserialize form: {}", e, e.getMessage());
 
@@ -251,14 +256,13 @@ public class FormService {
 				log.trace("Received formData:\n{}", formData.encodePrettily());
 
 			}
+			ValidationError error = new ValidationError()
+					.setName("form")
+					.setTitle(I18nHelper.get(Locale.GERMAN, "error.validation.form.title"))
+					.setMessage(I18nHelper.get(Locale.GERMAN, "error.validation.form.bad_request"));
+			
+			return Optional.of(error);
 		}
-
-		ValidationError error = new ValidationError()
-			.setName("form")
-			.setTitle(I18nHelper.get(Locale.GERMAN, "error.validation.form.title"))
-			.setMessage(I18nHelper.get(Locale.GERMAN, "error.validation.form.bad_request"));
-
-		return Optional.of(error);
 	}
 
 //	/**
@@ -968,7 +972,7 @@ public class FormService {
 			Form form = objectMapper.readValue(formNode.getFields().getStringField("json").toString(), Form.class);
 			form.addFieldSchemas(schema);
 		} catch (IOException e) {
-			return Single.error(new FormsError(e));
+			return Single.error(new FormsError("Error while deserializing form JSON", e, HttpResponseStatus.BAD_REQUEST.code()));
 		}
 
 		// add field for errors
