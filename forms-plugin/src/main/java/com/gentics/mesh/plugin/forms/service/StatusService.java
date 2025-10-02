@@ -128,7 +128,7 @@ public class StatusService {
 	 * @return activation response
 	 */
 	public Single<StatusResponse> activate(String projectName) {
-		return initializeProject(projectName).andThen(lazyPurgeService.get().initializeProject(projectName)).andThen(publish(projectName));
+		return initializeProject(projectName).andThen(publish(projectName));
 	}
 
 	/**
@@ -182,8 +182,6 @@ public class StatusService {
 							.takeNodeOffline(projectName, uuid, new PublishParametersImpl().setRecursive(true))
 							.toCompletable())
 					.andThen(check(projectName));
-		}).doOnSuccess(unused -> {
-			lazyPurgeService.get().removePurgeHandler(projectName);
 		});
 	}
 
