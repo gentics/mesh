@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -111,12 +112,9 @@ public class FormDataPurgeTest extends AbstractFormPostDataTest {
 
 		// delete the schema
 		String schemaName = "form_%s".formatted(formUuid);
-		SchemaListResponse schemas = call(() -> server.client().findSchemas(new PagingParametersImpl().setPerPage(Long.MAX_VALUE)));
-		for (SchemaResponse schema : schemas.getData()) {
-			if (StringUtils.equals(schema.getName(), schemaName)) {
-				call(() -> server.client().deleteSchema(schema.getUuid()));
-			}
-		}
+		Optional<SchemaResponse> optSchema = loadSchema(schemaName);
+		assertThat(optSchema).as("Schema").isPresent();
+		call(() -> server.client().deleteSchema(optSchema.get().getUuid()));
 
 		// call the purge
 		doRequest(new Request.Builder()
