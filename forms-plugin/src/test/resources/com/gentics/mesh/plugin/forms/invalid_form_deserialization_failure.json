@@ -1,0 +1,10 @@
+{
+	"name": "Invalid form with element that fails during deserialization",
+	"elements": [
+		{
+			"type": "failing",
+			"name": "failing",
+			"label": "Deserialization Failing"
+		}
+	]
+}
