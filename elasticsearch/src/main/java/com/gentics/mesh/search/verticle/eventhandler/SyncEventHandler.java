@@ -189,7 +189,7 @@ public class SyncEventHandler implements EventHandler {
 				.doOnSubscribe(ignore -> log.debug("Init for {}", handler.getClass()))
 				.doOnComplete(() -> log.debug("Init for {} complete", handler.getClass()))
 				.andThen(handler.syncIndices(optPattern)
-					.doOnSubscribe(ignore -> log.debug("Syncing for {}", handler.getClass()))));
+					.doOnSubscribe(ignore -> log.debug("Syncing for {}", handler.getClass()))), 1);
 	}
 
 	/**
