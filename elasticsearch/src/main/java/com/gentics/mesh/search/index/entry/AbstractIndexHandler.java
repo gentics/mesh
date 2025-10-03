@@ -1,6 +1,9 @@
 package com.gentics.mesh.search.index.entry;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -223,47 +226,54 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 			log.trace("Using query {\n" + query.encodePrettily() + "\n");
 			RequestBuilder<JsonObject> builder = client.searchScroll(query, "1m", fullIndexName);
 			JsonObject result = new JsonObject();
+
+			// collect all scroll IDs
+			Set<String> scrollIds = new HashSet<>();
+
 			try {
 				result = builder.sync();
 				if (log.isTraceEnabled()) {
 					log.trace("Got response {" + result.encodePrettily() + "}");
 				}
+				Optional.ofNullable(result.getString("_scroll_id")).ifPresent(scrollIds::add);
 				JsonArray hits = result.getJsonObject("hits").getJsonArray("hits");
 				processHits(hits, versions);
 
 				// Check whether we need to process more scrolls
 				if (hits.size() != 0) {
 					String nextScrollId = result.getString("_scroll_id");
-					try {
-						while (true) {
-							final String currentScroll = nextScrollId;
-							log.debug("Fetching scroll result using scrollId {" + currentScroll + "}");
-							JsonObject scrollResult = client.scroll("1m", currentScroll).sync();
-							JsonArray scrollHits = scrollResult.getJsonObject("hits").getJsonArray("hits");
-							if (log.isTraceEnabled()) {
-								log.trace("Got response {" + scrollHits.encodePrettily() + "}");
-							}
-							if (scrollHits.size() != 0) {
-								processHits(scrollHits, versions);
-								// Update the scrollId for the next fetch
-								nextScrollId = scrollResult.getString("_scroll_id");
-								if (log.isDebugEnabled()) {
-									log.debug("Using scrollId {" + nextScrollId + "} for next fetch.");
-								}
-							} else {
-								// The scroll yields no more data. We are done
-								break;
-							}
+					while (true) {
+						final String currentScroll = nextScrollId;
+						log.debug("Fetching scroll result using scrollId {" + currentScroll + "}");
+						JsonObject scrollResult = client.scroll("1m", currentScroll).sync();
+						Optional.ofNullable(scrollResult.getString("_scroll_id")).ifPresent(scrollIds::add);
+						JsonArray scrollHits = scrollResult.getJsonObject("hits").getJsonArray("hits");
+						if (log.isTraceEnabled()) {
+							log.trace("Got response {" + scrollHits.encodePrettily() + "}");
 						}
-					} finally {
-						// Clearing used scroll in order to free memory in ES
-						client.clearScroll(nextScrollId).sync();
+						if (scrollHits.size() != 0) {
+							processHits(scrollHits, versions);
+							// Update the scrollId for the next fetch
+							nextScrollId = scrollResult.getString("_scroll_id");
+							if (log.isDebugEnabled()) {
+								log.debug("Using scrollId {" + nextScrollId + "} for next fetch.");
+							}
+						} else {
+							// The scroll yields no more data. We are done
+							break;
+						}
 					}
 				}
 			} catch (HttpErrorException e) {
 				log.error("Error while loading version information from index {" + indexName + "}", e.toString());
 				log.error(e);
 				throw e;
+			} finally {
+				if (!scrollIds.isEmpty()) {
+					JsonObject scrollIdBody = new JsonObject();
+					scrollIdBody.put("scroll_id", new JsonArray(new ArrayList<String>(scrollIds)));
+					client.clearScroll(scrollIdBody).sync();
+				}
 			}
 
 			return versions;
