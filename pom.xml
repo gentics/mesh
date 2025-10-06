@@ -25,6 +25,7 @@
 		<!-- Tests -->
 		<surefire.version>3.0.0-M5</surefire.version>
 		<surefire.forkcount>1</surefire.forkcount>
+		<surefire.rerunFailingTestsCount>1</surefire.rerunFailingTestsCount>
 		<surefire.jvm.postfix></surefire.jvm.postfix>
 		<skip.unit.tests>false</skip.unit.tests>
 		<skip.cluster.tests>false</skip.cluster.tests>
