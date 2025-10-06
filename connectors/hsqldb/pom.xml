@@ -204,7 +204,7 @@
 						${jacoco.env}
 					</argLine>
 					<forkedProcessTimeoutInSeconds>2700</forkedProcessTimeoutInSeconds>
-					<rerunFailingTestsCount>0</rerunFailingTestsCount>
+					<rerunFailingTestsCount>${surefire.rerunFailingTestsCount}</rerunFailingTestsCount>
 					<reuseForks>false</reuseForks>
 					<forkCount>${surefire.forkcount}</forkCount>
 					<trimStackTrace>false</trimStackTrace>

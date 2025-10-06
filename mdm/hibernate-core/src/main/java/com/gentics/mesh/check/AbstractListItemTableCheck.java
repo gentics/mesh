@@ -2,11 +2,15 @@ package com.gentics.mesh.check;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.Pair;
 
+import com.gentics.mesh.contentoperation.CommonContentColumn;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
+import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchema;
@@ -18,10 +22,15 @@ import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
 import com.gentics.mesh.core.rest.admin.consistency.InconsistencyInfo;
 import com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity;
 import com.gentics.mesh.core.rest.admin.consistency.RepairAction;
+import com.gentics.mesh.core.rest.common.FieldTypes;
+import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.database.connector.DatabaseConnector;
 import com.gentics.mesh.hibernate.MeshTablePrefixStrategy;
+import com.gentics.mesh.hibernate.util.HibernateUtil;
+import com.gentics.mesh.hibernate.util.SplittingUtils;
+import com.gentics.mesh.util.UUIDUtil;
 
 import jakarta.persistence.EntityManager;
 
@@ -32,16 +41,66 @@ public abstract class AbstractListItemTableCheck extends AbstractContentReferenc
 	@Override
 	public ConsistencyCheckResult invoke(Database db, Tx tx, boolean attemptRepair) {
 		ConsistencyCheckResult result = new ConsistencyCheckResult();
-		checkInvalidRecordReferences(tx, result);
+		checkInvalidRecordReferences(tx, result, attemptRepair);
 		return result;
 	}
+
+	@SuppressWarnings("unchecked")
+	protected void findOrphanedListItems(EntityManager em, ConsistencyCheckResult result, HibFieldSchemaVersionElement<?,?,?,?,?> version, String contentRefColumn, String schemaVersionRefColumn, boolean attemptRepair) {
+		if (getListFieldType() == null) {
+			// This type does not support being a list item
+			return;
+		}
+		DatabaseConnector dc = HibernateTx.get().data().getDatabaseConnector();
+		String contentTable = dc.getPhysicalTableName(UUIDUtil.toJavaUuid(version.getUuid()));
+		String uuidColumn = dc.renderColumn(CommonContentColumn.DB_UUID);
+
+		List<String> listFields = version.getSchema().getFields().stream()
+				.filter(f -> FieldTypes.valueByName(f.getType()).equals(FieldTypes.LIST) && FieldTypes.valueByName(((ListFieldSchema) f).getListType()).equals(getListFieldType()))
+				.map(f -> f.getName())
+				.collect(Collectors.toList());
+
+		for (String field : listFields) {
+			String fieldParam = HibernateUtil.makeParamName(field);
+			String fieldColumn = dc.identify(field + "-list." + getListFieldType().name().toLowerCase()).render(dc.getHibernateDialect());
+			String sql = String.format(
+					"SELECT ref.%s c FROM %s ref LEFT JOIN %s content ON ref.%s = content.%s WHERE ref.fieldkey = :%s AND content.%s <> ref.listuuid",
+					uuidColumn, refTableName, contentTable, contentRefColumn, uuidColumn, fieldParam, fieldColumn);
+
+			List<UUID> orphanedListItems = em.createNativeQuery(sql)
+					.setParameter(fieldParam, field).getResultList();
+
+			if (orphanedListItems.size() > 0) {
+				InconsistencyInfo info = new InconsistencyInfo()
+						.setDescription(String.format("Table %s contains %d records, that were abandoned from the records of table %s", refTableName, orphanedListItems.size(), contentTable))
+						.setElementUuid(version.getUuid())
+						.setSeverity(InconsistencySeverity.LOW)
+						.setRepairAction(RepairAction.DELETE);
+				long deleted = 0;
+				if (attemptRepair) {
+					String delete = "DELETE FROM " + refTableName + " WHERE " + uuidColumn + " IN :" + fieldParam;
+					deleted += SplittingUtils.splitAndCount(orphanedListItems, HibernateUtil.inQueriesLimitForSplitting(1), slice -> Long.valueOf(em.createNativeQuery(delete).setParameter(fieldParam, slice).executeUpdate()));
+					info.setRepaired(deleted == orphanedListItems.size());
+				}
+				result.addInconsistency(info);
+			}
+		}
+	}
+
+	/**
+	 * Get a {@link FieldTypes} instance of the list field type we currently process.
+	 * 
+	 * @return type or null, if the type is not supporting being the list item
+	 */
+	protected abstract FieldTypes getListFieldType();
 
 	/**
 	 * Do the checks for all schemas and microschemas
 	 * @param tx transaction
 	 * @param result check result
+	 * @param attemptRepair 
 	 */
-	protected void checkInvalidRecordReferences(Tx tx, ConsistencyCheckResult result) {
+	protected void checkInvalidRecordReferences(Tx tx, ConsistencyCheckResult result, boolean attemptRepair) {
 		HibernateTx hibernateTx = (HibernateTx) tx;
 		EntityManager em = hibernateTx.entityManager();
 		DatabaseConnector dc = hibernateTx.data().getDatabaseConnector();
@@ -56,6 +115,7 @@ public abstract class AbstractListItemTableCheck extends AbstractContentReferenc
 			Iterable<? extends HibSchemaVersion> versions = schemaDao.findAllVersions(schema);
 			for (HibSchemaVersion version : versions) {
 				checkCount(em, result, version.getUuid(), "containeruuid", "containerversionuuid");
+				findOrphanedListItems(em, result, version, "containeruuid", "containerversionuuid", attemptRepair);
 			}
 		}
 
@@ -69,6 +129,7 @@ public abstract class AbstractListItemTableCheck extends AbstractContentReferenc
 				// micronodes might be referenced also with other columns
 				for (Pair<String, String> ref : optMicroNodeReferences()) {
 					checkCount(em, result, version.getUuid(), ref.getLeft(), ref.getRight());
+					findOrphanedListItems(em, result, version, ref.getLeft(), ref.getRight(), attemptRepair);
 				}
 			}
 		}
