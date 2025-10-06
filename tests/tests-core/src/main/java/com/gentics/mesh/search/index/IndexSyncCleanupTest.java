@@ -13,6 +13,8 @@ import java.util.stream.Collectors;
 
 import com.gentics.mesh.parameter.client.IndexMaintenanceParametersImpl;
 import com.gentics.mesh.test.helper.ExpectedEvent;
+import com.jayway.jsonpath.JsonPath;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -95,6 +97,11 @@ public class IndexSyncCleanupTest extends AbstractMeshTest {
 			.contains("mesh-different", "thirdparty")
 			.containsAll(remainingIndices);
 
+		// Check that no open contexts remain after the sync
+		ElasticsearchClient<JsonObject> searchClient = searchProvider().getClient();
+		JsonObject stats = searchClient.getBuilder("_nodes/stats/indices/search").sync();
+		List<Integer> openContexts = JsonPath.read(stats.toString(), "$.nodes[*].indices.search.open_contexts");
+		assertThat(openContexts).as("Open contexts").isNotEmpty().containsOnly(0);
 	}
 
 	/**

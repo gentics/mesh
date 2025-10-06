@@ -1,0 +1,3 @@
+Search: Running an index sync did not properly close all used scroll contexts in elasticsearch,
+which could lead to errors like 'Trying to create too many scroll contexts' in elasticsearch.
+This has been fixed, all scroll contexts are closed as soon as they are not used any more.

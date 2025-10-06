@@ -10,26 +10,22 @@ import java.io.IOException;
 import java.net.URL;
 import java.time.Duration;
 import java.util.Optional;
-import java.util.concurrent.TimeoutException;
 import java.util.stream.IntStream;
 
 import org.apache.http.HttpStatus;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.helper.ExpectedEvent;
 
-import io.vertx.core.http.HttpMethod;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -84,17 +80,29 @@ public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 							rh.uri()
 						).putHeaders(rh.headers());
 					realRequest.queryParams().addAll(rh.params());
-					if (HttpMethod.POST == rh.method() || HttpMethod.PUT == rh.method()) {
-						rh.bodyHandler(body -> realRequest.sendBuffer(body, rs -> {
-							log.info(rh.toString() + " body sent");
-							rh.response().end(rs.result().body());
-						}));
-					} else {
-						realRequest.send(rs -> {
-							log.info(rh.toString() + " sent");
-							rh.response().end(rs.result().body());
-						});
-					}
+					rh.bodyHandler(body -> {
+						if (body.length() != 0) {
+							realRequest.sendBuffer(body, rs -> {
+								log.info(rh.toString() + " body sent");
+								if (rs.succeeded()) {
+									rh.response().end(rs.result().body());
+								} else {
+									rh.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code())
+										.setStatusMessage(rs.cause().getClass().getName()).end();
+								}
+							});
+						} else {
+							realRequest.send(rs -> {
+								log.info(rh.toString() + " sent");
+								if (rs.succeeded()) {
+									rh.response().end(rs.result().body());
+								} else {
+									rh.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code())
+										.setStatusMessage(rs.cause().getClass().getName()).end();
+								}
+							});
+						}
+					});
 				}
 			} catch (InterruptedException e) {
 			}
