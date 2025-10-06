@@ -236,31 +236,43 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 					log.trace("Got response {" + result.encodePrettily() + "}");
 				}
 				Optional.ofNullable(result.getString("_scroll_id")).ifPresent(scrollIds::add);
-				JsonArray hits = result.getJsonObject("hits").getJsonArray("hits");
+				JsonArray hits = result.getJsonObject("hits", new JsonObject()).getJsonArray("hits", new JsonArray());
 				processHits(hits, versions);
 
-				// Check whether we need to process more scrolls
-				if (hits.size() != 0) {
-					String nextScrollId = result.getString("_scroll_id");
-					while (true) {
-						final String currentScroll = nextScrollId;
-						log.debug("Fetching scroll result using scrollId {" + currentScroll + "}");
-						JsonObject scrollResult = client.scroll("1m", currentScroll).sync();
-						Optional.ofNullable(scrollResult.getString("_scroll_id")).ifPresent(scrollIds::add);
-						JsonArray scrollHits = scrollResult.getJsonObject("hits").getJsonArray("hits");
-						if (log.isTraceEnabled()) {
-							log.trace("Got response {" + scrollHits.encodePrettily() + "}");
-						}
-						if (scrollHits.size() != 0) {
-							processHits(scrollHits, versions);
-							// Update the scrollId for the next fetch
-							nextScrollId = scrollResult.getString("_scroll_id");
-							if (log.isDebugEnabled()) {
-								log.debug("Using scrollId {" + nextScrollId + "} for next fetch.");
+				try {
+					// Check whether we need to process more scrolls
+					if (hits.size() != 0) {
+						String nextScrollId = result.getString("_scroll_id");
+						while (true) {
+							final String currentScroll = nextScrollId;
+							log.debug("Fetching scroll result using scrollId {" + currentScroll + "}");
+							JsonObject scrollResult = client.scroll("1m", currentScroll).sync();
+							Optional.ofNullable(scrollResult.getString("_scroll_id")).ifPresent(scrollIds::add);
+							JsonArray scrollHits = scrollResult.getJsonObject("hits").getJsonArray("hits");
+							if (log.isTraceEnabled()) {
+								log.trace("Got response {" + scrollHits.encodePrettily() + "}");
 							}
-						} else {
-							// The scroll yields no more data. We are done
-							break;
+							if (scrollHits.size() != 0) {
+								processHits(scrollHits, versions);
+								// Update the scrollId for the next fetch
+								nextScrollId = scrollResult.getString("_scroll_id");
+								if (log.isDebugEnabled()) {
+									log.debug("Using scrollId {" + nextScrollId + "} for next fetch.");
+								}
+							} else {
+								// The scroll yields no more data. We are done
+								break;
+							}
+						}
+					}
+				} finally {
+					if (!scrollIds.isEmpty()) {
+						JsonObject scrollIdBody = new JsonObject();
+						scrollIdBody.put("scroll_id", new JsonArray(new ArrayList<String>(scrollIds)));
+						try {
+							client.clearScroll(scrollIdBody).sync();
+						} catch (Throwable e) {
+							log.error("Error while clearing open scrolls");
 						}
 					}
 				}
@@ -268,12 +280,6 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 				log.error("Error while loading version information from index {" + indexName + "}", e.toString());
 				log.error(e);
 				throw e;
-			} finally {
-				if (!scrollIds.isEmpty()) {
-					JsonObject scrollIdBody = new JsonObject();
-					scrollIdBody.put("scroll_id", new JsonArray(new ArrayList<String>(scrollIds)));
-					client.clearScroll(scrollIdBody).sync();
-				}
 			}
 
 			return versions;
