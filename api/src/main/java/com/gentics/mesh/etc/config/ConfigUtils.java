@@ -1,5 +1,8 @@
 package com.gentics.mesh.etc.config;
 
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,5 +38,26 @@ public final class ConfigUtils {
 		default:
 			return 0;
 		}
+	}
+
+	/**
+	 * Get an optional configuration from either the environment variable, or the system parameter.
+	 * 
+	 * @param <T>
+	 * @param configName
+	 * @param defaultValue
+	 * @param parse
+	 * @param stringify
+	 * @return
+	 */
+	public static final <T> T getOptionalConfig(String configName, T defaultValue, Function<String, T> parse, Function<T, String> stringify) {
+		return parse.apply(System.getenv()
+				.entrySet().stream()
+				.filter(e -> e.getKey().equals(configName))
+				.map(e -> e.getValue())
+				.filter(Objects::nonNull)
+				.findAny()
+				.or(() -> Optional.ofNullable(System.getProperty(configName, stringify.apply(defaultValue))))
+				.orElseGet(() -> stringify.apply(defaultValue)));
 	}
 }
