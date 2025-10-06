@@ -88,7 +88,7 @@ public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 									rh.response().end(rs.result().body());
 								} else {
 									rh.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code())
-									.setStatusMessage(rs.cause().getClass().getName()).end();
+										.setStatusMessage(rs.cause().getClass().getName()).end();
 								}
 							});
 						} else {
@@ -98,7 +98,7 @@ public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 									rh.response().end(rs.result().body());
 								} else {
 									rh.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code())
-									.setStatusMessage(rs.cause().getClass().getName()).end();
+										.setStatusMessage(rs.cause().getClass().getName()).end();
 								}
 							});
 						}
