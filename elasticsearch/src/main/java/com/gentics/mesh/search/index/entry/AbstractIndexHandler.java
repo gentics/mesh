@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,6 +23,7 @@ import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.search.EntityMetrics;
+import com.gentics.mesh.etc.config.ConfigUtils;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -55,7 +57,7 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractIndexHandler.class);
 
-	public static final int ES_SYNC_FETCH_BATCH_SIZE = 10_000;
+	public static final int ES_SYNC_FETCH_BATCH_SIZE = ConfigUtils.getOptionalConfig("MESH_ES_SYNC_FETCH_BATCH_SIZE", 10_000, Integer::parseUnsignedInt, Object::toString);
 
 	protected final SearchProvider searchProvider;
 
@@ -206,7 +208,6 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 	 * @param bucket
 	 * @return
 	 */
-	// TODO Async
 	public Single<Map<String, String>> loadVersionsFromIndex(String indexName, Bucket bucket) {
 		return Single.fromCallable(() -> {
 			String fullIndexName = searchProvider.installationPrefix() + indexName;
@@ -221,6 +222,9 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 			query.put("sort", new JsonArray().add("_doc"));
 
 			log.debug("Using {} query:\n\t", fullIndexName, query.encodePrettily());
+
+			switch (options.getSearchOptions().getIndexSearchMode()) {
+			case SCROLL:
 			RequestBuilder<JsonObject> builder = client.searchScroll(query, "1m", fullIndexName);
 			JsonObject result = new JsonObject();
 			try {
@@ -258,18 +262,62 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 				log.error("Could not load versions of index " + indexName);
 				throw e;
 			}
+				break;
+			default:
+				// TODO Do we need PIT aka Point In Time here?
+				builder = client.search(query, fullIndexName);
+				result = new JsonObject();
+				try {
+					result = builder.sync();
+					if (log.isTraceEnabled()) {
+						log.trace("Got response {" + result.encodePrettily() + "}");
+					}
+					JsonArray hits = result.getJsonObject("hits").getJsonArray("hits");
+					JsonArray searchAfter = processHits(hits, versions);
+
+					// Check whether we need to process further
+					if (hits.size() != 0) {
+						while (true) {
+							query.put("search_after", searchAfter);
+							log.debug("Fetching search result using search_after {" + searchAfter.encode() + "}");
+							JsonObject scrollResult = client.search(query, fullIndexName).sync();
+							JsonArray scrollHits = scrollResult.getJsonObject("hits").getJsonArray("hits");
+							if (log.isTraceEnabled()) {
+								log.trace("Got response {" + scrollHits.encodePrettily() + "}");
+							}
+							if (scrollHits.size() != 0) {
+								searchAfter = processHits(scrollHits, versions);
+								if (log.isDebugEnabled()) {
+									log.debug("Using search_after {" + searchAfter.encode() + "} for next fetch.");
+								}
+							} else {
+								// The scroll yields no more data. We are done
+								break;
+							}
+						}
+					}
+				} catch (HttpErrorException e) {
+					log.error("Error while loading version information from index {" + indexName + "}", e.toString());
+					log.error(e);
+					throw e;
+				}
+				break;			
+			}
 			return versions;
 		});
 	}
 
-	protected void processHits(JsonArray hits, Map<String, String> versions) {
+	protected JsonArray processHits(JsonArray hits, Map<String, String> versions) {
+		JsonArray lastHitSort = null;
 		for (int i = 0; i < hits.size(); i++) {
 			JsonObject hit = hits.getJsonObject(i);
 			JsonObject source = hit.getJsonObject("_source");
 			String uuid = source.getString("uuid");
 			String version = source.getString("version");
 			versions.put(uuid, version);
+			lastHitSort = hit.getJsonArray("sort");
 		}
+		return lastHitSort;
 	}
 
 	@Override

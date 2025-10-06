@@ -392,9 +392,11 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 
 	/**
 	 * We need to override the default method since the UUID alone is not enough to id a document in the node index. We also need to append the language.
+	 * @return 
 	 */
 	@Override
-	protected void processHits(JsonArray hits, Map<String, String> versions) {
+	protected JsonArray processHits(JsonArray hits, Map<String, String> versions) {
+		JsonArray lastHitSort = null;
 		for (int i = 0; i < hits.size(); i++) {
 			JsonObject hit = hits.getJsonObject(i);
 			JsonObject source = hit.getJsonObject("_source");
@@ -402,7 +404,9 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 			String uuidAndLang = hit.getString("_id");
 			String version = source.getString("version");
 			versions.put(uuidAndLang, version);
+			lastHitSort = hit.getJsonArray("sort");
 		}
+		return lastHitSort;
 	}
 
 	private Flowable<SearchRequest> diffAndSync(HibProject project, HibBranch branch, HibSchemaVersion version, ContainerType type, Optional<Pattern> indexPattern) {
