@@ -37,6 +37,7 @@ public class S3HibBinariesImpl implements S3Binaries {
 				.entityManager()
 				.createNamedQuery("s3binary.findByUuids", S3HibBinary.class)
 				.setParameter("uuids", Set.of(UUIDUtil.toJavaUuid(uuid)))
+				.setMaxResults(1)
 				.getResultStream()
 				.findAny()
 				.orElse(null));
@@ -49,8 +50,9 @@ public class S3HibBinariesImpl implements S3Binaries {
 
 			return hibTx.entityManager().createNamedQuery("s3Binary.findByS3ObjectKey", HibS3BinaryImpl.class)
 					.setParameter("s3ObjectKey", s3ObjectKey)
+					.setMaxResults(1)
 					.getResultStream()
-					.findFirst()
+					.findAny()
 					.orElse(null);
 		});
 	}

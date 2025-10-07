@@ -37,6 +37,7 @@ public class HibBinariesImpl implements Binaries {
 				.entityManager()
 				.createNamedQuery("binary.findByUuids", HibBinary.class)
 				.setParameter("uuids", Set.of(UUIDUtil.toJavaUuid(uuid)))
+				.setMaxResults(1)
 				.getResultStream()
 				.findAny()
 				.orElse(null));
@@ -49,8 +50,9 @@ public class HibBinariesImpl implements Binaries {
 
 			return hibTx.entityManager().createNamedQuery("binary.findBySHA", HibBinaryImpl.class)
 					.setParameter("SHA512Sum", SHA512Sum)
+					.setMaxResults(1)
 					.getResultStream()
-					.findFirst()
+					.findAny()
 					.orElse(null);
 		});
 	}

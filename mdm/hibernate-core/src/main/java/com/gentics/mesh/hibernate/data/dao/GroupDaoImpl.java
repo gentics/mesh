@@ -89,7 +89,7 @@ public class GroupDaoImpl extends AbstractHibDaoGlobal<HibGroup, GroupResponse, 
 		return new TraversalResult<>(
 				em().createQuery("select r from group g inner join g.roles r where g.dbUuid = :groupUuid", HibRoleImpl.class)
 				.setParameter("groupUuid", group.getId())
-				.getResultStream());
+				.getResultList());
 	}
 
 	@Override
@@ -115,8 +115,9 @@ public class GroupDaoImpl extends AbstractHibDaoGlobal<HibGroup, GroupResponse, 
 		return em().createQuery("select u from group g inner join g.users u where u.dbUuid = :userUuid and g.dbUuid = :groupUuid")
 				.setParameter("userUuid", user.getId())
 				.setParameter("groupUuid", group.getId())
+				.setMaxResults(1)
 				.getResultStream()
-				.findFirst().isPresent();
+				.findAny().isPresent();
 	}
 
 	@Override

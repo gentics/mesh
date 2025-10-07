@@ -202,8 +202,9 @@ public class TagDaoImpl extends AbstractHibDaoGlobal<HibTag, TagResponse, HibTag
 				.setParameter("nodeuuid", node.getId())
 				.setParameter("taguuid", tag.getId())
 				.setParameter("branchuuid", branch.getId())
+				.setMaxResults(1)
 				.getResultStream()
-				.findFirst()
+				.findAny()
 				.isPresent();
 	}
 

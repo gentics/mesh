@@ -295,7 +295,7 @@ public class TypeConverter {
 	}
 
 	private Object firstIfList(Object value) {
-		return toStream(value).findFirst().orElse(null);
+		return toStream(value).findAny().orElse(null);
 	}
 
 	private <T, L extends AbstractFieldList<T>> L listField(Supplier<L> listFieldSupplier, Function<Object, T> valueMapper, Object value) {

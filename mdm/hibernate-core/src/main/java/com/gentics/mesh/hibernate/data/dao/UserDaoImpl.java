@@ -11,14 +11,8 @@ import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.Root;
-import jakarta.persistence.metamodel.EntityType;
-import jakarta.persistence.metamodel.Metamodel;
 
-import org.hibernate.annotations.QueryHints;
+import org.hibernate.jpa.HibernateHints;
 
 import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.core.data.HibBaseElement;
@@ -52,6 +46,12 @@ import com.gentics.mesh.parameter.PagingParameters;
 
 import dagger.Lazy;
 import io.vertx.core.Vertx;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.metamodel.EntityType;
+import jakarta.persistence.metamodel.Metamodel;
 
 /**
  * User DAO implementation for Gentics Mesh.
@@ -119,9 +119,9 @@ public class UserDaoImpl extends AbstractHibDaoGlobal<HibUser, UserResponse, Hib
 	@Override
 	public HibUser findByUsername(String username) {
 		return HibernateTx.get().data().mesh().userNameCache().get(username, name -> {
-			return firstOrNull(currentTransaction.getEntityManager().createQuery("from user where name = :name", HibUserImpl.class).setHint(QueryHints.CACHEABLE, true)
-					.setParameter("name", username)
-					.setHint(QueryHints.CACHEABLE, true));
+			return firstOrNull(currentTransaction.getEntityManager().createQuery("from user where name = :name", HibUserImpl.class)
+					.setHint(HibernateHints.HINT_CACHEABLE, true)
+					.setParameter("name", username));
 		});
 	}
 
@@ -151,7 +151,7 @@ public class UserDaoImpl extends AbstractHibDaoGlobal<HibUser, UserResponse, Hib
 					" where u = :user",
 				HibRoleImpl.class)
 			.setParameter("user", user)
-			.setHint(QueryHints.CACHEABLE, true)
+			.setHint(HibernateHints.HINT_CACHEABLE, true)
 			.getResultList();
 	}
 
@@ -165,7 +165,8 @@ public class UserDaoImpl extends AbstractHibDaoGlobal<HibUser, UserResponse, Hib
 					" where u = :user",
 				HibGroupImpl.class)
 			.setParameter("user", user)
-			.getResultStream());
+			.setHint(HibernateHints.HINT_CACHEABLE, true)
+			.getResultList());
 	}
 
 	@Override
@@ -216,7 +217,7 @@ public class UserDaoImpl extends AbstractHibDaoGlobal<HibUser, UserResponse, Hib
 		currentTransaction.getEntityManager().createQuery(
 				"select p from permission p join p.role r join r.groups g join g.users u where u = :user and p.element = :element",
 				HibPermissionImpl.class).setParameter("user", user).setParameter("element", elementId)
-				.getResultStream().forEach(hibPerm -> {
+				.getResultList().forEach(hibPerm -> {
 					for(InternalPermission p : InternalPermission.values()) {
 						if(hibPerm.hasPermission(p)) {
 							permissions.add(p);
@@ -238,7 +239,7 @@ public class UserDaoImpl extends AbstractHibDaoGlobal<HibUser, UserResponse, Hib
 				.createQuery(
 					"select p from permission p join p.role r join r.groups g join g.users u where u = :user and p.element in :element",
 					HibPermissionImpl.class).setParameter("user", user).setParameter("element", slice)
-						.getResultStream().forEach(hibPerm -> {
+						.getResultList().forEach(hibPerm -> {
 							EnumSet<InternalPermission> permSet = permissionCache.get(user.getId(), hibPerm.getElement());
 							if (permSet == null) {
 								permSet = EnumSet.noneOf(InternalPermission.class);

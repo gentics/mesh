@@ -4,13 +4,12 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.firstOrNull;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
-import jakarta.persistence.EntityManager;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.InternalActionContext;
@@ -44,11 +43,11 @@ import com.gentics.mesh.hibernate.data.domain.HibUpdateSchemaChangeImpl;
 import com.gentics.mesh.hibernate.data.permission.HibPermissionRoots;
 import com.gentics.mesh.hibernate.event.EventFactory;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.UUIDUtil;
 
 import dagger.Lazy;
 import io.vertx.core.Vertx;
+import jakarta.persistence.EntityManager;
 
 /**
  * Partial implementation of common parts for entity container DAOs.
@@ -114,17 +113,17 @@ public abstract class AbstractHibContainerDao<
 		return schemaChange;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Iterable<SCV> findAllVersions(SC schema) {
 		EntityManager em = currentTransaction.getEntityManager();
-		return StreamUtil.toIterable(
-			em.createQuery("select v" +
+		return (List<SCV>) em.createQuery("select v" +
 					" from " + getVersionFieldLabel() + "version v " +
 					" join v." + getVersionFieldLabel() + " s" +
 					" where s = :schema",
 				getVersionPersistenceClass())
 			.setParameter("schema", schema)
-			.getResultStream());
+			.getResultList();
 	}
 
 	@Override
@@ -137,7 +136,7 @@ public abstract class AbstractHibContainerDao<
 					" and e.active = true",
 				getVersionPersistenceClass())
 			.setParameter("branch", branch)
-			.getResultStream());
+			.getResultList());
 	}
 
 	@Override
@@ -229,7 +228,7 @@ public abstract class AbstractHibContainerDao<
 								" where e.version = :version",
 						HibBranchImpl.class)
 				.setParameter("version", version)
-				.getResultStream());
+				.getResultList());
 	}
 
 	/**

@@ -166,7 +166,9 @@ public abstract class AbstractHibListFieldEdgeImpl<U>
 				.setParameter("containerUuid", containerUuid)
 				.setParameter("containerType", containerType)
 				.setParameter("index", index)
-				.getResultStream().findAny();
+				.setMaxResults(1)
+				.getResultStream()
+				.findAny();
 	}
 
 	public static int deleteItems(

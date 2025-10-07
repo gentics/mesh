@@ -50,8 +50,9 @@ public class S3BinaryDaoImpl extends AbstractImageDataHibDao<S3HibBinary> implem
         return em().createNamedQuery("s3binaryfieldref.getByContentAndFieldKey", HibS3BinaryFieldImpl.class)
                 .setParameter("contentUuid", contentUuid)
                 .setParameter("fieldKey", fieldKey)
+                .setMaxResults(1)
                 .getResultStream()
-                .findFirst()
+                .findAny()
                 .orElse(null);
     }
 

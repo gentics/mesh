@@ -338,7 +338,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 		if (contentEdgesInitialized(node)) {
 			return impl.getContentEdges().stream()
 				.filter(e -> e.getLanguageTag().equals(languageTag) && e.getBranchUuid().equals(branchUuid) && e.getType().equals(type))
-				.findFirst()
+				.findAny()
 				.orElse(null);
 		}
 
@@ -1016,7 +1016,6 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 			HibNodeImpl impl = (HibNodeImpl) container.getNode();
 			return impl.getContentEdges().stream().filter(edge -> edge.getContentUuid().equals(container.getId()));
 		}
-
 		return em.createNamedQuery("contentEdge.findByContent", HibNodeFieldContainerEdgeImpl.class)
 				.setParameter("contentUuid", container.getId())
 				.getResultStream();
@@ -1092,6 +1091,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 		return currentTransaction.getEntityManager().createNamedQuery("containerversions.findNextEdgeByVersion", HibNodeFieldContainerVersionsEdgeImpl.class)
 				.setParameter("contentUuid", content.getId())
 				.setParameter("version", getSchemaContainerVersion(content))
+				.setMaxResults(1)
 				.getResultStream()
 				.findAny()
 				.isPresent();
@@ -1122,6 +1122,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 		return currentTransaction.getEntityManager().createNamedQuery("containerversions.findPreviousEdgeByVersion", HibNodeFieldContainerVersionsEdgeImpl.class)
 				.setParameter("contentUuid", content.getId())
 				.setParameter("version", getSchemaContainerVersion(content))
+				.setMaxResults(1)
 				.getResultStream()
 				.findAny()
 				.isPresent();
@@ -1132,6 +1133,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 		return currentTransaction.getEntityManager().createNamedQuery("containerversions.findPreviousEdgeByVersion", HibNodeFieldContainerVersionsEdgeImpl.class)
 				.setParameter("contentUuid", content.getId())
 				.setParameter("version", getSchemaContainerVersion(content))
+				.setMaxResults(1)
 				.getResultStream()
 				.map(edge -> getFieldContainer(edge.getThisVersion(), edge.getThisContentUuid()))
 				.findAny()
@@ -1266,6 +1268,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 				.setParameter("branchUuid", UUIDUtil.toJavaUuid(branchUuid))
 				.setParameter("type", type)
 				.setParameter("edgeUuid", ((HibNodeFieldContainerEdgeImpl ) edge).getElement())
+				.setMaxResults(1)
 				.getResultStream()
 				.findAny().orElse(null);
 	}
@@ -1279,6 +1282,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 				.setParameter("type", type)
 				.setParameter("field", urlFieldValue)
 				.setParameter("edgeUuid", ((HibNodeFieldContainerEdgeImpl ) edge).getElement())
+				.setMaxResults(1)
 				.getResultStream()
 				.findAny().orElse(null);
 	}
@@ -1299,6 +1303,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 					.setParameter("type", type)
 					.setParameter("field", slice)
 					.setParameter("edgeUuid", edgeUuid)
+					.setMaxResults(1)
 					.getResultStream()
 					.findAny().orElse(null));
 			}
@@ -1660,17 +1665,17 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 		EntityManager em = HibernateTx.get().entityManager();
 
 		return SplittingUtils.splitAndMergeInSet(micronodeUuids, HibernateUtil.inQueriesLimitForSplitting(2), slice -> {
-		List<UUID> referencedByEdges = em.createNamedQuery("micronodefieldref.findByMicrocontainerUuids", HibMicronodeFieldEdgeImpl.class)
-					.setParameter("micronodeUuids", slice)
-				.getResultStream()
-				.map(HibMicronodeFieldEdgeImpl::getValueOrUuid)
-				.collect(Collectors.toList());
-
-		List<UUID> referencedInLists = em.createNamedQuery("micronodelistitem.findByMicronodeUuids", HibMicronodeListFieldEdgeImpl.class)
-					.setParameter("micronodeUuids", slice)
-				.getResultStream()
-				.map(HibMicronodeListFieldEdgeImpl::getValueOrUuid)
-				.collect(Collectors.toList());
+			List<UUID> referencedByEdges = em.createNamedQuery("micronodefieldref.findByMicrocontainerUuids", HibMicronodeFieldEdgeImpl.class)
+						.setParameter("micronodeUuids", slice)
+					.getResultStream()
+					.map(HibMicronodeFieldEdgeImpl::getValueOrUuid)
+					.collect(Collectors.toList());
+	
+			List<UUID> referencedInLists = em.createNamedQuery("micronodelistitem.findByMicronodeUuids", HibMicronodeListFieldEdgeImpl.class)
+						.setParameter("micronodeUuids", slice)
+					.getResultStream()
+					.map(HibMicronodeListFieldEdgeImpl::getValueOrUuid)
+					.collect(Collectors.toList());
 
 			return Stream.of(referencedByEdges, referencedInLists).flatMap(Collection::stream).collect(Collectors.toSet());
 		});

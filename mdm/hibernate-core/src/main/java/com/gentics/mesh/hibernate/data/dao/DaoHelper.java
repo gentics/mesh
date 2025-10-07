@@ -2045,6 +2045,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 				" where u = :user",
 			HibPermissionImpl.class
 		).setParameter("user", user)
+			.setMaxResults(1)
 			.getResultStream()
 			.findAny();
 	}

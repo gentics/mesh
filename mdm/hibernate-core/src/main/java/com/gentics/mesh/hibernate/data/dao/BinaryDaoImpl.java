@@ -105,8 +105,9 @@ public class BinaryDaoImpl extends AbstractImageDataHibDao<HibBinary> implements
 		return em().createNamedQuery("binaryfieldref.findByContentAndKey", HibBinaryFieldImpl.class)
 				.setParameter("contentUuid", contentUuid)
 				.setParameter("key", key)
+				.setMaxResults(1)
 				.getResultStream()
-				.findFirst()
+				.findAny()
 				.orElse(null);
 	}
 
