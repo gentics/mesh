@@ -32,6 +32,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.hibernate.boot.model.naming.Identifier;
@@ -519,7 +520,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 			log.error("Failure at query: " + sqlQuery);
 			// Sorting usually comes from the user input, so it is reasonable to inform back with the less severe status 
 			if (shouldSort) {
-				throw error(BAD_REQUEST, "error_invalid_parameter", "sortBy", pagingInfo.getSort().entrySet().stream().map(Map.Entry::getKey).collect(Collectors.joining(", ")));
+				throw error(BAD_REQUEST, "error_invalid_parameter", SortingParameters.SORT_BY_PARAMETER_KEY, pagingInfo.getSort().entrySet().stream().map(Map.Entry::getKey).collect(Collectors.joining(", ")));
 			} else {
 				throw e;
 			}
@@ -577,8 +578,26 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 			return Pair.of(ansiJoin, Collections.emptyMap());
 		}
 		HibQueryFieldMapper mapper = daoCollection.get().maybeFindFieldMapper(domainClass).get();
+		String[] domainSortColumns = mapper.getGraphQlSortingFieldNames(false);
+		boolean hasFields = ArrayUtils.contains(domainSortColumns, NodeDaoImpl.SORT_FIELDS_SCHEMA_DEFINITION);
 		Map<String, SortOrder> items = sorting.getSort();
-		Optional<Set<String>> domainColumns = databaseConnector.getDatabaseColumnNames(domainClass);
+		Set<String> wrongColumns = items.keySet().stream()
+			.skip(domainSortColumns != null ? 0 : items.size())
+			.filter(item -> {
+				if (StringUtils.isBlank(item)) {
+					return false;
+				}
+				if (hasFields && item.startsWith("fields.")) {
+					return false;
+				}
+				return !ArrayUtils.contains(domainSortColumns, item);
+			})
+			.collect(Collectors.toSet());
+		if (wrongColumns.size() > 0) {
+			throw error(BAD_REQUEST, "wrong_sorting_column_name", 
+					wrongColumns.stream().collect(Collectors.joining(", ")),
+					Arrays.stream(domainSortColumns).collect(Collectors.joining(", ")));
+		}
 		items = items.entrySet().stream().map(entry -> {
 			String key = mapper.mapGraphQlFilterFieldName(entry.getKey());
 			String[] keyParts = key.split("\\.");
@@ -603,7 +622,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 						alias = entityLocalAlias;
 					}
 					if (schema == null) {
-						throw new IllegalArgumentException("No (micro)schema found for sorting request: " + key);
+						throw error(BAD_REQUEST, "error_invalid_parameter", SortingParameters.SORT_BY_PARAMETER_KEY, "No (micro)schema found for sorting request: " + key);
 					}
 					FieldSchema field = schema.getLatestVersion().getSchema().getFieldsAsMap().get(keyParts[i+2]);
 					if (field == null) {
@@ -671,12 +690,6 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 					}
 					boolean noAlias = StringUtils.isBlank(alias);
 					Pair<String, String> pair = makeSortJoins(alias, localKeyParts, mapper, ansiJoin, maybeContainerType, maybeBranch, baseJoin, otherJoins);
-					boolean noDomainColumn = (keyParts.length < 2) && domainColumns.map(columns -> columns.stream().allMatch(column -> !column.equalsIgnoreCase(pair.getRight()))).orElse(false);
-					if (noDomainColumn) {
-						throw error(BAD_REQUEST, "wrong_sorting_column_name", 
-								pair.getRight(), 
-								domainColumns.map(columns -> columns.stream().filter(column -> StringUtils.isNotBlank(column) && !column.toLowerCase().endsWith("dbuuid")).collect(Collectors.joining(", "))).orElse(StringUtils.EMPTY));
-					}
 					key = alias + Optional.ofNullable(pair.getLeft()).map(table -> table + ".").orElseGet(() -> noAlias ? StringUtils.EMPTY : ".") + databaseConnector.renderNonContentColumn(pair.getRight());
 					break;
 				}

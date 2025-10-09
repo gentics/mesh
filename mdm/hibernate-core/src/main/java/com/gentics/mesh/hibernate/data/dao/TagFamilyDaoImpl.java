@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.firstOrNull;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.Stack;
 import java.util.function.Consumer;
@@ -15,8 +16,6 @@ import java.util.stream.StreamSupport;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Root;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.InternalActionContext;
@@ -47,6 +46,8 @@ import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 
 import dagger.Lazy;
 import io.vertx.core.Vertx;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 
 /**
  * Tag family DAO implementation for Gentics Mesh.
@@ -56,6 +57,7 @@ import io.vertx.core.Vertx;
  */
 @Singleton
 public class TagFamilyDaoImpl extends AbstractHibRootDao<HibTagFamily, TagFamilyResponse, HibTagFamilyImpl, HibProject, HibProjectImpl> implements PersistingTagFamilyDao {
+	public static final String[] SORT_FIELDS = new String[] { "name" };
 
 	private final TagDaoImpl tagDao;
 	
@@ -243,5 +245,13 @@ public class TagFamilyDaoImpl extends AbstractHibRootDao<HibTagFamily, TagFamily
 	@Override
 	public HibTagFamily loadObjectByUuid(InternalActionContext ac, String userUuid, InternalPermission perm) {
 		return daoHelper.loadObjectByUuid(ac, userUuid, perm);
+	}
+
+	@Override
+	public String[] getGraphQlSortingFieldNames(boolean noDependencies) {
+		return Stream.of(
+				Arrays.stream(super.getGraphQlSortingFieldNames(noDependencies)),
+				Arrays.stream(SORT_FIELDS)					
+			).flatMap(Function.identity()).toArray(String[]::new);
 	}
 }

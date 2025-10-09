@@ -3,9 +3,12 @@ package com.gentics.mesh.hibernate.data.dao;
 import static com.gentics.mesh.core.rest.job.JobStatus.QUEUED;
 
 import java.time.ZonedDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -46,6 +49,8 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 public class JobDaoImpl extends AbstractHibDaoGlobal<HibJob, JobResponse, HibJobImpl> implements PersistingJobDao {
+
+	public static final String[] SORT_FIELDS = new String[] { "type", "status", "stopDate", "startDate", "nodeName" };
 	private static final Logger log = LoggerFactory.getLogger(JobDaoImpl.class);
 	
 	@Inject
@@ -210,5 +215,25 @@ public class JobDaoImpl extends AbstractHibDaoGlobal<HibJob, JobResponse, HibJob
 	@Override
 	public void clear() {
 		em().createQuery("delete from job").executeUpdate();
+	}
+
+	@Override
+	public String mapGraphQlSortingFieldName(String gqlName) {
+		switch (gqlName) {
+		case "type":
+			return "jobType";
+		case "status":
+			return "jobStatus";
+		default:
+			return super.mapGraphQlSortingFieldName(gqlName);
+		}
+	}
+
+	@Override
+	public String[] getGraphQlSortingFieldNames(boolean noDependencies) {
+		return Stream.of(
+				Arrays.stream(super.getGraphQlSortingFieldNames(noDependencies)),
+				Arrays.stream(SORT_FIELDS)					
+			).flatMap(Function.identity()).toArray(String[]::new);
 	}
 }
