@@ -232,7 +232,8 @@ public class JobDaoImpl extends AbstractHibDaoGlobal<HibJob, JobResponse, HibJob
 	@Override
 	public String[] getGraphQlSortingFieldNames(boolean noDependencies) {
 		return Stream.of(
-				Arrays.stream(super.getGraphQlSortingFieldNames(noDependencies)),
+				Arrays.stream(super.getGraphQlSortingFieldNames(noDependencies))
+					.filter(item -> !"edited".equals(item) && !item.startsWith("editor.")),
 				Arrays.stream(SORT_FIELDS)					
 			).flatMap(Function.identity()).toArray(String[]::new);
 	}

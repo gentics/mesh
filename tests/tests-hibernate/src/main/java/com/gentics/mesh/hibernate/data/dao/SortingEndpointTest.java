@@ -27,6 +27,8 @@ import com.gentics.mesh.core.rest.common.AbstractResponse;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
+import com.gentics.mesh.core.rest.job.JobListResponse;
+import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.lang.LanguageListResponse;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
@@ -47,6 +49,7 @@ import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
@@ -57,6 +60,7 @@ import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.hibernate.data.HibQueryFieldMapper;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.SortingParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -86,12 +90,14 @@ public class SortingEndpointTest extends AbstractMeshTest {
 		Consumer<String> test = field -> {
 			Function<SchemaResponse, String> context = getters.get(field);
 			if (context == null) {
-				System.out.println("Sorting schemas by " + field + " cannot currently be tested");
+				System.out.println("Sorting schemas , by `" + field + "` cannot currently be tested");
 				return;
 			}
 			SchemaListResponse list = call(() -> client().findSchemas(new SortingParametersImpl(field, SortOrder.DESCENDING)));
 			assertEquals("Total data size should be 13", 13, list.getData().size());
-			assertThat(list.getData()).as("Sorted by " + field).isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().reversed().compare(
+			assertThat(list.getData()).as("Sorted by " + field)
+				.withFailMessage("Schemas are not sorted by " + field + ":\n%s", list.getData().stream().map(r -> getters.get(field).apply(r)).collect(Collectors.joining(",\n", "<", ">")))
+				.isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().reversed().compare(
 					fa != null ? context.apply(fa) : null,
 					fb != null ? context.apply(fb) : null));
 		};		
@@ -124,12 +130,14 @@ public class SortingEndpointTest extends AbstractMeshTest {
 		Consumer<String> test = field -> {
 			Function<MicroschemaResponse, String> context = getters.get(field);
 			if (context == null) {
-				System.out.println("Sorting microschemas by " + field + " cannot currently be tested");
+				System.out.println("Sorting microschemas , by `" + field + "` cannot currently be tested");
 				return;
 			}
 			MicroschemaListResponse list = call(() -> client().findMicroschemas(new SortingParametersImpl(field, SortOrder.DESCENDING)));
 			assertEquals("Total data size should be 12", 12, list.getData().size());
-			assertThat(list.getData()).as("Sorted by " + field).isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().reversed().compare(
+			assertThat(list.getData()).as("Sorted by " + field)
+				.withFailMessage("Microschemas are not sorted by " + field + ":\n%s", list.getData().stream().map(r -> getters.get(field).apply(r)).collect(Collectors.joining(",\n", "<", ">")))
+				.isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().reversed().compare(
 					fa != null ? context.apply(fa) : null,
 					fb != null ? context.apply(fb) : null));
 		};		
@@ -172,12 +180,14 @@ public class SortingEndpointTest extends AbstractMeshTest {
 		Consumer<String> test = field -> {
 			Function<UserResponse, String> context = getters.get(field);
 			if (context == null) {
-				System.out.println("Sorting users by " + field + " cannot currently be tested");
+				System.out.println("Sorting users , by `" + field + "` cannot currently be tested");
 				return;
 			}
 			UserListResponse list = call(() -> client().findUsers(new SortingParametersImpl(field, SortOrder.DESCENDING)));
 			assertEquals("Total data size should be 14", 14, list.getData().size());
-			assertThat(list.getData()).as("Sorted by " + field).isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().reversed().compare(
+			assertThat(list.getData()).as("Sorted by " + field)
+				.withFailMessage("Users are not sorted by " + field + ":\n%s", list.getData().stream().map(r -> getters.get(field).apply(r)).collect(Collectors.joining(",\n", "<", ">")))
+				.isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().reversed().compare(
 					fa != null ? context.apply(fa) : null,
 					fb != null ? context.apply(fb) : null));
 		};		
@@ -210,12 +220,14 @@ public class SortingEndpointTest extends AbstractMeshTest {
 		Consumer<String> test = field -> {
 			Function<TagFamilyResponse, String> context = getters.get(field);
 			if (context == null) {
-				System.out.println("Sorting tag families by " + field + " cannot currently be tested");
+				System.out.println("Sorting tag families , by `" + field + "` cannot currently be tested");
 				return;
 			}
 			TagFamilyListResponse list = call(() -> client().findTagFamilies(projectName(), new SortingParametersImpl(field, SortOrder.DESCENDING)));
 			assertEquals("Total data size should be 12", 12, list.getData().size());
-			assertThat(list.getData()).as("Sorted by " + field).isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().reversed().compare(
+			assertThat(list.getData()).as("Sorted by " + field)
+				.withFailMessage("Tag families are not sorted by " + field + ":\n%s", list.getData().stream().map(r -> getters.get(field).apply(r)).collect(Collectors.joining(",\n", "<", ">")))
+				.isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().reversed().compare(
 					fa != null ? context.apply(fa) : null,
 					fb != null ? context.apply(fb) : null));
 		};		
@@ -249,12 +261,14 @@ public class SortingEndpointTest extends AbstractMeshTest {
 		Consumer<String> test = field -> {
 			Function<TagResponse, String> context = getters.get(field);
 			if (context == null) {
-				System.out.println("Sorting tags by " + field + " cannot currently be tested");
+				System.out.println("Sorting tags , by `" + field + "` cannot currently be tested");
 				return;
 			}
 			TagListResponse list = call(() -> client().findTags(projectName(), tagFamilyUuid, new SortingParametersImpl(field, SortOrder.DESCENDING)));
 			assertEquals("Total data size should be 19", 19, list.getData().size());
-			assertThat(list.getData()).as("Sorted by " + field).isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().reversed().compare(
+			assertThat(list.getData()).as("Sorted by " + field)
+				.withFailMessage("Tags are not sorted by " + field + ":\n%s", list.getData().stream().map(r -> getters.get(field).apply(r)).collect(Collectors.joining(",\n", "<", ">")))
+				.isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().reversed().compare(
 					fa != null ? context.apply(fa) : null,
 					fb != null ? context.apply(fb) : null));
 		};		
@@ -287,12 +301,14 @@ public class SortingEndpointTest extends AbstractMeshTest {
 		Consumer<String> test = field -> {
 			Function<RoleResponse, String> context = getters.get(field);
 			if (context == null) {
-				System.out.println("Sorting roles by " + field + " cannot currently be tested");
+				System.out.println("Sorting roles , by `" + field + "` cannot currently be tested");
 				return;
 			}
 			RoleListResponse list = call(() -> client().findRoles(new SortingParametersImpl(field, SortOrder.DESCENDING)));
 			assertEquals("Total data size should be 15", 15, list.getData().size());
-			assertThat(list.getData()).as("Sorted by " + field).isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().reversed().compare(
+			assertThat(list.getData()).as("Sorted by " + field)
+				.withFailMessage("Roles are not sorted by " + field + ":\n%s", list.getData().stream().map(r -> getters.get(field).apply(r)).collect(Collectors.joining(",\n", "<", ">")))
+				.isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().reversed().compare(
 					fa != null ? context.apply(fa) : null,
 					fb != null ? context.apply(fb) : null));
 		};		
@@ -326,12 +342,14 @@ public class SortingEndpointTest extends AbstractMeshTest {
 		Consumer<String> test = field -> {
 			Function<ProjectResponse, String> context = getters.get(field);
 			if (context == null) {
-				System.out.println("Sorting projects by " + field + " cannot currently be tested");
+				System.out.println("Sorting projects , by `" + field + "` cannot currently be tested");
 				return;
 			}
 			ProjectListResponse list = call(() -> client().findProjects(new SortingParametersImpl(field, SortOrder.DESCENDING)));
 			assertEquals("Total data size should be 11", 11, list.getData().size());
-			assertThat(list.getData()).as("Sorted by " + field).isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().reversed().compare(
+			assertThat(list.getData()).as("Sorted by " + field)
+				.withFailMessage("Projects are not sorted by " + field + ":\n%s", list.getData().stream().map(r -> getters.get(field).apply(r)).collect(Collectors.joining(",\n", "<", ">")))
+				.isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().reversed().compare(
 					fa != null ? context.apply(fa) : null,
 					fb != null ? context.apply(fb) : null));
 		};		
@@ -364,12 +382,14 @@ public class SortingEndpointTest extends AbstractMeshTest {
 		Consumer<String> test = field -> {
 			Function<GroupResponse, String> context = getters.get(field);
 			if (context == null) {
-				System.out.println("Sorting groups by " + field + " cannot currently be tested");
+				System.out.println("Sorting groups , by `" + field + "` cannot currently be tested");
 				return;
 			}
 			GroupListResponse list = call(() -> client().findGroups(new SortingParametersImpl(field, SortOrder.DESCENDING)));
 			assertEquals("Total data size should be 15", 15, list.getData().size());
-			assertThat(list.getData()).as("Sorted by " + field).isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().reversed().compare(
+			assertThat(list.getData()).as("Sorted by " + field)
+				.withFailMessage("Groups are not sorted by " + field + ":\n%s", list.getData().stream().map(r -> getters.get(field).apply(r)).collect(Collectors.joining(",\n", "<", ">")))
+				.isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().reversed().compare(
 					fa != null ? context.apply(fa) : null,
 					fb != null ? context.apply(fb) : null));
 		};		
@@ -402,12 +422,14 @@ public class SortingEndpointTest extends AbstractMeshTest {
 		Consumer<String> test = field -> {
 			Function<BranchResponse, String> context = getters.get(field);
 			if (context == null) {
-				System.out.println("Sorting branches by " + field + " cannot currently be tested");
+				System.out.println("Sorting branches , by `" + field + "` cannot currently be tested");
 				return;
 			}
 			BranchListResponse list = call(() -> client().findBranches(projectName(), new SortingParametersImpl(field, SortOrder.DESCENDING)));
 			assertEquals("Total data size should be 11", 11, list.getData().size());
-			assertThat(list.getData()).as("Sorted by " + field).isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().reversed().compare(
+			assertThat(list.getData()).as("Sorted by " + field)
+				.withFailMessage("Branches are not sorted by " + field + ":\n%s", list.getData().stream().map(r -> getters.get(field).apply(r)).collect(Collectors.joining(",\n", "<", ">")))
+				.isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().reversed().compare(
 					fa != null ? context.apply(fa) : null,
 					fb != null ? context.apply(fb) : null));
 		};		
@@ -431,13 +453,62 @@ public class SortingEndpointTest extends AbstractMeshTest {
 		Consumer<String> test = field -> {
 			Function<LanguageResponse, String> context = getters.get(field);
 			if (context == null) {
-				System.out.println("Sorting languages by " + field + " cannot currently be tested");
+				System.out.println("Sorting languages , by `" + field + "` cannot currently be tested");
 				return;
 			}
 			LanguageListResponse list = call(() -> client().findLanguages(new SortingParametersImpl(field, SortOrder.DESCENDING)));
 			assertEquals("Total data size should be 11", 11, list.getData().size());
 			assertThat(list.getData()).as("Sorted by " + field)
 				.withFailMessage("Languages are not sorted by " + field + ":\n%s", list.getData().stream().map(r -> getters.get(field).apply(r)).collect(Collectors.joining(",\n", "<", ">")))
+				.isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().reversed().compare(
+					fa != null ? context.apply(fa) : null,
+					fb != null ? context.apply(fb) : null));
+		};		
+		String[] fields = tx(tx -> { 
+			return ((HibQueryFieldMapper) tx.languageDao()).getGraphQlSortingFieldNames(false);
+		});
+		for (String field : fields) {
+			test.accept(field);
+		}
+	}
+
+	@Test
+	public void testSortJobs() {
+		JobListResponse jobList = adminCall(() -> client().findJobs());
+		assertThat(jobList.getData()).isEmpty();
+
+		String json = tx(() -> schemaContainer("folder").getLatestVersion().getJson());
+		String uuid = tx(() -> schemaContainer("folder").getUuid());
+		waitForJob(() -> {
+			SchemaUpdateRequest schema = JsonUtil.readValue(json, SchemaUpdateRequest.class);
+			schema.setName("folder2");
+			call(() -> client().updateSchema(uuid, schema));
+		});
+
+		tx((tx) -> {
+			tx.jobDao().enqueueBranchMigration(user(), initialBranch());
+		});
+		final Map<String, Function<JobResponse, String>> getters = Map.ofEntries(
+				Map.entry("uuid", JobResponse::getUuid),
+				Map.entry("created", r -> Long.toString(DateUtils.fromISO8601(r.getCreated(), false))),
+				Map.entry("creator.firstname", r -> r.getCreator().getFirstName()),
+				Map.entry("creator.lastname", r -> r.getCreator().getLastName()),
+				Map.entry("type", r -> r.getType().toString()), 
+				Map.entry("status", r -> r.getStatus().toString()), 
+				Map.entry("stopDate", r -> r.getStopDate()),
+				Map.entry("startDate", r -> r.getStartDate()),
+				Map.entry("nodeName", r -> r.getNodeName())
+			);
+		Consumer<String> test = field -> {
+			Function<JobResponse, String> context = getters.get(field);
+			if (context == null) {
+				System.out.println("Sorting jobs , by `" + field + "` cannot currently be tested");
+				return;
+			}
+			JobListResponse list = adminCall(() -> client().findJobs(new SortingParametersImpl(field, SortOrder.DESCENDING)));
+			assertEquals("Total data size should be 2", 2, list.getData().size());
+			assertThat(list.getData()).as("Sorted by " + field)
+				.withFailMessage("Jobs are not sorted by " + field + ":\n%s", list.getData().stream().map(r -> getters.get(field).apply(r)).collect(Collectors.joining(",\n", "<", ">")))
 				.isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().reversed().compare(
 					fa != null ? context.apply(fa) : null,
 					fb != null ? context.apply(fb) : null));
@@ -488,7 +559,7 @@ public class SortingEndpointTest extends AbstractMeshTest {
 		Consumer<String> test = field -> {
 			Function<NodeResponse, String> context = getters.get(field);
 			if (context == null) {
-				System.out.println("Sorting nodes by " + field + " cannot currently be tested");
+				System.out.println("Sorting nodes , by `" + field + "` cannot currently be tested");
 				return;
 			}
 			NodeListResponse list = call(() -> client().findNodes(projectName(), new SortingParametersImpl(field, SortOrder.DESCENDING)));
@@ -503,7 +574,7 @@ public class SortingEndpointTest extends AbstractMeshTest {
 		Consumer<String> testFields = field -> {
 			Function<NodeResponse, String> context = getters.get(field);
 			if (context == null) {
-				System.out.println("Sorting nodes by " + field + " cannot currently be tested");
+				System.out.println("Sorting nodes , by `" + field + "` cannot currently be tested");
 				return;
 			}
 			NodeListResponse list = call(() -> client().findNodes(projectName(), new SortingParametersImpl(field, SortOrder.DESCENDING)));
