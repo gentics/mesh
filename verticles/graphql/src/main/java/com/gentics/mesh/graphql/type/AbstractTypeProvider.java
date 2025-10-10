@@ -422,8 +422,8 @@ public abstract class AbstractTypeProvider {
 		return handleUuidNameArgsNoPerm(env, uuid -> schemas.filter(schema -> {
 			HibSchema container = schema.getSchemaContainer();
 			return container.getUuid().equals(uuid) && userDao.hasPermission(gc.getUser(), container, READ_PERM);
-		}).findFirst().get(), name -> schemas.filter(schema -> schema.getName().equals(name) && userDao.hasPermission(gc.getUser(), schema
-			.getSchemaContainer(), READ_PERM)).findFirst().get());
+		}).findAny().get(), name -> schemas.filter(schema -> schema.getName().equals(name) && userDao.hasPermission(gc.getUser(), schema
+			.getSchemaContainer(), READ_PERM)).findAny().get());
 	}
 
 	protected Page<HibSchemaVersion> handleBranchSchemas(DataFetchingEnvironment env) {

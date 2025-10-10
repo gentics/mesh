@@ -32,7 +32,7 @@ public final class LanguageOverrideUtil {
 	public static void validateLanguageOverrides(JsonObject settings) {
 		findLanguages(settings)
 			.filter(unique().negate())
-			.findFirst()
+			.findAny()
 			.ifPresent(duplicateLanguage -> {
 				throw error(BAD_REQUEST, "error_language_duplicate_override", duplicateLanguage);
 			});
