@@ -3,12 +3,14 @@ package com.gentics.mesh.hibernate.data.dao;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
+import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.collectVersionColumns;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.firstOrNull;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.inQueriesLimitForSplitting;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.makeAlias;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.makeParamName;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.streamContentSelectClause;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.ArrayDeque;
@@ -110,6 +112,7 @@ import com.gentics.mesh.hibernate.util.SplittingUtils;
 import com.gentics.mesh.parameter.DeleteParameters;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.parameter.SortingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.query.NativeJoin;
 import com.gentics.mesh.query.ReferencedNodesFilterJoin;
@@ -135,6 +138,9 @@ import jakarta.persistence.criteria.Subquery;
  */
 @Singleton
 public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNodeImpl, HibProject, HibProjectImpl> implements PersistingNodeDao {
+
+	public static final String SORT_FIELDS_SCHEMA_DEFINITION = "fields.<schema_name>.<field_name>";
+
 	private final ContentStorage contentStorage;
 	private final NodeDeleteDaoImpl nodeDeleteDao;
 	private final DatabaseConnector databaseConnector;
@@ -180,10 +186,27 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 		case "references": return super.mapGraphQlSortingFieldName("uuid");
 		case "editor": return "CONTAINER.editor_dbUuid";
 		case "schema": return "SCHEMA.schemacontainer_dbUuid";
+		case "project": return "PROJECT.project_dbUuid";
 		case "microschema": return "MICROSCHEMA.microschemacontainer_dbUuid";
 		case "CONTAINER.editor_dbUuid": return super.mapGraphQlSortingFieldName("editor");
 		}
 		return super.mapGraphQlSortingFieldName(gqlName);
+	}
+
+	@Override
+	public String[] getGraphQlSortingFieldNames(boolean noDependencies) {
+		if (noDependencies) {
+			return Stream.of(
+					Arrays.stream(super.getGraphQlSortingFieldNames(true))
+				).flatMap(Function.identity()).toArray(String[]::new);
+		}
+		return Stream.of(
+				Arrays.stream(super.getGraphQlSortingFieldNames(false)),
+				Stream.of(SORT_FIELDS_SCHEMA_DEFINITION),
+				// Works, but not included in API
+				//Arrays.stream(currentTransaction.getTx().projectDao().getGraphQlSortingFieldNames(true)).map(f -> "project." + f),
+				Arrays.stream(currentTransaction.getTx().schemaDao().getGraphQlSortingFieldNames(true)).map(f -> "schema." + f)
+			).flatMap(Function.identity()).toArray(String[]::new);
 	}
 
 	@Override
@@ -602,6 +625,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 				Stream.of(permJoins),
 				maybeFilterJoin.map(filterJoin -> filterJoin.getRawSqlJoins().stream()).orElse(Stream.empty())
 			).flatMap(Function.identity()).collect(Collectors.toSet()));
+		boolean shouldSort = !countOnly && !sortJoins.getValue().isEmpty();
 
 		// One of the provided schema parameters should have a version - extract it
 		maybeContentSchemaVersion = maybeContentSchemaVersion.or(() -> maybeContentSchema.map(schema -> schema.getLatestVersion()));
@@ -627,7 +651,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 		maybeParents.map(parents -> makeAlias(databaseConnector.maybeGetDatabaseEntityName(HibBranchNodeParent.class).get()) + ".*").ifPresent(columns::add);
 		Optional.of(noContainerEdgeFetch).filter(noFetch -> !noFetch).flatMap(fetch -> maybeContainerLanguages).or(() -> maybeContentColumns.map(contentColumns -> Collections.emptyList())).map(yes -> makeAlias("CONTAINER") + ".*").ifPresent(columns::add);
 		maybeContentColumns.ifPresent(contentColumns -> streamContentSelectClause(databaseConnector, contentColumns, Optional.of(makeAlias("CONTENT")), true).forEach(columns::add));
-		if (!countOnly && !sortJoins.getValue().isEmpty()) {
+		if (shouldSort) {
 			sortJoins.getValue().keySet().stream()
 				.map(col -> maybeContainerLanguages.map(columnsExplicitlyRequested -> col).orElseGet(() -> databaseConnector.makeSortDefinition(col, Optional.empty())))
 				.filter(col -> columns.stream().noneMatch(acol -> col.equalsIgnoreCase(acol)))
@@ -667,7 +691,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 				+ (wheres.size() > 0 ? wheres.stream().collect(Collectors.joining(" AND ", " AND ", StringUtils.EMPTY)) : StringUtils.EMPTY));
 
 		// Fill sorting, if applicable
-		if (!countOnly && !sortJoins.getValue().isEmpty()) {
+		if (shouldSort) {
 			String clause = sortJoins.getValue().entrySet().stream()
 					.map(entry -> {
 						String alias = databaseConnector.findSortAlias(entry.getKey());
@@ -752,7 +776,12 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 			}
 		} catch (Throwable e) {
 			log.error("Failure at query: " + sqlQuery);
-			throw e;
+			// Sorting usually comes from the user input, so it is reasonable to inform back with the less severe status 
+			if (shouldSort) {
+				throw error(BAD_REQUEST, "error_invalid_parameter", SortingParameters.SORT_BY_PARAMETER_KEY, paging.getSort().entrySet().stream().map(Map.Entry::getKey).collect(Collectors.joining(", ")));
+			} else {
+				throw e;
+			}
 		}
 	}
 
@@ -1312,6 +1341,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 				.getResultStream().collect(Collectors.toSet());
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Map<String, NodeChildrenInfo> getChildrenInfo(HibNode node, InternalActionContext ac, String branchUuid, boolean allowDataLoader) {
 		if (allowDataLoader && maybeChildrenInfoLoader().isPresent()) {
@@ -1353,6 +1383,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 		return childrenInfo;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Map<HibNode, Map<String, NodeChildrenInfo>> getChildrenInfo(Collection<HibNode> nodes,
 			InternalActionContext ac, String branchUuid) {

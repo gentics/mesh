@@ -3,17 +3,17 @@ package com.gentics.mesh.hibernate.data.dao;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.firstOrNull;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Root;
 
 import org.apache.commons.collections4.IteratorUtils;
 import org.hibernate.Hibernate;
@@ -53,6 +53,8 @@ import com.gentics.mesh.util.UUIDUtil;
 
 import dagger.Lazy;
 import io.vertx.core.Vertx;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 
 /**
  * Tag DAO implementation for Gentics Mesh.
@@ -62,6 +64,7 @@ import io.vertx.core.Vertx;
  */
 @Singleton
 public class TagDaoImpl extends AbstractHibDaoGlobal<HibTag, TagResponse, HibTagImpl> implements PersistingTagDao {
+	public static final String[] SORT_FIELDS = new String[] { "name" };
 
 	private final RootDaoHelper<HibTag, HibTagImpl, HibTagFamily, HibTagFamilyImpl> rootDaoHelper;
 
@@ -301,5 +304,21 @@ public class TagDaoImpl extends AbstractHibDaoGlobal<HibTag, TagResponse, HibTag
 			branch.removeTag(element);
 		}
 		return element;
+	}
+
+	@Override
+	public String[] getGraphQlSortingFieldNames(boolean noDependencies) {
+		if (noDependencies) {
+			return Stream.of(
+					Arrays.stream(super.getGraphQlSortingFieldNames(true)),
+					Arrays.stream(SORT_FIELDS)					
+				).flatMap(Function.identity()).toArray(String[]::new);
+		}
+		return Stream.of(
+				Arrays.stream(super.getGraphQlSortingFieldNames(false)),
+				Arrays.stream(SORT_FIELDS)
+				// Technically works, but REST API allows no direct tag access, only through a defined tag family 
+				//, Arrays.stream(currentTransaction.getTx().tagFamilyDao().getGraphQlSortingFieldNames(true)).map(f -> "tagFamily." + f)
+			).flatMap(Function.identity()).toArray(String[]::new);
 	}
 }

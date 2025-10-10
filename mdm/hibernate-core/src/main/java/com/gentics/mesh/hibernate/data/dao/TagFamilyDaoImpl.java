@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.firstOrNull;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.Stack;
 import java.util.function.Consumer;
@@ -15,8 +16,6 @@ import java.util.stream.StreamSupport;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Root;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.InternalActionContext;
@@ -25,6 +24,7 @@ import com.gentics.mesh.core.data.dao.PermissionRoots;
 import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.data.dao.PersistingTagFamilyDao;
 import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.tag.HibTag;
@@ -42,9 +42,12 @@ import com.gentics.mesh.hibernate.data.domain.HibTagImpl;
 import com.gentics.mesh.hibernate.data.permission.HibPermissionRoots;
 import com.gentics.mesh.hibernate.event.EventFactory;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 
 import dagger.Lazy;
 import io.vertx.core.Vertx;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 
 /**
  * Tag family DAO implementation for Gentics Mesh.
@@ -54,6 +57,7 @@ import io.vertx.core.Vertx;
  */
 @Singleton
 public class TagFamilyDaoImpl extends AbstractHibRootDao<HibTagFamily, TagFamilyResponse, HibTagFamilyImpl, HibProject, HibProjectImpl> implements PersistingTagFamilyDao {
+	public static final String[] SORT_FIELDS = new String[] { "name" };
 
 	private final TagDaoImpl tagDao;
 	
@@ -218,7 +222,12 @@ public class TagFamilyDaoImpl extends AbstractHibRootDao<HibTagFamily, TagFamily
 
 	@Override
 	public Page<? extends HibTagFamily> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibTagFamily> extraFilter) {
-		return daoHelper.findAll(ac, pagingInfo, extraFilter, true);
+		return PersistingRootDao.shouldSort(pagingInfo) 
+				? new DynamicStreamPageImpl<>(
+						// Since we do not know yet what the extra filter gives to us, we dare at this moment no paging - it will be applied at the PageImpl
+						daoHelper.findAll(ac, Optional.empty(), ((PagingParameters) new PagingParametersImpl().putSort(pagingInfo.getSort())), Optional.empty()).stream(), 
+						pagingInfo, extraFilter, false)
+				: daoHelper.findAll(ac, pagingInfo, extraFilter, true);
 	}
 
 	@Override
@@ -236,5 +245,13 @@ public class TagFamilyDaoImpl extends AbstractHibRootDao<HibTagFamily, TagFamily
 	@Override
 	public HibTagFamily loadObjectByUuid(InternalActionContext ac, String userUuid, InternalPermission perm) {
 		return daoHelper.loadObjectByUuid(ac, userUuid, perm);
+	}
+
+	@Override
+	public String[] getGraphQlSortingFieldNames(boolean noDependencies) {
+		return Stream.of(
+				Arrays.stream(super.getGraphQlSortingFieldNames(noDependencies)),
+				Arrays.stream(SORT_FIELDS)					
+			).flatMap(Function.identity()).toArray(String[]::new);
 	}
 }

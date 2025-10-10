@@ -4,8 +4,10 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.firstOrNull;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -74,6 +76,8 @@ public abstract class AbstractHibContainerDao<
 			D extends SC, 
 			DV extends SCV
 		> extends AbstractHibDaoGlobal<SC, R, D> implements PersistingContainerDao<R, RM, RE, SC, SCV, M>, RootDao<HibProject, SC> {
+
+	public static final String[] SORT_FIELDS = new String[] { "name" };
 
 	protected final DaoHelper<SCV, DV> versionDaoHelper;
 	private final RootDaoHelper<SC, D, HibProject, HibProjectImpl> rootDaoHelper;
@@ -266,6 +270,14 @@ public abstract class AbstractHibContainerDao<
 			.orElse(null);
 	}
 
+	@Override
+	public String[] getGraphQlSortingFieldNames(boolean noDependencies) {
+		return Stream.of(
+				Arrays.stream(super.getGraphQlSortingFieldNames(noDependencies)),
+				Arrays.stream(SORT_FIELDS)					
+			).flatMap(Function.identity()).toArray(String[]::new);
+	}
+	
 	/**
 	 * Get the field label for the container version.
 	 * 
