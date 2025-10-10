@@ -29,7 +29,7 @@ public interface MicroschemaModel extends FieldSchemaContainer {
 				}
 			}
 			return false;
-		}).findFirst();
+		}).findAny();
 		if (firstDisallowed.isPresent()) {
 			FieldSchema field = firstDisallowed.get();
 			String typeInfo = field.getType();

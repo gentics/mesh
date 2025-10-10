@@ -586,7 +586,7 @@ public class OrientDBClusterManagerImpl implements OrientDBClusterManager {
 		} else {
 			return hazelcastPlugin.getHazelcastInstance().getCluster().getMembers().stream()
 					.filter(m -> m.getBooleanAttribute(MESH_MEMBER_DISK_QUOTA_EXCEEDED) == Boolean.TRUE)
-					.map(m -> m.getUuid()).findFirst();
+					.map(m -> m.getUuid()).findAny();
 		}
 	}
 
