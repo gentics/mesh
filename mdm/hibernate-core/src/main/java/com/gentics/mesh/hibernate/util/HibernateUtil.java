@@ -50,6 +50,7 @@ import com.gentics.mesh.hibernate.data.domain.HibNodeFieldContainerImpl;
 import com.gentics.mesh.util.UUIDUtil;
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -64,6 +65,18 @@ public final class HibernateUtil {
 	public static final int DEFAULT_IN_QUERY_LIMIT = Short.MAX_VALUE;
 
 	private HibernateUtil() {
+	}
+
+	/**
+	 * Check, if query has items..
+	 *
+	 * @param <T>
+	 * @param query
+	 * @return
+	 */
+	public static boolean isNotEmpty(Query query) {
+		List<?> resultList = query.setMaxResults(1).getResultList();
+		return resultList.size() > 0;
 	}
 
 	/**

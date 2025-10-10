@@ -212,10 +212,9 @@ public class BranchDaoImpl extends AbstractHibRootDao<HibBranch, BranchResponse,
 								"where b = :branch and v.version.dbUuid = :schemaVersionDbUuid",
 						HibBranchSchemaVersionEdgeImpl.class)
 				.setParameter("branch", branch)
-				.setParameter("schemaVersionDbUuid", UUIDUtil.toJavaUuid(schemaVersion.getUuid()))
-				.setMaxResults(1);
+				.setParameter("schemaVersionDbUuid", UUIDUtil.toJavaUuid(schemaVersion.getUuid()));
 
-		return firstOrNull(query.getResultStream());
+		return firstOrNull(query);
 	}
 
 	@Override
@@ -225,10 +224,9 @@ public class BranchDaoImpl extends AbstractHibRootDao<HibBranch, BranchResponse,
 								"where b = :branch and v.version.dbUuid = :microSchemaVersionDbUuid",
 						HibBranchMicroschemaVersionEdgeImpl.class)
 				.setParameter("branch", branch)
-				.setParameter("microSchemaVersionDbUuid", UUIDUtil.toJavaUuid(microschemaVersion.getUuid()))
-				.setMaxResults(1);
+				.setParameter("microSchemaVersionDbUuid", UUIDUtil.toJavaUuid(microschemaVersion.getUuid()));
 
-		return firstOrNull(query.getResultStream());
+		return firstOrNull(query);
 	}
 
 	@Override

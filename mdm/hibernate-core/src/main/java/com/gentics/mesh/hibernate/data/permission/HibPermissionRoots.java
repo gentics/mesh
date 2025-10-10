@@ -88,7 +88,8 @@ public class HibPermissionRoots implements PermissionRoots {
 				.setParameter("type", permissionType)
 				.setParameter("parent", parent)
 				.setMaxResults(1)
-				.getResultStream()
+				.getResultList()
+				.stream()
 				.findAny()
 				.orElseGet(() -> createPermissionRoot(parent, permissionType));
 	}
@@ -112,7 +113,8 @@ public class HibPermissionRoots implements PermissionRoots {
 							.createQuery("from permissionroot where type = :type and parent is null", HibPermissionRootImpl.class)
 							.setParameter("type", elementType)
 							.setMaxResults(1)
-							.getResultStream()
+							.getResultList()
+							.stream()
 							.findAny()
 							.orElseGet(() -> {
 								HibernateTx hibTx = HibernateTx.get();

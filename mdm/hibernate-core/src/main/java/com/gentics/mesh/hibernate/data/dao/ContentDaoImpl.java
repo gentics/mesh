@@ -1088,13 +1088,9 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 
 	@Override
 	public boolean hasNextVersion(HibNodeFieldContainer content) {
-		return currentTransaction.getEntityManager().createNamedQuery("containerversions.findNextEdgeByVersion", HibNodeFieldContainerVersionsEdgeImpl.class)
+		return HibernateUtil.isNotEmpty(currentTransaction.getEntityManager().createNamedQuery("containerversions.findNextEdgeByVersion", HibNodeFieldContainerVersionsEdgeImpl.class)
 				.setParameter("contentUuid", content.getId())
-				.setParameter("version", getSchemaContainerVersion(content))
-				.setMaxResults(1)
-				.getResultStream()
-				.findAny()
-				.isPresent();
+				.setParameter("version", getSchemaContainerVersion(content)));
 	}
 
 	@Override
@@ -1119,25 +1115,20 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 
 	@Override
 	public boolean hasPreviousVersion(HibNodeFieldContainer content) {
-		return currentTransaction.getEntityManager().createNamedQuery("containerversions.findPreviousEdgeByVersion", HibNodeFieldContainerVersionsEdgeImpl.class)
+		return HibernateUtil.isNotEmpty(currentTransaction.getEntityManager().createNamedQuery("containerversions.findPreviousEdgeByVersion", HibNodeFieldContainerVersionsEdgeImpl.class)
 				.setParameter("contentUuid", content.getId())
-				.setParameter("version", getSchemaContainerVersion(content))
-				.setMaxResults(1)
-				.getResultStream()
-				.findAny()
-				.isPresent();
+				.setParameter("version", getSchemaContainerVersion(content)));
 	}
 
 	@Override
 	public HibNodeFieldContainer getPreviousVersion(HibNodeFieldContainer content) {
-		return currentTransaction.getEntityManager().createNamedQuery("containerversions.findPreviousEdgeByVersion", HibNodeFieldContainerVersionsEdgeImpl.class)
+		HibNodeFieldContainerVersionsEdgeImpl edge = HibernateUtil.firstOrNull(currentTransaction.getEntityManager().createNamedQuery("containerversions.findPreviousEdgeByVersion", HibNodeFieldContainerVersionsEdgeImpl.class)
 				.setParameter("contentUuid", content.getId())
-				.setParameter("version", getSchemaContainerVersion(content))
-				.setMaxResults(1)
-				.getResultStream()
-				.map(edge -> getFieldContainer(edge.getThisVersion(), edge.getThisContentUuid()))
-				.findAny()
-				.orElse(null);
+				.setParameter("version", getSchemaContainerVersion(content)));
+		if (edge == null) {
+			return null;
+		}
+		return getFieldContainer(edge.getThisVersion(), edge.getThisContentUuid());
 	}
 
 	@Override
@@ -1157,13 +1148,10 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 			return impl.getContentEdges().stream().anyMatch(edge -> edge.getContentUuid().equals(content.getId()) && edge.getType().equals(type));
 		}
 
-		return em.createNamedQuery("contentEdge.findByContentAndTypes", HibNodeFieldContainerEdgeImpl.class)
+		return HibernateUtil.isNotEmpty(em.createNamedQuery("contentEdge.findByContentAndTypes", HibNodeFieldContainerEdgeImpl.class)
 				.setParameter("contentUuid", content.getId())
 				.setParameter("types", Collections.singletonList(type))
-				.setMaxResults(1)
-				.setHint(AvailableHints.HINT_CACHEABLE, true)
-				.getResultList()
-				.size() > 0;
+				.setHint(AvailableHints.HINT_CACHEABLE, true));
 	}
 
 	@Override
@@ -1174,13 +1162,11 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 			return impl.getContentEdges().stream().anyMatch(edge -> edge.getContentUuid().equals(content.getId()) && edge.getType().equals(type) && edge.getBranchUuid().equals(branchUuid));
 		}
 
-		return em.createNamedQuery("contentEdge.findByContentTypeAndBranch", HibNodeFieldContainerEdgeImpl.class)
+		return HibernateUtil.isNotEmpty(em.createNamedQuery("contentEdge.findByContentTypeAndBranch", HibNodeFieldContainerEdgeImpl.class)
 				.setParameter("contentUuid", content.getId())
 				.setParameter("type", type)
 				.setParameter("branchUuid", UUIDUtil.toJavaUuid(branchUuid))
-				.setMaxResults(1)
-				.setHint(AvailableHints.HINT_CACHEABLE, true)
-				.getResultList().size() > 0;
+				.setHint(AvailableHints.HINT_CACHEABLE, true));
 	}
 
 	@Override
@@ -1263,28 +1249,22 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	public HibNodeFieldContainerEdge getConflictingEdgeOfWebrootPath(HibNodeFieldContainer content, String segmentInfo, String branchUuid, ContainerType type, HibNodeFieldContainerEdge edge) {
 		//TODO do we need to check contentUuid?
 		EntityManager em = currentTransaction.getEntityManager();
-		return em.createNamedQuery("contentEdge.findByBranchTypeAndWebroot", HibNodeFieldContainerEdgeImpl.class)
+		return HibernateUtil.firstOrNull(em.createNamedQuery("contentEdge.findByBranchTypeAndWebroot", HibNodeFieldContainerEdgeImpl.class)
 				.setParameter("webrootPath", segmentInfo)
 				.setParameter("branchUuid", UUIDUtil.toJavaUuid(branchUuid))
 				.setParameter("type", type)
-				.setParameter("edgeUuid", ((HibNodeFieldContainerEdgeImpl ) edge).getElement())
-				.setMaxResults(1)
-				.getResultStream()
-				.findAny().orElse(null);
+				.setParameter("edgeUuid", ((HibNodeFieldContainerEdgeImpl ) edge).getElement()));
 	}
 
 	@Override
 	public HibNodeFieldContainerEdge getConflictingEdgeOfWebrootField(HibNodeFieldContainer content, HibNodeFieldContainerEdge edge, String urlFieldValue, String branchUuid, ContainerType type) {
 		//TODO do we need to check contentUuid?
 		EntityManager em = currentTransaction.getEntityManager();
-		return em.createNamedQuery("contentEdge.findByBranchTypeAndUrlField", HibNodeFieldContainerEdgeImpl.class)
+		return HibernateUtil.firstOrNull(em.createNamedQuery("contentEdge.findByBranchTypeAndUrlField", HibNodeFieldContainerEdgeImpl.class)
 				.setParameter("branchUuid", UUIDUtil.toJavaUuid(branchUuid))
 				.setParameter("type", type)
 				.setParameter("field", urlFieldValue)
-				.setParameter("edgeUuid", ((HibNodeFieldContainerEdgeImpl ) edge).getElement())
-				.setMaxResults(1)
-				.getResultStream()
-				.findAny().orElse(null);
+				.setParameter("edgeUuid", ((HibNodeFieldContainerEdgeImpl ) edge).getElement()));
 	}
 
 	@Override
@@ -1298,14 +1278,11 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 		// split the set of field values into slices, and - as long as we did not find a conflicting edge - keep searching for each slice
 		SplittingUtils.splitAndConsume(urlFieldValues, HibernateUtil.inQueriesLimitForSplitting(3), slice -> {
 			if (foundConflictingEdge.get() == null) {
-				foundConflictingEdge.set(em.createNamedQuery("contentEdge.findByBranchTypeAndUrlFieldValues", HibNodeFieldContainerEdgeImpl.class)
+				foundConflictingEdge.set(HibernateUtil.firstOrNull(em.createNamedQuery("contentEdge.findByBranchTypeAndUrlFieldValues", HibNodeFieldContainerEdgeImpl.class)
 					.setParameter("branchUuid", UUIDUtil.toJavaUuid(branchUuid))
 					.setParameter("type", type)
 					.setParameter("field", slice)
-					.setParameter("edgeUuid", edgeUuid)
-					.setMaxResults(1)
-					.getResultStream()
-					.findAny().orElse(null));
+					.setParameter("edgeUuid", edgeUuid)));
 			}
 		});
 		return foundConflictingEdge.get();

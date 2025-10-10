@@ -47,13 +47,9 @@ public class S3BinaryDaoImpl extends AbstractImageDataHibDao<S3HibBinary> implem
     }
 
     public S3HibBinaryField getField(UUID contentUuid, String fieldKey) {
-        return em().createNamedQuery("s3binaryfieldref.getByContentAndFieldKey", HibS3BinaryFieldImpl.class)
+        return HibernateUtil.firstOrNull(em().createNamedQuery("s3binaryfieldref.getByContentAndFieldKey", HibS3BinaryFieldImpl.class)
                 .setParameter("contentUuid", contentUuid)
-                .setParameter("fieldKey", fieldKey)
-                .setMaxResults(1)
-                .getResultStream()
-                .findAny()
-                .orElse(null);
+                .setParameter("fieldKey", fieldKey));
     }
 
     public void removeField(HibField field) {

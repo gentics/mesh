@@ -124,6 +124,7 @@ import com.gentics.mesh.hibernate.data.domain.HibUnmanagedFieldContainer;
 import com.gentics.mesh.hibernate.data.domain.HibUserImpl;
 import com.gentics.mesh.hibernate.event.EventFactory;
 import com.gentics.mesh.hibernate.util.HibernateFilter;
+import com.gentics.mesh.hibernate.util.HibernateUtil;
 import com.gentics.mesh.hibernate.util.JpaUtil;
 import com.gentics.mesh.hibernate.util.TypeInfoUtil;
 import com.gentics.mesh.hibernate.util.UuidGenerator;
@@ -1957,7 +1958,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 		CriteriaQuery<D> query = cb().createQuery(domainClass);
 		Root<D> root = query.from(domainClass);
 		query.where(cb().equal(root.get("name"), name));
-		return firstOrNull(em().createQuery(query).setHint(AvailableHints.HINT_CACHEABLE, true).setMaxResults(1));
+		return firstOrNull(em().createQuery(query).setHint(AvailableHints.HINT_CACHEABLE, true));
 	}
 
 	/**
@@ -2037,17 +2038,14 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 	 * @return
 	 */
 	public Optional<HibPermissionImpl> getPermissionForUser(HibUser user) {
-		return em().createQuery("select p" +
+		return Optional.ofNullable(HibernateUtil.firstOrNull(em().createQuery("select p" +
 				" from permission p" +
 				" join p.role r" +
 				" join r.groups g" +
 				" join g.users u" +
 				" where u = :user",
 			HibPermissionImpl.class
-		).setParameter("user", user)
-			.setMaxResults(1)
-			.getResultStream()
-			.findAny();
+		).setParameter("user", user)));
 	}
 
 	EntityManager em() {

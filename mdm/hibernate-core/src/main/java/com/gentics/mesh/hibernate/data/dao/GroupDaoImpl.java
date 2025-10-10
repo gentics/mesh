@@ -112,12 +112,9 @@ public class GroupDaoImpl extends AbstractHibDaoGlobal<HibGroup, GroupResponse, 
 
 	@Override
 	public boolean hasUser(HibGroup group, HibUser user) {
-		return em().createQuery("select u from group g inner join g.users u where u.dbUuid = :userUuid and g.dbUuid = :groupUuid")
+		return HibernateUtil.isNotEmpty(em().createQuery("select u from group g inner join g.users u where u.dbUuid = :userUuid and g.dbUuid = :groupUuid")
 				.setParameter("userUuid", user.getId())
-				.setParameter("groupUuid", group.getId())
-				.setMaxResults(1)
-				.getResultStream()
-				.findAny().isPresent();
+				.setParameter("groupUuid", group.getId()));
 	}
 
 	@Override

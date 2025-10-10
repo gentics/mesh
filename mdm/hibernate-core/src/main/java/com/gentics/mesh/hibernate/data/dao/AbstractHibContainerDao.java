@@ -42,6 +42,7 @@ import com.gentics.mesh.hibernate.data.domain.HibUpdateMicroschemaChangeImpl;
 import com.gentics.mesh.hibernate.data.domain.HibUpdateSchemaChangeImpl;
 import com.gentics.mesh.hibernate.data.permission.HibPermissionRoots;
 import com.gentics.mesh.hibernate.event.EventFactory;
+import com.gentics.mesh.hibernate.util.HibernateUtil;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -142,18 +143,14 @@ public abstract class AbstractHibContainerDao<
 	@Override
 	public SCV findVersionByRev(SC schema, String version) {
 		EntityManager em = currentTransaction.getEntityManager();
-		return em.createQuery("select v" +
+		return HibernateUtil.firstOrNull(em.createQuery("select v" +
 					" from " + getVersionFieldLabel() + "version v" +
 					" join v." + getVersionFieldLabel() + " s" +
 					" where s = :schema" + 
 					" and v.version = :version",
 				getVersionPersistenceClass())
 			.setParameter("schema", schema)
-			.setParameter("version", version)
-			.setMaxResults(1)
-			.getResultStream()
-			.findAny()
-			.orElse(null);
+			.setParameter("version", version));
 	}
 
 	@Override
@@ -251,18 +248,14 @@ public abstract class AbstractHibContainerDao<
 	 */
 	public SCV findVersionByUuid(SC schema, UUID versionUuid) {
 		EntityManager em = currentTransaction.getEntityManager();
-		return em.createQuery("select v" +
+		return HibernateUtil.firstOrNull(em.createQuery("select v" +
 					" from " + getVersionTableLabel() + " v" +
 					" join v." + getVersionFieldLabel() + " s" +
 					" where s = :schema" + 
 					" and v.dbUuid = :uuid",
 				getVersionPersistenceClass())
 			.setParameter("schema", schema)
-			.setParameter("uuid", versionUuid)
-			.setMaxResults(1)
-			.getResultStream()
-			.findAny()
-			.orElse(null);
+			.setParameter("uuid", versionUuid));
 	}
 
 	/**

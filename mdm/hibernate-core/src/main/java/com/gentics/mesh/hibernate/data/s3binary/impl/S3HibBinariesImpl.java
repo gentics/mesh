@@ -13,6 +13,7 @@ import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 import com.gentics.mesh.database.HibernateDatabase;
 import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.hibernate.data.domain.HibS3BinaryImpl;
+import com.gentics.mesh.hibernate.util.HibernateUtil;
 import com.gentics.mesh.util.UUIDUtil;
 
 /**
@@ -33,14 +34,10 @@ public class S3HibBinariesImpl implements S3Binaries {
 
 	@Override
 	public Transactional<S3HibBinary> findByUuid(String uuid) {
-		return database.transactional((tx) -> tx.<HibernateTx>unwrap()
+		return database.transactional((tx) -> HibernateUtil.firstOrNull(tx.<HibernateTx>unwrap()
 				.entityManager()
 				.createNamedQuery("s3binary.findByUuids", S3HibBinary.class)
-				.setParameter("uuids", Set.of(UUIDUtil.toJavaUuid(uuid)))
-				.setMaxResults(1)
-				.getResultStream()
-				.findAny()
-				.orElse(null));
+				.setParameter("uuids", Set.of(UUIDUtil.toJavaUuid(uuid)))));
 	}
 
 	@Override
@@ -48,12 +45,8 @@ public class S3HibBinariesImpl implements S3Binaries {
 		return database.transactional(tx -> {
 			HibernateTx hibTx = (HibernateTx) tx;
 
-			return hibTx.entityManager().createNamedQuery("s3Binary.findByS3ObjectKey", HibS3BinaryImpl.class)
-					.setParameter("s3ObjectKey", s3ObjectKey)
-					.setMaxResults(1)
-					.getResultStream()
-					.findAny()
-					.orElse(null);
+			return HibernateUtil.firstOrNull(hibTx.entityManager().createNamedQuery("s3Binary.findByS3ObjectKey", HibS3BinaryImpl.class)
+					.setParameter("s3ObjectKey", s3ObjectKey));
 		});
 	}
 

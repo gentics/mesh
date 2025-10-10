@@ -12,8 +12,6 @@ import java.util.stream.StreamSupport;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Root;
 
 import org.apache.commons.collections4.IteratorUtils;
 import org.hibernate.Hibernate;
@@ -53,6 +51,8 @@ import com.gentics.mesh.util.UUIDUtil;
 
 import dagger.Lazy;
 import io.vertx.core.Vertx;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 
 /**
  * Tag DAO implementation for Gentics Mesh.
@@ -198,14 +198,10 @@ public class TagDaoImpl extends AbstractHibDaoGlobal<HibTag, TagResponse, HibTag
 
 	@Override
 	public boolean hasTag(HibNode node, HibTag tag, HibBranch branch) {
-		return em().createQuery("select t from node_tag t where t.id.nodeUUID = :nodeuuid and t.id.tagUUID = :taguuid and t.id.branchUUID = :branchuuid")
+		return HibernateUtil.isNotEmpty(em().createQuery("select t from node_tag t where t.id.nodeUUID = :nodeuuid and t.id.tagUUID = :taguuid and t.id.branchUUID = :branchuuid")
 				.setParameter("nodeuuid", node.getId())
 				.setParameter("taguuid", tag.getId())
-				.setParameter("branchuuid", branch.getId())
-				.setMaxResults(1)
-				.getResultStream()
-				.findAny()
-				.isPresent();
+				.setParameter("branchuuid", branch.getId()));
 	}
 
 	@Override
