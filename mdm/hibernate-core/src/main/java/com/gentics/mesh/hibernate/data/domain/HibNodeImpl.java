@@ -303,7 +303,7 @@ public class HibNodeImpl extends AbstractHibBucketableElement implements HibNode
 	public void removeTag(HibTag tag, HibBranch branch) {
 		Optional<HibNodeTag> tagToRemove = tags.stream()
 				.filter(t -> t.getId().getTagUUID().equals(UUIDUtil.toJavaUuid(tag.getUuid())) && t.getId().getBranchUUID().equals(UUIDUtil.toJavaUuid(branch.getUuid())))
-				.findFirst();
+				.findAny();
 
 		tagToRemove.ifPresent(tags::remove);
 	}

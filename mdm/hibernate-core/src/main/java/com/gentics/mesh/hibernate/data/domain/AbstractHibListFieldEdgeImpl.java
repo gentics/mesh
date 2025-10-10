@@ -161,12 +161,11 @@ public abstract class AbstractHibListFieldEdgeImpl<U>
 
 	public static <I extends AbstractHibListFieldEdgeImpl<?>> Optional<I> getItem(
 				HibernateTx tx, Class<I> classOfI, UUID containerUuid, ReferenceType containerType, String listFieldKey, int index) {
-		return tx.entityManager().createQuery(String.format(QUERY_ITEM_BY_KEY_CONTENT_TYPE_INDEX, getEntityTableName(classOfI)), classOfI)
+		return Optional.ofNullable(HibernateUtil.firstOrNull(tx.entityManager().createQuery(String.format(QUERY_ITEM_BY_KEY_CONTENT_TYPE_INDEX, getEntityTableName(classOfI)), classOfI)
 				.setParameter("fieldKey", listFieldKey)
 				.setParameter("containerUuid", containerUuid)
 				.setParameter("containerType", containerType)
-				.setParameter("index", index)
-				.getResultStream().findAny();
+				.setParameter("index", index)));
 	}
 
 	public static int deleteItems(

@@ -314,7 +314,7 @@ public class HibBranchImpl extends AbstractHibUserTrackedElement<BranchResponse>
 				.filter(v -> schemaContainer.getUuid().equals(v.getVersion().getSchemaContainer().getUuid()))
 				.sorted((v1, v2) -> VersionUtil.compareVersions(v2.getVersion().getVersion(), v1.getVersion().getVersion()))
 				.map(AbstractHibBranchSchemaVersion::getVersion)
-				.findFirst()
+				.findAny()
 				.orElse(null);
 	}
 
@@ -324,7 +324,7 @@ public class HibBranchImpl extends AbstractHibUserTrackedElement<BranchResponse>
 				.filter(v -> microschemaContainer.getUuid().equals(v.getVersion().getSchemaContainer().getUuid()))
 				.sorted((v1, v2) -> VersionUtil.compareVersions(v2.getVersion().getVersion(), v1.getVersion().getVersion()))
 				.map(AbstractHibBranchSchemaVersion::getVersion)
-				.findFirst()
+				.findAny()
 				.orElse(null);
 	}
 
@@ -361,7 +361,7 @@ public class HibBranchImpl extends AbstractHibUserTrackedElement<BranchResponse>
 
 	@Override
 	public HibTag findTagByUuid(String uuid) {
-		return tags.stream().filter(t -> t.getUuid().equals(uuid)).findFirst().orElse(null);
+		return tags.stream().filter(t -> t.getUuid().equals(uuid)).findAny().orElse(null);
 	}
 
 	@Override

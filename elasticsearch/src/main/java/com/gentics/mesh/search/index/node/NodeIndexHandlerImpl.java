@@ -408,7 +408,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	private Flowable<SearchRequest> diffAndSync(HibProject project, HibBranch branch, HibSchemaVersion version, ContainerType type, Optional<Pattern> indexPattern) {
 		// if an index pattern is given, check whether any index matches the pattern
 		if (indexPattern.isPresent() && !getIndexNames(project, branch, version, type).stream()
-				.filter(indexName -> indexPattern.orElse(MATCH_ALL).matcher(indexName).matches()).findFirst()
+				.filter(indexName -> indexPattern.orElse(MATCH_ALL).matcher(indexName).matches()).findAny()
 				.isPresent()) {
 			return Flowable.empty();
 		}

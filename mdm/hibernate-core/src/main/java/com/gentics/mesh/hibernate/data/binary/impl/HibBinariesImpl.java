@@ -13,6 +13,7 @@ import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 import com.gentics.mesh.database.HibernateDatabase;
 import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.hibernate.data.domain.HibBinaryImpl;
+import com.gentics.mesh.hibernate.util.HibernateUtil;
 import com.gentics.mesh.util.UUIDUtil;
 
 /**
@@ -33,13 +34,10 @@ public class HibBinariesImpl implements Binaries {
 
 	@Override
 	public Transactional<HibBinary> findByUuid(String uuid) {
-		return database.transactional((tx) -> tx.<HibernateTx>unwrap()
+		return database.transactional((tx) -> HibernateUtil.firstOrNull(tx.<HibernateTx>unwrap()
 				.entityManager()
 				.createNamedQuery("binary.findByUuids", HibBinary.class)
-				.setParameter("uuids", Set.of(UUIDUtil.toJavaUuid(uuid)))
-				.getResultStream()
-				.findAny()
-				.orElse(null));
+				.setParameter("uuids", Set.of(UUIDUtil.toJavaUuid(uuid)))));
 	}
 
 	@Override
@@ -47,11 +45,8 @@ public class HibBinariesImpl implements Binaries {
 		return database.transactional((tx) -> {
 			HibernateTx hibTx = (HibernateTx) tx;
 
-			return hibTx.entityManager().createNamedQuery("binary.findBySHA", HibBinaryImpl.class)
-					.setParameter("SHA512Sum", SHA512Sum)
-					.getResultStream()
-					.findFirst()
-					.orElse(null);
+			return HibernateUtil.firstOrNull(hibTx.entityManager().createNamedQuery("binary.findBySHA", HibBinaryImpl.class)
+					.setParameter("SHA512Sum", SHA512Sum));
 		});
 	}
 

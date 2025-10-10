@@ -91,18 +91,16 @@ public class BranchDaoImpl extends AbstractHibRootDao<HibBranch, BranchResponse,
 	public void deletePersisted(HibProject root, HibBranch entity) {
 		em().createQuery("select j from job j where j.branch = :branch", HibJobImpl.class)
 				.setParameter("branch", entity)
-				.getResultStream()
+				.getResultList()
 				.forEach(job -> job.setBranch(null));
 		em().remove(entity);
 	}
 
 	@Override
 	public Result<? extends HibBranch> findAll(HibProject project) {
-		Stream<HibBranchImpl> branches = em().createNamedQuery("branch.findFromProject", HibBranchImpl.class)
+		return new TraversalResult<>(em().createNamedQuery("branch.findFromProject", HibBranchImpl.class)
 				.setParameter("project", project)
-				.getResultStream();
-
-		return new TraversalResult<>(branches.iterator());
+				.getResultList());
 	}
 
 	@Override
@@ -216,7 +214,7 @@ public class BranchDaoImpl extends AbstractHibRootDao<HibBranch, BranchResponse,
 				.setParameter("branch", branch)
 				.setParameter("schemaVersionDbUuid", UUIDUtil.toJavaUuid(schemaVersion.getUuid()));
 
-		return firstOrNull(query.getResultStream());
+		return firstOrNull(query);
 	}
 
 	@Override
@@ -228,7 +226,7 @@ public class BranchDaoImpl extends AbstractHibRootDao<HibBranch, BranchResponse,
 				.setParameter("branch", branch)
 				.setParameter("microSchemaVersionDbUuid", UUIDUtil.toJavaUuid(microschemaVersion.getUuid()));
 
-		return firstOrNull(query.getResultStream());
+		return firstOrNull(query);
 	}
 
 	@Override
