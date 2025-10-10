@@ -5,6 +5,7 @@ elements:
   custom: com.gentics.mesh.plugin.forms.CustomElement
   customconfig: com.gentics.mesh.plugin.forms.CustomConfigElement
   not-validated: com.gentics.mesh.plugin.forms.model.CustomNotValidated
+  failing: com.gentics.mesh.plugin.forms.model.CustomDeserializationFailure
 
 validateElements: true
 

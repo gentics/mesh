@@ -72,7 +72,7 @@ public class ValueListElement extends FormElement {
 	 * @param options The options for this value list element
 	 */
 	public void setOptions(List<ValueListItem> options) {
-		this.options = options;
+		this.options = Optional.ofNullable(options).orElse(new ArrayList<>());
 		updateValidValues();
 	}
 
@@ -113,7 +113,7 @@ public class ValueListElement extends FormElement {
 			.setTitle(I18nHelper.get(Locale.GERMAN, "error.validation.form.title"));
 
 		if (options == null || options.isEmpty()) {
-			error.setMessage(I18nHelper.get(Locale.GERMAN, "error.validation.form.missing_list_elements", getLabel()));
+			error.setMessage(I18nHelper.get(Locale.GERMAN, "error.validation.form.missing_list_elements", getLabelOrName()));
 
 			return Optional.of(error);
 		}
@@ -127,7 +127,7 @@ public class ValueListElement extends FormElement {
 				? "error.validation.form.missing_value"
 				: "error.validation.form.missing_label";
 
-			error.setMessage(I18nHelper.get(Locale.GERMAN, key, getLabel()));
+			error.setMessage(I18nHelper.get(Locale.GERMAN, key, getLabelOrName()));
 
 			return Optional.of(error);
 		}
