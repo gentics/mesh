@@ -424,7 +424,7 @@ public class SortingEndpointTest extends AbstractMeshTest {
 		final Map<String, Function<LanguageResponse, String>> getters = Map.of(
 				"uuid", AbstractResponse::getUuid, 
 				"name", LanguageResponse::getName, 
-				// Fails on checking the non latin characters against Java comparator
+				// Fails on checking non latin characters against Java comparator
 				//"nativeName", LanguageResponse::getNativeName, 
 				"languageTag", LanguageResponse::getLanguageTag
 			);
@@ -463,10 +463,11 @@ public class SortingEndpointTest extends AbstractMeshTest {
 				Map.entry("editor.lastname", r -> r.getEditor().getLastName()),
 				Map.entry("schema.name", r -> r.getSchema().getName()),
 				Map.entry("schema.uuid", r -> r.getSchema().getUuid()),
+				// fails on checking French characters in Concorde definition, which does not match Java comparison rules
+				//Map.entry("fields.content.content", r -> safeGet.apply(r.getFields().getStringField("content"))),
 				Map.entry("fields.content.title", r -> safeGet.apply(r.getFields().getStringField("title"))),
 				Map.entry("fields.content.teaser", r -> safeGet.apply(r.getFields().getStringField("teaser"))),
-				Map.entry("fields.content.slug", r -> safeGet.apply(r.getFields().getStringField("slug"))),
-				Map.entry("fields.content.content", r -> safeGet.apply(r.getFields().getStringField("content")))
+				Map.entry("fields.content.slug", r -> safeGet.apply(r.getFields().getStringField("slug")))
 			);
 		HibNode parentNode = folder("news");
 		String uuid = tx(() -> parentNode.getUuid());
@@ -480,8 +481,7 @@ public class SortingEndpointTest extends AbstractMeshTest {
 			request.getFields().put("title", createStringField("some title " + i));
 			request.getFields().put("teaser", createStringField("some teaser " + rnd.nextAlphanumeric(i+1)));
 			request.getFields().put("slug", createStringField("newpage" + i + ".html"));
-			// fails on checking French characters in Concorde definition, which does not match Java comparison
-			//request.getFields().put("content", createStringField(rnd.nextAlphanumeric(i+1)));
+			request.getFields().put("content", createStringField(rnd.nextAlphanumeric(i+1)));
 			request.setParentNodeUuid(uuid);
 			call(() -> client().createNode(PROJECT_NAME, request));			
 		}

@@ -2,7 +2,6 @@ package com.gentics.mesh.core;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -104,10 +103,6 @@ public class HSQLMemoryTestContextProvider extends HibernateTestContextProvider 
 				if (Character.isUpperCase(a.charAt(0)) && !Character.isUpperCase(b.charAt(0))) {
 					return -1;
 				}
-				if (!StringUtils.isAlphanumericSpace(a) || !StringUtils.isAlphanumericSpace(b)) {
-					// With non ASCII it is all complicated
-					return 0;
-				}
 				return a.compareTo(b);
 			}
 
@@ -134,10 +129,6 @@ public class HSQLMemoryTestContextProvider extends HibernateTestContextProvider 
 					}
 					if (Character.isUpperCase(a.charAt(0)) && !Character.isUpperCase(b.charAt(0))) {
 						return 1;
-					}
-					if (!StringUtils.isAlphanumericSpace(a) || !StringUtils.isAlphanumericSpace(b)) {
-						// With non ASCII it is all complicated
-						return 0;
 					}
 					return -(a.compareTo(b));
 				};
