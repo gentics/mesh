@@ -18,6 +18,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
@@ -36,6 +37,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.client.DeleteParametersImpl;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
+import com.gentics.mesh.parameter.client.VersioningParametersImpl;
 import com.gentics.mesh.plugin.forms.model.LanguagesModel;
 import com.gentics.mesh.plugin.forms.model.response.FormOnlineResponse;
 import com.gentics.mesh.plugin.forms.model.response.StatusResponse;
@@ -234,6 +236,8 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 			assertThat(response.get("uuid").asText()).as("Returned uuid").isEqualTo(uuid);
 			return uuid;
 		} else {
+			call(() -> server.client().findNodeByUuid(PROJECT_NAME, uuid,
+					new VersioningParametersImpl().setVersion("draft")), HttpResponseStatus.NOT_FOUND);
 			return null;
 		}
 	}
@@ -265,11 +269,13 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 	 * Create a new form from file <code>create.json</code>, and update it with the from in <code>fileName</code>.
 	 * @param fileName The JSON file for the update request
 	 * @param permission TODO
-	 * @param expectSuccess Whether the update request is expected to succedd
+	 * @param expectSuccess Whether the update request is expected to succeed
+	 * @param formHandlers optional form handlers, which will be called with the form uuid before the form is updated
 	 * @return The <code>NodeResponse</code> of the update request
 	 * @throws IOException
 	 */
-	protected NodeResponse updateForm(String fileName, boolean permission, boolean expectSuccess) throws IOException {
+	@SafeVarargs
+	protected final NodeResponse updateForm(String fileName, boolean permission, boolean expectSuccess, Consumer<String>...formHandlers) throws IOException {
 		String uuid = createForm("create.json", true, true);
 		Optional<SchemaResponse> formSchema = loadSchema(SchemaService.getSchemaName(uuid));
 
@@ -278,6 +284,10 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 		// Do not unassign the schema if the update request is not expected to succeed, since this will cause problems in the assertions later on.
 		if (expectSuccess) {
 			call(() -> server.client().unassignSchemaFromProject(PROJECT_NAME, formSchema.get().getUuid()));
+		}
+
+		for (Consumer<String> handler : formHandlers) {
+			handler.accept(uuid);
 		}
 
 		Request updateRequest = new Request.Builder()
@@ -340,6 +350,16 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 	 */
 	protected Optional<SchemaResponse> loadSchema(String name) {
 		return call(() -> server.client().findSchemas(PROJECT_NAME, new PagingParametersImpl().setPerPage((long) Integer.MAX_VALUE))).getData().stream()
+			.filter(schema -> name.equals(schema.getName())).findFirst().map(e -> Optional.of(e)).orElse(Optional.empty());
+	}
+
+	/**
+	 * Try to load schema with given name globally
+	 * @param name schema name
+	 * @return optional schema response
+	 */
+	protected Optional<SchemaResponse> loadGlobalSchema(String name) {
+		return call(() -> server.client().findSchemas(new PagingParametersImpl().setPerPage(Long.MAX_VALUE))).getData().stream()
 			.filter(schema -> name.equals(schema.getName())).findFirst().map(e -> Optional.of(e)).orElse(Optional.empty());
 	}
 

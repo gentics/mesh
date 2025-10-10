@@ -1,5 +1,6 @@
 package com.gentics.mesh.plugin.forms;
 
+import static com.gentics.mesh.test.ClientHelper.call;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.gentics.mesh.util.UUIDUtil;
@@ -21,6 +22,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.client.NodeParametersImpl;
 import com.gentics.mesh.plugin.forms.service.SchemaService;
@@ -188,12 +190,63 @@ public class FormCRUDTest extends AbstractFormsPluginIntegrationTest {
 	}
 
 	/**
+	 * Test that updating a form with missing schema will create the schema
+	 * @throws IOException
+	 */
+	@Test
+	public void testUpdateFormWithMissingSchema() throws IOException {
+		NodeResponse updatedNode = updateForm("update.json", permission, true, uuid -> {
+			Optional<SchemaResponse> optSchema = loadGlobalSchema("form_%s".formatted(uuid));
+			assertThat(optSchema).as("Schema").isPresent();
+			call(() -> server.client().deleteSchema(optSchema.get().getUuid()));
+		});
+
+		if (permission) {
+			assertThat(updatedNode.getDisplayName())
+				.as("Name of updated form")
+				.isEqualTo("Updated Form");
+			Optional<SchemaResponse> optSchema = loadSchema("form_%s".formatted(updatedNode.getUuid()));
+			assertThat(optSchema).as("Schema").isPresent();
+		}
+	}
+
+	/**
 	 * Test deleting a form
 	 * @throws IOException
 	 */
 	@Test
 	public void testDeleteForm() throws IOException {
 		String uuid = createForm("create.json");
+
+		Request deleteRequest = new Request.Builder()
+				.url(projectUrl("/forms/" + uuid))
+				.headers(auth(permission))
+				.delete()
+				.build();
+		Response response = client().newCall(deleteRequest).execute();
+
+		if (permission) {
+			assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+
+			assertThat(loadNode(uuid)).as("Form Node").isEmpty();
+			assertThat(loadSchema(SchemaService.getSchemaName(uuid))).as("Form Schema").isEmpty();
+		} else {
+			assertForbidden(response);
+		}
+	}
+
+	/**
+	 * Test deleting a form with data
+	 * @throws IOException
+	 */
+	@Test
+	public void testDeleteFormWithData() throws IOException {
+		String uuid = createForm("inputfield.json");
+
+		for (int i = 0; i < 20; i++) {
+			boolean empty = i % 2 == 0;
+			submit(uuid, true, empty, "input1", empty ? "" : "data %d".formatted(i));
+		}
 
 		Request deleteRequest = new Request.Builder()
 				.url(projectUrl("/forms/" + uuid))

@@ -36,7 +36,7 @@ public class PurgeStaleDataHandler extends AbstractFormsHandler {
 				.minus(Duration.ofSeconds(Long.valueOf(seconds)));
 
 		return purgeService.purgeAllStaleData(projectName, purgeThreshold, perPage)
-				.doOnEvent(t -> {
+				.doOnComplete(() -> {
 					context.response().putHeader(HttpHeaders.CONTENT_TYPE, HttpConstants.APPLICATION_JSON_UTF8)
 							.end("{}");
 				});

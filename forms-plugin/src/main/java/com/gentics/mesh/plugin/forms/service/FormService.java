@@ -238,22 +238,31 @@ public class FormService {
 	 * @return The respective error, when the form validation failed.
 	 */
 	private Optional<ValidationError> checkForm(JsonObject formData) {
-		if (!configuration.isValidateElements()) {
-			return Optional.empty();
-		}
-
 		try {
-			return toForm(formData.encode(), formData.getString("uuid"), null).validateForm();
+			// first try to deserialize the form
+			Form form = toForm(formData.encode(), formData.getString("uuid"), null);
+
+			if (!configuration.isValidateElements()) {
+				// no validation, so return empty optional
+				return Optional.empty();
+			} else {
+				// validate and return the result
+				return form.validateForm();
+			}
 		} catch (IOException e) {
-			log.error("Could not deserialize form of data:\n\t" + formData, e);
+			log.error("Could not deserialize form: {}", e, e.getMessage());
+
+			if (log.isTraceEnabled()) {
+				log.trace("Received formData:\n{}", formData.encodePrettily());
+
+			}
+			ValidationError error = new ValidationError()
+					.setName("form")
+					.setTitle(I18nHelper.get(Locale.GERMAN, "error.validation.form.title"))
+					.setMessage(I18nHelper.get(Locale.GERMAN, "error.validation.form.bad_request"));
+
+			return Optional.of(error);
 		}
-
-		ValidationError error = new ValidationError()
-			.setName("form")
-			.setTitle(I18nHelper.get(Locale.GERMAN, "error.validation.form.title"))
-			.setMessage(I18nHelper.get(Locale.GERMAN, "error.validation.form.bad_request"));
-
-		return Optional.of(error);
 	}
 
 //	/**
@@ -954,22 +963,21 @@ public class FormService {
 	 * @param schema
 	 *            schema
 	 * @return schema filled with data
-	 * @throws FormsError
 	 */
-	private <T extends SchemaModel> T getSchema(NodeResponse formNode, T schema) throws FormsError {
+	private <T extends SchemaModel> Single<T> getSchema(NodeResponse formNode, T schema) {
 		schema.setName(getSchemaName(formNode.getUuid()));
 		schema.setContainer(false);
 		try {
 			Form form = objectMapper.readValue(formNode.getFields().getStringField("json").toString(), Form.class);
 			form.addFieldSchemas(schema);
 		} catch (IOException e) {
-			throw new FormsError(e);
+			return Single.error(new FormsError("Error while deserializing form JSON", e, HttpResponseStatus.BAD_REQUEST.code()));
 		}
 
 		// add field for errors
 		schema.addField(new StringFieldSchemaImpl().setName(Form.ERRORS_FIELD_NAME).setLabel("Errors"));
 
-		return schema;
+		return Single.just(schema);
 	}
 
 	/**
@@ -983,22 +991,24 @@ public class FormService {
 		return SchemaService.SCHEMA_NAME.equals(node.getSchema().getName());
 	}
 
-	private Single<SchemaResponse> createAndAssignSchema(String projectName, NodeResponse formNode) throws FormsError {
-		SchemaCreateRequest schema = getSchema(formNode, new SchemaCreateRequest());
-		log.info("Creating schema {}", schema.getName());
-		return userClient.createSchema(schema).toSingle().flatMap(createdSchema -> {
-			return userClient.assignSchemaToProject(projectName, createdSchema.getUuid()).toSingle();
-		});
+	private Single<SchemaResponse> createAndAssignSchema(String projectName, NodeResponse formNode) {
+		return getSchema(formNode, new SchemaCreateRequest())
+			.map(schema -> {
+				log.info("Creating schema {}", schema.getName());
+				return schema;
+			})
+			.flatMap(schema -> userClient.createSchema(schema).toSingle())
+			.flatMap(createdSchema -> userClient.assignSchemaToProject(projectName, createdSchema.getUuid()).toSingle());
 	}
 
-	private Single<GenericMessageResponse> updateSchema(String projectName, NodeResponse formNode, SchemaResponse schema) throws FormsError {
-		log.info("Updating schema {} with uuid {}", schema.getName(), schema.getUuid());
-		SchemaUpdateRequest updateRequest = getSchema(formNode, new SchemaUpdateRequest());
-		return  userClient.updateSchema(schema.getUuid(), updateRequest).toSingle()
-			.flatMap(updateResponse ->
-				// Make sure the schema is assigned to the project, just in case.
-				userClient.assignSchemaToProject(projectName, schema.getUuid()).toCompletable()
-					.andThen(Single.just(updateResponse)));
+	private Single<GenericMessageResponse> updateSchema(String projectName, NodeResponse formNode, SchemaResponse schema) {
+		return getSchema(formNode, new SchemaUpdateRequest())
+			.map(updateRequest -> {
+				log.info("Updating schema {} with uuid {}", schema.getName(), schema.getUuid());
+				return updateRequest;
+			})
+			.flatMap(updateRequest -> userClient.updateSchema(schema.getUuid(), updateRequest).toSingle())
+			.flatMap(updateResponse -> userClient.assignSchemaToProject(projectName, schema.getUuid()).toCompletable().andThen(Single.just(updateResponse)));
 	}
 
 	/**

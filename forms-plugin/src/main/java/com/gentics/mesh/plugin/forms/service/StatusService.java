@@ -137,14 +137,14 @@ public class StatusService {
 	public Single<StatusResponse> activate(String projectName) {
 		return activate(projectName, Optional.empty());
 	}
-	
+
 	/**
 	 * Activate the plugin in the project
 	 * @param projectName project name
 	 * @return activation response
 	 */
 	public Single<StatusResponse> activate(String projectName, Optional<SchemaListResponse> maybeExistingSchemas) {
-		return initializeProject(projectName, maybeExistingSchemas).andThen(lazyPurgeService.get().initializeProject(projectName)).andThen(publish(projectName));
+		return initializeProject(projectName).andThen(publish(projectName));
 	}
 
 	/**
@@ -198,9 +198,7 @@ public class StatusService {
 							.takeNodeOffline(projectName, uuid, new PublishParametersImpl().setRecursive(true))
 							.toCompletable())
 					.andThen(check(projectName));
-		}).doOnSuccess(unused -> {
-			lazyPurgeService.get().removePurgeHandler(projectName);
-			});
+		});
 	}
 
 	/**

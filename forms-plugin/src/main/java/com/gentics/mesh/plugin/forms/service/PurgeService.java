@@ -10,7 +10,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -19,7 +18,10 @@ import javax.inject.Singleton;
 
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 
+import com.gentics.mesh.core.rest.MeshServerInfoModel;
+import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorMasterResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.plugin.common.dagger.AdminClient;
@@ -34,6 +36,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
+import io.reactivex.Single;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -55,7 +58,6 @@ public class PurgeService {
 
 	private final int downloadPurgeInterval;
 	private final int staleDataPurgeInterval;
-	private final Map<String, Long> purgeSchedulers = new ConcurrentHashMap<>();
 
 	@Inject
 	public PurgeService(
@@ -77,56 +79,18 @@ public class PurgeService {
 	 * @return completable
 	 */
 	public Completable initialize() {
-		return statusService.projectsWithPluginActive().toFlowable(BackpressureStrategy.BUFFER)
-				.flatMapCompletable(response -> initializeProject(response.getName()), false, 1);
-	}
-
-	/**
-	 * Initialize the project.
-	 * 
-	 * @param projectName project name
-	 * @return completable
-	 */
-	protected Completable initializeProject(String projectName) {
-		return adminClient.loadCoordinationMaster().toSingle().flatMap(
-				coordMaster -> adminClient.getApiInfo().toSingle().map(serverInfo -> coordMaster.getName() != null
-						&& !coordMaster.getName().equals(serverInfo.getMeshNodeName())).onErrorReturn(e -> {
-							return false;
-						})).flatMapCompletable(skip -> {
-			if (skip) {
-				log.warn("Download purge is disabled due to being started over non-master cluster node");
-
-				return Completable.complete();
-			}
+		return Completable.fromRunnable(() -> {
 			if (downloadPurgeInterval <= 0 && staleDataPurgeInterval <= 0) {
 				log.warn("All purge intervals are less than 1, purge disabled");
+			} else {
+				Handler<Long> purgeHandler = purgeHandler();
 
-				return Completable.complete();
-			}
-			purgeSchedulers.computeIfAbsent(projectName, name -> {
-				log.info("Starting periodic purge for {}", name);
-				Handler<Long> purgeHandler = purgeHandler(name);
-
+				log.info("Scheduling periodic purge");
 				// Start the first purge in a minute to make sure the purge is started at least once after startup  ...
 				rxVertx.setTimer(Duration.of(1, ChronoUnit.MINUTES).toMillis(), purgeHandler);
 				// ... and schedule one purge per day.
-				return rxVertx.setPeriodic(Duration.of(1, ChronoUnit.DAYS).toMillis(), purgeHandler);
-			});
-			return Completable.complete();
-		});
-	}
-
-	/**
-	 * Remove the purge handler for the given project
-	 * @param projectName project name
-	 */
-	protected void removePurgeHandler(String projectName) {
-		purgeSchedulers.computeIfPresent(projectName, (name, id) -> {
-			if (!rxVertx.cancelTimer(id)) {
-				log.error("Could not cancel downloads purge for {}", name);
+				rxVertx.setPeriodic(Duration.of(1, ChronoUnit.DAYS).toMillis(), purgeHandler);
 			}
-			// this removes the scheduler mapping
-			return null;
 		});
 	}
 
@@ -135,27 +99,45 @@ public class PurgeService {
 	 * {@link Vertx#setPeriodic(long, Handler)} that will delete old download
 	 * nodes and/or stale data nodes
 	 *
-	 * @param projectName The project to purge.
 	 * @return A timer/periodic handler that will delete old downloads and/or stale data nodes
 	 */
-	private Handler<Long> purgeHandler(String projectName) {
+	private Handler<Long> purgeHandler() {
 		return timerId -> {
-			Completable allJobs = Completable.complete();
-
-			if (downloadPurgeInterval > 0) {
-				allJobs = allJobs.andThen(purgeDownloads(projectName));
-				log.info("Purging downloads for project {}", projectName);
-			}
-			if (staleDataPurgeInterval > 0) {
-				ZonedDateTime purgeThreshold = ZonedDateTime.now(ZoneOffset.UTC)
-						.minus(Duration.ofDays(staleDataPurgeInterval))
-						.truncatedTo(ChronoUnit.DAYS);
-				allJobs = allJobs.andThen(purgeAllStaleData(projectName, purgeThreshold, 100));
-				log.info("Purging stale data nodes for project {}", projectName);
-			}
-
-			allJobs.subscribe();
+			shouldSkipPurge().flatMapCompletable(skip -> {
+				if (skip) {
+					return Completable.complete()
+						.doOnSubscribe(disp -> log.info("Skip purging, because currently not the master"));
+				} else {
+					return statusService.projectsWithPluginActive().toFlowable(BackpressureStrategy.BUFFER)
+						.flatMapCompletable(response -> purge(response.getName()), false, 1)
+						.doOnSubscribe(disp -> log.info("Starting periodic purge"))
+						.doFinally(() -> log.info("Finished periodic purge"));
+				}
+			}).subscribe();
 		};
+	}
+
+	/**
+	 * Return a completable which will do the necessary purges for the project with given name when subscribed
+	 * @param projectName project name
+	 * @return purge completable
+	 */
+	private Completable purge(String projectName) {
+		Completable allJobs = Completable.complete();
+
+		if (downloadPurgeInterval > 0) {
+			allJobs = allJobs.andThen(purgeDownloads(projectName));
+			log.info("Purging downloads for project {}", projectName);
+		}
+		if (staleDataPurgeInterval > 0) {
+			ZonedDateTime purgeThreshold = ZonedDateTime.now(ZoneOffset.UTC)
+					.minus(Duration.ofDays(staleDataPurgeInterval))
+					.truncatedTo(ChronoUnit.DAYS);
+			allJobs = allJobs.andThen(purgeAllStaleData(projectName, purgeThreshold, 100));
+			log.info("Purging stale data nodes for project {}", projectName);
+		}
+
+		return allJobs;
 	}
 
 	/**
@@ -303,6 +285,11 @@ public class PurgeService {
 				Optional<JsonObject> nodes = Optional.ofNullable(rs.getData())
 					.map(data -> data.getJsonObject("schema"))
 					.map(schema -> schema.getJsonObject("nodes"));
+				if (!nodes.isPresent()) {
+					log.warn("Could not get nodes for schema {}. Maybe schema does not exist.", schemaName);
+					hasNext.set(false);
+					return Completable.complete();
+				}
 				Optional<JsonArray> elements = nodes.map(n -> n.getJsonArray("elements")).filter(ar -> !ar.isEmpty());
 
 				hasNext.set(nodes.get().getBoolean("hasNextPage"));
@@ -328,5 +315,20 @@ public class PurgeService {
 				long duration = System.currentTimeMillis() - start.get();
 				log.info("Finished purging stale data nodes with schema {}. Purged {} nodes in {} ms", schemaName, counter.get(), duration);
 			});
+	}
+
+	/**
+	 * Check whether purging should be skipped
+	 * @return single boolean which emits true when purging shall be skipped
+	 */
+	protected Single<Boolean> shouldSkipPurge() {
+		Single<CoordinatorMasterResponse> coordinationMasterSingle = adminClient.loadCoordinationMaster().toSingle();
+		Single<MeshServerInfoModel> serverInfoSingle = adminClient.getApiInfo().toSingle();
+
+		return Single
+				.zip(coordinationMasterSingle, serverInfoSingle,
+						(coordMaster, serverInfo) -> coordMaster.getName() != null
+								&& !StringUtils.equals(coordMaster.getName(), serverInfo.getMeshNodeName()))
+				.onErrorReturnItem(false);
 	}
 }
