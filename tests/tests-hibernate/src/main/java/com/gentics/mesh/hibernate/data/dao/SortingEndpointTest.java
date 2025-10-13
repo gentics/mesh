@@ -21,15 +21,14 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
-import com.gentics.mesh.core.rest.branch.BranchListResponse;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.common.AbstractResponse;
+import com.gentics.mesh.core.rest.common.ListResponse;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
-import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
-import com.gentics.mesh.core.rest.lang.LanguageListResponse;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
@@ -38,30 +37,24 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
-import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
-import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
-import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
-import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
-import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
-import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.hibernate.data.HibQueryFieldMapper;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.SortingParametersImpl;
+import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.util.DateUtils;
@@ -86,26 +79,12 @@ public class SortingEndpointTest extends AbstractMeshTest {
 			SchemaCreateRequest request = new SchemaCreateRequest();
 			request.setName(name);
 			call(() -> client().createSchema(request));
-		}
-		Consumer<String> test = field -> {
-			Function<SchemaResponse, String> context = getters.get(field);
-			if (context == null) {
-				System.out.println("Sorting schemas , by `" + field + "` cannot currently be tested");
-				return;
-			}
-			SchemaListResponse list = call(() -> client().findSchemas(new SortingParametersImpl(field, SortOrder.DESCENDING)));
-			assertEquals("Total data size should be 13", 13, list.getData().size());
-			assertThat(list.getData()).as("Sorted by " + field)
-				.withFailMessage("Schemas are not sorted by " + field + ":\n%s", list.getData().stream().map(r -> getters.get(field).apply(r)).collect(Collectors.joining(",\n", "<", ">")))
-				.isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().reversed().compare(
-					fa != null ? context.apply(fa) : null,
-					fb != null ? context.apply(fb) : null));
-		};		
+		}	
 		String[] fields = tx(tx -> { 
 			return ((HibQueryFieldMapper) tx.schemaDao()).getGraphQlSortingFieldNames(false);
 		});
 		for (String field : fields) {
-			test.accept(field);
+			sortBackAndForth("Schemas", field, getters, sortOrder -> client().findSchemas(new SortingParametersImpl(field, sortOrder)), 13);
 		}
 	}
 
@@ -126,26 +105,12 @@ public class SortingEndpointTest extends AbstractMeshTest {
 			MicroschemaCreateRequest request = new MicroschemaCreateRequest();
 			request.setName(name);
 			call(() -> client().createMicroschema(request));
-		}
-		Consumer<String> test = field -> {
-			Function<MicroschemaResponse, String> context = getters.get(field);
-			if (context == null) {
-				System.out.println("Sorting microschemas , by `" + field + "` cannot currently be tested");
-				return;
-			}
-			MicroschemaListResponse list = call(() -> client().findMicroschemas(new SortingParametersImpl(field, SortOrder.DESCENDING)));
-			assertEquals("Total data size should be 12", 12, list.getData().size());
-			assertThat(list.getData()).as("Sorted by " + field)
-				.withFailMessage("Microschemas are not sorted by " + field + ":\n%s", list.getData().stream().map(r -> getters.get(field).apply(r)).collect(Collectors.joining(",\n", "<", ">")))
-				.isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().reversed().compare(
-					fa != null ? context.apply(fa) : null,
-					fb != null ? context.apply(fb) : null));
-		};		
+		}	
 		String[] fields = tx(tx -> { 
 			return ((HibQueryFieldMapper) tx.microschemaDao()).getGraphQlSortingFieldNames(false);
 		});
 		for (String field : fields) {
-			test.accept(field);
+			sortBackAndForth("Microschemas", field, getters, sortOrder -> client().findMicroschemas(new SortingParametersImpl(field, sortOrder)), 12);
 		}
 	}
 
@@ -169,33 +134,19 @@ public class SortingEndpointTest extends AbstractMeshTest {
 		for (int i = 1; i < 11; i++) {
 			final String name = "sort12345_" + i;
 			UserCreateRequest request = new UserCreateRequest();
-			request.setFirstname(rnd.nextAlphanumeric(i));
-			request.setLastname(rnd.nextAlphanumeric(i));
-			request.setEmailAddress(rnd.nextAlphanumeric(i) + "@" + rnd.nextAlphanumeric(i));
+			request.setFirstname("fn" + rnd.nextAlphanumeric(i));
+			request.setLastname("ln" + rnd.nextAlphanumeric(i));
+			request.setEmailAddress("mail" + rnd.nextAlphanumeric(i) + "@" + rnd.nextAlphanumeric(i) + "domain");
 			request.setUsername(name);
 			request.setPassword(name);
 			request.setForcedPasswordChange((i % 2) > 0);
 			call(() -> client().createUser(request));
-		}
-		Consumer<String> test = field -> {
-			Function<UserResponse, String> context = getters.get(field);
-			if (context == null) {
-				System.out.println("Sorting users , by `" + field + "` cannot currently be tested");
-				return;
-			}
-			UserListResponse list = call(() -> client().findUsers(new SortingParametersImpl(field, SortOrder.DESCENDING)));
-			assertEquals("Total data size should be 14", 14, list.getData().size());
-			assertThat(list.getData()).as("Sorted by " + field)
-				.withFailMessage("Users are not sorted by " + field + ":\n%s", list.getData().stream().map(r -> getters.get(field).apply(r)).collect(Collectors.joining(",\n", "<", ">")))
-				.isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().reversed().compare(
-					fa != null ? context.apply(fa) : null,
-					fb != null ? context.apply(fb) : null));
-		};		
+		}	
 		String[] fields = tx(tx -> { 
 			return ((HibQueryFieldMapper) tx.userDao()).getGraphQlSortingFieldNames(false);
 		});
 		for (String field : fields) {
-			test.accept(field);
+			sortBackAndForth("Users", field, getters, sortOrder -> client().findUsers(new SortingParametersImpl(field, sortOrder)), 14);
 		}
 	}
 
@@ -216,26 +167,12 @@ public class SortingEndpointTest extends AbstractMeshTest {
 			TagFamilyCreateRequest request = new TagFamilyCreateRequest();
 			request.setName(name);
 			call(() -> client().createTagFamily(projectName(), request));
-		}
-		Consumer<String> test = field -> {
-			Function<TagFamilyResponse, String> context = getters.get(field);
-			if (context == null) {
-				System.out.println("Sorting tag families , by `" + field + "` cannot currently be tested");
-				return;
-			}
-			TagFamilyListResponse list = call(() -> client().findTagFamilies(projectName(), new SortingParametersImpl(field, SortOrder.DESCENDING)));
-			assertEquals("Total data size should be 12", 12, list.getData().size());
-			assertThat(list.getData()).as("Sorted by " + field)
-				.withFailMessage("Tag families are not sorted by " + field + ":\n%s", list.getData().stream().map(r -> getters.get(field).apply(r)).collect(Collectors.joining(",\n", "<", ">")))
-				.isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().reversed().compare(
-					fa != null ? context.apply(fa) : null,
-					fb != null ? context.apply(fb) : null));
-		};		
+		}	
 		String[] fields = tx(tx -> { 
 			return ((HibQueryFieldMapper) tx.tagFamilyDao()).getGraphQlSortingFieldNames(false);
 		});
 		for (String field : fields) {
-			test.accept(field);
+			sortBackAndForth("Tag Families", field, getters, sortOrder -> client().findTagFamilies(projectName(), new SortingParametersImpl(field, sortOrder)), 12);
 		}
 	}
 
@@ -257,26 +194,12 @@ public class SortingEndpointTest extends AbstractMeshTest {
 			TagCreateRequest request = new TagCreateRequest();
 			request.setName(name);
 			call(() -> client().createTag(projectName(), tagFamilyUuid, request));
-		}
-		Consumer<String> test = field -> {
-			Function<TagResponse, String> context = getters.get(field);
-			if (context == null) {
-				System.out.println("Sorting tags , by `" + field + "` cannot currently be tested");
-				return;
-			}
-			TagListResponse list = call(() -> client().findTags(projectName(), tagFamilyUuid, new SortingParametersImpl(field, SortOrder.DESCENDING)));
-			assertEquals("Total data size should be 19", 19, list.getData().size());
-			assertThat(list.getData()).as("Sorted by " + field)
-				.withFailMessage("Tags are not sorted by " + field + ":\n%s", list.getData().stream().map(r -> getters.get(field).apply(r)).collect(Collectors.joining(",\n", "<", ">")))
-				.isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().reversed().compare(
-					fa != null ? context.apply(fa) : null,
-					fb != null ? context.apply(fb) : null));
-		};		
+		}	
 		String[] fields = tx(tx -> { 
 			return ((HibQueryFieldMapper) tx.tagDao()).getGraphQlSortingFieldNames(false);
 		});
 		for (String field : fields) {
-			test.accept(field);
+			sortBackAndForth("Tags", field, getters, sortOrder -> client().findTags(projectName(), tagFamilyUuid, new SortingParametersImpl(field, sortOrder)), 19);
 		}
 	}
 
@@ -297,26 +220,12 @@ public class SortingEndpointTest extends AbstractMeshTest {
 			RoleCreateRequest request = new RoleCreateRequest();
 			request.setName(name);
 			call(() -> client().createRole(request));
-		}
-		Consumer<String> test = field -> {
-			Function<RoleResponse, String> context = getters.get(field);
-			if (context == null) {
-				System.out.println("Sorting roles , by `" + field + "` cannot currently be tested");
-				return;
-			}
-			RoleListResponse list = call(() -> client().findRoles(new SortingParametersImpl(field, SortOrder.DESCENDING)));
-			assertEquals("Total data size should be 15", 15, list.getData().size());
-			assertThat(list.getData()).as("Sorted by " + field)
-				.withFailMessage("Roles are not sorted by " + field + ":\n%s", list.getData().stream().map(r -> getters.get(field).apply(r)).collect(Collectors.joining(",\n", "<", ">")))
-				.isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().reversed().compare(
-					fa != null ? context.apply(fa) : null,
-					fb != null ? context.apply(fb) : null));
-		};		
+		}	
 		String[] fields = tx(tx -> { 
 			return ((HibQueryFieldMapper) tx.roleDao()).getGraphQlSortingFieldNames(false);
 		});
 		for (String field : fields) {
-			test.accept(field);
+			sortBackAndForth("Roles", field, getters, sortOrder -> client().findRoles(new SortingParametersImpl(field, sortOrder)), 15);
 		}
 	}
 
@@ -338,26 +247,12 @@ public class SortingEndpointTest extends AbstractMeshTest {
 			request.setName(name);
 			request.setSchema(new SchemaReferenceImpl().setName("folder"));
 			call(() -> client().createProject(request));
-		}
-		Consumer<String> test = field -> {
-			Function<ProjectResponse, String> context = getters.get(field);
-			if (context == null) {
-				System.out.println("Sorting projects , by `" + field + "` cannot currently be tested");
-				return;
-			}
-			ProjectListResponse list = call(() -> client().findProjects(new SortingParametersImpl(field, SortOrder.DESCENDING)));
-			assertEquals("Total data size should be 11", 11, list.getData().size());
-			assertThat(list.getData()).as("Sorted by " + field)
-				.withFailMessage("Projects are not sorted by " + field + ":\n%s", list.getData().stream().map(r -> getters.get(field).apply(r)).collect(Collectors.joining(",\n", "<", ">")))
-				.isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().reversed().compare(
-					fa != null ? context.apply(fa) : null,
-					fb != null ? context.apply(fb) : null));
-		};		
+		}	
 		String[] fields = tx(tx -> { 
 			return ((HibQueryFieldMapper) tx.projectDao()).getGraphQlSortingFieldNames(false);
 		});
 		for (String field : fields) {
-			test.accept(field);
+			sortBackAndForth("Projects", field, getters, sortOrder -> client().findProjects(new SortingParametersImpl(field, sortOrder)), 11);
 		}
 	}
 
@@ -378,26 +273,12 @@ public class SortingEndpointTest extends AbstractMeshTest {
 			GroupCreateRequest request = new GroupCreateRequest();
 			request.setName(name);
 			call(() -> client().createGroup(request));
-		}
-		Consumer<String> test = field -> {
-			Function<GroupResponse, String> context = getters.get(field);
-			if (context == null) {
-				System.out.println("Sorting groups , by `" + field + "` cannot currently be tested");
-				return;
-			}
-			GroupListResponse list = call(() -> client().findGroups(new SortingParametersImpl(field, SortOrder.DESCENDING)));
-			assertEquals("Total data size should be 15", 15, list.getData().size());
-			assertThat(list.getData()).as("Sorted by " + field)
-				.withFailMessage("Groups are not sorted by " + field + ":\n%s", list.getData().stream().map(r -> getters.get(field).apply(r)).collect(Collectors.joining(",\n", "<", ">")))
-				.isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().reversed().compare(
-					fa != null ? context.apply(fa) : null,
-					fb != null ? context.apply(fb) : null));
-		};		
+		}	
 		String[] fields = tx(tx -> { 
 			return ((HibQueryFieldMapper) tx.groupDao()).getGraphQlSortingFieldNames(false);
 		});
 		for (String field : fields) {
-			test.accept(field);
+			sortBackAndForth("Groups", field, getters, sortOrder -> client().findGroups(new SortingParametersImpl(field, sortOrder)), 15);
 		}
 	}
 
@@ -418,26 +299,12 @@ public class SortingEndpointTest extends AbstractMeshTest {
 			BranchCreateRequest request = new BranchCreateRequest();
 			request.setName(name);
 			call(() -> client().createBranch(projectName(), request));
-		}
-		Consumer<String> test = field -> {
-			Function<BranchResponse, String> context = getters.get(field);
-			if (context == null) {
-				System.out.println("Sorting branches , by `" + field + "` cannot currently be tested");
-				return;
-			}
-			BranchListResponse list = call(() -> client().findBranches(projectName(), new SortingParametersImpl(field, SortOrder.DESCENDING)));
-			assertEquals("Total data size should be 11", 11, list.getData().size());
-			assertThat(list.getData()).as("Sorted by " + field)
-				.withFailMessage("Branches are not sorted by " + field + ":\n%s", list.getData().stream().map(r -> getters.get(field).apply(r)).collect(Collectors.joining(",\n", "<", ">")))
-				.isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().reversed().compare(
-					fa != null ? context.apply(fa) : null,
-					fb != null ? context.apply(fb) : null));
-		};		
+		}	
 		String[] fields = tx(tx -> { 
 			return ((HibQueryFieldMapper) tx.branchDao()).getGraphQlSortingFieldNames(false);
 		});
 		for (String field : fields) {
-			test.accept(field);
+			sortBackAndForth("Branches", field, getters, sortOrder -> client().findBranches(projectName(), new SortingParametersImpl(field, sortOrder)), 11);
 		}
 	}
 
@@ -449,26 +316,12 @@ public class SortingEndpointTest extends AbstractMeshTest {
 				// Fails on checking non latin characters against Java comparator
 				//"nativeName", LanguageResponse::getNativeName, 
 				"languageTag", LanguageResponse::getLanguageTag
-			);
-		Consumer<String> test = field -> {
-			Function<LanguageResponse, String> context = getters.get(field);
-			if (context == null) {
-				System.out.println("Sorting languages , by `" + field + "` cannot currently be tested");
-				return;
-			}
-			LanguageListResponse list = call(() -> client().findLanguages(new SortingParametersImpl(field, SortOrder.DESCENDING)));
-			assertEquals("Total data size should be 11", 11, list.getData().size());
-			assertThat(list.getData()).as("Sorted by " + field)
-				.withFailMessage("Languages are not sorted by " + field + ":\n%s", list.getData().stream().map(r -> getters.get(field).apply(r)).collect(Collectors.joining(",\n", "<", ">")))
-				.isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().reversed().compare(
-					fa != null ? context.apply(fa) : null,
-					fb != null ? context.apply(fb) : null));
-		};		
+			);	
 		String[] fields = tx(tx -> { 
 			return ((HibQueryFieldMapper) tx.languageDao()).getGraphQlSortingFieldNames(false);
 		});
 		for (String field : fields) {
-			test.accept(field);
+			sortBackAndForth("Languages", field, getters, sortOrder -> client().findLanguages(new SortingParametersImpl(field, sortOrder)), 11);
 		}
 	}
 
@@ -498,26 +351,12 @@ public class SortingEndpointTest extends AbstractMeshTest {
 				Map.entry("stopDate", r -> r.getStopDate()),
 				Map.entry("startDate", r -> r.getStartDate()),
 				Map.entry("nodeName", r -> r.getNodeName())
-			);
-		Consumer<String> test = field -> {
-			Function<JobResponse, String> context = getters.get(field);
-			if (context == null) {
-				System.out.println("Sorting jobs , by `" + field + "` cannot currently be tested");
-				return;
-			}
-			JobListResponse list = adminCall(() -> client().findJobs(new SortingParametersImpl(field, SortOrder.DESCENDING)));
-			assertEquals("Total data size should be 2", 2, list.getData().size());
-			assertThat(list.getData()).as("Sorted by " + field)
-				.withFailMessage("Jobs are not sorted by " + field + ":\n%s", list.getData().stream().map(r -> getters.get(field).apply(r)).collect(Collectors.joining(",\n", "<", ">")))
-				.isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().reversed().compare(
-					fa != null ? context.apply(fa) : null,
-					fb != null ? context.apply(fb) : null));
-		};		
+			);	
 		String[] fields = tx(tx -> { 
 			return ((HibQueryFieldMapper) tx.languageDao()).getGraphQlSortingFieldNames(false);
 		});
 		for (String field : fields) {
-			test.accept(field);
+			sortBackAndForth("Jobs", field, getters, sortOrder -> client().findJobs(new SortingParametersImpl(field, sortOrder)), 2);
 		}
 	}
 
@@ -552,25 +391,10 @@ public class SortingEndpointTest extends AbstractMeshTest {
 			request.getFields().put("title", createStringField("some title " + i));
 			request.getFields().put("teaser", createStringField("some teaser " + rnd.nextAlphanumeric(i+1)));
 			request.getFields().put("slug", createStringField("newpage" + i + ".html"));
-			request.getFields().put("content", createStringField(rnd.nextAlphanumeric(i+1)));
+			request.getFields().put("content", createStringField("HTML " + rnd.nextAlphanumeric(i+1)));
 			request.setParentNodeUuid(uuid);
 			call(() -> client().createNode(PROJECT_NAME, request));			
-		}
-		Consumer<String> test = field -> {
-			Function<NodeResponse, String> context = getters.get(field);
-			if (context == null) {
-				System.out.println("Sorting nodes , by `" + field + "` cannot currently be tested");
-				return;
-			}
-			NodeListResponse list = call(() -> client().findNodes(projectName(), new SortingParametersImpl(field, SortOrder.DESCENDING)));
-			assertEquals("Total data size should be 116", 116, list.getData().size());
-			assertThat(list.getData()).as("Sorted by " + field)
-				.withFailMessage("Nodes are not sorted by " + field + ":\n%s", list.getData().stream().map(r -> getters.get(field).apply(r)).collect(Collectors.joining(",\n", "<", ">")))
-				.isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().reversed().compare(
-					fa != null ? context.apply(fa) : null,
-					fb != null ? context.apply(fb) : null)
-				);
-		};		
+		}		
 		Consumer<String> testFields = field -> {
 			Function<NodeResponse, String> context = getters.get(field);
 			if (context == null) {
@@ -581,6 +405,8 @@ public class SortingEndpointTest extends AbstractMeshTest {
 			assertEquals("Total data size should be 116", 116, list.getData().size());
 			List<NodeResponse> listData = list.getData().stream().filter(item -> "content".equals(item.getSchema().getName())).collect(Collectors.toList());
 			assertEquals("Total requested schema's data size should be 109", 109, listData.size());
+
+			// Since sorting is performed against schema versioned content, it is grouped by version in the response, but not sorted in general
 			Map<String, List<NodeResponse>> byVersion = listData.stream().collect(Collectors.groupingBy(item -> item.getVersion()));
 			for (Entry<String, List<NodeResponse>> version : byVersion.entrySet()) {
 				assertThat(version.getValue()).as("Version " + version.getKey() + " sorted by " + field)
@@ -598,10 +424,35 @@ public class SortingEndpointTest extends AbstractMeshTest {
 			if (field.startsWith("fields.<")) {
 				continue;
 			}
-			test.accept(field);
+			sortBackAndForth("Nodes", field, getters, sortOrder -> client().findNodes(projectName(), new SortingParametersImpl(field, sortOrder)), 116);
 		}
 		for (FieldSchema field : tx(() -> schema.getLatestVersion().getSchema().getFields())) {
 			testFields.accept("fields.content." + field.getName());
 		}
 	}
+
+	protected <M extends RestModel> void sortBackAndForth(String name, String field, Map<String, Function<M, String>> getters, Function<SortOrder, MeshRequest<? extends ListResponse<M>>> request, long totalSize) {
+		Function<M, String> context = getters.get(field);
+		if (context == null) {
+			System.out.println("Sorting " + name + "  by `" + field + "` cannot currently be tested");
+			return;
+		}
+		ListResponse<M> list = adminCall(() -> request.apply(SortOrder.ASCENDING));
+		assertEquals(name + " total data size should be " + totalSize, totalSize, list.getData().size());
+		assertThat(list.getData()).as("Sorted by " + field)
+			.withFailMessage(name + " are not sorted by " + field + ":\n%s", list.getData().stream().map(r -> getters.get(field).apply(r)).collect(Collectors.joining(",\n", "<", ">")))
+			.isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().compare(
+				fa != null ? context.apply(fa) : null,
+				fb != null ? context.apply(fb) : null)
+			);
+
+		list = adminCall(() -> request.apply(SortOrder.DESCENDING));
+		assertEquals(name + " total data size should be " + totalSize, totalSize, list.getData().size());
+		assertThat(list.getData()).as("Sorted by " + field)
+			.withFailMessage(name + " are not sorted by " + field + ":\n%s", list.getData().stream().map(r -> getters.get(field).apply(r)).collect(Collectors.joining(",\n", "<", ">")))
+			.isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().reversed().compare(
+				fa != null ? context.apply(fa) : null,
+				fb != null ? context.apply(fb) : null)
+			);
+	};
 }
