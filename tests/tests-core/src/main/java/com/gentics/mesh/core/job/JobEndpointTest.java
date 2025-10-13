@@ -9,6 +9,7 @@ import static com.gentics.mesh.test.TestSize.PROJECT_AND_NODE;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -29,6 +30,7 @@ import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
@@ -38,6 +40,8 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.JobParameters;
 import com.gentics.mesh.parameter.client.JobParametersImpl;
+import com.gentics.mesh.parameter.client.SortingParametersImpl;
+import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.util.TestUtils;
@@ -76,6 +80,48 @@ public class JobEndpointTest extends AbstractMeshTest {
 		});
 
 		assertThat(adminCall(() -> client().findJobs()).getData()).hasSize(2);
+	}
+	/**
+	 * Test sorting the jobs list
+	 */
+	@Test
+	public void testListJobsSorted() {
+		JobListResponse jobList = adminCall(() -> client().findJobs());
+		assertThat(jobList.getData()).isEmpty();
+
+		String json = tx(() -> schemaContainer("folder").getLatestVersion().getJson());
+		String uuid = tx(() -> schemaContainer("folder").getUuid());
+		waitForJob(() -> {
+			SchemaUpdateRequest schema = JsonUtil.readValue(json, SchemaUpdateRequest.class);
+			schema.setName("folder2");
+			call(() -> client().updateSchema(uuid, schema));
+		});
+
+		tx((tx) -> {
+			tx.jobDao().enqueueBranchMigration(user(), initialBranch());
+		});
+
+		JobResponse branchMigrationJob = new JobResponse();
+		branchMigrationJob.setType(JobType.branch);
+		branchMigrationJob.setStatus(JobStatus.QUEUED);
+
+		JobResponse schemaMigrationJob = new JobResponse();
+		schemaMigrationJob.setType(JobType.schema);
+		schemaMigrationJob.setStatus(JobStatus.COMPLETED);
+
+		jobList = adminCall(() -> client().findJobs(new SortingParametersImpl().putSort("created", SortOrder.DESCENDING)));
+
+		assertThat(jobList.getData()).as("Job list sorted by created date, descendant").usingElementComparatorOnFields("status", "type")
+			.containsOnlyElementsOf(Arrays.asList(branchMigrationJob, schemaMigrationJob))
+			.isSortedAccordingTo((a,b) -> b.getCreated().compareToIgnoreCase(a.getCreated()));
+	}
+	/**
+	 * Test requesting the jobs list declines incorrect field
+	 */
+	@Test
+	public void testListJobsSortedWrongField() {
+		MeshRestClientMessageException error = adminCall(() -> client().findJobs(new SortingParametersImpl().putSort("existiertleidernicht", SortOrder.DESCENDING)), BAD_REQUEST);
+		assertThat(error.getResponseMessage().getMessage()).as("Error message").startsWith("The following column names are not allowed for sorting: [existiertleidernicht].");
 	}
 
 	/**

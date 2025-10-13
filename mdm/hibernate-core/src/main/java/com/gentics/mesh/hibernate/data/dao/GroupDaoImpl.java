@@ -4,11 +4,13 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.inQueriesLimitForSplitting;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -52,6 +54,7 @@ import io.vertx.core.Vertx;
  */
 @Singleton
 public class GroupDaoImpl extends AbstractHibDaoGlobal<HibGroup, GroupResponse, HibGroupImpl> implements PersistingGroupDao {
+	public static final String[] SORT_FIELDS = new String[] { "name" };
 	
 	@Inject
 	public GroupDaoImpl(CurrentTransaction currentTransaction, DaoHelper<HibGroup, HibGroupImpl> daoHelper, 
@@ -169,5 +172,13 @@ public class GroupDaoImpl extends AbstractHibDaoGlobal<HibGroup, GroupResponse, 
 				.map(t -> Pair.of(t.getName(), t))
 				.collect(Collectors.toList());
 		}).stream();
+	}
+
+	@Override
+	public String[] getGraphQlSortingFieldNames(boolean noDependencies) {
+		return Stream.of(
+				Arrays.stream(super.getGraphQlSortingFieldNames(noDependencies)),
+				Arrays.stream(SORT_FIELDS)					
+			).flatMap(Function.identity()).toArray(String[]::new);
 	}
 }

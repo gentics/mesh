@@ -87,6 +87,7 @@ import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.SortingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
+import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
@@ -235,6 +236,13 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		assertThat(list.getData()).isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().reversed().compare(
 				fa != null ? fa.getName() : null,
 				fb != null ? fb.getName() : null));
+	}
+
+	@Test
+	@Override
+	public void testReadPermittedSortedWrongField() throws Exception {
+		MeshRestClientMessageException error = call(() -> client().findSchemas(new SortingParametersImpl("existiertleidernicht", SortOrder.DESCENDING)), BAD_REQUEST);
+		assertThat(error.getLocalizedMessage()).as("Error message").startsWith("The following column names are not allowed for sorting: [existiertleidernicht].");
 	}
 
 	@Test
