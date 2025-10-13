@@ -144,7 +144,7 @@ public class StatusService {
 	 * @return activation response
 	 */
 	public Single<StatusResponse> activate(String projectName, Optional<SchemaListResponse> maybeExistingSchemas) {
-		return initializeProject(projectName).andThen(publish(projectName));
+		return initializeProject(projectName, maybeExistingSchemas).andThen(publish(projectName));
 	}
 
 	/**
