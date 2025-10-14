@@ -207,7 +207,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 	}
 
 	public Page<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo, java.util.function.Predicate<T> extraFilter, boolean readPerm) {
-		CriteriaQuery<D> query = cb().createQuery(domainClass);
+		CriteriaQuery<D> query = cb().createQuery(domainClass).distinct(true);
 		Root<D> dRoot = query.from(domainClass);
 
 		if (readPerm) {
