@@ -607,7 +607,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					return contentDao.getFieldContainers(node, tx.getBranch(gc), DRAFT).stream().filter(c -> {
 						String lang = c.getLanguageTag();
 						return lang.equals(languageTag);
-					}).findFirst().map(contentDao::versions).orElse(null);
+					}).findAny().map(contentDao::versions).orElse(null);
 				}).build(),
 
 			// .language
