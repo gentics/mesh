@@ -533,7 +533,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 		create.setLanguage("en");
 		create.setSchema(new SchemaReferenceImpl().setName(binContentSchema.getName()).setUuid(binContentSchema.getUuid()));
 		create.getFields().put("name", FieldUtil.createStringField("title_12345"));
-		NodeResponse node1 = call(() -> client().createNode(project().getName(), create));
+		NodeResponse node1 = call(() -> client().createNode(PROJECT_NAME, create));
 
 		// create the illegal content - node cannot appear with already used segment value
 		NodeCreateRequest illegalCreate = new NodeCreateRequest();
