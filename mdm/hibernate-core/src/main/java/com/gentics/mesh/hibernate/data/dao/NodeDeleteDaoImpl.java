@@ -207,15 +207,19 @@ public class NodeDeleteDaoImpl {
 				break;
 			}
 
-			Set<HibNodeImpl> descendants = em().createNamedQuery("nodeBranchParents.findDescendantsInBranch", HibNodeImpl.class)
+			List<UUID> nodesUuidsToDelete = em().createNamedQuery("nodeBranchParents.findDescendantUuidsInBranch", UUID.class)
 					.setParameter("node", node)
 					.setParameter("branch", branch)
 					.setParameter("distance", maxDistance)
-					.setHint("jakarta.persistence.fetchgraph", entityGraph)
 					.setMaxResults(NODE_DELETION_BATCHSIZE)
-					.getResultStream()
-					.collect(Collectors.toSet());
-			List<UUID> nodesUuidsToDelete = descendants.stream().map(HibNodeImpl::getDbUuid).collect(Collectors.toList());
+					.getResultList();
+
+			// note: no need to split the query, since the batchsize for loading the uuids is small enough
+			Set<HibNodeImpl> descendants = new HashSet<>(
+					em().createNamedQuery("node.findNodesByUuids", HibNodeImpl.class)
+							.setParameter("nodeUuids", nodesUuidsToDelete)
+							.setHint("javax.persistence.fetchgraph", entityGraph).getResultList());
+
 			Set<HibSchema> schemas = descendants.stream().map(HibNode::getSchemaContainer).collect(Collectors.toSet());
 			Set<HibSchemaVersion> versions = schemas.stream()
 					.flatMap(this::getVersions)
