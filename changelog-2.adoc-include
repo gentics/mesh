@@ -6,6 +6,14 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v2.1.25]]
+== 2.1.25 (27.10.2025)
+
+icon:check[] Search: Running an index sync did not properly close all used scroll contexts in elasticsearch,
+which could lead to errors like 'Trying to create too many scroll contexts' in elasticsearch.
+This has been fixed, all scroll contexts are closed as soon as they are not used any more.
+
+
 [[v2.1.24]]
 == 2.1.24 (22.09.2025)
 
