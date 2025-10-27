@@ -6,6 +6,22 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v3.0.16]]
+== 3.0.16 (27.10.2025)
+
+icon:check[] Core: After the data migration from the older Mesh versions it is possible to have list item database tables being polluted with the duplicated data, that, while making no functional harm, may lead to the random performance penalties.
+ Targeting these, a new consistency check/repair feature has been added to the existing "*listitem" checks. 
+
+icon:check[] Search: Running an index sync did not properly close all used scroll contexts in elasticsearch,
+which could lead to errors like 'Trying to create too many scroll contexts' in elasticsearch.
+This has been fixed, all scroll contexts are closed as soon as they are not used any more.
+
+
+icon:check[] Core: Under some circumstances the fetch of entities via REST GET returns duplicated entries. This has been fixed.
+
+icon:check[] Core: The recursive deletion of nodes has been fixed to not leave orphaned contents behind.
+
+
 [[v3.0.15]]
 == 3.0.15 (23.09.2025)
 
