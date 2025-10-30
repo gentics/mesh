@@ -1169,9 +1169,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 		EntityManager em = currentTransaction.getEntityManager();
 		if (contentEdgesInitialized(content.getNode())) {
 			HibNodeImpl impl = (HibNodeImpl) content.getNode();
-			return impl.getContentEdges().stream().sorted((a,b) -> a.getContentUuid().compareTo(b.getContentUuid()))
-					.peek(edge -> log.error("Content {} Edge version {}/{} content {} node {} type {} branch {} match {}", content.getId(), edge.getVersion().getId(), edge.getVersion().getVersion(), edge.getContentUuid(), edge.getNode().getId(), edge.getType(), edge.getBranchUuid(), edge.getContentUuid().equals(content.getId()) && edge.getType().equals(type) && edge.getBranchUuid().equals(branchUuid)))
-					.anyMatch(edge -> edge.getContentUuid().equals(content.getId()) && edge.getType().equals(type) && edge.getBranchUuid().equals(branchUuid));
+			return impl.getContentEdges().stream().anyMatch(edge -> edge.getContentUuid().equals(content.getId()) && edge.getType().equals(type) && edge.getBranchUuid().equals(branchUuid));
 		}
 
 		return em.createNamedQuery("contentEdge.findByContentTypeAndBranch", HibNodeFieldContainerEdgeImpl.class)
