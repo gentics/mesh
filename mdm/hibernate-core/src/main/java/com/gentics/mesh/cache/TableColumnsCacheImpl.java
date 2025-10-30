@@ -32,16 +32,17 @@ public class TableColumnsCacheImpl extends AbstractMeshCache<Class<?>, Set<Strin
 	 * @return cache instance
 	 */
 	private static EventAwareCache<Class<?>, Set<String>> createCache(EventAwareCacheFactory factory) {
-		long size = 46;
-		try {
-			size = ClassPath.from(AbstractHibDatabaseElement.class.getClassLoader()).getAllClasses()
-					.stream()
-					.filter(cls -> "com.gentics.mesh.hibernate.data.domain".equals(cls.getPackageName()))
-					.map(ClassInfo::load)
-					.filter(cls -> cls.getDeclaredAnnotation(Entity.class) != null)
-					.count();
-		} catch (IOException e) {
-		}
+		// The value is taken from the commented code below
+		long size = 46;		
+//		try {
+//			size = ClassPath.from(AbstractHibDatabaseElement.class.getClassLoader()).getAllClasses()
+//					.stream()
+//					.filter(cls -> "com.gentics.mesh.hibernate.data.domain".equals(cls.getPackageName()))
+//					.map(ClassInfo::load)
+//					.filter(cls -> cls.getDeclaredAnnotation(Entity.class) != null)
+//					.count();
+//		} catch (IOException e) {
+//		}
 		return factory.<Class<?>, Set<String>>builder()
 				.name("tablecolumns")
 				.events()
