@@ -11,6 +11,8 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 
@@ -34,6 +36,13 @@ import com.gentics.mesh.dagger.annotations.ElementTypeKey;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Entity(name = TABLE_NAME)
 @ElementTypeKey(ElementType.MICROSCHEMAVERSION)
+@NamedQueries({
+	@NamedQuery(
+			name = "microschemaversion.findInBranchForMicroschema",
+			query = "select e.version from branch_microschema_version_edge e " +
+					"where e.branch = :branch and e.version.microschema = :microschema"
+	)
+})
 public class HibMicroschemaVersionImpl 
 		extends AbstractHibFieldSchemaVersion<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschema, HibMicroschemaVersion> 
 		implements HibMicroschemaVersion, Serializable {
