@@ -5,6 +5,7 @@ import java.util.stream.Stream;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
@@ -165,4 +166,12 @@ public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionMod
 	default Result<? extends HibNodeFieldContainer> findDraftFieldContainers(HibSchemaVersion version, String branchUuid) {
 		return findDraftFieldContainers(version, branchUuid, -1);
 	}
+
+	/**
+	 * Find the latest schema version of the schema, that is assigned to the branch
+	 * @param branch branch
+	 * @param schema schema
+	 * @return latest schema version or null
+	 */
+	HibSchemaVersion findLatestVersion(HibBranch branch, HibSchema schema);
 }

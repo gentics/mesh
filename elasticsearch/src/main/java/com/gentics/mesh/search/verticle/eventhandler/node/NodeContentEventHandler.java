@@ -157,7 +157,7 @@ public class NodeContentEventHandler implements EventHandler {
 			HibSchema schema = tx.schemaDao().findByUuid(message.getSchema().getUuid());
 			HibProject project = tx.projectDao().findByUuid(message.getProject().getUuid());
 			if (project != null) {
-				return tx.branchDao().findByUuid(project, message.getBranchUuid()).findLatestSchemaVersion(schema);
+				return tx.schemaDao().findLatestVersion(tx.branchDao().findByUuid(project, message.getBranchUuid()), schema);
 			} else {
 				log.warn("Could not find the project for UUID {" + message.getProject().getUuid() + "}");
 				return getSchemaVersion(message.getSchema(), tx);

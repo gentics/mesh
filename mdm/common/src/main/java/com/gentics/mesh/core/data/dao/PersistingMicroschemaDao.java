@@ -273,7 +273,7 @@ public interface PersistingMicroschemaDao
 		HibMicroschemaVersion foundVersion = null;
 
 		if (branch != null) {
-			foundVersion = branch.findLatestMicroschemaVersion(container);
+			foundVersion = findLatestVersion(branch, container);
 		} else if (version != null) {
 			foundVersion = findVersionByRev(container, version);
 		} else {

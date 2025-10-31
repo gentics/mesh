@@ -13,6 +13,7 @@ import com.gentics.mesh.contentoperation.CommonContentColumn;
 import com.gentics.mesh.contentoperation.ContentStorage;
 import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.PersistingSchemaDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -45,6 +46,7 @@ import com.gentics.mesh.hibernate.event.EventFactory;
 import com.gentics.mesh.hibernate.util.HibernateUtil;
 import com.gentics.mesh.hibernate.util.SplittingUtils;
 import com.gentics.mesh.util.UUIDUtil;
+import com.gentics.mesh.util.VersionUtil;
 
 import dagger.Lazy;
 import io.vertx.core.Vertx;
@@ -251,5 +253,16 @@ public class SchemaDaoImpl
 		em().createQuery("delete from branch_schema_version_edge bsve where bsve.version = :version")
 				.setParameter("version", version)
 				.executeUpdate();
+	}
+
+	@Override
+	public HibSchemaVersion findLatestVersion(HibBranch branch, HibSchema schema) {
+		List<HibSchemaVersionImpl> versions = em().createNamedQuery("schemaversion.findInBranchForSchema", HibSchemaVersionImpl.class)
+			.setParameter("branch", branch)
+			.setParameter("schema", schema)
+			.getResultList();
+
+		return versions.stream().sorted((v1, v2) -> VersionUtil.compareVersions(v2.getVersion(), v1.getVersion()))
+				.findFirst().orElse(null);
 	}
 }

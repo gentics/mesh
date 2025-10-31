@@ -7,6 +7,8 @@ import java.util.Set;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 
@@ -33,6 +35,13 @@ import com.gentics.mesh.dagger.annotations.ElementTypeKey;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Entity(name = HibSchemaVersionImpl.TABLE_NAME)
 @ElementTypeKey(ElementType.SCHEMAVERSION)
+@NamedQueries({
+	@NamedQuery(
+			name = "schemaversion.findInBranchForSchema",
+			query = "select e.version from branch_schema_version_edge e " +
+					"where e.branch = :branch and e.version.schema = :schema"
+	)
+})
 public class HibSchemaVersionImpl 
 			extends AbstractHibFieldSchemaVersion<SchemaResponse, SchemaVersionModel, SchemaReference, HibSchema, HibSchemaVersion> 
 			implements HibSchemaVersion, Serializable {
