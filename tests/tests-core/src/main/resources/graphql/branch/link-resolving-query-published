@@ -1,19 +1,23 @@
 {
-  node(path: "/test2") {
-    # [$.data.node.isPublished=true]
-    isPublished
-    ... on content {
-      fields {
-		    # [$.data.node.fields.content=/test1]
-        content(linkType: SHORT)
-		    # [$.data.node.fields.teaser=/test1]
-        teaser(linkType: SHORT)
-
-        # [$.data.node.fields.contentFull=%CURRENT_API_BASE_PATH%/dummy/webroot/test1?branch=testBranch]
-        contentFull: content(linkType: FULL)
-        # [$.data.node.fields.teaserFull=%CURRENT_API_BASE_PATH%/dummy/webroot/test1?branch=testBranch]
-        teaserFull: teaser(linkType: FULL)
-      }
+  rootNode {
+    children(filter: {fields:{content:{slug:{equals:"test2"}}}}) {
+      elements {
+        # [$.data.rootNode.children.elements[0].isPublished=true]
+        isPublished
+        ... on content {
+          fields {
+            # [$.data.rootNode.children.elements[0].fields.content=/test1]
+            content(linkType: SHORT)
+            # [$.data.rootNode.children.elements[0].fields.teaser=/test1]
+            teaser(linkType: SHORT)
+    
+            # [$.data.rootNode.children.elements[0].fields.contentFull=%CURRENT_API_BASE_PATH%/dummy/webroot/test1?branch=testBranch]
+            contentFull: content(linkType: FULL)
+            # [$.data.rootNode.children.elements[0].fields.teaserFull=%CURRENT_API_BASE_PATH%/dummy/webroot/test1?branch=testBranch]
+            teaserFull: teaser(linkType: FULL)
+          }
+        }
+      }    
     }
   }
 }
