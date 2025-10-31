@@ -409,9 +409,15 @@ public class TestDataProvider {
 			project.addLanguage(tx.languageDao().findByLanguageTag(getGerman()));
 		}		
 		HibUser jobUser = userInfo.getUser();
-		//schemaDao.assign(getSchemaContainer("folder"), project, jobUser, batch); // already done
-		schemaDao.assign(getSchemaContainer("content"), project, jobUser, batch);
-		schemaDao.assign(getSchemaContainer("binary_content"), project, jobUser, batch);
+		if (!schemaDao.isLinkedToProject(getSchemaContainer("folder"), project)) {
+			schemaDao.assign(getSchemaContainer("folder"), project, jobUser, batch);
+		}
+		if (!schemaDao.isLinkedToProject(getSchemaContainer("content"), project)) {
+			schemaDao.assign(getSchemaContainer("content"), project, jobUser, batch);
+		}
+		if (!schemaDao.isLinkedToProject(getSchemaContainer("binary_content"), project)) {
+			schemaDao.assign(getSchemaContainer("binary_content"), project, jobUser, batch);
+		}
 		projectUuid = project.getUuid();
 		branchUuid = project.getInitialBranch().getUuid();
 
