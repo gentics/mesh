@@ -950,7 +950,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		if (!isEmpty(schemaInfo.getSchema().getUuid())) {
 			// 2. Use schema reference by uuid first
 			HibSchema schemaByUuid = schemaDao.loadObjectByUuid(project, ac, schemaInfo.getSchema().getUuid(), READ_PERM);
-			HibSchemaVersion schemaVersion = branch.findLatestSchemaVersion(schemaByUuid);
+			HibSchemaVersion schemaVersion = schemaDao.findLatestVersion(branch, schemaByUuid);
 			if (schemaVersion == null) {
 				throw error(BAD_REQUEST, "schema_error_schema_not_linked_to_branch", schemaByUuid.getName(), branch.getName(), project.getName());
 			}
@@ -964,7 +964,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 				String schemaName = schemaByName.getName();
 				String schemaUuid = schemaByName.getUuid();
 				if (userDao.hasPermission(requestUser, schemaByName, READ_PERM)) {
-					HibSchemaVersion schemaVersion = branch.findLatestSchemaVersion(schemaByName);
+					HibSchemaVersion schemaVersion = schemaDao.findLatestVersion(branch, schemaByName);
 					if (schemaVersion == null) {
 						throw error(BAD_REQUEST, "schema_error_schema_not_linked_to_branch", schemaByName.getName(), branch.getName(),
 								project.getName());
@@ -1476,6 +1476,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			}
 		}
 		ContentDao contentDao = tx.contentDao();
+		SchemaDao schemaDao = tx.schemaDao();
 		HibBranch branch = tx.getBranch(ac, node.getProject());
 		HibNodeFieldContainer latestDraftVersion = contentDao.getFieldContainer(node, languageTag, branch, DRAFT);
 
@@ -1524,8 +1525,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 
 			// Make sure the container was already migrated. Otherwise the update can't proceed.
 			HibSchemaVersion schemaVersion = contentDao.getSchemaContainerVersion(latestDraftVersion);
-			if (!latestDraftVersion.getSchemaContainerVersion().equals(branch.findLatestSchemaVersion(schemaVersion
-					.getSchemaContainer()))) {
+			if (!latestDraftVersion.getSchemaContainerVersion().equals(schemaDao.findLatestVersion(branch, schemaVersion.getSchemaContainer()))) {
 				throw error(BAD_REQUEST, "node_error_migration_incomplete");
 			}
 

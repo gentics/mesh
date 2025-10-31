@@ -305,7 +305,7 @@ public interface PersistingContentDao extends ContentDao {
 
 	@Override
 	default HibNodeFieldContainer createFirstFieldContainerForNode(HibNode node, String languageTag, HibBranch branch, HibUser editor) {
-		HibSchemaVersion version = branch.findLatestSchemaVersion(node.getSchemaContainer());
+		HibSchemaVersion version = Tx.get().schemaDao().findLatestVersion(branch, node.getSchemaContainer());
 		HibNodeFieldContainer newContainer = createPersisted(node.getUuid(), version, null, languageTag, new VersionNumber(), editor);
 		connectFieldContainer(node, newContainer, branch, languageTag, true);
 
@@ -318,7 +318,7 @@ public interface PersistingContentDao extends ContentDao {
 		// We need create a new container with no reference, if an original is not provided.
 		// So use the latest version available to use.
 		HibSchemaVersion version = Objects.isNull(original)
-				? branch.findLatestSchemaVersion(node.getSchemaContainer())
+				? Tx.get().schemaDao().findLatestVersion(branch, node.getSchemaContainer())
 				: getSchemaContainerVersion(original) ;
 		return createFieldContainer(version, node, languageTag, branch, editor, original, handleDraftEdge);
 	}

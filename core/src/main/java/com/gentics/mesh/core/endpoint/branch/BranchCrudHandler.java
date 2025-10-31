@@ -116,7 +116,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 				// Resolve the list of references to graph schema container versions
 				for (SchemaReference reference : schemaReferenceList.getSchemas()) {
 					HibSchemaVersion version = schemaDao.fromReference(project, reference);
-					HibSchemaVersion assignedVersion = branch.findLatestSchemaVersion(version.getSchemaContainer());
+					HibSchemaVersion assignedVersion = schemaDao.findLatestVersion(branch, version.getSchemaContainer());
 					if (assignedVersion != null && Double.valueOf(assignedVersion.getVersion()) > Double.valueOf(version.getVersion())) {
 						throw error(BAD_REQUEST, "branch_error_downgrade_schema_version", version.getName(), assignedVersion.getVersion(),
 							version.getVersion());
@@ -172,7 +172,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 				for (MicroschemaReference reference : microschemaReferenceList.getMicroschemas()) {
 					HibMicroschemaVersion version = microschemaDao.fromReference(tx.getProject(ac), reference);
 
-					HibMicroschemaVersion assignedVersion = branch.findLatestMicroschemaVersion(version.getSchemaContainer());
+					HibMicroschemaVersion assignedVersion = microschemaDao.findLatestVersion(branch, version.getSchemaContainer());
 					if (assignedVersion != null && Double.valueOf(assignedVersion.getVersion()) > Double.valueOf(version.getVersion())) {
 						throw error(BAD_REQUEST, "branch_error_downgrade_microschema_version", version.getName(), assignedVersion.getVersion(),
 							version.getVersion());

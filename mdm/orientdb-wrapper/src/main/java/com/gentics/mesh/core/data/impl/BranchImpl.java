@@ -34,7 +34,6 @@ import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.root.impl.BranchRootImpl;
-import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaElement;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
@@ -59,7 +58,6 @@ import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.util.VersionUtil;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 import io.reactivex.Observable;
@@ -218,33 +216,6 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 			.filter(version -> {
 				return schemaVersion.getUuid().equals(version.getUuid());
 			}).findAny().isPresent();
-	}
-
-	@Override
-	public HibSchemaVersion findLatestSchemaVersion(HibSchema schemaContainer) {
-		SchemaContainerVersionImpl graphVersion = out(HAS_SCHEMA_VERSION, SchemaContainerVersionImpl.class)
-			.stream()
-			.filter(version -> {
-				return schemaContainer.getUuid().equals(version.getSchemaContainer().getUuid());
-			}).sorted((o1, o2) -> {
-				String v1 = o1.getProperty(GraphFieldSchemaContainerVersion.VERSION_PROPERTY_KEY);
-				String v2 = o2.getProperty(GraphFieldSchemaContainerVersion.VERSION_PROPERTY_KEY);
-				return VersionUtil.compareVersions(v2, v1);
-			}).findFirst().orElse(null);
-		return graphVersion;
-	}
-
-	@Override
-	public HibMicroschemaVersion findLatestMicroschemaVersion(HibMicroschema schemaContainer) {
-		return out(HAS_MICROSCHEMA_VERSION, MicroschemaContainerVersionImpl.class)
-			.stream()
-			.filter(version -> {
-				return schemaContainer.getUuid().equals(version.getSchemaContainer().getUuid());
-			}).sorted((o1, o2) -> {
-				String v1 = o1.getProperty(GraphFieldSchemaContainerVersion.VERSION_PROPERTY_KEY);
-				String v2 = o2.getProperty(GraphFieldSchemaContainerVersion.VERSION_PROPERTY_KEY);
-				return VersionUtil.compareVersions(v2, v1);
-			}).findFirst().orElse(null);
 	}
 
 	@Override
