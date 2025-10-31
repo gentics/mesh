@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.dao.impl;
 
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_VERSION;
 
 import java.util.Map;
 import java.util.Optional;
@@ -24,6 +25,7 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.MicroschemaRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.Microschema;
@@ -35,6 +37,7 @@ import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.util.VersionUtil;
 
 import dagger.Lazy;
 
@@ -214,5 +217,17 @@ public class MicroschemaDaoWrapperImpl
 	@Override
 	public Result<? extends HibMicronode> findMicronodes(HibMicroschemaVersion version) {
 		return toGraph(version).findMicronodes();
+	}
+
+	@Override
+	public HibMicroschemaVersion findLatestVersion(HibBranch branch, HibMicroschema microschema) {
+		return toGraph(microschema).out(HAS_MICROSCHEMA_VERSION, MicroschemaContainerVersionImpl.class).stream()
+				.filter(version -> {
+					return microschema.getUuid().equals(version.getSchemaContainer().getUuid());
+				}).sorted((o1, o2) -> {
+					String v1 = o1.getProperty(GraphFieldSchemaContainerVersion.VERSION_PROPERTY_KEY);
+					String v2 = o2.getProperty(GraphFieldSchemaContainerVersion.VERSION_PROPERTY_KEY);
+					return VersionUtil.compareVersions(v2, v1);
+				}).findFirst().orElse(null);
 	}
 }

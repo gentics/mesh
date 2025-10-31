@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.dao.impl;
 
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -26,6 +27,7 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.SchemaRoot;
+import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
@@ -43,6 +45,7 @@ import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.util.VersionUtil;
 
 import dagger.Lazy;
 
@@ -230,5 +233,18 @@ public class SchemaDaoWrapperImpl
 	@Override
 	public Class<? extends HibSchemaVersion> getVersionPersistenceClass() {
 		return SchemaContainerVersionImpl.class;
+	}
+
+	@Override
+	public HibSchemaVersion findLatestVersion(HibBranch branch, HibSchema schema) {
+		SchemaContainerVersionImpl graphVersion = toGraph(schema)
+				.out(HAS_SCHEMA_VERSION, SchemaContainerVersionImpl.class).stream().filter(version -> {
+					return schema.getUuid().equals(version.getSchemaContainer().getUuid());
+				}).sorted((o1, o2) -> {
+					String v1 = o1.getProperty(GraphFieldSchemaContainerVersion.VERSION_PROPERTY_KEY);
+					String v2 = o2.getProperty(GraphFieldSchemaContainerVersion.VERSION_PROPERTY_KEY);
+					return VersionUtil.compareVersions(v2, v1);
+				}).findFirst().orElse(null);
+		return graphVersion;
 	}
 }

@@ -86,4 +86,12 @@ public interface MicroschemaDao extends ContainerDao<MicroschemaResponse, Micros
 	 * @return
 	 */
 	HibMicroschemaVersion fromReference(HibProject project, MicroschemaReference reference, HibBranch branch);
+
+	/**
+	 * Find the latest microschema version of the microschema, that is assigned to the branch
+	 * @param branch branch
+	 * @param microschema microschema
+	 * @return latest microschema version or null
+	 */
+	HibMicroschemaVersion findLatestVersion(HibBranch branch, HibMicroschema microschema);
 }

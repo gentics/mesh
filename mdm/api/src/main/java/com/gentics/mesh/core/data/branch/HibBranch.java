@@ -285,22 +285,6 @@ public interface HibBranch extends HibCoreElement<BranchResponse>, HibReferencea
 	HibBranch setProject(HibProject project);
 
 	/**
-	 * Find the latest schema version which is assigned to the branch which matches the provided schema container
-	 * 
-	 * @param schemaContainer
-	 * @return Found version or null if no version could be found.
-	 */
-	HibSchemaVersion findLatestSchemaVersion(HibSchema schemaContainer);
-
-	/**
-	 * Find the latest microschema version which is assigned to the branch which matches the provided microschema container
-	 * 
-	 * @param schemaContainer
-	 * @return Found version or null if no version could be found.
-	 */
-	HibMicroschemaVersion findLatestMicroschemaVersion(HibMicroschema schemaContainer);
-
-	/**
 	 * Add the given tag to the list of tags for this branch.
 	 * 
 	 * @param tag
