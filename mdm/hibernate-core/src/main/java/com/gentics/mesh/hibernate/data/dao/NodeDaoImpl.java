@@ -618,7 +618,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 		Optional<List<ContentColumn>> maybeContentColumns = maybeContentSchemaVersion.map(version -> collectVersionColumns(version).stream()
 				.filter(c -> !JoinedContentColumn.class.isInstance(c)).collect(Collectors.toList()));
 
-		List<String> nodeColumns = databaseConnector.getDatabaseColumnNames(getPersistenceClass()).map(columns -> columns.stream().map(column -> nodeAlias + "." + column).collect(Collectors.toList())).get();
+		List<String> nodeColumns = daoHelper.getDomainColumns().stream().map(column -> nodeAlias + "." + column).collect(Collectors.toList());
 
 		Select select = new Select(databaseConnector.getSessionMetadataIntegrator().getSessionFactoryImplementor());
 		select.setTableName(databaseConnector.maybeGetPhysicalTableName(getPersistenceClass()).get() + " " + nodeAlias);
@@ -699,7 +699,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 			maybeParents.ifPresent(unused -> query.addEntity(HibBranchNodeParent.class));
 
 			// Add an extra container edge entity to fetch, if applicable
-			Optional.of(noContainerEdgeFetch).filter(noFetch -> !noFetch).map(fetch -> maybeContainerLanguages).flatMap(unused -> maybeParents).ifPresent(unused -> query.addEntity(HibNodeFieldContainerEdgeImpl.class));
+			Optional.of(noContainerEdgeFetch).filter(noFetch -> !noFetch).flatMap(fetch -> maybeContainerLanguages).or(() -> maybeContentColumns.map(contentColumns -> Collections.emptyList())).map(unused -> maybeParents).ifPresent(unused -> query.addEntity(HibNodeFieldContainerEdgeImpl.class));
 
 			// Add an extra content entity to fetch, if applicable
 			maybeContentColumns.ifPresent(contentColumns -> contentColumns.stream().forEach(c -> query.addScalar(databaseConnector.renderColumn(c), c.getJavaClass())));
@@ -726,7 +726,9 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 			} else {
 				// Los geht's
 				return Pair.of(query.getResultStream().map(o -> {
-					// This clumsy construction is required for Hibernate, that's not being currently able to mix managed and unmanaged entities even with a help of result transformer.
+					// This clumsy construction is required for Hibernate, that's not being currently able to mix managed and unmanaged entities.
+					// Besides, the results transformers do not work with scrollable contexts (aka stream()).
+					// All the code below could have been formed as TupleTransformer, which would look a bit more Hibernate'ish, but is identical by functioning.
 					if (o.getClass().isArray() && ((Object[]) o).length > 1) {
 						Object[] oo = (Object[]) o;
 						// Check if node responded (normally under index 0)
@@ -734,13 +736,20 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 						// Check if branch parent edge responded
 						HibBranchNodeParent parentEdge = Arrays.stream(oo).filter(HibBranchNodeParent.class::isInstance).map(HibBranchNodeParent.class::cast).findAny().orElse(null);
 						// Check if container edge responded
-						HibNodeFieldContainerEdge container = Arrays.stream(oo).filter(HibNodeFieldContainerEdge.class::isInstance).map(HibNodeFieldContainerEdge.class::cast).findAny().orElse(null);
+						HibNodeFieldContainerEdgeImpl container = Arrays.stream(oo).filter(HibNodeFieldContainerEdgeImpl.class::isInstance).map(HibNodeFieldContainerEdgeImpl.class::cast).findAny().orElse(null);
 						// Check if content fields responded
 						HibNodeFieldContainer content = maybeContentColumns.map(contentColumns -> {
 							int contentIndex = (node != null ? 1 : 0) + (parentEdge != null ? 1 : 0) + (container != null ? 1 : 0);
 							HibNodeFieldContainerImpl fc = new HibNodeFieldContainerImpl();
 							for (int i = 0; i < contentColumns.size(); i++) {
-								fc.put(contentColumns.get(i), oo[i + contentIndex]);
+								ContentColumn column = contentColumns.get(i);
+								// Still the same Hibernate problem, mixing managed and unmanaged entities means the similarly named fields are fetched out of the raw record incorrectly.
+								// Sadly, we have no such option for `dbVersion`. Fortunately, it is not needed in the client processing.
+								if (CommonContentColumn.DB_UUID.equals(column)) {
+									fc.setDbUuid(container.getContentUuid());
+								} else {
+									fc.put(column, oo[i + contentIndex]);
+								}
 							}
 							return fc;
 						}).orElse(null);

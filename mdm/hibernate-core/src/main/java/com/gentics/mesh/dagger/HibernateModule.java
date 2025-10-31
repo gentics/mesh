@@ -18,6 +18,8 @@ import com.gentics.mesh.cache.ProjectNameCache;
 import com.gentics.mesh.cache.ProjectNameCacheImpl;
 import com.gentics.mesh.cache.RoleNameCache;
 import com.gentics.mesh.cache.RoleNameCacheImpl;
+import com.gentics.mesh.cache.TableColumnsCache;
+import com.gentics.mesh.cache.TableColumnsCacheImpl;
 import com.gentics.mesh.cache.TagFamilyNameCache;
 import com.gentics.mesh.cache.TagFamilyNameCacheImpl;
 import com.gentics.mesh.cache.TagNameCache;
@@ -201,6 +203,9 @@ public abstract class HibernateModule {
 
 	@Binds
 	abstract ListableFieldCache<AbstractHibListFieldEdgeImpl<?>> bindListableFieldCache(ListableFieldCacheImpl e);
+
+	@Binds
+	abstract TableColumnsCache bindTableColumnsCache(TableColumnsCacheImpl e);
 
 	@Binds
 	abstract CacheRegistry bindCacheRegistry(HibCacheRegistry e);

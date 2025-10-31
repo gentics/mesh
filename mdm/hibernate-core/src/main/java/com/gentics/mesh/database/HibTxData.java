@@ -5,6 +5,7 @@ import java.util.Optional;
 import javax.inject.Inject;
 
 import com.gentics.mesh.cache.ListableFieldCache;
+import com.gentics.mesh.cache.TableColumnsCache;
 import com.gentics.mesh.changelog.HibernateBootstrapInitializerImpl;
 import com.gentics.mesh.contentoperation.ContentStorage;
 import com.gentics.mesh.context.BulkActionContext;
@@ -39,6 +40,7 @@ public class HibTxData implements CommonTxData {
 	private final HibPermissionRoots permissionRoots;
 	private final ContentStorage contentStorage;
 	private final ListableFieldCache<AbstractHibListFieldEdgeImpl<?>> listableFieldCache;
+	private final TableColumnsCache tableColumnsCache;
 
 	private Optional<EventQueueBatch> qBatch;
 	private Optional<BulkActionContext> bac;
@@ -46,12 +48,15 @@ public class HibTxData implements CommonTxData {
 	@Inject
 	public HibTxData(HibernateMeshOptions options, HibernateBootstrapInitializerImpl boot,
 					 HibPermissionRoots permissionRoots, ContentStorage contentStorage, 
-					 ListableFieldCache<AbstractHibListFieldEdgeImpl<?>> listableFieldCache, DatabaseConnector databaseConnector) {
+					 ListableFieldCache<AbstractHibListFieldEdgeImpl<?>> listableFieldCache, 
+					 TableColumnsCache tableColumnsCache,
+					 DatabaseConnector databaseConnector) {
 		this.options = options;
 		this.boot = boot;
 		this.permissionRoots = permissionRoots;
 		this.contentStorage = contentStorage;
 		this.listableFieldCache = listableFieldCache;
+		this.tableColumnsCache = tableColumnsCache;
 		this.qBatch = Optional.empty();
 		this.databaseConnector = databaseConnector;
 		this.bac = Optional.empty();
@@ -136,6 +141,14 @@ public class HibTxData implements CommonTxData {
 	 */
 	public ListableFieldCache<AbstractHibListFieldEdgeImpl<?>> getListableFieldCache() {
 		return listableFieldCache;
+	}
+
+	/**
+	 * Get the table columns cache
+	 * @return cache
+	 */
+	public TableColumnsCache getTableColumnsCache() {
+		return tableColumnsCache;
 	}
 
 	@Override
