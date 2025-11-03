@@ -1,0 +1,23 @@
+{
+  schema(name: "content") {
+    nodes(filter: {fields:{content:{slug:{equals:"test2"}}}}) {
+      elements {
+        # [$.data.schema.nodes.elements[0].isPublished=false]
+        isPublished
+        ... on content {
+          fields {
+            # [$.data.schema.nodes.elements[0].fields.content=/test1]
+            content(linkType: SHORT)
+            # [$.data.schema.nodes.elements[0].fields.teaser=/test1]
+            teaser(linkType: SHORT)
+
+            # [$.data.schema.nodes.elements[0].fields.contentFull=%CURRENT_API_BASE_PATH%/dummy/webroot/test1?branch=testBranch]
+            contentFull: content(linkType: FULL)
+            # [$.data.schema.nodes.elements[0].fields.teaserFull=%CURRENT_API_BASE_PATH%/dummy/webroot/test1?branch=testBranch]
+            teaserFull: teaser(linkType: FULL)
+          }
+        }
+      }    
+    }
+  }
+}
