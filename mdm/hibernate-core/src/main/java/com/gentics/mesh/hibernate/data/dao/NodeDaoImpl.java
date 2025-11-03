@@ -8,7 +8,6 @@ import static com.gentics.mesh.hibernate.util.HibernateUtil.firstOrNull;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.inQueriesLimitForSplitting;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.makeAlias;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.makeParamName;
-import static com.gentics.mesh.hibernate.util.HibernateUtil.streamContentSelectClause;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.ArrayDeque;
@@ -623,10 +622,28 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 		Select select = new Select(databaseConnector.getSessionMetadataIntegrator().getSessionFactoryImplementor());
 		select.setTableName(databaseConnector.maybeGetPhysicalTableName(getPersistenceClass()).get() + " " + nodeAlias);
 		List<String> columns = new ArrayList<>();
+
+		// Domain columns
 		columns.addAll(nodeColumns);
-		maybeParents.map(parents -> makeAlias(databaseConnector.maybeGetDatabaseEntityName(HibBranchNodeParent.class).get()) + ".*").ifPresent(columns::add);
-		Optional.of(noContainerEdgeFetch).filter(noFetch -> !noFetch).flatMap(fetch -> maybeContainerLanguages).or(() -> maybeContentColumns.map(contentColumns -> Collections.emptyList())).map(yes -> makeAlias("CONTAINER") + ".*").ifPresent(columns::add);
-		maybeContentColumns.ifPresent(contentColumns -> streamContentSelectClause(databaseConnector, contentColumns, Optional.of(makeAlias("CONTENT")), true).forEach(columns::add));
+
+		// Parent edge columns, if requested
+		String parentAlias = makeAlias(databaseConnector.maybeGetDatabaseEntityName(HibBranchNodeParent.class).get());
+		maybeParents.map(parents -> parentAlias)
+			.ifPresent(alias -> HibernateTx.get().data().getTableColumnsCache().get(HibBranchNodeParent.class, cls -> databaseConnector.getDatabaseColumnNames(cls).orElse(null))
+					.stream().forEach(column -> columns.add(alias + "." + column)));
+
+		// Content edge columns, if requested
+		Optional.of(noContainerEdgeFetch).filter(noFetch -> !noFetch).flatMap(fetch -> maybeContainerLanguages).or(() -> maybeContentColumns.map(contentColumns -> Collections.emptyList())).map(yes -> makeAlias("CONTAINER"))
+			.ifPresent(alias -> HibernateTx.get().data().getTableColumnsCache().get(HibNodeFieldContainerEdgeImpl.class, cls -> databaseConnector.getDatabaseColumnNames(cls).orElse(null))
+					.stream().forEach(column -> columns.add(alias + "." + column)));
+
+		// Explicit content columns, if requested. Expect column aliases in the output.
+		Optional<List<Pair<ContentColumn, String>>> maybeContentColumnAliases = maybeContentColumns.map(contentColumns -> contentColumns.stream()
+				.map(column -> Pair.of(column, HibernateUtil.getContentSelectClause(databaseConnector, column, Optional.of(makeAlias("CONTENT")), true)))
+				.map(pair -> Pair.of(pair.getKey(), HibernateUtil.hasAlias(pair.getValue()) ? pair.getValue() : (pair.getValue() + " AS " + makeAlias(pair.getValue()))))
+				.peek(pair -> columns.add(pair.getValue()))
+				.collect(Collectors.toList()));
+
 		if (!countOnly && !sortJoins.getValue().isEmpty()) {
 			sortJoins.getValue().keySet().stream()
 				.map(col -> maybeContainerLanguages.map(columnsExplicitlyRequested -> col).orElseGet(() -> databaseConnector.makeSortDefinition(col, Optional.empty())))
@@ -691,18 +708,24 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 		}
 
 		// Construct the query
-		NativeQuery query = (NativeQuery) (countOnly ? em().createNativeQuery(sqlQuery) : em().createNativeQuery(sqlQuery, HibNodeImpl.class));
+		NativeQuery query = (NativeQuery) em().createNativeQuery(sqlQuery);
+
 		query.setParameter("project", project.getId());
 
 		if (!countOnly) {
+			// Add an own entity
+			query.addEntity(nodeAlias, getPersistenceClass());
+
 			// Add an extra parent edge entity to fetch, if applicable
-			maybeParents.ifPresent(unused -> query.addEntity(HibBranchNodeParent.class));
+			maybeParents.ifPresent(unused -> query.addEntity(parentAlias, HibBranchNodeParent.class));
 
 			// Add an extra container edge entity to fetch, if applicable
-			Optional.of(noContainerEdgeFetch).filter(noFetch -> !noFetch).flatMap(fetch -> maybeContainerLanguages).or(() -> maybeContentColumns.map(contentColumns -> Collections.emptyList())).map(unused -> maybeParents).ifPresent(unused -> query.addEntity(HibNodeFieldContainerEdgeImpl.class));
+			Optional.of(noContainerEdgeFetch).filter(noFetch -> !noFetch).flatMap(fetch -> maybeContainerLanguages).or(() -> maybeContentColumns.map(contentColumns -> Collections.emptyList()))
+					.map(unused -> maybeParents).ifPresent(unused -> query.addEntity(makeAlias("CONTAINER"), HibNodeFieldContainerEdgeImpl.class));
 
 			// Add an extra content entity to fetch, if applicable
-			maybeContentColumns.ifPresent(contentColumns -> contentColumns.stream().forEach(c -> query.addScalar(databaseConnector.renderColumn(c), c.getJavaClass())));
+			maybeContentColumnAliases.ifPresent(contentColumns -> contentColumns.stream()
+					.forEach(c -> query.addScalar(makeAlias(c.getValue()), c.getKey().getJavaClass())));
 		}
 
 		// Fill join params
@@ -742,14 +765,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 							int contentIndex = (node != null ? 1 : 0) + (parentEdge != null ? 1 : 0) + (container != null ? 1 : 0);
 							HibNodeFieldContainerImpl fc = new HibNodeFieldContainerImpl();
 							for (int i = 0; i < contentColumns.size(); i++) {
-								ContentColumn column = contentColumns.get(i);
-								// Still the same Hibernate problem, mixing managed and unmanaged entities means the similarly named fields are fetched out of the raw record incorrectly.
-								// Sadly, we have no such option for `dbVersion`. Fortunately, it is not needed in the client processing.
-								if (CommonContentColumn.DB_UUID.equals(column)) {
-									fc.setDbUuid(container.getContentUuid());
-								} else {
-									fc.put(column, oo[i + contentIndex]);
-								}
+								fc.put(contentColumns.get(i), oo[i + contentIndex]);
 							}
 							return fc;
 						}).orElse(null);

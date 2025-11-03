@@ -15,7 +15,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.hibernate.boot.SchemaAutoTooling;
 import org.hibernate.boot.model.naming.PhysicalNamingStrategy;
 import org.hibernate.boot.spi.SessionFactoryOptions;
@@ -306,17 +305,28 @@ public final class HibernateUtil {
 	public static Stream<String> streamContentSelectClause(DatabaseConnector databaseConnector, List<ContentColumn> columns, Optional<String> maybeCustomAlias, boolean forceUnlob) {
 		return columns.stream()
 			.filter(c -> maybeCustomAlias.isEmpty() || !JoinedContentColumn.class.isInstance(c))
-			.map(c -> {
-				String renderedColumn = databaseConnector.renderColumn(c);
-				if (c instanceof JoinedContentColumn) {
-					return maybeCustomAlias.orElseGet(() -> ((JoinedContentColumn) c).getTableAlias()) + "." + ((JoinedContentColumn) c).getColumnName() + " as " + renderedColumn;
-				}
-				String columnName = maybeCustomAlias.orElse(ContentNoCacheStorage.DEFAULT_ALIAS) + "." + renderedColumn;
-				if (forceUnlob) {
-					columnName = databaseConnector.installStringContentColumn(columnName, true, false);
-				}
-				return columnName;
-			});
+			.map(c -> getContentSelectClause(databaseConnector, c, maybeCustomAlias, forceUnlob));
+	}
+
+	/**
+	 * Get a SQL SELECT content column clause.
+	 * 
+	 * @param databaseConnector
+	 * @param column
+	 * @param maybeCustomAlias
+	 * @param forceUnlob
+	 * @return
+	 */
+	public static String getContentSelectClause(DatabaseConnector databaseConnector, ContentColumn column, Optional<String> maybeCustomAlias, boolean forceUnlob) {
+		String renderedColumn = databaseConnector.renderColumn(column);
+		if (column instanceof JoinedContentColumn) {
+			return maybeCustomAlias.orElseGet(() -> ((JoinedContentColumn) column).getTableAlias()) + "." + ((JoinedContentColumn) column).getColumnName() + " as " + renderedColumn;
+		}
+		String columnName = maybeCustomAlias.orElse(ContentNoCacheStorage.DEFAULT_ALIAS) + "." + renderedColumn;
+		if (forceUnlob) {
+			columnName = databaseConnector.installStringContentColumn(columnName, true, false);
+		}
+		return columnName;
 	}
 
 	/**
@@ -376,13 +386,29 @@ public final class HibernateUtil {
 	}
 
 	/**
-	 * Make a table/column alias for an arbitrary name. 
+	 * Make a table/column alias for an arbitrary name, or returns an existing one.
 	 * 
 	 * @param owner
 	 * @return
 	 */
 	public static String makeAlias(String owner) {
-		return StringEscapeUtils.escapeSql(owner.toLowerCase()) + "_";
+		if (owner.contains(" AS ")) {
+			return owner.substring(owner.lastIndexOf(" AS ") + 4);
+		} else if (owner.contains(" as ")) {
+			return owner.substring(owner.lastIndexOf(" as ") + 4);
+		} else {
+			return owner.toLowerCase().replaceAll("[^a-zA_Z0-9\\_]", "_") + "_";
+		}
+	}
+
+	/**
+	 * Check if a name already contains alias.
+	 * 
+	 * @param owner
+	 * @return
+	 */
+	public static boolean hasAlias(String owner) {
+		return owner.contains(" AS ") || owner.contains(" as ");
 	}
 
 	/**
