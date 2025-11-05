@@ -20,6 +20,8 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 
 	private static final Charset UTF8 = Charset.forName("UTF-8");
 
+	public static final String VERSION_ES9 = "9.1.0";
+
 	public static final String VERSION_ES8 = "8.14.1";
 
 	public static final String VERSION_ES7 = "7.4.0";

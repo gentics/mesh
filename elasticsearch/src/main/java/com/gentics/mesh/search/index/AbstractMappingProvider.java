@@ -60,6 +60,7 @@ public abstract class AbstractMappingProvider implements MappingProvider {
 			return mapping;
 		case ES_7:
 		case ES_8:
+		case ES_9:
 			return typeMapping;
 		default:
 			throw new RuntimeException("Unknown mode {" + complianceMode + "}");

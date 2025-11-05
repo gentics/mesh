@@ -24,6 +24,9 @@ import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.branch.HibBranchMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
@@ -42,8 +45,6 @@ import com.google.common.collect.Sets;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @see NodeContainerMappingProvider
@@ -164,6 +165,7 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 		switch (complianceMode) {
 		case ES_7:
 		case ES_8:
+		case ES_9:
 			return Optional.of(typeMapping);
 		case ES_6:
 			mapping.put(DEFAULT_TYPE, typeMapping);

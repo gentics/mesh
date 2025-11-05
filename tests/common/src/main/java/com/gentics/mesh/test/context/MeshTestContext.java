@@ -193,6 +193,7 @@ public class MeshTestContext implements TestRule {
 		case CONTAINER_ES6:
 		case CONTAINER_ES7:
 		case CONTAINER_ES8:
+		case CONTAINER_ES9:
 			setupIndexHandlers(true);
 			break;
 		default:
@@ -207,6 +208,7 @@ public class MeshTestContext implements TestRule {
 		case CONTAINER_ES6:
 		case CONTAINER_ES7:
 		case CONTAINER_ES8:
+		case CONTAINER_ES9:
 			setupIndexHandlers(false);
 			break;
 		default:
@@ -340,6 +342,7 @@ public class MeshTestContext implements TestRule {
 		switch (settings.elasticsearch()) {
 		case CONTAINER_ES7:
 		case CONTAINER_ES8:
+		case CONTAINER_ES9:
 		case CONTAINER_ES6:
 		case CONTAINER_ES6_TOXIC:
 			instances.forEach(inst -> inst.meshDagger.searchProvider().clear().blockingAwait());
@@ -870,11 +873,15 @@ public class MeshTestContext implements TestRule {
 
 					yield ElasticsearchContainer.VERSION_ES7;
 				}
-
 				case CONTAINER_ES8 -> {
 					searchOptions.setComplianceMode(ComplianceMode.ES_8);
 
 					yield ElasticsearchContainer.VERSION_ES8;
+				}
+				case CONTAINER_ES9 -> {
+					searchOptions.setComplianceMode(ComplianceMode.ES_9);
+
+					yield ElasticsearchContainer.VERSION_ES9;
 				}
 
 				default -> ElasticsearchContainer.VERSION_ES6;
@@ -884,6 +891,7 @@ public class MeshTestContext implements TestRule {
 			case CONTAINER_ES6:
 			case CONTAINER_ES7:
 			case CONTAINER_ES8:
+			case CONTAINER_ES9:
 			case UNREACHABLE:
 				elasticsearch = new ElasticsearchContainer(version);
 				if (!elasticsearch.isRunning()) {
@@ -896,7 +904,7 @@ public class MeshTestContext implements TestRule {
 				} else {
 					searchOptions.setUrl("http://" + elasticsearch.getHost() + ":" + elasticsearch.getMappedPort(9200));
 				}
-				if (settings.elasticsearch() == ElasticsearchTestMode.CONTAINER_ES8) {
+				if (settings.elasticsearch().getOrder() >= 8) {
 					Thread.sleep(1000);
 					SearchProviderModule.searchClient(meshOptions).settings(new JsonObject("{\n"
 							+ "    \"persistent\": {\n"

@@ -285,6 +285,7 @@ public abstract class AbstractSearchHandler<T extends HibCoreElement<RM>, RM ext
 							break;
 						case ES_7:
 						case ES_8:
+						case ES_9:
 							hitsInfo.put("total", new JsonObject().put("value", total - 1));
 							break;
 						default:
@@ -357,6 +358,7 @@ public abstract class AbstractSearchHandler<T extends HibCoreElement<RM>, RM ext
 		switch (complianceMode) {
 		case ES_7:
 		case ES_8:
+		case ES_9:
 			return info.getJsonObject("total").getLong("value");
 		case ES_6:
 			return info.getLong("total");

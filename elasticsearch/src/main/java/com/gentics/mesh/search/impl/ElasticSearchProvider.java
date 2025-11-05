@@ -123,10 +123,14 @@ public class ElasticSearchProvider implements SearchProvider {
 
 		JsonObject tokenizer = new JsonObject();
 
-		if (complianceMode == ComplianceMode.ES_8) {
+		switch (complianceMode) {
+		case ES_8:
+		case ES_9:
 			tokenizer.put("type", "ngram");
-		} else {
+			break;
+		default:
 			tokenizer.put("type", "nGram");
+			break;
 		}
 
 		tokenizer.put("min_gram", "3");
@@ -434,11 +438,15 @@ public class ElasticSearchProvider implements SearchProvider {
 
 		String randomName = info.getIndexName() + UUIDUtil.randomUUID();
 		String templateName = randomName.toLowerCase();
-		if (options.getSearchOptions().getComplianceMode() != ComplianceMode.ES_8) {
-			json.put("template", templateName);
-		} else {
+		switch (options.getSearchOptions().getComplianceMode()) {
+		case ES_8:
+		case ES_9:
 			JsonArray indexPatterns = new JsonArray(List.of(templateName));
 			json.put("index_patterns", indexPatterns);
+			break;
+		default:
+			json.put("template", templateName);
+			break;
 		}
 
 		return client.createIndexTemplate(templateName, json).async()
@@ -712,6 +720,7 @@ public class ElasticSearchProvider implements SearchProvider {
 			return DEFAULT_TYPE;
 		case ES_7:
 		case ES_8:
+		case ES_9:
 			return null;
 		default:
 			throw new RuntimeException("Unknown compliance mode {" + complianceMode + "}");
