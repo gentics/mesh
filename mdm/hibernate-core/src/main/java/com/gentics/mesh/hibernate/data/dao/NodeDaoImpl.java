@@ -911,7 +911,9 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 
 	@Override
 	public Stream<? extends HibNode> findAllGlobal() {
-		return em().createQuery("select n from node n", HibNodeImpl.class).getResultStream();
+		CriteriaQuery<HibNodeImpl> query = cb().createQuery(daoHelper.getDomainClass());
+		query.from(daoHelper.getDomainClass());
+		return em().createQuery(query).getResultStream();
 	}
 
 	@Override

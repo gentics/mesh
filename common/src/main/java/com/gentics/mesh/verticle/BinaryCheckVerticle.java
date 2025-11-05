@@ -119,7 +119,7 @@ public class BinaryCheckVerticle extends AbstractVerticle {
 			ContentDao contentDao = tx.contentDao();
 
 			tx.binaryDao().findByCheckStatus(BinaryCheckStatus.POSTPONED).runInExistingTx(tx).forEach(binary -> {
-				Optional<? extends HibBinaryField> field = tx.binaryDao().findFields(binary).stream().findFirst();
+				Optional<? extends HibBinaryField> field = tx.binaryDao().findFields(binary).stream().findAny();
 
 				if (field.isEmpty()) {
 					return;

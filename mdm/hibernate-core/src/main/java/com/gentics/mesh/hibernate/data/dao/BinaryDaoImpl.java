@@ -102,12 +102,9 @@ public class BinaryDaoImpl extends AbstractImageDataHibDao<HibBinary> implements
 	 * @return entity or null
 	 */
 	public HibBinaryField getField(UUID contentUuid, String key) {
-		return em().createNamedQuery("binaryfieldref.findByContentAndKey", HibBinaryFieldImpl.class)
+		return HibernateUtil.firstOrNull(em().createNamedQuery("binaryfieldref.findByContentAndKey", HibBinaryFieldImpl.class)
 				.setParameter("contentUuid", contentUuid)
-				.setParameter("key", key)
-				.getResultStream()
-				.findFirst()
-				.orElse(null);
+				.setParameter("key", key));
 	}
 
 	/**

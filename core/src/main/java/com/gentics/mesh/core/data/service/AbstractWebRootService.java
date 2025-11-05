@@ -76,7 +76,7 @@ public abstract class AbstractWebRootService implements WebRootService {
 
 		// Handle path to project root (baseNode)
 		if ("/".equals(strippedPath) || strippedPath.isEmpty()) {
-			Optional<HibNodeFieldContainer> container = contentDao.getFieldContainers(baseNode, branch, type).stream().findFirst();
+			Optional<HibNodeFieldContainer> container = contentDao.getFieldContainers(baseNode, branch, type).stream().findAny();
 			if (container.isPresent()) {
 				nodePath.addSegment(new PathSegmentImpl(container.get(), null, null, "/"));
 				stack.push("/");
