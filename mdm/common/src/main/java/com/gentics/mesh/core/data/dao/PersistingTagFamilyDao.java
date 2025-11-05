@@ -16,12 +16,15 @@ import com.gentics.mesh.cache.NameCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
@@ -41,6 +44,8 @@ import org.slf4j.LoggerFactory;
 public interface PersistingTagFamilyDao extends TagFamilyDao, PersistingRootDao<HibProject, HibTagFamily>, PersistingNamedEntityDao<HibTagFamily> {
 
 	Logger log = LoggerFactory.getLogger(PersistingTagFamilyDao.class);
+
+	public final static String ATTRIBUTE_PERMISSIONS_PREPARED_NAME = "tag_families.permissions";
 
 	@Override
 	default boolean update(HibProject project, HibTagFamily tagFamily, InternalActionContext ac, EventQueueBatch batch) {
@@ -139,6 +144,23 @@ public interface PersistingTagFamilyDao extends TagFamilyDao, PersistingRootDao<
 		// Now delete the tag root element'
 		deletePersisted(tagFamily.getProject(), tagFamily);
 		CommonTx.get().data().maybeGetBulkActionContext().ifPresent(BulkActionContext::process);
+	}
+
+	@Override
+	default void beforeGetETagForPage(Page<? extends HibCoreElement<? extends RestModel>> page,
+			InternalActionContext ac) {
+		preparePermissions(page, ac, ATTRIBUTE_PERMISSIONS_PREPARED_NAME);
+	}
+
+	@Override
+	default void beforeTransformToRestSync(Page<? extends HibCoreElement<? extends RestModel>> page,
+			InternalActionContext ac) {
+		GenericParameters generic = ac.getGenericParameters();
+		FieldsSet fields = generic.getFields();
+
+		if (fields.has("perms")) {
+			preparePermissions(page, ac, ATTRIBUTE_PERMISSIONS_PREPARED_NAME);
+		}
 	}
 
 	@Override

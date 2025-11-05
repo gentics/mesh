@@ -20,10 +20,12 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.cache.NameCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.branch.HibBranchMicroschemaVersion;
 import com.gentics.mesh.core.data.branch.HibBranchSchemaVersion;
 import com.gentics.mesh.core.data.job.HibJob;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
@@ -39,6 +41,7 @@ import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
@@ -54,6 +57,8 @@ import org.slf4j.LoggerFactory;
  */
 public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibProject, HibBranch>, PersistingNamedEntityDao<HibBranch> {
 	static final Logger log = LoggerFactory.getLogger(BranchDao.class);
+
+	public final static String ATTRIBUTE_PERMISSIONS_PREPARED_NAME = "branches.permissions";
 
 	/**
 	 * Make a new connection of the branch to the schema version, containing the migration status data.
@@ -268,6 +273,23 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 		}
 
 		return branch;
+	}
+
+	@Override
+	default void beforeGetETagForPage(Page<? extends HibCoreElement<? extends RestModel>> page,
+			InternalActionContext ac) {
+		preparePermissions(page, ac, ATTRIBUTE_PERMISSIONS_PREPARED_NAME);
+	}
+
+	@Override
+	default void beforeTransformToRestSync(Page<? extends HibCoreElement<? extends RestModel>> page,
+			InternalActionContext ac) {
+		GenericParameters generic = ac.getGenericParameters();
+		FieldsSet fields = generic.getFields();
+
+		if (fields.has("perms")) {
+			preparePermissions(page, ac, ATTRIBUTE_PERMISSIONS_PREPARED_NAME);
+		}
 	}
 
 	@Override

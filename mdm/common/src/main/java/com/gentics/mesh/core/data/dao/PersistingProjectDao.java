@@ -23,9 +23,11 @@ import com.gentics.mesh.cache.NameCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
@@ -34,6 +36,7 @@ import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.NameConflictException;
 import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
@@ -57,6 +60,8 @@ import org.slf4j.LoggerFactory;
  */
 public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<HibProject>, PersistingNamedEntityDao<HibProject> {
 	static final Logger log = LoggerFactory.getLogger(ProjectDao.class);
+
+	public final static String ATTRIBUTE_PERMISSIONS_PREPARED_NAME = "projects.permissions";
 
 	/**
 	 * Return the schema container permission root for the project.
@@ -92,6 +97,23 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 	default HibProject create(String projectName, String hostname, Boolean ssl, String pathPrefix, HibUser creator,
 		HibSchemaVersion schemaVersion, EventQueueBatch batch) {
 		return create(projectName, hostname, ssl, pathPrefix, creator, schemaVersion, null, batch);
+	}
+
+	@Override
+	default void beforeGetETagForPage(Page<? extends HibCoreElement<? extends RestModel>> page,
+			InternalActionContext ac) {
+		preparePermissions(page, ac, ATTRIBUTE_PERMISSIONS_PREPARED_NAME);
+	}
+
+	@Override
+	default void beforeTransformToRestSync(Page<? extends HibCoreElement<? extends RestModel>> page,
+			InternalActionContext ac) {
+		GenericParameters generic = ac.getGenericParameters();
+		FieldsSet fields = generic.getFields();
+
+		if (fields.has("perms")) {
+			preparePermissions(page, ac, ATTRIBUTE_PERMISSIONS_PREPARED_NAME);
+		}
 	}
 
 	@Override

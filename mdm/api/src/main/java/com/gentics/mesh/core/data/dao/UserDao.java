@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.dao;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -235,12 +236,26 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	Iterable<? extends HibRole> getRoles(HibUser user);
 
 	/**
+	 * Return the roles for all given users
+	 * @param users collection of users
+	 * @return map of user to the collections of roles
+	 */
+	Map<HibUser, Collection<? extends HibRole>> getRoles(Collection<HibUser> users);
+
+	/**
 	 * Load the groups of the user.
 	 * 
 	 * @param user
 	 * @return
 	 */
 	Result<? extends HibGroup> getGroups(HibUser user);
+
+	/**
+	 * Return the groups for all given users
+	 * @param users collection of users
+	 * @return map of user to the collections of groups
+	 */
+	Map<HibUser, Collection<? extends HibGroup>> getGroups(Collection<HibUser> users);
 
 	/**
 	 * Load the effective roles for user via the shortcut edges.
@@ -327,9 +342,11 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	/**
 	 * A CRC32 hash of the users {@link #getRoles roles}.
 	 *
+	 * @param user user
+	 * @param ac action context
 	 * @return A hash of the users roles
 	 */
-	String getRolesHash(HibUser user);
+	String getRolesHash(HibUser user,  InternalActionContext ac);
 
 	/**
 	 * Set the user password hash and update forced password change flag

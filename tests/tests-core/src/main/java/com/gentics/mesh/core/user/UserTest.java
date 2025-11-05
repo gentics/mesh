@@ -579,6 +579,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (Tx tx = tx()) {
 			GroupDao groupDao = tx.groupDao();
 			UserDao userDao= tx.userDao();
+			InternalActionContext ac = mockActionContext();
 
 			HibUser oldUser = user();
 			HibUser newUser = userDao.create("newuser", oldUser);
@@ -588,9 +589,9 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			groupDao.addUser(newGroup, newUser);
 
 			// Both groups have the same roles, so the hashes must match.
-			assertEquals(userDao.getRolesHash(oldUser), userDao.getRolesHash(newUser));
+			assertEquals(userDao.getRolesHash(oldUser, ac), userDao.getRolesHash(newUser, ac));
 
-			String hash = userDao.getRolesHash(oldUser);
+			String hash = userDao.getRolesHash(oldUser, ac);
 
 			// Add another role to the groups only oldUser is in.
 			grantAdmin();
@@ -599,9 +600,9 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			newUser = userDao.findByUuid(newUser.getUuid());
 
 			// The roles have changed for oldUser ...
-			assertNotEquals(hash, userDao.getRolesHash(oldUser));
+			assertNotEquals(hash, userDao.getRolesHash(oldUser, ac));
 			// ... but NOT for newUser.
-			assertEquals(hash, userDao.getRolesHash(newUser));
+			assertEquals(hash, userDao.getRolesHash(newUser, ac));
 		}
 	}
 

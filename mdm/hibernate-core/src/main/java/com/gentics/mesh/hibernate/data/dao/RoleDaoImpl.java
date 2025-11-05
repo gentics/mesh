@@ -1,5 +1,8 @@
 package com.gentics.mesh.hibernate.data.dao;
 
+import static com.gentics.mesh.hibernate.util.HibernateUtil.inQueriesLimitForSplitting;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -53,6 +56,7 @@ import com.gentics.mesh.hibernate.util.HibernateUtil;
 import com.gentics.mesh.hibernate.util.SplittingUtils;
 import com.gentics.mesh.hibernate.util.TypeInfoUtil;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.util.CollectionUtil;
 import com.gentics.mesh.util.UUIDUtil;
 
 import dagger.Lazy;
@@ -278,6 +282,24 @@ public class RoleDaoImpl extends AbstractHibDaoGlobal<HibRole, RoleResponse, Hib
 	@Override
 	public Result<? extends HibGroup> getGroups(HibRole role) {
 		return new TraversalResult<>(role.getGroups());
+	}
+
+	@Override
+	public Map<HibRole, Collection<? extends HibGroup>> getGroups(Collection<HibRole> roles) {
+		List<UUID> rolesUuids = roles.stream().map(HibRole::getId).map(UUID.class::cast).collect(Collectors.toList());
+
+		Map<HibRole, Collection<? extends HibGroup>> result = new HashMap<>();
+		result.putAll(SplittingUtils.splitAndMergeInMapOfLists(rolesUuids, inQueriesLimitForSplitting(1), (uuids) -> {
+			@SuppressWarnings("unchecked")
+			List<Object[]> resultList = em().createNamedQuery("role.findgroupsforroles")
+					.setParameter("roleUuids", uuids)
+					.getResultList();
+
+			return resultList.stream()
+					.map(tuples -> Pair.of((HibRole)tuples[0], (HibGroup)tuples[1]))
+					.collect(Collectors.groupingBy(Pair::getKey, Collectors.mapping(Pair::getValue, Collectors.toList())));
+		}));
+		return CollectionUtil.addFallbackValueForMissingKeys(result, roles, new ArrayList<>());
 	}
 
 	@Override

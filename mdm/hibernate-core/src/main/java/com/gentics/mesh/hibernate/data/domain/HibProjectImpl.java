@@ -9,6 +9,9 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.NamedAttributeNode;
+import jakarta.persistence.NamedEntityGraph;
+import jakarta.persistence.NamedSubgraph;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 
@@ -35,6 +38,24 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
  * @author plyhun
  *
  */
+@NamedEntityGraph(
+		name = "project.rest",
+		attributeNodes = {
+			@NamedAttributeNode(value = "baseNode", subgraph = "baseNode-subgraph"),
+			@NamedAttributeNode("branches"),
+			@NamedAttributeNode("languages")
+		},
+		subgraphs = {
+				@NamedSubgraph(
+					name = "baseNode-subgraph",
+					attributeNodes = {
+						@NamedAttributeNode("project"),
+						@NamedAttributeNode("schemaContainer"),
+						@NamedAttributeNode("content")
+					}
+				)
+			}
+	)
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Entity(name = "project")
 @ElementTypeKey(ElementType.PROJECT)

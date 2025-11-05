@@ -16,8 +16,10 @@ import java.util.stream.StreamSupport;
 import com.gentics.mesh.cache.NameCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.tag.HibTag;
@@ -25,6 +27,7 @@ import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
@@ -45,6 +48,8 @@ import org.slf4j.LoggerFactory;
 public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<HibTag>, PersistingNamedEntityDao<HibTag> {
 
 	Logger log = LoggerFactory.getLogger(PersistingTagDao.class);
+
+	public final static String ATTRIBUTE_PERMISSIONS_PREPARED_NAME = "tags.permissions";
 
 	@Override
 	default HibTag loadObjectByUuid(HibBranch branch, InternalActionContext ac, String tagUuid, InternalPermission perm) {
@@ -189,6 +194,23 @@ public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<HibTag>, P
 			}
 		}
 		return false;
+	}
+
+	@Override
+	default void beforeGetETagForPage(Page<? extends HibCoreElement<? extends RestModel>> page,
+			InternalActionContext ac) {
+		preparePermissions(page, ac, ATTRIBUTE_PERMISSIONS_PREPARED_NAME);
+	}
+
+	@Override
+	default void beforeTransformToRestSync(Page<? extends HibCoreElement<? extends RestModel>> page,
+			InternalActionContext ac) {
+		GenericParameters generic = ac.getGenericParameters();
+		FieldsSet fields = generic.getFields();
+
+		if (fields.has("perms")) {
+			preparePermissions(page, ac, ATTRIBUTE_PERMISSIONS_PREPARED_NAME);
+		}
 	}
 
 	@Override

@@ -16,8 +16,10 @@ import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibMicronode;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
@@ -27,6 +29,7 @@ import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
@@ -38,6 +41,8 @@ import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.GenericParameters;
+import com.gentics.mesh.parameter.value.FieldsSet;
 
 /**
  * A persisting extension to {@link MicroschemaDao}
@@ -48,6 +53,7 @@ import com.gentics.mesh.json.JsonUtil;
 public interface PersistingMicroschemaDao 
 		extends MicroschemaDao, 
 			PersistingContainerDao<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschema, HibMicroschemaVersion, MicroschemaModel>, PersistingNamedEntityDao<HibMicroschema> {
+	public final static String ATTRIBUTE_PERMISSIONS_PREPARED_NAME = "microschemas.permissions";
 
 	/**
 	 * Find all micronodes belonging to this microschema version
@@ -310,6 +316,23 @@ public interface PersistingMicroschemaDao
 		}
 		CommonTx.get().batch().add(microschema.onDeleted());
 		deletePersisted(microschema);
+	}
+
+	@Override
+	default void beforeGetETagForPage(Page<? extends HibCoreElement<? extends RestModel>> page,
+			InternalActionContext ac) {
+		preparePermissions(page, ac, ATTRIBUTE_PERMISSIONS_PREPARED_NAME);
+	}
+
+	@Override
+	default void beforeTransformToRestSync(Page<? extends HibCoreElement<? extends RestModel>> page,
+			InternalActionContext ac) {
+		GenericParameters generic = ac.getGenericParameters();
+		FieldsSet fields = generic.getFields();
+
+		if (fields.has("perms")) {
+			preparePermissions(page, ac, ATTRIBUTE_PERMISSIONS_PREPARED_NAME);
+		}
 	}
 
 	@Override

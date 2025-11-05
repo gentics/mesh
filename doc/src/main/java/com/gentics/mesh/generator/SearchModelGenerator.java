@@ -234,7 +234,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		HibGroup groupA = mockGroup("editors", user);
 		HibGroup groupB = mockGroup("superEditors", user);
 		Result<? extends HibGroup> result = new TraversalResult<>(Arrays.asList(groupA, groupB));
-		when(userDao.getGroups(Mockito.any())).then(answer -> {
+		when(userDao.getGroups(Mockito.any(HibUser.class))).then(answer -> {
 			return result;
 		});
 		write(new UserTransformer().toDocument(user), "user.search");

@@ -11,6 +11,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -21,16 +24,21 @@ import com.gentics.mesh.cache.NameCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.group.HibGroup;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.event.group.GroupRoleAssignModel;
 import com.gentics.mesh.core.rest.event.group.GroupUserAssignModel;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
+import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.GenericParameters;
@@ -43,6 +51,9 @@ import com.gentics.mesh.parameter.value.FieldsSet;
  *
  */
 public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGroup>, PersistingNamedEntityDao<HibGroup> {
+	public final static String ATTRIBUTE_ROLES_PER_GROUP_NAME = "roles_per_group";
+
+	public final static String ATTRIBUTE_PERMISSIONS_PREPARED_NAME = "roles_permissions";
 
 	@Override
 	default HibGroup create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
@@ -166,6 +177,29 @@ public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGro
 		Tx.get().permissionCache().clear();
 	}
 
+	@SuppressWarnings("unchecked")
+	@Override
+	default void beforeTransformToRestSync(Page<? extends HibCoreElement<? extends RestModel>> page,
+			InternalActionContext ac) {
+		GenericParameters generic = ac.getGenericParameters();
+		FieldsSet fields = generic.getFields();
+
+		if (fields.has("roles")) {
+			Map<HibGroup, Collection<? extends HibRole>> rolesPerGroup = getRoles(
+					(Collection<HibGroup>) page.getWrappedList());
+			ac.put(ATTRIBUTE_ROLES_PER_GROUP_NAME, rolesPerGroup);
+		}
+		if (fields.has("perms")) {
+			preparePermissions(page, ac, ATTRIBUTE_PERMISSIONS_PREPARED_NAME);
+		}
+	}
+
+	@Override
+	default void beforeGetETagForPage(Page<? extends HibCoreElement<? extends RestModel>> page,
+			InternalActionContext ac) {
+		preparePermissions(page, ac, ATTRIBUTE_PERMISSIONS_PREPARED_NAME);
+	}
+
 	@Override
 	default GroupResponse transformToRestSync(HibGroup group, InternalActionContext ac, int level,
 			String... languageTags) {
@@ -177,7 +211,7 @@ public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGro
 			restGroup.setName(group.getName());
 		}
 		if (fields.has("roles")) {
-			for (HibRole role : getRoles(group)) {
+			for (HibRole role : getRoles(group, ac)) {
 				String name = role.getName();
 				if (name != null) {
 					restGroup.getRoles().add(role.transformToReference());
@@ -187,6 +221,15 @@ public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGro
 		group.fillCommonRestFields(ac, fields, restGroup);
 		Tx.get().roleDao().setRolePermissions(group, ac, restGroup);
 		return restGroup;
+	}
+
+	default Result<? extends HibRole> getRoles(HibGroup group, InternalActionContext ac) {
+		Map<HibGroup, Collection<? extends HibRole>> rolesPerGroup = ac.get(ATTRIBUTE_ROLES_PER_GROUP_NAME);
+		if (rolesPerGroup != null) {
+			return new TraversalResult<HibRole>(rolesPerGroup.getOrDefault(group, Collections.emptyList()));
+		} else {
+			return getRoles(group);
+		}
 	}
 
 	@Override

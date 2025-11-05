@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.dao;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -167,6 +168,13 @@ public interface RoleDao extends DaoGlobal<HibRole>, DaoTransformable<HibRole, R
 	 * @return
 	 */
 	Result<? extends HibGroup> getGroups(HibRole role);
+
+	/**
+	 * Return the groups for all given roles
+	 * @param roles collection of roles
+	 * @return map of role to the collections of groups
+	 */
+	Map<HibRole, Collection<? extends HibGroup>> getGroups(Collection<HibRole> roles);
 
 	/**
 	 * Return a page of groups to which this role was assigned.

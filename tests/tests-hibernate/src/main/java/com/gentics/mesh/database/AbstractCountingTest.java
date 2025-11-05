@@ -20,18 +20,31 @@ public abstract class AbstractCountingTest extends AbstractMeshTest {
 	/**
 	 * Set this flag to true for debugging. The test will then output changes in the number of executed queries
 	 */
-	public final static boolean DEBUG = true;
+	public final static boolean DEBUG = false;
 
 	/**
 	 * Execute the given handler and assert that no more than either {@link #ALLOWED_WITH_ETAG} or {@link #ALLOWED_NO_ETAG} queries were executed by Hibernate.
 	 * @param <T> type of response of handler
 	 * @param handler test handler
+	 * @param noMoreThan maximum allowed queries
 	 */
 	protected <T> T doTest(ClientHandler<T> handler, int noMoreThan) {
+		return doTest(handler, noMoreThan, -1);
+	}
+
+	/**
+	 * Execute the given handler and assert that no more than either {@link #ALLOWED_WITH_ETAG} or {@link #ALLOWED_NO_ETAG} queries were executed by Hibernate.
+	 * @param <T> type of response of handler
+	 * @param handler test handler
+	 * @param noMoreThan maximum allowed queries
+	 * @param atLeast minimum number of expected queries
+	 */
+	protected <T> T doTest(ClientHandler<T> handler, int noMoreThan, int atLeast) {
 		DatabaseConnector dc = tx(tx -> {
 			return tx.<HibernateTx>unwrap().data().getDatabaseConnector();
 		});
-		try (QueryCounter queryCounter = QueryCounter.Builder.get().withDatabaseConnector(dc).clear().assertNotMoreThan(noMoreThan).build()) {
+		try (QueryCounter queryCounter = QueryCounter.Builder.get().withDatabaseConnector(dc).clear()
+				.assertNotMoreThan(noMoreThan).assertAtLeast(atLeast).build()) {
 			long periodicId = 0;
 			if (DEBUG) {
 				AtomicLong currentCount = new AtomicLong();

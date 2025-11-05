@@ -37,6 +37,7 @@ import org.hibernate.boot.model.naming.Identifier;
 import org.hibernate.boot.model.naming.PhysicalNamingStrategy;
 import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
 import org.hibernate.jpa.AvailableHints;
+import org.hibernate.jpa.SpecHints;
 import org.hibernate.query.NativeQuery;
 import org.slf4j.Logger;
 
@@ -226,10 +227,10 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 	}
 
 	@Deprecated
-	private <R> Page<? extends R> getResultPageWithSqlPagination(InternalActionContext ac, CriteriaQuery<? extends R> query, PagingParameters pagingInfo) {
+	private <R> Page<? extends R> getResultPageWithSqlPagination(InternalActionContext ac, CriteriaQuery<? extends R> query, EntityGraph<?> entityGraph, PagingParameters pagingInfo) {
 		Long perPage = pagingInfo.getPerPage();
 		long totalCount = em().createQuery(JpaUtil.countCriteria(em(), query)).getSingleResult();
-		List<? extends R> list = em().createQuery(query)
+		List<? extends R> list = setEntityGraph(em().createQuery(query), entityGraph)
 				.setFirstResult(pagingInfo.getActualPage() * perPage.intValue())
 				.setMaxResults(perPage.intValue())
 				.getResultList();
@@ -404,7 +405,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 	public <R, F> Page<? extends R> getResultPage(InternalActionContext ac, CriteriaQuery<? extends R> query, PagingParameters pagingInfo,
 												  EntityGraph<?> entityGraph, java.util.function.Predicate<R> extraFilter) {
 		if (paginateWithSql(pagingInfo, extraFilter)) {
-			return getResultPageWithSqlPagination(ac, query, pagingInfo);
+			return getResultPageWithSqlPagination(ac, query, entityGraph, pagingInfo);
 		}
 		Stream<? extends R> resultStream = getResultStream(ac, query, entityGraph);
 
@@ -1845,7 +1846,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 
 	private <E> TypedQuery<E> setEntityGraph(TypedQuery<E> query, EntityGraph<?> entityGraph) {
 		if (entityGraph != null) {
-			query.setHint("jakarta.persistence.fetchgraph", entityGraph);
+			query.setHint(SpecHints.HINT_SPEC_FETCH_GRAPH, entityGraph);
 		}
 		return query;
 	}

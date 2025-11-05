@@ -8,6 +8,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -25,7 +26,9 @@ import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.group.HibGroup;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -34,6 +37,7 @@ import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
@@ -50,6 +54,10 @@ import com.gentics.mesh.parameter.value.FieldsSet;
  *
  */
 public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole>, PersistingNamedEntityDao<HibRole> {
+	public final static String ATTRIBUTE_GROUPS_PER_ROLE_NAME = "roles.groups";
+
+	public final static String ATTRIBUTE_PERMISSIONS_PREPARED_NAME = "roles.permissions";
+
 	/**
 	 * Grant role permission. Consumers implementing this method do not need to invalidate the cache
 	 * @param role the role
@@ -337,6 +345,36 @@ public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole>
 		return permissionsMap;
 	}
 
+	default void prepareGroups(Page<? extends HibCoreElement<? extends RestModel>> page,
+			InternalActionContext ac) {
+		if (ac.get(ATTRIBUTE_GROUPS_PER_ROLE_NAME) == null) {
+			@SuppressWarnings("unchecked")
+			Map<HibRole, Collection<? extends HibGroup>> groupsPerRole = getGroups(
+					(Collection<HibRole>) page.getWrappedList());
+			ac.put(ATTRIBUTE_GROUPS_PER_ROLE_NAME, groupsPerRole);
+		}
+	}
+
+	@Override
+	default void beforeGetETagForPage(Page<? extends HibCoreElement<? extends RestModel>> page,
+			InternalActionContext ac) {
+		preparePermissions(page, ac, ATTRIBUTE_PERMISSIONS_PREPARED_NAME);
+	}
+
+	@Override
+	default void beforeTransformToRestSync(Page<? extends HibCoreElement<? extends RestModel>> page,
+			InternalActionContext ac) {
+		GenericParameters generic = ac.getGenericParameters();
+		FieldsSet fields = generic.getFields();
+
+		if (fields.has("groups")) {
+			prepareGroups(page, ac);
+		}
+		if (fields.has("perms")) {
+			preparePermissions(page, ac, ATTRIBUTE_PERMISSIONS_PREPARED_NAME);
+		}
+	}
+
 	@Override
 	default RoleResponse transformToRestSync(HibRole role, InternalActionContext ac, int level, String... languageTags) {
 		GenericParameters generic = ac.getGenericParameters();
@@ -362,8 +400,17 @@ public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole>
 		return Tx.maybeGet().map(CommonTx.class::cast).map(tx -> tx.data().mesh().roleNameCache());
 	}
 
+	default Result<? extends HibGroup> getGroups(HibRole role, InternalActionContext ac) {
+		Map<HibRole, Collection<? extends HibGroup>> groupsPerRole = ac.get(ATTRIBUTE_GROUPS_PER_ROLE_NAME);
+		if (groupsPerRole != null) {
+			return new TraversalResult<>(groupsPerRole.getOrDefault(role, Collections.emptyList()));
+		} else {
+			return getGroups(role);
+		}
+	}
+
 	private void setGroups(HibRole role, InternalActionContext ac, RoleResponse restRole) {
-		for (HibGroup group : role.getGroups()) {
+		for (HibGroup group : getGroups(role, ac)) {
 			restRole.getGroups().add(group.transformToReference());
 		}
 	}
