@@ -6,6 +6,71 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v3.1.5]]
+== 3.1.5 (27.10.2025)
+
+icon:check[] Core: After the data migration from the older Mesh versions it is possible to have list item database tables being polluted with the duplicated data, that, while making no functional harm, may lead to the random performance penalties.
+ Targeting these, a new consistency check/repair feature has been added to the existing "*listitem" checks. 
+
+icon:check[] Search: Running an index sync did not properly close all used scroll contexts in elasticsearch,
+which could lead to errors like 'Trying to create too many scroll contexts' in elasticsearch.
+This has been fixed, all scroll contexts are closed as soon as they are not used any more.
+
+
+icon:check[] Core: Under some circumstances the fetch of entities via REST GET returns duplicated entries. This has been fixed.
+
+icon:check[] Core: The recursive deletion of nodes has been fixed to not leave orphaned contents behind.
+
+
+[[v3.1.4]]
+== 3.1.4 (23.09.2025)
+
+icon:check[] Core: Generation of ETags for nodes has generally been improved to be more stable.
+
+
+icon:check[] Core: Generation of childrenInfo and etag for nodes with many children has been refactored to support better performance.
+
+
+icon:check[] Core: Generation of childrenInfo and etag for nodes with many children has been made more performant.
+
+
+icon:check[] GraphQL: The performance of GraphQL queries returning larger hierachies of data has been improved.
+
+
+icon:check[] Core: The performance of deleting nodes recursively has been improved.
+
+
+icon:check[] Core: Implementations of the persistance layer may now choose to process recursive deletion of nodes
+in a separate thread instead of in the worker thread pool.
+
+
+icon:check[] Core: Deleting of nodes with more than 1000 descendants is now done
+in a separate thread. This will also cause those delete tasks to be done
+one after the other instead of in parallel.
+
+
+icon:check[] Search: When a schema was completely excluded from indexing, the index sync operation still
+tried to put the nodes of that schema into the non-existent index, this has been fixed.
+
+
+icon:check[] Core: It is now possible to delete a node with a list field that has data inconsistencies.
+
+[[v3.1.3]]
+== 3.1.3 (01.09.2025)
+
+icon:check[] Plugins: Now the plugin timeout value is also considered in the HTTP plugin client. This allows extending HTTP call timeouts when the plugin is expected to start longer.
+
+icon:check[] Some dependencies have been updated:
+* Netty: 4.1.124.Final
+* Vert.x: 4.5.18
+
+
+icon:check[] Core: The following dependencies have been updated, to target the vulnerability CVE-2025-54988 :
+ * Apache Tika, to *3.2.2*
+ * Apache Commons Lang3, to *3.18.0*
+ * Apache Commons Compress, to *1.28.0*
+ * JSOUP, to *1.21.1*
+
 [[v3.1.2]]
 == 3.1.2 (15.07.2025)
 
@@ -47,6 +112,71 @@ icon:check[] Some dependencies have been updated:
 * Netty: 4.1.118.Final
 * Commons Beanutils: 1.11.0
 
+
+[[v3.0.16]]
+== 3.0.16 (27.10.2025)
+
+icon:check[] Core: After the data migration from the older Mesh versions it is possible to have list item database tables being polluted with the duplicated data, that, while making no functional harm, may lead to the random performance penalties.
+ Targeting these, a new consistency check/repair feature has been added to the existing "*listitem" checks. 
+
+icon:check[] Search: Running an index sync did not properly close all used scroll contexts in elasticsearch,
+which could lead to errors like 'Trying to create too many scroll contexts' in elasticsearch.
+This has been fixed, all scroll contexts are closed as soon as they are not used any more.
+
+
+icon:check[] Core: Under some circumstances the fetch of entities via REST GET returns duplicated entries. This has been fixed.
+
+icon:check[] Core: The recursive deletion of nodes has been fixed to not leave orphaned contents behind.
+
+
+[[v3.0.15]]
+== 3.0.15 (23.09.2025)
+
+icon:check[] Core: Generation of ETags for nodes has generally been improved to be more stable.
+
+
+icon:check[] Core: Generation of childrenInfo and etag for nodes with many children has been refactored to support better performance.
+
+
+icon:check[] Core: Generation of childrenInfo and etag for nodes with many children has been made more performant.
+
+
+icon:check[] GraphQL: The performance of GraphQL queries returning larger hierachies of data has been improved.
+
+
+icon:check[] Core: The performance of deleting nodes recursively has been improved.
+
+
+icon:check[] Core: Implementations of the persistance layer may now choose to process recursive deletion of nodes
+in a separate thread instead of in the worker thread pool.
+
+
+icon:check[] Core: Deleting of nodes with more than 1000 descendants is now done
+in a separate thread. This will also cause those delete tasks to be done
+one after the other instead of in parallel.
+
+
+icon:check[] Search: When a schema was completely excluded from indexing, the index sync operation still
+tried to put the nodes of that schema into the non-existent index, this has been fixed.
+
+
+icon:check[] Core: It is now possible to delete a node with a list field that has data inconsistencies.
+
+[[v3.0.14]]
+== 3.0.14 (01.09.2025)
+
+icon:check[] Plugins: Now the plugin timeout value is also considered in the HTTP plugin client. This allows extending HTTP call timeouts when the plugin is expected to start longer.
+
+icon:check[] Some dependencies have been updated:
+* Netty: 4.1.124.Final
+* Vert.x: 4.5.18
+
+
+icon:check[] Core: The following dependencies have been updated, to target the vulnerability CVE-2025-54988 :
+ * Apache Tika, to *3.2.2*
+ * Apache Commons Lang3, to *3.18.0*
+ * Apache Commons Compress, to *1.28.0*
+ * JSOUP, to *1.21.1*
 
 [[v3.0.13]]
 == 3.0.13 (15.07.2025)
@@ -183,6 +313,43 @@ icon:plus[] Clustering: The Hazelcast library, responsible for the cluster insta
 
 icon:plus[] Some library dependencies have been updated to the latest hotfix versions.
 
+
+[[v2.1.25]]
+== 2.1.25 (27.10.2025)
+
+icon:check[] Search: Running an index sync did not properly close all used scroll contexts in elasticsearch,
+which could lead to errors like 'Trying to create too many scroll contexts' in elasticsearch.
+This has been fixed, all scroll contexts are closed as soon as they are not used any more.
+
+
+[[v2.1.24]]
+== 2.1.24 (22.09.2025)
+
+icon:check[] Core: Generation of ETags for nodes has generally been improved to be more stable.
+
+
+icon:check[] Core: Generation of childrenInfo and etag for nodes with many children has been refactored to support better performance.
+
+
+icon:check[] GraphQL: The performance of GraphQL queries returning larger hierachies of data has been improved.
+
+
+icon:check[] Core: Implementations of the persistance layer may now choose to process recursive deletion of nodes
+in a separate thread instead of in the worker thread pool.
+
+
+icon:check[] Search: When a schema was completely excluded from indexing, the index sync operation still
+tried to put the nodes of that schema into the non-existent index, this has been fixed.
+
+
+[[v2.1.23]]
+== 2.1.23 (01.09.2025)
+
+icon:check[] Core: Generation of ETags for nodes containing tags was not stable and sometimes resulted in different ETags,
+even if nothing was changed. This has been fixed.
+
+
+icon:check[] Plugins: Now the plugin timeout value is also considered in the HTTP plugin client. This allows extending HTTP call timeouts when the plugin is expected to start longer.
 
 [[v2.1.22]]
 == 2.1.22 (02.07.2025)

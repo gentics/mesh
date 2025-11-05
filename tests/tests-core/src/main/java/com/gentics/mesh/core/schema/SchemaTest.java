@@ -210,7 +210,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 			String uuid = getSchemaContainer().getUuid();
 			NodeDao nodeDao = tx.nodeDao();
 			HibSchema schema = tx.schemaDao().findByUuid(uuid);
-			for (HibNode node : schemaDao.getNodes(schema)) {
+			for (HibNode node : schemaDao.getNodes(schema).list()) {
 				nodeDao.delete(node, false, true);
 			}
 		});

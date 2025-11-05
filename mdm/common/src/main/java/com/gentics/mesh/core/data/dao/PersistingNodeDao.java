@@ -36,7 +36,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
-import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -511,18 +510,28 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	/**
 	 * Set the children info to the rest model.
 	 *
-	 * @param ac
+	 * @param node node
+	 * @param ac action context
 	 * @param branch
 	 *            Branch which will be used to identify the branch specific child nodes
 	 * @param restNode
 	 *            Rest model which will be updated
 	 */
 	private void setChildrenInfo(HibNode node, InternalActionContext ac, HibBranch branch, NodeResponse restNode) {
+		restNode.setChildrenInfo(getChildrenInfo(node, ac, branch.getUuid(), true));
+	}
+
+	@Override
+	default Map<String, NodeChildrenInfo> getChildrenInfo(HibNode node, InternalActionContext ac, String branchUuid, boolean allowDataLoader) {
+		InternalPermission requiredPermission = "published".equals(ac.getVersioningParameters().getVersion())
+				? READ_PUBLISHED_PERM
+				: READ_PERM;
+
 		Map<String, NodeChildrenInfo> childrenInfo = new HashMap<>();
 		UserDao userDao = Tx.get().userDao();
 
-		for (HibNode child : getChildren(node, branch.getUuid())) {
-			if (userDao.hasPermission(ac.getUser(), child, READ_PERM)) {
+		for (HibNode child : getChildren(node, branchUuid)) {
+			if (userDao.hasPermission(ac.getUser(), child, requiredPermission)) {
 				String schemaName = child.getSchemaContainer().getName();
 				NodeChildrenInfo info = childrenInfo.get(schemaName);
 				if (info == null) {
@@ -536,7 +545,13 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 				}
 			}
 		}
-		restNode.setChildrenInfo(childrenInfo);
+		return childrenInfo;
+	}
+
+	@Override
+	default Map<HibNode, Map<String, NodeChildrenInfo>> getChildrenInfo(Collection<HibNode> nodes,
+			InternalActionContext ac, String branchUuid) {
+		return nodes.stream().map(n -> Pair.of(n, getChildrenInfo(n, ac, branchUuid, false))).collect(Collectors.toMap(Pair::getLeft, Pair::getRight));
 	}
 
 	/**
@@ -853,7 +868,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 
 	@Override
 	default Result<? extends HibNode> getBreadcrumbNodes(HibNode node, InternalActionContext ac) {
-		return new TraversalResult<>(() -> getBreadcrumbNodeStream(node, ac).iterator());
+		return new TraversalResult<>(getBreadcrumbNodeStream(node, ac).iterator());
 	}
 
 	@Override
@@ -1683,30 +1698,24 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		keyBuilder.append(expandedFields);
 
 		// branch specific tags. Since node.getTags() does not guarantee a specific order of the tags,
-		// we collect the etags of the tags in a TreeSet and use that to append the etags to the keyBuilder
-		Set<String> tagETags = new TreeSet<>();
-		for (HibTag tag : node.getTags(branch)) {
+		// we need to sort the etags
 			// Tags can't be moved across branches thus we don't need to add the
 			// tag family etag
-			tagETags.add(tagDao.getETag(tag, ac));
-		}
-		tagETags.stream().forEach(tagETag -> keyBuilder.append(tagETag));
+		node.getTags(branch).stream().map(tag -> tagDao.getETag(tag, ac)).sorted().forEach(keyBuilder::append);
 
 		// branch specific children
-		for (HibNode child : getChildren(node, branch.getUuid())) {
-			if (userDao.hasPermission(ac.getUser(), child, READ_PUBLISHED_PERM)) {
-				keyBuilder.append("-");
-				keyBuilder.append(child.getSchemaContainer().getName());
-			}
-		}
+		NodeResponse tmp = new NodeResponse();
+		setChildrenInfo(node, ac, branch, tmp);
+		tmp.getChildrenInfo().values().stream()
+				.sorted((info1, info2) -> info1.getSchemaUuid().compareTo(info2.getSchemaUuid())).forEachOrdered(info -> {
+					keyBuilder.append("-").append(info.getSchemaUuid()).append(":").append(info.getCount());
+				});
 
 		// Publish state & availableLanguages
-		for (HibNodeFieldContainer c : contentDao.getFieldContainers(node, branch.getUuid(), PUBLISHED)) {
-			keyBuilder.append(c.getLanguageTag() + "published");
-		}
-		for (HibNodeFieldContainer c : contentDao.getFieldContainers(node, branch.getUuid(), DRAFT)) {
-			keyBuilder.append(c.getLanguageTag() + "draft");
-		}
+		contentDao.getFieldContainers(node, branch.getUuid(), PUBLISHED).stream()
+				.map(c -> c.getLanguageTag() + "published").sorted().forEachOrdered(keyBuilder::append);
+		contentDao.getFieldContainers(node, branch.getUuid(), DRAFT).stream()
+				.map(c -> c.getLanguageTag() + "draft").sorted().forEachOrdered(keyBuilder::append);
 
 		// breadcrumb
 		keyBuilder.append("-");

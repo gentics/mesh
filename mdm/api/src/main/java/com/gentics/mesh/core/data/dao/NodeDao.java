@@ -26,6 +26,7 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.node.NodeTaggedEventModel;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
+import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
@@ -134,6 +135,28 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @return
 	 */
 	Map<HibNode, List<HibNode>> getChildren(Collection<HibNode> nodes, String branchUuid);
+
+	/**
+	 * Get the children info for a single node. The children info is a map, keys are schema names and values are instances of
+	 * {@link NodeChildrenInfo} containing the schema uuid and number of children using the specific schema.
+	 * 
+	 * @param node node
+	 * @param ac action context
+	 * @param branchUuid branch uuid
+	 * @param allowDataLoader true to allow a data loader (if present), false to get the info directly
+	 * @return children info for the node
+	 */
+	Map<String, NodeChildrenInfo> getChildrenInfo(HibNode node, InternalActionContext ac, String branchUuid, boolean allowDataLoader);
+
+	/**
+	 * Get the children info for a collection of nodes.
+	 * 
+	 * @param nodes nodes
+	 * @param ac action context
+	 * @param branchUuid branch uuid
+	 * @return map of children info maps for the given nodes.
+	 */
+	Map<HibNode, Map<String, NodeChildrenInfo>> getChildrenInfo(Collection<HibNode> nodes, InternalActionContext ac, String branchUuid);
 
 	/**
 	 * Returns the parent node of this node.
@@ -578,6 +601,19 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param ignoreChecks
 	 */
 	void deleteFromBranch(HibNode node, InternalActionContext ac, HibBranch branch, boolean ignoreChecks);
+
+	/**
+	 * Check whether deleting the given node from the branch is expected to cause massive deletion of children.
+	 * Concrete implementations of this have to decide, what exactly a "massive" deletion is (e.g. if the number of all children in
+	 * the branch exceeds a certain threshold).
+	 * When this method returns true, recursive deletion of the node will be delegated to a single threaded executor
+	 * instead of doing it in the worker pool thread.
+	 * 
+	 * @param node node in question
+	 * @param branch branch
+	 * @return true when massive deletion is expected, false if not.
+	 */
+	boolean expectMassiveDeletion(HibNode node, HibBranch branch);
 
 	/**
 	 * Remove branch parent of the node

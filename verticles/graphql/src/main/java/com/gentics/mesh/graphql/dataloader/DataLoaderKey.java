@@ -37,7 +37,7 @@ public final class DataLoaderKey<T> {
 	 * @param value
 	 */
 	public DataLoaderKey(ResultPath path, T value) {
-		this(path.toString().replaceAll("\\[[\\d+]\\]", StringUtils.EMPTY), value);
+		this(path.toString().replaceAll("\\[[\\d]+\\]", StringUtils.EMPTY), value);
 	}
 
 	/**

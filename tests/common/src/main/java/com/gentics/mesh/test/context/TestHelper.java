@@ -14,6 +14,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -23,15 +24,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.assertj.core.api.Assertions;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.MeshStatus;
+import com.gentics.mesh.cli.AbstractBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -415,7 +420,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	}
 
 	default public NodeResponse createNode(NodeResponse parent) {
-		return createNode(parent.getUuid(), "slug", new StringFieldImpl().setString(RandomStringUtils.randomAlphabetic(5)));
+		return createNode(parent.getUuid(), "slug", new StringFieldImpl().setString(RandomStringUtils.randomAlphabetic(RandomUtils.nextInt(10, 20))));
 	}
 
 	default public NodeResponse createNode(String fieldKey, Field field) {
@@ -992,6 +997,15 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return threadMXBean.dumpAllThreads(true, true).length;
 	}
 
+	/**
+	 * Print a thread dump to stdout
+	 */
+	default void threadDump() {
+		ThreadMXBean bean = ManagementFactory.getThreadMXBean();
+		ThreadInfo[] infos = bean.dumpAllThreads(true, true);
+		System.out.println(Arrays.stream(infos).map(Object::toString).collect(Collectors.joining()));
+	}
+
 	static FieldSchema fieldIntoSchema(Field field) {
 		FieldTypes type = FieldTypes.valueByName(field.getType());
 		switch(type) {
@@ -1029,5 +1043,28 @@ public interface TestHelper extends EventHelper, ClientHelper {
 			displayName = "unnamed node (" + node.getUuid() + ")";
 		}
 		return displayName;
+	}
+
+	/**
+	 * Undeploy the search verticle.
+	 * If undeploying is not done within 1 minute, a treaddump is printed to stdout and {@link Assertions#fail(String)} is called
+	 */
+	default void undeploySearchVerticle() {
+		if (!((AbstractBootstrapInitializer) boot()).getCoreVerticleLoader().undeploySearchVerticle().blockingAwait(1, TimeUnit.MINUTES)) {
+			threadDump();
+			fail("Failed to undeploy search verticle within 1 minute");
+		}
+	}
+
+	/**
+	 * Redeploy the search verticle.
+	 * If redeploying is not done within 1 minute, a treaddump is printed to stdout and {@link Assertions#fail(String)} is called
+	 */
+
+	default void redeploySearchVerticle() {
+		if (!((AbstractBootstrapInitializer) boot()).getCoreVerticleLoader().redeploySearchVerticle().blockingAwait(1, TimeUnit.MINUTES)) {
+			threadDump();
+			fail("Failed to redeploy search verticle within 1 minute");
+		}
 	}
 }
