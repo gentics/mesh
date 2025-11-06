@@ -63,12 +63,12 @@ public class SchemaQueryCountingTest extends AbstractCountingTest {
 	@Parameters(name = "{index}: field {0}, etag {1}")
 	public static Collection<Object[]> parameters() throws Exception {
 		Collection<Object[]> data = new ArrayList<>();
-//		for (String field : fieldAsserters.keySet()) {
-//			for (Boolean etag : Arrays.asList(true, false)) {
-//				data.add(new Object[] {field, etag});
-//			}
-//		}
-		data.add(new Object[] {"created", false});
+		for (String field : fieldAsserters.keySet()) {
+			for (Boolean etag : Arrays.asList(true, false)) {
+				data.add(new Object[] {field, etag});
+			}
+		}
+//		data.add(new Object[] {"created", false});
 		return data;
 	}
 

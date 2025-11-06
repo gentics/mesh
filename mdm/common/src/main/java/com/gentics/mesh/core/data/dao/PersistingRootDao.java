@@ -1,19 +1,12 @@
 package com.gentics.mesh.core.data.dao;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
-import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -74,18 +67,6 @@ public interface PersistingRootDao<R extends HibCoreElement<? extends RestModel>
 	@Override
 	default BiFunction<R, String, L> getFinder() {
 		return this::findByUuid;
-	}
-
-	default void preparePermissions(Page<? extends HibCoreElement<? extends RestModel>> page,
-			InternalActionContext ac, String attributeName) {
-		Boolean prepared = ac.get(attributeName);
-		if (BooleanUtils.isNotTrue(prepared)) {
-			PersistingUserDao userDao = CommonTx.get().userDao();
-			List<Object> permIds = new ArrayList<>();
-			permIds.addAll(page.getWrappedList().stream().map(HibCoreElement::getId).collect(Collectors.toList()));
-			userDao.preparePermissionsForElementIds(ac.getUser(), permIds);
-			ac.put(attributeName, true);
-		}
 	}
 
 	/**

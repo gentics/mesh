@@ -7,13 +7,12 @@ import static com.gentics.mesh.core.rest.MeshEvent.GROUP_USER_ASSIGNED;
 import static com.gentics.mesh.core.rest.MeshEvent.GROUP_USER_UNASSIGNED;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.util.PreparationUtil.prepareData;
+import static com.gentics.mesh.util.PreparationUtil.preparePermissions;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -37,12 +36,11 @@ import com.gentics.mesh.core.rest.event.group.GroupUserAssignModel;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
-import com.gentics.mesh.core.result.Result;
-import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
+import com.gentics.mesh.util.PreparationUtil;
 
 /**
  * A persisting extension to {@link SchemaDao}
@@ -51,9 +49,6 @@ import com.gentics.mesh.parameter.value.FieldsSet;
  *
  */
 public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGroup>, PersistingNamedEntityDao<HibGroup> {
-	public final static String ATTRIBUTE_ROLES_PER_GROUP_NAME = "roles_per_group";
-
-	public final static String ATTRIBUTE_PERMISSIONS_PREPARED_NAME = "roles_permissions";
 
 	@Override
 	default HibGroup create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
@@ -177,27 +172,23 @@ public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGro
 		Tx.get().permissionCache().clear();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	default void beforeTransformToRestSync(Page<? extends HibCoreElement<? extends RestModel>> page,
 			InternalActionContext ac) {
 		GenericParameters generic = ac.getGenericParameters();
 		FieldsSet fields = generic.getFields();
 
-		if (fields.has("roles")) {
-			Map<HibGroup, Collection<? extends HibRole>> rolesPerGroup = getRoles(
-					(Collection<HibGroup>) page.getWrappedList());
-			ac.put(ATTRIBUTE_ROLES_PER_GROUP_NAME, rolesPerGroup);
-		}
-		if (fields.has("perms")) {
-			preparePermissions(page, ac, ATTRIBUTE_PERMISSIONS_PREPARED_NAME);
-		}
+		preparePermissions(page, ac, fields);
+
+		@SuppressWarnings("unchecked")
+		Page<HibGroup> groups = (Page<HibGroup>)page;
+		prepareData(groups, ac, "group", "roles", this::getRoles, fields.has("roles"));
 	}
 
 	@Override
 	default void beforeGetETagForPage(Page<? extends HibCoreElement<? extends RestModel>> page,
 			InternalActionContext ac) {
-		preparePermissions(page, ac, ATTRIBUTE_PERMISSIONS_PREPARED_NAME);
+		preparePermissions(page, ac);
 	}
 
 	@Override
@@ -211,7 +202,7 @@ public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGro
 			restGroup.setName(group.getName());
 		}
 		if (fields.has("roles")) {
-			for (HibRole role : getRoles(group, ac)) {
+			for (HibRole role : PreparationUtil.getPreparedData(group, ac, "group", "roles", this::getRoles)) {
 				String name = role.getName();
 				if (name != null) {
 					restGroup.getRoles().add(role.transformToReference());
@@ -221,15 +212,6 @@ public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGro
 		group.fillCommonRestFields(ac, fields, restGroup);
 		Tx.get().roleDao().setRolePermissions(group, ac, restGroup);
 		return restGroup;
-	}
-
-	default Result<? extends HibRole> getRoles(HibGroup group, InternalActionContext ac) {
-		Map<HibGroup, Collection<? extends HibRole>> rolesPerGroup = ac.get(ATTRIBUTE_ROLES_PER_GROUP_NAME);
-		if (rolesPerGroup != null) {
-			return new TraversalResult<HibRole>(rolesPerGroup.getOrDefault(group, Collections.emptyList()));
-		} else {
-			return getRoles(group);
-		}
 	}
 
 	@Override

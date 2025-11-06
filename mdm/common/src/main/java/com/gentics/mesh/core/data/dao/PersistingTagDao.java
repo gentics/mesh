@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.event.Assignment.UNASSIGNED;
+import static com.gentics.mesh.util.PreparationUtil.preparePermissions;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
@@ -48,8 +49,6 @@ import org.slf4j.LoggerFactory;
 public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<HibTag>, PersistingNamedEntityDao<HibTag> {
 
 	Logger log = LoggerFactory.getLogger(PersistingTagDao.class);
-
-	public final static String ATTRIBUTE_PERMISSIONS_PREPARED_NAME = "tags.permissions";
 
 	@Override
 	default HibTag loadObjectByUuid(HibBranch branch, InternalActionContext ac, String tagUuid, InternalPermission perm) {
@@ -199,7 +198,7 @@ public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<HibTag>, P
 	@Override
 	default void beforeGetETagForPage(Page<? extends HibCoreElement<? extends RestModel>> page,
 			InternalActionContext ac) {
-		preparePermissions(page, ac, ATTRIBUTE_PERMISSIONS_PREPARED_NAME);
+		preparePermissions(page, ac);
 	}
 
 	@Override
@@ -208,9 +207,7 @@ public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<HibTag>, P
 		GenericParameters generic = ac.getGenericParameters();
 		FieldsSet fields = generic.getFields();
 
-		if (fields.has("perms")) {
-			preparePermissions(page, ac, ATTRIBUTE_PERMISSIONS_PREPARED_NAME);
-		}
+		preparePermissions(page, ac, fields);
 	}
 
 	@Override

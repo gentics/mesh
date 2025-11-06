@@ -1,5 +1,7 @@
 package com.gentics.mesh.database;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -9,6 +11,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import org.junit.Before;
@@ -50,6 +53,9 @@ public class BranchQueryCountingTest extends AbstractCountingTest {
 
 	protected static Set<String> initialBranchUuids = new HashSet<>();
 
+	/**
+	 * Test cases with asserters
+	 */
 	protected final static Map<String, Consumer<BranchResponse>> fieldAsserters = Map.of(
 		"name", branch -> {
 			assertThat(branch.getName()).as("Branch name").isNotEmpty();
@@ -119,15 +125,19 @@ public class BranchQueryCountingTest extends AbstractCountingTest {
 
 			// create branches
 			for (int i = 0; i < NUM_BRANCHES; i++) {
-				createBranch("");
 				BranchCreateRequest request = new BranchCreateRequest();
 				request.setName("branch_%d".formatted(i));
 				request.setHostname("branch_%d".formatted(i));
 				request.setLatest(true);
-				BranchResponse branch = call(() -> client().createBranch(PROJECT_NAME, request));
+
+				AtomicReference<String> branchUuid = new AtomicReference<>();
+				waitForJobs(() -> {
+					BranchResponse branch = call(() -> client().createBranch(PROJECT_NAME, request));
+					branchUuid.set(branch.getUuid());
+				}, COMPLETED, 1);
 
 				for (String tagUuid : tagUuids) {
-					call(() -> client().addTagToBranch(PROJECT_NAME, branch.getUuid(), tagUuid));
+					call(() -> client().addTagToBranch(PROJECT_NAME, branchUuid.get(), tagUuid));
 				}
 			}
 		}
@@ -154,7 +164,7 @@ public class BranchQueryCountingTest extends AbstractCountingTest {
 	public void testGetPage() {
 		BranchListResponse branchList = doTest(() -> client().findBranches(PROJECT_NAME,
 				new GenericParametersImpl().setETag(etag).setFields("uuid", field),
-				new PagingParametersImpl().setPerPage(10L)), 9, 1);
+				new PagingParametersImpl().setPerPage(10L)), 10, 1);
 
 		assertThat(branchList.getData()).as("List of fetched branches").hasSize(10);
 

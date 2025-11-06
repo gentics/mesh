@@ -110,7 +110,7 @@ public class TagQueryCountingTest extends AbstractCountingTest {
 	@Test
 	public void testGetAll() {
 		TagListResponse tagList = doTest(() -> client().findTags(PROJECT_NAME, tagFamilyUuid,
-				new GenericParametersImpl().setETag(etag).setFields("uuid", field)), 7, 1);
+				new GenericParametersImpl().setETag(etag).setFields("uuid", field)), 12, 1);
 
 		assertThat(tagList.getData()).as("List of fetched tags").hasSize(totalNumTags);
 
@@ -123,9 +123,9 @@ public class TagQueryCountingTest extends AbstractCountingTest {
 	public void testGetPage() {
 		TagListResponse tagList = doTest(() -> client().findTags(PROJECT_NAME, tagFamilyUuid,
 				new GenericParametersImpl().setETag(etag).setFields("uuid", field),
-				new PagingParametersImpl().setPerPage(10L)), 7, 1);
+				new PagingParametersImpl().setPerPage(15L)), 13, 1);
 
-		assertThat(tagList.getData()).as("List of fetched tags").hasSize(10);
+		assertThat(tagList.getData()).as("List of fetched tags").hasSize(15);
 
 		for (TagResponse tag : tagList.getData()) {
 			fieldAsserters.get(field).accept(tag);

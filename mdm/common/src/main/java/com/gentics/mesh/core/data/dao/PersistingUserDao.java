@@ -8,20 +8,24 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_
 import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.util.PreparationUtil.getPreparedData;
+import static com.gentics.mesh.util.PreparationUtil.prepareData;
+import static com.gentics.mesh.util.PreparationUtil.preparePermissions;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumSet;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.cache.NameCache;
 import com.gentics.mesh.cache.PermissionCache;
@@ -52,16 +56,11 @@ import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
-import com.gentics.mesh.core.result.Result;
-import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A persisting extension to {@link UserDao}
@@ -72,12 +71,6 @@ import org.slf4j.LoggerFactory;
 public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>, PersistingNamedEntityDao<HibUser> {
 
 	Logger log = LoggerFactory.getLogger(PersistingUserDao.class);
-
-	public final static String ATTRIBUTE_GROUPS_PER_USER_NAME = "users.groups";
-
-	public final static String ATTRIBUTE_ROLES_PER_USER_NAME = "users.roles";
-
-	public final static String ATTRIBUTE_PERMISSIONS_PREPARED_NAME = "users.permissions";
 
 	/**
 	 * Update all shortcut edges.
@@ -377,7 +370,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 			keyBuilder.append(referencedNode.getUuid());
 			keyBuilder.append(referencedNode.getProject().getName());
 		}
-		for (HibGroup group : getGroups(user, ac)) {
+		for (HibGroup group : getPreparedData(user, ac, "user", "groups", this::getGroups)) {
 			keyBuilder.append(group.getUuid());
 		}
 		keyBuilder.append(String.valueOf(user.isAdmin()));
@@ -426,43 +419,23 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 		GenericParameters generic = ac.getGenericParameters();
 		FieldsSet fields = generic.getFields();
 
-		if (fields.has("groups")) {
-			prepareGroups(page, ac);
-		}
-		if (fields.has("rolesHash")) {
-			prepareRoles(page, ac);
-		}
-		if (fields.has("perms")) {
-			preparePermissions(page, ac, ATTRIBUTE_PERMISSIONS_PREPARED_NAME);
-		}
+		preparePermissions(page, ac, fields);
+
+		@SuppressWarnings("unchecked")
+		Page<HibUser> users = (Page<HibUser>)page;
+		prepareData(users, ac, "user", "groups", this::getGroups, fields.has("groups"));
+		prepareData(users, ac, "user", "roles", this::getRoles, fields.has("rolesHash"));
 	}
 
 	@Override
 	default void beforeGetETagForPage(Page<? extends HibCoreElement<? extends RestModel>> page,
 			InternalActionContext ac) {
-		preparePermissions(page, ac, ATTRIBUTE_PERMISSIONS_PREPARED_NAME);
-		prepareGroups(page, ac);
-		prepareRoles(page, ac);
-	}
+		preparePermissions(page, ac);
 
-	default void prepareGroups(Page<? extends HibCoreElement<? extends RestModel>> page,
-			InternalActionContext ac) {
-		if (ac.get(ATTRIBUTE_GROUPS_PER_USER_NAME) == null) {
-			@SuppressWarnings("unchecked")
-			Map<HibUser, Collection<? extends HibGroup>> groupsPerUser = getGroups(
-					(Collection<HibUser>) page.getWrappedList());
-			ac.put(ATTRIBUTE_GROUPS_PER_USER_NAME, groupsPerUser);
-		}
-	}
-
-	default void prepareRoles(Page<? extends HibCoreElement<? extends RestModel>> page,
-			InternalActionContext ac) {
-		if (ac.get(ATTRIBUTE_ROLES_PER_USER_NAME) == null) {
-			@SuppressWarnings("unchecked")
-			Map<HibUser, Collection<? extends HibRole>> rolesPerUser = getRoles(
-					(Collection<HibUser>) page.getWrappedList());
-			ac.put(ATTRIBUTE_ROLES_PER_USER_NAME, rolesPerUser);
-		}
+		@SuppressWarnings("unchecked")
+		Page<HibUser> users = (Page<HibUser>)page;
+		prepareData(users, ac, "user", "groups", this::getGroups);
+		prepareData(users, ac, "user", "roles", this::getRoles);
 	}
 
 	@Override
@@ -542,27 +515,9 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	 */
 	default void setGroups(HibUser user, InternalActionContext ac, UserResponse restUser) {
 		// TODO filter by permissions
-		for (HibGroup group : getGroups(user, ac)) {
+		for (HibGroup group : getPreparedData(user, ac, "user", "groups", this::getGroups)) {
 			GroupReference reference = group.transformToReference();
 			restUser.getGroups().add(reference);
-		}
-	}
-
-	default Result<? extends HibGroup> getGroups(HibUser user, InternalActionContext ac) {
-		Map<HibUser, Collection<? extends HibGroup>> groupsPerUser = ac.get(ATTRIBUTE_GROUPS_PER_USER_NAME);
-		if (groupsPerUser != null) {
-			return new TraversalResult<>(groupsPerUser.getOrDefault(user, Collections.emptyList()));
-		} else {
-			return getGroups(user);
-		}
-	}
-
-	default Result<? extends HibRole> getRoles(HibUser user, InternalActionContext ac) {
-		Map<HibUser, Collection<? extends HibRole>> rolesPerUser = ac.get(ATTRIBUTE_ROLES_PER_USER_NAME);
-		if (rolesPerUser != null) {
-			return new TraversalResult<>(rolesPerUser.getOrDefault(user, Collections.emptyList()));
-		} else {
-			return new TraversalResult<>(getRoles(user));
 		}
 	}
 
@@ -695,7 +650,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	default String getRolesHash(HibUser user, InternalActionContext ac) {
 		return Stream.concat(
 				Stream.of(user.isAdmin() ? "1" : "0"), 
-				StreamSupport.stream(getRoles(user, ac).spliterator(), false)
+				StreamSupport.stream(getPreparedData(user, ac, "user", "roles", this::getRoles).spliterator(), false)
 					.map(role -> role.getId().toString())
 					.sorted())
 			.collect(Collectors.joining());

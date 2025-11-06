@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.data.dao;
 
+import java.util.Collection;
+import java.util.Map;
+
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.branch.HibBranchMicroschemaVersion;
@@ -8,6 +11,7 @@ import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -133,4 +137,11 @@ public interface BranchDao extends DaoTransformable<HibBranch, BranchResponse>, 
 	 * @return Found edge between branch and version
 	 */
 	HibBranchMicroschemaVersion findBranchMicroschemaEdge(HibBranch branch, HibMicroschemaVersion microschemaVersion);
+
+	/**
+	 * Return the tags for all given branches
+	 * @param branches collection of branches
+	 * @return map of branch to the collections of tags
+	 */
+	Map<HibBranch, Collection<? extends HibTag>> getTags(Collection<HibBranch> branches);
 }

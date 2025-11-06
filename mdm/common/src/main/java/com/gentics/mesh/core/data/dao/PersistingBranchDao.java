@@ -7,6 +7,8 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.job.JobStatus.QUEUED;
 import static com.gentics.mesh.event.Assignment.ASSIGNED;
+import static com.gentics.mesh.util.PreparationUtil.prepareData;
+import static com.gentics.mesh.util.PreparationUtil.preparePermissions;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
@@ -14,8 +16,11 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.cache.NameCache;
 import com.gentics.mesh.context.BulkActionContext;
@@ -45,9 +50,7 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.gentics.mesh.util.PreparationUtil;
 
 /**
  * A persisting extension to {@link BranchDao}
@@ -57,8 +60,6 @@ import org.slf4j.LoggerFactory;
  */
 public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibProject, HibBranch>, PersistingNamedEntityDao<HibBranch> {
 	static final Logger log = LoggerFactory.getLogger(BranchDao.class);
-
-	public final static String ATTRIBUTE_PERMISSIONS_PREPARED_NAME = "branches.permissions";
 
 	/**
 	 * Make a new connection of the branch to the schema version, containing the migration status data.
@@ -278,7 +279,7 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 	@Override
 	default void beforeGetETagForPage(Page<? extends HibCoreElement<? extends RestModel>> page,
 			InternalActionContext ac) {
-		preparePermissions(page, ac, ATTRIBUTE_PERMISSIONS_PREPARED_NAME);
+		preparePermissions(page, ac);
 	}
 
 	@Override
@@ -287,9 +288,11 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 		GenericParameters generic = ac.getGenericParameters();
 		FieldsSet fields = generic.getFields();
 
-		if (fields.has("perms")) {
-			preparePermissions(page, ac, ATTRIBUTE_PERMISSIONS_PREPARED_NAME);
-		}
+		preparePermissions(page, ac, fields);
+
+		@SuppressWarnings("unchecked")
+		Page<HibBranch> branches = (Page<HibBranch>)page;
+		prepareData(branches, ac, "branch", "tags", this::getTags, fields.has("tags"));
 	}
 
 	@Override
@@ -437,7 +440,10 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 	 *            Rest model which will be updated
 	 */
 	private void setTagsToRest(HibBranch branch, InternalActionContext ac, BranchResponse restNode) {
-		restNode.setTags(branch.getTags().stream().map(HibTag::transformToReference).collect(Collectors.toList()));
+		restNode.setTags(StreamSupport
+				.stream(PreparationUtil.getPreparedData(branch, ac, "branch", "tags", HibBranch::getTags).spliterator(),
+						false)
+				.map(HibTag::transformToReference).collect(Collectors.toList()));
 	}
 
 	/**

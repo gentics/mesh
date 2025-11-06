@@ -99,7 +99,7 @@ public class TagFamilyQueryCountingTest extends AbstractCountingTest {
 	@Test
 	public void testGetAll() {
 		TagFamilyListResponse tagFamilyList = doTest(() -> client().findTagFamilies(PROJECT_NAME,
-				new GenericParametersImpl().setETag(etag).setFields("uuid", field)), 7, 1);
+				new GenericParametersImpl().setETag(etag).setFields("uuid", field)), 9, 1);
 
 		assertThat(tagFamilyList.getData()).as("List of fetched tag families").hasSize(totalNumTagFamilies);
 
@@ -112,7 +112,7 @@ public class TagFamilyQueryCountingTest extends AbstractCountingTest {
 	public void testGetPage() {
 		TagFamilyListResponse tagFamilyList = doTest(() -> client().findTagFamilies(PROJECT_NAME,
 				new GenericParametersImpl().setETag(etag).setFields("uuid", field),
-				new PagingParametersImpl().setPerPage(10L)), 7, 1);
+				new PagingParametersImpl().setPerPage(10L)), 9, 1);
 
 		assertThat(tagFamilyList.getData()).as("List of fetched tag families").hasSize(10);
 

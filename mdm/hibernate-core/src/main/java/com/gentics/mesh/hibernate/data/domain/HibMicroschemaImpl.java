@@ -14,6 +14,8 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.NamedAttributeNode;
+import jakarta.persistence.NamedEntityGraph;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 
@@ -32,6 +34,12 @@ import com.gentics.mesh.dagger.annotations.ElementTypeKey;
  * @author plyhun
  *
  */
+@NamedEntityGraph(
+		name = "microschema.rest",
+		attributeNodes = {
+			@NamedAttributeNode("latestVersion")
+		}
+	)
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Entity(name = HibMicroschemaImpl.TABLE_NAME)
 @ElementTypeKey(ElementType.MICROSCHEMA)
