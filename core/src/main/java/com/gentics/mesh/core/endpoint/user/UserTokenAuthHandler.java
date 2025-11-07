@@ -8,6 +8,8 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.NotImplementedException;
+
 import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.context.InternalActionContext;
@@ -47,8 +49,7 @@ public class UserTokenAuthHandler extends AuthenticationHandlerImpl<MeshJWTAuthP
 
 	@Override
 	public Future<User> authenticate(RoutingContext context) {
-		User user = context.user();
-		return user != null ? Future.succeededFuture(user) : Future.failedFuture("No authenticated user");
+		throw new NotImplementedException();
 	}
 
 	@Override

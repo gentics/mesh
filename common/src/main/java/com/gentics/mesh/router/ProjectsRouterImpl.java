@@ -83,7 +83,7 @@ public class ProjectsRouterImpl implements ProjectsRouter {
 			// Note: the end slash in the subrouter mount point is important, otherwise the subrouter for e.g. /project
 			// (for a project named "project") would also match for the route /projects, which will cause problems,
 			// if the project "project" is deleted
-			router.route("/" + encodedName + "*").subRouter(projectRouter);
+			router.route("/" + encodedName + "/*").subRouter(projectRouter);
 			projectRouter.route("/*").subRouter(this.projectRouter.getRouter());
 			// mountSubRoutersForProjectRouter(projectRouter, encodedName);
 		}

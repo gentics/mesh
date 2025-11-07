@@ -124,7 +124,7 @@ public class MeshJWTAuthProvider implements AuthenticationProvider, JWTAuth {
 	@Override
 	public Future<User> authenticate(Credentials credentials) {
 		// The mesh auth provider is not using this method to authenticate a user.
-		return null;
+		throw new NotImplementedException();
 	}
 
 	@Override

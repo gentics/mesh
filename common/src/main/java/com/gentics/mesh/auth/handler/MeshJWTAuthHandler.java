@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,8 +84,7 @@ public class MeshJWTAuthHandler extends AuthenticationHandlerImpl<MeshJWTAuthPro
 
 	@Override
 	public Future<User> authenticate(RoutingContext context) {
-		User user = context.user();
-		return user != null ? Future.succeededFuture(user) : Future.failedFuture("No authenticated user");
+		throw new NotImplementedException();
 	}
 
 	/**
