@@ -1,24 +1,19 @@
 package com.gentics.mesh.database;
 
-import static com.gentics.mesh.test.ClientHelper.call;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Consumer;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.hibernate.util.QueryCounter;
@@ -33,14 +28,7 @@ import com.gentics.mesh.test.TestSize;
  */
 @MeshTestSetting(testSize = TestSize.PROJECT, monitoring = true, startServer = true, customOptionChanger = QueryCounter.EnableHibernateStatistics.class, resetBetweenTests = ResetTestDb.NEVER)
 @RunWith(Parameterized.class)
-public class RoleQueryCountingTest extends AbstractCountingTest {
-	public final static int NUM_ROLES = 53;
-
-	public final static int NUM_GROUPS_PER_ROLE = 10;
-
-	protected static int totalNumRoles = NUM_ROLES;
-
-	protected static Set<String> initialRoleUuids = new HashSet<>();
+public class RoleQueryCountingTest extends AbstractRoleQueryCountingTest {
 
 	protected final static Map<String, Consumer<RoleResponse>> fieldAsserters = Map.of(
 		"name", role -> {
@@ -82,29 +70,6 @@ public class RoleQueryCountingTest extends AbstractCountingTest {
 
 	@Parameter(1)
 	public boolean etag;
-
-	@Before
-	public void setup() {
-		if (getTestContext().needsSetup()) {
-			RoleListResponse initialRoles = call(() -> client().findRoles());
-			initialRoleUuids.addAll(initialRoles.getData().stream().map(RoleResponse::getUuid).toList());
-			totalNumRoles += initialRoles.getMetainfo().getTotalCount();
-
-			// create roles
-			for (int i = 0; i < NUM_ROLES; i++) {
-				RoleResponse role = createRole("role_%d".formatted(i), null);
-	
-				// create and assign groups
-				for (int j = 0; j < NUM_GROUPS_PER_ROLE; j++) {
-					GroupResponse group = createGroup("role_%d_group_%d".formatted(i, j));
-					call(() -> client().addRoleToGroup(group.getUuid(), role.getUuid()));
-				}
-			}
-		}
-
-		// clear the cache
-		adminCall(() -> client().clearCache());
-	}
 
 	@Test
 	public void testGetAll() {

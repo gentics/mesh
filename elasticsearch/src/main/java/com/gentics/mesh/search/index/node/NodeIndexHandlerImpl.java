@@ -56,6 +56,7 @@ import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.search.index.node.NodeContainerMappingProvider;
 import com.gentics.mesh.core.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.handler.DataHolderContext;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.BucketManager;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
@@ -631,8 +632,8 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	}	
 
 	@Override
-	public Stream<? extends HibNode> loadAllElements() {
-		return CommonTx.get().nodeDao().findAllGlobal();
+	public Collection<? extends HibNode> loadAllElements(Bucket bucket, DataHolderContext dc) {
+		return CommonTx.get().nodeDao().findAllGlobal(bucket).toList();
 	}
 
 	@Override

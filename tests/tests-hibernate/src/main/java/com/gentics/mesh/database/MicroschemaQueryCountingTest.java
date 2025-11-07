@@ -1,17 +1,13 @@
 package com.gentics.mesh.database;
 
-import static com.gentics.mesh.test.ClientHelper.call;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Consumer;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -32,12 +28,7 @@ import com.gentics.mesh.test.TestSize;
  */
 @MeshTestSetting(testSize = TestSize.PROJECT, monitoring = true, startServer = true, customOptionChanger = QueryCounter.EnableHibernateStatistics.class, resetBetweenTests = ResetTestDb.NEVER)
 @RunWith(Parameterized.class)
-public class MicroschemaQueryCountingTest extends AbstractCountingTest {
-	public final static int NUM_MICROSCHEMAS = 53;
-
-	protected static int totalNumMicroschemas = NUM_MICROSCHEMAS;
-
-	protected static Set<String> initialMicroschemaUuids = new HashSet<>();
+public class MicroschemaQueryCountingTest extends AbstractMicroschemaQueryCountingTest {
 
 	protected final static Map<String, Consumer<MicroschemaResponse>> fieldAsserters = Map.of(
 		"name", microschema -> {
@@ -76,23 +67,6 @@ public class MicroschemaQueryCountingTest extends AbstractCountingTest {
 
 	@Parameter(1)
 	public boolean etag;
-
-	@Before
-	public void setup() {
-		if (getTestContext().needsSetup()) {
-			MicroschemaListResponse initialMicroschemas = call(() -> client().findMicroschemas());
-			initialMicroschemaUuids.addAll(initialMicroschemas.getData().stream().map(MicroschemaResponse::getUuid).toList());
-			totalNumMicroschemas += initialMicroschemas.getMetainfo().getTotalCount();
-
-			// create schemas
-			for (int i = 0; i < NUM_MICROSCHEMAS; i++) {
-				createMicroschema("microschema_%d".formatted(i));
-			}
-		}
-
-		// clear the cache
-		adminCall(() -> client().clearCache());
-	}
 
 	@Test
 	public void testGetAll() {

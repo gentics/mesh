@@ -54,6 +54,7 @@ import com.gentics.mesh.contentoperation.ContentColumn;
 import com.gentics.mesh.contentoperation.ContentStorage;
 import com.gentics.mesh.contentoperation.JoinedContentColumn;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
@@ -912,6 +913,14 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 	@Override
 	public Stream<? extends HibNode> findAllGlobal() {
 		return em().createQuery("select n from node n", HibNodeImpl.class).getResultStream();
+	}
+
+	@Override
+	public Stream<? extends HibNode> findAllGlobal(Bucket bucket) {
+		return em().createQuery("select n from node n where n.bucketId >= :start and n.bucketId <= :end", HibNodeImpl.class)
+				.setParameter("start", bucket.start())
+				.setParameter("end", bucket.end())
+				.getResultStream();
 	}
 
 	@Override

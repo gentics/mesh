@@ -7,12 +7,14 @@ import static com.gentics.mesh.core.rest.MeshEvent.GROUP_USER_ASSIGNED;
 import static com.gentics.mesh.core.rest.MeshEvent.GROUP_USER_UNASSIGNED;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.util.PreparationUtil.getPreparedData;
 import static com.gentics.mesh.util.PreparationUtil.prepareData;
 import static com.gentics.mesh.util.PreparationUtil.preparePermissions;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -40,7 +42,6 @@ import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
-import com.gentics.mesh.util.PreparationUtil;
 
 /**
  * A persisting extension to {@link SchemaDao}
@@ -178,17 +179,17 @@ public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGro
 		GenericParameters generic = ac.getGenericParameters();
 		FieldsSet fields = generic.getFields();
 
-		preparePermissions(page, ac, fields);
+		preparePermissions(ac.getUser(), page, ac, fields);
 
 		@SuppressWarnings("unchecked")
-		Page<HibGroup> groups = (Page<HibGroup>)page;
+		List<HibGroup> groups = (List<HibGroup>)page.getWrappedList();
 		prepareData(groups, ac, "group", "roles", this::getRoles, fields.has("roles"));
 	}
 
 	@Override
 	default void beforeGetETagForPage(Page<? extends HibCoreElement<? extends RestModel>> page,
 			InternalActionContext ac) {
-		preparePermissions(page, ac);
+		preparePermissions(ac.getUser(), page, ac);
 	}
 
 	@Override
@@ -202,7 +203,7 @@ public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGro
 			restGroup.setName(group.getName());
 		}
 		if (fields.has("roles")) {
-			for (HibRole role : PreparationUtil.getPreparedData(group, ac, "group", "roles", this::getRoles)) {
+			for (HibRole role : getPreparedData(group, ac, "group", "roles", r -> getRoles(r).list())) {
 				String name = role.getName();
 				if (name != null) {
 					restGroup.getRoles().add(role.transformToReference());

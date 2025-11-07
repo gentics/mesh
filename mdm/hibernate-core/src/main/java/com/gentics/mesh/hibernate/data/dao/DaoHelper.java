@@ -51,6 +51,7 @@ import com.gentics.mesh.cache.TotalsCache;
 import com.gentics.mesh.contentoperation.CommonContentColumn;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
+import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.dao.PersistingRootDao;
@@ -200,7 +201,16 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 	public TraversalResult<T> findAll() {
 		CriteriaQuery<D> query = cb().createQuery(domainClass);
 		query.from(domainClass);
-		return new TraversalResult<>(em().createQuery(query).getResultStream());
+
+		return new TraversalResult<>(setEntityGraph(em().createQuery(query), getEntityGraph("load")).getResultStream());
+	}
+
+	public TraversalResult<T> findAll(Bucket bucket) {
+		CriteriaQuery<D> query = cb().createQuery(domainClass);
+		Root<D> root = query.from(domainClass);
+
+		query.where(cb().greaterThanOrEqualTo(root.get("bucketTracking").get("bucketId"), bucket.start()), cb().lessThanOrEqualTo(root.get("bucketTracking").get("bucketId"), bucket.end()));
+		return new TraversalResult<>(setEntityGraph(em().createQuery(query), getEntityGraph("load")).getResultStream());
 	}
 
 	public Page<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo) {

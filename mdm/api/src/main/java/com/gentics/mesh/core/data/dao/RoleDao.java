@@ -220,6 +220,15 @@ public interface RoleDao extends DaoGlobal<HibRole>, DaoTransformable<HibRole, R
 	Set<String> getRoleUuidsForPerm(HibBaseElement element, InternalPermission permission);
 
 	/**
+	 * Return set of role uuids for the given permission that were granted on the given collection of elements.
+	 *
+	 * @param elements
+	 * @param permission
+	 * @return
+	 */
+	Map<HibBaseElement, Set<String>> getRoleUuidsForPerm(Collection<? extends HibBaseElement> elements, InternalPermission permission);
+
+	/**
 	 * Return the roles which grant the given permission on the element.
 	 * 
 	 * @param element

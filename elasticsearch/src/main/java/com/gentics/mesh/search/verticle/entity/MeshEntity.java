@@ -89,7 +89,7 @@ public abstract class MeshEntity<T> {
 	 * @return
 	 */
 	public JsonObject transform(T element) {
-		return transformer.toDocument(element);
+		return transformer.toDocument(element, null);
 	}
 
 	/**

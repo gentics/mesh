@@ -1,17 +1,13 @@
 package com.gentics.mesh.database;
 
-import static com.gentics.mesh.test.ClientHelper.call;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Consumer;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -32,14 +28,7 @@ import com.gentics.mesh.test.TestSize;
  */
 @MeshTestSetting(testSize = TestSize.PROJECT, monitoring = true, startServer = true, customOptionChanger = QueryCounter.EnableHibernateStatistics.class, resetBetweenTests = ResetTestDb.NEVER)
 @RunWith(Parameterized.class)
-public class GroupQueryCountingTest extends AbstractCountingTest {
-	public final static int NUM_GROUPS = 53;
-
-	public final static int NUM_ROLES_PER_GROUP = 10;
-
-	protected static int totalNumGroups = NUM_GROUPS;
-
-	protected static Set<String> initialGroupUuids = new HashSet<>();
+public class GroupQueryCountingTest extends AbstractGroupQueryCountingTest {
 
 	protected final static Map<String, Consumer<GroupResponse>> fieldAsserters = Map.of(
 		"name", group -> {
@@ -82,28 +71,6 @@ public class GroupQueryCountingTest extends AbstractCountingTest {
 	@Parameter(1)
 	public boolean etag;
 
-	@Before
-	public void setup() {
-		if (getTestContext().needsSetup()) {
-			GroupListResponse initialGroups = call(() -> client().findGroups());
-			initialGroupUuids.addAll(initialGroups.getData().stream().map(GroupResponse::getUuid).toList());
-			totalNumGroups += initialGroups.getMetainfo().getTotalCount();
-
-			// create groups
-			for (int i = 0; i < NUM_GROUPS; i++) {
-				GroupResponse group = createGroup("group_%d".formatted(i));
-
-				// create and assign roles
-				for (int j = 0; j < NUM_ROLES_PER_GROUP; j++) {
-					createRole("group_%d_role_%d".formatted(i, j), group.getUuid());
-				}
-			}
-		}
-
-		// clear the cache
-		adminCall(() -> client().clearCache());
-	}
-
 	@Test
 	public void testGetAll() {
 		GroupListResponse groupList = doTest(() -> client().findGroups(new GenericParametersImpl().setETag(etag).setFields("uuid", field)), 7, 1);
@@ -118,7 +85,7 @@ public class GroupQueryCountingTest extends AbstractCountingTest {
 
 	@Test
 	public void testGetPage() {
-		GroupListResponse groupList = doTest(() -> client().findGroups(new GenericParametersImpl().setETag(etag).setFields("uuid", field), new PagingParametersImpl().setPerPage(10L)), 7, 1);
+		GroupListResponse groupList = doTest(() -> client().findGroups(new GenericParametersImpl().setETag(etag).setFields("uuid", field), new PagingParametersImpl().setPerPage(10L)), 8, 1);
 		assertThat(groupList.getData()).as("List of fetched groups").hasSize(10);
 
 		for (GroupResponse group : groupList.getData()) {

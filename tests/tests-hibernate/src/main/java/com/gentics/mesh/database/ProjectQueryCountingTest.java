@@ -1,27 +1,19 @@
 package com.gentics.mesh.database;
 
-import static com.gentics.mesh.test.ClientHelper.call;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.gentics.mesh.core.rest.lang.LanguageListResponse;
-import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.hibernate.util.QueryCounter;
@@ -37,14 +29,7 @@ import com.gentics.mesh.test.TestSize;
  */
 @MeshTestSetting(testSize = TestSize.PROJECT, monitoring = true, startServer = true, customOptionChanger = QueryCounter.EnableHibernateStatistics.class, resetBetweenTests = ResetTestDb.NEVER)
 @RunWith(Parameterized.class)
-public class ProjectQueryCountingTest extends AbstractCountingTest {
-	public final static int NUM_PROJECTS = 53;
-
-	public final static int NUM_LANGUAGES_PER_PROJECT = 8;
-
-	protected static int totalNumProjects = NUM_PROJECTS;
-
-	protected static Set<String> initialProjectUuids = new HashSet<>();
+public class ProjectQueryCountingTest extends AbstractProjectQueryCountingTest {
 
 	protected final static Map<String, Consumer<ProjectResponse>> fieldAsserters = Map.of(
 		"name", project -> {
@@ -89,31 +74,6 @@ public class ProjectQueryCountingTest extends AbstractCountingTest {
 
 	@Parameter(1)
 	public boolean etag;
-
-	@Before
-	public void setup() {
-		if (getTestContext().needsSetup()) {
-			ProjectListResponse initialProjects = call(() -> client().findProjects());
-			initialProjectUuids.addAll(initialProjects.getData().stream().map(ProjectResponse::getUuid).toList());
-			totalNumProjects += initialProjects.getMetainfo().getTotalCount();
-
-			LanguageListResponse languages = call(() -> client().findLanguages(new PagingParametersImpl().setPerPage((long)NUM_LANGUAGES_PER_PROJECT)));
-			List<String> languageUuids = languages.getData().stream().map(LanguageResponse::getUuid).collect(Collectors.toList());
-
-			// create projects
-			for (int i = 0; i < NUM_PROJECTS; i++) {
-				ProjectResponse project = createProject("project_%d".formatted(i));
-	
-				// assign languages
-				for (String languageUuid : languageUuids) {
-					call(() -> client().assignLanguageToProject(project.getName(), languageUuid));
-				}
-			}
-		}
-
-		// clear the cache
-		adminCall(() -> client().clearCache());
-	}
 
 	@Test
 	public void testGetAll() {

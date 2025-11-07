@@ -13,6 +13,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.NamedAttributeNode;
 import jakarta.persistence.NamedEntityGraph;
+import jakarta.persistence.NamedEntityGraphs;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 
@@ -29,12 +30,20 @@ import com.gentics.mesh.dagger.annotations.ElementTypeKey;
  * @author plyhun
  *
  */
-@NamedEntityGraph(
-	name = "schema.rest",
-	attributeNodes = {
-		@NamedAttributeNode("latestVersion")
-	}
-)
+@NamedEntityGraphs({
+	@NamedEntityGraph(
+		name = "schema.rest",
+		attributeNodes = {
+			@NamedAttributeNode("latestVersion")
+		}
+	),
+	@NamedEntityGraph(
+		name = "schema.load",
+		attributeNodes = {
+			@NamedAttributeNode("latestVersion")
+		}
+	)
+})
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Entity(name = "schema")
 @ElementTypeKey(ElementType.SCHEMA)

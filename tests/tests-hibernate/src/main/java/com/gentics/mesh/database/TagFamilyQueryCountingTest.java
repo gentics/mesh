@@ -1,6 +1,5 @@
 package com.gentics.mesh.database;
 
-import static com.gentics.mesh.test.ClientHelper.call;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
@@ -9,15 +8,12 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
-import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.hibernate.util.QueryCounter;
@@ -32,12 +28,7 @@ import com.gentics.mesh.test.TestSize;
  */
 @MeshTestSetting(testSize = TestSize.PROJECT, monitoring = true, startServer = true, customOptionChanger = QueryCounter.EnableHibernateStatistics.class, resetBetweenTests = ResetTestDb.NEVER)
 @RunWith(Parameterized.class)
-public class TagFamilyQueryCountingTest extends AbstractCountingTest {
-	public final static String PROJECT_NAME = "testproject";
-
-	public final static int NUM_TAG_FAMILIES = 53;
-
-	protected static int totalNumTagFamilies = NUM_TAG_FAMILIES;
+public class TagFamilyQueryCountingTest extends AbstractTagFamilyQueryCountingTest {
 
 	protected final static Map<String, Consumer<TagFamilyResponse>> fieldAsserters = Map.of(
 		"name", tagFamily -> {
@@ -76,25 +67,6 @@ public class TagFamilyQueryCountingTest extends AbstractCountingTest {
 
 	@Parameter(1)
 	public boolean etag;
-
-	@Before
-	public void setup() {
-		if (getTestContext().needsSetup()) {
-			// create project
-			ProjectCreateRequest projectCreateRequest = new ProjectCreateRequest();
-			projectCreateRequest.setName(PROJECT_NAME);
-			projectCreateRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
-			call(() -> client().createProject(projectCreateRequest));
-
-			// create tag families
-			for (int i = 0; i < NUM_TAG_FAMILIES; i++) {
-				createTagFamily(PROJECT_NAME, "tagfamily_%d".formatted(i));
-			}
-		}
-
-		// clear the cache
-		adminCall(() -> client().clearCache());
-	}
 
 	@Test
 	public void testGetAll() {

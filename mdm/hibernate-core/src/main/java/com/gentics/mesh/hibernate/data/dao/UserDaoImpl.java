@@ -149,7 +149,7 @@ public class UserDaoImpl extends AbstractHibDaoGlobal<HibUser, UserResponse, Hib
 	}
 
 	@Override
-	public Iterable<? extends HibRole> getRoles(HibUser user) {
+	public List<? extends HibRole> getRoles(HibUser user) {
 		EntityManager em = currentTransaction.getEntityManager();
 		return em.createQuery("select distinct r" +
 					" from user u" +

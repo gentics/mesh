@@ -1,7 +1,12 @@
 package com.gentics.mesh.database;
 
+import static org.assertj.core.api.Assertions.fail;
+
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.gentics.mesh.core.data.Bucket;
+import com.gentics.mesh.core.db.TxAction;
 import com.gentics.mesh.database.connector.DatabaseConnector;
 import com.gentics.mesh.hibernate.util.QueryCounter;
 import com.gentics.mesh.json.JsonUtil;
@@ -16,6 +21,7 @@ import com.gentics.mesh.test.context.ClientHandler;
  */
 @MeshTestSetting(testSize = TestSize.PROJECT, monitoring = true, startServer = true, customOptionChanger = QueryCounter.EnableHibernateStatistics.class, resetBetweenTests = ResetTestDb.NEVER)
 public abstract class AbstractCountingTest extends AbstractMeshTest {
+	public final static Bucket ONLY_BUCKET = new Bucket(0, Integer.MAX_VALUE, 0, 1);
 
 	/**
 	 * Set this flag to true for debugging. The test will then output changes in the number of executed queries
@@ -64,6 +70,46 @@ public abstract class AbstractCountingTest extends AbstractMeshTest {
 				vertx().cancelTimer(periodicId);
 			}
 			return result;
+		}
+	}
+
+	protected <T> T doTest(TxAction<T> handler, int noMoreThan, int atLeast) {
+		DatabaseConnector dc = tx(tx -> {
+			return tx.<HibernateTx>unwrap().data().getDatabaseConnector();
+		});
+
+		try (QueryCounter queryCounter = QueryCounter.Builder.get().withDatabaseConnector(dc).clear()
+				.assertNotMoreThan(noMoreThan).assertAtLeast(atLeast).build()) {
+			return tx(handler);
+		}
+	}
+
+	protected <T> T doTest(Callable<T> handler, int noMoreThan, int atLeast) {
+		DatabaseConnector dc = tx(tx -> {
+			return tx.<HibernateTx>unwrap().data().getDatabaseConnector();
+		});
+		try (QueryCounter queryCounter = QueryCounter.Builder.get().withDatabaseConnector(dc).clear()
+				.assertNotMoreThan(noMoreThan).assertAtLeast(atLeast).build()) {
+			try {
+				return handler.call();
+			} catch (Exception e) {
+				fail("Tested method failed", e);
+				return null;
+			}
+		}
+	}
+
+	protected void doTest(Runnable handler, int noMoreThan, int atLeast) {
+		DatabaseConnector dc = tx(tx -> {
+			return tx.<HibernateTx>unwrap().data().getDatabaseConnector();
+		});
+		try (QueryCounter queryCounter = QueryCounter.Builder.get().withDatabaseConnector(dc).clear()
+				.assertNotMoreThan(noMoreThan).assertAtLeast(atLeast).build()) {
+			try {
+				handler.run();
+			} catch (Exception e) {
+				fail("Tested method failed", e);
+			}
 		}
 	}
 }

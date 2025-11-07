@@ -68,6 +68,7 @@ import com.gentics.mesh.core.rest.schema.S3BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.handler.DataHolderContext;
 import com.gentics.mesh.search.index.AbstractTransformer;
 import com.gentics.mesh.util.ETag;
 
@@ -481,7 +482,7 @@ public class NodeContainerTransformer extends AbstractTransformer<HibNodeFieldCo
 	 */
 	@Override
 	@Deprecated
-	public JsonObject toDocument(HibNodeFieldContainer object) {
+	public JsonObject toDocument(HibNodeFieldContainer object, DataHolderContext dhc) {
 		throw new NotImplementedException("Use toDocument(container, branchUuid) instead");
 	}
 
@@ -530,7 +531,7 @@ public class NodeContainerTransformer extends AbstractTransformer<HibNodeFieldCo
 	 */
 	@Override
 	@Deprecated
-	public String generateVersion(HibNodeFieldContainer element) {
+	public String generateVersion(HibNodeFieldContainer element, DataHolderContext dhc) {
 		throw new NotImplementedException("Use generateVersion(container, branchUuid) instead");
 	}
 

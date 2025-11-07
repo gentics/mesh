@@ -1,24 +1,19 @@
 package com.gentics.mesh.database;
 
-import static com.gentics.mesh.test.ClientHelper.call;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Consumer;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.hibernate.util.QueryCounter;
@@ -33,21 +28,14 @@ import com.gentics.mesh.test.TestSize;
  */
 @MeshTestSetting(testSize = TestSize.PROJECT, monitoring = true, startServer = true, customOptionChanger = QueryCounter.EnableHibernateStatistics.class, resetBetweenTests = ResetTestDb.NEVER)
 @RunWith(Parameterized.class)
-public class UserQueryCountingTest extends AbstractCountingTest {
-	public final static int NUM_USERS = 53;
-
-	public final static int NUM_GROUPS_PER_USER = 10;
-
-	protected static int totalNumUsers = NUM_USERS;
-
-	protected static Set<String> initialUserUuids = new HashSet<>();
+public class UserQueryCountingTest extends AbstractUserQueryCountingTest {
 
 	protected final static Map<String, Consumer<UserResponse>> fieldAsserters = Map.of(
 		"username", user -> {
 			assertThat(user.getUsername()).as("User name").isNotEmpty();
 		},
 		"groups", user -> {
-			assertThat(user.getGroups()).as("User groups").isNotNull().hasSize(NUM_GROUPS_PER_USER);
+			assertThat(user.getGroups()).as("User groups").isNotNull().hasSize(NUM_GROUPS_PER_USER + 1);
 		},
 		"rolesHash", user -> {
 			assertThat(user.getRolesHash()).as("User rolesHash").isNotEmpty();
@@ -85,29 +73,6 @@ public class UserQueryCountingTest extends AbstractCountingTest {
 
 	@Parameter(1)
 	public boolean etag;
-
-	@Before
-	public void setup() {
-		if (getTestContext().needsSetup()) {
-			UserListResponse initialUsers = call(() -> client().findUsers());
-			initialUserUuids.addAll(initialUsers.getData().stream().map(UserResponse::getUuid).toList());
-			totalNumUsers += initialUsers.getMetainfo().getTotalCount();
-
-			// create users
-			for (int i = 0; i < NUM_USERS; i++) {
-				UserResponse user = createUser("user_%d".formatted(i), null);
-
-				// create and assign groups
-				for (int j = 0; j < NUM_GROUPS_PER_USER; j++) {
-					GroupResponse group = createGroup("user_%d_group_%d".formatted(i, j));
-					call(() -> client().addUserToGroup(group.getUuid(), user.getUuid()));
-				}
-			}
-		}
-
-		// clear the cache
-		adminCall(() -> client().clearCache());
-	}
 
 	@Test
 	public void testGetAll() {

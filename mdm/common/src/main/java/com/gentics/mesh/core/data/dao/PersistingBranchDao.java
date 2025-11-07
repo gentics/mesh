@@ -7,6 +7,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.job.JobStatus.QUEUED;
 import static com.gentics.mesh.event.Assignment.ASSIGNED;
+import static com.gentics.mesh.util.PreparationUtil.getPreparedData;
 import static com.gentics.mesh.util.PreparationUtil.prepareData;
 import static com.gentics.mesh.util.PreparationUtil.preparePermissions;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -14,9 +15,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -50,7 +51,6 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
-import com.gentics.mesh.util.PreparationUtil;
 
 /**
  * A persisting extension to {@link BranchDao}
@@ -279,7 +279,7 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 	@Override
 	default void beforeGetETagForPage(Page<? extends HibCoreElement<? extends RestModel>> page,
 			InternalActionContext ac) {
-		preparePermissions(page, ac);
+		preparePermissions(ac.getUser(), page, ac);
 	}
 
 	@Override
@@ -288,10 +288,10 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 		GenericParameters generic = ac.getGenericParameters();
 		FieldsSet fields = generic.getFields();
 
-		preparePermissions(page, ac, fields);
+		preparePermissions(ac.getUser(), page, ac, fields);
 
 		@SuppressWarnings("unchecked")
-		Page<HibBranch> branches = (Page<HibBranch>)page;
+		List<HibBranch> branches = (List<HibBranch>)page.getWrappedList();
 		prepareData(branches, ac, "branch", "tags", this::getTags, fields.has("tags"));
 	}
 
@@ -440,9 +440,7 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 	 *            Rest model which will be updated
 	 */
 	private void setTagsToRest(HibBranch branch, InternalActionContext ac, BranchResponse restNode) {
-		restNode.setTags(StreamSupport
-				.stream(PreparationUtil.getPreparedData(branch, ac, "branch", "tags", HibBranch::getTags).spliterator(),
-						false)
+		restNode.setTags(getPreparedData(branch, ac, "branch", "tags", b -> b.getTags().list()).stream()
 				.map(HibTag::transformToReference).collect(Collectors.toList()));
 	}
 

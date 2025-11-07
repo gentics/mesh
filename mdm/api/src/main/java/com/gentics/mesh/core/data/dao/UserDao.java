@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.dao;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -233,7 +234,7 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	 * @param user
 	 * @return
 	 */
-	Iterable<? extends HibRole> getRoles(HibUser user);
+	List<? extends HibRole> getRoles(HibUser user);
 
 	/**
 	 * Return the roles for all given users

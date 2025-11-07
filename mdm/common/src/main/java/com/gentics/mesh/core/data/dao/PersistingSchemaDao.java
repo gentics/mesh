@@ -355,7 +355,7 @@ public interface PersistingSchemaDao
 	@Override
 	default void beforeGetETagForPage(Page<? extends HibCoreElement<? extends RestModel>> page,
 			InternalActionContext ac) {
-		preparePermissions(page, ac);
+		preparePermissions(ac.getUser(), page, ac);
 	}
 
 	@Override
@@ -364,7 +364,7 @@ public interface PersistingSchemaDao
 		GenericParameters generic = ac.getGenericParameters();
 		FieldsSet fields = generic.getFields();
 
-		preparePermissions(page, ac, fields);
+		preparePermissions(ac.getUser(), page, ac, fields);
 	}
 
 	@Override

@@ -1,17 +1,13 @@
 package com.gentics.mesh.database;
 
-import static com.gentics.mesh.test.ClientHelper.call;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Consumer;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -32,12 +28,7 @@ import com.gentics.mesh.test.TestSize;
  */
 @MeshTestSetting(testSize = TestSize.PROJECT, monitoring = true, startServer = true, customOptionChanger = QueryCounter.EnableHibernateStatistics.class, resetBetweenTests = ResetTestDb.NEVER)
 @RunWith(Parameterized.class)
-public class SchemaQueryCountingTest extends AbstractCountingTest {
-	public final static int NUM_SCHEMAS = 53;
-
-	protected static int totalNumSchemas = NUM_SCHEMAS;
-
-	protected static Set<String> initialSchemaUuids = new HashSet<>();
+public class SchemaQueryCountingTest extends AbstractSchemaQueryCountingTest {
 
 	protected final static Map<String, Consumer<SchemaResponse>> fieldAsserters = Map.of(
 		"name", schema -> {
@@ -68,7 +59,6 @@ public class SchemaQueryCountingTest extends AbstractCountingTest {
 				data.add(new Object[] {field, etag});
 			}
 		}
-//		data.add(new Object[] {"created", false});
 		return data;
 	}
 
@@ -77,23 +67,6 @@ public class SchemaQueryCountingTest extends AbstractCountingTest {
 
 	@Parameter(1)
 	public boolean etag;
-
-	@Before
-	public void setup() {
-		if (getTestContext().needsSetup()) {
-			SchemaListResponse initialSchemas = call(() -> client().findSchemas());
-			initialSchemaUuids.addAll(initialSchemas.getData().stream().map(SchemaResponse::getUuid).toList());
-			totalNumSchemas += initialSchemas.getMetainfo().getTotalCount();
-
-			// create schemas
-			for (int i = 0; i < NUM_SCHEMAS; i++) {
-				createSchema("schema_%d".formatted(i));
-			}
-		}
-
-		// clear the cache
-		adminCall(() -> client().clearCache());
-	}
 
 	@Test
 	public void testGetAll() {

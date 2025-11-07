@@ -3,6 +3,7 @@ package com.gentics.mesh.search.index.user;
 import static com.gentics.mesh.core.data.Bucket.BUCKET_ID_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
+import static com.gentics.mesh.util.PreparationUtil.getPreparedData;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,7 +17,7 @@ import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.handler.DataHolderContext;
 import com.gentics.mesh.search.index.AbstractTransformer;
 import com.gentics.mesh.util.ETag;
 
@@ -40,11 +41,11 @@ public class UserTransformer extends AbstractTransformer<HibUser> {
 	}
 
 	@Override
-	public String generateVersion(HibUser user) {
+	public String generateVersion(HibUser user, DataHolderContext dhc) {
 		StringBuilder builder = new StringBuilder();
 		builder.append(user.getElementVersion());
 		builder.append("|");
-		for (HibGroup group : Tx.get().userDao().getGroups(user)) {
+		for (HibGroup group : getPreparedData(user, dhc, "user", "groups", u -> Tx.get().userDao().getGroups(u).list())) {
 			builder.append(group.getElementVersion());
 			builder.append("|");
 		}
@@ -59,29 +60,29 @@ public class UserTransformer extends AbstractTransformer<HibUser> {
 
 	/**
 	 * Transform the user to the document which can be stored in ES.
-	 *
 	 * @param tx
 	 * @param user
 	 * @param withVersion
 	 *            Whether to include the version number.
+	 *
 	 * @return
 	 */
 	@Override
-	public JsonObject toDocument(HibUser user) {
+	public JsonObject toDocument(HibUser user, DataHolderContext dhc) {
 		JsonObject document = new JsonObject();
 		addBasicReferences(document, user);
 		document.put(USERNAME_KEY, user.getUsername());
 		document.put(EMAIL_KEY, user.getEmailAddress());
 		document.put(FIRSTNAME_KEY, user.getFirstname());
 		document.put(LASTNAME_KEY, user.getLastname());
-		addGroups(document, Tx.get().userDao().getGroups(user));
-		addPermissionInfo(document, user);
+		addGroups(document, getPreparedData(user, dhc, "user", "groups", u -> Tx.get().userDao().getGroups(u).list()));
+		addPermissionInfo(document, user, "user", dhc);
 		// TODO add disabled / enabled flag
 		HibNode referencedNode = user.getReferencedNode();
 		if (referencedNode != null) {
 			document.put(NODEREFERECE_KEY, referencedNode.getUuid());
 		}
-		document.put(VERSION_KEY, generateVersion(user));
+		document.put(VERSION_KEY, generateVersion(user, dhc));
 		document.put(BUCKET_ID_KEY, user.getBucketId());
 
 		return document;
@@ -93,7 +94,7 @@ public class UserTransformer extends AbstractTransformer<HibUser> {
 	 * @param document
 	 * @param groups
 	 */
-	private void addGroups(JsonObject document, Result<? extends HibGroup> groups) {
+	private void addGroups(JsonObject document, Iterable<? extends HibGroup> groups) {
 		List<String> groupUuids = new ArrayList<>();
 		List<String> groupNames = new ArrayList<>();
 		for (HibGroup group : groups) {

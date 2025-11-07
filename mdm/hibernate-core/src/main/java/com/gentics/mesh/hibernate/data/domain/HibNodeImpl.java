@@ -13,6 +13,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedAttributeNode;
 import jakarta.persistence.NamedEntityGraph;
+import jakarta.persistence.NamedEntityGraphs;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.NamedSubgraph;
@@ -43,20 +44,23 @@ import com.gentics.mesh.util.UUIDUtil;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Entity(name = "node")
 @ElementTypeKey(ElementType.NODE)
-@NamedEntityGraph(name = "node.content", attributeNodes = @NamedAttributeNode("content"))
-@NamedEntityGraph(
-		name = "node.contentAndTags",
-		attributeNodes = {
-				@NamedAttributeNode("content"),
-				@NamedAttributeNode(value = "tags", subgraph = "subgraph.tags")
-		},
-		subgraphs = {
-			@NamedSubgraph(
-					name = "subgraph.tags",
-					attributeNodes = @NamedAttributeNode(value = "tag")
+@NamedEntityGraphs({
+	@NamedEntityGraph(name = "node.content",
+			attributeNodes = @NamedAttributeNode("content")),
+	@NamedEntityGraph(
+			name = "node.contentAndTags",
+			attributeNodes = {
+					@NamedAttributeNode("content"),
+					@NamedAttributeNode(value = "tags", subgraph = "subgraph.tags")
+			},
+			subgraphs = {
+					@NamedSubgraph(
+							name = "subgraph.tags",
+							attributeNodes = @NamedAttributeNode(value = "tag")
+							)
+			}
 			)
-		}
-)
+})
 @NamedQueries({
 		@NamedQuery(
 				name = "node.findByProjectBranchAndContainerType.read",

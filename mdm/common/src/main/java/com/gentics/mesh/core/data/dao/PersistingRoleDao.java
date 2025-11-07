@@ -14,6 +14,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -346,7 +347,7 @@ public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole>
 	@Override
 	default void beforeGetETagForPage(Page<? extends HibCoreElement<? extends RestModel>> page,
 			InternalActionContext ac) {
-		preparePermissions(page, ac);
+		preparePermissions(ac.getUser(), page, ac);
 	}
 
 	@Override
@@ -355,10 +356,10 @@ public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole>
 		GenericParameters generic = ac.getGenericParameters();
 		FieldsSet fields = generic.getFields();
 
-		preparePermissions(page, ac, fields);
+		preparePermissions(ac.getUser(), page, ac, fields);
 
 		@SuppressWarnings("unchecked")
-		Page<HibRole> roles = (Page<HibRole>)page;
+		List<HibRole> roles = (List<HibRole>)page.getWrappedList();
 		prepareData(roles, ac, "role", "groups", this::getGroups, fields.has("groups"));
 	}
 
@@ -388,7 +389,7 @@ public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole>
 	}
 
 	private void setGroups(HibRole role, InternalActionContext ac, RoleResponse restRole) {
-		for (HibGroup group : getPreparedData(role, ac, "role", "groups", this::getGroups)) {
+		for (HibGroup group : getPreparedData(role, ac, "role", "groups", r -> getGroups(r).list())) {
 			restRole.getGroups().add(group.transformToReference());
 		}
 	}

@@ -27,6 +27,7 @@ import org.mockito.Mockito;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.GroupDao;
@@ -213,19 +214,19 @@ public class SearchModelGenerator extends AbstractGenerator {
 		HibUser creator = mockUser("admin", "Admin", "", null);
 		HibUser user = mockUser("joe1", "Joe", "Doe", creator);
 		HibProject project = mockProject(user);
-		write(new ProjectTransformer().toDocument(project), "project.search");
+		write(new ProjectTransformer().toDocument(project, null), "project.search");
 	}
 
 	private void writeGroupDocumentExample() throws Exception {
 		HibUser user = mockUser("joe1", "Joe", "Doe");
 		HibGroup group = mockGroup("adminGroup", user);
-		write(new GroupTransformer().toDocument(group), "group.search");
+		write(new GroupTransformer().toDocument(group, null), "group.search");
 	}
 
 	private void writeRoleDocumentExample() throws Exception {
 		HibUser user = mockUser("joe1", "Joe", "Doe");
 		HibRole role = mockRole("adminRole", user);
-		write(new RoleTransformer().toDocument(role), "role.search");
+		write(new RoleTransformer().toDocument(role, null), "role.search");
 	}
 
 	private void writeUserDocumentExample(UserDao userDao) throws Exception {
@@ -237,7 +238,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		when(userDao.getGroups(Mockito.any(HibUser.class))).then(answer -> {
 			return result;
 		});
-		write(new UserTransformer().toDocument(user), "user.search");
+		write(new UserTransformer().toDocument(user, null), "user.search");
 	}
 
 	private void writeTagFamilyDocumentExample(TagDao tagDao, TagFamilyDao tagFamilyDao) throws Exception {
@@ -248,28 +249,28 @@ public class SearchModelGenerator extends AbstractGenerator {
 		tagList.add(mockTag("red", user, tagFamily, project));
 		tagList.add(mockTag("green", user, tagFamily, project));
 
-		when(tagDao.findAll(Mockito.any())).then(answer -> {
+		when(tagDao.findAll(Mockito.any(Bucket.class))).then(answer -> {
 			return new TraversalResult<>(tagList);
 		});
-		when(tagFamilyDao.findAll(Mockito.any())).then(answer -> {
+		when(tagFamilyDao.findAll(Mockito.any(Bucket.class))).then(answer -> {
 			return new TraversalResult<>(tagList);
 		});
 
-		write(new TagFamilyTransformer().toDocument(tagFamily), "tagFamily.search");
+		write(new TagFamilyTransformer().toDocument(tagFamily, null), "tagFamily.search");
 	}
 
 	private void writeSchemaDocumentExample() throws Exception {
 		HibUser user = mockUser("joe1", "Joe", "Doe");
 		HibSchema schemaContainer = mockSchemaContainer("content", user);
 
-		write(new SchemaTransformer().toDocument(schemaContainer), "schema.search");
+		write(new SchemaTransformer().toDocument(schemaContainer, null), "schema.search");
 	}
 
 	private void writeMicroschemaDocumentExample() throws Exception {
 		HibUser user = mockUser("joe1", "Joe", "Doe");
 		HibMicroschema microschema = mockMicroschemaContainer("geolocation", user);
 
-		write(new MicroschemaTransformer().toDocument(microschema), "microschema.search");
+		write(new MicroschemaTransformer().toDocument(microschema, null), "microschema.search");
 	}
 
 	private void writeTagDocumentExample() throws Exception {
@@ -277,7 +278,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		HibProject project = mockProject(user);
 		HibTagFamily tagFamily = mockTagFamily("colors", user, project);
 		HibTag tag = mockTag("red", user, tagFamily, project);
-		write(new TagTransformer().toDocument(tag), "tag.search");
+		write(new TagTransformer().toDocument(tag, null), "tag.search");
 	}
 
 	private void write(JsonObject jsonObject, String filename) throws Exception {

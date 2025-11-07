@@ -15,8 +15,10 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -24,6 +26,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.apache.commons.collections.ListUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -370,7 +373,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 			keyBuilder.append(referencedNode.getUuid());
 			keyBuilder.append(referencedNode.getProject().getName());
 		}
-		for (HibGroup group : getPreparedData(user, ac, "user", "groups", this::getGroups)) {
+		for (HibGroup group : getPreparedData(user, ac, "user", "groups", u -> getGroups(u).list())) {
 			keyBuilder.append(group.getUuid());
 		}
 		keyBuilder.append(String.valueOf(user.isAdmin()));
@@ -419,10 +422,10 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 		GenericParameters generic = ac.getGenericParameters();
 		FieldsSet fields = generic.getFields();
 
-		preparePermissions(page, ac, fields);
+		preparePermissions(ac.getUser(), page, ac, fields);
 
 		@SuppressWarnings("unchecked")
-		Page<HibUser> users = (Page<HibUser>)page;
+		List<HibUser> users = (List<HibUser>)page.getWrappedList();
 		prepareData(users, ac, "user", "groups", this::getGroups, fields.has("groups"));
 		prepareData(users, ac, "user", "roles", this::getRoles, fields.has("rolesHash"));
 	}
@@ -430,10 +433,10 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	@Override
 	default void beforeGetETagForPage(Page<? extends HibCoreElement<? extends RestModel>> page,
 			InternalActionContext ac) {
-		preparePermissions(page, ac);
+		preparePermissions(ac.getUser(), page, ac);
 
 		@SuppressWarnings("unchecked")
-		Page<HibUser> users = (Page<HibUser>)page;
+		List<HibUser> users = (List<HibUser>)page.getWrappedList();
 		prepareData(users, ac, "user", "groups", this::getGroups);
 		prepareData(users, ac, "user", "roles", this::getRoles);
 	}
@@ -515,7 +518,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	 */
 	default void setGroups(HibUser user, InternalActionContext ac, UserResponse restUser) {
 		// TODO filter by permissions
-		for (HibGroup group : getPreparedData(user, ac, "user", "groups", this::getGroups)) {
+		for (HibGroup group : getPreparedData(user, ac, "user", "groups", u -> getGroups(u).list())) {
 			GroupReference reference = group.transformToReference();
 			restUser.getGroups().add(reference);
 		}
@@ -650,7 +653,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	default String getRolesHash(HibUser user, InternalActionContext ac) {
 		return Stream.concat(
 				Stream.of(user.isAdmin() ? "1" : "0"), 
-				StreamSupport.stream(getPreparedData(user, ac, "user", "roles", this::getRoles).spliterator(), false)
+				getPreparedData(user, ac, "user", "roles", u -> getRoles(u)).stream()
 					.map(role -> role.getId().toString())
 					.sorted())
 			.collect(Collectors.joining());

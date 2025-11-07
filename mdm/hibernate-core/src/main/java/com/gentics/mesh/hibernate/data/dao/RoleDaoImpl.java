@@ -28,6 +28,7 @@ import jakarta.persistence.metamodel.Metamodel;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.IteratorUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -328,6 +329,39 @@ public class RoleDaoImpl extends AbstractHibDaoGlobal<HibRole, RoleResponse, Hib
 			.getResultStream()
 			.map(UUIDUtil::toShortUuid)
 			.collect(Collectors.toSet());
+	}
+
+	@Override
+	public Map<HibBaseElement, Set<String>> getRoleUuidsForPerm(Collection<? extends HibBaseElement> elements, InternalPermission permission) {
+		// convert collection of elements to map UUID -> element
+		Map<UUID, HibBaseElement> elementMap = elements.stream().collect(Collectors.toMap(e -> UUID.class.cast(e.getId()), Function.identity()));
+
+		String qlString = "select element, p.role.dbUuid from permission p where element in :elements"
+				+ " and p." + HibPermissionImpl.getColumnName(permission) + " is true";
+
+		Map<HibBaseElement, Set<String>> result = new HashMap<>();
+		// populate the map with empty sets
+		elements.forEach(e -> result.put(e, Collections.emptySet()));
+
+		// load the roles per element UUID
+		Map<UUID, List<String>> tmpResult = SplittingUtils.splitAndMergeInMapOfLists(elementMap.keySet(), inQueriesLimitForSplitting(0), (uuids) -> {
+			@SuppressWarnings("unchecked")
+			List<Object[]> resultList = em().createQuery(qlString)
+				.setParameter("elements", uuids)
+				.getResultList();
+
+			return resultList.stream()
+				.map(tuples -> Pair.of(UUID.class.cast(tuples[0]), UUIDUtil.toShortUuid(UUID.class.cast(tuples[1]))))
+				.collect(Collectors.groupingBy(Pair::getKey, Collectors.mapping(Pair::getValue, Collectors.toList())));
+		});
+
+		// remap to result map
+		tmpResult.entrySet().stream().forEach(entry -> {
+			HibBaseElement element = elementMap.get(entry.getKey());
+			result.put(element, new HashSet<>(entry.getValue()));
+		});
+
+		return result;
 	}
 
 	@Override
