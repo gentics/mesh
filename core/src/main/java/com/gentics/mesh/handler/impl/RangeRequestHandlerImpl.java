@@ -14,18 +14,19 @@ import java.util.regex.Pattern;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.handler.RangeRequestHandler;
 
 import io.reactivex.Single;
 import io.vertx.core.MultiMap;
+import io.vertx.core.file.FileProps;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.impl.LRUCache;
 import io.vertx.reactivex.core.Vertx;
-import io.vertx.reactivex.core.file.FileProps;
 
 /**
  * @see RangeRequestHandler
@@ -135,7 +136,7 @@ public class RangeRequestHandlerImpl implements RangeRequestHandler {
 			request.response().sendFile(file, finalOffset, finalLength);
 		} else {
 			// Return the full file
-			request.response().sendFile(file, res2 -> {
+			request.response().sendFile(file).andThen(res2 -> {
 				if (res2.failed()) {
 					context.fail(res2.cause());
 				}

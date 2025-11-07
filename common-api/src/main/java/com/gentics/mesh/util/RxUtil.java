@@ -1,6 +1,12 @@
 package com.gentics.mesh.util;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Scanner;
 import java.util.function.Function;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.reactivex.Completable;
 import io.reactivex.CompletableSource;
@@ -11,10 +17,9 @@ import io.reactivex.Single;
 import io.reactivex.SingleSource;
 import io.reactivex.functions.Action;
 import io.reactivex.functions.BiFunction;
+import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.AsyncFile;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Utility for RXJava methods.
@@ -79,7 +84,6 @@ public final class RxUtil {
 	 */
 	public static Flowable<Buffer> toBufferFlow(io.vertx.reactivex.core.file.AsyncFile file) {
 		return file.toFlowable()
-			.map(io.vertx.reactivex.core.buffer.Buffer::getDelegate)
 			.doOnTerminate(file::close)
 			.doOnCancel(file::close);
 	}
@@ -129,4 +133,22 @@ public final class RxUtil {
 			return Maybe.just(item);
 		}
 	}
+
+	  /**
+	   * Reads the version from the {@code vertx-version.txt} file.
+	   *
+	   * @return the version
+	   */
+	  public static String getVertxVersion() {
+	    try (InputStream is = Vertx.class.getClassLoader().getResourceAsStream("META-INF/vertx/vertx-version.txt")) {
+	      if (is == null) {
+	        throw new IllegalStateException("Cannot find vertx-version.txt on classpath");
+	      }
+	      try (Scanner scanner = new Scanner(is, "UTF-8").useDelimiter("\\A")) {
+	        return scanner.hasNext() ? scanner.next().trim() : "";
+	      }
+	    } catch (IOException e) {
+	      throw new IllegalStateException(e.getMessage());
+	    }
+	  }
 }

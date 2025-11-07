@@ -12,8 +12,7 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-
-import io.vertx.core.impl.launcher.commands.VersionCommand;
+import com.gentics.mesh.util.RxUtil;
 
 @MeshTestSetting(testSize = FULL, startServer = true)
 public class RestInfoEndpointTest extends AbstractMeshTest {
@@ -34,7 +33,7 @@ public class RestInfoEndpointTest extends AbstractMeshTest {
 		MeshServerInfoModel info = call(() -> client().getApiInfo());
 		assertEquals(Mesh.getPlainVersion(), info.getMeshVersion());
 		assertEquals("dev-null", info.getSearchVendor());
-		assertEquals(VersionCommand.getVersion(), info.getVertxVersion());
+		assertEquals(RxUtil.getVertxVersion(), info.getVertxVersion());
 		assertEquals(options().getNodeName(), info.getMeshNodeName());
 		assertEquals("1.0", info.getSearchVersion());
 		assertEquals(db().getDatabaseRevision(), info.getDatabaseRevision());

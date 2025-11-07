@@ -1009,7 +1009,6 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	 */
 	protected Vertx createClusteredVertx(MeshOptions options, VertxOptions vertxOptions) {
 		clusterManager = db.clusterManager().getVertxClusterManager();
-		vertxOptions.setClusterManager(clusterManager);
 		String localIp = options.getClusterOptions().getNetworkHost();
 
 		Integer clusterPort = options.getClusterOptions().getVertxPort();
@@ -1027,7 +1026,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 			log.debug("Binding Vert.x on host {" + localIp + "}");
 		}
 		CompletableFuture<Vertx> fut = new CompletableFuture<>();
-		Vertx.clusteredVertx(vertxOptions, rh -> {
+		Vertx.builder().withClusterManager(clusterManager).with(vertxOptions).buildClustered().andThen(rh -> {
 			log.info("Created clustered Vert.x instance");
 			if (rh.failed()) {
 				Throwable cause = rh.cause();

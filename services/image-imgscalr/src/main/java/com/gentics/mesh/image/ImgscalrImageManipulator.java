@@ -350,17 +350,13 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 				// intensive for larger images and we don't want to exhaust the
 				// regular worker
 				// pool
-				return workerPool.<String>rxExecuteBlocking(bh -> {
+				return workerPool.<String>rxExecuteBlocking(() -> {
 					Supplier<InputStream> stream = () -> binaryStorage.openBlockingStream(binaryUuid);
 
-					try {
-						String cacheFilePath = resize(stream, parameters, extension -> cacheFileInfo.path + "." + extension);
+					String cacheFilePath = resize(stream, parameters, extension -> cacheFileInfo.path + "." + extension);
 
-						// Return buffer to written cache file
-						bh.complete(cacheFilePath);
-					} catch (Exception e) {
-						bh.fail(e);
-					}
+					// Return buffer to written cache file
+					return cacheFilePath;
 				}, false).toSingle();
 			}
 		});
@@ -374,22 +370,17 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 		parameters.validateLimits(options);
 
 		return s3BinaryStorage.read(bucketName, s3ObjectKey)
-				.flatMapSingle(originalFile -> workerPool.<File>rxExecuteBlocking(bh -> {
-					Supplier<InputStream> stream = () -> new ByteArrayInputStream(originalFile.getBytes());
-					try {
-						String cacheFilePath = resize(stream, parameters, extension -> getS3CachePath() + File.separator + filename);
-						File outCacheFile = new File(cacheFilePath);
+			.flatMapSingle(originalFile -> workerPool.<File>rxExecuteBlocking(() -> {
+				Supplier<InputStream> stream = () -> new ByteArrayInputStream(originalFile.getBytes());
+				String cacheFilePath = resize(stream, parameters, extension -> getS3CachePath() + File.separator + filename);
+				File outCacheFile = new File(cacheFilePath);
 
-						// Return buffer to written cache file
-						bh.complete(outCacheFile);
-					} catch (Exception e) {
-						bh.fail(e);
-					}
-				}).toSingle()).flatMapSingle(file ->
+				// Return buffer to written cache file
+				return outCacheFile;
+			})).flatMapSingle(file ->
 				// write cache to AWS
 				s3BinaryStorage.uploadFile(bucketName, s3ObjectKey, file, true)
-						.flatMap(ignoreElement -> Single.just(file)))
-				.singleOrError();
+						.flatMap(ignoreElement -> Single.just(file))).singleOrError();
 	}
 
 	@Override
@@ -413,18 +404,14 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 								});
 					else {
 						return s3BinaryStorage.read(bucketName, s3ObjectKey)
-								.flatMapSingle(originalFile -> workerPool.<File>rxExecuteBlocking(bh -> {
+								.flatMapSingle(originalFile -> workerPool.<File>rxExecuteBlocking(() -> {
 									Supplier<InputStream> stream = () -> new ByteArrayInputStream(originalFile.getBytes());
-									try {
-										String cacheFilePath = resize(stream, parameters, extension -> getS3CachePath() + File.separator + filename);
-										File outCacheFile = new File(cacheFilePath);
+									String cacheFilePath = resize(stream, parameters, extension -> getS3CachePath() + File.separator + filename);
+									File outCacheFile = new File(cacheFilePath);
 
-										// Return buffer to written cache file
-										bh.complete(outCacheFile);
-									} catch (Exception e) {
-										bh.fail(e);
-									}
-								}).toSingle()).flatMapSingle(file ->
+									// Return buffer to written cache file
+									return outCacheFile;
+								})).flatMapSingle(file ->
 						// write cache to AWS
 						s3BinaryStorage.uploadFile(cacheBucketName, cacheS3ObjectKey, file, true)).ignoreElements();
 					}

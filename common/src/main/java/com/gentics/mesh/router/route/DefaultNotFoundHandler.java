@@ -45,7 +45,7 @@ public class DefaultNotFoundHandler implements Handler<RoutingContext> {
 	@Override
 	public void handle(RoutingContext rc) {
 		GenericMessageResponse msg = new GenericMessageResponse();
-		String internalMessage = "The rest endpoint or resource for given path {" + rc.normalisedPath() + "} could not be found.";
+		String internalMessage = "The rest endpoint or resource for given path {" + rc.normalizedPath() + "} could not be found.";
 		String contentType = rc.request().getHeader("Content-Type");
 		if (contentType == null) {
 			switch (rc.request().method().name()) {

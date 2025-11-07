@@ -133,8 +133,9 @@ public class HibernateBootstrapInitializerImpl extends AbstractBootstrapInitiali
 					// check for the curren thread (which is expected to be an eventloop thread)
 					cleanupLeftoverTx();
 					// also execute blocking, which will check in one of the worker threads
-					vertx.executeBlocking(prom -> {
+					vertx.executeBlocking(() -> {
 						cleanupLeftoverTx();
+						return null;
 					}, false);
 				});
 			}

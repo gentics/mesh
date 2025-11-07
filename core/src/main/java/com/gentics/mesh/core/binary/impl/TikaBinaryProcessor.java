@@ -19,6 +19,8 @@ import javax.inject.Singleton;
 
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.binary.AbstractBinaryProcessor;
@@ -42,8 +44,6 @@ import com.gentics.mesh.etc.config.MeshOptions;
 
 import dagger.Lazy;
 import io.reactivex.Maybe;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.reactivex.core.Vertx;
 
@@ -190,7 +190,7 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 			return Maybe.empty();
 		}
 
-		return vertx.get().rxExecuteBlocking(promise -> {
+		return vertx.get().rxExecuteBlocking(() -> {
 			File uploadFile = new File(upload.uploadedFileName());
 			if (log.isDebugEnabled()) {
 				log.debug("Parsing file {" + uploadFile + "}");
@@ -216,9 +216,9 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 						field.setLocation(pr.getLoc());
 					}
 				};
-				promise.complete(consumer);
+				return consumer;
 			} catch (Exception e) {
-				promise.fail(new IllegalStateException("Tika processing of uploaded file " + upload.uploadedFileName() + " failed", e));
+				throw new IllegalStateException("Tika processing of uploaded file " + upload.uploadedFileName() + " failed", e);
 			}
 		}, true);
 	}

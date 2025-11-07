@@ -2,8 +2,7 @@ package com.gentics.mesh.example;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
-
-import io.vertx.core.impl.launcher.commands.VersionCommand;
+import com.gentics.mesh.util.RxUtil;
 
 public class RestInfoExamples extends AbstractExamples {
 
@@ -15,7 +14,7 @@ public class RestInfoExamples extends AbstractExamples {
 		info.setSearchVersion("2.4.3");
 		info.setMeshVersion(Mesh.getPlainVersion());
 		info.setMeshNodeName("Reminiscent Tirtouga");
-		info.setVertxVersion(VersionCommand.getVersion());
+		info.setVertxVersion(RxUtil.getVertxVersion());
 		return info;
 	}
 }

@@ -20,12 +20,13 @@ import dagger.Provides;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.config.MeterFilter;
-import io.micrometer.prometheus.PrometheusConfig;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.micrometer.prometheusmetrics.PrometheusConfig;
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
 import io.vertx.core.metrics.MetricsOptions;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.Match;
 import io.vertx.micrometer.MetricsDomain;
+import io.vertx.micrometer.MicrometerMetricsFactory;
 import io.vertx.micrometer.MicrometerMetricsOptions;
 import io.vertx.micrometer.VertxPrometheusOptions;
 
@@ -99,7 +100,6 @@ public class MicrometerModule {
 	public static MetricsOptions micrometerMetricsOptions(MeshOptions options, MeterRegistry meterRegistry) {
 		MonitoringConfig monitoringOptions = options.getMonitoringOptions();
 		MicrometerMetricsOptions metricsOptions = new MicrometerMetricsOptions()
-			.setMicrometerRegistry(meterRegistry)
 			.setRegistryName(options.getNodeName())
 			.setJvmMetricsEnabled(monitoringOptions.isJvmMetricsEnabled())
 			.setLabels(EnumSet.of(Label.HTTP_CODE, Label.HTTP_METHOD, Label.LOCAL, Label.HTTP_PATH))
@@ -107,7 +107,7 @@ public class MicrometerModule {
 			.setEnabled(true);
 		labelMatches(options).forEach(metricsOptions::addLabelMatch);
 
-		return metricsOptions;
+		return new MicrometerMetricsFactory(meterRegistry).newOptions(metricsOptions);
 	}
 
 	private static Stream<Match> labelMatches(MeshOptions options) {

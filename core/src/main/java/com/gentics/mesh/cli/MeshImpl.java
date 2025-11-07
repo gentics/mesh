@@ -1,7 +1,7 @@
 package com.gentics.mesh.cli;
 
-import static com.gentics.mesh.MeshEnv.MESH_CONF_FILENAME;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
+import static com.gentics.mesh.MeshEnv.MESH_CONF_FILENAME;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,6 +25,7 @@ import com.gentics.mesh.crypto.KeyStoreHelper;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.util.RxUtil;
 import com.gentics.mesh.util.VersionUtil;
 
 import io.reactivex.Completable;
@@ -35,7 +36,6 @@ import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.RequestOptions;
-import io.vertx.core.impl.launcher.commands.VersionCommand;
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -195,7 +195,7 @@ public class MeshImpl implements Mesh {
 		requestOptions.setSsl(true);
 		requestOptions.setHost("getmesh.io/api/updatecheck?v=" + Mesh.getPlainVersion());
 		getVertx().createHttpClient(new HttpClientOptions().setSsl(true).setTrustAll(false))
-				.request(HttpMethod.GET, 443, "getmesh.io", "/api/updatecheck?v=" + Mesh.getPlainVersion(), ar -> {
+				.request(HttpMethod.GET, 443, "getmesh.io", "/api/updatecheck?v=" + Mesh.getPlainVersion()).andThen(ar -> {
 					if (ar.succeeded()) {
 						HttpClientRequest req = ar.result();
 
@@ -206,7 +206,7 @@ public class MeshImpl implements Mesh {
 							headers.set("X-Hostname", hostname);
 						}
 
-						req.send(ar2 -> {
+						req.send().andThen(ar2 -> {
 							if (ar2.succeeded()) {
 								HttpClientResponse response = ar2.result();
 								int code = response.statusCode();
@@ -328,7 +328,7 @@ public class MeshImpl implements Mesh {
 	 * @return
 	 */
 	private String getVertxVersion() {
-		return VersionCommand.getVersion();
+		return RxUtil.getVertxVersion();
 	}
 
 	private static String infoLine(String text) {
