@@ -12,6 +12,7 @@ import static com.gentics.mesh.mock.TestMocks.mockSchemaContainer;
 import static com.gentics.mesh.mock.TestMocks.mockTag;
 import static com.gentics.mesh.mock.TestMocks.mockTagFamily;
 import static com.gentics.mesh.mock.TestMocks.mockUser;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -160,6 +161,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 			RoleDao roleDao = mock(RoleDaoImpl.class);
 			GroupDao groupDao = mock(GroupDaoImpl.class);
 			TagDao tagDao = mock(TagDaoImpl.class);
+			when(tagDao.findAll(any(HibTagFamily.class))).thenReturn(TraversalResult.empty());
 			TagFamilyDao tagFamilyDao = mock(TagFamilyDaoImpl.class);
 
 			when(tx.nodeDao()).thenReturn(nodeDao);
