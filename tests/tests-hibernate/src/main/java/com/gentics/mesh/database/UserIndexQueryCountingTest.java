@@ -4,16 +4,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.context.SimpleDataHolderContext;
+import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
+import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
@@ -27,6 +32,7 @@ import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.ResetTestDb;
 import com.gentics.mesh.test.TestSize;
 
+import io.reactivex.functions.Consumer;
 import io.vertx.core.json.JsonObject;
 
 @MeshTestSetting(testSize = TestSize.PROJECT, elasticsearch = ElasticsearchTestMode.CONTAINER_ES8, monitoring = true, startServer = true, customOptionChanger = QueryCounter.EnableHibernateStatistics.class, resetBetweenTests = ResetTestDb.NEVER)
@@ -95,7 +101,21 @@ public class UserIndexQueryCountingTest extends AbstractUserQueryCountingTest {
 
 		MessageEvent event = new MessageEvent(MeshEvent.GROUP_UPDATED, eventModel);
 
+		Map<String, AtomicInteger> requestsPerIndex = new HashMap<>();
+
+		Consumer<SearchRequest> requestConsumer = request -> {
+			if (request instanceof CreateDocumentRequest) {
+				String index = ((CreateDocumentRequest) request).getIndex();
+				requestsPerIndex.computeIfAbsent(index, key -> new AtomicInteger()).incrementAndGet();
+			}
+		};
+
 		MainEventHandler mainEventhandler = getSearchVerticle().getMainEventhandler();
-		doTest(() -> mainEventhandler.handle(event).blockingSubscribe(), 5, 1);
+		doTest(() -> mainEventhandler.handle(event).doOnNext(requestConsumer).blockingSubscribe(), 11, 1);
+
+		assertThat(requestsPerIndex.getOrDefault("group", new AtomicInteger(0)).get())
+				.as("Number of create requests for groups").isEqualTo(1);
+		assertThat(requestsPerIndex.getOrDefault("user", new AtomicInteger(0)).get())
+				.as("Number of create requests for users").isEqualTo(NUM_USERS);
 	}
 }
