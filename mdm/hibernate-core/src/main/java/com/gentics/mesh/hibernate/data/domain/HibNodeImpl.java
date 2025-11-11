@@ -45,6 +45,17 @@ import com.gentics.mesh.util.UUIDUtil;
 @Entity(name = "node")
 @ElementTypeKey(ElementType.NODE)
 @NamedEntityGraphs({
+	@NamedEntityGraph(name = "node.load",
+		attributeNodes = {
+				@NamedAttributeNode(value = "tags", subgraph = "subgraph.tags")
+		},
+		subgraphs = {
+			@NamedSubgraph(
+				name = "subgraph.tags",
+				attributeNodes = @NamedAttributeNode(value = "tag")
+			)
+		}
+	),
 	@NamedEntityGraph(name = "node.content",
 			attributeNodes = @NamedAttributeNode("content")),
 	@NamedEntityGraph(

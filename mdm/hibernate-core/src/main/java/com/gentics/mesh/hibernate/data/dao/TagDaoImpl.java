@@ -23,6 +23,7 @@ import javax.inject.Singleton;
 import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.hibernate.Hibernate;
+import org.hibernate.jpa.SpecHints;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.InternalActionContext;
@@ -60,6 +61,7 @@ import com.gentics.mesh.util.UUIDUtil;
 
 import dagger.Lazy;
 import io.vertx.core.Vertx;
+import jakarta.persistence.EntityGraph;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
 
@@ -87,9 +89,12 @@ public class TagDaoImpl extends AbstractHibDaoGlobal<HibTag, TagResponse, HibTag
 			List<String> languageTags, ContainerType type, PagingParameters pagingInfo) {
 		String branchUuid =branch.getUuid();
 
+		EntityGraph<?> entityGraph = em().getEntityGraph("node.load");
+
 		List<? extends HibNode> nodes = null;
 		if (requestUser.isAdmin()) {
 			nodes = em().createNamedQuery("node.findByTagsLanguageTagsAndContainerTypeForAdmin", HibNodeImpl.class)
+					.setHint(SpecHints.HINT_SPEC_FETCH_GRAPH, entityGraph)
 					.setParameter("tagUuid", tag.getId())
 					.setParameter("branchUuid", UUIDUtil.toJavaUuid(branchUuid))
 					.setParameter("type", type)
@@ -97,6 +102,7 @@ public class TagDaoImpl extends AbstractHibDaoGlobal<HibTag, TagResponse, HibTag
 		} else {
 			List<HibRole> roles = IteratorUtils.toList(Tx.get().userDao().getRoles(requestUser).iterator());
 			nodes = SplittingUtils.splitAndMergeInList(roles, HibernateUtil.inQueriesLimitForSplitting(3), slice -> em().createNamedQuery("node.findByTagsLanguageTagsAndContainerType", HibNodeImpl.class)
+					.setHint(SpecHints.HINT_SPEC_FETCH_GRAPH, entityGraph)
 					.setParameter("tagUuid", tag.getId())
 					.setParameter("branchUuid", UUIDUtil.toJavaUuid(branchUuid))
 					.setParameter("type", type)
