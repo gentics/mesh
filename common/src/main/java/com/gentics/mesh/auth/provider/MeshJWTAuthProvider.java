@@ -332,7 +332,7 @@ public class MeshJWTAuthProvider implements AuthenticationProvider, JWTAuth {
 						log.error("Authentication failed in Mesh JWT p.", res.cause());
 					}
 				}
-				throw error(UNAUTHORIZED, "auth_login_failed");
+				ac.fail(error(UNAUTHORIZED, "auth_login_failed"));
 			}
 		});
 	}
