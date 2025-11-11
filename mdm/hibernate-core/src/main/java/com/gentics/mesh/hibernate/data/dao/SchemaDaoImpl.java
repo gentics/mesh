@@ -1,6 +1,7 @@
 package com.gentics.mesh.hibernate.data.dao;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -50,6 +51,7 @@ import com.gentics.mesh.util.VersionUtil;
 
 import dagger.Lazy;
 import io.vertx.core.Vertx;
+import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
 
 /**
@@ -169,7 +171,7 @@ public class SchemaDaoImpl
 	@SuppressWarnings("unchecked")
 	@Override
 	public Stream<? extends HibNodeFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid,
-			Bucket bucket) {
+			Bucket bucket, Optional<ContainerType> optType) {
 
 		String nativeQuery = "select distinct edge.* from " + MeshTablePrefixStrategy.TABLE_NAME_PREFIX + "nodefieldcontainer edge "
 				+ " inner join " + databaseConnector.getPhysicalTableName(version) + " content "
@@ -179,12 +181,21 @@ public class SchemaDaoImpl
 				+ " and edge." + databaseConnector.renderNonContentColumn("version_dbUuid") + " = :versionUuid "
 				+ " and content." + databaseConnector.renderColumn(CommonContentColumn.BUCKET_ID) + " >= :bucketStart "
 				+ " and content." + databaseConnector.renderColumn(CommonContentColumn.BUCKET_ID) + " <= :bucketEnd ";
+		if (optType.isPresent()) {
+			nativeQuery += " and edge." + databaseConnector.renderNonContentColumn("type") + " = :type ";
+		}
 
-		List<HibNodeFieldContainerEdgeImpl> edges = em().createNativeQuery(nativeQuery, HibNodeFieldContainerEdgeImpl.class)
+		Query query = em().createNativeQuery(nativeQuery, HibNodeFieldContainerEdgeImpl.class)
 				.setParameter("branchUuid", UUIDUtil.toJavaUuid(branchUuid))
 				.setParameter("versionUuid", version.getId())
 				.setParameter("bucketStart", bucket.start())
-				.setParameter("bucketEnd", bucket.end())
+				.setParameter("bucketEnd", bucket.end());
+
+		if (optType.isPresent()) {
+			query = query.setParameter("type", optType.get().name());
+		}
+
+		List<HibNodeFieldContainerEdgeImpl> edges = query
 				.getResultList();
 
 		return contentStorage.findMany(edges).stream();

@@ -7,6 +7,7 @@ import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
 import static com.gentics.mesh.util.DateUtils.toISO8601;
+import static com.gentics.mesh.util.PreparationUtil.getPreparedData;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,17 +16,20 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.jsoup.Jsoup;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.HibImageDataElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.dao.BranchDao;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
@@ -65,8 +69,8 @@ import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.S3BinaryExtractOptions;
 import com.gentics.mesh.core.rest.schema.S3BinaryFieldSchema;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
-import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.handler.DataHolderContext;
 import com.gentics.mesh.search.index.AbstractTransformer;
@@ -75,8 +79,6 @@ import com.gentics.mesh.util.ETag;
 import io.reactivex.Observable;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Transformer which can be used to transform a {@link HibNodeFieldContainer} into a elasticsearch document. Additionally the matching mapping can also be
@@ -137,19 +139,18 @@ public class NodeContainerTransformer extends AbstractTransformer<HibNodeFieldCo
 	 * @param document
 	 * @param node
 	 * @param type
+	 * @param dhc
 	 */
-	private void addPermissionInfo(JsonObject document, HibNode node, ContainerType type) {
+	private void addPermissionInfo(JsonObject document, HibNode node, ContainerType type, DataHolderContext dhc) {
 		List<String> roleUuids = new ArrayList<>();
 
-		for (HibRole role : roleDao.getRolesWithPerm(node, READ_PERM)) {
-			roleUuids.add(role.getUuid());
-		}
+		roleUuids.addAll(getPreparedData(node, dhc, "node", "read_permissions",
+				n -> roleDao.getRolesWithPerm(n, READ_PERM).stream().map(HibRole::getUuid).collect(Collectors.toSet())));
 
 		// Also add the roles which would grant read on published nodes if the container is published.
 		if (type == PUBLISHED) {
-			for (HibRole role : roleDao.getRolesWithPerm(node, READ_PUBLISHED_PERM)) {
-				roleUuids.add(role.getUuid());
-			}
+			roleUuids.addAll(getPreparedData(node, dhc, "node", "read_published_permissions",
+					n -> roleDao.getRolesWithPerm(n, READ_PUBLISHED_PERM).stream().map(HibRole::getUuid).collect(Collectors.toSet())));
 		}
 		document.put("_roleUuids", roleUuids);
 	}
@@ -495,7 +496,7 @@ public class NodeContainerTransformer extends AbstractTransformer<HibNodeFieldCo
 	 */
 	public JsonObject toPermissionPartial(HibNode node, ContainerType type) {
 		JsonObject document = new JsonObject();
-		addPermissionInfo(document, node, type);
+		addPermissionInfo(document, node, type, null);
 		return document;
 	}
 
@@ -505,17 +506,17 @@ public class NodeContainerTransformer extends AbstractTransformer<HibNodeFieldCo
 	 * @param container
 	 * @param branchUuid
 	 * @param type
+	 * @param dhc
 	 * @return
 	 */
-	public String generateVersion(HibNodeFieldContainer container, String branchUuid, ContainerType type) {
+	public String generateVersion(HibNodeFieldContainer container, HibProject project, HibBranch branch, ContainerType type, DataHolderContext dhc) {
 		ContentDao contentDao = Tx.get().contentDao();
-		HibNode node = contentDao.getNode(container);
-		HibProject project = node.getProject();
+		HibNode node = getPreparedData(container, dhc, "container", "nodes", contentDao::getNode);
 
 		StringBuilder builder = new StringBuilder();
 		builder.append(container.getElementVersion());
 		builder.append("|");
-		builder.append(branchUuid);
+		builder.append(branch.getUuid());
 		builder.append("|");
 		builder.append(type.name());
 		builder.append("|");
@@ -541,15 +542,15 @@ public class NodeContainerTransformer extends AbstractTransformer<HibNodeFieldCo
 	 * @param container
 	 * @param branchUuid
 	 * @param type
+	 * @param dhc
 	 * @return
 	 */
-	public JsonObject toDocument(HibNodeFieldContainer container, String branchUuid, ContainerType type) {
+	public JsonObject toDocument(HibNodeFieldContainer container, HibProject project, HibBranch branch, ContainerType type, DataHolderContext dhc) {
 		TagDao tagDao = Tx.get().tagDao();
 		NodeDao nodeDao = Tx.get().nodeDao();
 		ContentDao contentDao = Tx.get().contentDao();
-		BranchDao branchDao = Tx.get().branchDao();
 
-		HibNode node = contentDao.getNode(container);
+		HibNode node = getPreparedData(container, dhc, "container", "nodes", contentDao::getNode);
 		JsonObject document = new JsonObject();
 		document.put("uuid", node.getUuid());
 		addUser(document, "editor", container.getEditor());
@@ -557,22 +558,25 @@ public class NodeContainerTransformer extends AbstractTransformer<HibNodeFieldCo
 		addUser(document, "creator", node.getCreator());
 		document.put("created", toISO8601(node.getCreationTimestamp()));
 
-		addProject(document, node.getProject());
-		Result<HibTag> tags = tagDao.getTags(node, branchDao.getLatestBranch(node.getProject()));
+		addProject(document, project);
+		List<HibTag> tags = getPreparedData(node, dhc, "node", "tags", n -> tagDao.getTags(n, branch).list());
 		addTags(document, tags);
-		addTagFamilies(document, tagDao.getTags(node, branchDao.getLatestBranch(node.getProject())));
-		addPermissionInfo(document, node, type);
+		addTagFamilies(document, tags);
+		addPermissionInfo(document, node, type, dhc);
 
 		// The basenode has no parent.
-		if (nodeDao.getParentNode(node, branchUuid) != null) {
-			addParentNodeInfo(document, nodeDao.getParentNode(node, branchUuid));
+		HibNode parentNode = getPreparedData(node, dhc, "node", "parents", n -> nodeDao.getParentNode(node, branch.getUuid()));
+		if (parentNode != null) {
+			addParentNodeInfo(document, parentNode);
 		}
 
 		String language = container.getLanguageTag();
 		document.put("language", language);
-		addSchema(document, contentDao.getSchemaContainerVersion(container));
+		HibSchemaVersion schemaVersion = contentDao.getSchemaContainerVersion(container);
+		SchemaVersionModel schema = schemaVersion.getSchema();
+		addSchema(document, schemaVersion);
 
-		addFields(document, "fields", container, contentDao.getSchemaContainerVersion(container).getSchema().getFields());
+		addFields(document, "fields", container, schema.getFields());
 		if (log.isTraceEnabled()) {
 			String json = document.toString();
 			log.trace("Search index json:\n{}", json);
@@ -580,11 +584,11 @@ public class NodeContainerTransformer extends AbstractTransformer<HibNodeFieldCo
 
 		// Add display field value
 		JsonObject displayField = new JsonObject();
-		displayField.put("key", contentDao.getSchemaContainerVersion(container).getSchema().getDisplayField());
+		displayField.put("key", schema.getDisplayField());
 		displayField.put("value", contentDao.getDisplayFieldValue(container));
 		document.put("displayField", displayField);
-		document.put("branchUuid", branchUuid);
-		document.put(VERSION_KEY, generateVersion(container, branchUuid, type));
+		document.put("branchUuid", branch.getUuid());
+		document.put(VERSION_KEY, generateVersion(container, project, branch, type, dhc));
 		document.put(BUCKET_ID_KEY, container.getBucketId());
 		return document;
 	}

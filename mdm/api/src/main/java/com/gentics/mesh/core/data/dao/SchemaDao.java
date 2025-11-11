@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.dao;
 
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -144,7 +145,7 @@ public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionMod
 	 *            Bucket to limit the selection by
 	 * @return
 	 */
-	Stream<? extends HibNodeFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid, Bucket bucket);
+	Stream<? extends HibNodeFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid, Bucket bucket, Optional<ContainerType> optType);
 
 	/**
 	 * Load the limited portion of contents that use the given schema version for the given branch.

@@ -2,20 +2,26 @@ package com.gentics.mesh.hibernate.data.dao;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.firstOrNull;
+import static com.gentics.mesh.hibernate.util.HibernateUtil.inQueriesLimitForSplitting;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Root;
 
 import org.apache.commons.collections4.IteratorUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.hibernate.Hibernate;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
@@ -49,10 +55,13 @@ import com.gentics.mesh.hibernate.event.EventFactory;
 import com.gentics.mesh.hibernate.util.HibernateUtil;
 import com.gentics.mesh.hibernate.util.SplittingUtils;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.util.CollectionUtil;
 import com.gentics.mesh.util.UUIDUtil;
 
 import dagger.Lazy;
 import io.vertx.core.Vertx;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 
 /**
  * Tag DAO implementation for Gentics Mesh.
@@ -179,6 +188,26 @@ public class TagDaoImpl extends AbstractHibDaoGlobal<HibTag, TagResponse, HibTag
 				.getResultStream();
 
 		return new TraversalResult<>(tags.iterator());
+	}
+
+	@Override
+	public Map<HibNode, Collection<? extends HibTag>> getTags(Collection<HibNode> nodes, HibBranch branch) {
+		List<UUID> nodesUuids = nodes.stream().map(HibNode::getId).map(UUID.class::cast).collect(Collectors.toList());
+		UUID branchUuid = UUIDUtil.toJavaUuid(branch.getUuid());
+
+		Map<HibNode, Collection<? extends HibTag>> result = new HashMap<>();
+		result.putAll(SplittingUtils.splitAndMergeInMapOfLists(nodesUuids, inQueriesLimitForSplitting(1), (uuids) -> {
+			@SuppressWarnings("unchecked")
+			List<Object[]> resultList = em().createQuery("select t.node, t.tag from node_tag t where t.id.nodeUUID in :nodeUuids and t.id.branchUUID = :branchUuid order by t.tag.name asc")
+					.setParameter("nodeUuids", uuids)
+					.setParameter("branchUuid", branchUuid)
+					.getResultList();
+
+			return resultList.stream()
+					.map(tuples -> Pair.of((HibNode)tuples[0], (HibTag)tuples[1]))
+					.collect(Collectors.groupingBy(Pair::getKey, Collectors.mapping(Pair::getValue, Collectors.toList())));
+		}));
+		return CollectionUtil.addFallbackValueForMissingKeys(result, nodes, new ArrayList<>());
 	}
 
 	@Override

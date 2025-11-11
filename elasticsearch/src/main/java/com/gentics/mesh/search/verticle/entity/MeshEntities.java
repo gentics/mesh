@@ -339,7 +339,7 @@ public class MeshEntities {
 					version.getMicroschemaVersionHash(branch)
 				),
 				ContentDao.composeDocumentId(nodeUuid, container.getLanguageTag()),
-				transformer.toDocument(container, branch.getUuid(), type), complianceMode
+				transformer.toDocument(container, project, branch, type, null), complianceMode
 			);
 		})));
 	}

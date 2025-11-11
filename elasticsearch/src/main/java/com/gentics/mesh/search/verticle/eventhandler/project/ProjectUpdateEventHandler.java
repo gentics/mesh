@@ -84,7 +84,7 @@ public class ProjectUpdateEventHandler implements EventHandler {
 											ContentDao.composeDocumentId(node.getUuid(),
 													container.getLanguageTag()),
 											((NodeContainerTransformer) entities.nodeContent.getTransformer())
-													.toDocument(container, branch.getUuid(), type),
+													.toDocument(container, project, branch, type, null),
 											complianceMode)))));
 				}).collect(toFlowable())).runInNewTx());
 	}

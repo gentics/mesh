@@ -2,7 +2,6 @@ package com.gentics.mesh.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -17,7 +16,6 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.handler.DataHolderContext;
 import com.gentics.mesh.parameter.value.FieldsSet;
 
@@ -78,7 +76,7 @@ public final class PreparationUtil {
 	 * @param dataType type of the data to be prepared
 	 * @param func function that prepares the data
 	 */
-	public static <T extends HibCoreElement<? extends RestModel>> void prepareData(
+	public static <T> void prepareData(
 			Collection<T> elements, DataHolderContext dhc, String elementType, String dataType,
 			Function<Collection<T>, ?> func) {
 		if (dhc == null) {
@@ -102,7 +100,7 @@ public final class PreparationUtil {
 	 * @param func function that prepares the data
 	 * @param assumption if true, the data is prepared
 	 */
-	public static <T extends HibCoreElement<? extends RestModel>> void prepareData(
+	public static <T> void prepareData(
 			Collection<T> elements, DataHolderContext dhc, String elementType, String dataType,
 			Function<Collection<T>, ?> func, boolean assumption) {
 		if (assumption) {
@@ -110,21 +108,42 @@ public final class PreparationUtil {
 		}
 	}
 
+	/**
+	 * Get prepared data
+	 * @param <T> type of the element
+	 * @param <U> type of the prepared data
+	 * @param element element
+	 * @param dhc data holder context, if null, the data is fetched from the alternative fetcher
+	 * @param elementType type of the element
+	 * @param dataType type of the prepared data
+	 * @param alternative alternative data fetcher
+	 * @return either prepared data or data fetched from the alternative
+	 */
 	public static <T, U> U getPreparedData(T element, DataHolderContext dhc, String elementType, String dataType, Function<T, U> alternative) {
 		if (dhc == null) {
 			return alternative.apply(element);
 		}
 
 		String attributeName = getAttributeName(elementType, dataType);
-		Map<T, U> data = dhc.get(attributeName);
-		if (data != null) {
-			return Optional.ofNullable(data.get(element)).orElseGet(() -> alternative.apply(element));
-		} else {
+		try {
+			Map<T, U> data = dhc.get(attributeName);
+			if (data != null) {
+				return Optional.ofNullable(data.get(element)).orElseGet(() -> alternative.apply(element));
+			} else {
+				return alternative.apply(element);
+			}
+		} catch(Throwable e) {
 			return alternative.apply(element);
 		}
 	}
 
-	private static String getAttributeName(String elementType, String dataType) {
+	/**
+	 * Get the attribute name
+	 * @param elementType element type
+	 * @param dataType data type
+	 * @return attribute name
+	 */
+	public static String getAttributeName(String elementType, String dataType) {
 		return "%s.%s.prepared".formatted(elementType, dataType);
 	}
 }

@@ -29,6 +29,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.Bucket;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.GroupDao;
@@ -202,6 +203,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		String language = "de";
 		HibUser user = mockUser("joe1", "Joe", "Doe");
 		HibProject project = mockProject(user);
+		HibBranch branch = mock(HibBranch.class);
 		HibTagFamily tagFamily = mockTagFamily("colors", user, project);
 		HibTag tagA = mockTag("green", user, tagFamily, project);
 		HibTag tagB = mockTag("red", user, tagFamily, project);
@@ -209,7 +211,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		HibNode node = mockNode(nodeDao, contentDao, tagDao, parentNode, project, user, language, tagA, tagB);
 		when(roleDao.getRolesWithPerm(Mockito.any(), Mockito.any())).thenReturn(new TraversalResult<>(Collections.emptyList()));
 
-		write(new NodeContainerTransformer(new HibernateMeshOptions(), roleDao).toDocument(contentDao.getLatestDraftFieldContainer(node, language), UUID_1, ContainerType.PUBLISHED), "node.search");
+		write(new NodeContainerTransformer(new HibernateMeshOptions(), roleDao).toDocument(contentDao.getLatestDraftFieldContainer(node, language), project, branch, ContainerType.PUBLISHED, null), "node.search");
 	}
 
 	private void writeProjectDocumentExample() throws Exception {

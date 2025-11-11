@@ -917,7 +917,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 
 	@Override
 	public Stream<? extends HibNode> findAllGlobal(Bucket bucket) {
-		return em().createQuery("select n from node n where n.bucketId >= :start and n.bucketId <= :end", HibNodeImpl.class)
+		return em().createQuery("select n from node n where n.bucketTracking.bucketId >= :start and n.bucketTracking.bucketId <= :end", HibNodeImpl.class)
 				.setParameter("start", bucket.start())
 				.setParameter("end", bucket.end())
 				.getResultStream();
