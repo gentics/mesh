@@ -31,12 +31,12 @@ public class MetricsLabelTest extends AbstractMeshTest {
 	@Test
 	public void testGraphQL() {
 		String query = "{ me { uuid } }";
-		testMetric(pathLabel(PROJECT_NAME + "/graphql"), client().graphqlQuery(PROJECT_NAME, query));
+		testMetric(pathLabel("graphql"), client().graphqlQuery(PROJECT_NAME, query));
 	}
 
 	@Test
 	public void testWebroot() {
-		testMetric(pathLabel(PROJECT_NAME + "/webroot/"), client().webroot(PROJECT_NAME, "/"));
+		testMetric(pathLabel("webroot"), client().webroot(PROJECT_NAME, "/"));
 	}
 
 	@Test
@@ -44,49 +44,49 @@ public class MetricsLabelTest extends AbstractMeshTest {
 		NodeResponse binaryNode = createBinaryContent().blockingGet();
 		binaryNode = uploadImage(binaryNode);
 		binaryNode = client().findNodeByUuid(PROJECT_NAME, binaryNode.getUuid(), new NodeParametersImpl().setResolveLinks(LinkType.SHORT)).blockingGet();
-		testMetric(pathLabel(PROJECT_NAME + "/webrootfield/binary/blume.jpg"), client().webrootField(PROJECT_NAME, "binary", binaryNode.getPath()));
+		testMetric(pathLabel("webrootfield"), client().webrootField(PROJECT_NAME, "binary", binaryNode.getPath()));
 	}
 
 	@Test
 	public void testNodes() {
-		testMetric(pathLabel(PROJECT_NAME + "/nodes"), client().findNodes(PROJECT_NAME));
+		testMetric(pathLabel("nodes"), client().findNodes(PROJECT_NAME));
 	}
 
 	@Test
 	public void testSingleNode() {
 		NodeResponse node = client().findNodes(PROJECT_NAME).blockingGet().getData().get(0);
-		testMetric(pathLabel(PROJECT_NAME + "/nodes/" + node.getUuid()), client().findNodeByUuid(PROJECT_NAME, node.getUuid()));
+		testMetric(pathLabel("nodes"), client().findNodeByUuid(PROJECT_NAME, node.getUuid()));
 	}
 
 	@Test
 	public void testBinaries() throws IOException {
 		NodeResponse binaryNode = createBinaryContent().blockingGet();
 		uploadImage(binaryNode);
-		testMetric(pathLabel(PROJECT_NAME + "/nodes/" + binaryNode.getUuid() + "/binary/binary"), client().downloadBinaryField(PROJECT_NAME, binaryNode.getUuid(), binaryNode.getLanguage(), "binary"));
+		testMetric(pathLabel("binary"), client().downloadBinaryField(PROJECT_NAME, binaryNode.getUuid(), binaryNode.getLanguage(), "binary"));
 	}
 
 	@Test
 	public void testSearch() {
-		testMetric(pathLabel("search/nodes"), client().searchNodes(esQuery));
+		testMetric(pathLabel("search"), client().searchNodes(esQuery));
 	}
 
 	@Test
 	public void testSearchProject() {
-		testMetric(pathLabel(PROJECT_NAME + "/search/nodes"), client().searchNodes(PROJECT_NAME, esQuery));
+		testMetric(pathLabel("search"), client().searchNodes(PROJECT_NAME, esQuery));
 	}
 
 	@Test
 	public void testPlugin() {
 		meshApi2().deployPlugin(DummyPlugin.class, "dummy").blockingAwait();
 		waitForPluginRegistration();
-		testMetric(pathLabel("plugins/dummy/hello"), client().get("/plugins/dummy/hello"));
+		testMetric(pathLabel("plugin_dummy"), client().get("/plugins/dummy/hello"));
 	}
 
 	@Test
 	public void testProjectPlugin() {
 		meshApi2().deployPlugin(DummyPlugin.class, "dummy").blockingAwait();
 		waitForPluginRegistration();
-		testMetric(pathLabel(PROJECT_NAME + "/plugins/dummy/hello"), client().get("/dummy/plugins/dummy/hello"));
+		testMetric(pathLabel("plugin_dummy"), client().get("/dummy/plugins/dummy/hello"));
 	}
 
 	@After
@@ -95,7 +95,7 @@ public class MetricsLabelTest extends AbstractMeshTest {
 	}
 
 	private String pathLabel(String label) {
-		return "path=\"/api/v2/" + label + "\"";
+		return "path=\"" + label + "\"";
 	}
 
 	private void testMetric(String expected, MeshRequest<?> loader) {

@@ -90,9 +90,11 @@ import ch.qos.logback.core.rolling.RollingFileAppender;
 import ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy;
 import ch.qos.logback.core.util.FileSize;
 import dagger.Lazy;
+import io.micrometer.core.instrument.MeterRegistry;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.vertx.core.Vertx;
+import io.vertx.core.VertxBuilder;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.EventBusOptions;
@@ -100,6 +102,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.metrics.MetricsOptions;
 import io.vertx.core.spi.cluster.ClusterManager;
+import io.vertx.micrometer.MicrometerMetricsFactory;
 
 /**
  * @see BootstrapInitializer
@@ -141,6 +144,8 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 
 	protected final MetricsOptions metricsOptions;
 
+	protected final MeterRegistry meterRegistry;
+
 	protected final LocalConfigApiImpl localConfigApi;
 
 	protected final BCryptPasswordEncoder passwordEncoder;
@@ -172,7 +177,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	protected AbstractBootstrapInitializer(ServerSchemaStorageImpl schemaStorage, Database db,
 			SearchProvider searchProvider, BCryptPasswordEncoder encoder, DistributedEventManager eventManager,
 			Lazy<IndexHandlerRegistryImpl> indexHandlerRegistry, Lazy<CoreVerticleLoader> loader,
-			HighLevelChangelogSystem highlevelChangelogSystem, CacheRegistry cacheRegistry,
+			HighLevelChangelogSystem highlevelChangelogSystem, CacheRegistry cacheRegistry, MeterRegistry meterRegistry,
 			MeshPluginManager pluginManager, MeshOptions options, RouterStorageRegistryImpl routerStorageRegistry,
 			MetricsOptions metricsOptions, LocalConfigApiImpl localConfigApi, BCryptPasswordEncoder passwordEncoder,
 			MasterElector coordinatorMasterElector, LivenessManager liveness, EventBusLivenessManager eventbusLiveness,
@@ -190,6 +195,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 		this.options = options;
 		this.routerStorageRegistry = routerStorageRegistry;
 		this.metricsOptions = metricsOptions;
+		this.meterRegistry = meterRegistry;
 		this.localConfigApi = localConfigApi;
 		this.passwordEncoder = passwordEncoder;
 		this.coordinatorMasterElector = coordinatorMasterElector;
@@ -567,11 +573,6 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 		vertxOptions.setWorkerPoolSize(options.getVertxOptions().getWorkerPoolSize());
 		vertxOptions.setEventLoopPoolSize(options.getVertxOptions().getEventPoolSize());
 
-		MonitoringConfig monitoringOptions = options.getMonitoringOptions();
-		if (monitoringOptions != null && monitoringOptions.isEnabled()) {
-			log.info("Enabling Vert.x metrics");
-			vertxOptions.setMetricsOptions(metricsOptions);
-		}
 		boolean logActivity = LoggerFactory.getLogger(EventBus.class).isDebugEnabled();
 		vertxOptions.getEventBusOptions().setLogActivity(logActivity);
 		vertxOptions.setPreferNativeTransport(true);
@@ -582,7 +583,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 			vertx = createClusteredVertx(options, vertxOptions);
 		} else {
 			log.info("Creating non-clustered Vert.x instance");
-			vertx = Vertx.vertx(vertxOptions);
+			vertx = createNonClusteredVertx(options, vertxOptions);
 		}
 		if (vertx.isNativeTransportEnabled()) {
 			log.info("Running with native transports enabled");
@@ -1000,6 +1001,27 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	protected abstract void initOptionalData(Tx tx, boolean isEmptyInstallation);
 
 	/**
+	 * Create a non-clustered vert.x instance.
+	 *
+	 * @param options
+	 *			Mesh options
+	 * @param vertxOptions
+	 *			Vert.x options
+	 */
+	protected Vertx createNonClusteredVertx(MeshOptions options, VertxOptions vertxOptions) {
+		VertxBuilder builder = Vertx.builder();
+
+		MonitoringConfig monitoringOptions = options.getMonitoringOptions();
+		if (monitoringOptions != null && monitoringOptions.isEnabled()) {
+			log.info("Enabling Vert.x metrics");
+			vertxOptions.setMetricsOptions(metricsOptions);
+			builder.withMetrics(new MicrometerMetricsFactory(meterRegistry));
+		}
+
+		return builder.with(vertxOptions).build();
+	}
+
+	/**
 	 * Create a clustered vert.x instance and block until the instance has been created.
 	 *
 	 * @param options
@@ -1026,7 +1048,16 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 			log.debug("Binding Vert.x on host {" + localIp + "}");
 		}
 		CompletableFuture<Vertx> fut = new CompletableFuture<>();
-		Vertx.builder().withClusterManager(clusterManager).with(vertxOptions).buildClustered().andThen(rh -> {
+		VertxBuilder builder = Vertx.builder().withClusterManager(clusterManager);
+
+		MonitoringConfig monitoringOptions = options.getMonitoringOptions();
+		if (monitoringOptions != null && monitoringOptions.isEnabled()) {
+			log.info("Enabling Vert.x metrics");
+			vertxOptions.setMetricsOptions(metricsOptions);
+			builder.withMetrics(new MicrometerMetricsFactory(meterRegistry));
+		}
+
+		builder.with(vertxOptions).buildClustered().andThen(rh -> {
 			log.info("Created clustered Vert.x instance");
 			if (rh.failed()) {
 				Throwable cause = rh.cause();
