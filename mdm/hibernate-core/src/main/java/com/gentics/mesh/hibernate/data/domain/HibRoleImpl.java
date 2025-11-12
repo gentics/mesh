@@ -28,11 +28,8 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
-import jakarta.persistence.NamedAttributeNode;
-import jakarta.persistence.NamedEntityGraph;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
-import jakarta.persistence.NamedSubgraph;
 import jakarta.persistence.OneToMany;
 
 /**
@@ -41,20 +38,6 @@ import jakarta.persistence.OneToMany;
  * @author plyhun
  *
  */
-@NamedEntityGraph(
-	name = "role.rest",
-	attributeNodes = {
-		@NamedAttributeNode(value = "groups", subgraph = "groups-subgraph")
-	},
-	subgraphs = {
-		@NamedSubgraph(
-			name = "groups-subgraph",
-			attributeNodes = {
-				@NamedAttributeNode(value = "name")
-			}
-		)
-	}
-)
 @NamedQueries({
 	@NamedQuery(
 		name = "role.findAllForAdmin",
@@ -66,6 +49,10 @@ import jakarta.persistence.OneToMany;
 				" join permission perm on (perm.element = r.dbUuid) " +
 				" where perm.role in :roles " +
 				" and perm.readPerm = true"
+	),
+	@NamedQuery(
+		name = "role.findgroupsforroles",
+		query = "select r, g from role r inner join r.groups g where r.dbUuid in :roleUuids"
 	)
 })
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)

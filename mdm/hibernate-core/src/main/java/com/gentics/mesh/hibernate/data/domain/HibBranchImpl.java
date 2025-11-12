@@ -67,6 +67,10 @@ import jakarta.persistence.OneToOne;
 		@NamedQuery(
 				name = "branch.findForTag",
 				query = "select b from branch b join b.tags t where t = :tag"
+		),
+		@NamedQuery(
+				name = "branch.findtagsforbranches",
+				query = "select b, t from branch b join b.tags t where b.dbUuid in :branchUuids"
 		)
 })
 public class HibBranchImpl extends AbstractHibUserTrackedElement<BranchResponse> implements HibBranch, Serializable {

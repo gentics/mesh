@@ -7,6 +7,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.handler.DataHolderContext;
 import com.gentics.mesh.search.index.AbstractTransformer;
 import com.gentics.mesh.util.ETag;
 
@@ -23,18 +24,18 @@ public class ProjectTransformer extends AbstractTransformer<HibProject> {
 	}
 
 	@Override
-	public String generateVersion(HibProject project) {
+	public String generateVersion(HibProject project, DataHolderContext dhc) {
 		// No need to add users since the creator/editor edge affects the project version
 		return ETag.hash(project.getElementVersion());
 	}
 
 	@Override
-	public JsonObject toDocument(HibProject project) {
+	public JsonObject toDocument(HibProject project, DataHolderContext dhc) {
 		JsonObject document = new JsonObject();
 		document.put(NAME_KEY, project.getName());
 		addBasicReferences(document, project);
-		addPermissionInfo(document, project);
-		document.put(VERSION_KEY, generateVersion(project));
+		addPermissionInfo(document, project, "project", dhc);
+		document.put(VERSION_KEY, generateVersion(project, dhc));
 		document.put(BUCKET_ID_KEY, project.getBucketId());
 		return document;
 	}

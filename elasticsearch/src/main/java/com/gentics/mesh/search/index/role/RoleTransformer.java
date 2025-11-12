@@ -7,6 +7,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.handler.DataHolderContext;
 import com.gentics.mesh.search.index.AbstractTransformer;
 import com.gentics.mesh.util.ETag;
 
@@ -23,24 +24,24 @@ public class RoleTransformer extends AbstractTransformer<HibRole> {
 	}
 
 	@Override
-	public String generateVersion(HibRole role) {
+	public String generateVersion(HibRole role, DataHolderContext dhc) {
 		// No need to add users since the creator/editor edge affects the role version
 		return ETag.hash(role.getElementVersion());
 	}
 
 	/**
 	 * Transform the given object into a source JSON object which can be used to store the document in the search provider specific format.
-	 * 
 	 * @param role
+	 * 
 	 * @return JSON document representing the role
 	 */
 	@Override
-	public JsonObject toDocument(HibRole role) {
+	public JsonObject toDocument(HibRole role, DataHolderContext dhc) {
 		JsonObject document = new JsonObject();
 		document.put(NAME_KEY, role.getName());
 		addBasicReferences(document, role);
-		addPermissionInfo(document, role);
-		document.put(VERSION_KEY, generateVersion(role));
+		addPermissionInfo(document, role, "role", dhc);
+		document.put(VERSION_KEY, generateVersion(role, dhc));
 		document.put(BUCKET_ID_KEY, role.getBucketId());
 		return document;
 	}

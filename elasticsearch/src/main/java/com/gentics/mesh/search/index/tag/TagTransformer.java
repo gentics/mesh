@@ -10,6 +10,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
+import com.gentics.mesh.handler.DataHolderContext;
 import com.gentics.mesh.search.index.AbstractTransformer;
 import com.gentics.mesh.search.index.MappingHelper;
 import com.gentics.mesh.util.ETag;
@@ -27,7 +28,7 @@ public class TagTransformer extends AbstractTransformer<HibTag> {
 	}
 
 	@Override
-	public String generateVersion(HibTag tag) {
+	public String generateVersion(HibTag tag, DataHolderContext dhc) {
 		HibProject project = tag.getProject();
 		HibTagFamily tagFamily = tag.getTagFamily();
 
@@ -43,21 +44,21 @@ public class TagTransformer extends AbstractTransformer<HibTag> {
 
 	/**
 	 * Transform the tag to the document which can be stored in ES.
-	 * 
 	 * @param tag
 	 * @param withVersion
 	 *            Whether to include the version number.
+	 * 
 	 * @return
 	 */
 	@Override
-	public JsonObject toDocument(HibTag tag) {
+	public JsonObject toDocument(HibTag tag, DataHolderContext dhc) {
 		JsonObject document = new JsonObject();
 		document.put(NAME_KEY, tag.getName());
 		addBasicReferences(document, tag);
-		addPermissionInfo(document, tag);
+		addPermissionInfo(document, tag, "tag", dhc);
 		addTagFamily(document, tag.getTagFamily());
 		addProject(document, tag.getProject());
-		document.put(MappingHelper.VERSION_KEY, generateVersion(tag));
+		document.put(MappingHelper.VERSION_KEY, generateVersion(tag, dhc));
 		document.put(BUCKET_ID_KEY, tag.getBucketId());
 		return document;
 	}
