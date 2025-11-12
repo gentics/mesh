@@ -5,11 +5,14 @@ import org.apache.commons.lang3.StringUtils;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
 
 import io.vertx.core.json.JsonObject;
 
+import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Checkbox field
@@ -65,7 +68,23 @@ public class CheckboxElement extends FormElement {
 	}
 
 	@Override
+	public Optional<ValidationError> validateForm() {
+		if (StringUtils.isBlank(value)) {
+			var error = new ValidationError()
+				.setName(getName())
+				.setTitle(I18nHelper.get(Locale.GERMAN, "error.validation.form.title"))
+				.setMessage(I18nHelper.get(Locale.GERMAN, "error.validation.form.missing_list_elements", getLabelOrName()));
+
+			return Optional.of(error);
+		}
+
+		return Optional.empty();
+	}
+
+	@Override
 	protected boolean isInvalidValue(String value) {
-		return this.value != null && !this.value.equals(value);
+		var actualValue = Optional.ofNullable(value).map(String::trim).orElse(null);
+
+		return this.value != null && !this.value.trim().equals(actualValue);
 	}
 }
