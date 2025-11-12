@@ -14,12 +14,10 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Root;
 
 import org.apache.commons.lang3.tuple.Pair;
 
+import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.dao.PersistingGroupDao;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
@@ -43,6 +41,9 @@ import com.gentics.mesh.util.CollectionUtil;
 
 import dagger.Lazy;
 import io.vertx.core.Vertx;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 
 /**
  * Group DAO implementation for Gentics Mesh.
@@ -80,8 +81,24 @@ public class GroupDaoImpl extends AbstractHibDaoGlobal<HibGroup, GroupResponse, 
 	}
 
 	@Override
+	public long countUsers(HibGroup group) {
+		return em().createQuery("select count(*) from group g inner join g.users u where g.dbUuid = :groupUuid", Long.class)
+			.setParameter("groupUuid", group.getId())
+			.getSingleResult();
+	}
+
+	@Override
 	public Result<? extends HibUser> getUsers(HibGroup group) {
 		return new TraversalResult<>(((HibGroupImpl) group).getUsers());
+	}
+
+	@Override
+	public Result<? extends HibUser> getUsers(HibGroup group, Bucket bucket) {
+		return new TraversalResult<>(em().createQuery("select u from group g inner join g.users u where g.dbUuid = :groupUuid and u.bucketTracking.bucketId >= :start and u.bucketTracking.bucketId <= :end", HibUserImpl.class)
+			.setParameter("groupUuid", group.getId())
+			.setParameter("start", bucket.start())
+			.setParameter("end", bucket.end())
+			.getResultStream());
 	}
 
 	@Override

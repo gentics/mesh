@@ -48,8 +48,12 @@ public class QueryCounter implements AutoCloseable {
 	public void close() {
 		long count = getCountSinceStart();
 
+		if (builder.minCount >= 0) {
+			assertThat(count).as("Number of executed queries").isGreaterThanOrEqualTo(builder.minCount);
+		}
+
 		if (builder.maxCount >= 0) {
-			assertThat(count).as("Allowed number of executed queries").isLessThanOrEqualTo(builder.maxCount);
+			assertThat(count).as("Number of executed queries").isLessThanOrEqualTo(builder.maxCount);
 		}
 	}
 
@@ -67,7 +71,7 @@ public class QueryCounter implements AutoCloseable {
 	 */
 	protected @UnknownKeyFor @NonNull @Initialized long getQueryExecutionCount() {
 		try {
-			return builder.databaseConnector.getSessionMetadataIntegrator().getSessionFactoryImplementor().getStatistics().getQueryExecutionCount();
+			return builder.databaseConnector.getSessionMetadataIntegrator().getSessionFactoryImplementor().getStatistics().getPrepareStatementCount();
 		} catch (Exception e) {
 			fail("Unable to get query count", e);
 			return -1;
@@ -109,6 +113,11 @@ public class QueryCounter implements AutoCloseable {
 		protected boolean clear;
 
 		/**
+		 * Minimum expected count
+		 */
+		protected int minCount = -1;
+
+		/**
 		 * Maximum allowed count
 		 */
 		protected int maxCount = -1;
@@ -124,6 +133,16 @@ public class QueryCounter implements AutoCloseable {
 		 */
 		public static Builder get() {
 			return new Builder();
+		}
+
+		/**
+		 * Assert that at least the given number of queries were executed
+		 * @param minCount expected minimum number of queries
+		 * @return fluent API
+		 */
+		public Builder assertAtLeast(int minCount) {
+			this.minCount = minCount;
+			return this;
 		}
 
 		/**
@@ -175,6 +194,7 @@ public class QueryCounter implements AutoCloseable {
 			HibernateMeshOptions hibernateOptions = (HibernateMeshOptions) options;
 			hibernateOptions.getStorageOptions().setGenerateStatistics(true);
 			options.setMigrationTriggerInterval(0);
+			hibernateOptions.getUploadOptions().setCheckInterval(-1);
 		}
 	}
 }

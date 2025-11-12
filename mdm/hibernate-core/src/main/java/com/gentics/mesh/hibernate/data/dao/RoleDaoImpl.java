@@ -1,5 +1,8 @@
 package com.gentics.mesh.hibernate.data.dao;
 
+import static com.gentics.mesh.hibernate.util.HibernateUtil.inQueriesLimitForSplitting;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -25,6 +28,7 @@ import jakarta.persistence.metamodel.Metamodel;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.IteratorUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -53,6 +57,7 @@ import com.gentics.mesh.hibernate.util.HibernateUtil;
 import com.gentics.mesh.hibernate.util.SplittingUtils;
 import com.gentics.mesh.hibernate.util.TypeInfoUtil;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.util.CollectionUtil;
 import com.gentics.mesh.util.UUIDUtil;
 
 import dagger.Lazy;
@@ -281,6 +286,24 @@ public class RoleDaoImpl extends AbstractHibDaoGlobal<HibRole, RoleResponse, Hib
 	}
 
 	@Override
+	public Map<HibRole, Collection<? extends HibGroup>> getGroups(Collection<HibRole> roles) {
+		List<UUID> rolesUuids = roles.stream().map(HibRole::getId).map(UUID.class::cast).collect(Collectors.toList());
+
+		Map<HibRole, Collection<? extends HibGroup>> result = new HashMap<>();
+		result.putAll(SplittingUtils.splitAndMergeInMapOfLists(rolesUuids, inQueriesLimitForSplitting(1), (uuids) -> {
+			@SuppressWarnings("unchecked")
+			List<Object[]> resultList = em().createNamedQuery("role.findgroupsforroles")
+					.setParameter("roleUuids", uuids)
+					.getResultList();
+
+			return resultList.stream()
+					.map(tuples -> Pair.of((HibRole)tuples[0], (HibGroup)tuples[1]))
+					.collect(Collectors.groupingBy(Pair::getKey, Collectors.mapping(Pair::getValue, Collectors.toList())));
+		}));
+		return CollectionUtil.addFallbackValueForMissingKeys(result, roles, new ArrayList<>());
+	}
+
+	@Override
 	public Page<? extends HibGroup> getGroups(HibRole role, HibUser authUser, PagingParameters pagingInfo) {
 		CriteriaQuery<HibGroupImpl> query = cb().createQuery(HibGroupImpl.class);
 		Metamodel metamodel = em().getMetamodel();
@@ -306,6 +329,39 @@ public class RoleDaoImpl extends AbstractHibDaoGlobal<HibRole, RoleResponse, Hib
 			.getResultStream()
 			.map(UUIDUtil::toShortUuid)
 			.collect(Collectors.toSet());
+	}
+
+	@Override
+	public Map<HibBaseElement, Set<String>> getRoleUuidsForPerm(Collection<? extends HibBaseElement> elements, InternalPermission permission) {
+		// convert collection of elements to map UUID -> element
+		Map<UUID, HibBaseElement> elementMap = elements.stream().collect(Collectors.toMap(e -> UUID.class.cast(e.getId()), Function.identity()));
+
+		String qlString = "select element, p.role.dbUuid from permission p where element in :elements"
+				+ " and p." + HibPermissionImpl.getColumnName(permission) + " is true";
+
+		Map<HibBaseElement, Set<String>> result = new HashMap<>();
+		// populate the map with empty sets
+		elements.forEach(e -> result.put(e, Collections.emptySet()));
+
+		// load the roles per element UUID
+		Map<UUID, List<String>> tmpResult = SplittingUtils.splitAndMergeInMapOfLists(elementMap.keySet(), inQueriesLimitForSplitting(0), (uuids) -> {
+			@SuppressWarnings("unchecked")
+			List<Object[]> resultList = em().createQuery(qlString)
+				.setParameter("elements", uuids)
+				.getResultList();
+
+			return resultList.stream()
+				.map(tuples -> Pair.of(UUID.class.cast(tuples[0]), UUIDUtil.toShortUuid(UUID.class.cast(tuples[1]))))
+				.collect(Collectors.groupingBy(Pair::getKey, Collectors.mapping(Pair::getValue, Collectors.toList())));
+		});
+
+		// remap to result map
+		tmpResult.entrySet().stream().forEach(entry -> {
+			HibBaseElement element = elementMap.get(entry.getKey());
+			result.put(element, new HashSet<>(entry.getValue()));
+		});
+
+		return result;
 	}
 
 	@Override

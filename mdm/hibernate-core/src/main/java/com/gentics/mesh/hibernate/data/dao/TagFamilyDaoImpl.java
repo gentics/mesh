@@ -3,27 +3,40 @@ package com.gentics.mesh.hibernate.data.dao;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.firstOrNull;
+import static com.gentics.mesh.hibernate.util.HibernateUtil.inQueriesLimitForSplitting;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Stack;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import org.apache.commons.lang3.tuple.Pair;
+
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
 import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.data.dao.PersistingTagFamilyDao;
+import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -41,7 +54,9 @@ import com.gentics.mesh.hibernate.data.domain.HibTagFamilyImpl;
 import com.gentics.mesh.hibernate.data.domain.HibTagImpl;
 import com.gentics.mesh.hibernate.data.permission.HibPermissionRoots;
 import com.gentics.mesh.hibernate.event.EventFactory;
+import com.gentics.mesh.hibernate.util.SplittingUtils;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.util.CollectionUtil;
 
 import dagger.Lazy;
 import io.vertx.core.Vertx;
@@ -202,6 +217,11 @@ public class TagFamilyDaoImpl extends AbstractHibRootDao<HibTagFamily, TagFamily
 	}
 
 	@Override
+	public Result<? extends HibTagFamily> findAll(Bucket bucket) {
+		return daoHelper.findAll(bucket);
+	}
+
+	@Override
 	public HibTagFamily loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		return daoHelper.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
 	}
@@ -236,5 +256,23 @@ public class TagFamilyDaoImpl extends AbstractHibRootDao<HibTagFamily, TagFamily
 	@Override
 	public HibTagFamily loadObjectByUuid(InternalActionContext ac, String userUuid, InternalPermission perm) {
 		return daoHelper.loadObjectByUuid(ac, userUuid, perm);
+	}
+
+	@Override
+	public Map<HibTagFamily, Collection<? extends HibTag>> getTags(Collection<HibTagFamily> tagFamilies) {
+		List<UUID> tagFamilyUuids = tagFamilies.stream().map(HibTagFamily::getId).map(UUID.class::cast).collect(Collectors.toList());
+
+		Map<HibTagFamily, Collection<? extends HibTag>> result = new HashMap<>();
+		result.putAll(SplittingUtils.splitAndMergeInMapOfLists(tagFamilyUuids, inQueriesLimitForSplitting(1), (uuids) -> {
+			@SuppressWarnings("unchecked")
+			List<Object[]> resultList = em().createNamedQuery("tagfamily.findtagsfortagfamilies")
+					.setParameter("tagFamilyUuids", uuids)
+					.getResultList();
+
+			return resultList.stream()
+					.map(tuples -> Pair.of((HibTagFamily)tuples[0], (HibTag)tuples[1]))
+					.collect(Collectors.groupingBy(Pair::getKey, Collectors.mapping(Pair::getValue, Collectors.toList())));
+		}));
+		return CollectionUtil.addFallbackValueForMissingKeys(result, tagFamilies, new ArrayList<>());
 	}
 }

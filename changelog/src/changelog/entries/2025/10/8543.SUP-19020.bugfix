@@ -1,0 +1,2 @@
+Core: The API for branches has been modified to support better performance when loading
+the latest schema version of a schema in a branch.

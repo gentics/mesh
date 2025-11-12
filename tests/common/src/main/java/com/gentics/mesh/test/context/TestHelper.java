@@ -358,7 +358,9 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		RoleCreateRequest roleCreateRequest = new RoleCreateRequest();
 		roleCreateRequest.setName(roleName);
 		RoleResponse roleResponse = call(() -> client().createRole(roleCreateRequest));
-		client().addRoleToGroup(groupUuid, roleResponse.getUuid()).blockingAwait();
+		if (groupUuid != null) {
+			client().addRoleToGroup(groupUuid, roleResponse.getUuid()).blockingAwait();
+		}
 		return roleResponse;
 	}
 

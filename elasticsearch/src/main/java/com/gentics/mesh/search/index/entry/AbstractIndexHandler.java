@@ -1,9 +1,9 @@
 package com.gentics.mesh.search.index.entry;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -17,9 +17,9 @@ import org.slf4j.LoggerFactory;
 import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.elasticsearch.client.okhttp.RequestBuilder;
+import com.gentics.mesh.context.SimpleDataHolderContext;
 import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
@@ -28,10 +28,10 @@ import com.gentics.mesh.core.rest.search.EntityMetrics;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.handler.DataHolderContext;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.BucketManager;
 import com.gentics.mesh.search.index.MappingProvider;
-import com.gentics.mesh.search.index.Transformer;
 import com.gentics.mesh.search.index.metric.SyncMeters;
 import com.gentics.mesh.search.index.metric.SyncMetersFactory;
 import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
@@ -85,13 +85,6 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 		this.bucketManager = bucketManager;
 	}
 
-	/**
-	 * Return the index specific transformer which is used to generate the search documents.
-	 * 
-	 * @return
-	 */
-	abstract protected Transformer getTransformer();
-
 	@Override
 	abstract public MappingProvider getMappingProvider();
 
@@ -128,9 +121,10 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 	 * @return
 	 */
 	protected Flowable<SearchRequest> diffAndSync(String indexName, String projectUuid, Bucket bucket) {
+		DataHolderContext dhc = new SimpleDataHolderContext();
 		return Single.zip(
 			loadVersionsFromIndex(indexName, bucket),
-			Single.fromCallable(() -> loadVersionsFromGraph(bucket)),
+			Single.fromCallable(() -> loadVersionsFromStorage(bucket, dhc)),
 			(sinkVersions, sourceVersions) -> {
 				log.debug("Handling index sync on handler {" + getClass().getName() + "} for {" + bucket + "}");
 				log.debug("Found {" + sourceVersions.size() + "} elements in graph bucket");
@@ -160,7 +154,7 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 							log.warn("Element for uuid {" + uuid + "} in type handler {" + getType() + "}  could not be found. Skipping document.");
 							return Optional.empty();
 						} else {
-							return Optional.of(getTransformer().toDocument(element));
+							return Optional.of(getTransformer().toDocument(element, dhc));
 						}
 					});
 				};
@@ -189,15 +183,11 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 		return elementLoader().apply(elementUuid);
 	}
 
-	private Map<String, String> loadVersionsFromGraph(Bucket bucket) {
+	private Map<String, String> loadVersionsFromStorage(Bucket bucket, DataHolderContext dhc) {
 		return db.tx(tx -> {
-			return loadAllElements()
-				.filter(element -> {
-					return bucket.filter().test((HibBucketableElement) element);
-				})
-				.collect(Collectors.toMap(
-					HibBaseElement::getUuid,
-					this::generateVersion));
+			Collection<? extends T> elementsOfBucket = loadAllElements(bucket, dhc);
+			return elementsOfBucket.stream()
+					.collect(Collectors.toMap(HibBaseElement::getUuid, e -> generateVersion(e, dhc)));
 		});
 	}
 
@@ -313,8 +303,8 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 	}
 
 	@Override
-	public String generateVersion(T element) {
-		return getTransformer().generateVersion(element);
+	public String generateVersion(T element, DataHolderContext dhc) {
+		return getTransformer().generateVersion(element, dhc);
 	}
 
 	@Override

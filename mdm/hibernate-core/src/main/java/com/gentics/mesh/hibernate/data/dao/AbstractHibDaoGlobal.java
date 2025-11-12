@@ -14,6 +14,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.dao.DaoGlobal;
 import com.gentics.mesh.core.data.dao.DaoTransformable;
@@ -78,6 +79,11 @@ public abstract class AbstractHibDaoGlobal<T extends HibCoreElement<R>, R extend
 	@Override
 	public Result<? extends T> findAll() {
 		return daoHelper.findAll();
+	}
+
+	@Override
+	public Result<? extends T> findAll(Bucket bucket) {
+		return daoHelper.findAll(bucket);
 	}
 
 	@Override

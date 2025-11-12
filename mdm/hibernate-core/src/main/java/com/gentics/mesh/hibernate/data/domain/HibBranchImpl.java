@@ -8,16 +8,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.NamedQueries;
-import jakarta.persistence.NamedQuery;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -46,9 +38,17 @@ import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.dagger.annotations.ElementTypeKey;
 import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.util.VersionUtil;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 
 /**
  * Branch entity implementation for Gentics Mesh.
@@ -67,6 +67,10 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 		@NamedQuery(
 				name = "branch.findForTag",
 				query = "select b from branch b join b.tags t where t = :tag"
+		),
+		@NamedQuery(
+				name = "branch.findtagsforbranches",
+				query = "select b, t from branch b join b.tags t where b.dbUuid in :branchUuids"
 		)
 })
 public class HibBranchImpl extends AbstractHibUserTrackedElement<BranchResponse> implements HibBranch, Serializable {
@@ -306,26 +310,6 @@ public class HibBranchImpl extends AbstractHibUserTrackedElement<BranchResponse>
 	@Override
 	public TraversalResult<? extends HibBranchMicroschemaVersion> findAllMicroschemaVersionEdges() {
 		return new TraversalResult<>(microschemaVersions);
-	}
-
-	@Override
-	public HibSchemaVersion findLatestSchemaVersion(HibSchema schemaContainer) {
-		return schemaVersions.stream()
-				.filter(v -> schemaContainer.getUuid().equals(v.getVersion().getSchemaContainer().getUuid()))
-				.sorted((v1, v2) -> VersionUtil.compareVersions(v2.getVersion().getVersion(), v1.getVersion().getVersion()))
-				.map(AbstractHibBranchSchemaVersion::getVersion)
-				.findFirst()
-				.orElse(null);
-	}
-
-	@Override
-	public HibMicroschemaVersion findLatestMicroschemaVersion(HibMicroschema microschemaContainer) {
-		return microschemaVersions.stream()
-				.filter(v -> microschemaContainer.getUuid().equals(v.getVersion().getSchemaContainer().getUuid()))
-				.sorted((v1, v2) -> VersionUtil.compareVersions(v2.getVersion().getVersion(), v1.getVersion().getVersion()))
-				.map(AbstractHibBranchSchemaVersion::getVersion)
-				.findFirst()
-				.orElse(null);
 	}
 
 	@Override
