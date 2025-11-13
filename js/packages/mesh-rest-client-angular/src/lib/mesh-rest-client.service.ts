@@ -22,7 +22,7 @@ import {
     MeshTagFamiliesAPI,
     MeshTagsAPI,
     MeshUserAPI,
-    RequestMethod
+    RequestMethod,
 } from '@gentics/mesh-rest-client';
 import { AngularMeshClientDriver } from './angular-mesh-client-driver';
 
@@ -30,30 +30,30 @@ import { AngularMeshClientDriver } from './angular-mesh-client-driver';
 export class MeshRestClientService {
 
     private driver: AngularMeshClientDriver;
-    private client: MeshRestClient;
+    private client: MeshRestClient | null = null;
 
     constructor(
         http: HttpClient,
     ) {
         this.driver = new AngularMeshClientDriver(http);
-        this.client = new MeshRestClient(this.driver);
     }
 
     init(config: MeshRestClientConfig, apiKey?: string): void {
-        this.client.config = config;
-        this.client.apiKey = apiKey;
+        this.client = new MeshRestClient(this.driver, config, apiKey);
     }
 
     configure(config: MeshRestClientConfig): void {
-        this.client.config = config;
+        if (this.client != null) {
+            this.client.config = config;
+        }
     }
 
     isInitialized(): boolean {
         return this.client != null;
     }
 
-    getConfig(): MeshRestClientConfig {
-        return this.client.config;
+    getConfig(): MeshRestClientConfig | null {
+        return this.client?.config ?? null;
     }
 
     public prepareRequest(
@@ -62,78 +62,78 @@ export class MeshRestClientService {
         queryParams: Record<string, any>,
         requestHeaders: Record<string, string>,
     ): MeshRestClientRequestData {
-        return this.client.prepareRequest(requestMethod, path, queryParams, requestHeaders);
+        return this.client!.prepareRequest(requestMethod, path, queryParams, requestHeaders);
     }
 
     get auth(): MeshAuthAPI {
-        return this.client.auth;
+        return this.client!.auth;
     }
 
     get users(): MeshUserAPI {
-        return this.client.users;
+        return this.client!.users;
     }
 
     get roles(): MeshRoleAPI {
-        return this.client.roles;
+        return this.client!.roles;
     }
 
     get groups(): MeshGroupAPI {
-        return this.client.groups;
+        return this.client!.groups;
     }
 
     get permissions(): MeshPermissionAPI {
-        return this.client.permissions;
+        return this.client!.permissions;
     }
 
     get projects(): MeshProjectAPI {
-        return this.client.projects;
+        return this.client!.projects;
     }
 
     get schemas(): MeshSchemaAPI {
-        return this.client.schemas;
+        return this.client!.schemas;
     }
 
     get microschemas(): MeshMicroschemaAPI {
-        return this.client.microschemas;
+        return this.client!.microschemas;
     }
 
     get branches(): MeshBranchAPI {
-        return this.client.branches;
+        return this.client!.branches;
     }
 
     get nodes(): MeshNodeAPI {
-        return this.client.nodes;
+        return this.client!.nodes;
     }
 
     get tagFamilies(): MeshTagFamiliesAPI {
-        return this.client.tagFamilies;
+        return this.client!.tagFamilies;
     }
 
     get tags(): MeshTagsAPI {
-        return this.client.tags;
+        return this.client!.tags;
     }
 
     get server(): MeshServerAPI {
-        return this.client.server;
+        return this.client!.server;
     }
 
     get coordinator(): MeshCoordinatorAPI {
-        return this.client.coordinator;
+        return this.client!.coordinator;
     }
 
     get cluster(): MeshClusterAPI {
-        return this.client.cluster;
+        return this.client!.cluster;
     }
 
     get plugins(): MeshPluginAPI {
-        return this.client.plugins;
+        return this.client!.plugins;
     }
 
     get graphql(): MeshGraphQLAPI {
-        return this.client.graphql;
+        return this.client!.graphql;
     }
 
     get language(): MeshLanguageAPI {
-        return this.client.language;
+        return this.client!.language;
     }
 }

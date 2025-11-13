@@ -23,18 +23,6 @@
         ]
       }
     },
-    "lint": {
-      "executor": "@nx/linter:eslint",
-      "outputs": [
-        "{options.outputFile}"
-      ],
-      "options": {
-        "lintFilePatterns": [
-          "packages/mesh-models/**/*.ts",
-          "packages/mesh-models/package.json"
-        ]
-      }
-    },
     "test": {
       "executor": "@nx/jest:jest",
       "outputs": [

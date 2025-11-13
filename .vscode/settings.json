@@ -1,0 +1,10 @@
+{
+    "eslint.useFlatConfig": true,
+    "eslint.format.enable": true,
+    "eslint.enable": true,
+    "eslint.workingDirectories": [
+        {
+            "mode": "auto"
+        }
+    ]
+}

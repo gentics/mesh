@@ -25,18 +25,6 @@
         ]
       }
     },
-    "lint": {
-      "executor": "@nx/linter:eslint",
-      "outputs": [
-        "{options.outputFile}"
-      ],
-      "options": {
-        "lintFilePatterns": [
-          "packages/mesh-rest-client/**/*.ts",
-          "packages/mesh-rest-client/package.json"
-        ]
-      }
-    },
     "test": {
       "executor": "@nx/jest:jest",
       "outputs": [

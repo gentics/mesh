@@ -61,8 +61,12 @@ export interface RolePermissionsOptions {
 }
 
 export interface VersionedEntityOptions {
-    /** Specifies the version to be loaded. Can either be published/draft or version number. e.g.: 0.1, 1.0, draft, published. */
-    version?: 'draft' | 'published' | string;
+    /**
+     * Specifies the version to be loaded.
+     * Can either be published/draft or version number. e.g.: "0.1", "1.0", "draft", "published".
+     */
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+    version?: 'draft' | 'published' | string | any;
 }
 
 export interface ResolvableLinksOptions {
