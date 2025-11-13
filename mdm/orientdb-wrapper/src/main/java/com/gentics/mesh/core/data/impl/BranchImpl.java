@@ -230,7 +230,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 				String v1 = o1.getProperty(GraphFieldSchemaContainerVersion.VERSION_PROPERTY_KEY);
 				String v2 = o2.getProperty(GraphFieldSchemaContainerVersion.VERSION_PROPERTY_KEY);
 				return VersionUtil.compareVersions(v2, v1);
-			}).findFirst().orElse(null);
+			}).findAny().orElse(null);
 		return graphVersion;
 	}
 
@@ -244,7 +244,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 				String v1 = o1.getProperty(GraphFieldSchemaContainerVersion.VERSION_PROPERTY_KEY);
 				String v2 = o2.getProperty(GraphFieldSchemaContainerVersion.VERSION_PROPERTY_KEY);
 				return VersionUtil.compareVersions(v2, v1);
-			}).findFirst().orElse(null);
+			}).findAny().orElse(null);
 	}
 
 	@Override

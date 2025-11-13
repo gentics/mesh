@@ -146,7 +146,7 @@ public class MasterElector {
 			log.info("Locked for master election");
 			Optional<Member> foundMaster = cluster.getMembers().stream()
 					.filter(m -> isMaster(m))
-					.findFirst();
+					.findAny();
 			boolean hasMaster = foundMaster.isPresent();
 			boolean isElectible = isElectable(localMember());
 			if (!hasMaster && isElectible) {
@@ -187,7 +187,7 @@ public class MasterElector {
 
 		if (clusterOptions.getCoordinatorTopology() == CoordinationTopology.UNMANAGED) {
 			ClusterConfigResponse config = database.loadClusterConfig();
-			Optional<ClusterServerConfig> databaseServer = config.getServers().stream().filter(s -> s.getName().equals(name)).findFirst();
+			Optional<ClusterServerConfig> databaseServer = config.getServers().stream().filter(s -> s.getName().equals(name)).findAny();
 			if (databaseServer.isPresent()) {
 				// Replicas are not eligible for master election
 				ServerRole role = databaseServer.get().getRole();
@@ -274,7 +274,7 @@ public class MasterElector {
 		Cluster cluster = hazelcast.get().getCluster();
 		Optional<Member> master = cluster.getMembers().stream()
 				.filter(m -> isMaster(m))
-				.findFirst();
+				.findAny();
 		if (master.isPresent()) {
 			masterMember = master.get();
 			log.info("Updated master member {" + masterMember.getStringAttribute(MESH_NODE_NAME_ATTR) + "}");

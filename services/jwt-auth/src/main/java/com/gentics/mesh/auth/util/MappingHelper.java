@@ -186,7 +186,7 @@ public class MappingHelper <T extends HibNamedBaseElement> {
 	 */
 	public boolean areMappedEntitiesMissing() {
 		return entitiesByName.entrySet().stream().filter(entry -> mappedNames.contains(entry.getKey()))
-				.filter(entry -> entry.getValue() == null).findFirst().isPresent();
+				.anyMatch(entry -> entry.getValue() == null);
 	}
 
 	/**
