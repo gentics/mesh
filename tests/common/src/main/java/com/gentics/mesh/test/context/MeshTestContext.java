@@ -571,6 +571,10 @@ public class MeshTestContext implements TestRule {
 		return getHttpClient(0);
 	}
 
+	public MeshRestClient getAnonymousHttpClient() {
+		return instances.get(0).getAnonymousHttpClient();
+	}
+
 	public MeshRestClient getHttpClient(int instance) {
 		return instances.get(instance).getHttpClient();
 	}
@@ -700,6 +704,9 @@ public class MeshTestContext implements TestRule {
 
 		// Maps api version to client
 		private final Map<String, MeshRestClient> clients = new HashMap<>();
+
+		// Maps api version to anonymous client
+		private final Map<String, MeshRestClient> anonymousClients = new HashMap<>();
 
 		private MonitoringRestClient monitoringClient;
 
@@ -985,6 +992,10 @@ public class MeshTestContext implements TestRule {
 			return clients.get("http_v" + CURRENT_API_VERSION);
 		}
 
+		public MeshRestClient getAnonymousHttpClient() {
+			return anonymousClients.get("http_v" + CURRENT_API_VERSION);
+		}
+
 		public MeshRestClient getHttpsClient() {
 			return clients.get("https_v" + CURRENT_API_VERSION);
 		}
@@ -1019,6 +1030,7 @@ public class MeshTestContext implements TestRule {
 				httpClient.setLogin(getData().user().getUsername(), getData().getUserInfo().getPassword());
 				httpClient.login().blockingGet();
 				clients.put("http_v" + CURRENT_API_VERSION, httpClient);
+				anonymousClients.put("http_v" + CURRENT_API_VERSION, MeshRestClient.create(httpConfigBuilder.build(), okHttp));
 
 				// Setup SSL client if needed
 				SSLTestMode ssl = settings.ssl();
@@ -1089,6 +1101,16 @@ public class MeshTestContext implements TestRule {
 
 		private void closeClient() throws Exception {
 			clients.values().forEach(client -> {
+				if (client != null) {
+					try {
+						client.close();
+					} catch (IllegalStateException e) {
+						// Ignored
+						e.printStackTrace();
+					}
+				}
+			});
+			anonymousClients.values().forEach(client -> {
 				if (client != null) {
 					try {
 						client.close();

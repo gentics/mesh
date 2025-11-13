@@ -165,6 +165,10 @@ public interface BaseHelper {
 		return getTestContext().getHttpClient();
 	}
 
+	default MeshRestClient anonymousClient() {
+		return getTestContext().getAnonymousHttpClient();
+	}
+
 	default MeshRestClient sslClient() {
 		return getTestContext().getHttpsClient();
 	}
