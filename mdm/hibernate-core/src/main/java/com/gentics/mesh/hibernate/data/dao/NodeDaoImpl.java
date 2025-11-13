@@ -8,7 +8,6 @@ import static com.gentics.mesh.hibernate.util.HibernateUtil.firstOrNull;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.inQueriesLimitForSplitting;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.makeAlias;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.makeParamName;
-import static com.gentics.mesh.hibernate.util.HibernateUtil.streamContentSelectClause;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.ArrayDeque;
@@ -634,33 +633,37 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 		Optional<List<ContentColumn>> maybeContentColumns = maybeContentSchemaVersion.map(version -> collectVersionColumns(version).stream()
 				.filter(c -> !JoinedContentColumn.class.isInstance(c)).collect(Collectors.toList()));
 
-		List<String> nodeColumns = databaseConnector.getDatabaseColumnNames(getPersistenceClass()).map(columns -> columns.stream().map(column -> nodeAlias + "." + column).collect(Collectors.toList())).get();
+		List<String> nodeColumns = daoHelper.getDomainColumns().stream().map(column -> nodeAlias + "." + column).collect(Collectors.toList());
 
 		Select select = new Select(databaseConnector.getSessionMetadataIntegrator().getSessionFactoryImplementor());
 		select.setTableName(databaseConnector.maybeGetPhysicalTableName(getPersistenceClass()).get() + " " + nodeAlias);
 		List<String> columns = new ArrayList<>();
+
+		// Domain columns
 		columns.addAll(nodeColumns);
 
 		// Ask for the parent edge columns, if parent/chilren requested
-		maybeParents.ifPresent(parents -> {
-			String parentAlias = makeAlias(databaseConnector.maybeGetDatabaseEntityName(HibBranchNodeParent.class).get());
-			List<String> parentColumns = databaseConnector.getDatabaseColumnNames(HibBranchNodeParent.class).map(columns1 -> columns1.stream().map(column -> parentAlias + "." + column).collect(Collectors.toList())).get();
-			columns.addAll(parentColumns);
-		});
+		String parentAlias = makeAlias(databaseConnector.maybeGetDatabaseEntityName(HibBranchNodeParent.class).get());
+		maybeParents.map(parents -> parentAlias)
+			.ifPresent(alias -> HibernateTx.get().data().getTableColumnsCache().get(HibBranchNodeParent.class, cls -> databaseConnector.getDatabaseColumnNames(cls).orElse(null))
+					.stream().forEach(column -> columns.add(alias + "." + column)));
 
 		// Ask for the container edge columns, if the language edges or content columns provided, unless the edges fetch is explicitly disallowed
 		Optional.of(noContainerEdgeFetch)
 			.filter(noFetch -> !noFetch)
 			.flatMap(fetch -> maybeContainerLanguages)
 			.or(() -> maybeContentColumns.map(contentColumns -> Collections.emptyList()))
-			.ifPresent(yes -> {
-				String containerAlias = makeAlias("CONTAINER");
-				List<String> parentColumns = databaseConnector.getDatabaseColumnNames(HibNodeFieldContainerEdgeImpl.class).map(columns1 -> columns1.stream().map(column -> containerAlias + "." + column).collect(Collectors.toList())).get();
-				columns.addAll(parentColumns);
-			});
+			.map(yes -> makeAlias("CONTAINER"))
+			.ifPresent(alias -> HibernateTx.get().data().getTableColumnsCache().get(HibNodeFieldContainerEdgeImpl.class, cls -> databaseConnector.getDatabaseColumnNames(cls).orElse(null))
+				.stream().forEach(column -> columns.add(alias + "." + column)));
 
 		// Ask for the content columns, if requested
-		maybeContentColumns.ifPresent(contentColumns -> streamContentSelectClause(databaseConnector, contentColumns, Optional.of(makeAlias("CONTENT")), true).forEach(columns::add));
+		Optional<List<Pair<ContentColumn, String>>> maybeContentColumnAliases = maybeContentColumns.map(contentColumns -> contentColumns.stream()					
+			.map(column -> Pair.of(column, HibernateUtil.getContentSelectClause(databaseConnector, column, Optional.of(makeAlias("CONTENT")), true)))
+			.map(pair -> Pair.of(pair.getKey(), HibernateUtil.hasAlias(pair.getValue()) ? pair.getValue() : (pair.getValue() + " AS " + makeAlias(pair.getValue()))))
+			.peek(pair -> columns.add(pair.getValue()))
+			.collect(Collectors.toList()));
+
 		if (!countOnly && !sortJoins.getValue().isEmpty()) {
 			sortJoins.getValue().keySet().stream()
 				.map(col -> maybeContainerLanguages.map(columnsExplicitlyRequested -> col).orElseGet(() -> databaseConnector.makeSortDefinition(col, Optional.empty())))
@@ -730,16 +733,21 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 
 		if (!countOnly) {
 			// Add a root entity
-			query.addEntity(getPersistenceClass());
+			query.addEntity(nodeAlias, getPersistenceClass());
 
 			// Add an extra parent edge entity to fetch, if applicable
-			maybeParents.ifPresent(unused -> query.addEntity(HibBranchNodeParent.class));
+			maybeParents.ifPresent(unused -> query.addEntity(parentAlias, HibBranchNodeParent.class));
 
 			// Add an extra container edge entity to fetch, if applicable
-			Optional.of(noContainerEdgeFetch).filter(noFetch -> !noFetch).map(fetch -> maybeContainerLanguages).flatMap(unused -> maybeParents).ifPresent(unused -> query.addEntity(HibNodeFieldContainerEdgeImpl.class));
+			Optional.of(noContainerEdgeFetch)
+				.filter(noFetch -> !noFetch)
+				.flatMap(fetch -> maybeContainerLanguages)
+				.or(() -> maybeContentColumns.map(contentColumns -> Collections.emptyList()))
+				.map(unused -> maybeParents).ifPresent(unused -> query.addEntity(makeAlias("CONTAINER"), HibNodeFieldContainerEdgeImpl.class));
 
 			// Add an extra content entity to fetch, if applicable
-			maybeContentColumns.ifPresent(contentColumns -> contentColumns.stream().forEach(c -> query.addScalar(databaseConnector.renderColumn(c), c.getJavaClass())));
+			maybeContentColumnAliases.ifPresent(contentColumns -> contentColumns.stream()
+				.forEach(c -> query.addScalar(makeAlias(c.getValue()), c.getKey().getJavaClass())));
 		}
 
 		// Fill join params
@@ -763,7 +771,9 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 			} else {
 				// Los geht's
 				return Pair.of(query.getResultStream().map(o -> {
-					// This clumsy construction is required for Hibernate, that's not being currently able to mix managed and unmanaged entities even with a help of result transformer.
+					// This clumsy construction is required for Hibernate, that's not being currently able to mix managed and unmanaged entities.
+					// Besides, the results transformers do not work with scrollable contexts (aka stream()).
+					// All the code below could have been formed as TupleTransformer, which would look a bit more Hibernate'ish, but is identical by functioning.
 					if (o.getClass().isArray() && ((Object[]) o).length > 1) {
 						Object[] oo = (Object[]) o;
 						// Check if node responded (normally under index 0)

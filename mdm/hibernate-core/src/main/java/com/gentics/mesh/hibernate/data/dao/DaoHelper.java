@@ -459,7 +459,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 		// Make root joins, if requested
 		Optional<NativeJoin> maybeRootJoin = maybeRoot.map(joinEntity -> joinEntity.getLeft().makeJoin(myAlias, joinEntity.getRight()));
 
-		List<String> domainColumns = databaseConnector.getDatabaseColumnNames(domainClass).map(columns -> columns.stream().map(column -> myAlias + "." + column).collect(Collectors.toList())).get();
+		List<String> domainColumns = getDomainColumns().stream().map(column -> myAlias + "." + column).collect(Collectors.toList());
 
 		Select select = new Select(databaseConnector.getSessionMetadataIntegrator().getSessionFactoryImplementor());
 		select.setTableName(databaseConnector.maybeGetPhysicalTableName(domainClass).get() + " " + myAlias);
@@ -2139,6 +2139,15 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 	public long getOrFetchTotal(NativeQuery<?> query) {
 		String key = query.getQueryString() + query.getParameterMetadata().getNamedParameterNames().stream().collect(Collectors.joining());
 		return totalsCache.get(key, unused -> ((Number) query.getSingleResult()).longValue());
+	}
+
+	/**
+	 * Get a list of database table columns for this domain entity, through cache.
+	 * 
+	 * @return
+	 */
+	public Set<String> getDomainColumns() {
+		return HibernateTx.get().data().getTableColumnsCache().get(domainClass, cls -> databaseConnector.getDatabaseColumnNames(cls).orElse(null));
 	}
 
 	/**

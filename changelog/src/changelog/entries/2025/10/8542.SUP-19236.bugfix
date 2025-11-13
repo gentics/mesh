@@ -1,0 +1,1 @@
+Core: The published status of the fetched content was wrong, if using either native filtering or sorting. This has been fixed.
