@@ -397,7 +397,7 @@ public final class HibernateUtil {
 		} else if (owner.contains(" as ")) {
 			return owner.substring(owner.lastIndexOf(" as ") + 4);
 		} else {
-			return owner.toLowerCase().replaceAll("[^a-zA_Z0-9\\_]", "_") + "_";
+			return owner.toLowerCase().replaceAll("[^a-zA-Z0-9\\_]", "_") + "_";
 		}
 	}
 
