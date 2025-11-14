@@ -134,7 +134,7 @@ public class SearchPlugin extends AbstractPlugin implements RestPlugin {
 					.handler(wrappedHandler);
 		});
 
-		projectRouter.mountSubRouter("/custom", customRouter);
+		projectRouter.route("/custom*").subRouter(customRouter);
 	}
 
 	private Collection<CustomHandler> getCustomHandlers() {

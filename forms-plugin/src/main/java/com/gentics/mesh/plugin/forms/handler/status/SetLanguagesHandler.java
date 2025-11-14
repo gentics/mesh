@@ -33,7 +33,7 @@ public class SetLanguagesHandler extends AbstractFormsHandler {
 		String projectName = context.project().getString("name");
 		LanguagesModel languagesModel;
 		try {
-			languagesModel = mapper.readValue(context.getBodyAsString(), LanguagesModel.class);
+			languagesModel = mapper.readValue(context.body().asString(), LanguagesModel.class);
 		} catch (IOException e) {
 			return Completable.error(e);
 		}

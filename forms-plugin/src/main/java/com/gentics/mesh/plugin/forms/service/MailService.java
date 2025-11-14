@@ -177,7 +177,7 @@ public class MailService {
 
 				Consumer<MailMessage> send = m -> {
 					MailClient client = MailClient.createShared(vertx, convertConfig(configuration.getMailOptions()), "client");
-					client.sendMail(m, sendRes -> {
+					client.sendMail(m).andThen(sendRes -> {
 						if (sendRes.succeeded()) {
 							log.debug("Main sent: " + sendRes.result().toString());
 						} else {

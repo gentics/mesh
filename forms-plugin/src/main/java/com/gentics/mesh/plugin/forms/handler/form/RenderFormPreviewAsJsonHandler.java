@@ -29,7 +29,7 @@ public class RenderFormPreviewAsJsonHandler extends AbstractFormsHandler {
 	public Completable handle(PluginContext context) {
 		String projectName = context.project().getString("name");
 		String uuid = context.pathParam("formUuid");
-		JsonObject formData = context.getBodyAsJson();
+		JsonObject formData = context.body().asJsonObject();
 
 		return formService.renderPreviewAsJson(projectName, uuid, formData, context).doOnEvent((response, t) -> {
 				if (response != null) {

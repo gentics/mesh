@@ -43,8 +43,8 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.SortOrder;
+import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -95,13 +95,13 @@ import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.MultiMap;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.Cookie;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.reactivex.core.Vertx;
-import io.vertx.reactivex.core.buffer.Buffer;
 import io.vertx.reactivex.core.eventbus.Message;
 import io.vertx.reactivex.core.eventbus.MessageConsumer;
 
@@ -1168,7 +1168,7 @@ public class FormDataService {
 								Cookie cookie = Cookie.cookie(COOKIE_NAME_DATA, form.getDataCookie(savedFileUploads.getUuid()));
 								cookie.setPath(getPath(ctx.getReferer()));
 								cookie.setHttpOnly(true);
-								ctx.getContext().addCookie(cookie);
+								ctx.getContext().response().addCookie(cookie);
 							}
 
 							PostDataResponse response = new PostDataResponse();
@@ -1278,23 +1278,17 @@ public class FormDataService {
 		return Flowable.fromIterable(fileUploads)
 			// The upload can be blocking in some implementations of the rest client. Therefore we queue
 			// it as a worker job just in case.
-			.flatMapSingle(fileUpload -> rxVertx.<NodeResponse>rxExecuteBlocking(prm -> {
+			.flatMapSingle(fileUpload -> rxVertx.rxExecuteBlocking(() -> {
 				long size = fileUpload.size();
-				InputStream ins;
-				try {
-					ins = new FileInputStream(fileUpload.uploadedFileName());
-				} catch (FileNotFoundException e) {
-					prm.fail(e);
-					return;
-				}
+				InputStream ins = new FileInputStream(fileUpload.uploadedFileName());
 
 				// Always use the draft version because updating the binary field will increase the version of the node,
 				// which can lead to problems when multiple files are uploaded.
-				adminClient.updateNodeBinaryField(projectName, formDataNode.getUuid(), formDataNode.getLanguage(), "draft",
+				return adminClient.updateNodeBinaryField(projectName, formDataNode.getUuid(), formDataNode.getLanguage(), "draft",
 						fileUpload.name(),
 						ins, size, fileUpload.fileName(), fileUpload.contentType())
-					.toSingle().subscribe(prm::complete, prm::fail);
-			}).toSingle(), false, 1)
+					.toSingle();
+			}).flatMapSingle(single -> single), false, 1)
 			.lastOrError();
 	}
 
@@ -1324,12 +1318,12 @@ public class FormDataService {
 
 						// remove the data cookie
 						if (ctx.handleCookies()) {
-							meshContext.removeCookie(COOKIE_NAME_DATA);
+							meshContext.response().removeCookie(COOKIE_NAME_DATA);
 							Cookie cookie = Cookie.cookie(COOKIE_NAME_DATA, "");
 							cookie.setPath(getPath(ctx.getReferer()));
 							cookie.setHttpOnly(true);
 							cookie.setMaxAge(0);
-							meshContext.addCookie(cookie);
+							meshContext.response().addCookie(cookie);
 
 							if (isPoll) {
 								addPollCookie(ctx);
@@ -1367,7 +1361,7 @@ public class FormDataService {
 	private void addPollCookie(FormDataSaveContext ctx) {
 		PluginContext pc = ctx.getContext();
 		String formUuid = ctx.getFormUuid();
-		String votedPolls = Optional.ofNullable(pc.getCookie(COOKIE_NAME_VOTED))
+		String votedPolls = Optional.ofNullable(pc.request().getCookie(COOKIE_NAME_VOTED))
 			.map(Cookie::getValue)
 			.filter(StringUtils::isNotBlank)
 			.map(old -> {
@@ -1396,7 +1390,7 @@ public class FormDataService {
 			.setHttpOnly(true)
 			.setMaxAge(Integer.MAX_VALUE);
 
-		pc.addCookie(cookie);
+		pc.response().addCookie(cookie);
 	}
 
 	/**

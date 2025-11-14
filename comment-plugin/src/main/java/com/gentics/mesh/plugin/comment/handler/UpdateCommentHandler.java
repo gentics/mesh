@@ -22,7 +22,7 @@ public class UpdateCommentHandler extends AbstractCommentHandler {
 	@Override
 	public Completable handle(PluginContext context) {
 		String commentUuid = context.pathParam("uuid");
-		UpdateCommentRequest request = JsonUtil.readValue(context.getBodyAsString(), UpdateCommentRequest.class);
+		UpdateCommentRequest request = JsonUtil.readValue(context.body().asString(), UpdateCommentRequest.class);
 		return commentService.updateComment(commentUuid, request)
 			.doOnEvent(jsonHandler(context))
 			.ignoreElement();

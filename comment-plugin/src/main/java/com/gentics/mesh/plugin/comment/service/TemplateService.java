@@ -1,21 +1,21 @@
 package com.gentics.mesh.plugin.comment.service;
 
+import java.io.File;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.plugin.comment.config.Configuration;
 import com.gentics.mesh.plugin.comment.util.RxUtil;
 import com.gentics.mesh.plugin.common.dagger.StorageDir;
 import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.io.FileTemplateLoader;
+
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
-import io.reactivex.functions.Function;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.file.FileSystem;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.io.File;
-import java.io.IOException;
 
 @Singleton
 public class TemplateService {
@@ -79,15 +79,7 @@ public class TemplateService {
 	 * Compiles a single template
 	 */
 	private Single<String> toCompiledJs(Handlebars handlebars, String templatePath) {
-		return vertx.<String>rxExecuteBlocking(promise -> {
-			try {
-				promise.complete(
-					handlebars.compileInline(String.format("{{precompile \"%s\"}}", getName(templatePath))).apply(null)
-				);
-			} catch (IOException e) {
-				promise.fail(e);
-			}
-		}).toSingle();
+		return vertx.<String>rxExecuteBlocking(() -> handlebars.compileInline(String.format("{{precompile \"%s\"}}", getName(templatePath))).apply(null)).toSingle();
 	}
 
 	private String getName(String path) {

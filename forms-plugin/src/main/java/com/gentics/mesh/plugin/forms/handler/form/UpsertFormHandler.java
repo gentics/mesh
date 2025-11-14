@@ -24,7 +24,7 @@ public class UpsertFormHandler extends AbstractFormsHandler {
 	public Completable handle(PluginContext context) {
 		String projectName = context.project().getString("name");
 		String uuid = context.pathParam("formUuid");
-		JsonObject formData = context.getBodyAsJson();
+		JsonObject formData = context.body().asJsonObject();
 
 		return formService.upsert(projectName, uuid, formData).doOnEvent((response, t) -> {
 			if (response != null) {

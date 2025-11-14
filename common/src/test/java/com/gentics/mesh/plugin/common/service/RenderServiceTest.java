@@ -1,16 +1,6 @@
 package com.gentics.mesh.plugin.common.service;
 
-import com.gentics.mesh.plugin.common.TemplateWrapper;
-import com.github.jknack.handlebars.HandlebarsException;
-import io.reactivex.Single;
-import io.reactivex.observers.TestObserver;
-import io.vertx.core.Vertx;
-import io.vertx.reactivex.core.buffer.Buffer;
-import io.vertx.reactivex.ext.web.templ.handlebars.HandlebarsTemplateEngine;
-import org.apache.commons.lang3.ArrayUtils;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -19,7 +9,19 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.apache.commons.lang3.ArrayUtils;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import com.gentics.mesh.plugin.common.TemplateWrapper;
+import com.github.jknack.handlebars.HandlebarsException;
+
+import io.reactivex.Single;
+import io.reactivex.observers.TestObserver;
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.reactivex.ext.web.templ.handlebars.HandlebarsTemplateEngine;
 
 /**
  * Test template path adjustment and rendering (RxJava and callback versions).

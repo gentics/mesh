@@ -10,8 +10,6 @@ import com.gentics.mesh.plugin.favorite.error.InvalidTypeError;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Completable;
 
-import java.util.regex.Matcher;
-
 @Singleton
 public class OverrideFavoriteHandler extends AbstractFavoriteHandler {
 	private final FavoriteService favoriteService;
@@ -27,7 +25,7 @@ public class OverrideFavoriteHandler extends AbstractFavoriteHandler {
 		if(!pattern.matcher(type).matches()) {
 			throw new InvalidTypeError(type);
 		}
-		return favoriteService.overrideFavorite(projectName, type, context.getBodyAsJson()).doOnEvent((response, t) -> {
+		return favoriteService.overrideFavorite(projectName, type, context.body().asJsonObject()).doOnEvent((response, t) -> {
 			if (t == null) {
 				context.response().setStatusCode(HttpResponseStatus.CREATED.code()).end();
 			}

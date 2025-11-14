@@ -21,7 +21,7 @@ public class CreateCommentHandler extends AbstractCommentHandler {
 
 	@Override
 	public Completable handle(PluginContext event) {
-		CreateCommentRequest request = JsonUtil.readValue(event.getBodyAsString(), CreateCommentRequest.class);
+		CreateCommentRequest request = JsonUtil.readValue(event.body().asString(), CreateCommentRequest.class);
 		return commentService.createComment(request)
 			.doOnEvent(jsonHandler(event))
 			.ignoreElement();

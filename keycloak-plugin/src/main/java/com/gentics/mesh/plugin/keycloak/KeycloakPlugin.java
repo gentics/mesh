@@ -37,10 +37,10 @@ import groovy.lang.GroovyShell;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.json.JsonObject;
-import io.vertx.reactivex.core.buffer.Buffer;
 import io.vertx.reactivex.core.file.FileSystem;
 
 
