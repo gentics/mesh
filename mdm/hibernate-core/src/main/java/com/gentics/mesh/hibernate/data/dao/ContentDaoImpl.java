@@ -32,7 +32,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.hibernate.Hibernate;
-import org.hibernate.jpa.AvailableHints;
+import org.hibernate.jpa.HibernateHints;
 import org.hibernate.query.NativeQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -227,7 +227,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 					.setParameter("nodeUuids", uuids)
 					.setParameter("type", type)
 					.setParameter("branchUuid", branchId)
-					.setHint(AvailableHints.HINT_CACHEABLE, true)
+					.setHint(HibernateHints.HINT_CACHEABLE, true)
 					.getResultList();
 
 			return contentStorage.findMany(edges).stream()
@@ -287,7 +287,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 					.setParameter("nodeUuids", slice)
 					.setParameter("type", ContainerType.DRAFT)
 					.setParameter("branchUuid", UUIDUtil.toJavaUuid(branchUuid))
-					.setHint(AvailableHints.HINT_CACHEABLE, true)
+					.setHint(HibernateHints.HINT_CACHEABLE, true)
 					.getResultList());
 
 		return contentStorage.findMany(edges).stream()
@@ -1159,7 +1159,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 				.setParameter("contentUuid", content.getId())
 				.setParameter("types", Collections.singletonList(type))
 				.setMaxResults(1)
-				.setHint(AvailableHints.HINT_CACHEABLE, true)
+				.setHint(HibernateHints.HINT_CACHEABLE, true)
 				.getResultList()
 				.size() > 0;
 	}
@@ -1177,7 +1177,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 				.setParameter("type", type)
 				.setParameter("branchUuid", UUIDUtil.toJavaUuid(branchUuid))
 				.setMaxResults(1)
-				.setHint(AvailableHints.HINT_CACHEABLE, true)
+				.setHint(HibernateHints.HINT_CACHEABLE, true)
 				.getResultList().size() > 0;
 	}
 

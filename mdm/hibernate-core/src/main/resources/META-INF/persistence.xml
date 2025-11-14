@@ -1,6 +1,56 @@
-<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+<persistence xmlns="https://jakarta.ee/xml/ns/persistence"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
-	version="2.0">
-	<persistence-unit name="default"/>
+	xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd"
+	version="3.0">
+	<persistence-unit name="default"
+		transaction-type="RESOURCE_LOCAL">
+		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+
+		<class>com.gentics.mesh.hibernate.data.domain.HibAddFieldChangeImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibBinaryFieldEdgeImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibBinaryImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibBooleanListFieldEdgeImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibBranchImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibBranchMicroschemaVersionEdgeImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibBranchNodeParent</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibBranchSchemaVersionEdgeImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibChangeMarkerImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibDateListFieldEdgeImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibFieldTypeChangeImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibGroupImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibHtmlListFieldEdgeImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibImageVariantImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibJobImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibLanguageImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibMicronodeFieldEdgeImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibMicronodeListFieldEdgeImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibMicroschemaImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibMicroschemaVersionImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibNodeFieldContainerEdgeImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibNodeFieldContainerVersionsEdgeImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibNodeFieldEdgeImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibNodeImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibNodeListFieldEdgeImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibNodeTag</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibNumberListFieldEdgeImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibPermissionImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibPermissionRootImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibProjectImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibRemoveFieldChangeImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibRoleImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibS3BinaryFieldEdgeImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibS3BinaryImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibSchemaChangeImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibSchemaImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibSchemaVersionImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibStringListFieldEdgeImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibTagFamilyImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibTagImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibUpdateFieldChangeImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibUpdateMicroschemaChangeImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibUpdateSchemaChangeImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibUserImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibVersionPurgeJobImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.MeshVersionEntityImpl</class>
+	</persistence-unit>
 </persistence>

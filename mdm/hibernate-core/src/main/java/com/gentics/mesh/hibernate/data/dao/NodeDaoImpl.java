@@ -37,7 +37,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.hibernate.jpa.AvailableHints;
+import org.hibernate.jpa.HibernateHints;
 import org.hibernate.jpa.SpecHints;
 import org.hibernate.query.NativeQuery;
 import org.hibernate.query.Query;
@@ -1122,7 +1122,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 		return em().createNamedQuery("nodeBranchParents.findBreadcrumbs", HibNodeImpl.class)
 				.setParameter("node", node)
 				.setParameter("branch", branch)
-				.setHint(AvailableHints.HINT_CACHEABLE, true)
+				.setHint(HibernateHints.HINT_CACHEABLE, true)
 				.getResultList().stream();
 	}
 
@@ -1139,7 +1139,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 			List<Object[]> list = em().createNamedQuery("nodeBranchParents.findAncestors")
 					.setParameter("nodeUuids", uuids)
 					.setParameter("branchUuid", branchUuid)
-					.setHint(AvailableHints.HINT_CACHEABLE, true)
+					.setHint(HibernateHints.HINT_CACHEABLE, true)
 					.getResultList();
 
 			return list.stream()
@@ -1213,7 +1213,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 		EntityGraph<?> entityGraph = em().getEntityGraph("node.content");
 		return SplittingUtils.splitAndMergeInList(nodeUuids, HibernateUtil.inQueriesLimitForSplitting(1), slice -> em().createNamedQuery("node.findNodesByUuids", HibNodeImpl.class)
 				.setParameter("nodeUuids", slice)
-				.setHint("jakarta.persistence.fetchgraph", entityGraph)
+				.setHint(SpecHints.HINT_SPEC_FETCH_GRAPH, entityGraph)
 				.getResultList());
 	}
 
@@ -1226,7 +1226,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 		EntityGraph<?> entityGraph = em().getEntityGraph("node.contentAndTags");
 		return em().createNamedQuery("node.findNodesByUuids", HibNodeImpl.class)
 				.setParameter("nodeUuids", nodeUuids)
-				.setHint("jakarta.persistence.fetchgraph", entityGraph)
+				.setHint(SpecHints.HINT_SPEC_FETCH_GRAPH, entityGraph)
 				.getResultList();
 	}
 

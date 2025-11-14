@@ -5,17 +5,16 @@ import java.util.Objects;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.tag.HibTag;
+
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
-
-import org.hibernate.annotations.Target;
-
-import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.tag.HibTag;
 
 /**
  * Node-Tag edge.
@@ -32,20 +31,17 @@ public class HibNodeTag implements Serializable {
 	@EmbeddedId
     private HibNodeTagId id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = HibNodeImpl.class)
     @MapsId("nodeUUID")
-    @Target(HibNodeImpl.class)
-    private HibNode node;
+    private HibNodeImpl node;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = HibTagImpl.class)
     @MapsId("tagUUID")
-    @Target(HibTagImpl.class)
-    private HibTag tag;
+    private HibTagImpl tag;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = HibBranchImpl.class)
     @MapsId("branchUUID")
-    @Target(HibBranchImpl.class)
-    private HibBranch branch;
+    private HibBranchImpl branch;
 
     public HibNodeTag() {}
 
@@ -69,7 +65,7 @@ public class HibNodeTag implements Serializable {
     }
 
     public void setNode(HibNode node) {
-        this.node = node;
+        this.node = (HibNodeImpl)node;
     }
 
     public HibTag getTag() {
@@ -77,7 +73,7 @@ public class HibNodeTag implements Serializable {
     }
 
     public void setTag(HibTag tag) {
-        this.tag = tag;
+        this.tag = (HibTagImpl)tag;
     }
 
     public HibBranch getBranch() {
@@ -85,7 +81,7 @@ public class HibNodeTag implements Serializable {
     }
 
     public void setBranch(HibBranch branch) {
-        this.branch = branch;
+        this.branch = (HibBranchImpl)branch;
     }
 
     @Override

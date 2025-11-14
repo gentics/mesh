@@ -36,7 +36,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.hibernate.boot.model.naming.Identifier;
 import org.hibernate.boot.model.naming.PhysicalNamingStrategy;
 import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
-import org.hibernate.jpa.AvailableHints;
+import org.hibernate.jpa.HibernateHints;
 import org.hibernate.jpa.SpecHints;
 import org.hibernate.query.NativeQuery;
 import org.slf4j.Logger;
@@ -1977,7 +1977,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 		CriteriaQuery<D> query = cb().createQuery(domainClass);
 		Root<D> root = query.from(domainClass);
 		query.where(cb().equal(root.get("name"), name));
-		return firstOrNull(em().createQuery(query).setHint(AvailableHints.HINT_CACHEABLE, true).setMaxResults(1));
+		return firstOrNull(em().createQuery(query).setHint(HibernateHints.HINT_CACHEABLE, true).setMaxResults(1));
 	}
 
 	/**
