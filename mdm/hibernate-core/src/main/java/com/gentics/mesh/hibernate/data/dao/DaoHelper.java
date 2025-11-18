@@ -239,13 +239,14 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 	@Deprecated
 	private <R> Page<? extends R> getResultPageWithSqlPagination(InternalActionContext ac, CriteriaQuery<? extends R> query, EntityGraph<?> entityGraph, PagingParameters pagingInfo) {
 		Long perPage = pagingInfo.getPerPage();
+		int perPageInt = perPage > Integer.MAX_VALUE ? Integer.MAX_VALUE : perPage.intValue();
 		long totalCount = em().createQuery(JpaUtil.countCriteria(em(), query)).getSingleResult();
 
 		List<? extends R> list;
-		if (perPage > 0 && totalCount > 0) {
+		if (perPageInt > 0 && totalCount > 0) {
 			list = setEntityGraph(em().createQuery(query), entityGraph)
-					.setFirstResult(pagingInfo.getActualPage() * perPage.intValue())
-					.setMaxResults(perPage.intValue())
+					.setFirstResult(pagingInfo.getActualPage() * perPageInt)
+					.setMaxResults(perPageInt)
 					.getResultList();
 		} else {
 			list = Collections.emptyList();
