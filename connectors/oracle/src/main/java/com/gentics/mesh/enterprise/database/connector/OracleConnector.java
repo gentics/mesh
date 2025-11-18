@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import com.gentics.mesh.enterprise.hibernate.dialect.OracleLongTextDialect;
 import com.gentics.mesh.enterprise.license.LicenseService;
@@ -16,6 +17,7 @@ import com.gentics.mesh.hibernate.data.domain.AbstractHibListFieldEdgeImpl;
 import com.gentics.mesh.hibernate.data.node.field.HibListFieldEdge;
 import com.gentics.mesh.hibernate.util.HibernateUtil;
 
+import jakarta.persistence.EntityGraph;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 
@@ -23,6 +25,13 @@ import jakarta.persistence.Query;
  * Oracle database connector for Gentics Mesh
  */
 public class OracleConnector extends AbstractEnterpriseDatabaseConnector {
+	/**
+	 * Names of entity graphs, that are not allowed to be used, when selecting entities in a root
+	 * The reason is, that hibernate will create a distinct select query joining the latest schema version, which will lead to an error like
+	 * "[ORA-00932: inconsistent datatypes: expected - got NCLOB", apparently because with the schema version, the column schemajson is also selected
+	 * and oracle cannot make the results distinct when this is the case.
+	 */
+	protected final static String[] DISALLOWED_ENTITY_GRAPHS = new String[] {"schema.load", "schema.rest", "microschema.rest", "microschema.load"};
 
 	public OracleConnector(HibernateMeshOptions options, LicenseService licenseService) {
 		super(options, licenseService);
@@ -114,6 +123,15 @@ public class OracleConnector extends AbstractEnterpriseDatabaseConnector {
 			query.setParameter("dbuuid_" + index, item.getDbUuid());
 		});
 		return query;
+	}
+
+	@Override
+	public <T> boolean allows(EntityGraph<T> entityGraph, boolean inRoot) {
+		if (inRoot && Strings.CI.equalsAny(entityGraph.getName(), DISALLOWED_ENTITY_GRAPHS)) {
+			return false;
+		} else {
+			return super.allows(entityGraph, inRoot);
+		}
 	}
 
 	protected String unblobStringContentColumn(String columnName, boolean makeAlias, boolean customAlias) {
