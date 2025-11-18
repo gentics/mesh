@@ -2,11 +2,13 @@ package com.gentics.mesh.database;
 
 import static com.gentics.mesh.test.ClientHelper.call;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.Strings;
 import org.junit.Before;
 
 import com.gentics.mesh.core.rest.lang.LanguageListResponse;
@@ -32,7 +34,13 @@ public abstract class AbstractProjectQueryCountingTest extends AbstractCountingT
 			totalNumProjects += initialProjects.getMetainfo().getTotalCount();
 
 			LanguageListResponse languages = call(() -> client().findLanguages(new PagingParametersImpl().setPerPage((long)NUM_LANGUAGES_PER_PROJECT)));
-			List<String> languageUuids = languages.getData().stream().map(LanguageResponse::getUuid).collect(Collectors.toList());
+			// when the list of the languages does not contain english, we remove one language from the list (because english is automatically assigned to the project)
+			boolean containsEnglish = languages.getData().stream().filter(lang -> Strings.CI.equals(lang.getLanguageTag(), "en")).findFirst().isPresent();
+
+			List<String> languageUuids = new ArrayList<>(languages.getData().stream().map(LanguageResponse::getUuid).collect(Collectors.toList()));
+			if (!containsEnglish) {
+				languageUuids.remove(languageUuids.size() - 1);
+			}
 
 			// create projects
 			for (int i = 0; i < NUM_PROJECTS; i++) {
