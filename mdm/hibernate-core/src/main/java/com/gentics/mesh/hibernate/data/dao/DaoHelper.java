@@ -202,7 +202,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 		CriteriaQuery<D> query = cb().createQuery(domainClass);
 		query.from(domainClass);
 
-		return new TraversalResult<>(setEntityGraph(em().createQuery(query), getEntityGraph("load")).getResultStream());
+		return new TraversalResult<>(setEntityGraph(em().createQuery(query), getEntityGraph("load", false)).getResultStream());
 	}
 
 	public TraversalResult<T> findAll(Bucket bucket) {
@@ -210,7 +210,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 		Root<D> root = query.from(domainClass);
 
 		query.where(cb().greaterThanOrEqualTo(root.get("bucketTracking").get("bucketId"), bucket.start()), cb().lessThanOrEqualTo(root.get("bucketTracking").get("bucketId"), bucket.end()));
-		return new TraversalResult<>(setEntityGraph(em().createQuery(query), getEntityGraph("load")).getResultStream());
+		return new TraversalResult<>(setEntityGraph(em().createQuery(query), getEntityGraph("load", false)).getResultStream());
 	}
 
 	public Page<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
@@ -225,7 +225,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 		if (readPerm) {
 			addPermissionRestriction(query, dRoot, ac.getUser(), InternalPermission.READ_PERM);
 		}
-		return getResultPage(ac, query, pagingInfo, getEntityGraph("rest"), extraFilter);
+		return getResultPage(ac, query, pagingInfo, getEntityGraph("rest", false), extraFilter);
 	}
 
 	// sql pagination can be performed only if we have per page info and no extra filter
@@ -233,17 +233,23 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 	// before filtering
 	@Deprecated
 	private <R> boolean paginateWithSql(PagingParameters pagingInfo, java.util.function.Predicate<R> extraFilter) {
-		return pagingInfo != null && pagingInfo.getPerPage() != null && pagingInfo.getPerPage().intValue() > 0 && extraFilter == null;
+		return pagingInfo != null && pagingInfo.getPerPage() != null && extraFilter == null;
 	}
 
 	@Deprecated
 	private <R> Page<? extends R> getResultPageWithSqlPagination(InternalActionContext ac, CriteriaQuery<? extends R> query, EntityGraph<?> entityGraph, PagingParameters pagingInfo) {
 		Long perPage = pagingInfo.getPerPage();
 		long totalCount = em().createQuery(JpaUtil.countCriteria(em(), query)).getSingleResult();
-		List<? extends R> list = setEntityGraph(em().createQuery(query), entityGraph)
-				.setFirstResult(pagingInfo.getActualPage() * perPage.intValue())
-				.setMaxResults(perPage.intValue())
-				.getResultList();
+
+		List<? extends R> list;
+		if (perPage > 0 && totalCount > 0) {
+			list = setEntityGraph(em().createQuery(query), entityGraph)
+					.setFirstResult(pagingInfo.getActualPage() * perPage.intValue())
+					.setMaxResults(perPage.intValue())
+					.getResultList();
+		} else {
+			list = Collections.emptyList();
+		}
 
 		return new PageImpl<>(list, pagingInfo, totalCount);
 	}
@@ -264,9 +270,10 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 	}
 
 	@SuppressWarnings("unchecked")
-	EntityGraph<D> getEntityGraph(String suffix) {
+	EntityGraph<D> getEntityGraph(String suffix, boolean inRoot) {
 		return (EntityGraph<D>) em().getEntityGraphs(domainClass).stream()
 			.filter(graph -> graph.getName().endsWith(suffix))
+			.filter(graph -> databaseConnector.allows(graph, inRoot))
 			.findAny()
 			.orElse(null);
 	}
@@ -1801,7 +1808,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 	 * @return
 	 */
 	public <R, F> Stream<? extends R> getResultStream(InternalActionContext ac, CriteriaQuery<? extends R> query, EntityGraph<?> entityGraph) {
-		return setEntityGraph(em().createQuery(query), entityGraph).getResultStream();
+		return setEntityGraph(em().createQuery(query), entityGraph).getResultList().stream();
 	}
 
 	/**
