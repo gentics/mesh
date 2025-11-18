@@ -73,7 +73,7 @@ storageOptions:
     leakDetectionThreshold: 0
   synchronizeWrites: false
   synchronizeWritesTimeout: 60000
-  secondLevelCacheEnabled: false
+  secondLevelCacheEnabled: true
   generateStatistics: false
   queryTimeout: 0
   slowSqlThreshold: 60000
