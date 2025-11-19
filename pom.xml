@@ -10,14 +10,14 @@
 	<parent>
 		<artifactId>mesh-plugin-parent</artifactId>
 		<groupId>com.gentics.mesh</groupId>
-		<version>3.1.0</version>
+		<version>3.1.6</version>
 	</parent>
 
 	<properties>
 		<plugin.license>Commercial</plugin.license>
 		<plugin.author>Gentics</plugin.author>
 		<!--  Don't forget to also update dependencyManagement section! -->
-		<mesh.version>3.1.5</mesh.version>
+		<mesh.version>3.1.6</mesh.version>
 		<spring.security.version>6.3.9</spring.security.version>
 		<json-smart.version>2.5.2</json-smart.version>
 		<netty.version>4.1.118.Final</netty.version>
