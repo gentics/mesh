@@ -5,6 +5,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.core.action.GroupDAOActions;
 import com.gentics.mesh.core.data.group.HibGroup;
+import com.gentics.mesh.core.data.search.Compliance;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -20,8 +21,8 @@ public class GroupSearchHandler extends AbstractSearchHandler<HibGroup, GroupRes
 
 	@Inject
 	public GroupSearchHandler(Database db, SearchProvider searchProvider, GroupIndexHandler indexHandler, MeshOptions options,
-		GroupDAOActions actions, SearchWaitUtil waitUtil) {
-		super(db, searchProvider, options, indexHandler, actions, waitUtil);
+			Compliance compliance,GroupDAOActions actions, SearchWaitUtil waitUtil) {
+		super(db, searchProvider, options, compliance, indexHandler, actions, waitUtil);
 	}
 
 }

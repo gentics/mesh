@@ -20,13 +20,15 @@ import com.gentics.elasticsearch.client.okhttp.RequestBuilder;
 import com.gentics.mesh.context.SimpleDataHolderContext;
 import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.search.Compliance;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.search.EntityMetrics;
+import com.gentics.mesh.etc.config.ConfigUtils;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.search.ComplianceMode;
+import com.gentics.mesh.etc.config.search.IndexSearchMode;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.handler.DataHolderContext;
 import com.gentics.mesh.search.SearchProvider;
@@ -58,7 +60,7 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractIndexHandler.class);
 
-	public static final int ES_SYNC_FETCH_BATCH_SIZE = 10_000;
+	public static final int ES_SYNC_FETCH_BATCH_SIZE = ConfigUtils.getOptionalConfig("MESH_ES_SYNC_FETCH_BATCH_SIZE", 10_000, Integer::parseUnsignedInt, Object::toString);
 
 	protected final SearchProvider searchProvider;
 
@@ -66,21 +68,21 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 
 	protected final MeshHelper helper;
 
-	protected final MeshOptions options;
+	protected final Compliance compliance;
 
-	protected final ComplianceMode complianceMode;
+	protected final IndexSearchMode indexSearchMode;
 
 	protected final SyncMeters meters;
 
 	protected final BucketManager bucketManager;
 
 	public AbstractIndexHandler(SearchProvider searchProvider, Database db, MeshHelper helper, MeshOptions options,
-		SyncMetersFactory syncMetersFactory, BucketManager bucketManager) {
+		SyncMetersFactory syncMetersFactory, BucketManager bucketManager, Compliance compliance) {
 		this.searchProvider = searchProvider;
 		this.db = db;
 		this.helper = helper;
-		this.options = options;
-		this.complianceMode = options.getSearchOptions().getComplianceMode();
+		this.compliance = compliance;
+		this.indexSearchMode = options.getSearchOptions().getIndexSearchMode();
 		this.meters = syncMetersFactory.createSyncMetric(getType());
 		this.bucketManager = bucketManager;
 	}
@@ -161,7 +163,7 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 
 				Function<Action, Function<JsonObject, CreateDocumentRequest>> toCreateRequest = action -> doc -> {
 					String uuid = doc.getString("uuid");
-					return helper.createDocumentRequest(indexName, uuid, doc, complianceMode, action);
+					return helper.createDocumentRequest(indexName, uuid, doc, compliance, action);
 				};
 
 				Flowable<SearchRequest> toInsert = Flowable.fromIterable(needInsertionInES)
@@ -173,7 +175,7 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 					.map(toCreateRequest.apply(meters.getUpdateMeter()::synced));
 
 				Flowable<SearchRequest> toDelete = Flowable.fromIterable(needRemovalInES)
-					.map(uuid -> helper.deleteDocumentRequest(indexName, uuid, complianceMode, meters.getDeleteMeter()::synced));
+					.map(uuid -> helper.deleteDocumentRequest(indexName, uuid, compliance, meters.getDeleteMeter()::synced));
 
 				return Flowable.merge(toInsert, toUpdate, toDelete);
 			}).flatMapPublisher(x -> x);
@@ -199,7 +201,6 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 	 * @param bucket
 	 * @return
 	 */
-	// TODO Async
 	public Single<Map<String, String>> loadVersionsFromIndex(String indexName, Bucket bucket) {
 		return Single.fromCallable(() -> {
 			String fullIndexName = searchProvider.installationPrefix() + indexName;
@@ -214,51 +215,15 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 			query.put("sort", new JsonArray().add("_doc"));
 
 			log.debug("Using {} query:\n\t", fullIndexName, query.encodePrettily());
-			RequestBuilder<JsonObject> builder = client.searchScroll(query, "1m", fullIndexName);
-			JsonObject result = new JsonObject();
-
-			// collect all scroll IDs
-			Set<String> scrollIds = new HashSet<>();
-
+			
 			try {
-				result = builder.sync();
-				log.debug("Got response:\n{}", result.encodePrettily());
-				Optional.ofNullable(result.getString("_scroll_id")).ifPresent(scrollIds::add);
-				JsonArray hits = result.getJsonObject("hits", new JsonObject()).getJsonArray("hits", new JsonArray());
-				processHits(hits, versions);
-
-				try {
-					// Check whether we need to process more scrolls
-					if (hits.size() != 0) {
-						String nextScrollId = result.getString("_scroll_id");
-						while (true) {
-							final String currentScroll = nextScrollId;
-							log.debug("Fetching scroll result using scrollId {}", currentScroll);
-							JsonObject scrollResult = client.scroll("1m", currentScroll).sync();
-							Optional.ofNullable(scrollResult.getString("_scroll_id")).ifPresent(scrollIds::add);
-							JsonArray scrollHits = scrollResult.getJsonObject("hits").getJsonArray("hits");
-							log.debug("Got response:\n\t[{}]", scrollHits.encodePrettily());
-							if (scrollHits.size() != 0) {
-								processHits(scrollHits, versions);
-								// Update the scrollId for the next fetch
-								nextScrollId = scrollResult.getString("_scroll_id");
-								log.debug("Using scrollId [{}] for next fetch.", nextScrollId);
-							} else {
-								// The scroll yields no more data. We are done
-								break;
-							}
-						}
-					}
-				} finally {
-					if (!scrollIds.isEmpty()) {
-						JsonObject scrollIdBody = new JsonObject();
-						scrollIdBody.put("scroll_id", new JsonArray(new ArrayList<String>(scrollIds)));
-						try {
-							client.clearScroll(scrollIdBody).sync();
-						} catch (Throwable e) {
-							log.error("Error while clearing open scrolls");
-						}
-					}
+				switch (indexSearchMode) {
+				case SCROLL:
+					scrollQuery(query, client, fullIndexName, versions);
+					break;
+				default:
+					searchAfterQuery(query, client, fullIndexName, versions);
+					break;		
 				}
 			} catch (HttpErrorException e) {
 				log.error("Could not load versions of index " + indexName);
@@ -268,14 +233,116 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 		});
 	}
 
-	protected void processHits(JsonArray hits, Map<String, String> versions) {
+	/**
+	 * Search using stateless `search_after` method.
+	 * 
+	 * @param query
+	 * @param client
+	 * @param fullIndexName
+	 * @param versions
+	 * @throws HttpErrorException
+	 */
+	protected void searchAfterQuery(JsonObject query, ElasticsearchClient<JsonObject> client, String fullIndexName, Map<String, String> versions) throws HttpErrorException {
+		// TODO Do we need PIT aka Point In Time here?
+		RequestBuilder<JsonObject> builder = client.search(query, fullIndexName);
+		JsonObject result = builder.sync();
+		if (log.isTraceEnabled()) {
+			log.trace("Got response {" + result.encodePrettily() + "}");
+		}
+		JsonArray hits = result.getJsonObject("hits").getJsonArray("hits");
+		JsonArray searchAfter = processHits(hits, versions);
+
+		// Check whether we need to process further
+		if (hits.size() != 0) {
+			while (true) {
+				query.put("search_after", searchAfter);
+				log.debug("Fetching search result using search_after {" + searchAfter.encode() + "}");
+				JsonObject scrollResult = client.search(query, fullIndexName).sync();
+				JsonArray scrollHits = scrollResult.getJsonObject("hits").getJsonArray("hits");
+				if (log.isTraceEnabled()) {
+					log.trace("Got response {" + scrollHits.encodePrettily() + "}");
+				}
+				if (scrollHits.size() != 0) {
+					searchAfter = processHits(scrollHits, versions);
+					if (log.isDebugEnabled()) {
+						log.debug("Using search_after {" + searchAfter.encode() + "} for next fetch.");
+					}
+				} else {
+					// The scroll yields no more data. We are done
+					break;
+				}
+			}
+		}
+	}
+
+	/**
+	 * Search using `scroll` API
+	 * 
+	 * @param query
+	 * @param client
+	 * @param fullIndexName
+	 * @param versions
+	 * @throws HttpErrorException 
+	 */
+	protected void scrollQuery(JsonObject query, ElasticsearchClient<JsonObject> client, String fullIndexName, Map<String, String> versions) throws HttpErrorException {
+		RequestBuilder<JsonObject> builder = client.searchScroll(query, "1m", fullIndexName);
+		JsonObject result = new JsonObject();
+
+		// collect all scroll IDs
+		Set<String> scrollIds = new HashSet<>();
+
+		result = builder.sync();
+		log.debug("Got response:\n{}", result.encodePrettily());
+		Optional.ofNullable(result.getString("_scroll_id")).ifPresent(scrollIds::add);
+		JsonArray hits = result.getJsonObject("hits", new JsonObject()).getJsonArray("hits", new JsonArray());
+		processHits(hits, versions);
+
+		try {
+			// Check whether we need to process more scrolls
+			if (hits.size() != 0) {
+				String nextScrollId = result.getString("_scroll_id");
+				while (true) {
+					final String currentScroll = nextScrollId;
+					log.debug("Fetching scroll result using scrollId {}", currentScroll);
+					JsonObject scrollResult = client.scroll("1m", currentScroll).sync();
+					Optional.ofNullable(scrollResult.getString("_scroll_id")).ifPresent(scrollIds::add);
+					JsonArray scrollHits = scrollResult.getJsonObject("hits").getJsonArray("hits");
+					log.debug("Got response:\n\t[{}]", scrollHits.encodePrettily());
+					if (scrollHits.size() != 0) {
+						processHits(scrollHits, versions);
+						// Update the scrollId for the next fetch
+						nextScrollId = scrollResult.getString("_scroll_id");
+						log.debug("Using scrollId [{}] for next fetch.", nextScrollId);
+					} else {
+						// The scroll yields no more data. We are done
+						break;
+					}
+				}
+			}
+		} finally {
+			if (!scrollIds.isEmpty()) {
+				JsonObject scrollIdBody = new JsonObject();
+				scrollIdBody.put("scroll_id", new JsonArray(new ArrayList<String>(scrollIds)));
+				try {
+					client.clearScroll(scrollIdBody).sync();
+				} catch (Throwable e) {
+					log.error("Error while clearing open scrolls");
+				}
+			}
+		}
+	}
+
+	protected JsonArray processHits(JsonArray hits, Map<String, String> versions) {
+		JsonArray lastHitSort = null;
 		for (int i = 0; i < hits.size(); i++) {
 			JsonObject hit = hits.getJsonObject(i);
 			JsonObject source = hit.getJsonObject("_source");
 			String uuid = source.getString("uuid");
 			String version = source.getString("version");
 			versions.put(uuid, version);
+			lastHitSort = hit.getJsonArray("sort");
 		}
+		return lastHitSort;
 	}
 
 	@Override

@@ -34,6 +34,7 @@ import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.search.Compliance;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
@@ -61,8 +62,8 @@ public class NodeSearchHandler extends AbstractSearchHandler<HibNode, NodeRespon
 
 	@Inject
 	public NodeSearchHandler(SearchProvider searchProvider, Database db, NodeIndexHandlerImpl nodeIndexHandler,
-		MeshOptions options, NodeDAOActions actions, SearchWaitUtil waitUtil) {
-		super(db, searchProvider, options, nodeIndexHandler, actions, waitUtil);
+			Compliance compliance, MeshOptions options, NodeDAOActions actions, SearchWaitUtil waitUtil) {
+		super(db, searchProvider, options, compliance, nodeIndexHandler, actions, waitUtil);
 	}
 
 	/**
@@ -179,19 +180,7 @@ public class NodeSearchHandler extends AbstractSearchHandler<HibNode, NodeRespon
 				});
 
 				// Update the total count
-				switch (complianceMode) {
-				case ES_6:
-					hitsInfo.put("total", totalCount.longValue());
-					break;
-				case ES_7:
-				case ES_8:
-				case ES_9:
-					hitsInfo.put("total", new JsonObject().put("value", totalCount.longValue()));
-					break;
-				default:
-					throw new RuntimeException("Unknown compliance mode {" + complianceMode + "}");
-
-				}
+				compliance.putTotal(hitsInfo, totalCount.longValue());
 
 				PagingMetaInfo info = extractMetaInfo(hitsInfo, pagingInfo);
 				return new PageImpl<>(elementList, info.getTotalCount(), pagingInfo.getPage(), info.getPageCount(), pagingInfo.getPerPage());

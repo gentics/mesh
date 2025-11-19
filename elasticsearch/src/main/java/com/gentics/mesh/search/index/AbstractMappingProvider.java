@@ -1,7 +1,6 @@
 package com.gentics.mesh.search.index;
 
 import static com.gentics.mesh.core.data.Bucket.BUCKET_ID_KEY;
-import static com.gentics.mesh.search.SearchProvider.DEFAULT_TYPE;
 import static com.gentics.mesh.search.index.MappingHelper.DATE;
 import static com.gentics.mesh.search.index.MappingHelper.INTEGER;
 import static com.gentics.mesh.search.index.MappingHelper.KEYWORD;
@@ -9,8 +8,7 @@ import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.VERSION_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.notAnalyzedType;
 
-import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.search.ComplianceMode;
+import com.gentics.mesh.core.data.search.Compliance;
 
 import io.vertx.core.json.JsonObject;
 
@@ -22,13 +20,10 @@ public abstract class AbstractMappingProvider implements MappingProvider {
 
 	public static final String ROLE_UUIDS = "_roleUuids";
 
-	protected final MeshOptions options;
+	protected final Compliance compliance;
 
-	protected final ComplianceMode complianceMode;
-
-	public AbstractMappingProvider(MeshOptions options) {
-		this.options = options;
-		this.complianceMode = options.getSearchOptions().getComplianceMode();
+	public AbstractMappingProvider(Compliance compliance) {
+		this.compliance = compliance;
 	}
 
 	@Override
@@ -53,19 +48,7 @@ public abstract class AbstractMappingProvider implements MappingProvider {
 		typeMapping.put("date_detection", false);
 		typeMapping.put("numeric_detection", false);
 
-		switch (complianceMode) {
-		case ES_6:
-			JsonObject mapping = new JsonObject();
-			mapping.put(DEFAULT_TYPE, typeMapping);
-			return mapping;
-		case ES_7:
-		case ES_8:
-		case ES_9:
-			return typeMapping;
-		default:
-			throw new RuntimeException("Unknown mode {" + complianceMode + "}");
-		}
-
+		return compliance.prepareTypeMapping(typeMapping);
 	}
 
 	/**

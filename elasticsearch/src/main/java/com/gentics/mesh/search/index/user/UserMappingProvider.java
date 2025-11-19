@@ -10,7 +10,7 @@ import static com.gentics.mesh.search.index.MappingHelper.trigramTextType;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.core.data.search.Compliance;
 import com.gentics.mesh.search.index.AbstractMappingProvider;
 
 import io.vertx.core.json.JsonObject;
@@ -23,8 +23,8 @@ import io.vertx.core.json.JsonObject;
 public class UserMappingProvider extends AbstractMappingProvider {
 
 	@Inject
-	public UserMappingProvider(MeshOptions options) {
-		super(options);
+	public UserMappingProvider(Compliance compliance) {
+		super(compliance);
 	}
 
 	@Override

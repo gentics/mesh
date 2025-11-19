@@ -1,16 +1,17 @@
 package com.gentics.mesh.core.data.search.request;
 
-import com.gentics.mesh.etc.config.search.ComplianceMode;
-import com.gentics.mesh.search.SearchProvider;
-import io.reactivex.Completable;
-import io.reactivex.Single;
-import io.reactivex.functions.Action;
-import io.vertx.core.json.JsonObject;
+import static com.gentics.mesh.util.RxUtil.NOOP;
 
 import java.util.Collections;
 import java.util.List;
 
-import static com.gentics.mesh.util.RxUtil.NOOP;
+import com.gentics.mesh.core.data.search.Compliance;
+import com.gentics.mesh.search.SearchProvider;
+
+import io.reactivex.Completable;
+import io.reactivex.Single;
+import io.reactivex.functions.Action;
+import io.vertx.core.json.JsonObject;
 
 /**
  * Wrapper for bulkable delete document requests in elasticsearch.
@@ -23,11 +24,11 @@ public class DeleteDocumentRequest implements Bulkable {
 	private final Action onComplete;
 	private final String bulkString;
 
-	public DeleteDocumentRequest(String index, String transformedIndex, String id, ComplianceMode mode) {
-		this(index, transformedIndex, id, mode, NOOP);
+	public DeleteDocumentRequest(String index, String transformedIndex, String id, Compliance compliance) {
+		this(index, transformedIndex, id, compliance, NOOP);
 	}
 
-	public DeleteDocumentRequest(String index, String transformedIndex, String id, ComplianceMode mode, Action onComplete) {
+	public DeleteDocumentRequest(String index, String transformedIndex, String id, Compliance compliance, Action onComplete) {
 		this.index = index;
 		this.transformedIndex = transformedIndex;
 		this.id = id;
@@ -37,17 +38,7 @@ public class DeleteDocumentRequest implements Bulkable {
 			.put("_index", transformedIndex)
 			.put("_id", id);
 
-		switch (mode) {
-		case ES_7:
-		case ES_8:
-		case ES_9:
-			break;
-		case ES_6:
-			settings.put("_type", SearchProvider.DEFAULT_TYPE);
-			break;
-		default:
-			throw new RuntimeException("Unknown compliance mode {" + mode + "}");
-		}
+		compliance.prepareDeleteRequest(settings);
 
 		this.bulkString = new JsonObject().put("delete", settings).encode();
 	}

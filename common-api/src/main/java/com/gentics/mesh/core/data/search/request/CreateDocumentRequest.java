@@ -5,7 +5,7 @@ import static com.gentics.mesh.util.RxUtil.NOOP;
 import java.util.Arrays;
 import java.util.List;
 
-import com.gentics.mesh.etc.config.search.ComplianceMode;
+import com.gentics.mesh.core.data.search.Compliance;
 import com.gentics.mesh.search.SearchProvider;
 
 import io.reactivex.Completable;
@@ -25,11 +25,11 @@ public class CreateDocumentRequest implements Bulkable {
 	private final CachedJsonObjectProxy doc;
 	private final Action onComplete;
 
-	public CreateDocumentRequest(String index, String transformedIndex, String id, JsonObject doc, ComplianceMode mode) {
-		this(index, transformedIndex, id, doc, mode, NOOP);
+	public CreateDocumentRequest(String index, String transformedIndex, String id, JsonObject doc, Compliance compliance) {
+		this(index, transformedIndex, id, doc, compliance, NOOP);
 	}
 
-	public CreateDocumentRequest(String index, String transformedIndex, String id, JsonObject doc, ComplianceMode mode, Action onComplete) {
+	public CreateDocumentRequest(String index, String transformedIndex, String id, JsonObject doc, Compliance compliance, Action onComplete) {
 		this.index = index;
 		this.transformedIndex = transformedIndex;
 		this.id = id;
@@ -40,17 +40,7 @@ public class CreateDocumentRequest implements Bulkable {
 			.put("_index", transformedIndex)
 			.put("_id", id);
 
-		switch (mode) {
-		case ES_7:
-		case ES_8:
-		case ES_9:
-			break;
-		case ES_6:
-			settings.put("_type", SearchProvider.DEFAULT_TYPE);
-			break;
-		default:
-			throw new RuntimeException("Unknown compliance mode {" + mode + "}");
-		}
+		compliance.prepareCreateRequest(settings);
 
 		this.bulkPreamble = new JsonObject().put("index", settings).encode();
 	}

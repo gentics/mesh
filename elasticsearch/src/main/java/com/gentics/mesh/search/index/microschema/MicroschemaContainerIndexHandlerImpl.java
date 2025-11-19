@@ -25,6 +25,7 @@ import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.search.Compliance;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.db.Database;
@@ -52,9 +53,9 @@ public class MicroschemaContainerIndexHandlerImpl extends AbstractIndexHandler<H
 	protected final SyncMetersFactory syncMetersFactory;
 
 	@Inject
-	public MicroschemaContainerIndexHandlerImpl(SearchProvider searchProvider, Database db, MeshHelper helper,
+	public MicroschemaContainerIndexHandlerImpl(SearchProvider searchProvider, Database db, MeshHelper helper, Compliance compliance,
 		MeshOptions options, SyncMetersFactory syncMetricsFactory, BucketManager bucketManager, MicroschemaTransformer transformer, MicroschemaMappingProvider mappingProvider, SyncMetersFactory syncMetersFactory) {
-		super(searchProvider, db, helper, options, syncMetricsFactory, bucketManager);
+		super(searchProvider, db, helper, options, syncMetricsFactory, bucketManager, compliance);
 		this.transformer = transformer;
 		this.mappingProvider = mappingProvider;
 		this.syncMetersFactory = syncMetersFactory;
