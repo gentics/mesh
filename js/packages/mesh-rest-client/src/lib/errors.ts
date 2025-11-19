@@ -49,6 +49,7 @@ export class MeshRestClientRequestError extends Error {
     /**
      * Hacky workaround to allow custom error objects to still be identified as correct errors.
      * Mainly used in testing.
+     * @param obj
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/instanceof#instanceof_and_symbol.hasinstance
      * @returns If the provided object is an instance of this class.
      */
@@ -100,6 +101,7 @@ export class MeshRestClientAbortError extends Error {
     /**
      * Hacky workaround to allow custom error objects to still be identified as correct errors.
      * Mainly used in testing.
+     * @param obj
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/instanceof#instanceof_and_symbol.hasinstance
      * @returns If the provided object is an instance of this class.
      */

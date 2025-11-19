@@ -1,6 +1,11 @@
 {
-    "extends": "nx/presets/npm.json",
     "$schema": "./node_modules/nx/schemas/nx-schema.json",
+    "extends": "nx/presets/npm.json",
+    "pluginsConfig": {
+        "@nx/js": {
+            "analyzeSourceFiles": true
+        }
+    },
     "defaultBase": "master",
     "cli": {
         "packageManager": "npm"
@@ -11,10 +16,28 @@
     "parallel": 3,
     "useInferencePlugins": false,
     "release": {
-        "projectsRelationship": "independent",
+        "git": {
+            "commit": false,
+            "push": false,
+            "tag": false
+        },
+        "version": {
+            "preVersionCommand": "npx nx run-many -t build",
+            "currentVersionResolver": "registry",
+            "versionPrefix": "^",
+            "manifestRootsToUpdate": [
+                ".",
+                "dist/{projectName}"
+            ],
+            "preserveLocalDependencyProtocols": false
+        },
         "projects": [
             "tag:lib"
-        ]
+        ],
+        "changelog": {
+            "projectChangelogs": false,
+            "workspaceChangelog": false
+        }
     },
     "plugins": [
         {
@@ -30,6 +53,7 @@
             "unitTestRunner": "jest"
         },
         "@nx/angular:component": {
+            "style": "css",
             "type": "component"
         },
         "@schematics/angular:component": {
@@ -104,7 +128,10 @@
         "production": [
             "building",
             "{projectRoot}/package.json",
-            "{projectRoot}/ng-package.json"
+            "{projectRoot}/ng-package.json",
+            "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
+            "!{projectRoot}/tsconfig.spec.json",
+            "!{projectRoot}/src/test-setup.[jt]s"
         ],
         "linting": [
             "{workspaceRoot}/eslint.config.mjs"
@@ -119,26 +146,33 @@
         ]
     },
     "targetDefaults": {
-        "lint": {
-            "executor": "@nx/eslint:lint",
+        "@nx/eslint:lint": {
             "cache": true,
-            "inputs": ["default", "linting"],
+            "inputs": [
+                "default",
+                "linting"
+            ],
             "options": {
-                "lintFilePatterns": [
-                    "{projectRoot}/**/*.[jt]s"
-                ],
-                "fix": true,
-                "eslintConfig": "eslint.config.mjs"
+                "fix": true
             }
         },
         "build": {
-            "dependsOn": ["^build"],
-            "inputs": ["production", "^production"],
+            "dependsOn": [
+                "^build"
+            ],
+            "inputs": [
+                "production",
+                "^production"
+            ],
             "cache": true
         },
         "@nx/jest:jest": {
             "cache": true,
-            "inputs": ["default", "jestTests", "^default"],
+            "inputs": [
+                "default",
+                "jestTests",
+                "^default"
+            ],
             "options": {
                 "passWithNoTests": true
             },
@@ -147,6 +181,41 @@
                     "ci": true,
                     "codeCoverage": true
                 }
+            }
+        },
+        "@nx/angular:ng-packagr-lite": {
+            "cache": true,
+            "dependsOn": [
+                "^build"
+            ],
+            "inputs": [
+                "production",
+                "^production"
+            ]
+        },
+        "@nx/js:tsc": {
+            "cache": true,
+            "dependsOn": [
+                "^build"
+            ],
+            "inputs": [
+                "production",
+                "^production"
+            ]
+        },
+        "@nx/rollup:rollup": {
+            "cache": true,
+            "dependsOn": [
+                "^build"
+            ],
+            "inputs": [
+                "production",
+                "^production"
+            ]
+        },
+        "nx-release-publish": {
+            "options": {
+                "packageRoot": "dist/{projectName}"
             }
         }
     }

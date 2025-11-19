@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 import { UserReference } from './users';
 
 export interface PagingMetaInfo {
@@ -27,6 +26,7 @@ export interface SortingOptions {
 
 export interface ListResponse<T> {
     /** Paging information of the list result. */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     _metainfo: PagingMetaInfo;
     /** Array which contains the found elements. */
     data: T[];

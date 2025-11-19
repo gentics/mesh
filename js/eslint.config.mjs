@@ -1,30 +1,59 @@
 /* eslint-disable import-x/no-named-as-default-member */
-import js from '@eslint/js';
-import nxPlugin from '@nx/eslint-plugin';
+import { default as nx } from '@nx/eslint-plugin';
 import stylistic from '@stylistic/eslint-plugin';
+import tsParser from '@typescript-eslint/parser';
+import ngPlugin from 'angular-eslint';
 import importPlugin from 'eslint-plugin-import-x';
 import { jsdoc } from 'eslint-plugin-jsdoc';
-import globals from 'globals';
-import tseslint from 'typescript-eslint';
-import * as tsParser from '@typescript-eslint/parser';
 import { defineConfig } from 'eslint/config';
+import globals from 'globals';
 
 export default defineConfig([
-    js.configs.recommended,
-    tseslint.configs.strictTypeChecked,
-    stylistic.configs.recommended,
-    importPlugin.flatConfigs.recommended,
-    importPlugin.flatConfigs.typescript,
-    jsdoc({
-        config: 'flat/recommended',
-    }),
+    ...nx.configs['flat/base'],
+    ...nx.configs['flat/typescript'],
+    ...nx.configs['flat/javascript'],
     {
-        plugins: {
-            '@nx': nxPlugin,
+        ignores: ['**/dist'],
+    },
+    {
+        files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
+        rules: {
+            '@nx/enforce-module-boundaries': [
+                'error',
+                {
+                    enforceBuildableLibDependency: true,
+                    allow: ['^.*/eslint(\\.base)?\\.config\\.[cm]?[jt]s$'],
+                    depConstraints: [
+                        {
+                            sourceTag: '*',
+                            onlyDependOnLibsWithTags: ['*'],
+                        },
+                    ],
+                },
+            ],
         },
     },
     {
-        files: ['**/*.mjs', '**/*.js', '**/*.ts'],
+        files: [
+            '**/*.ts',
+            '**/*.tsx',
+            '**/*.cts',
+            '**/*.mts',
+            '**/*.js',
+            '**/*.jsx',
+            '**/*.cjs',
+            '**/*.mjs',
+        ],
+
+        extends: [
+            stylistic.configs.recommended,
+            importPlugin.flatConfigs.recommended,
+            importPlugin.flatConfigs.typescript,
+            ngPlugin.configs.tsRecommended,
+            jsdoc({
+                config: 'flat/recommended',
+            }),
+        ],
 
         languageOptions: {
             parser: tsParser,
@@ -204,6 +233,11 @@ export default defineConfig([
             'jsdoc/check-param-names': 'error',
             'jsdoc/check-property-names': 'error',
             'jsdoc/no-types': 'error',
+            'jsdoc/require-param-type': 'off',
+            'jsdoc/require-returns-type': 'off',
+            'jsdoc/require-jsdoc': 'off',
+            'jsdoc/require-returns': 'off',
+            'jsdoc/require-param': 'off',
 
             'arrow-parens': ['off', 'always'],
             'comma-dangle': ['error', {
@@ -310,7 +344,14 @@ export default defineConfig([
             'use-isnan': 'error',
             'valid-typeof': 'off',
         },
-    }, {
+    },
+    {
+        files: ['**/*.module.ts'],
+        rules: {
+            '@typescript-eslint/no-extraneous-class': 'off',
+        },
+    },
+    {
         files: ['**/*.spec.ts'],
 
         rules: {

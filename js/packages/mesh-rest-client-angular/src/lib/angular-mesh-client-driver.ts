@@ -1,20 +1,20 @@
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
+import { inject, Injectable } from '@angular/core';
 import { GenericErrorResponse } from '@gentics/mesh-models';
 import {
     MeshClientDriver,
-    MeshRestClientRequestData,
-    MeshRestClientResponse,
-    MeshRestClientRequestError,
     MeshRestClientAbortError,
+    MeshRestClientRequestData,
+    MeshRestClientRequestError,
+    MeshRestClientResponse,
 } from '@gentics/mesh-rest-client';
 import { Subscription, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
+@Injectable()
 export class AngularMeshClientDriver implements MeshClientDriver {
 
-    constructor(
-        private http: HttpClient,
-    ) { }
+    private http = inject(HttpClient);
 
     performJsonRequest(
         request: MeshRestClientRequestData,

@@ -1,42 +1,35 @@
-import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import {
-    MeshAuthAPI,
-    MeshBranchAPI,
-    MeshClusterAPI,
-    MeshCoordinatorAPI,
-    MeshGraphQLAPI,
-    MeshGroupAPI,
-    MeshLanguageAPI,
-    MeshMicroschemaAPI,
-    MeshNodeAPI,
-    MeshPermissionAPI,
-    MeshPluginAPI,
-    MeshProjectAPI,
+    type MeshAuthAPI,
+    type MeshBranchAPI,
+    type MeshClusterAPI,
+    type MeshCoordinatorAPI,
+    type MeshGraphQLAPI,
+    type MeshGroupAPI,
+    type MeshLanguageAPI,
+    type MeshMicroschemaAPI,
+    type MeshNodeAPI,
+    type MeshPermissionAPI,
+    type MeshPluginAPI,
+    type MeshProjectAPI,
     MeshRestClient,
-    MeshRestClientConfig,
-    MeshRestClientRequestData,
-    MeshRoleAPI,
-    MeshSchemaAPI,
-    MeshServerAPI,
-    MeshTagFamiliesAPI,
-    MeshTagsAPI,
-    MeshUserAPI,
-    RequestMethod,
+    type MeshRestClientConfig,
+    type MeshRestClientRequestData,
+    type MeshRoleAPI,
+    type MeshSchemaAPI,
+    type MeshServerAPI,
+    type MeshTagFamiliesAPI,
+    type MeshTagsAPI,
+    type MeshUserAPI,
+    type RequestMethod,
 } from '@gentics/mesh-rest-client';
 import { AngularMeshClientDriver } from './angular-mesh-client-driver';
 
 @Injectable()
 export class MeshRestClientService {
 
-    private driver: AngularMeshClientDriver;
+    private driver = inject(AngularMeshClientDriver);
     private client: MeshRestClient | null = null;
-
-    constructor(
-        http: HttpClient,
-    ) {
-        this.driver = new AngularMeshClientDriver(http);
-    }
 
     init(config: MeshRestClientConfig, apiKey?: string): void {
         this.client = new MeshRestClient(this.driver, config, apiKey);
