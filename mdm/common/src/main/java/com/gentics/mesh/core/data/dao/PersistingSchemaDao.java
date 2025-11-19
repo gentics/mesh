@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.event.Assignment.ASSIGNED;
 import static com.gentics.mesh.event.Assignment.UNASSIGNED;
+import static com.gentics.mesh.util.PreparationUtil.preparePermissions;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -19,8 +20,10 @@ import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
@@ -29,6 +32,7 @@ import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -43,6 +47,8 @@ import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.GenericParameters;
+import com.gentics.mesh.parameter.value.FieldsSet;
 
 /**
  * A persisting extension to {@link SchemaDao}
@@ -344,6 +350,21 @@ public interface PersistingSchemaDao
 		projectDao.mergeIntoPersisted(root);
 		assignEvents(schema, UNASSIGNED).forEach(batch::add);
 		return schema;
+	}
+
+	@Override
+	default void beforeGetETagForPage(Page<? extends HibCoreElement<? extends RestModel>> page,
+			InternalActionContext ac) {
+		preparePermissions(ac.getUser(), page, ac);
+	}
+
+	@Override
+	default void beforeTransformToRestSync(Page<? extends HibCoreElement<? extends RestModel>> page,
+			InternalActionContext ac) {
+		GenericParameters generic = ac.getGenericParameters();
+		FieldsSet fields = generic.getFields();
+
+		preparePermissions(ac.getUser(), page, ac, fields);
 	}
 
 	@Override

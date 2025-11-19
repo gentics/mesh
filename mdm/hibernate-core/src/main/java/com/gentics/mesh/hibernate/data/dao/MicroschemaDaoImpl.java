@@ -12,6 +12,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.contentoperation.ContentStorage;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.PersistingMicroschemaDao;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.node.HibMicronode;
@@ -46,6 +47,7 @@ import com.gentics.mesh.hibernate.event.EventFactory;
 import com.gentics.mesh.hibernate.util.HibernateUtil;
 import com.gentics.mesh.hibernate.util.SplittingUtils;
 import com.gentics.mesh.util.UUIDUtil;
+import com.gentics.mesh.util.VersionUtil;
 
 import dagger.Lazy;
 import io.vertx.core.Vertx;
@@ -253,5 +255,16 @@ public class MicroschemaDaoImpl
 				.map(this::findByName)
 				.flatMap(microschema -> ((HibMicroschemaImpl) microschema).getVersions().stream())
 				.collect(Collectors.toList());
+	}
+
+	@Override
+	public HibMicroschemaVersion findLatestVersion(HibBranch branch, HibMicroschema microschema) {
+		List<HibMicroschemaVersionImpl> versions = em().createNamedQuery("microschemaversion.findInBranchForMicroschema", HibMicroschemaVersionImpl.class)
+				.setParameter("branch", branch)
+				.setParameter("microschema", microschema)
+				.getResultList();
+
+		return versions.stream().sorted((v1, v2) -> VersionUtil.compareVersions(v2.getVersion(), v1.getVersion()))
+				.findFirst().orElse(null);
 	}
 }

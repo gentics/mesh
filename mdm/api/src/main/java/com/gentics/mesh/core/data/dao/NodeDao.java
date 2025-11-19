@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -692,6 +693,16 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @return
 	 */
 	Stream<? extends HibNode> findAllGlobal();
+
+	/**
+	 * Find all the existing nodes in a bucket.<br>
+	 * <b>Attention: this method serves administration purposes. Don't use it for the node manipulation or general retrieval!</b><br>
+	 * Use {@link NodeDao#findAll(HibProject)} with the valid project binding instead.
+	 * 
+	 * @param bucket bucket
+	 * @return
+	 */
+	Stream<? extends HibNode> findAllGlobal(Bucket bucket);
 
 	/**
 	 * Get ETag part of node.

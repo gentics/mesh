@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -85,7 +86,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 		long before = tx(tx -> {
 			SchemaDao schemaDao = tx.schemaDao();
 			// Count contents in bucket 0 to MaxInt/2
-			return schemaDao.getFieldContainers(version, initialBranchUuid(), bucket).count();
+			return schemaDao.getFieldContainers(version, initialBranchUuid(), bucket, Optional.empty()).count();
 		});
 
 		// Now create a new container
@@ -95,7 +96,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 
 		tx(tx -> {
 			SchemaDao schemaDao = tx.schemaDao();
-			long after = schemaDao.getFieldContainers(version, initialBranchUuid(), bucket).count();
+			long after = schemaDao.getFieldContainers(version, initialBranchUuid(), bucket, Optional.empty()).count();
 			assertEquals("We should find one more content.", before + 1, after);
 		});
 
@@ -106,7 +107,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 
 		tx(tx -> {
 			SchemaDao schemaDao = tx.schemaDao();
-			long after = schemaDao.getFieldContainers(version, initialBranchUuid(), bucket).count();
+			long after = schemaDao.getFieldContainers(version, initialBranchUuid(), bucket, Optional.empty()).count();
 			assertEquals("We should still find the altered element ", before + 1, after);
 		});
 
@@ -117,7 +118,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 
 		tx(tx -> {
 			SchemaDao schemaDao = tx.schemaDao();
-			long after = schemaDao.getFieldContainers(version, initialBranchUuid(), bucket).count();
+			long after = schemaDao.getFieldContainers(version, initialBranchUuid(), bucket, Optional.empty()).count();
 			assertEquals("We should still find the altered element ", before, after);
 		});
 

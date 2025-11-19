@@ -6,6 +6,28 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v3.1.6]]
+== 3.1.6 (19.11.2025)
+
+icon:check[] Core: The published status of the fetched content was wrong, if using either native filtering or sorting. This has been fixed.
+
+icon:check[] Core: The API for branches has been modified to support better performance when loading
+the latest schema version of a schema in a branch.
+
+
+icon:check[] Core: The performace for creating/updating nodes has been improved.
+
+
+icon:check[] Core: The second level cache for hibernate has been enabled by default.
+The startup of Mesh with second level cache enabled in a cluster environment has been fixed.
+
+
+icon:check[] Core: The performance of getting entity lists has been improved by reducing the number of executed SQL queries.
+
+
+icon:check[] Core: The `OkHttp` client dependency has been updated to the version `5.3.0`, targeting the vulnerability `CVE-2021-0341`. 
+The `ElasticSearch Java Client`, that depends on the same client, has been updated as well to the version `1.1.4`.
+
 [[v3.1.5]]
 == 3.1.5 (27.10.2025)
 
@@ -112,6 +134,28 @@ icon:check[] Some dependencies have been updated:
 * Netty: 4.1.118.Final
 * Commons Beanutils: 1.11.0
 
+
+[[v3.0.17]]
+== 3.0.17 (18.11.2025)
+
+icon:check[] Core: The published status of the fetched content was wrong, if using either native filtering or sorting. This has been fixed.
+
+icon:check[] Core: The API for branches has been modified to support better performance when loading
+the latest schema version of a schema in a branch.
+
+
+icon:check[] Core: The performace for creating/updating nodes has been improved.
+
+
+icon:check[] Core: The second level cache for hibernate has been enabled by default.
+The startup of Mesh with second level cache enabled in a cluster environment has been fixed.
+
+
+icon:check[] Core: The performance of getting entity lists has been improved by reducing the number of executed SQL queries.
+
+
+icon:check[] Core: The `OkHttp` client dependency has been updated to the version `5.3.0`, targeting the vulnerability `CVE-2021-0341`. 
+The `ElasticSearch Java Client`, that depends on the same client, has been updated as well to the version `1.1.4`.
 
 [[v3.0.16]]
 == 3.0.16 (27.10.2025)

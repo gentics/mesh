@@ -37,6 +37,7 @@ import org.hibernate.boot.model.naming.Identifier;
 import org.hibernate.boot.model.naming.PhysicalNamingStrategy;
 import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
 import org.hibernate.jpa.AvailableHints;
+import org.hibernate.jpa.SpecHints;
 import org.hibernate.query.NativeQuery;
 import org.slf4j.Logger;
 
@@ -50,6 +51,7 @@ import com.gentics.mesh.cache.TotalsCache;
 import com.gentics.mesh.contentoperation.CommonContentColumn;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
+import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.dao.PersistingRootDao;
@@ -199,7 +201,16 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 	public TraversalResult<T> findAll() {
 		CriteriaQuery<D> query = cb().createQuery(domainClass);
 		query.from(domainClass);
-		return new TraversalResult<>(em().createQuery(query).getResultStream());
+
+		return new TraversalResult<>(setEntityGraph(em().createQuery(query), getEntityGraph("load", false)).getResultStream());
+	}
+
+	public TraversalResult<T> findAll(Bucket bucket) {
+		CriteriaQuery<D> query = cb().createQuery(domainClass);
+		Root<D> root = query.from(domainClass);
+
+		query.where(cb().greaterThanOrEqualTo(root.get("bucketTracking").get("bucketId"), bucket.start()), cb().lessThanOrEqualTo(root.get("bucketTracking").get("bucketId"), bucket.end()));
+		return new TraversalResult<>(setEntityGraph(em().createQuery(query), getEntityGraph("load", false)).getResultStream());
 	}
 
 	public Page<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
@@ -214,7 +225,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 		if (readPerm) {
 			addPermissionRestriction(query, dRoot, ac.getUser(), InternalPermission.READ_PERM);
 		}
-		return getResultPage(ac, query, pagingInfo, getEntityGraph("rest"), extraFilter);
+		return getResultPage(ac, query, pagingInfo, getEntityGraph("rest", false), extraFilter);
 	}
 
 	// sql pagination can be performed only if we have per page info and no extra filter
@@ -222,17 +233,24 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 	// before filtering
 	@Deprecated
 	private <R> boolean paginateWithSql(PagingParameters pagingInfo, java.util.function.Predicate<R> extraFilter) {
-		return pagingInfo != null && pagingInfo.getPerPage() != null && pagingInfo.getPerPage().intValue() > 0 && extraFilter == null;
+		return pagingInfo != null && pagingInfo.getPerPage() != null && extraFilter == null;
 	}
 
 	@Deprecated
-	private <R> Page<? extends R> getResultPageWithSqlPagination(InternalActionContext ac, CriteriaQuery<? extends R> query, PagingParameters pagingInfo) {
+	private <R> Page<? extends R> getResultPageWithSqlPagination(InternalActionContext ac, CriteriaQuery<? extends R> query, EntityGraph<?> entityGraph, PagingParameters pagingInfo) {
 		Long perPage = pagingInfo.getPerPage();
+		int perPageInt = perPage > Integer.MAX_VALUE ? Integer.MAX_VALUE : perPage.intValue();
 		long totalCount = em().createQuery(JpaUtil.countCriteria(em(), query)).getSingleResult();
-		List<? extends R> list = em().createQuery(query)
-				.setFirstResult(pagingInfo.getActualPage() * perPage.intValue())
-				.setMaxResults(perPage.intValue())
-				.getResultList();
+
+		List<? extends R> list;
+		if (perPageInt > 0 && totalCount > 0) {
+			list = setEntityGraph(em().createQuery(query), entityGraph)
+					.setFirstResult(pagingInfo.getActualPage() * perPageInt)
+					.setMaxResults(perPageInt)
+					.getResultList();
+		} else {
+			list = Collections.emptyList();
+		}
 
 		return new PageImpl<>(list, pagingInfo, totalCount);
 	}
@@ -253,9 +271,10 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 	}
 
 	@SuppressWarnings("unchecked")
-	EntityGraph<D> getEntityGraph(String suffix) {
+	EntityGraph<D> getEntityGraph(String suffix, boolean inRoot) {
 		return (EntityGraph<D>) em().getEntityGraphs(domainClass).stream()
 			.filter(graph -> graph.getName().endsWith(suffix))
+			.filter(graph -> databaseConnector.allows(graph, inRoot))
 			.findAny()
 			.orElse(null);
 	}
@@ -404,7 +423,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 	public <R, F> Page<? extends R> getResultPage(InternalActionContext ac, CriteriaQuery<? extends R> query, PagingParameters pagingInfo,
 												  EntityGraph<?> entityGraph, java.util.function.Predicate<R> extraFilter) {
 		if (paginateWithSql(pagingInfo, extraFilter)) {
-			return getResultPageWithSqlPagination(ac, query, pagingInfo);
+			return getResultPageWithSqlPagination(ac, query, entityGraph, pagingInfo);
 		}
 		Stream<? extends R> resultStream = getResultStream(ac, query, entityGraph);
 
@@ -448,7 +467,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 		// Make root joins, if requested
 		Optional<NativeJoin> maybeRootJoin = maybeRoot.map(joinEntity -> joinEntity.getLeft().makeJoin(myAlias, joinEntity.getRight()));
 
-		List<String> domainColumns = databaseConnector.getDatabaseColumnNames(domainClass).map(columns -> columns.stream().map(column -> myAlias + "." + column).collect(Collectors.toList())).get();
+		List<String> domainColumns = getDomainColumns().stream().map(column -> myAlias + "." + column).collect(Collectors.toList());
 
 		Select select = new Select(databaseConnector.getSessionMetadataIntegrator().getSessionFactoryImplementor());
 		select.setTableName(databaseConnector.maybeGetPhysicalTableName(domainClass).get() + " " + myAlias);
@@ -1790,7 +1809,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 	 * @return
 	 */
 	public <R, F> Stream<? extends R> getResultStream(InternalActionContext ac, CriteriaQuery<? extends R> query, EntityGraph<?> entityGraph) {
-		return setEntityGraph(em().createQuery(query), entityGraph).getResultStream();
+		return setEntityGraph(em().createQuery(query), entityGraph).getResultList().stream();
 	}
 
 	/**
@@ -1845,7 +1864,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 
 	private <E> TypedQuery<E> setEntityGraph(TypedQuery<E> query, EntityGraph<?> entityGraph) {
 		if (entityGraph != null) {
-			query.setHint("jakarta.persistence.fetchgraph", entityGraph);
+			query.setHint(SpecHints.HINT_SPEC_FETCH_GRAPH, entityGraph);
 		}
 		return query;
 	}
@@ -2128,6 +2147,15 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 	public long getOrFetchTotal(NativeQuery<?> query) {
 		String key = query.getQueryString() + query.getParameterMetadata().getNamedParameterNames().stream().collect(Collectors.joining());
 		return totalsCache.get(key, unused -> ((Number) query.getSingleResult()).longValue());
+	}
+
+	/**
+	 * Get a list of database table columns for this domain entity, through cache.
+	 * 
+	 * @return
+	 */
+	public Set<String> getDomainColumns() {
+		return HibernateTx.get().data().getTableColumnsCache().get(domainClass, cls -> databaseConnector.getDatabaseColumnNames(cls).orElse(null));
 	}
 
 	/**

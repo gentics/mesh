@@ -43,7 +43,7 @@ public class GroupUserAssignmentHandler implements EventHandler {
 			GroupUserAssignModel model = requireType(GroupUserAssignModel.class, messageEvent.message);
 			return Flowable.just(helper.getDb().tx(tx -> {
 				HibUser user = tx.userDao().findByUuid(model.getUser().getUuid());
-				return entities.createRequest(user);
+				return entities.createRequest(user, null);
 			}));
 		});
 	}

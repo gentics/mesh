@@ -7,10 +7,14 @@ import static com.gentics.mesh.core.rest.MeshEvent.GROUP_USER_ASSIGNED;
 import static com.gentics.mesh.core.rest.MeshEvent.GROUP_USER_UNASSIGNED;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.util.PreparationUtil.getPreparedData;
+import static com.gentics.mesh.util.PreparationUtil.prepareData;
+import static com.gentics.mesh.util.PreparationUtil.preparePermissions;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -21,11 +25,14 @@ import com.gentics.mesh.cache.NameCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.group.HibGroup;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.event.group.GroupRoleAssignModel;
 import com.gentics.mesh.core.rest.event.group.GroupUserAssignModel;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
@@ -167,6 +174,25 @@ public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGro
 	}
 
 	@Override
+	default void beforeTransformToRestSync(Page<? extends HibCoreElement<? extends RestModel>> page,
+			InternalActionContext ac) {
+		GenericParameters generic = ac.getGenericParameters();
+		FieldsSet fields = generic.getFields();
+
+		preparePermissions(ac.getUser(), page, ac, fields);
+
+		@SuppressWarnings("unchecked")
+		List<HibGroup> groups = (List<HibGroup>)page.getWrappedList();
+		prepareData(groups, ac, "group", "roles", this::getRoles, fields.has("roles"));
+	}
+
+	@Override
+	default void beforeGetETagForPage(Page<? extends HibCoreElement<? extends RestModel>> page,
+			InternalActionContext ac) {
+		preparePermissions(ac.getUser(), page, ac);
+	}
+
+	@Override
 	default GroupResponse transformToRestSync(HibGroup group, InternalActionContext ac, int level,
 			String... languageTags) {
 		GenericParameters generic = ac.getGenericParameters();
@@ -177,7 +203,7 @@ public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGro
 			restGroup.setName(group.getName());
 		}
 		if (fields.has("roles")) {
-			for (HibRole role : getRoles(group)) {
+			for (HibRole role : getPreparedData(group, ac, "group", "roles", r -> getRoles(r).list())) {
 				String name = role.getName();
 				if (name != null) {
 					restGroup.getRoles().add(role.transformToReference());

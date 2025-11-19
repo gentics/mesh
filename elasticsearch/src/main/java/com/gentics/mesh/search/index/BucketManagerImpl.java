@@ -1,5 +1,7 @@
 package com.gentics.mesh.search.index;
 
+import java.util.function.Supplier;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -9,6 +11,9 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.util.MathUtil;
 
 import io.reactivex.Flowable;
+import io.reactivex.functions.Function;
+
+import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,4 +68,9 @@ public class BucketManagerImpl implements BucketManager {
 		});
 	}
 
+	@Override
+	public <T> Flowable<T> doWithBuckets(Supplier<Long> totalCountSupplier,
+			Function<Bucket, Publisher<? extends T>> handler) {
+		return getBuckets(totalCountSupplier.get()).flatMap(handler, 1);
+	}
 }

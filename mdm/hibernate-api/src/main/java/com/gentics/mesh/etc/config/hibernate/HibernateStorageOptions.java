@@ -37,7 +37,7 @@ public class HibernateStorageOptions implements Option {
 	public static final String DEFAULT_CONNECTION_PASSWORD = "admin";
 	public static final Boolean DEFAULT_SHOW_SQL = false;
 	public static final Boolean DEFAULT_FORMAT_SQL = false;
-	public static final Boolean DEFAULT_SECOND_LEVEL_CACHE_ENABLED = false;
+	public static final Boolean DEFAULT_SECOND_LEVEL_CACHE_ENABLED = true;
 	public static final Boolean DEFAULT_GENERATE_STATISTICS = false;
 	public static final long DEFAULT_QUERY_TIMEOUT = 0;
 	public static final int DEFAULT_HIBERNATE_JDBC_BATCH_SIZE = 5;

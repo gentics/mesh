@@ -11,13 +11,16 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.search.EntityMetrics;
+import com.gentics.mesh.handler.DataHolderContext;
 import com.gentics.mesh.search.index.MappingProvider;
+import com.gentics.mesh.search.index.Transformer;
 
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
@@ -61,13 +64,14 @@ public interface IndexHandler<T extends HibBaseElement> {
 	Function<Collection<String>, Stream<Pair<String, T>>> elementsLoader();
 
 	/**
-	 * Load all elements from the graph that are needed for the index handler.
+	 * Load all elements in the bucket that are needed for the index handler.
 	 * 
-	 * @param tx
+	 * @param bucket bucket
+	 * @param dc data holder context for prepared data
 	 * 
 	 * @return
 	 */
-	Stream<? extends T> loadAllElements();
+	Collection<? extends T> loadAllElements(Bucket bucket, DataHolderContext dc);
 
 	/**
 	 * Return the class of elements which can be handled by this handler.
@@ -135,9 +139,10 @@ public interface IndexHandler<T extends HibBaseElement> {
 	 * Generate the version for the given element.
 	 * 
 	 * @param element
+	 * @param dhc data holder context
 	 * @return
 	 */
-	String generateVersion(T element);
+	String generateVersion(T element, DataHolderContext dhc);
 
 	/**
 	 * Returns a map of metrics which the handler is aware of.
@@ -152,6 +157,13 @@ public interface IndexHandler<T extends HibBaseElement> {
 	 * @return
 	 */
 	long getTotalCountFromGraph();
+
+	/**
+	 * Return the index specific transformer which is used to generate the search documents.
+	 * 
+	 * @return
+	 */
+	Transformer getTransformer();
 
 	/**
 	 * Return the index specific mapping provider.

@@ -26,7 +26,7 @@ public class GraphQLChildrenQueryCountingTest extends AbstractGraphQLChildrenQue
 	/**
 	 * Number of children, created for the test folder
 	 */
-	public final static int NUM_CHILDREN = 15;
+	public final static int NUM_CHILDREN = 50;
 
 	@Before
 	public void setup() {
@@ -58,7 +58,7 @@ public class GraphQLChildrenQueryCountingTest extends AbstractGraphQLChildrenQue
 		// make the query without counting statements, to put everything into the cache, which can be cached
 		nonAdminCall(() -> client().graphql(projectName(), new GraphQLRequest().setQuery(finalQuery)));
 
-		// we expect only two sql statements, one for each level
-		doTest(() -> client().graphql(projectName(), new GraphQLRequest().setQuery(finalQuery)), 2);
+		// we expect only 10 sql statements, 5 for each level
+		doTest(() -> client().graphql(projectName(), new GraphQLRequest().setQuery(finalQuery)), 10);
 	}
 }

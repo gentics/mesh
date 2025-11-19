@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.dao;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -169,6 +170,13 @@ public interface RoleDao extends DaoGlobal<HibRole>, DaoTransformable<HibRole, R
 	Result<? extends HibGroup> getGroups(HibRole role);
 
 	/**
+	 * Return the groups for all given roles
+	 * @param roles collection of roles
+	 * @return map of role to the collections of groups
+	 */
+	Map<HibRole, Collection<? extends HibGroup>> getGroups(Collection<HibRole> roles);
+
+	/**
 	 * Return a page of groups to which this role was assigned.
 	 *
 	 * @param role
@@ -210,6 +218,15 @@ public interface RoleDao extends DaoGlobal<HibRole>, DaoTransformable<HibRole, R
 	 * @return
 	 */
 	Set<String> getRoleUuidsForPerm(HibBaseElement element, InternalPermission permission);
+
+	/**
+	 * Return set of role uuids for the given permission that were granted on the given collection of elements.
+	 *
+	 * @param elements
+	 * @param permission
+	 * @return
+	 */
+	Map<HibBaseElement, Set<String>> getRoleUuidsForPerm(Collection<? extends HibBaseElement> elements, InternalPermission permission);
 
 	/**
 	 * Return the roles which grant the given permission on the element.

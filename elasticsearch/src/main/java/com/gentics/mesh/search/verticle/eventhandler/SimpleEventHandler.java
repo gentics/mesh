@@ -12,6 +12,7 @@ import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
+import com.gentics.mesh.handler.DataHolderContext;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.entity.MeshEntity;
 
@@ -21,7 +22,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * An event handler that uses the events from {@link MeshEntity#allEvents()} and creates/updates/deletes documents according to
- * {@link MeshEntity#transform(Object)}
+ * {@link MeshEntity#transform(Object, DataHolderContext)}
  * 
  * @param <T>
  */

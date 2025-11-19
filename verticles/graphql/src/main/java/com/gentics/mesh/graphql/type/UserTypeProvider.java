@@ -114,7 +114,8 @@ public class UserTypeProvider extends AbstractTypeProvider {
 		// .rolesHash
 		root.field(newFieldDefinition().name("rolesHash").description("Hash of the users roles").type(GraphQLString).dataFetcher((env) -> {
 			HibUser user = env.getSource();
-			return Tx.get().userDao().getRolesHash(user);
+			GraphQLContext gc = env.getContext();
+			return Tx.get().userDao().getRolesHash(user, gc);
 		}));
 
 		// .nodeReference
