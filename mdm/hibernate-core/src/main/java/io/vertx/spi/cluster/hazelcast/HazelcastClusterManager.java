@@ -165,7 +165,7 @@ public class HazelcastClusterManager implements ClusterManager, MembershipListen
 					nodeId = hazelcast.getCluster().getLocalMember().getAttribute(NODE_ID_ATTRIBUTE);
 					if (nodeId == null) {
 						// The Hazelcast may have come from the external source;
-						nodeId = UUID.randomUUID().toString();
+						nodeId = hazelcast.getCluster().getLocalMember().getUuid().toString();
 					}
 				}
 
