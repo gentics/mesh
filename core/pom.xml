@@ -187,11 +187,6 @@
 			<artifactId>mockito-core</artifactId>
 		</dependency>
 
-		<dependency>
-			<groupId>com.google.dagger</groupId>
-			<artifactId>dagger-compiler</artifactId>
-			<optional>true</optional>
-		</dependency>
 		<!-- Default S3 storage provider -->
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>

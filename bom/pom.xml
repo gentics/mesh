@@ -37,7 +37,6 @@
 		<log4j.version>2.23.1</log4j.version>
 		<slf4j.version>2.0.13</slf4j.version>
 		<scrimage.webp.version>4.1.3</scrimage.webp.version>
-		<hibernate.version>7.1.7.Final</hibernate.version>
 		<liquibase.version>4.29.2</liquibase.version>
 		<hazelcast-hibernate.version>5.2.0</hazelcast-hibernate.version>
 		<bytebuddy.version>1.12.9</bytebuddy.version>
@@ -89,12 +88,6 @@
 				<groupId>com.google.dagger</groupId>
 				<artifactId>dagger</artifactId>
 				<version>${dagger.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.google.dagger</groupId>
-				<artifactId>dagger-compiler</artifactId>
-				<version>${dagger.version}</version>
-				<optional>true</optional>
 			</dependency>
 
 			<!-- Utilities -->
@@ -820,7 +813,7 @@
 			<dependency>
 				<groupId>com.google.auto.factory</groupId>
 				<artifactId>auto-factory</artifactId>
-				<version>1.0-beta8</version>
+				<version>${auto-factory.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.liquibase</groupId>
@@ -860,8 +853,8 @@
 
 			<!-- Library replacements -->
 			<dependency>
-					<groupId>com.github.jknack</groupId>
-					<artifactId>handlebars</artifactId>
+				<groupId>com.github.jknack</groupId>
+				<artifactId>handlebars</artifactId>
 				<version>${handlebars.version}</version>
 			</dependency>
 		</dependencies>
