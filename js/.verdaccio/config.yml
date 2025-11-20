@@ -16,8 +16,8 @@ web:
 packages:
   "@gentics/*":
     access: $all
-    publish: $authenticated
-    unpublish: $authenticated
+    publish: $all
+    unpublish: $all
     proxy: gentics
 
   "**":

@@ -16,25 +16,32 @@
     "parallel": 3,
     "useInferencePlugins": false,
     "release": {
-        "git": {
-            "commit": false,
-            "push": false,
-            "tag": false
-        },
-        "version": {
-            "preVersionCommand": "npx nx run-many -t build",
-            "currentVersionResolver": "registry",
-            "versionPrefix": "^",
-            "manifestRootsToUpdate": [
-                ".",
-                "dist/{projectName}"
-            ],
-            "preserveLocalDependencyProtocols": false
-        },
         "projects": [
             "tag:lib"
         ],
+        "version": {
+            "git": {
+                "stageChanges": true,
+                "commit": false,
+                "push": false,
+                "tag": false
+            },
+            "preVersionCommand": "npm run nx -- run-many -t build",
+            "currentVersionResolver": "registry",
+            "versionPrefix": "^",
+            "manifestRootsToUpdate": [
+                "{workspaceRoot}/{projectRoot}",
+                "{workspaceRoot}/dist/{projectName}"
+            ],
+            "preserveLocalDependencyProtocols": false
+        },
         "changelog": {
+            "git": {
+                "stageChanges": false,
+                "commit": false,
+                "push": false,
+                "tag": false
+            },
             "projectChangelogs": false,
             "workspaceChangelog": false
         }
