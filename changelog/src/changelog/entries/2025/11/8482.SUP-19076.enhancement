@@ -1,2 +1,0 @@
-Search: An index search integration with Elasticsearch has been refactored to favor the stateless `search_after` approach, over an old stateful `scroll` API. 
-A new search config item, `indexSearchMode`, has been added, with the following values allowed `SEARCH_AFTER` (default) and `SCROLL`.

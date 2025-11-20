@@ -1,0 +1,1 @@
+Search: An index search integration with Elasticsearch has been refactored to use the stateless `search_after` approach. The old, `scroll` API based implementation has been removed.

@@ -34,7 +34,6 @@ public class ElasticSearchOptions implements Option {
 	public static final boolean DEFAULT_INCLUDE_BINARY_FIELDS = true;
 	public static final MappingMode DEFAULT_MAPPING_MODE = MappingMode.DYNAMIC;
 	public static final ComplianceMode DEFAULT_COMPLIANCE_MODE = ComplianceMode.ES_6;
-	public static final IndexSearchMode DEFAULT_INDEX_SEARCH_MODE = IndexSearchMode.SEARCH_AFTER;
 
 	public static final String DEFAULT_PREFIX = "mesh-";
 
@@ -187,11 +186,6 @@ public class ElasticSearchOptions implements Option {
 	@JsonPropertyDescription("Set the timeout for the cache of index mappings in ms. Default: " + DEFAULT_INDEX_MAPPING_CACHE_TIMEOUT)
 	@EnvironmentVariable(name = MESH_ELASTICSEARCH_INDEX_MAPPING_CACHE_TIMEOUT_ENV, description = "Override the timeout for the cache if index mappings")
 	private long indexMappingCacheTimeout = DEFAULT_INDEX_MAPPING_CACHE_TIMEOUT;
-
-	@JsonProperty(required = false)
-	@JsonPropertyDescription("This setting controls the index search mode for Elasticsearch, using either `scroll` state or `search_after` points. Default: SCROLL")
-	@EnvironmentVariable(name = MESH_ELASTICSEARCH_INDEX_SEARCH_MODE_ENV, description = "Override the index search mode. ")
-	private IndexSearchMode indexSearchMode = DEFAULT_INDEX_SEARCH_MODE;
 
 	public ElasticSearchOptions() {
 
@@ -476,24 +470,5 @@ public class ElasticSearchOptions implements Option {
 	 */
 	public void setIndexMappingCacheTimeout(long indexMappingCacheTimeout) {
 		this.indexMappingCacheTimeout = indexMappingCacheTimeout;
-	}
-
-	/**
-	 * Index search mode.
-	 * 
-	 * @return
-	 */
-	public IndexSearchMode getIndexSearchMode() {
-		return indexSearchMode;
-	}
-
-	/**
-	 * Set the index search mode.
-	 * @param indexSearchMode
-	 * @return
-	 */
-	public ElasticSearchOptions setIndexSearchMode(IndexSearchMode indexSearchMode) {
-		this.indexSearchMode = indexSearchMode;
-		return this;
 	}
 }

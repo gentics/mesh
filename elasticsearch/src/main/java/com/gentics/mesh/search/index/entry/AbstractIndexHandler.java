@@ -1,9 +1,7 @@
 package com.gentics.mesh.search.index.entry;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -28,7 +26,6 @@ import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.search.EntityMetrics;
 import com.gentics.mesh.etc.config.ConfigUtils;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.search.IndexSearchMode;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.handler.DataHolderContext;
 import com.gentics.mesh.search.SearchProvider;
@@ -70,8 +67,6 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 
 	protected final Compliance compliance;
 
-	protected final IndexSearchMode indexSearchMode;
-
 	protected final SyncMeters meters;
 
 	protected final BucketManager bucketManager;
@@ -82,7 +77,6 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 		this.db = db;
 		this.helper = helper;
 		this.compliance = compliance;
-		this.indexSearchMode = options.getSearchOptions().getIndexSearchMode();
 		this.meters = syncMetersFactory.createSyncMetric(getType());
 		this.bucketManager = bucketManager;
 	}
@@ -217,14 +211,7 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 			log.debug("Using {} query:\n\t", fullIndexName, query.encodePrettily());
 			
 			try {
-				switch (indexSearchMode) {
-				case SCROLL:
-					scrollQuery(query, client, fullIndexName, versions);
-					break;
-				default:
-					searchAfterQuery(query, client, fullIndexName, versions);
-					break;		
-				}
+				searchAfterQuery(query, client, fullIndexName, versions);
 			} catch (HttpErrorException e) {
 				log.error("Could not load versions of index " + indexName);
 				throw e;
@@ -270,63 +257,6 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 				} else {
 					// The scroll yields no more data. We are done
 					break;
-				}
-			}
-		}
-	}
-
-	/**
-	 * Search using `scroll` API
-	 * 
-	 * @param query
-	 * @param client
-	 * @param fullIndexName
-	 * @param versions
-	 * @throws HttpErrorException 
-	 */
-	protected void scrollQuery(JsonObject query, ElasticsearchClient<JsonObject> client, String fullIndexName, Map<String, String> versions) throws HttpErrorException {
-		RequestBuilder<JsonObject> builder = client.searchScroll(query, "1m", fullIndexName);
-		JsonObject result = new JsonObject();
-
-		// collect all scroll IDs
-		Set<String> scrollIds = new HashSet<>();
-
-		result = builder.sync();
-		log.debug("Got response:\n{}", result.encodePrettily());
-		Optional.ofNullable(result.getString("_scroll_id")).ifPresent(scrollIds::add);
-		JsonArray hits = result.getJsonObject("hits", new JsonObject()).getJsonArray("hits", new JsonArray());
-		processHits(hits, versions);
-
-		try {
-			// Check whether we need to process more scrolls
-			if (hits.size() != 0) {
-				String nextScrollId = result.getString("_scroll_id");
-				while (true) {
-					final String currentScroll = nextScrollId;
-					log.debug("Fetching scroll result using scrollId {}", currentScroll);
-					JsonObject scrollResult = client.scroll("1m", currentScroll).sync();
-					Optional.ofNullable(scrollResult.getString("_scroll_id")).ifPresent(scrollIds::add);
-					JsonArray scrollHits = scrollResult.getJsonObject("hits").getJsonArray("hits");
-					log.debug("Got response:\n\t[{}]", scrollHits.encodePrettily());
-					if (scrollHits.size() != 0) {
-						processHits(scrollHits, versions);
-						// Update the scrollId for the next fetch
-						nextScrollId = scrollResult.getString("_scroll_id");
-						log.debug("Using scrollId [{}] for next fetch.", nextScrollId);
-					} else {
-						// The scroll yields no more data. We are done
-						break;
-					}
-				}
-			}
-		} finally {
-			if (!scrollIds.isEmpty()) {
-				JsonObject scrollIdBody = new JsonObject();
-				scrollIdBody.put("scroll_id", new JsonArray(new ArrayList<String>(scrollIds)));
-				try {
-					client.clearScroll(scrollIdBody).sync();
-				} catch (Throwable e) {
-					log.error("Error while clearing open scrolls");
 				}
 			}
 		}

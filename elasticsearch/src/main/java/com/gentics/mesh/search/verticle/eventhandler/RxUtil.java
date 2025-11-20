@@ -5,16 +5,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.LongStream;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.elasticsearch.client.ElasticsearchClient;
-import com.gentics.mesh.etc.config.search.IndexSearchMode;
 
 import io.reactivex.Flowable;
 import io.reactivex.functions.Function;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Utility for RxJava related search code.
@@ -30,20 +29,14 @@ public final class RxUtil {
 	 * Executes a search request to elasticsearch base on the options. Then continues the search and fetches all documents from the request and returns
 	 * them in the flow.
 	 * 
-	 * @param options
 	 * @param client
 	 * @param query
 	 * @param scrollAge
 	 * @param indices
 	 * @return
 	 */
-	public static Flowable<JsonObject> searchAll(IndexSearchMode mode, ElasticsearchClient<JsonObject> client, JsonObject query, String scrollAge, String... indices) {
-		switch (mode) {
-		case SCROLL:
-			return scrollAll(client, query, scrollAge, indices);
-		default:
-			return searchAfterAll(client, query, indices);		
-		}
+	public static Flowable<JsonObject> searchAll(ElasticsearchClient<JsonObject> client, JsonObject query, String scrollAge, String... indices) {
+		return searchAfterAll(client, query, indices);
 	}
 
 	/**

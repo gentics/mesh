@@ -21,7 +21,6 @@ import com.gentics.mesh.core.data.search.request.UpdateDocumentRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.search.IndexSearchMode;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.verticle.MessageEvent;
 
@@ -39,13 +38,11 @@ public class RoleDeletedEventHandler implements EventHandler {
 
 	private final SearchProvider searchProvider;
 	private final Compliance compliance;
-	private final IndexSearchMode searchMode;
 
 	@Inject
 	public RoleDeletedEventHandler(SearchProvider searchProvider, MeshOptions options, Compliance compliance) {
 		this.searchProvider = searchProvider;
 		this.compliance = compliance;
-		this.searchMode = options.getSearchOptions().getIndexSearchMode();
 	}
 
 	@Override
@@ -81,7 +78,7 @@ public class RoleDeletedEventHandler implements EventHandler {
 		if (client == null) {
 			return Flowable.empty();
 		}
-		return searchAll(searchMode, client, createSearchQuery(model), "1m")
+		return searchAll(client, createSearchQuery(model), "1m")
 			.doOnNext(response -> {
 				if (log.isTraceEnabled()) {
 					log.trace("Found docs readable from role {}: {}", model.getUuid(), response);
