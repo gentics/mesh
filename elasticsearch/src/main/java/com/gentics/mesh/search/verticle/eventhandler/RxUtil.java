@@ -26,48 +26,6 @@ public final class RxUtil {
 	}
 
 	/**
-	 * Executes a search request to elasticsearch base on the options. Then continues the search and fetches all documents from the request and returns
-	 * them in the flow.
-	 * 
-	 * @param client
-	 * @param query
-	 * @param scrollAge
-	 * @param indices
-	 * @return
-	 */
-	public static Flowable<JsonObject> searchAll(ElasticsearchClient<JsonObject> client, JsonObject query, String scrollAge, String... indices) {
-		return searchAfterAll(client, query, indices);
-	}
-
-	/**
-	 * Executes a search request to elasticsearch with the scrolling option. Then continues the scroll and fetches all documents from the request and returns
-	 * them in the flow.
-	 *
-	 * @param client
-	 * @param query
-	 * @param scrollAge
-	 * @param indices
-	 * @return
-	 */
-	public static Flowable<JsonObject> scrollAll(ElasticsearchClient<JsonObject> client, JsonObject query, String scrollAge, String... indices) {
-		return client.searchScroll(query, scrollAge, indices).async()
-			.flatMapPublisher(continueScroll(client, scrollAge));
-	}
-	private static Function<JsonObject, Flowable<JsonObject>> continueScroll(ElasticsearchClient<JsonObject> client, String scrollAge) {
-		return response -> {
-			String scrollId = response.getString("_scroll_id");
-			if (response.getJsonObject("hits").getJsonArray("hits").isEmpty()) {
-				return client.clearScroll(scrollId).async().toCompletable()
-					.andThen(Flowable.just(response));
-			} else {
-				return client.scroll(scrollAge, scrollId).async()
-					.flatMapPublisher(continueScroll(client, scrollAge))
-					.startWith(response);
-			}
-		};
-	}
-
-	/**
 	 * Executes a search request to elasticsearch with the search_after option. Then continues the search and fetches all documents from the request and returns
 	 * them in the flow.
 	 *
@@ -76,7 +34,7 @@ public final class RxUtil {
 	 * @param indices
 	 * @return
 	 */
-	public static Flowable<JsonObject> searchAfterAll(ElasticsearchClient<JsonObject> client, JsonObject query, String... indices) {
+	public static Flowable<JsonObject> searchAll(ElasticsearchClient<JsonObject> client, JsonObject query, String... indices) {
 		return client.search(query, indices).async()
 			.flatMapPublisher(continueSearchAfter(client, query, indices));
 	}

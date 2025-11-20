@@ -31,7 +31,6 @@ import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
@@ -90,31 +89,19 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 
 	protected void addNumberSpeedFieldToOneNode(Number number) {
 		HibNode node = tx(() -> content("concorde"));
-		switch (complianceMode()) {
-		case ES_9:
-			String schemaUuid = tx(() -> content("concorde").getSchemaContainer().getUuid());
-			String schemaVersion = tx(() -> schemaContainer("content").getLatestVersion().getVersion());
-			expect(SCHEMA_MIGRATION_FINISHED).match(1, SchemaMigrationMeshEventModel.class, event -> {
-				SchemaReference from = event.getFromVersion();
-				assertNotNull(from);
-				assertEquals("The from schema uuid did not match.", schemaUuid, from.getUuid());
-				assertEquals("The from version did not match", schemaVersion, from.getVersion());
-			});
-			SchemaUpdateRequest schemaUpdate = call(() -> client().findSchemaByUuid(schemaUuid)).toUpdateRequest();
-			schemaUpdate.addField(new NumberFieldSchemaImpl().setName("speed"));
-			call(() -> client().updateSchema(schemaUuid, schemaUpdate));
-			awaitEvents();
-			waitForSearchIdleEvent();
-			break;
-		default:
-			tx(() -> {
-				SchemaVersionModel schema = content("concorde").getSchemaContainer().getLatestVersion().getSchema();
-				schema.addField(new NumberFieldSchemaImpl().setName("speed"));
-				content("concorde").getSchemaContainer().getLatestVersion().setSchema(schema);
-				actions().updateSchemaVersion(content("concorde").getSchemaContainer().getLatestVersion());
-			});
-			break;
-		}
+		String schemaUuid = tx(() -> content("concorde").getSchemaContainer().getUuid());
+		String schemaVersion = tx(() -> schemaContainer("content").getLatestVersion().getVersion());
+		expect(SCHEMA_MIGRATION_FINISHED).match(1, SchemaMigrationMeshEventModel.class, event -> {
+			SchemaReference from = event.getFromVersion();
+			assertNotNull(from);
+			assertEquals("The from schema uuid did not match.", schemaUuid, from.getUuid());
+			assertEquals("The from version did not match", schemaVersion, from.getVersion());
+		});
+		SchemaUpdateRequest schemaUpdate = call(() -> client().findSchemaByUuid(schemaUuid)).toUpdateRequest();
+		schemaUpdate.addField(new NumberFieldSchemaImpl().setName("speed"));
+		call(() -> client().updateSchema(schemaUuid, schemaUpdate));
+		awaitEvents();
+		waitForSearchIdleEvent();
 
 		NodeResponse response = call(() -> client().findNodeByUuid(projectName(), node.getUuid()));
 		NodeUpdateRequest request = response.toRequest();

@@ -1,10 +1,7 @@
 package com.gentics.mesh.search.impl;
 
-import static com.gentics.mesh.search.SearchProvider.DEFAULT_TYPE;
-
 import com.gentics.mesh.core.data.search.Compliance;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
-import com.gentics.mesh.search.SearchProvider;
 
 import io.vertx.core.json.JsonObject;
 
@@ -13,6 +10,11 @@ import io.vertx.core.json.JsonObject;
  */
 public class Elasticsearch6ComplianceImpl implements Compliance {
 
+	/**
+	 * Default document type for all indices. Note that the type handling will be removed in future ES versions.
+	 */
+	static final String DEFAULT_TYPE = "default";
+
 	@Override
 	public ComplianceMode getMode() {
 		return ComplianceMode.ES_6;
@@ -20,7 +22,7 @@ public class Elasticsearch6ComplianceImpl implements Compliance {
 
 	@Override
 	public void prepareGenericRequest(JsonObject settings) {
-		settings.put("_type", SearchProvider.DEFAULT_TYPE);
+		settings.put("_type", DEFAULT_TYPE);
 	}
 
 	@Override

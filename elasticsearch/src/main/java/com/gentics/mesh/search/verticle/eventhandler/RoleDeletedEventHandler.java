@@ -78,7 +78,7 @@ public class RoleDeletedEventHandler implements EventHandler {
 		if (client == null) {
 			return Flowable.empty();
 		}
-		return searchAll(client, createSearchQuery(model), "1m")
+		return searchAll(client, createSearchQuery(model))
 			.doOnNext(response -> {
 				if (log.isTraceEnabled()) {
 					log.trace("Found docs readable from role {}: {}", model.getUuid(), response);
