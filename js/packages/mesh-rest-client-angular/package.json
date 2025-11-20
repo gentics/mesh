@@ -1,6 +1,6 @@
 {
   "name": "@gentics/mesh-rest-client-angular",
-  "version": "3.1.5",
+  "version": "3.1.6",
   "license": "Apache-2.0",
   "dependencies": {},
   "peerDependencies": {
@@ -11,8 +11,8 @@
     "rxjs": "^7.8.1"
   },
   "devDependencies": {
-    "@gentics/mesh-models": "^3.1.5",
-    "@gentics/mesh-rest-client": "^3.1.5",
+    "@gentics/mesh-models": "^3.1.6",
+    "@gentics/mesh-rest-client": "^3.1.6",
     "@angular/common": "^16.0.0",
     "@angular/core": "^16.0.0",
     "rxjs": "^7.8.1"
