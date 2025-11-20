@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh-database-tests</artifactId>
-		<version>3.1.8-SNAPSHOT</version>
+		<version>3.1.7</version>
 	</parent>
 	<artifactId>mesh-database-tests-common</artifactId>
 	<name>Gentics Mesh - Tests - Common Database code</name>
