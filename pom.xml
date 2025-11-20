@@ -20,6 +20,7 @@
 
 		<vertx.version>4.5.18</vertx.version>
 		<dagger.version>2.24</dagger.version>
+		<hibernate.version>6.5.2.Final</hibernate.version>
 		<compiler.plugin.version>3.11.0</compiler.plugin.version>
 
 		<!-- Tests -->

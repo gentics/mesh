@@ -37,7 +37,6 @@
 		<log4j.version>2.23.1</log4j.version>
 		<slf4j.version>2.0.13</slf4j.version>
 		<scrimage.webp.version>4.1.3</scrimage.webp.version>
-		<hibernate.version>6.5.2.Final</hibernate.version>
 		<liquibase.version>4.29.2</liquibase.version>
 		<hazelcast-hibernate.version>5.2.0</hazelcast-hibernate.version>
 		<bytebuddy.version>1.12.9</bytebuddy.version>
