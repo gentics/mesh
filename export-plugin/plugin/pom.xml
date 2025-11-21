@@ -31,11 +31,6 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
-			<dependency>
-				<groupId>com.google.dagger</groupId>
-				<artifactId>dagger-compiler</artifactId>
-				<version>${dagger.version}</version>
-			</dependency>
 		</dependencies>
 	</dependencyManagement>
 	<dependencies>
@@ -52,12 +47,6 @@
 			<groupId>com.gentics.mesh.plugin.commercial</groupId>
 			<artifactId>mesh-export-plugin-extension-api</artifactId>
 			<version>${project.version}</version>
-		</dependency>
-		<!-- Dagger -->
-		<dependency>
-			<groupId>com.google.dagger</groupId>
-			<artifactId>dagger-compiler</artifactId>
-			<scope>provided</scope>
 		</dependency>
 		<!-- Jackson Date Parsing -->
 		<dependency>
