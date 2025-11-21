@@ -62,6 +62,7 @@ public class ElasticSearchOptions implements Option {
 	public static final String MESH_ELASTICSEARCH_MAPPING_MODE_ENV = "MESH_ELASTICSEARCH_MAPPING_MODE";
 	public static final String MESH_ELASTICSEARCH_COMPLIANCE_MODE_ENV = "MESH_ELASTICSEARCH_COMPLIANCE_MODE";
 	public static final String MESH_ELASTICSEARCH_SYNC_BATCH_SIZE_ENV = "MESH_ELASTICSEARCH_SYNC_BATCH_SIZE";
+	public static final String MESH_ELASTICSEARCH_SYNC_FETCH_BATCH_SIZE_ENV = "MESH_ELASTICSEARCH_SYNC_FETCH_BATCH_SIZE";
 	public static final String MESH_ELASTICSEARCH_HOSTNAME_VERIFICATION_ENV = "MESH_ELASTICSEARCH_HOSTNAME_VERIFICATION";
 	public static final String MESH_ELASTICSEARCH_INCLUDE_BINARY_FIELDS_ENV = "MESH_ELASTICSEARCH_INCLUDE_BINARY_FIELDS";
 
@@ -179,7 +180,7 @@ public class ElasticSearchOptions implements Option {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Configure the batch size while fetching the index versions. Default: " + DEFAULT_SYNC_FETCH_BATCH_SIZE)
-	@EnvironmentVariable(name = MESH_ELASTICSEARCH_BULK_LIMIT_ENV, description = "Override the sync fetch batch size. Default: " + DEFAULT_SYNC_FETCH_BATCH_SIZE)
+	@EnvironmentVariable(name = MESH_ELASTICSEARCH_SYNC_FETCH_BATCH_SIZE_ENV, description = "Override the sync fetch batch size. Default: " + DEFAULT_SYNC_FETCH_BATCH_SIZE)
 	private int syncFetchBatchSize = DEFAULT_SYNC_FETCH_BATCH_SIZE;
 
 	@JsonProperty(required = false)
