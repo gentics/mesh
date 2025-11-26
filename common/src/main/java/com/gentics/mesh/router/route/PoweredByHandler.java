@@ -19,7 +19,7 @@ public class PoweredByHandler implements Handler<RoutingContext> {
 
 	@Override
 	public void handle(RoutingContext rc) {
-		rc.response().putHeader("X-Powered-By", "getmesh.io");
+		rc.response().putHeader("X-Powered-By", "gentics.com/mesh");
 		rc.next();
 	}
 

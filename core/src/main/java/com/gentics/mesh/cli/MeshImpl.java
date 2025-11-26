@@ -193,9 +193,9 @@ public class MeshImpl implements Mesh {
 		RequestOptions requestOptions = new RequestOptions();
 		requestOptions.setMethod(HttpMethod.GET);
 		requestOptions.setSsl(true);
-		requestOptions.setHost("getmesh.io/api/updatecheck?v=" + Mesh.getPlainVersion());
+		requestOptions.setHost("www.gentics.com/mesh/api/updatecheck?v=" + Mesh.getPlainVersion());
 		getVertx().createHttpClient(new HttpClientOptions().setSsl(true).setTrustAll(false))
-				.request(HttpMethod.GET, 443, "getmesh.io", "/api/updatecheck?v=" + Mesh.getPlainVersion()).andThen(ar -> {
+				.request(HttpMethod.GET, 443, "www.gentics.com", "/mesh/api/updatecheck?v=" + Mesh.getPlainVersion()).andThen(ar -> {
 					if (ar.succeeded()) {
 						HttpClientRequest req = ar.result();
 
