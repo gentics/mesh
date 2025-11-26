@@ -14,7 +14,7 @@
  *  You may elect to redistribute this code under either of these licenses.
  */
 
-// Gentics: Patched to get back the getter for resolvers, is the current render functionality is inapplicable. 
+// Gentics: Patched to get back the getter for resolvers, as in the current render the existing functionality is inapplicable. 
 package io.vertx.ext.web.templ.handlebars.impl;
 
 import com.github.jknack.handlebars.Context;
