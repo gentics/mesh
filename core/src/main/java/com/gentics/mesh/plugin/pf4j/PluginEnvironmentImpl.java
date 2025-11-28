@@ -78,6 +78,8 @@ public class PluginEnvironmentImpl implements PluginEnvironment {
 		MeshRestClient client = MeshRestClient.create(MeshRestClientConfig.newConfig()
 			.setPort(port)
 			.setHost(host)
+			.setMinifyJson(true)
+			.setDisableCompression(true)
 			.setBasePath(version.getBasePath())
 			.build(), pluginOkHttpClient);
 
@@ -93,6 +95,8 @@ public class PluginEnvironmentImpl implements PluginEnvironment {
 			.setHost(host)
 			.setPort(port)
 			.setSsl(false)
+			.setMinifyJson(true)
+			.setDisableCompression(true)
 			.build(), pluginOkHttpClient);
 
 		// Set the token to the client if it was specified.
