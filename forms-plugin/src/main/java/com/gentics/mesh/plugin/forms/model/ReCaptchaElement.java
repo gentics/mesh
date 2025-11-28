@@ -105,9 +105,17 @@ public class ReCaptchaElement extends FormElement {
 				url = VERIFICATION_URL;
 			}
 
+			var secret = getConfiguration().getReCaptcha().getSecretKey();
+
+			if (StringUtils.isBlank(secret)) {
+				log.error("ReCaptcha secret key is missing, validation of reCaptcha element {} will always fail.", getName());
+
+				return Single.just(false);
+			}
+
 			// prepare request
 			FormBody formBody = new FormBody.Builder()
-					.add("secret", getConfiguration().getReCaptcha().getSecretKey())
+					.add("secret", secret)
 					.add("response", captchaResponse)
 					.build();
 
