@@ -40,8 +40,6 @@ public class PluginModule {
 			.setSsl(false)
 			.setProtocolVersion(options.isPluginUseHttp2() ? ProtocolVersion.HTTP_2 : ProtocolVersion.DEFAULT)
 			.setTimeout(Duration.ofSeconds(timeout))
-			.setDisableCompression(true)
-			.setMinifyJson(true)
 			.build();
 
 		// Create a fresh client for plugins to ensure independence between clients that are used within mesh.
