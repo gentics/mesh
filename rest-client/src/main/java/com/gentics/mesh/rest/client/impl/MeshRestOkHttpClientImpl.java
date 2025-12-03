@@ -10,6 +10,7 @@ import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshRestClientConfig;
 import com.gentics.mesh.rest.client.MeshWebsocket;
 
+import io.vertx.core.http.HttpHeaders;
 import okhttp3.OkHttpClient;
 
 /**
@@ -70,6 +71,9 @@ public class MeshRestOkHttpClientImpl extends MeshRestHttpClientImpl {
 		Map<String, String> headers = new HashMap<>();
 		if (disableAnonymousAccess) {
 			headers.put(MeshHeaders.ANONYMOUS_AUTHENTICATION, "disable");
+		}
+		if (config.isDisableCompression()) {
+			headers.put("Accept-Encoding", "identity");
 		}
 		headers.put("Accept", "application/json");
 		headers.putAll(authentication.getHeaders());
