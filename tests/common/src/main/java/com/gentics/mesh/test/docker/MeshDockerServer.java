@@ -47,8 +47,6 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> impleme
 				.setPort(getMappedPort(8080))
 				.setSsl(false)
 				.setProtocolVersion(ProtocolVersion.HTTP_2)
-				.setDisableCompression(true)
-				.setMinifyJson(true)
 				.build();
 
 		client = MeshRestClient.create(config);

@@ -33,7 +33,6 @@ public class MeshRestClientConfig {
 	private final int retryDelayMs;
 	private final ParameterProvider[] defaultParameters;
 	private final boolean minifyJson;
-	private final boolean disableCompression;
 
 	public MeshRestClientConfig(Builder builder) {
 		this.host = Objects.requireNonNull(builder.host);
@@ -52,7 +51,6 @@ public class MeshRestClientConfig {
 		this.retryDelayMs = builder.retryDelayMs;
 		this.defaultParameters = builder.defaultParameters;
 		this.minifyJson = builder.minifyJson;
-		this.disableCompression = builder.disableCompression;
 	}
 
 	/**
@@ -134,10 +132,6 @@ public class MeshRestClientConfig {
 		return minifyJson;
 	}
 
-	public boolean isDisableCompression() {
-		return disableCompression;
-	}
-
 	/**
 	 * Create a fresh config builder.
 	 * 
@@ -169,7 +163,6 @@ public class MeshRestClientConfig {
 		// max call timeout.
 		private int retryDelayMs = -1;
 		private boolean minifyJson = true;
-		private boolean disableCompression = false;
 
 		private ParameterProvider[] defaultParameters = new ParameterProvider[0];
 
@@ -185,8 +178,6 @@ public class MeshRestClientConfig {
 		public Builder(MeshRestClientConfig config) {
 			Objects.requireNonNull(config);
 
-			setDisableCompression(config.isDisableCompression());
-			setMinifyJson(config.isMinifyJson());
 			setHost(config.getHost());
 			setBasePath(config.getBasePath());
 			setPort(config.getPort());
@@ -218,11 +209,6 @@ public class MeshRestClientConfig {
 
 		public Builder setMinifyJson(boolean minify) {
 			this.minifyJson = minify;
-			return this;
-		}
-
-		public Builder setDisableCompression(boolean disable) {
-			this.disableCompression = disable;
 			return this;
 		}
 
