@@ -7,7 +7,7 @@ mvn -pl changelog install
 ////
 
 [[v3.1.6]]
-== 3.1.6 (19.11.2025)
+== 3.1.6 (20.11.2025)
 
 icon:check[] Core: The published status of the fetched content was wrong, if using either native filtering or sorting. This has been fixed.
 
@@ -136,7 +136,7 @@ icon:check[] Some dependencies have been updated:
 
 
 [[v3.0.17]]
-== 3.0.17 (18.11.2025)
+== 3.0.17 (20.11.2025)
 
 icon:check[] Core: The published status of the fetched content was wrong, if using either native filtering or sorting. This has been fixed.
 

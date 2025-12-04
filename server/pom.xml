@@ -138,6 +138,21 @@
 										<exclude>META-INF/*.RSA</exclude>
 									</excludes>
 								</filter>
+								<!-- Exclude classes from dependency jars, which are overwritten (patched) -->
+								<filter>
+									<artifact>com.hazelcast:hazelcast-hibernate53</artifact>
+									<excludes>
+										<exclude>com/hazelcast/hibernate/PhoneHomeInfo.class</exclude>
+										<exclude>com/hazelcast/hibernate/PhoneHomeInfo$QueryStringBuilder.class</exclude>
+									</excludes>
+								</filter>
+								<filter>
+									<artifact>io.vertx:vertx-hazelcast</artifact>
+									<excludes>
+										<exclude>io/vertx/spi/cluster/hazelcast/impl/HazelcastLock.class</exclude>
+										<exclude>io/vertx/spi/cluster/hazelcast/HazelcastClusterManager.class</exclude>
+									</excludes>
+								</filter>
 							</filters>
 							<transformers>
 								<transformer
