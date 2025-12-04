@@ -73,8 +73,8 @@ public class SortingParametersImpl extends AbstractParameters implements Sorting
 
 	@Override
 	public SortingParameters putSort(String sortBy, SortOrder order) {
-		if (StringUtils.isNotBlank(sortBy)) {
-			sort.put(sortBy, Optional.ofNullable(order).orElse(SortOrder.ASCENDING));
+		if (StringUtils.isNotBlank(sortBy) && order != null) {
+			sort.put(sortBy, order);
 			setParameter(SORT_BY_PARAMETER_KEY, sortBy);
 			setParameter(SORT_ORDER_PARAMETER_KEY, order.getValue());
 		}
