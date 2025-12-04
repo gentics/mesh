@@ -19,6 +19,7 @@
 
 		<vertx.version>4.5.18</vertx.version>
 		<dagger.version>2.56.2</dagger.version>
+		<hibernate.version>6.6.11.Final</hibernate.version>
 		<compiler.plugin.version>3.11.0</compiler.plugin.version>
 
 		<!-- Tests -->
