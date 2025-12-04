@@ -4,6 +4,10 @@ metadata:
   name: {{ include "mesh.fullname" . }}
   labels:
     {{- include "mesh.labels" . | nindent 4 }}
+  {{- with .Values.statefulsetAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4}}
+  {{- end }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
