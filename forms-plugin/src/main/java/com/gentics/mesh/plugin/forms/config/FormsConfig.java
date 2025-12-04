@@ -30,7 +30,7 @@ public class FormsConfig extends LicenseConfiguration {
 
 	private ExportFormat defaultExportFormat = ExportFormat.CSV;
 
-	private ReCaptchaOptions reCaptcha;
+	private ReCaptchaOptions reCaptcha = new ReCaptchaOptions();
 
 	private FriendlyCaptchaOptions friendlyCaptcha = new FriendlyCaptchaOptions();
 
@@ -138,6 +138,10 @@ public class FormsConfig extends LicenseConfiguration {
 	}
 
 	public ReCaptchaOptions getReCaptcha() {
+		if (reCaptcha == null) {
+			reCaptcha = new ReCaptchaOptions();
+		}
+
 		return reCaptcha;
 	}
 
