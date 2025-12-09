@@ -156,6 +156,11 @@ spec:
           {{- if .Values.extraVolumeMounts }}
           {{- tpl (toYaml .Values.extraVolumeMounts) $ | nindent 10 }}
           {{- end }}
+          {{- if and .Values.customCert .Values.customCert.secretName }}
+          - name: cert-secret
+            mountPath: "/certificates"
+            readOnly: true
+          {{- end }}
 
       volumes:
       - name: config
@@ -208,6 +213,12 @@ spec:
       - name: ssl-secret
         secret:
           secretName: {{ .Values.ssl.existingSecret }}
+      {{- end }}
+
+      {{- if and .Values.customCert .Values.customCert.secretName }}
+      - name: cert-secret
+        secret:
+          secretName: {{ .Values.customCert.secretName }}
       {{- end }}
 
       {{- if .Values.extraVolumes }}
