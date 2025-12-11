@@ -1,13 +1,13 @@
 
 package com.gentics.mesh;
 
+import java.util.ServiceLoader;
 import java.util.Set;
 
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.reactivex.Completable;
-import io.vertx.core.ServiceHelper;
 import io.vertx.core.Vertx;
 
 /**
@@ -15,7 +15,7 @@ import io.vertx.core.Vertx;
  */
 public interface Mesh {
 
-	static MeshFactory factory = ServiceHelper.loadFactory(MeshFactory.class);
+	static MeshFactory factory = ServiceLoader.load(MeshFactory.class, null).findFirst().orElse(null);
 
 	/**
 	 * Returns the initialized instance.

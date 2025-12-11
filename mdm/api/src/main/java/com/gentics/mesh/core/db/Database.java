@@ -281,7 +281,7 @@ public interface Database extends TxFactory {
 					}
 					throw e;
 				}
-			}, false, done -> {
+			}, false).andThen(done -> {
 				if (done.failed()) {
 					sub.onError(done.cause());
 				} else {
@@ -332,7 +332,7 @@ public interface Database extends TxFactory {
 					}
 					throw e;
 				}
-			}, false, (AsyncResult<T> done) -> {
+			}, false).andThen((AsyncResult<T> done) -> {
 				if (done.failed()) {
 					sub.onError(done.cause());
 				} else {

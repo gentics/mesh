@@ -19,7 +19,7 @@ import io.vertx.ext.web.Router;
  */
 public class PluginRouterImpl implements PluginRouter {
 
-	public static final String PLUGINS_MOUNTPOINT = "/plugins";
+	public static final String PLUGINS_MOUNTPOINT = "/plugins*";
 
 	private static final Logger log = LoggerFactory.getLogger(APIRouterImpl.class);
 
@@ -53,13 +53,13 @@ public class PluginRouterImpl implements PluginRouter {
 			rc.next();
 		});
 
-		parentRouter.mountSubRouter(PLUGINS_MOUNTPOINT, router);
+		parentRouter.route(PLUGINS_MOUNTPOINT).subRouter(router);
 	}
 
 	@Override
 	public void addRouter(String name, Router pluginRouter) {
 		pluginRouters.put(name, pluginRouter);
-		router.mountSubRouter("/" + name, pluginRouter);
+		router.route("/" + name + "*").subRouter(pluginRouter);
 		log.info("Added plugin subrouter {" + name + "}");
 	}
 

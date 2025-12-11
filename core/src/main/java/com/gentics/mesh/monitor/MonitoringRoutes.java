@@ -5,6 +5,9 @@ import static io.vertx.core.http.HttpMethod.GET;
 
 import javax.inject.Inject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
@@ -18,8 +21,6 @@ import com.gentics.mesh.router.route.DefaultNotFoundHandler;
 import com.gentics.mesh.router.route.FailureHandler;
 
 import io.vertx.core.Vertx;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.LoggerHandler;
 import io.vertx.ext.web.impl.RouterImpl;
@@ -55,7 +56,7 @@ public class MonitoringRoutes {
 		this.monitoringCrudHandler = monitoringCrudHandler;
 		this.liveness = liveness;
 		VersionUtils.generateVersionMountpoints()
-			.forEach(mountPoint -> router.mountSubRouter(mountPoint, apiRouter));
+			.forEach(mountPoint -> router.route(mountPoint + "*").subRouter(apiRouter));
 		this.adminHandler = adminHandler;
 		init();
 	}

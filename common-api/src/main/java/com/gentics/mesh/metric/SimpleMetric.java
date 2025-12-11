@@ -2,12 +2,13 @@ package com.gentics.mesh.metric;
 
 /**
  * Metrics which are used across Gentics Mesh.
+ * Attention: on creating a metric, don't use the following suffixes: [_total, _created, _bucket, _info, .total, .created, .bucket, .info]
  */
 public enum SimpleMetric implements Metric {
 
-	TX("tx_created", "Meter which measures the rate of created transactions over time."),
+	TX("tx_rate", "Meter which measures the rate of created transactions over time."),
 
-	NO_TX("notx_created", "Meter which measures the rate of created noTx transactions over time."),
+	NO_TX("notx_rate", "Meter which measures the rate of created noTx transactions over time."),
 
 	TX_TIME("tx_time", "Timer which tracks transaction durations."),
 

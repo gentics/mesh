@@ -11,6 +11,9 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.cluster.ClusterManager;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterInstanceInfo;
@@ -25,8 +28,6 @@ import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 
 import dagger.Lazy;
-import io.vertx.core.impl.logging.Logger;
-import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 
 /**

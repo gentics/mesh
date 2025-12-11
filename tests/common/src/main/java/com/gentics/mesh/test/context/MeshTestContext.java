@@ -362,11 +362,11 @@ public class MeshTestContext implements TestRule {
 			idleConsumer = null;
 		}
 		for (MeshTestInstance instance : instances) {
-			if (instance.mesh != null) {
-				instance.mesh.shutdown();
-			}
 			if (instance.meshDagger != null) {
 				instance.meshDagger.eventbusLivenessManager().shutdown();
+			}
+			if (instance.mesh != null) {
+				instance.mesh.shutdown();
 			}
 		}
 		instances.clear();

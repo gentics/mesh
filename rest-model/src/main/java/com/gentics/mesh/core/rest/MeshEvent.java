@@ -714,7 +714,7 @@ public enum MeshEvent {
 				.handler(ev -> sub.onComplete())
 				.exceptionHandler(sub::onError);
 			// The handler will be invoked once the event listener is registered
-			consumer.completionHandler(ignore -> {
+			consumer.completion().andThen(ignore -> {
 				try {
 					runnable.run();
 				} catch (Exception e) {

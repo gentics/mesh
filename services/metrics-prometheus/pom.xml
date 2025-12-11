@@ -33,6 +33,19 @@
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-micrometer-metrics</artifactId>
 		</dependency>
-	</dependencies>
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-registry-prometheus</artifactId>
+		</dependency>
 
+		<dependency>
+		    <groupId>io.prometheus</groupId>
+		    <artifactId>simpleclient</artifactId>
+		    <version>0.16.0</version>
+		</dependency>
+	</dependencies>
 </project>

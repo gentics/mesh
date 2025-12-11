@@ -47,7 +47,7 @@ public class MonitoringServerVerticle extends AbstractVerticle {
 		log.info("Starting monitoring http server in verticle {" + getClass().getName() + "} on port {" + options.getPort() + "}");
 		server = vertx.createHttpServer(options);
 		server.requestHandler(router);
-		server.listen(rh -> {
+		server.listen().andThen(rh -> {
 			if (rh.failed()) {
 				promise.fail(rh.cause());
 			} else {
@@ -61,7 +61,7 @@ public class MonitoringServerVerticle extends AbstractVerticle {
 
 	@Override
 	public void stop(Promise<Void> promise) throws Exception {
-		server.close(rh -> {
+		server.close().andThen(rh -> {
 			if (rh.failed()) {
 				promise.fail(rh.cause());
 			} else {

@@ -27,7 +27,6 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Supplier;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -54,11 +53,11 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
-import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
+import com.gentics.mesh.rest.client.impl.EmptyResponse;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 
@@ -367,16 +366,11 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 	}
 
 	private void publish(CountDownLatch allDone, String uuid, String branchUuid) {
-		vertx().executeBlocking(bc -> {
-			try {
-				System.out.println("Publishing node {" + uuid + "}");
-				call(() -> client().publishNode(projectName(), uuid, new PublishParametersImpl().setRecursive(true),
+		vertx().executeBlocking(() -> {
+			System.out.println("Publishing node {" + uuid + "}");
+			return call(() -> client().publishNode(projectName(), uuid, new PublishParametersImpl().setRecursive(true),
 					new VersioningParametersImpl().setBranch(branchUuid)));
-				bc.complete();
-			} catch (Throwable t) {
-				bc.fail(t);
-			}
-		}, false, rh -> {
+		}, false).andThen(rh -> {
 			if (rh.failed()) {
 				System.out.println("Publish failed");
 				rh.cause().printStackTrace();
@@ -389,16 +383,11 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 	}
 
 	private void createNode(CountDownLatch allDone, List<String> uuids, String branchUuid) {
-		vertx().executeBlocking(bc -> {
-			try {
-				String parentNodeUuid = random(uuids);
-				System.out.println("Creating node in {" + parentNodeUuid + "}");
-				createNode(null, parentNodeUuid, "i:" + System.currentTimeMillis(), branchUuid, true);
-				bc.complete();
-			} catch (Throwable t) {
-				bc.fail(t);
-			}
-		}, false, rh -> {
+		vertx().executeBlocking(() -> {
+			String parentNodeUuid = random(uuids);
+			System.out.println("Creating node in {" + parentNodeUuid + "}");
+			return createNode(null, parentNodeUuid, "i:" + System.currentTimeMillis(), branchUuid, true);
+		}, false).andThen(rh -> {
 			if (rh.failed()) {
 				System.out.println("Create failed");
 				rh.cause().printStackTrace();
@@ -410,15 +399,10 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 	}
 
 	private void deleteNode(CountDownLatch allDone, String uuid, String branchUuid) {
-		vertx().executeBlocking(bc -> {
+		vertx().executeBlocking(() -> {
 			System.out.println("Deleting node");
-			try {
-				deleteParent(uuid, branchUuid);
-				bc.complete();
-			} catch (Throwable t) {
-				bc.fail(t);
-			}
-		}, false, rh -> {
+			return deleteParent(uuid, branchUuid);
+		}, false).andThen(rh -> {
 			if (rh.failed()) {
 				System.out.println("Delete failed");
 				rh.cause().printStackTrace();
@@ -429,8 +413,8 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 		});
 	}
 
-	private void deleteParent(String uuid, String branchUuid) {
-		call(() -> client().deleteNode(PROJECT_NAME, uuid, new VersioningParametersImpl().setBranch(branchUuid),
+	private EmptyResponse deleteParent(String uuid, String branchUuid) {
+		return call(() -> client().deleteNode(PROJECT_NAME, uuid, new VersioningParametersImpl().setBranch(branchUuid),
 			new DeleteParametersImpl().setRecursive(true)));
 
 	}

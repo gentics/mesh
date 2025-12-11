@@ -1,5 +1,12 @@
 package com.gentics.mesh.auth;
 
+import java.util.Base64;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import org.apache.commons.lang3.NotImplementedException;
+
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
@@ -7,22 +14,16 @@ import com.gentics.mesh.core.rest.auth.TokenResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.shared.SharedKeys;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
+import io.vertx.core.Future;
 import io.vertx.core.http.Cookie;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.User;
+import io.vertx.ext.auth.authentication.Credentials;
+import io.vertx.ext.auth.authentication.TokenCredentials;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.impl.AuthenticationHandlerImpl;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
-import org.apache.commons.lang3.StringUtils;
-
-import java.util.Base64;
+import io.vertx.ext.web.impl.UserContextInternal;
 
 /**
  * Extended Vert.x {@link AuthHandler}.
@@ -52,8 +53,8 @@ public class MeshBasicAuthLoginHandler extends AuthenticationHandlerImpl<MeshJWT
 	}
 
 	@Override
-	public void authenticate(RoutingContext routingContext, Handler<AsyncResult<User>> handler) {
-		// Not needed
+	public Future<User> authenticate(RoutingContext context) {
+		throw new NotImplementedException();
 	}
 
 	@Override
@@ -77,7 +78,7 @@ public class MeshBasicAuthLoginHandler extends AuthenticationHandlerImpl<MeshJWT
 					String[] parts = authorization.split(" ");
 					sscheme = parts[0];
 
-					if (StringUtils.equalsIgnoreCase("Basic", sscheme)) {
+					if ("Basic".equalsIgnoreCase(sscheme)) {
 						String decoded = new String(Base64.getDecoder().decode(parts[1]));
 						int colonIdx = decoded.indexOf(":");
 						if (colonIdx != -1) {
@@ -92,17 +93,17 @@ public class MeshBasicAuthLoginHandler extends AuthenticationHandlerImpl<MeshJWT
 						// and return the response to the requestor.
 						InternalActionContext ac = new InternalRoutingActionContextImpl(context);
 						authProvider.login(ac, suser, spass, null);
-					} else if (StringUtils.equalsIgnoreCase("Bearer", sscheme)) {
+					} else if ("Bearer".equalsIgnoreCase(sscheme)) {
 						// TODO check whether there are additional parts
 						String token = parts[1];
-						JsonObject authInfo = new JsonObject().put("token", token).put("options", new JsonObject());
+						Credentials authInfo = new TokenCredentials(token);
 						authProvider.authenticateJWT(authInfo, res -> {
 
 							// Authentication was successful.
 							if (res.succeeded()) {
 								AuthenticationResult result = res.result();
 								User authenticatedUser = result.getUser();
-								context.setUser(authenticatedUser);
+								((UserContextInternal) context.userContext()).setUser(authenticatedUser);
 
 								InternalActionContext ac = new InternalRoutingActionContextImpl(context);
 								String jwtToken = authProvider.generateToken(authenticatedUser);
@@ -133,5 +134,4 @@ public class MeshBasicAuthLoginHandler extends AuthenticationHandlerImpl<MeshJWT
 		context.response().putHeader("WWW-Authenticate", "Basic realm=\"" + realm + "\"");
 		context.fail(401);
 	}
-
 }
