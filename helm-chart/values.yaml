@@ -53,8 +53,13 @@ service:
     # nodePort is only available when using service type NodePort
     # nodePort: 80
 
+# Custom annotations for the statefulset
+#statefulsetAnnotations:
+#  customStatefulsetAnnotation: "whatever"
+
+# Custom annotations for the pods
 #podAnnotations:
-#  - customAnnotation: "whatever"
+#  customPodAnnotation: "whatever"
 
 # extraConfig creates a configmap per name, which can hold multiple
 # items and can be mountad as a specified path
