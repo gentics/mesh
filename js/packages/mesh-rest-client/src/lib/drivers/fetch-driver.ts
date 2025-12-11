@@ -3,9 +3,9 @@ import { MeshRestClientRequestError } from '../errors';
 import { MeshClientDriver, MeshRestClientRequestData, MeshRestClientResponse } from '../models';
 
 async function parseErrorFromAPI<T>(request: MeshRestClientRequestData, res: Response): Promise<T> {
-    let raw: string;
-    let parsed: GenericErrorResponse;
-    let bodyError: Error;
+    let raw = '';
+    let parsed: GenericErrorResponse | undefined;
+    let bodyError: unknown;
 
     try {
         raw = await res.text();
@@ -24,13 +24,11 @@ async function parseErrorFromAPI<T>(request: MeshRestClientRequestData, res: Res
         res.status,
         raw,
         parsed,
-        bodyError,
+        bodyError as Error,
     );
 }
 
 export class MeshFetchDriver implements MeshClientDriver {
-
-    constructor() { }
 
     performJsonRequest(
         request: MeshRestClientRequestData,
@@ -57,11 +55,9 @@ export class MeshFetchDriver implements MeshClientDriver {
         handler: (res: Response) => Promise<T>,
     ): MeshRestClientResponse<T> {
         let fullUrl = request.url;
-        if (request.params) {
-            const params = new URLSearchParams(request.params).toString();
-            if (params) {
-                fullUrl += `?${params}`;
-            }
+        const params = new URLSearchParams(request.params).toString();
+        if (params) {
+            fullUrl += `?${params}`;
         }
 
         const abortController = new AbortController();
@@ -70,13 +66,15 @@ export class MeshFetchDriver implements MeshClientDriver {
             const options: RequestInfo = {
                 ...fn(fullUrl) as any,
                 signal: abortController.signal,
-            }
+            };
             return fetch(options)
-                .then(res => handler(res));
+                .then((res) => handler(res));
         }
 
         return {
-            cancel: () => abortController.abort(),
+            cancel: () => {
+                abortController.abort();
+            },
             send: () => sendRequest(),
         };
     }

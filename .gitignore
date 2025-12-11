@@ -60,5 +60,7 @@ server/hmac_store.jceks
 **/mesh.live
 **/test.jpg
 .vscode
+!.vscode/extensions.json
+!.vscode/settings.json
 .asciidoctorconfig.adoc
 *.patch
