@@ -18,7 +18,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.hibernate.annotations.QueryHints;
+import org.hibernate.jpa.HibernateHints;
 
 import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.core.data.HibBaseElement;
@@ -126,9 +126,9 @@ public class UserDaoImpl extends AbstractHibDaoGlobal<HibUser, UserResponse, Hib
 	@Override
 	public HibUser findByUsername(String username) {
 		return HibernateTx.get().data().mesh().userNameCache().get(username, name -> {
-			return firstOrNull(currentTransaction.getEntityManager().createQuery("from user where name = :name", HibUserImpl.class).setHint(QueryHints.CACHEABLE, true)
+			return firstOrNull(currentTransaction.getEntityManager().createQuery("from user where name = :name", HibUserImpl.class)
 					.setParameter("name", username)
-					.setHint(QueryHints.CACHEABLE, true));
+					.setHint(HibernateHints.HINT_CACHEABLE, true));
 		});
 	}
 
@@ -158,7 +158,7 @@ public class UserDaoImpl extends AbstractHibDaoGlobal<HibUser, UserResponse, Hib
 					" where u = :user",
 				HibRoleImpl.class)
 			.setParameter("user", user)
-			.setHint(QueryHints.CACHEABLE, true)
+			.setHint(HibernateHints.HINT_CACHEABLE, true)
 			.getResultList();
 	}
 

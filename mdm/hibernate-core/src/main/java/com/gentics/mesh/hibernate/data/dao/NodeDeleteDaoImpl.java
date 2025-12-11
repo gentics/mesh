@@ -17,6 +17,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.hibernate.jpa.SpecHints;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -218,7 +219,7 @@ public class NodeDeleteDaoImpl {
 			Set<HibNodeImpl> descendants = new HashSet<>(
 					em().createNamedQuery("node.findNodesByUuids", HibNodeImpl.class)
 							.setParameter("nodeUuids", nodesUuidsToDelete)
-							.setHint("javax.persistence.fetchgraph", entityGraph).getResultList());
+							.setHint(SpecHints.HINT_SPEC_FETCH_GRAPH, entityGraph).getResultList());
 
 			Set<HibSchema> schemas = descendants.stream().map(HibNode::getSchemaContainer).collect(Collectors.toSet());
 			Set<HibSchemaVersion> versions = schemas.stream()

@@ -65,11 +65,6 @@
 			<groupId>com.google.dagger</groupId>
 			<artifactId>dagger</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>com.google.dagger</groupId>
-			<artifactId>dagger-compiler</artifactId>
-			<optional>true</optional>
-		</dependency>
 	</dependencies>
 
 	<build>
@@ -170,25 +165,6 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<forceJavacCompilerUse>true</forceJavacCompilerUse>
-					<compilerArgs>
-						<!-- See https://github.com/google/dagger/releases/tag/dagger-2.48-->
-						<arg>-Adagger.ignoreProvisionKeyWildcards=DISABLED</arg>
-					</compilerArgs>
-				</configuration>
-				<dependencies>
-					<dependency>
-						<groupId>com.google.dagger</groupId>
-						<artifactId>dagger-compiler</artifactId>
-						<version>2.24</version>
-						<optional>true</optional>
-					</dependency>
-				</dependencies>
 			</plugin>
 			<plugin>
 				<groupId>com.gentics</groupId>

@@ -19,7 +19,8 @@
 
 		<vertx.version>5.0.5</vertx.version>
 		<dagger.version>2.56.2</dagger.version>
-		<hibernate.version>6.6.11.Final</hibernate.version>
+		<hibernate.version>7.1.8.Final</hibernate.version>
+		<auto-factory.version>1.0-beta8</auto-factory.version>
 		<compiler.plugin.version>3.11.0</compiler.plugin.version>
 
 		<!-- Tests -->
@@ -118,22 +119,31 @@
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>${compiler.plugin.version}</version>
 					<configuration>
-						<forceJavacCompilerUse>true</forceJavacCompilerUse>
+						<!--forceJavacCompilerUse>true</forceJavacCompilerUse -->
 						<verbose>false</verbose>
 						<release>17</release>
 						<compilerArgs>
 							<!-- See https://github.com/google/dagger/releases/tag/dagger-2.48-->
 							<arg>-Adagger.ignoreProvisionKeyWildcards=DISABLED</arg>
 						</compilerArgs>
+						<annotationProcessorPaths>
+							<path>
+								<groupId>com.google.dagger</groupId>
+								<artifactId>dagger-compiler</artifactId>
+								<version>${dagger.version}</version>
+							</path>
+							<path>
+								<groupId>com.google.auto.factory</groupId>
+								<artifactId>auto-factory</artifactId>
+								<version>${auto-factory.version}</version>
+							</path>
+							<path>
+								<groupId>org.hibernate</groupId>
+								<artifactId>hibernate-jpamodelgen</artifactId>
+								<version>${hibernate.version}</version>
+							</path>
+						</annotationProcessorPaths>
 					</configuration>
-					<dependencies>
-						<dependency>
-							<groupId>com.google.dagger</groupId>
-							<artifactId>dagger-compiler</artifactId>
-							<version>${dagger.version}</version>
-							<optional>true</optional>
-						</dependency>
-					</dependencies>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
