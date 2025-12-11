@@ -1,7 +1,7 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
 import static com.gentics.mesh.search.index.AbstractMappingProvider.ROLE_UUIDS;
-import static com.gentics.mesh.search.verticle.eventhandler.RxUtil.scrollAll;
+import static com.gentics.mesh.search.verticle.eventhandler.RxUtil.searchAll;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
 
 import java.util.Collection;
@@ -12,19 +12,21 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.elasticsearch.client.ElasticsearchClient;
+import com.gentics.mesh.core.data.search.Compliance;
 import com.gentics.mesh.core.data.search.request.UpdateDocumentRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.verticle.MessageEvent;
 
 import io.reactivex.Flowable;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Deletes all _roleUuid entries for the deleted role
@@ -35,12 +37,12 @@ public class RoleDeletedEventHandler implements EventHandler {
 	private static final int ELASTIC_SEARCH_PAGE_SIZE = 100;
 
 	private final SearchProvider searchProvider;
-	private final ComplianceMode complianceMode;
+	private final Compliance compliance;
 
 	@Inject
-	public RoleDeletedEventHandler(SearchProvider searchProvider, MeshOptions options) {
+	public RoleDeletedEventHandler(SearchProvider searchProvider, MeshOptions options, Compliance compliance) {
 		this.searchProvider = searchProvider;
-		this.complianceMode = options.getSearchOptions().getComplianceMode();
+		this.compliance = compliance;
 	}
 
 	@Override
@@ -67,7 +69,7 @@ public class RoleDeletedEventHandler implements EventHandler {
 			doc.index,
 			doc.id,
 			partial,
-			complianceMode);
+			compliance);
 	}
 
 	private Flowable<DocRoles> getDocuments(MeshElementEventModelImpl model) {
@@ -76,8 +78,7 @@ public class RoleDeletedEventHandler implements EventHandler {
 		if (client == null) {
 			return Flowable.empty();
 		}
-
-		return scrollAll(client, createSearchQuery(model), "1m")
+		return searchAll(client, createSearchQuery(model))
 			.doOnNext(response -> {
 				if (log.isTraceEnabled()) {
 					log.trace("Found docs readable from role {}: {}", model.getUuid(), response);
@@ -90,6 +91,7 @@ public class RoleDeletedEventHandler implements EventHandler {
 	private JsonObject createSearchQuery(MeshElementEventModelImpl model) {
 		return new JsonObject()
 			.put("_source", ROLE_UUIDS)
+			.put("sort", new JsonArray().add("_doc"))
 			.put("size", ELASTIC_SEARCH_PAGE_SIZE)
 			.put("query", new JsonObject()
 				.put("term", new JsonObject()

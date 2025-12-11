@@ -5,6 +5,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.core.action.MicroschemaDAOActions;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.search.Compliance;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -20,8 +21,8 @@ public class MicroschemaSearchHandler extends AbstractSearchHandler<HibMicrosche
 
 	@Inject
 	public MicroschemaSearchHandler(Database db, SearchProvider searchProvider, MicroschemaContainerIndexHandlerImpl indexHandler, MeshOptions options,
-		MicroschemaDAOActions actions, SearchWaitUtil waitUtil) {
-		super(db, searchProvider, options, indexHandler, actions, waitUtil);
+			Compliance compliance, MicroschemaDAOActions actions, SearchWaitUtil waitUtil) {
+		super(db, searchProvider, options, compliance, indexHandler, actions, waitUtil);
 	}
 
 }

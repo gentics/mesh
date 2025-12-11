@@ -21,14 +21,13 @@ import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.search.Compliance;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
-import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.handler.DataHolderContext;
 import com.gentics.mesh.search.index.BucketManager;
 import com.gentics.mesh.search.verticle.MessageEvent;
@@ -44,14 +43,14 @@ import io.reactivex.Flowable;
 public class GroupEventHandler implements EventHandler {
 	private final MeshHelper helper;
 	private final MeshEntities entities;
-	private final ComplianceMode complianceMode;
+	private final Compliance compliance;
 	private final BucketManager bucketManager;
 
 	@Inject
-	public GroupEventHandler(MeshHelper helper, MeshEntities entities, MeshOptions options, BucketManager bucketManager) {
+	public GroupEventHandler(MeshHelper helper, MeshEntities entities, Compliance compliance, BucketManager bucketManager) {
 		this.helper = helper;
 		this.entities = entities;
-		this.complianceMode = options.getSearchOptions().getComplianceMode();
+		this.compliance = compliance;
 		this.bucketManager = bucketManager;
 	}
 
@@ -110,7 +109,7 @@ public class GroupEventHandler implements EventHandler {
 			} else if (event == GROUP_DELETED) {
 				// TODO Update users that were part of that group.
 				// At the moment we cannot look up users that were in the group if the group is already deleted.
-				return Flowable.just(helper.deleteDocumentRequest(HibGroup.composeIndexName(), model.getUuid(), complianceMode));
+				return Flowable.just(helper.deleteDocumentRequest(HibGroup.composeIndexName(), model.getUuid(), compliance));
 			} else {
 				throw new RuntimeException("Unexpected event " + event.address);
 			}

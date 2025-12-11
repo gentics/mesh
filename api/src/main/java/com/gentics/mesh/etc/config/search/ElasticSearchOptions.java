@@ -41,6 +41,7 @@ public class ElasticSearchOptions implements Option {
 
 	public static final long DEFAULT_INDEX_CHECK_INTERVAL = 60 * 1000;
 	public static final long DEFAULT_INDEX_MAPPING_CACHE_TIMEOUT = 60 * 60 * 1000;
+	public static final int DEFAULT_SYNC_FETCH_BATCH_SIZE = 10_000;
 
 	public static final String MESH_ELASTICSEARCH_URL_ENV = "MESH_ELASTICSEARCH_URL";
 	public static final String MESH_ELASTICSEARCH_USERNAME_ENV = "MESH_ELASTICSEARCH_USERNAME";
@@ -61,6 +62,7 @@ public class ElasticSearchOptions implements Option {
 	public static final String MESH_ELASTICSEARCH_MAPPING_MODE_ENV = "MESH_ELASTICSEARCH_MAPPING_MODE";
 	public static final String MESH_ELASTICSEARCH_COMPLIANCE_MODE_ENV = "MESH_ELASTICSEARCH_COMPLIANCE_MODE";
 	public static final String MESH_ELASTICSEARCH_SYNC_BATCH_SIZE_ENV = "MESH_ELASTICSEARCH_SYNC_BATCH_SIZE";
+	public static final String MESH_ELASTICSEARCH_SYNC_FETCH_BATCH_SIZE_ENV = "MESH_ELASTICSEARCH_SYNC_FETCH_BATCH_SIZE";
 	public static final String MESH_ELASTICSEARCH_HOSTNAME_VERIFICATION_ENV = "MESH_ELASTICSEARCH_HOSTNAME_VERIFICATION";
 	public static final String MESH_ELASTICSEARCH_INCLUDE_BINARY_FIELDS_ENV = "MESH_ELASTICSEARCH_INCLUDE_BINARY_FIELDS";
 
@@ -175,6 +177,11 @@ public class ElasticSearchOptions implements Option {
 	@JsonPropertyDescription("Configure the index sync batch size. Default: " + DEFAULT_SYNC_BATCH_SIZE)
 	@EnvironmentVariable(name = MESH_ELASTICSEARCH_SYNC_BATCH_SIZE_ENV, description = "Override the search sync batch size")
 	private int syncBatchSize = DEFAULT_SYNC_BATCH_SIZE;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Configure the batch size while fetching the index versions. Default: " + DEFAULT_SYNC_FETCH_BATCH_SIZE)
+	@EnvironmentVariable(name = MESH_ELASTICSEARCH_SYNC_FETCH_BATCH_SIZE_ENV, description = "Override the sync fetch batch size. Default: " + DEFAULT_SYNC_FETCH_BATCH_SIZE)
+	private int syncFetchBatchSize = DEFAULT_SYNC_FETCH_BATCH_SIZE;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Set the interval of index checks in ms. Default: " + DEFAULT_INDEX_CHECK_INTERVAL)
@@ -394,7 +401,6 @@ public class ElasticSearchOptions implements Option {
 		if (complianceMode == null) {
 			complianceMode = DEFAULT_COMPLIANCE_MODE;
 		}
-
 		return complianceMode;
 	}
 
@@ -470,5 +476,25 @@ public class ElasticSearchOptions implements Option {
 	 */
 	public void setIndexMappingCacheTimeout(long indexMappingCacheTimeout) {
 		this.indexMappingCacheTimeout = indexMappingCacheTimeout;
+	}
+
+	/**
+	 * Get the batch size while fetching the index versions.
+	 * 
+	 * @return
+	 */
+	public int getSyncFetchBatchSize() {
+		return syncFetchBatchSize;
+	}
+
+	/**
+	 * Set the batch size while fetching the index versions.
+	 * 
+	 * @param syncFetchBatchSize
+	 * @return 
+	 */
+	public ElasticSearchOptions setSyncFetchBatchSize(int syncFetchBatchSize) {
+		this.syncFetchBatchSize = syncFetchBatchSize;
+		return this;
 	}
 }

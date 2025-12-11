@@ -5,12 +5,12 @@ import static com.gentics.mesh.util.RxUtil.NOOP;
 import javax.inject.Inject;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.search.Compliance;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.DeleteDocumentRequest;
 import com.gentics.mesh.core.data.search.request.UpdateDocumentRequest;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.search.ComplianceMode;
 
 import io.reactivex.functions.Action;
 import io.vertx.core.json.JsonObject;
@@ -47,8 +47,8 @@ public class MeshHelper {
 	 * @param mode
 	 * @return
 	 */
-	public CreateDocumentRequest createDocumentRequest(String index, String id, JsonObject doc, ComplianceMode mode) {
-		return new CreateDocumentRequest(index, prefixIndexName(index), id, doc, mode, NOOP);
+	public CreateDocumentRequest createDocumentRequest(String index, String id, JsonObject doc, Compliance compliance) {
+		return new CreateDocumentRequest(index, prefixIndexName(index), id, doc, compliance, NOOP);
 	}
 
 	/**
@@ -61,8 +61,8 @@ public class MeshHelper {
 	 * @param onComplete
 	 * @return
 	 */
-	public CreateDocumentRequest createDocumentRequest(String index, String id, JsonObject doc, ComplianceMode mode, Action onComplete) {
-		return new CreateDocumentRequest(index, prefixIndexName(index), id, doc, mode, onComplete);
+	public CreateDocumentRequest createDocumentRequest(String index, String id, JsonObject doc, Compliance compliance, Action onComplete) {
+		return new CreateDocumentRequest(index, prefixIndexName(index), id, doc, compliance, onComplete);
 	}
 
 	/**
@@ -73,8 +73,8 @@ public class MeshHelper {
 	 * @param doc
 	 * @return
 	 */
-	public UpdateDocumentRequest updateDocumentRequest(String index, String id, JsonObject doc, ComplianceMode mode) {
-		return new UpdateDocumentRequest(index, prefixIndexName(index), id, doc, mode);
+	public UpdateDocumentRequest updateDocumentRequest(String index, String id, JsonObject doc, Compliance compliance) {
+		return new UpdateDocumentRequest(index, prefixIndexName(index), id, doc, compliance);
 	}
 
 	/**
@@ -85,8 +85,8 @@ public class MeshHelper {
 	 * @param mode
 	 * @return
 	 */
-	public DeleteDocumentRequest deleteDocumentRequest(String index, String id, ComplianceMode mode) {
-		return new DeleteDocumentRequest(index, prefixIndexName(index), id, mode);
+	public DeleteDocumentRequest deleteDocumentRequest(String index, String id, Compliance compliance) {
+		return new DeleteDocumentRequest(index, prefixIndexName(index), id, compliance);
 	}
 
 	/**
@@ -98,8 +98,8 @@ public class MeshHelper {
 	 * @param onComplete
 	 * @return
 	 */
-	public DeleteDocumentRequest deleteDocumentRequest(String index, String id, ComplianceMode mode, Action onComplete) {
-		return new DeleteDocumentRequest(index, prefixIndexName(index), id, mode, onComplete);
+	public DeleteDocumentRequest deleteDocumentRequest(String index, String id, Compliance compliance, Action onComplete) {
+		return new DeleteDocumentRequest(index, prefixIndexName(index), id, compliance, onComplete);
 	}
 
 	public Database getDb() {

@@ -28,6 +28,7 @@ import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.TagFamilyDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.search.Compliance;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
@@ -54,9 +55,9 @@ public class TagFamilyIndexHandlerImpl extends AbstractIndexHandler<HibTagFamily
 	protected final TagFamilyMappingProvider mappingProvider;
 
 	@Inject
-	public TagFamilyIndexHandlerImpl(SearchProvider searchProvider, Database db, MeshHelper helper, MeshOptions options,
+	public TagFamilyIndexHandlerImpl(SearchProvider searchProvider, Database db, MeshHelper helper, MeshOptions options, Compliance compliance,
 		SyncMetersFactory syncMetricsFactory, BucketManager bucketManager, TagFamilyTransformer transformer, TagFamilyMappingProvider mappingProvider) {
-		super(searchProvider, db, helper, options, syncMetricsFactory, bucketManager);
+		super(searchProvider, db, helper, options, syncMetricsFactory, bucketManager, compliance);
 		this.transformer = transformer;
 		this.mappingProvider = mappingProvider;
 	}

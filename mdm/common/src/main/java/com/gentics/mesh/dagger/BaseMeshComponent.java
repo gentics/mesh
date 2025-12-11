@@ -19,6 +19,7 @@ import com.gentics.mesh.core.data.generic.UserProperties;
 import com.gentics.mesh.core.data.page.PageTransformer;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
+import com.gentics.mesh.core.data.search.Compliance;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.data.storage.BinaryStorage;
 import com.gentics.mesh.core.data.storage.LocalBinaryStorage;
@@ -155,6 +156,9 @@ public interface BaseMeshComponent {
 	// Search
 	@Getter
 	SearchProvider searchProvider();
+
+	@Getter
+	Compliance compliance();
 
 	@Getter
 	UserIndexHandler userIndexHandler();

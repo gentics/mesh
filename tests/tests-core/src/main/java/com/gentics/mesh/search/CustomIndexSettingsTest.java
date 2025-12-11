@@ -66,7 +66,7 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 		request.addField(FieldUtil.createStringFieldSchema("text").setElasticsearch(new JsonObject().put("bogus", "value")));
 		call(() -> client().createSchema(request, new SchemaUpdateParametersImpl().setStrictValidation(true)), BAD_REQUEST,
 			"schema_error_index_validation",
-			"Failed to parse mapping" + (currentMode == ElasticsearchTestMode.CONTAINER_ES8 ? "" : " [" + typeName() + "]") + ": illegal field [bogus], only fields can be specified inside fields");
+			"Failed to parse mapping" + (Math.abs(currentMode.getOrder()) >= 8 ? "" : " [" + typeName() + "]") + ": illegal field [bogus], only fields can be specified inside fields");
 	}
 
 	@Test
@@ -81,7 +81,7 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 		updateRequest.addField(FieldUtil.createStringFieldSchema("text").setElasticsearch(new JsonObject().put("bogus", "value")));
 		call(() -> client().updateSchema(response.getUuid(), updateRequest, new SchemaUpdateParametersImpl().setStrictValidation(true)), BAD_REQUEST,
 			"schema_error_index_validation",
-			"Failed to parse mapping" + (currentMode == ElasticsearchTestMode.CONTAINER_ES8 ? "" : " [" + typeName() + "]") + ": illegal field [bogus], only fields can be specified inside fields");
+			"Failed to parse mapping" + (Math.abs(currentMode.getOrder()) >= 8 ? "" : " [" + typeName() + "]") + ": illegal field [bogus], only fields can be specified inside fields");
 	}
 
 	@Test
@@ -168,7 +168,7 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 		assertEquals(ValidationStatus.INVALID, response.getStatus());
 
 		String message = I18NUtil.get(Locale.ENGLISH, "schema_error_index_validation",
-				"Failed to parse mapping" + (currentMode == ElasticsearchTestMode.CONTAINER_ES8 ? "" : " [" + typeName() + "]") + ": illegal field [bogus], only fields can be specified inside fields");
+				"Failed to parse mapping" + (Math.abs(currentMode.getOrder()) >= 8 ? "" : " [" + typeName() + "]") + ": illegal field [bogus], only fields can be specified inside fields");
 		assertEquals(message, response.getMessage().getMessage());
 		assertEquals("schema_error_index_validation", response.getMessage().getInternalMessage());
 
