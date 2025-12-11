@@ -1,0 +1,1 @@
+Core: The base for all commercial plugins has been updated to Mesh 3.2.0, which contains an update to Vert.x dependency to the version `5.0.5`.

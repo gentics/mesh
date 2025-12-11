@@ -78,11 +78,11 @@ import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.functions.BiConsumer;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.reactivex.core.Vertx;
-import io.vertx.reactivex.core.buffer.Buffer;
 import io.vertx.reactivex.core.file.FileSystem;
 
 @Singleton
@@ -736,7 +736,7 @@ public class FormService {
 					.flatMap(form -> {
 						if (form.getType() == FormType.POLL) {
 							boolean showResults = !rc.queryParam(PARAM_SHOW_RESULTS).isEmpty()
-								|| Stream.of(rc.getCookie(FormDataService.COOKIE_NAME_VOTED))
+								|| Stream.of(rc.request().getCookie(FormDataService.COOKIE_NAME_VOTED))
 									.filter(Objects::nonNull)
 									.map(c -> c.getValue().split(FormDataService.COOKIE_VOTED_SEPARATOR))
 									.flatMap(Arrays::stream)

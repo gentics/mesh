@@ -23,7 +23,7 @@ public class StoreLikeHandler extends AbstractLikeHandler {
 		String projectName = context.project().getString("name");
 		String uuid = context.pathParam("nodeUuid");
 		String lang = context.pathParam("lang");
-		return likeService.postLike(projectName, uuid, lang, context.getBodyAsString()).doOnEvent((response, t) -> {
+		return likeService.postLike(projectName, uuid, lang, context.body().asString()).doOnEvent((response, t) -> {
 			if (t == null) {
 				context.response().setStatusCode(HttpResponseStatus.CREATED.code()).end();
 			}

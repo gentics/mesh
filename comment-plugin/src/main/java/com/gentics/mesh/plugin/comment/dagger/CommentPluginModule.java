@@ -46,7 +46,7 @@ public class CommentPluginModule {
 	@Provides
 	static TemplateEngine provideTemplateEngine(Vertx vertx) {
 		HandlebarsTemplateEngine handlebarsTemplateEngine = HandlebarsTemplateEngine.create(vertx);
-		handlebarsTemplateEngine.getDelegate().getHandlebars().registerHelper("date", new DateHelper());
+		handlebarsTemplateEngine.getDelegate().unwrap().registerHelper("date", new DateHelper());
 		return handlebarsTemplateEngine;
 	}
 }

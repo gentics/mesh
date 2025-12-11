@@ -56,7 +56,7 @@ public class FormsPluginModule {
 	public RenderService renderService(Vertx vertx, FormsConfig config) {
 		io.vertx.ext.web.templ.handlebars.HandlebarsTemplateEngine delegateEngine = io.vertx.ext.web.templ.handlebars.HandlebarsTemplateEngine.create(vertx);
 
-		Handlebars handlebars = delegateEngine.getHandlebars();
+		Handlebars handlebars = delegateEngine.unwrap();
 
 		handlebars.registerHelpers(new FormHelper());
 		handlebars.setInfiniteLoops(true);

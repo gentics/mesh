@@ -7,7 +7,6 @@ import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 
-import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Completable;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpHeaders;

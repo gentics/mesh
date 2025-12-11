@@ -24,7 +24,7 @@ public class RenderFormPreviewHandler extends AbstractFormsHandler {
 	public Completable handle(PluginContext context) {
 		String uuid = context.pathParam("formUuid");
 
-		return formService.renderForm(uuid, context.getBodyAsString(), null, context).doOnEvent((buffer, t) -> {
+		return formService.renderForm(uuid, context.body().asString(), null, context).doOnEvent((buffer, t) -> {
 			if (buffer != null) {
 				context.response().putHeader(CONTENT_TYPE, String.format("%s; charset=UTF-8", DEFAULT_CONTENT_TYPE)).end(buffer.toString());
 			}

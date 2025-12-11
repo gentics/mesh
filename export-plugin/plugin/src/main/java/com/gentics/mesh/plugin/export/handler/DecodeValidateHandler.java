@@ -40,7 +40,7 @@ public class DecodeValidateHandler<T> implements Handler<RoutingContext> {
     @Override
     public void handle(RoutingContext rc) {
         try {
-            T obj = Json.decodeValue(rc.getBodyAsString(), decodeType);
+            T obj = Json.decodeValue(rc.body().asString(), decodeType);
             Set<ConstraintViolation<Object>> violations = factory.getValidator().validate(obj);
             if (!violations.isEmpty()) {
                 violations.forEach(violation -> log.error(violation.getMessage()));

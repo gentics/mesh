@@ -13,6 +13,8 @@ import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.vertx.ext.web.RequestBody;
 import io.vertx.ext.web.RoutingContext;
 import org.apache.commons.lang.StringUtils;
 
@@ -179,6 +181,11 @@ abstract class BaseHandler implements Handler<RoutingContext> {
 	}
 
 	JsonObject getBodyAsJson() {
-		return new JsonObject(getRoutingContext().getBodyAsString());
+		RequestBody body = getRoutingContext().body();
+		if (body != null) {
+			return new JsonObject(body.asString());
+		} else {
+			return null;
+		}
 	}
 }

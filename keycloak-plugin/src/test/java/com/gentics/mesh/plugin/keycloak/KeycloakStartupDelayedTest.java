@@ -15,10 +15,10 @@ import com.gentics.mesh.plugin.keycloak.config.KeycloakPluginConfig;
 import com.gentics.mesh.test.docker.KeycloakContainer;
 import com.gentics.mesh.test.util.TestUtils;
 
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.reactivex.core.Vertx;
-import io.vertx.reactivex.core.buffer.Buffer;
 import io.vertx.reactivex.core.http.HttpServer;
 import io.vertx.reactivex.ext.web.client.HttpRequest;
 import io.vertx.reactivex.ext.web.client.WebClient;
@@ -36,7 +36,7 @@ public class KeycloakStartupDelayedTest extends AbstractKeycloakPluginTest {
 
 	static {
 		realmUrlPrefix = StringUtils.EMPTY;
-		vertx = new Vertx(new io.vertx.core.impl.VertxBuilder().init().vertx());
+		vertx = Vertx.builder().build();
 	}
 
 	@ClassRule
@@ -59,12 +59,12 @@ public class KeycloakStartupDelayedTest extends AbstractKeycloakPluginTest {
 					).putHeaders(rh.headers());
 				realRequest.queryParams().addAll(rh.params());
 				if (HttpMethod.POST == rh.method() || HttpMethod.PUT == rh.method()) {
-					rh.bodyHandler(body -> realRequest.sendBuffer(body, rs -> {
+					rh.bodyHandler(body -> realRequest.sendBuffer(body).andThen(rs -> {
 						log.info(rh.toString() + " body sent");
 						rh.response().end(rs.result().body());
 					}));
 				} else {
-					realRequest.send(rs -> {
+					realRequest.send().andThen(rs -> {
 						log.info(rh.toString() + " sent");
 						rh.response().end(rs.result().body());
 					});
