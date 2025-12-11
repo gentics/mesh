@@ -189,6 +189,10 @@ keystore:
   # Change this password. This will be used if no custom keystore secret has been specified.
   password: "secret"
 
+# Add custom certificates to the jvm truststore
+# customCert:
+#   secretName: "my-certs"
+
 ssl:
   enabled: false
   # Client Authentication mode can be: NONE, REQUEST or REQUIRE
