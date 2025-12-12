@@ -6,6 +6,11 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v3.1.7]]
+== 3.1.7 (12.12.2025)
+
+icon:check[] Docker: The content of @eclipse-temurin@ base image has been updated, to eliminate critical vulnerabilities on its dependencies.
+
 [[v3.1.6]]
 == 3.1.6 (20.11.2025)
 
