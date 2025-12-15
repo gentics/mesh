@@ -131,7 +131,7 @@ stage("Setup Build Environment") {
 						sh "git commit -m 'Raise version'"
 						GitHelper.addTag(version, 'Release of version ' + version)
 					} else if (Boolean.valueOf(params.setBranchAsVersion)) {
-						version = branchName
+						version = branchName + "-SNAPSHOT"
 						echo "Building version " + version
 						MavenHelper.setVersion(version)
 					}
@@ -348,7 +348,6 @@ stage("Setup Build Environment") {
 			stage("Docker Build") {
 				if (env.BUILD_SKIPPED != "true" && Boolean.valueOf(params.runDocker)) {
 					if (Boolean.valueOf(params.runDeployTesting)) {
-						version = branchName;
 						registryHost = registryHostTest;
 					}
 					// server
@@ -406,7 +405,6 @@ stage("Setup Build Environment") {
 				if (env.BUILD_SKIPPED != "true" && (Boolean.valueOf(params.runDeploy) || Boolean.valueOf(params.runDeployTesting))) {
 					if (Boolean.valueOf(params.runDocker)) {
 						if (Boolean.valueOf(params.runDeployTesting)) {
-							version = branchName;
 							registryHost = registryHostTest;
 						}
 
