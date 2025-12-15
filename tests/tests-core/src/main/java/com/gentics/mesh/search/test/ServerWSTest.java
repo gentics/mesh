@@ -50,7 +50,8 @@ public class ServerWSTest extends AbstractVerticle {
 		// 4. Setup the HTTP server
 		HttpServerOptions options = new HttpServerOptions();
 		options.setPort(4444);
-		options.setCompressionSupported(true);
+		// TODO disabling compression is currently necessary due to a but in vert.x
+		options.setCompressionSupported(false);
 		options.setLogActivity(true);
 		HttpServer server = vertx.createHttpServer(options);
 		server.requestHandler(router);

@@ -40,7 +40,9 @@ public class MonitoringServerVerticle extends AbstractVerticle {
 		HttpServerOptions options = new HttpServerOptions();
 		options.setPort(port);
 		options.setHost(host);
-		options.setCompressionSupported(true);
+
+		// TODO disabling compression is currently necessary due to a but in vert.x
+		options.setCompressionSupported(false);
 		options.setHandle100ContinueAutomatically(true);
 		Router router = routes.getRouter();
 

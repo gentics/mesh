@@ -267,7 +267,8 @@ public class RestAPIVerticle extends AbstractVerticle {
 	private void applyCommonSettings(HttpServerOptions options, HttpServerConfig serverConfig) {
 		String host = config().getString("host");
 		options.setHost(host);
-		options.setCompressionSupported(true);
+		// TODO disabling compression is currently necessary due to a but in vert.x
+		options.setCompressionSupported(false);
 		options.setHandle100ContinueAutomatically(true);
 		options.setUseAlpn(serverConfig.isUseAlpn());
 		// options.setLogActivity(true);
