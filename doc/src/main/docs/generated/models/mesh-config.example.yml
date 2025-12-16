@@ -132,6 +132,7 @@ search:
   mappingMode: "DYNAMIC"
   complianceMode: "ES_6"
   syncBatchSize: 50000
+  syncFetchBatchSize: 10000
   indexCheckInterval: 60000
   indexMappingCacheTimeout: 3600000
 upload:

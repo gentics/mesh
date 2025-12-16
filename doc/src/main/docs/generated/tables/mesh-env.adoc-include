@@ -80,6 +80,9 @@
 | *HIKARI_CP_POOL_NAME*
 | This property represents a user-defined name for the connection pool and appears mainly in logging and JMX management consoles to identify pools and pool configurations.
 
+| *MESH_ELASTICSEARCH_SYNC_FETCH_BATCH_SIZE*
+| Override the sync fetch batch size. Default: 10000
+
 | *MESH_S3_BINARY_SECRET_ACCESS_KEY*
 | Override the configured AWS S3 secret access key.
 
@@ -224,11 +227,11 @@
 | *MESH_IMAGE_CACHE_TOUCH*
 | Overwrite the image cache touch behaviour.
 
-| *MESH_HTTP_SSL_CLIENT_AUTH_MODE*
-| Override the configured client certificate handling mode.
-
 | *MESH_CLUSTER_COORDINATOR_REGEX*
 | Override the cluster coordinator regex.
+
+| *MESH_HTTP_SSL_CLIENT_AUTH_MODE*
+| Override the configured client certificate handling mode.
 
 | *MESH_S3_CORS_ALLOWED_HEADERS*
 | Override the configured AWS S3 CORS allowed headers.

@@ -6,6 +6,19 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v3.2.0]]
+== 3.2.0 (16.12.2025)
+
+icon:plus[] Search: An index search integration with Elasticsearch has been refactored to use the stateless `search_after` approach. The old, `scroll` API based implementation has been removed.
+
+icon:plus[] Search: Support for Elasticsearch 9 has been added.
+
+icon:plus[] Core: The `Vert.x` async IO / routing framework has been updated to the version `5.0.5`.
+
+icon:plus[] Some dependencies have been updated:
+* Hibernate: 7.1.8.Final
+
+
 [[v3.1.7]]
 == 3.1.7 (12.12.2025)
 
