@@ -44,6 +44,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -2439,6 +2440,26 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			.hasStringField("name", "Name auf Deutsch")
 			.hasStringField("slug", "german_root_node");
 
+	}
+
+	@Test
+	public void testLargeContent() {
+		String largeContent = RandomStringUtils.secure().nextAlphabetic(20_000_001);
+
+		String parentNodeUuid = tx(() -> folder("news").getUuid());
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setSchemaName("content");
+		request.setLanguage("en");
+		request.getFields().put("title", FieldUtil.createStringField("some title"));
+		request.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		request.getFields().put("slug", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField(largeContent));
+		request.setParentNodeUuid(parentNodeUuid);
+
+		NodeResponse restNode = call(() -> client().createNode(PROJECT_NAME, request));
+		String nodeUuid = restNode.getUuid();
+		restNode = call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid));
+		assertThat(restNode).hasStringField("content", largeContent);
 	}
 
 	/**
