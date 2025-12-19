@@ -254,6 +254,7 @@
 										<arg>--transaction-isolation=READ-COMMITTED</arg>
 										<arg>--binlog-format=ROW</arg>
 										<arg>--log-bin=mysqld-bin</arg>
+										<arg>--max-allowed-packet=67108864</arg>
 									</exec>
 								</cmd>
 								<env>
