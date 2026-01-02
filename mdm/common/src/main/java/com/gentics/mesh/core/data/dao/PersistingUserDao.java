@@ -15,7 +15,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
@@ -24,9 +23,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
-import org.apache.commons.collections.ListUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,31 +97,31 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	@Override
 	default boolean hasPermissionForId(HibUser user, Object elementId, InternalPermission permission) {
 		PermissionCache permissionCache = Tx.get().permissionCache();
-		Boolean cached = permissionCache.hasPermission(user.getId(), permission, elementId);
-		if (cached != null) {
-			if (!cached && permission == READ_PUBLISHED_PERM) {
-				return hasPermissionForId(user, elementId, READ_PERM);
-			}
-
-			return cached.booleanValue();
+		// Admin users have all permissions
+		if (user.isAdmin()) {
+			permissionCache.store(user.getId(), EnumSet.allOf(InternalPermission.class), elementId);
+			return true;
 		} else {
-			// Admin users have all permissions
-			if (user.isAdmin()) {
-				permissionCache.store(user.getId(), EnumSet.allOf(InternalPermission.class), elementId);
-				return true;
-			}
+			Boolean cached = permissionCache.hasPermission(user.getId(), permission, elementId);
+			if (cached != null) {
+				if (!cached && permission == READ_PUBLISHED_PERM) {
+					return hasPermissionForId(user, elementId, READ_PERM);
+				}
 
-			EnumSet<InternalPermission> permissions = getPermissionsForElementId(user, elementId);
-			permissionCache.store(user.getId(), permissions, elementId);
-			if (permissions.contains(permission)) {
-				return true;
-			}
-
-			// Fall back to read and check whether the user has read perm. Read permission also includes read published.
-			if (permission == READ_PUBLISHED_PERM) {
-				return hasPermissionForId(user, elementId, READ_PERM);
+				return cached.booleanValue();
 			} else {
-				return false;
+				EnumSet<InternalPermission> permissions = getPermissionsForElementId(user, elementId);
+				permissionCache.store(user.getId(), permissions, elementId);
+				if (permissions.contains(permission)) {
+					return true;
+				}
+
+				// Fall back to read and check whether the user has read perm. Read permission also includes read published.
+				if (permission == READ_PUBLISHED_PERM) {
+					return hasPermissionForId(user, elementId, READ_PERM);
+				} else {
+					return false;
+				}
 			}
 		}
 	}

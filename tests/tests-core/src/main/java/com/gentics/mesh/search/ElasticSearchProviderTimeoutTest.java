@@ -71,7 +71,7 @@ public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 				}
 				if (maybeCustomStatus.isPresent()) {
 					rh.response().setStatusCode(maybeCustomStatus.get()).setStatusMessage("HTTP " + maybeCustomStatus.get()).end(new JsonObject().put("error", "HTTP error " + maybeCustomStatus.get() + " occurred!!!").toString());
-			} else {
+				} else {
 					HttpRequest<Buffer> realRequest = realClient.request(
 							rh.method(), 
 							testContext.elasticsearchContainer().getMappedPort(9200), 
@@ -84,8 +84,8 @@ public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 							realRequest.sendBuffer(body, rs -> {
 							log.info(rh.toString() + " body sent");
 								if (rs.succeeded()) {
-							rh.response().end(rs.result().body());
-					} else {
+									rh.response().end(rs.result().body());
+								} else {
 									rh.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code())
 										.setStatusMessage(rs.cause().getClass().getName()).end();
 								}
