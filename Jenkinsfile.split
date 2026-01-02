@@ -135,19 +135,21 @@ stage("Setup Build Environment") {
 						echo "Building version " + version
 						MavenHelper.setVersion(version)
 					}
-				}
 
-				if (params.testingVersion?.trim()) {
-					version = params.testingVersion.trim()
-					echo "Building version test build with name: " + version
-					MavenHelper.setVersion(version)
+					if (params.testingVersion?.trim()) {
+						version = params.testingVersion.trim()
+						echo "Building version test build with name: " + version
+						MavenHelper.setVersion(version)
+					}
 				}
 			}
 
 			stage("Setup") {
 				if (params.meshVersion?.trim()) {
-					echo "Setting Gentics Mesh version to " + params.meshVersion.trim()
-					MavenHelper.setProperty("mesh.version", params.meshVersion.trim())
+					withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
+						echo "Setting Gentics Mesh version to " + params.meshVersion.trim()
+						MavenHelper.setProperty("mesh.version", params.meshVersion.trim())
+					}
 				}
       		}
 
