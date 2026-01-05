@@ -188,12 +188,7 @@ public abstract class AbstractSearchHandler<T extends HibCoreElement<RM>, RM ext
 				log.error("Error at: " + error.toString());
 				log.error("Search query failed", error);
 				try {
-					String body = he.getBody();
-					if (StringUtils.isNotBlank(body)) {
-						ac.send(he.getBody(), HttpResponseStatus.BAD_REQUEST);
-					} else {
-						ac.send(HttpResponseStatus.BAD_REQUEST);
-					}
+					ac.send(he.getBody(), HttpResponseStatus.BAD_REQUEST);
 				} catch (Exception e1) {
 					log.error("Error while converting es error to response", e1);
 					throw error(INTERNAL_SERVER_ERROR, "Error while converting error.", e1);
