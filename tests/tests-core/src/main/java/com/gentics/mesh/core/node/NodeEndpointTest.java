@@ -92,6 +92,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.demo.UserInfo;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.parameter.client.GenericParametersImpl;
@@ -2444,7 +2445,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testLargeContent() {
-		String largeContent = RandomStringUtils.secure().nextAlphabetic(20_000_001);
+		String largeContent = RandomStringUtils.secure().nextAlphabetic(MeshOptions.DEFAULT_STRING_LENGTH);
 
 		String parentNodeUuid = tx(() -> folder("news").getUuid());
 		NodeCreateRequest request = new NodeCreateRequest();
@@ -2460,6 +2461,25 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String nodeUuid = restNode.getUuid();
 		restNode = call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid));
 		assertThat(restNode).hasStringField("content", largeContent);
+	}
+
+	@Test
+	public void testTooLargeContent() {
+		String largeContent = RandomStringUtils.secure().nextAlphabetic(MeshOptions.DEFAULT_STRING_LENGTH + 1);
+
+		String parentNodeUuid = tx(() -> folder("news").getUuid());
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setSchemaName("content");
+		request.setLanguage("en");
+		request.getFields().put("title", FieldUtil.createStringField("some title"));
+		request.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		request.getFields().put("slug", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField(largeContent));
+		request.setParentNodeUuid(parentNodeUuid);
+
+		call(() -> client().createNode(PROJECT_NAME, request), BAD_REQUEST, "node_error_string_field_value_too_long",
+				"content", String.valueOf(MeshOptions.DEFAULT_STRING_LENGTH),
+				String.valueOf(MeshOptions.DEFAULT_STRING_LENGTH + 1));
 	}
 
 	/**
