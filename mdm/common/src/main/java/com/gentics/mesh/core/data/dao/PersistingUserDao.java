@@ -107,7 +107,6 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 				if (!cached && permission == READ_PUBLISHED_PERM) {
 					return hasPermissionForId(user, elementId, READ_PERM);
 				}
-
 				return cached.booleanValue();
 			} else {
 				EnumSet<InternalPermission> permissions = getPermissionsForElementId(user, elementId);
