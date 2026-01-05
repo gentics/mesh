@@ -45,16 +45,19 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.PersistingRootDao;
+import com.gentics.mesh.core.data.dao.PersistingUserDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.FieldTypes;
@@ -202,9 +205,24 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 		DataLoader<DataLoaderKey<HibNode>, List<NodeContent>> breadcrumbLoader = env.getDataLoader(NodeDataLoader.BREADCRUMB_LOADER_KEY);
 		return breadcrumbLoader.load(new DataLoaderKey<>(env, content.getNode()), context).thenApply(contents -> {
-			return contents.stream()
-					.filter(item -> item != null && item.getContainer() != null && gc.hasReadPerm(item, type))
-					.collect(Collectors.toList());
+			HibUser user = gc.getUser();
+			if (user.isAdmin()) {
+				return contents.stream()
+						.filter(item -> item != null && item.getContainer() != null)
+						.collect(Collectors.toList());
+			} else {
+				List<Object> nodeIds = contents.stream().map(nc -> nc.getNode().getId()).collect(Collectors.toList());
+				PersistingUserDao userDao = CommonTx.get().userDao();
+				userDao.preparePermissionsForElementIds(gc.getUser(), nodeIds);
+
+				return contents.stream().filter(item -> {
+					InternalPermission perm = item.getType() == ContainerType.PUBLISHED
+							? InternalPermission.READ_PUBLISHED_PERM
+							: InternalPermission.READ_PERM;
+					return item != null && item.getContainer() != null && userDao.hasPermission(user, item.getNode(), perm);
+				}).collect(Collectors.toList());
+			}
+
 		});
 	}
 

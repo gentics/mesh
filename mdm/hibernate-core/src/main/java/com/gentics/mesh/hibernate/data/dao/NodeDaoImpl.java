@@ -1483,4 +1483,14 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 			.getSingleResult();
 		return numDescendants >= MASSIVE_DELETION_THRESHOLD;
 	}
+
+	@Override
+	public void loadEdges(List<HibNode> nodes) {
+		List<UUID> nodeUuids = nodes.stream().map(n -> UUIDUtil.toJavaUuid(n.getUuid())).toList();
+
+		SplittingUtils.splitAndConsume(nodeUuids, inQueriesLimitForSplitting(0), split -> {
+			em().createQuery("select edge from nodefieldcontainer edge where edge.node.dbUuid in :uuids",
+					HibNodeFieldContainerEdgeImpl.class).setParameter("uuids", nodeUuids).getResultList();
+		});
+	}
 }

@@ -68,6 +68,9 @@ public class NodeDataLoader {
 		String branchUuid = tx.getBranch(context).getUuid();
 		Map<DataLoaderKey<HibNode>, List<HibNodeFieldContainer>> fieldsContainers = new HashMap<>();
 
+		List<HibNode> nodes = keys.stream().map(DataLoaderKey::getValue).toList();
+		CommonTx.get().nodeDao().loadEdges(nodes);
+
 		// query for all types provided
 		partitioningByContainerType(environment.getKeyContexts(), (Pair<ContainerType, List<DataLoaderKey<HibNode>>> keysByContainerType) -> {
 			ContainerType type = keysByContainerType.getKey();
