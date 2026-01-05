@@ -1,8 +1,5 @@
 package com.gentics.mesh.hibernate.data.domain;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.HashMap;
@@ -19,7 +16,6 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.contentoperation.CommonContentColumn;
 import com.gentics.mesh.contentoperation.ContentColumn;
-import com.gentics.mesh.contentoperation.DynamicContentColumn;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -31,15 +27,12 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ReferenceType;
 import com.gentics.mesh.core.rest.node.FieldMap;
-import com.gentics.mesh.core.rest.node.field.Field;
-import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.hibernate.data.dao.ContentDaoImpl;
-import com.gentics.mesh.hibernate.data.node.field.HibFieldTypes;
 import com.gentics.mesh.util.VersionNumber;
 
 /**
@@ -302,8 +295,7 @@ public class HibNodeFieldContainerImpl extends AbstractHibBucketableElement
 		FieldSchemaContainer schema = getSchemaContainerVersion().getSchema();
 		schema.assertForUnhandledFields(restFields);
 
-		createBasicFields(schema, restFields);
-		createComplexFields(ac, schema, restFields);
+		HibUnmanagedFieldContainer.super.updateFieldsFromRest(ac, restFields);
 
 		String branchUuid = tx.getBranch(ac).getUuid();
 		contentDao.updateWebrootPathInfo(this, ac, branchUuid, "node_conflicting_segmentfield_update");
@@ -317,52 +309,5 @@ public class HibNodeFieldContainerImpl extends AbstractHibBucketableElement
 	 */
 	public UUID getNodeId() {
 		return get(CommonContentColumn.NODE, () -> null);
-	}
-
-	/**
-	 * basic fields can be stored with a single update query
-	 * @param schema
-	 * @param restFields
-	 */
-	private void createBasicFields(FieldSchemaContainer schema, FieldMap restFields) {
-		List<FieldSchema> basicFields = schema.getFields().stream().filter(this::isBasicField).collect(Collectors.toList());
-		for (FieldSchema fieldSchema : basicFields) {
-			String key = fieldSchema.getName();
-			Field field = restFields.getField(key, fieldSchema);
-			boolean restFieldIsNull = field == null || field.getValue() == null;
-			if (fieldSchema.isRequired() && restFieldIsNull) {
-				throw error(BAD_REQUEST, "node_error_missing_required_field_value", key, schema.getName());
-			} else if (restFieldIsNull) {
-				continue;
-			}
-
-			DynamicContentColumn column = new DynamicContentColumn(fieldSchema);
-			put(column, column.transformToPersistedValue(field.getValue()));
-		}
-	}
-
-	/**
-	 * For complex query there is more logic to be observed, so we fall back to the updateField method
-	 * @param ac
-	 * @param schema
-	 * @param restFields
-	 */
-	private void createComplexFields(InternalActionContext ac, FieldSchemaContainer schema, FieldMap restFields) {
-		List<FieldSchema> complexFields = schema.getFields().stream().filter(f -> !isBasicField(f)).collect(Collectors.toList());
-
-		for (FieldSchema entry : complexFields) {
-			String key = entry.getName();
-			updateField(ac, restFields, key, entry, schema);
-		}
-	}
-
-	private boolean isBasicField(FieldSchema fieldSchema) {
-		HibFieldTypes type = HibFieldTypes.fromFieldSchema(fieldSchema);
-
-		return  HibFieldTypes.STRING.equals(type) ||
-				HibFieldTypes.HTML.equals(type) ||
-				HibFieldTypes.NUMBER.equals(type) ||
-				HibFieldTypes.DATE.equals(type) ||
-				HibFieldTypes.BOOLEAN.equals(type);
 	}
 }

@@ -6,12 +6,16 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.binary.HibBinary;
@@ -63,10 +67,8 @@ import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.S3BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.util.DateUtils;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class RestUpdaters {
 
@@ -94,6 +96,9 @@ public class RestUpdaters {
 		if (restIsNullOrEmpty) {
 			return;
 		}
+
+		// check value length
+		checkStringLength(stringField.getString(), fieldKey);
 
 		// check value restrictions
 		StringFieldSchema stringFieldSchema = (StringFieldSchema) fieldSchema;
@@ -134,6 +139,9 @@ public class RestUpdaters {
 		if (restIsNull) {
 			return;
 		}
+
+		// check string lengths
+		checkStringsLength(stringList.getItems(), fieldKey);
 
 		// Always create a new list.
 		// This will effectively unlink the old list and create a new one.
@@ -382,6 +390,9 @@ public class RestUpdaters {
 			return;
 		}
 
+		// check value length
+		checkStringLength(htmlField.getHTML(), fieldKey);
+
 		// Handle Update / Create - Create new graph field if no existing one could be found
 		if (htmlGraphField == null) {
 			container.createHTML(fieldKey).setHtml(htmlField.getHTML());
@@ -412,6 +423,9 @@ public class RestUpdaters {
 		if (restIsNull) {
 			return;
 		}
+
+		// check strings length
+		checkStringsLength(htmlList.getItems(), fieldKey);
 
 		// Always create a new list.
 		// This will effectively unlink the old list and create a new one.
@@ -845,4 +859,21 @@ public class RestUpdaters {
 		}
 		// Don't update image width, height, SHA checksum - those are immutable
 	};
+
+	private static void checkStringLength(String string, String fieldKey) {
+		if (StringUtils.isEmpty(string)) {
+			return;
+		}
+		if (string.length() > MeshOptions.DEFAULT_STRING_LENGTH) {
+			throw error(BAD_REQUEST, "node_error_string_field_value_too_long", fieldKey,
+					String.valueOf(MeshOptions.DEFAULT_STRING_LENGTH), String.valueOf(string.length()));
+		}
+	}
+
+	private static void checkStringsLength(List<String> strings, String fieldKey) {
+		if (CollectionUtils.isEmpty(strings)) {
+			return;
+		}
+		strings.forEach(string -> checkStringLength(string, fieldKey));
+	}
 }

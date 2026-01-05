@@ -29,7 +29,6 @@ import jakarta.persistence.EntityManager;
  */
 public interface QueryUtils {
 
-	static final int DEFAULT_STRING_LENGTH = 1000000;
 	static final int DEFAULT_UUID_LENGTH = 16;
 	static final int DEFAULT_NUMBER_LENGTH = 64;
 	static final int DEFAULT_NUMBER_PRECISION = 40;
