@@ -211,16 +211,21 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 						.filter(item -> item != null && item.getContainer() != null)
 						.collect(Collectors.toList());
 			} else {
-				List<Object> nodeIds = contents.stream().map(nc -> nc.getNode().getId()).collect(Collectors.toList());
+				List<Object> nodeIds = contents
+						.stream()
+						.filter(item -> item != null && item.getContainer() != null)
+						.map(nc -> nc.getNode().getId()).collect(Collectors.toList());
 				PersistingUserDao userDao = CommonTx.get().userDao();
 				userDao.preparePermissionsForElementIds(gc.getUser(), nodeIds);
 
-				return contents.stream().filter(item -> {
-					InternalPermission perm = item.getType() == ContainerType.PUBLISHED
-							? InternalPermission.READ_PUBLISHED_PERM
-							: InternalPermission.READ_PERM;
-					return item != null && item.getContainer() != null && userDao.hasPermission(user, item.getNode(), perm);
-				}).collect(Collectors.toList());
+				return contents.stream()
+						.filter(item -> item != null && item.getContainer() != null)
+						.filter(item -> {
+							InternalPermission perm = item.getType() == ContainerType.PUBLISHED
+									? InternalPermission.READ_PUBLISHED_PERM
+									: InternalPermission.READ_PERM;
+							return item != null && item.getContainer() != null && userDao.hasPermission(user, item.getNode(), perm);
+						}).collect(Collectors.toList());
 			}
 
 		});
