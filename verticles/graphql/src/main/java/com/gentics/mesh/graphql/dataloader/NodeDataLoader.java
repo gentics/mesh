@@ -33,6 +33,7 @@ import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.PersistingUserDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.NodeContent;
+import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
@@ -57,6 +58,7 @@ public class NodeDataLoader {
 	public static final String REFERENCED_BY_LOADER_KEY = "referencedByLoader";
 	public static final String PARENT_LOADER_KEY = "parentLoader";
 	public static final String BREADCRUMB_LOADER_KEY = "breadcrumbLoader";
+	public static final String NODE_REFERENCE_LOADER_KEY = "nodeReferenceLoader";
 
 	/**
 	 * Batch load all field containers of a node for transaction branch and the provided types, without doing permission
@@ -313,6 +315,46 @@ public class NodeDataLoader {
 		for (DataLoaderKey<HibNode> key : keys) {
 			results.add(nodeContentMap.getOrDefault(key, Collections.emptyList()));
 		}
+		promise.complete(results);
+
+		return promise.future().toCompletionStage();
+	};
+
+	/**
+	 * Batch loading of nodes referenced from node fields.
+	 */
+	public static BatchLoaderWithContext<DataLoaderKey<HibNodeField>, NodeContent> NODE_REFERENCE_LOADER = (keys, environment) -> {
+		NodeDao nodeDao = Tx.get().nodeDao();
+		GraphQLContext context = environment.getContext();
+		HibBranch branch = Tx.get().getBranch(context);
+
+		Map<DataLoaderKey<HibNodeField>, NodeContent> nodeContentByField = new HashMap<>();
+
+		partitioningByContext(environment.getKeyContexts(), (Pair<Context, List<DataLoaderKey<HibNodeField>>> keysByContext) -> {
+			ContainerType type = keysByContext.getKey().getType();
+			List<String> languageTags = keysByContext.getKey().getLanguageTags();
+
+			Map<String, Set<HibNodeField>> fieldsByPath = keysByContext.getValue().stream()
+					.collect(Collectors.groupingBy(DataLoaderKey::getPath,
+							Collectors.mapping(DataLoaderKey::getValue, Collectors.toSet())));
+
+			Set<HibNodeField> fields = fieldsByPath.values().stream().flatMap(Set::stream).collect(Collectors.toSet());
+
+			Map<HibNodeField, NodeContent> contentByField = nodeDao.getNodeContents(fields, context, branch.getUuid(), languageTags, type);
+
+			fieldsByPath.entrySet().forEach(entry -> {
+				String path = entry.getKey();
+				entry.getValue().forEach(field -> {
+					nodeContentByField.put(new DataLoaderKey<>(path, field), contentByField.getOrDefault(field, null));
+				});
+			});
+		});
+
+		List<NodeContent> results = new ArrayList<>();
+		for (DataLoaderKey<HibNodeField> key : keys) {
+			results.add(nodeContentByField.getOrDefault(key, null));
+		}
+		Promise<List<NodeContent>> promise = Promise.promise();
 		promise.complete(results);
 
 		return promise.future().toCompletionStage();

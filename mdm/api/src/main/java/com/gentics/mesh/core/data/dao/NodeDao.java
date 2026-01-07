@@ -31,6 +31,7 @@ import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
+import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
@@ -120,6 +121,19 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @return
 	 */
 	Map<HibNode, List<NodeContent>> getChildren(Set<HibNode> nodes, InternalActionContext ac, String branchUuid, List<String> languageTags, ContainerType type, PagingParameters sorting, Optional<FilterOperation<?>> maybeFilter);
+
+	/**
+	 * Get the node contents referenced by the given collection of fields in the given branch, of the provided type and with language fallback
+	 * This will also check for permissions.
+	 * @param nodeFields
+	 * @param ac
+	 * @param branchUuid
+	 * @param languageTags
+	 * @param type
+	 * @return
+	 */
+	Map<HibNodeField, NodeContent> getNodeContents(Collection<HibNodeField> nodeFields, InternalActionContext ac,
+			String branchUuid, List<String> languageTags, ContainerType type);
 
 	/**
 	 * Return the children for this node. Only fetches nodes from the provided branch and also checks permissions.

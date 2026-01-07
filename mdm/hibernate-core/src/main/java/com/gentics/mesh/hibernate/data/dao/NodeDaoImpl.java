@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -103,6 +104,7 @@ import com.gentics.mesh.hibernate.data.domain.HibNodeListFieldEdgeImpl;
 import com.gentics.mesh.hibernate.data.domain.HibProjectImpl;
 import com.gentics.mesh.hibernate.data.domain.misc.NodeData;
 import com.gentics.mesh.hibernate.data.loader.DataLoaders;
+import com.gentics.mesh.hibernate.data.node.field.impl.HibNodeFieldImpl;
 import com.gentics.mesh.hibernate.data.permission.HibPermissionRoots;
 import com.gentics.mesh.hibernate.event.EventFactory;
 import com.gentics.mesh.hibernate.util.HibernateFilter;
@@ -457,6 +459,67 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 					return Pair.of(kv.getKey(), content);
 				}).collect(Collectors.toMap(Pair::getKey, Pair::getValue));
 		return CollectionUtil.addFallbackValueForMissingKeys(map, nodes, Collections.emptyList());
+	}
+
+	@Override
+	public Map<HibNodeField, NodeContent> getNodeContents(Collection<HibNodeField> nodeFields, InternalActionContext ac,
+			String branchUuid, List<String> languageTags, ContainerType type) {
+		InternalPermission perm = type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM;
+		PersistingUserDao userDao = CommonTx.get().userDao();
+		HibUser user = ac.getUser();
+
+		Map<HibNodeField, UUID> edgeIdPerField = new HashMap<>();
+		Collection<UUID> edgeIds = new HashSet<>();
+
+		nodeFields.stream().map(HibNodeFieldImpl.class::cast).forEach(field -> {
+			UUID edgeUuid = field.valueOrNull();
+			if (edgeUuid != null) {
+				edgeIdPerField.put(field, edgeUuid);
+				edgeIds.add(edgeUuid);
+			}
+		});
+
+		// load the edges (between field and node)
+		List<HibNodeFieldEdgeImpl> edges = em().createNamedQuery("nodefieldref.findEdgesByUuids", HibNodeFieldEdgeImpl.class)
+			.setParameter("uuids", edgeIds)
+			.getResultList();
+
+		Map<UUID, UUID> nodeIdPerEdgeId = edges.stream().filter(edge -> edge.getValueOrUuid() != null)
+				.collect(Collectors.toMap(edge -> UUIDUtil.toJavaUuid(edge.getUuid()), edge -> edge.getValueOrUuid()));
+
+		// load the referenced nodes with content edges
+		Set<HibNode> nodes = new HashSet<>(loadNodesWithEdges(nodeIdPerEdgeId.values()));
+
+		// remove nodes without permissions
+		if (!user.isAdmin()) {
+			List<Object> ids = nodes.stream().map(HibNode::getId).collect(Collectors.toList());
+			userDao.preparePermissionsForElementIds(user, ids);
+			nodes.removeIf(node -> !userDao.hasPermission(user, node, perm));
+		}
+		Map<UUID, HibNode> nodesByUuid = nodes.stream().collect(Collectors.toMap(n -> UUIDUtil.toJavaUuid(n.getUuid()), Function.identity()));
+
+		// load contents (field containers)
+		Map<UUID, HibNodeFieldContainer> fieldContainers = SplittingUtils.splitAndMergeInMap(nodes,
+				inQueriesLimitForSplitting(3), (nodesSlice) -> getFieldContainers(Collections.emptyList(), nodesSlice,
+						languageTags, branchUuid, type));
+
+		Map<HibNodeField, NodeContent> result = new HashMap<>();
+
+		nodeFields.forEach(field ->  {
+			UUID edgeId = edgeIdPerField.getOrDefault(field, null);
+			if (edgeId != null) {
+				UUID nodeId = nodeIdPerEdgeId.getOrDefault(edgeId, null);
+				if (nodeId != null) {
+					HibNode node = nodesByUuid.getOrDefault(nodeId, null);
+					HibNodeFieldContainer container = fieldContainers.getOrDefault(nodeId, null);
+					if (node != null && container != null) {
+						result.put(field, new NodeContent(node, container, languageTags, type));
+					}
+				}
+			}
+		});
+
+		return CollectionUtil.addFallbackValueForMissingKeys(result, nodeFields, null);
 	}
 
 	@Override

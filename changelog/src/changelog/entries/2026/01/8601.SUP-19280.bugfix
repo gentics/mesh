@@ -1,1 +1,1 @@
-GraphQL: The number of SQL Queries necessary for fetching breadcrumbs of GraphQL has been reduced.
+GraphQL: The number of SQL Queries necessary for fetching breadcrumbs and node references via GraphQL has been reduced.
