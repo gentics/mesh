@@ -193,7 +193,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		fieldUpdate.path("/:nodeUuid/binary/:fieldName");
 		fieldUpdate.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
 		fieldUpdate.addUriParameter("fieldName", "Name of the field which should be created.", "stringField");
-		fieldUpdate.addUriParameter("publish", "Whether the node shall be published after updating the binary field", "true");
+		fieldUpdate.addQueryParameter("publish", "Whether the node shall be published after updating the binary field", "true");
 		fieldUpdate.method(POST);
 		fieldUpdate.consumes(MULTIPART_FORM_DATA);
 		fieldUpdate.produces(APPLICATION_JSON);
@@ -253,6 +253,8 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		fieldGet.addQueryParameters(ImageManipulationParametersImpl.class);
 		fieldGet.addQueryParameters(VersioningParametersImpl.class);
 		fieldGet.method(GET);
+		fieldGet.produces(APPLICATION_OCTET_STREAM);
+		fieldGet.exampleResponse(OK, "Binary data");
 		fieldGet.description(
 			"Download the binary field with the given name. You can use image query parameters for crop and resize if the binary data represents an image.");
 		fieldGet.blockingHandler(rc -> {
