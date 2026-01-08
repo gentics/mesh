@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data.service;
 
-import java.util.Iterator;
 import java.util.Optional;
 import java.util.Stack;
 
@@ -15,7 +14,6 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.webroot.PathPrefixUtil;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.impl.PathImpl;
@@ -76,7 +74,7 @@ public abstract class AbstractWebRootService implements WebRootService {
 
 		// Handle path to project root (baseNode)
 		if ("/".equals(strippedPath) || strippedPath.isEmpty()) {
-			Optional<HibNodeFieldContainer> container = contentDao.getFieldContainers(baseNode, branch, type).stream().findFirst();
+			Optional<HibNodeFieldContainer> container = contentDao.getFieldContainers(baseNode, branch, type).stream().findAny();
 			if (container.isPresent()) {
 				nodePath.addSegment(new PathSegmentImpl(container.get(), null, null, "/"));
 				stack.push("/");

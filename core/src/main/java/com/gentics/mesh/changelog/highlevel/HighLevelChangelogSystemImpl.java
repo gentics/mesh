@@ -93,7 +93,7 @@ public class HighLevelChangelogSystemImpl implements HighLevelChangelogSystem {
 			if (filter != null) {
 				stream = stream.filter(filter);
 			}
-			return stream.filter(change -> !isApplied(dao, change)).findFirst().isPresent();
+			return stream.filter(change -> !isApplied(dao, change)).findAny().isPresent();
 		});
 	}
 

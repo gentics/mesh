@@ -1214,7 +1214,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	@Override
 	default Map<HibNode, String> getPaths(Collection<HibNode> sourceNodes, String branchUuid, InternalActionContext ac, ContainerType type, String... languageTags) {
 		BranchDao branchDao = Tx.get().branchDao();
-		HibBranch branch = sourceNodes.stream().map(node -> branchDao.findByUuid(node.getProject(), branchUuid)).findFirst().orElse(null);
+		HibBranch branch = sourceNodes.stream().map(node -> branchDao.findByUuid(node.getProject(), branchUuid)).findAny().orElse(null);
 		return getPaths(sourceNodes, branch, ac, type, languageTags);
 	}
 
@@ -1265,7 +1265,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 							String fallbackPath = null;
 							if (containerForUrlFieldValues != null) {
 								fallbackPath = contentDao.getUrlFieldValues(containerForUrlFieldValues)
-										.findFirst()
+										.findAny()
 										.map(path -> getWithSanitizedPathPrefix(branch, builder -> builder.append(path)))
 										.orElse(null);
 							}
@@ -1394,7 +1394,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		return Stream.of(languages)
 				.flatMap(language -> Stream.ofNullable(contentDao.getFieldContainer(node, language, branch != null ? branch.getUuid() : null, type)))
 				.flatMap(contentDao::getUrlFieldValues)
-				.findFirst()
+				.findAny()
 				.map(path -> getWithSanitizedPathPrefix(branch, builder -> builder.append(path)))
 				.orElse(null);
 	}

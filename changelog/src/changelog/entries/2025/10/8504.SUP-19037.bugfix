@@ -1,0 +1,1 @@
+Core: Some refactorings have been made to avoid potential deadlocks or slowdowns on various use cases.
