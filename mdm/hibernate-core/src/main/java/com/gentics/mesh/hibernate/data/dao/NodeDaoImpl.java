@@ -463,7 +463,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 
 	@Override
 	public Map<HibNodeField, NodeContent> getNodeContents(Collection<HibNodeField> nodeFields, InternalActionContext ac,
-			String branchUuid, List<String> languageTags, ContainerType type) {
+			String branchUuid, List<String> languageTags, ContainerType type, boolean removeWithoutPerm) {
 		InternalPermission perm = type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM;
 		PersistingUserDao userDao = CommonTx.get().userDao();
 		HibUser user = ac.getUser();
@@ -494,7 +494,9 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 		if (!user.isAdmin()) {
 			List<Object> ids = nodes.stream().map(HibNode::getId).collect(Collectors.toList());
 			userDao.preparePermissionsForElementIds(user, ids);
-			nodes.removeIf(node -> !userDao.hasPermission(user, node, perm));
+			if (removeWithoutPerm) {
+				nodes.removeIf(node -> !userDao.hasPermission(user, node, perm));
+			}
 		}
 		Map<UUID, HibNode> nodesByUuid = nodes.stream().collect(Collectors.toMap(n -> UUIDUtil.toJavaUuid(n.getUuid()), Function.identity()));
 
@@ -511,8 +513,8 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 				UUID nodeId = nodeIdPerEdgeId.getOrDefault(edgeId, null);
 				if (nodeId != null) {
 					HibNode node = nodesByUuid.getOrDefault(nodeId, null);
-					HibNodeFieldContainer container = fieldContainers.getOrDefault(nodeId, null);
-					if (node != null && container != null) {
+					if (node != null) {
+						HibNodeFieldContainer container = fieldContainers.getOrDefault(nodeId, null);
 						result.put(field, new NodeContent(node, container, languageTags, type));
 					}
 				}

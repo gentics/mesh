@@ -340,7 +340,7 @@ public class NodeDataLoader {
 
 			Set<HibNodeField> fields = fieldsByPath.values().stream().flatMap(Set::stream).collect(Collectors.toSet());
 
-			Map<HibNodeField, NodeContent> contentByField = nodeDao.getNodeContents(fields, context, branch.getUuid(), languageTags, type);
+			Map<HibNodeField, NodeContent> contentByField = nodeDao.getNodeContents(fields, context, branch.getUuid(), languageTags, type, false);
 
 			fieldsByPath.entrySet().forEach(entry -> {
 				String path = entry.getKey();

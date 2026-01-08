@@ -872,8 +872,16 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 					List<String> languageTags = getLanguageArgument(env, source);
 					NodeDataLoader.Context context = new NodeDataLoader.Context(type, languageTags, Optional.empty(), getPagingInfo(env));
 
-					return nodeReferenceLoader.load(new DataLoaderKey<>(env, nodeField), context);
-				}
+					return nodeReferenceLoader.load(new DataLoaderKey<>(env, nodeField), context)
+							.thenApply(nodeContent -> {
+								if (nodeContent != null && nodeContent.getNode() != null) {
+									gc.requiresPerm(nodeContent.getNode(), READ_PERM, READ_PUBLISHED_PERM);
+								}
+								return NodeTypeProvider.createNodeContentWithSoftPermissions(env, gc,
+										nodeContent.getNode(), nodeContent.getLanguageFallback(),
+										nodeContent.getType(), nodeContent.getContainer());
+							});
+					}
 				return null;
 			}).build();
 	}

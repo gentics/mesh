@@ -124,16 +124,20 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 
 	/**
 	 * Get the node contents referenced by the given collection of fields in the given branch, of the provided type and with language fallback
-	 * This will also check for permissions.
+	 * This will also check for permissions, when the flag removeWithoutPerm is set.
+	 * When the field does not reference an existing node, the field will be mapped to null.
+	 * If the field references a node, but that node does not have a content, the field will be mapped to a non-null instance of {@link NodeContent}, which
+	 * will reference the node but no content
 	 * @param nodeFields
 	 * @param ac
 	 * @param branchUuid
 	 * @param languageTags
 	 * @param type
+	 * @param removeWithoutPerm
 	 * @return
 	 */
 	Map<HibNodeField, NodeContent> getNodeContents(Collection<HibNodeField> nodeFields, InternalActionContext ac,
-			String branchUuid, List<String> languageTags, ContainerType type);
+			String branchUuid, List<String> languageTags, ContainerType type, boolean removeWithoutPerm);
 
 	/**
 	 * Return the children for this node. Only fetches nodes from the provided branch and also checks permissions.
