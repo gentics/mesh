@@ -25,6 +25,9 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
+import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
@@ -63,6 +66,7 @@ public class GraphQLBreadcrumbQueryCountingTest2 extends AbstractCountingTest {
 			// add "reference" field to "folder" schema
 			SchemaUpdateRequest schemaRequest = call(() -> client().findSchemaByUuid(tx(() -> schemaContainer("folder").getUuid()))).toUpdateRequest();
 			schemaRequest.addField(new NodeFieldSchemaImpl().setAllowedSchemas("folder").setName("reference"));
+			schemaRequest.addField(new ListFieldSchemaImpl().setListType("node").setAllowedSchemas("folder").setName("references"));
 			call(() -> client().updateSchema(tx(() -> schemaContainer("folder").getUuid()), schemaRequest));
 
 			// first create a deeply nested folder structure
@@ -178,6 +182,21 @@ public class GraphQLBreadcrumbQueryCountingTest2 extends AbstractCountingTest {
 	}
 
 	@Test
+	public void testGetReferencesFields() {
+		String graphQl = "query ($uuid: String) { node (uuid: $uuid) { breadcrumb(lang: [\"en\"]) { node { ... on folder {fields { references { ... on folder {fields {slug}}} }}}}} }";
+
+		GraphQLRequest request = new GraphQLRequest();
+		request.setQuery(graphQl);
+		JsonObject vars = new JsonObject();
+		vars.put("uuid", testNodeUuid);
+		request.setVariables(vars);
+
+		GraphQLResponse response = doTest(() -> client().graphql(PROJECT_NAME, request), 100);
+		List<String> slugs = JsonPath.read(response.toJson(), "$.data.node.breadcrumb[*].node.fields.references[*].fields.slug");
+		assertThat(slugs).as("Slugs in breadcrumb").containsExactlyElementsOf(testBreadcrumbSlugs.subList(0, testBreadcrumbSlugs.size() - 1));
+	}
+
+	@Test
 	public void testDraftPermissions() {
 		String graphQl = "query ($uuid: String) { node (uuid: $uuid) { breadcrumb(lang: [\"en\"]) {uuid}} }";
 
@@ -214,6 +233,8 @@ public class GraphQLBreadcrumbQueryCountingTest2 extends AbstractCountingTest {
 		nodeCreateRequest.setLanguage("en");
 		nodeCreateRequest.getFields().put("slug", new StringFieldImpl().setString(RandomStringUtils.secure().nextAlphabetic(5)));
 		nodeCreateRequest.getFields().put("reference", new NodeFieldImpl().setUuid(parentUuid));
+		nodeCreateRequest.getFields().put("references",
+				new NodeFieldListImpl().setItems(Arrays.asList(new NodeFieldListItemImpl(parentUuid))));
 		nodeCreateRequest.setPublish(published);
 		NodeResponse nodeResponse = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParametersImpl().setLanguages("en")));
 		String uuid = nodeResponse.getUuid();
