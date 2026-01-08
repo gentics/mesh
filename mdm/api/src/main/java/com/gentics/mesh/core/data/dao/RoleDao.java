@@ -71,7 +71,7 @@ public interface RoleDao extends DaoGlobal<HibRole>, DaoTransformable<HibRole, R
 	 * @param role
 	 * @param element
 	 * @param permissions
-	 * @return
+	 * @return true, if permissions were effectively changed
 	 */
 	boolean grantPermissions(HibRole role, HibBaseElement element, InternalPermission... permissions);
 
@@ -82,7 +82,7 @@ public interface RoleDao extends DaoGlobal<HibRole>, DaoTransformable<HibRole, R
 	 * @param element element to grant permission on
 	 * @param exclusive true to revoke the given permissions on all other roles
 	 * @param permissions permissions to grant
-	 * @return true, iff permissions were effectively changed
+	 * @return true, if permissions were effectively changed
 	 */
 	boolean grantPermissions(Set<HibRole> roles, HibBaseElement element, boolean exclusive, InternalPermission... permissions);
 
@@ -93,7 +93,7 @@ public interface RoleDao extends DaoGlobal<HibRole>, DaoTransformable<HibRole, R
 	 * @param element element to grant permission on
 	 * @param exclusive true to revoke the given permissions on all other roles
 	 * @param permissions permissions to grant
-	 * @return true, iff permissions where effectively changed
+	 * @return true, if permissions where effectively changed
 	 */
 	boolean grantPermissionsWithUuids(Set<String> roleUuids, HibBaseElement element, boolean exclusive, InternalPermission... permissions);
 
@@ -103,7 +103,7 @@ public interface RoleDao extends DaoGlobal<HibRole>, DaoTransformable<HibRole, R
 	 * @param role
 	 * @param element
 	 * @param permissions
-	 * @return
+	 * @return true, if permissions were effectively changed
 	 */
 	boolean revokePermissions(HibRole role, HibBaseElement element, InternalPermission... permissions);
 
@@ -123,7 +123,7 @@ public interface RoleDao extends DaoGlobal<HibRole>, DaoTransformable<HibRole, R
 	 * @param roleUuids set of role uuids
 	 * @param element element to revoke permissions from
 	 * @param permissions permissions to revoke
-	 * @return true, iff permissions were effectively changed
+	 * @return true, if permissions were effectively changed
 	 */
 	boolean revokePermissionsWithUuids(Set<String> roleUuids, HibBaseElement element, InternalPermission... permissions);
 
