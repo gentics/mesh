@@ -257,7 +257,7 @@ public class FormService {
 
 			}
 			ValidationError error = new ValidationError()
-					.setName("form")
+					.setName(formData.encode())
 					.setTitle(I18nHelper.get(Locale.GERMAN, "error.validation.form.title"))
 					.setMessage(I18nHelper.get(Locale.GERMAN, "error.validation.form.bad_request"));
 
@@ -489,7 +489,7 @@ public class FormService {
 
 		if (error.isPresent()) {
 			return Single.error(
-				new FormsError(error.get().getMessage(), HttpResponseStatus.BAD_REQUEST.code()));
+				new FormsError(error.toString(), HttpResponseStatus.BAD_REQUEST.code()));
 		}
 
 		ensureFormType(formData);

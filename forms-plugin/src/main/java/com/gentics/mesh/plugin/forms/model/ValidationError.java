@@ -1,5 +1,7 @@
 package com.gentics.mesh.plugin.forms.model;
 
+import com.github.jknack.handlebars.internal.lang3.StringUtils;
+
 /**
  * Model of a validation error
  */
@@ -82,5 +84,20 @@ public class ValidationError {
 	public ValidationError setPreventStoring(boolean preventStoring) {
 		this.preventStoring = preventStoring;
 		return this;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder("Validation Error:");
+		if (StringUtils.isNotBlank(title)) {
+			sb.append(" ").append(title);
+		}
+		if (StringUtils.isNotBlank(name)) {
+			sb.append(" in [").append(name).append("]");
+		}
+		if (StringUtils.isNotBlank(message)) {
+			sb.append(": ").append(message);
+		}
+		return sb.toString();
 	}
 }
