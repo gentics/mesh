@@ -1,0 +1,1 @@
+Elasticsearch: When an ES server is unresponsive, a timeout error is thrown, which may or may not have a HTTP body. In the case of body absence Mesh crashes with HTTP 500. This has now been fixed.
