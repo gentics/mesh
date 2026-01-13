@@ -1,0 +1,1 @@
+Core: A default value of `true` for `MESH_HIBERNATE_SECOND_LEVEL_CACHE_ENABLED` config has been restored, enabling the second level SQL cache. The startup of a second level cache in the cluster environment has been fixed.

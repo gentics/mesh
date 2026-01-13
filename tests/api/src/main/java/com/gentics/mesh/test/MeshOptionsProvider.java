@@ -3,7 +3,10 @@ package com.gentics.mesh.test;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.ServiceLoader;
+import java.util.function.Function;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -43,7 +46,7 @@ public interface MeshOptionsProvider {
 	 * @return
 	 */
 	public static MeshOptionsProvider getProvider() {
-		return spawnProviderInstance(System.getProperty(ENV_OPTIONS_PROVIDER_CLASS), MeshOptionsProvider.class);
+		return spawnProviderInstance(getOptionalConfig(ENV_OPTIONS_PROVIDER_CLASS, (String)null, Function.identity(), Object::toString), MeshOptionsProvider.class);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -98,5 +101,26 @@ public interface MeshOptionsProvider {
 				| InvocationTargetException e) {
 			return true;
 		}
+	}
+
+	/**
+	 * Get an optional configuration from either the environment variable, or the system parameter.
+	 * 
+	 * @param <T>
+	 * @param configName
+	 * @param defaultValue
+	 * @param parse
+	 * @param stringify
+	 * @return
+	 */
+	static <T> T getOptionalConfig(String configName, T defaultValue, Function<String, T> parse, Function<T, String> stringify) {
+		return parse.apply(System.getenv()
+				.entrySet().stream()
+				.filter(e -> e.getKey().equals(configName))
+				.map(e -> e.getValue())
+				.filter(Objects::nonNull)
+				.findAny()
+				.or(() -> Optional.ofNullable(System.getProperty(configName, stringify.apply(defaultValue))))
+				.orElseGet(() -> stringify.apply(defaultValue)));
 	}
 }
