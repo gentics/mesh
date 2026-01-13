@@ -8,9 +8,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,6 +55,10 @@ public class GraphQLBreadcrumbQueryCountingTest2 extends AbstractCountingTest {
 
 	protected static List<String> testBreadcrumbSlugs = new ArrayList<>();
 
+	protected static List<String> testReferenceSlugs = new ArrayList<>();
+
+	protected static List<String> testReferencesSlugs = new ArrayList<>();
+
 	protected static String testDraftPermNodeUuid;
 
 	protected static List<String> testDraftPermBreadcrumb = new ArrayList<>();
@@ -77,14 +84,26 @@ public class GraphQLBreadcrumbQueryCountingTest2 extends AbstractCountingTest {
 			AtomicReference<String> parentNodeUuid = new AtomicReference<>(baseNodeUuid);
 			testBreadcrumbUuids.add(baseNodeUuid);
 			testBreadcrumbSlugs.add(null);
+
+			String currentSlug = null;
 			NodeResponse nodeResponse;
+
+			List<String> references = new ArrayList<>();
+			List<String> referencesSlugs = new ArrayList<>();
+			references.add(parentNodeUuid.get());
 
 			// create some additional nodes
 			for (int i = 0; i < NUM_NESTED_FOLDERS; i++) {
-				nodeResponse = createFolder(parentNodeUuid.get(), false, false, true, true);
+				nodeResponse = createFolder(parentNodeUuid.get(), false, false, true, true, references);
 				parentNodeUuid.set(nodeResponse.getUuid());
 				testBreadcrumbUuids.add(parentNodeUuid.get());
 				testBreadcrumbSlugs.add(nodeResponse.getFields().getStringField("slug").getString());
+				testReferenceSlugs.add(currentSlug);
+				referencesSlugs.add(0, currentSlug);
+				references.add(0, parentNodeUuid.get());
+				testReferencesSlugs.addAll(referencesSlugs);
+
+				currentSlug = nodeResponse.getFields().getStringField("slug").getString();
 			}
 
 			testNodeUuid = parentNodeUuid.get();
@@ -95,7 +114,7 @@ public class GraphQLBreadcrumbQueryCountingTest2 extends AbstractCountingTest {
 
 			for (boolean readPerm : Arrays.asList(true, false)) {
 				for (boolean readPublishedPerm : Arrays.asList(true, false)) {
-					nodeResponse = createFolder(parentNodeUuid.get(), false, false, readPerm, readPublishedPerm);
+					nodeResponse = createFolder(parentNodeUuid.get(), false, false, readPerm, readPublishedPerm, Collections.emptyList());
 					parentNodeUuid.set(nodeResponse.getUuid());
 
 					if (readPerm) {
@@ -104,7 +123,7 @@ public class GraphQLBreadcrumbQueryCountingTest2 extends AbstractCountingTest {
 				}
 			}
 
-			nodeResponse = createFolder(parentNodeUuid.get(), false, false, true, true);
+			nodeResponse = createFolder(parentNodeUuid.get(), false, false, true, true, Collections.emptyList());
 			parentNodeUuid.set(nodeResponse.getUuid());
 			testDraftPermBreadcrumb.add(parentNodeUuid.get());
 			testDraftPermNodeUuid = parentNodeUuid.get();
@@ -116,7 +135,7 @@ public class GraphQLBreadcrumbQueryCountingTest2 extends AbstractCountingTest {
 			for (boolean modified : Arrays.asList(true, false)) {
 				for (boolean readPerm : Arrays.asList(true, false)) {
 					for (boolean readPublishedPerm : Arrays.asList(true, false)) {
-						nodeResponse = createFolder(parentNodeUuid.get(), true, modified, readPerm, readPublishedPerm);
+						nodeResponse = createFolder(parentNodeUuid.get(), true, modified, readPerm, readPublishedPerm, Collections.emptyList());
 						parentNodeUuid.set(nodeResponse.getUuid());
 
 						if (readPerm || readPublishedPerm) {
@@ -126,7 +145,7 @@ public class GraphQLBreadcrumbQueryCountingTest2 extends AbstractCountingTest {
 				}
 			}
 
-			nodeResponse = createFolder(parentNodeUuid.get(), true, false, true, true);
+			nodeResponse = createFolder(parentNodeUuid.get(), true, false, true, true, Collections.emptyList());
 			parentNodeUuid.set(nodeResponse.getUuid());
 			testPublishedPermBreadcrumb.add(parentNodeUuid.get());
 			testPublishedPermNodeUuid = parentNodeUuid.get();
@@ -178,7 +197,7 @@ public class GraphQLBreadcrumbQueryCountingTest2 extends AbstractCountingTest {
 
 		GraphQLResponse response = doTest(() -> client().graphql(PROJECT_NAME, request), 25);
 		List<String> slugs = JsonPath.read(response.toJson(), "$.data.node.breadcrumb[*].node.fields.reference.fields.slug");
-		assertThat(slugs).as("Slugs in breadcrumb").containsExactlyElementsOf(testBreadcrumbSlugs.subList(0, testBreadcrumbSlugs.size() - 1));
+		assertThat(slugs).as("Slugs in breadcrumb").containsExactlyElementsOf(testReferenceSlugs);
 	}
 
 	@Test
@@ -193,7 +212,7 @@ public class GraphQLBreadcrumbQueryCountingTest2 extends AbstractCountingTest {
 
 		GraphQLResponse response = doTest(() -> client().graphql(PROJECT_NAME, request), 100);
 		List<String> slugs = JsonPath.read(response.toJson(), "$.data.node.breadcrumb[*].node.fields.references[*].fields.slug");
-		assertThat(slugs).as("Slugs in breadcrumb").containsExactlyElementsOf(testBreadcrumbSlugs.subList(0, testBreadcrumbSlugs.size() - 1));
+		assertThat(slugs).as("Slugs in breadcrumb").containsExactlyElementsOf(testReferencesSlugs);
 	}
 
 	@Test
@@ -226,15 +245,27 @@ public class GraphQLBreadcrumbQueryCountingTest2 extends AbstractCountingTest {
 		assertThat(uuids).as("Uuids in breadcrumb").containsExactlyElementsOf(testPublishedPermBreadcrumb);
 	}
 
-	protected NodeResponse createFolder(String parentUuid, boolean published, boolean modified, boolean readPerm, boolean readPublishedPerm) {
+	/**
+	 * Create a folder
+	 * @param parentUuid parent node uuid
+	 * @param published true if the folder shall be published
+	 * @param modified true if the folder shall be modified (after being published)
+	 * @param readPerm true if the testuser shall have read permissions on the folder
+	 * @param readPublishedPerm true of the testuser shall have read published permissions on the folder
+	 * @param referencedUuids uuids of nodes, which shall be referenced
+	 * @return node
+	 */
+	protected NodeResponse createFolder(String parentUuid, boolean published, boolean modified, boolean readPerm, boolean readPublishedPerm, List<String> referencedUuids) {
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 		nodeCreateRequest.setParentNode(new NodeReference().setUuid(parentUuid));
 		nodeCreateRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
 		nodeCreateRequest.setLanguage("en");
 		nodeCreateRequest.getFields().put("slug", new StringFieldImpl().setString(RandomStringUtils.secure().nextAlphabetic(5)));
-		nodeCreateRequest.getFields().put("reference", new NodeFieldImpl().setUuid(parentUuid));
-		nodeCreateRequest.getFields().put("references",
-				new NodeFieldListImpl().setItems(Arrays.asList(new NodeFieldListItemImpl(parentUuid))));
+		if (!CollectionUtils.isEmpty(referencedUuids)) {
+			nodeCreateRequest.getFields().put("reference", new NodeFieldImpl().setUuid(referencedUuids.get(0)));
+			nodeCreateRequest.getFields().put("references",
+					new NodeFieldListImpl().setItems(referencedUuids.stream().map(NodeFieldListItemImpl::new).collect(Collectors.toList())));
+		}
 		nodeCreateRequest.setPublish(published);
 		NodeResponse nodeResponse = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParametersImpl().setLanguages("en")));
 		String uuid = nodeResponse.getUuid();

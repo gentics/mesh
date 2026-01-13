@@ -26,6 +26,7 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
@@ -1142,6 +1143,18 @@ public interface ContentDao {
 	 * @return map of list UUIDs to lists of micronode field values
 	 */
 	Map<String, List<HibMicronode>> getMicronodeListFieldValues(List<String> listUuids);
+
+	/**
+	 * Get the Node list field values for the given list UUIDs
+	 * @param listUuids list UUIDs
+	 * @param ac action context
+	 * @param branchUuid branch UUID
+	 * @param languageTags language tags
+	 * @param type container type
+	 * @return map of list UUIDs to lists of NodeContent field values
+	 */
+	Map<String, List<NodeContent>> getNodeListFieldValues(List<String> listUuids, InternalActionContext ac,
+			String branchUuid, List<String> languageTags, ContainerType type);
 
 	/**
 	 * Load the micronodes for the given collection of micronode fields

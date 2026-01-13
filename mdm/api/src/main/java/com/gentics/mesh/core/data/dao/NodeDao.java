@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
@@ -136,7 +137,20 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param removeWithoutPerm
 	 * @return
 	 */
-	Map<HibNodeField, NodeContent> getNodeContents(Collection<HibNodeField> nodeFields, InternalActionContext ac,
+	Map<HibNodeField, NodeContent> getNodeContentsForFields(Collection<HibNodeField> nodeFields, InternalActionContext ac,
+			String branchUuid, List<String> languageTags, ContainerType type, boolean removeWithoutPerm);
+
+	/**
+	 * Get the node contents for the given nodes
+	 * @param nodeUuids collection of node UUIDs
+	 * @param ac action context
+	 * @param branchUuid branch UUID
+	 * @param languageTags language tags
+	 * @param type container type
+	 * @param removeWithoutPerm true to remove nodes without permission
+	 * @return map of node UUID to NodeContent
+	 */
+	Map<UUID,  NodeContent> getNodeContentsForUuids(Collection<UUID> nodeUuids, InternalActionContext ac,
 			String branchUuid, List<String> languageTags, ContainerType type, boolean removeWithoutPerm);
 
 	/**
