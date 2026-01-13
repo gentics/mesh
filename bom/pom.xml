@@ -34,7 +34,7 @@
 		<aws.sdk.version>2.16.83</aws.sdk.version>
 		<snakeyaml.version>2.2</snakeyaml.version>
 		<testcontainers.version>1.17.6</testcontainers.version>
-		<log4j.version>2.23.1</log4j.version>
+		<log4j.version>2.25.3</log4j.version>
 		<slf4j.version>2.0.13</slf4j.version>
 		<scrimage.webp.version>4.1.3</scrimage.webp.version>
 		<liquibase.version>4.29.2</liquibase.version>
