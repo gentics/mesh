@@ -359,11 +359,12 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 	@Override
 	default HibJob assignSchemaVersion(HibBranch branch, HibUser user, HibSchemaVersion schemaVersion, EventQueueBatch batch) {
 		JobDao jobDao = Tx.get().jobDao();
+		SchemaDao schemaDao = Tx.get().schemaDao();
 		HibBranchSchemaVersion edge = findBranchSchemaEdge(branch, schemaVersion);
 		HibJob job = null;
 		// Don't remove any existing edge. Otherwise the edge properties are lost
 		if (edge == null) {
-			HibSchemaVersion currentVersion = branch.findLatestSchemaVersion(schemaVersion.getSchemaContainer());
+			HibSchemaVersion currentVersion = schemaDao.findLatestVersion(branch, schemaVersion.getSchemaContainer());
 			edge = connectToSchemaVersion(branch, schemaVersion);
 			// Enqueue the schema migration for each found schema version
 			edge.setActive(true);
@@ -383,11 +384,12 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 	@Override
 	default HibJob assignMicroschemaVersion(HibBranch branch, HibUser user, HibMicroschemaVersion microschemaVersion, EventQueueBatch batch) {
 		JobDao jobDao = Tx.get().jobDao();
+		MicroschemaDao microschemaDao = Tx.get().microschemaDao();
 		HibBranchMicroschemaVersion edge = findBranchMicroschemaEdge(branch, microschemaVersion);
 		HibJob job = null;
 		// Don't remove any existing edge. Otherwise the edge properties are lost
 		if (edge == null) {
-			HibMicroschemaVersion currentVersion = branch.findLatestMicroschemaVersion(microschemaVersion.getSchemaContainer());
+			HibMicroschemaVersion currentVersion = microschemaDao.findLatestVersion(branch, microschemaVersion.getSchemaContainer());
 			edge = connectToMicroschemaVersion(branch, microschemaVersion);
 			// Enqueue the job so that the worker can process it later on
 			edge.setActive(true);
