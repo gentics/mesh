@@ -794,18 +794,31 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				}
 				Map<String, ?> filterArgument = env.getArgument("filter");
 				ContainerType nodeType = getNodeVersion(env);
-				List<String> languageTags = getLanguageArgument(env, container);
+				List<String> languageTags;
+				if (container instanceof HibNodeFieldContainer) {
+					languageTags = Arrays.asList(container.getLanguageTag());
+				} else if (container instanceof HibMicronode) {
+					HibMicronode micronode = (HibMicronode) container;
+					languageTags = Arrays.asList(micronode.getContainer().getLanguageTag());
+				} else {
+					throw error(HttpResponseStatus.INTERNAL_SERVER_ERROR, "container can only be NodeGraphFieldContainer or Micronode");
+				}
 				NodeDataLoader.Context nodeContext = new NodeDataLoader.Context(nodeType, languageTags, Optional.empty(), getPagingInfo(env));
 
 				String nodeListUuid = nodeList.getUuid();
 
 				if (contentDao.supportsPrefetchingListFieldValues() && !StringUtils.isEmpty(nodeListUuid)) {
 					DataLoader<String, List<NodeContent>> nodeListValueLoader = env.getDataLoader(FieldDefinitionProvider.NODE_LIST_VALUES_DATA_LOADER_KEY);
-					return nodeListValueLoader.load(nodeListUuid, nodeContext).thenAccept(nodeContents -> {
+					return nodeListValueLoader.load(nodeListUuid, nodeContext).thenApply(nodeContents -> {
 						if (filterArgument != null) {
 							Predicate<NodeContent> predicate = nodeFilter.createPredicate(filterArgument);
 							nodeContents.removeIf(predicate.negate());
 						}
+						return nodeContents
+								.stream()
+								.filter(content -> content.getContainer() != null)
+								.filter(content1 -> gc.hasReadPerm(content1, nodeType))
+								.collect(Collectors.toList());
 					});
 				} else {
 					Stream<NodeContent> nodes = nodeList.getList().stream().map(item -> {
