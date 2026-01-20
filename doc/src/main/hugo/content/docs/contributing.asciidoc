@@ -166,7 +166,6 @@ The single remote database is used for both single instance and clustered modes.
 | mesh-api                    | Contains API classes like Configuration POJOs and constants.
 | mesh-core                   | Contains the data model and the main codebase
 | mesh-database-connectors    | Contains the database connectors code
-| mesh-demo                   | Contains the Gentics Demo which can be run via the `DemoRunner` main class.
 | mesh-rest-client            | Contains the Vert.x based REST client.
 | mesh-rest-model             | Contains the POJOs for the REST API models.
 | mesh-doc                    | Contains sources for the getmesh.io documentation and tools to generate tables and examples from sources.             

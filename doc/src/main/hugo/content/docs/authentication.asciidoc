@@ -172,7 +172,7 @@ Gentics Mesh first and foremost keeps your content safe - all data including med
 That is why Gentics Mesh instances ship with an included ```anonymous``` user/role/group set. 
 If no authentication details are provided Gentics Mesh will automatically try to authenticate with the user ```anonymous```.
 
-TIP: Try our Gentics Mesh demo instance without authenticating yourself: ```https://demo.getmesh.io{apiLatest}/auth/me```. This link:/docs/api#auth[API endpoint] shows the currently authenticated user - which is ```anonymous```.
+This link:/docs/api#auth[API endpoint] shows the currently authenticated user.
 
 You can assign ```readPublished``` permissions to the ```anonymous``` role for all elements you want to be publicly available.
 
