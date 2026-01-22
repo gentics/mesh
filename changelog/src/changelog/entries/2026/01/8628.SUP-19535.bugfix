@@ -1,0 +1,1 @@
+Search: The support for @MESH_ELASTICSEARCH_SYNC_FETCH_BATCH_SIZE@ environment variable, controlling the search batch size, has been backported from CMP 8.4. 

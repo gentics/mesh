@@ -58,8 +58,6 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractIndexHandler.class);
 
-	public static final int ES_SYNC_FETCH_BATCH_SIZE = 10_000;
-
 	protected final SearchProvider searchProvider;
 
 	protected final Database db;
@@ -74,6 +72,8 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 
 	protected final BucketManager bucketManager;
 
+	protected final int syncFetchBatchSize;
+
 	public AbstractIndexHandler(SearchProvider searchProvider, Database db, MeshHelper helper, MeshOptions options,
 		SyncMetersFactory syncMetersFactory, BucketManager bucketManager) {
 		this.searchProvider = searchProvider;
@@ -83,6 +83,7 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 		this.complianceMode = options.getSearchOptions().getComplianceMode();
 		this.meters = syncMetersFactory.createSyncMetric(getType());
 		this.bucketManager = bucketManager;
+		this.syncFetchBatchSize = options.getSearchOptions().getSyncFetchBatchSize();
 	}
 
 	@Override
@@ -208,7 +209,7 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 
 			ElasticsearchClient<JsonObject> client = searchProvider.getClient();
 			JsonObject query = new JsonObject();
-			query.put("size", ES_SYNC_FETCH_BATCH_SIZE);
+			query.put("size", syncFetchBatchSize);
 			query.put("_source", new JsonArray().add("uuid").add("version"));
 			query.put("query", bucket.rangeQuery());
 			query.put("sort", new JsonArray().add("_doc"));
