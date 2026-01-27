@@ -64,6 +64,7 @@ import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.db.TxAction;
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -92,7 +93,6 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.demo.UserInfo;
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.parameter.client.GenericParametersImpl;
@@ -115,6 +115,12 @@ import io.reactivex.Observable;
 
 @MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true, synchronizeWrites = true)
 public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
+	/**
+	 * Determine the connector defined string length limit
+	 */
+	protected final static TxAction<Integer> STRING_LENGTH_LIMIT = tx -> {
+		return tx.contentDao().getStringLengthLimit();
+	};
 
 	@Test
 	public void testCreateNodeWithNoLanguageCode() {
@@ -2443,9 +2449,13 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	}
 
+	/**
+	 * Test that string fields can reach the connector defined string length (when not using multibyte utf8 characters)
+	 */
 	@Test
 	public void testLargeContent() {
-		String largeContent = RandomStringUtils.secure().nextAlphabetic(MeshOptions.DEFAULT_STRING_LENGTH);
+		int stringLengthLimit = tx(STRING_LENGTH_LIMIT);
+		String largeContent = RandomStringUtils.secure().nextAlphabetic(stringLengthLimit);
 
 		String parentNodeUuid = tx(() -> folder("news").getUuid());
 		NodeCreateRequest request = new NodeCreateRequest();
@@ -2463,9 +2473,13 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertThat(restNode).hasStringField("content", largeContent);
 	}
 
+	/**
+	 * Test that when string fields exceed the connector defined string length, node creation will fail
+	 */
 	@Test
 	public void testTooLargeContent() {
-		String largeContent = RandomStringUtils.secure().nextAlphabetic(MeshOptions.DEFAULT_STRING_LENGTH + 1);
+		int stringLengthLimit = tx(STRING_LENGTH_LIMIT);
+		String largeContent = RandomStringUtils.secure().nextAlphabetic(stringLengthLimit + 1);
 
 		String parentNodeUuid = tx(() -> folder("news").getUuid());
 		NodeCreateRequest request = new NodeCreateRequest();
@@ -2478,8 +2492,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.setParentNodeUuid(parentNodeUuid);
 
 		call(() -> client().createNode(PROJECT_NAME, request), BAD_REQUEST, "node_error_string_field_value_too_long",
-				"content", String.valueOf(MeshOptions.DEFAULT_STRING_LENGTH),
-				String.valueOf(MeshOptions.DEFAULT_STRING_LENGTH + 1));
+				"content", String.valueOf(stringLengthLimit), String.valueOf(stringLengthLimit + 1));
 	}
 
 	/**

@@ -67,7 +67,6 @@ import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.S3BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.util.DateUtils;
 
 public class RestUpdaters {
@@ -860,16 +859,28 @@ public class RestUpdaters {
 		// Don't update image width, height, SHA checksum - those are immutable
 	};
 
+	/**
+	 * Check whether the given string is within the allowed length bounds. If not, throw an error
+	 * @param string string content
+	 * @param fieldKey field key
+	 */
 	private static void checkStringLength(String string, String fieldKey) {
 		if (StringUtils.isEmpty(string)) {
 			return;
 		}
-		if (string.length() > MeshOptions.DEFAULT_STRING_LENGTH) {
+		int stringLengthLimit = Tx.get().contentDao().getStringLengthLimit();
+
+		if (string.length() > stringLengthLimit) {
 			throw error(BAD_REQUEST, "node_error_string_field_value_too_long", fieldKey,
-					String.valueOf(MeshOptions.DEFAULT_STRING_LENGTH), String.valueOf(string.length()));
+					String.valueOf(stringLengthLimit), String.valueOf(string.length()));
 		}
 	}
 
+	/**
+	 * Check whether all the given strings are within the allowed length bounds. If not, throw an error
+	 * @param strings string contents
+	 * @param fieldKey field key
+	 */
 	private static void checkStringsLength(List<String> strings, String fieldKey) {
 		if (CollectionUtils.isEmpty(strings)) {
 			return;

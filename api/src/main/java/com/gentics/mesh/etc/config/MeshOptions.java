@@ -19,7 +19,6 @@ import com.gentics.mesh.util.PasswordUtil;
  */
 @GenerateDocumentation
 public abstract class MeshOptions implements Option {
-	public static final int DEFAULT_STRING_LENGTH = 1000000;
 
 	public static final String DEFAULT_LANGUAGE = "en";
 	public static final String DEFAULT_DIRECTORY_NAME = "graphdb";

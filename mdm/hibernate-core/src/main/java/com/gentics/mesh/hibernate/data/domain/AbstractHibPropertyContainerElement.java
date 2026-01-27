@@ -11,7 +11,7 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.database.connector.QueryUtils;
 import com.gentics.mesh.json.JsonUtil;
 
 import io.vertx.core.json.JsonArray;
@@ -41,7 +41,7 @@ public abstract class AbstractHibPropertyContainerElement extends AbstractHibBas
 	@ElementCollection
 	@CollectionTable
 	@MapKeyColumn(name = "pkey")
-	@Column(name = "pvalue", length = MeshOptions.DEFAULT_STRING_LENGTH)
+	@Column(name = "pvalue", length = QueryUtils.DEFAULT_STRING_LENGTH)
 	private Map<String, String> properties = new HashMap<>();
 
 	@SuppressWarnings("unchecked")

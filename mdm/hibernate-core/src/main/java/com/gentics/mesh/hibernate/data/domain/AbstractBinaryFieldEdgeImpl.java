@@ -11,7 +11,7 @@ import com.gentics.mesh.core.data.HibImageDataElement;
 import com.gentics.mesh.core.data.node.field.HibImageDataField;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.database.HibernateTx;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.database.connector.QueryUtils;
 
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
@@ -29,7 +29,7 @@ import jakarta.persistence.MappedSuperclass;
 @MappedSuperclass
 public abstract class AbstractBinaryFieldEdgeImpl<B extends HibImageDataElement> extends AbstractFieldEdgeImpl<UUID> implements HibImageDataField  {
 
-	public static final int METADATA_PROPERTY_LENGTH = MeshOptions.DEFAULT_STRING_LENGTH;
+	public static final int METADATA_PROPERTY_LENGTH = QueryUtils.DEFAULT_STRING_LENGTH;
 
 	protected String fileName;
 	protected String mimeType;
@@ -47,7 +47,7 @@ public abstract class AbstractBinaryFieldEdgeImpl<B extends HibImageDataElement>
 	@Column(name = "pvalue", length = METADATA_PROPERTY_LENGTH)
 	private Map<String, String> metadataProperties = new HashMap<>();
 
-	@Column(length = MeshOptions.DEFAULT_STRING_LENGTH)
+	@Column(length = QueryUtils.DEFAULT_STRING_LENGTH)
 	protected String plainText;
 
 	public AbstractBinaryFieldEdgeImpl() {

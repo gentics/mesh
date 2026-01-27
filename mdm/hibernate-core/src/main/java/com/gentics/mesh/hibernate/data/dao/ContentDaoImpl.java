@@ -1992,6 +1992,11 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 		return resultMap;
 	}
 
+	@Override
+	public int getStringLengthLimit() {
+		return databaseConnector.getStringLengthLimit();
+	}
+
 	public TotalsCache getTotalsCache() {
 		return totalsCache;
 	}

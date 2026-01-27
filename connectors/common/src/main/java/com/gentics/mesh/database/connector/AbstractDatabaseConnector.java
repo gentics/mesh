@@ -48,7 +48,6 @@ import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.hibernate.MeshTablePrefixStrategy;
 import com.gentics.mesh.hibernate.SessionMetadataIntegrator;
 import com.gentics.mesh.hibernate.data.domain.AbstractHibListFieldEdgeImpl;
@@ -419,7 +418,7 @@ public abstract class AbstractDatabaseConnector implements DatabaseConnector {
 			return DEFAULT_NUMBER_LENGTH;
 		case STRING:
 		case HTML:
-			return MeshOptions.DEFAULT_STRING_LENGTH;
+			return DEFAULT_STRING_LENGTH;
 		case LIST:
 		case MICRONODE:
 		case NODE:

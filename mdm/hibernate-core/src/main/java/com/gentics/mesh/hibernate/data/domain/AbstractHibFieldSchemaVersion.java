@@ -7,7 +7,7 @@ import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.database.connector.QueryUtils;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
@@ -38,7 +38,7 @@ public abstract class AbstractHibFieldSchemaVersion<
 	private String name;
 	private Boolean noIndex;
 
-	@Column(length = MeshOptions.DEFAULT_STRING_LENGTH)
+	@Column(length = QueryUtils.DEFAULT_STRING_LENGTH)
 	private String schemaJson = EMPTY_JSON;
 
 	@Override
