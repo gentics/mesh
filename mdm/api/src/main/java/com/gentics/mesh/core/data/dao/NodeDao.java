@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
@@ -31,6 +32,7 @@ import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
+import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
@@ -120,6 +122,36 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @return
 	 */
 	Map<HibNode, List<NodeContent>> getChildren(Set<HibNode> nodes, InternalActionContext ac, String branchUuid, List<String> languageTags, ContainerType type, PagingParameters sorting, Optional<FilterOperation<?>> maybeFilter);
+
+	/**
+	 * Get the node contents referenced by the given collection of fields in the given branch, of the provided type and with language fallback
+	 * This will also check for permissions, when the flag removeWithoutPerm is set.
+	 * When the field does not reference an existing node, the field will be mapped to null.
+	 * If the field references a node, but that node does not have a content, the field will be mapped to a non-null instance of {@link NodeContent}, which
+	 * will reference the node but no content
+	 * @param nodeFields
+	 * @param ac
+	 * @param branchUuid
+	 * @param languageTags
+	 * @param type
+	 * @param removeWithoutPerm
+	 * @return
+	 */
+	Map<HibNodeField, NodeContent> getNodeContentsForFields(Collection<HibNodeField> nodeFields, InternalActionContext ac,
+			String branchUuid, List<String> languageTags, ContainerType type, boolean removeWithoutPerm);
+
+	/**
+	 * Get the node contents for the given nodes
+	 * @param nodeUuids collection of node UUIDs
+	 * @param ac action context
+	 * @param branchUuid branch UUID
+	 * @param languageTags language tags
+	 * @param type container type
+	 * @param removeWithoutPerm true to remove nodes without permission
+	 * @return map of node UUID to NodeContent
+	 */
+	Map<UUID,  NodeContent> getNodeContentsForUuids(Collection<UUID> nodeUuids, InternalActionContext ac,
+			String branchUuid, List<String> languageTags, ContainerType type, boolean removeWithoutPerm);
 
 	/**
 	 * Return the children for this node. Only fetches nodes from the provided branch and also checks permissions.

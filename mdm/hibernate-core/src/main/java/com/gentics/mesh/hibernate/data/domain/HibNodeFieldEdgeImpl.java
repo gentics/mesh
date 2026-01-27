@@ -32,6 +32,10 @@ import com.gentics.mesh.hibernate.data.node.field.impl.HibNodeFieldImpl;
 			query = "select edge from nodefieldref edge " +
 					"where edge.dbUuid = :uuid "),
 	@NamedQuery(
+			name = "nodefieldref.findEdgesByUuids",
+			query = "select edge from nodefieldref edge " +
+					"where edge.dbUuid in :uuids "),
+	@NamedQuery(
 			name = "nodefieldref.findNodeByEdgeUuid",
 			query = "select n from node n " +
 					"join nodefieldref edge on n.dbUuid = edge.valueOrUuid " +

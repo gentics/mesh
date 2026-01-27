@@ -14,6 +14,7 @@ import static graphql.scalars.java.JavaPrimitives.GraphQLLong;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,13 +26,16 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.dataloader.BatchLoaderWithContext;
@@ -41,6 +45,7 @@ import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.binary.HibImageVariant;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -74,6 +79,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.dataloader.DataLoaderKey;
 import com.gentics.mesh.graphql.dataloader.NodeDataLoader;
+import com.gentics.mesh.graphql.dataloader.NodeDataLoader.Context;
 import com.gentics.mesh.graphql.filter.NodeFilter;
 import com.gentics.mesh.graphql.type.AbstractTypeProvider;
 import com.gentics.mesh.graphql.type.NodeTypeProvider;
@@ -133,6 +139,11 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	public static final String MICRONODE_LIST_VALUES_DATA_LOADER_KEY = "micronodeUuidListLoader";
 
 	/**
+	 * Key for the data loader for node list field values
+	 */
+	public static final String NODE_LIST_VALUES_DATA_LOADER_KEY = "nodeUuidListLoader";
+
+	/**
 	 * Key for the data loader for micronode field values
 	 */
 	public static final String MICRONODE_DATA_LOADER_KEY = "micronodeLoader";
@@ -153,6 +164,15 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 			.collect(Collectors.groupingBy(Pair::getLeft, Collectors.mapping(Pair::getRight, Collectors.toSet())));
 
 		partitionedKeys.forEach(consumer::accept);
+	}
+
+	@SuppressWarnings("unchecked")
+	private static <T> void partitioningByContext(Map<Object, Object> keyContexts, Consumer<Pair<Context, List<T>>> consumer) {
+		Map<Context, List<T>> partitionedContext = keyContexts.entrySet().stream()
+				.map(kv -> Pair.of((T) kv.getKey(), (Context) kv.getValue()))
+				.collect(Collectors.groupingBy(Pair::getValue, Collectors.mapping(Pair::getKey, Collectors.toList())));
+
+		partitionedContext.forEach((key, value) -> consumer.accept(Pair.of(key, value)));
 	}
 
 	/**
@@ -230,6 +250,28 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	public BatchLoaderWithContext<String, List<HibMicronode>> MICRONODE_LIST_VALUE_LOADER = (keys, environment) -> {
 		ContentDao contentDao = Tx.get().contentDao();
 		return listValueDataLoader(keys, contentDao::getMicronodeListFieldValues, Functions.identity());
+	};
+
+	/**
+	 * DataLoader implementation for values of node lists
+	 */
+	public BatchLoaderWithContext<String, List<NodeContent>> NODE_LIST_VALUE_LOADER = (keys, environment) -> {
+		ContentDao contentDao = Tx.get().contentDao();
+		GraphQLContext context = environment.getContext();
+		HibBranch branch = Tx.get().getBranch(context);
+
+		Map<String, List<NodeContent>> resultMap = new HashMap<>();
+
+		partitioningByContext(environment.getKeyContexts(), (Pair<Context, List<String>> keysByContext) -> {
+			ContainerType type = keysByContext.getKey().getType();
+			List<String> languageTags = keysByContext.getKey().getLanguageTags();
+			resultMap.putAll(contentDao.getNodeListFieldValues(keysByContext.getValue(), context, branch.getUuid(), languageTags, type));
+		});
+
+		Promise<List<List<NodeContent>>> promise = Promise.promise();
+		List<List<NodeContent>> result = keys.stream().map(resultMap::get).collect(Collectors.toList());
+		promise.complete(result);
+		return promise.future().toCompletionStage();
 	};
 
 	/**
@@ -752,32 +794,49 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				}
 				Map<String, ?> filterArgument = env.getArgument("filter");
 				ContainerType nodeType = getNodeVersion(env);
-
-				Stream<NodeContent> nodes = nodeList.getList().stream().map(item -> {
-					HibNode node = item.getNode();
-					if (node == null) {
-						return null;
-					}
-					List<String> languageTags;
-					if (container instanceof HibNodeFieldContainer) {
-						languageTags = Arrays.asList(container.getLanguageTag());
-					} else if (container instanceof HibMicronode) {
-						HibMicronode micronode = (HibMicronode) container;
-						languageTags = Arrays.asList(micronode.getContainer().getLanguageTag());
-					} else {
-						throw error(HttpResponseStatus.INTERNAL_SERVER_ERROR, "container can only be NodeGraphFieldContainer or Micronode");
-					}
-					// TODO we need to add more assertions and check what happens if the itemContainer is null
-					HibNodeFieldContainer itemContainer = contentDao.findVersion(node, gc, languageTags, nodeType);
-					return new NodeContent(node, itemContainer, languageTags, nodeType);
-				}).filter(Objects::nonNull);
-				if (filterArgument != null) {
-					nodes = nodes.filter(nodeFilter.createPredicate(filterArgument));
+				List<String> languageTags;
+				if (container instanceof HibNodeFieldContainer) {
+					languageTags = Arrays.asList(container.getLanguageTag());
+				} else if (container instanceof HibMicronode) {
+					HibMicronode micronode = (HibMicronode) container;
+					languageTags = Arrays.asList(micronode.getContainer().getLanguageTag());
+				} else {
+					throw error(HttpResponseStatus.INTERNAL_SERVER_ERROR, "container can only be NodeGraphFieldContainer or Micronode");
 				}
-				return nodes
-					.filter(content -> content.getContainer() != null)
-					.filter(content1 -> gc.hasReadPerm(content1, nodeType))
-					.collect(Collectors.toList());
+				NodeDataLoader.Context nodeContext = new NodeDataLoader.Context(nodeType, languageTags, Optional.empty(), getPagingInfo(env));
+
+				String nodeListUuid = nodeList.getUuid();
+
+				if (contentDao.supportsPrefetchingListFieldValues() && !StringUtils.isEmpty(nodeListUuid)) {
+					DataLoader<String, List<NodeContent>> nodeListValueLoader = env.getDataLoader(FieldDefinitionProvider.NODE_LIST_VALUES_DATA_LOADER_KEY);
+					return nodeListValueLoader.load(nodeListUuid, nodeContext).thenApply(nodeContents -> {
+						if (filterArgument != null) {
+							Predicate<NodeContent> predicate = nodeFilter.createPredicate(filterArgument);
+							nodeContents.removeIf(predicate.negate());
+						}
+						return nodeContents
+								.stream()
+								.filter(content -> content.getContainer() != null)
+								.filter(content1 -> gc.hasReadPerm(content1, nodeType))
+								.collect(Collectors.toList());
+					});
+				} else {
+					Stream<NodeContent> nodes = nodeList.getList().stream().map(item -> {
+						HibNode node = item.getNode();
+						if (node == null) {
+							return null;
+						}
+						HibNodeFieldContainer itemContainer = contentDao.findVersion(node, gc, languageTags, nodeType);
+						return new NodeContent(node, itemContainer, languageTags, nodeType);
+					}).filter(Objects::nonNull);
+					if (filterArgument != null) {
+						nodes = nodes.filter(nodeFilter.createPredicate(filterArgument));
+					}
+					return nodes
+						.filter(content -> content.getContainer() != null)
+						.filter(content1 -> gc.hasReadPerm(content1, nodeType))
+						.collect(Collectors.toList());
+				}
 			case "micronode":
 				HibMicronodeFieldList micronodeList = container.getMicronodeList(schema.getName());
 				if (micronodeList == null) {
@@ -859,7 +918,6 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 			.argument(createNodeVersionArg())
 			.description(schema.getLabel())
 			.type(new GraphQLTypeReference(NODE_TYPE_NAME)).dataFetcher(env -> {
-				ContentDao contentDao = Tx.get().contentDao();
 				GraphQLContext gc = env.getContext();
 				HibFieldContainer source = env.getSource();
 				ContainerType type = getNodeVersion(env);
@@ -867,21 +925,22 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				// TODO decide whether we want to reference the default content by default
 				HibNodeField nodeField = source.getNode(schema.getName());
 				if (nodeField != null) {
-					HibNode node = nodeField.getNode();
-					if (node != null) {
-						//Note that we would need to check for micronodes which are not language specific!
-						List<String> languageTags = getLanguageArgument(env, source);
-						// Check permissions for the linked node
-						gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
+					DataLoader<DataLoaderKey<HibNodeField>, NodeContent> nodeReferenceLoader = env.getDataLoader(NodeDataLoader.NODE_REFERENCE_LOADER_KEY);
 
-						NodeDataLoader.Context context = new NodeDataLoader.Context(type, languageTags, Optional.empty(), getPagingInfo(env));
-						DataLoader<DataLoaderKey<HibNode>, List<HibNodeFieldContainer>> contentLoader = env.getDataLoader(NodeDataLoader.CONTENT_LOADER_KEY);
-						return contentLoader.load(new DataLoaderKey<>(env, node), context).thenApply((containers) -> {
-							HibNodeFieldContainer container = NodeTypeProvider.getContainerWithFallback(languageTags, containers);
-							return NodeTypeProvider.createNodeContentWithSoftPermissions(env, gc, node, languageTags, type, container);
-						});
+					//Note that we would need to check for micronodes which are not language specific!
+					List<String> languageTags = getLanguageArgument(env, source);
+					NodeDataLoader.Context context = new NodeDataLoader.Context(type, languageTags, Optional.empty(), getPagingInfo(env));
+
+					return nodeReferenceLoader.load(new DataLoaderKey<>(env, nodeField), context)
+							.thenApply(nodeContent -> {
+								if (nodeContent != null && nodeContent.getNode() != null) {
+									gc.requiresPerm(nodeContent.getNode(), READ_PERM, READ_PUBLISHED_PERM);
+								}
+								return NodeTypeProvider.createNodeContentWithSoftPermissions(env, gc,
+										nodeContent.getNode(), nodeContent.getLanguageFallback(),
+										nodeContent.getType(), nodeContent.getContainer());
+							});
 					}
-				}
 				return null;
 			}).build();
 	}
