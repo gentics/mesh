@@ -50,4 +50,10 @@ public class HSQLDBConnector extends AbstractDatabaseConnector {
 		// TODO Auto-generated method stub
 		return HSQLDialect.class.getCanonicalName();
 	}
+
+	@Override
+	public int getStringLengthLimit() {
+		// HSQL honors the requested limit
+		return QueryUtils.DEFAULT_STRING_LENGTH;
+	}
 }
