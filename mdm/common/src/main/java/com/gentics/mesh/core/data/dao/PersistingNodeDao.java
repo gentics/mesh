@@ -2193,4 +2193,10 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 
 		return node;
 	}
+
+	/**
+	 * Load the edges for the given nodes. This will ensure that all "content" collections in the node entities will be populated
+	 * @param nodes list of nodes
+	 */
+	void loadEdges(List<HibNode> nodes);
 }
