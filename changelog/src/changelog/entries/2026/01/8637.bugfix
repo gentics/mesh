@@ -1,0 +1,2 @@
+The version of the library for handling GraphQL filtering has been updated to
+remove the unnecessary dependency on AssertJ.
