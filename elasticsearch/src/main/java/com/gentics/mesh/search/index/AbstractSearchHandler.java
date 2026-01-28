@@ -191,7 +191,7 @@ public abstract class AbstractSearchHandler<T extends HibCoreElement<RM>, RM ext
 					ac.send(he.getBody(), HttpResponseStatus.BAD_REQUEST);
 				} catch (Exception e1) {
 					log.error("Error while converting es error to response", e1);
-					throw error(INTERNAL_SERVER_ERROR, "Error while converting error.", e1);
+					throw error(INTERNAL_SERVER_ERROR, "error_internal", e1);
 				}
 			} else if (error instanceof TimeoutException) {
 				ac.fail(error(INTERNAL_SERVER_ERROR, "search_error_timeout"));

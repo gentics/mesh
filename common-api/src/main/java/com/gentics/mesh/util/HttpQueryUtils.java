@@ -8,13 +8,19 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.core.rest.error.GenericRestException;
+
 import io.vertx.core.MultiMap;
 
 /**
  * Utility for HTTP query string processing.
  */
 public final class HttpQueryUtils {
+
+	private static final Logger log = LoggerFactory.getLogger(HttpQueryUtils.class);
 
 	/**
 	 * Split the query in its parts and return a map which contains the individual query parameters.
@@ -36,7 +42,8 @@ public final class HttpQueryUtils {
 			try {
 				queryPairs.put(URLDecoder.decode(pair.substring(0, idx), "UTF-8"), URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
 			} catch (UnsupportedEncodingException e) {
-				throw new GenericRestException(INTERNAL_SERVER_ERROR, "Could not decode query string pair {" + pair + "}", e);
+				log.error("Could not decode query string pair {" + pair + "}");
+				throw new GenericRestException(INTERNAL_SERVER_ERROR, "error_internal", e);
 			}
 
 		}

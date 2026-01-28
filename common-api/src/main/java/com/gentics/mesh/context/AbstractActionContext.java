@@ -48,11 +48,11 @@ public abstract class AbstractActionContext implements ActionContext {
 			String body = getBodyAsString();
 			return (T) JsonUtil.getMapper().readValue(body, classOfT);
 		} catch (Exception e) {
-			// throw new HttpStatusCodeErrorException(400, new I18NService().get(rc, "error_parse_request_json_error"), e);
-			throw new GenericRestException(BAD_REQUEST, "Error while parsing json.", e);
+			throw new GenericRestException(BAD_REQUEST, "error_parse_request_json_error", e);
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Map<String, String> splitQuery() {
 		data().computeIfAbsent(QUERY_MAP_DATA_KEY, map -> {

@@ -117,9 +117,8 @@ public interface HibMicronodeField extends HibListableField, HibReferenceField<H
 
 					}
 				} catch (Exception e) {
-					// TODO i18n
-					throw error(INTERNAL_SERVER_ERROR, "Can't load rest field {" + fieldSchema.getName() + "} from micronode {" + getFieldKey() + "}",
-						e);
+					log.error("Can't load rest field {" + fieldSchema.getName() + "} from micronode {" + getFieldKey() + "}");
+					throw error(INTERNAL_SERVER_ERROR, "error_internal", e);
 				}
 			}
 			return changes;
