@@ -12,6 +12,7 @@ import com.gentics.mesh.contentoperation.ContentCachedStorage;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.db.cluster.ClusterManager;
 import com.gentics.mesh.core.endpoint.admin.AdminHandler;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
@@ -37,8 +38,8 @@ public class HibAdminHandler extends AdminHandler {
 	public HibAdminHandler(Vertx vertx, Database db, RouterStorageImpl routerStorage, BootstrapInitializer boot,
 			SearchProvider searchProvider, HandlerUtilities utils, MeshOptions options,
 			RouterStorageRegistryImpl routerStorageRegistry, Coordinator coordinator, WriteLock writeLock,
-			ConsistencyCheckHandler consistencyCheckHandler, CacheRegistry cacheRegistry, ContentCachedStorage contentCache) {
-		super(vertx, db, routerStorage, boot, searchProvider, utils, options, routerStorageRegistry, coordinator, writeLock, consistencyCheckHandler, cacheRegistry);
+			ConsistencyCheckHandler consistencyCheckHandler, CacheRegistry cacheRegistry, ContentCachedStorage contentCache, ClusterManager clusterManager) {
+		super(vertx, db, routerStorage, boot, searchProvider, utils, options, routerStorageRegistry, coordinator, writeLock, consistencyCheckHandler, cacheRegistry, clusterManager);
 		this.contentCache = contentCache;
 	}
 

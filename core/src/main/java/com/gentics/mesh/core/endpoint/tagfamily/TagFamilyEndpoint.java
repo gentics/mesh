@@ -199,8 +199,8 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 
 		InternalEndpointRoute grantPermissionsEndpoint = createRoute();
 		grantPermissionsEndpoint.path("/:tagFamilyUuid/tags/:tagUuid/rolePermissions");
-		readPermissionsEndpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
-		readPermissionsEndpoint.addUriParameter("tagUuid", "Uuid of the tag.", TAG_BLUE_UUID);
+		grantPermissionsEndpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
+		grantPermissionsEndpoint.addUriParameter("tagUuid", "Uuid of the tag.", TAG_BLUE_UUID);
 		grantPermissionsEndpoint.method(POST);
 		grantPermissionsEndpoint.description("Grant permissions on the tag to multiple roles.");
 		grantPermissionsEndpoint.consumes(APPLICATION_JSON);
@@ -217,8 +217,8 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 
 		InternalEndpointRoute revokePermissionsEndpoint = createRoute();
 		revokePermissionsEndpoint.path("/:tagFamilyUuid/tags/:tagUuid/rolePermissions");
-		readPermissionsEndpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
-		readPermissionsEndpoint.addUriParameter("tagUuid", "Uuid of the tag.", TAG_BLUE_UUID);
+		revokePermissionsEndpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
+		revokePermissionsEndpoint.addUriParameter("tagUuid", "Uuid of the tag.", TAG_BLUE_UUID);
 		revokePermissionsEndpoint.method(DELETE);
 		revokePermissionsEndpoint.description("Revoke permissions on the tag from multiple roles.");
 		revokePermissionsEndpoint.consumes(APPLICATION_JSON);

@@ -2,7 +2,6 @@ package com.gentics.mesh.generator;
 
 import static com.gentics.mesh.MeshVersion.CURRENT_API_VERSION;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
-import static org.mockito.Mockito.mock;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,7 +12,6 @@ import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
-import org.mockito.Mockito;
 import org.raml.emitter.RamlEmitter;
 import org.raml.model.Action;
 import org.raml.model.ActionType;
@@ -26,47 +24,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.MeshVersion;
-import com.gentics.mesh.core.endpoint.admin.AdminEndpoint;
-import com.gentics.mesh.core.endpoint.admin.AdminEndpointImpl;
-import com.gentics.mesh.core.endpoint.admin.HealthEndpoint;
-import com.gentics.mesh.core.endpoint.admin.RestInfoEndpoint;
-import com.gentics.mesh.core.endpoint.auth.AuthenticationEndpoint;
-import com.gentics.mesh.core.endpoint.branch.BranchEndpoint;
-import com.gentics.mesh.core.endpoint.eventbus.EventbusEndpoint;
-import com.gentics.mesh.core.endpoint.group.GroupEndpoint;
-import com.gentics.mesh.core.endpoint.microschema.MicroschemaEndpoint;
-import com.gentics.mesh.core.endpoint.microschema.ProjectMicroschemaEndpoint;
-import com.gentics.mesh.core.endpoint.navroot.NavRootEndpoint;
-import com.gentics.mesh.core.endpoint.node.NodeEndpoint;
-import com.gentics.mesh.core.endpoint.project.ProjectEndpoint;
-import com.gentics.mesh.core.endpoint.project.ProjectInfoEndpoint;
-import com.gentics.mesh.core.endpoint.role.RoleEndpoint;
-import com.gentics.mesh.core.endpoint.schema.ProjectSchemaEndpoint;
-import com.gentics.mesh.core.endpoint.schema.SchemaEndpoint;
-import com.gentics.mesh.core.endpoint.tagfamily.TagFamilyEndpoint;
-import com.gentics.mesh.core.endpoint.user.UserEndpoint;
-import com.gentics.mesh.core.endpoint.utility.UtilityEndpoint;
-import com.gentics.mesh.core.endpoint.webroot.WebRootEndpoint;
-import com.gentics.mesh.core.endpoint.webrootfield.WebRootFieldEndpoint;
-import com.gentics.mesh.graphql.GraphQLEndpoint;
 import com.gentics.mesh.rest.InternalEndpointRoute;
-import com.gentics.mesh.router.APIRouterImpl;
-import com.gentics.mesh.router.RootRouterImpl;
-import com.gentics.mesh.router.RouterStorageImpl;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
-import com.gentics.mesh.search.ProjectRawSearchEndpointImpl;
-import com.gentics.mesh.search.ProjectSearchEndpointImpl;
-import com.gentics.mesh.search.RawSearchEndpointImpl;
-import com.gentics.mesh.search.SearchEndpointImpl;
 
-import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
-import io.vertx.ext.web.Router;
 
 /**
  * Generator for RAML documentation. The generation mocks all endpoint classes and extracts the routes from these endpoints in order to generate the RAML.
  */
-public class RAMLGenerator extends AbstractGenerator {
+public class RAMLGenerator extends AbstractEndpointGenerator<Map<String, Resource>> {
 
 	private static final Logger log = LoggerFactory.getLogger(RAMLGenerator.class);
 
@@ -139,8 +105,7 @@ public class RAMLGenerator extends AbstractGenerator {
 	 *            Endpoint which provides endpoints
 	 * @throws IOException
 	 */
-	protected void addEndpoints(String basePath, Map<String, Resource> resources, AbstractInternalEndpoint verticle) throws IOException {
-
+	protected void addEndpoints(String basePath, Map<String, Resource> resources, AbstractInternalEndpoint verticle, boolean isProject) throws IOException {
 		String ramlPath = basePath + "/" + verticle.getBasePath();
 		// Check whether the resource was already added. Maybe we just need to extend it
 		Resource verticleResource = resources.get(ramlPath);
@@ -272,144 +237,6 @@ public class RAMLGenerator extends AbstractGenerator {
 	 */
 	protected ActionType getActionType(HttpMethod method) {
 		return ActionType.valueOf(method.name());
-	}
-
-	protected void initEndpoint(AbstractInternalEndpoint endpoint) {
-		Vertx vertx = mock(Vertx.class);
-		Mockito.when(endpoint.getRouter()).thenReturn(Router.router(vertx));
-		endpoint.registerEndPoints();
-	}
-
-	/**
-	 * Add all project verticles to the list resources.
-	 * 
-	 * @param resources
-	 * @throws IOException
-	 * @throws Exception
-	 */
-	protected void addProjectEndpoints(Map<String, Resource> resources) throws IOException {
-		NodeEndpoint nodeEndpoint = Mockito.spy(new NodeEndpoint());
-		initEndpoint(nodeEndpoint);
-		String projectBasePath = "/{project}";
-		addEndpoints(projectBasePath, resources, nodeEndpoint);
-
-		TagFamilyEndpoint tagFamilyEndpoint = Mockito.spy(new TagFamilyEndpoint());
-		initEndpoint(tagFamilyEndpoint);
-		addEndpoints(projectBasePath, resources, tagFamilyEndpoint);
-
-		NavRootEndpoint navEndpoint = Mockito.spy(new NavRootEndpoint());
-		initEndpoint(navEndpoint);
-		addEndpoints(projectBasePath, resources, navEndpoint);
-
-		WebRootEndpoint webEndpoint = Mockito.spy(new WebRootEndpoint());
-		initEndpoint(webEndpoint);
-		addEndpoints(projectBasePath, resources, webEndpoint);
-
-		WebRootFieldEndpoint webFieldEndpoint = Mockito.spy(new WebRootFieldEndpoint());
-		initEndpoint(webFieldEndpoint);
-		addEndpoints(projectBasePath, resources, webFieldEndpoint);
-
-		BranchEndpoint branchEndpoint = Mockito.spy(new BranchEndpoint());
-		initEndpoint(branchEndpoint);
-		addEndpoints(projectBasePath, resources, branchEndpoint);
-
-		GraphQLEndpoint graphqlEndpoint = Mockito.spy(new GraphQLEndpoint());
-		initEndpoint(graphqlEndpoint);
-		addEndpoints(projectBasePath, resources, graphqlEndpoint);
-
-		ProjectSearchEndpointImpl projectSearchEndpoint = Mockito.spy(new ProjectSearchEndpointImpl());
-		initEndpoint(projectSearchEndpoint);
-		addEndpoints(projectBasePath, resources, projectSearchEndpoint);
-
-		ProjectRawSearchEndpointImpl projectRawSearchEndpoint = Mockito.spy(new ProjectRawSearchEndpointImpl());
-		initEndpoint(projectRawSearchEndpoint);
-		addEndpoints(projectBasePath, resources, projectRawSearchEndpoint);
-
-		ProjectSchemaEndpoint projectSchemaEndpoint = Mockito.spy(new ProjectSchemaEndpoint());
-		initEndpoint(projectSchemaEndpoint);
-		addEndpoints(projectBasePath, resources, projectSchemaEndpoint);
-
-		ProjectMicroschemaEndpoint projectMicroschemaEndpoint = Mockito.spy(new ProjectMicroschemaEndpoint());
-		initEndpoint(projectMicroschemaEndpoint);
-		addEndpoints(projectBasePath, resources, projectMicroschemaEndpoint);
-
-	}
-
-	/**
-	 * Add all core verticles to the map of RAML resources.
-	 * 
-	 * @param resources
-	 * @throws IOException
-	 * @throws Exception
-	 */
-	protected void addCoreEndpoints(Map<String, Resource> resources) throws IOException {
-		String coreBasePath = "";
-		UserEndpoint userEndpoint = Mockito.spy(new UserEndpoint());
-		initEndpoint(userEndpoint);
-		addEndpoints(coreBasePath, resources, userEndpoint);
-
-		RoleEndpoint roleEndpoint = Mockito.spy(new RoleEndpoint());
-		initEndpoint(roleEndpoint);
-		addEndpoints(coreBasePath, resources, roleEndpoint);
-
-		GroupEndpoint groupEndpoint = Mockito.spy(new GroupEndpoint());
-		initEndpoint(groupEndpoint);
-		addEndpoints(coreBasePath, resources, groupEndpoint);
-
-		ProjectEndpoint projectEndpoint = Mockito.spy(new ProjectEndpoint());
-		initEndpoint(projectEndpoint);
-		addEndpoints(coreBasePath, resources, projectEndpoint);
-
-		SchemaEndpoint schemaEndpoint = Mockito.spy(new SchemaEndpoint());
-		initEndpoint(schemaEndpoint);
-		addEndpoints(coreBasePath, resources, schemaEndpoint);
-
-		MicroschemaEndpoint microschemaEndpoint = Mockito.spy(new MicroschemaEndpoint());
-		initEndpoint(microschemaEndpoint);
-		addEndpoints(coreBasePath, resources, microschemaEndpoint);
-
-		AdminEndpoint adminEndpoint = Mockito.spy(new AdminEndpointImpl());
-		initEndpoint(adminEndpoint);
-		addEndpoints(coreBasePath, resources, adminEndpoint);
-
-		HealthEndpoint healthEndpoint = Mockito.spy(new HealthEndpoint());
-		initEndpoint(healthEndpoint);
-		addEndpoints(coreBasePath, resources, healthEndpoint);
-
-		SearchEndpointImpl searchEndpoint = Mockito.spy(new SearchEndpointImpl());
-		initEndpoint(searchEndpoint);
-		addEndpoints(coreBasePath, resources, searchEndpoint);
-
-		RawSearchEndpointImpl rawSearchEndpoint = Mockito.spy(new RawSearchEndpointImpl());
-		initEndpoint(rawSearchEndpoint);
-		addEndpoints(coreBasePath, resources, rawSearchEndpoint);
-
-		UtilityEndpoint utilityEndpoint = Mockito.spy(new UtilityEndpoint());
-		initEndpoint(utilityEndpoint);
-		addEndpoints(coreBasePath, resources, utilityEndpoint);
-
-		AuthenticationEndpoint authEndpoint = Mockito.spy(new AuthenticationEndpoint());
-		initEndpoint(authEndpoint);
-		addEndpoints(coreBasePath, resources, authEndpoint);
-
-		EventbusEndpoint eventbusEndpoint = Mockito.spy(new EventbusEndpoint());
-		initEndpoint(eventbusEndpoint);
-		addEndpoints(coreBasePath, resources, eventbusEndpoint);
-
-		RouterStorageImpl rs = Mockito.mock(RouterStorageImpl.class);
-		RootRouterImpl rootRouter = Mockito.mock(RootRouterImpl.class);
-		Mockito.when(rs.root()).thenReturn(rootRouter);
-		APIRouterImpl apiRouter = Mockito.mock(APIRouterImpl.class);
-		Mockito.when(rootRouter.apiRouter()).thenReturn(apiRouter);
-		RestInfoEndpoint infoEndpoint = Mockito.spy(new RestInfoEndpoint(""));
-		infoEndpoint.init(null, rs);
-		initEndpoint(infoEndpoint);
-		addEndpoints(coreBasePath, resources, infoEndpoint);
-
-		ProjectInfoEndpoint projectInfoEndpoint = Mockito.spy(new ProjectInfoEndpoint());
-		initEndpoint(projectInfoEndpoint);
-		addEndpoints(coreBasePath, resources, projectInfoEndpoint);
-
 	}
 
 	/**

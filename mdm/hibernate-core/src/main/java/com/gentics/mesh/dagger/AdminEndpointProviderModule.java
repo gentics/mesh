@@ -7,6 +7,7 @@ import com.gentics.mesh.cache.CacheRegistry;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.contentoperation.ContentCachedStorage;
 import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.db.cluster.ClusterManager;
 import com.gentics.mesh.core.endpoint.admin.AdminEndpoint;
 import com.gentics.mesh.core.endpoint.admin.AdminEndpointImpl;
 import com.gentics.mesh.core.endpoint.admin.AdminHandler;
@@ -47,7 +48,7 @@ public class AdminEndpointProviderModule {
 	public static AdminHandler provideAdminHandler(Vertx vertx, Database db, RouterStorageImpl routerStorage, BootstrapInitializer boot,
 			SearchProvider searchProvider, HandlerUtilities utils, MeshOptions options,
 			RouterStorageRegistryImpl routerStorageRegistry, Coordinator coordinator, WriteLock writeLock,
-			ConsistencyCheckHandler consistencyCheckHandler, CacheRegistry cacheRegistry, ContentCachedStorage contentCache) {
-		return new HibAdminHandler(vertx, db, routerStorage, boot, searchProvider, utils, options, routerStorageRegistry, coordinator, writeLock, consistencyCheckHandler, cacheRegistry, contentCache);
+			ConsistencyCheckHandler consistencyCheckHandler, CacheRegistry cacheRegistry, ContentCachedStorage contentCache, ClusterManager clusterManager) {
+		return new HibAdminHandler(vertx, db, routerStorage, boot, searchProvider, utils, options, routerStorageRegistry, coordinator, writeLock, consistencyCheckHandler, cacheRegistry, contentCache, clusterManager);
 	}
 }

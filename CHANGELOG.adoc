@@ -213,6 +213,8 @@ enforced in the UI, and is now enforced in the REST API. The check is not perfor
 
 icon:check[] Core: When a project was deleted, its associated version purge jobs were not. This has been fixed.
 
+icon:check[] Rest: New OpenAPI secure endpoints `/openapi.yaml` and `/openapi.json` have been added.
+
 [[v1.8.6]]
 == 1.8.6 (06.07.2022)
 

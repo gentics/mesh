@@ -57,7 +57,7 @@ public class EventbusEndpoint extends AbstractInternalEndpoint {
 		endpoint.setRAMLPath("/");
 		endpoint.description("This endpoint provides a sockjs compliant websocket which can be used to interface with the vert.x eventbus.");
 
-		if (!isRamlGeneratorContext()) {
+		if (!isSpecGeneratorContext()) {
 			SockJSHandlerOptions sockJSoptions = new SockJSHandlerOptions().setHeartbeatInterval(2000);
 			SockJSHandler handler = SockJSHandler.create(vertx, sockJSoptions);
 			SockJSBridgeOptions bridgeOptions = new SockJSBridgeOptions();
@@ -91,10 +91,10 @@ public class EventbusEndpoint extends AbstractInternalEndpoint {
 	}
 
 	/**
-	 * Returns whether the method is called from during the documentation generation context.
+	 * Returns whether the method is called from during the specification generation context.
 	 * @return
 	 */
-	private boolean isRamlGeneratorContext() {
+	private boolean isSpecGeneratorContext() {
 		return localRouter == null;
 	}
 }

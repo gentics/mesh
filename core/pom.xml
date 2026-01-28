@@ -192,8 +192,23 @@
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-service-aws-s3-storage</artifactId>
 		</dependency>
-	</dependencies>
 
+		<dependency>
+			<groupId>io.swagger.core.v3</groupId>
+			<artifactId>swagger-core</artifactId>
+			<version>2.2.20</version>
+		</dependency>
+		<dependency>
+			<groupId>org.reflections</groupId>
+			<artifactId>reflections</artifactId>
+			<version>0.10.2</version>
+		</dependency>
+		<dependency>
+			<groupId>jakarta.xml.bind</groupId>
+			<artifactId>jakarta.xml.bind-api</artifactId>
+			<version>4.0.1</version>
+		</dependency>
+	</dependencies>
 	<build>
 		<plugins>
 			<plugin>

@@ -3,6 +3,7 @@ package com.gentics.mesh.rest;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import io.vertx.ext.web.Router;
 import org.codehaus.jettison.json.JSONObject;
@@ -432,10 +433,38 @@ public interface InternalEndpointRoute extends Comparable<InternalEndpointRoute>
 	InternalEndpointRoute setMutating(Boolean mutating);
 
 	/**
+	 * If true, the endpoint can be used with no authentication. 
+	 * 
+	 * @return
+	 */
+	boolean isInsecure();
+
+	/**
+	 * Set the endpoint to omit the secure token requirement.
+	 * 
+	 * @param insecure
+	 * @return
+	 */
+	InternalEndpointRoute setInsecure(boolean insecure);
+
+	/**
 	 * Return underlying route.
 	 * 
 	 * @return
 	 */
 	Route getRoute();
 
+	/**
+	 * Return set of produced MIME types;
+	 * 
+	 * @return
+	 */
+	Set<String> getProduces();
+
+	/**
+	 * Return set of accepted request body MIME types;
+	 * 
+	 * @return
+	 */
+	Set<String> getConsumes();
 }
