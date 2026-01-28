@@ -1162,4 +1162,10 @@ public interface ContentDao {
 	 * @return map of field to micronode
 	 */
 	Map<HibMicronodeField, HibMicronode> getMicronodes(Collection<HibMicronodeField> micronodeFields);
+
+	/**
+	 * Get the length limit for string fields
+	 * @return length limit
+	 */
+	int getStringLengthLimit();
 }
