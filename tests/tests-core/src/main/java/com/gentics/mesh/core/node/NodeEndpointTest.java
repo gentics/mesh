@@ -44,6 +44,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -63,6 +64,7 @@ import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.db.TxAction;
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -113,6 +115,12 @@ import io.reactivex.Observable;
 
 @MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true, synchronizeWrites = true)
 public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
+	/**
+	 * Determine the connector defined string length limit
+	 */
+	protected final static TxAction<Integer> STRING_LENGTH_LIMIT = tx -> {
+		return tx.contentDao().getStringLengthLimit();
+	};
 
 	@Test
 	public void testCreateNodeWithNoLanguageCode() {
@@ -2439,6 +2447,52 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			.hasStringField("name", "Name auf Deutsch")
 			.hasStringField("slug", "german_root_node");
 
+	}
+
+	/**
+	 * Test that string fields can reach the connector defined string length (when not using multibyte utf8 characters)
+	 */
+	@Test
+	public void testLargeContent() {
+		int stringLengthLimit = tx(STRING_LENGTH_LIMIT);
+		String largeContent = RandomStringUtils.secure().nextAlphabetic(stringLengthLimit);
+
+		String parentNodeUuid = tx(() -> folder("news").getUuid());
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setSchemaName("content");
+		request.setLanguage("en");
+		request.getFields().put("title", FieldUtil.createStringField("some title"));
+		request.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		request.getFields().put("slug", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField(largeContent));
+		request.setParentNodeUuid(parentNodeUuid);
+
+		NodeResponse restNode = call(() -> client().createNode(PROJECT_NAME, request));
+		String nodeUuid = restNode.getUuid();
+		restNode = call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid));
+		assertThat(restNode).hasStringField("content", largeContent);
+	}
+
+	/**
+	 * Test that when string fields exceed the connector defined string length, node creation will fail
+	 */
+	@Test
+	public void testTooLargeContent() {
+		int stringLengthLimit = tx(STRING_LENGTH_LIMIT);
+		String largeContent = RandomStringUtils.secure().nextAlphabetic(stringLengthLimit + 1);
+
+		String parentNodeUuid = tx(() -> folder("news").getUuid());
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setSchemaName("content");
+		request.setLanguage("en");
+		request.getFields().put("title", FieldUtil.createStringField("some title"));
+		request.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		request.getFields().put("slug", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField(largeContent));
+		request.setParentNodeUuid(parentNodeUuid);
+
+		call(() -> client().createNode(PROJECT_NAME, request), BAD_REQUEST, "node_error_string_field_value_too_long",
+				"content", String.valueOf(stringLengthLimit), String.valueOf(stringLengthLimit + 1));
 	}
 
 	/**

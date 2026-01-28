@@ -97,4 +97,13 @@ public interface DatabaseConnector extends QueryUtils {
 		// per default, entity graphs may be used
 		return true;
 	}
+
+	/**
+	 * Get the length limit for string field contents
+	 * @return length limit
+	 */
+	default int getStringLengthLimit() {
+		// the default is 20_000_000, because this was the internal limit of jackson when deserializing the request
+		return 20_000_000;
+	}
 }
