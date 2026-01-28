@@ -125,7 +125,7 @@ public interface HibMicronodeFieldList extends HibMicroschemaListableField, HibR
 				} catch (GenericRestException e) {
 					throw e;
 				} catch (Exception e) {
-					throw error(INTERNAL_SERVER_ERROR, "Unknown error while updating micronode list.", e);
+					throw error(INTERNAL_SERVER_ERROR, "error_internal", e);
 				}
 				return micronode;
 			}).toList().subscribe(micronodeList -> {
