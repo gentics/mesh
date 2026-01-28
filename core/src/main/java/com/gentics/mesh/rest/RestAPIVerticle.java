@@ -219,7 +219,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 
 			keyOptions.setKeyPath(meshServerOptions.getKeyPath());
 			keyOptions.setCertPath(meshServerOptions.getCertPath());
-			httpsOptions.setPemKeyCertOptions(keyOptions);
+			httpsOptions.setKeyCertOptions(keyOptions);
 
 			PemTrustOptions pemTrustOptions = new PemTrustOptions();
 			for (String path : meshServerOptions.getTrustedCertPaths()) {
@@ -229,7 +229,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 			// Internally Vert.x will only create a trust manager when options have been specified
 			// Otherwise the default JVM trust manager will be used.
 			if (!pemTrustOptions.getCertPaths().isEmpty()) {
-				httpsOptions.setPemTrustOptions(pemTrustOptions);
+				httpsOptions.setTrustOptions(pemTrustOptions);
 			}
 
 			log.info("Starting https server in verticle {" + getClass().getName() + "} on port {" + httpsOptions.getPort() + "}");
@@ -267,7 +267,8 @@ public class RestAPIVerticle extends AbstractVerticle {
 	private void applyCommonSettings(HttpServerOptions options, HttpServerConfig serverConfig) {
 		String host = config().getString("host");
 		options.setHost(host);
-		options.setCompressionSupported(true);
+		// TODO disabling compression is currently necessary due to a but in vert.x
+		options.setCompressionSupported(false);
 		options.setHandle100ContinueAutomatically(true);
 		options.setUseAlpn(serverConfig.isUseAlpn());
 		// options.setLogActivity(true);

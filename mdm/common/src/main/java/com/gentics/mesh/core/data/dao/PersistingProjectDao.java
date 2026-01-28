@@ -8,6 +8,7 @@ import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_SCHEMA_UNASSIGNED;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.util.PreparationUtil.preparePermissions;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
@@ -23,9 +24,11 @@ import com.gentics.mesh.cache.NameCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
@@ -34,6 +37,7 @@ import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.NameConflictException;
 import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
@@ -92,6 +96,21 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 	default HibProject create(String projectName, String hostname, Boolean ssl, String pathPrefix, HibUser creator,
 		HibSchemaVersion schemaVersion, EventQueueBatch batch) {
 		return create(projectName, hostname, ssl, pathPrefix, creator, schemaVersion, null, batch);
+	}
+
+	@Override
+	default void beforeGetETagForPage(Page<? extends HibCoreElement<? extends RestModel>> page,
+			InternalActionContext ac) {
+		preparePermissions(ac.getUser(), page, ac);
+	}
+
+	@Override
+	default void beforeTransformToRestSync(Page<? extends HibCoreElement<? extends RestModel>> page,
+			InternalActionContext ac) {
+		GenericParameters generic = ac.getGenericParameters();
+		FieldsSet fields = generic.getFields();
+
+		preparePermissions(ac.getUser(), page, ac, fields);
 	}
 
 	@Override
@@ -290,7 +309,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 	}
 
 	@Override
-	default void delete(HibProject project, BulkActionContext bac) {
+	default void delete(HibProject project) {
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting project {" + project.getName() + "}");
 		}
@@ -303,38 +322,38 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 
 		// Remove the nodes in the project hierarchy
 		HibNode base = project.getBaseNode();
-		nodeDao.delete(base, bac, true, true);
+		nodeDao.delete(base, true, true);
 
 		// Remove the tagfamilies from the index
-		tagFamilyDao.onRootDeleted(project, bac);
+		tagFamilyDao.onRootDeleted(project);
 
 		// Remove all nodes in this project
 		for (HibNode node : findNodes(project)) {
-			nodeDao.delete(node, bac, true, false);
-			bac.inc();
+			nodeDao.delete(node, true, false);
+			CommonTx.get().data().maybeGetBulkActionContext().ifPresent(BulkActionContext::inc);
 		}
 
 		// Finally also remove the node root
-		nodeDao.onRootDeleted(project, bac);
+		nodeDao.onRootDeleted(project);
 
 		// Unassign the schemas from the container
 		for (HibSchema container : project.getSchemas().list()) {
-			schemaDao.unassign(container, project, bac.batch());
+			schemaDao.unassign(container, project, CommonTx.get().batch());
 		}
 
 		// Unassign the microschemas from the container
 		for (HibMicroschema container : project.getMicroschemas().list()) {
-			microschemaDao.unassign(container, project, bac.batch());
+			microschemaDao.unassign(container, project, CommonTx.get().batch());
 		}
 
 		// Remove the project schema root from the index
-		schemaDao.onRootDeleted(project, bac);
+		schemaDao.onRootDeleted(project);
 
 		// Remove the branch root and all branches
-		branchDao.onRootDeleted(project, bac);
+		branchDao.onRootDeleted(project);
 
 		// Remove the project from the index
-		bac.add(project.onDeleted());
+		CommonTx.get().batch().add(project.onDeleted());
 
 		// Remove the jobs referencing the job
 		jobDao.deleteByProject(project);
@@ -342,7 +361,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		// Finally remove the project node
 		deletePersisted(project);
 
-		bac.process(true);
+		CommonTx.get().data().maybeGetBulkActionContext().ifPresent(bac -> bac.process(true));
 	}
 
 	@Override

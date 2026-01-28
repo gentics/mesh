@@ -10,6 +10,8 @@ import javax.inject.Singleton;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.auth.AuthenticationResult;
@@ -29,12 +31,12 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.Cookie;
 import io.vertx.core.json.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.vertx.ext.auth.JWTOptions;
 import io.vertx.ext.auth.KeyStoreOptions;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.auth.authentication.AuthenticationProvider;
+import io.vertx.ext.auth.authentication.Credentials;
+import io.vertx.ext.auth.authentication.TokenCredentials;
 import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.auth.jwt.JWTAuthOptions;
 
@@ -91,10 +93,10 @@ public class MeshJWTAuthProvider implements AuthenticationProvider, JWTAuth {
 	 * @param authInfo
 	 * @param resultHandler
 	 */
-	public void authenticateJWT(JsonObject authInfo, Handler<AsyncResult<AuthenticationResult>> resultHandler) {
+	public void authenticateJWT(Credentials authInfo, Handler<AsyncResult<AuthenticationResult>> resultHandler) {
 		// Decode and validate the JWT. A JWTUser will be returned which contains the decoded token.
 		// We will use this information to load the Mesh User from the graph.
-		jwtProvider.authenticate(authInfo, rh -> {
+		jwtProvider.authenticate(authInfo).andThen(rh -> {
 			if (rh.failed()) {
 				if (log.isDebugEnabled()) {
 					log.debug("Could not authenticate token.", rh.cause());
@@ -118,8 +120,9 @@ public class MeshJWTAuthProvider implements AuthenticationProvider, JWTAuth {
 		});
 	}
 
+
 	@Override
-	public void authenticate(JsonObject authInfo, Handler<AsyncResult<User>> resultHandler) {
+	public Future<User> authenticate(Credentials credentials) {
 		// The mesh auth provider is not using this method to authenticate a user.
 		throw new NotImplementedException();
 	}
@@ -297,7 +300,9 @@ public class MeshJWTAuthProvider implements AuthenticationProvider, JWTAuth {
 	public void login(InternalActionContext ac, String username, String password, String newPassword) {
 		String token = generateToken(username, password, newPassword);
 		ac.addCookie(Cookie.cookie(SharedKeys.TOKEN_COOKIE_KEY, token)
-			.setMaxAge(meshOptions.getAuthenticationOptions().getTokenExpirationTime()).setPath("/"));
+				.setHttpOnly(true)
+				.setMaxAge(meshOptions.getAuthenticationOptions().getTokenExpirationTime())
+				.setPath("/"));
 		ac.send(new TokenResponse(token).toJson(ac.isMinify(meshOptions.getHttpServerOptions())));
 	}
 
@@ -310,7 +315,7 @@ public class MeshJWTAuthProvider implements AuthenticationProvider, JWTAuth {
 	 *            Mesh API token
 	 */
 	public void login(InternalActionContext ac, String apiToken) {
-		JsonObject authInfo = new JsonObject().put("token", apiToken).put("options", new JsonObject());
+		Credentials authInfo = new TokenCredentials(apiToken);
 		authenticateJWT(authInfo, res -> {
 			// Authentication was successful.
 			if (res.succeeded()) {
@@ -318,6 +323,7 @@ public class MeshJWTAuthProvider implements AuthenticationProvider, JWTAuth {
 				User authenticatedUser = result.getUser();
 				String token = generateToken(authenticatedUser);
 				ac.addCookie(Cookie.cookie(SharedKeys.TOKEN_COOKIE_KEY, token)
+						.setHttpOnly(true)
 						.setMaxAge(meshOptions.getAuthenticationOptions().getTokenExpirationTime()).setPath("/"));
 					ac.send(new TokenResponse(token).toJson());
 			} else {
@@ -326,7 +332,7 @@ public class MeshJWTAuthProvider implements AuthenticationProvider, JWTAuth {
 						log.error("Authentication failed in Mesh JWT p.", res.cause());
 					}
 				}
-				throw error(UNAUTHORIZED, "auth_login_failed");
+				ac.fail(error(UNAUTHORIZED, "auth_login_failed"));
 			}
 		});
 	}

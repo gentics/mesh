@@ -2,7 +2,6 @@ package com.gentics.mesh.core.admin;
 
 import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.rest.MeshEvent.PLUGIN_REGISTERED;
 import static com.gentics.mesh.core.rest.plugin.PluginStatus.REGISTERED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
@@ -105,17 +104,21 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 	 * Deploy the basic plugin and assert that the plugin routes can be reached.
 	 * 
 	 * @throws IOException
+	 * @throws TimeoutException 
 	 */
 	@Test
-	public void testDeployPlugin() throws IOException {
+	public void testDeployPlugin() throws IOException, TimeoutException {
 		grantAdmin();
 
-		PluginResponse deployment = copyAndDeploy(BASIC_PATH, "basic-plugin.jar");
+		PluginResponse deployment = null;
+		try (ExpectedEvent ee = expectEvent(MeshEvent.PLUGIN_REGISTERED, 10_000)) {
+			deployment = copyAndDeploy(BASIC_PATH, "basic-plugin.jar");
+		}
+		String deploymentId = deployment.getId();
 		assertEquals("basic", deployment.getId());
 		assertEquals(REGISTERED, deployment.getStatus());
 
-		waitForEvent(PLUGIN_REGISTERED);
-		PluginResponse response1 = call(() -> client().findPlugin(deployment.getId()));
+		PluginResponse response1 = call(() -> client().findPlugin(deploymentId));
 		assertEquals(REGISTERED, response1.getStatus());
 
 		assertEquals("world", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/" + API_NAME + "/hello"));
@@ -124,10 +127,10 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 		PluginListResponse list = call(() -> client().findPlugins());
 		assertEquals(1, list.getMetainfo().getTotalCount());
 
-		PluginResponse response2 = call(() -> client().findPlugin(deployment.getId()));
+		PluginResponse response2 = call(() -> client().findPlugin(deploymentId));
 		assertEquals(deployment.getName(), response2.getName());
 
-		call(() -> client().undeployPlugin(deployment.getId()));
+		call(() -> client().undeployPlugin(deploymentId));
 
 		assertEquals(404, httpGet(CURRENT_API_BASE_PATH + "/plugins/" + API_NAME + "/hello").execute().code());
 
@@ -173,12 +176,15 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 	}
 
 	@Test
-	public void testStaticHandler() throws IOException {
+	public void testStaticHandler() throws IOException, TimeoutException {
 		grantAdmin();
 
-		copyAndDeploy(BASIC_PATH, "plugin.jar");
-		copyAndDeploy(BASIC2_PATH, "plugin2.jar");
-		waitForPluginRegistration();
+		try (ExpectedEvent ee = expectEvent(MeshEvent.PLUGIN_REGISTERED, 10_000)) {
+			copyAndDeploy(BASIC_PATH, "plugin.jar");
+		}
+		try (ExpectedEvent ee = expectEvent(MeshEvent.PLUGIN_REGISTERED, 10_000)) {
+			copyAndDeploy(BASIC2_PATH, "plugin2.jar");
+		}
 
 		assertEquals("world", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/basic/hello"));
 		assertEquals("world2", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/basic2/hello"));
@@ -239,11 +245,12 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 	}
 
 	@Test
-	public void testClassLoaderHandling() throws IOException {
+	public void testClassLoaderHandling() throws IOException, TimeoutException {
 		grantAdmin();
 
-		copyAndDeploy(CLASSLOADER_PATH, "plugin.jar");
-		waitForPluginRegistration();
+		try (ExpectedEvent ee = expectEvent(MeshEvent.PLUGIN_REGISTERED, 10_000)) {
+			copyAndDeploy(CLASSLOADER_PATH, "plugin.jar");
+		}
 
 		assertEquals("plugin", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/classloader/scope"));
 		assertEquals("plugin", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/classloader/check"));
@@ -289,13 +296,14 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 	}
 
 	@Test
-	public void testMultipleDeployments() throws IOException {
+	public void testMultipleDeployments() throws IOException, TimeoutException {
 		grantAdmin();
 
 		for (int i = 1; i <= 100; i++) {
-			deployPlugin(ClonePlugin.class, "clone" + i);
+			try (ExpectedEvent ee = expectEvent(MeshEvent.PLUGIN_REGISTERED, 10_000)) {
+				deployPlugin(ClonePlugin.class, "clone" + i);
+			}
 		}
-		waitForPluginRegistration();
 
 		PluginListResponse result = call(() -> client().findPlugins(new PagingParametersImpl().setPerPage(10L).setPage(10)));
 		PluginResponse lastElement = result.getData().get(9);
@@ -324,12 +332,15 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 	}
 
 	@Test
-	public void testExtensionHandling() throws IOException {
+	public void testExtensionHandling() throws IOException, TimeoutException {
 		grantAdmin();
 
-		copyAndDeploy(EXTENSION_CONSUMER_PATH, "extension-consumer.jar");
-		copyAndDeploy(EXTENSION_PROVIDER_PATH, "extension-provider.jar");
-		waitForPluginRegistration();
+		try (ExpectedEvent ee = expectEvent(MeshEvent.PLUGIN_REGISTERED, 10_000)) {
+			copyAndDeploy(EXTENSION_CONSUMER_PATH, "extension-consumer.jar");
+		}
+		try (ExpectedEvent ee = expectEvent(MeshEvent.PLUGIN_REGISTERED, 10_000)) {
+			copyAndDeploy(EXTENSION_PROVIDER_PATH, "extension-provider.jar");
+		}
 
 		assertEquals("My dummy extension\n", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/extension-consumer/extensions"));
 

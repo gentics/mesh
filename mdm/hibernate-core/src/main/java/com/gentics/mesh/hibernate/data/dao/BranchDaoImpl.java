@@ -1,21 +1,29 @@
 package com.gentics.mesh.hibernate.data.dao;
 
 import static com.gentics.mesh.hibernate.util.HibernateUtil.firstOrNull;
+import static com.gentics.mesh.hibernate.util.HibernateUtil.inQueriesLimitForSplitting;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.hibernate.jpa.QueryHints;
+import org.apache.commons.lang3.tuple.Pair;
+import org.hibernate.jpa.HibernateHints;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.branch.HibBranchMicroschemaVersion;
@@ -26,6 +34,7 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
@@ -41,7 +50,9 @@ import com.gentics.mesh.hibernate.data.domain.HibProjectImpl;
 import com.gentics.mesh.hibernate.data.domain.HibSchemaVersionImpl;
 import com.gentics.mesh.hibernate.data.permission.HibPermissionRoots;
 import com.gentics.mesh.hibernate.event.EventFactory;
+import com.gentics.mesh.hibernate.util.SplittingUtils;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.util.CollectionUtil;
 import com.gentics.mesh.util.UUIDUtil;
 
 import dagger.Lazy;
@@ -76,7 +87,7 @@ public class BranchDaoImpl extends AbstractHibRootDao<HibBranch, BranchResponse,
 	}
 
 	@Override
-	public void onRootDeleted(HibProject root, BulkActionContext bac) {
+	public void onRootDeleted(HibProject root) {
 		// before deleting all branches of the project, unset the initial and latest branch in the project
 		HibProjectImpl hibProject = (HibProjectImpl) root;
 		hibProject.setInitialBranch(null);
@@ -85,7 +96,7 @@ public class BranchDaoImpl extends AbstractHibRootDao<HibBranch, BranchResponse,
 		// also unset the "previousBranch" relation of all branches
 		findAll(root).forEach(branch -> branch.setPreviousBranch(null));
 
-		super.onRootDeleted(root, bac);
+		super.onRootDeleted(root);
 	}
 
 	@Override
@@ -94,7 +105,7 @@ public class BranchDaoImpl extends AbstractHibRootDao<HibBranch, BranchResponse,
 				.setParameter("branch", entity)
 				.getResultStream()
 				.forEach(job -> job.setBranch(null));
-		em().remove(entity);
+		currentTransaction.getTx().delete(entity);
 	}
 
 	@Override
@@ -128,7 +139,7 @@ public class BranchDaoImpl extends AbstractHibRootDao<HibBranch, BranchResponse,
 					em().createQuery("select b from branch b where b.name = :name and b.project = :project", HibBranchImpl.class)
 							.setParameter("name", name)
 							.setParameter("project", project)
-					.setHint(QueryHints.HINT_CACHEABLE, true)
+					.setHint(HibernateHints.HINT_CACHEABLE, true)
 			);
 		});
 	}
@@ -235,5 +246,23 @@ public class BranchDaoImpl extends AbstractHibRootDao<HibBranch, BranchResponse,
 	@Override
 	public HibBranch getInitialBranch(HibProject project) {
 		return ((HibProjectImpl)project).getInitialBranch();
+	}
+
+	@Override
+	public Map<HibBranch, Collection<? extends HibTag>> getTags(Collection<HibBranch> branches) {
+		List<UUID> branchUuids = branches.stream().map(HibBranch::getId).map(UUID.class::cast).collect(Collectors.toList());
+
+		Map<HibBranch, Collection<? extends HibTag>> result = new HashMap<>();
+		result.putAll(SplittingUtils.splitAndMergeInMapOfLists(branchUuids, inQueriesLimitForSplitting(1), (uuids) -> {
+			@SuppressWarnings("unchecked")
+			List<Object[]> resultList = em().createNamedQuery("branch.findtagsforbranches")
+					.setParameter("branchUuids", uuids)
+					.getResultList();
+
+			return resultList.stream()
+					.map(tuples -> Pair.of((HibBranch)tuples[0], (HibTag)tuples[1]))
+					.collect(Collectors.groupingBy(Pair::getKey, Collectors.mapping(Pair::getValue, Collectors.toList())));
+		}));
+		return CollectionUtil.addFallbackValueForMissingKeys(result, branches, new ArrayList<>());
 	}
 }

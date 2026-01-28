@@ -4,6 +4,7 @@ import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -13,6 +14,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -22,14 +24,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.assertj.core.api.Assertions;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.MeshStatus;
+import com.gentics.mesh.cli.AbstractBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -44,6 +51,7 @@ import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.common.FieldTypes;
@@ -104,6 +112,7 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.test.context.helper.ClientHelper;
 import com.gentics.mesh.test.context.helper.EventHelper;
+import com.gentics.mesh.test.helper.ExpectedEvent;
 import com.gentics.mesh.util.VersionNumber;
 import com.google.common.io.Resources;
 
@@ -349,7 +358,9 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		RoleCreateRequest roleCreateRequest = new RoleCreateRequest();
 		roleCreateRequest.setName(roleName);
 		RoleResponse roleResponse = call(() -> client().createRole(roleCreateRequest));
-		client().addRoleToGroup(groupUuid, roleResponse.getUuid()).blockingAwait();
+		if (groupUuid != null) {
+			client().addRoleToGroup(groupUuid, roleResponse.getUuid()).blockingAwait();
+		}
 		return roleResponse;
 	}
 
@@ -411,7 +422,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	}
 
 	default public NodeResponse createNode(NodeResponse parent) {
-		return createNode(parent.getUuid(), "slug", new StringFieldImpl().setString(RandomStringUtils.randomAlphabetic(5)));
+		return createNode(parent.getUuid(), "slug", new StringFieldImpl().setString(RandomStringUtils.randomAlphabetic(RandomUtils.nextInt(10, 20))));
 	}
 
 	default public NodeResponse createNode(String fieldKey, Field field) {
@@ -521,15 +532,31 @@ public interface TestHelper extends EventHelper, ClientHelper {
 			() -> client().createNode(nodeResponse.getUuid(), projectName, create, new VersioningParametersImpl().setBranch(targetBranchName)));
 	}
 
+	/**
+	 * Create a project with random name. This will also wait for the event {@link MeshEvent#PROJECT_CREATED} and fail,
+	 * if the event is not fired within 10 seconds
+	 * @return project response
+	 */
 	default ProjectResponse createProject() {
 		return createProject(RandomStringUtils.randomAlphabetic(10));
 	}
 
+	/**
+	 * Create a project with given name. This will also wait for the event {@link MeshEvent#PROJECT_CREATED} and fail,
+	 * if the event is not fired within 10 seconds
+	 * @param projectName project name
+	 * @return project response
+	 */
 	default public ProjectResponse createProject(String projectName) {
 		ProjectCreateRequest projectCreateRequest = new ProjectCreateRequest();
 		projectCreateRequest.setName(projectName);
 		projectCreateRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
-		return call(() -> client().createProject(projectCreateRequest));
+		try (ExpectedEvent ee = expectEvent(MeshEvent.PROJECT_CREATED, 10_000)) {
+			return call(() -> client().createProject(projectCreateRequest));
+		} catch (TimeoutException e) {
+			fail("The event %s was not fired after project %s was created".formatted(MeshEvent.PROJECT_CREATED, projectName));
+			return null;
+		}
 	}
 
 	default public ProjectResponse getProject() {
@@ -540,14 +567,33 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return call(() -> client().findProjectByUuid(uuid));
 	}
 
+	/**
+	 * Update the project by giving it a new name. This will also wait for the project router to be registered
+	 * fail if that did not happen within 10 seconds.
+	 * @param uuid project uuid
+	 * @param projectName new project name
+	 * @return project response
+	 */
 	default public ProjectResponse updateProject(String uuid, String projectName) {
 		ProjectUpdateRequest projectUpdateRequest = new ProjectUpdateRequest();
 		projectUpdateRequest.setName(projectName);
-		return call(() -> client().updateProject(uuid, projectUpdateRequest));
+
+		ProjectResponse response = call(() -> client().updateProject(uuid, projectUpdateRequest));
+		assertProjectRouter(projectName);
+		return response;
 	}
 
+	/**
+	 * Delete the project with given uuid. This will also wait for the event {@link MeshEvent#PROJECT_DELETED} and fail,
+	 * if the event is not fired within 10 seconds
+	 * @param uuid project uuid
+	 */
 	default public void deleteProject(String uuid) {
-		call(() -> client().deleteProject(uuid));
+		try (ExpectedEvent ee = expectEvent(MeshEvent.PROJECT_DELETED, 10_000)) {
+			call(() -> client().deleteProject(uuid));
+		} catch (TimeoutException e) {
+			fail("The event %s was not fired after project %d was deleted".formatted(MeshEvent.PROJECT_DELETED, uuid));
+		}
 	}
 
 	default SchemaResponse createSchema(SchemaCreateRequest request) {
@@ -696,11 +742,15 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	}
 
 	default public File createTempFile() {
+		return createTempFile("blume.jpg");
+	}
+
+	default public File createTempFile(String pictureResourceFileName) {
 		try {
-			InputStream ins = getClass().getResourceAsStream("/pictures/blume.jpg");
+			InputStream ins = getClass().getResourceAsStream("/pictures/" + pictureResourceFileName);
 			byte[] bytes = IOUtils.toByteArray(ins);
 			Flowable<Buffer> obs = Flowable.just(Buffer.buffer(bytes)).publish().autoConnect(2);
-			File file = new File("target", "blume.jpg");
+			File file = new File("target", pictureResourceFileName);
 			try (FileOutputStream fos = new FileOutputStream(file)) {
 				IOUtils.write(bytes, fos);
 				fos.flush();
@@ -949,6 +999,15 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return threadMXBean.dumpAllThreads(true, true).length;
 	}
 
+	/**
+	 * Print a thread dump to stdout
+	 */
+	default void threadDump() {
+		ThreadMXBean bean = ManagementFactory.getThreadMXBean();
+		ThreadInfo[] infos = bean.dumpAllThreads(true, true);
+		System.out.println(Arrays.stream(infos).map(Object::toString).collect(Collectors.joining()));
+	}
+
 	static FieldSchema fieldIntoSchema(Field field) {
 		FieldTypes type = FieldTypes.valueByName(field.getType());
 		switch(type) {
@@ -986,5 +1045,28 @@ public interface TestHelper extends EventHelper, ClientHelper {
 			displayName = "unnamed node (" + node.getUuid() + ")";
 		}
 		return displayName;
+	}
+
+	/**
+	 * Undeploy the search verticle.
+	 * If undeploying is not done within 1 minute, a treaddump is printed to stdout and {@link Assertions#fail(String)} is called
+	 */
+	default void undeploySearchVerticle() {
+		if (!((AbstractBootstrapInitializer) boot()).getCoreVerticleLoader().undeploySearchVerticle().blockingAwait(1, TimeUnit.MINUTES)) {
+			threadDump();
+			fail("Failed to undeploy search verticle within 1 minute");
+		}
+	}
+
+	/**
+	 * Redeploy the search verticle.
+	 * If redeploying is not done within 1 minute, a treaddump is printed to stdout and {@link Assertions#fail(String)} is called
+	 */
+
+	default void redeploySearchVerticle() {
+		if (!((AbstractBootstrapInitializer) boot()).getCoreVerticleLoader().redeploySearchVerticle().blockingAwait(1, TimeUnit.MINUTES)) {
+			threadDump();
+			fail("Failed to redeploy search verticle within 1 minute");
+		}
 	}
 }

@@ -8,7 +8,6 @@ import java.util.stream.IntStream;
 import jakarta.persistence.EntityManager;
 
 import com.gentics.mesh.contentoperation.CommonContentColumn;
-import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.node.HibMicronode;
@@ -86,14 +85,13 @@ public class HibMicronodeListFieldImpl
 				.setParameter("micronodeUuid", value.getId())
 				.setParameter("micronodeVersion", value.getSchemaContainerVersion())
 				.executeUpdate() == 1) {
-			HibernateTx.get().contentDao().delete(value, new DummyBulkActionContext());
+			HibernateTx.get().contentDao().delete(value);
 		} else {
 			HibMicronodeField.log.debug("The micronode { " + value + " } has not been deleted");
 		}
 	}
 
 	@Override
-	// TODO do we need real BulkActionContext here?
 	public HibMicronode createMicronodeAt(Optional<Integer> maybeIndex, HibMicroschemaVersion microschemaVersion) {
 		HibernateTx tx = HibernateTx.get();
 
@@ -131,7 +129,7 @@ public class HibMicronodeListFieldImpl
 	protected HibMicronodeListFieldEdgeImpl makeFromValueAndIndex(HibMicronode micronode, int index, HibernateTx tx) {
 		EntityManager em = tx.entityManager();
 		get(index, tx).ifPresent(existing -> {
-			tx.forceDelete(existing, "dbUuid", e -> e.getId());
+			tx.delete(existing);
 		});
 		HibMicronodeListFieldEdgeImpl item = getItemConstructor().provide(tx, valueOrNull(), index, getFieldKey(), micronode, getContainer());
 		em.persist(item);

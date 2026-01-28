@@ -1,6 +1,6 @@
 languageCode = "en-us"
 title = "Gentics Mesh - Documentation"
-baseURL = "https://gentics.com/mesh-docs/"
+baseURL = "https://gentics.com/mesh/"
 theme = "gentics"
 
 DefaultContentLanguage = "en-us"

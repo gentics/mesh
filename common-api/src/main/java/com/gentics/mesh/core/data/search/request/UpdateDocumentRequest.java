@@ -1,13 +1,14 @@
 package com.gentics.mesh.core.data.search.request;
 
-import com.gentics.mesh.etc.config.search.ComplianceMode;
+import java.util.Arrays;
+import java.util.List;
+
+import com.gentics.mesh.core.data.search.Compliance;
 import com.gentics.mesh.search.SearchProvider;
+
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
-
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Request model for search index updates.
@@ -20,7 +21,7 @@ public class UpdateDocumentRequest implements Bulkable {
 	private final String bulkPreamble;
 	private final CachedJsonObjectProxy doc;
 
-	public UpdateDocumentRequest(String index, String transformedIndex, String id, JsonObject doc, ComplianceMode mode) {
+	public UpdateDocumentRequest(String index, String transformedIndex, String id, JsonObject doc, Compliance compliance) {
 		this.index = index;
 		this.transformedIndex = transformedIndex;
 		this.id = id;
@@ -30,16 +31,7 @@ public class UpdateDocumentRequest implements Bulkable {
 			.put("_index", transformedIndex)
 			.put("_id", id);
 
-		switch (mode) {
-		case ES_7:
-		case ES_8:
-			break;
-		case ES_6:
-			settings.put("_type", SearchProvider.DEFAULT_TYPE);
-			break;
-		default:
-			throw new RuntimeException("Unknown compliance mode {" + mode + "}");
-		}
+		compliance.prepareUpdateRequest(settings);
 
 		this.bulkPreamble = new JsonObject()
 			.put("update", settings).encode();

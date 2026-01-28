@@ -40,10 +40,10 @@ import com.gentics.mesh.parameter.BackupParameters;
 import com.gentics.mesh.router.RouterStorageImpl;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.util.RxUtil;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.impl.launcher.commands.VersionCommand;
 
 /**
  * Handler for admin request methods.
@@ -224,7 +224,7 @@ public abstract class AdminHandler extends AbstractHandler {
 			info.setSearchVendor(searchProvider.getVendorName());
 			info.setSearchVersion(searchProvider.getVersion(false));
 			info.setMeshVersion(Mesh.getPlainVersion());
-			info.setVertxVersion(VersionCommand.getVersion());
+			info.setVertxVersion(RxUtil.getVertxVersion());
 			info.setMeshNodeName(options.getNodeName());
 			info.setMeshRevision("OSS");
 		}

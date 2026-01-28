@@ -3,7 +3,6 @@ package com.gentics.mesh.auth.oauth2;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.event.Assignment.ASSIGNED;
 import static com.gentics.mesh.event.Assignment.UNASSIGNED;
-import static com.google.common.base.Throwables.getRootCause;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 
 import java.util.ArrayList;
@@ -69,6 +68,7 @@ import io.vertx.ext.auth.User;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.JWTAuthHandler;
+import io.vertx.ext.web.impl.UserContextInternal;
 
 /**
  * @see MeshOAuthService
@@ -192,16 +192,14 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 				}
 			}
 			syncUser(rc, decodedToken).subscribe(syncedUser -> {
-				rc.setUser(syncedUser);
+				((UserContextInternal) rc.userContext()).setUser(syncedUser);
 				rc.next();
 			}, error -> {
-				// if the current instance is not writable, we redirect the request to the master instance
-				Throwable rootCause = getRootCause(error);
-				// all other errors while sync'ing will cause the sync to be repeated once.
+				// all the errors while sync'ing will cause the sync to be repeated once.
 				// the reason is that the error might be caused by a race condition (when parallel requests try to sync the same objects)
 				// trying again (once) increases the chance of the request to actually succeed.
 				syncUser(rc, decodedToken).subscribe(syncedUser -> {
-					rc.setUser(syncedUser);
+					((UserContextInternal) rc.userContext()).setUser(syncedUser);
 					rc.next();
 				}, rc::fail);
 			});
@@ -298,7 +296,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		return Optional.ofNullable(token.getString(DEFAULT_JWT_USERNAME_PROP));
 	}
 
-	private void defaultUserMapper(EventQueueBatch batch, MeshAuthUser user, JsonObject token) throws CannotWriteException {
+	private void defaultUserMapper(EventQueueBatch batch, MeshAuthUser user, JsonObject token)  {
 		boolean modified = false;
 		String givenName = token.getString("given_name");
 		if (givenName == null) {
@@ -348,21 +346,16 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 	 * @param user
 	 * @param userUuid
 	 * @param token
-	 * @throws CannotWriteException
 	 *             If a change is required but this instance cannot be written to because of cluster coordination.
 	 * @return
 	 */
 	private void runPlugins(Tx tx, RoutingContext rc, EventQueueBatch batch, HibUser admin, MeshAuthUser user, String userUuid,
-		JsonObject token) throws CannotWriteException {
+		JsonObject token)  {
 		List<AuthServicePlugin> plugins = authPluginRegistry.getPlugins();
 		// Only load the needed data for plugins if there are any plugins
 		if (!plugins.isEmpty()) {
-			RoleDao roleDao = tx.roleDao();
-			GroupDao groupDao = tx.groupDao();
 			UserDao userDao = tx.userDao();
 
-			HibBaseElement groupRoot = permissionRoots.group();
-			HibBaseElement roleRoot = permissionRoots.role();
 			HibUser authUser = userDao.findByUuid(user.getDelegate().getUuid());
 
 			for (AuthServicePlugin plugin : plugins) {
@@ -391,8 +384,6 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 					}
 
 					handleMappingResult(tx, batch, result, authUser, admin);
-				} catch (CannotWriteException e) {
-					throw e;
 				} catch (Exception e) {
 					log.error("Error while executing mapping plugin {" + plugin.id() + "}. Ignoring result.", e);
 					throw e;
@@ -412,9 +403,8 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 	 * @param result mapping result
 	 * @param authUser authenticated user
 	 * @param admin admin user
-	 * @throws CannotWriteException
 	 */
-	public void handleMappingResult(Tx tx, EventQueueBatch batch, MappingResult result, HibUser authUser, HibUser admin) throws CannotWriteException {
+	public void handleMappingResult(Tx tx, EventQueueBatch batch, MappingResult result, HibUser authUser, HibUser admin)  {
 		RoleDao roleDao = tx.roleDao();
 		GroupDao groupDao = tx.groupDao();
 		UserDao userDao = tx.userDao();
@@ -449,6 +439,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		});
 
 		// check which groups are not yet assigned to the user and add them
+		boolean assignedGroupsEdited = false;
 		List<? extends HibGroup> assignedGroups = new ArrayList<>(userDao.getGroups(authUser).list());
 		List<HibGroup> toAssign = new ArrayList<>(groupsHelper.getMappedEntities());
 		toAssign.removeAll(assignedGroups);
@@ -461,6 +452,11 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 			if (!groupsHelper.wasCreated(group)) {
 				batch.add(group.onUpdated());
 			}
+			assignedGroupsEdited = true;
+		}
+
+		if (assignedGroupsEdited) {
+			assignedGroups = new ArrayList<>(userDao.getGroups(authUser).list());
 		}
 
 		// collect information about groups <-> roles assignment
@@ -507,6 +503,8 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		if (roleFilter != null) {
 			groupUuids.addAll(groupsHelper.getMappedEntities().stream().map(HibGroup::getUuid).collect(Collectors.toSet()));
 		}
+
+		boolean rolesPerGroupEdited = false;
 		Map<HibGroup, Collection<? extends HibRole>> rolesPerGroup = groupDao.getRoles(groupsHelper.getEntities(groupUuids));
 
 		// check which group <-> role assignement is not yet present and assign
@@ -522,7 +520,13 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 					groupDao.addRole(group, role);
 					batch.add(groupDao.createRoleAssignmentEvent(group, role, ASSIGNED));
 				}
+				rolesPerGroupEdited = true;
 			}
+		}
+
+		if (rolesPerGroupEdited) {
+			// update roles per group to consider newly added roles
+			rolesPerGroup = groupDao.getRoles(groupsHelper.getEntities(groupUuids));
 		}
 
 		// if a role filter is given, remove the filtered group <-> role assignments for the mapped groups

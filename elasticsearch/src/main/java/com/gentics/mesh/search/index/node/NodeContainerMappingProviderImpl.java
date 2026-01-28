@@ -1,6 +1,5 @@
 package com.gentics.mesh.search.index.node;
 
-import static com.gentics.mesh.search.SearchProvider.DEFAULT_TYPE;
 import static com.gentics.mesh.search.index.MappingHelper.BOOLEAN;
 import static com.gentics.mesh.search.index.MappingHelper.DATE;
 import static com.gentics.mesh.search.index.MappingHelper.DOUBLE;
@@ -24,9 +23,13 @@ import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.branch.HibBranchMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.search.Compliance;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -35,15 +38,13 @@ import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.search.index.node.NodeContainerMappingProvider;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.search.ComplianceMode;
+import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.etc.config.search.MappingMode;
 import com.gentics.mesh.search.index.AbstractMappingProvider;
 import com.google.common.collect.Sets;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @see NodeContainerMappingProvider
@@ -53,12 +54,12 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 
 	private static final Logger log = LoggerFactory.getLogger(NodeContainerMappingProviderImpl.class);
 
-	private final boolean isStrictMode;
+	private final ElasticSearchOptions searchOptions;
 
 	@Inject
-	public NodeContainerMappingProviderImpl(MeshOptions options) {
-		super(options);
-		this.isStrictMode = MappingMode.STRICT == options.getSearchOptions().getMappingMode();
+	public NodeContainerMappingProviderImpl(MeshOptions options, Compliance compliance) {
+		super(compliance);
+		this.searchOptions = options.getSearchOptions();
 	}
 
 	@Override
@@ -82,12 +83,8 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 		JsonObject mapping = getMapping();
 
 		// 2. Enhance the type specific mapping
-		JsonObject typeMapping = mapping;
+		JsonObject typeMapping = compliance.getDefaultTypeMapping(mapping);
 
-		// In ES 6.x the mapping is typed
-		if (complianceMode == ComplianceMode.ES_6) {
-			typeMapping = mapping.getJsonObject(DEFAULT_TYPE);
-		}
 		typeMapping.put("dynamic", "strict");
 		JsonObject typeProperties = typeMapping.getJsonObject("properties");
 
@@ -161,16 +158,8 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 			});
 		}
 
-		switch (complianceMode) {
-		case ES_7:
-		case ES_8:
-			return Optional.of(typeMapping);
-		case ES_6:
-			mapping.put(DEFAULT_TYPE, typeMapping);
-			return Optional.of(mapping);
-		default:
-			throw new RuntimeException("Unknown compliance mode {" + complianceMode + "}");
-		}
+		mapping = compliance.prepareTypeMapping(typeMapping);
+		return Optional.of(mapping);
 	}
 
 	/**
@@ -186,7 +175,7 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 		// It may be required if the mapping mode is set to dynamic
 		// of if the schema contains a custom mapping and the mode is
 		// set to strict.
-		boolean mappingRequired = fieldSchema.isMappingRequired(options.getSearchOptions());
+		boolean mappingRequired = fieldSchema.isMappingRequired(searchOptions);
 		if (!mappingRequired) {
 			return Optional.empty();
 		}
@@ -232,8 +221,12 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 		return Optional.of(fieldInfo);
 	}
 
+	private boolean isStrictMode() {
+		return MappingMode.STRICT == searchOptions.getMappingMode();
+	}
+
 	private void addBooleanFieldMapping(JsonObject fieldInfo, JsonObject customIndexOptions) {
-		if (isStrictMode) {
+		if (isStrictMode()) {
 			fieldInfo.mergeIn(customIndexOptions);
 		} else {
 			fieldInfo.put("type", BOOLEAN);
@@ -241,7 +234,7 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 	}
 
 	private void addDataFieldMapping(JsonObject fieldInfo, JsonObject customIndexOptions) {
-		if (isStrictMode) {
+		if (isStrictMode()) {
 			fieldInfo.mergeIn(customIndexOptions);
 		} else {
 			fieldInfo.put("type", DATE);
@@ -249,7 +242,7 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 	}
 
 	private void addNumberFieldMapping(JsonObject fieldInfo, JsonObject customIndexOptions) {
-		if (isStrictMode) {
+		if (isStrictMode()) {
 			fieldInfo.mergeIn(customIndexOptions);
 		} else {
 			// Note: Lucene does not support BigDecimal/Decimal. It is not possible to store such values. ES will fallback to string in those cases.
@@ -260,7 +253,7 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 
 	private void addMicronodeMapping(JsonObject fieldInfo, FieldSchema fieldSchema, HibBranch branch, String language,
 		JsonObject customIndexOptions) {
-		if (isStrictMode) {
+		if (isStrictMode()) {
 			fieldInfo.mergeIn(customIndexOptions);
 		} else {
 			fieldInfo.put("type", OBJECT);
@@ -274,7 +267,7 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 	}
 
 	private void addNodeMapping(JsonObject fieldInfo, JsonObject customIndexOptions) {
-		if (isStrictMode) {
+		if (isStrictMode()) {
 			fieldInfo.mergeIn(customIndexOptions);
 		} else {
 			fieldInfo.put("type", KEYWORD);
@@ -284,7 +277,7 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 
 	private void addListFieldMapping(JsonObject fieldInfo, HibBranch branch, ListFieldSchemaImpl fieldSchema, String language,
 		JsonObject customIndexOptions) {
-		if (isStrictMode) {
+		if (isStrictMode()) {
 			fieldInfo.mergeIn(customIndexOptions);
 		} else {
 			ListFieldSchemaImpl listFieldSchema = (ListFieldSchemaImpl) fieldSchema;
@@ -328,7 +321,7 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 	}
 
 	private void addStringFieldMapping(JsonObject fieldInfo, JsonObject customIndexOptions) {
-		if (isStrictMode) {
+		if (isStrictMode()) {
 			fieldInfo.mergeIn(customIndexOptions);
 		} else {
 			fieldInfo.put("type", TEXT);
@@ -341,7 +334,7 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 	}
 
 	private void addS3BinaryFieldMapping(JsonObject fieldInfo, JsonObject customIndexOptions) {
-		if (!isStrictMode) {
+		if (!isStrictMode()) {
 			JsonObject binaryProps = new JsonObject();
 
 			// .s3ObjectKey
@@ -351,7 +344,7 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 	}
 
 	private void addBinaryFieldMapping(JsonObject fieldInfo, JsonObject customIndexOptions) {
-		if (!isStrictMode) {
+		if (!isStrictMode()) {
 			JsonObject binaryProps = new JsonObject();
 
 			// .sha512sum
@@ -361,7 +354,7 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 	}
 
 	private void addCommonBinaryFieldMapping(JsonObject fieldInfo, JsonObject customIndexOptions, JsonObject binaryProps) {
-		if (isStrictMode) {
+		if (isStrictMode()) {
 			fieldInfo.mergeIn(customIndexOptions);
 		} else {
 			fieldInfo.put("type", OBJECT);
@@ -393,7 +386,7 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 			// .dominantColor
 			binaryProps.put("dominantColor", notAnalyzedType(KEYWORD));
 
-			if (options.getSearchOptions().isIncludeBinaryFields()) {
+			if (searchOptions.isIncludeBinaryFields()) {
 				// Add mapping for plain text fields
 				addBinaryFieldPlainTextMapping(binaryProps, customIndexOptions);
 

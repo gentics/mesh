@@ -40,14 +40,16 @@ public class MonitoringServerVerticle extends AbstractVerticle {
 		HttpServerOptions options = new HttpServerOptions();
 		options.setPort(port);
 		options.setHost(host);
-		options.setCompressionSupported(true);
+
+		// TODO disabling compression is currently necessary due to a but in vert.x
+		options.setCompressionSupported(false);
 		options.setHandle100ContinueAutomatically(true);
 		Router router = routes.getRouter();
 
 		log.info("Starting monitoring http server in verticle {" + getClass().getName() + "} on port {" + options.getPort() + "}");
 		server = vertx.createHttpServer(options);
 		server.requestHandler(router);
-		server.listen(rh -> {
+		server.listen().andThen(rh -> {
 			if (rh.failed()) {
 				promise.fail(rh.cause());
 			} else {
@@ -61,7 +63,7 @@ public class MonitoringServerVerticle extends AbstractVerticle {
 
 	@Override
 	public void stop(Promise<Void> promise) throws Exception {
-		server.close(rh -> {
+		server.close().andThen(rh -> {
 			if (rh.failed()) {
 				promise.fail(rh.cause());
 			} else {

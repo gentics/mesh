@@ -1,9 +1,13 @@
 package com.gentics.mesh.search.index.tag;
 
+import static com.gentics.mesh.util.PreparationUtil.prepareData;
+
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -18,14 +22,20 @@ import javax.inject.Singleton;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.dao.ProjectDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
+import com.gentics.mesh.core.data.dao.TagDao;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.search.Compliance;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.handler.DataHolderContext;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.BucketManager;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
@@ -50,9 +60,9 @@ public class TagIndexHandlerImpl extends AbstractIndexHandler<HibTag> implements
 	protected final TagMappingProvider mappingProvider;
 
 	@Inject
-	public TagIndexHandlerImpl(SearchProvider searchProvider, Database db, MeshHelper helper, MeshOptions options,
+	public TagIndexHandlerImpl(SearchProvider searchProvider, Database db, MeshHelper helper, MeshOptions options, Compliance compliance,
 		SyncMetersFactory syncMetricsFactory, BucketManager bucketManager, TagTransformer transforer, TagMappingProvider mappingProvider) {
-		super(searchProvider, db, helper, options, syncMetricsFactory, bucketManager);
+		super(searchProvider, db, helper, options, syncMetricsFactory, bucketManager, compliance);
 		this.transforer = transforer;
 		this.mappingProvider = mappingProvider;
 	}
@@ -75,7 +85,7 @@ public class TagIndexHandlerImpl extends AbstractIndexHandler<HibTag> implements
 	}
 
 	@Override
-	protected TagTransformer getTransformer() {
+	public TagTransformer getTransformer() {
 		return transforer;
 	}
 
@@ -155,8 +165,15 @@ public class TagIndexHandlerImpl extends AbstractIndexHandler<HibTag> implements
 	}
 
 	@Override
-	public Stream<? extends HibTag> loadAllElements() {
-		return Tx.get().tagDao().findAll().stream();
+	public Collection<? extends HibTag> loadAllElements(Bucket bucket, DataHolderContext dhc) {
+		TagDao tagDao = Tx.get().tagDao();
+		RoleDao roleDao = Tx.get().roleDao();
+
+		List<HibTag> tagsInBucket = new ArrayList<>(tagDao.findAll(bucket).list());
+		prepareData(tagsInBucket, dhc, "tag", "permissions",
+				elements -> roleDao.getRoleUuidsForPerm(elements, InternalPermission.READ_PERM));
+
+		return tagsInBucket;
 	}
 
 	@Override

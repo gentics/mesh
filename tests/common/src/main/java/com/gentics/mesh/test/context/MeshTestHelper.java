@@ -94,7 +94,7 @@ public final class MeshTestHelper {
 	public static String getRangeQuery(String fieldName, double from, double to) {
 		JsonObject json = new JsonObject();
 		json.put("query", new JsonObject().put("range", new JsonObject().put(fieldName,
-			new JsonObject().put("from", from).put("to", to).put("include_lower", true).put("include_upper", true).put("boost", 1))));
+			new JsonObject().put("gte", from).put("lte", to).put("boost", 1))));
 		return json.encodePrettily();
 	}
 	

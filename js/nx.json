@@ -1,87 +1,229 @@
 {
-  "extends": "nx/presets/npm.json",
-  "$schema": "./node_modules/nx/schemas/nx-schema.json",
-  "defaultBase": "master",
-  "cli": {
-    "packageManager": "npm"
-  },
-  "workspaceLayout": {
-    "libsDir": "packages"
-  },
-  "parallel": 3,
-  "useInferencePlugins": false,
-  "release": {
-    "projectsRelationship": "independent",
-    "projects": [
-      "tag:lib"
-    ]
-  },
-  "plugins": [
-    {
-      "plugin": "@nx/eslint/plugin",
-      "options": {
-        "targetName": "lint"
-      }
-    }
-  ],
-  "generators": {
-    "@nx/angular:library": {
-      "linter": "eslint",
-      "unitTestRunner": "jest"
-    }
-  },
-  "namedInputs": {
-    "default": [
-      "{projectRoot}/**/*",
-      "sharedGlobals"
-    ],
-    "production": [
-      "default",
-      "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
-      "!{projectRoot}/**/*.spec.[jt]s",
-      "!{projectRoot}/tsconfig.spec.json",
-      "!{projectRoot}/jest.config.[jt]s",
-      "!{projectRoot}/.eslintrc.json"
-    ],
-    "sharedGlobals": []
-  },
-  "targetDefaults": {
-    "build": {
-      "cache": true,
-      "dependsOn": [
-        "^build"
-      ],
-      "inputs": [
-        "default",
-        "production",
-        "^production"
-      ]
-    },
-    "lint": {
-      "cache": true,
-      "inputs": [
-        "default",
-        "{workspaceRoot}/.eslintrc.json",
-        "{workspaceRoot}/.eslintignore"
-      ]
-    },
-    "@nx/jest:jest": {
-      "cache": true,
-      "inputs": [
-        "default",
-        "^production",
-        "{workspaceRoot}/jest.preset.js"
-      ],
-      "options": {
-        "passWithNoTests": true
-      },
-      "configurations": {
-        "ci": {
-          "ci": true,
-          "codeCoverage": true
+    "$schema": "./node_modules/nx/schemas/nx-schema.json",
+    "extends": "nx/presets/npm.json",
+    "pluginsConfig": {
+        "@nx/js": {
+            "analyzeSourceFiles": true
         }
-      }
+    },
+    "defaultBase": "master",
+    "cli": {
+        "packageManager": "npm"
+    },
+    "workspaceLayout": {
+        "libsDir": "packages"
+    },
+    "parallel": 3,
+    "useInferencePlugins": false,
+    "release": {
+        "projects": [
+            "tag:lib"
+        ],
+        "version": {
+            "git": {
+                "stageChanges": true,
+                "commit": false,
+                "push": false,
+                "tag": false
+            },
+            "preVersionCommand": "npm run nx -- run-many -t build",
+            "currentVersionResolver": "registry",
+            "versionPrefix": "^",
+            "manifestRootsToUpdate": [
+                "{workspaceRoot}/{projectRoot}",
+                "{workspaceRoot}/dist/{projectName}"
+            ],
+            "preserveLocalDependencyProtocols": false
+        },
+        "changelog": {
+            "git": {
+                "stageChanges": false,
+                "commit": false,
+                "push": false,
+                "tag": false
+            },
+            "projectChangelogs": false,
+            "workspaceChangelog": false
+        }
+    },
+    "plugins": [
+        {
+            "plugin": "@nx/eslint/plugin",
+            "options": {
+                "targetName": "lint"
+            }
+        }
+    ],
+    "generators": {
+        "@nx/angular:library": {
+            "linter": "eslint",
+            "unitTestRunner": "jest"
+        },
+        "@nx/angular:component": {
+            "style": "css",
+            "type": "component"
+        },
+        "@schematics/angular:component": {
+            "type": "component"
+        },
+        "@nx/angular:directive": {
+            "type": "directive"
+        },
+        "@schematics/angular:directive": {
+            "type": "directive"
+        },
+        "@nx/angular:service": {
+            "type": "service"
+        },
+        "@schematics/angular:service": {
+            "type": "service"
+        },
+        "@nx/angular:scam": {
+            "type": "component"
+        },
+        "@nx/angular:scam-directive": {
+            "type": "directive"
+        },
+        "@nx/angular:guard": {
+            "typeSeparator": "."
+        },
+        "@schematics/angular:guard": {
+            "typeSeparator": "."
+        },
+        "@nx/angular:interceptor": {
+            "typeSeparator": "."
+        },
+        "@schematics/angular:interceptor": {
+            "typeSeparator": "."
+        },
+        "@nx/angular:module": {
+            "typeSeparator": "."
+        },
+        "@schematics/angular:module": {
+            "typeSeparator": "."
+        },
+        "@nx/angular:pipe": {
+            "typeSeparator": "."
+        },
+        "@schematics/angular:pipe": {
+            "typeSeparator": "."
+        },
+        "@nx/angular:resolver": {
+            "typeSeparator": "."
+        },
+        "@schematics/angular:resolver": {
+            "typeSeparator": "."
+        }
+    },
+    "namedInputs": {
+        "sharedGlobals": [
+            "{workspaceRoot}/package.json",
+            "{workspaceRoot}/tsconfig.json"
+        ],
+        "default": [
+            "sharedGlobals",
+            "{projectRoot}/src/**/*.ts",
+            "{projectRoot}/project.json",
+            "{projectRoot}/tsconfig.json",
+            "{projectRoot}/tsconfig.app.json",
+            "{projectRoot}/tsconfig.lib.json"
+        ],
+        "building": [
+            "default",
+            "!{projectRoot}/src/**/*.spec.ts"
+        ],
+        "production": [
+            "building",
+            "{projectRoot}/package.json",
+            "{projectRoot}/ng-package.json",
+            "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
+            "!{projectRoot}/tsconfig.spec.json",
+            "!{projectRoot}/src/test-setup.[jt]s"
+        ],
+        "linting": [
+            "{workspaceRoot}/eslint.config.mjs"
+        ],
+        "jestTests": [
+            "{projectRoot}/src/**/*.spec.ts",
+            "{projectRoot}/tsconfig.spec.json",
+            "{projectRoot}/jest.config.ci.js",
+            "{projectRoot}/jest.config.js",
+            "{workspaceRoot}/jest.config.ts",
+            "{workspaceRoot}/jest.preset.ts"
+        ]
+    },
+    "targetDefaults": {
+        "@nx/eslint:lint": {
+            "cache": true,
+            "inputs": [
+                "default",
+                "linting"
+            ],
+            "options": {
+                "fix": true
+            }
+        },
+        "build": {
+            "dependsOn": [
+                "^build"
+            ],
+            "inputs": [
+                "production",
+                "^production"
+            ],
+            "cache": true
+        },
+        "@nx/jest:jest": {
+            "cache": true,
+            "inputs": [
+                "default",
+                "jestTests",
+                "^default"
+            ],
+            "options": {
+                "passWithNoTests": true
+            },
+            "configurations": {
+                "ci": {
+                    "ci": true,
+                    "codeCoverage": true
+                }
+            }
+        },
+        "@nx/angular:ng-packagr-lite": {
+            "cache": true,
+            "dependsOn": [
+                "^build"
+            ],
+            "inputs": [
+                "production",
+                "^production"
+            ]
+        },
+        "@nx/js:tsc": {
+            "cache": true,
+            "dependsOn": [
+                "^build"
+            ],
+            "inputs": [
+                "production",
+                "^production"
+            ]
+        },
+        "@nx/rollup:rollup": {
+            "cache": true,
+            "dependsOn": [
+                "^build"
+            ],
+            "inputs": [
+                "production",
+                "^production"
+            ]
+        },
+        "nx-release-publish": {
+            "options": {
+                "packageRoot": "dist/{projectName}"
+            }
+        }
     }
-  },
-  "useLegacyCache": true
 }

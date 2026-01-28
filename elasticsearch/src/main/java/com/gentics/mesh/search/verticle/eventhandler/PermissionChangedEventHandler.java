@@ -21,6 +21,7 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.search.Compliance;
 import com.gentics.mesh.core.data.search.request.UpdateDocumentRequest;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
@@ -28,8 +29,6 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModelImpl;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedProjectElementEventModel;
-import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.search.index.node.NodeContainerTransformer;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.entity.MeshEntities;
@@ -45,13 +44,13 @@ public class PermissionChangedEventHandler implements EventHandler {
 
 	private final MeshEntities meshEntities;
 	private final MeshHelper meshHelper;
-	private final ComplianceMode complianceMode;
+	private final Compliance compliance;
 
 	@Inject
-	public PermissionChangedEventHandler(MeshEntities meshEntities, MeshHelper meshHelper, MeshOptions options) {
+	public PermissionChangedEventHandler(MeshEntities meshEntities, MeshHelper meshHelper, Compliance compliance) {
 		this.meshEntities = meshEntities;
 		this.meshHelper = meshHelper;
-		this.complianceMode = options.getSearchOptions().getComplianceMode();
+		this.compliance = compliance;
 	}
 
 	@Override
@@ -99,7 +98,7 @@ public class PermissionChangedEventHandler implements EventHandler {
 										null,
 										container.getSchemaContainerVersion().getMicroschemaVersionHash(branch)),
 									ContentDao.composeDocumentId(model.getUuid(), container.getLanguageTag()),
-									tf.toPermissionPartial(node, type), complianceMode))))))
+									tf.toPermissionPartial(node, type), compliance))))))
 				.collect(toFlowable());
 		});
 	}
@@ -110,7 +109,7 @@ public class PermissionChangedEventHandler implements EventHandler {
 			.map(doc -> Flowable.just(meshHelper.updateDocumentRequest(
 				getIndex(model),
 				model.getUuid(),
-				doc, complianceMode)))
+				doc, compliance)))
 			.orElse(Flowable.empty());
 	}
 

@@ -47,7 +47,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
@@ -233,7 +232,9 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		}
 		SchemaListResponse list = call(() -> client().findSchemas(new SortingParametersImpl("name", SortOrder.DESCENDING)));
 		assertEquals("Total data size should be 8", 8, list.getData().size());
-		assertThat(list.getData()).isSortedAccordingTo((a, b) -> b.getName().compareTo(a.getName()));
+		assertThat(list.getData()).isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().reversed().compare(
+				fa != null ? fa.getName() : null,
+				fb != null ? fb.getName() : null));
 	}
 
 	@Test
@@ -663,9 +664,8 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			assertNotNull("The schema should not have been deleted.", reloaded);
 			// Validate and delete all remaining nodes that use the schema
 			assertThat(schemaDao.getNodes(reloaded)).isNotEmpty();
-			BulkActionContext context = createBulkContext();
 			for (HibNode node : schemaDao.getNodes(schemaDao.findByUuid(getSchemaContainer().getUuid())).list()) {
-				nodeDao.delete(node, context, false, true);
+				nodeDao.delete(node, false, true);
 			}
 			assertThat(schemaDao.getNodes(schemaDao.findByUuid(uuid))).isEmpty();
 			tx.success();

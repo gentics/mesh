@@ -6,7 +6,6 @@ import java.util.function.Consumer;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -61,8 +60,8 @@ public interface PersistingRootDao<R extends HibCoreElement<? extends RestModel>
 	void deletePersisted(R root, L entity);
 
 	@Override
-	default void onRootDeleted(R root, BulkActionContext bac) {
-		findAll(root).list().forEach(entity -> delete(root, entity, bac));
+	default void onRootDeleted(R root) {
+		findAll(root).list().forEach(entity -> delete(root, entity));
 	}
 
 	@Override

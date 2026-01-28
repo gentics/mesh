@@ -312,7 +312,7 @@ public abstract class AdminEndpoint extends AbstractInternalEndpoint {
 		route.produces(APPLICATION_OCTET_STREAM);
 		route.exampleResponse(OK, "ZIP file");
 		route.description("Downloads a zip file of various [debug information](/docs/administration-guide/#debuginfo) files.");
-		route.addQueryParameter("include", "Information to include. See the [documentation](/docs/administration-guide/#debuginfo) for possible values.", "-backup,consistencyCheck");
+		route.addQueryParameter("include", "Information to include. See the [documentation](/docs/administration-guide/#debuginfo) for possible usages.", "-log,consistencyCheck");
 		route.handler(rc -> debugInfoHandler.handle(rc));
 	}
 

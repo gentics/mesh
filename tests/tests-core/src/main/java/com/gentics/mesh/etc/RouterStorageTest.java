@@ -43,7 +43,7 @@ public class RouterStorageTest implements MeshOptionsTypeUnawareContext {
 		when(request.method()).thenReturn(HttpMethod.GET);
 		when(request.uri()).thenReturn("");
 		when(rc.request()).thenReturn(request);
-		when(rc.normalisedPath()).thenReturn("/blub");
+		when(rc.normalizedPath()).thenReturn("/blub");
 		when(rc.queryParams()).thenReturn(MultiMap.caseInsensitiveMultiMap());
 		storage.root().getRouter().handleFailure(rc);
 	}

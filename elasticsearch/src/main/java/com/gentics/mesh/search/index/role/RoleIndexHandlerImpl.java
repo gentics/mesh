@@ -1,7 +1,11 @@
 package com.gentics.mesh.search.index.role;
 
+import static com.gentics.mesh.util.PreparationUtil.prepareData;
+
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -15,12 +19,17 @@ import javax.inject.Singleton;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Bucket;
+import com.gentics.mesh.core.data.dao.RoleDao;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.search.Compliance;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.handler.DataHolderContext;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.BucketManager;
 import com.gentics.mesh.search.index.MappingProvider;
@@ -41,9 +50,9 @@ public class RoleIndexHandlerImpl extends AbstractIndexHandler<HibRole>  impleme
 	protected final RoleMappingProvider mappingProvider;
 
 	@Inject
-	public RoleIndexHandlerImpl(SearchProvider searchProvider, Database db, MeshHelper helper, MeshOptions options,
+	public RoleIndexHandlerImpl(SearchProvider searchProvider, Database db, MeshHelper helper, MeshOptions options, Compliance compliance,
 		SyncMetersFactory syncMetricsFactory, BucketManager bucketManager, RoleTransformer transformer, RoleMappingProvider mappingProvider) {
-		super(searchProvider, db, helper, options, syncMetricsFactory, bucketManager);
+		super(searchProvider, db, helper, options, syncMetricsFactory, bucketManager, compliance);
 		this.transformer = transformer;
 		this.mappingProvider = mappingProvider;
 	}
@@ -108,8 +117,14 @@ public class RoleIndexHandlerImpl extends AbstractIndexHandler<HibRole>  impleme
 	}
 
 	@Override
-	public Stream<? extends HibRole> loadAllElements() {
-		return Tx.get().roleDao().findAll().stream();
+	public Collection<? extends HibRole> loadAllElements(Bucket bucket, DataHolderContext dhc) {
+		RoleDao roleDao = Tx.get().roleDao();
+		List<HibRole> rolesInBucket = new ArrayList<>(roleDao.findAll(bucket).list());
+
+		prepareData(rolesInBucket, dhc, "role", "permissions",
+				elements -> roleDao.getRoleUuidsForPerm(elements, InternalPermission.READ_PERM));
+
+		return rolesInBucket;
 	}
 
 }

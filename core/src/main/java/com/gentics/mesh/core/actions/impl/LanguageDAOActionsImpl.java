@@ -10,7 +10,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.action.LanguageDAOActions;
@@ -64,9 +63,9 @@ public class LanguageDAOActionsImpl implements LanguageDAOActions {
 	}
 
 	@Override
-	public void delete(Tx tx, HibLanguage element, BulkActionContext bac) {
+	public void delete(Tx tx, HibLanguage element) {
 		// Unassign languages should cause a batch process that removes the FieldContainers for the given language.
-		tx.languageDao().delete(element, bac);
+		tx.languageDao().delete(element);
 	}
 
 	@Override

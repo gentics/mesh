@@ -32,7 +32,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.hibernate.Hibernate;
-import org.hibernate.jpa.AvailableHints;
+import org.hibernate.jpa.HibernateHints;
 import org.hibernate.query.NativeQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +43,7 @@ import com.gentics.mesh.contentoperation.CommonContentColumn;
 import com.gentics.mesh.contentoperation.ContentKey;
 import com.gentics.mesh.contentoperation.ContentStorage;
 import com.gentics.mesh.context.BulkActionContext;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibDeletableField;
 import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -51,6 +52,7 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.PersistingContentDao;
 import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.node.field.HibDisplayField;
 import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
@@ -60,6 +62,7 @@ import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.common.ReferenceType;
@@ -120,6 +123,7 @@ import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.UUIDUtil;
 import com.gentics.mesh.util.VersionNumber;
 
+import io.reactivex.Completable;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
 
@@ -226,7 +230,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 					.setParameter("nodeUuids", uuids)
 					.setParameter("type", type)
 					.setParameter("branchUuid", branchId)
-					.setHint(AvailableHints.HINT_CACHEABLE, true)
+					.setHint(HibernateHints.HINT_CACHEABLE, true)
 					.getResultList();
 
 			return contentStorage.findMany(edges).stream()
@@ -286,7 +290,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 					.setParameter("nodeUuids", slice)
 					.setParameter("type", ContainerType.DRAFT)
 					.setParameter("branchUuid", UUIDUtil.toJavaUuid(branchUuid))
-					.setHint(AvailableHints.HINT_CACHEABLE, true)
+					.setHint(HibernateHints.HINT_CACHEABLE, true)
 					.getResultList());
 
 		return contentStorage.findMany(edges).stream()
@@ -499,10 +503,10 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	 * @param version
 	 * @param project
 	 */
-	public void delete(HibSchemaVersion version, HibProject project, BulkActionContext bac) {
+	public void delete(HibSchemaVersion version, HibProject project) {
 		long deletedCount = contentStorage.delete(version, project);
 		if (deletedCount > 0) {
-			deleteUnreferencedForVersion(version, bac);
+			deleteUnreferencedForVersion(version);
 		}
 	}
 
@@ -550,19 +554,19 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	 * @param versions
 	 * @param nodes
 	 */
-	public void delete(Set<HibSchemaVersion> versions, Set<HibNodeImpl> nodes, BulkActionContext bac) {
+	public void delete(Set<HibSchemaVersion> versions, Set<HibNodeImpl> nodes) {
 		Set<ContentKey> contentKeys = new HashSet<>();
 		versions.forEach(version -> {
 			contentKeys.addAll(contentStorage.findByNodes(version, nodes));
 		});
-		delete(contentKeys, bac);
+		delete(contentKeys);
 	}
 
 	/**
 	 * Delete the node field containers referenced by the provided keys, and all of the rows of the table referencing those keys.
 	 * @param contentKeys
 	 */
-	public void delete(Set<ContentKey> contentKeys, BulkActionContext bac) {
+	public void delete(Set<ContentKey> contentKeys) {
 		HibernateTx tx = HibernateTx.get();
 		EntityManager em = tx.entityManager();
 
@@ -608,7 +612,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 					FieldTypes listType = FieldTypes.valueByName(typePair.getRight());
 					if (FieldTypes.MICRONODE.equals(listType)) {
 						// micronode list get a special treatment since we need to delete the unreferenced micronodes afterwards.
-						deleteMicronodesList(contentUuids, bac);
+						deleteMicronodesList(contentUuids);
 					} else {
 						Class<?> listClass = getListClass(listType);
 						String tableName = databaseConnector.getSessionMetadataIntegrator().getTableName(listClass);
@@ -619,13 +623,13 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 					}
 					break;
 				case BINARY:
-					HibernateTx.get().binaryDao().removeField(contentUuids, bac);
+					HibernateTx.get().binaryDao().removeField(contentUuids);
 					break;
 				case S3BINARY:
 					HibernateTx.get().s3binaryDao().removeField(contentUuids);
 					break;
 				case MICRONODE:
-					deleteMicronodes(contentUuids, bac);
+					deleteMicronodes(contentUuids);
 					break;
 			}
 		}
@@ -634,7 +638,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 		contentStorage.delete(contentKeys);
 	}
 
-	private void deleteUnreferencedForVersion(HibSchemaVersion version, BulkActionContext bac) {
+	private void deleteUnreferencedForVersion(HibSchemaVersion version) {
 		deleteUnreferencedContentVersions(version);
 
 		Set<Pair<FieldTypes, FieldTypes>> fieldTypes = getFieldTypePairs(version.getSchema().getFields());
@@ -657,7 +661,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 				case BINARY:
 					deleteUnreferencedFieldRows(HibBinaryFieldEdgeImpl.class, version);
 					deleteUnreferencedImageVariantEdges();
-					deleteUnreferencedBinary(bac);
+					deleteUnreferencedBinary();
 					deleteUnreferencedImageVariants();
 					break;
 				case S3BINARY:
@@ -673,9 +677,10 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 		}
 	}
 
-	private void deleteUnreferencedBinary(BulkActionContext bac) {
+	private void deleteUnreferencedBinary() {
 		List<UUID> uuids = currentTransaction.getEntityManager().createNamedQuery("binary.findUnreferencedBinaryUuids", UUID.class).getResultList();
-		uuids.forEach(uuid -> bac.add(currentTransaction.getTx().data().binaryStorage().delete(UUIDUtil.toShortUuid(uuid))));
+		Completable deleteAction = Completable.merge(StreamUtil.toIterable(uuids.stream().map(uuid -> currentTransaction.getTx().data().binaryStorage().delete(UUIDUtil.toShortUuid(uuid)))));
+		HibernateTx.get().data().maybeGetBulkActionContext().ifPresentOrElse(bac -> bac.add(deleteAction), () -> HibernateTx.get().batch().add(() -> deleteAction.blockingAwait()));
 		SplittingUtils.splitAndConsume(uuids, HibernateUtil.inQueriesLimitForSplitting(1), slice -> {
 		currentTransaction.getEntityManager().createQuery("delete from binary where dbUuid in :uuids")
 				.setParameter("uuids", slice)
@@ -749,8 +754,8 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	}
 
 	@Override
-	public void delete(HibNodeFieldContainer content, BulkActionContext bac) {
-		delete(content, bac, true);
+	public void delete(HibNodeFieldContainer content) {
+		delete(content, true);
 	}
 
 	/**
@@ -758,7 +763,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	 * @param containers
 	 */
 	@SuppressWarnings("unchecked")
-	public void purge(List<? extends HibNodeFieldContainer> containers, BulkActionContext bac) {
+	public void purge(List<? extends HibNodeFieldContainer> containers) {
 		if (containers.isEmpty()) {
 			return;
 		}
@@ -805,7 +810,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 			log.info("Containers purged: {} of {}", progress, containersUuids.size());
 		});
 		// 2. Now we can delete the containers (and all their related edges, version edges, field edges) safely.
-		delete(containers, bac);
+		delete(containers);
 	}
 
 	private HibNodeFieldContainerVersionsEdgeImpl findAncestor(HibNodeFieldContainerVersionsEdgeImpl edge, Map<UUID, HibNodeFieldContainerVersionsEdgeImpl> ancestorLookup, Set<UUID> blackList) {
@@ -832,7 +837,8 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	 * @param containers
 	 * @param bac
 	 */
-	public void delete(List<? extends HibNodeFieldContainer> containers, BulkActionContext bac) {
+	@SuppressWarnings("unchecked")
+	public void delete(List<? extends HibNodeFieldContainer> containers) {
 		HibernateTx tx = HibernateTx.get();
 		EntityManager em = tx.entityManager();
 
@@ -876,7 +882,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 					FieldTypes listType = FieldTypes.valueByName(typePair.getRight());
 					if (FieldTypes.MICRONODE.equals(listType)) {
 						// micronode list get a special treatment since we need to delete the unreferenced micronodes afterwards.
-						deleteMicronodesList(contentUuids, bac);
+						deleteMicronodesList(contentUuids);
 					} else {
 						Class<?> listClass = getListClass(listType);
 						String tableName = databaseConnector.getSessionMetadataIntegrator().getTableName(listClass);
@@ -887,13 +893,13 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 					}
 					break;
 				case BINARY:
-					HibernateTx.get().binaryDao().removeField(contentUuids, bac);
+					HibernateTx.get().binaryDao().removeField(contentUuids);
 					break;
 				case S3BINARY:
 					HibernateTx.get().s3binaryDao().removeField(contentUuids);
 					break;
 				case MICRONODE:
-					deleteMicronodes(contentUuids, bac);
+					deleteMicronodes(contentUuids);
 					break;
 			}
 		}
@@ -907,7 +913,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 					case DRAFT:
 					case PUBLISHED:
 						String branchUuid = ((HibNodeFieldContainerEdgeImpl) edge).getBranch().getUuid();
-						bac.add(onDeleted(container, branchUuid, edge.getType()));
+						tx.batch().add(onDeleted(container, branchUuid, edge.getType()));
 						break;
 					default:
 						break;
@@ -938,9 +944,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 		contentStorage.delete((Collection<? extends HibUnmanagedFieldContainer<?, ?, ?, ?, ?>>) containers);
 
 		// 6. Update bac count.
-		for (HibNodeFieldContainer ignored : containers) {
-			bac.inc();
-		}
+		containers.forEach(ignored -> tx.data().maybeGetBulkActionContext().ifPresent(BulkActionContext::inc));
 	}
 
 	private Class<?> getListClass(FieldTypes listType) {
@@ -965,12 +969,12 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	}
 
 	@Override
-	public void delete(HibNodeFieldContainer content, BulkActionContext bac, boolean deleteNext) {
+	public void delete(HibNodeFieldContainer content, boolean deleteNext) {
 		if (deleteNext) {
 			// Recursively delete all versions of the container
 			for (HibNodeFieldContainer next : getNextVersions(content)) {
 				// no need to delete next since we will do that
-				delete(next, bac);
+				delete(next);
 			}
 		}
 		HibernateTx tx = HibernateTx.get();
@@ -985,7 +989,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 				.executeUpdate();
 
 		// Delete the fields
-		content.getFields().forEach(field -> ((AbstractHibField) field).onFieldDeleted(tx, bac));
+		content.getFields().forEach(field -> ((AbstractHibField) field).onFieldDeleted(tx));
 
 		List<? extends HibNodeFieldContainerEdge> edges = getContainerEdges(content).collect(Collectors.toList());
 
@@ -994,7 +998,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 			case DRAFT:
 			case PUBLISHED:
 				String branchUuid = ((HibNodeFieldContainerEdgeImpl) edge).getBranch().getUuid();
-				bac.add(onDeleted(content, branchUuid, edge.getType()));
+				tx.batch().add(onDeleted(content, branchUuid, edge.getType()));
 				break;
 			default:
 				break;
@@ -1005,7 +1009,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 		// Delete the container itself
 		contentStorage.delete((UUID) content.getId(), getSchemaContainerVersion(content));
 
-		bac.inc();
+		tx.data().maybeGetBulkActionContext().ifPresent(BulkActionContext::inc);
 	}
 
 	@Override
@@ -1158,7 +1162,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 				.setParameter("contentUuid", content.getId())
 				.setParameter("types", Collections.singletonList(type))
 				.setMaxResults(1)
-				.setHint(AvailableHints.HINT_CACHEABLE, true)
+				.setHint(HibernateHints.HINT_CACHEABLE, true)
 				.getResultList()
 				.size() > 0;
 	}
@@ -1176,7 +1180,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 				.setParameter("type", type)
 				.setParameter("branchUuid", UUIDUtil.toJavaUuid(branchUuid))
 				.setMaxResults(1)
-				.setHint(AvailableHints.HINT_CACHEABLE, true)
+				.setHint(HibernateHints.HINT_CACHEABLE, true)
 				.getResultList().size() > 0;
 	}
 
@@ -1470,10 +1474,10 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 		return container.getNode();
 	}
 
-	public void delete(HibMicronode micronode, BulkActionContext bac) {
+	public void delete(HibMicronode micronode) {
 		HibernateTx tx = HibernateTx.get();
 		// Delete the fields
-		micronode.getFields().forEach(field -> ((AbstractHibField) field).onFieldDeleted(tx, bac));
+		micronode.getFields().forEach(field -> ((AbstractHibField) field).onFieldDeleted(tx));
 		// Delete the explicitly owned micronode data
 		contentStorage.delete((UUID) micronode.getId(), micronode.getSchemaContainerVersion());
 	}
@@ -1483,7 +1487,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	 * @param containerUuids container UUIDs
 	 * @param bac bulk action context
 	 */
-	private void deleteMicronodesList(List<UUID> containerUuids, BulkActionContext bac) {
+	private void deleteMicronodesList(List<UUID> containerUuids) {
 		EntityManager em = HibernateTx.get().entityManager();
 
 		// 1. get all micro lists to remove
@@ -1549,7 +1553,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 					}
 					break;
 				case BINARY:
-					HibernateTx.get().binaryDao().removeField(contentUuids, bac);
+					HibernateTx.get().binaryDao().removeField(contentUuids);
 					break;
 				case S3BINARY:
 					HibernateTx.get().s3binaryDao().removeField(contentUuids);
@@ -1569,7 +1573,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	 * @param containerUuids container UUIDs
 	 * @param bac bulk action context
 	 */
-	private void deleteMicronodes(List<UUID> containerUuids, BulkActionContext bac) {
+	private void deleteMicronodes(List<UUID> containerUuids) {
 		EntityManager em = HibernateTx.get().entityManager();
 
 		// 1. get all edges to remove
@@ -1635,7 +1639,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 					}
 					break;
 				case BINARY:
-					HibernateTx.get().binaryDao().removeField(contentUuids, bac);
+					HibernateTx.get().binaryDao().removeField(contentUuids);
 					break;
 				case S3BINARY:
 					HibernateTx.get().s3binaryDao().removeField(contentUuids);
@@ -1675,7 +1679,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 		});
 	}
 
-	public void tryDelete(HibMicronode micronode, AbstractFieldEdgeImpl<UUID> owner, BulkActionContext bac) {
+	public void tryDelete(HibMicronode micronode, AbstractFieldEdgeImpl<UUID> owner) {
 		if (micronode == null) {
 			return;
 		}
@@ -1692,7 +1696,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 						HibMicronodeField.log.debug("Micronode { " + micronode.getUuid() + " } is occupied by " + otherOwner.getReferenceType() + "{ " + owner.getUuid() + " }, no deletion possible");
 					}, () -> {
 						// Free to delete
-						delete(micronode, bac);
+						delete(micronode);
 					}
 			);
 	}
@@ -1736,7 +1740,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 		AbstractDeletableHibField<?> impl = (AbstractDeletableHibField<?>) field;
 		HibFieldEdge referenced = impl.getReferencedEdge();
 		if (referenced != null) {
-			currentTransaction.getEntityManager().remove(referenced);
+			currentTransaction.getTx().delete(referenced);
 		}
 	}
 
@@ -1883,6 +1887,30 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 		return resultMap;
 	}
 
+	@Override
+	public Map<String, List<NodeContent>> getNodeListFieldValues(List<String> listUuids, InternalActionContext ac,
+			String branchUuid, List<String> languageTags, ContainerType type) {
+		Map<String, List<UUID>> keyLists = getListValues(listUuids, HibNodeListFieldEdgeImpl::getNodeUuid,
+				HibNodeListFieldEdgeImpl.class);
+
+		List<UUID> allNodeUuids = keyLists.values().stream().flatMap(List::stream).distinct().toList();
+
+		Map<UUID, NodeContent> nodeContentsForUuids = Tx.get().nodeDao().getNodeContentsForUuids(allNodeUuids, ac, branchUuid,
+				languageTags, type, true);
+
+		Map<String, List<NodeContent>> result = new HashMap<>();
+		keyLists.entrySet().forEach(entry -> {
+			String listUuid = entry.getKey();
+			List<UUID> nodeUuids = entry.getValue();
+
+			List<NodeContent> nodeContents = nodeUuids.stream().map(nodeContentsForUuids::get).filter(c -> c != null)
+					.collect(Collectors.toList());
+			result.put(listUuid, nodeContents);
+		});
+
+		return result;
+	}
+
 	/**
 	 * Generic method to get list field values for given list UUIDs. The implementation will first get the items from the {@link ListableFieldCache}.
 	 * Everything not found in the cache will be loaded (with a single query) from the database and put into the cache.
@@ -1989,6 +2017,11 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 		});
 
 		return resultMap;
+	}
+
+	@Override
+	public int getStringLengthLimit() {
+		return databaseConnector.getStringLengthLimit();
 	}
 
 	public TotalsCache getTotalsCache() {

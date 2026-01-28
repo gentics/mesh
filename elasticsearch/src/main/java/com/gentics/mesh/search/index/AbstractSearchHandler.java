@@ -23,6 +23,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.HttpErrorException;
@@ -34,6 +36,7 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.search.Compliance;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Database;
@@ -44,7 +47,6 @@ import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -59,8 +61,6 @@ import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Abstract implementation for a mesh search handler.
@@ -75,7 +75,7 @@ public abstract class AbstractSearchHandler<T extends HibCoreElement<RM>, RM ext
 	protected final SearchProvider searchProvider;
 	protected final MeshOptions options;
 	protected final IndexHandler<T> indexHandler;
-	protected final ComplianceMode complianceMode;
+	protected final Compliance compliance;
 	protected final DAOActions<T, RM> actions;
 
 	protected final SearchWaitUtil waitUtil;
@@ -90,13 +90,13 @@ public abstract class AbstractSearchHandler<T extends HibCoreElement<RM>, RM ext
 	 * @param options
 	 * @param indexHandler
 	 */
-	public AbstractSearchHandler(Database db, SearchProvider searchProvider, MeshOptions options, IndexHandler<T> indexHandler,
+	public AbstractSearchHandler(Database db, SearchProvider searchProvider, MeshOptions options, Compliance compliance, IndexHandler<T> indexHandler,
 		DAOActions<T, RM> actions, SearchWaitUtil waitUtil) {
 		this.db = db;
 		this.searchProvider = searchProvider;
 		this.options = options;
 		this.indexHandler = indexHandler;
-		this.complianceMode = options.getSearchOptions().getComplianceMode();
+		this.compliance = compliance;
 		this.actions = actions;
 		this.waitUtil = waitUtil;
 	}
@@ -279,17 +279,7 @@ public abstract class AbstractSearchHandler<T extends HibCoreElement<RM>, RM ext
 						log.warn("Object could not be found for uuid {" + uuid + "}. The element will be omitted.");
 						// Reduce the total count
 						long total = extractTotalCount(hitsInfo);
-						switch (complianceMode) {
-						case ES_6:
-							hitsInfo.put("total", total - 1);
-							break;
-						case ES_7:
-						case ES_8:
-							hitsInfo.put("total", new JsonObject().put("value", total - 1));
-							break;
-						default:
-							throw new RuntimeException("Unknown compliance mode {" + complianceMode + "}");
-						}
+						compliance.putTotal(hitsInfo, total - 1);
 					} else {
 						list.add(actions.transformToRestSync(tx, element, ac, 0, language));
 					}
@@ -354,15 +344,7 @@ public abstract class AbstractSearchHandler<T extends HibCoreElement<RM>, RM ext
 	}
 
 	protected long extractTotalCount(JsonObject info) {
-		switch (complianceMode) {
-		case ES_7:
-		case ES_8:
-			return info.getJsonObject("total").getLong("value");
-		case ES_6:
-			return info.getLong("total");
-		default:
-			throw new RuntimeException("Unknown compliance mode {" + complianceMode + "}");
-		}
+		return compliance.getTotal(info);
 	}
 
 	@SuppressWarnings("unchecked")

@@ -2,23 +2,23 @@ package com.gentics.mesh.hibernate.data.dao;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.firstOrNull;
+import static com.gentics.mesh.hibernate.util.HibernateUtil.inQueriesLimitForSplitting;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.Root;
-import jakarta.persistence.metamodel.EntityType;
-import jakarta.persistence.metamodel.Metamodel;
 
-import org.hibernate.annotations.QueryHints;
+import org.apache.commons.lang3.tuple.Pair;
+import org.hibernate.jpa.HibernateHints;
 
 import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.core.data.HibBaseElement;
@@ -49,9 +49,16 @@ import com.gentics.mesh.hibernate.event.EventFactory;
 import com.gentics.mesh.hibernate.util.HibernateUtil;
 import com.gentics.mesh.hibernate.util.SplittingUtils;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.util.CollectionUtil;
 
 import dagger.Lazy;
 import io.vertx.core.Vertx;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.metamodel.EntityType;
+import jakarta.persistence.metamodel.Metamodel;
 
 /**
  * User DAO implementation for Gentics Mesh.
@@ -119,9 +126,9 @@ public class UserDaoImpl extends AbstractHibDaoGlobal<HibUser, UserResponse, Hib
 	@Override
 	public HibUser findByUsername(String username) {
 		return HibernateTx.get().data().mesh().userNameCache().get(username, name -> {
-			return firstOrNull(currentTransaction.getEntityManager().createQuery("from user where name = :name", HibUserImpl.class).setHint(QueryHints.CACHEABLE, true)
+			return firstOrNull(currentTransaction.getEntityManager().createQuery("from user where name = :name", HibUserImpl.class)
 					.setParameter("name", username)
-					.setHint(QueryHints.CACHEABLE, true));
+					.setHint(HibernateHints.HINT_CACHEABLE, true));
 		});
 	}
 
@@ -142,7 +149,7 @@ public class UserDaoImpl extends AbstractHibDaoGlobal<HibUser, UserResponse, Hib
 	}
 
 	@Override
-	public Iterable<? extends HibRole> getRoles(HibUser user) {
+	public List<? extends HibRole> getRoles(HibUser user) {
 		EntityManager em = currentTransaction.getEntityManager();
 		return em.createQuery("select distinct r" +
 					" from user u" +
@@ -151,8 +158,26 @@ public class UserDaoImpl extends AbstractHibDaoGlobal<HibUser, UserResponse, Hib
 					" where u = :user",
 				HibRoleImpl.class)
 			.setParameter("user", user)
-			.setHint(QueryHints.CACHEABLE, true)
+			.setHint(HibernateHints.HINT_CACHEABLE, true)
 			.getResultList();
+	}
+
+	@Override
+	public Map<HibUser, Collection<? extends HibRole>> getRoles(Collection<HibUser> users) {
+		List<UUID> usersUuids = users.stream().map(HibUser::getId).map(UUID.class::cast).collect(Collectors.toList());
+
+		Map<HibUser, Collection<? extends HibRole>> result = new HashMap<>();
+		result.putAll(SplittingUtils.splitAndMergeInMapOfLists(usersUuids, inQueriesLimitForSplitting(1), (uuids) -> {
+			@SuppressWarnings("unchecked")
+			List<Object[]> resultList = em().createNamedQuery("user.findrolesforusers")
+					.setParameter("userUuids", uuids)
+					.getResultList();
+
+			return resultList.stream()
+					.map(tuples -> Pair.of((HibUser)tuples[0], (HibRole)tuples[1]))
+					.collect(Collectors.groupingBy(Pair::getKey, Collectors.mapping(Pair::getValue, Collectors.toList())));
+		}));
+		return CollectionUtil.addFallbackValueForMissingKeys(result, users, new ArrayList<>());
 	}
 
 	@Override
@@ -166,6 +191,24 @@ public class UserDaoImpl extends AbstractHibDaoGlobal<HibUser, UserResponse, Hib
 				HibGroupImpl.class)
 			.setParameter("user", user)
 			.getResultStream());
+	}
+
+	@Override
+	public Map<HibUser, Collection<? extends HibGroup>> getGroups(Collection<HibUser> users) {
+		List<UUID> usersUuids = users.stream().map(HibUser::getId).map(UUID.class::cast).collect(Collectors.toList());
+
+		Map<HibUser, Collection<? extends HibGroup>> result = new HashMap<>();
+		result.putAll(SplittingUtils.splitAndMergeInMapOfLists(usersUuids, inQueriesLimitForSplitting(1), (uuids) -> {
+			@SuppressWarnings("unchecked")
+			List<Object[]> resultList = em().createNamedQuery("user.findgroupsforusers")
+					.setParameter("userUuids", uuids)
+					.getResultList();
+
+			return resultList.stream()
+					.map(tuples -> Pair.of((HibUser)tuples[0], (HibGroup)tuples[1]))
+					.collect(Collectors.groupingBy(Pair::getKey, Collectors.mapping(Pair::getValue, Collectors.toList())));
+		}));
+		return CollectionUtil.addFallbackValueForMissingKeys(result, users, new ArrayList<>());
 	}
 
 	@Override

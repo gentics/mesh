@@ -33,7 +33,7 @@ docker run \
 
 === Use MariaDB-connected container
 
-Other variant for an easy, yet production ready start is to use https://hub.docker.com/r/gentics/mesh-mariadb/[mesh-mariadb] image, providing along an external instance of MariaDB 10.3+ database as a data storage, and a JDBC connector, which can be downloaded from the https://mariadb.com/downloads/connectors/connectors-data-access/java8-connector [official website]. For instance, below is how a dedicated `docker-compose` setup may look like.
+Other variant for an easy, yet production ready start is to use https://hub.docker.com/r/gentics/mesh-mariadb/[mesh-mariadb] image, providing along an external instance of MariaDB 10.3+ database as a data storage, and a JDBC driver, which can be downloaded from the https://mariadb.com/downloads/connectors/connectors-data-access/java8-connector[official website] and attached to the image via (possible read-only) volume. By default, the expected location of both of the JDBC driver and a Mesh database connector is `/mesh/database/`. Below is how a dedicated `docker-compose` setup may look like.
 
 First, initialize an empty database in your MariaDB, as well as its user. Example setup:
 
@@ -74,6 +74,7 @@ Include the following `mesh` container into your `docker-compose.yml`:
     image: gentics/mesh-mariadb
     volumes:
       - mesh-uploads:/uploads
+      - /whatever/path/you/chose/for/the/mariadb-java-client-3.1.2.jar:/mesh/database/mariadb.jar
     ports:
       - '8080:8080'
     environment:
@@ -115,6 +116,8 @@ storageOptions:
   synchronizeWritesTimeout: 6000
 ----
 
+Please refer to the https://mariadb.org/documentation/[official MariaDB documentation] for the database-specific topics.
+
 === Volumes / Locations
 
 [options="header"]
@@ -125,6 +128,7 @@ storageOptions:
 | `/keystore`      | Location for the main keystore file which contains the cryptographic keys which are used to sign the JWT. | `MESH_AUTH_KEYSTORE_PATH=/keystore/keystore.jks`
 | `/plugins`       | Plugin data and configuration location | `MESH_PLUGIN_DIR=/plugins`
 | `/mesh/data`     | Remaining data files (e.g. temp dirs, caches) | -
+| `/mesh/database`   | Database driver and connector library location (e.g. temp dirs, caches) | `MESH_DB_CONNECTOR_CLASSPATH=/mesh/database`
 |======
 
 === Docker Compose
@@ -379,7 +383,7 @@ NOTE: The admin access can be restored via the use of the `resetAdminPassword` l
 There are currently fours components which can be included in a backup:
 
 * *Database* - The database contains the main content of Gentics Mesh.
-    The backup process of a database depends on an actual RDBMS (MariaDB, HSQLDB etc...) used, and is not a part of Gentics Mesh.
+    The backup process of a database depends on an actual RDBMS (MariaDB, HSQLDB etc...) used, and is _not_ a part of Gentics Mesh. In the case of MariaDB, please refer to the https://mariadb.com/kb/en/backup-and-restore-overview/[official backup/restore documentation]. For all the other cases, a link:../../premium-features/premium-db[premium DB documentation] is a good place to start looking.
 
 * *Binary files* - Binaries are currently stored in the filesystem and need to be backed up separately data/binaryFiles)
 
@@ -392,12 +396,12 @@ There are currently fours components which can be included in a backup:
 [[debuginfo]]
 == Debug Information
 
-The debug info endpoint (GET {apiLatest}/admin/debuginfo) starts a zip download containing various useful data about the system.
+The debug info endpoint `GET {apiLatest}/admin/debuginfo` starts a zip download containing various useful data about the system.
 
 The documentation below lists all files that are included in the zip.
 
 Per default everything except the consistency check is included in the zip. You can use the `?include` query parameter to include or exclude specific parts.
-For example `{apiLatest}/admin/debuginfo?include=-backup,consistencyCheck` will exclude the database backup and include the consistency checks.
+For example `{apiLatest}/admin/debuginfo?include=-log,consistencyCheck` will exclude application logs and include the consistency checks.
 
 === Active Config
 Query name: `activeConfig`

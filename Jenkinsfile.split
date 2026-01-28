@@ -1,5 +1,5 @@
 // The GIT repository for this pipeline lib is defined in the global Jenkins setting
-@Library('jenkins-pipeline-library@nexus')
+@Library('jenkins-pipeline-library')
 import com.gentics.*
 
 // Make the helpers aware of this jobs environment
@@ -23,6 +23,7 @@ properties([
 		booleanParam(name: 'runDocker',           defaultValue: false, description: "Whether to run the docker steps."),
 		booleanParam(name: 'omitScan',            defaultValue: false, description: "Omit scanning the docker images"),
 		booleanParam(name: 'runMavenBuild',       defaultValue: false, description: "Whether to run the maven build steps."),
+		booleanParam(name: 'setBranchAsVersion',  defaultValue: false, description: "Whether to set the branch name as project version (unless runDeploy is true). Use this together with runMavenBuild to install the maven artifacts to the local repository (changelog and documentation will be skipped)."),
 		booleanParam(name: 'runIntegrationTests', defaultValue: false, description: "Whether to run integration tests."),
 		booleanParam(name: 'consistencyChecks',   defaultValue: false, description: "Whether to do consistency checks for every test. Enabling this will increase overall test runtime."),
 		string(	     name: 'testingVersion',      defaultValue: "",    description: "Version for testing"),
@@ -41,7 +42,7 @@ def registryHost = registryHostStaging;
 final def testPart(partName, current, branches) {
 	def partId = "split${partName}${current}"
 	branches[partId] = {
-		node('mesh-worker-17') {
+		node('mesh-worker-3.2') {
 			echo "Preparing slave environment for ${partId}"
 			sh "rm -rf ${partId}"
 			sh "mkdir ${partId}"
@@ -70,7 +71,7 @@ final def testPart(partName, current, branches) {
 								sh "mvn -pl :mesh-database-connector-mariadb docker:start -Dskip.mariadb.tests=${noMariadb} "
 								}
 								// run the tests
-								withEnv(["TESTCONTAINERS_RYUK_DISABLED=true", "MESH_CONSISTENCY_CHECKS=" + (Boolean.valueOf(params.consistencyChecks) ? "true" : "false")]) {
+								withEnv(["TESTCONTAINERS_RYUK_DISABLED=true", "MESH_CONSISTENCY_CHECKS=" + (Boolean.valueOf(params.consistencyChecks) ? "true" : "false"), "MAVEN_OPTS=-Xmx1g -XX:MaxMetaspaceSize=128m "]) {
 									sh ".jenkins/run-splits.sh includes-${postfix} ${jacoco} ${partName} ${partId}"
 								}
 							} finally {
@@ -92,7 +93,7 @@ final def testPart(partName, current, branches) {
 }
 
 stage("Setup Build Environment") {
-	node("mesh-root-worker-17") {
+	node("mesh-root-worker-3.2") {
 		githubBuildStarted()
 		try {
 			stage("Checkout") {
@@ -129,10 +130,12 @@ stage("Setup Build Environment") {
 						sh 'git add .'
 						sh "git commit -m 'Raise version'"
 						GitHelper.addTag(version, 'Release of version ' + version)
+					} else if (Boolean.valueOf(params.setBranchAsVersion)) {
+						version = branchName + "-SNAPSHOT"
+						echo "Building version " + version
+						MavenHelper.setVersion(version)
 					}
-				}
 
-				if (Boolean.valueOf(params.runDeployTesting)) {
 					if (params.testingVersion?.trim()) {
 						version = params.testingVersion.trim()
 						echo "Building version test build with name: " + version
@@ -143,8 +146,10 @@ stage("Setup Build Environment") {
 
 			stage("Setup") {
 				if (params.meshVersion?.trim()) {
-					echo "Setting Gentics Mesh version to " + params.meshVersion.trim()
-					MavenHelper.setProperty("mesh.version", params.meshVersion.trim())
+					withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
+						echo "Setting Gentics Mesh version to " + params.meshVersion.trim()
+						MavenHelper.setProperty("mesh.version", params.meshVersion.trim())
+					}
 				}
       		}
 
@@ -291,6 +296,10 @@ stage("Setup Build Environment") {
 							withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
 								sh "mvn -U -B -DskipTests -Dgpg.skip=false clean deploy"
 							}
+						} else if (Boolean.valueOf(params.setBranchAsVersion)) {
+							withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
+								sh "mvn -U -B -DskipTests -Dgpg.skip=false -pl '!doc,!changelog' clean install"
+							}
 						} else {
 							withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
 								sh "mvn -B -DskipTests clean package"
@@ -341,7 +350,6 @@ stage("Setup Build Environment") {
 			stage("Docker Build") {
 				if (env.BUILD_SKIPPED != "true" && Boolean.valueOf(params.runDocker)) {
 					if (Boolean.valueOf(params.runDeployTesting)) {
-						version = branchName;
 						registryHost = registryHostTest;
 					}
 					// server
@@ -399,7 +407,6 @@ stage("Setup Build Environment") {
 				if (env.BUILD_SKIPPED != "true" && (Boolean.valueOf(params.runDeploy) || Boolean.valueOf(params.runDeployTesting))) {
 					if (Boolean.valueOf(params.runDocker)) {
 						if (Boolean.valueOf(params.runDeployTesting)) {
-							version = branchName;
 							registryHost = registryHostTest;
 						}
 
@@ -416,21 +423,32 @@ stage("Setup Build Environment") {
 						}
 					}
 
-					// if (Boolean.valueOf(params.runDeploy)) {
-					// 	dir(path: 'js') {
-					// 		// Install dependencies
-					// 		sh 'npm ci --no-audit --no-fund'
+					if (Boolean.valueOf(params.runDeploy)) {
+						sh "echo @gentics:registry=https://repo.gentics.com/repository/npm-products/ > js/.npmrc"
+						sh "echo 'git-tag-version = false' >> js/.npmrc"
+						sh "echo 'allow-same-version = true' >> js/.npmrc"
 
-					// 		// Set the version for the packages
-					// 		sh "npm run nx -- release version ${version}"
+						// Add private repository credentials and scopes
+						withCredentials([string(credentialsId: 'nexus-npm', variable: 'NPM_TOKEN')]) {
+							sh "echo //repo.gentics.com/repository/npm-products/:_auth=${env.NPM_TOKEN} >> js/.npmrc"
+						}
 
-					// 		// Build all JS packages
-					// 		sh 'npm run nx -- run-many --targets build'
+						dir(path: 'js') {
+							// Install dependencies
+							sh 'npm ci --no-audit --no-fund'
 
-					// 		// Publish the pacakges to artifactory
-					// 		sh 'npm run nx -- release publish'
-					// 	}
-					// }
+							// Set the version for the packages
+							sh "npm run nx -- release version ${version}"
+
+							// Build all JS packages
+							sh 'npm run nx -- run-many --targets build'
+
+							// Publish the pacakges to artifactory
+							sh "npm run nx -- release publish"
+						}
+
+						sh "rm js/.npmrc"
+					}
 				} else {
 					echo "Deploy skipped.."
 				}
@@ -458,7 +476,6 @@ stage("Setup Build Environment") {
 		} finally {
 			deleteDir()
 			githubBuildEnded()
-			notifyMattermostUsers()
 		}
 	}
 }

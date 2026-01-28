@@ -1,0 +1,2 @@
+Core: The second level cache for hibernate has been enabled by default.
+The startup of Mesh with second level cache enabled in a cluster environment has been fixed.

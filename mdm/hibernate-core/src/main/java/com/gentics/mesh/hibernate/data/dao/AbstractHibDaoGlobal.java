@@ -14,6 +14,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.dao.DaoGlobal;
 import com.gentics.mesh.core.data.dao.DaoTransformable;
@@ -81,6 +82,11 @@ public abstract class AbstractHibDaoGlobal<T extends HibCoreElement<R>, R extend
 	}
 
 	@Override
+	public Result<? extends T> findAll(Bucket bucket) {
+		return daoHelper.findAll(bucket);
+	}
+
+	@Override
 	public T loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		return daoHelper.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
 	}
@@ -127,7 +133,7 @@ public abstract class AbstractHibDaoGlobal<T extends HibCoreElement<R>, R extend
 	@Override
 	public void deletePersisted(T entity) {
 		entity = beforeDeletedFromDatabase(entity);
-		em().remove(entity);
+		currentTransaction.getTx().delete(entity);
 		afterDeletedFromDatabase(entity);
 	}
 

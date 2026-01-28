@@ -11,6 +11,7 @@ import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.hibernate.data.node.field.impl.HibNumberFieldImpl;
+import com.gentics.mesh.util.DateUtils;
 
 /**
  * A dynamic content column, that is, a column that is not common to all the content table, but is rather
@@ -86,7 +87,7 @@ public class DynamicContentColumn implements ContentColumn, Serializable {
 			return HibNumberFieldImpl.convertToDouble((Number)value);
 		} else if (fieldType == FieldTypes.DATE) {
 			if (value instanceof String) {
-				return Instant.parse(value.toString());
+				return Instant.ofEpochMilli(DateUtils.fromISO8601(value.toString()));
 			} else if (value instanceof Long) {
 				return Instant.ofEpochMilli((long) value);
 			} else if (value instanceof Timestamp) {

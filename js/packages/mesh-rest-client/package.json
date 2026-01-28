@@ -1,11 +1,15 @@
 {
   "name": "@gentics/mesh-rest-client",
-  "version": "2.2.0-SNAPSHOT",
+  "version": "3.2.1",
+  "description": "The JS Client for Gentics Mesh",
   "license": "Apache-2.0",
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
   "peerDependencies": {
-    "@gentics/mesh-models": "^2.2.0-SNAPSHOT"
+    "@gentics/mesh-models": "^3.2.0"
   },
   "devDependencies": {
-    "@gentics/mesh-models": "^2.2.0-SNAPSHOT"
+    "@gentics/mesh-models": "^3.2.0"
   }
 }

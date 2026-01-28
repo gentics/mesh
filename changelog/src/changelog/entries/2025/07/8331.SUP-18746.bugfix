@@ -1,0 +1,1 @@
+REST API: Now Mesh accepts both ISO-8601 standards of a date/time string representation, with and without trailing Z or timezone value.

@@ -86,7 +86,7 @@ public class DefaultSQLDatabase implements DatabaseProvider {
 			if (options.getClusterOptions().isEnabled()) {
 				optionBuilder
 						.put("hibernate.cache.region.factory_class", HazelcastLocalCacheRegionFactory.class.getName())
-						.put("hibernate.cache.hazelcast.instance_name", options.getClusterOptions().getClusterName());
+						.put("hibernate.cache.hazelcast.instance_name", options.getNodeName());
 			} else {
 				optionBuilder
 						.put("hibernate.cache.region.factory_class", JCacheRegionFactory.class.getName())

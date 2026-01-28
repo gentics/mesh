@@ -13,6 +13,8 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -61,12 +63,10 @@ import dagger.Lazy;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.file.FileProps;
 import io.vertx.core.file.OpenOptions;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.reactivex.core.Vertx;
-import io.vertx.reactivex.core.file.FileProps;
 import io.vertx.reactivex.core.file.FileSystem;
 
 /**
@@ -226,11 +226,12 @@ public class BinaryTransformHandler extends AbstractHandler {
 				.handleS3Resize(options.getS3Options().getBucket(), s3ObjectKey, fileName, parameters)
 				.flatMap(file -> {
 					// The image was stored and hashed. Now we need to load the stored file again and check the image properties
-					Single<ImageInfo> info = imageManipulator.readImageInfo(file.getName());
-					Single<FileProps> fileProps = fs.rxProps(file.getName());
+					String filePath = file.getAbsolutePath();
+					Single<ImageInfo> info = imageManipulator.readImageInfo(filePath);
+					Single<FileProps> fileProps = fs.rxProps(filePath);
 					return Single.zip(info, fileProps, (infoV, props) -> {
 						// Return a POJO which hold all information that is needed to update the field
-						return new TransformationResult(null, props.size(), infoV, file.getName());
+						return new TransformationResult(null, props.size(), infoV, filePath);
 					});
 				})
 				.flatMap(transformationResult ->  Single.just(updateNodeInGraph(ac, s3UploadContext, transformationResult, uuid, languageTag, fieldName, parameters)))
@@ -334,33 +335,43 @@ public class BinaryTransformHandler extends AbstractHandler {
 			// Update graph with the new image information
 			return updateNodeInGraph(ac, context, r, uuid, languageTag, fieldName, parameters);
 		}).onErrorResumeNext(e -> {
+			Single<NodeResponse> se = Single.error(e);
 			if (context.isInvokeStore()) {
 				if (log.isDebugEnabled()) {
 					log.debug("Error detected. Purging previously stored upload for tempId " + temporaryId, e);
 				}
 				return binaryStorage.purgeTemporaryUpload(temporaryId).doOnError(e1 -> {
 					log.error("Error while purging temporary upload for tempId " + temporaryId, e1);
-				}).onErrorComplete().andThen(Single.error(e));
+				}).onErrorComplete().andThen(se);
 			} else {
-				return Single.error(e);
+				return se;
 			}
 		}).flatMap(n -> {
+			Single<NodeResponse> sn = Single.just(n);
 			if (context.isInvokeStore()) {
 				String binaryUuid = context.getBinaryUuid();
 				if (log.isDebugEnabled()) {
 					log.debug("Moving upload with uuid {} and tempId {} into place", binaryUuid, temporaryId);
 				}
-				return binaryStorage.moveInPlace(binaryUuid, temporaryId).andThen(Single.just(n));
+				return binaryStorage.moveInPlace(binaryUuid, temporaryId).andThen(sn);
 			} else {
-				return Single.just(n);
+				return sn;
+			}
+		}).onErrorResumeNext(e -> {
+			Single<NodeResponse> se = Single.error(e);
+			if (context.isInvokeStore()) {
+				return binaryStorage.delete(context.getBinaryUuid()).onErrorComplete()
+						.andThen(binaryStorage.purgeTemporaryUpload(context.getTemporaryId())).onErrorComplete()
+						.andThen(se);
+			} else {
+				return se;
 			}
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
-
 	}
 
 	private NodeResponse updateNodeInGraph(InternalActionContext ac, S3UploadContext s3UploadContext, TransformationResult result, String nodeUuid,
 										   String languageTag, String fieldName, ImageManipulationParameters parameters) {
-		return utils.eventAction((tx, batch) -> {
+		return utils.syncTxBulkable((tx, bac) -> {
 			PersistingContentDao contentDao = tx.<CommonTx>unwrap().contentDao();
 			NodeDao nodeDao = tx.nodeDao();
 			HibProject project = tx.getProject(ac);
@@ -414,15 +425,14 @@ public class BinaryTransformHandler extends AbstractHandler {
 			if (ac.isPurgeAllowed() && contentDao.isAutoPurgeEnabled(newDraftVersion) && contentDao.isPurgeable(latestDraftVersion)) {
 				contentDao.purge(latestDraftVersion);
 			}
-
-			batch.add(contentDao.onCreated(newDraftVersion, branchUuid, DRAFT));
+			bac.add(contentDao.onCreated(newDraftVersion, branchUuid, DRAFT));
 			return tx.nodeDao().transformToRestSync(node, ac, 0);
 		});
 	}
 
 	private NodeResponse updateNodeInGraph(InternalActionContext ac, UploadContext context, TransformationResult result, String nodeUuid,
 		String languageTag, String fieldName, ImageManipulationParameters parameters) {
-		return utils.eventAction((tx, batch) -> {
+		return utils.syncTxBulkable((tx, bac) -> {
 			NodeDao nodeDao = tx.nodeDao();
 			HibProject project = tx.getProject(ac);
 			HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, UPDATE_PERM);
@@ -485,8 +495,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 			if (ac.isPurgeAllowed() && contentDao.isAutoPurgeEnabled(newDraftVersion) && contentDao.isPurgeable(latestDraftVersion)) {
 				contentDao.purge(latestDraftVersion);
 			}
-
-			batch.add(contentDao.onCreated(newDraftVersion, branchUuid, DRAFT));
+			bac.add(contentDao.onCreated(newDraftVersion, branchUuid, DRAFT));
 			return tx.nodeDao().transformToRestSync(node, ac, 0);
 		});
 	}

@@ -9,6 +9,7 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
 
 import com.gentics.mesh.ElementType;
@@ -26,6 +27,10 @@ import com.gentics.mesh.dagger.annotations.ElementTypeKey;
  * @author plyhun
  *
  */
+@NamedQuery(
+	name = "tagfamily.findtagsfortagfamilies",
+	query = "select f, t from tagfamily f inner join f.tags t where f.dbUuid in :tagFamilyUuids"
+)
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Entity(name = "tagfamily")
 @ElementTypeKey(ElementType.TAGFAMILY)

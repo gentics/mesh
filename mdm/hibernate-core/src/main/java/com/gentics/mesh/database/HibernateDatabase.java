@@ -25,9 +25,9 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.StaleStateException;
 import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.exception.LockAcquisitionException;
-import org.hibernate.internal.SessionFactoryImpl;
 import org.hibernate.internal.SessionImpl;
 import org.hibernate.stat.HibernateMetrics;
 import org.hibernate.stat.HibernateQueryMetrics;
@@ -155,7 +155,9 @@ public class HibernateDatabase extends CommonDatabase implements Database, Seria
 	}
 
 	private void initializeMetrics() {
-		ConnectionProvider provider = ((SessionFactoryImpl) getEntityManagerFactory()).getSessionFactory().getSessionFactoryOptions().getServiceRegistry().getService(ConnectionProvider.class);
+		EntityManagerFactory entityManagerFactory = getEntityManagerFactory();
+		SessionFactoryImplementor sfi = entityManagerFactory.unwrap(SessionFactoryImplementor.class);
+		ConnectionProvider provider = sfi.getServiceRegistry().getService(ConnectionProvider.class);
 		HikariDataSource dataSource = (HikariDataSource) provider.unwrap(DataSource.class);
 		dataSource.setMetricsTrackerFactory(new MicrometerMetricsTrackerFactory(metrics.getMetricRegistry()));
 		SessionFactory sessionFactory = getEntityManagerFactory().unwrap(SessionFactory.class);

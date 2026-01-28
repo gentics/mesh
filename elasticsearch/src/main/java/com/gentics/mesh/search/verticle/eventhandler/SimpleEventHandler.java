@@ -7,21 +7,23 @@ import java.util.Collection;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.search.Compliance;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
-import com.gentics.mesh.etc.config.search.ComplianceMode;
+import com.gentics.mesh.handler.DataHolderContext;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.entity.MeshEntity;
 
 import io.reactivex.Flowable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * An event handler that uses the events from {@link MeshEntity#allEvents()} and creates/updates/deletes documents according to
- * {@link MeshEntity#transform(Object)}
+ * {@link MeshEntity#transform(Object, DataHolderContext)}
  * 
  * @param <T>
  */
@@ -32,13 +34,13 @@ public class SimpleEventHandler<T extends HibBaseElement> implements EventHandle
 	private final MeshHelper helper;
 	private final MeshEntity<T> entity;
 	private final String indexName;
-	private final ComplianceMode complianceMode;
+	private final Compliance compliance;
 
-	public SimpleEventHandler(MeshHelper helper, MeshEntity<T> entity, String indexName, ComplianceMode complianceMode) {
+	public SimpleEventHandler(MeshHelper helper, MeshEntity<T> entity, String indexName, Compliance compliance) {
 		this.helper = helper;
 		this.entity = entity;
 		this.indexName = indexName;
-		this.complianceMode = complianceMode;
+		this.compliance = compliance;
 	}
 
 	@Override
@@ -57,10 +59,10 @@ public class SimpleEventHandler<T extends HibBaseElement> implements EventHandle
 					return entity.getDocument(model);
 				}).map(document -> helper.createDocumentRequest(
 						indexName, model.getUuid(),
-						document, complianceMode)));
+						document, compliance)));
 			} else if (event == entity.getDeleteEvent()) {
 				return Flowable.just(helper.deleteDocumentRequest(
-					indexName, model.getUuid(), complianceMode));
+					indexName, model.getUuid(), compliance));
 			} else {
 				throw new RuntimeException("Unexpected event " + event.address);
 			}

@@ -90,6 +90,7 @@ import com.gentics.mesh.util.UUIDUtil;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Observable;
+import io.vertx.core.eventbus.DeliveryOptions;
 
 @MeshTestSetting(elasticsearch = TRACKING, testSize = TestSize.FULL, startServer = true)
 public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
@@ -100,13 +101,13 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 		// get tag families of project (this will put project into cache)
 		call(() -> client().findTagFamilies("project"));
-		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(1);
+		tx(() -> assertThat(mesh().projectNameCache().get("project")).as("Cached project").isNotNull());
 
 		// rename project to "newproject"
 		project = updateProject(project.getUuid(), "newproject");
-		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(0);
+		assertThat(waitFor(() -> tx(() -> mesh().projectNameCache().get("project")) == null, 10_000)).as("Project not found in cache any more").isTrue();
 
-		long maxWaitMs = 1000;
+		long maxWaitMs = DeliveryOptions.DEFAULT_TIMEOUT;
 		long delayMs = 100;
 		boolean repeat = false;
 
@@ -460,7 +461,9 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		}
 		ProjectListResponse list = call(() -> client().findProjects(new SortingParametersImpl("name", SortOrder.DESCENDING)));
 		assertEquals("Total data size should be 6", 6, list.getData().size());
-		assertThat(list.getData()).isSortedAccordingTo((a, b) -> b.getName().compareTo(a.getName()));
+		assertThat(list.getData()).isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().reversed().compare(
+				fa != null ? fa.getName() : null,
+				fb != null ? fb.getName() : null));
 	}
 
 	@Test
@@ -550,7 +553,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	// Update Tests
 
 	@Test
-	public void testUpdateWithBogusNames() {
+	public void testUpdateWithBogusNames() throws TimeoutException {
 		String uuid = projectUuid();
 
 		tx(() -> createProject("Test234", "folder"));
@@ -561,7 +564,8 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		// Test slashes
 		request.setName("Bla/blub");
 		call(() -> client().updateProject(uuid, request));
-		call(() -> client().findNodes(request.getName()));
+		assertThat(waitForSuccess(() -> call(() -> client().findNodes(request.getName())), 10_000))
+			.as("Fetching nodes for project %s succeeded".formatted(request.getName())).isTrue();
 
 		try (Tx tx = tx()) {
 			assertEquals(request.getName(), Tx.get().projectDao().findByUuid(projectUuid()).getName());
@@ -570,17 +574,19 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	}
 
 	@Test
-	@Ignore("Fails on CI pipeline. See https://github.com/gentics/mesh/issues/608")
-	public void testUpdateByAppendingToName() {
+	public void testUpdateByAppendingToName() throws TimeoutException {
 		String uuid = projectUuid();
 
 		ProjectUpdateRequest request = new ProjectUpdateRequest();
 		request.setName("abc");
 		call(() -> client().updateProject(uuid, request));
-		call(() -> client().findNodes(request.getName()));
+		assertThat(waitForSuccess(() -> call(() -> client().findNodes(request.getName())), 10_000))
+				.as("Fetching nodes for project %s succeeded".formatted(request.getName())).isTrue();
 
 		request.setName("abcd");
 		call(() -> client().updateProject(uuid, request));
+		assertThat(waitForSuccess(() -> call(() -> client().findNodes(request.getName())), 10_000))
+			.as("Fetching nodes for project %s succeeded".formatted(request.getName())).isTrue();
 		call(() -> client().findNodes(request.getName()));
 	}
 

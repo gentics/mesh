@@ -50,6 +50,7 @@ import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.endpoint.admin.consistency.UploadsConsistencyCheck;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
@@ -250,6 +251,9 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			assertNotNull(binaryField.getHeight());
 			assertEquals("image/jpeg", binaryField.getMimeType());
 		}
+		tx(tx -> {
+			new UploadsConsistencyCheck().invoke(mesh().database(), tx, true);
+		});
 	}
 
 	@Test
@@ -350,14 +354,14 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testPlainTextExtractionForDocuments() throws IOException {
-		expectPlainText("test.pdf", "application/pdf", "Enemenemu");
-		expectPlainText("test.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-			"Das ist ein Word Dokument für den Johannes");
-		expectPlainText("small.mp4", "application/pdf", "HandBrake 0.9.4 2009112300");
-	}
+	public void testMetadataExtractionForDocuments() throws IOException {
+               expectMetadataOrPlainText("test.pdf", "application/pdf", Map.of("", "Enemenemu"));
+               expectMetadataOrPlainText("test.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                       Map.of("", "Das ist ein Word Dokument für den Johannes"));
+               expectMetadataOrPlainText("small.mp4", "video/mp4", Map.of("xmp_CreatorTool", "HandBrake 0.9.4 2009112300"));
+		        }
 
-	private void expectPlainText(String fileName, String mimeType, String plainText) throws IOException {
+	private void expectMetadataOrPlainText(String fileName, String mimeType, Map<String, String> metadata) throws IOException {
 		String parentNodeUuid = tx(() -> project().getBaseNode().getUuid());
 
 		Buffer buffer = getBuffer("/testfiles/" + fileName);
@@ -366,6 +370,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "0.1", "binary", new ByteArrayInputStream(buffer.getBytes()),
 				buffer.length(), fileName, mimeType));
 		BinaryField binaryField = node2.getFields().getBinaryField("binary");
+		String plainText = metadata.get("");
 		assertEquals("The plain text of file {" + fileName + "} did not match", plainText, binaryField.getPlainText());
 	}
 
@@ -835,7 +840,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		AtomicBoolean success = prepareCheckServiceMock(true, checkRequestLatch);
 		BinaryDownloadInfo downloadInfo = doTestFlowableDownload(true);
 
-		checkRequestLatch.await(10, TimeUnit.SECONDS);
+		assertThat(checkRequestLatch.await(30, TimeUnit.SECONDS)).as("Check request was performed within timeout").isTrue();
 
 		mockServerClient.verify(HttpRequest.request("/check"), VerificationTimes.atLeast(1));
 
@@ -864,7 +869,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		AtomicBoolean success = prepareCheckServiceMock(false, checkRequestLatch);
 		BinaryDownloadInfo downloadInfo = doTestFlowableDownload(true);
 
-		checkRequestLatch.await(10, TimeUnit.MINUTES);
+		assertThat(checkRequestLatch.await(30, TimeUnit.SECONDS)).as("Check request was performend within timeout").isTrue();
 
 		mockServerClient.verify(HttpRequest.request("/check"), VerificationTimes.atLeast(1));
 

@@ -1,0 +1,1 @@
+Core: Generation of childrenInfo and etag for nodes with many children has been made more performant.

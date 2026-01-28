@@ -11,7 +11,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>3.0.1-SNAPSHOT</version>
+		<version>3.3.0-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -64,11 +64,6 @@
 		<dependency>
 			<groupId>com.google.dagger</groupId>
 			<artifactId>dagger</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.google.dagger</groupId>
-			<artifactId>dagger-compiler</artifactId>
-			<optional>true</optional>
 		</dependency>
 	</dependencies>
 
@@ -143,6 +138,21 @@
 										<exclude>META-INF/*.RSA</exclude>
 									</excludes>
 								</filter>
+								<!-- Exclude classes from dependency jars, which are overwritten (patched) -->
+								<filter>
+									<artifact>com.hazelcast:hazelcast-hibernate53</artifact>
+									<excludes>
+										<exclude>com/hazelcast/hibernate/PhoneHomeInfo.class</exclude>
+										<exclude>com/hazelcast/hibernate/PhoneHomeInfo$QueryStringBuilder.class</exclude>
+									</excludes>
+								</filter>
+								<filter>
+									<artifact>io.vertx:vertx-hazelcast</artifact>
+									<excludes>
+										<exclude>io/vertx/spi/cluster/hazelcast/impl/HazelcastLock.class</exclude>
+										<exclude>io/vertx/spi/cluster/hazelcast/HazelcastClusterManager.class</exclude>
+									</excludes>
+								</filter>
 							</filters>
 							<transformers>
 								<transformer
@@ -157,21 +167,6 @@
 				</executions>
 			</plugin>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<forceJavacCompilerUse>true</forceJavacCompilerUse>
-				</configuration>
-				<dependencies>
-					<dependency>
-						<groupId>com.google.dagger</groupId>
-						<artifactId>dagger-compiler</artifactId>
-						<version>2.24</version>
-						<optional>true</optional>
-					</dependency>
-				</dependencies>
-			</plugin>
-			<plugin>
 				<groupId>com.gentics</groupId>
 				<artifactId>dependency-reporting-plugin</artifactId>
 				<executions>
@@ -182,7 +177,7 @@
 						</goals>
 						<configuration>
 							<reportFile>../target/dependency-updates-aggregate-report.xml</reportFile>
-							<componentName>Mesh SQL</componentName>
+							<componentName>Mesh</componentName>
 							<moduleName>Java Backend</moduleName>
 							<staticInput>${project.basedir}/src/static_dependencies.json</staticInput>
 							<ignoredNames>

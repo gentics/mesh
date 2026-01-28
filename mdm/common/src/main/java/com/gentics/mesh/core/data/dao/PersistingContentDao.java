@@ -29,7 +29,6 @@ import java.util.stream.Stream;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.HibDeletableField;
@@ -306,7 +305,7 @@ public interface PersistingContentDao extends ContentDao {
 
 	@Override
 	default HibNodeFieldContainer createFirstFieldContainerForNode(HibNode node, String languageTag, HibBranch branch, HibUser editor) {
-		HibSchemaVersion version = branch.findLatestSchemaVersion(node.getSchemaContainer());
+		HibSchemaVersion version = Tx.get().schemaDao().findLatestVersion(branch, node.getSchemaContainer());
 		HibNodeFieldContainer newContainer = createPersisted(node.getUuid(), version, null, languageTag, new VersionNumber(), editor);
 		connectFieldContainer(node, newContainer, branch, languageTag, true);
 
@@ -319,7 +318,7 @@ public interface PersistingContentDao extends ContentDao {
 		// We need create a new container with no reference, if an original is not provided.
 		// So use the latest version available to use.
 		HibSchemaVersion version = Objects.isNull(original)
-				? branch.findLatestSchemaVersion(node.getSchemaContainer())
+				? Tx.get().schemaDao().findLatestVersion(branch, node.getSchemaContainer())
 				: getSchemaContainerVersion(original) ;
 		return createFieldContainer(version, node, languageTag, branch, editor, original, handleDraftEdge);
 	}
@@ -388,14 +387,14 @@ public interface PersistingContentDao extends ContentDao {
 	}
 
 	@Override
-	default void deleteLanguageContainer(HibNode node, InternalActionContext ac, HibBranch branch, String languageTag, BulkActionContext bac,
+	default void deleteLanguageContainer(HibNode node, InternalActionContext ac, HibBranch branch, String languageTag,
 										 boolean failForLastContainer) {
 		NodeDao nodeDao = Tx.get().nodeDao();
 		
 		// 1. Check whether the container has also a published variant. We need to take it offline in those cases
 		HibNodeFieldContainer container = getFieldContainer(node, languageTag, branch, PUBLISHED);
 		if (container != null) {
-			nodeDao.takeOffline(node, ac, bac, branch, languageTag);
+			nodeDao.takeOffline(node, ac, branch, languageTag);
 		}
 
 		// 2. Load the draft container and remove it from the branch
@@ -403,7 +402,7 @@ public interface PersistingContentDao extends ContentDao {
 		if (container == null) {
 			throw error(NOT_FOUND, "node_no_language_found", languageTag);
 		}
-		deleteFromBranch(container, branch, bac);
+		deleteFromBranch(container, branch);
 		// No need to delete the published variant because if the container was published the take offline call handled it
 
 		// starting with the old draft, delete all GFC that have no next and are not draft (for other branches)
@@ -411,7 +410,7 @@ public interface PersistingContentDao extends ContentDao {
 		while (dangling != null && !isDraft(dangling) && !dangling.hasNextVersion()) {
 			HibNodeFieldContainer toDelete = dangling;
 			dangling = toDelete.getPreviousVersion();
-			delete(toDelete, bac);
+			delete(toDelete);
 		}
 
 		HibNodeFieldContainer initial = getFieldContainer(node, languageTag, branch, INITIAL);
@@ -428,7 +427,7 @@ public interface PersistingContentDao extends ContentDao {
 				// an INITIAL, which would have to be either this GFC or a previous)
 				Iterator<HibNodeFieldContainer> danglingIterator = getNextVersions(toDelete).iterator();
 				dangling = danglingIterator.hasNext() ? danglingIterator.next() : null;
-				delete(toDelete, bac, false);
+				delete(toDelete, false);
 			}
 		}
 
@@ -445,7 +444,7 @@ public interface PersistingContentDao extends ContentDao {
 
 			// Also delete the node and children
 			if (parameters.isRecursive() && wasLastContainer) {
-				nodeDao.deleteFromBranch(node, ac, branch, bac, false);
+				nodeDao.deleteFromBranch(node, ac, branch, false);
 			}
 		}
 	}
@@ -995,12 +994,12 @@ public interface PersistingContentDao extends ContentDao {
 	}
 
 	@Override
-	default void deleteFromBranch(HibNodeFieldContainer content, HibBranch branch, BulkActionContext bac) {
+	default void deleteFromBranch(HibNodeFieldContainer content, HibBranch branch) {
 		String branchUuid = branch.getUuid();
 
-		bac.batch().add(onDeleted(content, branchUuid, DRAFT));
+		Tx.get().batch().add(onDeleted(content, branchUuid, DRAFT));
 		if (isPublished(content, branchUuid)) {
-			bac.batch().add(onDeleted(content, branchUuid, PUBLISHED));
+			Tx.get().batch().add(onDeleted(content, branchUuid, PUBLISHED));
 		}
 
 		HibNode node = getNode(content);
@@ -1016,7 +1015,7 @@ public interface PersistingContentDao extends ContentDao {
 	}
 
 	@Override
-	default void purge(HibNodeFieldContainer content, BulkActionContext bac) {
+	default void purge(HibNodeFieldContainer content) {
 		if (log.isDebugEnabled()) {
 			log.debug("Purging container {" + content.getUuid() + "} for version {" + content.getVersion() + "}");
 		}
@@ -1027,7 +1026,7 @@ public interface PersistingContentDao extends ContentDao {
 				beforePrev.setNextVersion(afterPrev);
 			}
 		}
-		delete(content, bac, false);
+		delete(content, false);
 	}
 
 	@Override

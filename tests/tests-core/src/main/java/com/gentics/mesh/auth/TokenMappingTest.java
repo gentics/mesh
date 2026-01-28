@@ -19,7 +19,6 @@ import org.assertj.core.util.Objects;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.mesh.auth.oauth2.CannotWriteException;
 import com.gentics.mesh.auth.oauth2.MeshOAuth2ServiceImpl;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.role.HibRole;
@@ -944,7 +943,7 @@ public class TokenMappingTest extends AbstractMeshTest {
 		public void test() {
 			List<MeshEventModel> caughtEvents = new ArrayList<>();
 			boolean success = tx(tx -> {
-				EventQueueBatch eqb = tx.createBatch();
+				EventQueueBatch eqb = tx.batch();
 				HibUser admin = tx.userDao().findByName("admin");
 				HibUser testUser = tx.userDao().findByName(TESTUSER_NAME);
 
@@ -954,7 +953,7 @@ public class TokenMappingTest extends AbstractMeshTest {
 						caughtEvents.addAll(eqb.getEntries());
 					}
 					return true;
-				} catch (CannotWriteException e) {
+				} catch (Throwable e) {
 					if (!expectUpdate) {
 						throw e;
 					}

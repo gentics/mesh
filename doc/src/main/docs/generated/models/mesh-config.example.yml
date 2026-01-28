@@ -5,7 +5,7 @@ languagesFilePath: null
 updateCheck: true
 vertxOptions:
   workerPoolSize: 20
-  eventPoolSize: 24
+  eventPoolSize: 2
   orderedBlockingHandlers: true
   eventBus:
     checkInterval: 30000
@@ -73,7 +73,7 @@ storageOptions:
     leakDetectionThreshold: 0
   synchronizeWrites: false
   synchronizeWritesTimeout: 60000
-  secondLevelCacheEnabled: false
+  secondLevelCacheEnabled: true
   generateStatistics: false
   queryTimeout: 0
   slowSqlThreshold: 60000
@@ -96,7 +96,7 @@ httpServer:
   keyPath: "config/key.pem"
   clientAuthMode: "NONE"
   trustedCertPaths: []
-  verticleAmount: 24
+  verticleAmount: 2
   minifyJson: true
   maxFormAttributeSize: -1
   serverTokens: true
@@ -132,6 +132,7 @@ search:
   mappingMode: "DYNAMIC"
   complianceMode: "ES_6"
   syncBatchSize: 50000
+  syncFetchBatchSize: 10000
   indexCheckInterval: 60000
   indexMappingCacheTimeout: 3600000
 upload:
@@ -152,6 +153,9 @@ security:
 image:
   mode: "ON_DEMAND"
   imageCacheDirectory: "data/binaryImageCache"
+  imageCacheCleanInterval: "PT0S"
+  imageCacheMaxIdle: "PT1M"
+  imageCacheTouch: false
   maxWidth: 2048
   maxHeight: 2048
   jpegQuality: 0.95

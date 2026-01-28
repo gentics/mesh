@@ -10,8 +10,8 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -92,7 +92,7 @@ public interface DaoGlobal<T extends HibBaseElement> extends Dao<T> {
 	 * @param element
 	 * @param bac
 	 */
-	void delete(T element, BulkActionContext bac);
+	void delete(T element);
 
 	/**
 	 * Update the element.
@@ -150,6 +150,13 @@ public interface DaoGlobal<T extends HibBaseElement> extends Dao<T> {
 	 * @return
 	 */
 	Result<? extends T> findAll();
+
+	/**
+	 * Load all elements in the bucket
+	 * @param bucket bucket
+	 * @return result
+	 */
+	Result<? extends T> findAll(Bucket bucket);
 
 	/**
 	 * Load the object by uuid. No permission check will be performed.

@@ -1,14 +1,14 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
-import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.search.ComplianceMode;
-import com.gentics.mesh.search.verticle.entity.MeshEntities;
-import com.gentics.mesh.search.verticle.entity.MeshEntity;
+import java.util.function.Function;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.function.Function;
+
+import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.search.Compliance;
+import com.gentics.mesh.search.verticle.entity.MeshEntities;
+import com.gentics.mesh.search.verticle.entity.MeshEntity;
 
 /**
  * A factory to create simple event handlers.
@@ -18,13 +18,13 @@ public class EventHandlerFactory {
 
 	private final MeshEntities entities;
 	private final MeshHelper helper;
-	private final ComplianceMode complianceMode;
+	private final Compliance compliance;
 
 	@Inject
-	public EventHandlerFactory(MeshEntities entities, MeshHelper helper, MeshOptions options) {
+	public EventHandlerFactory(MeshEntities entities, MeshHelper helper, Compliance compliance) {
 		this.entities = entities;
 		this.helper = helper;
-		this.complianceMode = options.getSearchOptions().getComplianceMode();
+		this.compliance = compliance;
 	}
 
 	/**
@@ -39,6 +39,6 @@ public class EventHandlerFactory {
 	 */
 	public <T extends HibBaseElement> EventHandler createSimpleEventHandler(Function<MeshEntities, MeshEntity<T>> entity,
 		String indexName) {
-		return new SimpleEventHandler<>(helper, entity.apply(entities), indexName, complianceMode);
+		return new SimpleEventHandler<>(helper, entity.apply(entities), indexName, compliance);
 	}
 }

@@ -1,6 +1,10 @@
 package com.gentics.mesh.test.docker;
 
-import com.github.dockerjava.api.command.ExecCreateCmdResponse;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.time.Duration;
+import java.util.Collections;
+
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.FrameConsumerResultCallback;
 import org.testcontainers.containers.output.OutputFrame;
@@ -8,10 +12,7 @@ import org.testcontainers.containers.output.ToStringConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.TestEnvironment;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.time.Duration;
-import java.util.Collections;
+import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 
 /**
  * Testcontainer for a non-clustered Elasticsearch instance.
@@ -19,6 +20,8 @@ import java.util.Collections;
 public class ElasticsearchContainer extends GenericContainer<ElasticsearchContainer> {
 
 	private static final Charset UTF8 = Charset.forName("UTF-8");
+
+	public static final String VERSION_ES9 = "9.1.7";
 
 	public static final String VERSION_ES8 = "8.14.1";
 
@@ -49,8 +52,8 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 		withTmpFs(Collections.singletonMap("/usr/share/elasticsearch/data", "rw,size=64m"));
 		// addEnv("xpack.security.enabled", "false");
 		withExposedPorts(9200);
-		withStartupTimeout(Duration.ofSeconds(30L));
-		waitingFor(Wait.forLogMessage(".*started.*", 1).withStartupTimeout(Duration.ofMinutes(2)));
+		withStartupTimeout(Duration.ofMinutes(5));
+		waitingFor(Wait.forLogMessage(".*started.*", 1).withStartupTimeout(Duration.ofMinutes(5)));
 	}
 
 	public ElasticsearchContainer dropTraffic() throws UnsupportedOperationException, IOException, InterruptedException {

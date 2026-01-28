@@ -1,6 +1,5 @@
 package com.gentics.mesh.search;
 
-import static com.gentics.mesh.search.SearchProvider.DEFAULT_TYPE;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ElasticsearchTestMode.CONTAINER_ES6;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
@@ -33,7 +32,6 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.search.index.node.NodeContainerMappingProvider;
 import com.gentics.mesh.core.search.index.node.NodeIndexHandler;
-import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -221,14 +219,10 @@ public class MicroschemaMappingTest extends AbstractMeshTest {
 	public void testMicroschemaCustomMappingJson() {
 		NodeIndexHandler handler = mesh().indexHandlerRegistry().getNodeIndexHandler();
 		NodeContainerMappingProvider provider = handler.getMappingProvider();
-		ComplianceMode mode = options().getSearchOptions().getComplianceMode();
 
 		tx(() -> {
 			HibBranch branch = latestBranch();
-			JsonObject schemaMapping = provider.getMapping(this.schema, branch, null).get();
-			if (mode == ComplianceMode.ES_6) {
-				schemaMapping = schemaMapping.getJsonObject(DEFAULT_TYPE);
-			}
+			JsonObject schemaMapping = compliance().getDefaultTypeMapping(provider.getMapping(this.schema, branch, null).get());
 			assertNotNull(schemaMapping);
 			JsonObject fieldsMapping = schemaMapping
 				.getJsonObject("properties")

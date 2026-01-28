@@ -321,7 +321,7 @@ public abstract class AbstractDatabaseConnector implements DatabaseConnector {
 	public String getUUIDTypeName(Connection connection) {
 		SessionMetadataIntegrator smi = getSessionMetadataIntegrator();
 		TypeConfiguration typeConfig = smi.getSessionFactoryImplementor().getTypeConfiguration();
-		int uuidType = smi.getBasicTypeForClass(UUID.class).getSqlTypeCodes(smi.getSessionFactoryImplementor())[0];
+		int uuidType = smi.getBasicTypeForClass(UUID.class).getSqlTypeCodes(smi.getMetadata())[0];
 		return typeConfig.getDdlTypeRegistry().getTypeName(uuidType, new Size(null, null, (long) DEFAULT_UUID_LENGTH), typeConfig.getBasicTypeForJavaType(UUID.class));
 	}
 

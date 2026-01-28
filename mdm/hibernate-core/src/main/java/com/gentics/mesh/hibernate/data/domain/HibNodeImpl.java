@@ -13,6 +13,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedAttributeNode;
 import jakarta.persistence.NamedEntityGraph;
+import jakarta.persistence.NamedEntityGraphs;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.NamedSubgraph;
@@ -43,20 +44,34 @@ import com.gentics.mesh.util.UUIDUtil;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Entity(name = "node")
 @ElementTypeKey(ElementType.NODE)
-@NamedEntityGraph(name = "node.content", attributeNodes = @NamedAttributeNode("content"))
-@NamedEntityGraph(
-		name = "node.contentAndTags",
+@NamedEntityGraphs({
+	@NamedEntityGraph(name = "node.load",
 		attributeNodes = {
-				@NamedAttributeNode("content"),
 				@NamedAttributeNode(value = "tags", subgraph = "subgraph.tags")
 		},
 		subgraphs = {
 			@NamedSubgraph(
-					name = "subgraph.tags",
-					attributeNodes = @NamedAttributeNode(value = "tag")
+				name = "subgraph.tags",
+				attributeNodes = @NamedAttributeNode(value = "tag")
 			)
 		}
-)
+	),
+	@NamedEntityGraph(name = "node.content",
+			attributeNodes = @NamedAttributeNode("content")),
+	@NamedEntityGraph(
+			name = "node.contentAndTags",
+			attributeNodes = {
+					@NamedAttributeNode("content"),
+					@NamedAttributeNode(value = "tags", subgraph = "subgraph.tags")
+			},
+			subgraphs = {
+					@NamedSubgraph(
+							name = "subgraph.tags",
+							attributeNodes = @NamedAttributeNode(value = "tag")
+							)
+			}
+			)
+})
 @NamedQueries({
 		@NamedQuery(
 				name = "node.findByProjectBranchAndContainerType.read",
@@ -137,7 +152,63 @@ import com.gentics.mesh.util.UUIDUtil;
 		@NamedQuery(
 				name = "node.findNodesByUuids",
 				query = "select distinct n from node n " +
-						"where n.dbUuid in :nodeUuids")
+						"where n.dbUuid in :nodeUuids"),
+		@NamedQuery(
+				name = "node.countChildrenBySchema.read",
+				query = "select n.schemaContainer.dbUuid, count(distinct n) from node n " +
+						" join n.content edge " +
+						" join permission perm on (perm.element = n.dbUuid) " +
+						" join node_branch_parent nbp on (nbp.id.childUuid = n.dbUuid) " +
+						" where nbp.distance = 1 and nbp.nodeParent.dbUuid = :parentUuid " +
+						" and edge.branch.dbUuid = :branchUuid " +
+						" and perm.role in :roles and perm.readPerm = true " +
+						" group by n.schemaContainer.dbUuid"),
+		@NamedQuery(
+				name = "node.countChildrenBySchema.read_published",
+				query = "select n.schemaContainer.dbUuid, count(distinct n) from node n " +
+						" join n.content edge " +
+						" join permission perm on (perm.element = n.dbUuid) " +
+						" join node_branch_parent nbp on (nbp.id.childUuid = n.dbUuid) " +
+						" where nbp.distance = 1 and nbp.nodeParent.dbUuid = :parentUuid " +
+						" and edge.branch.dbUuid = :branchUuid " +
+						" and perm.role in :roles and (perm.readPerm = true or perm.readPublishedPerm = true)" +
+						" group by n.schemaContainer.dbUuid"),
+		@NamedQuery(
+				name = "node.countChildrenBySchema.admin",
+				query = "select n.schemaContainer.dbUuid, count(distinct n) from node n " +
+						" join n.content edge " +
+						" join node_branch_parent nbp on (nbp.id.childUuid = n.dbUuid) " +
+						" where nbp.distance = 1 and nbp.nodeParent.dbUuid = :parentUuid " +
+						" and edge.branch.dbUuid = :branchUuid " +
+						" group by n.schemaContainer.dbUuid"),
+		@NamedQuery(
+				name = "node.countMultipleChildrenBySchema.read",
+				query = "select n.schemaContainer.dbUuid, nbp.nodeParent.dbUuid, count(distinct n) from node n " +
+						" join n.content edge " +
+						" join permission perm on (perm.element = n.dbUuid) " +
+						" join node_branch_parent nbp on (nbp.id.childUuid = n.dbUuid) " +
+						" where nbp.distance = 1 and nbp.nodeParent.dbUuid in :parentUuids " +
+						" and edge.branch.dbUuid = :branchUuid " +
+						" and perm.role in :roles and perm.readPerm = true " +
+						" group by n.schemaContainer.dbUuid, nbp.nodeParent.dbUuid"),
+		@NamedQuery(
+				name = "node.countMultipleChildrenBySchema.read_published",
+				query = "select n.schemaContainer.dbUuid, nbp.nodeParent.dbUuid, count(distinct n) from node n " +
+						" join n.content edge " +
+						" join permission perm on (perm.element = n.dbUuid) " +
+						" join node_branch_parent nbp on (nbp.id.childUuid = n.dbUuid) " +
+						" where nbp.distance = 1 and nbp.nodeParent.dbUuid in :parentUuids " +
+						" and edge.branch.dbUuid = :branchUuid " +
+						" and perm.role in :roles and (perm.readPerm = true or perm.readPublishedPerm = true)" +
+						" group by n.schemaContainer.dbUuid, nbp.nodeParent.dbUuid"),
+		@NamedQuery(
+				name = "node.countMultipleChildrenBySchema.admin",
+				query = "select n.schemaContainer.dbUuid, nbp.nodeParent.dbUuid, count(distinct n) from node n " +
+						" join n.content edge " +
+						" join node_branch_parent nbp on (nbp.id.childUuid = n.dbUuid) " +
+						" where nbp.distance = 1 and nbp.nodeParent.dbUuid in :parentUuids " +
+						" and edge.branch.dbUuid = :branchUuid " +
+						" group by n.schemaContainer.dbUuid, nbp.nodeParent.dbUuid")
 
 })
 public class HibNodeImpl extends AbstractHibBucketableElement implements HibNode, Serializable {

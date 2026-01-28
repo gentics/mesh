@@ -5,13 +5,15 @@ import java.util.Optional;
 import javax.inject.Inject;
 
 import com.gentics.mesh.cache.ListableFieldCache;
+import com.gentics.mesh.cache.TableColumnsCache;
+import com.gentics.mesh.changelog.HibernateBootstrapInitializerImpl;
 import com.gentics.mesh.contentoperation.ContentStorage;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.HibMeshVersion;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.data.storage.BinaryStorage;
 import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 import com.gentics.mesh.core.db.CommonTxData;
-import com.gentics.mesh.changelog.HibernateBootstrapInitializerImpl;
 import com.gentics.mesh.dagger.HibernateMeshComponent;
 import com.gentics.mesh.dagger.tx.TransactionScope;
 import com.gentics.mesh.database.connector.DatabaseConnector;
@@ -38,20 +40,26 @@ public class HibTxData implements CommonTxData {
 	private final HibPermissionRoots permissionRoots;
 	private final ContentStorage contentStorage;
 	private final ListableFieldCache<AbstractHibListFieldEdgeImpl<?>> listableFieldCache;
+	private final TableColumnsCache tableColumnsCache;
 
 	private Optional<EventQueueBatch> qBatch;
+	private Optional<BulkActionContext> bac;
 
 	@Inject
 	public HibTxData(HibernateMeshOptions options, HibernateBootstrapInitializerImpl boot,
 					 HibPermissionRoots permissionRoots, ContentStorage contentStorage, 
-					 ListableFieldCache<AbstractHibListFieldEdgeImpl<?>> listableFieldCache, DatabaseConnector databaseConnector) {
+					 ListableFieldCache<AbstractHibListFieldEdgeImpl<?>> listableFieldCache, 
+					 TableColumnsCache tableColumnsCache,
+					 DatabaseConnector databaseConnector) {
 		this.options = options;
 		this.boot = boot;
 		this.permissionRoots = permissionRoots;
 		this.contentStorage = contentStorage;
 		this.listableFieldCache = listableFieldCache;
+		this.tableColumnsCache = tableColumnsCache;
 		this.qBatch = Optional.empty();
 		this.databaseConnector = databaseConnector;
+		this.bac = Optional.empty();
 	}
 
 	@Override
@@ -135,6 +143,14 @@ public class HibTxData implements CommonTxData {
 		return listableFieldCache;
 	}
 
+	/**
+	 * Get the table columns cache
+	 * @return cache
+	 */
+	public TableColumnsCache getTableColumnsCache() {
+		return tableColumnsCache;
+	}
+
 	@Override
 	public void setEventQueueBatch(EventQueueBatch batch) {
 		this.qBatch = Optional.ofNullable(batch);
@@ -143,5 +159,15 @@ public class HibTxData implements CommonTxData {
 	@Override
 	public Optional<EventQueueBatch> maybeGetEventQueueBatch() {
 		return qBatch;
+	}
+
+	@Override
+	public void setBulkActionContext(BulkActionContext bac) {
+		this.bac = Optional.ofNullable(bac);
+	}
+
+	@Override
+	public Optional<BulkActionContext> maybeGetBulkActionContext() {
+		return bac;
 	}
 }

@@ -6,7 +6,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.action.MicroschemaDAOActions;
@@ -75,8 +74,8 @@ public class MicroschemaDAOActionsImpl implements MicroschemaDAOActions {
 	}
 
 	@Override
-	public void delete(Tx tx, HibMicroschema element, BulkActionContext bac) {
-		tx.microschemaDao().delete(element, bac);
+	public void delete(Tx tx, HibMicroschema element) {
+		tx.microschemaDao().delete(element);
 	}
 
 	@Override

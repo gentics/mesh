@@ -7,10 +7,14 @@ import static com.gentics.mesh.core.rest.MeshEvent.GROUP_USER_ASSIGNED;
 import static com.gentics.mesh.core.rest.MeshEvent.GROUP_USER_UNASSIGNED;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.util.PreparationUtil.getPreparedData;
+import static com.gentics.mesh.util.PreparationUtil.prepareData;
+import static com.gentics.mesh.util.PreparationUtil.preparePermissions;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -21,11 +25,14 @@ import com.gentics.mesh.cache.NameCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.group.HibGroup;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.event.group.GroupRoleAssignModel;
 import com.gentics.mesh.core.rest.event.group.GroupUserAssignModel;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
@@ -143,14 +150,14 @@ public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGro
 	}
 
 	@Override
-	default void delete(HibGroup group, BulkActionContext bac) {
+	default void delete(HibGroup group) {
 		PersistingUserDao userDao = CommonTx.get().userDao();
 
 		// TODO unhardcode the admin name
 		if ("admin".equals(group.getName())) {
 			throw error(FORBIDDEN, "error_illegal_admin_deletion");
 		}
-		bac.batch().add(group.onDeleted());
+		CommonTx.get().batch().add(group.onDeleted());
 
 		Set<? extends HibUser> affectedUsers = getUsers(group).stream().collect(Collectors.toSet());
 
@@ -158,12 +165,31 @@ public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGro
 
 		for (HibUser affectedUser : affectedUsers) {
 			userDao.updateShortcutEdges(affectedUser);
-			bac.add(affectedUser.onUpdated());
-			bac.inc();
+			CommonTx.get().batch().add(affectedUser.onUpdated());
+			CommonTx.get().data().maybeGetBulkActionContext().ifPresent(BulkActionContext::inc);
 		}
-		bac.process();
+		CommonTx.get().data().maybeGetBulkActionContext().ifPresent(BulkActionContext::process);
 
 		Tx.get().permissionCache().clear();
+	}
+
+	@Override
+	default void beforeTransformToRestSync(Page<? extends HibCoreElement<? extends RestModel>> page,
+			InternalActionContext ac) {
+		GenericParameters generic = ac.getGenericParameters();
+		FieldsSet fields = generic.getFields();
+
+		preparePermissions(ac.getUser(), page, ac, fields);
+
+		@SuppressWarnings("unchecked")
+		List<HibGroup> groups = (List<HibGroup>)page.getWrappedList();
+		prepareData(groups, ac, "group", "roles", this::getRoles, fields.has("roles"));
+	}
+
+	@Override
+	default void beforeGetETagForPage(Page<? extends HibCoreElement<? extends RestModel>> page,
+			InternalActionContext ac) {
+		preparePermissions(ac.getUser(), page, ac);
 	}
 
 	@Override
@@ -177,7 +203,7 @@ public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGro
 			restGroup.setName(group.getName());
 		}
 		if (fields.has("roles")) {
-			for (HibRole role : getRoles(group)) {
+			for (HibRole role : getPreparedData(group, ac, "group", "roles", r -> getRoles(r).list())) {
 				String name = role.getName();
 				if (name != null) {
 					restGroup.getRoles().add(role.transformToReference());

@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import org.hibernate.boot.Metadata;
+import org.hibernate.boot.spi.BootstrapContext;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
 import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
@@ -31,8 +32,8 @@ public class MetadataExtractorIntegrator implements SessionMetadataIntegrator {
 	@Override
 	public void integrate(
 			Metadata metadata,
-			SessionFactoryImplementor sessionFactory,
-			SessionFactoryServiceRegistry serviceRegistry) {
+			BootstrapContext bootstrapContext,
+			SessionFactoryImplementor sessionFactory) {
 		this.metadata = metadata;
 		this.sessionFactory = sessionFactory;
 		dropContentColumnsIfRequired();
@@ -60,7 +61,7 @@ public class MetadataExtractorIntegrator implements SessionMetadataIntegrator {
 
 	@Override
 	public Type getBasicTypeForClass(Class<?> clazz) {
-		return sessionFactory.getMetamodel().getTypeConfiguration().getBasicTypeRegistry().getRegisteredType(clazz.getCanonicalName());
+		return sessionFactory.getTypeConfiguration().getBasicTypeRegistry().getRegisteredType(clazz.getCanonicalName());
 	}
 
 	@Override
@@ -75,7 +76,7 @@ public class MetadataExtractorIntegrator implements SessionMetadataIntegrator {
 
 	@Override
 	public String getTableName(final Class<?> modelClazz) {
-		EntityPersister persister = sessionFactory.getMetamodel().entityPersister(modelClazz);
+		EntityPersister persister = sessionFactory.getRuntimeMetamodels().getMappingMetamodel().getEntityDescriptor(modelClazz);
 		if (persister instanceof SingleTableEntityPersister) {
 			return ((SingleTableEntityPersister) persister).getTableName();
 		} else {

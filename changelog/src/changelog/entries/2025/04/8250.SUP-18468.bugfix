@@ -1,0 +1,2 @@
+Image Manipulation: Creating image variants with a focal point or focal zoom value failed with an internal server error when using MariaDB.
+This has been fixed.

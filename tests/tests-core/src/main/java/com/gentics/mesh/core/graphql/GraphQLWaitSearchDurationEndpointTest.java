@@ -4,7 +4,7 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ElasticsearchTestMode.CONTAINER_ES6;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -13,6 +13,12 @@ import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.Collection;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.rules.RuleChain;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
@@ -26,12 +32,6 @@ import com.gentics.mesh.util.SearchWaitUtil;
 
 import io.reactivex.Completable;
 import io.vertx.core.json.JsonObject;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 @RunWith(Parameterized.class)
 @MeshTestSetting(elasticsearch = CONTAINER_ES6, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
@@ -45,12 +45,9 @@ public class GraphQLWaitSearchDurationEndpointTest extends AbstractMeshTest {
 
 	static {
 		when(waitUtil.awaitSync(any())).thenAnswer(params -> Completable.complete());
+		testContext = new MeshTestContextOverride().setWaitUtil(waitUtil);
+		chain = RuleChain.outerRule(globalTimeout).around(testContext);
 	}
-
-	@Rule
-	@ClassRule
-	public static final MeshTestContextOverride testContext = new MeshTestContextOverride()
-		.setWaitUtil(waitUtil);
 
 	@Parameterized.Parameter(0)
 	public boolean searchWithQuery;

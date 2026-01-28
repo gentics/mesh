@@ -281,7 +281,7 @@ public interface Database extends TxFactory {
 					}
 					throw e;
 				}
-			}, false, done -> {
+			}, false).andThen(done -> {
 				if (done.failed()) {
 					sub.onError(done.cause());
 				} else {
@@ -332,7 +332,7 @@ public interface Database extends TxFactory {
 					}
 					throw e;
 				}
-			}, false, (AsyncResult<T> done) -> {
+			}, false).andThen((AsyncResult<T> done) -> {
 				if (done.failed()) {
 					sub.onError(done.cause());
 				} else {
@@ -400,7 +400,7 @@ public interface Database extends TxFactory {
 	default <T> Single<T> singleTxWriteLock(TxEventAction<T> action) {
 		AtomicReference<EventQueueBatch> lazyBatch = new AtomicReference<>();
 		Function<Tx, T> handler = tx -> {
-			EventQueueBatch batch = tx.createBatch();
+			EventQueueBatch batch = tx.batch();
 			lazyBatch.set(batch);
 			return action.handle(batch, tx);
 		};

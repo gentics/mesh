@@ -20,7 +20,6 @@ import jakarta.persistence.UniqueConstraint;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -131,8 +130,8 @@ public class HibBinaryFieldEdgeImpl extends AbstractBinaryFieldEdgeImpl<HibBinar
 	}
 
 	@Override
-	public void onEdgeDeleted(HibernateTx tx, BulkActionContext bac) {
-		tx.binaryDao().removeField(bac, this);
+	public void onEdgeDeleted(HibernateTx tx) {
+		tx.binaryDao().removeField(this);
 	}
 
 	public static HibBinaryFieldEdgeImpl fromContainer(HibernateTx tx, HibUnmanagedFieldContainer<?,?,?,?,?> container, String fieldKey, HibBinaryImpl binary) {

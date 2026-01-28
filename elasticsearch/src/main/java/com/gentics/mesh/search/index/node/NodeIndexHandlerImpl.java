@@ -4,6 +4,8 @@ import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.search.index.node.NodeIndexUtil.getDefaultSetting;
 import static com.gentics.mesh.search.index.node.NodeIndexUtil.getLanguageOverride;
+import static com.gentics.mesh.util.PreparationUtil.getAttributeName;
+import static com.gentics.mesh.util.PreparationUtil.prepareData;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,25 +28,32 @@ import javax.inject.Singleton;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.SimpleDataHolderContext;
 import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.dao.PersistingSchemaDao;
+import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.ProjectDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
+import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.search.Compliance;
 import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
+import com.gentics.mesh.core.data.search.request.DeleteDocumentRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
@@ -56,6 +65,7 @@ import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.search.index.node.NodeContainerMappingProvider;
 import com.gentics.mesh.core.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.handler.DataHolderContext;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.BucketManager;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
@@ -63,15 +73,12 @@ import com.gentics.mesh.search.index.metric.SyncMetersFactory;
 import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Streams;
 
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
-import io.reactivex.Single;
-import io.reactivex.functions.Action;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Handler for the node specific search index.
@@ -93,9 +100,9 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	protected final NodeContainerMappingProviderImpl mappingProvider;
 
 	@Inject
-	public NodeIndexHandlerImpl(SearchProvider searchProvider, Database db, MeshHelper helper, MeshOptions options,
+	public NodeIndexHandlerImpl(SearchProvider searchProvider, Database db, MeshHelper helper, MeshOptions options, Compliance compliance,
 		SyncMetersFactory syncMetersFactory, BucketManager bucketManager, NodeContainerTransformer transformer, NodeContainerMappingProviderImpl mappingProvider) {
-		super(searchProvider, db, helper, options, syncMetersFactory, bucketManager);
+		super(searchProvider, db, helper, options, syncMetersFactory, bucketManager, compliance);
 		this.transformer = transformer;
 		this.mappingProvider = mappingProvider;
 	}
@@ -346,6 +353,10 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 			return projectDao.findAll().stream()
 				.flatMap(project -> branchDao.findAll(project).stream()
 					.flatMap(branch -> branch.findActiveSchemaVersions().stream()
+						.filter(version -> {
+							SchemaVersionModel schema = version.getSchema();
+							return schema.getNoIndex() == null || !schema.getNoIndex();
+						})
 						.flatMap(version -> Stream.of(DRAFT, PUBLISHED)
 							.map(type -> diffAndSync(project, branch, version, type, indexPattern)))))
 				.collect(Collectors.collectingAndThen(Collectors.toList(), Flowable::merge));
@@ -358,39 +369,39 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	 * @param version
 	 * @param type
 	 * @param bucket
+	 * @param dhc
 	 * @return indexName -> documentName -> NodeGraphFieldContainer
 	 */
-	private Map<String, Map<String, HibNodeFieldContainer>> loadVersionsFromGraph(HibBranch branch, HibSchemaVersion version, ContainerType type,
-		Bucket bucket) {
-		return db.tx(tx -> {
-			CommonTx ctx = (CommonTx) tx;
-			ContentDao contentDao = ctx.contentDao();
-			PersistingSchemaDao schemaDao = ctx.schemaDao();
-			String branchUuid = branch.getUuid();
-			List<String> indexLanguages = version.getSchema().findOverriddenSearchLanguages().collect(Collectors.toList());
+	private Map<String, Map<String, HibNodeFieldContainer>> loadVersionsFromStorage(HibBranch branch, HibSchemaVersion version, ContainerType type,
+		Bucket bucket, DataHolderContext dhc) {
+		CommonTx ctx = CommonTx.get();
+		ContentDao contentDao = ctx.contentDao();
+		String branchUuid = branch.getUuid();
+		List<String> indexLanguages = version.getSchema().findOverriddenSearchLanguages().collect(Collectors.toList());
 
-			return schemaDao.getFieldContainers(version, branchUuid, bucket)
-				.filter(c -> contentDao.isType(c, type, branchUuid))
-				.map(HibNodeFieldContainer.class::cast)
-				.collect(Collectors.groupingBy(content -> {
-					String languageTag = content.getLanguageTag();
-					return ContentDao.composeIndexName(
-						branch.getProject().getUuid(),
-						branchUuid,
-						version.getUuid(),
-						type,
-						indexLanguages.contains(languageTag)
-							? languageTag
-							: null, version.getMicroschemaVersionHash(branch));
-				}, Collectors.toMap(c -> contentDao.getNode(c).getUuid() + "-" + c.getLanguageTag(), Function.identity())));
-		});
+		return loadAllElements(branch, version, type, bucket, dhc)
+			.stream()
+			.map(HibNodeFieldContainer.class::cast)
+			.collect(Collectors.groupingBy(content -> {
+				String languageTag = content.getLanguageTag();
+				return ContentDao.composeIndexName(
+					branch.getProject().getUuid(),
+					branchUuid,
+					version.getUuid(),
+					type,
+					indexLanguages.contains(languageTag)
+						? languageTag
+						: null, version.getMicroschemaVersionHash(branch));
+			}, Collectors.toMap(c -> contentDao.getNode(c).getUuid() + "-" + c.getLanguageTag(), Function.identity())));
 	}
 
 	/**
 	 * We need to override the default method since the UUID alone is not enough to id a document in the node index. We also need to append the language.
+	 * @return 
 	 */
 	@Override
-	protected void processHits(JsonArray hits, Map<String, String> versions) {
+	protected JsonArray processHits(JsonArray hits, Map<String, String> versions) {
+		JsonArray lastHitSort = null;
 		for (int i = 0; i < hits.size(); i++) {
 			JsonObject hit = hits.getJsonObject(i);
 			JsonObject source = hit.getJsonObject("_source");
@@ -398,7 +409,9 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 			String uuidAndLang = hit.getString("_id");
 			String version = source.getString("version");
 			versions.put(uuidAndLang, version);
+			lastHitSort = hit.getJsonArray("sort");
 		}
+		return lastHitSort;
 	}
 
 	private Flowable<SearchRequest> diffAndSync(HibProject project, HibBranch branch, HibSchemaVersion version, ContainerType type, Optional<Pattern> indexPattern) {
@@ -427,27 +440,30 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 
 	private Flowable<SearchRequest> diffAndSync(HibProject project, HibBranch branch, HibSchemaVersion version, ContainerType type, Bucket bucket, Optional<Pattern> indexPattern) {
 		return Flowable.defer(() -> {
-			Map<String, Map<String, HibNodeFieldContainer>> sourceNodesPerIndex = loadVersionsFromGraph(branch, version, type, bucket);
-			return Flowable.fromIterable(getIndexNames(project, branch, version, type))
-				.filter(indexName -> {
+			return db.tx(tx -> {
+				DataHolderContext dhc = new SimpleDataHolderContext();
+				Map<String, Map<String, HibNodeFieldContainer>> sourceNodesPerIndex = loadVersionsFromStorage(branch, version, type, bucket, dhc);
+
+				List<SearchRequest> requests = getIndexNames(project, branch, version, type).stream().filter(indexName -> {
 					boolean match = indexPattern.orElse(MATCH_ALL).matcher(indexName).matches();
 					if (!match && log.isDebugEnabled()) {
-						log.debug("Index {} does not match pattern {} and will be omitted from sync", indexName, indexPattern);
+						log.debug("Index {} does not match pattern {} and will be omitted from sync", indexName,
+								indexPattern);
 					}
 					return match;
-				})
-				.flatMap(indexName -> loadVersionsFromIndex(indexName, bucket).flatMapPublisher(sinkVersions -> {
+				}).flatMap(indexName -> {
+					Map<String, String> sinkVersions = loadVersionsFromIndex(indexName, bucket).blockingGet();
+
 					log.debug("Handling index sync on handler {" + getClass().getName() + "} for bucket {" + bucket + "}");
 					Map<String, HibNodeFieldContainer> sourceNodes = sourceNodesPerIndex.getOrDefault(indexName, Collections.emptyMap());
-					String branchUuid = branch.getUuid();
 
-					Map<String, String> sourceVersions = db.tx(() -> sourceNodes.entrySet().stream()
-						.collect(Collectors.toMap(Map.Entry::getKey, x -> generateVersion(x.getValue(), branchUuid, type))));
+					Map<String, String> sourceVersions = sourceNodes.entrySet().stream()
+							.collect(Collectors.toMap(Map.Entry::getKey, x -> generateVersion(x.getValue(), project, branch, type, dhc)));
 
 					// 3. Diff the maps
 					MapDifference<String, String> diff = Maps.difference(sourceVersions, sinkVersions);
 					if (diff.areEqual()) {
-						return Flowable.empty();
+						return Stream.empty();
 					}
 					Set<String> needInsertionInES = diff.entriesOnlyOnLeft().keySet();
 					Set<String> needRemovalInES = diff.entriesOnlyOnRight().keySet();
@@ -461,45 +477,46 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 					meters.getDeleteMeter().addPending(needRemovalInES.size());
 					meters.getUpdateMeter().addPending(needUpdateInEs.size());
 
-					io.reactivex.functions.Function<Action, io.reactivex.functions.Function<String, CreateDocumentRequest>> toCreateRequest = action -> uuid -> {
-						JsonObject doc = db.tx(() -> getTransformer().toDocument(sourceNodes.get(uuid), branchUuid, type));
-						return helper.createDocumentRequest(indexName, uuid, doc, complianceMode, action);
-					};
+					Stream<CreateDocumentRequest> toInsert = needInsertionInES.stream().map(uuid -> {
+						JsonObject doc = getTransformer().toDocument(sourceNodes.get(uuid), project, branch, type, dhc);
+						return helper.createDocumentRequest(indexName, uuid, doc, compliance, meters.getInsertMeter()::synced);
+					});
 
-					Flowable<SearchRequest> toInsert = Flowable.fromIterable(needInsertionInES)
-						.map(toCreateRequest.apply(meters.getInsertMeter()::synced));
+					Stream<CreateDocumentRequest> toUpdate = needUpdateInEs.stream().map(uuid -> {
+						JsonObject doc = getTransformer().toDocument(sourceNodes.get(uuid), project, branch, type, dhc);
+						return helper.createDocumentRequest(indexName, uuid, doc, compliance, meters.getUpdateMeter()::synced);
+					});
 
-					Flowable<SearchRequest> toUpdate = Flowable.fromIterable(needUpdateInEs)
-						.map(toCreateRequest.apply(meters.getUpdateMeter()::synced));
+					Stream<DeleteDocumentRequest> toDelete = needRemovalInES.stream().map(uuid -> {
+						return helper.deleteDocumentRequest(indexName, uuid, compliance, meters.getDeleteMeter()::synced);
+					});
 
-					Flowable<SearchRequest> toDelete = Flowable.fromIterable(needRemovalInES)
-						.map(uuid -> helper.deleteDocumentRequest(indexName, uuid, complianceMode, meters.getDeleteMeter()::synced));
+					return Streams.concat(toInsert, toUpdate, toDelete);
+				}).collect(Collectors.toList());
 
-					return Flowable.merge(toInsert, toUpdate, toDelete);
-				}));
+				return Flowable.fromIterable(requests);
+			});
 		});
 	}
 
 	private List<String> getIndexNames(HibProject project, HibBranch branch, HibSchemaVersion version, ContainerType type) {
-		return db.tx(() -> {
-			Stream<String> languageIndices = version.getSchema().findOverriddenSearchLanguages()
-				.map(lang -> ContentDao.composeIndexName(
-					project.getUuid(),
-					branch.getUuid(),
-					version.getUuid(),
-					type,
-					lang,
-					version.getMicroschemaVersionHash(branch)));
-			Stream<String> defaultIndex = Stream.of(ContentDao.composeIndexName(
+		Stream<String> languageIndices = version.getSchema().findOverriddenSearchLanguages()
+			.map(lang -> ContentDao.composeIndexName(
 				project.getUuid(),
 				branch.getUuid(),
 				version.getUuid(),
 				type,
-				null,
+				lang,
 				version.getMicroschemaVersionHash(branch)));
-			return Stream.concat(languageIndices, defaultIndex)
-				.collect(Collectors.toList());
-		});
+		Stream<String> defaultIndex = Stream.of(ContentDao.composeIndexName(
+			project.getUuid(),
+			branch.getUuid(),
+			version.getUuid(),
+			type,
+			null,
+			version.getMicroschemaVersionHash(branch)));
+		return Stream.concat(languageIndices, defaultIndex)
+			.collect(Collectors.toList());
 	}
 
 	/**
@@ -527,30 +544,6 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	@Override
 	public Set<String> getIndicesForSearch(InternalActionContext ac) {
 		return getIndicesForSearch(ac, ContainerType.forVersion(ac.getVersioningParameters().getVersion()));
-	}
-
-	/**
-	 * Generate an elasticsearch document object from the given container and stores it in the search index.
-	 * 
-	 * @param container
-	 * @param branchUuid
-	 * @param type
-	 * @return Single with affected index name
-	 */
-	public Single<String> storeContainer(HibNodeFieldContainer container, String branchUuid, ContainerType type) {
-		ContentDao contentDao = Tx.get().contentDao();
-		JsonObject doc = transformer.toDocument(container, branchUuid, type);
-		HibProject project = contentDao.getNode(container).getProject();
-		HibSchemaVersion version = contentDao.getSchemaContainerVersion(container);
-		HibBranch branch = Tx.get().branchDao().findByUuid(project, branchUuid);
-		String indexName = ContentDao.composeIndexName(project.getUuid(), branchUuid, version.getUuid(), 
-				type, null, version.getMicroschemaVersionHash(branch));
-		if (log.isDebugEnabled()) {
-			log.debug("Storing node {" + contentDao.getNode(container).getUuid() + "} into index {" + indexName + "}");
-		}
-		String languageTag = container.getLanguageTag();
-		String documentId = ContentDao.composeDocumentId(contentDao.getNode(container).getUuid(), languageTag);
-		return searchProvider.storeDocument(indexName, documentId, doc).andThen(Single.just(indexName));
 	}
 
 	@Override
@@ -608,12 +601,14 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	 * Generate the version for the container that should be transformed.
 	 * 
 	 * @param container
-	 * @param branchUuid
+	 * @param project
+	 * @param branch
 	 * @param type
+	 * @param dhc
 	 * @return
 	 */
-	public String generateVersion(HibNodeFieldContainer container, String branchUuid, ContainerType type) {
-		return getTransformer().generateVersion(container, branchUuid, type);
+	public String generateVersion(HibNodeFieldContainer container, HibProject project, HibBranch branch, ContainerType type, DataHolderContext dhc) {
+		return getTransformer().generateVersion(container, project, branch, type, dhc);
 	}
 
 	@Override
@@ -627,8 +622,61 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	}	
 
 	@Override
-	public Stream<? extends HibNode> loadAllElements() {
-		return CommonTx.get().nodeDao().findAllGlobal();
+	public Collection<? extends HibNode> loadAllElements(Bucket bucket, DataHolderContext dc) {
+		return CommonTx.get().nodeDao().findAllGlobal(bucket).toList();
+	}
+
+	/**
+	 * Load elements from the bucket
+	 * @param branch branch
+	 * @param schemaVersion schema version
+	 * @param type container type
+	 * @param bucket bucket
+	 * @param dhc data holder context
+	 * @return list of containers
+	 */
+	public List<? extends HibNodeFieldContainer> loadAllElements(HibBranch branch, HibSchemaVersion schemaVersion,
+			ContainerType type, Bucket bucket, DataHolderContext dhc) {
+		SchemaDao schemaDao = Tx.get().schemaDao();
+		ContentDao contentDao = Tx.get().contentDao();
+		TagDao tagDao = Tx.get().tagDao();
+		RoleDao roleDao = Tx.get().roleDao();
+		NodeDao nodeDao = Tx.get().nodeDao();
+
+		// get the containers in the bucket
+		List<HibNodeFieldContainer> containersInBucket = new ArrayList<>(schemaDao
+			.getFieldContainers(schemaVersion, branch.getUuid(), bucket, Optional.of(type))
+			.toList());
+
+		// prepare nodes for parents
+		prepareData(containersInBucket, dhc, "container", "nodes", list -> {
+			return contentDao.getNodes(list).collect(Collectors.toMap(Pair::getLeft, Pair::getRight));
+		});
+
+		if (dhc != null) {
+			Map<HibNodeFieldContainer, HibNode> nodesMap = dhc.get(getAttributeName("container", "nodes"));
+			Collection<HibNode> nodes = new HashSet<>(nodesMap.values());
+
+			// prepare tags for nodes
+			prepareData(nodes, dhc, "node", "tags", list -> {
+				return tagDao.getTags(list, branch);
+			});
+
+			// prepare permissions for nodes
+			prepareData(nodes, dhc, "node", "read_permissions",
+					elements -> roleDao.getRoleUuidsForPerm(elements, InternalPermission.READ_PERM));
+			if (type == PUBLISHED) {
+				prepareData(nodes, dhc, "node", "read_published_permissions",
+						elements -> roleDao.getRoleUuidsForPerm(elements, InternalPermission.READ_PUBLISHED_PERM));
+			}
+
+			// prepare parents for nodes
+			String branchUuid = branch.getUuid();
+			prepareData(nodes, dhc, "node", "parents", elements -> nodeDao.getParentNodes(elements, branchUuid));
+		}
+
+
+		return containersInBucket;
 	}
 
 	@Override

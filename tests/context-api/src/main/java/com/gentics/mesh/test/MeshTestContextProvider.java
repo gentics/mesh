@@ -1,5 +1,7 @@
 package com.gentics.mesh.test;
 
+import java.util.Comparator;
+
 import com.gentics.mesh.etc.config.MeshOptions;
 
 /**
@@ -30,5 +32,14 @@ public interface MeshTestContextProvider extends MeshOptionsProvider {
 	 */
 	public static MeshTestContextProvider getProvider() {
 		return MeshOptionsProvider.spawnProviderInstance(System.getProperty(ENV_TEST_CONTEXT_PROVIDER_CLASS), MeshTestContextProvider.class);
+	}
+
+	/**
+	 * Get a sorting mode, that current Mesh instance or its database implements. The default value does nothing, assuming everything is ordered.
+	 * 
+	 * @return
+	 */
+	default Comparator<String> sortComparator() {
+		return MeshSortComparators.DEFAULT_COMPARATOR;
 	}
 }

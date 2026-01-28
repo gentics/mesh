@@ -13,6 +13,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Transactional;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
@@ -74,6 +75,9 @@ public class ConsistencyCheckHandler extends AbstractHandler {
 		utils.syncTx(ac, tx -> {
 			if (!ac.getUser().isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
+			}
+			if (attemptRepair) {
+				tx.<CommonTx>unwrap().data().getOrCreateBulkActionContext();
 			}
 			if (async) {
 				tx.jobDao().enqueueConsistencyCheck(ac.getUser(), attemptRepair);

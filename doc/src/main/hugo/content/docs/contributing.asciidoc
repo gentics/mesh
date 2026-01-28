@@ -83,6 +83,8 @@ The main components which are used to build Gentics Mesh are:
 | https://google.github.io/dagger/[Dagger 2]    | Dependency injection library
 | https://github.com/ReactiveX/RxJava[RxJava2]  | Library which is used to composing asynchronous requests/processes.
 | https://docs.jboss.org/hibernate/orm/6.5/introduction/html_single/Hibernate_Introduction.html[Hibernate]               | Object relations mapping.
+|======
+
 == Big Picture
 
 Since you are most likely already familiar with the Gentics Mesh link:/docs/api[REST API] I assume it is best to start there.

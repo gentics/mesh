@@ -27,7 +27,9 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -45,6 +47,8 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
+import com.gentics.mesh.core.rest.group.GroupCreateRequest;
+import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
@@ -61,6 +65,32 @@ import io.reactivex.Single;
 
 @MeshTestSetting(elasticsearch = TRACKING, testSize = PROJECT, startServer = true)
 public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
+
+	@Test
+	public void testOneRoleTwoGroups() {
+		Set<GroupResponse> groups = IntStream.range(0, 2).mapToObj(i -> {
+			GroupCreateRequest request = new GroupCreateRequest();
+			request.setName("group" + i + "forrole");
+			return call(() -> client().createGroup(request));
+		}).collect(Collectors.toSet());
+
+		RoleCreateRequest request = new RoleCreateRequest();
+		request.setName("one_role_two_groups");
+
+		expect(ROLE_CREATED).match(1, MeshElementEventModelImpl.class, event -> {
+			assertThat(event).hasName("one_role_two_groups").uuidNotNull();
+		}).total(1);
+		expect(ROLE_UPDATED).total(0);
+
+		RoleResponse restRole = call(() -> client().createRole(request));
+		awaitEvents();
+		waitForSearchIdleEvent();
+
+		groups.stream().forEach(group -> call(() -> client().addRoleToGroup(group.getUuid(), restRole.getUuid())));
+
+		RoleListResponse roles = adminCall(() -> client().findRoles());
+		assertThat(roles.getData().stream().filter(role -> "one_role_two_groups".equals(role.getName()))).hasSize(1);
+	}
 
 	@Test
 	@Override
@@ -353,7 +383,9 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		}
 		RoleListResponse list = call(() -> client().findRoles(new SortingParametersImpl("name", SortOrder.DESCENDING)));
 		assertEquals("Total data size should be 8", 8, list.getData().size());
-		assertThat(list.getData()).isSortedAccordingTo((a, b) -> b.getName().compareTo(a.getName()));
+		assertThat(list.getData()).isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().reversed().compare(
+				fa != null ? fa.getName() : null,
+				fb != null ? fb.getName() : null));
 	}
 
 	@Test

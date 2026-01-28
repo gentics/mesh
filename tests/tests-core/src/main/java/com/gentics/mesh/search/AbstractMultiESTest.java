@@ -1,20 +1,30 @@
 package com.gentics.mesh.search;
 
+import static org.assertj.core.api.Assertions.fail;
+
 import java.lang.annotation.Annotation;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.rules.Timeout;
 import org.junit.runners.Parameterized.Parameters;
 
+import com.gentics.mesh.cli.AbstractBootstrapInitializer;
 import com.gentics.mesh.test.AWSTestMode;
 import com.gentics.mesh.test.ElasticsearchTestMode;
 import com.gentics.mesh.test.MeshCoreOptionChanger;
 import com.gentics.mesh.test.MeshOptionChanger;
 import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.ResetTestDb;
 import com.gentics.mesh.test.SSLTestMode;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestContext;
@@ -30,6 +40,9 @@ public abstract class AbstractMultiESTest implements TestHttpMethods, TestGraphH
 
 	protected OkHttpClient httpClient;
 
+	@ClassRule
+	public static Timeout globalTimeout= new Timeout(20, TimeUnit.MINUTES);
+
 	protected static ElasticsearchTestMode currentMode = null;
 
 	@Parameters(name = "{index}: ({0})")
@@ -38,6 +51,7 @@ public abstract class AbstractMultiESTest implements TestHttpMethods, TestGraphH
 			{ ElasticsearchTestMode.CONTAINER_ES6 },
 			{ ElasticsearchTestMode.CONTAINER_ES7 },
 			{ ElasticsearchTestMode.CONTAINER_ES8 },
+			{ ElasticsearchTestMode.CONTAINER_ES9 },
 		});
 	}
 
@@ -83,10 +97,12 @@ public abstract class AbstractMultiESTest implements TestHttpMethods, TestGraphH
 	@Before
 	public void setup() throws Throwable {
 		getTestContext().setup(settings);
+		redeploySearchVerticle();
 	}
 
 	@After
 	public void tearDown() throws Throwable {
+		undeploySearchVerticle();
 		getTestContext().tearDown(settings);
 	}
 
@@ -189,7 +205,7 @@ public abstract class AbstractMultiESTest implements TestHttpMethods, TestGraphH
 		}
 
 		@Override
-		public boolean resetBetweenTests() {
+		public ResetTestDb resetBetweenTests() {
 			return delegate.resetBetweenTests();
 		}
 	}

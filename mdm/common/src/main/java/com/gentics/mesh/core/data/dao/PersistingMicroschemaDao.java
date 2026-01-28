@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.event.Assignment.ASSIGNED;
 import static com.gentics.mesh.event.Assignment.UNASSIGNED;
+import static com.gentics.mesh.util.PreparationUtil.preparePermissions;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
@@ -14,11 +15,12 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang.NotImplementedException;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibMicronode;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
@@ -28,6 +30,7 @@ import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
@@ -39,6 +42,8 @@ import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.GenericParameters;
+import com.gentics.mesh.parameter.value.FieldsSet;
 
 /**
  * A persisting extension to {@link MicroschemaDao}
@@ -274,7 +279,7 @@ public interface PersistingMicroschemaDao
 		HibMicroschemaVersion foundVersion = null;
 
 		if (branch != null) {
-			foundVersion = branch.findLatestMicroschemaVersion(container);
+			foundVersion = findLatestVersion(branch, container);
 		} else if (version != null) {
 			foundVersion = findVersionByRev(container, version);
 		} else {
@@ -302,15 +307,30 @@ public interface PersistingMicroschemaDao
 	}
 
 	@Override
-	default void delete(HibMicroschema microschema, BulkActionContext bac) {
+	default void delete(HibMicroschema microschema) {
 		for (HibMicroschemaVersion version : findAllVersions(microschema)) {
 			if (findMicronodes(version).hasNext()) {
 				throw error(BAD_REQUEST, "microschema_delete_still_in_use", microschema.getUuid());
 			}
-			deleteVersion(version, bac);
+			deleteVersion(version);
 		}
-		bac.add(microschema.onDeleted());
+		CommonTx.get().batch().add(microschema.onDeleted());
 		deletePersisted(microschema);
+	}
+
+	@Override
+	default void beforeGetETagForPage(Page<? extends HibCoreElement<? extends RestModel>> page,
+			InternalActionContext ac) {
+		preparePermissions(ac.getUser(), page, ac);
+	}
+
+	@Override
+	default void beforeTransformToRestSync(Page<? extends HibCoreElement<? extends RestModel>> page,
+			InternalActionContext ac) {
+		GenericParameters generic = ac.getGenericParameters();
+		FieldsSet fields = generic.getFields();
+
+		preparePermissions(ac.getUser(), page, ac, fields);
 	}
 
 	@Override
@@ -320,9 +340,10 @@ public interface PersistingMicroschemaDao
 	}
 
 	@Override
-	default void delete(HibProject root, HibMicroschema element, BulkActionContext bac) {
-		unassign(element, root, bac.batch());
-		assignEvents(element, UNASSIGNED).forEach(bac::add);
+	default void delete(HibProject root, HibMicroschema element) {
+		EventQueueBatch batch = CommonTx.get().batch();
+		unassign(element, root, batch);
+		assignEvents(element, UNASSIGNED).forEach(batch::add);
 		// TODO should we delete the schema completely?
 		//delete(element, bac);
 	}

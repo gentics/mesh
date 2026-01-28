@@ -16,13 +16,13 @@ import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.util.RxUtil;
 
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLTypeReference;
-import io.vertx.core.impl.launcher.commands.VersionCommand;
 
 /**
  * GraphQL type provider for the mesh type.
@@ -111,7 +111,7 @@ public class MeshTypeProvider {
 		// .vertxVersion
 		root.field(newFieldDefinition().name("vertxVersion").description("Vert.x version").type(GraphQLString).dataFetcher((env) -> {
 			if (isTokenAllowed(env)) {
-				return VersionCommand.getVersion();
+				return RxUtil.getVertxVersion();
 			} else {
 				return null;
 			}

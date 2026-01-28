@@ -32,7 +32,6 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
@@ -119,7 +118,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		String s3Bucket = getTestContext().getOptions().getS3Options().getBucket();
 		File tempFile = createTempFile();
 		s3BinaryStorage().createBucket(s3Bucket)
-				.flatMap(unused -> s3BinaryStorage().uploadFile(s3Bucket, nodeUuid + "/s3", tempFile, false))
+				.flatMap(unused -> s3BinaryStorage().uploadFile(s3Bucket, nodeUuid + "/s3/en", tempFile, false))
 				.blockingGet();
 
 		// 3. Try to resolve the path
@@ -157,6 +156,27 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		assertThat(response.getNodeResponse()).is(node).hasLanguage("en");
 		assertFalse(response.isBinary());
 		assertEquals("Webroot response node uuid header value did not match", nodeUuid, response.getNodeUuid());
+	}
+
+	@Test
+	public void testReadFolderByPathAsAnonymous() throws Exception {
+		String path = "/News/2015";
+
+		// grant permissions to the anonymous role
+		try (Tx tx = tx()) {
+			RoleDao roleDao = tx.roleDao();
+			HibNode newsFolder = folder("2015");
+			roleDao.grantPermissions(anonymousRole(), newsFolder, READ_PERM);
+			roleDao.grantPermissions(anonymousRole(), newsFolder, READ_PUBLISHED_PERM);
+			tx.success();
+		}
+
+		// clear the cache
+		adminCall(() -> client().clearCache());
+		// read by webroot path
+		call(() -> anonymousClient().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft()));
+		// read by webroot path again (from cache)
+		call(() -> anonymousClient().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft()));
 	}
 
 	@Test
@@ -537,9 +557,8 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		// 2. Publish nodes
 		try (Tx tx = tx()) {
 			NodeDao nodeDao = tx.nodeDao();
-			BulkActionContext bac = createBulkContext();
-			nodeDao.publish(folder("news"), mockActionContext(), bac);
-			nodeDao.publish(folder("2015"), mockActionContext(), bac);
+			nodeDao.publish(folder("news"), mockActionContext());
+			nodeDao.publish(folder("2015"), mockActionContext());
 			tx.success();
 		}
 
@@ -584,9 +603,8 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		// 1. Publish nodes
 		tx(tx -> {
 			NodeDao nodeDao = tx.nodeDao();
-			BulkActionContext bac = createBulkContext();
-			nodeDao.publish(folder("news"), mockActionContext(), bac);
-			nodeDao.publish(folder("2015"), mockActionContext(), bac);
+			nodeDao.publish(folder("news"), mockActionContext());
+			nodeDao.publish(folder("2015"), mockActionContext());
 		});
 
 		// 2. Change names

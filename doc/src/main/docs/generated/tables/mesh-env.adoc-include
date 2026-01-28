@@ -77,6 +77,9 @@
 | *MESH_S3_BINARY_CACHE_BUCKET*
 | Override the configured AWS S3 bucket.
 
+| *MESH_ELASTICSEARCH_SYNC_FETCH_BATCH_SIZE*
+| Override the sync fetch batch size. Default: 10000
+
 | *HIKARI_CP_POOL_NAME*
 | This property represents a user-defined name for the connection pool and appears mainly in logging and JMX management consoles to identify pools and pool configurations.
 
@@ -86,11 +89,11 @@
 | *MESH_HTTP_VERTICLE_AMOUNT*
 | Override the http verticle amount.
 
-| *MESH_JDBC_RETRY_LIMIT*
-| Override the default transaction retry count.
-
 | *MESH_BINARY_CHECK_INTERVAL*
 | Override the binary check interval
+
+| *MESH_JDBC_RETRY_LIMIT*
+| Override the default transaction retry count.
 
 | *HIKARI_CP_REGISTER_MBEANS*
 | This property controls whether or not JMX Management Beans (&quot;MBeans&quot;) are registered or not.
@@ -221,11 +224,14 @@
 | *MESH_MAX_MIGRATION_BATCH_SIZE*
 | Override the maximum migration batch size
 
-| *MESH_HTTP_SSL_CLIENT_AUTH_MODE*
-| Override the configured client certificate handling mode.
+| *MESH_IMAGE_CACHE_TOUCH*
+| Overwrite the image cache touch behaviour.
 
 | *MESH_CLUSTER_COORDINATOR_REGEX*
 | Override the cluster coordinator regex.
+
+| *MESH_HTTP_SSL_CLIENT_AUTH_MODE*
+| Override the configured client certificate handling mode.
 
 | *MESH_S3_CORS_ALLOWED_HEADERS*
 | Override the configured AWS S3 CORS allowed headers.
@@ -235,6 +241,9 @@
 
 | *MESH_AUTH_PUBLIC_KEYS_PATH*
 | Override the configured public keys file path.
+
+| *MESH_IMAGE_CACHE_CLEAN_INTERVAL*
+| Overwrite the image cache clean interval.
 
 | *MESH_S3_BINARY_ACCESS_KEY_ID*
 | Override the configured AWS S3 access key id.
@@ -265,6 +274,9 @@
 
 | *MESH_MONITORING_ENABLED*
 | Override the configured monitoring enabled flag.
+
+| *MESH_IMAGE_CACHE_CLEAN_INTERVAL*
+| Overwrite the image cache max idle time.
 
 | *MESH_HTTP_CORS_ENABLE*
 | Override the configured CORS enable flag.
@@ -464,11 +476,11 @@
 | *MESH_S3_BINARY_CACHE_EXPIRATION_TIME_DOWNLOAD*
 | Override the configured AWS S3 download time.
 
-| *MESH_DB_SYNC_WRITES_TIMEOUT*
-| Override the database sync write timeout.
-
 | *MESH_BINARY_UPLOAD_TEMP_DIR*
 | Override the configured upload temporary directory.
+
+| *MESH_DB_SYNC_WRITES_TIMEOUT*
+| Override the database sync write timeout.
 
 | *MESH_NODE_NAME*
 | Override the configured node name.

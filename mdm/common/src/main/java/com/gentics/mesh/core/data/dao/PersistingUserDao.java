@@ -8,30 +8,37 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_
 import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.util.PreparationUtil.getPreparedData;
+import static com.gentics.mesh.util.PreparationUtil.prepareData;
+import static com.gentics.mesh.util.PreparationUtil.preparePermissions;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.cache.NameCache;
 import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.context.impl.DummyEventQueueBatch;
 import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeMigrationUser;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
@@ -40,6 +47,7 @@ import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectReference;
@@ -53,9 +61,6 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A persisting extension to {@link UserDao}
@@ -92,31 +97,30 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	@Override
 	default boolean hasPermissionForId(HibUser user, Object elementId, InternalPermission permission) {
 		PermissionCache permissionCache = Tx.get().permissionCache();
-		Boolean cached = permissionCache.hasPermission(user.getId(), permission, elementId);
-		if (cached != null) {
-			if (!cached && permission == READ_PUBLISHED_PERM) {
-				return hasPermissionForId(user, elementId, READ_PERM);
-			}
-
-			return cached.booleanValue();
+		// Admin users have all permissions
+		if (user.isAdmin()) {
+			permissionCache.store(user.getId(), EnumSet.allOf(InternalPermission.class), elementId);
+			return true;
 		} else {
-			// Admin users have all permissions
-			if (user.isAdmin()) {
-				permissionCache.store(user.getId(), EnumSet.allOf(InternalPermission.class), elementId);
-				return true;
-			}
-
-			EnumSet<InternalPermission> permissions = getPermissionsForElementId(user, elementId);
-			permissionCache.store(user.getId(), permissions, elementId);
-			if (permissions.contains(permission)) {
-				return true;
-			}
-
-			// Fall back to read and check whether the user has read perm. Read permission also includes read published.
-			if (permission == READ_PUBLISHED_PERM) {
-				return hasPermissionForId(user, elementId, READ_PERM);
+			Boolean cached = permissionCache.hasPermission(user.getId(), permission, elementId);
+			if (cached != null) {
+				if (!cached && permission == READ_PUBLISHED_PERM) {
+					return hasPermissionForId(user, elementId, READ_PERM);
+				}
+				return cached.booleanValue();
 			} else {
-				return false;
+				EnumSet<InternalPermission> permissions = getPermissionsForElementId(user, elementId);
+				permissionCache.store(user.getId(), permissions, elementId);
+				if (permissions.contains(permission)) {
+					return true;
+				}
+
+				// Fall back to read and check whether the user has read perm. Read permission also includes read published.
+				if (permission == READ_PUBLISHED_PERM) {
+					return hasPermissionForId(user, elementId, READ_PERM);
+				} else {
+					return false;
+				}
 			}
 		}
 	}
@@ -365,7 +369,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 			keyBuilder.append(referencedNode.getUuid());
 			keyBuilder.append(referencedNode.getProject().getName());
 		}
-		for (HibGroup group : getGroups(user)) {
+		for (HibGroup group : getPreparedData(user, ac, "user", "groups", u -> getGroups(u).list())) {
 			keyBuilder.append(group.getUuid());
 		}
 		keyBuilder.append(String.valueOf(user.isAdmin()));
@@ -409,6 +413,31 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	}
 
 	@Override
+	default void beforeTransformToRestSync(Page<? extends HibCoreElement<? extends RestModel>> page,
+			InternalActionContext ac) {
+		GenericParameters generic = ac.getGenericParameters();
+		FieldsSet fields = generic.getFields();
+
+		preparePermissions(ac.getUser(), page, ac, fields);
+
+		@SuppressWarnings("unchecked")
+		List<HibUser> users = (List<HibUser>)page.getWrappedList();
+		prepareData(users, ac, "user", "groups", this::getGroups, fields.has("groups"));
+		prepareData(users, ac, "user", "roles", this::getRoles, fields.has("rolesHash"));
+	}
+
+	@Override
+	default void beforeGetETagForPage(Page<? extends HibCoreElement<? extends RestModel>> page,
+			InternalActionContext ac) {
+		preparePermissions(ac.getUser(), page, ac);
+
+		@SuppressWarnings("unchecked")
+		List<HibUser> users = (List<HibUser>)page.getWrappedList();
+		prepareData(users, ac, "user", "groups", this::getGroups);
+		prepareData(users, ac, "user", "roles", this::getRoles);
+	}
+
+	@Override
 	default UserResponse transformToRestSync(HibUser user, InternalActionContext ac, int level, String... languageTags) {
 		GenericParameters generic = ac.getGenericParameters();
 		FieldsSet fields = generic.getFields();
@@ -439,7 +468,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 			setGroups(user, ac, restUser);
 		}
 		if (fields.has("rolesHash")) {
-			restUser.setRolesHash(getRolesHash(user));
+			restUser.setRolesHash(getRolesHash(user, ac));
 		}
 		if (fields.has("forcedPasswordChange")) {
 			restUser.setForcedPasswordChange(user.isForcedPasswordChange());
@@ -485,7 +514,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	 */
 	default void setGroups(HibUser user, InternalActionContext ac, UserResponse restUser) {
 		// TODO filter by permissions
-		for (HibGroup group : getGroups(user)) {
+		for (HibGroup group : getPreparedData(user, ac, "user", "groups", u -> getGroups(u).list())) {
 			GroupReference reference = group.transformToReference();
 			restUser.getGroups().add(reference);
 		}
@@ -493,7 +522,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 
 	@Override
 	default boolean updateDry(HibUser user, InternalActionContext ac) {
-		return update(user, ac, new DummyEventQueueBatch(), true);
+		return update(user, ac, Tx.get().batch(), true);
 	}
 
 	@Override
@@ -578,7 +607,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	}
 
 	@Override
-	default void delete(HibUser user, BulkActionContext bac) {
+	default void delete(HibUser user) {
 		// TODO unhardcode the admin name
 		if ("admin".equals(user.getUsername())) {
 			throw error(FORBIDDEN, "error_illegal_admin_deletion");
@@ -591,9 +620,9 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 		// user will be just disabled and removed from all groups.");
 		// }
 		// outE(HAS_USER).removeAll();
-		bac.add(user.onDeleted());
+		CommonTx.get().batch().add(user.onDeleted());
 		deletePersisted(user);
-		bac.process();
+		CommonTx.get().data().maybeGetBulkActionContext().ifPresent(BulkActionContext::process);
 		Tx.get().permissionCache().clear();
 	}
 
@@ -617,10 +646,10 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	}
 
 	@Override
-	default String getRolesHash(HibUser user) {
+	default String getRolesHash(HibUser user, InternalActionContext ac) {
 		return Stream.concat(
 				Stream.of(user.isAdmin() ? "1" : "0"), 
-				StreamSupport.stream(getRoles(user).spliterator(), false)
+				getPreparedData(user, ac, "user", "roles", u -> getRoles(u)).stream()
 					.map(role -> role.getId().toString())
 					.sorted())
 			.collect(Collectors.joining());

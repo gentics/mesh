@@ -15,6 +15,7 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.core.data.search.Compliance;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.data.tag.HibTag;
@@ -22,8 +23,6 @@ import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.MeshProjectElementEventModel;
-import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.entity.MeshEntities;
 
@@ -37,13 +36,13 @@ public class TagEventHandler implements EventHandler {
 	
 	private final MeshHelper helper;
 	private final MeshEntities entities;
-	private final ComplianceMode complianceMode;
+	private final Compliance compliance;
 
 	@Inject
-	public TagEventHandler(MeshHelper helper, MeshEntities entities, MeshOptions options) {
+	public TagEventHandler(MeshHelper helper, MeshEntities entities, Compliance compliance) {
 		this.helper = helper;
 		this.entities = entities;
-		this.complianceMode = options.getSearchOptions().getComplianceMode();
+		this.compliance = compliance;
 	}
 
 	@Override
@@ -77,7 +76,7 @@ public class TagEventHandler implements EventHandler {
 				if (EventCauseHelper.isProjectDeleteCause(model)) {
 					return Flowable.empty();
 				} else {
-					return Flowable.just(helper.deleteDocumentRequest(HibTag.composeIndexName(projectUuid), model.getUuid(), complianceMode));
+					return Flowable.just(helper.deleteDocumentRequest(HibTag.composeIndexName(projectUuid), model.getUuid(), compliance));
 				}
 
 			} else {

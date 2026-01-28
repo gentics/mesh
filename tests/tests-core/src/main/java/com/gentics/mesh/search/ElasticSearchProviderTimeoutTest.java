@@ -16,6 +16,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.user.UserListResponse;
@@ -24,13 +26,11 @@ import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 
-import io.vertx.core.http.HttpMethod;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
-import io.vertx.reactivex.core.buffer.Buffer;
 import io.vertx.reactivex.core.http.HttpServer;
 import io.vertx.reactivex.ext.web.client.HttpRequest;
 import io.vertx.reactivex.ext.web.client.WebClient;
@@ -71,7 +71,7 @@ public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 				}
 				if (maybeCustomStatus.isPresent()) {
 					rh.response().setStatusCode(maybeCustomStatus.get()).setStatusMessage("HTTP " + maybeCustomStatus.get()).end(new JsonObject().put("error", "HTTP error " + maybeCustomStatus.get() + " occurred!!!").toString());
-			} else {
+				} else {
 					HttpRequest<Buffer> realRequest = realClient.request(
 							rh.method(), 
 							testContext.elasticsearchContainer().getMappedPort(9200), 
@@ -79,17 +79,29 @@ public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 							rh.uri()
 						).putHeaders(rh.headers());
 					realRequest.queryParams().addAll(rh.params());
-					if (HttpMethod.POST == rh.method() || HttpMethod.PUT == rh.method()) {
-						rh.bodyHandler(body -> realRequest.sendBuffer(body, rs -> {
+					rh.bodyHandler(body -> {
+						if (body.length() != 0) {
+							realRequest.sendBuffer(body).andThen(rs -> {
 							log.info(rh.toString() + " body sent");
-							rh.response().end(rs.result().body());
-						}));
-					} else {
-						realRequest.send(rs -> {
+								if (rs.succeeded()) {
+									rh.response().end(rs.result().body());
+								} else {
+									rh.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code())
+										.setStatusMessage(rs.cause().getClass().getName()).end();
+								}
+							});
+						} else {
+						realRequest.send().andThen(rs -> {
 							log.info(rh.toString() + " sent");
+								if (rs.succeeded()) {
 							rh.response().end(rs.result().body());
+								} else {
+									rh.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code())
+										.setStatusMessage(rs.cause().getClass().getName()).end();
+								}
 						});
-			}
+						}
+					});
 				}
 			} catch (InterruptedException e) {
 			}

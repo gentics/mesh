@@ -1,0 +1,2 @@
+Cache: The Image Cache refactoring, which was done in a previous hotfix release introduced an error which caused creation of empty folders in the old structure as well. This has been fixed.
+Also the migration process has been fixed to really remove all folders of the old structure, even if they are empty or contain cache files of binaries that were deleted before.

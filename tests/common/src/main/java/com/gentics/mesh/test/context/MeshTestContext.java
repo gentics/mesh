@@ -6,11 +6,14 @@ import static com.gentics.mesh.test.ElasticsearchTestMode.UNREACHABLE;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.NoSuchFileException;
 import java.security.cert.CertificateException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +22,7 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -28,6 +32,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOExceptionList;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.junit.rules.TestRule;
@@ -73,6 +78,7 @@ import com.gentics.mesh.test.MeshInstanceProvider;
 import com.gentics.mesh.test.MeshTestActions;
 import com.gentics.mesh.test.MeshTestContextProvider;
 import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.ResetTestDb;
 import com.gentics.mesh.test.SSLTestMode;
 import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.test.docker.AWSContainer;
@@ -86,10 +92,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.http.ClientAuth;
 import io.vertx.core.json.JsonObject;
-import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
 
 public class MeshTestContext implements TestRule {
 
@@ -130,6 +133,10 @@ public class MeshTestContext implements TestRule {
 
 	private boolean needsSetup = true;
 
+	private int lastDbHash;
+
+	private int currentDbHash;
+
 	private List<MeshTestInstance> instances = new ArrayList<>();
 
 	public List<MeshTestInstance> getInstances() {
@@ -165,6 +172,15 @@ public class MeshTestContext implements TestRule {
 	}
 
 	public void setup(MeshTestSetting settings) throws Exception {
+		// when the database needs to be reset when the hash changes, we compare the hashes now
+		if (settings.resetBetweenTests() == ResetTestDb.ON_HASH_CHANGE && lastDbHash != currentDbHash) {
+			// hash changed, so we need setup
+			needsSetup = true;
+			// and will force tearDown now
+			tearDown(settings, true);
+			lastDbHash = currentDbHash;
+		}
+
 		if (!needsSetup) {
 			// database has already been setup, so omit this step
 			return;
@@ -177,6 +193,7 @@ public class MeshTestContext implements TestRule {
 		case CONTAINER_ES6:
 		case CONTAINER_ES7:
 		case CONTAINER_ES8:
+		case CONTAINER_ES9:
 			setupIndexHandlers(true);
 			break;
 		default:
@@ -191,6 +208,7 @@ public class MeshTestContext implements TestRule {
 		case CONTAINER_ES6:
 		case CONTAINER_ES7:
 		case CONTAINER_ES8:
+		case CONTAINER_ES9:
 			setupIndexHandlers(false);
 			break;
 		default:
@@ -289,11 +307,27 @@ public class MeshTestContext implements TestRule {
 	}
 
 	public void tearDown(MeshTestSetting settings) throws Exception {
-		if (!settings.resetBetweenTests()) {
-			// the test does not require the database to be reset between test runs
-			needsSetup = false;
-			return;
+		tearDown(settings, false);
+	}
+
+	public void tearDown(MeshTestSetting settings, boolean force) throws Exception {
+		if (!force) {
+			switch (settings.resetBetweenTests()) {
+			case NEVER:
+				// the test does not require the database to be reset between test runs
+				needsSetup = false;
+				return;
+			case ON_HASH_CHANGE:
+				// we need to reset on a changed hash, which will be setup on test creation,
+				// so we do not remove the data right now
+				needsSetup = false;
+				return;
+			case ALWAYS:
+			default:
+				break;
+			}
 		}
+
 		cleanupFolders();
 		if (settings.startServer()) {
 			for (MeshTestInstance instance : instances) {
@@ -301,10 +335,14 @@ public class MeshTestContext implements TestRule {
 				instance.closeClient();
 			}
 		}
-		idleConsumer.unregister();
+		if (idleConsumer != null) {
+			idleConsumer.unregister();
+			idleConsumer = null;
+		}
 		switch (settings.elasticsearch()) {
 		case CONTAINER_ES7:
 		case CONTAINER_ES8:
+		case CONTAINER_ES9:
 		case CONTAINER_ES6:
 		case CONTAINER_ES6_TOXIC:
 			instances.forEach(inst -> inst.meshDagger.searchProvider().clear().blockingAwait());
@@ -319,7 +357,14 @@ public class MeshTestContext implements TestRule {
 	}
 
 	public void tearDownOnce(MeshTestSetting settings) throws Exception {
+		if (idleConsumer != null) {
+			idleConsumer.unregister();
+			idleConsumer = null;
+		}
 		for (MeshTestInstance instance : instances) {
+			if (instance.meshDagger != null) {
+				instance.meshDagger.eventbusLivenessManager().shutdown();
+			}
 			if (instance.mesh != null) {
 				instance.mesh.shutdown();
 			}
@@ -433,8 +478,29 @@ public class MeshTestContext implements TestRule {
 	}
 
 	private void cleanupFolders() throws IOException {
+		Predicate<Throwable> isFileNotFound = e -> 
+				(e instanceof NoSuchFileException) 
+				|| (e.getCause() instanceof NoSuchFileException)
+				|| (e instanceof FileNotFoundException) 
+				|| (e.getCause() instanceof FileNotFoundException);
+
 		for (File folder : tmpFolders) {
-			FileUtils.deleteDirectory(folder);
+			try {
+				FileUtils.deleteDirectory(folder);
+			} catch (IOException e) {
+				if (isFileNotFound.test(e)) {
+					LOG.debug("Suppressing inexisting directory deletion error", e);
+				} else if (e instanceof IOExceptionList) {
+					IOExceptionList el = IOExceptionList.class.cast(e);
+					if (el.getCauseList().stream().allMatch(isFileNotFound)) {
+						LOG.debug("Suppressing inexisting directory deletion errors", el);
+					} else {
+						throw el;
+					}
+				} else {
+					throw e;
+				}
+			}
 		}
 		for (MeshTestInstance instance : instances) {
 			if (instance.meshDagger != null && instance.meshDagger.permissionCache() != null) {
@@ -506,6 +572,10 @@ public class MeshTestContext implements TestRule {
 
 	public MeshRestClient getHttpClient() {
 		return getHttpClient(0);
+	}
+
+	public MeshRestClient getAnonymousHttpClient() {
+		return instances.get(0).getAnonymousHttpClient();
 	}
 
 	public MeshRestClient getHttpClient(int instance) {
@@ -588,6 +658,10 @@ public class MeshTestContext implements TestRule {
 		return meshTestContextProvider.getInstanceProvider();
 	}
 
+	public Comparator<String> getSortComparator() {
+		return meshTestContextProvider.sortComparator();
+	}
+
 	public MeshOptions getOptions() {
 		return getOptions(0);
 	}
@@ -608,6 +682,18 @@ public class MeshTestContext implements TestRule {
 		return needsSetup;
 	}
 
+	/**
+	 * Set the db hash for the current test run, which is used to determine, whether
+	 * the db needs to be reset (when {@link MeshTestSetting#resetBetweenTests()} is
+	 * set to {@link ResetTestDb#ON_HASH_CHANGE}).
+	 * This method must be called in the constructor of the test.
+	 * 
+	 * @param hash db hash for the current test
+	 */
+	public void setDbHash(int hash) {
+		this.currentDbHash = hash;
+	}
+
 	public class MeshTestInstance {
 		private Mesh mesh;
 
@@ -621,6 +707,9 @@ public class MeshTestContext implements TestRule {
 
 		// Maps api version to client
 		private final Map<String, MeshRestClient> clients = new HashMap<>();
+
+		// Maps api version to anonymous client
+		private final Map<String, MeshRestClient> anonymousClients = new HashMap<>();
 
 		private MonitoringRestClient monitoringClient;
 
@@ -687,6 +776,11 @@ public class MeshTestContext implements TestRule {
 			if (settings == null) {
 				throw new RuntimeException("Settings could not be found. Did you forget to add the @MeshTestSetting annotation to your test?");
 			}
+
+			// restrict number of verticles and threads
+			meshOptions.getHttpServerOptions().setVerticleAmount(10);
+			meshOptions.getVertxOptions().setWorkerPoolSize(5);
+			meshOptions.getVertxOptions().setEventPoolSize(10);
 
 			// disable usage of "ordered" blocking handlers (which seems to be useless anyways)
 			meshOptions.getVertxOptions().setOrderedBlockingHandlers(false);
@@ -786,11 +880,15 @@ public class MeshTestContext implements TestRule {
 
 					yield ElasticsearchContainer.VERSION_ES7;
 				}
-
 				case CONTAINER_ES8 -> {
 					searchOptions.setComplianceMode(ComplianceMode.ES_8);
 
 					yield ElasticsearchContainer.VERSION_ES8;
+				}
+				case CONTAINER_ES9 -> {
+					searchOptions.setComplianceMode(ComplianceMode.ES_9);
+
+					yield ElasticsearchContainer.VERSION_ES9;
 				}
 
 				default -> ElasticsearchContainer.VERSION_ES6;
@@ -800,6 +898,7 @@ public class MeshTestContext implements TestRule {
 			case CONTAINER_ES6:
 			case CONTAINER_ES7:
 			case CONTAINER_ES8:
+			case CONTAINER_ES9:
 			case UNREACHABLE:
 				elasticsearch = new ElasticsearchContainer(version);
 				if (!elasticsearch.isRunning()) {
@@ -812,7 +911,7 @@ public class MeshTestContext implements TestRule {
 				} else {
 					searchOptions.setUrl("http://" + elasticsearch.getHost() + ":" + elasticsearch.getMappedPort(9200));
 				}
-				if (settings.elasticsearch() == ElasticsearchTestMode.CONTAINER_ES8) {
+				if (settings.elasticsearch().getOrder() >= 8) {
 					Thread.sleep(1000);
 					SearchProviderModule.searchClient(meshOptions).settings(new JsonObject("{\n"
 							+ "    \"persistent\": {\n"
@@ -878,7 +977,9 @@ public class MeshTestContext implements TestRule {
 			}
 
 			if (settings.useKeycloak()) {
-				keycloak = new KeycloakContainer("/keycloak/realm.json").waitingFor(Wait.forHttp("/auth/realms/master-test"));
+				keycloak = new KeycloakContainer("/keycloak/realm.json", "keycloak/keycloak", "22.0.5", Arrays.asList("start-dev"), true)
+						.waitingFor(Wait.forHttp("/realms/master-test"));
+
 				if (!keycloak.isRunning()) {
 					keycloak.start();
 				}
@@ -897,6 +998,10 @@ public class MeshTestContext implements TestRule {
 
 		public MeshRestClient getHttpClient() {
 			return clients.get("http_v" + CURRENT_API_VERSION);
+		}
+
+		public MeshRestClient getAnonymousHttpClient() {
+			return anonymousClients.get("http_v" + CURRENT_API_VERSION);
 		}
 
 		public MeshRestClient getHttpsClient() {
@@ -933,6 +1038,7 @@ public class MeshTestContext implements TestRule {
 				httpClient.setLogin(getData().user().getUsername(), getData().getUserInfo().getPassword());
 				httpClient.login().blockingGet();
 				clients.put("http_v" + CURRENT_API_VERSION, httpClient);
+				anonymousClients.put("http_v" + CURRENT_API_VERSION, MeshRestClient.create(httpConfigBuilder.build(), okHttp));
 
 				// Setup SSL client if needed
 				SSLTestMode ssl = settings.ssl();
@@ -1003,6 +1109,16 @@ public class MeshTestContext implements TestRule {
 
 		private void closeClient() throws Exception {
 			clients.values().forEach(client -> {
+				if (client != null) {
+					try {
+						client.close();
+					} catch (IllegalStateException e) {
+						// Ignored
+						e.printStackTrace();
+					}
+				}
+			});
+			anonymousClients.values().forEach(client -> {
 				if (client != null) {
 					try {
 						client.close();

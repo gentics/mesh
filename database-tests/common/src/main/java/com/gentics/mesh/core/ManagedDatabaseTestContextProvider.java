@@ -12,6 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.test.MeshProviderOrder;
 
@@ -110,6 +111,15 @@ public abstract class ManagedDatabaseTestContextProvider extends HibernateTestCo
 	 * Connect to the testdb manager via WEbSocket
 	 */
 	public ManagedDatabaseTestContextProvider() {
+		this(null);
+	}
+
+	/**
+	 * Create an instance with the given Mesh component builder.
+	 * Connect to the testdb manager via WEbSocket
+	 */
+	public ManagedDatabaseTestContextProvider(MeshComponent.Builder componentBuilder) {
+		super(componentBuilder);
 		ManagedBy managedBy = Objects.requireNonNull(getClass().getAnnotation(ManagedBy.class),
 				String.format("%s must be annotated with %s", getClass(), ManagedBy.class));
 		try {

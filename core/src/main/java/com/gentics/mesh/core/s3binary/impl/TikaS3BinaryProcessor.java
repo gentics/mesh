@@ -19,6 +19,8 @@ import javax.inject.Singleton;
 
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.binary.DocumentTikaParser;
@@ -43,8 +45,6 @@ import com.gentics.mesh.etc.config.MeshOptions;
 
 import dagger.Lazy;
 import io.reactivex.Maybe;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.reactivex.core.Vertx;
 
@@ -134,7 +134,7 @@ public class TikaS3BinaryProcessor implements S3BinaryDataProcessor {
 	@Override
 	public Maybe<Consumer<S3HibBinaryField>> process(S3BinaryDataProcessorContext ctx) {
 		FileUpload upload = ctx.getUpload();
-		return getExtractOptions(ctx.getActionContext(), ctx.getNodeUuid(), ctx.getFieldName())
+		return getExtractOptions(ctx.getActionContext(), ctx.getNodeUuid(), ctx.getFieldName(), ctx.getLanguageTag())
 			.flatMap(
 				extractOptions -> process(extractOptions, upload),
 				Maybe::error,
@@ -147,9 +147,10 @@ public class TikaS3BinaryProcessor implements S3BinaryDataProcessor {
 	 * @param ac
 	 * @param nodeUuid
 	 * @param fieldName
+	 * @param languageTag 
 	 * @return
 	 */
-	private Maybe<S3BinaryExtractOptions> getExtractOptions(InternalActionContext ac, String nodeUuid, String fieldName) {
+	private Maybe<S3BinaryExtractOptions> getExtractOptions(InternalActionContext ac, String nodeUuid, String fieldName, String languageTag) {
 		return db.maybeTx(tx -> {
 			NodeDao nodeDao = tx.nodeDao();
 			ContentDao contentDao = tx.contentDao();
@@ -158,7 +159,7 @@ public class TikaS3BinaryProcessor implements S3BinaryDataProcessor {
 			HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, InternalPermission.UPDATE_PERM);
 
 			// Load the current latest draft
-			HibNodeFieldContainer latestDraftVersion = contentDao.getFieldContainers(node, branch, ContainerType.DRAFT).next();
+			HibNodeFieldContainer latestDraftVersion = contentDao.getFieldContainer(node, languageTag, branch, ContainerType.DRAFT);
 
 			FieldSchema fieldSchema = latestDraftVersion.getSchemaContainerVersion()
 				.getSchema()
@@ -191,7 +192,7 @@ public class TikaS3BinaryProcessor implements S3BinaryDataProcessor {
 			return Maybe.empty();
 		}
 
-		return vertx.get().rxExecuteBlocking(promise -> {
+		return vertx.get().rxExecuteBlocking(() -> {
 			File uploadFile = new File(upload.uploadedFileName());
 			if (log.isDebugEnabled()) {
 				log.debug("Parsing file {" + uploadFile + "}");
@@ -217,9 +218,9 @@ public class TikaS3BinaryProcessor implements S3BinaryDataProcessor {
 						field.setLocation(pr.getLoc());
 					}
 				};
-				promise.complete(consumer);
+				return consumer;
 			} catch (Exception e) {
-				promise.fail(new IllegalStateException("Tika processing of uploaded S3 file " + upload.uploadedFileName() + " failed", e));
+				throw new IllegalStateException("Tika processing of uploaded S3 file " + upload.uploadedFileName() + " failed", e);
 			}
 		}, true);
 	}

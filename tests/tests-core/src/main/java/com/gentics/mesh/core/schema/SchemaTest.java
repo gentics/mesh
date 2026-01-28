@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -20,7 +21,6 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -86,7 +86,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 		long before = tx(tx -> {
 			SchemaDao schemaDao = tx.schemaDao();
 			// Count contents in bucket 0 to MaxInt/2
-			return schemaDao.getFieldContainers(version, initialBranchUuid(), bucket).count();
+			return schemaDao.getFieldContainers(version, initialBranchUuid(), bucket, Optional.empty()).count();
 		});
 
 		// Now create a new container
@@ -96,7 +96,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 
 		tx(tx -> {
 			SchemaDao schemaDao = tx.schemaDao();
-			long after = schemaDao.getFieldContainers(version, initialBranchUuid(), bucket).count();
+			long after = schemaDao.getFieldContainers(version, initialBranchUuid(), bucket, Optional.empty()).count();
 			assertEquals("We should find one more content.", before + 1, after);
 		});
 
@@ -107,7 +107,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 
 		tx(tx -> {
 			SchemaDao schemaDao = tx.schemaDao();
-			long after = schemaDao.getFieldContainers(version, initialBranchUuid(), bucket).count();
+			long after = schemaDao.getFieldContainers(version, initialBranchUuid(), bucket, Optional.empty()).count();
 			assertEquals("We should still find the altered element ", before + 1, after);
 		});
 
@@ -118,7 +118,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 
 		tx(tx -> {
 			SchemaDao schemaDao = tx.schemaDao();
-			long after = schemaDao.getFieldContainers(version, initialBranchUuid(), bucket).count();
+			long after = schemaDao.getFieldContainers(version, initialBranchUuid(), bucket, Optional.empty()).count();
 			assertEquals("We should still find the altered element ", before, after);
 		});
 
@@ -208,20 +208,18 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 		// delete all nodes of the schema
 		tx(tx -> {
 			SchemaDao schemaDao = tx.schemaDao();
-			BulkActionContext context = createBulkContext();
 			String uuid = getSchemaContainer().getUuid();
 			NodeDao nodeDao = tx.nodeDao();
 			HibSchema schema = tx.schemaDao().findByUuid(uuid);
-			for (HibNode node : schemaDao.getNodes(schema)) {
-				nodeDao.delete(node, context, false, true);
+			for (HibNode node : schemaDao.getNodes(schema).list()) {
+				nodeDao.delete(node, false, true);
 			}
 		});
 		tx(tx -> {
 			SchemaDao schemaDao = tx.schemaDao();
-			BulkActionContext context = createBulkContext();
 			String uuid = getSchemaContainer().getUuid();
 			HibSchema schema = tx.schemaDao().findByUuid(uuid);
-			schemaDao.delete(schema, context);
+			schemaDao.delete(schema);
 			assertNull("The schema should have been deleted", tx.schemaDao().findByUuid(uuid));
 		});
 	}
@@ -250,7 +248,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 			HibSchema newContainer = schemaDao.create(schema, user());
 			assertNotNull(newContainer);
 			String uuid = newContainer.getUuid();
-			schemaDao.delete(newContainer, createBulkContext());
+			schemaDao.delete(newContainer);
 			assertNull("The container should have been deleted", tx.schemaDao().findByUuid(uuid));
 		}
 	}

@@ -1,0 +1,3 @@
+REST: The query parameters for node versioning and branch targeting have been decoupled, to match the cases where a branch usage is allowed, but version is not.
+
+Documentation: The query parameterizing has been updated for the selected REST endpoints.

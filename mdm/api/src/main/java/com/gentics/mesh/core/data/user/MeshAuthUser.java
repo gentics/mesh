@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.user;
 
-import io.vertx.core.shareddata.impl.ClusterSerializable;
+import io.vertx.core.shareddata.ClusterSerializable;
 import io.vertx.ext.auth.User;
 
 /**

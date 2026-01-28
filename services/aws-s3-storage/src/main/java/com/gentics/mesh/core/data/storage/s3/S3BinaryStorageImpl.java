@@ -12,10 +12,15 @@ import java.util.concurrent.CompletionException;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.gentics.mesh.core.data.storage.S3BinaryStorage;
+import com.gentics.mesh.core.db.CommonTx;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3RestResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.S3Options;
-import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 
 import hu.akarnokd.rxjava2.interop.CompletableInterop;
 import hu.akarnokd.rxjava2.interop.FlowableInterop;
@@ -24,10 +29,8 @@ import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.reactivex.functions.Function;
-import io.vertx.core.http.impl.MimeMapping;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import io.vertx.reactivex.core.buffer.Buffer;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.MimeMapping;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -154,8 +157,7 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 	}
 
 	@Override
-	public Single<S3RestResponse> createUploadPresignedUrl(String bucketName, String nodeUuid, String fieldName,
-			String nodeVersion, boolean isCache) {
+	public Single<S3RestResponse> createUploadPresignedUrl(String bucketName, String objectKey, String nodeVersion, boolean isCache) {
 		return initIfRequiredAndExecute(unused -> {
 			int expirationTimeUpload;
 			// we need to establish a fixed expiration time upload for the cache
@@ -164,14 +166,12 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 			else {
 				expirationTimeUpload = s3Options.getExpirationTimeUpload();
 			}
-			String objectKey = nodeUuid + "/" + fieldName;
-	
 			PresignedPutObjectRequest presignedRequest = presigner
 					.presignPutObject(r -> r.signatureDuration(Duration.ofSeconds(expirationTimeUpload))
 							.putObjectRequest(por -> por.bucket(bucketName).key(objectKey)));
 	
 			if (log.isDebugEnabled()) {
-				log.debug("Creating presigned URL for nodeUuid '{}' and fieldName '{}'", nodeUuid, fieldName);
+				log.debug("Creating presigned URL for objectKey '{}'", objectKey);
 			}
 	
 			S3RestResponse s3RestResponse = new S3RestResponse(presignedRequest.url().toString(),
@@ -231,16 +231,15 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 	@Override
 	public Single<S3RestResponse> uploadFile(String bucket, String objectKey, File file, boolean isCache) {
 		return initIfRequiredAndExecute(unused -> {
-			String mimeTypeForFilename = MimeMapping.getMimeTypeForFilename(file.getName());
+			String mimeTypeForFilename = MimeMapping.mimeTypeForFilename(file.getName());
 	
 			PutObjectRequest objectRequest = PutObjectRequest.builder().bucket(bucket).key(objectKey)
 					.contentType(mimeTypeForFilename).build();
-			String[] split = objectKey.split("/");
-	
+
 			// Put the object into the bucket
 			Completable completable = CompletableInterop
 					.fromFuture(client.putObject(objectRequest, AsyncRequestBody.fromFile(file)));
-			return completable.andThen(createUploadPresignedUrl(bucket, split[0], split[1], null, isCache))
+			return completable.andThen(createUploadPresignedUrl(bucket, objectKey, null, isCache))
 					.doOnError(err -> Single.error(err));
 		});
 	}
@@ -301,6 +300,12 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 			initClient = init();
 		}
 		return initClient.flatMapCompletable(unused -> delete(s3Options.getBucket(), s3ObjectKey));
+	}
+
+	@Override
+	public void deleteOnTxSuccess(String s3ObjectKey, Tx tx) {
+		Completable deletion = delete(s3ObjectKey);
+		tx.<CommonTx>unwrap().data().maybeGetBulkActionContext().ifPresentOrElse(bac -> bac.add(deletion), () -> tx.batch().add(() -> deletion.blockingAwait()));
 	}
 
 	private <T> Single<T> initIfRequiredAndExecute(Function<Boolean, Single<T>> function) {

@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.event.Assignment.ASSIGNED;
 import static com.gentics.mesh.event.Assignment.UNASSIGNED;
+import static com.gentics.mesh.util.PreparationUtil.preparePermissions;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -17,11 +18,12 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang.NotImplementedException;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
@@ -30,6 +32,7 @@ import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -44,6 +47,8 @@ import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.GenericParameters;
+import com.gentics.mesh.parameter.value.FieldsSet;
 
 /**
  * A persisting extension to {@link SchemaDao}
@@ -292,16 +297,16 @@ public interface PersistingSchemaDao
 	}
 
 	@Override
-	default void delete(HibSchema schema, BulkActionContext bac) {
+	default void delete(HibSchema schema) {
 		// Check whether the schema is currently being referenced by nodes.
 		Iterator<? extends HibNode> it = getNodes(schema).iterator();
 		if (!it.hasNext()) {
-
-			assignEvents(schema, UNASSIGNED).forEach(bac::add);
-			bac.add(schema.onDeleted());
+			EventQueueBatch q = CommonTx.get().batch();
+			assignEvents(schema, UNASSIGNED).forEach(q::add);
+			q.add(schema.onDeleted());
 
 			for (HibSchemaVersion v : findAllVersions(schema)) {
-				deleteVersion(v, bac);
+				deleteVersion(v);
 			}
 			deletePersisted(schema);
 		} else {
@@ -310,9 +315,10 @@ public interface PersistingSchemaDao
 	}
 
 	@Override
-	default void delete(HibProject root, HibSchema element, BulkActionContext bac) {
-		unassign(element, root, bac.batch());
-		assignEvents(element, UNASSIGNED).forEach(bac::add);
+	default void delete(HibProject root, HibSchema element) {
+		EventQueueBatch q = CommonTx.get().batch();
+		unassign(element, root, q);
+		assignEvents(element, UNASSIGNED).forEach(q::add);
 		// TODO should we delete the schema completely?
 		//delete(element, bac);
 	}
@@ -344,6 +350,21 @@ public interface PersistingSchemaDao
 		projectDao.mergeIntoPersisted(root);
 		assignEvents(schema, UNASSIGNED).forEach(batch::add);
 		return schema;
+	}
+
+	@Override
+	default void beforeGetETagForPage(Page<? extends HibCoreElement<? extends RestModel>> page,
+			InternalActionContext ac) {
+		preparePermissions(ac.getUser(), page, ac);
+	}
+
+	@Override
+	default void beforeTransformToRestSync(Page<? extends HibCoreElement<? extends RestModel>> page,
+			InternalActionContext ac) {
+		GenericParameters generic = ac.getGenericParameters();
+		FieldsSet fields = generic.getFields();
+
+		preparePermissions(ac.getUser(), page, ac, fields);
 	}
 
 	@Override

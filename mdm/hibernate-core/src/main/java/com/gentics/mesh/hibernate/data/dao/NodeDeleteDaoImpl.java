@@ -1,6 +1,9 @@
 package com.gentics.mesh.hibernate.data.dao;
 
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_REFERENCE_UPDATED;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,6 +17,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.hibernate.jpa.SpecHints;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,12 +25,14 @@ import com.gentics.mesh.contentoperation.ContentKey;
 import com.gentics.mesh.contentoperation.ContentStorage;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.PersistingNodeDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.ReferenceType;
@@ -54,10 +60,17 @@ public class NodeDeleteDaoImpl {
 
 	private final CurrentTransaction currentTransaction;
 	private final ContentStorage contentStorage;
+	private final PersistingNodeDao nodeDao;
 
-	public NodeDeleteDaoImpl(CurrentTransaction currentTransaction, ContentStorage contentStorage) {
+	/**
+	 * Maximum number of descendants of a node, which will be deleted in a single batch
+	 */
+	private final static int NODE_DELETION_BATCHSIZE = 100;
+
+	public NodeDeleteDaoImpl(CurrentTransaction currentTransaction, ContentStorage contentStorage, PersistingNodeDao nodeDao) {
 		this.currentTransaction = currentTransaction;
 		this.contentStorage = contentStorage;
+		this.nodeDao = nodeDao;
 	}
 
 	/**
@@ -65,12 +78,12 @@ public class NodeDeleteDaoImpl {
 	 * @param project
 	 * @param bac
 	 */
-	public void deleteAllFromProject(HibProject project, BulkActionContext bac) {
+	public void deleteAllFromProject(HibProject project) {
 		ContentDaoImpl contentDao = HibernateTx.get().contentDao();
 		((HibProjectImpl) project).getHibSchemas()
 				.stream()
 				.flatMap(this::getVersions)
-				.forEach(version -> contentDao.delete(version, project, bac));
+				.forEach(version -> contentDao.delete(version, project));
 
 		((HibProjectImpl) project).getHibMicroschemas()
 				.stream()
@@ -94,49 +107,67 @@ public class NodeDeleteDaoImpl {
 	 * @param bac
 	 * @param ignoreChecks
 	 */
-	public void deleteRecursive(HibNode node, BulkActionContext bac, boolean ignoreChecks) {
+	public void deleteRecursive(HibNode node, boolean ignoreChecks) {
 		ContentDaoImpl contentDao = HibernateTx.get().contentDao();
-		Set<HibNodeImpl> descendants = em().createNamedQuery("nodeBranchParents.findDescendants", HibNodeImpl.class)
-				.setParameter("node", node)
-				.getResultStream()
-				.collect(Collectors.toSet());
 
-		List<UUID> nodesUuidsToDelete = descendants.stream().map(HibNodeImpl::getDbUuid).collect(Collectors.toList());
-		Set<HibSchemaVersion> versions = descendants.stream().map(HibNode::getSchemaContainer)
-				.flatMap(this::getVersions)
-				.collect(Collectors.toSet());
+		boolean done = false;
+		while (!done) {
+			Integer maxDistance = em().createNamedQuery("nodeBranchParents.getMaxDistance", Integer.class)
+					.setParameter("node", node)
+					.getSingleResult();
 
-		// Send Node Updated events
-		addNodeUpdateReferenceEvents(nodesUuidsToDelete, bac);
+			if (maxDistance == null) {
+				done = true;
+				break;
+			}
 
-		contentDao.delete(versions, descendants, bac);
+			Set<HibNodeImpl> descendants = em().createNamedQuery("nodeBranchParents.findDescendants", HibNodeImpl.class)
+					.setParameter("node", node)
+					.setParameter("distance", maxDistance)
+					.setMaxResults(NODE_DELETION_BATCHSIZE)
+					.getResultStream()
+					.collect(Collectors.toSet());
 
-		descendants.forEach(n -> bac.add(onDeleted(n)));
+			List<UUID> nodesUuidsToDelete = descendants.stream().map(HibNodeImpl::getDbUuid).collect(Collectors.toList());
+			Set<HibSchema> schemas = descendants.stream().map(HibNode::getSchemaContainer).collect(Collectors.toSet());
+			Set<HibSchemaVersion> versions = schemas.stream()
+					.flatMap(this::getVersions)
+					.collect(Collectors.toSet());
 
-		// clear entity manager before performing bulk delete queries
-		em().clear();
+			// Send Node Updated events
+			addNodeUpdateReferenceEvents(nodesUuidsToDelete);
 
-		// note: we need to use half the split-size here, because at least one of the queries will inject the slice twice.
-		SplittingUtils.splitAndConsume(nodesUuidsToDelete, HibernateUtil.inQueriesLimitForSplitting(1) / 2, slice -> {
-			currentTransaction.getTx().data().getDatabaseConnector().deleteContentEdgesByUuids(em(), slice);
+			contentDao.delete(versions, descendants);
 
-			em().createNamedQuery("nodeBranchParents.deleteAllByNodeUuids")
-					.setParameter("nodesUuid", slice)
-					.executeUpdate();
+			descendants.forEach(n -> HibernateTx.get().batch().add(onDeleted(n)));
 
-			em().createNamedQuery("nodelistitem.deleteByNodeUuids")
-					.setParameter("nodeUuids", slice)
-					.executeUpdate();
+			// clear entity manager before performing bulk delete queries
+			em().clear();
 
-			em().createNamedQuery("nodefieldref.deleteEdgeByNodeUuids")
-					.setParameter("uuids", slice)
-					.executeUpdate();
+			// note: we need to use half the split-size here, because at least one of the queries will inject the slice twice.
+			SplittingUtils.splitAndConsume(nodesUuidsToDelete, HibernateUtil.inQueriesLimitForSplitting(1) / 2, slice -> {
+				currentTransaction.getTx().data().getDatabaseConnector().deleteContentEdgesByUuids(em(), slice);
 
-			em().createQuery("delete from node where dbUuid in :nodesUuid")
-					.setParameter("nodesUuid", slice)
-					.executeUpdate();
-		});
-		bac.process();
+				em().createNamedQuery("nodeBranchParents.deleteAllByNodeUuids")
+						.setParameter("nodesUuid", slice)
+						.executeUpdate();
+
+				em().createNamedQuery("nodelistitem.deleteByNodeUuids")
+						.setParameter("nodeUuids", slice)
+						.executeUpdate();
+
+				em().createNamedQuery("nodefieldref.deleteEdgeByNodeUuids")
+						.setParameter("uuids", slice)
+						.executeUpdate();
+
+				em().createQuery("delete from node where dbUuid in :nodesUuid")
+						.setParameter("nodesUuid", slice)
+						.executeUpdate();
+			});
+			CommonTx.get().data().maybeGetBulkActionContext().ifPresent(BulkActionContext::process);
+
+			currentTransaction.getTx().commit();
+		}
 	}
 
 	/**
@@ -146,60 +177,97 @@ public class NodeDeleteDaoImpl {
 	 * @param bac
 	 * @param ignoreChecks
 	 */
-	public void deleteRecursiveFromBranch(HibNode node, HibBranch branch, BulkActionContext bac, boolean ignoreChecks) {
+	public void deleteRecursiveFromBranch(HibNode node, HibBranch branch, boolean ignoreChecks, boolean recursive) {
+		// 0. Dumb checks
+		if (!ignoreChecks) {
+			// Prevent deletion of basenode
+			if (node.getProject().getBaseNode().getUuid().equals(node.getUuid())) {
+				throw error(METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
+			}
+			// Prevent deletion of node parent, if not recursive
+			if (!recursive) {
+				if (nodeDao.getChildren(node, branch.getUuid()).hasNext()) {
+					throw error(BAD_REQUEST, "node_error_delete_failed_node_has_children");
+				}
+			}
+		}
+
 		// 1. get descendants in branch, fetching the edges as well
 		ContentDaoImpl contentDao = HibernateTx.get().contentDao();
 		EntityGraph<?> entityGraph = em().getEntityGraph("node.content");
-		Set<HibNodeImpl> descendants = em().createNamedQuery("nodeBranchParents.findDescendantsInBranch", HibNodeImpl.class)
-				.setParameter("node", node)
-				.setParameter("branch", branch)
-				.setHint("jakarta.persistence.fetchgraph", entityGraph)
-				.getResultStream()
-				.collect(Collectors.toSet());
-		List<UUID> nodesUuidsToDelete = descendants.stream().map(HibNodeImpl::getDbUuid).collect(Collectors.toList());
-		Set<HibSchemaVersion> versions = descendants.stream().map(HibNode::getSchemaContainer)
-				.flatMap(this::getVersions)
-				.collect(Collectors.toSet());
-		Set<ContentKey> relatedContainers = new HashSet<>();
-		versions.forEach(version -> {
-			// Get the containers related to the descendants. We get only the content keys to get memory consumption low
-			List<ContentKey> containersUuuids = contentStorage.findByNodes(version, descendants);
-			relatedContainers.addAll(containersUuuids);
-		});
-		// relatedContainers might contain containers which belongs to other branches, we need to figure out only the
-		// ones belonging to the provided branch that are not referenced in other branches
-		Set<ContentKey> deletableContainersForBranch = findDeletableContainersForBranch(relatedContainers, descendants, branch);
-		// before deleting the containers, we must submit reference updates events
-		addNodeUpdateReferenceEvents(nodesUuidsToDelete, bac);
-		// clear entity manager before performing bulk queries
-		em().clear();
-		// delete the containers
-		contentDao.delete(deletableContainersForBranch, bac);
-		// note: we need to use half the split-size here, because at least one of the queries will inject the slice twice.
-		List<HibNodeImpl> deletableNodes = SplittingUtils.splitAndMergeInList(nodesUuidsToDelete, HibernateUtil.inQueriesLimitForSplitting(2) / 2, slice -> {
-			// delete edges
-			currentTransaction.getTx().data().getDatabaseConnector().deleteContentEdgesByBranchUuids(em(), branch, slice);
 
-			// delete parent branches
-			em().createNamedQuery("nodeBranchParents.deleteAllByNodeUuidsAndBranch")
+		boolean done = false;
+		while (!done) {
+			Integer maxDistance = em().createNamedQuery("nodeBranchParents.getMaxDistanceInBranch", Integer.class)
+					.setParameter("node", node)
+					.setParameter("branch", branch)
+					.getSingleResult();
+
+			if (maxDistance == null) {
+				done = true;
+				break;
+			}
+
+			List<UUID> nodesUuidsToDelete = em().createNamedQuery("nodeBranchParents.findDescendantUuidsInBranch", UUID.class)
+					.setParameter("node", node)
+					.setParameter("branch", branch)
+					.setParameter("distance", maxDistance)
+					.setMaxResults(NODE_DELETION_BATCHSIZE)
+					.getResultList();
+
+			// note: no need to split the query, since the batchsize for loading the uuids is small enough
+			Set<HibNodeImpl> descendants = new HashSet<>(
+					em().createNamedQuery("node.findNodesByUuids", HibNodeImpl.class)
+							.setParameter("nodeUuids", nodesUuidsToDelete)
+							.setHint(SpecHints.HINT_SPEC_FETCH_GRAPH, entityGraph).getResultList());
+
+			Set<HibSchema> schemas = descendants.stream().map(HibNode::getSchemaContainer).collect(Collectors.toSet());
+			Set<HibSchemaVersion> versions = schemas.stream()
+					.flatMap(this::getVersions)
+					.collect(Collectors.toSet());
+			Set<ContentKey> relatedContainers = new HashSet<>();
+			versions.forEach(version -> {
+				// Get the containers related to the descendants. We get only the content keys to get memory consumption low
+				List<ContentKey> containersUuuids = contentStorage.findByNodes(version, descendants);
+				relatedContainers.addAll(containersUuuids);
+			});
+			// relatedContainers might contain containers which belongs to other branches, we need to figure out only the
+			// ones belonging to the provided branch that are not referenced in other branches
+			Set<ContentKey> deletableContainersForBranch = findDeletableContainersForBranch(relatedContainers, descendants, branch);
+			// before deleting the containers, we must submit reference updates events
+			addNodeUpdateReferenceEvents(nodesUuidsToDelete);
+			// clear entity manager before performing bulk queries
+			em().clear();
+			// delete the containers
+			contentDao.delete(deletableContainersForBranch);
+			// note: we need to use half the split-size here, because at least one of the queries will inject the slice twice.
+			List<HibNodeImpl> deletableNodes = SplittingUtils.splitAndMergeInList(nodesUuidsToDelete, HibernateUtil.inQueriesLimitForSplitting(2) / 2, slice -> {
+				// delete edges
+				currentTransaction.getTx().data().getDatabaseConnector().deleteContentEdgesByBranchUuids(em(), branch, slice);
+
+				// delete parent branches
+				em().createNamedQuery("nodeBranchParents.deleteAllByNodeUuidsAndBranch")
+						.setParameter("nodesUuid", slice)
+						.setParameter("branchUuid", branch.getId())
+						.executeUpdate();
+
+				// delete the nodes which don't have any more edges
+				return em().createQuery("select n from node n where n.dbUuid in :nodesUuid and size(n.content) = 0", HibNodeImpl.class)
 					.setParameter("nodesUuid", slice)
-					.setParameter("branchUuid", branch.getId())
-					.executeUpdate();
+					.getResultList();
+			});
+			// create delete events
+			deletableNodes.forEach(n -> {
+				HibernateTx.get().batch().add(onDeleted(n));
+				em().detach(n); // make sure the elements are not stored in the persistence context, otherwise em().find() will still return them after deletion
+			});
+			// finally delete the nodes
+			SplittingUtils.splitAndConsume(deletableNodes.stream().map(HibNode::getId).collect(Collectors.toList()), HibernateUtil.inQueriesLimitForSplitting(0), slice -> em().createQuery("delete from node where dbUuid in :nodesUuid")
+					.setParameter("nodesUuid", slice)
+					.executeUpdate());
 
-			// delete the nodes which don't have any more edges
-			return em().createQuery("select n from node n where n.dbUuid in :nodesUuid and size(n.content) = 0", HibNodeImpl.class)
-				.setParameter("nodesUuid", slice)
-				.getResultList();
-		});
-		// create delete events
-		deletableNodes.forEach(n -> {
-			bac.add(onDeleted(n));
-			em().detach(n); // make sure the elements are not stored in the persistence context, otherwise em().find() will still return them after deletion
-		});
-		// finally delete the nodes
-		SplittingUtils.splitAndConsume(deletableNodes.stream().map(HibNode::getId).collect(Collectors.toList()), HibernateUtil.inQueriesLimitForSplitting(0), slice -> em().createQuery("delete from node where dbUuid in :nodesUuid")
-				.setParameter("nodesUuid", slice)
-				.executeUpdate());
+			currentTransaction.getTx().commit();
+		}
 	}
 
 	private Set<ContentKey> findDeletableContainersForBranch(Set<ContentKey> containersKeys, Set<HibNodeImpl> descendants, HibBranch branch) {
@@ -267,18 +335,18 @@ public class NodeDeleteDaoImpl {
 		return ret;
 	}
 
-	private void addNodeUpdateReferenceEvents(List<UUID> nodesUuidsToDelete, BulkActionContext bac) {
+	private void addNodeUpdateReferenceEvents(List<UUID> nodesUuidsToDelete) {
 		Set<String> handledNodeUuids = new HashSet<>();
 		// node reference updates events for nodes and node list referencing the to be deleted nodes.
-		addNodeUpdateReferenceEventsForReferencingFields(nodesUuidsToDelete, bac, handledNodeUuids);
-		addNodeUpdateReferenceEventsForReferencingListItems(nodesUuidsToDelete, bac, handledNodeUuids);
+		addNodeUpdateReferenceEventsForReferencingFields(nodesUuidsToDelete, handledNodeUuids);
+		addNodeUpdateReferenceEventsForReferencingListItems(nodesUuidsToDelete, handledNodeUuids);
 		// node reference updates events for micronodes and micronodes list referencing the to be deleted nodes.
 		List<UUID> micronodesReferencingNodes = micronodesReferencingNodes(nodesUuidsToDelete);
-		addNodeUpdateReferenceEventsForReferencingMicroFields(micronodesReferencingNodes, bac, handledNodeUuids);
-		addNodeUpdateReferenceEventsForReferencingMicroListItems(micronodesReferencingNodes, bac, handledNodeUuids);
+		addNodeUpdateReferenceEventsForReferencingMicroFields(micronodesReferencingNodes, handledNodeUuids);
+		addNodeUpdateReferenceEventsForReferencingMicroListItems(micronodesReferencingNodes, handledNodeUuids);
 	}
 
-	private void addNodeUpdateReferenceEventsForReferencingFields(List<UUID> nodesUuidsToDelete, BulkActionContext bac, Set<String> handledNodeUuids) {
+	private void addNodeUpdateReferenceEventsForReferencingFields(List<UUID> nodesUuidsToDelete, Set<String> handledNodeUuids) {
 		SplittingUtils.splitAndConsume(nodesUuidsToDelete, HibernateUtil.inQueriesLimitForSplitting(3), slice -> em().createQuery(
 				"select e.languageTag, e.branch.dbUuid, e.type, p, c, n.dbUuid from nodefieldcontainer e " +
 						" join nodefieldref ref on e.contentUuid = ref.containerUuid " +
@@ -289,10 +357,10 @@ public class NodeDeleteDaoImpl {
 						" and (e.type = 'DRAFT' or e.type = 'PUBLISHED')", Tuple.class)
 				.setParameter("nodeUuids", slice)
 				.getResultList()
-				.forEach(tuple -> addReferenceUpdateEvent(handledNodeUuids, bac, tuple)));
+				.forEach(tuple -> addReferenceUpdateEvent(handledNodeUuids, tuple)));
 	}
 
-	private void addNodeUpdateReferenceEventsForReferencingListItems(List<UUID> nodesUuidsToDelete, BulkActionContext bac, Set<String> handledNodeUuids) {
+	private void addNodeUpdateReferenceEventsForReferencingListItems(List<UUID> nodesUuidsToDelete, Set<String> handledNodeUuids) {
 		SplittingUtils.splitAndConsume(nodesUuidsToDelete, HibernateUtil.inQueriesLimitForSplitting(3), slice -> em().createQuery(
 				"select e.languageTag, e.branch.dbUuid, e.type, p, c, n.dbUuid from nodefieldcontainer e " +
 						" join nodelistitem l on e.contentUuid = l.containerUuid " +
@@ -303,7 +371,7 @@ public class NodeDeleteDaoImpl {
 						" and (e.type = 'DRAFT' or e.type = 'PUBLISHED')", Tuple.class)
 				.setParameter("nodeUuids", slice)
 				.getResultList()
-				.forEach(tuple -> addReferenceUpdateEvent(handledNodeUuids, bac, tuple)));
+				.forEach(tuple -> addReferenceUpdateEvent(handledNodeUuids, tuple)));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -329,7 +397,7 @@ public class NodeDeleteDaoImpl {
 		});
 	}
 
-	private void addNodeUpdateReferenceEventsForReferencingMicroFields(List<UUID> micronodesReferencingNodes, BulkActionContext bac, Set<String> handledNodeUuids) {
+	private void addNodeUpdateReferenceEventsForReferencingMicroFields(List<UUID> micronodesReferencingNodes, Set<String> handledNodeUuids) {
 		SplittingUtils.splitAndConsume(micronodesReferencingNodes, HibernateUtil.inQueriesLimitForSplitting(3), slice -> em().createQuery(
 					"select e.languageTag, e.branch.dbUuid, e.type, p, c, n.dbUuid from nodefieldcontainer e " +
 							" join micronodefieldref ref on e.contentUuid = ref.containerUuid " +
@@ -340,10 +408,10 @@ public class NodeDeleteDaoImpl {
 							" and (e.type = 'DRAFT' or e.type = 'PUBLISHED')", Tuple.class)
 					.setParameter("micronodeUuids", slice)
 					.getResultList()
-					.forEach(tuple -> addReferenceUpdateEvent(handledNodeUuids, bac, tuple)));
+					.forEach(tuple -> addReferenceUpdateEvent(handledNodeUuids, tuple)));
 	}
 
-	private void addNodeUpdateReferenceEventsForReferencingMicroListItems(List<UUID> micronodesReferencingNodes, BulkActionContext bac, Set<String> handledNodeUuids) {
+	private void addNodeUpdateReferenceEventsForReferencingMicroListItems(List<UUID> micronodesReferencingNodes, Set<String> handledNodeUuids) {
 		SplittingUtils.splitAndConsume(micronodesReferencingNodes, HibernateUtil.inQueriesLimitForSplitting(3), slice -> em().createQuery(
 				"select e.languageTag, e.branch.dbUuid, e.type, p, c, n.dbUuid from nodefieldcontainer e " +
 						" join micronodelistitem ref on e.contentUuid = ref.containerUuid " +
@@ -354,7 +422,7 @@ public class NodeDeleteDaoImpl {
 						" and (e.type = 'DRAFT' or e.type = 'PUBLISHED')", Tuple.class)
 				.setParameter("micronodeUuids", slice)
 				.getResultList()
-				.forEach(tuple -> addReferenceUpdateEvent(handledNodeUuids, bac, tuple)));
+				.forEach(tuple -> addReferenceUpdateEvent(handledNodeUuids, tuple)));
 	}
 
 	private NodeMeshEventModel onDeleted(HibNode node) {
@@ -372,20 +440,20 @@ public class NodeDeleteDaoImpl {
 		return event;
 	}
 
-	private void addReferenceUpdateEvent(Set<String> handledNodeUuids, BulkActionContext bac, Tuple tuple) {
+	private void addReferenceUpdateEvent(Set<String> handledNodeUuids, Tuple tuple) {
 		String languageTag = (String) tuple.get(0);
 		UUID branchUuid = (UUID) tuple.get(1);
 		ContainerType ctype = (ContainerType) tuple.get(2);
 		HibProjectImpl project = (HibProjectImpl) tuple.get(3);
 		HibSchema schema = (HibSchema) tuple.get(4);
 		UUID uuid = (UUID) tuple.get(5);
-		addReferenceUpdateEvent(handledNodeUuids, UUIDUtil.toShortUuid(uuid), schema, languageTag, UUIDUtil.toShortUuid(branchUuid), ctype, bac, project);
+		addReferenceUpdateEvent(handledNodeUuids, UUIDUtil.toShortUuid(uuid), schema, languageTag, UUIDUtil.toShortUuid(branchUuid), ctype, project);
 	}
    
-	private void addReferenceUpdateEvent(Set<String> handledNodeUuids, String referencingNodeUuid, HibSchema schema, String languageTag, String branchUuid, ContainerType type, BulkActionContext bac, HibProject project) {
+	private void addReferenceUpdateEvent(Set<String> handledNodeUuids, String referencingNodeUuid, HibSchema schema, String languageTag, String branchUuid, ContainerType type, HibProject project) {
 		String key = referencingNodeUuid + languageTag + branchUuid + type.getCode();
 		if (!handledNodeUuids.contains(key)) {
-			bac.add(onReferenceUpdated(referencingNodeUuid, schema, branchUuid, type, languageTag, project));
+			HibernateTx.get().batch().add(onReferenceUpdated(referencingNodeUuid, schema, branchUuid, type, languageTag, project));
 			handledNodeUuids.add(key);
 		}
 	}

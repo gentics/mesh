@@ -39,6 +39,7 @@ import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 
 import io.vertx.core.DeploymentOptions;
+import io.vertx.core.ThreadingModel;
 
 @MeshTestSetting(testSize = FULL, startServer = true)
 public class BranchMigrationEndpointTest extends AbstractMeshTest {
@@ -46,7 +47,7 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 	@Before
 	public void setupVerticleTest() throws Exception {
 		DeploymentOptions options = new DeploymentOptions();
-		options.setWorker(true);
+		options.setThreadingModel(ThreadingModel.WORKER);
 		vertx().deployVerticle(meshDagger().jobWorkerVerticle(), options);
 		grantAdmin();
 	}

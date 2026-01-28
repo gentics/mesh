@@ -16,6 +16,9 @@ import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
@@ -23,18 +26,18 @@ import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.search.Compliance;
 import com.gentics.mesh.core.data.search.request.BulkRequest;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.DeleteDocumentRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.db.Transactional;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.EventCauseInfo;
 import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.entity.MeshEntities;
 import com.gentics.mesh.search.verticle.eventhandler.EventCauseHelper;
@@ -48,15 +51,18 @@ import io.reactivex.Flowable;
  */
 @Singleton
 public class NodeContentEventHandler implements EventHandler {
+
+	private static final Logger log = LoggerFactory.getLogger(NodeContentEventHandler.class);
+
 	private final MeshHelper helper;
 	private final MeshEntities entities;
-	private final ComplianceMode complianceMode;
+	private final Compliance compliance;
 
 	@Inject
-	public NodeContentEventHandler(MeshHelper helper, MeshEntities entities, MeshOptions options) {
+	public NodeContentEventHandler(MeshHelper helper, MeshEntities entities, Compliance compliance) {
 		this.helper = helper;
 		this.entities = entities;
-		this.complianceMode = options.getSearchOptions().getComplianceMode();
+		this.compliance = compliance;
 	}
 
 	@Override
@@ -85,7 +91,12 @@ public class NodeContentEventHandler implements EventHandler {
 				if (EventCauseHelper.isProjectDeleteCause(message)) {
 					return Flowable.empty();
 				} else {
-					return Flowable.just(deleteNodes(message, getSchemaVersionUuid(message).runInNewTx()));
+					HibSchemaVersion schemaVersion = findLatestSchemaVersion(message).runInNewTx();
+					if (schemaVersion != null) {
+						return Flowable.just(deleteNodes(message, helper.getDb().tx(() -> schemaVersion.getUuid())));
+					} else {
+						return Flowable.empty();
+					}
 				}
 			default:
 				throw new RuntimeException("Unexpected event " + event.address);
@@ -110,13 +121,13 @@ public class NodeContentEventHandler implements EventHandler {
 		}).map(doc -> helper.createDocumentRequest(
 			getIndexName(message, getSchemaVersionUuid(message).runInNewTx()),
 			ContentDao.composeDocumentId(message.getUuid(), message.getLanguageTag()),
-			doc, complianceMode));
+			doc, compliance));
 	}
 
 	private DeleteDocumentRequest deleteNodes(NodeMeshEventModel message, String schemaVersionUuid) {
 		return helper.deleteDocumentRequest(
 			getIndexName(message, schemaVersionUuid), ContentDao.composeDocumentId(message.getUuid(), message.getLanguageTag()),
-			complianceMode);
+			compliance);
 	}
 
 	private String getIndexName(NodeMeshEventModel message, String schemaVersionUuid) {
@@ -145,17 +156,24 @@ public class NodeContentEventHandler implements EventHandler {
 		return helper.getDb().transactional(tx -> {
 			HibSchema schema = tx.schemaDao().findByUuid(message.getSchema().getUuid());
 			HibProject project = tx.projectDao().findByUuid(message.getProject().getUuid());
-			return tx.branchDao().findByUuid(project, message.getBranchUuid())
-				.findLatestSchemaVersion(schema);
+			if (project != null) {
+				return tx.schemaDao().findLatestVersion(tx.branchDao().findByUuid(project, message.getBranchUuid()), schema);
+			} else {
+				log.warn("Could not find the project for UUID {" + message.getProject().getUuid() + "}");
+				return getSchemaVersion(message.getSchema(), tx);
+			}
 		});
+	}
+
+	private HibSchemaVersion getSchemaVersion(SchemaReference reference, Tx tx) {
+		SchemaDao schemaDao = tx.schemaDao();
+		HibSchema schema = schemaDao.findByUuid(reference.getUuid());
+		return schemaDao.findVersionByRev(schema, reference.getVersion());
 	}
 
 	private String getSchemaVersionUuid(SchemaReference reference) {
 		return helper.getDb().tx(tx -> {
-			SchemaDao schemaDao = tx.schemaDao();
-			HibSchema schema = schemaDao
-				.findByUuid(reference.getUuid());
-			return schemaDao.findVersionByRev(schema, reference.getVersion()).getUuid();
+			return getSchemaVersion(reference, tx).getUuid();
 		});
 	}
 
@@ -163,9 +181,14 @@ public class NodeContentEventHandler implements EventHandler {
 		return helper.getDb().tx(tx -> {
 			HibSchema schema = tx.schemaDao().findByUuid(message.getSchema().getUuid());
 			HibProject project = tx.projectDao().findByUuid(message.getProject().getUuid());
-			HibBranch branch = tx.branchDao().findByUuid(project, message.getBranchUuid());
-			HibSchemaVersion schemaVersion = tx.schemaDao().findVersionByUuid(schema, schemaVersionUuid);
-			return schemaVersion.getMicroschemaVersionHash(branch);
+			if (project != null) {
+				HibBranch branch = tx.branchDao().findByUuid(project, message.getBranchUuid());
+				HibSchemaVersion schemaVersion = tx.schemaDao().findVersionByUuid(schema, schemaVersionUuid);
+				return schemaVersion.getMicroschemaVersionHash(branch);
+			} else {
+				log.warn("Could not find the project for UUID {" + message.getProject().getUuid() + "}");
+				return null;
+			}
 		});
 	}
 }

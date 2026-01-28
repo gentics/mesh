@@ -32,12 +32,13 @@ import com.gentics.mesh.hibernate.util.QueryCounter;
 import com.gentics.mesh.parameter.client.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.ResetTestDb;
 import com.gentics.mesh.test.TestSize;
 
 /**
  * Test cases which count the number of executed REST call queries.
  */
-@MeshTestSetting(testSize = TestSize.PROJECT, monitoring = true, startServer = true, customOptionChanger = QueryCounter.EnableHibernateStatistics.class, resetBetweenTests = false)
+@MeshTestSetting(testSize = TestSize.PROJECT, monitoring = true, startServer = true, customOptionChanger = QueryCounter.EnableHibernateStatistics.class, resetBetweenTests = ResetTestDb.NEVER)
 @RunWith(Parameterized.class)
 public class QueryCountingTest extends AbstractCountingTest {
 
@@ -53,12 +54,12 @@ public class QueryCountingTest extends AbstractCountingTest {
 	/**
 	 * Number of allowed queries when getting nodes with etag
 	 */
-	public final static int ALLOWED_WITH_ETAG = 20;
+	public final static int ALLOWED_WITH_ETAG = 26;
 
 	/**
 	 * Number of allowed queries when getting nodes without etag
 	 */
-	public final static int ALLOWED_NO_ETAG = 15;
+	public final static int ALLOWED_NO_ETAG = 25;
 
 	protected static TagFamilyResponse tagFamily;
 

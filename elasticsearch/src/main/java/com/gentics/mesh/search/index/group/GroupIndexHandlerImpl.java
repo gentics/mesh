@@ -1,7 +1,11 @@
 package com.gentics.mesh.search.index.group;
 
+import static com.gentics.mesh.util.PreparationUtil.prepareData;
+
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -15,12 +19,18 @@ import javax.inject.Singleton;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Bucket;
+import com.gentics.mesh.core.data.dao.GroupDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.group.HibGroup;
+import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.search.Compliance;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.handler.DataHolderContext;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.BucketManager;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
@@ -40,9 +50,9 @@ public class GroupIndexHandlerImpl extends AbstractIndexHandler<HibGroup> implem
 	protected final GroupMappingProvider mappingProvider;
 
 	@Inject
-	public GroupIndexHandlerImpl(SearchProvider searchProvider, Database db, MeshHelper helper, MeshOptions options,
+	public GroupIndexHandlerImpl(SearchProvider searchProvider, Database db, MeshHelper helper, MeshOptions options, Compliance compliance,
 		SyncMetersFactory syncMetersFactory, BucketManager bucketManager, GroupTransformer transformer, GroupMappingProvider mappingProvider) {
-		super(searchProvider, db, helper, options, syncMetersFactory, bucketManager);
+		super(searchProvider, db, helper, options, syncMetersFactory, bucketManager, compliance);
 		this.transformer = transformer;
 		this.mappingProvider = mappingProvider;
 	}
@@ -97,8 +107,15 @@ public class GroupIndexHandlerImpl extends AbstractIndexHandler<HibGroup> implem
 	}
 
 	@Override
-	public Stream<? extends HibGroup> loadAllElements() {
-		return Tx.get().groupDao().findAll().stream();
+	public Collection<? extends HibGroup> loadAllElements(Bucket bucket, DataHolderContext dhc) {
+		GroupDao groupDao = Tx.get().groupDao();
+		RoleDao roleDao = Tx.get().roleDao();
+		List<HibGroup> groupsInBucket = new ArrayList<>(groupDao.findAll(bucket).list());
+
+		prepareData(groupsInBucket, dhc, "group", "permissions",
+				elements -> roleDao.getRoleUuidsForPerm(elements, InternalPermission.READ_PERM));
+
+		return groupsInBucket;
 	}
 
 	@Override

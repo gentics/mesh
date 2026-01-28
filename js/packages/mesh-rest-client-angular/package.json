@@ -1,21 +1,21 @@
 {
   "name": "@gentics/mesh-rest-client-angular",
-  "version": "2.2.0-SNAPSHOT",
+  "version": "3.2.1",
+  "description": "The Angular specific Client for Gentics Mesh",
   "license": "Apache-2.0",
-  "dependencies": {
-  },
+  "dependencies": {},
   "peerDependencies": {
-    "@gentics/mesh-models": "^2.2.0-SNAPSHOT",
-    "@gentics/mesh-rest-client": "^2.2.0-SNAPSHOT",
-    "@angular/common": "^16.0.0",
-    "@angular/core": "^16.0.0",
+    "@gentics/mesh-models": "^3.2.0",
+    "@gentics/mesh-rest-client": "^3.2.0",
+    "@angular/common": ">=20.0.0",
+    "@angular/core": ">=20.0.0",
     "rxjs": "^7.8.1"
   },
   "devDependencies": {
-    "@gentics/mesh-models": "^2.2.0-SNAPSHOT",
-    "@gentics/mesh-rest-client": "^2.2.0-SNAPSHOT",
-    "@angular/common": "^16.0.0",
-    "@angular/core": "^16.0.0",
+    "@gentics/mesh-models": "^3.2.0",
+    "@gentics/mesh-rest-client": "^3.2.0",
+    "@angular/common": ">=20.0.0",
+    "@angular/core": ">=20.0.0",
     "rxjs": "^7.8.1"
   }
 }

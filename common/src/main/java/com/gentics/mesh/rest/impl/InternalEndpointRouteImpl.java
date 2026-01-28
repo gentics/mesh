@@ -8,6 +8,7 @@ import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -252,7 +253,7 @@ public class InternalEndpointRouteImpl implements InternalEndpointRoute {
 
 	@Override
 	public InternalEndpointRoute useNormalisedPath(boolean useNormalisedPath) {
-		route.useNormalisedPath(useNormalisedPath);
+		route.useNormalizedPath(useNormalisedPath);
 		return this;
 	}
 
@@ -433,9 +434,9 @@ public class InternalEndpointRouteImpl implements InternalEndpointRoute {
 	@Override
 	public InternalEndpointRoute addQueryParameters(Class<? extends ParameterProvider> clazz) {
 		try {
-			ParameterProvider provider = clazz.newInstance();
+			ParameterProvider provider = clazz.getConstructor().newInstance();
 			parameters.putAll(provider.getRAMLParameters());
-		} catch (InstantiationException | IllegalAccessException e) {
+		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
 			e.printStackTrace();
 		}
 		return this;

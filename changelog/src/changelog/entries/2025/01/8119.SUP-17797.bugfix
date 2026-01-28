@@ -1,0 +1,4 @@
+Image Manipulation: A periodic cleanup for files in the image cache has been added, which can be
+configured with the new configuration options `image.imageCacheCleanInterval` (for the interval for running the cleanup)
+and `image.imageCacheMaxIdle` (for the maximum allowed file age). Both values must be set in ISO 8601 duration format.
+By default, `image.imageCacheCleanInterval` is set to `PT0S` (0 seconds), which deactivates the periodic cleanup.

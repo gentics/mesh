@@ -8,15 +8,13 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang.NotImplementedException;
-import org.hibernate.jpa.QueryHints;
+import org.hibernate.jpa.HibernateHints;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.dao.PersistingLanguageDao;
 import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.data.dao.util.CommonDaoHelper;
@@ -50,11 +48,11 @@ public class LanguageDaoImpl extends AbstractHibDaoGlobal<HibLanguage, LanguageR
 	public HibLanguage findByLanguageTag(String tag) {
 		return firstOrNull(em().createQuery("select l from language l where l.languageTag = :tag", HibLanguageImpl.class)
 				.setParameter("tag", tag)
-				.setHint(QueryHints.HINT_CACHEABLE, true));
+				.setHint(HibernateHints.HINT_CACHEABLE, true));
 	}
 
 	@Override
-	public void delete(HibLanguage element, BulkActionContext bac) {
+	public void delete(HibLanguage element) {
 		throw new NotImplementedException("Languages cannot be deleted");
 	}
 
@@ -68,7 +66,7 @@ public class LanguageDaoImpl extends AbstractHibDaoGlobal<HibLanguage, LanguageR
 		return firstOrNull(em().createQuery("select l from project p join p.languages l where p = :project and l.languageTag = :tag", HibLanguageImpl.class)
 				.setParameter("tag", tag)
 				.setParameter("project", project)
-				.setHint(QueryHints.HINT_CACHEABLE, true));
+				.setHint(HibernateHints.HINT_CACHEABLE, true));
 	}
 
 	@Override

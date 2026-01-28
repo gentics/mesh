@@ -32,6 +32,10 @@ import com.gentics.mesh.hibernate.data.node.field.impl.HibNodeFieldImpl;
 			query = "select edge from nodefieldref edge " +
 					"where edge.dbUuid = :uuid "),
 	@NamedQuery(
+			name = "nodefieldref.findEdgesByUuids",
+			query = "select edge from nodefieldref edge " +
+					"where edge.dbUuid in :uuids "),
+	@NamedQuery(
 			name = "nodefieldref.findNodeByEdgeUuid",
 			query = "select n from node n " +
 					"join nodefieldref edge on n.dbUuid = edge.valueOrUuid " +
@@ -139,7 +143,7 @@ public class HibNodeFieldEdgeImpl extends AbstractFieldEdgeImpl<UUID> implements
 	}
 
 	@Override
-	public void onEdgeDeleted(HibernateTx tx, BulkActionContext bac) {
+	public void onEdgeDeleted(HibernateTx tx) {
 		// Node edge does not own a node, so nothing to do with it on a deletion.
 	}
 }

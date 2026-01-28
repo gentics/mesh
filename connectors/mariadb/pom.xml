@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh-database-connectors</artifactId>
-		<version>3.0.1-SNAPSHOT</version>
+		<version>3.3.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>mesh-database-connector-mariadb</artifactId>
@@ -216,7 +216,7 @@
 						${jacoco.env}
 					</argLine>
 					<forkedProcessTimeoutInSeconds>2700</forkedProcessTimeoutInSeconds>
-					<rerunFailingTestsCount>0</rerunFailingTestsCount>
+					<rerunFailingTestsCount>${surefire.rerunFailingTestsCount}</rerunFailingTestsCount>
 					<reuseForks>false</reuseForks>
 					<forkCount>${surefire.forkcount}</forkCount>
 					<trimStackTrace>false</trimStackTrace>
@@ -254,6 +254,7 @@
 										<arg>--transaction-isolation=READ-COMMITTED</arg>
 										<arg>--binlog-format=ROW</arg>
 										<arg>--log-bin=mysqld-bin</arg>
+										<arg>--max-allowed-packet=67108864</arg>
 									</exec>
 								</cmd>
 								<env>

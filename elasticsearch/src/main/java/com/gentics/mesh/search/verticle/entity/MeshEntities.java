@@ -12,6 +12,9 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibCoreElement;
@@ -26,6 +29,7 @@ import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.search.Compliance;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
@@ -36,8 +40,7 @@ import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.ProjectEvent;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.event.tag.TagElementEventModel;
-import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.search.ComplianceMode;
+import com.gentics.mesh.handler.DataHolderContext;
 import com.gentics.mesh.search.index.group.GroupTransformer;
 import com.gentics.mesh.search.index.microschema.MicroschemaTransformer;
 import com.gentics.mesh.search.index.node.NodeContainerTransformer;
@@ -51,9 +54,6 @@ import com.gentics.mesh.search.verticle.eventhandler.EventVertexMapper;
 import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
 import com.gentics.mesh.search.verticle.eventhandler.Util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * A helper class that abstracts the common functionality shared across mesh elements
  * that are useful for the search verticle.
@@ -63,7 +63,7 @@ public class MeshEntities {
 	private static final Logger log = LoggerFactory.getLogger(MeshEntities.class);
 
 	private final MeshHelper helper;
-	private final ComplianceMode complianceMode;
+	private final Compliance compliance;
 
 	public final MeshEntity<HibUser> user;
 	public final MeshEntity<HibGroup> group;
@@ -78,7 +78,7 @@ public class MeshEntities {
 
 	@Inject
 	public MeshEntities(MeshHelper helper, 
-		MeshOptions options, 
+		Compliance compliance, 
 		UserTransformer userTransformer, 
 		RoleTransformer roleTransformer, 
 		TagTransformer tagTransformer, 
@@ -89,7 +89,7 @@ public class MeshEntities {
 		MicroschemaTransformer microschemaTransformer, 
 		NodeContainerTransformer nodeTransformer) {
 		this.helper = helper;
-		this.complianceMode = options.getSearchOptions().getComplianceMode();
+		this.compliance = compliance;
 
 		schema = new SimpleMeshEntity<>(schemaTransformer, HibSchema.TYPE_INFO, byHibElementUuid(uuid -> Tx.get().schemaDao().findByUuid(uuid)));
 		microschema = new SimpleMeshEntity<>(microschemaTransformer, HibMicroschema.TYPE_INFO, byHibElementUuid(uuid -> Tx.get().microschemaDao().findByUuid(uuid)));
@@ -269,7 +269,7 @@ public class MeshEntities {
 	 * @return
 	 */
 	public CreateDocumentRequest createRequest(HibGroup element) {
-		return helper.createDocumentRequest(HibGroup.composeIndexName(), element.getUuid(), group.transform(element), complianceMode);
+		return helper.createDocumentRequest(HibGroup.composeIndexName(), element.getUuid(), group.transform(element, null), compliance);
 	}
 
 	/**
@@ -278,7 +278,17 @@ public class MeshEntities {
 	 * @return
 	 */
 	public CreateDocumentRequest createRequest(HibUser element) {
-		return helper.createDocumentRequest(HibUser.composeIndexName(), element.getUuid(), user.transform(element), complianceMode);
+		return createRequest(element, null);
+	}
+
+	/**
+	 * Creates a {@link CreateDocumentRequest} for the given element.
+	 * @param element
+	 * @param dhc optional data holder context
+	 * @return
+	 */
+	public CreateDocumentRequest createRequest(HibUser element, DataHolderContext dhc) {
+		return helper.createDocumentRequest(HibUser.composeIndexName(), element.getUuid(), user.transform(element, dhc), compliance);
 	}
 
 	/**
@@ -287,7 +297,7 @@ public class MeshEntities {
 	 * @return
 	 */
 	public CreateDocumentRequest createRequest(HibTagFamily element, String projectUuid) {
-		return helper.createDocumentRequest(HibTagFamily.composeIndexName(projectUuid), element.getUuid(), tagFamily.transform(element), complianceMode);
+		return helper.createDocumentRequest(HibTagFamily.composeIndexName(projectUuid), element.getUuid(), tagFamily.transform(element, null), compliance);
 	}
 
 	/**
@@ -296,7 +306,7 @@ public class MeshEntities {
 	 * @return
 	 */
 	public CreateDocumentRequest createRequest(HibTag element, String projectUuid) {
-		return helper.createDocumentRequest(HibTag.composeIndexName(projectUuid), element.getUuid(), tag.transform(element), complianceMode);
+		return helper.createDocumentRequest(HibTag.composeIndexName(projectUuid), element.getUuid(), tag.transform(element, null), compliance);
 	}
 
 	/**
@@ -328,7 +338,7 @@ public class MeshEntities {
 					version.getMicroschemaVersionHash(branch)
 				),
 				ContentDao.composeDocumentId(nodeUuid, container.getLanguageTag()),
-				transformer.toDocument(container, branch.getUuid(), type), complianceMode
+				transformer.toDocument(container, project, branch, type, null), compliance
 			);
 		})));
 	}

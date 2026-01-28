@@ -32,6 +32,10 @@ import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 		name = "s3Binary.deleteUnreferenced",
 		query = "delete from s3binary s where not exists (select f from s3binaryfieldref f where f.valueOrUuid = s.dbUuid)"),
 	@NamedQuery(
+		name = "s3Binary.findByUuids",
+		query = "select b from s3binary b where b.dbUuid in :uuids"
+	),
+	@NamedQuery(
 		name = "s3binary.findByCheckStatus",
 		query = "select s from s3binary s where s.checkStatus = :checkStatus")
 })

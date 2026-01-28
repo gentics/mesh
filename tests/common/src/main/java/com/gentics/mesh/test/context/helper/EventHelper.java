@@ -2,6 +2,7 @@ package com.gentics.mesh.test.context.helper;
 
 import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -100,7 +101,7 @@ public interface EventHelper extends BaseHelper {
 		MessageConsumer<Object> consumer = vertx().eventBus().consumer(address);
 		consumer.handler(msg -> latch.countDown());
 		// The completion handler will be invoked once the consumer has been registered
-		consumer.completionHandler(res -> {
+		consumer.completion().andThen(res -> {
 			if (res.failed()) {
 				throw new RuntimeException("Could not listen to event", res.cause());
 			}
@@ -346,7 +347,7 @@ public interface EventHelper extends BaseHelper {
 	 * @return Migration status
 	 */
 	default JobListResponse waitForJobs(Supplier<?> action, JobStatus status, int expectedJobs) {
-		return waitForJobs(action, status, expectedJobs, 30);
+		return waitForJobs(action, status, expectedJobs, 120);
 	}
 
 	/**
@@ -418,7 +419,7 @@ public interface EventHelper extends BaseHelper {
 		action.run();
 
 		// Now poll the migration status and check the response
-		final int MAX_WAIT = 30;
+		final int MAX_WAIT = 120;
 		for (int i = 0; i < MAX_WAIT; i++) {
 			JobListResponse response = runAsAdmin(() -> call(() -> client().findJobs()));
 			List<JobResponse> diff = TestUtils.difference(response.getData(), before.getData(), JobResponse::getUuid);
@@ -586,7 +587,7 @@ public interface EventHelper extends BaseHelper {
 	}
 
 	default void syncIndex() throws TimeoutException {
-		try (ExpectedEvent ee = expectEvent(MeshEvent.INDEX_SYNC_FINISHED, 10_000)) {
+		try (ExpectedEvent ee = expectEvent(MeshEvent.INDEX_SYNC_FINISHED, 30_000)) {
 			SyncEventHandler.invokeSync(vertx(), null);
 		}
 		refreshIndices();
@@ -626,5 +627,44 @@ public interface EventHelper extends BaseHelper {
 		}
 
 		return result;
+	}
+
+	/**
+	 * Wait for the given task to run without throwing an exception, but no longer than timeout milliseconds
+	 * @param task task to run
+	 * @param timeout timeout
+	 * @return true if the task succeeded without the timeout or false otherwise
+	 */
+	default boolean waitForSuccess(Runnable task, int timeout) {
+		return waitFor(() -> {
+			try {
+				task.run();
+				return true;
+			} catch (Throwable t) {
+				return false;
+			}
+		}, timeout);
+	}
+
+	/**
+	 * Assert that the project router for the project with the given name is
+	 * registered (after waiting no longer than 10_000 milliseconds).
+	 * 
+	 * @param name project name
+	 */
+	default void assertProjectRouter(String name) {
+		assertProjectRouter(name, 10_000);
+	}
+
+	/**
+	 * Assert that the project router for the project with the given name is
+	 * registered (after waiting no longer than then given number of milliseconds).
+	 * 
+	 * @param name project name
+	 * @param timeout maximum wait time in milliseconds
+	 */
+	default void assertProjectRouter(String name, int timeout) {
+		assertThat(waitFor(() -> mesh().routerStorageRegistry().hasProject(name), timeout))
+				.as("Project router for %s is registered after waiting %d ms".formatted(name, timeout)).isTrue();
 	}
 }

@@ -32,7 +32,7 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.cache.CacheRegistry;
 import com.gentics.mesh.changelog.highlevel.HighLevelChangelogSystem;
-import com.gentics.mesh.context.impl.DummyBulkActionContext;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.HibMeshVersion;
 import com.gentics.mesh.core.data.dao.GroupDao;
@@ -47,6 +47,7 @@ import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.service.ServerSchemaStorageImpl;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApiImpl;
@@ -89,9 +90,11 @@ import ch.qos.logback.core.rolling.RollingFileAppender;
 import ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy;
 import ch.qos.logback.core.util.FileSize;
 import dagger.Lazy;
+import io.micrometer.core.instrument.MeterRegistry;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.vertx.core.Vertx;
+import io.vertx.core.VertxBuilder;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.EventBusOptions;
@@ -99,6 +102,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.metrics.MetricsOptions;
 import io.vertx.core.spi.cluster.ClusterManager;
+import io.vertx.micrometer.MicrometerMetricsFactory;
 
 /**
  * @see BootstrapInitializer
@@ -140,6 +144,8 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 
 	protected final MetricsOptions metricsOptions;
 
+	protected final MeterRegistry meterRegistry;
+
 	protected final LocalConfigApiImpl localConfigApi;
 
 	protected final BCryptPasswordEncoder passwordEncoder;
@@ -154,7 +160,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 
 	// TODO: Changing the role name or deleting the role would cause code that utilizes this field to break.
 	// This is however a rare case.
-	protected HibRole anonymousRole;
+	protected String anonymousRoleUuid;
 
 	protected MeshImpl mesh;
 
@@ -171,7 +177,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	protected AbstractBootstrapInitializer(ServerSchemaStorageImpl schemaStorage, Database db,
 			SearchProvider searchProvider, BCryptPasswordEncoder encoder, DistributedEventManager eventManager,
 			Lazy<IndexHandlerRegistryImpl> indexHandlerRegistry, Lazy<CoreVerticleLoader> loader,
-			HighLevelChangelogSystem highlevelChangelogSystem, CacheRegistry cacheRegistry,
+			HighLevelChangelogSystem highlevelChangelogSystem, CacheRegistry cacheRegistry, MeterRegistry meterRegistry,
 			MeshPluginManager pluginManager, MeshOptions options, RouterStorageRegistryImpl routerStorageRegistry,
 			MetricsOptions metricsOptions, LocalConfigApiImpl localConfigApi, BCryptPasswordEncoder passwordEncoder,
 			MasterElector coordinatorMasterElector, LivenessManager liveness, EventBusLivenessManager eventbusLiveness,
@@ -189,6 +195,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 		this.options = options;
 		this.routerStorageRegistry = routerStorageRegistry;
 		this.metricsOptions = metricsOptions;
+		this.meterRegistry = meterRegistry;
 		this.localConfigApi = localConfigApi;
 		this.passwordEncoder = passwordEncoder;
 		this.coordinatorMasterElector = coordinatorMasterElector;
@@ -566,11 +573,6 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 		vertxOptions.setWorkerPoolSize(options.getVertxOptions().getWorkerPoolSize());
 		vertxOptions.setEventLoopPoolSize(options.getVertxOptions().getEventPoolSize());
 
-		MonitoringConfig monitoringOptions = options.getMonitoringOptions();
-		if (monitoringOptions != null && monitoringOptions.isEnabled()) {
-			log.info("Enabling Vert.x metrics");
-			vertxOptions.setMetricsOptions(metricsOptions);
-		}
 		boolean logActivity = LoggerFactory.getLogger(EventBus.class).isDebugEnabled();
 		vertxOptions.getEventBusOptions().setLogActivity(logActivity);
 		vertxOptions.setPreferNativeTransport(true);
@@ -581,7 +583,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 			vertx = createClusteredVertx(options, vertxOptions);
 		} else {
 			log.info("Creating non-clustered Vert.x instance");
-			vertx = Vertx.vertx(vertxOptions);
+			vertx = createNonClusteredVertx(options, vertxOptions);
 		}
 		if (vertx.isNativeTransportEnabled()) {
 			log.info("Running with native transports enabled");
@@ -646,14 +648,16 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	private void checkImageCacheMigrated() throws IOException {
 		Path imageCachePath = Path.of(options.getImageOptions().getImageCacheDirectory());
 		if (Files.exists(imageCachePath) && Files.list(imageCachePath).filter(path -> path.getFileName().toString().length() == 8).count() > 0) {
-			db().tx(tx -> {
+			db().singleTx(tx -> {
 				log.info("Image cache requires migration, triggering the corresponding Job.");
+				BulkActionContext bac = tx.<CommonTx>unwrap().data().getOrCreateBulkActionContext();
 				tx.jobDao().findAll().stream().filter(job -> job.getType() == JobType.imagecache).forEach(job -> {
-					tx.jobDao().delete(job, new DummyBulkActionContext());
+					tx.jobDao().delete(job);
 				});
 				tx.jobDao().enqueueImageCacheMigration(tx.userDao().findByUsername("admin"));
 				MeshEvent.triggerJobWorker(mesh);
-			});
+				return bac;
+			}).doOnSuccess(bac -> bac.process(true)).subscribe();
 		}
 	}
 
@@ -804,13 +808,13 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	 */
 	@Override
 	public HibRole anonymousRole() {
-		if (anonymousRole == null) {
+		if (anonymousRoleUuid == null) {
 			synchronized (BootstrapInitializer.class) {
 				// Load the role if it has not been yet loaded
-				anonymousRole = Tx.get().roleDao().findByName("anonymous");
+				anonymousRoleUuid = Tx.get().roleDao().findByName("anonymous").getUuid();
 			}
 		}
-		return anonymousRole;
+		return Tx.get().roleDao().findByUuid(anonymousRoleUuid);
 	}
 
 	/**
@@ -818,7 +822,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	 */
 	@Override
 	public void clearReferences() {
-		anonymousRole = null;
+		anonymousRoleUuid = null;
 	}
 
 	@Override
@@ -912,12 +916,13 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 					log.debug("Created anonymous group {" + anonymousGroup.getUuid() + "}");
 				}
 
-				anonymousRole = roleDao.findByName("anonymous");
+				HibRole anonymousRole = roleDao.findByName("anonymous");
 				if (anonymousRole == null) {
 					anonymousRole = roleDao.create("anonymous", anonymousUser);
 					groupDao.addRole(anonymousGroup, anonymousRole);
 					log.debug("Created anonymous role {" + anonymousRole.getUuid() + "}");
 				}
+				anonymousRoleUuid = anonymousRole.getUuid();
 
 				tx.success();
 			});
@@ -996,6 +1001,27 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	protected abstract void initOptionalData(Tx tx, boolean isEmptyInstallation);
 
 	/**
+	 * Create a non-clustered vert.x instance.
+	 *
+	 * @param options
+	 *			Mesh options
+	 * @param vertxOptions
+	 *			Vert.x options
+	 */
+	protected Vertx createNonClusteredVertx(MeshOptions options, VertxOptions vertxOptions) {
+		VertxBuilder builder = Vertx.builder();
+
+		MonitoringConfig monitoringOptions = options.getMonitoringOptions();
+		if (monitoringOptions != null && monitoringOptions.isEnabled()) {
+			log.info("Enabling Vert.x metrics");
+			vertxOptions.setMetricsOptions(metricsOptions);
+			builder.withMetrics(new MicrometerMetricsFactory(meterRegistry));
+		}
+
+		return builder.with(vertxOptions).build();
+	}
+
+	/**
 	 * Create a clustered vert.x instance and block until the instance has been created.
 	 *
 	 * @param options
@@ -1005,7 +1031,6 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	 */
 	protected Vertx createClusteredVertx(MeshOptions options, VertxOptions vertxOptions) {
 		clusterManager = db.clusterManager().getVertxClusterManager();
-		vertxOptions.setClusterManager(clusterManager);
 		String localIp = options.getClusterOptions().getNetworkHost();
 
 		Integer clusterPort = options.getClusterOptions().getVertxPort();
@@ -1023,7 +1048,16 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 			log.debug("Binding Vert.x on host {" + localIp + "}");
 		}
 		CompletableFuture<Vertx> fut = new CompletableFuture<>();
-		Vertx.clusteredVertx(vertxOptions, rh -> {
+		VertxBuilder builder = Vertx.builder().withClusterManager(clusterManager);
+
+		MonitoringConfig monitoringOptions = options.getMonitoringOptions();
+		if (monitoringOptions != null && monitoringOptions.isEnabled()) {
+			log.info("Enabling Vert.x metrics");
+			vertxOptions.setMetricsOptions(metricsOptions);
+			builder.withMetrics(new MicrometerMetricsFactory(meterRegistry));
+		}
+
+		builder.with(vertxOptions).buildClustered().andThen(rh -> {
 			log.info("Created clustered Vert.x instance");
 			if (rh.failed()) {
 				Throwable cause = rh.cause();

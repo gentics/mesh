@@ -13,7 +13,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.s3binary.S3HibBinary;
@@ -129,8 +128,8 @@ public class HibS3BinaryFieldEdgeImpl extends AbstractBinaryFieldEdgeImpl<S3HibB
 	}
 
 	@Override
-	public void onEdgeDeleted(HibernateTx tx, BulkActionContext bac) {
-		tx.s3binaryDao().removeField(bac, this);
+	public void onEdgeDeleted(HibernateTx tx) {
+		tx.s3binaryDao().removeField(this);
 	}
 
 	public static HibS3BinaryFieldEdgeImpl fromContainer(HibernateTx tx, HibUnmanagedFieldContainer<?,?,?,?,?> container, String fieldKey, HibS3BinaryImpl binary) {

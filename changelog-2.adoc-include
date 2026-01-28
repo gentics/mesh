@@ -6,6 +6,368 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v3.2.1]]
+== 3.2.1 (12.01.2026)
+
+[[v3.2.0]]
+== 3.2.0 (16.12.2025)
+
+icon:plus[] Search: An index search integration with Elasticsearch has been refactored to use the stateless `search_after` approach. The old, `scroll` API based implementation has been removed.
+
+icon:plus[] Search: Support for Elasticsearch 9 has been added.
+
+icon:plus[] Core: The `Vert.x` async IO / routing framework has been updated to the version `5.0.5`.
+
+icon:plus[] Some dependencies have been updated:
+* Hibernate: 7.1.8.Final
+
+
+[[v3.1.8]]
+== 3.1.8 (12.01.2026)
+
+icon:check[] Core: A permission system has been reworked to speed up accessibility of the selected elements for the users with admin permissions. 
+
+[[v3.1.7]]
+== 3.1.7 (12.12.2025)
+
+icon:check[] Docker: The content of @eclipse-temurin@ base image has been updated, to eliminate critical vulnerabilities on its dependencies.
+
+[[v3.1.6]]
+== 3.1.6 (20.11.2025)
+
+icon:check[] Core: The published status of the fetched content was wrong, if using either native filtering or sorting. This has been fixed.
+
+icon:check[] Core: The API for branches has been modified to support better performance when loading
+the latest schema version of a schema in a branch.
+
+
+icon:check[] Core: The performace for creating/updating nodes has been improved.
+
+
+icon:check[] Core: The second level cache for hibernate has been enabled by default.
+The startup of Mesh with second level cache enabled in a cluster environment has been fixed.
+
+
+icon:check[] Core: The performance of getting entity lists has been improved by reducing the number of executed SQL queries.
+
+
+icon:check[] Core: The `OkHttp` client dependency has been updated to the version `5.3.0`, targeting the vulnerability `CVE-2021-0341`. 
+The `ElasticSearch Java Client`, that depends on the same client, has been updated as well to the version `1.1.4`.
+
+[[v3.1.5]]
+== 3.1.5 (27.10.2025)
+
+icon:check[] Core: After the data migration from the older Mesh versions it is possible to have list item database tables being polluted with the duplicated data, that, while making no functional harm, may lead to the random performance penalties.
+ Targeting these, a new consistency check/repair feature has been added to the existing "*listitem" checks. 
+
+icon:check[] Search: Running an index sync did not properly close all used scroll contexts in elasticsearch,
+which could lead to errors like 'Trying to create too many scroll contexts' in elasticsearch.
+This has been fixed, all scroll contexts are closed as soon as they are not used any more.
+
+
+icon:check[] Core: Under some circumstances the fetch of entities via REST GET returns duplicated entries. This has been fixed.
+
+icon:check[] Core: The recursive deletion of nodes has been fixed to not leave orphaned contents behind.
+
+
+[[v3.1.4]]
+== 3.1.4 (23.09.2025)
+
+icon:check[] Core: Generation of ETags for nodes has generally been improved to be more stable.
+
+
+icon:check[] Core: Generation of childrenInfo and etag for nodes with many children has been refactored to support better performance.
+
+
+icon:check[] Core: Generation of childrenInfo and etag for nodes with many children has been made more performant.
+
+
+icon:check[] GraphQL: The performance of GraphQL queries returning larger hierachies of data has been improved.
+
+
+icon:check[] Core: The performance of deleting nodes recursively has been improved.
+
+
+icon:check[] Core: Implementations of the persistance layer may now choose to process recursive deletion of nodes
+in a separate thread instead of in the worker thread pool.
+
+
+icon:check[] Core: Deleting of nodes with more than 1000 descendants is now done
+in a separate thread. This will also cause those delete tasks to be done
+one after the other instead of in parallel.
+
+
+icon:check[] Search: When a schema was completely excluded from indexing, the index sync operation still
+tried to put the nodes of that schema into the non-existent index, this has been fixed.
+
+
+icon:check[] Core: It is now possible to delete a node with a list field that has data inconsistencies.
+
+[[v3.1.3]]
+== 3.1.3 (01.09.2025)
+
+icon:check[] Plugins: Now the plugin timeout value is also considered in the HTTP plugin client. This allows extending HTTP call timeouts when the plugin is expected to start longer.
+
+icon:check[] Some dependencies have been updated:
+* Netty: 4.1.124.Final
+* Vert.x: 4.5.18
+
+
+icon:check[] Core: The following dependencies have been updated, to target the vulnerability CVE-2025-54988 :
+ * Apache Tika, to *3.2.2*
+ * Apache Commons Lang3, to *3.18.0*
+ * Apache Commons Compress, to *1.28.0*
+ * JSOUP, to *1.21.1*
+
+[[v3.1.2]]
+== 3.1.2 (15.07.2025)
+
+icon:check[] Core: Generation of ETags for nodes containing tags was not stable and sometimes resulted in different ETags,
+even if nothing was changed. This has been fixed.
+
+
+icon:check[] REST API: Now Mesh accepts both ISO-8601 standards of a date/time string representation, with and without trailing Z or timezone value.
+
+[[v3.1.1]]
+== 3.1.1 (03.07.2025)
+
+icon:plus[] Core: The following dependencies have been updated, to eliminate vulnerable versions:
+ * Vert.x - to version `4.5.14`
+ * Netty - to version `4.1.118.Final`
+
+icon:check[] REST: The query parameters for node versioning and branch targeting have been decoupled, to match the cases where a branch usage is allowed, but version is not.
+
+Documentation: The query parameterizing has been updated for the selected REST endpoints.
+
+icon:check[] Auth: Now a secondary auth provider (from Mesh plugins, for instance) allows proceeding with the request unauthenticated in a number of cases of errors, like provider denial or bad request, and logging the other cases.
+
+[[v3.1.0]]
+== 3.1.0 (10.06.2025)
+
+icon:plus[] Some dependencies have been updated:
+* Hibernate: 6.6.11.Final
+* Vert.x: 4.5.14
+* Netty: 4.1.118.Final
+* Spring Security: 6.3.5
+* Guava: 32.0.0-jre
+* Zip4j: 2.11.3
+* Logback: 1.5.18
+* Okio: 1.17.6
+* Dagger: 2.56.2
+
+
+icon:check[] Some dependencies have been updated:
+* Netty: 4.1.118.Final
+* Commons Beanutils: 1.11.0
+
+
+[[v3.0.17]]
+== 3.0.17 (20.11.2025)
+
+icon:check[] Core: The published status of the fetched content was wrong, if using either native filtering or sorting. This has been fixed.
+
+icon:check[] Core: The API for branches has been modified to support better performance when loading
+the latest schema version of a schema in a branch.
+
+
+icon:check[] Core: The performace for creating/updating nodes has been improved.
+
+
+icon:check[] Core: The second level cache for hibernate has been enabled by default.
+The startup of Mesh with second level cache enabled in a cluster environment has been fixed.
+
+
+icon:check[] Core: The performance of getting entity lists has been improved by reducing the number of executed SQL queries.
+
+
+icon:check[] Core: The `OkHttp` client dependency has been updated to the version `5.3.0`, targeting the vulnerability `CVE-2021-0341`. 
+The `ElasticSearch Java Client`, that depends on the same client, has been updated as well to the version `1.1.4`.
+
+[[v3.0.16]]
+== 3.0.16 (27.10.2025)
+
+icon:check[] Core: After the data migration from the older Mesh versions it is possible to have list item database tables being polluted with the duplicated data, that, while making no functional harm, may lead to the random performance penalties.
+ Targeting these, a new consistency check/repair feature has been added to the existing "*listitem" checks. 
+
+icon:check[] Search: Running an index sync did not properly close all used scroll contexts in elasticsearch,
+which could lead to errors like 'Trying to create too many scroll contexts' in elasticsearch.
+This has been fixed, all scroll contexts are closed as soon as they are not used any more.
+
+
+icon:check[] Core: Under some circumstances the fetch of entities via REST GET returns duplicated entries. This has been fixed.
+
+icon:check[] Core: The recursive deletion of nodes has been fixed to not leave orphaned contents behind.
+
+
+[[v3.0.15]]
+== 3.0.15 (23.09.2025)
+
+icon:check[] Core: Generation of ETags for nodes has generally been improved to be more stable.
+
+
+icon:check[] Core: Generation of childrenInfo and etag for nodes with many children has been refactored to support better performance.
+
+
+icon:check[] Core: Generation of childrenInfo and etag for nodes with many children has been made more performant.
+
+
+icon:check[] GraphQL: The performance of GraphQL queries returning larger hierachies of data has been improved.
+
+
+icon:check[] Core: The performance of deleting nodes recursively has been improved.
+
+
+icon:check[] Core: Implementations of the persistance layer may now choose to process recursive deletion of nodes
+in a separate thread instead of in the worker thread pool.
+
+
+icon:check[] Core: Deleting of nodes with more than 1000 descendants is now done
+in a separate thread. This will also cause those delete tasks to be done
+one after the other instead of in parallel.
+
+
+icon:check[] Search: When a schema was completely excluded from indexing, the index sync operation still
+tried to put the nodes of that schema into the non-existent index, this has been fixed.
+
+
+icon:check[] Core: It is now possible to delete a node with a list field that has data inconsistencies.
+
+[[v3.0.14]]
+== 3.0.14 (01.09.2025)
+
+icon:check[] Plugins: Now the plugin timeout value is also considered in the HTTP plugin client. This allows extending HTTP call timeouts when the plugin is expected to start longer.
+
+icon:check[] Some dependencies have been updated:
+* Netty: 4.1.124.Final
+* Vert.x: 4.5.18
+
+
+icon:check[] Core: The following dependencies have been updated, to target the vulnerability CVE-2025-54988 :
+ * Apache Tika, to *3.2.2*
+ * Apache Commons Lang3, to *3.18.0*
+ * Apache Commons Compress, to *1.28.0*
+ * JSOUP, to *1.21.1*
+
+[[v3.0.13]]
+== 3.0.13 (15.07.2025)
+
+icon:check[] Core: Generation of ETags for nodes containing tags was not stable and sometimes resulted in different ETags,
+even if nothing was changed. This has been fixed.
+
+
+icon:check[] REST API: Now Mesh accepts both ISO-8601 standards of a date/time string representation, with and without trailing Z or timezone value.
+
+[[v3.0.12]]
+== 3.0.12 (02.07.2025)
+
+icon:check[] REST: The query parameters for node versioning and branch targeting have been decoupled, to match the cases where a branch usage is allowed, but version is not.
+
+Documentation: The query parameterizing has been updated for the selected REST endpoints.
+
+icon:check[] Auth: Now a secondary auth provider (from Mesh plugins, for instance) allows proceeding with the request unauthenticated in a number of cases of errors, like provider denial or bad request, and logging the other cases.
+
+[[v3.0.11]]
+== 3.0.11 (20.06.2025)
+
+icon:plus[] Core: The following dependencies have been updated, to eliminate vulnerable versions:
+ * Vert.x - to version `4.5.14`
+ * Netty - to version `4.1.118.Final`
+
+icon:check[] Some dependencies have been updated:
+* Netty: 4.1.118.Final
+* Commons Beanutils: 1.11.0
+
+
+[[v3.0.10]]
+== 3.0.10 (22.05.2025)
+
+icon:check[] Plugins: If a static file handler fails to unpack the static resource to the plugin storage folder, currently a misleading `HTTP 404 binary_data_not_found` is thrown. This has been now changed to `HTTP 500` with a detailed failure description.
+
+[[v3.0.9]]
+== 3.0.9 (07.05.2025)
+
+icon:check[] Auth: More occurrences of setting the `mesh.token` cookies have been secured with `HTTPOnly` flag.
+
+icon:check[] Image Manipulation: Creating image variants with a focal point or focal zoom value failed with an internal server error when using MariaDB.
+This has been fixed.
+
+
+[[v3.0.8]]
+== 3.0.8 (24.04.2025)
+
+icon:check[] S3: Now the language specific S3 fields are correctly processed.
+
+[[v3.0.7]]
+== 3.0.7 (10.04.2025)
+
+icon:check[] The dependency on nashorn-core has been updated to 15.6.
+This fixes startup errors in plugins (like the comment plugin) which uses precompilation of handlebars templates to javascript.
+
+
+icon:check[] Logging: Some sensitive configuration entries were eliminated from the logging.
+
+icon:check[] S3: When a S3 image is transformed, the transformation result can be never returned to the client at some cases, because of a false cache path provided by the transformation service. This has been fixed.
+
+icon:check[] Core: When an empty payload is sent to the binary field update function, a new version of a content, being updated, is produced, containing no changes. This has been now fixed, and the content stays old in this case. 
+
+icon:check[] OAuth: If a new set of groups/roles has been attached to the Mesh user during the OAuth login session, these groups/roles are not used in the filtering during the same session. This has been fixed. 
+
+icon:check[] Indexing: At some circumstances an indexing engine crash is possible, when the changes, triggering the (re)indexing on updated or deleted data, come too quickly. This has been fixed.
+
+icon:check[] The dependencies on hibernate have been changed from groupId org.hibernate to org.hibernate.orm.
+
+
+[[v3.0.6]]
+== 3.0.6 (26.03.2025)
+
+[[v3.0.5]]
+== 3.0.5 (13.03.2025)
+
+icon:plus[] Documentation: References to the MariaDB official documentation have been added.
+
+[[v3.0.4]]
+== 3.0.4 (26.02.2025)
+
+icon:check[] Auth: The JWT auth cookie will now have the `HTTPOnly` flag set.
+
+
+[[v3.0.3]]
+== 3.0.3 (12.02.2025)
+
+icon:check[] Image Manipulation: A periodic cleanup for files in the image cache has been added, which can be
+configured with the new configuration options `image.imageCacheCleanInterval` (for the interval for running the cleanup)
+and `image.imageCacheMaxIdle` (for the maximum allowed file age). Both values must be set in ISO 8601 duration format.
+By default, `image.imageCacheCleanInterval` is set to `PT0S` (0 seconds), which deactivates the periodic cleanup.
+
+
+icon:check[] GraphQL: A case of using a GraphQL native filter for a string field against a UUID value, resulting in an exception, has been fixed. 
+
+[[v3.0.2]]
+== 3.0.2 (29.01.2025)
+
+icon:check[] Core: The processing of binaries has been refactored, targeting possible binary data leftovers being eliminated after the binary content is updated or deleted. Also, two new async consistency check have been added, for the detection of binary data with no corresponding database records (repairable) and binary database records with no corresponding binary data (for the automated testing purposes, not repairable).
+
+[[v3.0.1]]
+== 3.0.1 (16.01.2025)
+
+icon:check[] GraphQL: Data fetchers have been speed up on native filtering of the nodes with node fields, by fixing the proper context detection, so complex multi-inclusion queries (navigation) run up to 10x faster.
+
+
+icon:check[] Core: The node deletion rules has been strictened, to avoid internal deletion API misusage.
+
+icon:check[] Auth: A crash on retrieving principal user's referenced node has been fixed.
+
+icon:check[] Cache: The Image Cache refactoring, which was done in a previous hotfix release introduced an error which caused creation of empty folders in the old structure as well. This has been fixed.
+Also the migration process has been fixed to really remove all folders of the old structure, even if they are empty or contain cache files of binaries that were deleted before.
+
+
+icon:check[] Clustering: Autodiscovery of cluster member nodes in a kubernetes environment did not work (Mesh instances failed to start) due to an incorrect dependency, which has been removed now.
+
+
+icon:check[] GraphQL: A natively filtered paginated data set contains incorrect values for current page and total page number. This has been fixed.
+
+icon:check[] Core: The paged data sets contain different data, when being produced by native and legacy filtering, and/or sorting, under some circumstances. This has been fixed.
+
 [[v3.0.0]]
 == 3.0.0 (09.12.2024)
 
@@ -21,6 +383,133 @@ icon:plus[] Clustering: The Hazelcast library, responsible for the cluster insta
 
 icon:plus[] Some library dependencies have been updated to the latest hotfix versions.
 
+
+[[v2.1.25]]
+== 2.1.25 (27.10.2025)
+
+icon:check[] Search: Running an index sync did not properly close all used scroll contexts in elasticsearch,
+which could lead to errors like 'Trying to create too many scroll contexts' in elasticsearch.
+This has been fixed, all scroll contexts are closed as soon as they are not used any more.
+
+
+[[v2.1.24]]
+== 2.1.24 (22.09.2025)
+
+icon:check[] Core: Generation of ETags for nodes has generally been improved to be more stable.
+
+
+icon:check[] Core: Generation of childrenInfo and etag for nodes with many children has been refactored to support better performance.
+
+
+icon:check[] GraphQL: The performance of GraphQL queries returning larger hierachies of data has been improved.
+
+
+icon:check[] Core: Implementations of the persistance layer may now choose to process recursive deletion of nodes
+in a separate thread instead of in the worker thread pool.
+
+
+icon:check[] Search: When a schema was completely excluded from indexing, the index sync operation still
+tried to put the nodes of that schema into the non-existent index, this has been fixed.
+
+
+[[v2.1.23]]
+== 2.1.23 (01.09.2025)
+
+icon:check[] Core: Generation of ETags for nodes containing tags was not stable and sometimes resulted in different ETags,
+even if nothing was changed. This has been fixed.
+
+
+icon:check[] Plugins: Now the plugin timeout value is also considered in the HTTP plugin client. This allows extending HTTP call timeouts when the plugin is expected to start longer.
+
+[[v2.1.22]]
+== 2.1.22 (02.07.2025)
+
+icon:check[] REST: The query parameters for node versioning and branch targeting have been decoupled, to match the cases where a branch usage is allowed, but version is not.
+
+Documentation: The query parameterizing has been updated for the selected REST endpoints.
+
+icon:check[] Auth: Now a secondary auth provider (from Mesh plugins, for instance) allows proceeding with the request unauthenticated in a number of cases of errors, like provider denial or bad request, and logging the other cases.
+
+[[v2.1.21]]
+== 2.1.21 (20.06.2025)
+
+icon:plus[] Core: The following dependencies have been updated, to eliminate vulnerable versions:
+ * Vert.x - to version `4.5.14`
+ * Netty - to version `4.1.118.Final`
+
+[[v2.1.20]]
+== 2.1.20 (22.05.2025)
+
+icon:check[] Plugins: If a static file handler fails to unpack the static resource to the plugin storage folder, currently a misleading `HTTP 404 binary_data_not_found` is thrown. This has been now changed to `HTTP 500` with a detailed failure description.
+
+[[v2.1.19]]
+== 2.1.19 (07.05.2025)
+
+icon:check[] Auth: More occurrences of setting the `mesh.token` cookies have been secured with `HTTPOnly` flag.
+
+[[v2.1.18]]
+== 2.1.18 (23.04.2025)
+
+icon:check[] S3: Now the language specific S3 fields are correctly processed.
+
+[[v2.1.17]]
+== 2.1.17 (25.03.2025)
+
+icon:check[] S3: When a S3 image is transformed, the transformation result can be never returned to the client at some cases, because of a false cache path provided by the transformation service. This has been fixed.
+
+icon:check[] Core: When an empty payload is sent to the binary field update function, a new version of a content, being updated, is produced, containing no changes. This has been now fixed, and the content stays old in this case. 
+
+icon:check[] OAuth: If a new set of groups/roles has been attached to the Mesh user during the OAuth login session, these groups/roles are not used in the filtering during the same session. This has been fixed. 
+
+icon:check[] Indexing: At some circumstances an indexing engine crash is possible, when the changes, triggering the (re)indexing on updated or deleted data, come too quickly. This has been fixed.
+
+[[v2.1.16]]
+== 2.1.16 (12.03.2025)
+
+icon:check[] The dependency on nashorn-core has been updated to 15.6.
+This fixes startup errors in plugins (like the comment plugin) which uses precompilation of handlebars templates to javascript.
+
+
+icon:check[] Logging: Some sensitive configuration entries were eliminated from the logging.
+
+[[v2.1.15]]
+== 2.1.15 (25.02.2025)
+
+icon:check[] Auth: The JWT auth cookie will now have the `HTTPOnly` flag set.
+
+
+[[v2.1.14]]
+== 2.1.14 (11.02.2025)
+
+icon:check[] Image Manipulation: A periodic cleanup for files in the image cache has been added, which can be
+configured with the new configuration options `image.imageCacheCleanInterval` (for the interval for running the cleanup)
+and `image.imageCacheMaxIdle` (for the maximum allowed file age). Both values must be set in ISO 8601 duration format.
+By default, `image.imageCacheCleanInterval` is set to `PT0S` (0 seconds), which deactivates the periodic cleanup.
+
+
+[[v2.1.13]]
+== 2.1.13 (28.01.2025)
+
+icon:check[] Core: The processing of binaries has been refactored, targeting possible binary data leftovers being eliminated after the binary content is updated or deleted. Also, two new async consistency check have been added, for the detection of binary data with no corresponding database records (repairable) and binary database records with no corresponding binary data (for the automated testing purposes, not repairable).
+
+[[v2.1.12]]
+== 2.1.12 (16.01.2025)
+
+icon:check[] Cache: The Image Cache refactoring, which was done in a previous hotfix release introduced an error which caused creation of empty folders in the old structure as well. This has been fixed.
+Also the migration process has been fixed to really remove all folders of the old structure, even if they are empty or contain cache files of binaries that were deleted before.
+
+
+icon:check[] GraphQL: A natively filtered paginated data set contains incorrect values for current page and total page number. This has been fixed.
+
+[[v2.1.11]]
+== 2.1.11 (09.12.2024)
+
+icon:check[] GraphQL: Data fetchers have been speed up on native filtering of the nodes with node fields, by fixing the proper context detection, so complex multi-inclusion queries (navigation) run up to 10x faster.
+
+
+icon:check[] Core: The node deletion rules has been strictened, to avoid internal deletion API misusage.
+
+icon:check[] Auth: A crash on retrieving principal user's referenced node has been fixed.
 
 [[v2.1.10]]
 == 2.1.10 (06.11.2024)

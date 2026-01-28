@@ -1,7 +1,11 @@
 package com.gentics.mesh.search.index.user;
 
+import static com.gentics.mesh.util.PreparationUtil.prepareData;
+
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -15,12 +19,18 @@ import javax.inject.Singleton;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Bucket;
+import com.gentics.mesh.core.data.dao.RoleDao;
+import com.gentics.mesh.core.data.dao.UserDao;
+import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.search.Compliance;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.handler.DataHolderContext;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.BucketManager;
 import com.gentics.mesh.search.index.MappingProvider;
@@ -43,9 +53,9 @@ public class UserIndexHandlerImpl extends AbstractIndexHandler<HibUser> implemen
 	protected final UserMappingProvider mappingProvider;
 
 	@Inject
-	public UserIndexHandlerImpl(SearchProvider searchProvider, Database db, MeshHelper helper, MeshOptions options,
+	public UserIndexHandlerImpl(SearchProvider searchProvider, Database db, MeshHelper helper, MeshOptions options, Compliance compliance,
 		SyncMetersFactory syncMetricsFactory, BucketManager bucketManager, UserTransformer transformer, UserMappingProvider mappingProvider) {
-		super(searchProvider, db, helper, options, syncMetricsFactory, bucketManager);
+		super(searchProvider, db, helper, options, syncMetricsFactory, bucketManager, compliance);
 		this.transformer = transformer;
 		this.mappingProvider = mappingProvider;
 	}
@@ -103,8 +113,14 @@ public class UserIndexHandlerImpl extends AbstractIndexHandler<HibUser> implemen
 	}
 
 	@Override
-	public Stream<? extends HibUser> loadAllElements() {
-		return Tx.get().userDao().findAll().stream();
+	public Collection<? extends HibUser> loadAllElements(Bucket bucket, DataHolderContext dhc) {
+		UserDao userDao = Tx.get().userDao();
+		RoleDao roleDao = Tx.get().roleDao();
+		List<HibUser> usersInBucket = new ArrayList<>(userDao.findAll(bucket).list());
+		prepareData(usersInBucket, dhc, "user", "groups", userDao::getGroups);
+		prepareData(usersInBucket, dhc, "user", "permissions",
+				elements -> roleDao.getRoleUuidsForPerm(elements, InternalPermission.READ_PERM));
+		return usersInBucket;
 	}
 
 	@Override

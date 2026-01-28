@@ -20,6 +20,7 @@ import javax.inject.Singleton;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.binary.HibBinary;
@@ -29,6 +30,7 @@ import com.gentics.mesh.core.data.dao.PersistingImageVariantDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -140,7 +142,8 @@ public class BinaryVariantsHandler extends AbstractHandler {
 	 * @param consumer
 	 */
 	protected void wrapVariantsCall(InternalActionContext ac, String nodeUuid, String fieldName, Consumer<HibBinaryField> consumer) {
-		db.tx(tx -> {
+		db.singleTx(tx -> {
+			BulkActionContext bac = tx.<CommonTx>unwrap().data().getOrCreateBulkActionContext();
 			ContainerType version = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
 			HibProject project = tx.getProject(ac);
 			HibNode node = tx.nodeDao().loadObjectByUuid(project, ac, nodeUuid, version == ContainerType.PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM);
@@ -164,6 +167,7 @@ public class BinaryVariantsHandler extends AbstractHandler {
 			} else {
 				throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
 			}
-		});
+			return bac;
+		}).doOnSuccess(bac -> bac.process(true)).blockingGet();
 	}
 }

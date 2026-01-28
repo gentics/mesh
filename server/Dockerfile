@@ -1,9 +1,13 @@
-FROM eclipse-temurin:17-alpine
+FROM eclipse-temurin:17-alpine AS eclipse-temurin-upgraded
+
+RUN apk upgrade --no-cache
+
+FROM eclipse-temurin-upgraded
 
 ENV MESH_AUTH_KEYSTORE_PATH=/keystore/keystore.jks
 ENV MESH_PLUGIN_DIR=/plugins
 ENV MESH_BINARY_DIR=/uploads
-ENV MESH_TEMP_DIR=/tmp
+ENV MESH_TEMP_DIR=/tmpq
 ENV HOME=/mesh
 ENV JAVA_TOOL_OPTIONS="-Xms512m -Xmx512m"
 
@@ -24,6 +28,9 @@ RUN adduser -D -u 1000 -G root -h /mesh mesh && \
     apk update && apk add rsync curl iputils busybox-extras tar nano && rm -rf /var/cache/apk/*
 ADD --chown=1000:0 ./live.sh /mesh/live.sh
 ADD --chown=1000:0 ./target/mesh-server*jar /mesh/mesh.jar
+ADD --chown=1000:0 ./entrypoint.sh /mesh/
+
+RUN chmod u+x,g+x /mesh/entrypoint.sh
 
 USER mesh
 WORKDIR /mesh
@@ -33,5 +40,5 @@ VOLUME /plugins
 VOLUME /keystore
 VOLUME /config
 
-CMD [ "java", "-Djna.tmpdir=/tmp/.jna", "-Duser.dir=/mesh", "--add-opens", "java.base/java.util=ALL-UNNAMED", "-jar" , "mesh.jar"]
+ENTRYPOINT ["/mesh/entrypoint.sh"]
 HEALTHCHECK --start-period=60s --interval=10s --retries=2 CMD ["sh", "live.sh"]

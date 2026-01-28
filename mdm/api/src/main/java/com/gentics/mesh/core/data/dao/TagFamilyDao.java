@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.data.dao;
 
+import java.util.Collection;
+import java.util.Map;
+
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.tag.HibTag;
@@ -61,4 +64,11 @@ public interface TagFamilyDao extends DaoGlobal<HibTagFamily>, DaoTransformable<
 	 * @return
 	 */
 	Page<? extends HibTag> getTags(HibTagFamily tagFamily, HibUser user, PagingParameters pagingInfo);
+
+	/**
+	 * Return the tags for all given tag families
+	 * @param tagFamilies collection of tag families
+	 * @return map of tag family to the collections of tags
+	 */
+	Map<HibTagFamily, Collection<? extends HibTag>> getTags(Collection<HibTagFamily> tagFamilies);
 }

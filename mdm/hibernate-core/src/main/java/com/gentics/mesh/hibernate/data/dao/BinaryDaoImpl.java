@@ -10,10 +10,11 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.hibernate.jpa.SpecHints;
+
 import com.gentics.mesh.contentoperation.ContentFieldKey;
 import com.gentics.mesh.contentoperation.ContentKey;
 import com.gentics.mesh.contentoperation.ContentStorage;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.binary.Binaries;
@@ -118,7 +119,7 @@ public class BinaryDaoImpl extends AbstractImageDataHibDao<HibBinary> implements
 	 * @param key
 	 * @return entity or null
 	 */
-	public void removeField(BulkActionContext bac, HibField field) {
+	public void removeField(HibField field) {
 		ImageVariantDaoImpl imageVariantDao = HibernateTx.get().imageVariantDao();
 		HibBinaryField binaryRef = (HibBinaryField) field;
 		HibBinaryImpl binary = (HibBinaryImpl) binaryRef.getBinary();
@@ -132,8 +133,8 @@ public class BinaryDaoImpl extends AbstractImageDataHibDao<HibBinary> implements
 			for (HibImageVariant variant : imageVariantDao.getVariants(binary, null)) {
 				imageVariantDao.deletePersistedVariant(binary, variant, true);
 			};
-			bac.add(currentTransaction.getTx().data().binaryStorage().delete(binary.getUuid()));
-			em().remove(binary);
+			currentTransaction.getTx().data().binaryStorage().deleteOnTxSuccess(binary.getUuid(), currentTransaction.getTx());
+			currentTransaction.getTx().delete(binary);
 		}
 	}
 
@@ -142,19 +143,21 @@ public class BinaryDaoImpl extends AbstractImageDataHibDao<HibBinary> implements
 	 * After that, remove all binaries that are not referenced anymore
 	 * @param containerUuids
 	 */
-	public void removeField(List<UUID> containerUuids, BulkActionContext bac) {
+	public void removeField(List<UUID> containerUuids) {
 		SplittingUtils.splitAndConsume(containerUuids, HibernateUtil.inQueriesLimitForSplitting(1), slice -> em().createNamedQuery("binaryfieldref.removeByContainerUuids")
 				.setParameter("containerUuids", slice)
 				.executeUpdate());
 
 		List<UUID> uuids = currentTransaction.getEntityManager().createNamedQuery("binary.findUnreferencedBinaryUuids", UUID.class)
 				.getResultList();
-		uuids.forEach(uuid -> bac.add(currentTransaction.getTx().data().binaryStorage().delete(UUIDUtil.toShortUuid(uuid))));
+		uuids.forEach(uuid -> {
+			currentTransaction.getTx().data().binaryStorage().deleteOnTxSuccess(UUIDUtil.toShortUuid(uuid), currentTransaction.getTx());
+		});
 
 		SplittingUtils.splitAndConsume(uuids, HibernateUtil.inQueriesLimitForSplitting(1), slice -> {
-		currentTransaction.getEntityManager().createQuery("delete from binary where dbUuid in :uuids")
-				.setParameter("uuids", slice)
-				.executeUpdate();
+			currentTransaction.getEntityManager().createQuery("delete from binary where dbUuid in :uuids")
+					.setParameter("uuids", slice)
+					.executeUpdate();
 		});
 	}
 
@@ -181,7 +184,7 @@ public class BinaryDaoImpl extends AbstractImageDataHibDao<HibBinary> implements
 		EntityGraph<?> entityGraph = em().getEntityGraph("binaryfieldref.metadataProperties");
 		List<HibBinaryFieldEdgeImpl> fields = SplittingUtils.splitAndMergeInList(refUuids, HibernateUtil.inQueriesLimitForSplitting(1), slice -> em().createNamedQuery("binaryfieldref.findByUuids", HibBinaryFieldEdgeImpl.class)
 			.setParameter("uuids", slice)
-			.setHint("jakarta.persistence.fetchgraph", entityGraph)
+			.setHint(SpecHints.HINT_SPEC_FETCH_GRAPH, entityGraph)
 			.getResultList());
 
 		// collect the binary uuids

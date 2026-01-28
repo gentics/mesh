@@ -1,11 +1,11 @@
 # This Dockerfile is used to create a Jenkins agent that connects to the controller and is used to as a worker
-FROM jenkins/inbound-agent:latest-jdk17
+FROM jenkins/inbound-agent:latest-trixie-jdk17
 
-ARG DEBIAN_RELEASE="bullseye"
+ARG DEBIAN_RELEASE="trixie"
 ARG USER_NAME="jenkins"
 ARG GIT_USER_NAME="Maven Release Manager"
 ARG GIT_USER_EMAIL="entwicklung@gentics.com"
-ARG NODE_VERSION=20.12.1
+ARG NODE_VERSION=22.15.0
 
 USER root
 
@@ -18,18 +18,26 @@ RUN echo "deb http://ftp.at.debian.org/debian ${DEBIAN_RELEASE} main contrib non
   && apt-get install -y git-core gawk sed wget curl sudo \
                       less vim curl tar wget sed psmisc \
                       file pwgen locales zip unzip \
-                      software-properties-common devscripts \
+                      devscripts \
                       bzip2 rsync gpg moreutils \
-                      build-essential gnupg2 \ 
-  && curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - \
-  && add-apt-repository "deb https://download.docker.com/linux/debian ${DEBIAN_RELEASE} stable" \
-  && apt-get update \
-  && apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin \
-  && apt-get clean \
-  && rm -Rf /var/lib/apt/lists/*
+                      build-essential gnupg2
+
+# Docker
+RUN install -m 0755 -d /etc/apt/keyrings
+RUN curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
+RUN chmod a+r /etc/apt/keyrings/docker.asc
+RUN tee /etc/apt/sources.list.d/docker.sources <<EOF
+Types: deb
+URIs: https://download.docker.com/linux/debian
+Suites: $(. /etc/os-release && echo "$DEBIAN_RELEASE")
+Components: stable
+Signed-By: /etc/apt/keyrings/docker.asc
+EOF
+RUN apt update
+RUN apt install --assume-yes docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
 # Maven
-RUN cd /opt && wget -nv -O maven.tar.gz "https://dlcdn.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz" && \
+RUN cd /opt && wget -nv -O maven.tar.gz "https://dlcdn.apache.org/maven/maven-3/3.9.11/binaries/apache-maven-3.9.11-bin.tar.gz" && \
     tar -xzf maven.tar.gz && mv apache-maven* maven && rm maven.tar.gz && \
     ln -s /opt/maven/bin/mvn /usr/local/bin/mvn
 

@@ -2,11 +2,13 @@ package com.gentics.mesh.core.data.storage;
 
 import java.io.File;
 
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3RestResponse;
+
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
-import io.vertx.reactivex.core.buffer.Buffer;
+import io.vertx.core.buffer.Buffer;
 
 /**
  * A S3 binary storage provides means to store and retrieve binary data.
@@ -26,11 +28,12 @@ public interface S3BinaryStorage {
 	/**
 	 * Create a presigned URL that can be used for a given time period.
 	 *
-	 * @param nodeUuid
-	 * @param fieldName
+	 * @param bucketName
+	 * @param objectKey
+	 * @param isCache
 	 * @return
 	 */
-	Single<S3RestResponse> createUploadPresignedUrl(String bucketName, String nodeUuid, String fieldName, String nodeVersion, boolean isCache);
+	Single<S3RestResponse> createUploadPresignedUrl(String bucketName, String objectKey, String nodeVersion, boolean isCache);
 
 	/**
 	 * Get a presigned URL that can be used for a given time period.
@@ -91,4 +94,25 @@ public interface S3BinaryStorage {
 	 * @param s3ObjectKey
 	 */
 	Completable delete(String s3ObjectKey);
+
+	/**
+	 * Delete the binary with the given S3 key if the transaction succeeds.
+	 * 
+	 * @param s3ObjectKey
+	 * @param tx
+	 */
+	void deleteOnTxSuccess(String s3ObjectKey, Tx tx);
+
+
+	/**
+	 * Make a S3 Object key from the params.
+	 * 
+	 * @param nodeUuid
+	 * @param fieldName
+	 * @param languageTag
+	 * @return
+	 */
+	static String makeObjectKey(String nodeUuid, String fieldName, String languageTag) {
+		return nodeUuid + "/" + fieldName + "/" + languageTag;
+	}
 }
