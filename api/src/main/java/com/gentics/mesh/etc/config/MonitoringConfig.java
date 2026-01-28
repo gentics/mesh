@@ -2,6 +2,7 @@ package com.gentics.mesh.etc.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.annotation.Getter;
 import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.doc.GenerateDocumentation;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
@@ -16,6 +17,8 @@ public class MonitoringConfig implements Option {
 	public static final String MESH_MONITORING_HTTP_PORT_ENV = "MESH_MONITORING_HTTP_PORT";
 	public static final String MESH_MONITORING_HTTP_HOST_ENV = "MESH_MONITORING_HTTP_HOST";
 	public static final String MESH_MONITORING_ENABLED_ENV = "MESH_MONITORING_ENABLED";
+	public static final String MESH_MONITORING_MEMORY_LIMIT_ENV = "MESH_MONITORING_MEMORY_LIMIT";
+	public static final String MESH_MONITORING_GC_LIMIT_ENV = "MESH_MONITORING_GC_LIMIT";
 
 	public static final boolean DEFAULT_MONITORING_ENABLED = true;
 
@@ -24,6 +27,9 @@ public class MonitoringConfig implements Option {
 	public static final String DEFAULT_MONITORING_HTTP_HOST = "127.0.0.1";
 
 	public static final boolean DEFAULT_JVM_METRICS_ENABLED = true;
+
+	public static final long DEFAULT_MEMORY_LIMIT = 95;
+	public static final long DEFAULT_GC_TIME_LIMIT = 50;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Enable or disable the monitoring system. Default is: " + DEFAULT_MONITORING_ENABLED)
@@ -44,6 +50,16 @@ public class MonitoringConfig implements Option {
 	@JsonPropertyDescription("Enable or disable the measuring of JVM metrics. Default is: " + DEFAULT_JVM_METRICS_ENABLED)
 	@EnvironmentVariable(name = "MESH_MONITORING_JVM_METRICS_ENABLED", description = "Override the configured JVM metrics enabled flag.")
 	private boolean jvmMetricsEnabled = DEFAULT_JVM_METRICS_ENABLED;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Limit of used memory in percent, which will cause Mesh to become unhealthy. Defaults to " + DEFAULT_MEMORY_LIMIT + "%")
+	@EnvironmentVariable(name = MESH_MONITORING_MEMORY_LIMIT_ENV, description = "Override the memory limit in percent.")
+	private long memoryLimit = DEFAULT_MEMORY_LIMIT;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Limit time used for garbage collections percent, which will cause Mesh to become unhealthy. Defaults to " + DEFAULT_GC_TIME_LIMIT + "%")
+	@EnvironmentVariable(name = MESH_MONITORING_GC_LIMIT_ENV, description = "Override the garbage collection limit in percent.")
+	private long gcTimeLimit = DEFAULT_GC_TIME_LIMIT;
 
 	public MonitoringConfig() {
 	}
@@ -85,6 +101,28 @@ public class MonitoringConfig implements Option {
 	@Setter
 	public MonitoringConfig setJvmMetricsEnabled(boolean jvmMetricsEnabled) {
 		this.jvmMetricsEnabled = jvmMetricsEnabled;
+		return this;
+	}
+
+	@Getter
+	public long getMemoryLimit() {
+		return memoryLimit;
+	}
+
+	@Setter
+	public MonitoringConfig setMemoryLimit(long memoryLimit) {
+		this.memoryLimit = memoryLimit;
+		return this;
+	}
+
+	@Getter
+	public long getGcTimeLimit() {
+		return gcTimeLimit;
+	}
+
+	@Setter
+	public MonitoringConfig setGcTimeLimit(long gcTimeLimit) {
+		this.gcTimeLimit = gcTimeLimit;
 		return this;
 	}
 
