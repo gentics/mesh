@@ -114,6 +114,7 @@ public class InternalEndpointRouteImpl implements InternalEndpointRoute {
 		this.route = router.route();
 		ReadOnlyHandler readOnlyHandler = new ReadOnlyHandler(localConfigApi, db);
 		route.handler(readOnlyHandler);
+		route.putMetadata(InternalEndpointRoute.class.getCanonicalName(), this);
 	}
 
 	@Override

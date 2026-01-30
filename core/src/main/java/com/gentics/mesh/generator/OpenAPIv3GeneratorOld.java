@@ -1,7 +1,12 @@
 package com.gentics.mesh.generator;
 
+import static com.gentics.mesh.MeshVersion.CURRENT_API_VERSION;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON_UTF8;
+import static com.gentics.mesh.http.HttpConstants.APPLICATION_YAML_UTF8;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,13 +24,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.annotation.Nonnull;
 
 import org.apache.commons.collections4.keyvalue.UnmodifiableMapEntry;
 import org.apache.commons.lang.StringUtils;
@@ -41,9 +43,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonSerializable;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.gentics.mesh.MeshVersion;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.http.HttpConstants;
 import com.gentics.mesh.rest.InternalEndpointRoute;
+import com.gentics.mesh.router.route.AbstractInternalEndpoint;
+import com.hazelcast.core.HazelcastInstance;
 
 import io.swagger.v3.core.util.Json;
 import io.swagger.v3.core.util.Yaml;
@@ -65,8 +71,6 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.Route;
-import io.vertx.ext.web.Router;
 
 /**
  * OpenAPI v3 API definition generator. Outputs JSON and YAML schemas.
@@ -74,42 +78,56 @@ import io.vertx.ext.web.Router;
  * @author plyhun
  *
  */
-public class OpenAPIv3Generator {
+public class OpenAPIv3GeneratorOld extends AbstractEndpointGenerator<OpenAPI> {
 
-	private static final Logger log = LoggerFactory.getLogger(OpenAPIv3Generator.class);
+	private static final String API_VERSION_PATH_PREFIX = "/api/v";
 
-	private final Optional<List<String>> maybePathBlacklist;
-	private final Optional<List<String>> maybePathWhitelist;
+	private static final Logger log = LoggerFactory.getLogger(OpenAPIv3GeneratorOld.class);
 
-	private final List<String> servers;
+	private final HazelcastInstance hz;
+	private final HttpServerConfig httpServerConfig;
 
-	public OpenAPIv3Generator(List<String> servers, @Nonnull Optional<List<String>> maybePathBlacklist, @Nonnull Optional<List<String>> maybePathWhitelist) {
-		this.maybePathBlacklist = maybePathBlacklist;
-		this.maybePathWhitelist = maybePathWhitelist;
-		this.servers = servers;
+	public OpenAPIv3GeneratorOld(HazelcastInstance hz, HttpServerConfig httpServerConfig) {
+		this.hz = hz;
+		this.httpServerConfig = httpServerConfig;
 	}
 
-	public String generate(List<Router> routers, Format format, boolean pretty) {
+	public OpenAPIv3GeneratorOld(HazelcastInstance hz, HttpServerConfig httpServerConfig, File outputFolder, boolean cleanup) throws IOException {
+		super(outputFolder, cleanup);
+		this.hz = hz;
+		this.httpServerConfig = httpServerConfig;
+	}
+
+	public OpenAPIv3GeneratorOld(HazelcastInstance hz, HttpServerConfig httpServerConfig, File outputFolder) throws IOException {
+		super(outputFolder);
+		this.hz = hz;
+		this.httpServerConfig = httpServerConfig;
+	}
+
+	public void generate(InternalActionContext ac, String format) {
 		log.info("Starting OpenAPIv3 generation...");
 		OpenAPI openApi = new OpenAPI();
-		openApi.setPaths(new Paths());
 		Info info = new Info();
 		info.setTitle("Gentics Mesh REST API");
 		info.setVersion(MeshVersion.getBuildInfo().getVersion());
-
-		openApi.servers(servers.stream().map(url -> {
+		if (hz != null) {
+			List<Server> servers = hz.getCluster().getMembers().stream().map(m -> {
+				Server server = new Server();
+				server.setUrl(m.getAddress().toString());
+				return server;
+			}).collect(Collectors.toList());
+			openApi.servers(servers);
+		} else {
 			Server server = new Server();
-			server.setUrl(url);
-			return server;
-		}).collect(Collectors.toList()));
-
+			server.setUrl((httpServerConfig.isSsl() ? "https://" : "http://") + httpServerConfig.getHost() + ":" + (httpServerConfig.isSsl() ? httpServerConfig.getSslPort() : httpServerConfig.getPort()));
+			openApi.servers(Collections.singletonList(null));
+		}
 		openApi.setInfo(info);		
 		try {
 			addSecurity(openApi);
 			addComponents(openApi);
-			for (Router router : routers) {
-				addRouter(StringUtils.EMPTY, router, openApi);
-			}
+			addCoreEndpoints(openApi);
+			addProjectEndpoints(openApi);
 		} catch (IOException e) {
 			throw new RuntimeException("Could not add all verticles to raml generator", e);
 		}
@@ -117,19 +135,22 @@ public class OpenAPIv3Generator {
 		//new OpenAPI30To31().process(openApi);
 		//openApi.jsonSchemaDialect("https://spec.openapis.org/oas/3.1/dialect/base");
 		String formatted;
+		String mime;
 		switch (format) {
-		case YAML:
+		case "yaml":
 			try {
+				mime = APPLICATION_YAML_UTF8;
 				//formatted = ac.isMinify(httpServerConfig) ? Yaml31.mapper().writer().writeValueAsString(openApi) : Yaml31.pretty().writeValueAsString(openApi);
-				formatted = pretty ? Yaml.pretty().writeValueAsString(openApi) : Yaml.mapper().writer().writeValueAsString(openApi) ;
+				formatted = ac.isMinify(httpServerConfig) ? Yaml.mapper().writer().writeValueAsString(openApi) : Yaml.pretty().writeValueAsString(openApi);
 			} catch (JsonProcessingException e) {
 				throw new RuntimeException("Could not generate YAML", e);
 			}
 			break;
-		case JSON:
+		case "json":
+			mime = APPLICATION_JSON_UTF8;
 			try {
 				//formatted = ac.isMinify(httpServerConfig) ? Json31.mapper().writer().writeValueAsString(openApi) : Json31.pretty(openApi);
-				formatted = pretty ? Json.pretty(openApi) : Json.mapper().writer().writeValueAsString(openApi);
+				formatted = ac.isMinify(httpServerConfig) ? Json.mapper().writer().writeValueAsString(openApi) : Json.pretty(openApi);
 			} catch (JsonProcessingException e) {
 				throw new RuntimeException(e);
 			}
@@ -137,10 +158,10 @@ public class OpenAPIv3Generator {
 		default:
 			throw error(BAD_REQUEST, "Please specify a response format: YAML or JSON");
 		}
-		return formatted;
+		ac.send(formatted, OK, mime);
 	}
 
-	protected void addSecurity(OpenAPI openApi) {
+	private void addSecurity(OpenAPI openApi) {
 		Components components;
 		if (openApi.getComponents() == null) {
 			components = new Components();
@@ -163,7 +184,7 @@ public class OpenAPIv3Generator {
 		return "Mesh" + cls.getSimpleName();
 	}
 
-	protected void addComponents(OpenAPI openApi) {
+	private void addComponents(OpenAPI openApi) {
 		Components components;
 		if (openApi.getComponents() == null) {
 			components = new Components();
@@ -177,7 +198,7 @@ public class OpenAPIv3Generator {
 	}
 
 	@SuppressWarnings("rawtypes")
-	protected void fillComponent(Class<?> cls, Components components) {
+	private void fillComponent(Class<?> cls, Components components) {
 		if (!cls.getPackageName().startsWith("com.gentics.mesh") || StringUtils.isBlank(cls.getSimpleName())) {
 			return;
 		}
@@ -261,181 +282,143 @@ public class OpenAPIv3Generator {
 		components.addSchemas(cls.getSimpleName(), schema);
 	}
 
-	protected void resolveEndpointRoute(String path, PathItem pathItem, InternalEndpointRoute endpoint) {
-		Operation operation = new Operation();
-		HttpMethod method = endpoint.getMethod();
-		if (method == null) {
-			method = HttpMethod.GET;
-		}
-		if (endpoint.isInsecure()) {
-			operation.setSecurity(Collections.emptyList());
-		} else {
-			SecurityRequirement reqBearerAuth = new SecurityRequirement();
-			reqBearerAuth.addList("bearerAuth");
-			operation.setSecurity(List.of(reqBearerAuth));
-		}
-		resolveMethod(method.name(), pathItem, operation);
-		List<Stream<Parameter>> params = List.of(
-				path.contains("/{project}/")
-					? Stream.of(new Parameter().name("project").in(InParameter.PATH.value).schema(new Schema<String>().type("string").description("Uuid of the related project"))) 
-					: Stream.empty(),
-				endpoint.getQueryParameters().entrySet().stream().map(e -> parameter(e.getKey(), e.getValue(), InParameter.QUERY)),
-				endpoint.getUriParameters().entrySet().stream().map(e -> parameter(e.getKey(), e.getValue(), InParameter.PATH)));
-		operation.setParameters(params.stream().flatMap(Function.identity()).filter(Objects::nonNull).collect(Collectors.toList()));
-		ApiResponses responses = new ApiResponses();
-		endpoint.getProduces().stream().map(e -> {
-			ApiResponse response = new ApiResponse();
-			Content responseBody = new Content();
-			responseBody.addMediaType(e, new MediaType());
-			response.setContent(responseBody);
-			response.setDescription(e);
-			if (HttpConstants.APPLICATION_OCTET_STREAM.equals(e)) {
-				response.setExtensions(Map.of("x-is-file", true));
-				Schema<String> schema = new Schema<>();
-				schema.setType("string");
-				schema.setFormat("binary");
-				MediaType mediaType = new MediaType();
-				mediaType.setSchema(schema);
-				responseBody.addMediaType("application/octet-stream", mediaType);
-				response.setContent(responseBody);
-			}
-			return new UnmodifiableMapEntry<String, ApiResponse>("default", response);
-		}).filter(Objects::nonNull).forEach(e -> responses.addApiResponse(e.getKey(), e.getValue()));
-		endpoint.getExampleResponses().entrySet().stream().filter(e -> Objects.nonNull(e.getValue()))
-			.map(e -> {
-				ApiResponse response = new ApiResponse();
-				if (e.getValue().getDescription().startsWith("Generated login token")) {
-					e.getValue().getHeaders();
-				}
-				response.setDescription(e.getValue().getDescription());
-				Content responseBody = new Content();
-				if (endpoint.getExampleResponseClasses() != null && endpoint.getExampleResponseClasses().get(e.getKey()) != null) {
-					Class<?> ref = endpoint.getExampleResponseClasses().get(e.getKey());
-					if (ref.getCanonicalName().startsWith("com.gentics.mesh")) {
-						Schema<String> schema = new Schema<>();
-						schema.set$ref("#/components/schemas/" + ref.getSimpleName());
-						MediaType mediaType = new MediaType();
-						mediaType.setSchema(schema);
-						mediaType.setExample(e.getValue());
-						responseBody.addMediaType("*/*", mediaType);
-						response.setContent(responseBody);
-					} else {
-						if (e.getValue().getBody() != null) {
-							e.getValue().getBody().entrySet().stream().filter(r -> Objects.nonNull(r.getValue()))
-								.map(r -> fillMediaType(r.getKey(), r.getValue(), ref))
-								.filter(Objects::nonNull).forEach(r -> responseBody.addMediaType(r.getKey(), r.getValue()));
-						} else {
-							log.warn("Body of " + e.getKey() + " is null!");
-						}
-						response.setContent(responseBody);
-					}
-				}							
-				return new UnmodifiableMapEntry<Integer, ApiResponse>(e.getKey(), response);
-			}).filter(Objects::nonNull).forEach(e -> responses.addApiResponse(Integer.toString(e.getKey()), e.getValue()));
-		operation.setResponses(responses);
-		if (endpoint.getExampleRequestMap() != null && !HttpMethod.DELETE.equals(method)) {
-			RequestBody requestBody = new RequestBody();
-			Content content = new Content();
-			endpoint.getExampleRequestMap().entrySet().stream().filter(e -> Objects.nonNull(e.getValue()))
-					.map(e -> fillMediaType(e.getKey(), e.getValue(), endpoint.getExampleRequestClass()))
-					.filter(Objects::nonNull).forEach(e -> content.addMediaType(e.getKey(), e.getValue()));
-			requestBody.setContent(content);
-			operation.setRequestBody(requestBody);
-		}
-		// action.setIs(Arrays.asList(endpoint.getTraits()));
-	}
-
-	protected void resolveMethod(String methodName, PathItem pathItem, Operation operation) {
-		switch (methodName.toUpperCase()) {
-		case "DELETE":
-			pathItem.setDelete(operation);
-			break;
-		case "GET":
-			pathItem.setGet(operation);
-			break;
-		case "HEAD":
-			pathItem.setHead(operation);
-			break;
-		case "OPTIONS":
-			pathItem.setOptions(operation);
-			break;
-		case "PATCH":
-			pathItem.setPatch(operation);
-			break;
-		case "POST":
-			pathItem.setPost(operation);
-			break;
-		case "PUT":
-			pathItem.setPut(operation);
-			break;
-		case "TRACE":
-			pathItem.setTrace(operation);
-			break;
-		default:
-			break;
-		}
-	}
-
-	protected void addRouter(String parent, Router router, OpenAPI consumer)
+	@Override
+	protected void addEndpoints(String basePath, OpenAPI consumer, AbstractInternalEndpoint verticle, boolean isProject)
 			throws IOException {
+		// Check whether the resource was already added. Maybe we just need to extend it
 		Paths paths = consumer.getPaths();
-
-		for (Route route : router.getRoutes()) {
-			if (StringUtils.isBlank(route.getPath())
-					|| maybePathBlacklist.map(list -> list.contains(route.getPath())).filter(blacklisted -> blacklisted).isPresent()
-					|| (maybePathWhitelist.isPresent() && maybePathWhitelist.map(list -> list.contains(route.getPath())).filter(whitelisted -> whitelisted).isEmpty())) {
+		if (paths == null) {
+			paths = new Paths();
+			consumer.setPaths(paths);
+		}
+		for (InternalEndpointRoute endpoint : verticle.getEndpoints().stream().sorted().collect(Collectors.toList())) {
+			if ("eventbus".equals(verticle.getBasePath())) {
 				continue;
 			}
-			String path = parent + (StringUtils.equals(route.getPath(), "/") ? "/" : Arrays.stream(route.getPath().split("/"))
-					.map(segment -> segment.startsWith(":") ? ("{" + segment.substring(1) + "}") : segment)
-					.collect(Collectors.joining("/")));
-
-			log.info("Processing path {}", path);
-			Optional.ofNullable(route.getMetadata(InternalEndpointRoute.class.getCanonicalName()))
-				.map(InternalEndpointRoute.class::cast)
-				.ifPresentOrElse(endpoint -> {
-					PathItem pathItem = paths.get(path);
-					if (pathItem == null) {
-						log.debug("Path " + path);
-						pathItem = new PathItem();
-						pathItem.setSummary(endpoint.getDisplayName());
-						pathItem.setDescription(endpoint.getDescription());
-						paths.put(path, pathItem);
-					}
-					resolveEndpointRoute(path, pathItem, endpoint);
-				}, () -> {
-					PathItem pathItem = paths.get(path);
-					if (pathItem == null) {
-						log.debug("Path " + path);
-						pathItem = new PathItem();
-						pathItem.setSummary(route.getName());
-						paths.put(path, pathItem);
-					}
-					resolveFallbackRoute(route, pathItem);
-				});
-			if (route.getSubRouter() != null) {
-				addRouter(path, route.getSubRouter(), consumer);
+			String fullPath = API_VERSION_PATH_PREFIX + CURRENT_API_VERSION + basePath + "/" + verticle.getBasePath()
+					+ endpoint.getRamlPath();
+			if (isEmpty(verticle.getBasePath())) {
+				fullPath = API_VERSION_PATH_PREFIX + CURRENT_API_VERSION + basePath + endpoint.getRamlPath();
 			}
+			PathItem pathItem = paths.get(fullPath);
+			if (pathItem == null) {
+				log.debug("Path " + fullPath);
+				pathItem = new PathItem();
+				pathItem.setSummary(endpoint.getDisplayName());
+				pathItem.setDescription(endpoint.getDescription());
+				consumer.path(fullPath, pathItem);
+			}
+			Operation operation = new Operation();
+			HttpMethod method = endpoint.getMethod();
+			if (method == null) {
+				method = HttpMethod.GET;
+			}
+			if (endpoint.isInsecure()) {
+				operation.setSecurity(Collections.emptyList());
+			} else {
+				SecurityRequirement reqBearerAuth = new SecurityRequirement();
+				reqBearerAuth.addList("bearerAuth");
+				operation.setSecurity(List.of(reqBearerAuth));
+			}
+			switch (method.name()) {
+			case "DELETE":
+				pathItem.setDelete(operation);
+				break;
+			case "GET":
+				pathItem.setGet(operation);
+				break;
+			case "HEAD":
+				pathItem.setHead(operation);
+				break;
+			case "OPTIONS":
+				pathItem.setOptions(operation);
+				break;
+			case "PATCH":
+				pathItem.setPatch(operation);
+				break;
+			case "POST":
+				pathItem.setPost(operation);
+				break;
+			case "PUT":
+				pathItem.setPut(operation);
+				break;
+			case "TRACE":
+				pathItem.setTrace(operation);
+				break;
+			default:
+				break;
+			}
+			List<Stream<Parameter>> params = List.of(
+					isProject ? Stream.of(new Parameter().name("project").in(InParameter.PATH.value).schema(new Schema<String>().type("string").description("Uuid of the related project"))) : Stream.of(),
+					endpoint.getQueryParameters().entrySet().stream().map(e -> parameter(e.getKey(), e.getValue(), InParameter.QUERY)),
+					endpoint.getUriParameters().entrySet().stream().map(e -> parameter(e.getKey(), e.getValue(), InParameter.PATH)));
+			operation.setParameters(params.stream().flatMap(Function.identity()).filter(Objects::nonNull).collect(Collectors.toList()));
+			ApiResponses responses = new ApiResponses();
+			endpoint.getProduces().stream().map(e -> {
+				ApiResponse response = new ApiResponse();
+				Content responseBody = new Content();
+				responseBody.addMediaType(e, new MediaType());
+				response.setContent(responseBody);
+				response.setDescription(e);
+				if (HttpConstants.APPLICATION_OCTET_STREAM.equals(e)) {
+					response.setExtensions(Map.of("x-is-file", true));
+					Schema<String> schema = new Schema<>();
+					schema.setType("string");
+					schema.setFormat("binary");
+					MediaType mediaType = new MediaType();
+					mediaType.setSchema(schema);
+					responseBody.addMediaType("application/octet-stream", mediaType);
+					response.setContent(responseBody);
+				}
+				return new UnmodifiableMapEntry<String, ApiResponse>("default", response);
+			}).filter(Objects::nonNull).forEach(e -> responses.addApiResponse(e.getKey(), e.getValue()));
+			endpoint.getExampleResponses().entrySet().stream().filter(e -> Objects.nonNull(e.getValue()))
+				.map(e -> {
+					ApiResponse response = new ApiResponse();
+					if (e.getValue().getDescription().startsWith("Generated login token")) {
+						e.getValue().getHeaders();
+					}
+					response.setDescription(e.getValue().getDescription());
+					Content responseBody = new Content();
+					if (endpoint.getExampleResponseClasses() != null && endpoint.getExampleResponseClasses().get(e.getKey()) != null) {
+						Class<?> ref = endpoint.getExampleResponseClasses().get(e.getKey());
+						if (ref.getCanonicalName().startsWith("com.gentics.mesh")) {
+							Schema<String> schema = new Schema<>();
+							schema.set$ref("#/components/schemas/" + ref.getSimpleName());
+							MediaType mediaType = new MediaType();
+							mediaType.setSchema(schema);
+							mediaType.setExample(e.getValue());
+							responseBody.addMediaType("*/*", mediaType);
+							response.setContent(responseBody);
+						} else {
+							if (e.getValue().getBody() != null) {
+								e.getValue().getBody().entrySet().stream().filter(r -> Objects.nonNull(r.getValue()))
+									.map(r -> fillMediaType(r.getKey(), r.getValue(), ref))
+									.filter(Objects::nonNull).forEach(r -> responseBody.addMediaType(r.getKey(), r.getValue()));
+							} else {
+								log.warn("Body of " + e.getKey() + " is null!");
+							}
+							response.setContent(responseBody);
+						}
+					}							
+					return new UnmodifiableMapEntry<Integer, ApiResponse>(e.getKey(), response);
+				}).filter(Objects::nonNull).forEach(e -> responses.addApiResponse(Integer.toString(e.getKey()), e.getValue()));
+			operation.setResponses(responses);
+			if (endpoint.getExampleRequestMap() != null && !HttpMethod.DELETE.equals(method)) {
+				RequestBody requestBody = new RequestBody();
+				Content content = new Content();
+				endpoint.getExampleRequestMap().entrySet().stream().filter(e -> Objects.nonNull(e.getValue()))
+						.map(e -> fillMediaType(e.getKey(), e.getValue(), endpoint.getExampleRequestClass()))
+						.filter(Objects::nonNull).forEach(e -> content.addMediaType(e.getKey(), e.getValue()));
+				requestBody.setContent(content);
+				operation.setRequestBody(requestBody);
+			}
+			// action.setIs(Arrays.asList(endpoint.getTraits()));
 		}
-	}
-
-	protected void resolveFallbackRoute(Route r, PathItem pathItem) {
-		Operation o = new Operation();
-		o.setParameters(Arrays.stream(r.getPath().split("/"))
-				.filter(segment -> segment.startsWith(":"))
-				.map(segment -> segment.substring(1))
-				.map(segment -> {
-					Parameter p = new Parameter();
-					p.setName(segment);
-					p.setRequired(true);
-					p.setAllowEmptyValue(false);
-					return p;
-				}).collect(Collectors.toList()));
-		Optional.ofNullable(r.methods()).ifPresent(methods -> methods.stream().forEach(m -> resolveMethod(m.name(), pathItem, o)));
 	}
 
 	@SuppressWarnings("rawtypes")
-	protected Map.Entry<String, MediaType> fillMediaType(String key, MimeType mimeType, Class<?> refClass) {
+	private Map.Entry<String, MediaType> fillMediaType(String key, MimeType mimeType, Class<?> refClass) {
 		MediaType mediaType = new MediaType();
 		mediaType.setExample(mimeType.getExample());
 		if (mimeType.getFormParameters() != null) {
@@ -633,24 +616,6 @@ public class OpenAPIv3Generator {
 		@Override
 		public String toString() {
 			return value;
-		}
-	}
-
-	/**
-	 * OpenAPI output format
-	 */
-	public static enum Format {
-		YAML,
-		JSON;
-
-		public static final Format parse(String text) {
-			if (text == null) {
-				throw new IllegalArgumentException("Cannot parse null to OpenAPI Format");
-			}
-			return Arrays.stream(values())
-					.filter(v -> v.name().equals(text.trim().toUpperCase()))
-					.findAny()
-					.orElseThrow(() -> new IllegalStateException("Unsupported OpenAPI Format:" + text));
 		}
 	}
 }
