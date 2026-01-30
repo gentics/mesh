@@ -431,6 +431,14 @@ public class OpenAPIv3Generator {
 					p.setAllowEmptyValue(false);
 					return p;
 				}).collect(Collectors.toList()));
+		ApiResponses responses = new ApiResponses();
+		ApiResponse response = new ApiResponse();
+		Content responseBody = new Content();
+		responseBody.addMediaType("*/*", new MediaType());
+		response.setDescription("Auto generated response description for " + r.getPath());
+		response.setContent(responseBody);
+		responses.addApiResponse("200", response);
+		o.setResponses(responses);
 		Optional.ofNullable(r.methods()).ifPresent(methods -> methods.stream().forEach(m -> resolveMethod(m.name(), pathItem, o)));
 	}
 
