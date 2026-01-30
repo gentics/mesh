@@ -11,7 +11,11 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,9 +37,12 @@ import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.distributed.coordinator.Coordinator;
 import com.gentics.mesh.distributed.coordinator.MasterServer;
+import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.generator.OpenAPIv3Generator;
+import com.gentics.mesh.generator.OpenAPIv3Generator.Format;
 import com.gentics.mesh.generator.RAMLGenerator;
+import com.gentics.mesh.http.HttpConstants;
 import com.gentics.mesh.parameter.BackupParameters;
 import com.gentics.mesh.router.RouterStorageImpl;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
@@ -232,8 +239,21 @@ public abstract class AdminHandler extends AbstractHandler {
 	}
 
 	public void handleOpenAPIv3(InternalActionContext ac, String format) {
-		OpenAPIv3Generator generator = new OpenAPIv3Generator(clusterManager.getHazelcast(), options.getHttpServerOptions());
-		generator.generate(ac, format);
+		HttpServerConfig httpServerConfig = options.getHttpServerOptions();
+		List<String> servers = Optional.ofNullable(clusterManager.getHazelcast())
+			.map(hz -> hz.getCluster().getMembers().stream().map(m -> m.getAddress().getHost() + ":" + m.getAddress().getPort()).collect(Collectors.toList()))
+			.orElseGet(() -> Collections.singletonList((httpServerConfig.isSsl() ? "https://" : "http://") + httpServerConfig.getHost() + ":" + (httpServerConfig.isSsl() ? httpServerConfig.getSslPort() : httpServerConfig.getPort())));
+
+		OpenAPIv3Generator generator = new OpenAPIv3Generator(servers, Optional.of(List.of("/api/v1", "/api/:apiversion")), Optional.empty());
+		ac.send(generator.generate(
+				routerStorageRegistry.getInstances().stream().map(rr -> rr.root().getRouter()).toList(), 
+				Format.parse(format), 
+				!httpServerConfig.isMinifyJson()), 
+				OK, 
+				"yaml".equalsIgnoreCase(format) 
+					? HttpConstants.APPLICATION_YAML_UTF8 
+					: HttpConstants.APPLICATION_JSON_UTF8
+			);
 	}
 
 	/**
