@@ -48,10 +48,6 @@ For more details see the documentation on link:{{< relref "building-blocks.ascii
 
 You can also specify dedicated paths for nodes using the ```urlFields``` schema property. You can add string or string list fields to your schema and list them via the ```urlFields``` property. Gentics Mesh will utilize these fields in nodes in order to retrieve the node.
 
-.Try the example
-[TIP]
-https://demo.getmesh.io{apiLatest}/demo/webroot/cars/outatime
-
 === API endpoints
 
 [options="header",cols="2*"]
@@ -66,10 +62,6 @@ https://demo.getmesh.io{apiLatest}/demo/webroot/cars/outatime
 |======
 
 ==== Response Sample
-
-.Try the example
-[TIP]
-https://demo.getmesh.io{apiLatest}/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?resolveLinks=short
 
 [source,json]
 ----
@@ -223,17 +215,7 @@ The demo app includes a navigation object showing just the top-level elements _A
 
 === Response Sample
 
-Retrieving a navigation object using the projects root node ```/``` including the top level navigation menu items.
-
-.Try the example
-[TIP]
-https://demo.getmesh.io{apiLatest}/demo/navroot/?resolveLinks=short&maxDepth=1
-
-The same can be achieved using the node specific navigation endpoint. In this case you can specify the root node of your navigation by providing the node uuid.
-
-.Try the example
-[TIP]
-https://demo.getmesh.io{apiLatest}/demo/nodes/688f7beae8d240bf8f7beae8d2a0bf2e/navigation?resolveLinks=short&maxDepth=1
+Retrieving a navigation object using the projects root node ```/``` including the top level navigation menu items. The same can be achieved using the node specific navigation endpoint. In this case you can specify the root node of your navigation by providing the node uuid.
 
 [source,json]
 ----
@@ -690,10 +672,6 @@ The ```breadcrumb``` property will be returned in all API responses containing n
 
 === Response Sample
 
-.Try the example
-[TIP]
-https://demo.getmesh.io{apiLatest}/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?resolveLinks=short
-
 [source,json]
 ----
 {
@@ -846,7 +824,7 @@ For example, the following will not work:
 | API endpoint
 | Response code
 | GET
-| /api/v2/docs/hello-world/example-page.html
+| {apiLatest}/docs/hello-world/example-page.html
 | 404
 |======
 
@@ -866,7 +844,7 @@ By prepending the path with a forward slash, the same request will resolve the n
 | API endpoint
 | Response code
 | GET
-| /api/v2/docs/hello-world/example-page.html
+| {apiLatest}/docs/hello-world/example-page.html
 | 200
 |======
 
@@ -911,17 +889,11 @@ NOTE: Each segment of the URL must be URL-encoded. A node's contents must provid
 
 ==== Fetch node with UUID
 
-.Try the example
-[TIP]
-https://demo.getmesh.io{apiLatest}/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?resolveLinks=short
-
 Loading the node with the given UUID using API endpoint ```GET {apiLatest}/:projectName/nodes/:nodeUuid```.
 
 ==== Fetch node with WebRoot path
 
-.Try the example
-[TIP]
-https://demo.getmesh.io{apiLatest}/demo/webroot/automobiles/ford-gt?resolveLinks=short
+Loading the node with the given web path using API endpoint ```GET {apiLatest}/:projectName/webroot/path/to/the/node```.
 
 === Query binary content by path
 The WebRoot API, furthermore, directly supports delivering binary content (e.g., images, documents, etc.) using the ```fileName``` meta-data field of the ```binary``` field.
@@ -932,17 +904,9 @@ NOTE: Downloads of resized images currently do not support byte range requests.
 
 ==== Fetch an image with UUID
 
-.Try the example
-[TIP]
-https://demo.getmesh.io{apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image
-
 Downloading a node's binary field with the given name using API endpoint ```GET {apiLatest}/:projectName/nodes/:nodeUuid/binary/:fieldName```.
 
 ==== Fetch an image with WebRoot path
-
-.Try the example
-[TIP]
-https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg
 
 TIP: When using a routing framework, in order to find out if a requested resource is binary data or JSON data you need to check the HTTP Content-Disposition response header. If it is set, it’s binary data.
 
@@ -950,20 +914,11 @@ TIP: When using a routing framework, in order to find out if a requested resourc
 In case, the binary data is an image, the WebRoot API allows to directly perform
 link:{{<relref "image-manipulation.asciidoc">}}[Image Manipulation] such as cropping and resizing.
 
-==== Crop and resize an image with UUID
+==== Crop and resize an image
 
-.Try the example
-[TIP]
-https://demo.getmesh.io{apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?rect=10,100,800,400&w=300&crop=rect
-
-==== Crop and resize an image with WebRoot path
-
-.Try the example
-[TIP]
-https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg?rect=10,100,800,400&w=300&crop=rect
+The manipulation of an image, either over a UUID or path `GET` request, can be done by adding the corresponding query parameters, like: `?rect=10,100,800,400&w=300&crop=rect`
 
 Find out more about this topic in our blog post about https://getmesh.io/blog/gentics-mesh-image-manipulation/[Gentics Mesh's Image Manipulation API and Interface].
-
 
 == Link Resolving
 
@@ -1382,17 +1337,10 @@ Most API responses within Gentics Mesh contain a list of permissions. This list 
 
 ==== Example
 
-.Try the example
-[TIP]
-Permission of user ```anonymous``` on node ```Delorean```
-https://demo.getmesh.io{apiLatest}/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?version=published
-// TODO provide new example node, remove read permission for this example node only, add ?version=published to example code
-// TODO provide image with user - group - role for anonymous and permissions to specified node
-
+The permissions has been requested as follows: link:/docs/api/#project__webroot__path__get[{apiLatest}/demo/nodes/fd58237c79d64bf198237c79d6bbf107?version=published]
 
 [source,json,subs=attributes]
 -----
-// permissions for node https://demo.getmesh.io{apiLatest}/demo/nodes/fd58237c79d64bf198237c79d6bbf107?version=published
 ...
   "permissions" : {
     "create" : false,        //create other nodes
@@ -1404,7 +1352,6 @@ https://demo.getmesh.io{apiLatest}/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?v
   }
 ...
 -----
-
 
 The example above shows that the requesting user ```anonymous``` has the ```readPublish``` permission on the requested node, only. This means the user is allowed to read the published version of the node but not previous versions or a draft version of the requested element.
 
@@ -1453,16 +1400,10 @@ The link:/docs/api/#roles__roleUuid__permissions__pathToElement__get[```GET {api
 
 For example, the link:{{< relref "references.asciidoc" >}}#_authentication[authenticated] ```admin``` user is able to find out the configured permissions for role ```Public User``` on node ```fc3c85be82584ae2bc85be82588ae2b0```.
 
-.Try the example with user ```admin```
-[TIP]
-https://demo.getmesh.io{apiLatest}/roles/10447951fd264e6a847951fd266e6ae6/permissions/projects/217f8c981ada4642bf8c981adaa642c3/nodes/88fac3fbc61041c1bac3fbc610d1c182
-Note, that a request with user ```anonymous``` will yield a _Missing object permissions_ error response.
-
+link:/docs/api/#roles__roleUuid__permissions__pathToElement__get[```GET {apiLatest}/roles/10447951fd264e6a847951fd266e6ae6/permissions/projects/217f8c981ada4642bf8c981adaa642c3/nodes/88fac3fbc61041c1bac3fbc610d1c182```]
 
 [source,bash,subs=attributes]
 -----
-GET https://demo.getmesh.io{apiLatest}/roles/10447951fd264e6a847951fd266e6ae6/permissions/projects/217f8c981ada4642bf8c981adaa642c3/nodes/88fac3fbc61041c1bac3fbc610d1c182
-
 RESPONSE
 {
     "create": false,
@@ -1476,14 +1417,10 @@ RESPONSE
 
 Alternatively, you can use query the element using the respective API endpoint (e.g. link:++/docs/api#project__nodes__get++[```GET {apiLatest}/projectName/nodes```]) and use the ```role``` query parameter to find out another role's (i.e. ```anonymous```) permissions on the element:
 
-.Try the example with user ```admin```
-[TIP]
-https://demo.getmesh.io{apiLatest}/demo/nodes/88fac3fbc61041c1bac3fbc610d1c182?role=10447951fd264e6a847951fd266e6ae6
+link:/docs/api#project__nodes__get[```GET {apiLatest}/demo/nodes/88fac3fbc61041c1bac3fbc610d1c182?role=10447951fd264e6a847951fd266e6ae6```]
 
 [source,bash,subs=attributes]
 -----
-GET https://demo.getmesh.io{apiLatest}/roles/10447951fd264e6a847951fd266e6ae6/permissions/projects/217f8c981ada4642bf8c981adaa642c3/nodes/88fac3fbc61041c1bac3fbc610d1c182
-
 RESPONSE
 ...
   "permissions" : { // permissions of requesting user admin
@@ -1506,11 +1443,8 @@ RESPONSE
 -----
 
 ==== Querying User Permissions
-The endpoint link:/docs/api/#users__userUuid__permissions__path__get[```GET {apiLatest}/users/:userUuid/permissions/:path```] provides a shortcut for querying permissions for specific users directly, e.g., for user ```anonymous```, which is essentially inheriting all permissions from role ```anonymous```.
 
-.Try the example
-[TIP]
-https://demo.getmesh.io{apiLatest}/users/5fb9654c0b734e87b9654c0b736e8701/permissions/projects/217f8c981ada4642bf8c981adaa642c3/nodes/88fac3fbc61041c1bac3fbc610d1c182
+The endpoint link:/docs/api/#users__userUuid__permissions__path__get[```GET {apiLatest}/users/:userUuid/permissions/:path```] provides a shortcut for querying permissions for specific users directly, e.g., for user ```anonymous```, which is essentially inheriting all permissions from role ```anonymous```.
 
 === Assigning & Revoking Permissions
 
@@ -1547,9 +1481,10 @@ The following example shows how to grant the ```Editor Role``` role the permissi
 
 NOTE: Links used in the example require prior authentication with user admin (credentials: admin/admin). Please refer to the link:{{< relref "references.asciidoc" >}}#_authentication[authentication] section to learn about the different authentication mechanisms provided by Gentics Mesh. The https://insomnia.rest/[Insomnia] REST client can be used to build and invoke requests from your browser to Gentics Mesh.
 
+link:/docs/api#roles__roleUuid__permissions__path__post[```POST {apiLatest}/roles/6754d83b086244d894d83b086204d87f/permissions/users```]
+
 [source,bash,subs=attributes]
 -----
-POST https://demo.getmesh.io{apiLatest}/roles/6754d83b086244d894d83b086204d87f/permissions/users
 {
   "permissions": {
     "create": false,
@@ -1570,9 +1505,7 @@ POST https://demo.getmesh.io{apiLatest}/roles/6754d83b086244d894d83b086204d87f/p
 }
 -----
 
-You can query the updated permissions with user ```admin```:
-
-https://demo.getmesh.io{apiLatest}/roles/6754d83b086244d894d83b086204d87f/permissions/users
+You can query the updated permissions with user ```admin```: link:/docs/api#roles__roleUuid__permissions__path__get[```GET {apiLatest}/roles/6754d83b086244d894d83b086204d87f/permissions/users```]
 
 ===== Role permissions
 All possible role permissions on users are summarized in the following table.
@@ -1604,9 +1537,10 @@ The following example shows how to grant the ```Editor Role``` role the permissi
 
 NOTE: Links used in the example require prior authentication with user admin (credentials: admin/admin). Please refer to the link:{{< relref "references.asciidoc" >}}#_authentication[authentication] section to learn about the different authentication mechanisms provided by Gentics Mesh. The https://insomnia.rest/[Insomnia] REST client can be used to build and invoke requests from your browser to Gentics Mesh.
 
+link:/docs/api#roles__roleUuid__permissions__path__post[```POST {apiLatest}/roles/6754d83b086244d894d83b086204d87f/permissions/groups/df81c23d9ff1450081c23d9ff195005e```]
+
 [source,bash,subs=attributes]
 -----
-POST https://demo.getmesh.io{apiLatest}/roles/6754d83b086244d894d83b086204d87f/permissions/groups/df81c23d9ff1450081c23d9ff195005e
 {
   "permissions": {
     "create": false,
@@ -1630,12 +1564,13 @@ POST https://demo.getmesh.io{apiLatest}/roles/6754d83b086244d894d83b086204d87f/p
 
 You can query the updated permissions with user ```admin```:
 
-* https://demo.getmesh.io{apiLatest}/roles/6754d83b086244d894d83b086204d87f/permissions/groups/df81c23d9ff1450081c23d9ff195005e
-* https://demo.getmesh.io{apiLatest}/roles/6754d83b086244d894d83b086204d87f/permissions/users
+* link:/docs/api#roles__roleUuid__permissions__path__get[```GET {apiLatest}/roles/6754d83b086244d894d83b086204d87f/permissions/groups/df81c23d9ff1450081c23d9ff195005e```]
+* link:/docs/api#roles__roleUuid__permissions__path__post[```GET {apiLatest}/roles/6754d83b086244d894d83b086204d87f/permissions/users```]
 
-* or alternatively with
-https://demo.getmesh.io{apiLatest}/groups/df81c23d9ff1450081c23d9ff195005e?role=6754d83b086244d894d83b086204d87f
-https://demo.getmesh.io{apiLatest}/groups/df81c23d9ff1450081c23d9ff195005e/users?role=6754d83b086244d894d83b086204d87f
+or alternatively with
+
+* link:/docs/api/#groups__groupUuid__get[```GET {apiLatest}/groups/df81c23d9ff1450081c23d9ff195005e?role=6754d83b086244d894d83b086204d87f```]
+* link:/docs/api/#groups__groupUuid__users_get[```GET {apiLatest}/groups/df81c23d9ff1450081c23d9ff195005e/users?role=6754d83b086244d894d83b086204d87f```]
 
 ===== Role permissions
 All possible role permissions on groups are summarized in the following table.
@@ -1669,9 +1604,10 @@ The following example shows how to grant the ```Editor Role``` role permissions 
 
 NOTE: Links used in the example require prior authentication with user admin (credentials: admin/admin). Please refer to the link:{{< relref "references.asciidoc" >}}#_authentication[authentication] section to learn about the different authentication mechanisms provided by Gentics Mesh. The https://insomnia.rest/[Insomnia] REST client can be used to build and invoke requests from your browser to Gentics Mesh.
 
+link:/docs/api/#roles__roleUuid__permissions__path__post[```POST {apiLatest}/roles/6754d83b086244d894d83b086204d87f/permissions/roles```]
+
 [source,bash,subs=attributes]
 -----
-POST https://demo.getmesh.io{apiLatest}/roles/6754d83b086244d894d83b086204d87f/permissions/roles
 {
   "permissions": {
     "create": true,
@@ -1694,10 +1630,11 @@ POST https://demo.getmesh.io{apiLatest}/roles/6754d83b086244d894d83b086204d87f/p
 
 You can query the updated permissions with user ```admin```:
 
-* https://demo.getmesh.io{apiLatest}/roles/6754d83b086244d894d83b086204d87f/permissions/roles
+* link:/docs/api/#roles__roleUuid__permissions__path__get[```GET {apiLatest}/roles/6754d83b086244d894d83b086204d87f/permissions/roles```]
 
-* or alternatively with
-https://demo.getmesh.io{apiLatest}/roles?role=6754d83b086244d894d83b086204d87f
+or alternatively with
+
+* /docs/api/#roles__get[```GET {apiLatest}/roles?role=6754d83b086244d894d83b086204d87f```]
 
 ===== Role permissions
 All possible role permissions on roles are summarized in the following table.
