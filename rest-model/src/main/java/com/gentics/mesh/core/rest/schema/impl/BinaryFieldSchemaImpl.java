@@ -71,8 +71,8 @@ public class BinaryFieldSchemaImpl extends AbstractFieldSchema implements Binary
 	@Override
 	public void apply(Map<String, Object> fieldProperties) {
 		super.apply(fieldProperties);
-		if (fieldProperties.get("allowedMimeTypes") != null) {
-			setAllowedMimeTypes((String[]) fieldProperties.get("allowedMimeTypes"));
+		if (fieldProperties.get(SchemaChangeModel.ALLOW_KEY) != null) {
+			setAllowedMimeTypes((String[]) fieldProperties.get(SchemaChangeModel.ALLOW_KEY));
 		}
 		boolean hasExtractContent = fieldProperties.get(CHANGE_EXTRACT_CONTENT_KEY) != null;
 		if (hasExtractContent) {

@@ -35,25 +35,23 @@ public class SchemaComparatorImpl extends AbstractFieldSchemaContainerComparator
 		List<SchemaChangeModel> changes = super.diff(schemaA, schemaB, SchemaModel.class);
 
 		// .segmentField
-		compareAndAddSchemaProperty(changes, SEGMENT_FIELD_KEY, schemaA.getSegmentField(), schemaB.getSegmentField(), SchemaModel.class);
+		compareAndAddSchemaProperty(changes, SEGMENT_FIELD_KEY, schemaA.getSegmentField(), schemaB.getSegmentField(), SchemaModel.class, true, true);
 
 		// .urlFields
-		compareAndAddSchemaProperty(changes, URLFIELDS_KEY, schemaA.getUrlFields(), schemaB.getUrlFields(), SchemaModel.class);
+		compareAndAddSchemaProperty(changes, URLFIELDS_KEY, schemaA.getUrlFields(), schemaB.getUrlFields(), SchemaModel.class, true, true);
 
 		// .displayField
-		compareAndAddSchemaProperty(changes, DISPLAY_FIELD_NAME_KEY, schemaA.getDisplayField(), schemaB.getDisplayField(), SchemaModel.class);
+		compareAndAddSchemaProperty(changes, DISPLAY_FIELD_NAME_KEY, schemaA.getDisplayField(), schemaB.getDisplayField(), SchemaModel.class, true, true);
 
 		// .autoPurge
 		compareAndAddSchemaProperty(changes, AUTO_PURGE_FLAG_KEY, schemaA.getAutoPurge(), schemaB.getAutoPurge(), SchemaModel.class);
 
 		// .noIndex
-		compareAndAddSchemaProperty(changes, NO_INDEX_KEY, schemaA.getNoIndex(), schemaB.getNoIndex(), SchemaModel.class);
+		compareAndAddSchemaProperty(changes, NO_INDEX_KEY, schemaA.getNoIndex(), schemaB.getNoIndex(), SchemaModel.class, true, true);
 
 		// .container
 		// Only diff the flag if a value has been set in the schemaB
-		if (schemaB.getContainer() != null) {
-			compareAndAddSchemaProperty(changes, CONTAINER_FLAG_KEY, schemaA.getContainer(), schemaB.getContainer(), SchemaModel.class);
-		}
+		compareAndAddSchemaProperty(changes, CONTAINER_FLAG_KEY, schemaA.getContainer(), schemaB.getContainer(), SchemaModel.class, true, true);
 
 		// .elasticsearch
 		compareAndAddSchemaElasticSearchProperty(changes, ELASTICSEARCH_KEY, schemaA.getElasticsearch(), schemaB.getElasticsearch(), SchemaModel.class);
