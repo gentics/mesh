@@ -13,7 +13,9 @@ import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperatio
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEFIELD;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -164,7 +166,13 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 			change.getProperties().putAll(schemaPropertiesB);
 		} else {
 			// fields that are null in the other schema are considered "unchanged" (and therefore removed from both maps)
-			Set<String> unchangedKeys = schemaPropertiesB.entrySet().stream().filter(e -> e.getValue() == null).map(Entry::getKey).collect(Collectors.toSet());
+			// we only allow some fields to be set to "null"
+			List<String> keysWithNullAllowed = Arrays.asList(ELASTICSEARCH_KEY, BinaryFieldSchemaImpl.CHANGE_EXTRACT_CONTENT_KEY,
+					BinaryFieldSchemaImpl.CHANGE_EXTRACT_METADATA_KEY);
+			Set<String> unchangedKeys = schemaPropertiesB.entrySet().stream()
+					.filter(e -> !keysWithNullAllowed.contains(e.getKey()))
+					.filter(e -> e.getValue() == null)
+					.map(Entry::getKey).collect(Collectors.toSet());
 			schemaPropertiesA.keySet().removeAll(unchangedKeys);
 			schemaPropertiesB.keySet().removeAll(unchangedKeys);
 
@@ -172,7 +180,7 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 				String key = entryA.getKey();
 				Object valueA = entryA.getValue();
 				Object valueB = schemaPropertiesB.getOrDefault(key, null);
-				if (!CompareUtils.equals(valueA, valueB, true, true)) {
+				if (!CompareUtils.equals(valueA, valueB, true, !keysWithNullAllowed.contains(key))) {
 					change.setOperation(UPDATEFIELD);
 					change.getProperties().put(key, valueB);
 				}

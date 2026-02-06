@@ -1,8 +1,10 @@
 package com.gentics.mesh.util;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
@@ -54,7 +56,11 @@ public final class CompareUtils {
 			)) {
 			return true;
 		}
-		return (a == null && b == null) || (a != null && a.equals(b));
+		if (a instanceof Object[] arrayA && b instanceof Object[] arrayB) {
+			return Arrays.equals(arrayA, arrayB);
+		} else {
+			return (a == null && b == null) || (a != null && a.equals(b));
+		}
 	}
 
 	/**
@@ -138,7 +144,9 @@ public final class CompareUtils {
 		} else if (o instanceof String s) {
 			return StringUtils.isEmpty(s);
 		} else if (o instanceof Collection<?> c) {
-			return c.size() == 0;
+			return c.isEmpty();
+		} else if (o instanceof Map<?, ?> m) {
+			return m.isEmpty();
 		} else if (o instanceof Object[] array) {
 			return array.length == 0;
 		} else {
