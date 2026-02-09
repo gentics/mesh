@@ -1,0 +1,2 @@
+REST API: Performance of getting schemas/microschemas assigned to a branch has been improved
+if schemas/microschemas exist, that have lots of versions.
