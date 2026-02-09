@@ -13,8 +13,10 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.Triple;
@@ -32,6 +34,7 @@ import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
@@ -45,10 +48,13 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.client.SchemaUpdateParametersImpl;
 import com.gentics.mesh.parameter.client.VersioningParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
@@ -463,6 +469,43 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 				List<String> nodeUuids = nodes.stream().map(node -> getDisplayName(node, testCase.getLeft())).collect(Collectors.toList());
 				assertThat(nodeUuids).doesNotHaveDuplicates().containsOnlyElementsOf(expected);
 			}
+		}
+	}
+
+	/**
+	 * Test implementation of {@link HibSchema#findReferencedBranches()}
+	 */
+	@Test
+	public void testFindReferencedBranches() {
+		String schemaUuid = tx(() -> schemaContainer("folder").getUuid());
+		String version1Uuid = tx(() -> schemaContainer("folder").getLatestVersion().getUuid());
+
+		String initialBranchUuid = tx(() -> project().getInitialBranch().getUuid());
+		String newBranchUuid = tx(() -> createBranch("newbranch").getUuid());
+
+		SchemaResponse schemaResponse = call(() -> client().findSchemaByUuid(schemaUuid));
+		SchemaUpdateRequest update = JsonUtil.readValue(JsonUtil.toJson(schemaResponse), SchemaUpdateRequest.class);
+		update.setAutoPurge(false);
+
+		waitForJob(() -> client().updateSchema(schemaUuid, update, new SchemaUpdateParametersImpl().setBranchNames("newbranch")).blockingAwait());
+
+		String version2Uuid = tx(tx -> {
+			return tx.schemaDao().findByUuid(schemaUuid).getLatestVersion().getUuid();
+		});
+
+		try (Tx tx = tx()) {
+			HibProject project = project();
+			HibBranch initialBranch = tx.branchDao().findByUuid(project, initialBranchUuid);
+			HibBranch newBranch = tx.branchDao().findByUuid(project, newBranchUuid);
+
+			HibSchema schema = tx.schemaDao().findByUuid(schemaUuid);
+			HibSchemaVersion version1 = tx.schemaDao().findVersionByUuid(schema, version1Uuid);
+			HibSchemaVersion version2 = tx.schemaDao().findVersionByUuid(schema, version2Uuid);
+
+			Map<HibBranch, HibSchemaVersion> referencedBranches = schema.findReferencedBranches();
+
+			assertThat(referencedBranches).as("Map of referenced branches")
+					.containsOnly(Map.entry(initialBranch, version1), Map.entry(newBranch, version2));
 		}
 	}
 }

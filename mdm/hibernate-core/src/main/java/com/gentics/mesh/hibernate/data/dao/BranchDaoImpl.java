@@ -29,14 +29,12 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.branch.HibBranchMicroschemaVersion;
 import com.gentics.mesh.core.data.branch.HibBranchSchemaVersion;
 import com.gentics.mesh.core.data.dao.PersistingBranchDao;
-import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
-import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
@@ -266,5 +264,41 @@ public class BranchDaoImpl extends AbstractHibRootDao<HibBranch, BranchResponse,
 					.collect(Collectors.groupingBy(Pair::getKey, Collectors.mapping(Pair::getValue, Collectors.toList())));
 		}));
 		return CollectionUtil.addFallbackValueForMissingKeys(result, branches, new ArrayList<>());
+	}
+
+	@Override
+	public Result<? extends HibSchemaVersion> findActiveSchemaVersions(HibBranch branch) {
+		return new TraversalResult<HibSchemaVersion>(em()
+				.createQuery("select e.version from branch_schema_version_edge e where e.branch = :branch and active = :active", HibSchemaVersionImpl.class)
+				.setParameter("branch", branch)
+				.setParameter("active", true)
+				.getResultList());
+	}
+
+	@Override
+	public Result<? extends HibBranchSchemaVersion> findActiveSchemaVersionEdges(HibBranch branch) {
+		return new TraversalResult<HibBranchSchemaVersion>(em()
+				.createQuery("select e from branch_schema_version_edge e where e.branch = :branch and active = :active", HibBranchSchemaVersionEdgeImpl.class)
+				.setParameter("branch", branch)
+				.setParameter("active", true)
+				.getResultList());
+	}
+
+	@Override
+	public Result<? extends HibMicroschemaVersion> findActiveMicroschemaVersions(HibBranch branch) {
+		return new TraversalResult<HibMicroschemaVersion>(em()
+				.createQuery("select e.version from branch_microschema_version_edge e where e.branch = :branch and active = :active", HibMicroschemaVersion.class)
+				.setParameter("branch", branch)
+				.setParameter("active", true)
+				.getResultList());
+	}
+
+	@Override
+	public Result<? extends HibBranchMicroschemaVersion> findActiveMicroschemaVersionEdges(HibBranch branch) {
+		return new TraversalResult<HibBranchMicroschemaVersion>(em()
+				.createQuery("select e from branch_microschema_version_edge e where e.branch = :branch and active = :active", HibBranchMicroschemaVersionEdgeImpl.class)
+				.setParameter("branch", branch)
+				.setParameter("active", true)
+				.getResultList());
 	}
 }
