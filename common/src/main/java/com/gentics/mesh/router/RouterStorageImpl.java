@@ -2,8 +2,6 @@ package com.gentics.mesh.router;
 
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_UPDATED;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import javax.inject.Inject;
 import javax.naming.InvalidNameException;
@@ -106,8 +104,8 @@ public class RouterStorageImpl implements RouterStorage {
 					log.info("Registered project {" + name + "}");
 				}
 			} catch (InvalidNameException e) {
+				log.error("Error while adding project to router storage", e);
 				rh.fail(400, e.getMessage());
-				throw error(BAD_REQUEST, "Error while adding project to router storage", e);
 			}
 		});
 
@@ -128,7 +126,7 @@ public class RouterStorageImpl implements RouterStorage {
 			} catch (RuntimeException e) {
 				if (e.getCause() instanceof InvalidNameException) {
 					log.error("Could not update project routers", e);
-					rh.fail(400, "Invalid project name found");
+					rh.fail(400, e.getMessage());
 				} else {
 					throw e;
 				}
