@@ -236,10 +236,8 @@ public class FieldMapImpl implements FieldMap {
 				return field;
 			}
 		} catch (IOException e) {
-			// TODO i18n
-			throw error(INTERNAL_SERVER_ERROR, "Could not read node field for key {" + key + "}", e);
+			throw error(INTERNAL_SERVER_ERROR, "error_internal", e);
 		}
-
 	}
 
 	/**
