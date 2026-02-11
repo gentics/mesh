@@ -935,10 +935,12 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 							.thenApply(nodeContent -> {
 								if (nodeContent != null && nodeContent.getNode() != null) {
 									gc.requiresPerm(nodeContent.getNode(), READ_PERM, READ_PUBLISHED_PERM);
+									return NodeTypeProvider.createNodeContentWithSoftPermissions(env, gc,
+											nodeContent.getNode(), nodeContent.getLanguageFallback(),
+											nodeContent.getType(), nodeContent.getContainer());
+								} else {
+									return null;
 								}
-								return NodeTypeProvider.createNodeContentWithSoftPermissions(env, gc,
-										nodeContent.getNode(), nodeContent.getLanguageFallback(),
-										nodeContent.getType(), nodeContent.getContainer());
 							});
 					}
 				return null;

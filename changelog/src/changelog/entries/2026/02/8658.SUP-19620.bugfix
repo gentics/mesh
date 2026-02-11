@@ -1,0 +1,2 @@
+GraphQL: Loading of a node field which references a deleted node resulted in an error message in the response.
+This has been fixed.
