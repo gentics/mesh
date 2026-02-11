@@ -1,0 +1,35 @@
+{
+	enNode: node(uuid: "c056aac6f22311f0a26100090ffe0001", lang: "en") {
+		uuid
+		language
+        ... on folder {
+		    fields {
+                # [$.data.enNode.fields.nodeList.length()=0]
+				nodeList {
+					uuid
+					language
+                    ... on folder {
+					    fields {
+							stringList(linkType: FULL)
+
+							htmlList(linkType: FULL)
+						}
+					}
+				}
+                # [$.data.enNode.fields.nodeRef=<is-null>]
+				nodeRef {
+					uuid
+					language
+                    ... on folder {
+					    fields {
+							stringList(linkType: FULL)
+
+							htmlList(linkType: FULL)
+						}
+					}
+				}
+			}
+		}
+	}
+}
+# [$.errors=<is-undefined>]

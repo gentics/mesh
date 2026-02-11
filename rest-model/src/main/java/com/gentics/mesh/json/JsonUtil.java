@@ -191,10 +191,8 @@ public final class JsonUtil {
 				return defaultMapper.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
 			}
 		} catch (IOException e) {
-			// TODO i18n
-			String message = "Could not generate json from object";
-			// TODO 500?
-			throw new GenericRestException(INTERNAL_SERVER_ERROR, message, e);
+			log.error("Could not generate json from object", e);
+			throw new GenericRestException(INTERNAL_SERVER_ERROR, "error_internal", e);
 		}
 	}
 

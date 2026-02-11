@@ -81,6 +81,8 @@ public class TestDataProvider {
 
 	public static final String CONTENT_UUID = "43ee8f9ff71e4016ae8f9ff71e10161c";
 	public static final String NEWS_UUID = "4b1346a2163a4ff89346a2163a9ff883";
+	public static final String PRODUCTS_UUID = "c056aac6f22311f0a26100090ffe0001";
+	public static final String DEALS_UUID = "01f105cdd4c61a0ea653302a59781136";
 	public static final String NEWS_2015_UUID = "1234567890abcdef1234567890abcdef";
 
 	private static TestDataProvider instance;
@@ -304,8 +306,8 @@ public class TestDataProvider {
 			HibNode news2014 = addFolder(tx, news, "2014", null);
 			addFolder(tx, news2014, "March", "März");
 
-			addFolder(tx, baseNode, "Products", "Produkte");
-			addFolder(tx, baseNode, "Deals", "Angebote");
+			addFolder(tx, baseNode, "Products", "Produkte", PRODUCTS_UUID);
+			addFolder(tx, baseNode, "Deals", "Angebote", DEALS_UUID);
 		}
 
 	}
