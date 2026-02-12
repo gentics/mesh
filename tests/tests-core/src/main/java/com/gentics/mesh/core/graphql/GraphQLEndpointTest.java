@@ -4,6 +4,7 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.CONTENT_UUID;
 import static com.gentics.mesh.test.TestDataProvider.NEWS_UUID;
+import static com.gentics.mesh.test.TestDataProvider.PRODUCTS_UUID;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static java.util.Objects.hash;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -88,6 +90,7 @@ import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -189,6 +192,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 				Arrays.asList("node/link/children", true, false, "draft", (Consumer<JsonObject>) GraphQLEndpointTest::checkNodeLinkChildrenResponse),
 				Arrays.asList("node/link/webroot-language", true, false, "draft"),
 				Arrays.asList("node/link/reference", true, false, "draft"),
+				Arrays.asList("node/link/null-reference", true, false, "draft"),
 				Arrays.asList("node-field-list-path-query", true, false, "draft"),
 				Arrays.asList("project-query", true, false, "draft"),
 				Arrays.asList("tag-query", true, false, "draft"),
@@ -551,6 +555,24 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			nodeUpdateRequest.getFields().put("nodeList", FieldUtil.createNodeListField(NODE_WITH_LINKS_UUID));
 			nodeUpdateRequest.getFields().put("slug", FieldUtil.createStringField("node-with-reference-de"));
 			call(() -> client.updateNode(PROJECT_NAME, NODE_WITH_NODE_REF_UUID, nodeUpdateRequest));
+
+			// create a node (which we will delete afterwards)
+			NodeCreateRequest request3 = new NodeCreateRequest();
+			request3.setLanguage("en");
+			request3.setSchema(new SchemaReferenceImpl().setName("folder"));
+			request3.getFields().put("slug", FieldUtil.createStringField(RandomStringUtils.insecure().nextAlphabetic(10)));
+			request3.setParentNode(new NodeReference().setUuid(baseNodeUuid));
+			String nullReferenceUuid = call(() -> client.createNode(PROJECT_NAME, request3)).getUuid();
+
+			// create referencing node
+			NodeResponse products = call(() -> client.findNodeByUuid(PROJECT_NAME, PRODUCTS_UUID));
+			NodeUpdateRequest nodeUpdateRequest2 = JsonUtil.readValue(JsonUtil.toJson(products), NodeUpdateRequest.class);
+			nodeUpdateRequest2.getFields().put("nodeRef", FieldUtil.createNodeField(nullReferenceUuid));
+			nodeUpdateRequest2.getFields().put("nodeList", FieldUtil.createNodeListField(nullReferenceUuid));
+			call(() -> client.updateNode(PROJECT_NAME, PRODUCTS_UUID, nodeUpdateRequest2));
+
+			// delete the referenced node
+			call(() -> client.deleteNode(PROJECT_NAME, nullReferenceUuid));
 
 			// Add node reference to user
 			UserResponse user = call(() -> client.me());
