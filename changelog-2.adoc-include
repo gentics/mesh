@@ -6,6 +6,9 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v3.2.3]]
+== 3.2.3 (11.02.2026)
+
 [[v3.2.2]]
 == 3.2.2 (06.02.2026)
 
@@ -23,6 +26,15 @@ icon:plus[] Core: The `Vert.x` async IO / routing framework has been updated to 
 
 icon:plus[] Some dependencies have been updated:
 * Hibernate: 7.1.8.Final
+
+
+[[v3.1.10]]
+== 3.1.10 (11.02.2026)
+
+icon:check[] Core: A number of exceptions regarding inexisting message translations has been eliminated.
+
+icon:check[] GraphQL: Loading of a node field which references a deleted node resulted in an error message in the response.
+This has been fixed.
 
 
 [[v3.1.9]]
