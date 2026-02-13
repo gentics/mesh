@@ -12,11 +12,17 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,6 +47,7 @@ import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.generator.OpenAPIv3Generator;
 import com.gentics.mesh.generator.OpenAPIv3Generator.Format;
+import com.gentics.mesh.generator.OpenAPIv3Generator.InParameter;
 import com.gentics.mesh.generator.RAMLGenerator;
 import com.gentics.mesh.http.HttpConstants;
 import com.gentics.mesh.parameter.BackupParameters;
@@ -50,6 +57,8 @@ import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.util.RxUtil;
 import com.gentics.mesh.util.UUIDUtil;
 
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.parameters.Parameter;
 import io.vertx.core.Vertx;
 
 /**
@@ -244,11 +253,29 @@ public abstract class AdminHandler extends AbstractHandler {
 			.map(hz -> hz.getCluster().getMembers().stream().map(m -> m.getAddress().getHost() + ":" + m.getAddress().getPort()).collect(Collectors.toList()))
 			.orElseGet(() -> Collections.singletonList((httpServerConfig.isSsl() ? "https://" : "http://") + httpServerConfig.getHost() + ":" + (httpServerConfig.isSsl() ? httpServerConfig.getSslPort() : httpServerConfig.getPort())));
 
-		OpenAPIv3Generator generator = new OpenAPIv3Generator(servers, Optional.of(List.of("/api/v1", "/api/:apiversion")), Optional.empty());
+		Set<String> blacklistedRouteRegex = new HashSet<>(routerStorageRegistry.getInstances().stream()
+				.flatMap(rr -> rr.root().apiRouter().projectsRouter().getProjectRouters().keySet().stream())
+				.map(project -> "\\/api\\/v2\\/" + project + "[.]*").collect(Collectors.toSet()));
+		blacklistedRouteRegex.addAll(List.of("\\/api\\/v2", "\\/api\\/v1[.]*", "\\/api\\/\\{apiversion\\}[.]*"));
+		OpenAPIv3Generator generator = new OpenAPIv3Generator(servers, Optional.of(blacklistedRouteRegex), Optional.empty());
 		ac.send(generator.generate(
-				routerStorageRegistry.getInstances().stream().map(rr -> rr.root().getRouter()).toList(), 
+				Stream.of(
+						routerStorageRegistry.getInstances().stream().map(rr -> Pair.of(rr.root().getRouter(), StringUtils.EMPTY)),
+						routerStorageRegistry.getInstances().stream().map(rr -> Pair.of(rr.root().apiRouter().projectsRouter().projectRouter().getRouter(), "/api/v2/{projectName}"))
+					).flatMap(Function.identity()).collect(Collectors.toMap(Pair::getKey, Pair::getValue)), 
 				Format.parse(format), 
-				!httpServerConfig.isMinifyJson()), 
+				!httpServerConfig.isMinifyJson(),
+				Optional.of((path, item) -> {
+					if (path.contains("/{projectName}/")) {
+						Parameter projectNameParam = new Parameter().name("projectName").in(InParameter.PATH.toString()).schema(new Schema<String>().type("string").description("Uuid of the related project"));
+						item.readOperations().stream()
+							.forEach(o -> o.getParameters().stream().filter(p -> "projectName".equals(p.getName())).findAny()
+									.ifPresentOrElse(present -> {
+										// already exists, no action
+									}, () -> o.addParametersItem(projectNameParam)));
+					}
+					return path;
+				})), 
 				OK, 
 				"yaml".equalsIgnoreCase(format) 
 					? HttpConstants.APPLICATION_YAML_UTF8 
