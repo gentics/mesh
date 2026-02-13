@@ -13,15 +13,19 @@ import java.math.BigDecimal;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -42,6 +46,7 @@ import com.fasterxml.jackson.databind.JsonSerializable;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.generator.OpenAPIv3Generator.InParameter;
 import com.gentics.mesh.http.HttpConstants;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 
@@ -78,18 +83,18 @@ public class OpenAPIv3Generator {
 
 	private static final Logger log = LoggerFactory.getLogger(OpenAPIv3Generator.class);
 
-	private final Optional<List<String>> maybePathBlacklist;
-	private final Optional<List<String>> maybePathWhitelist;
+	private final Optional<? extends Collection<String>> maybePathBlacklist;
+	private final Optional<? extends Collection<String>> maybePathWhitelist;
 
 	private final List<String> servers;
 
-	public OpenAPIv3Generator(List<String> servers, @Nonnull Optional<List<String>> maybePathBlacklist, @Nonnull Optional<List<String>> maybePathWhitelist) {
+	public OpenAPIv3Generator(List<String> servers, @Nonnull Optional<? extends Collection<String>> maybePathBlacklist, @Nonnull Optional<? extends Collection<String>> maybePathWhitelist) {
 		this.maybePathBlacklist = maybePathBlacklist;
 		this.maybePathWhitelist = maybePathWhitelist;
 		this.servers = servers;
 	}
 
-	public String generate(List<Router> routers, Format format, boolean pretty) {
+	public String generate(Map<Router, String> routers, Format format, boolean pretty, Optional<BiFunction<String, PathItem, String>> maybePathItemTransformer) {
 		log.info("Starting OpenAPIv3 generation...");
 		OpenAPI openApi = new OpenAPI();
 		openApi.setPaths(new Paths());
@@ -107,8 +112,8 @@ public class OpenAPIv3Generator {
 		try {
 			addSecurity(openApi);
 			addComponents(openApi);
-			for (Router router : routers) {
-				addRouter(StringUtils.EMPTY, router, openApi);
+			for (Entry<Router, String> routerAndParent : routers.entrySet()) {
+				addRouter(routerAndParent.getValue(), routerAndParent.getKey(), openApi, maybePathItemTransformer);
 			}
 		} catch (IOException e) {
 			throw new RuntimeException("Could not add all verticles to raml generator", e);
@@ -276,9 +281,6 @@ public class OpenAPIv3Generator {
 		}
 		resolveMethod(method.name(), pathItem, operation);
 		List<Stream<Parameter>> params = List.of(
-				path.contains("/{project}/")
-					? Stream.of(new Parameter().name("project").in(InParameter.PATH.value).schema(new Schema<String>().type("string").description("Uuid of the related project"))) 
-					: Stream.empty(),
 				endpoint.getQueryParameters().entrySet().stream().map(e -> parameter(e.getKey(), e.getValue(), InParameter.QUERY)),
 				endpoint.getUriParameters().entrySet().stream().map(e -> parameter(e.getKey(), e.getValue(), InParameter.PATH)));
 		operation.setParameters(params.stream().flatMap(Function.identity()).filter(Objects::nonNull).collect(Collectors.toList()));
@@ -376,45 +378,56 @@ public class OpenAPIv3Generator {
 		}
 	}
 
-	protected void addRouter(String parent, Router router, OpenAPI consumer)
+	protected void addRouter(String parent, Router router, OpenAPI consumer, Optional<BiFunction<String, PathItem, String>> maybePathItemTransformer)
 			throws IOException {
 		Paths paths = consumer.getPaths();
 
 		for (Route route : router.getRoutes()) {
-			if (StringUtils.isBlank(route.getPath())
-					|| maybePathBlacklist.map(list -> list.contains(route.getPath())).filter(blacklisted -> blacklisted).isPresent()
-					|| (maybePathWhitelist.isPresent() && maybePathWhitelist.map(list -> list.contains(route.getPath())).filter(whitelisted -> whitelisted).isEmpty())) {
+			String rawPath = route.getPath();
+			if (StringUtils.isBlank(rawPath)) {
 				continue;
 			}
-			String path = parent + (StringUtils.equals(route.getPath(), "/") ? "/" : Arrays.stream(route.getPath().split("/"))
-					.map(segment -> segment.startsWith(":") ? ("{" + segment.substring(1) + "}") : segment)
-					.collect(Collectors.joining("/")));
+			String path = (parent + (StringUtils.equals(rawPath, "/") ? "/" : Arrays.stream(rawPath.split("/"))
+						.map(segment -> segment.startsWith(":") ? ("{" + segment.substring(1) + "}") : segment)
+						.collect(Collectors.joining("/"))))
+					.replace("//", "/");
 
-			log.info("Processing path {}", path);
+			if(maybePathBlacklist.flatMap(list -> list.stream().filter(blacklisted -> Pattern.matches(blacklisted, path)).findAny()).isPresent()
+					|| (maybePathWhitelist.isPresent() && maybePathWhitelist.flatMap(list -> list.stream().filter(whitelisted -> Pattern.matches(whitelisted, path)).findAny()).isEmpty())) {
+				log.debug("Path filtered off: " + path);
+				continue;
+			}
+			PathItem pathItem = Optional.ofNullable(paths.get(path)).orElseGet(() -> {
+				log.debug("Raw path: " + path);
+				PathItem item = new PathItem();
+				item.setSummary(route.getName());
+				paths.put(path, item);
+				return item;
+			});
 			Optional.ofNullable(route.getMetadata(InternalEndpointRoute.class.getCanonicalName()))
 				.map(InternalEndpointRoute.class::cast)
 				.ifPresentOrElse(endpoint -> {
-					PathItem pathItem = paths.get(path);
-					if (pathItem == null) {
-						log.debug("Path " + path);
-						pathItem = new PathItem();
-						pathItem.setSummary(endpoint.getDisplayName());
-						pathItem.setDescription(endpoint.getDescription());
-						paths.put(path, pathItem);
-					}
+					log.debug("Path with metadata: " + path);
+					pathItem.setSummary(endpoint.getDisplayName());
+					pathItem.setDescription(endpoint.getDescription());
 					resolveEndpointRoute(path, pathItem, endpoint);
 				}, () -> {
-					PathItem pathItem = paths.get(path);
-					if (pathItem == null) {
-						log.debug("Path " + path);
-						pathItem = new PathItem();
-						pathItem.setSummary(route.getName());
-						paths.put(path, pathItem);
-					}
 					resolveFallbackRoute(route, pathItem);
 				});
+			String path1 = maybePathItemTransformer.map(pathItemTransformer -> {
+				String newPath = pathItemTransformer.apply(path, pathItem);
+				if (!StringUtils.equals(path, newPath)) {
+					paths.remove(path, pathItem);
+					paths.put(newPath, pathItem);
+				}
+				return path;
+			}).orElse(path);
+			if (pathItem.readOperations().isEmpty()) {
+				log.debug("Path removed due to having no operations: " + path1);
+				paths.remove(path1, pathItem);
+			}
 			if (route.getSubRouter() != null) {
-				addRouter(path, route.getSubRouter(), consumer);
+				addRouter(path, route.getSubRouter(), consumer, maybePathItemTransformer);
 			}
 		}
 	}
@@ -429,6 +442,7 @@ public class OpenAPIv3Generator {
 					p.setName(segment);
 					p.setRequired(true);
 					p.setAllowEmptyValue(false);
+					p.in(InParameter.PATH.toString()).schema(new Schema<String>().type("string").description("A path parameter `" + segment + "` of a fallback type `string`"));
 					return p;
 				}).collect(Collectors.toList()));
 		ApiResponses responses = new ApiResponses();
@@ -629,7 +643,7 @@ public class OpenAPIv3Generator {
 		return p;
 	}
 
-	private enum InParameter {
+	public enum InParameter {
 		PATH("path"), QUERY("query"), HEADER("header"), COOKIE("cookie");
 
 		private final String value;

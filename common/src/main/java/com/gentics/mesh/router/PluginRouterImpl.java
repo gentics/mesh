@@ -1,5 +1,6 @@
 package com.gentics.mesh.router;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,9 +24,9 @@ public class PluginRouterImpl implements PluginRouter {
 
 	private static final Logger log = LoggerFactory.getLogger(APIRouterImpl.class);
 
-	private Map<String, Router> pluginRouters = new HashMap<>();
+	private final Map<String, Router> pluginRouters = new HashMap<>();
 
-	private Router router;
+	private final Router router;
 
 	/**
 	 * Create a new plugin router.
@@ -73,4 +74,13 @@ public class PluginRouterImpl implements PluginRouter {
 		}
 	}
 
+	@Override
+	public Map<String, Router> pluginRouters() {
+		return Collections.unmodifiableMap(pluginRouters);
+	}
+
+	@Override
+	public Router getRouter() {
+		return router;
+	}
 }
