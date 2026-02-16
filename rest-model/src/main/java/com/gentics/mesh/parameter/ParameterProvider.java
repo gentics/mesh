@@ -74,6 +74,24 @@ public interface ParameterProvider {
 	String getParameter(String name);
 
 	/**
+	 * Return the query parameter value for the given name, or the default value.
+	 * 
+	 * @param name
+	 *            Parameter name
+	 * @param defaultValue
+	 *            Default value
+	 * @return Loaded value or null
+	 */
+	default String getParameter(String name, String defaultValue) {
+		String parameter = getParameter(name);
+		if (parameter != null) {
+			return parameter;
+		} else {
+			return defaultValue;
+		}
+	}
+
+	/**
 	 * Return the query parameter values for the given name.
 	 * @param <T> value type
 	 * @param name parameter name
