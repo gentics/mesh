@@ -62,7 +62,7 @@ public class SortingParametersImpl extends AbstractParameters implements Sorting
 		sortOrderParameter.setExample(SortOrder.ASCENDING.name());
 		sortOrderParameter.setRequired(false);
 		sortOrderParameter.setType(ParamType.STRING);
-		sortOrderParameter.setEnumeration(Arrays.asList(SortOrder.values()).stream().map(SortOrder::name).collect(Collectors.toList()));
+		sortOrderParameter.setEnumeration(Arrays.asList(SortOrder.values()).stream().map(e -> e.toString().toLowerCase()).collect(Collectors.toList()));
 		parameters.put(SortingParameters.SORT_ORDER_PARAMETER_KEY, sortOrderParameter);
 
 		return parameters;

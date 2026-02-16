@@ -11,9 +11,10 @@ import javax.inject.Inject;
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.rest.openapi.Format;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.example.RestInfoExamples;
-import com.gentics.mesh.parameter.OpenAPIParameters;
+import com.gentics.mesh.parameter.impl.OpenAPIParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
@@ -70,17 +71,43 @@ public class RestInfoEndpoint extends AbstractInternalEndpoint {
 		}, false);
 
 		secure("/openapi");
-		InternalEndpointRoute openapiYml = createRoute();
-		openapiYml.path("/openapi");
-		openapiYml.method(GET);
-		openapiYml.description("Endpoint which provides a OpenAPIv3 document for all registed endpoints.");
-		openapiYml.displayName("OpenAPI specification");
-		openapiYml.exampleResponse(OK, "Not yet specified");
-		openapiYml.produces(TEXT_PLAIN_UTF8);
-		openapiYml.addQueryParameters(OpenAPIParameters.class);
-		openapiYml.blockingHandler(rc -> {
+		InternalEndpointRoute openapi = createRoute();
+		openapi.path("/openapi");
+		openapi.method(GET);
+		openapi.description("Endpoint which provides a OpenAPIv3 document for all registed endpoints.");
+		openapi.displayName("OpenAPI specification");
+		openapi.exampleResponse(OK, "Not yet specified");
+		openapi.produces(TEXT_PLAIN_UTF8);
+		openapi.addQueryParameters(OpenAPIParametersImpl.class);
+		openapi.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			adminHandler.handleOpenAPIv3(ac);
+		}, false);
+
+		secure("/openapi.yaml");
+		InternalEndpointRoute openapiYml = createRoute();
+		openapiYml.path("/openapi.yaml");
+		openapiYml.method(GET);
+		openapiYml.description("Endpoint which provides a OpenAPIv3.0 YAML document for all registed endpoints.");
+		openapiYml.displayName("OpenAPI specification");
+		openapiYml.exampleResponse(OK, "Not yet specified");
+		openapiYml.produces(APPLICATION_YAML);
+		openapiYml.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			adminHandler.handleOpenAPIv3(ac, Format.YAML);
+		}, false);
+
+		secure("/openapi.json");
+		InternalEndpointRoute openapiJson = createRoute();
+		openapiJson.path("/openapi.json");
+		openapiJson.method(GET);
+		openapiJson.description("Endpoint which provides a OpenAPIv3.0 JSON document for all registed endpoints.");
+		openapiJson.displayName("OpenAPI specification");
+		openapiJson.exampleResponse(OK, "Not yet specified");
+		openapiJson.produces(APPLICATION_JSON);
+		openapiJson.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			adminHandler.handleOpenAPIv3(ac, Format.JSON);
 		}, false);
 
 		secure("/");

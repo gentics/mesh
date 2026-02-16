@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -35,7 +36,6 @@ import org.apache.commons.collections4.keyvalue.UnmodifiableMapEntry;
 import org.apache.commons.lang.StringUtils;
 import org.raml.model.MimeType;
 import org.raml.model.parameter.AbstractParam;
-import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,7 +43,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonSerializable;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -86,29 +85,53 @@ public class OpenAPIv3Generator {
 
 	private static final Logger log = LoggerFactory.getLogger(OpenAPIv3Generator.class);
 
-	private final Optional<? extends Collection<String>> maybePathBlacklist;
-	private final Optional<? extends Collection<String>> maybePathWhitelist;
+	private final Optional<? extends Collection<Pattern>> maybePathBlacklist;
+	private final Optional<? extends Collection<Pattern>> maybePathWhitelist;
 
 	private final List<String> servers;
 
 	/**
+	 * Ctor
 	 * 
-	 * 
-	 * @param servers
-	 * @param maybePathBlacklist
-	 * @param maybePathWhitelist
+	 * @param servers a list of available servers; may be empty.
+	 * @param maybePathBlacklist optional regex blacklist
+	 * @param maybePathWhitelist optional regex whitelist
 	 */
-	public OpenAPIv3Generator(List<String> servers, @Nonnull Optional<? extends Collection<String>> maybePathBlacklist, @Nonnull Optional<? extends Collection<String>> maybePathWhitelist) {
+	public OpenAPIv3Generator(List<String> servers, @Nonnull Optional<? extends Collection<Pattern>> maybePathBlacklist, 
+			@Nonnull Optional<? extends Collection<Pattern>> maybePathWhitelist) {
 		this.maybePathBlacklist = maybePathBlacklist;
 		this.maybePathWhitelist = maybePathWhitelist;
 		this.servers = servers;
 	}
 
-	public String generate(Map<Router, String> routers, Format format, boolean pretty, Optional<BiFunction<String, PathItem, String>> maybePathItemTransformer) {
-		return generate(routers, format, pretty, maybePathItemTransformer, false);
+	/**
+	 * Generate the spec out of the given routes and format
+	 * 
+	 * @param routers
+	 * @param format
+	 * @param pretty
+	 * @param maybePathItemTransformer an optional custon path and path item transformer
+	 * @return
+	 */
+	public String generate(Map<Router, String> routers, Format format, boolean pretty, 
+			@Nonnull Optional<BiFunction<String, PathItem, String>> maybePathItemTransformer,
+			@Nonnull Optional<Supplier<Collection<Class<?>>>> maybeExtraComponentSupplier) {
+		return generate(routers, format, pretty, false, maybePathItemTransformer, maybeExtraComponentSupplier);
 	}
 
-	public String generate(Map<Router, String> routers, Format format, boolean pretty, Optional<BiFunction<String, PathItem, String>> maybePathItemTransformer, boolean useVersion31) {
+	/**
+	 * Generate the spec out of given routes and parameters
+	 * 
+	 * @param routers
+	 * @param format
+	 * @param pretty
+	 * @param useVersion31
+	 * @param maybePathItemTransformer an optional custon path and path item transformer
+	 * @return
+	 */
+	public String generate(Map<Router, String> routers, Format format, boolean pretty, boolean useVersion31, 
+			@Nonnull Optional<BiFunction<String, PathItem, String>> maybePathItemTransformer,
+			@Nonnull Optional<Supplier<Collection<Class<?>>>> maybeExtraComponentSupplier) {
 		log.info("Starting OpenAPIv3 generation...");
 		OpenAPI openApi = new OpenAPI();
 		openApi.setPaths(new Paths());
@@ -125,7 +148,9 @@ public class OpenAPIv3Generator {
 		openApi.setInfo(info);		
 		try {
 			addSecurity(openApi);
-			addComponents(openApi);
+			maybeExtraComponentSupplier.ifPresent(componentSupplier -> {
+				componentSupplier.get().forEach(componentClass -> fillComponent(componentClass, openApi));
+			});
 			for (Entry<Router, String> routerAndParent : routers.entrySet()) {
 				addRouter(routerAndParent.getValue(), routerAndParent.getKey(), openApi, maybePathItemTransformer);
 			}
@@ -137,6 +162,11 @@ public class OpenAPIv3Generator {
 		return writer.write(openApi, format, pretty);
 	}
 
+	/**
+	 * Add a security to the spec
+	 * 
+	 * @param openApi
+	 */
 	protected void addSecurity(OpenAPI openApi) {
 		Components components;
 		if (openApi.getComponents() == null) {
@@ -156,27 +186,20 @@ public class OpenAPIv3Generator {
 		openApi.addSecurityItem(reqBearerAuth);
 	}
 
-	private String makeSchemaName(Class<?> cls) {
-		return "Mesh" + cls.getSimpleName();
-	}
-
-	protected void addComponents(OpenAPI openApi) {
+	@SuppressWarnings("rawtypes")
+	protected void fillComponent(Class<?> cls, OpenAPI openApi) {
+		if (StringUtils.isBlank(cls.getSimpleName())) {
+			return;
+		}
 		Components components;
 		if (openApi.getComponents() == null) {
-			components = new Components();
+			components = new Components();			
 			openApi.setComponents(components);
 		} else {
 			components = openApi.getComponents();
 		}
-		components.setSchemas(new HashMap<>(Map.of("AnyJson", new Schema<String>())));
-		Reflections reflections = new Reflections("com.gentics.mesh");
-		reflections.getSubTypesOf(RestModel.class).stream().forEach(cls -> fillComponent(cls, components));
-	}
-
-	@SuppressWarnings("rawtypes")
-	protected void fillComponent(Class<?> cls, Components components) {
-		if (!cls.getPackageName().startsWith("com.gentics.mesh") || StringUtils.isBlank(cls.getSimpleName())) {
-			return;
+		if (components.getSchemas() == null) {
+			components.setSchemas(new HashMap<>(Map.of("AnyJson", new Schema<String>())));
 		}
 		Schema<?> schema = components.getSchemas().getOrDefault(cls.getSimpleName(), new Schema<String>());
 		schema.setType("object");
@@ -214,7 +237,7 @@ public class OpenAPIv3Generator {
 			.filter(f -> !Modifier.isStatic(f.getModifiers())).peek(f -> {
 				Class<?> t = f.getType();
 				if (!RestModel.class.isAssignableFrom(t) && !t.isPrimitive() && !t.getCanonicalName().startsWith("java.lang")) {
-					fillComponent(t, components);
+					fillComponent(t, openApi);
 				}
 			})
 			.map(f -> {
@@ -384,8 +407,8 @@ public class OpenAPIv3Generator {
 						.collect(Collectors.joining("/"))))
 					.replace("//", "/");
 
-			if(maybePathBlacklist.flatMap(list -> list.stream().filter(blacklisted -> Pattern.matches(blacklisted, path)).findAny()).isPresent()
-					|| (maybePathWhitelist.isPresent() && maybePathWhitelist.flatMap(list -> list.stream().filter(whitelisted -> Pattern.matches(whitelisted, path)).findAny()).isEmpty())) {
+			if(maybePathBlacklist.flatMap(list -> list.stream().filter(blacklisted -> blacklisted.matcher(path).matches()).findAny()).isPresent()
+					|| (maybePathWhitelist.isPresent() && maybePathWhitelist.flatMap(list -> list.stream().filter(whitelisted -> whitelisted.matcher(path).matches()).findAny()).isEmpty())) {
 				log.debug("Path filtered off: " + path);
 				continue;
 			}
@@ -402,6 +425,7 @@ public class OpenAPIv3Generator {
 					log.debug("Path with metadata: " + path);
 					pathItem.setSummary(endpoint.getDisplayName());
 					pathItem.setDescription(endpoint.getDescription());
+					endpoint.getModel().forEach(modelComponent -> fillComponent(modelComponent, consumer));
 					resolveEndpointRoute(path, pathItem, endpoint);
 				}, () -> {
 					resolveFallbackRoute(route, pathItem);
@@ -519,14 +543,11 @@ public class OpenAPIv3Generator {
 				log.error("Unknown array type" + t + " / " + Arrays.toString(generics.toArray()));
 			}
 			fieldSchema.setItems(itemSchema);
-//		} else if (t.isEnum()) {
-//			fieldSchema.setType("string");
-//			fieldSchema.setEnum(Arrays.stream(t.getEnumConstants()).collect(Collectors.toList()));
 		} else {
 			if (t.isEnum()) {
 				Schema enumSchema = new Schema<String>();
 				enumSchema.setType("string");
-				enumSchema.setEnum(Arrays.stream(t.getEnumConstants()).collect(Collectors.toList()));
+				enumSchema.setEnum(Arrays.stream(t.getEnumConstants()).map(e -> e.toString().toLowerCase()).collect(Collectors.toList()));
 				components.addSchemas(t.getSimpleName(), enumSchema);
 			}
 			if (Map.class.isAssignableFrom(t)) {
