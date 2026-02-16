@@ -39,6 +39,7 @@ import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorMasterResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
+import com.gentics.mesh.core.rest.openapi.Version;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.distributed.coordinator.Coordinator;
@@ -247,7 +248,9 @@ public abstract class AdminHandler extends AbstractHandler {
 		return info;
 	}
 
-	public void handleOpenAPIv3(InternalActionContext ac, String format) {
+	public void handleOpenAPIv3(InternalActionContext ac) {
+		boolean useVersion31 = ac.getOpenAPIParameters().getVersion() == Version.V31;
+		String format = ac.getOpenAPIParameters().getFormat().name().toLowerCase();
 		HttpServerConfig httpServerConfig = options.getHttpServerOptions();
 		List<String> servers = Optional.ofNullable(clusterManager.getHazelcast())
 			.map(hz -> hz.getCluster().getMembers().stream().map(m -> m.getAddress().getHost() + ":" + m.getAddress().getPort()).collect(Collectors.toList()))
@@ -275,7 +278,7 @@ public abstract class AdminHandler extends AbstractHandler {
 									}, () -> o.addParametersItem(projectNameParam)));
 					}
 					return path;
-				})), 
+				}), useVersion31), 
 				OK, 
 				"yaml".equalsIgnoreCase(format) 
 					? HttpConstants.APPLICATION_YAML_UTF8 

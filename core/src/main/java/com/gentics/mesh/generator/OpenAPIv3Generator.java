@@ -43,15 +43,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonSerializable;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.generator.OpenAPIv3Generator.InParameter;
 import com.gentics.mesh.http.HttpConstants;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 
 import io.swagger.v3.core.util.Json;
+import io.swagger.v3.core.util.Json31;
+import io.swagger.v3.core.util.OpenAPI30To31;
 import io.swagger.v3.core.util.Yaml;
+import io.swagger.v3.core.util.Yaml31;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -88,6 +91,13 @@ public class OpenAPIv3Generator {
 
 	private final List<String> servers;
 
+	/**
+	 * 
+	 * 
+	 * @param servers
+	 * @param maybePathBlacklist
+	 * @param maybePathWhitelist
+	 */
 	public OpenAPIv3Generator(List<String> servers, @Nonnull Optional<? extends Collection<String>> maybePathBlacklist, @Nonnull Optional<? extends Collection<String>> maybePathWhitelist) {
 		this.maybePathBlacklist = maybePathBlacklist;
 		this.maybePathWhitelist = maybePathWhitelist;
@@ -95,6 +105,10 @@ public class OpenAPIv3Generator {
 	}
 
 	public String generate(Map<Router, String> routers, Format format, boolean pretty, Optional<BiFunction<String, PathItem, String>> maybePathItemTransformer) {
+		return generate(routers, format, pretty, maybePathItemTransformer, false);
+	}
+
+	public String generate(Map<Router, String> routers, Format format, boolean pretty, Optional<BiFunction<String, PathItem, String>> maybePathItemTransformer, boolean useVersion31) {
 		log.info("Starting OpenAPIv3 generation...");
 		OpenAPI openApi = new OpenAPI();
 		openApi.setPaths(new Paths());
@@ -119,30 +133,8 @@ public class OpenAPIv3Generator {
 			throw new RuntimeException("Could not add all verticles to raml generator", e);
 		}
 
-		//new OpenAPI30To31().process(openApi);
-		//openApi.jsonSchemaDialect("https://spec.openapis.org/oas/3.1/dialect/base");
-		String formatted;
-		switch (format) {
-		case YAML:
-			try {
-				//formatted = ac.isMinify(httpServerConfig) ? Yaml31.mapper().writer().writeValueAsString(openApi) : Yaml31.pretty().writeValueAsString(openApi);
-				formatted = pretty ? Yaml.pretty().writeValueAsString(openApi) : Yaml.mapper().writer().writeValueAsString(openApi) ;
-			} catch (JsonProcessingException e) {
-				throw new RuntimeException("Could not generate YAML", e);
-			}
-			break;
-		case JSON:
-			try {
-				//formatted = ac.isMinify(httpServerConfig) ? Json31.mapper().writer().writeValueAsString(openApi) : Json31.pretty(openApi);
-				formatted = pretty ? Json.pretty(openApi) : Json.mapper().writer().writeValueAsString(openApi);
-			} catch (JsonProcessingException e) {
-				throw new RuntimeException(e);
-			}
-			break;
-		default:
-			throw error(BAD_REQUEST, "Please specify a response format: YAML or JSON");
-		}
-		return formatted;
+		OpenAPIVersionWriter writer = useVersion31 ? new V31Writer() : new V30Writer();
+		return writer.write(openApi, format, pretty);
 	}
 
 	protected void addSecurity(OpenAPI openApi) {
@@ -437,14 +429,15 @@ public class OpenAPIv3Generator {
 		o.setParameters(Arrays.stream(r.getPath().split("/"))
 				.filter(segment -> segment.startsWith(":"))
 				.map(segment -> segment.substring(1))
-				.map(segment -> {
-					Parameter p = new Parameter();
-					p.setName(segment);
-					p.setRequired(true);
-					p.setAllowEmptyValue(false);
-					p.in(InParameter.PATH.toString()).schema(new Schema<String>().type("string").description("A path parameter `" + segment + "` of a fallback type `string`"));
-					return p;
-				}).collect(Collectors.toList()));
+				.map(segment -> new Parameter()
+						.name(segment)
+						.required(true)
+						.allowEmptyValue(false)
+						.in(InParameter.PATH.toString())
+						.schema(new Schema<String>()
+								.type("string")
+								.description("A path parameter `" + segment + "` of a fallback type `string`")))
+				.collect(Collectors.toList()));
 		ApiResponses responses = new ApiResponses();
 		ApiResponse response = new ApiResponse();
 		Content responseBody = new Content();
@@ -673,6 +666,60 @@ public class OpenAPIv3Generator {
 					.filter(v -> v.name().equals(text.trim().toUpperCase()))
 					.findAny()
 					.orElseThrow(() -> new IllegalStateException("Unsupported OpenAPI Format:" + text));
+		}
+	}
+
+	public interface OpenAPIVersionWriter {
+		String write(OpenAPI api, Format format, boolean pretty);
+	}
+	private class V30Writer implements OpenAPIVersionWriter {
+
+		@Override
+		public String write(OpenAPI openApi, Format format, boolean pretty) {
+			switch (format) {
+			case YAML:
+				try {
+					//formatted = pretty ? Yaml31.mapper().writer().writeValueAsString(openApi) : Yaml31.pretty().writeValueAsString(openApi);
+					return pretty ? Yaml.pretty().writeValueAsString(openApi) : Yaml.mapper().writer().writeValueAsString(openApi) ;
+				} catch (JsonProcessingException e) {
+					throw new RuntimeException("Could not generate YAML", e);
+				}
+			case JSON:
+				try {
+					//formatted = pretty ? Json31.mapper().writer().writeValueAsString(openApi) : Json31.pretty(openApi);
+					return pretty ? Json.pretty(openApi) : Json.mapper().writer().writeValueAsString(openApi);
+				} catch (JsonProcessingException e) {
+					throw new RuntimeException(e);
+				}
+			default:
+				throw error(BAD_REQUEST, "Please specify a response format: YAML or JSON");
+			}
+		}
+		
+	}
+	private class V31Writer implements OpenAPIVersionWriter {
+
+		@Override
+		public String write(OpenAPI openApi, Format format, boolean pretty) {
+			new OpenAPI30To31().process(openApi);
+			openApi.jsonSchemaDialect("https://spec.openapis.org/oas/3.1/dialect/base");
+
+			switch (format) {
+			case YAML:
+				try {
+					return pretty ? Yaml31.mapper().writer().writeValueAsString(openApi) : Yaml31.pretty().writeValueAsString(openApi);
+				} catch (JsonProcessingException e) {
+					throw new RuntimeException("Could not generate YAML", e);
+				}
+			case JSON:
+				try {
+					return pretty ? Json31.mapper().writer().writeValueAsString(openApi) : Json31.pretty(openApi);
+				} catch (JsonProcessingException e) {
+					throw new RuntimeException(e);
+				}
+			default:
+				throw error(BAD_REQUEST, "Please specify a response format: YAML or JSON");
+			}
 		}
 	}
 }
