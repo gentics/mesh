@@ -1,11 +1,11 @@
 package com.gentics.mesh.rest;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import io.vertx.ext.web.Router;
 import org.codehaus.jettison.json.JSONObject;
 import org.raml.model.MimeType;
 import org.raml.model.Response;
@@ -22,6 +22,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.Route;
+import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 
 /**
@@ -467,4 +468,19 @@ public interface InternalEndpointRoute extends Comparable<InternalEndpointRoute>
 	 * @return
 	 */
 	Set<String> getConsumes();
+
+	/**
+	 * Set the custom model components, additionally required for this route
+	 * 
+	 * @param modelComponents
+	 * @return
+	 */
+	InternalEndpointRoute setModel(Collection<Class<?>> modelComponents);
+
+	/**
+	 * Get the custom model components, additionally required for this route
+	 * 
+	 * @return
+	 */
+	Collection<Class<?>> getModel();
 }

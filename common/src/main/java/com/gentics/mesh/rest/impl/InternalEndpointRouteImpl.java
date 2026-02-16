@@ -11,6 +11,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -101,6 +102,8 @@ public class InternalEndpointRouteImpl implements InternalEndpointRoute {
 	private Boolean mutating;
 
 	private boolean insecure = false;
+
+	private final Collection<Class<?>> modelComponents = new HashSet<>();
 
 	/**
 	 * Create a new endpoint wrapper using the provided router to create the wrapped
@@ -589,5 +592,17 @@ public class InternalEndpointRouteImpl implements InternalEndpointRoute {
 				});
 			}
 		}
+	}
+
+	@Override
+	public InternalEndpointRoute setModel(Collection<Class<?>> modelComponents) {
+		this.modelComponents.addAll(modelComponents);
+		return this;
+	}
+
+	@Override
+	public Collection<Class<?>> getModel() {
+		// TODO Auto-generated method stub
+		return modelComponents;
 	}
 }

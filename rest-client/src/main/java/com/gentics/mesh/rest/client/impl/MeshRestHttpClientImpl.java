@@ -1,5 +1,6 @@
 package com.gentics.mesh.rest.client.impl;
 
+import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON_UTF8;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_YAML_UTF8;
 import static com.gentics.mesh.rest.client.impl.HttpMethod.DELETE;
 import static com.gentics.mesh.rest.client.impl.HttpMethod.GET;
@@ -64,6 +65,8 @@ import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryMetadataRequest;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryUploadRequest;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3RestResponse;
 import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
+import com.gentics.mesh.core.rest.openapi.Format;
+import com.gentics.mesh.core.rest.openapi.Version;
 import com.gentics.mesh.core.rest.plugin.PluginDeploymentRequest;
 import com.gentics.mesh.core.rest.plugin.PluginListResponse;
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
@@ -111,6 +114,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.parameter.client.BinaryCheckParametersImpl;
 import com.gentics.mesh.parameter.client.NodeParametersImpl;
+import com.gentics.mesh.parameter.client.OpenAPIParametersImpl;
 import com.gentics.mesh.parameter.client.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.AbstractMeshRestHttpClient;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
@@ -1375,6 +1379,13 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	public MeshRequest<String> getRAML() {
 		MeshRequest<String> request = prepareRequest(GET, "/raml", String.class);
 		request.setHeader("Accept", APPLICATION_YAML_UTF8);
+		return request;
+	}
+
+	@Override
+	public MeshRequest<String> getOpenAPI(Format format, Version version) {
+		MeshRequest<String> request = prepareRequest(GET, "/openapi" + getQuery(getConfig(), new OpenAPIParametersImpl().setFormat(format).setVersion(version)), String.class);
+		request.setHeader("Accept", "*/*");
 		return request;
 	}
 

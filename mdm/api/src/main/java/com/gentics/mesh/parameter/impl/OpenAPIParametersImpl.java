@@ -43,7 +43,7 @@ public class OpenAPIParametersImpl extends AbstractParameters implements OpenAPI
 		versionParameter.setDescription("Specify, whether the OpenAPI standard version 3.1 should be generated. If false or unset, a version 3.0 of standard will be used.");
 		versionParameter.setExample(Version.V31.name());
 		versionParameter.setRequired(false);
-		versionParameter.setEnumeration(Arrays.asList(Version.values()).stream().map(Version::name).collect(Collectors.toList()));
+		versionParameter.setEnumeration(Arrays.asList(Version.values()).stream().map(e -> e.toString().toLowerCase()).collect(Collectors.toList()));
 		versionParameter.setType(ParamType.STRING);
 		parameters.put(VERSION_PARAMETER_KEY, versionParameter);
 
@@ -53,7 +53,7 @@ public class OpenAPIParametersImpl extends AbstractParameters implements OpenAPI
 		formatParameter.setDescription("Specify the output format. Default is JSON.");
 		formatParameter.setExample(Format.YAML.name());
 		formatParameter.setRequired(false);
-		formatParameter.setEnumeration(Arrays.asList(Format.values()).stream().map(Format::name).collect(Collectors.toList()));
+		formatParameter.setEnumeration(Arrays.asList(Format.values()).stream().map(e -> e.toString().toLowerCase()).collect(Collectors.toList()));
 		formatParameter.setType(ParamType.STRING);
 		parameters.put(FORMAT_PARAMETER_KEY, formatParameter);
 				

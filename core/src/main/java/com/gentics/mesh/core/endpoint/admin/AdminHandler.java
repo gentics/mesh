@@ -18,15 +18,19 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.cache.CacheRegistry;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -39,6 +43,7 @@ import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorMasterResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.openapi.Version;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
@@ -248,26 +253,61 @@ public abstract class AdminHandler extends AbstractHandler {
 		return info;
 	}
 
+	/**
+	 * Handle a request of generating OpenAPI spec for all the routes. All the necessary parameters will be taken from an action context.
+	 * 
+	 * @param ac internal action context.
+	 */
 	public void handleOpenAPIv3(InternalActionContext ac) {
+		handleOpenAPIv3(ac, ac.getOpenAPIParameters().getFormat());
+	}
+
+	/**
+	 * Handle a request of generating OpenAPI spec for all the routes.
+	 * 
+	 * @param ac internal action context
+	 * @param format2 manually picked specification format
+	 */
+	public void handleOpenAPIv3(InternalActionContext ac, com.gentics.mesh.core.rest.openapi.Format format2) {
 		boolean useVersion31 = ac.getOpenAPIParameters().getVersion() == Version.V31;
-		String format = ac.getOpenAPIParameters().getFormat().name().toLowerCase();
-		HttpServerConfig httpServerConfig = options.getHttpServerOptions();
+		String format = Optional.ofNullable(format2).orElse(com.gentics.mesh.core.rest.openapi.Format.JSON).name().toLowerCase();
+	
+		// Collect available servers
+		HttpServerConfig httpServerConfig = options.getHttpServerOptions();	
 		List<String> servers = Optional.ofNullable(clusterManager.getHazelcast())
 			.map(hz -> hz.getCluster().getMembers().stream().map(m -> m.getAddress().getHost() + ":" + m.getAddress().getPort()).collect(Collectors.toList()))
 			.orElseGet(() -> Collections.singletonList((httpServerConfig.isSsl() ? "https://" : "http://") + httpServerConfig.getHost() + ":" + (httpServerConfig.isSsl() ? httpServerConfig.getSslPort() : httpServerConfig.getPort())));
 
+		/*
+		 * Blacklist 
+		 * a) all the actual project roots
+		 * b) old api version roots
+		 * c) an `apiversion` selector parameter root
+		 */
 		Set<String> blacklistedRouteRegex = new HashSet<>(routerStorageRegistry.getInstances().stream()
 				.flatMap(rr -> rr.root().apiRouter().projectsRouter().getProjectRouters().keySet().stream())
-				.map(project -> "\\/api\\/v2\\/" + project + "[.]*").collect(Collectors.toSet()));
-		blacklistedRouteRegex.addAll(List.of("\\/api\\/v2", "\\/api\\/v1[.]*", "\\/api\\/\\{apiversion\\}[.]*"));
-		OpenAPIv3Generator generator = new OpenAPIv3Generator(servers, Optional.of(blacklistedRouteRegex), Optional.empty());
+				.map(project -> "\\/api\\/v" + MeshVersion.CURRENT_API_VERSION + "\\/" + project + "[.]*").collect(Collectors.toSet()));
+		blacklistedRouteRegex.addAll(IntStream.range(1, MeshVersion.CURRENT_API_VERSION).mapToObj(v -> "\\/api\\/v" + v + "[.]*").collect(Collectors.toList()));
+		blacklistedRouteRegex.addAll(List.of("\\/api\\/v" + MeshVersion.CURRENT_API_VERSION + "", "\\/api\\/\\{apiversion\\}[.]*"));
+
+		// Make an instance with blacklist path patterns
+		OpenAPIv3Generator generator = new OpenAPIv3Generator(servers, Optional.of(blacklistedRouteRegex.stream().map(Pattern::compile).collect(Collectors.toList())), Optional.empty());
+
+		// Generate...
 		ac.send(generator.generate(
 				Stream.of(
+						//... from base root
 						routerStorageRegistry.getInstances().stream().map(rr -> Pair.of(rr.root().getRouter(), StringUtils.EMPTY)),
-						routerStorageRegistry.getInstances().stream().map(rr -> Pair.of(rr.root().apiRouter().projectsRouter().projectRouter().getRouter(), "/api/v2/{projectName}"))
+						//... from generic project root
+						routerStorageRegistry.getInstances().stream().map(rr -> Pair.of(rr.root().apiRouter().projectsRouter().projectRouter().getRouter(), "/api/v" + MeshVersion.CURRENT_API_VERSION + "/{projectName}"))
 					).flatMap(Function.identity()).collect(Collectors.toMap(Pair::getKey, Pair::getValue)), 
+				// ...with desired format
 				Format.parse(format), 
+				// ...with desired pretty printing
 				!httpServerConfig.isMinifyJson(),
+				// ...with desired spec version
+				useVersion31,
+				// ...with a manipulator injecting a `projectName` path parameter, where unavailable
 				Optional.of((path, item) -> {
 					if (path.contains("/{projectName}/")) {
 						Parameter projectNameParam = new Parameter().name("projectName").in(InParameter.PATH.toString()).schema(new Schema<String>().type("string").description("Uuid of the related project"));
@@ -278,7 +318,14 @@ public abstract class AdminHandler extends AbstractHandler {
 									}, () -> o.addParametersItem(projectNameParam)));
 					}
 					return path;
-				}), useVersion31), 
+				}),
+				// ...with component model provider
+				Optional.of(() -> Collections.unmodifiableCollection(
+						new Reflections("com.gentics.mesh")
+							.getSubTypesOf(RestModel.class)
+							.stream()
+							.filter(ty -> ty.getPackageName().startsWith("com.gentics.mesh"))
+							.collect(Collectors.toSet())))), 
 				OK, 
 				"yaml".equalsIgnoreCase(format) 
 					? HttpConstants.APPLICATION_YAML_UTF8 

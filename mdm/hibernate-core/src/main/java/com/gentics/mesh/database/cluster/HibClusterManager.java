@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -57,7 +58,7 @@ public class HibClusterManager implements ClusterManager {
 				config = new Config();
 			}
 			config.setInstanceName(options.getNodeName());
-			config.setClusterName(options.getClusterOptions().getClusterName());
+			config.setClusterName(Optional.ofNullable(options.getClusterOptions().getClusterName()).orElseGet(() -> options.getNodeName()));
 			config.setClassLoader(Thread.currentThread().getContextClassLoader());
 			config.getMemberAttributeConfig().setAttribute("__vertx.nodeId", options.getNodeName());
 			hazelcastInstance = Hazelcast.getOrCreateHazelcastInstance(config);
