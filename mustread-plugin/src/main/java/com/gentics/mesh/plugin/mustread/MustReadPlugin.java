@@ -1,5 +1,15 @@
 package com.gentics.mesh.plugin.mustread;
 
+import static com.gentics.vertx.openapi.misc.UtilsAndConstants.APPLICATION_JSON_UTF8;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+
+import org.pf4j.PluginWrapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.plugin.AbstractPlugin;
 import com.gentics.mesh.plugin.RestPlugin;
 import com.gentics.mesh.plugin.common.MeshPluginException;
@@ -20,15 +30,15 @@ import com.gentics.mesh.plugin.mustread.initializer.FolderInitializer;
 import com.gentics.mesh.plugin.mustread.initializer.SchemaInitializer;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshRestClientConfig;
-import io.reactivex.Completable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import io.vertx.ext.web.Router;
-import org.pf4j.PluginWrapper;
+import com.gentics.vertx.openapi.model.GenericMessageResponse;
+import com.gentics.vertx.openapi.route.InternalEndpointBuilder;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.reactivex.Completable;
+import io.vertx.core.http.HttpMethod;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.Router;
 
 public class MustReadPlugin extends AbstractPlugin implements RestPlugin {
 
@@ -91,8 +101,22 @@ public class MustReadPlugin extends AbstractPlugin implements RestPlugin {
         Router router = Router.router(vertx());
 
         log.info(logHelper.generateLogMessage("", "Registering Endpoints for projects"));
-        router.get("/unread").handler(new UnreadHandler(this, getConfiguration(), getLogHelper(), getNodeController()));
-        router.post("/read").handler(new MakeReadHandler(this, getConfiguration(), getLogHelper(), getNodeController()));
+        InternalEndpointBuilder.wrap(router)
+        	.withMethod(HttpMethod.GET)
+        	.withPath("/unread")
+        	.withDescription("Get unread pages")
+        	.withHandler(new UnreadHandler(this, getConfiguration(), getLogHelper(), getNodeController()))
+        	.produces(APPLICATION_JSON_UTF8)
+        	.build();
+        
+        InternalEndpointBuilder.wrap(router)
+        	.withMethod(HttpMethod.POST)
+        	.withPath("/read")
+        	.withDescription("Post an array of page UUIDs to be marked as read")
+        	.withHandler(new MakeReadHandler(this, getConfiguration(), getLogHelper(), getNodeController()))
+        	.withExampleRequest(new JsonObject().put(getConfiguration().getNodeListParameterName(), new JsonArray()))
+        	.withExampleResponse(HttpResponseStatus.OK, new GenericMessageResponse("successful"), APPLICATION_JSON_UTF8)
+        	.build();
 
         return router;
     }
