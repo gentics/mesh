@@ -1,6 +1,6 @@
 package com.gentics.mesh.plugin.mustread;
 
-import static com.gentics.vertx.openapi.misc.UtilsAndConstants.APPLICATION_JSON_UTF8;
+import static com.gentics.vertx.openapi.misc.UtilsAndConstants.APPLICATION_JSON;
 
 import java.io.File;
 import java.io.IOException;
@@ -104,18 +104,21 @@ public class MustReadPlugin extends AbstractPlugin implements RestPlugin {
         InternalEndpointBuilder.wrap(router)
         	.withMethod(HttpMethod.GET)
         	.withPath("/unread")
+        	.withRAMLPath("/unread")
         	.withDescription("Get unread pages")
         	.withHandler(new UnreadHandler(this, getConfiguration(), getLogHelper(), getNodeController()))
-        	.produces(APPLICATION_JSON_UTF8)
+        	.produces(APPLICATION_JSON)
         	.build();
         
         InternalEndpointBuilder.wrap(router)
         	.withMethod(HttpMethod.POST)
         	.withPath("/read")
+        	.withRAMLPath("/read")
+        	.consumes(APPLICATION_JSON)
         	.withDescription("Post an array of page UUIDs to be marked as read")
         	.withHandler(new MakeReadHandler(this, getConfiguration(), getLogHelper(), getNodeController()))
         	.withExampleRequest(new JsonObject().put(getConfiguration().getNodeListParameterName(), new JsonArray()))
-        	.withExampleResponse(HttpResponseStatus.OK, new MessageResponse("successful"), APPLICATION_JSON_UTF8)
+        	.withExampleResponse(HttpResponseStatus.OK, new MessageResponse("successful"), APPLICATION_JSON)
         	.build();
 
         return router;
