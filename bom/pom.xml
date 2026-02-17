@@ -46,6 +46,7 @@
 		<handlebars.version>4.3.1</handlebars.version>
 		<hsqldb.version>2.7.3</hsqldb.version>
 		<micrometer.version>1.15.5</micrometer.version>
+		<vertx.openapi.version>0.0.1-SNAPSHOT</vertx.openapi.version>
 	</properties>
 
 	<!-- IMPORTANT: Always keep dependencies in-sync with mesh-plugin-parent pom in order to avoid duplicate libraries in shaded plugin jars -->
@@ -106,6 +107,11 @@
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-lang3</artifactId>
 				<version>3.18.0</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics</groupId>
+				<artifactId>vertx-openapi</artifactId>
+				<version>${vertx.openapi.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-io</groupId>

@@ -51,9 +51,6 @@ import com.gentics.mesh.distributed.coordinator.Coordinator;
 import com.gentics.mesh.distributed.coordinator.MasterServer;
 import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.generator.OpenAPIv3Generator;
-import com.gentics.mesh.generator.OpenAPIv3Generator.Format;
-import com.gentics.mesh.generator.OpenAPIv3Generator.InParameter;
 import com.gentics.mesh.generator.RAMLGenerator;
 import com.gentics.mesh.http.HttpConstants;
 import com.gentics.mesh.parameter.BackupParameters;
@@ -62,6 +59,10 @@ import com.gentics.mesh.router.RouterStorageRegistryImpl;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.util.RxUtil;
 import com.gentics.mesh.util.UUIDUtil;
+import com.gentics.vertx.openapi.OpenAPIv3Generator;
+import com.gentics.vertx.openapi.OpenAPIv3Generator.InParameter;
+import com.gentics.vertx.openapi.model.Format;
+import com.gentics.vertx.openapi.model.OpenAPIGenerationException;
 
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.Parameter;
@@ -291,46 +292,50 @@ public abstract class AdminHandler extends AbstractHandler {
 		blacklistedRouteRegex.addAll(List.of("\\/api\\/v" + MeshVersion.CURRENT_API_VERSION + "", "\\/api\\/\\{apiversion\\}[.]*"));
 
 		// Make an instance with blacklist path patterns
-		OpenAPIv3Generator generator = new OpenAPIv3Generator(servers, Optional.of(blacklistedRouteRegex.stream().map(Pattern::compile).collect(Collectors.toList())), Optional.empty());
+		OpenAPIv3Generator generator = new OpenAPIv3Generator(MeshVersion.getPlainVersion(), servers, Optional.of(blacklistedRouteRegex.stream().map(Pattern::compile).collect(Collectors.toList())), Optional.empty());
 
 		// Generate...
-		ac.send(generator.generate(
-				Stream.of(
-						//... from base root
-						routerStorageRegistry.getInstances().stream().map(rr -> Pair.of(rr.root().getRouter(), StringUtils.EMPTY)),
-						//... from generic project root
-						routerStorageRegistry.getInstances().stream().map(rr -> Pair.of(rr.root().apiRouter().projectsRouter().projectRouter().getRouter(), "/api/v" + MeshVersion.CURRENT_API_VERSION + "/{projectName}"))
-					).flatMap(Function.identity()).collect(Collectors.toMap(Pair::getKey, Pair::getValue)), 
-				// ...with desired format
-				Format.parse(format), 
-				// ...with desired pretty printing
-				!httpServerConfig.isMinifyJson(),
-				// ...with desired spec version
-				useVersion31,
-				// ...with a manipulator injecting a `projectName` path parameter, where unavailable
-				Optional.of((path, item) -> {
-					if (path.contains("/{projectName}/")) {
-						Parameter projectNameParam = new Parameter().name("projectName").in(InParameter.PATH.toString()).schema(new Schema<String>().type("string").description("Uuid of the related project"));
-						item.readOperations().stream()
-							.forEach(o -> o.getParameters().stream().filter(p -> "projectName".equals(p.getName())).findAny()
-									.ifPresentOrElse(present -> {
-										// already exists, no action
-									}, () -> o.addParametersItem(projectNameParam)));
-					}
-					return path;
-				}),
-				// ...with component model provider
-				Optional.of(() -> Collections.unmodifiableCollection(
-						new Reflections("com.gentics.mesh")
-							.getSubTypesOf(RestModel.class)
-							.stream()
-							.filter(ty -> ty.getPackageName().startsWith("com.gentics.mesh"))
-							.collect(Collectors.toSet())))), 
-				OK, 
-				"yaml".equalsIgnoreCase(format) 
-					? HttpConstants.APPLICATION_YAML_UTF8 
-					: HttpConstants.APPLICATION_JSON_UTF8
-			);
+		try {
+			ac.send(generator.generate(
+					Stream.of(
+							//... from base root
+							routerStorageRegistry.getInstances().stream().map(rr -> Pair.of(rr.root().getRouter(), StringUtils.EMPTY)),
+							//... from generic project root
+							routerStorageRegistry.getInstances().stream().map(rr -> Pair.of(rr.root().apiRouter().projectsRouter().projectRouter().getRouter(), "/api/v" + MeshVersion.CURRENT_API_VERSION + "/{projectName}"))
+						).flatMap(Function.identity()).collect(Collectors.toMap(Pair::getKey, Pair::getValue)), 
+					// ...with desired format
+					Format.parse(format), 
+					// ...with desired pretty printing
+					!httpServerConfig.isMinifyJson(),
+					// ...with desired spec version
+					useVersion31,
+					// ...with a manipulator injecting a `projectName` path parameter, where unavailable
+					Optional.of((path, item) -> {
+						if (path.contains("/{projectName}/")) {
+							Parameter projectNameParam = new Parameter().name("projectName").in(InParameter.PATH.toString()).schema(new Schema<String>().type("string").description("Uuid of the related project"));
+							item.readOperations().stream()
+								.forEach(o -> o.getParameters().stream().filter(p -> "projectName".equals(p.getName())).findAny()
+										.ifPresentOrElse(present -> {
+											// already exists, no action
+										}, () -> o.addParametersItem(projectNameParam)));
+						}
+						return path;
+					}),
+					// ...with component model provider
+					Optional.of(() -> Collections.unmodifiableCollection(
+							new Reflections("com.gentics.mesh")
+								.getSubTypesOf(RestModel.class)
+								.stream()
+								.filter(ty -> ty.getPackageName().startsWith("com.gentics.mesh"))
+								.collect(Collectors.toSet())))), 
+					OK, 
+					"yaml".equalsIgnoreCase(format) 
+						? HttpConstants.APPLICATION_YAML_UTF8 
+						: HttpConstants.APPLICATION_JSON_UTF8
+				);
+		} catch (OpenAPIGenerationException e) {
+			ac.fail(error(INTERNAL_SERVER_ERROR, "error_internal", e));
+		}
 	}
 
 	/**
