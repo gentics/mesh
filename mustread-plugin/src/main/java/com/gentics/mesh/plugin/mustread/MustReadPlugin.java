@@ -30,7 +30,7 @@ import com.gentics.mesh.plugin.mustread.initializer.FolderInitializer;
 import com.gentics.mesh.plugin.mustread.initializer.SchemaInitializer;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshRestClientConfig;
-import com.gentics.vertx.openapi.model.GenericMessageResponse;
+import com.gentics.vertx.openapi.model.MessageResponse;
 import com.gentics.vertx.openapi.route.InternalEndpointBuilder;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -115,7 +115,7 @@ public class MustReadPlugin extends AbstractPlugin implements RestPlugin {
         	.withDescription("Post an array of page UUIDs to be marked as read")
         	.withHandler(new MakeReadHandler(this, getConfiguration(), getLogHelper(), getNodeController()))
         	.withExampleRequest(new JsonObject().put(getConfiguration().getNodeListParameterName(), new JsonArray()))
-        	.withExampleResponse(HttpResponseStatus.OK, new GenericMessageResponse("successful"), APPLICATION_JSON_UTF8)
+        	.withExampleResponse(HttpResponseStatus.OK, new MessageResponse("successful"), APPLICATION_JSON_UTF8)
         	.build();
 
         return router;

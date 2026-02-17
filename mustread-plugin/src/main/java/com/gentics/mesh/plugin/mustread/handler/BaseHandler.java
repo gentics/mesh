@@ -7,7 +7,7 @@ import com.gentics.mesh.plugin.mustread.config.ProjectConfig;
 import com.gentics.mesh.plugin.mustread.helper.LogHelper;
 import com.gentics.mesh.plugin.mustread.object.User;
 import com.gentics.mesh.rest.client.MeshRestClient;
-import com.gentics.vertx.openapi.model.GenericMessageResponse;
+import com.gentics.vertx.openapi.model.MessageResponse;
 import com.gentics.vertx.openapi.model.RestModel;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -121,7 +121,7 @@ abstract class BaseHandler implements Handler<RoutingContext> {
 	}
 
 	void doJsonResponse(String text, HttpResponseStatus status) {
-		GenericMessageResponse response = new GenericMessageResponse(text);
+		MessageResponse response = new MessageResponse(text);
 		doJsonResponse(response, status);
 	}
 

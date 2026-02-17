@@ -17,7 +17,7 @@ import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
 import com.gentics.mesh.core.rest.branch.info.BranchInfoMicroschemaList;
 import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaList;
-import com.gentics.mesh.core.rest.common.GenericI18NMessageResponse;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.ObjectPermissionGrantRequest;
 import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
 import com.gentics.mesh.core.rest.common.ObjectPermissionRevokeRequest;
@@ -164,27 +164,27 @@ public abstract class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GenericI18NMessageResponse> invokeBackup() {
+	public MeshRequest<GenericMessageResponse> invokeBackup() {
 		throw new NotImplementedException();
 	}
 
 	@Override
-	public MeshRequest<GenericI18NMessageResponse> invokeBackup(BackupParameters parameters) {
+	public MeshRequest<GenericMessageResponse> invokeBackup(BackupParameters parameters) {
 		throw new NotImplementedException();
 	}
 
 	@Override
-	public MeshRequest<GenericI18NMessageResponse> invokeExport() {
+	public MeshRequest<GenericMessageResponse> invokeExport() {
 		throw new NotImplementedException();
 	}
 
 	@Override
-	public MeshRequest<GenericI18NMessageResponse> invokeRestore() {
+	public MeshRequest<GenericMessageResponse> invokeRestore() {
 		throw new NotImplementedException();
 	}
 
 	@Override
-	public MeshRequest<GenericI18NMessageResponse> invokeImport() {
+	public MeshRequest<GenericMessageResponse> invokeImport() {
 		throw new NotImplementedException();
 	}
 
@@ -209,12 +209,12 @@ public abstract class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public Single<GenericI18NMessageResponse> login() {
+	public Single<GenericMessageResponse> login() {
 		throw new NotImplementedException();
 	}
 
 	@Override
-	public Single<GenericI18NMessageResponse> logout() {
+	public Single<GenericMessageResponse> logout() {
 		throw new NotImplementedException();
 	}
 
@@ -324,7 +324,7 @@ public abstract class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GenericI18NMessageResponse> invokeJobProcessing() {
+	public MeshRequest<GenericMessageResponse> invokeJobProcessing() {
 		throw new NotImplementedException();
 	}
 
@@ -344,7 +344,7 @@ public abstract class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GenericI18NMessageResponse> updateMicroschema(String uuid, MicroschemaUpdateRequest request, ParameterProvider... parameters) {
+	public MeshRequest<GenericMessageResponse> updateMicroschema(String uuid, MicroschemaUpdateRequest request, ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
@@ -354,7 +354,7 @@ public abstract class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GenericI18NMessageResponse> applyChangesToMicroschema(String uuid, SchemaChangesListModel changes) {
+	public MeshRequest<GenericMessageResponse> applyChangesToMicroschema(String uuid, SchemaChangesListModel changes) {
 		throw new NotImplementedException();
 	}
 
@@ -578,7 +578,7 @@ public abstract class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GenericI18NMessageResponse> purgeProject(String uuid, ParameterProvider... parameters) {
+	public MeshRequest<GenericMessageResponse> purgeProject(String uuid, ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
@@ -694,7 +694,7 @@ public abstract class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GenericI18NMessageResponse> updateRolePermissions(String roleUuid, String pathToElement, RolePermissionRequest request) {
+	public MeshRequest<GenericMessageResponse> updateRolePermissions(String roleUuid, String pathToElement, RolePermissionRequest request) {
 		throw new NotImplementedException();
 	}
 
@@ -739,7 +739,7 @@ public abstract class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GenericI18NMessageResponse> updateSchema(String uuid, SchemaUpdateRequest request, ParameterProvider... parameters) {
+	public MeshRequest<GenericMessageResponse> updateSchema(String uuid, SchemaUpdateRequest request, ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
@@ -764,7 +764,7 @@ public abstract class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GenericI18NMessageResponse> applyChangesToSchema(String uuid, SchemaChangesListModel changes) {
+	public MeshRequest<GenericMessageResponse> applyChangesToSchema(String uuid, SchemaChangesListModel changes) {
 		throw new NotImplementedException();
 	}
 
@@ -934,12 +934,12 @@ public abstract class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GenericI18NMessageResponse> invokeIndexClear(ParameterProvider... parameters) {
+	public MeshRequest<GenericMessageResponse> invokeIndexClear(ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
 	@Override
-	public MeshRequest<GenericI18NMessageResponse> invokeIndexSync(ParameterProvider... parameters) {
+	public MeshRequest<GenericMessageResponse> invokeIndexSync(ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
@@ -1094,7 +1094,7 @@ public abstract class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GenericI18NMessageResponse> invalidateAPIToken(String userUuid) {
+	public MeshRequest<GenericMessageResponse> invalidateAPIToken(String userUuid) {
 		throw new NotImplementedException();
 	}
 
@@ -1176,17 +1176,17 @@ public abstract class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GenericI18NMessageResponse> undeployPlugin(String uuid) {
+	public MeshRequest<GenericMessageResponse> undeployPlugin(String uuid) {
 		throw new NotImplementedException();
 	}
 
 	@Override
-	public MeshRequest<GenericI18NMessageResponse> migrateBranchSchemas(String projectName, String branchUuid) {
+	public MeshRequest<GenericMessageResponse> migrateBranchSchemas(String projectName, String branchUuid) {
 		throw new NotImplementedException();
 	}
 
 	@Override
-	public MeshRequest<GenericI18NMessageResponse> migrateBranchMicroschemas(String projectName, String branchUuid) {
+	public MeshRequest<GenericMessageResponse> migrateBranchMicroschemas(String projectName, String branchUuid) {
 		throw new NotImplementedException();
 	}
 
@@ -1346,7 +1346,7 @@ public abstract class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GenericI18NMessageResponse> setCoordinationMaster() {
+	public MeshRequest<GenericMessageResponse> setCoordinationMaster() {
 		throw new NotImplementedException();
 	}
 
@@ -1371,7 +1371,7 @@ public abstract class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GenericI18NMessageResponse> clearCache() {
+	public MeshRequest<GenericMessageResponse> clearCache() {
 		throw new NotImplementedException();
 	}
 
