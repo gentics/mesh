@@ -64,8 +64,12 @@ import com.gentics.vertx.openapi.OpenAPIv3Generator.InParameter;
 import com.gentics.vertx.openapi.model.Format;
 import com.gentics.vertx.openapi.model.OpenAPIGenerationException;
 
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.Parameter;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.vertx.core.Vertx;
 
 /**
@@ -292,7 +296,27 @@ public abstract class AdminHandler extends AbstractHandler {
 		blacklistedRouteRegex.addAll(List.of("\\/api\\/v" + MeshVersion.CURRENT_API_VERSION + "", "\\/api\\/\\{apiversion\\}[.]*"));
 
 		// Make an instance with blacklist path patterns
-		OpenAPIv3Generator generator = new OpenAPIv3Generator(MeshVersion.getPlainVersion(), servers, Optional.of(blacklistedRouteRegex.stream().map(Pattern::compile).collect(Collectors.toList())), Optional.empty());
+		OpenAPIv3Generator generator = new OpenAPIv3Generator(MeshVersion.getPlainVersion(), servers, Optional.of(blacklistedRouteRegex.stream().map(Pattern::compile).collect(Collectors.toList())), Optional.empty()) {
+			@Override
+			protected void addSecurity(OpenAPI openApi) {
+				Components components;
+				if (openApi.getComponents() == null) {
+					components = new Components();
+					openApi.setComponents(components);
+				} else {
+					components = openApi.getComponents();
+				}
+				SecurityScheme securityBearerAuth = new SecurityScheme();
+				securityBearerAuth.setScheme("bearer");
+				securityBearerAuth.setType(SecurityScheme.Type.HTTP);
+				securityBearerAuth.setBearerFormat("JWT");
+				components.addSecuritySchemes("bearerAuth", securityBearerAuth);
+				//TODO OAuth2
+				SecurityRequirement reqBearerAuth = new SecurityRequirement();
+				reqBearerAuth.addList("bearerAuth");
+				openApi.addSecurityItem(reqBearerAuth);
+			}
+		};
 
 		// Generate...
 		try {
