@@ -63,6 +63,14 @@ public class CompareUtilsTest {
 				true
 			},
 			{
+				"null for first object does not mean unchanged",
+				null,
+				"a",
+				false,
+				true,
+				false
+			},
+			{
 				"equal arrays",
 				new String[] {"a", "b", "c"},
 				new String[] {"a", "b", "c"},
