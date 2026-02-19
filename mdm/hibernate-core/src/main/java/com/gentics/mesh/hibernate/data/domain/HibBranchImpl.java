@@ -15,6 +15,7 @@ import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.branch.HibBranchMicroschemaVersion;
 import com.gentics.mesh.core.data.branch.HibBranchSchemaVersion;
+import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
@@ -34,6 +35,7 @@ import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.dagger.annotations.ElementTypeKey;
 import com.gentics.mesh.database.HibernateTx;
@@ -266,32 +268,32 @@ public class HibBranchImpl extends AbstractHibUserTrackedElement<BranchResponse>
 
 	@Override
 	public TraversalResult<? extends HibBranchMicroschemaVersion> findAllLatestMicroschemaVersionEdges() {
-		Collection<HibBranchMicroschemaVersionEdgeImpl> latestSchemaVersionEdges = microschemaVersions.stream()
-				.collect(Collectors.toMap(sve -> sve.getVersion().getSchemaContainer(),
+		BranchDao branchDao = Tx.get().branchDao();
+		Collection<? extends HibBranchMicroschemaVersion> latestSchemaVersionEdges = branchDao.findActiveMicroschemaVersionEdges(this).stream()
+				.collect(Collectors.toMap(sve -> sve.getMicroschemaContainerVersion().getSchemaContainer(),
 						Function.identity(),
-						(a, b) -> a.getMicroschemaContainerVersion().compareTo(b.getMicroschemaContainerVersion()) > 0 ? a : b))
-				.values();
+						(a, b) -> a.getMicroschemaContainerVersion().compareTo(b.getMicroschemaContainerVersion()) > 0 ? a : b)).values();
 
 		return new TraversalResult<>(latestSchemaVersionEdges.iterator());
 	}
 
 	@Override
-	public TraversalResult<? extends HibSchemaVersion> findActiveSchemaVersions() {
-		return new TraversalResult<>(schemaVersions.stream().filter(HibBranchSchemaVersionEdgeImpl::isActive).map(HibBranchSchemaVersionEdgeImpl::getVersion));
+	public Result<? extends HibSchemaVersion> findActiveSchemaVersions() {
+		return Tx.get().branchDao().findActiveSchemaVersions(this);
 	}
 
 	@Override
 	public Iterable<? extends HibMicroschemaVersion> findActiveMicroschemaVersions() {
-		return new TraversalResult<>(microschemaVersions.stream().filter(HibBranchMicroschemaVersionEdgeImpl::isActive).map(HibBranchMicroschemaVersionEdgeImpl::getVersion));
+		return Tx.get().branchDao().findActiveMicroschemaVersions(this);
 	}
 
 	@Override
 	public Iterable<? extends HibBranchSchemaVersion> findAllLatestSchemaVersionEdges() {
-		Collection<HibBranchSchemaVersionEdgeImpl> latestSchemaVersionEdges = schemaVersions.stream()
-				.collect(Collectors.toMap(sve -> sve.getVersion().getSchemaContainer(),
+		BranchDao branchDao = Tx.get().branchDao();
+		Collection<? extends HibBranchSchemaVersion> latestSchemaVersionEdges = branchDao.findActiveSchemaVersionEdges(this).stream()
+				.collect(Collectors.toMap(sve -> sve.getSchemaContainerVersion().getSchemaContainer(),
 						Function.identity(),
-						(a, b) -> a.getSchemaContainerVersion().compareTo(b.getSchemaContainerVersion()) > 0 ? a : b))
-				.values();
+						(a, b) -> a.getSchemaContainerVersion().compareTo(b.getSchemaContainerVersion()) > 0 ? a : b)).values();
 
 		return new TraversalResult<>(latestSchemaVersionEdges.iterator());
 	}

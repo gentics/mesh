@@ -13,9 +13,13 @@ import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperatio
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEFIELD;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -26,10 +30,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.LanguageOverrideUtil;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
-import com.google.common.base.Equivalence;
-import com.google.common.collect.MapDifference;
-import com.google.common.collect.MapDifference.ValueDifference;
-import com.google.common.collect.Maps;
+import com.gentics.mesh.util.CompareUtils;
 
 import io.vertx.core.json.JsonObject;
 
@@ -164,30 +165,26 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 			// Add fieldB properties which are new
 			change.getProperties().putAll(schemaPropertiesB);
 		} else {
+			// fields that are null in the other schema are considered "unchanged" (and therefore removed from both maps)
+			// we only allow some fields to be set to "null"
+			List<String> keysWithNullAllowed = Arrays.asList(ELASTICSEARCH_KEY, BinaryFieldSchemaImpl.CHANGE_EXTRACT_CONTENT_KEY,
+					BinaryFieldSchemaImpl.CHANGE_EXTRACT_METADATA_KEY);
+			Set<String> unchangedKeys = schemaPropertiesB.entrySet().stream()
+					.filter(e -> !keysWithNullAllowed.contains(e.getKey()))
+					.filter(e -> e.getValue() == null)
+					.map(Entry::getKey).collect(Collectors.toSet());
+			schemaPropertiesA.keySet().removeAll(unchangedKeys);
+			schemaPropertiesB.keySet().removeAll(unchangedKeys);
 
-			// Generate a structural diff. This way it is easy to determine which field properties have been updated, added or removed.
-			MapDifference<String, Object> diff = Maps.difference(schemaPropertiesA, schemaPropertiesB, new Equivalence<Object>() {
-
-				@Override
-				protected boolean doEquivalent(Object a, Object b) {
-					return Objects.deepEquals(a, b);
+			schemaPropertiesA.entrySet().forEach(entryA -> {
+				String key = entryA.getKey();
+				Object valueA = entryA.getValue();
+				Object valueB = schemaPropertiesB.getOrDefault(key, null);
+				if (!CompareUtils.equals(valueA, valueB, true, !keysWithNullAllowed.contains(key))) {
+					change.setOperation(UPDATEFIELD);
+					change.getProperties().put(key, valueB);
 				}
-
-				@Override
-				protected int doHash(Object t) {
-					return t.hashCode();
-				}
-
 			});
-
-			// Check whether fields have been updated
-			Map<String, ValueDifference<Object>> differentProperties = diff.entriesDiffering();
-			if (!differentProperties.isEmpty()) {
-				change.setOperation(UPDATEFIELD);
-				for (String key : differentProperties.keySet()) {
-					change.getProperties().put(key, differentProperties.get(key).rightValue());
-				}
-			}
 		}
 		return change;
 	}

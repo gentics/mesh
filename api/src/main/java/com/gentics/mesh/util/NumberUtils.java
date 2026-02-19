@@ -3,12 +3,12 @@ package com.gentics.mesh.util;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Extended utility class to handle number conversions.
  */
-public final class NumberUtils extends org.apache.commons.lang.math.NumberUtils {
+public final class NumberUtils extends org.apache.commons.lang3.math.NumberUtils {
 
 	/**
 	 * Parse the given string into a integer and return the default value when the input string is null or empty.

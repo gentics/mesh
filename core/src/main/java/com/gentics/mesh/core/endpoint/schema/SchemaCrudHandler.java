@@ -118,7 +118,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 
 				// 2. Diff the schema with the latest version
 				SchemaChangesListModel model = new SchemaChangesListModel();
-				model.getChanges().addAll(comparator.diff(schemaContainer.getLatestVersion().getSchema(), requestModel));
+				model.getChanges().addAll(comparator.diff(schemaContainer.getLatestVersion().transformToRestSync(ac, 0), requestModel));
 				String schemaName = schemaContainer.getName();
 
 				// No changes -> done

@@ -198,7 +198,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 			// 2. Create schema field update change
 			HibUpdateFieldChange binaryFieldUpdate = (HibUpdateFieldChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.UPDATEFIELD);
 			binaryFieldUpdate.setFieldName("binaryField");
-			binaryFieldUpdate.setRestProperty("allowedMimeTypes", new String[] { "newTypes" });
+			binaryFieldUpdate.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] { "newTypes" });
 			binaryFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			version.setNextChange(binaryFieldUpdate);
 
