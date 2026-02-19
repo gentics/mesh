@@ -25,7 +25,6 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,7 +42,6 @@ import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorMasterResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
-import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.openapi.Version;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
@@ -57,19 +55,12 @@ import com.gentics.mesh.parameter.BackupParameters;
 import com.gentics.mesh.router.RouterStorageImpl;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.util.MeshOpenAPIv3Generator;
 import com.gentics.mesh.util.RxUtil;
 import com.gentics.mesh.util.UUIDUtil;
-import com.gentics.vertx.openapi.OpenAPIv3Generator;
-import com.gentics.vertx.openapi.OpenAPIv3Generator.InParameter;
 import com.gentics.vertx.openapi.model.Format;
 import com.gentics.vertx.openapi.model.OpenAPIGenerationException;
 
-import io.swagger.v3.oas.models.Components;
-import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.media.Schema;
-import io.swagger.v3.oas.models.parameters.Parameter;
-import io.swagger.v3.oas.models.security.SecurityRequirement;
-import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.vertx.core.Vertx;
 
 /**
@@ -293,30 +284,10 @@ public abstract class AdminHandler extends AbstractHandler {
 				.flatMap(rr -> rr.root().apiRouter().projectsRouter().getProjectRouters().keySet().stream())
 				.map(project -> "\\/api\\/v" + MeshVersion.CURRENT_API_VERSION + "\\/" + project + "[.]*").collect(Collectors.toSet()));
 		blacklistedRouteRegex.addAll(IntStream.range(1, MeshVersion.CURRENT_API_VERSION).mapToObj(v -> "\\/api\\/v" + v + "[.]*").collect(Collectors.toList()));
-		blacklistedRouteRegex.addAll(List.of("\\/api\\/v" + MeshVersion.CURRENT_API_VERSION + "", "\\/api\\/\\{apiversion\\}[.]*"));
+		blacklistedRouteRegex.addAll(List.of("\\/api\\/\\{apiversion\\}[.]*"));
 
 		// Make an instance with blacklist path patterns
-		OpenAPIv3Generator generator = new OpenAPIv3Generator(MeshVersion.getPlainVersion(), servers, Optional.of(blacklistedRouteRegex.stream().map(Pattern::compile).collect(Collectors.toList())), Optional.empty()) {
-			@Override
-			protected void addSecurity(OpenAPI openApi) {
-				Components components;
-				if (openApi.getComponents() == null) {
-					components = new Components();
-					openApi.setComponents(components);
-				} else {
-					components = openApi.getComponents();
-				}
-				SecurityScheme securityBearerAuth = new SecurityScheme();
-				securityBearerAuth.setScheme("bearer");
-				securityBearerAuth.setType(SecurityScheme.Type.HTTP);
-				securityBearerAuth.setBearerFormat("JWT");
-				components.addSecuritySchemes("bearerAuth", securityBearerAuth);
-				//TODO OAuth2
-				SecurityRequirement reqBearerAuth = new SecurityRequirement();
-				reqBearerAuth.addList("bearerAuth");
-				openApi.addSecurityItem(reqBearerAuth);
-			}
-		};
+		MeshOpenAPIv3Generator generator = new MeshOpenAPIv3Generator(MeshVersion.getPlainVersion(), servers, Optional.of(blacklistedRouteRegex.stream().map(Pattern::compile).collect(Collectors.toList())), Optional.empty());
 
 		// Generate...
 		try {
@@ -325,38 +296,19 @@ public abstract class AdminHandler extends AbstractHandler {
 							//... from base root
 							routerStorageRegistry.getInstances().stream().map(rr -> Pair.of(rr.root().getRouter(), StringUtils.EMPTY)),
 							//... from generic project root
-							routerStorageRegistry.getInstances().stream().map(rr -> Pair.of(rr.root().apiRouter().projectsRouter().projectRouter().getRouter(), "/api/v" + MeshVersion.CURRENT_API_VERSION + "/{projectName}"))
+							routerStorageRegistry.getInstances().stream().map(rr -> Pair.of(rr.root().apiRouter().projectsRouter().projectRouter().getRouter(), "/api/v" + MeshVersion.CURRENT_API_VERSION + "/{project}"))
 						).flatMap(Function.identity()).collect(Collectors.toMap(Pair::getKey, Pair::getValue)), 
 					// ...with desired format
 					Format.parse(format), 
 					// ...with desired pretty printing
 					!httpServerConfig.isMinifyJson(),
 					// ...with desired spec version
-					useVersion31,
-					// ...with a manipulator injecting a `projectName` path parameter, where unavailable
-					Optional.of((path, item) -> {
-						if (path.contains("/{projectName}/")) {
-							Parameter projectNameParam = new Parameter().name("projectName").in(InParameter.PATH.toString()).schema(new Schema<String>().type("string").description("Uuid of the related project"));
-							item.readOperations().stream()
-								.forEach(o -> o.getParameters().stream().filter(p -> "projectName".equals(p.getName())).findAny()
-										.ifPresentOrElse(present -> {
-											// already exists, no action
-										}, () -> o.addParametersItem(projectNameParam)));
-						}
-						return path;
-					}),
-					// ...with component model provider
-					Optional.of(() -> Collections.unmodifiableCollection(
-							new Reflections("com.gentics.mesh")
-								.getSubTypesOf(RestModel.class)
-								.stream()
-								.filter(ty -> ty.getPackageName().startsWith("com.gentics.mesh"))
-								.collect(Collectors.toSet())))), 
-					OK, 
-					"yaml".equalsIgnoreCase(format) 
-						? HttpConstants.APPLICATION_YAML_UTF8 
-						: HttpConstants.APPLICATION_JSON_UTF8
-				);
+					useVersion31),
+				OK, 
+				"yaml".equalsIgnoreCase(format) 
+					? HttpConstants.APPLICATION_YAML_UTF8 
+					: HttpConstants.APPLICATION_JSON_UTF8
+			);
 		} catch (OpenAPIGenerationException e) {
 			ac.fail(error(INTERNAL_SERVER_ERROR, "error_internal", e));
 		}

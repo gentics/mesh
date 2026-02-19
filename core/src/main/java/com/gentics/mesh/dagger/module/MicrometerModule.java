@@ -90,8 +90,6 @@ public class MicrometerModule {
 	 * 
 	 * @param options
 	 *            Mesh options
-	 * @param meterRegistry
-	 *            Reference to the to be used meter registry
 	 * @return
 	 */
 	@Provides
