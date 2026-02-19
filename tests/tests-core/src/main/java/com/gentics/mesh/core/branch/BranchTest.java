@@ -270,7 +270,8 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			});
 
 			versions.add(newVersion);
-			branchDao.connectToSchemaVersion(branch, newVersion);
+			HibBranchSchemaVersion edge = branchDao.connectToSchemaVersion(branch, newVersion);
+			edge.setActive(true);
 
 			List<HibSchemaVersion> found = new ArrayList<>();
 			for (HibBranchSchemaVersion versionedge : branch.findAllLatestSchemaVersionEdges()) {
@@ -463,6 +464,21 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 				assertThat(branch).as(branch.getName()).hasNotMicroschema(microschema)
 					.hasNotMicroschemaVersion(microschema.getLatestVersion());
 			}
+		}
+	}
+
+	@Test
+	public void testFindActiveMicroschemaVersions() {
+		try (Tx tx = tx()) {
+			MicroschemaDao microschemaDao = tx.microschemaDao();
+
+			HibProject project = project();
+			HibBranch branch = latestBranch();
+			List<HibMicroschemaVersion> versions = microschemaDao.findAll(project).stream()
+					.map(HibMicroschema::getLatestVersion).collect(Collectors.toList());
+
+			List<HibMicroschemaVersion> activeVersions = TestUtils.toList(branch.findActiveMicroschemaVersions());
+			assertThat(activeVersions).as("List of microschema versions").usingElementComparatorOnFields("uuid", "name", "version").containsAll(versions);
 		}
 	}
 

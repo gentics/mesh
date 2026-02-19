@@ -15,10 +15,12 @@ import com.gentics.mesh.context.MicronodeMigrationContext;
 import com.gentics.mesh.context.impl.MicronodeMigrationContextImpl;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.branch.HibBranchMicroschemaVersion;
+import com.gentics.mesh.core.data.branch.HibBranchSchemaVersion;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
@@ -155,6 +157,19 @@ public class MicronodeJobProcessor implements SingleJobProcessor {
 	}
 
 	private void finalizeMigration(HibJob job, MicronodeMigrationContext context) {
+		// Deactivate edge
+		db.tx(() -> {
+			HibBranch branch = context.getBranch();
+			HibMicroschemaVersion fromContainerVersion = context.getFromVersion();
+			HibBranchMicroschemaVersion assignment =  Tx.get().branchDao().findBranchMicroschemaEdge(branch, fromContainerVersion);
+			if (assignment != null) {
+				assignment.setActive(false);
+			}
+			if (log.isDebugEnabled()) {
+				log.debug("Deactivated microschema version {}-{} for branch {}",
+						fromContainerVersion.getSchema().getName(), fromContainerVersion.getVersion(), branch.getName());
+			}
+		});
 		db.tx(tx -> {
 			tx.batch().add(createEvent(job, tx, MICROSCHEMA_MIGRATION_FINISHED, COMPLETED)).dispatch();
 		});

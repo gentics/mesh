@@ -1,0 +1,2 @@
+Monitoring: Mesh will now regularly monitor memory consumption and garbage collections.
+See "Monitoring":https://www.gentics.com/mesh/docs/monitoring/ in the documentation for details.

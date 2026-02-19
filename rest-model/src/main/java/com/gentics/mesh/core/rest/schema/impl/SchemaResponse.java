@@ -59,7 +59,7 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Flag which indicates whether nodes which use this schema should be excluded from the indexing.")
-	private Boolean noIndex;
+	private boolean noIndex = false;
 
 	@Override
 	public String getName() {

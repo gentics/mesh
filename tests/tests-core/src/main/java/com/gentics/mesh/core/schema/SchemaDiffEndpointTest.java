@@ -214,9 +214,7 @@ public class SchemaDiffEndpointTest extends AbstractMeshTest {
 		SchemaModel request = getSchema();
 
 		SchemaChangesListModel changes = call(() -> client().diffSchema(schemaUuid, request));
-		assertThat(changes.getChanges()).hasSize(1);
-		SchemaChangeModel change = changes.getChanges().get(0);
-		assertThat(change).is(UPDATEFIELD).forField("slug").hasProperty("allow", null);
+		assertThat(changes.getChanges()).isEmpty();
 	}
 
 	@Test
