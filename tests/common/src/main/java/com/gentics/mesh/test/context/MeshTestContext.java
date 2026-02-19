@@ -8,6 +8,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.NoSuchFileException;
 import java.security.cert.CertificateException;
 import java.time.Duration;
@@ -1020,6 +1021,20 @@ public class MeshTestContext implements TestRule {
 			return mesh;
 		}
 
+		private MeshRestClient createRestClient(MeshRestClientConfig config) {
+			String customMeshRestClient = System.getenv("MESH_REST_CLIENT_CLASS");
+			if (StringUtils.isNotBlank(customMeshRestClient)) {
+				try {
+					return (MeshRestClient) Class.forName(customMeshRestClient).getConstructor(MeshRestClientConfig.class, OkHttpClient.class).newInstance(config, okHttp);
+				} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+						| InvocationTargetException | NoSuchMethodException | SecurityException
+						| ClassNotFoundException e) {
+					LOG.error("Could not instantiate MeshRestClient from class " + customMeshRestClient, e);
+				}
+			}
+			return MeshRestClient.create(config, okHttp);
+		}
+
 		private void setupRestEndpoints(MeshTestSetting settings) throws Exception {
 			mesh.getOptions().getUploadOptions().setByteLimit(Long.MAX_VALUE);
 
@@ -1034,11 +1049,11 @@ public class MeshTestContext implements TestRule {
 					.setBasePath(CURRENT_API_BASE_PATH)
 					.setSsl(false);
 
-				MeshRestClient httpClient = MeshRestClient.create(httpConfigBuilder.build(), okHttp);
+				MeshRestClient httpClient = createRestClient(httpConfigBuilder.build());
 				httpClient.setLogin(getData().user().getUsername(), getData().getUserInfo().getPassword());
 				httpClient.login().blockingGet();
 				clients.put("http_v" + CURRENT_API_VERSION, httpClient);
-				anonymousClients.put("http_v" + CURRENT_API_VERSION, MeshRestClient.create(httpConfigBuilder.build(), okHttp));
+				anonymousClients.put("http_v" + CURRENT_API_VERSION, createRestClient(httpConfigBuilder.build()));
 
 				// Setup SSL client if needed
 				SSLTestMode ssl = settings.ssl();
