@@ -22,6 +22,8 @@ monitoring:
   enabled: true
   port: 8081
   host: "127.0.0.1"
+  memoryLimit: 95
+  gcTimeLimit: 50
 ----
 
 TIP: Container deployments which need to access the monitoring API need to change the monitoring server binding in order to expose the port. +
@@ -29,9 +31,17 @@ This can be done via the environment http host setting: `MESH_MONITORING_HTTP_HO
 
 == Liveness Probe in Docker
 
-The liveness of the Gentics Mesh instance running in a docker container can be checked by executing the command `java -cp mesh.jar com.gentics.mesh.monitor.jmx.JMXProbe` inside the container.
+The liveness of the Gentics Mesh instance running in a docker container can be checked by executing the script `/mesh/live.sh` inside the container.
 This has some advantages over the liveness probe using the HTTP endpoint:
-Liveness checked with JMX does not depend on the http verticles and vert.x to be fully started, but only on the Java process to be running and having the JMX bean registered. This means that - especially when running Gentics Mesh in a cluster - the instances will become live very soon, whereas starting of vert.x and the http verticles may take a while, because this requires the cluster to be synchronized first.
+Liveness checked with with this script does not depend on the http verticles and vert.x to be fully started, but only on the Java process to be running.
+
+== Monitoring of Java Heap Memory and Garbage Collections
+
+When both `memoryLimit` and `gcTimeLimit` are set to positive integers (which is the default), Gentics Mesh will regularly check the amount of used Heap Memory and the amount of time
+spent for garbage collections (in the last 10 seconds). If both amounts exceed the configured limits (in percent), the instance will be considered unhealthy and both the liveness probe
+and the readiness probe will fail. The instance will be unhealthy until used memory and the time spent for garbage collections drop below the configured limits.
+
+TIP: Setting at least one of the values of `memoryLimit` and `gcTimeLimit` to 0 will disable the monitoring of Java Heap Memory and Garbage Collections.
 
 == Endpoints
 
