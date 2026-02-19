@@ -6,7 +6,6 @@ import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_UPDATED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -15,7 +14,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
@@ -63,12 +61,7 @@ public interface HibMicroschema
 	 */
 	@Override
 	default Map<HibBranch, HibMicroschemaVersion> findReferencedBranches() {
-		Map<HibBranch, HibMicroschemaVersion> references = new HashMap<>();
-		MicroschemaDao microschemaDao = Tx.get().microschemaDao();
-		for (HibMicroschemaVersion version : microschemaDao.findAllVersions(this)) {
-			microschemaDao.getBranches(version).forEach(branch -> references.put(branch, version));
-		}
-		return references;
+		return Tx.get().microschemaDao().findReferencedBranches(this);
 	}
 
 	default MicroschemaResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {

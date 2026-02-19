@@ -265,4 +265,40 @@ public class BranchDaoImpl extends AbstractHibRootDao<HibBranch, BranchResponse,
 		}));
 		return CollectionUtil.addFallbackValueForMissingKeys(result, branches, new ArrayList<>());
 	}
+
+	@Override
+	public Result<? extends HibSchemaVersion> findActiveSchemaVersions(HibBranch branch) {
+		return new TraversalResult<HibSchemaVersion>(em()
+				.createQuery("select e.version from branch_schema_version_edge e where e.branch = :branch and active = :active", HibSchemaVersionImpl.class)
+				.setParameter("branch", branch)
+				.setParameter("active", true)
+				.getResultList());
+	}
+
+	@Override
+	public Result<? extends HibBranchSchemaVersion> findActiveSchemaVersionEdges(HibBranch branch) {
+		return new TraversalResult<HibBranchSchemaVersion>(em()
+				.createQuery("select e from branch_schema_version_edge e where e.branch = :branch and active = :active", HibBranchSchemaVersionEdgeImpl.class)
+				.setParameter("branch", branch)
+				.setParameter("active", true)
+				.getResultList());
+	}
+
+	@Override
+	public Result<? extends HibMicroschemaVersion> findActiveMicroschemaVersions(HibBranch branch) {
+		return new TraversalResult<HibMicroschemaVersion>(em()
+				.createQuery("select e.version from branch_microschema_version_edge e where e.branch = :branch and active = :active", HibMicroschemaVersion.class)
+				.setParameter("branch", branch)
+				.setParameter("active", true)
+				.getResultList());
+	}
+
+	@Override
+	public Result<? extends HibBranchMicroschemaVersion> findActiveMicroschemaVersionEdges(HibBranch branch) {
+		return new TraversalResult<HibBranchMicroschemaVersion>(em()
+				.createQuery("select e from branch_microschema_version_edge e where e.branch = :branch and active = :active", HibBranchMicroschemaVersionEdgeImpl.class)
+				.setParameter("branch", branch)
+				.setParameter("active", true)
+				.getResultList());
+	}
 }
