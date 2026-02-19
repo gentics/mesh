@@ -19,6 +19,17 @@ There are many things you can do with the REST API. To name a few:
 
 NOTE: All REST API responses are available in JSON, only, except for binary data.
 
+=== OpenAPI Specification
+
+The link:https://swagger.io/specification/[OpenAPI specification] is available for Gentics Mesh in two variants:
+
+* The generic link:https://spec.openapis.org/oas/v3.0.0.html[OpenAPI v3.0 specification], unrelated to any actual Gentics Mesh installation, can be checked right link:/docs/api/openapi.yaml[here] in the YAML format.
+* The installation-aware specification, which is generated right in Mesh at runtime, and, in addition to the generic specification, contains also the endpoints of all the plugins currently running along, as well as some technical info of an installation (servers). It also allows choosing the right specification version, either 3.0 or 3.1.
+
+=== RAML Specification
+
+The link:https://github.com/raml-org/raml-spec/blob/master/versions/raml-08/raml-08.md[RAML v0.8 specification] provides the generic REST API information, and can be checked link:/docs/api/api.raml[here].
+
 === Query Parameters
 
 The REST API end points can be used in combination with a set of query parameters, all of which are documented for the specific end points in the link:/docs/api[Gentics Mesh REST API] reference. Following, we provide an overview of the most common query parameters.
