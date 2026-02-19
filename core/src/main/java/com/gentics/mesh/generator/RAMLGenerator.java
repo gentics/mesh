@@ -11,7 +11,6 @@ import java.util.Map.Entry;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.FileUtils;
 import org.raml.emitter.RamlEmitter;
 import org.raml.model.Action;
 import org.raml.model.ActionType;
@@ -213,23 +212,6 @@ public class RAMLGenerator extends AbstractEndpointGenerator<Map<String, Resourc
 	}
 
 	/**
-	 * Save the string content to the given file in the output folder.
-	 * 
-	 * @param filename
-	 *            Name of the file to be written to
-	 * @param content
-	 *            Content to be written
-	 * @throws IOException
-	 */
-	public void writeFile(String filename, String content) throws IOException {
-		if (outputFolder != null) {
-			File outputFile = new File(outputFolder, filename);
-			FileUtils.writeStringToFile(outputFile, content);
-			log.info("File saved to {" + outputFile.getPath() + "}");
-		}
-	}
-
-	/**
 	 * Convert the http method to a RAML action type.
 	 * 
 	 * @param method
@@ -237,15 +219,6 @@ public class RAMLGenerator extends AbstractEndpointGenerator<Map<String, Resourc
 	 */
 	protected ActionType getActionType(HttpMethod method) {
 		return ActionType.valueOf(method.name());
-	}
-
-	/**
-	 * Add any extra verticles to the map of RAML resources.
-	 * 
-	 * @param resources
-	 * @throws IOException
-	 */
-	protected void addExtraEndpoints(Map<String, Resource> resources) throws IOException {
 	}
 
 	/**

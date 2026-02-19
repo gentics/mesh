@@ -21,7 +21,7 @@ public interface OpenAPIParameters extends ParameterProvider {
 	/**
 	 * Set the OpenAPI standard version 
 	 * 
-	 * @param flag
+	 * @param version The specification version
 	 * @return Fluent API
 	 */
 	default OpenAPIParameters setVersion(Version version) {
@@ -32,7 +32,7 @@ public interface OpenAPIParameters extends ParameterProvider {
 	/**
 	 * Check whether OpenAPI spec version
 	 * 
-	 * @return flag value
+	 * @return value
 	 */
 	default Version getVersion() {
 		return Version.parse(getParameter(VERSION_PARAMETER_KEY), Version.V30);
@@ -41,7 +41,7 @@ public interface OpenAPIParameters extends ParameterProvider {
 	/**
 	 * Set the format
 	 * 
-	 * @param flag
+	 * @param format the specification format
 	 * @return Fluent API
 	 */
 	default OpenAPIParameters setFormat(Format format) {
@@ -52,7 +52,7 @@ public interface OpenAPIParameters extends ParameterProvider {
 	/**
 	 * Check the spec format
 	 * 
-	 * @return flag value
+	 * @return value
 	 */
 	default Format getFormat() {
 		return Format.parse(getParameter(FORMAT_PARAMETER_KEY), Format.JSON);

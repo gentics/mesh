@@ -34,7 +34,7 @@ public interface InternalEndpointRoute extends com.gentics.vertx.openapi.metadat
 	InternalEndpointRoute events(MeshEvent... events);
 
 	/**
-	 * @see {@link com.gentics.vertx.openapi.metadata.InternalEndpointRoute#blockingHandler(Handler)}
+	 * @see com.gentics.vertx.openapi.metadata.InternalEndpointRoute#blockingHandler(Handler)
 	 *
 	 * @deprecated since requests will only be "ordered" when running in the same http verticle
 	 */

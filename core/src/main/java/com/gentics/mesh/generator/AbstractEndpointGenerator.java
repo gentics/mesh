@@ -4,8 +4,12 @@ import static org.mockito.Mockito.mock;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
+import org.apache.commons.io.FileUtils;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.core.endpoint.admin.AdminEndpoint;
 import com.gentics.mesh.core.endpoint.admin.AdminEndpointImpl;
@@ -43,6 +47,8 @@ import io.vertx.core.Vertx;
 import io.vertx.ext.web.Router;
 
 public abstract class AbstractEndpointGenerator<T> extends AbstractGenerator {
+
+	private static final Logger log = LoggerFactory.getLogger(AbstractEndpointGenerator.class);
 
 	public AbstractEndpointGenerator() {
 	}
@@ -185,11 +191,51 @@ public abstract class AbstractEndpointGenerator<T> extends AbstractGenerator {
 		addEndpoints(coreBasePath, consumer, projectInfoEndpoint, false);
 	}
 
+	/**
+	 * Add any extra verticles to the consumer.
+	 * 
+	 * @param resources
+	 * @throws IOException
+	 */
+	protected void addExtraEndpoints(T consumer) throws IOException {
+	}
+
+	/**
+	 * Add an endpoint to the data consumer.
+	 * 
+	 * @param coreBasePath
+	 * @param consumer
+	 * @param projectInfoEndpoint
+	 * @param isProject
+	 * @throws IOException
+	 */
 	protected abstract void addEndpoints(String coreBasePath, T consumer, AbstractInternalEndpoint projectInfoEndpoint, boolean isProject) throws IOException;
 
+	/**
+	 * Mock an endpoint with data, full enough for the generator to succeed.
+	 * 
+	 * @param endpoint
+	 */
 	protected void initEndpoint(AbstractInternalEndpoint endpoint) {
 		Vertx vertx = mock(Vertx.class);
 		Mockito.when(endpoint.getRouter()).thenReturn(Router.router(vertx));
 		endpoint.registerEndPoints();
+	}
+
+	/**
+	 * Save the string content to the given file in the output folder.
+	 * 
+	 * @param filename
+	 *            Name of the file to be written to
+	 * @param content
+	 *            Content to be written
+	 * @throws IOException
+	 */
+	public void writeFile(String filename, String content) throws IOException {
+		if (outputFolder != null) {
+			File outputFile = new File(outputFolder, filename);
+			FileUtils.writeStringToFile(outputFile, content, StandardCharsets.UTF_8);
+			log.info("File saved to {" + outputFile.getPath() + "}");
+		}
 	}
 }
