@@ -41,6 +41,7 @@ public class GenericParametersImpl extends AbstractParameters implements Generic
 		fieldsParam.setDescription("Limit the output to certain fields. This is useful in order to reduce the response JSON overhead.");
 		fieldsParam.setType(ParamType.STRING);
 		fieldsParam.setDefaultValue("");
+		fieldsParam.setExample("uuid,name");
 		parameters.put(FIELDS_PARAM_KEY, fieldsParam);
 
 		QueryParameter etagParam = new QueryParameter();

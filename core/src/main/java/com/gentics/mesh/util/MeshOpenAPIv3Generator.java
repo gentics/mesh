@@ -48,10 +48,10 @@ public class MeshOpenAPIv3Generator extends OpenAPIv3Generator {
 		securityBearerAuth.setType(SecurityScheme.Type.HTTP);
 		securityBearerAuth.setBearerFormat("JWT");
 		components.addSecuritySchemes("bearerAuth", securityBearerAuth);
-		//TODO OAuth2
-		SecurityRequirement reqBearerAuth = new SecurityRequirement();
-		reqBearerAuth.addList("bearerAuth");
-		openApi.addSecurityItem(reqBearerAuth);
+// TODO we do not need this globally, do we?
+//		SecurityRequirement reqBearerAuth = new SecurityRequirement();
+//		reqBearerAuth.addList("bearerAuth");
+//		openApi.addSecurityItem(reqBearerAuth);
 	}
 
 	/**

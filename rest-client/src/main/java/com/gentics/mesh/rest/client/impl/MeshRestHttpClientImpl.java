@@ -1,6 +1,5 @@
 package com.gentics.mesh.rest.client.impl;
 
-import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON_UTF8;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_YAML_UTF8;
 import static com.gentics.mesh.rest.client.impl.HttpMethod.DELETE;
 import static com.gentics.mesh.rest.client.impl.HttpMethod.GET;

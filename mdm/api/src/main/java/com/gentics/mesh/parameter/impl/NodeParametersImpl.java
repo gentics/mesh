@@ -1,13 +1,16 @@
 package com.gentics.mesh.parameter.impl;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.raml.model.ParamType;
 import org.raml.model.parameter.QueryParameter;
 
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.AbstractParameters;
+import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.NodeParameters;
 
 /**
@@ -53,6 +56,7 @@ public class NodeParametersImpl extends AbstractParameters implements NodeParame
 		resolveLinksParameter.setExample("medium");
 		resolveLinksParameter.setRequired(false);
 		resolveLinksParameter.setType(ParamType.STRING);
+		resolveLinksParameter.setEnumeration(Arrays.asList(LinkType.values()).stream().map(e -> e.name().toLowerCase()).collect(Collectors.toList()));
 		parameters.put(RESOLVE_LINKS_QUERY_PARAM_KEY, resolveLinksParameter);
 
 		return parameters;
