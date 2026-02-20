@@ -12,7 +12,7 @@ public class PagingMetaInfo implements RestModel {
 	@JsonPropertyDescription("Number of the current page.")
 	private long currentPage;
 
-	@JsonProperty(required = true)
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("Number of elements which can be included in a single page.")
 	private Long perPage;
 

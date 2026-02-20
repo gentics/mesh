@@ -26,6 +26,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
+import static io.vertx.core.http.HttpMethod.PUT;
 
 import javax.inject.Inject;
 
@@ -40,6 +41,7 @@ import com.gentics.mesh.core.endpoint.RolePermissionHandlingProjectEndpoint;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.BranchParametersImpl;
 import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
@@ -54,6 +56,7 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 
 import io.vertx.core.MultiMap;
+import io.vertx.core.json.JsonObject;
 
 /**
  * The content verticle adds rest endpoints for manipulating nodes.
@@ -176,6 +179,8 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		endpoint.addUriParameter("language", "Language tag of the content which should be deleted.", "en");
 		endpoint.method(DELETE);
 		endpoint.produces(APPLICATION_JSON);
+		endpoint.addQueryParameters(DeleteParametersImpl.class);
+		endpoint.addQueryParameters(BranchParametersImpl.class);
 		endpoint.description("Delete the language specific content of the node.");
 		endpoint.exampleResponse(NO_CONTENT, "Language variation of the node has been deleted.");
 		endpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
@@ -571,13 +576,33 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 	// TODO use schema and only handle those i18n properties that were specified
 	// within the schema.
 	private void addUpdateHandler() {
-		InternalEndpointRoute endpoint = createRoute();
-		endpoint.description("Update or create the node with the given uuid. "
+		InternalEndpointRoute postEndpoint = createRoute();
+		postEndpoint.description("Update or create the node with the given uuid. "
 			+ "Mesh will automatically check for version conflicts if a version was specified in the request and return a 409 error if a conflict has been detected. "
 			+ "Additional conflict checks for WebRoot path conflicts will also be performed. The node is created if no node with the specified uuid could be found.");
+		postEndpoint.path("/:nodeUuid");
+		postEndpoint.addUriParameter("nodeUuid", "Uuid of the node", NODE_DELOREAN_UUID);
+		postEndpoint.method(POST);
+		postEndpoint.consumes(APPLICATION_JSON);
+		postEndpoint.produces(APPLICATION_JSON);
+		postEndpoint.exampleRequest(new JsonObject(JsonUtil.toJson(nodeExamples.getNodeCreateRequest2())));
+		postEndpoint.exampleResponse(OK, nodeExamples.getNodeResponse2(), "New or updated node.");
+		postEndpoint.exampleResponse(CONFLICT, miscExamples.createMessageResponse(), "A conflict has been detected.");
+		postEndpoint.events(NODE_UPDATED, NODE_CREATED, NODE_CONTENT_CREATED, NODE_UPDATED);
+		postEndpoint.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String uuid = ac.getParameter("nodeUuid");
+			ac.getVersioningParameters().setVersion("draft");
+			crudHandler.handleUpdate(ac, uuid);
+		}, isOrderedBlockingHandlers());
+
+		InternalEndpointRoute endpoint = createRoute();
+		endpoint.description("Update the node with the given uuid. "
+			+ "Mesh will automatically check for version conflicts if a version was specified in the request and return a 409 error if a conflict has been detected. "
+			+ "Additional conflict checks for WebRoot path conflicts will also be performed.");
 		endpoint.path("/:nodeUuid");
 		endpoint.addUriParameter("nodeUuid", "Uuid of the node", NODE_DELOREAN_UUID);
-		endpoint.method(POST);
+		endpoint.method(PUT);
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(nodeExamples.getNodeUpdateRequest());

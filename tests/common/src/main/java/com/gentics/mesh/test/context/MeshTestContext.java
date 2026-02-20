@@ -73,7 +73,6 @@ import com.gentics.mesh.rest.monitoring.MonitoringRestClient;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.TrackingSearchProviderImpl;
 import com.gentics.mesh.search.verticle.ElasticsearchProcessVerticle;
-import com.gentics.mesh.test.ElasticsearchTestMode;
 import com.gentics.mesh.test.MeshCoreOptionChanger;
 import com.gentics.mesh.test.MeshInstanceProvider;
 import com.gentics.mesh.test.MeshTestActions;
