@@ -126,8 +126,20 @@ public interface RestPlugin extends MeshPlugin {
 			File storageFile = new File(getStorageDir(), filePath);
 			String storagePath = storageFile.getAbsolutePath();
 
-			// get the url of the requested file from the classpath (will be null, if the resource does not exist)
-			URL url = getClass().getClassLoader().getResource(filePath);
+			ClassLoader cl = getClass().getClassLoader();
+            // If the request targets a directory (classpath resource exists with trailing '/'), we must NOT
+            // create a file in storage at that location, because it would block later directory creation.
+            // We explicitly respond with 404 for directory requests.
+            String dirPath = filePath.endsWith("/") ? filePath : (filePath + "/");
+            URL dirUrl = cl.getResource(dirPath);
+            if (dirUrl != null) { // Is a folder
+                rc.response().setStatusCode(404).end();
+                return;
+            }
+
+            // get the url of the requested file from the classpath (will be null, if the resource does not exist)
+            URL url = cl.getResource(filePath);
+
 			if (url != null) {
 				// this is the handler, which will copy the file
 				Handler<Promise<Object>> copy = prom -> {
@@ -137,7 +149,7 @@ public interface RestPlugin extends MeshPlugin {
 							return;
 						}
 					}
-					try (InputStream in = getClass().getClassLoader().getResourceAsStream(filePath)) {
+					try (InputStream in = cl.getResourceAsStream(filePath)) {
 						Files.copy(in, storageFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 						prom.complete();
 					} catch (Exception e) {
