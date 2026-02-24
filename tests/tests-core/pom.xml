@@ -181,10 +181,12 @@
 									JsonObject=com.google.gson.JsonObject
 								</schemaMappings>
 							<configOptions>
+								<useEnumCaseInsensitive>true</useEnumCaseInsensitive>
 								<useJakartaEe>true</useJakartaEe>
 								<openApiNullable>false</openApiNullable>
 								<useOptional>true</useOptional>
 								<sourceFolder>/</sourceFolder>
+								<disallowAdditionalPropertiesIfNotPresent>false</disallowAdditionalPropertiesIfNotPresent>
 							</configOptions>
 							<library>okhttp-gson</library>
 						</configuration>

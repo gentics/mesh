@@ -13,6 +13,7 @@ import org.reflections.Reflections;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.vertx.openapi.OpenAPIv3Generator;
 import com.gentics.vertx.openapi.model.Format;
+import com.gentics.vertx.openapi.model.InParameter;
 import com.gentics.vertx.openapi.model.OpenAPIGenerationException;
 
 import io.swagger.v3.oas.models.Components;

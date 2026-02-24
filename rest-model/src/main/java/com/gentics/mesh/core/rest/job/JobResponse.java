@@ -16,7 +16,7 @@ import com.gentics.mesh.core.rest.user.UserReference;
  */
 public class JobResponse extends AbstractResponse {
 
-	@JsonProperty(required = true)
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("User reference of the creator of the element.")
 	private UserReference creator;
 
@@ -44,11 +44,11 @@ public class JobResponse extends AbstractResponse {
 	@JsonPropertyDescription("Properties of the job.")
 	private Map<String, String> properties = new HashMap<>();
 
-	@JsonProperty(required = true)
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("The stop date of the job.")
 	private String stopDate;
 
-	@JsonProperty(required = true)
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("The start date of the job.")
 	private String startDate;
 

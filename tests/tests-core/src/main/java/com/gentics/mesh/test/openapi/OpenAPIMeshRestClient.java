@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 
 import org.openapitools.client.ApiClient;
+import org.openapitools.client.JSON;
 import org.openapitools.client.model.LoginRequest;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -117,11 +118,15 @@ import com.gentics.mesh.rest.client.MeshWebrootFieldResponse;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.gentics.mesh.rest.client.MeshWebsocket;
 import com.gentics.mesh.rest.client.impl.EmptyResponse;
+import com.google.gson.JsonSyntaxException;
 
 import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
 import okhttp3.OkHttpClient;
 
+/**
+ * Generated OpenAPI test client adapter.
+ */
 @SuppressWarnings({"unchecked","rawtypes"})
 public class OpenAPIMeshRestClient implements MeshRestClient {
 
@@ -130,8 +135,37 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 	private final MeshRestClientConfig config;
 	private final JWTAuthentication authentication = new JWTAuthentication();
 
+	/**
+	 * Find the parameter in the providers.
+	 * 
+	 * @param <T>
+	 * @param key
+	 * @param parameters
+	 * @return
+	 */
 	private static final <T> T findParameter(String key, ParameterProvider... parameters) {
 		return (T) Arrays.stream(parameters).map(p -> p.getParameter(key)).findAny().orElse(null);
+	}
+
+	/**
+	 * Adapt the request of Mesh REST model to an OpenAPI model.
+	 * 
+	 * @param <R>
+	 * @param <O>
+	 * @param r
+	 * @return
+	 */
+	private static <R extends RestModel, O> O adaptRequest(R r) {
+		if (r == null) {
+			return null;
+		}
+		try {
+			String modelName = r.getClass().getSimpleName();
+			Class<O> openApiModelClass = (Class<O>) Class.forName("org.openapitools.client.model." + modelName);
+			return JSON.getGson().fromJson(r.toJson(), openApiModelClass);
+		} catch (JsonSyntaxException | ClassNotFoundException e) {
+			throw new IllegalArgumentException(e);
+		}
 	}
 
 	public OpenAPIMeshRestClient(MeshRestClientConfig config, OkHttpClient okHttp) {
@@ -149,40 +183,42 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 				findParameter(NodeParameters.LANGUAGES_QUERY_PARAM_KEY, parameters), 
 				findParameter(GenericParameters.FIELDS_PARAM_KEY, parameters), 
 				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, parameters), 
-				findParameter(NodeParameters.RESOLVE_LINKS_QUERY_PARAM_KEY, parameters)));
+				findParameter(NodeParameters.RESOLVE_LINKS_QUERY_PARAM_KEY, parameters)), NodeResponse.class);
 	}
 
 	@Override
 	public MeshRequest<NodeResponse> createNode(String projectName, NodeCreateRequest nodeCreateRequest,
 			ParameterProvider... parameters) {
 		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesPostWithHttpInfo(projectName, 
-				org.openapitools.client.model.NodeCreateRequest.fromJson(JsonUtil.toJson(nodeCreateRequest))));
+				org.openapitools.client.model.NodeCreateRequest.fromJson(JsonUtil.toJson(nodeCreateRequest))), NodeResponse.class);
 	}
 
 	@Override
 	public MeshRequest<NodeResponse> createNode(String uuid, String projectName, NodeCreateRequest nodeCreateRequest,
 			ParameterProvider... parameters) {
-		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidPostWithHttpInfo(uuid, projectName, new JsonObject(nodeCreateRequest.toJson())));
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidPostWithHttpInfo(uuid, projectName, new JsonObject(nodeCreateRequest.toJson())), 
+				NodeResponse.class);
 	}
 
 	@Override
 	public MeshRequest<NodeResponse> upsertNode(String projectName, String uuid, NodeUpsertRequest nodeUpsertRequest,
 			ParameterProvider... parameters) {
-		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidPostWithHttpInfo(uuid, projectName, new JsonObject(nodeUpsertRequest.toJson())));
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidPostWithHttpInfo(uuid, projectName, new JsonObject(nodeUpsertRequest.toJson())), 
+				NodeResponse.class);
 	}
 
 	@Override
 	public MeshRequest<NodeResponse> updateNode(String projectName, String uuid, NodeUpdateRequest nodeUpdateRequest,
 			ParameterProvider... parameters) {
 		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidPutWithHttpInfo(uuid, projectName, 
-				org.openapitools.client.model.NodeUpdateRequest.fromJson(JsonUtil.toJson(nodeUpdateRequest))));
+				org.openapitools.client.model.NodeUpdateRequest.fromJson(JsonUtil.toJson(nodeUpdateRequest))), NodeResponse.class);
 	}
 
 	@Override
 	public MeshRequest<EmptyResponse> deleteNode(String projectName, String uuid, ParameterProvider... parameters) {
 		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidDeleteWithHttpInfo(uuid, projectName,
 				findParameter(BranchParameters.BRANCH_QUERY_PARAM_KEY, parameters),
-				findParameter(DeleteParameters.RECURSIVE_PARAMETER_KEY, parameters)));
+				findParameter(DeleteParameters.RECURSIVE_PARAMETER_KEY, parameters)), EmptyResponse.class);
 	}
 
 	@Override
@@ -191,7 +227,7 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidLanguagesLanguageDeleteWithHttpInfo(
 				languageTag, uuid, projectName,
 				findParameter(BranchParameters.BRANCH_QUERY_PARAM_KEY, parameters),
-				findParameter(DeleteParameters.RECURSIVE_PARAMETER_KEY, parameters)));
+				findParameter(DeleteParameters.RECURSIVE_PARAMETER_KEY, parameters)), EmptyResponse.class);
 	}
 
 	@Override
@@ -206,7 +242,7 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 				findParameter(NodeParameters.LANGUAGES_QUERY_PARAM_KEY, parameters), 
 				findParameter(GenericParameters.FIELDS_PARAM_KEY, parameters), 
 				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, parameters), 
-				findParameter(PagingParameters.SORT_ORDER_PARAMETER_KEY, parameters)));
+				findParameter(PagingParameters.SORT_ORDER_PARAMETER_KEY, parameters)), NodeListResponse.class);
 	}
 
 	@Override
@@ -222,7 +258,7 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 				findParameter(NodeParameters.LANGUAGES_QUERY_PARAM_KEY, parameters), 
 				findParameter(GenericParameters.FIELDS_PARAM_KEY, parameters), 
 				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, parameters), 
-				findParameter(PagingParameters.SORT_ORDER_PARAMETER_KEY, parameters)));
+				findParameter(PagingParameters.SORT_ORDER_PARAMETER_KEY, parameters)), NodeListResponse.class);
 	}
 
 	@Override
@@ -232,7 +268,7 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectTagFamiliesTagFamilyUuidTagsTagUuidGetWithHttpInfo(
 				tagFamilyUuid, tagUuid, projectName, 
 				findParameter(GenericParameters.FIELDS_PARAM_KEY, parameters), 
-				findParameter(GenericParameters.ETAG_PARAM_KEY, parameters)));
+				findParameter(GenericParameters.ETAG_PARAM_KEY, parameters)), NodeListResponse.class);
 	}
 
 	@Override
@@ -240,13 +276,13 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 			ParameterProvider... parameters) {
 		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidTagsTagUuidPostWithHttpInfo(
 				tagUuid, nodeUuid, projectName,
-				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, parameters)));
+				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, parameters)), NodeResponse.class);
 	}
 
 	@Override
 	public MeshRequest<EmptyResponse> removeTagFromNode(String projectName, String nodeUuid, String tagUuid,
 			ParameterProvider... parameters) {
-		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidTagsTagUuidDeleteWithHttpInfo(tagUuid, nodeUuid, projectName));
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidTagsTagUuidDeleteWithHttpInfo(tagUuid, nodeUuid, projectName), EmptyResponse.class);
 	}
 
 	@Override
@@ -254,7 +290,7 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 			ParameterProvider... parameters) {
 		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidMoveToToUuidPostWithHttpInfo(
 				targetFolderUuid, nodeUuid, projectName,
-				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, parameters)));
+				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, parameters)), EmptyResponse.class);
 	}
 
 	@Override
@@ -263,7 +299,7 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidTagsGetWithHttpInfo(nodeUuid, projectName, 
 				findParameter(GenericParameters.FIELDS_PARAM_KEY, parameters), 
 				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, parameters), 
-				findParameter(GenericParameters.ETAG_PARAM_KEY, parameters)));
+				findParameter(GenericParameters.ETAG_PARAM_KEY, parameters)), TagListResponse.class);
 	}
 
 	@Override
@@ -271,45 +307,48 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 			TagListUpdateRequest request, ParameterProvider... parameters) {
 		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidTagsPostWithHttpInfo(
 				nodeUuid, projectName, 
-				org.openapitools.client.model.TagListUpdateRequest.fromJson(JsonUtil.toJson(request))));
+				org.openapitools.client.model.TagListUpdateRequest.fromJson(JsonUtil.toJson(request))), TagListResponse.class);
 	}
 
 	@Override
 	public MeshRequest<PublishStatusResponse> getNodePublishStatus(String projectName, String nodeUuid,
 			ParameterProvider... parameters) {
-		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidPublishedGetWithHttpInfo(nodeUuid, projectName));
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidPublishedGetWithHttpInfo(nodeUuid, projectName), PublishStatusResponse.class);
 	}
 
 	@Override
 	public MeshRequest<PublishStatusModel> getNodeLanguagePublishStatus(String projectName, String nodeUuid,
 			String languageTag, ParameterProvider... parameters) {
-		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidLanguagesLanguagePublishedGetWithHttpInfo(languageTag, nodeUuid, projectName));
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidLanguagesLanguagePublishedGetWithHttpInfo(languageTag, nodeUuid, projectName),
+				PublishStatusModel.class);
 	}
 
 	@Override
 	public MeshRequest<PublishStatusResponse> publishNode(String projectName, String nodeUuid,
 			ParameterProvider... parameters) {
 		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidPublishedPostWithHttpInfo(nodeUuid, projectName,
-				findParameter(PublishParameters.RECURSIVE_PARAMETER_KEY, parameters)));
+				findParameter(PublishParameters.RECURSIVE_PARAMETER_KEY, parameters)), PublishStatusResponse.class);
 	}
 
 	@Override
 	public MeshRequest<PublishStatusModel> publishNodeLanguage(String projectName, String nodeUuid, String languageTag,
 			ParameterProvider... parameters) {
-		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidLanguagesLanguagePublishedPostWithHttpInfo(languageTag, nodeUuid, projectName));
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidLanguagesLanguagePublishedPostWithHttpInfo(languageTag, nodeUuid, projectName),
+				PublishStatusModel.class);
 	}
 
 	@Override
 	public MeshRequest<EmptyResponse> takeNodeOffline(String projectName, String nodeUuid,
 			ParameterProvider... parameters) {
 		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidPublishedDeleteWithHttpInfo(nodeUuid, projectName,
-				findParameter(PublishParameters.RECURSIVE_PARAMETER_KEY, parameters)));
+				findParameter(PublishParameters.RECURSIVE_PARAMETER_KEY, parameters)), EmptyResponse.class);
 	}
 
 	@Override
 	public MeshRequest<EmptyResponse> takeNodeLanguageOffline(String projectName, String nodeUuid, String languageTag,
 			ParameterProvider... parameters) {
-		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidLanguagesLanguagePublishedDeleteWithHttpInfo(languageTag, nodeUuid, projectName));
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidLanguagesLanguagePublishedDeleteWithHttpInfo(languageTag, nodeUuid, projectName),
+				EmptyResponse.class);
 	}
 
 	@Override
@@ -317,12 +356,13 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 			ParameterProvider... parameters) {
 		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidVersionsGetWithHttpInfo(nodeUuid, projectName, 
 				findParameter(NodeParameters.LANGUAGES_QUERY_PARAM_KEY, parameters), 
-				findParameter(NodeParameters.RESOLVE_LINKS_QUERY_PARAM_KEY, parameters)));
+				findParameter(NodeParameters.RESOLVE_LINKS_QUERY_PARAM_KEY, parameters)),
+				NodeVersionsResponse.class);
 	}
 
 	@Override
 	public MeshRequest<ObjectPermissionResponse> getNodeRolePermissions(String projectName, String uuid) {
-		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidRolePermissionsGetWithHttpInfo(uuid, projectName));
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidRolePermissionsGetWithHttpInfo(uuid, projectName), ObjectPermissionResponse.class);
 	}
 
 	@Override
@@ -608,8 +648,9 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 	@Override
 	public MeshRequest<GenericMessageResponse> updateSchema(String uuid, SchemaUpdateRequest request,
 			ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2SchemasSchemaUuidPostWithHttpInfo(uuid, 
+				null, uuid, null, 
+				adaptRequest(request)), GenericMessageResponse.class);
 	}
 
 	@Override
@@ -1582,32 +1623,32 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 				findParameter(JobParameters.SCHEMA_NAME_PARAMETER_KEY, parameters), 
 				findParameter(JobParameters.STATUS_PARAMETER_KEY, parameters), 
 				findParameter(JobParameters.SCHEMA_UUID_PARAMETER_KEY, parameters), 
-				findParameter(JobParameters.TO_VERSION_PARAMETER_KEY, parameters)));
+				findParameter(JobParameters.TO_VERSION_PARAMETER_KEY, parameters)), JobListResponse.class);
 	}
 
 	@Override
 	public MeshRequest<JobResponse> findJobByUuid(String uuid) {
-		return new OpenAPIMeshRequestImpl(() -> api.apiV2AdminJobsJobUuidGetWithHttpInfo(uuid));
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2AdminJobsJobUuidGetWithHttpInfo(uuid), JobResponse.class);
 	}
 
 	@Override
 	public MeshRequest<EmptyResponse> deleteJob(String uuid) {
-		return new OpenAPIMeshRequestImpl(() -> api.apiV2AdminJobsJobUuidDeleteWithHttpInfo(uuid));
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2AdminJobsJobUuidDeleteWithHttpInfo(uuid), EmptyResponse.class);
 	}
 
 	@Override
 	public MeshRequest<EmptyResponse> resetJob(String uuid) {
-		return new OpenAPIMeshRequestImpl(() -> api.apiV2AdminJobsJobUuidErrorDeleteWithHttpInfo(uuid));
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2AdminJobsJobUuidErrorDeleteWithHttpInfo(uuid), EmptyResponse.class);
 	}
 
 	@Override
 	public MeshRequest<JobResponse> processJob(String uuid) {
-		return new OpenAPIMeshRequestImpl(() -> api.apiV2AdminJobsJobUuidProcessPostWithHttpInfo(uuid));
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2AdminJobsJobUuidProcessPostWithHttpInfo(uuid), JobResponse.class);
 	}
 
 	@Override
 	public MeshRequest<GenericMessageResponse> invokeJobProcessing() {
-		return new OpenAPIMeshRequestImpl(() -> api.apiV2AdminProcessJobsPostWithHttpInfo());
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2AdminProcessJobsPostWithHttpInfo(), GenericMessageResponse.class);
 	}
 
 	@Override

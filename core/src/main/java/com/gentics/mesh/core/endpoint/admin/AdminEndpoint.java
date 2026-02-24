@@ -284,7 +284,7 @@ public abstract class AdminEndpoint extends AbstractInternalEndpoint {
 		processJob.path("/jobs/:jobUuid/process");
 		processJob.method(POST);
 		processJob.description("Process the job. Failed jobs will be automatically reset and put in queued state.");
-		processJob.exampleResponse(OK, "Job has been queued for processing.");
+		processJob.exampleResponse(OK, jobExamples.createJobResponse(), "Job information.");
 		processJob.addUriParameter("jobUuid", "Uuid of the job.", JOB_UUID);
 		processJob.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
