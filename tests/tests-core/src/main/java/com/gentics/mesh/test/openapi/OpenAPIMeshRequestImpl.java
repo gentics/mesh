@@ -3,25 +3,30 @@ package com.gentics.mesh.test.openapi;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.function.Function;
 
 import org.openapitools.client.ApiResponse;
+import org.openapitools.client.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
+import com.gentics.mesh.rest.client.impl.EmptyResponse;
 
 import io.reactivex.Single;
 
-class OpenAPIMeshRequestImpl<T> implements MeshRequest<T> {
+class OpenAPIMeshRequestImpl<T, R> implements MeshRequest<R> {
 
 	protected static final Logger log = LoggerFactory.getLogger(OpenAPIMeshRequestImpl.class);
 
 	private final Callable<ApiResponse<T>> callable;
+	private final Class<? extends R> targetType;
 
-	public OpenAPIMeshRequestImpl(Callable<ApiResponse<T>> callable) {
+	public OpenAPIMeshRequestImpl(Callable<ApiResponse<T>> callable, Class<? extends R> targetType) {
 		this.callable = callable;
+		this.targetType = targetType;
 	}
 
 	protected Single<ApiResponse<T>> toApiSingle() {
@@ -29,8 +34,8 @@ class OpenAPIMeshRequestImpl<T> implements MeshRequest<T> {
 	}
 
 	@Override
-	public Single<T> toSingle() {
-		return toApiSingle().map(ApiResponse::getData);
+	public Single<R> toSingle() {
+		return toApiSingle().map(apir -> ifNull(apir.getData(), r -> adaptResponse(r)));
 	}
 
 	@Override
@@ -39,9 +44,9 @@ class OpenAPIMeshRequestImpl<T> implements MeshRequest<T> {
 	}
 
 	@Override
-	public Single<MeshResponse<T>> getResponse() {
+	public Single<MeshResponse<R>> getResponse() {
 		return toApiSingle().map(apir -> {
-			return new MeshResponse<T>() {
+			return new MeshResponse<R>() {
 
 				@Override
 				public Map<String, List<String>> getHeaders() {
@@ -59,8 +64,8 @@ class OpenAPIMeshRequestImpl<T> implements MeshRequest<T> {
 				}
 
 				@Override
-				public T getBody() {
-					return apir.getData();
+				public R getBody() {
+					return adaptResponse(apir.getData());
 				}
 
 				@Override
@@ -68,5 +73,22 @@ class OpenAPIMeshRequestImpl<T> implements MeshRequest<T> {
 				}
 			};
 		});
+	}
+
+	@SuppressWarnings("unchecked")
+	protected R ifNull(T t, Function<T, R> ifNotNull) {
+		if (t == null) {
+			if (targetType.equals(EmptyResponse.class)) {
+				return (R) EmptyResponse.getInstance();
+			} else {
+				return null;
+			}
+		} else {
+			return ifNotNull.apply(t);
+		}
+	}
+
+	protected R adaptResponse(T t) {
+		return ifNull(t, r -> JsonUtil.readValue(JSON.getGson().toJson(t), targetType));
 	}
 }

@@ -11,7 +11,7 @@ import com.gentics.vertx.openapi.model.MessageResponse;
  */
 public class GenericMessageResponse extends MessageResponse implements RestModel {
 
-	@JsonProperty(required = true)
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("Internal developer friendly message")
 	private String internalMessage;
 
