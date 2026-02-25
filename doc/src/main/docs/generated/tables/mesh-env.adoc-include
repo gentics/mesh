@@ -86,11 +86,11 @@
 | *MESH_HTTP_VERTICLE_AMOUNT*
 | Override the http verticle amount.
 
-| *MESH_JDBC_RETRY_LIMIT*
-| Override the default transaction retry count.
-
 | *MESH_BINARY_CHECK_INTERVAL*
 | Override the binary check interval
+
+| *MESH_JDBC_RETRY_LIMIT*
+| Override the default transaction retry count.
 
 | *HIKARI_CP_REGISTER_MBEANS*
 | This property controls whether or not JMX Management Beans (&quot;MBeans&quot;) are registered or not.
@@ -206,6 +206,9 @@
 | *MESH_HTTP_CORS_ALLOW_CREDENTIALS*
 | Override the configured CORS allowed credentials flag.
 
+| *MESH_MONITORING_GC_LIMIT*
+| Override the garbage collection limit in percent.
+
 | *MESH_HIBERNATE_SLOW_SQL_THRESHOLD*
 | Slow SQL query threshold in milliseconds. Default: 60000
 
@@ -319,6 +322,9 @@
 
 | *MESH_ELASTICSEARCH_BULK_LENGTH_LIMIT*
 | Override the batch bulk length limit. Default: 5000000
+
+| *MESH_MONITORING_MEMORY_LIMIT*
+| Override the memory limit in percent.
 
 | *HIKARI_CP_AUTOCOMMIT*
 | This property controls the default auto-commit behavior of connections returned from the pool. It is a boolean value.
@@ -473,11 +479,11 @@
 | *MESH_S3_BINARY_CACHE_EXPIRATION_TIME_DOWNLOAD*
 | Override the configured AWS S3 download time.
 
-| *MESH_DB_SYNC_WRITES_TIMEOUT*
-| Override the database sync write timeout.
-
 | *MESH_BINARY_UPLOAD_TEMP_DIR*
 | Override the configured upload temporary directory.
+
+| *MESH_DB_SYNC_WRITES_TIMEOUT*
+| Override the database sync write timeout.
 
 | *MESH_NODE_NAME*
 | Override the configured node name.

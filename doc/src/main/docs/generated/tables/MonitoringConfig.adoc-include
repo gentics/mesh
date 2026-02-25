@@ -12,6 +12,11 @@
 | boolean
 | Enable or disable the monitoring system. Default is: true
 
+| gcTimeLimit
+| false
+| integer
+| Limit time used for garbage collections percent, which will cause Mesh to become unhealthy. Defaults to 50%
+
 | host
 | false
 | string
@@ -21,6 +26,11 @@
 | false
 | boolean
 | Enable or disable the measuring of JVM metrics. Default is: true
+
+| memoryLimit
+| false
+| integer
+| Limit of used memory in percent, which will cause Mesh to become unhealthy. Defaults to 95%
 
 | port
 | false
