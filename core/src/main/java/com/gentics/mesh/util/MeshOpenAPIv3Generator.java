@@ -12,15 +12,13 @@ import org.reflections.Reflections;
 
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.vertx.openapi.OpenAPIv3Generator;
+import com.gentics.vertx.openapi.model.ExtendedSecurityScheme;
 import com.gentics.vertx.openapi.model.Format;
 import com.gentics.vertx.openapi.model.InParameter;
 import com.gentics.vertx.openapi.model.OpenAPIGenerationException;
 
-import io.swagger.v3.oas.models.Components;
-import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.Parameter;
-import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.vertx.ext.web.Router;
 
@@ -29,30 +27,19 @@ import io.vertx.ext.web.Router;
  */
 public class MeshOpenAPIv3Generator extends OpenAPIv3Generator {
 
-	public MeshOpenAPIv3Generator(String version, List<String> servers,
-			Optional<? extends Collection<Pattern>> maybePathBlacklist,
-			Optional<? extends Collection<Pattern>> maybePathWhitelist) {
-		super(version, servers, maybePathBlacklist, maybePathWhitelist);
+	protected static ExtendedSecurityScheme securityBearerAuth;
+
+	static {
+		securityBearerAuth = new ExtendedSecurityScheme(false);
+		securityBearerAuth.getScheme().setScheme("bearer");
+		securityBearerAuth.getScheme().setType(SecurityScheme.Type.HTTP);
+		securityBearerAuth.getScheme().setBearerFormat("JWT");
 	}
 
-	@Override
-	protected void addSecurity(OpenAPI openApi) {
-		Components components;
-		if (openApi.getComponents() == null) {
-			components = new Components();
-			openApi.setComponents(components);
-		} else {
-			components = openApi.getComponents();
-		}
-		SecurityScheme securityBearerAuth = new SecurityScheme();
-		securityBearerAuth.setScheme("bearer");
-		securityBearerAuth.setType(SecurityScheme.Type.HTTP);
-		securityBearerAuth.setBearerFormat("JWT");
-		components.addSecuritySchemes("bearerAuth", securityBearerAuth);
-// TODO we do not need this globally, do we?
-//		SecurityRequirement reqBearerAuth = new SecurityRequirement();
-//		reqBearerAuth.addList("bearerAuth");
-//		openApi.addSecurityItem(reqBearerAuth);
+	public MeshOpenAPIv3Generator(String version, List<String> servers,
+			Optional<? extends Collection<Pattern>> maybePathBlacklist,
+			Optional<? extends Collection<Pattern>> maybePathWhitelist) {	
+		super(version, servers, Collections.singletonMap("bearerAuth", securityBearerAuth), maybePathBlacklist, maybePathWhitelist);
 	}
 
 	/**
@@ -66,7 +53,7 @@ public class MeshOpenAPIv3Generator extends OpenAPIv3Generator {
 	 * @throws OpenAPIGenerationException
 	 */
 	public String generate(Map<Router, String> routers, Format format, boolean pretty, boolean useVersion31) throws OpenAPIGenerationException {
-		return generate(routers, format, pretty, useVersion31, 
+		return generate("Gentics Mesh REST API", routers, format, pretty, useVersion31, 
 				// transform project path item
 				Optional.of((path, item) -> {
 					if (path.contains("/{project}/")) {
