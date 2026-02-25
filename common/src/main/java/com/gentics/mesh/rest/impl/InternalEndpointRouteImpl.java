@@ -3,6 +3,7 @@ package com.gentics.mesh.rest.impl;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -39,6 +40,7 @@ public class InternalEndpointRouteImpl extends com.gentics.vertx.openapi.metadat
 	 */
 	public InternalEndpointRouteImpl(Router router, LocalConfigApi localConfigApi, Database db) {
 		super(router);
+		setInsecure(false);
 		ReadOnlyHandler readOnlyHandler = new ReadOnlyHandler(localConfigApi, db);
 		route.handler(readOnlyHandler);
 	}
@@ -69,6 +71,16 @@ public class InternalEndpointRouteImpl extends com.gentics.vertx.openapi.metadat
 		mimeType.setExample(json);
 		bodyMap.put("application/json", mimeType);
 		this.exampleRequestMap = bodyMap;
+		return this;
+	}
+
+	@Override
+	public InternalEndpointRoute setInsecure(boolean insecure) {
+		if (insecure) {
+			setSecuritySchemes(Collections.emptyList());
+		} else {
+			setSecuritySchemes(Collections.singletonList("bearerAuth"));
+		}
 		return this;
 	}
 

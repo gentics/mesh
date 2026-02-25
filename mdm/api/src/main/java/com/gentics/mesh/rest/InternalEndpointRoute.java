@@ -42,6 +42,21 @@ public interface InternalEndpointRoute extends com.gentics.vertx.openapi.metadat
 	@Deprecated
 	InternalEndpointRoute blockingHandler(Handler<RoutingContext> requestHandler);
 
+	/**
+	 * If true, the endpoint can be used with no authentication. 
+	 * 
+	 * @return
+	 */
+	boolean isInsecure();
+
+	/**
+	 * Set the endpoint to omit the secure token requirement.
+	 * 
+	 * @param insecure
+	 * @return
+	 */
+	InternalEndpointRoute setInsecure(boolean insecure);
+
 	@Override
 	default com.gentics.vertx.openapi.metadata.InternalEndpointRoute exampleRequest(JsonObject jsonObject) {
 		try {
