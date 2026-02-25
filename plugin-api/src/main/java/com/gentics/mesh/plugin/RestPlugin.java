@@ -6,6 +6,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
@@ -126,19 +127,18 @@ public interface RestPlugin extends MeshPlugin {
 			File storageFile = new File(getStorageDir(), filePath);
 			String storagePath = storageFile.getAbsolutePath();
 
-			ClassLoader cl = getClass().getClassLoader();
-            // If the request targets a directory (classpath resource exists with trailing '/'), we must NOT
-            // create a file in storage at that location, because it would block later directory creation.
-            // We explicitly respond with 404 for directory requests.
-            String dirPath = filePath.endsWith("/") ? filePath : (filePath + "/");
-            URL dirUrl = cl.getResource(dirPath);
-            if (dirUrl != null) { // Is a folder
-                rc.response().setStatusCode(404).end();
+			// get the url of the requested file from the classpath (will be null, if the resource does not exist)
+			URL url = getClass().getClassLoader().getResource(filePath);
+
+            // Special case: requests that resolve to a directory path (e.g. "/webroot/formgen")
+            // must not be treated as a file. Otherwise we would cache a file at storage/[base]/formgen
+            // which then blocks creation of the correct directory structure.
+			// We only allow to request a file otherwise 404
+            URL dirUrl = getClass().getClassLoader().getResource(filePath.endsWith("/") ? filePath : filePath + "/");
+            if (dirUrl != null) {
+				rc.fail(HttpResponseStatus.NOT_FOUND.code());
                 return;
             }
-
-            // get the url of the requested file from the classpath (will be null, if the resource does not exist)
-            URL url = cl.getResource(filePath);
 
 			if (url != null) {
 				// this is the handler, which will copy the file
@@ -149,7 +149,7 @@ public interface RestPlugin extends MeshPlugin {
 							return;
 						}
 					}
-					try (InputStream in = cl.getResourceAsStream(filePath)) {
+					try (InputStream in = getClass().getClassLoader().getResourceAsStream(filePath)) {
 						Files.copy(in, storageFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 						prom.complete();
 					} catch (Exception e) {
