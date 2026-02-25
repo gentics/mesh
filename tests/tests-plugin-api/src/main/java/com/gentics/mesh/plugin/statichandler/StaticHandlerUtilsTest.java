@@ -10,9 +10,7 @@ import static org.mockito.Mockito.CALLS_REAL_METHODS;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Files;
-import java.util.Enumeration;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -66,19 +64,8 @@ public class StaticHandlerUtilsTest {
             return null;
         }).when(rc).fail(404);
 
-        Enumeration<URL> roots =
-                getClass().getClassLoader().getResources("com/gentics/mesh/plugin/statichandler/");
-
-        System.out.println("=== Classpath roots for com/gentics/mesh/plugin/statichandler/ ===");
-        while (roots.hasMoreElements()) {
-            System.out.println(roots.nextElement());
-        }
-
-        System.out.println(getClass().getResource("StaticHandlerUtilsTest.class"));
-        System.out.println("================================");
-
         handler.handle(rc);
-        // The directory detection branch uses async file system calls, so wait briefly.
+        // async file system calls, wait briefly.
         assertTrue("Expected rc.fail(404) to be called", latch.await(5, TimeUnit.SECONDS)); // wait 2 seconds until latch is decresed to 0
         verify(rc).fail(404);
     }
