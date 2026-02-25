@@ -106,12 +106,12 @@
           "required" : {
             "type" : "boolean"
           },
+          "noIndex" : {
+            "type" : "boolean"
+          },
           "elasticsearch" : {
             "type" : "object",
             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-          },
-          "noIndex" : {
-            "type" : "boolean"
           },
           "label" : {
             "type" : "string",
