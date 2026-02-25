@@ -32,6 +32,7 @@ import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.binary.BinaryFieldTestHelper;
 import com.gentics.mesh.core.data.storage.BinaryStorage;
 import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.ResetTestDb;
 import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.RxUtil;
 import com.gentics.mesh.util.UUIDUtil;
@@ -39,7 +40,7 @@ import com.gentics.mesh.util.UUIDUtil;
 import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
 
-@MeshTestSetting(testSize = FULL, startServer = false)
+@MeshTestSetting(testSize = FULL, startServer = false, resetBetweenTests = ResetTestDb.NEVER)
 public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest implements BinaryFieldTestHelper {
 
 	String hash;

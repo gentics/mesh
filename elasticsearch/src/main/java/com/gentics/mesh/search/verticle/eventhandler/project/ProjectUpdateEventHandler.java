@@ -84,7 +84,7 @@ public class ProjectUpdateEventHandler implements EventHandler {
 											ContentDao.composeDocumentId(node.getUuid(),
 													container.getLanguageTag()),
 											((NodeContainerTransformer) entities.nodeContent.getTransformer())
-													.toDocument(container, branch.getUuid(), type),
+													.toDocument(container, project, branch, type, null),
 											complianceMode)))));
 				}).collect(toFlowable())).runInNewTx());
 	}
@@ -109,12 +109,12 @@ public class ProjectUpdateEventHandler implements EventHandler {
 		TagDao tagDao = Tx.get().tagDao();
 		return tagDao.findAll(family).stream()
 				.map(tag -> helper.createDocumentRequest(HibTag.composeIndexName(project.getUuid()), tag.getUuid(),
-						entities.tag.transform(tag), complianceMode));
+						entities.tag.transform(tag, null), complianceMode));
 	}
 
 	private CreateDocumentRequest createTagFamilyRequest(HibProject project, HibTagFamily family) {
 		return helper.createDocumentRequest(HibTagFamily.composeIndexName(project.getUuid()), family.getUuid(),
-				entities.tagFamily.transform(family), complianceMode);
+				entities.tagFamily.transform(family, null), complianceMode);
 	}
 
 	@Override

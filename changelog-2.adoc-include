@@ -6,6 +6,224 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v3.1.11]]
+== 3.1.11 (25.02.2026)
+
+icon:check[] Elasticsearch: When an ES server is unresponsive, a timeout error is thrown, which may or may not have a HTTP body. In the case of body absence Mesh crashes with HTTP 500. This has now been fixed.
+
+icon:check[] Monitoring: Mesh will now regularly monitor memory consumption and garbage collections.
+See "Monitoring":https://www.gentics.com/mesh/docs/monitoring/ in the documentation for details.
+
+
+icon:check[] REST API: Handling of schema or microschema updates has been improved to not create new versions if nothing was actually changed.
+
+
+icon:check[] REST API: Performance of getting schemas/microschemas assigned to a branch has been improved
+if schemas/microschemas exist, that have lots of versions.
+
+
+icon:check[] Core: A consistency check and repair for incorrectly linked content versions has been added.
+
+
+[[v3.1.10]]
+== 3.1.10 (11.02.2026)
+
+icon:check[] Core: A number of exceptions regarding inexisting message translations has been eliminated.
+
+icon:check[] GraphQL: Loading of a node field which references a deleted node resulted in an error message in the response.
+This has been fixed.
+
+
+[[v3.1.9]]
+== 3.1.9 (06.02.2026)
+
+icon:check[] GraphQL: The number of SQL Queries necessary for fetching breadcrumbs and node references via GraphQL has been reduced.
+
+
+icon:check[] REST API: Requests to create or update nodes with fields exceeding the length limit will now fail with an appropriate error message.
+
+
+icon:check[] The version of the library for handling GraphQL filtering has been updated to
+remove the unnecessary dependency on AssertJ.
+
+
+[[v3.1.8]]
+== 3.1.8 (12.01.2026)
+
+icon:check[] Core: A permission system has been reworked to speed up accessibility of the selected elements for the users with admin permissions. 
+
+[[v3.1.7]]
+== 3.1.7 (12.12.2025)
+
+icon:check[] Docker: The content of @eclipse-temurin@ base image has been updated, to eliminate critical vulnerabilities on its dependencies.
+
+[[v3.1.6]]
+== 3.1.6 (20.11.2025)
+
+icon:check[] Core: The published status of the fetched content was wrong, if using either native filtering or sorting. This has been fixed.
+
+icon:check[] Core: The API for branches has been modified to support better performance when loading
+the latest schema version of a schema in a branch.
+
+
+icon:check[] Core: The performace for creating/updating nodes has been improved.
+
+
+icon:check[] Core: The second level cache for hibernate has been enabled by default.
+The startup of Mesh with second level cache enabled in a cluster environment has been fixed.
+
+
+icon:check[] Core: The performance of getting entity lists has been improved by reducing the number of executed SQL queries.
+
+
+icon:check[] Core: The `OkHttp` client dependency has been updated to the version `5.3.0`, targeting the vulnerability `CVE-2021-0341`. 
+The `ElasticSearch Java Client`, that depends on the same client, has been updated as well to the version `1.1.4`.
+
+[[v3.1.5]]
+== 3.1.5 (27.10.2025)
+
+icon:check[] Core: After the data migration from the older Mesh versions it is possible to have list item database tables being polluted with the duplicated data, that, while making no functional harm, may lead to the random performance penalties.
+ Targeting these, a new consistency check/repair feature has been added to the existing "*listitem" checks. 
+
+icon:check[] Search: Running an index sync did not properly close all used scroll contexts in elasticsearch,
+which could lead to errors like 'Trying to create too many scroll contexts' in elasticsearch.
+This has been fixed, all scroll contexts are closed as soon as they are not used any more.
+
+
+icon:check[] Core: Under some circumstances the fetch of entities via REST GET returns duplicated entries. This has been fixed.
+
+icon:check[] Core: The recursive deletion of nodes has been fixed to not leave orphaned contents behind.
+
+
+[[v3.1.4]]
+== 3.1.4 (23.09.2025)
+
+icon:check[] Core: Generation of ETags for nodes has generally been improved to be more stable.
+
+
+icon:check[] Core: Generation of childrenInfo and etag for nodes with many children has been refactored to support better performance.
+
+
+icon:check[] Core: Generation of childrenInfo and etag for nodes with many children has been made more performant.
+
+
+icon:check[] GraphQL: The performance of GraphQL queries returning larger hierachies of data has been improved.
+
+
+icon:check[] Core: The performance of deleting nodes recursively has been improved.
+
+
+icon:check[] Core: Implementations of the persistance layer may now choose to process recursive deletion of nodes
+in a separate thread instead of in the worker thread pool.
+
+
+icon:check[] Core: Deleting of nodes with more than 1000 descendants is now done
+in a separate thread. This will also cause those delete tasks to be done
+one after the other instead of in parallel.
+
+
+icon:check[] Search: When a schema was completely excluded from indexing, the index sync operation still
+tried to put the nodes of that schema into the non-existent index, this has been fixed.
+
+
+icon:check[] Core: It is now possible to delete a node with a list field that has data inconsistencies.
+
+[[v3.1.3]]
+== 3.1.3 (01.09.2025)
+
+icon:check[] Plugins: Now the plugin timeout value is also considered in the HTTP plugin client. This allows extending HTTP call timeouts when the plugin is expected to start longer.
+
+icon:check[] Some dependencies have been updated:
+* Netty: 4.1.124.Final
+* Vert.x: 4.5.18
+
+
+icon:check[] Core: The following dependencies have been updated, to target the vulnerability CVE-2025-54988 :
+ * Apache Tika, to *3.2.2*
+ * Apache Commons Lang3, to *3.18.0*
+ * Apache Commons Compress, to *1.28.0*
+ * JSOUP, to *1.21.1*
+
+[[v3.1.2]]
+== 3.1.2 (15.07.2025)
+
+icon:check[] Core: Generation of ETags for nodes containing tags was not stable and sometimes resulted in different ETags,
+even if nothing was changed. This has been fixed.
+
+
+icon:check[] REST API: Now Mesh accepts both ISO-8601 standards of a date/time string representation, with and without trailing Z or timezone value.
+
+[[v3.1.1]]
+== 3.1.1 (03.07.2025)
+
+icon:plus[] Core: The following dependencies have been updated, to eliminate vulnerable versions:
+ * Vert.x - to version `4.5.14`
+ * Netty - to version `4.1.118.Final`
+
+icon:check[] REST: The query parameters for node versioning and branch targeting have been decoupled, to match the cases where a branch usage is allowed, but version is not.
+
+Documentation: The query parameterizing has been updated for the selected REST endpoints.
+
+icon:check[] Auth: Now a secondary auth provider (from Mesh plugins, for instance) allows proceeding with the request unauthenticated in a number of cases of errors, like provider denial or bad request, and logging the other cases.
+
+[[v3.1.0]]
+== 3.1.0 (10.06.2025)
+
+icon:plus[] Some dependencies have been updated:
+* Hibernate: 6.6.11.Final
+* Vert.x: 4.5.14
+* Netty: 4.1.118.Final
+* Spring Security: 6.3.5
+* Guava: 32.0.0-jre
+* Zip4j: 2.11.3
+* Logback: 1.5.18
+* Okio: 1.17.6
+* Dagger: 2.56.2
+
+
+icon:check[] Some dependencies have been updated:
+* Netty: 4.1.118.Final
+* Commons Beanutils: 1.11.0
+
+
+[[v3.0.17]]
+== 3.0.17 (20.11.2025)
+
+icon:check[] Core: The published status of the fetched content was wrong, if using either native filtering or sorting. This has been fixed.
+
+icon:check[] Core: The API for branches has been modified to support better performance when loading
+the latest schema version of a schema in a branch.
+
+
+icon:check[] Core: The performace for creating/updating nodes has been improved.
+
+
+icon:check[] Core: The second level cache for hibernate has been enabled by default.
+The startup of Mesh with second level cache enabled in a cluster environment has been fixed.
+
+
+icon:check[] Core: The performance of getting entity lists has been improved by reducing the number of executed SQL queries.
+
+
+icon:check[] Core: The `OkHttp` client dependency has been updated to the version `5.3.0`, targeting the vulnerability `CVE-2021-0341`. 
+The `ElasticSearch Java Client`, that depends on the same client, has been updated as well to the version `1.1.4`.
+
+[[v3.0.16]]
+== 3.0.16 (27.10.2025)
+
+icon:check[] Core: After the data migration from the older Mesh versions it is possible to have list item database tables being polluted with the duplicated data, that, while making no functional harm, may lead to the random performance penalties.
+ Targeting these, a new consistency check/repair feature has been added to the existing "*listitem" checks. 
+
+icon:check[] Search: Running an index sync did not properly close all used scroll contexts in elasticsearch,
+which could lead to errors like 'Trying to create too many scroll contexts' in elasticsearch.
+This has been fixed, all scroll contexts are closed as soon as they are not used any more.
+
+
+icon:check[] Core: Under some circumstances the fetch of entities via REST GET returns duplicated entries. This has been fixed.
+
+icon:check[] Core: The recursive deletion of nodes has been fixed to not leave orphaned contents behind.
+
+
 [[v3.0.15]]
 == 3.0.15 (23.09.2025)
 
@@ -189,6 +407,14 @@ icon:plus[] Core: An Apache Tika file parsing dependency has been updated to the
 icon:plus[] Clustering: The Hazelcast library, responsible for the cluster instances orchestration, has been updated to the version @5.5.0@.
 
 icon:plus[] Some library dependencies have been updated to the latest hotfix versions.
+
+
+[[v2.1.25]]
+== 2.1.25 (27.10.2025)
+
+icon:check[] Search: Running an index sync did not properly close all used scroll contexts in elasticsearch,
+which could lead to errors like 'Trying to create too many scroll contexts' in elasticsearch.
+This has been fixed, all scroll contexts are closed as soon as they are not used any more.
 
 
 [[v2.1.24]]

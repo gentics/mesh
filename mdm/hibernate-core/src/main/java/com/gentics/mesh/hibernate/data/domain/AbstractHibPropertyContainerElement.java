@@ -79,7 +79,7 @@ public abstract class AbstractHibPropertyContainerElement extends AbstractHibBas
 				return (R) ovalue;
 			}
 		} catch (Throwable e) {
-			throw error(INTERNAL_SERVER_ERROR, "Failed to get property value {" + name + "}", e);
+			throw error(INTERNAL_SERVER_ERROR, "error_internal", e);
 		}
 	}
 

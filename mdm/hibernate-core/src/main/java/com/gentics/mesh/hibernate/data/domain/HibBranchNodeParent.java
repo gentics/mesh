@@ -93,8 +93,8 @@ import jakarta.persistence.QueryHint;
                                 "where p.nodeParent = :node and p.distance = :distance"
                 ),
                 @NamedQuery(
-                        name = "nodeBranchParents.findDescendantsInBranch",
-                        query = "select distinct(p.child) from node_branch_parent p " +
+                        name = "nodeBranchParents.findDescendantUuidsInBranch",
+                        query = "select distinct(p.child.dbUuid) from node_branch_parent p " +
                                 "where p.nodeParent = :node and p.branchParent = :branch and p.distance = :distance"
                 ),
                 @NamedQuery(

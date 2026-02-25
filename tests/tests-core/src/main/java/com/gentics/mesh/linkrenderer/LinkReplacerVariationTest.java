@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.apache.commons.collections4.SetUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,13 +36,14 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.ResetTestDb;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.util.UUIDUtil;
 
 /**
  * Test cases for the {@link WebRootLinkReplacer}
  */
-@MeshTestSetting(testSize = PROJECT, startServer = true)
+@MeshTestSetting(testSize = PROJECT, startServer = true, resetBetweenTests = ResetTestDb.NEVER)
 @RunWith(Parameterized.class)
 public class LinkReplacerVariationTest extends AbstractMeshTest {
 	private static final String PROJECT_NAME = "Testproject";
@@ -126,9 +128,13 @@ public class LinkReplacerVariationTest extends AbstractMeshTest {
 
 	private WebRootLinkReplacer replacer;
 
-	private String projectUuid;
+	private static String projectUuid;
 
-	private String branchUuid;
+	private static String rootNodeUuid;
+
+	private static String branchUuid;
+
+	private String testBaseName;
 
 	private String folderUuid;
 
@@ -151,26 +157,33 @@ public class LinkReplacerVariationTest extends AbstractMeshTest {
 	public void setup() {
 		replacer = meshDagger().webRootLinkReplacer();
 
-		// Create test project
-		ProjectCreateRequest request = new ProjectCreateRequest();
-		request.setName(PROJECT_NAME);
-		request.setHostname("dummy.io");
-		request.setSsl(false);
-		request.setSchema(new SchemaReferenceImpl().setName("folder"));
-		ProjectResponse projectResponse = call(() -> client().createProject(request));
-		projectUuid = projectResponse.getUuid();
-		branchUuid = call(() -> client().findBranches(PROJECT_NAME)).getData().stream().filter(BranchResponse::getLatest).findFirst().orElseThrow().getUuid();
+		if (testContext.needsSetup()) {
+			// Create test project
+			ProjectCreateRequest request = new ProjectCreateRequest();
+			request.setName(PROJECT_NAME);
+			request.setHostname("dummy.io");
+			request.setSsl(false);
+			request.setSchema(new SchemaReferenceImpl().setName("folder"));
+			ProjectResponse projectResponse = call(() -> client().createProject(request));
+			projectUuid = projectResponse.getUuid();
+			rootNodeUuid = projectResponse.getRootNode().getUuid();
+			branchUuid = call(() -> client().findBranches(PROJECT_NAME)).getData().stream().filter(BranchResponse::getLatest).findFirst().orElseThrow().getUuid();
 
-		// Assign the content schema
-		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
-		call(() -> client().assignSchemaToProject(PROJECT_NAME, schemaUuid));
+			// Assign the content schema
+			String schemaUuid = tx(() -> schemaContainer("content").getUuid());
+			call(() -> client().assignSchemaToProject(PROJECT_NAME, schemaUuid));
+		}
+
+		// create the test base folder
+		testBaseName = RandomStringUtils.randomAlphabetic(10);
+		String testBaseUuid = createFolder(rootNodeUuid, null, testBaseName, "en");
 
 		// create the link target
 		if (folderEn) {
-			folderUuid = createFolder(projectResponse.getRootNode().getUuid(), folderUuid, "targetfolder", "en");
+			folderUuid = createFolder(testBaseUuid, folderUuid, "targetfolder", "en");
 		}
 		if (folderDe) {
-			folderUuid = createFolder(projectResponse.getRootNode().getUuid(), folderUuid, "zielordner", "de");
+			folderUuid = createFolder(testBaseUuid, folderUuid, "zielordner", "de");
 		}
 		if (contentEn) {
 			contentUuid = createContent(folderUuid, contentUuid, "targetcontent", "en");
@@ -180,8 +193,8 @@ public class LinkReplacerVariationTest extends AbstractMeshTest {
 		}
 
 		// create another link target (in english and german)
-		otherFolderUuid = createFolder(projectResponse.getRootNode().getUuid(), otherFolderUuid, "otherfolder", "en");
-		otherFolderUuid = createFolder(projectResponse.getRootNode().getUuid(), otherFolderUuid, "andererordner", "de");
+		otherFolderUuid = createFolder(testBaseUuid, otherFolderUuid, "otherfolder", "en");
+		otherFolderUuid = createFolder(testBaseUuid, otherFolderUuid, "andererordner", "de");
 		otherContentUuid = createContent(otherFolderUuid, otherContentUuid, "othercontent", "en");
 		otherContentUuid = createContent(otherFolderUuid, otherContentUuid, "andererinhalt", "de");
 
@@ -305,9 +318,9 @@ public class LinkReplacerVariationTest extends AbstractMeshTest {
 		case "en":
 			if (contentEn) {
 				if (folderEn) {
-					return "/targetfolder/targetcontent";
+					return "/%s/targetfolder/targetcontent".formatted(testBaseName);
 				} else {
-					return "/zielordner/targetcontent";
+					return "/%s/zielordner/targetcontent".formatted(testBaseName);
 				}
 			} else {
 				return "/error/404";
@@ -315,15 +328,15 @@ public class LinkReplacerVariationTest extends AbstractMeshTest {
 		case "de":
 			if (contentDe) {
 				if (folderDe) {
-					return "/zielordner/zielinhalt";
+					return "/%s/zielordner/zielinhalt".formatted(testBaseName);
 				} else {
-					return "/targetfolder/zielinhalt";
+					return "/%s/targetfolder/zielinhalt".formatted(testBaseName);
 				}
 			} else {
 				if (folderDe) {
-					return "/zielordner/targetcontent";
+					return "/%s/zielordner/targetcontent".formatted(testBaseName);
 				} else {
-					return "/targetfolder/targetcontent";
+					return "/%s/targetfolder/targetcontent".formatted(testBaseName);
 				}
 			}
 		default:

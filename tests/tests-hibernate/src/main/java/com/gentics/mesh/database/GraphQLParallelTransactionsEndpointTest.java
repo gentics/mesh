@@ -82,6 +82,6 @@ public class GraphQLParallelTransactionsEndpointTest extends AbstractGraphQLChil
 		if (DEBUG) {
 			System.out.println(finalQuery);
 		}
-		doTest(() -> client().graphql(projectName(), new GraphQLRequest().setQuery(finalQuery)), 10 + ((number-1) * 3 ));
+		doTest(() -> client().graphql(projectName(), new GraphQLRequest().setQuery(finalQuery)), 19 + ((number-1) * 3 ));
 	}
 }

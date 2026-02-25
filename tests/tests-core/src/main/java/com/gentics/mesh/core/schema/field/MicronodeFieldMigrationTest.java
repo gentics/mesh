@@ -25,8 +25,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 
 import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.ResetTestDb;
 
-@MeshTestSetting(testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true, resetBetweenTests = ResetTestDb.NEVER)
 public class MicronodeFieldMigrationTest extends AbstractFieldMigrationTest {
 
 	@Test

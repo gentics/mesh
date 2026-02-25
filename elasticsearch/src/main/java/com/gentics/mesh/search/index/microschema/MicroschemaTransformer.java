@@ -7,6 +7,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.handler.DataHolderContext;
 import com.gentics.mesh.search.index.AbstractTransformer;
 import com.gentics.mesh.util.ETag;
 
@@ -23,19 +24,19 @@ public class MicroschemaTransformer extends AbstractTransformer<HibMicroschema> 
 	}
 
 	@Override
-	public String generateVersion(HibMicroschema microschema) {
+	public String generateVersion(HibMicroschema microschema, DataHolderContext dhc) {
 		// No need to add users since the creator/editor edge affects the microschema version
 		return ETag.hash(microschema.getElementVersion());
 	}
 
 	@Override
-	public JsonObject toDocument(HibMicroschema microschema) {
+	public JsonObject toDocument(HibMicroschema microschema, DataHolderContext dhc) {
 		JsonObject document = new JsonObject();
 		addBasicReferences(document, microschema);
 		document.put(NAME_KEY, microschema.getName());
-		addPermissionInfo(document, microschema);
+		addPermissionInfo(document, microschema, "microschema", dhc);
 		// map.put(DESCRIPTION_KEY, microschema.getSchema().getDescription());
-		document.put(VERSION_KEY, generateVersion(microschema));
+		document.put(VERSION_KEY, generateVersion(microschema, dhc));
 		document.put(BUCKET_ID_KEY, microschema.getBucketId());
 		return document;
 	}

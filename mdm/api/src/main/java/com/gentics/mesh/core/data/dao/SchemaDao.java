@@ -1,10 +1,12 @@
 package com.gentics.mesh.core.data.dao;
 
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
@@ -143,7 +145,7 @@ public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionMod
 	 *            Bucket to limit the selection by
 	 * @return
 	 */
-	Stream<? extends HibNodeFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid, Bucket bucket);
+	Stream<? extends HibNodeFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid, Bucket bucket, Optional<ContainerType> optType);
 
 	/**
 	 * Load the limited portion of contents that use the given schema version for the given branch.
@@ -165,4 +167,12 @@ public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionMod
 	default Result<? extends HibNodeFieldContainer> findDraftFieldContainers(HibSchemaVersion version, String branchUuid) {
 		return findDraftFieldContainers(version, branchUuid, -1);
 	}
+
+	/**
+	 * Find the latest schema version of the schema, that is assigned to the branch
+	 * @param branch branch
+	 * @param schema schema
+	 * @return latest schema version or null
+	 */
+	HibSchemaVersion findLatestVersion(HibBranch branch, HibSchema schema);
 }

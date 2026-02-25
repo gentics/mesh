@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.apache.commons.lang3.tuple.Pair;
 
+import com.gentics.mesh.core.rest.common.FieldTypes;
+
 /**
  * Test for checking consistency of "nodefieldref"
  */
@@ -17,5 +19,10 @@ public class NodeFieldRefCheck extends AbstractListItemTableCheck {
 	@Override
 	protected List<Pair<String, String>> optValueReferencesToCheck() {
 		return Arrays.asList(Pair.of("valueoruuid", "node"));
+	}
+
+	@Override
+	protected FieldTypes getListFieldType() {
+		return null;
 	}
 }

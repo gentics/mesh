@@ -1,0 +1,2 @@
+Core: After the data migration from the older Mesh versions it is possible to have list item database tables being polluted with the duplicated data, that, while making no functional harm, may lead to the random performance penalties.
+ Targeting these, a new consistency check/repair feature has been added to the existing "*listitem" checks. 

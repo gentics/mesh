@@ -32,9 +32,10 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.node.field.HibHtmlField;
 import com.gentics.mesh.core.field.html.HtmlFieldTestHelper;
 import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.ResetTestDb;
 import com.gentics.mesh.util.IndexOptionHelper;
 
-@MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = false)
+@MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = false, resetBetweenTests = ResetTestDb.NEVER)
 public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implements HtmlFieldTestHelper {
 
 	@Test

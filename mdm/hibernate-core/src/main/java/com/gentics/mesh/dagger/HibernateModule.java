@@ -18,6 +18,8 @@ import com.gentics.mesh.cache.ProjectNameCache;
 import com.gentics.mesh.cache.ProjectNameCacheImpl;
 import com.gentics.mesh.cache.RoleNameCache;
 import com.gentics.mesh.cache.RoleNameCacheImpl;
+import com.gentics.mesh.cache.TableColumnsCache;
+import com.gentics.mesh.cache.TableColumnsCacheImpl;
 import com.gentics.mesh.cache.TagFamilyNameCache;
 import com.gentics.mesh.cache.TagFamilyNameCacheImpl;
 import com.gentics.mesh.cache.TagNameCache;
@@ -37,6 +39,7 @@ import com.gentics.mesh.check.HibernateBranchCheck;
 import com.gentics.mesh.check.HtmlListItemCheck;
 import com.gentics.mesh.check.MicronodeFieldRefCheck;
 import com.gentics.mesh.check.MicronodeListItemCheck;
+import com.gentics.mesh.check.NodeContentConsistencyCheck;
 import com.gentics.mesh.check.NodeFieldContainerCheck;
 import com.gentics.mesh.check.NodeFieldContainerVersionsEdgeCheck;
 import com.gentics.mesh.check.NodeFieldRefCheck;
@@ -203,6 +206,9 @@ public abstract class HibernateModule {
 	abstract ListableFieldCache<AbstractHibListFieldEdgeImpl<?>> bindListableFieldCache(ListableFieldCacheImpl e);
 
 	@Binds
+	abstract TableColumnsCache bindTableColumnsCache(TableColumnsCacheImpl e);
+
+	@Binds
 	abstract CacheRegistry bindCacheRegistry(HibCacheRegistry e);
 
 	// Migration
@@ -331,7 +337,8 @@ public abstract class HibernateModule {
 					new StringListItemCheck(),
 					new NodeFieldContainerCheck(),
 					new NodeFieldContainerVersionsEdgeCheck(),
-					new ContentRefCheck())
+					new ContentRefCheck(),
+					new NodeContentConsistencyCheck())
 			);
 
 	@Provides

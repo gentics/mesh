@@ -10,6 +10,8 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToOne;
 
 import org.hibernate.annotations.Cache;
@@ -38,6 +40,14 @@ import com.gentics.mesh.hibernate.util.HibernateUtil;
  *
  */
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@NamedQueries({
+	@NamedQuery(
+			name = "user.findgroupsforusers",
+			query = "select u, g from user u inner join u.groups g where u.dbUuid in :userUuids"),
+	@NamedQuery(
+			name = "user.findrolesforusers",
+			query = "select distinct u, r from user u inner join u.groups g inner join g.roles r where u.dbUuid in :userUuids")
+})
 @Entity(name = "user")
 @ElementTypeKey(ElementType.USER)
 public class HibUserImpl extends AbstractHibUserTrackedElement<UserResponse> implements HibUser, Serializable {

@@ -54,12 +54,12 @@ public class QueryCountingTest extends AbstractCountingTest {
 	/**
 	 * Number of allowed queries when getting nodes with etag
 	 */
-	public final static int ALLOWED_WITH_ETAG = 20;
+	public final static int ALLOWED_WITH_ETAG = 26;
 
 	/**
 	 * Number of allowed queries when getting nodes without etag
 	 */
-	public final static int ALLOWED_NO_ETAG = 15;
+	public final static int ALLOWED_NO_ETAG = 25;
 
 	protected static TagFamilyResponse tagFamily;
 

@@ -391,19 +391,21 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 
 	public JsonObjectAssert hasPermFailure(String path) {
 		JsonArray errors = actual.getJsonArray("errors");
-		for (int i = 0; i < errors.size(); i++) {
-			JsonObject error = errors.getJsonObject(i);
-			if (path.equalsIgnoreCase(error.getString("path"))) {
-				assertTrue("The error for path {" + path + "} did not contain location information.", error.containsKey("locations"));
+		if (errors != null) {
+			for (int i = 0; i < errors.size(); i++) {
+				JsonObject error = errors.getJsonObject(i);
+				if (path.equalsIgnoreCase(error.getString("path"))) {
+					assertTrue("The error for path {" + path + "} did not contain location information.", error.containsKey("locations"));
 
-				assertEquals("The message of the found error \n{" + error.encodePrettily() + "}", "graphql_error_missing_perm",
-					error.getString("message"));
-				assertEquals("The type of the found error \n{" + error.encodePrettily() + "} did not match.", "missing_perm",
-					error.getString("type"));
-				// assertEquals(uuid, error.getString("elementId"))
-				assertEquals("The type within the found error \n{" + error.encodePrettily() + "} did not match.", "node",
-					error.getString("elementType"));
-				return this;
+					assertEquals("The message of the found error \n{" + error.encodePrettily() + "}", "graphql_error_missing_perm",
+							error.getString("message"));
+					assertEquals("The type of the found error \n{" + error.encodePrettily() + "} did not match.", "missing_perm",
+							error.getString("type"));
+					// assertEquals(uuid, error.getString("elementId"))
+					assertEquals("The type within the found error \n{" + error.encodePrettily() + "} did not match.", "node",
+							error.getString("elementType"));
+					return this;
+				}
 			}
 		}
 		fail("Perm error for path {" + path + "} could not be found.");

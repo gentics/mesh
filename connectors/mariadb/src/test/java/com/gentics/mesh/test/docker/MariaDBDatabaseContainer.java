@@ -29,7 +29,7 @@ public class MariaDBDatabaseContainer extends PreparingDatabaseContainer<MariaDB
 		addEnv("MYSQL_USER", DEFAULT_USERNAME);
 		addEnv("MYSQL_PASSWORD", DEFAULT_PASSWORD);
 		addEnv("MYSQL_ROOT_PASSWORD", DEFAULT_PASSWORD);
-		setCommand("--transaction-isolation=READ-COMMITTED", "--binlog-format=ROW", "--log-bin=mysqld-bin");
+		setCommand("--transaction-isolation=READ-COMMITTED", "--binlog-format=ROW", "--log-bin=mysqld-bin", "--max-allowed-packet=67108864");
 		super.configure();
 		waitingFor(Wait
 				.forLogMessage(".*socket: '/run/mysqld/mysqld.sock'  port: 3306  mariadb.org binary distribution*\\n",

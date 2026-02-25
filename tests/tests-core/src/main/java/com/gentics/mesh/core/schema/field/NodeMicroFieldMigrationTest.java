@@ -7,9 +7,10 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.schema.field.AbstractFieldMigrationTest.MicroschemaTest;
 import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.ResetTestDb;
 
 @MicroschemaTest
-@MeshTestSetting(testSize = FULL, startServer = false)
+@MeshTestSetting(testSize = FULL, startServer = false, resetBetweenTests = ResetTestDb.NEVER)
 public class NodeMicroFieldMigrationTest extends NodeFieldMigrationTest {
 
 	@Test

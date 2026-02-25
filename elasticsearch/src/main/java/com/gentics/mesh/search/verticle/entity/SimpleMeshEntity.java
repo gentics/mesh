@@ -24,7 +24,7 @@ public class SimpleMeshEntity<T> extends MeshEntity<T> {
 
 	@Override
 	public Optional<JsonObject> getDocument(MeshElementEventModel event) {
-		return getElement(event).map(transformer::toDocument);
+		return getElement(event).map(e -> transformer.toDocument(e, null));
 	}
 
 	@Override

@@ -1,0 +1,10 @@
+{
+  "changeLogEntryFileNames": [
+    "8301.SUP-18646.enhancement",
+    "8311.SUP-18638.bugfix",
+    "8319.SUP-18637.bugfix"
+  ],
+  "version": "3.1.1",
+  "date": "03.07.2025",
+  "genericProperties": {}
+}

@@ -27,8 +27,9 @@ import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.FieldFetcher;
 import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.ResetTestDb;
 
-@MeshTestSetting(testSize = FULL, startServer = false)
+@MeshTestSetting(testSize = FULL, startServer = false, resetBetweenTests = ResetTestDb.NEVER)
 public class MicronodeListFieldMigrationTest extends AbstractFieldMigrationTest {
 	private final DataProvider FILL = (container, name) -> {
 		HibMicronodeFieldList field = container.createMicronodeList(name);

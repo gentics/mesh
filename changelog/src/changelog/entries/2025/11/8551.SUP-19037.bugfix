@@ -1,0 +1,1 @@
+Core: The performance of getting entity lists has been improved by reducing the number of executed SQL queries.

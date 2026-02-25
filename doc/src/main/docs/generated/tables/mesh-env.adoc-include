@@ -62,11 +62,11 @@
 | *MESH_HTTPS_PORT*
 | Override the configured server https port.
 
-| *MESH_BINARY_METADATA_WHITELIST*
-| Override the metadata whitelist
-
 | *MESH_ELASTICSEARCH_PREFIX*
 | Override the configured elasticsearch prefix.
+
+| *MESH_BINARY_METADATA_WHITELIST*
+| Override the metadata whitelist
 
 | *MESH_DEBUGINFO_LOG_FOLDER*
 | Override the path to the debug info log folder
@@ -206,6 +206,9 @@
 | *MESH_HTTP_CORS_ALLOW_CREDENTIALS*
 | Override the configured CORS allowed credentials flag.
 
+| *MESH_MONITORING_GC_LIMIT*
+| Override the garbage collection limit in percent.
+
 | *MESH_HIBERNATE_SLOW_SQL_THRESHOLD*
 | Slow SQL query threshold in milliseconds. Default: 60000
 
@@ -319,6 +322,9 @@
 
 | *MESH_ELASTICSEARCH_BULK_LENGTH_LIMIT*
 | Override the batch bulk length limit. Default: 5000000
+
+| *MESH_MONITORING_MEMORY_LIMIT*
+| Override the memory limit in percent.
 
 | *HIKARI_CP_AUTOCOMMIT*
 | This property controls the default auto-commit behavior of connections returned from the pool. It is a boolean value.

@@ -73,7 +73,7 @@ storageOptions:
     leakDetectionThreshold: 0
   synchronizeWrites: false
   synchronizeWritesTimeout: 60000
-  secondLevelCacheEnabled: false
+  secondLevelCacheEnabled: true
   generateStatistics: false
   queryTimeout: 0
   slowSqlThreshold: 60000
@@ -105,6 +105,8 @@ monitoring:
   port: 8081
   host: "127.0.0.1"
   jvmMetricsEnabled: true
+  memoryLimit: 95
+  gcTimeLimit: 50
 cluster:
   networkHost: null
   enabled: false

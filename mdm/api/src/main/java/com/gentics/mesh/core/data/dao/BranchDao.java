@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.data.dao;
 
+import java.util.Collection;
+import java.util.Map;
+
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.branch.HibBranchMicroschemaVersion;
@@ -8,8 +11,10 @@ import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 
 /**
@@ -133,4 +138,39 @@ public interface BranchDao extends DaoTransformable<HibBranch, BranchResponse>, 
 	 * @return Found edge between branch and version
 	 */
 	HibBranchMicroschemaVersion findBranchMicroschemaEdge(HibBranch branch, HibMicroschemaVersion microschemaVersion);
+
+	/**
+	 * Return the tags for all given branches
+	 * @param branches collection of branches
+	 * @return map of branch to the collections of tags
+	 */
+	Map<HibBranch, Collection<? extends HibTag>> getTags(Collection<HibBranch> branches);
+
+	/**
+	 * Find the active schema versions assigned to the given branch
+	 * @param branch branch
+	 * @return result of schema versions
+	 */
+	Result<? extends HibSchemaVersion> findActiveSchemaVersions(HibBranch branch);
+
+	/**
+	 * Find the active microschema versions assigned to the given branch
+	 * @param branch branch
+	 * @return result of microschema versions
+	 */
+	Result<? extends HibMicroschemaVersion> findActiveMicroschemaVersions(HibBranch branch);
+
+	/**
+	 * Find the active schema version edges of schemas assigned to the given branch
+	 * @param branch branch
+	 * @return result of schema version edges
+	 */
+	Result<? extends HibBranchSchemaVersion> findActiveSchemaVersionEdges(HibBranch branch);
+
+	/**
+	 * Find the active microschema version edges of microschemas assigned to the given branch
+	 * @param branch branch
+	 * @return result of microschema version edges
+	 */
+	Result<? extends HibBranchMicroschemaVersion> findActiveMicroschemaVersionEdges(HibBranch branch);
 }

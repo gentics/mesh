@@ -429,4 +429,12 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	public IdleChecker getIdleChecker() {
 		return idleChecker;
 	}
+
+	/**
+	 * Get the main event handler (for testing)
+	 * @return main event handler
+	 */
+	public MainEventHandler getMainEventhandler() {
+		return mainEventhandler;
+	}
 }

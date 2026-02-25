@@ -43,6 +43,7 @@ import com.gentics.mesh.contentoperation.CommonContentColumn;
 import com.gentics.mesh.contentoperation.ContentKey;
 import com.gentics.mesh.contentoperation.ContentStorage;
 import com.gentics.mesh.context.BulkActionContext;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibDeletableField;
 import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -51,6 +52,7 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.PersistingContentDao;
 import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.node.field.HibDisplayField;
 import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
@@ -60,6 +62,7 @@ import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.common.ReferenceType;
@@ -1737,7 +1740,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 		AbstractDeletableHibField<?> impl = (AbstractDeletableHibField<?>) field;
 		HibFieldEdge referenced = impl.getReferencedEdge();
 		if (referenced != null) {
-			currentTransaction.getEntityManager().remove(referenced);
+			currentTransaction.getTx().delete(referenced);
 		}
 	}
 
@@ -1884,6 +1887,30 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 		return resultMap;
 	}
 
+	@Override
+	public Map<String, List<NodeContent>> getNodeListFieldValues(List<String> listUuids, InternalActionContext ac,
+			String branchUuid, List<String> languageTags, ContainerType type) {
+		Map<String, List<UUID>> keyLists = getListValues(listUuids, HibNodeListFieldEdgeImpl::getNodeUuid,
+				HibNodeListFieldEdgeImpl.class);
+
+		List<UUID> allNodeUuids = keyLists.values().stream().flatMap(List::stream).distinct().toList();
+
+		Map<UUID, NodeContent> nodeContentsForUuids = Tx.get().nodeDao().getNodeContentsForUuids(allNodeUuids, ac, branchUuid,
+				languageTags, type, true);
+
+		Map<String, List<NodeContent>> result = new HashMap<>();
+		keyLists.entrySet().forEach(entry -> {
+			String listUuid = entry.getKey();
+			List<UUID> nodeUuids = entry.getValue();
+
+			List<NodeContent> nodeContents = nodeUuids.stream().map(nodeContentsForUuids::get).filter(c -> c != null)
+					.collect(Collectors.toList());
+			result.put(listUuid, nodeContents);
+		});
+
+		return result;
+	}
+
 	/**
 	 * Generic method to get list field values for given list UUIDs. The implementation will first get the items from the {@link ListableFieldCache}.
 	 * Everything not found in the cache will be loaded (with a single query) from the database and put into the cache.
@@ -1990,6 +2017,11 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 		});
 
 		return resultMap;
+	}
+
+	@Override
+	public int getStringLengthLimit() {
+		return databaseConnector.getStringLengthLimit();
 	}
 
 	public TotalsCache getTotalsCache() {

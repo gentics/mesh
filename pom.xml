@@ -6,7 +6,7 @@
 
 	<groupId>com.gentics.mesh</groupId>
 	<artifactId>mesh</artifactId>
-	<version>3.0.16-SNAPSHOT</version>
+	<version>3.1.12-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
 	<name>Gentics Mesh</name>
@@ -16,15 +16,16 @@
 		<projectRoot>${project.basedir}</projectRoot>
 		<mesh.build.version>${project.version}</mesh.build.version>
 		<mesh.build.timestamp>${maven.build.timestamp}</mesh.build.timestamp>
-		<license.checker.version>1.0.0</license.checker.version>
 
 		<vertx.version>4.5.18</vertx.version>
-		<dagger.version>2.24</dagger.version>
+		<dagger.version>2.56.2</dagger.version>
+		<hibernate.version>6.6.11.Final</hibernate.version>
 		<compiler.plugin.version>3.11.0</compiler.plugin.version>
 
 		<!-- Tests -->
 		<surefire.version>3.0.0-M5</surefire.version>
 		<surefire.forkcount>1</surefire.forkcount>
+		<surefire.rerunFailingTestsCount>1</surefire.rerunFailingTestsCount>
 		<surefire.jvm.postfix></surefire.jvm.postfix>
 		<skip.unit.tests>false</skip.unit.tests>
 		<skip.cluster.tests>false</skip.cluster.tests>
@@ -120,6 +121,10 @@
 						<forceJavacCompilerUse>true</forceJavacCompilerUse>
 						<verbose>false</verbose>
 						<release>17</release>
+						<compilerArgs>
+							<!-- See https://github.com/google/dagger/releases/tag/dagger-2.48-->
+							<arg>-Adagger.ignoreProvisionKeyWildcards=DISABLED</arg>
+						</compilerArgs>
 					</configuration>
 					<dependencies>
 						<dependency>

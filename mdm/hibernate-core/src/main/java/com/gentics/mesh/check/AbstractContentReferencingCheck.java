@@ -39,7 +39,7 @@ public abstract class AbstractContentReferencingCheck extends AbstractHibernateC
 		String contentUuidColumn = dc.renderColumn(CommonContentColumn.DB_UUID);
 
 		String sql = String.format(
-				"SELECT COUNT(*) c FROM %s ref LEFT JOIN %s content ON ref.%s = content.%s WHERE ref.%s = :%s AND content.%s IS NULL",
+				"SELECT COUNT(1) c FROM %s ref LEFT JOIN %s content ON ref.%s = content.%s WHERE ref.%s = :%s AND content.%s IS NULL",
 				refTableName, contentTable, contentRefColumn, contentUuidColumn, schemaVersionRefColumn, versionUuidParam, contentUuidColumn);
 
 		Object countResult = em.createNativeQuery(sql)

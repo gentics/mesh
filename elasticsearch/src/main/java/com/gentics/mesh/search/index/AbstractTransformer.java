@@ -1,5 +1,7 @@
 package com.gentics.mesh.search.index;
 
+import static com.gentics.mesh.util.PreparationUtil.getPreparedData;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,6 +17,8 @@ import com.gentics.mesh.core.data.user.HibCreatorTracking;
 import com.gentics.mesh.core.data.user.HibEditorTracking;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.handler.DataHolderContext;
+import com.gentics.mesh.util.PreparationUtil;
 
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
@@ -117,10 +121,13 @@ public abstract class AbstractTransformer<T> implements Transformer<T> {
 	 * 
 	 * @param document
 	 * @param element
+	 * @param elementType element type
+	 * @param dhc optional data holder context
 	 */
-	protected void addPermissionInfo(JsonObject document, HibBaseElement element) {
+	protected void addPermissionInfo(JsonObject document, HibBaseElement element, String elementType, DataHolderContext dhc) {
 		RoleDao roleDao = Tx.get().roleDao();
-		Set<String> roleUuids = roleDao.getRoleUuidsForPerm(element, InternalPermission.READ_PERM);
+		Set<String> roleUuids = getPreparedData(element, dhc, elementType, "permissions",
+				e -> roleDao.getRoleUuidsForPerm(e, InternalPermission.READ_PERM));
 		List<String> roleUuidsList = new ArrayList<>(roleUuids);
 		document.put("_roleUuids", roleUuidsList);
 	}
@@ -128,7 +135,7 @@ public abstract class AbstractTransformer<T> implements Transformer<T> {
 	@Override
 	public JsonObject toPermissionPartial(HibBaseElement element) {
 		JsonObject document = new JsonObject();
-		addPermissionInfo(document, element);
+		addPermissionInfo(document, element, null, null);
 		return document;
 	}
 

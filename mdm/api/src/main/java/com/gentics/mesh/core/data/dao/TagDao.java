@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.data.dao;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -161,6 +163,14 @@ public interface TagDao extends DaoGlobal<HibTag>, DaoTransformable<HibTag, TagR
 	 * @return
 	 */
 	Result<HibTag> getTags(HibNode node, HibBranch branch);
+
+	/**
+	 * Return tags for the given nodes in the branch
+	 * @param nodes
+	 * @param branch
+	 * @return
+	 */
+	Map<HibNode, Collection<? extends HibTag>> getTags(Collection<HibNode> nodes, HibBranch branch);
 
 	/**
 	 * Return a page of all visible tags that are assigned to the node.

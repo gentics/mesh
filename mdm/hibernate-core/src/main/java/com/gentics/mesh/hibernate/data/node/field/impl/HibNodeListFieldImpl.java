@@ -85,7 +85,7 @@ public class HibNodeListFieldImpl
 		HibNodeImpl nodeImpl = (HibNodeImpl) node;
 		EntityManager em = tx.entityManager();
 		get(index, tx).ifPresent(existing -> {
-			tx.forceDelete(existing, "dbUuid", e -> e.getId());
+			tx.delete(existing);
 		});
 		HibNodeListFieldEdgeImpl item = getItemConstructor().provide(tx, valueOrNull(), index, getFieldKey(), nodeImpl, getContainer());
 		em.persist(item);

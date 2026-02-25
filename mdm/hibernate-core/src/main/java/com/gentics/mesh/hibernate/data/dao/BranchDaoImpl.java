@@ -1,18 +1,27 @@
 package com.gentics.mesh.hibernate.data.dao;
 
 import static com.gentics.mesh.hibernate.util.HibernateUtil.firstOrNull;
+import static com.gentics.mesh.hibernate.util.HibernateUtil.inQueriesLimitForSplitting;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.hibernate.jpa.HibernateHints;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
@@ -26,6 +35,7 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
@@ -41,7 +51,9 @@ import com.gentics.mesh.hibernate.data.domain.HibProjectImpl;
 import com.gentics.mesh.hibernate.data.domain.HibSchemaVersionImpl;
 import com.gentics.mesh.hibernate.data.permission.HibPermissionRoots;
 import com.gentics.mesh.hibernate.event.EventFactory;
+import com.gentics.mesh.hibernate.util.SplittingUtils;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.util.CollectionUtil;
 import com.gentics.mesh.util.UUIDUtil;
 
 import dagger.Lazy;
@@ -96,7 +108,7 @@ public class BranchDaoImpl extends AbstractHibRootDao<HibBranch, BranchResponse,
 				.setParameter("branch", entity)
 				.getResultStream()
 				.forEach(job -> job.setBranch(null));
-		em().remove(entity);
+		currentTransaction.getTx().delete(entity);
 	}
 
 	@Override
@@ -245,5 +257,59 @@ public class BranchDaoImpl extends AbstractHibRootDao<HibBranch, BranchResponse,
 				Arrays.stream(super.getGraphQlSortingFieldNames(noDependencies)),
 				Arrays.stream(SORT_FIELDS)					
 			).flatMap(Function.identity()).toArray(String[]::new);
+	}
+
+	@Override
+	public Map<HibBranch, Collection<? extends HibTag>> getTags(Collection<HibBranch> branches) {
+		List<UUID> branchUuids = branches.stream().map(HibBranch::getId).map(UUID.class::cast).collect(Collectors.toList());
+
+		Map<HibBranch, Collection<? extends HibTag>> result = new HashMap<>();
+		result.putAll(SplittingUtils.splitAndMergeInMapOfLists(branchUuids, inQueriesLimitForSplitting(1), (uuids) -> {
+			@SuppressWarnings("unchecked")
+			List<Object[]> resultList = em().createNamedQuery("branch.findtagsforbranches")
+					.setParameter("branchUuids", uuids)
+					.getResultList();
+
+			return resultList.stream()
+					.map(tuples -> Pair.of((HibBranch)tuples[0], (HibTag)tuples[1]))
+					.collect(Collectors.groupingBy(Pair::getKey, Collectors.mapping(Pair::getValue, Collectors.toList())));
+		}));
+		return CollectionUtil.addFallbackValueForMissingKeys(result, branches, new ArrayList<>());
+	}
+
+	@Override
+	public Result<? extends HibSchemaVersion> findActiveSchemaVersions(HibBranch branch) {
+		return new TraversalResult<HibSchemaVersion>(em()
+				.createQuery("select e.version from branch_schema_version_edge e where e.branch = :branch and active = :active", HibSchemaVersionImpl.class)
+				.setParameter("branch", branch)
+				.setParameter("active", true)
+				.getResultList());
+	}
+
+	@Override
+	public Result<? extends HibBranchSchemaVersion> findActiveSchemaVersionEdges(HibBranch branch) {
+		return new TraversalResult<HibBranchSchemaVersion>(em()
+				.createQuery("select e from branch_schema_version_edge e where e.branch = :branch and active = :active", HibBranchSchemaVersionEdgeImpl.class)
+				.setParameter("branch", branch)
+				.setParameter("active", true)
+				.getResultList());
+	}
+
+	@Override
+	public Result<? extends HibMicroschemaVersion> findActiveMicroschemaVersions(HibBranch branch) {
+		return new TraversalResult<HibMicroschemaVersion>(em()
+				.createQuery("select e.version from branch_microschema_version_edge e where e.branch = :branch and active = :active", HibMicroschemaVersion.class)
+				.setParameter("branch", branch)
+				.setParameter("active", true)
+				.getResultList());
+	}
+
+	@Override
+	public Result<? extends HibBranchMicroschemaVersion> findActiveMicroschemaVersionEdges(HibBranch branch) {
+		return new TraversalResult<HibBranchMicroschemaVersion>(em()
+				.createQuery("select e from branch_microschema_version_edge e where e.branch = :branch and active = :active", HibBranchMicroschemaVersionEdgeImpl.class)
+				.setParameter("branch", branch)
+				.setParameter("active", true)
+				.getResultList());
 	}
 }

@@ -4,18 +4,6 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.NamedAttributeNode;
-import jakarta.persistence.NamedEntityGraph;
-import jakarta.persistence.NamedQueries;
-import jakarta.persistence.NamedQuery;
-import jakarta.persistence.NamedSubgraph;
-import jakarta.persistence.OneToMany;
-
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -34,26 +22,22 @@ import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.hibernate.data.dao.RoleDaoImpl;
 import com.gentics.mesh.hibernate.util.HibernateUtil;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.OneToMany;
+
 /**
  * Role entity implementation for Gentics Mesh.
  * 
  * @author plyhun
  *
  */
-@NamedEntityGraph(
-	name = "role.rest",
-	attributeNodes = {
-		@NamedAttributeNode(value = "groups", subgraph = "groups-subgraph")
-	},
-	subgraphs = {
-		@NamedSubgraph(
-			name = "groups-subgraph",
-			attributeNodes = {
-				@NamedAttributeNode(value = "name")
-			}
-		)
-	}
-)
 @NamedQueries({
 	@NamedQuery(
 		name = "role.findAllForAdmin",
@@ -65,6 +49,10 @@ import com.gentics.mesh.hibernate.util.HibernateUtil;
 				" join permission perm on (perm.element = r.dbUuid) " +
 				" where perm.role in :roles " +
 				" and perm.readPerm = true"
+	),
+	@NamedQuery(
+		name = "role.findgroupsforroles",
+		query = "select r, g from role r inner join r.groups g where r.dbUuid in :roleUuids"
 	)
 })
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
@@ -74,7 +62,7 @@ public class HibRoleImpl extends AbstractHibUserTrackedElement<RoleResponse> imp
 
 	private static final long serialVersionUID = -5790764419841421849L;
 
-	@ManyToMany(targetEntity = HibGroupImpl.class)
+	@ManyToMany(targetEntity = HibGroupImpl.class, fetch = FetchType.LAZY)
 	@JoinTable(name = "group_role", joinColumns = {@JoinColumn(name = "roles_dbUuid")}, inverseJoinColumns = {@JoinColumn(name = "groups_dbUuid")})
 	private Set<HibGroup> groups = new HashSet<>();
 

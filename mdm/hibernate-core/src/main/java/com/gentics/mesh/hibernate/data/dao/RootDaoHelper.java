@@ -72,7 +72,7 @@ public class RootDaoHelper<CHILD extends HibBaseElement, CHILDIMPL extends CHILD
 		if (maybeNativeFilter.isPresent() || PersistingRootDao.shouldSort(pagingInfo)) {
 			return daoHelper.findAll(ac, Optional.ofNullable(permissions).flatMap(perms -> perms.stream().findAny()), pagingInfo, maybeNativeFilter, Optional.of(Pair.of(rootJoin, (ROOTIMPL) root)));
 		} else {
-			return (Page) daoHelper.getResultPage(ac, makeFindAllInRoot(root, ac, permissions), pagingInfo, daoHelper.getEntityGraph("rest"), extraFilter);
+			return (Page) daoHelper.getResultPage(ac, makeFindAllInRoot(root, ac, permissions), pagingInfo, daoHelper.getEntityGraph("rest", true), extraFilter);
 		}
 	}
 
@@ -146,7 +146,7 @@ public class RootDaoHelper<CHILD extends HibBaseElement, CHILDIMPL extends CHILD
 			ROOT root, InternalActionContext ac,
 			InternalPermission permission) {
 		CriteriaQuery<? extends CHILD> query = makeFindAllInRoot(root, ac, Collections.singletonList(permission));
-		return daoHelper.getResultStream(ac, query, daoHelper.getEntityGraph("rest"));
+		return daoHelper.getResultStream(ac, query, daoHelper.getEntityGraph("rest", true));
 	}
 
 	/**

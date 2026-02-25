@@ -25,8 +25,9 @@ import org.junit.Test;
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.node.NodeFieldTestHelper;
 import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.ResetTestDb;
 
-@MeshTestSetting(testSize = FULL, startServer = false)
+@MeshTestSetting(testSize = FULL, startServer = false, resetBetweenTests = ResetTestDb.NEVER)
 public class NodeFieldMigrationTest extends AbstractFieldMigrationTest implements NodeFieldTestHelper {
 
 	final DataProvider FILL = (container, name) -> container.createNode(name, folder("2015"));

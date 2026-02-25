@@ -155,7 +155,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 
 	// TODO: Changing the role name or deleting the role would cause code that utilizes this field to break.
 	// This is however a rare case.
-	protected HibRole anonymousRole;
+	protected String anonymousRoleUuid;
 
 	protected MeshImpl mesh;
 
@@ -807,13 +807,13 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	 */
 	@Override
 	public HibRole anonymousRole() {
-		if (anonymousRole == null) {
+		if (anonymousRoleUuid == null) {
 			synchronized (BootstrapInitializer.class) {
 				// Load the role if it has not been yet loaded
-				anonymousRole = Tx.get().roleDao().findByName("anonymous");
+				anonymousRoleUuid = Tx.get().roleDao().findByName("anonymous").getUuid();
 			}
 		}
-		return anonymousRole;
+		return Tx.get().roleDao().findByUuid(anonymousRoleUuid);
 	}
 
 	/**
@@ -821,7 +821,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	 */
 	@Override
 	public void clearReferences() {
-		anonymousRole = null;
+		anonymousRoleUuid = null;
 	}
 
 	@Override
@@ -915,12 +915,13 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 					log.debug("Created anonymous group {" + anonymousGroup.getUuid() + "}");
 				}
 
-				anonymousRole = roleDao.findByName("anonymous");
+				HibRole anonymousRole = roleDao.findByName("anonymous");
 				if (anonymousRole == null) {
 					anonymousRole = roleDao.create("anonymous", anonymousUser);
 					groupDao.addRole(anonymousGroup, anonymousRole);
 					log.debug("Created anonymous role {" + anonymousRole.getUuid() + "}");
 				}
+				anonymousRoleUuid = anonymousRole.getUuid();
 
 				tx.success();
 			});

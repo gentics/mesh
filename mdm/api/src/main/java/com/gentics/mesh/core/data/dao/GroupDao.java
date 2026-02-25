@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.role.HibRole;
@@ -101,12 +102,28 @@ public interface GroupDao extends DaoGlobal<HibGroup>, DaoTransformable<HibGroup
 	void removeRole(HibGroup group, HibRole role);
 
 	/**
+	 * Count the users in the group
+	 * @param group
+	 * @return user count
+	 */
+	long countUsers(HibGroup group);
+
+	/**
 	 * Return a traversal of users that are assigned to the group.
 	 *
 	 * @param group
 	 * @return Traversal of users
 	 */
 	Result<? extends HibUser> getUsers(HibGroup group);
+
+	/**
+	 * Return a traversal of users in the given bucket that are assigned to the group.
+	 *
+	 * @param group
+	 * @param bucket
+	 * @return Traversal of users
+	 */
+	Result<? extends HibUser> getUsers(HibGroup group, Bucket bucket);
 
 	/**
 	 * Return a traversal of roles that are assigned to the group.

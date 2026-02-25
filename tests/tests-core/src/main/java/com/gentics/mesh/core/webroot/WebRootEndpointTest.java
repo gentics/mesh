@@ -159,6 +159,27 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
+	public void testReadFolderByPathAsAnonymous() throws Exception {
+		String path = "/News/2015";
+
+		// grant permissions to the anonymous role
+		try (Tx tx = tx()) {
+			RoleDao roleDao = tx.roleDao();
+			HibNode newsFolder = folder("2015");
+			roleDao.grantPermissions(anonymousRole(), newsFolder, READ_PERM);
+			roleDao.grantPermissions(anonymousRole(), newsFolder, READ_PUBLISHED_PERM);
+			tx.success();
+		}
+
+		// clear the cache
+		adminCall(() -> client().clearCache());
+		// read by webroot path
+		call(() -> anonymousClient().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft()));
+		// read by webroot path again (from cache)
+		call(() -> anonymousClient().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft()));
+	}
+
+	@Test
 	public void testInvalidWebrootPath() {
 		HibNode node = folder("2015");
 		String path = "/News/2015";

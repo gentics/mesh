@@ -1,6 +1,7 @@
 package com.gentics.mesh.test.context;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -76,7 +77,7 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 
 	@Before
 	public void setupEventAsserter() {
-		((AbstractBootstrapInitializer) boot()).getCoreVerticleLoader().redeploySearchVerticle().blockingAwait();
+		redeploySearchVerticle();
 		eventAsserter = new EventAsserter(getTestContext());
 		testContext.waitAndClearSearchIdleEvents();
 	}
@@ -88,7 +89,7 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 
 	@After
 	public void resetSearchVerticle() throws Exception {
-		((AbstractBootstrapInitializer) boot()).getCoreVerticleLoader().undeploySearchVerticle().blockingAwait();
+		undeploySearchVerticle();
 	}
 
 	public OkHttpClient httpClient() {

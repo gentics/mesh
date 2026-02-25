@@ -1,0 +1,1 @@
+Core: Under some circumstances the fetch of entities via REST GET returns duplicated entries. This has been fixed.

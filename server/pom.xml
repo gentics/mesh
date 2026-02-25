@@ -11,7 +11,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>3.0.16-SNAPSHOT</version>
+		<version>3.1.12-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -143,6 +143,21 @@
 										<exclude>META-INF/*.RSA</exclude>
 									</excludes>
 								</filter>
+								<!-- Exclude classes from dependency jars, which are overwritten (patched) -->
+								<filter>
+									<artifact>com.hazelcast:hazelcast-hibernate53</artifact>
+									<excludes>
+										<exclude>com/hazelcast/hibernate/PhoneHomeInfo.class</exclude>
+										<exclude>com/hazelcast/hibernate/PhoneHomeInfo$QueryStringBuilder.class</exclude>
+									</excludes>
+								</filter>
+								<filter>
+									<artifact>io.vertx:vertx-hazelcast</artifact>
+									<excludes>
+										<exclude>io/vertx/spi/cluster/hazelcast/impl/HazelcastLock.class</exclude>
+										<exclude>io/vertx/spi/cluster/hazelcast/HazelcastClusterManager.class</exclude>
+									</excludes>
+								</filter>
 							</filters>
 							<transformers>
 								<transformer
@@ -161,6 +176,10 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
 					<forceJavacCompilerUse>true</forceJavacCompilerUse>
+					<compilerArgs>
+						<!-- See https://github.com/google/dagger/releases/tag/dagger-2.48-->
+						<arg>-Adagger.ignoreProvisionKeyWildcards=DISABLED</arg>
+					</compilerArgs>
 				</configuration>
 				<dependencies>
 					<dependency>

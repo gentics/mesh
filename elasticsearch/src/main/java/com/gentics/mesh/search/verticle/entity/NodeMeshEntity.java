@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModelImpl;
@@ -35,8 +36,9 @@ public class NodeMeshEntity extends MeshEntity<HibNodeFieldContainer> {
 		return getElement(event)
 			.map(element -> tf.toDocument(
 				element,
-				ev.getBranchUuid(),
-				ev.getType()
+				element.getNode().getProject(),
+				Tx.get().branchDao().findByUuid(element.getNode().getProject(), ev.getBranchUuid()),
+				ev.getType(), null
 			));
 	}
 

@@ -1,10 +1,15 @@
 package com.gentics.mesh.util;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
+
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Utils used for comparing objects.
@@ -24,7 +29,38 @@ public final class CompareUtils {
 	 * @see Object#equals(Object)
 	 */
 	public static boolean equals(Object a, Object b) {
-		return (a == null && b == null) || (a != null && a.equals(b));
+		return equals(a, b, false, false);
+	}
+
+	/**
+	 * Returns {@code true} if the arguments are equal to each other and {@code false} otherwise. Consequently, if both arguments are {@code null}, {@code true}
+	 * is returned and if exactly one argument is {@code null}, {@code false} is returned. Otherwise, equality is determined by using the {@link Object#equals
+	 * equals} method of the first argument.
+	 *
+	 * @param a
+	 *            an object
+	 * @param b
+	 *            an object to be compared with {@code a} for equality
+	 * @param nullIsEmpty true if null value is logically equal to an empty value
+	 * @param nullIsUnchanged true if null value for objectB shall be treated as "unchanged"
+	 * @return {@code true} if the arguments are equal to each other and {@code false} otherwise
+	 * @see Object#equals(Object)
+	 */
+	public static boolean equals(Object a, Object b, boolean nullIsEmpty, boolean nullIsUnchanged) {
+		if (nullIsUnchanged && b == null) {
+			return true;
+		}
+		if (nullIsEmpty && (
+				(b == null && isEmpty(a)) ||
+				(a == null && isEmpty(b))
+			)) {
+			return true;
+		}
+		if (a instanceof Object[] arrayA && b instanceof Object[] arrayB) {
+			return Arrays.equals(arrayA, arrayB);
+		} else {
+			return (a == null && b == null) || (a != null && a.equals(b));
+		}
 	}
 
 	/**
@@ -89,6 +125,33 @@ public final class CompareUtils {
 	 */
 	public static boolean equals(Number a, Number b) {
 		return (a == null && b == null) || (a != null && NumberUtils.compare(a, b) == 0);
+	}
+
+	/**
+	 * Check whether the given object is considered empty:
+	 * <ol>
+	 * <li>null</li>
+	 * <li>empty string</li>
+	 * <li>empty collection</li>
+	 * <li>empty array</li>
+	 * </ol>
+	 * @param o object to check
+	 * @return true if the object is empty
+	 */
+	public static boolean isEmpty(Object o) {
+		if (o == null) {
+			return true;
+		} else if (o instanceof String s) {
+			return StringUtils.isEmpty(s);
+		} else if (o instanceof Collection<?> c) {
+			return c.isEmpty();
+		} else if (o instanceof Map<?, ?> m) {
+			return m.isEmpty();
+		} else if (o instanceof Object[] array) {
+			return array.length == 0;
+		} else {
+			return false;
+		}
 	}
 
 	/**

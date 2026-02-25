@@ -131,23 +131,25 @@ stage("Setup Build Environment") {
 						sh "git commit -m 'Raise version'"
 						GitHelper.addTag(version, 'Release of version ' + version)
 					} else if (Boolean.valueOf(params.setBranchAsVersion)) {
-						version = branchName
+						version = branchName + "-SNAPSHOT"
 						echo "Building version " + version
 						MavenHelper.setVersion(version)
 					}
-				}
 
-				if (params.testingVersion?.trim()) {
-					version = params.testingVersion.trim()
-					echo "Building version test build with name: " + version
-					MavenHelper.setVersion(version)
+					if (params.testingVersion?.trim()) {
+						version = params.testingVersion.trim()
+						echo "Building version test build with name: " + version
+						MavenHelper.setVersion(version)
+					}
 				}
 			}
 
 			stage("Setup") {
 				if (params.meshVersion?.trim()) {
-					echo "Setting Gentics Mesh version to " + params.meshVersion.trim()
-					MavenHelper.setProperty("mesh.version", params.meshVersion.trim())
+					withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
+						echo "Setting Gentics Mesh version to " + params.meshVersion.trim()
+						MavenHelper.setProperty("mesh.version", params.meshVersion.trim())
+					}
 				}
       		}
 
@@ -348,7 +350,6 @@ stage("Setup Build Environment") {
 			stage("Docker Build") {
 				if (env.BUILD_SKIPPED != "true" && Boolean.valueOf(params.runDocker)) {
 					if (Boolean.valueOf(params.runDeployTesting)) {
-						version = branchName;
 						registryHost = registryHostTest;
 					}
 					// server
@@ -406,7 +407,6 @@ stage("Setup Build Environment") {
 				if (env.BUILD_SKIPPED != "true" && (Boolean.valueOf(params.runDeploy) || Boolean.valueOf(params.runDeployTesting))) {
 					if (Boolean.valueOf(params.runDocker)) {
 						if (Boolean.valueOf(params.runDeployTesting)) {
-							version = branchName;
 							registryHost = registryHostTest;
 						}
 

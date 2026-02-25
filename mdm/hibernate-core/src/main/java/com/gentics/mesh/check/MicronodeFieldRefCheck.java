@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.apache.commons.lang3.tuple.Pair;
 
+import com.gentics.mesh.core.rest.common.FieldTypes;
+
 /**
  * Test for checking consistency of "micronodefieldref"
  */
@@ -17,5 +19,10 @@ public class MicronodeFieldRefCheck extends AbstractListItemTableCheck {
 	@Override
 	protected List<Pair<String, String>> optMicroNodeReferences() {
 		return Arrays.asList(Pair.of("valueoruuid", "microschemaversion_dbuuid"));
+	}
+
+	@Override
+	protected FieldTypes getListFieldType() {
+		return null;
 	}
 }

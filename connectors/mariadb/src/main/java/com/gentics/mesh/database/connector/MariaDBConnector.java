@@ -101,4 +101,10 @@ public class MariaDBConnector extends AbstractDatabaseConnector {
 	protected String getDefaultDialectClassName() {
 		return MariaDBBinaryUuidDialect.class.getCanonicalName();
 	}
+
+	@Override
+	public int getStringLengthLimit() {
+		// MariaDB uses "mediumtext"
+		return 16_777_215;
+	}
 }

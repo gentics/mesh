@@ -5,14 +5,15 @@ import static com.gentics.mesh.hibernate.util.HibernateUtil.firstOrNull;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
-import jakarta.persistence.EntityManager;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.InternalActionContext;
@@ -51,6 +52,7 @@ import com.gentics.mesh.util.UUIDUtil;
 
 import dagger.Lazy;
 import io.vertx.core.Vertx;
+import jakarta.persistence.EntityManager;
 
 /**
  * Partial implementation of common parts for entity container DAOs.
@@ -278,6 +280,19 @@ public abstract class AbstractHibContainerDao<
 			).flatMap(Function.identity()).toArray(String[]::new);
 	}
 	
+	@Override
+	public Map<HibBranch, SCV> findReferencedBranches(SC schema) {
+		List<Object[]> resultList = em().createQuery(
+				"select e.branch, e.version from branch_" + getVersionFieldLabel() + "_version_edge e where e.active = :active and e.version."+getVersionFieldLabel()+" = :schema",
+				Object[].class)
+			.setParameter("active", true)
+			.setParameter("schema", schema)
+			.getResultList();
+
+		return resultList.stream().collect(Collectors.toMap(row -> HibBranch.class.cast(row[0]),
+				row -> getVersionPersistenceClass().cast(row[1]), (v1, v2) -> v1));
+	}
+
 	/**
 	 * Get the field label for the container version.
 	 * 

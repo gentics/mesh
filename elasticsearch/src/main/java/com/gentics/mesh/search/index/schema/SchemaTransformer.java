@@ -8,6 +8,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.handler.DataHolderContext;
 import com.gentics.mesh.search.index.AbstractTransformer;
 import com.gentics.mesh.util.ETag;
 
@@ -24,7 +25,7 @@ public class SchemaTransformer extends AbstractTransformer<HibSchema> {
 	}
 
 	@Override
-	public String generateVersion(HibSchema container) {
+	public String generateVersion(HibSchema container, DataHolderContext dhc) {
 		StringBuilder builder = new StringBuilder();
 		builder.append(container.getElementVersion());
 		builder.append("|");
@@ -34,13 +35,13 @@ public class SchemaTransformer extends AbstractTransformer<HibSchema> {
 	}
 
 	@Override
-	public JsonObject toDocument(HibSchema container) {
+	public JsonObject toDocument(HibSchema container, DataHolderContext dhc) {
 		JsonObject document = new JsonObject();
 		document.put(NAME_KEY, container.getName());
 		document.put(DESCRIPTION_KEY, container.getLatestVersion().getSchema().getDescription());
 		addBasicReferences(document, container);
-		addPermissionInfo(document, container);
-		document.put(VERSION_KEY, generateVersion(container));
+		addPermissionInfo(document, container, "schema", dhc);
+		document.put(VERSION_KEY, generateVersion(container, dhc));
 		document.put(BUCKET_ID_KEY, container.getBucketId());
 		return document;
 	}

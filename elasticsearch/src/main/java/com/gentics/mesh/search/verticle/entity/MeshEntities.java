@@ -38,6 +38,7 @@ import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.event.tag.TagElementEventModel;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
+import com.gentics.mesh.handler.DataHolderContext;
 import com.gentics.mesh.search.index.group.GroupTransformer;
 import com.gentics.mesh.search.index.microschema.MicroschemaTransformer;
 import com.gentics.mesh.search.index.node.NodeContainerTransformer;
@@ -269,7 +270,7 @@ public class MeshEntities {
 	 * @return
 	 */
 	public CreateDocumentRequest createRequest(HibGroup element) {
-		return helper.createDocumentRequest(HibGroup.composeIndexName(), element.getUuid(), group.transform(element), complianceMode);
+		return helper.createDocumentRequest(HibGroup.composeIndexName(), element.getUuid(), group.transform(element, null), complianceMode);
 	}
 
 	/**
@@ -278,7 +279,17 @@ public class MeshEntities {
 	 * @return
 	 */
 	public CreateDocumentRequest createRequest(HibUser element) {
-		return helper.createDocumentRequest(HibUser.composeIndexName(), element.getUuid(), user.transform(element), complianceMode);
+		return createRequest(element, null);
+	}
+
+	/**
+	 * Creates a {@link CreateDocumentRequest} for the given element.
+	 * @param element
+	 * @param dhc optional data holder context
+	 * @return
+	 */
+	public CreateDocumentRequest createRequest(HibUser element, DataHolderContext dhc) {
+		return helper.createDocumentRequest(HibUser.composeIndexName(), element.getUuid(), user.transform(element, dhc), complianceMode);
 	}
 
 	/**
@@ -287,7 +298,7 @@ public class MeshEntities {
 	 * @return
 	 */
 	public CreateDocumentRequest createRequest(HibTagFamily element, String projectUuid) {
-		return helper.createDocumentRequest(HibTagFamily.composeIndexName(projectUuid), element.getUuid(), tagFamily.transform(element), complianceMode);
+		return helper.createDocumentRequest(HibTagFamily.composeIndexName(projectUuid), element.getUuid(), tagFamily.transform(element, null), complianceMode);
 	}
 
 	/**
@@ -296,7 +307,7 @@ public class MeshEntities {
 	 * @return
 	 */
 	public CreateDocumentRequest createRequest(HibTag element, String projectUuid) {
-		return helper.createDocumentRequest(HibTag.composeIndexName(projectUuid), element.getUuid(), tag.transform(element), complianceMode);
+		return helper.createDocumentRequest(HibTag.composeIndexName(projectUuid), element.getUuid(), tag.transform(element, null), complianceMode);
 	}
 
 	/**
@@ -328,7 +339,7 @@ public class MeshEntities {
 					version.getMicroschemaVersionHash(branch)
 				),
 				ContentDao.composeDocumentId(nodeUuid, container.getLanguageTag()),
-				transformer.toDocument(container, branch.getUuid(), type), complianceMode
+				transformer.toDocument(container, project, branch, type, null), complianceMode
 			);
 		})));
 	}

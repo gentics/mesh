@@ -12,6 +12,7 @@ import static com.gentics.mesh.mock.TestMocks.mockSchemaContainer;
 import static com.gentics.mesh.mock.TestMocks.mockTag;
 import static com.gentics.mesh.mock.TestMocks.mockTagFamily;
 import static com.gentics.mesh.mock.TestMocks.mockUser;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -27,6 +28,8 @@ import org.mockito.Mockito;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.data.Bucket;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.GroupDao;
@@ -159,6 +162,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 			RoleDao roleDao = mock(RoleDaoImpl.class);
 			GroupDao groupDao = mock(GroupDaoImpl.class);
 			TagDao tagDao = mock(TagDaoImpl.class);
+			when(tagDao.findAll(any(HibTagFamily.class))).thenReturn(TraversalResult.empty());
 			TagFamilyDao tagFamilyDao = mock(TagFamilyDaoImpl.class);
 
 			when(tx.nodeDao()).thenReturn(nodeDao);
@@ -199,6 +203,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		String language = "de";
 		HibUser user = mockUser("joe1", "Joe", "Doe");
 		HibProject project = mockProject(user);
+		HibBranch branch = mock(HibBranch.class);
 		HibTagFamily tagFamily = mockTagFamily("colors", user, project);
 		HibTag tagA = mockTag("green", user, tagFamily, project);
 		HibTag tagB = mockTag("red", user, tagFamily, project);
@@ -206,26 +211,26 @@ public class SearchModelGenerator extends AbstractGenerator {
 		HibNode node = mockNode(nodeDao, contentDao, tagDao, parentNode, project, user, language, tagA, tagB);
 		when(roleDao.getRolesWithPerm(Mockito.any(), Mockito.any())).thenReturn(new TraversalResult<>(Collections.emptyList()));
 
-		write(new NodeContainerTransformer(new HibernateMeshOptions(), roleDao).toDocument(contentDao.getLatestDraftFieldContainer(node, language), UUID_1, ContainerType.PUBLISHED), "node.search");
+		write(new NodeContainerTransformer(new HibernateMeshOptions(), roleDao).toDocument(contentDao.getLatestDraftFieldContainer(node, language), project, branch, ContainerType.PUBLISHED, null), "node.search");
 	}
 
 	private void writeProjectDocumentExample() throws Exception {
 		HibUser creator = mockUser("admin", "Admin", "", null);
 		HibUser user = mockUser("joe1", "Joe", "Doe", creator);
 		HibProject project = mockProject(user);
-		write(new ProjectTransformer().toDocument(project), "project.search");
+		write(new ProjectTransformer().toDocument(project, null), "project.search");
 	}
 
 	private void writeGroupDocumentExample() throws Exception {
 		HibUser user = mockUser("joe1", "Joe", "Doe");
 		HibGroup group = mockGroup("adminGroup", user);
-		write(new GroupTransformer().toDocument(group), "group.search");
+		write(new GroupTransformer().toDocument(group, null), "group.search");
 	}
 
 	private void writeRoleDocumentExample() throws Exception {
 		HibUser user = mockUser("joe1", "Joe", "Doe");
 		HibRole role = mockRole("adminRole", user);
-		write(new RoleTransformer().toDocument(role), "role.search");
+		write(new RoleTransformer().toDocument(role, null), "role.search");
 	}
 
 	private void writeUserDocumentExample(UserDao userDao) throws Exception {
@@ -234,10 +239,10 @@ public class SearchModelGenerator extends AbstractGenerator {
 		HibGroup groupA = mockGroup("editors", user);
 		HibGroup groupB = mockGroup("superEditors", user);
 		Result<? extends HibGroup> result = new TraversalResult<>(Arrays.asList(groupA, groupB));
-		when(userDao.getGroups(Mockito.any())).then(answer -> {
+		when(userDao.getGroups(Mockito.any(HibUser.class))).then(answer -> {
 			return result;
 		});
-		write(new UserTransformer().toDocument(user), "user.search");
+		write(new UserTransformer().toDocument(user, null), "user.search");
 	}
 
 	private void writeTagFamilyDocumentExample(TagDao tagDao, TagFamilyDao tagFamilyDao) throws Exception {
@@ -248,28 +253,28 @@ public class SearchModelGenerator extends AbstractGenerator {
 		tagList.add(mockTag("red", user, tagFamily, project));
 		tagList.add(mockTag("green", user, tagFamily, project));
 
-		when(tagDao.findAll(Mockito.any())).then(answer -> {
+		when(tagDao.findAll(Mockito.any(Bucket.class))).then(answer -> {
 			return new TraversalResult<>(tagList);
 		});
-		when(tagFamilyDao.findAll(Mockito.any())).then(answer -> {
+		when(tagFamilyDao.findAll(Mockito.any(Bucket.class))).then(answer -> {
 			return new TraversalResult<>(tagList);
 		});
 
-		write(new TagFamilyTransformer().toDocument(tagFamily), "tagFamily.search");
+		write(new TagFamilyTransformer().toDocument(tagFamily, null), "tagFamily.search");
 	}
 
 	private void writeSchemaDocumentExample() throws Exception {
 		HibUser user = mockUser("joe1", "Joe", "Doe");
 		HibSchema schemaContainer = mockSchemaContainer("content", user);
 
-		write(new SchemaTransformer().toDocument(schemaContainer), "schema.search");
+		write(new SchemaTransformer().toDocument(schemaContainer, null), "schema.search");
 	}
 
 	private void writeMicroschemaDocumentExample() throws Exception {
 		HibUser user = mockUser("joe1", "Joe", "Doe");
 		HibMicroschema microschema = mockMicroschemaContainer("geolocation", user);
 
-		write(new MicroschemaTransformer().toDocument(microschema), "microschema.search");
+		write(new MicroschemaTransformer().toDocument(microschema, null), "microschema.search");
 	}
 
 	private void writeTagDocumentExample() throws Exception {
@@ -277,7 +282,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		HibProject project = mockProject(user);
 		HibTagFamily tagFamily = mockTagFamily("colors", user, project);
 		HibTag tag = mockTag("red", user, tagFamily, project);
-		write(new TagTransformer().toDocument(tag), "tag.search");
+		write(new TagTransformer().toDocument(tag, null), "tag.search");
 	}
 
 	private void write(JsonObject jsonObject, String filename) throws Exception {

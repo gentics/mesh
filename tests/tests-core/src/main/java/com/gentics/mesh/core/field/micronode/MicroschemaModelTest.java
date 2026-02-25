@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.field.micronode;
 
+import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ElasticsearchTestMode.CONTAINER_ES6;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -13,6 +14,7 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.junit.Ignore;
@@ -22,12 +24,14 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.dao.PersistingMicroschemaDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparatorImpl;
@@ -38,6 +42,7 @@ import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
@@ -45,7 +50,9 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
+import com.gentics.mesh.parameter.client.SchemaUpdateParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -334,4 +341,42 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 			tx.success();
 		}
 	}
+
+	/**
+	 * Test implementation of {@link HibMicroschema#findReferencedBranches()}
+	 */
+	@Test
+	public void testFindReferencedBranches() {
+		String microschemaUuid = tx(() -> microschemaContainer("vcard").getUuid());
+		String version1Uuid = tx(() -> microschemaContainer("vcard").getLatestVersion().getUuid());
+
+		String initialBranchUuid = tx(() -> project().getInitialBranch().getUuid());
+		String newBranchUuid = tx(() -> createBranch("newbranch").getUuid());
+
+		MicroschemaResponse microschemaResponse = call(() -> client().findMicroschemaByUuid(microschemaUuid));
+		MicroschemaUpdateRequest update = JsonUtil.readValue(JsonUtil.toJson(microschemaResponse), MicroschemaUpdateRequest.class);
+		update.setNoIndex(true);
+
+		waitForJob(() -> client().updateMicroschema(microschemaUuid, update, new SchemaUpdateParametersImpl().setBranchNames("newbranch")).blockingAwait());
+
+		String version2Uuid = tx(tx -> {
+			return tx.microschemaDao().findByUuid(microschemaUuid).getLatestVersion().getUuid();
+		});
+
+		try (Tx tx = tx()) {
+			HibProject project = project();
+			HibBranch initialBranch = tx.branchDao().findByUuid(project, initialBranchUuid);
+			HibBranch newBranch = tx.branchDao().findByUuid(project, newBranchUuid);
+
+			HibMicroschema microschema = tx.microschemaDao().findByUuid(microschemaUuid);
+			HibMicroschemaVersion version1 = tx.microschemaDao().findVersionByUuid(microschema, version1Uuid);
+			HibMicroschemaVersion version2 = tx.microschemaDao().findVersionByUuid(microschema, version2Uuid);
+
+			Map<HibBranch, HibMicroschemaVersion> referencedBranches = microschema.findReferencedBranches();
+
+			assertThat(referencedBranches).as("Map of referenced branches")
+					.containsOnly(Map.entry(initialBranch, version1), Map.entry(newBranch, version2));
+		}
+	}
+
 }

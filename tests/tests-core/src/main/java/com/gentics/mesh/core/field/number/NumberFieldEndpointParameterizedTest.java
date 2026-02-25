@@ -7,24 +7,22 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.HibNumberField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.test.Assert;
 import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.ResetTestDb;
 import com.gentics.mesh.test.TestSize;
 
 @RunWith(Parameterized.class)
-@MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = true)
+@MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = true, resetBetweenTests = ResetTestDb.NEVER)
 public class NumberFieldEndpointParameterizedTest extends AbstractNumberFieldEndpointTest {
 
 	@Parameterized.Parameters(name = "{index}: {1}")
@@ -58,6 +56,18 @@ public class NumberFieldEndpointParameterizedTest extends AbstractNumberFieldEnd
 	@Parameterized.Parameter(1)
 	public String testName;
 
+	@Before
+	public void setup() {
+		// when testing with Double min or Double max, we substitute the values with the
+		// limits allowed by the database
+		if (num.doubleValue() == Double.MIN_VALUE) {
+			num = testContext.getInstanceProvider().getMinAllowedDouble();
+		}
+		if (num.doubleValue() == Double.MAX_VALUE) {
+			num = testContext.getInstanceProvider().getMaxAllowedDouble();
+		}
+	}
+
 	@Test
 	@Override
 	public void testUpdateSameValue() {
@@ -83,16 +93,7 @@ public class NumberFieldEndpointParameterizedTest extends AbstractNumberFieldEnd
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() throws IOException {
-		try (Tx tx = tx()) {
-			HibNode node = folder("2015");
-			ContentDao contentDao = tx.contentDao();
-			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
-					node.getProject().getLatestBranch(), user(),
-					contentDao.getLatestDraftFieldContainer(node, english()), true);
-			HibNumberField numberField = container.createNumber(FIELD_NAME);
-			numberField.setNumber(this.num);
-			tx.success();
-		}
+		updateNode(FIELD_NAME, new NumberFieldImpl().setNumber(this.num));
 
 		try (Tx tx = tx()) {
 			NodeResponse response = readNode(folder("2015"));

@@ -8,6 +8,7 @@ import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModelImpl;
+import com.gentics.mesh.handler.DataHolderContext;
 import com.gentics.mesh.search.index.Transformer;
 import com.gentics.mesh.search.verticle.eventhandler.EventVertexMapper;
 
@@ -86,10 +87,11 @@ public abstract class MeshEntity<T> {
 	 * Transforms an element to an elasticsearch document.
 	 * 
 	 * @param element
+	 * @param dhc optional data holder context
 	 * @return
 	 */
-	public JsonObject transform(T element) {
-		return transformer.toDocument(element);
+	public JsonObject transform(T element, DataHolderContext dhc) {
+		return transformer.toDocument(element, dhc);
 	}
 
 	/**
