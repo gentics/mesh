@@ -105,6 +105,8 @@ monitoring:
   port: 8081
   host: "127.0.0.1"
   jvmMetricsEnabled: true
+  memoryLimit: 95
+  gcTimeLimit: 50
 cluster:
   networkHost: null
   enabled: false
