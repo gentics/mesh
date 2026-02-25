@@ -54,6 +54,7 @@
       "type" : "list",
       "allow" : [ "geolocation" ]
     } ],
+    "noIndex" : false,
     "microschema" : false,
     "permissions" : {
       "create" : true,
@@ -118,6 +119,7 @@
       "type" : "list",
       "allow" : [ "geolocation" ]
     } ],
+    "noIndex" : false,
     "microschema" : false,
     "permissions" : {
       "create" : true,
