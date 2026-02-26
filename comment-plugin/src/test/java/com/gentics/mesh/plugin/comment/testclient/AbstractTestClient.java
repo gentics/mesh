@@ -50,6 +50,8 @@ import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryMetadataRequest;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryUploadRequest;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3RestResponse;
 import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
+import com.gentics.mesh.core.rest.openapi.Format;
+import com.gentics.mesh.core.rest.openapi.Version;
 import com.gentics.mesh.core.rest.plugin.PluginDeploymentRequest;
 import com.gentics.mesh.core.rest.plugin.PluginListResponse;
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
@@ -1480,4 +1482,10 @@ public abstract class AbstractTestClient implements MeshRestClient {
 			ParameterProvider... parameterProviders) {
 		throw new NotImplementedException();
 	}
+
+	@Override
+	public MeshRequest<String> getOpenAPI(Format format, Version version) {
+		throw new NotImplementedException();
+	}
+
 }

@@ -1,5 +1,16 @@
 package com.gentics.mesh.plugin.search;
 
+import java.util.Collection;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.tuple.Pair;
+import org.pf4j.PluginWrapper;
+import org.raml.model.parameter.QueryParameter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.http.HttpConstants;
 import com.gentics.mesh.plugin.AbstractPlugin;
 import com.gentics.mesh.plugin.PluginContext;
@@ -18,21 +29,17 @@ import com.gentics.mesh.plugin.search.handler.custom.CustomQueryHandler;
 import com.gentics.mesh.plugin.search.service.BranchService;
 import com.gentics.mesh.plugin.search.service.QueryService;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.util.UUIDUtil;
 import com.gentics.vertx.http.HttpResponseStatus;
+import com.gentics.vertx.openapi.route.InternalEndpointBuilder;
+
 import io.reactivex.Completable;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
-import org.apache.commons.lang3.tuple.Pair;
-import org.pf4j.PluginWrapper;
-
-import java.util.Collection;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class SearchPlugin extends AbstractPlugin implements RestPlugin {
 
@@ -80,13 +87,27 @@ public class SearchPlugin extends AbstractPlugin implements RestPlugin {
 
 		Router router = Router.router(vertx());
 
-		router.route("/search")
-			.produces(HttpConstants.APPLICATION_JSON)
-			.handler(fromComponent(SearchPluginComponent::searchHandler));
+		QueryParameter qParameter = new QueryParameter();
+		qParameter.setRequired(true);
+		qParameter.setDescription("Search query");
+		qParameter.setExample("whatever");
 
-		router.route("/autocomplete")
+		InternalEndpointBuilder.wrap(router).withPath("/search")
+			.withDescription("Search using the query")
 			.produces(HttpConstants.APPLICATION_JSON)
-			.handler(fromComponent(SearchPluginComponent::autocompleteHandler));
+			.withQueryParameter("q", qParameter)
+			.withHandler(fromComponent(SearchPluginComponent::searchHandler))
+			.produces(HttpConstants.APPLICATION_JSON_UTF8)
+			.withExampleResponse(io.netty.handler.codec.http.HttpResponseStatus.OK, new JsonObject().put("totalHits", 1).put("hasMore", false).put("results", new JsonArray().add(new JsonObject().put("raw", new JsonObject().put("uuid", UUIDUtil.randomUUID())))), "Search response")
+			.build();
+
+		InternalEndpointBuilder.wrap(router).withPath("/autocomplete")
+			.withDescription("Autocomplete the query")
+			.produces(HttpConstants.APPLICATION_JSON)
+			.withQueryParameter("q", qParameter)
+			.withHandler(fromComponent(SearchPluginComponent::autocompleteHandler)).produces(HttpConstants.APPLICATION_JSON_UTF8)
+			.withExampleResponse(io.netty.handler.codec.http.HttpResponseStatus.OK, new JsonArray().add(new JsonObject().put("name", "what")).add(new JsonObject().put("name", "where")).add(new JsonObject().put("name", "which")), "Search response")
+			.build();
 
 		registerCustomEndpoints(router);
 
@@ -119,22 +140,22 @@ public class SearchPlugin extends AbstractPlugin implements RestPlugin {
 				log.debug("Registering custom route /custom{} with handler {}", path, handler.getClass().getSimpleName());
 			}
 
-			customRouter.route(path)
-					.method(HttpMethod.GET)
+			InternalEndpointBuilder.wrap(customRouter).withPath(path)
+					.withMethod(HttpMethod.GET)
 					.produces(HttpConstants.APPLICATION_JSON)
-					.handler(fromCustomhandler(handler));
+					.withHandler(fromCustomhandler(handler));
 
 			Handler<RoutingContext> wrappedHandler = handler.type() == HandlerType.AUTOCOMPLETE
 					? fromComponent(SearchPluginComponent::autocompleteHandler, handler)
 					: fromComponent(SearchPluginComponent::searchHandler, handler);
 
-			customRouter.route(path)
-					.method(HttpMethod.GET)
+			InternalEndpointBuilder.wrap(customRouter).withPath(path)
+					.withMethod(HttpMethod.GET)
 					.produces(HttpConstants.APPLICATION_JSON)
-					.handler(wrappedHandler);
+					.withHandler(wrappedHandler);
 		});
 
-		projectRouter.route("/custom*").subRouter(customRouter);
+		InternalEndpointBuilder.wrap(projectRouter).withPath("/custom*").withSubRouter(customRouter);
 	}
 
 	private Collection<CustomHandler> getCustomHandlers() {
@@ -167,17 +188,17 @@ public class SearchPlugin extends AbstractPlugin implements RestPlugin {
 	private void registerCacheEndpoints(Router globalRouter) {
 		log.trace("Registering caching routes");
 
-		globalRouter.route("/cache/clear")
-			.method(HttpMethod.POST)
-			.handler(cachingHandler(null));
+		InternalEndpointBuilder.wrap(globalRouter).withPath("/cache/clear")
+			.withMethod(HttpMethod.POST)
+			.withHandler(cachingHandler(null));
 
-		globalRouter.route("/cache/enable")
-			.method(HttpMethod.POST)
-			.handler(cachingHandler(true));
+		InternalEndpointBuilder.wrap(globalRouter).withPath("/cache/enable")
+			.withMethod(HttpMethod.POST)
+			.withHandler(cachingHandler(true));
 
-		globalRouter.route("/cache/disable")
-			.method(HttpMethod.POST)
-			.handler(cachingHandler(false));
+		InternalEndpointBuilder.wrap(globalRouter).withPath("/cache/disable")
+			.withMethod(HttpMethod.POST)
+			.withHandler(cachingHandler(false));
 	}
 
 	private Handler<RoutingContext> fromComponent(Function<SearchPluginComponent, AbstractQueryHandler> handler) {

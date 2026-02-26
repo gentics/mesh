@@ -1,22 +1,24 @@
 package com.gentics.mesh.plugin.comment.handler;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.comment.error.CommentPluginError;
-import com.gentics.mesh.plugin.comment.model.JsonSerializable;
+
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Completable;
 import io.reactivex.functions.BiConsumer;
 import io.reactivex.functions.Consumer;
 import io.vertx.core.json.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 
 public abstract class AbstractCommentHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractCommentHandler.class);
 
-	protected BiConsumer<? super JsonSerializable, ? super Throwable> jsonHandler(RoutingContext event) {
+	protected BiConsumer<? super RestModel, ? super Throwable> jsonHandler(RoutingContext event) {
 		return (delegate, error) -> {
 			if (delegate != null) {
 				event.response().end(delegate.toJson());

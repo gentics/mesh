@@ -47,7 +47,7 @@ public class FavoriteService {
 
 	public static final String FAVORITE_SCHEMA_NAME = "favorite";
 
-	private final String FAVORITE_FIELD = "favorites";
+	public static final String FAVORITE_FIELD = "favorites";
 	public static final String FAVORITE_PLUGIN_NAME = "favorite_plugin";
 
 	protected static <T> T ifNotFound(Throwable t, Supplier<T> notFoundHandler) {

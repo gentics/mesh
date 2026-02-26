@@ -7,6 +7,7 @@ import java.util.Optional;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -19,9 +20,8 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserReference;
-import com.gentics.mesh.plugin.comment.model.JsonSerializable;
 
-public class NodeResponseDelegate implements JsonSerializable {
+public class NodeResponseDelegate implements RestModel {
 
 	private final NodeResponse delegate;
 
@@ -62,7 +62,7 @@ public class NodeResponseDelegate implements JsonSerializable {
 	}
 
 	public boolean isContainer() {
-		return delegate.getContainer();
+		return delegate.getContainer() != null && delegate.getContainer() ;
 	}
 
 	public void setContainer(boolean isContainer) {

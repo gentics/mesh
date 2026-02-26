@@ -1,5 +1,11 @@
 package com.gentics.mesh.plugin.comment.service;
 
+import java.security.InvalidParameterException;
+import java.util.function.Consumer;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
@@ -14,7 +20,6 @@ import com.gentics.mesh.plugin.comment.dagger.UserClient;
 import com.gentics.mesh.plugin.comment.error.AnonymousNotAllowedError;
 import com.gentics.mesh.plugin.comment.error.ForbiddenException;
 import com.gentics.mesh.plugin.comment.error.InvalidEmailException;
-import com.gentics.mesh.plugin.comment.error.MeshException;
 import com.gentics.mesh.plugin.comment.error.NotFoundException;
 import com.gentics.mesh.plugin.comment.error.RequiredAnonymousFieldMissingError;
 import com.gentics.mesh.plugin.comment.model.AnonymousCommentField;
@@ -27,17 +32,11 @@ import com.gentics.mesh.plugin.comment.model.request.CreateCommentRequest;
 import com.gentics.mesh.plugin.comment.model.request.UpdateCommentRequest;
 import com.gentics.mesh.plugin.comment.util.RxUtil;
 import com.gentics.mesh.rest.client.MeshRestClient;
-import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.security.InvalidParameterException;
-import java.util.function.Consumer;
 
 @Singleton
 public class CommentService {

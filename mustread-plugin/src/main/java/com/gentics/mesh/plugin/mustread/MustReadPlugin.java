@@ -108,6 +108,7 @@ public class MustReadPlugin extends AbstractPlugin implements RestPlugin {
         	.withDescription("Get unread pages")
         	.withHandler(new UnreadHandler(this, getConfiguration(), getLogHelper(), getNodeController()))
         	.produces(APPLICATION_JSON)
+        	.withExampleResponse(HttpResponseStatus.OK, new JsonObject(), "JSON response")
         	.build();
         
         InternalEndpointBuilder.wrap(router)
@@ -116,9 +117,9 @@ public class MustReadPlugin extends AbstractPlugin implements RestPlugin {
         	.withRAMLPath("/read")
         	.consumes(APPLICATION_JSON)
         	.withDescription("Post an array of page UUIDs to be marked as read")
-        	.withHandler(new MakeReadHandler(this, getConfiguration(), getLogHelper(), getNodeController()))
         	.withExampleRequest(new JsonObject().put(getConfiguration().getNodeListParameterName(), new JsonArray()))
         	.withExampleResponse(HttpResponseStatus.OK, new MessageResponse("successful"), APPLICATION_JSON)
+        	.withHandler(new MakeReadHandler(this, getConfiguration(), getLogHelper(), getNodeController()))
         	.build();
 
         return router;
