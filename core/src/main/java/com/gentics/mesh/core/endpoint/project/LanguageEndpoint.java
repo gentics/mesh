@@ -25,6 +25,11 @@ public class LanguageEndpoint extends AbstractInternalEndpoint {
 
 	private final LanguageCrudHandler crudHandler;
 
+	public LanguageEndpoint() {
+		super("languages", null, null, null, null);
+		this.crudHandler = null;
+	}
+
 	@Inject
 	public LanguageEndpoint(MeshAuthChain chain, LocalConfigApi localConfigApi, Database db, MeshOptions options, LanguageCrudHandler crudHandler) {
 		super("languages", chain, localConfigApi, db, options);

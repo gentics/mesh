@@ -106,6 +106,7 @@ import com.gentics.mesh.parameter.JobParameters;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.ParameterProvider;
+import com.gentics.mesh.parameter.ProjectLoadParameters;
 import com.gentics.mesh.parameter.PublishParameters;
 import com.gentics.mesh.parameter.RolePermissionParameters;
 import com.gentics.mesh.parameter.VersioningParameters;
@@ -133,7 +134,7 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 	private final ApiClient apiClient;
 	private final UpgradedDefaultApi api;
 	private final MeshRestClientConfig config;
-	private final JWTAuthentication authentication = new JWTAuthentication();
+	private JWTAuthentication authentication = new JWTAuthentication();
 
 	/**
 	 * Find the parameter in the providers.
@@ -1783,74 +1784,74 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 	@Override
 	public MeshRequest<ImageVariantsResponse> upsertWebrootFieldImageVariants(String projectName, String fieldName,
 			String[] pathSegments, ImageManipulationRequest request, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public MeshRequest<LanguageResponse> findLanguageByUuid(String uuid, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2LanguagesLanguageUuidGetWithHttpInfo(uuid), LanguageResponse.class);
 	}
 
 	@Override
 	public MeshRequest<LanguageResponse> findLanguageByTag(String tag, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2LanguagesTagLanguageTagGetWithHttpInfo(tag), LanguageResponse.class);
 	}
 
 	@Override
 	public MeshRequest<LanguageListResponse> findLanguages(ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2LanguagesGetWithHttpInfo(findParameter(PagingParameters.SORT_BY_PARAMETER_KEY, parameters), 
+				findParameter(PagingParameters.PAGE_PARAMETER_KEY, parameters), 
+				findParameter(PagingParameters.PER_PAGE_PARAMETER_KEY, parameters), 
+				findParameter(PagingParameters.SORT_ORDER_PARAMETER_KEY, parameters)), LanguageListResponse.class);
 	}
 
 	@Override
 	public MeshRequest<LanguageResponse> findLanguageByUuid(String projectName, String uuid,
 			ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectLanguagesLanguageUuidGetWithHttpInfo(uuid, projectName), LanguageResponse.class);
 	}
 
 	@Override
 	public MeshRequest<LanguageResponse> findLanguageByTag(String projectName, String tag,
 			ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectLanguagesTagLanguageTagGetWithHttpInfo(tag, projectName), LanguageResponse.class);
 	}
 
 	@Override
 	public MeshRequest<LanguageListResponse> findLanguages(String projectName, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectLanguagesGet(projectName, 
+				findParameter(PagingParameters.SORT_BY_PARAMETER_KEY, parameters), 
+				findParameter(PagingParameters.PAGE_PARAMETER_KEY, parameters), 
+				findParameter(PagingParameters.PER_PAGE_PARAMETER_KEY, parameters), 
+				findParameter(PagingParameters.SORT_ORDER_PARAMETER_KEY, parameters)), LanguageListResponse.class);
 	}
 
 	@Override
 	public MeshRequest<ProjectResponse> assignLanguageToProjectByUuid(String projectName, String uuid,
 			ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectLanguagesLanguageUuidPostWithHttpInfo(uuid, projectName, findParameter(ProjectLoadParameters.LANGS_QUERY_PARAM_KEY, parameters)), 
+				ProjectResponse.class);
 	}
 
 	@Override
 	public MeshRequest<ProjectResponse> assignLanguageToProjectByTag(String projectName, String tag,
 			ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectLanguagesTagLanguageTagPostWithHttpInfo(tag, projectName, findParameter(ProjectLoadParameters.LANGS_QUERY_PARAM_KEY, parameters)), 
+				ProjectResponse.class);
 	}
 
 	@Override
 	public MeshRequest<ProjectResponse> unassignLanguageFromProjectByUuid(String projectName, String uuid,
 			ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectLanguagesLanguageUuidDeleteWithHttpInfo(uuid, projectName, findParameter(ProjectLoadParameters.LANGS_QUERY_PARAM_KEY, parameters)), 
+				ProjectResponse.class);
 	}
 
 	@Override
 	public MeshRequest<ProjectResponse> unassignLanguageFromProjectByTag(String projectName, String tag,
 			ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectLanguagesTagLanguageTagDeleteWithHttpInfo(tag, projectName, findParameter(ProjectLoadParameters.LANGS_QUERY_PARAM_KEY, parameters)), 
+				ProjectResponse.class);
 	}
 
 	@Override
@@ -1867,8 +1868,6 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 
 	@Override
 	public void close() {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
@@ -1879,38 +1878,34 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 
 	@Override
 	public String getAPIKey() {
-		// TODO Auto-generated method stub
-		return null;
+		return authentication.getToken();
 	}
 
 	@Override
 	public MeshRestClient disableAnonymousAccess() {
 		// TODO Auto-generated method stub
-		return null;
+		return this;
 	}
 
 	@Override
 	public MeshRestClient enableAnonymousAccess() {
 		// TODO Auto-generated method stub
-		return null;
+		return this;
 	}
 
 	@Override
 	public MeshRestClient setAuthenticationProvider(JWTAuthentication authentication) {
-		// TODO Auto-generated method stub
-		return null;
+		this.authentication = authentication;
+		return this;
 	}
 
 	@Override
 	public JWTAuthentication getAuthentication() {
-		// TODO Auto-generated method stub
-		return null;
+		return authentication;
 	}
 
 	@Override
 	public MeshRestClientConfig getConfig() {
-		// TODO Auto-generated method stub
-		return null;
+		return config;
 	}
-
 }
