@@ -172,6 +172,14 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	}
 
 	@Test
+	@Override
+	public void testReadPermittedSortedWrongField() throws Exception {
+		String tagFamilyUuid = tx(() -> tagFamily("basic").getUuid());
+		MeshRestClientMessageException error = call(() -> client().findTags(PROJECT_NAME, tagFamilyUuid, new SortingParametersImpl("existiertleidernicht", SortOrder.DESCENDING)), BAD_REQUEST);
+		assertThat(error.getResponseMessage().getMessage()).as("Error message").startsWith("The following column names are not allowed for sorting: [existiertleidernicht].");
+	}
+
+	@Test
 	public void testReadMetaCountOnly() {
 		try (Tx tx = tx()) {
 			HibTagFamily parentTagFamily = tagFamily("colors");

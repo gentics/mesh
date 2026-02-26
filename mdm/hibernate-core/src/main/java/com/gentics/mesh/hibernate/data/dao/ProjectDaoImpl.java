@@ -3,10 +3,16 @@ package com.gentics.mesh.hibernate.data.dao;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
+import java.util.Arrays;
 import java.util.Stack;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibLanguage;
@@ -33,8 +39,6 @@ import com.gentics.mesh.hibernate.event.EventFactory;
 
 import dagger.Lazy;
 import io.vertx.core.Vertx;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Project DAO implementation for Gentics Mesh.
@@ -45,6 +49,7 @@ import org.slf4j.LoggerFactory;
 @Singleton
 public class ProjectDaoImpl extends AbstractHibDaoGlobal<HibProject, ProjectResponse, HibProjectImpl> implements PersistingProjectDao {
 
+	public static final String[] SORT_FIELDS = new String[] { "name" };
 	private static final Logger log = LoggerFactory.getLogger(ProjectDaoImpl.class);
 
 	@Inject
@@ -189,5 +194,13 @@ public class ProjectDaoImpl extends AbstractHibDaoGlobal<HibProject, ProjectResp
 	@Override
 	public Result<? extends HibLanguage> findLanguages(HibProject project) {
 		return project.getLanguages();
+	}
+
+	@Override
+	public String[] getGraphQlSortingFieldNames(boolean noDependencies) {
+		return Stream.of(
+				Arrays.stream(super.getGraphQlSortingFieldNames(noDependencies)),
+				Arrays.stream(SORT_FIELDS)					
+			).flatMap(Function.identity()).toArray(String[]::new);
 	}
 }

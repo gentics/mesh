@@ -3,6 +3,7 @@ package com.gentics.mesh.core.language;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ElasticsearchTestMode.TRACKING;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -28,6 +29,7 @@ import com.gentics.mesh.parameter.client.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.ProjectLoadParametersImpl;
 import com.gentics.mesh.parameter.impl.SortingParametersImpl;
+import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -379,5 +381,12 @@ public class LanguageEndpointTest extends AbstractMeshTest implements BasicRestT
 		assertThat(list.getData()).isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().reversed().compare(
 				fa != null ? fa.getName() : null,
 				fb != null ? fb.getName() : null));
+	}
+
+	@Test
+	@Override
+	public void testReadPermittedSortedWrongField() throws Exception {
+		MeshRestClientMessageException error = call(() -> client().findLanguages(new SortingParametersImpl("existiertleidernicht", SortOrder.DESCENDING)), BAD_REQUEST);
+		assertThat(error.getResponseMessage().getMessage()).as("Error message").startsWith("The following column names are not allowed for sorting: [existiertleidernicht].");
 	}
 }

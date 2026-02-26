@@ -7,8 +7,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-import jakarta.persistence.EntityManager;
-
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
@@ -33,7 +31,6 @@ import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.database.HibernateTx;
-import com.gentics.mesh.hibernate.data.dao.NodeDaoImpl;
 import com.gentics.mesh.hibernate.data.domain.HibBinaryImpl;
 import com.gentics.mesh.hibernate.data.domain.HibMicronodeContainerImpl;
 import com.gentics.mesh.hibernate.data.domain.HibNodeFieldContainerEdgeImpl;
@@ -45,6 +42,8 @@ import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.DummyEventQueueBatch;
 import com.gentics.mesh.util.CoreTestUtils;
+
+import jakarta.persistence.EntityManager;
 
 @MeshTestSetting(testSize = TestSize.PROJECT)
 public class NodeDaoImplTest extends AbstractMeshTest {
