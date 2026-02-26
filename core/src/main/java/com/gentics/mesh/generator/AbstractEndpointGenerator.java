@@ -23,8 +23,10 @@ import com.gentics.mesh.core.endpoint.microschema.MicroschemaEndpoint;
 import com.gentics.mesh.core.endpoint.microschema.ProjectMicroschemaEndpoint;
 import com.gentics.mesh.core.endpoint.navroot.NavRootEndpoint;
 import com.gentics.mesh.core.endpoint.node.NodeEndpoint;
+import com.gentics.mesh.core.endpoint.project.LanguageEndpoint;
 import com.gentics.mesh.core.endpoint.project.ProjectEndpoint;
 import com.gentics.mesh.core.endpoint.project.ProjectInfoEndpoint;
+import com.gentics.mesh.core.endpoint.project.ProjectLanguageEndpoint;
 import com.gentics.mesh.core.endpoint.role.RoleEndpoint;
 import com.gentics.mesh.core.endpoint.schema.ProjectSchemaEndpoint;
 import com.gentics.mesh.core.endpoint.schema.SchemaEndpoint;
@@ -113,6 +115,10 @@ public abstract class AbstractEndpointGenerator<T> extends AbstractGenerator {
 		ProjectMicroschemaEndpoint projectMicroschemaEndpoint = Mockito.spy(new ProjectMicroschemaEndpoint());
 		initEndpoint(projectMicroschemaEndpoint);
 		addEndpoints(projectBasePath, consumer, projectMicroschemaEndpoint, true);
+
+		ProjectLanguageEndpoint projectLanguageEndpoint = Mockito.spy(new ProjectLanguageEndpoint());
+		initEndpoint(projectLanguageEndpoint);
+		addEndpoints(projectBasePath, consumer, projectLanguageEndpoint, true);
 	}
 
 	/**
@@ -189,6 +195,10 @@ public abstract class AbstractEndpointGenerator<T> extends AbstractGenerator {
 		ProjectInfoEndpoint projectInfoEndpoint = Mockito.spy(new ProjectInfoEndpoint());
 		initEndpoint(projectInfoEndpoint);
 		addEndpoints(coreBasePath, consumer, projectInfoEndpoint, false);
+
+		LanguageEndpoint languageEndpoint = Mockito.spy(new LanguageEndpoint());
+		initEndpoint(languageEndpoint);
+		addEndpoints(coreBasePath, consumer, languageEndpoint, false);
 	}
 
 	/**
