@@ -785,24 +785,14 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 				.map(version -> collectVersionColumns(version).stream()
 						.filter(c -> !JoinedContentColumn.class.isInstance(c)).collect(Collectors.toList()));
 
-		List<String> nodeColumns = daoHelper.getDomainColumns().stream().map(column -> nodeAlias + "." + column)
-				.collect(Collectors.toList());
-
 		Select select = new Select(databaseConnector.getSessionMetadataIntegrator().getSessionFactoryImplementor());
 		select.setTableName(databaseConnector.maybeGetPhysicalTableName(getPersistenceClass()).get() + " " + nodeAlias);
 		List<String> columns = new ArrayList<>();
 
 		// Domain columns
+		List<String> nodeColumns = daoHelper.getDomainColumns().stream().map(column -> nodeAlias + "." + column)
+				.collect(Collectors.toList());
 		columns.addAll(nodeColumns);
-		maybeParents
-				.map(parents -> makeAlias(databaseConnector.maybeGetDatabaseEntityName(HibBranchNodeParent.class).get())
-						+ ".*")
-				.ifPresent(columns::add);
-		Optional.of(noContainerEdgeFetch).filter(noFetch -> !noFetch).flatMap(fetch -> maybeContainerLanguages)
-				.or(() -> maybeContentColumns.map(contentColumns -> Collections.emptyList()))
-				.map(yes -> makeAlias("CONTAINER") + ".*").ifPresent(columns::add);
-		maybeContentColumns.ifPresent(contentColumns -> streamContentSelectClause(databaseConnector, contentColumns,
-				Optional.of(makeAlias("CONTENT")), true).forEach(columns::add));
 
 		// Ask for the parent edge columns, if parent/children requested
 		String parentAlias = makeAlias(databaseConnector.maybeGetDatabaseEntityName(HibBranchNodeParent.class).get());
