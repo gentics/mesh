@@ -201,7 +201,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 				});
 			}
 		}
-		UserListResponse list = call(() -> client().findUsers(new SortingParametersImpl("name", SortOrder.DESCENDING)));
+		UserListResponse list = call(() -> client().findUsers(new SortingParametersImpl("username", SortOrder.DESCENDING)));
 		assertEquals("Total data size should be 8", 8, list.getData().size());
 		assertThat(list.getData()).isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().reversed().compare(
 				fa != null ? fa.getUsername() : null,
