@@ -26,6 +26,14 @@ import io.vertx.core.Vertx;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.RoutingContext;
 
+
+/**
+ * tests for {@link com.gentics.mesh.plugin.RestPlugin#addStaticHandlerFromClasspath(io.vertx.ext.web.Route, String, io.vertx.core.Handler)}.
+ *
+ * <p>These tests focus on the directory-path regression fix: requests that resolve to a classpath directory (i.e. no
+ * filename/extension) must not be cached as a file in the plugin storage directory. Instead, the pre-handler must
+ * fail the routing context with HTTP 404.</p>
+ */
 public class StaticHandlerUtilsTest {
 
     private RestPlugin plugin;
