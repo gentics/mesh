@@ -143,6 +143,7 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 			.withExampleResponse(HttpResponseStatus.OK, exampleLanguages, "Supported languages")
 			.build();
 		InternalEndpointBuilder.wrap(projectRouter)
+			.withDescription("Set supported languages")
 			.withPath("/languages").withMethod(PUT)
 			.consumes(APPLICATION_JSON_UTF8)
 			.produces(HttpConstants.APPLICATION_JSON_UTF8)
@@ -157,6 +158,7 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 		sortOrder.setExample(SortOrder.ASCENDING.getValue());
 		sortOrder.setEnumeration(Arrays.stream(SortOrder.values()).map(SortOrder::getValue).collect(Collectors.toList()));
 		InternalEndpointBuilder.wrap(projectRouter)
+			.withDescription("Get all forms")
 			.withPath("/forms").withMethod(GET)
 			.produces(APPLICATION_JSON_UTF8)
 			.withQueryParameter("page", "Page number, optional", "1")
@@ -177,6 +179,7 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 			.withHandler(fromComponent(FormsPluginComponent::loadFormHandler))
 			.build();
 		InternalEndpointBuilder.wrap(projectRouter).withPath("/forms/:formUuid")
+			.withDescription("Upsert a form")
 			.withMethod(POST).produces(APPLICATION_JSON)
 			.withUriParameter("formUuid", "Form UUID", UUIDUtil.randomUUID())
 			//.consumes(APPLICATION_JSON) //Vert.x is super picky about false request content headers, so better don't add ones mid-road
@@ -258,6 +261,7 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 			.withUriParameter("formUuid", "Form UUID", UUIDUtil.randomUUID())
 			.produces(APPLICATION_JSON)
 			.withHandler(fromComponent(FormsPluginComponent::loadFormSchemaHandler))
+			.withExampleResponse(HttpResponseStatus.OK, new JsonObject(), "Form schema")
 			.build();
 
 		projectRouter.route("/form/:formUuid/validate").method(POST).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::validationHandler));
@@ -401,8 +405,15 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 			.withExampleResponse(HttpResponseStatus.OK, "ZIP data")
 			.withHandler(fromComponent(FormsPluginComponent::loadFilesZipHandler))
 			.build();
-		InternalEndpointBuilder.wrap(projectRouter).withPath("/forms/:formUuid/binaries").withMethod(POST).withUriParameter("formUuid", "Form UUID", UUIDUtil.randomUUID())
-		.withHandler(fromComponent(FormsPluginComponent::requestFilesZipHandler)).build();
+		InternalEndpointBuilder.wrap(projectRouter)
+			.withDescription("Request all uploaded binaries in a form of ZIP archive")
+			.withPath("/forms/:formUuid/binaries").withMethod(POST)
+			.withUriParameter("formUuid", "Form UUID", UUIDUtil.randomUUID())
+			.withQueryParameter("lang", "Language code", "en")
+			.withHandler(fromComponent(FormsPluginComponent::requestFilesZipHandler))
+			.produces(APPLICATION_JSON)
+			.withExampleResponse(HttpResponseStatus.OK, new NodeExamples().getNodeResponse2(), "Node of a created ZIP")
+			.build();
 
 		InternalEndpointBuilder.wrap(projectRouter)
 			.withDescription("Check if the specified download is ready")

@@ -30,11 +30,6 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<dependency>
-			<groupId>com.gentics</groupId>
-			<artifactId>vertx-openapi</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
 
 		<!-- Test dependencies -->
 		<dependency>

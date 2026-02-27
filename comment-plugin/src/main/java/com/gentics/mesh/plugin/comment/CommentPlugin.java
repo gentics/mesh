@@ -14,9 +14,9 @@ import org.pf4j.PluginWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gentics.mesh.core.rest.common.PermissionInfo;
-import com.gentics.mesh.example.NodeExamples;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.gentics.mesh.http.HttpConstants;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.plugin.AbstractPlugin;
 import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.RestPlugin;
@@ -26,7 +26,6 @@ import com.gentics.mesh.plugin.comment.dagger.DaggerCommentPluginComponent;
 import com.gentics.mesh.plugin.comment.dagger.DaggerInitializationComponent;
 import com.gentics.mesh.plugin.comment.dagger.InitializationComponent;
 import com.gentics.mesh.plugin.comment.handler.AbstractCommentHandler;
-import com.gentics.mesh.plugin.comment.model.Comment;
 import com.gentics.mesh.plugin.comment.model.NestedCommentSection;
 import com.gentics.mesh.plugin.comment.model.request.CreateCommentRequest;
 import com.gentics.mesh.plugin.comment.model.request.UpdateCommentRequest;
@@ -53,6 +52,10 @@ public class CommentPlugin extends AbstractPlugin implements RestPlugin {
 	private Configuration configuration;
 	// TODO ugly hack?
 	private TemplateService templateService;
+
+	static {
+		JsonUtil.getMapper().registerModule(new Jdk8Module());
+	}
 
 	public CommentPlugin(PluginWrapper wrapper, PluginEnvironment env) {
 		super(wrapper, env);
@@ -90,7 +93,7 @@ public class CommentPlugin extends AbstractPlugin implements RestPlugin {
 			.withPath("/comments")
 			.withDescription("Find comments")
 			.withMethod(GET)
-			.withExampleResponse(HttpResponseStatus.OK, new Comment(new NodeExamples().getNodeResponse2(), PermissionInfo.noPermissions()), "Found comment")
+			.withExampleResponse(HttpResponseStatus.OK, Examples.createComment(), "Found comment")
 			.withHandler(fromComponent(CommentPluginComponent::fetchCommentsHandler))
 			.build();
 
@@ -103,7 +106,7 @@ public class CommentPlugin extends AbstractPlugin implements RestPlugin {
 			.produces(HttpConstants.APPLICATION_JSON)
 			.withUriParameter("uuid", "UUID of a comment node", UUIDUtil.randomUUID())
 			.withExampleRequest(new UpdateCommentRequest())
-			.withExampleResponse(HttpResponseStatus.OK, new Comment(new NodeExamples().getNodeResponse2(), PermissionInfo.noPermissions()), "An updated comment")
+			.withExampleResponse(HttpResponseStatus.OK, Examples.createComment(), "An updated comment")
 			.withHandler(BodyHandler.create())
 			.withHandler(fromComponent(CommentPluginComponent::updateCommentHandler))
 			.build();
