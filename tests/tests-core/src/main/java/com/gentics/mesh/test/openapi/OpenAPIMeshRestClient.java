@@ -109,6 +109,7 @@ import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.parameter.ProjectLoadParameters;
 import com.gentics.mesh.parameter.PublishParameters;
 import com.gentics.mesh.parameter.RolePermissionParameters;
+import com.gentics.mesh.parameter.SortingParameters;
 import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.rest.JWTAuthentication;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
@@ -369,75 +370,71 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 	@Override
 	public MeshRequest<ObjectPermissionResponse> grantNodeRolePermissions(String projectName, String uuid,
 			ObjectPermissionGrantRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectNodesNodeUuidRolePermissionsPostWithHttpInfo(uuid, projectName, org.openapitools.client.model.ObjectPermissionGrantRequest.fromJson(JsonUtil.toJson(request))), ObjectPermissionResponse.class);
 	}
 
 	@Override
 	public MeshRequest<ObjectPermissionResponse> revokeNodeRolePermissions(String projectName, String uuid,
 			ObjectPermissionRevokeRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectNodesNodeUuidRolePermissionsPutWithHttpInfo(uuid, projectName, org.openapitools.client.model.ObjectPermissionRevokeRequest.fromJson(JsonUtil.toJson(request))), ObjectPermissionResponse.class);
 	}
 
 	@Override
 	public MeshRequest<TagResponse> createTag(String projectName, String tagFamilyUuid, TagCreateRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectTagFamiliesTagFamilyUuidTagsPostWithHttpInfo(tagFamilyUuid, projectName, org.openapitools.client.model.TagCreateRequest.fromJson(JsonUtil.toJson(request))), TagResponse.class);
 	}
 
 	@Override
 	public MeshRequest<TagResponse> findTagByUuid(String projectName, String tagFamilyUuid, String uuid,
 			ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectTagFamiliesTagFamilyUuidTagsTagUuidGetWithHttpInfo(tagFamilyUuid, uuid, projectName, findParameter(GenericParameters.FIELDS_PARAM_KEY, parameters), findParameter(GenericParameters.ETAG_PARAM_KEY, parameters)), TagResponse.class);
 	}
 
 	@Override
 	public MeshRequest<TagResponse> updateTag(String projectName, String tagFamilyUuid, String uuid,
 			TagUpdateRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectTagFamiliesTagFamilyUuidTagsTagUuidPostWithHttpInfo(tagFamilyUuid, uuid, projectName, org.openapitools.client.model.TagUpdateRequest.fromJson(JsonUtil.toJson(request))), TagResponse.class);
 	}
 
 	@Override
 	public MeshRequest<TagResponse> createTag(String projectName, String tagFamilyUuid, String uuid,
 			TagCreateRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectTagFamiliesTagFamilyUuidTagsPostWithHttpInfo(tagFamilyUuid, projectName, org.openapitools.client.model.TagCreateRequest.fromJson(JsonUtil.toJson(request))), TagResponse.class);
 	}
 
 	@Override
 	public MeshRequest<EmptyResponse> deleteTag(String projectName, String tagFamilyUuid, String uuid) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectTagFamiliesTagFamilyUuidTagsTagUuidDeleteWithHttpInfo(tagFamilyUuid, uuid, projectName), EmptyResponse.class);
 	}
 
 	@Override
 	public MeshRequest<TagListResponse> findTags(String projectName, String tagFamilyUuid,
 			ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectTagFamiliesTagFamilyUuidTagsGetWithHttpInfo(tagFamilyUuid, projectName, 
+				findParameter(SortingParameters.SORT_BY_PARAMETER_KEY, parameters), 
+				findParameter(GenericParameters.ETAG_PARAM_KEY, parameters), 
+				findParameter(PagingParameters.PAGE_PARAMETER_KEY, parameters), 
+				findParameter(PagingParameters.PER_PAGE_PARAMETER_KEY, parameters), 
+				findParameter(GenericParameters.FIELDS_PARAM_KEY, parameters), 
+				findParameter(SortingParameters.SORT_ORDER_PARAMETER_KEY, parameters)), TagListResponse.class);
 	}
 
 	@Override
 	public MeshRequest<ObjectPermissionResponse> getTagRolePermissions(String projectName, String tagFamilyUuid,
 			String uuid) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectTagFamiliesTagFamilyUuidTagsTagUuidRolePermissionsGetWithHttpInfo(tagFamilyUuid, uuid, projectName), ObjectPermissionResponse.class);
 	}
 
 	@Override
 	public MeshRequest<ObjectPermissionResponse> grantTagRolePermissions(String projectName, String tagFamilyUuid,
 			String uuid, ObjectPermissionGrantRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectTagFamiliesTagFamilyUuidTagsTagUuidRolePermissionsPostWithHttpInfo(tagFamilyUuid, uuid, projectName, org.openapitools.client.model.ObjectPermissionGrantRequest.fromJson(JsonUtil.toJson(request))), ObjectPermissionResponse.class);
 	}
 
 	@Override
 	public MeshRequest<ObjectPermissionResponse> revokeTagRolePermissions(String projectName, String tagFamilyUuid,
 			String uuid, ObjectPermissionRevokeRequest request) {
-		// TODO Auto-generated method stub
+	//	api.apiV2ProjectTagFamiliesTagFamilyUuidTagsTagUuidRolePermissions
 		return null;
 	}
 

@@ -66,23 +66,6 @@ public abstract class RolePermissionHandlingEndpoint extends AbstractInternalEnd
 			crudHandler.handleGrantPermissions(ac, uuid);
 		}, isOrderedBlockingHandlers());
 
-		InternalEndpointRoute revokePermissionsEndpoint = createRoute();
-		revokePermissionsEndpoint.path(path);
-		revokePermissionsEndpoint.addUriParameter(uuidParameterName, "Uuid of the " + typeDescription, uuidParameterExample);
-		revokePermissionsEndpoint.method(DELETE);
-		revokePermissionsEndpoint.description("Revoke permissions on the " + typeDescription + " from multiple roles.");
-		revokePermissionsEndpoint.consumes(APPLICATION_JSON);
-		revokePermissionsEndpoint.produces(APPLICATION_JSON);
-		revokePermissionsEndpoint.exampleRequest(roleExamples.getObjectPermissionRevokeRequest(includePublishPermissions));
-		revokePermissionsEndpoint.exampleResponse(OK, roleExamples.getObjectPermissionResponse(includePublishPermissions), "Updated permissions.");
-		revokePermissionsEndpoint.events(ROLE_PERMISSIONS_CHANGED);
-		revokePermissionsEndpoint.setHidden(true);
-		revokePermissionsEndpoint.blockingHandler(rc -> {
-			InternalActionContext ac = wrap(rc);
-			String uuid = rc.request().getParam(uuidParameterName);
-			crudHandler.handleRevokePermissions(ac, uuid);
-		}, isOrderedBlockingHandlers());
-
 		InternalEndpointRoute revokePermissionsEndpointStandard = createRoute();
 		revokePermissionsEndpointStandard.path(path);
 		revokePermissionsEndpointStandard.addUriParameter(uuidParameterName, "Uuid of the " + typeDescription, uuidParameterExample);
@@ -98,5 +81,22 @@ public abstract class RolePermissionHandlingEndpoint extends AbstractInternalEnd
 			String uuid = rc.request().getParam(uuidParameterName);
 			crudHandler.handleRevokePermissions(ac, uuid);
 		}, isOrderedBlockingHandlers());
+
+		InternalEndpointRoute revokePermissionsEndpointNonStandard = createRoute();
+		revokePermissionsEndpointNonStandard.path(path);
+		revokePermissionsEndpointNonStandard.addUriParameter(uuidParameterName, "Uuid of the " + typeDescription, uuidParameterExample);
+		revokePermissionsEndpointNonStandard.method(DELETE);
+		revokePermissionsEndpointNonStandard.description("Revoke permissions on the " + typeDescription + " from multiple roles.");
+		revokePermissionsEndpointNonStandard.consumes(APPLICATION_JSON);
+		revokePermissionsEndpointNonStandard.produces(APPLICATION_JSON);
+		revokePermissionsEndpointNonStandard.exampleRequest(roleExamples.getObjectPermissionRevokeRequest(includePublishPermissions));
+		revokePermissionsEndpointNonStandard.exampleResponse(OK, roleExamples.getObjectPermissionResponse(includePublishPermissions), "Updated permissions.");
+		revokePermissionsEndpointNonStandard.events(ROLE_PERMISSIONS_CHANGED);
+		revokePermissionsEndpointNonStandard.setHidden(true);
+		revokePermissionsEndpointNonStandard.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String uuid = rc.request().getParam(uuidParameterName);
+			crudHandler.handleRevokePermissions(ac, uuid);
+		}, isOrderedBlockingHandlers());		
 	}
 }
