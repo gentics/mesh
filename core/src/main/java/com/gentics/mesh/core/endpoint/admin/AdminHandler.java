@@ -63,6 +63,7 @@ import com.gentics.vertx.openapi.model.Format;
 import com.gentics.vertx.openapi.model.OpenAPIGenerationException;
 
 import io.vertx.core.Vertx;
+import io.vertx.ext.web.Router;
 
 /**
  * Handler for admin request methods.
@@ -293,8 +294,8 @@ public abstract class AdminHandler extends AbstractHandler {
 				.map(project -> "\\/api\\/v" + MeshVersion.CURRENT_API_VERSION + "\\/" + project + "[.]*").collect(Collectors.toSet()));
 		blacklistedRouteRegex.addAll(IntStream.range(1, MeshVersion.CURRENT_API_VERSION).mapToObj(v -> "\\/api\\/v" + v + "[.]*").collect(Collectors.toList()));
 		blacklistedRouteRegex.addAll(List.of("\\/api\\/\\{apiversion\\}[.]*", "\\/api\\/v" + MeshVersion.CURRENT_API_VERSION + "\\/eventbus\\/"));
-		if (!options.isOpenapiIncludePlugins()) {
-			//blacklistedRouteRegex.addAll(List.of("\\/api\\/v" + MeshVersion.CURRENT_API_VERSION + "/{project}/plugins/[.]*"));
+		if (options.isOpenapiExcludePlugins()) {
+			blacklistedRouteRegex.addAll(List.of("\\/api\\/v" + MeshVersion.CURRENT_API_VERSION + "/{project}/plugins/[.]*"));
 		}
 
 		// Make an instance with blacklist path patterns
@@ -309,7 +310,7 @@ public abstract class AdminHandler extends AbstractHandler {
 							//... from generic project root
 							routerStorageRegistry.getInstances().stream().map(rr -> Pair.of(rr.root().apiRouter().projectsRouter().projectRouter().getRouter(), "/api/v" + MeshVersion.CURRENT_API_VERSION + "/{project}")),
 							//... from generic plugin root
-							routerStorageRegistry.getInstances().stream().map(rr -> Pair.of(rr.root().apiRouter().pluginRouter().getRouter(), "/api/v" + MeshVersion.CURRENT_API_VERSION + "/{project}/plugins/"))
+							options.isOpenapiExcludePlugins() ? Stream.<Pair<Router, String>>empty() : routerStorageRegistry.getInstances().stream().map(rr -> Pair.of(rr.root().apiRouter().pluginRouter().getRouter(), "/api/v" + MeshVersion.CURRENT_API_VERSION + "/{project}/plugins/"))
 						).flatMap(Function.identity()).collect(Collectors.toMap(Pair::getKey, Pair::getValue)), 
 					// ...with desired format
 					Format.parse(format), 
