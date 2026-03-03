@@ -292,7 +292,7 @@ public abstract class AdminHandler extends AbstractHandler {
 				.flatMap(rr -> rr.root().apiRouter().projectsRouter().getProjectRouters().keySet().stream())
 				.map(project -> "\\/api\\/v" + MeshVersion.CURRENT_API_VERSION + "\\/" + project + "[.]*").collect(Collectors.toSet()));
 		blacklistedRouteRegex.addAll(IntStream.range(1, MeshVersion.CURRENT_API_VERSION).mapToObj(v -> "\\/api\\/v" + v + "[.]*").collect(Collectors.toList()));
-		blacklistedRouteRegex.addAll(List.of("\\/api\\/\\{apiversion\\}[.]*"));
+		blacklistedRouteRegex.addAll(List.of("\\/api\\/\\{apiversion\\}[.]*", "\\/api\\/v" + MeshVersion.CURRENT_API_VERSION + "\\/eventbus\\/"));
 		if (!options.isOpenapiIncludePlugins()) {
 			//blacklistedRouteRegex.addAll(List.of("\\/api\\/v" + MeshVersion.CURRENT_API_VERSION + "/{project}/plugins/[.]*"));
 		}

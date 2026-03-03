@@ -39,7 +39,7 @@ public class OpenAPIParametersImpl extends AbstractParameters implements OpenAPI
 
 		// version
 		QueryParameter versionParameter = new QueryParameter();
-		versionParameter.setDefaultValue(Version.V30.name());
+		versionParameter.setDefaultValue(Version.V30.name().toLowerCase());
 		versionParameter.setDescription("Specify, whether the OpenAPI standard version 3.1 should be generated. If false or unset, a version 3.0 of standard will be used.");
 		versionParameter.setExample(Version.V31.name());
 		versionParameter.setRequired(false);
@@ -49,7 +49,7 @@ public class OpenAPIParametersImpl extends AbstractParameters implements OpenAPI
 
 		// format
 		QueryParameter formatParameter = new QueryParameter();
-		formatParameter.setDefaultValue(Format.JSON.name());
+		formatParameter.setDefaultValue(Format.JSON.name().toLowerCase());
 		formatParameter.setDescription("Specify the output format. Default is JSON.");
 		formatParameter.setExample(Format.YAML.name());
 		formatParameter.setRequired(false);
