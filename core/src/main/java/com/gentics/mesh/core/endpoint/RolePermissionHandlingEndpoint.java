@@ -76,6 +76,7 @@ public abstract class RolePermissionHandlingEndpoint extends AbstractInternalEnd
 		revokePermissionsEndpoint.exampleRequest(roleExamples.getObjectPermissionRevokeRequest(includePublishPermissions));
 		revokePermissionsEndpoint.exampleResponse(OK, roleExamples.getObjectPermissionResponse(includePublishPermissions), "Updated permissions.");
 		revokePermissionsEndpoint.events(ROLE_PERMISSIONS_CHANGED);
+		revokePermissionsEndpoint.setHidden(true);
 		revokePermissionsEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().getParam(uuidParameterName);
