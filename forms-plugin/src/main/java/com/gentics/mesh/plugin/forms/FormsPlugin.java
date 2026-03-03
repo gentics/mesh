@@ -1,7 +1,7 @@
 package com.gentics.mesh.plugin.forms;
 
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
-import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON_UTF8;
+import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_OCTET_STREAM;
 import static com.gentics.mesh.http.HttpConstants.MULTIPART_FORM_DATA;
 import static io.vertx.core.http.HttpMethod.DELETE;
@@ -87,21 +87,21 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 		InternalEndpointBuilder.wrap(projectRouter)
 			.withDescription("Check forms status")
 			.withPath("/active").withMethod(GET)
-			.produces(HttpConstants.APPLICATION_JSON_UTF8)
+			.produces(HttpConstants.APPLICATION_JSON)
 			.withExampleResponse(HttpResponseStatus.OK, new StatusResponse(), "Current plugin status")
 			.withHandler(fromComponent(FormsPluginComponent::checkStatusHandler))
 			.build();
 		InternalEndpointBuilder.wrap(projectRouter)
 			.withDescription("Activate forms for the current project")
 			.withPath("/active").withMethod(PUT)
-			.produces(APPLICATION_JSON_UTF8)
+			.produces(APPLICATION_JSON)
 			.withExampleResponse(HttpResponseStatus.OK, new StatusResponse(), "Current plugin status")
 			.withHandler(fromComponent(FormsPluginComponent::activateHandler))
 			.build();
 		InternalEndpointBuilder.wrap(projectRouter)
 			.withDescription("Deactivate forms for the current project")
 			.withPath("/active").withMethod(DELETE)
-			.produces(HttpConstants.APPLICATION_JSON_UTF8)
+			.produces(HttpConstants.APPLICATION_JSON)
 			.withExampleResponse(HttpResponseStatus.OK, new StatusResponse(), "Current plugin status")
 			.withHandler(fromComponent(FormsPluginComponent::deactivateHandler))
 			.build();
@@ -110,11 +110,11 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 		InternalEndpointBuilder.wrap(projectRouter)
 			.withDescription("Set the form type configurations")
 			.withPath("/formtypeconfigs").withMethod(POST)
-			.consumes(APPLICATION_JSON_UTF8)
+			.consumes(APPLICATION_JSON)
 			.withExampleRequest(new FormtypeConfigsModel())
 			.withHandler(fromComponent(FormsPluginComponent::setFormtypeConfigsHandler))
 			.withExampleResponse(HttpResponseStatus.OK, new FormtypeConfigsModel(), "Current formtype configs")
-			.produces(APPLICATION_JSON_UTF8)
+			.produces(APPLICATION_JSON)
 			.build();
 
 		// routes for translations
@@ -123,15 +123,15 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 			.withUriParameter("lang", "Language", "en")
 			.withUriParameter("formUuid", "Form UUID", UUIDUtil.randomUUID())
 			.withHandler(fromComponent(FormsPluginComponent::getTranslationsHandler))
-			.produces(APPLICATION_JSON_UTF8)
+			.produces(APPLICATION_JSON)
 			.build();
 		InternalEndpointBuilder.wrap(projectRouter)
 			.withPath("/translations").withMethod(POST)
-			.consumes(APPLICATION_JSON_UTF8)
+			.consumes(APPLICATION_JSON)
 			.withExampleRequest(new TranslationsModel())
 			.withHandler(fromComponent(FormsPluginComponent::setTranslationsHandler))
-			.produces(APPLICATION_JSON_UTF8)
-			.withExampleResponse(HttpResponseStatus.OK, new TranslationsModel(), APPLICATION_JSON_UTF8)
+			.produces(APPLICATION_JSON)
+			.withExampleResponse(HttpResponseStatus.OK, new TranslationsModel(), APPLICATION_JSON)
 			.build();
 
 		// routes for getting/setting supported languages
@@ -139,14 +139,14 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 			.withDescription("Get the supported languages for the current project")
 			.withPath("/languages").withMethod(GET)
 			.withHandler(fromComponent(FormsPluginComponent::getLanguagesHandler))
-			.produces(HttpConstants.APPLICATION_JSON_UTF8)
+			.produces(HttpConstants.APPLICATION_JSON)
 			.withExampleResponse(HttpResponseStatus.OK, exampleLanguages, "Supported languages")
 			.build();
 		InternalEndpointBuilder.wrap(projectRouter)
 			.withDescription("Set supported languages")
 			.withPath("/languages").withMethod(PUT)
-			.consumes(APPLICATION_JSON_UTF8)
-			.produces(HttpConstants.APPLICATION_JSON_UTF8)
+			.consumes(APPLICATION_JSON)
+			.produces(HttpConstants.APPLICATION_JSON)
 			.withExampleRequest(exampleLanguages)
 			.withExampleResponse(HttpResponseStatus.OK, exampleLanguages, "Supported languages")
 			.withHandler(fromComponent(FormsPluginComponent::setLanguagesHandler))
@@ -160,7 +160,7 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 		InternalEndpointBuilder.wrap(projectRouter)
 			.withDescription("Get all forms")
 			.withPath("/forms").withMethod(GET)
-			.produces(APPLICATION_JSON_UTF8)
+			.produces(APPLICATION_JSON)
 			.withQueryParameter("page", "Page number, optional", "1")
 			.withQueryParameter("perPage", "Page size, optional", "10")
 			.withQueryParameter("sortBy", "Soring field, optional", "name")
@@ -201,7 +201,7 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 			.withDescription("Check the form's online status")
 			.withPath("/forms/:formUuid/online").withMethod(GET)
 			.withUriParameter("formUuid", "Form UUID", UUIDUtil.randomUUID())
-			.produces(APPLICATION_JSON_UTF8)
+			.produces(APPLICATION_JSON)
 			.withExampleResponse(HttpResponseStatus.OK, new FormOnlineResponse(), "Form online status")
 			.withHandler(fromComponent(FormsPluginComponent::getFormOnlineStatusHandler))
 			.build();
@@ -209,7 +209,7 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 			.withDescription("Set form online for the specific language")
 			.withPath("/forms/:formUuid/online").withMethod(PUT)
 			.withUriParameter("formUuid", "Form UUID", UUIDUtil.randomUUID())
-			.produces(APPLICATION_JSON_UTF8)
+			.produces(APPLICATION_JSON)
 			.withExampleResponse(HttpResponseStatus.OK, new FormOnlineResponse(), "Form online status")
 			.withHandler(fromComponent(FormsPluginComponent::setFormOnlineHandler))
 			.build();
@@ -217,7 +217,7 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 			.withDescription("Take a form offline")
 			.withPath("/forms/:formUuid/online").withMethod(DELETE)
 			.withUriParameter("formUuid", "Form UUID", UUIDUtil.randomUUID())
-			.produces(APPLICATION_JSON_UTF8)
+			.produces(APPLICATION_JSON)
 			.withExampleResponse(HttpResponseStatus.OK, new FormOnlineResponse(), "Form online status")
 			.withHandler(fromComponent(FormsPluginComponent::setFormOfflineHandler))
 			.build();
@@ -230,7 +230,7 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 			.withQueryParameter("lang", "Language", "en")
 			.withUriParameter("formUuid", "Form UUID", UUIDUtil.randomUUID())
 			.withExampleResponse(HttpResponseStatus.OK, new Form(), "The form")
-			.produces(APPLICATION_JSON_UTF8)
+			.produces(APPLICATION_JSON)
 			.withHandler(fromComponent(FormsPluginComponent::loadFormGenHandler))
 			.build();
 		InternalEndpointBuilder.wrap(projectRouter)
@@ -238,7 +238,7 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 			.withPath("/forms/:formUuid/preview").withMethod(GET)
 			.withUriParameter("formUuid", "Form UUID", UUIDUtil.randomUUID())
 			.withQueryParameter("lang", "Language", "en")
-			.produces(APPLICATION_JSON_UTF8)
+			.produces(APPLICATION_JSON)
 			.withExampleResponse(HttpResponseStatus.OK, 
 					new JsonObject().put("results", new JsonArray().add(new JsonObject().put("name", "John Doe").put("score", "42"))).put("templateContext", new Form().getTemplateContext()),
 					"Rendered JSON form")
@@ -251,7 +251,8 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 			.withUriParameter("formUuid", "Form UUID", UUIDUtil.randomUUID())
 			.withQueryParameter("lang", "Language code", "en")
 			.produces(APPLICATION_JSON)
-			.withExampleResponse(HttpResponseStatus.OK, new JsonObject().put("elements", new JsonArray().add(new JsonObject().put("first_name", "string")).add(new JsonObject().put("last_name", "string"))), "Form Elements")
+			.withExampleResponse(HttpResponseStatus.OK, new JsonObject().put("elements", 
+					new JsonArray().add(new JsonObject().put("first_name", "string")).add(new JsonObject().put("last_name", "string"))), "Form Elements")
 			.withHandler(fromComponent(FormsPluginComponent::loadFormElementsHandler))
 			.build();
 
@@ -263,13 +264,6 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 			.withHandler(fromComponent(FormsPluginComponent::loadFormSchemaHandler))
 			.withExampleResponse(HttpResponseStatus.OK, new JsonObject(), "Form schema")
 			.build();
-
-		projectRouter.route("/form/:formUuid/validate").method(POST).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::validationHandler));
-		projectRouter.route("/form/:formUuid/save").method(POST).handler(fromComponent(FormsPluginComponent::saveDataHandler));
-		projectRouter.route("/form/:formUuid/submit").method(POST).handler(fromComponent(FormsPluginComponent::submitDataHandler));
-		projectRouter.route("/forms/:formUuid/data").method(GET).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::findFormDataHandler));
-		projectRouter.route("/form/:formUuid/cancel").method(POST).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::cancelFormDataHandler));
-		projectRouter.route("/form/:formUuid/binary/:meshBinaryUuid").method(GET).handler(fromComponent(FormsPluginComponent::loadBinaryHandler));
 
 		InternalEndpointBuilder.wrap(projectRouter)
 			.withDescription("Post (save/modify + publish) a form data")
@@ -351,10 +345,6 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 			.withExampleResponse(HttpResponseStatus.NO_CONTENT, "Data deleted")
 			.build();
 
-
-		projectRouter.route("/forms/:formUuid/data/:formDataUuid/binary/:binaryFieldName").method(GET).blockingHandler(fromComponent(FormsPluginComponent::loadFormDataBinaryHandler));
-		projectRouter.route("/forms/:formUuid/data/:formDataUuid/binary/:binaryFieldName/:index").method(GET).blockingHandler(fromComponent(FormsPluginComponent::loadFormDataMultiBinaryItemHandler));
-
 		InternalEndpointBuilder.wrap(projectRouter)
 			.withDescription("Load form data binary field content")
 			.withPath("/forms/:formUuid/data/:formDataUuid/binary/:binaryFieldName").withMethod(GET)
@@ -422,7 +412,7 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 			.withUriParameter("downloadType", "Form UUID", UUIDUtil.randomUUID())
 			.withQueryParameter("lang", "Language code", "en")
 			.withHandler(fromComponent(FormsPluginComponent::checkDownloadHandler))
-			.produces(APPLICATION_JSON_UTF8)
+			.produces(APPLICATION_JSON)
 			.withExampleResponse(HttpResponseStatus.OK, new JsonObject().put("downloadReady", true)
 					.put("downloadUuid", UUIDUtil.randomUUID())
 					.put("downloadTimestamp", DateFormat.getDateTimeInstance().format(Date.from(Instant.now()))), "Download readiness status")

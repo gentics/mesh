@@ -97,7 +97,6 @@ public class SearchPlugin extends AbstractPlugin implements RestPlugin {
 			.produces(HttpConstants.APPLICATION_JSON)
 			.withQueryParameter("q", qParameter)
 			.withHandler(fromComponent(SearchPluginComponent::searchHandler))
-			.produces(HttpConstants.APPLICATION_JSON_UTF8)
 			.withExampleResponse(io.netty.handler.codec.http.HttpResponseStatus.OK, new JsonObject().put("totalHits", 1).put("hasMore", false).put("results", new JsonArray().add(new JsonObject().put("raw", new JsonObject().put("uuid", UUIDUtil.randomUUID())))), "Search response")
 			.build();
 
@@ -105,7 +104,7 @@ public class SearchPlugin extends AbstractPlugin implements RestPlugin {
 			.withDescription("Autocomplete the query")
 			.produces(HttpConstants.APPLICATION_JSON)
 			.withQueryParameter("q", qParameter)
-			.withHandler(fromComponent(SearchPluginComponent::autocompleteHandler)).produces(HttpConstants.APPLICATION_JSON_UTF8)
+			.withHandler(fromComponent(SearchPluginComponent::autocompleteHandler))
 			.withExampleResponse(io.netty.handler.codec.http.HttpResponseStatus.OK, new JsonArray().add(new JsonObject().put("name", "what")).add(new JsonObject().put("name", "where")).add(new JsonObject().put("name", "which")), "Search response")
 			.build();
 

@@ -77,7 +77,7 @@ public class LikePlugin extends AbstractPlugin implements RestPlugin {
 			.withUriParameter("nodeUuid", "The target node to like", UUIDUtil.randomUUID())
 			.withUriParameter("lang", "Language code", "en")
 			.withHandler(fromComponent(LikePluginComponent::getLikeHandler))
-			.produces(HttpConstants.APPLICATION_JSON_UTF8)
+			.produces(HttpConstants.APPLICATION_JSON)
 			.withExampleResponse(HttpResponseStatus.OK, new LikeResponse().setPosted(new PostedLike().setPlusMinus(PlusMinusType.plus)), "Like response")
 			.build();
 
@@ -96,7 +96,7 @@ public class LikePlugin extends AbstractPlugin implements RestPlugin {
 			.withUriParameter("nodeUuid", "The target node to like", UUIDUtil.randomUUID())
 			.withUriParameter("lang", "Language code", "en")
 			.withHandler(fromComponent(LikePluginComponent::getStatisticsHandler))
-			.produces(HttpConstants.APPLICATION_JSON_UTF8)
+			.produces(HttpConstants.APPLICATION_JSON)
 			.withExampleResponse(HttpResponseStatus.OK, new StatisticsResponse().setLikes(8), "Like statistics")
 			.build();
 
