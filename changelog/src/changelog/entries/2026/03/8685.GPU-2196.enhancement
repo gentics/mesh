@@ -1,0 +1,2 @@
+REST API: Along with existing RAML API definition, it is now possible to generate an OpenAPI (aka Swagger) specification for the Mesh REST API, which can optionally include the API for all the currently running Mesh Plugins.
+ For that, three new endpoints are provided, `/openapi`, which can be configured with `format` (`yaml or `json`) and/or `version` (`v3.0` or `v3.1`) query parameters, and two v3.0 shortcuts, `/openapi.yaml` and `openapi.json`.
