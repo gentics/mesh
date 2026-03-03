@@ -75,9 +75,10 @@ public class JobParametersImpl extends AbstractParameters implements JobParamete
 		QueryParameter param = new QueryParameter();
 		param.setDescription(description);
 		param.setType(ParamType.STRING);
-		param.setDefaultValue("");
 		if (enumValues.length > 0) {
 			param.setEnumeration(Arrays.asList(enumValues));
+		} else {
+			param.setDefaultValue("");
 		}
 		return param;
 	}

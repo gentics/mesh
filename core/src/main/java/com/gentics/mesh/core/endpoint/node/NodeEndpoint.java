@@ -16,7 +16,6 @@ import static com.gentics.mesh.example.ExampleUuids.NODE_DELOREAN_UUID;
 import static com.gentics.mesh.example.ExampleUuids.TAG_RED_UUID;
 import static com.gentics.mesh.example.ExampleUuids.UUID_1;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
-import static com.gentics.mesh.http.HttpConstants.APPLICATION_OCTET_STREAM;
 import static com.gentics.mesh.http.HttpConstants.MULTIPART_FORM_DATA;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
@@ -31,7 +30,9 @@ import static io.vertx.core.http.HttpMethod.PUT;
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
+import org.raml.model.ParamType;
 import org.raml.model.Resource;
+import org.raml.model.parameter.QueryParameter;
 
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -194,11 +195,16 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 	}
 
 	private void addBinaryHandlers() {
+		QueryParameter publishQueryParameter = new QueryParameter();
+		publishQueryParameter.setDescription("Should the saved data be published at once");
+		publishQueryParameter.setDefaultValue("false");
+		publishQueryParameter.setType(ParamType.BOOLEAN);
+
 		InternalEndpointRoute fieldUpdate = createRoute();
 		fieldUpdate.path("/:nodeUuid/binary/:fieldName");
 		fieldUpdate.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
 		fieldUpdate.addUriParameter("fieldName", "Name of the field which should be created.", "stringField");
-		fieldUpdate.addQueryParameter("publish", "Whether the node shall be published after updating the binary field", "true");
+		fieldUpdate.addQueryParameter("publish", publishQueryParameter);
 		fieldUpdate.method(POST);
 		fieldUpdate.consumes(MULTIPART_FORM_DATA);
 		fieldUpdate.produces(APPLICATION_JSON);
@@ -258,8 +264,6 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		fieldGet.addQueryParameters(ImageManipulationParametersImpl.class);
 		fieldGet.addQueryParameters(VersioningParametersImpl.class);
 		fieldGet.method(GET);
-		fieldGet.produces(APPLICATION_OCTET_STREAM);
-		fieldGet.exampleResponse(OK, "Binary data");
 		fieldGet.description(
 			"Download the binary field with the given name. You can use image query parameters for crop and resize if the binary data represents an image.");
 		fieldGet.blockingHandler(rc -> {
