@@ -39,6 +39,7 @@ import com.gentics.mesh.check.HibernateBranchCheck;
 import com.gentics.mesh.check.HtmlListItemCheck;
 import com.gentics.mesh.check.MicronodeFieldRefCheck;
 import com.gentics.mesh.check.MicronodeListItemCheck;
+import com.gentics.mesh.check.NodeContentConsistencyCheck;
 import com.gentics.mesh.check.NodeFieldContainerCheck;
 import com.gentics.mesh.check.NodeFieldContainerVersionsEdgeCheck;
 import com.gentics.mesh.check.NodeFieldRefCheck;
@@ -336,7 +337,8 @@ public abstract class HibernateModule {
 					new StringListItemCheck(),
 					new NodeFieldContainerCheck(),
 					new NodeFieldContainerVersionsEdgeCheck(),
-					new ContentRefCheck())
+					new ContentRefCheck(),
+					new NodeContentConsistencyCheck())
 			);
 
 	@Provides

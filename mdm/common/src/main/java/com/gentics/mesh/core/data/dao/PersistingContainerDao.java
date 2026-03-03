@@ -6,12 +6,10 @@ import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
-import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaElement;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
@@ -75,11 +73,6 @@ public interface PersistingContainerDao<
 				.diff(latestVersion.transformToRestSync(ac, 0), requestModel));
 		return list;
 	};
-
-	@Override
-	default Map<HibBranch, SCV> findReferencedBranches(SC schema) {
-		return schema.findReferencedBranches();
-	}
 
 	@Override
 	default SCV applyChanges(SCV version, InternalActionContext ac, SchemaChangesListModel listOfChanges,

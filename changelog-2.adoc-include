@@ -6,6 +6,9 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v3.2.4]]
+== 3.2.4 (25.02.2026)
+
 [[v3.2.3]]
 == 3.2.3 (11.02.2026)
 
@@ -26,6 +29,25 @@ icon:plus[] Core: The `Vert.x` async IO / routing framework has been updated to 
 
 icon:plus[] Some dependencies have been updated:
 * Hibernate: 7.1.8.Final
+
+
+[[v3.1.11]]
+== 3.1.11 (25.02.2026)
+
+icon:check[] Elasticsearch: When an ES server is unresponsive, a timeout error is thrown, which may or may not have a HTTP body. In the case of body absence Mesh crashes with HTTP 500. This has now been fixed.
+
+icon:check[] Monitoring: Mesh will now regularly monitor memory consumption and garbage collections.
+See "Monitoring":https://www.gentics.com/mesh/docs/monitoring/ in the documentation for details.
+
+
+icon:check[] REST API: Handling of schema or microschema updates has been improved to not create new versions if nothing was actually changed.
+
+
+icon:check[] REST API: Performance of getting schemas/microschemas assigned to a branch has been improved
+if schemas/microschemas exist, that have lots of versions.
+
+
+icon:check[] Core: A consistency check and repair for incorrectly linked content versions has been added.
 
 
 [[v3.1.10]]

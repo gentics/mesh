@@ -10,7 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.core.rest.schema.BinaryExtractOptions;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
@@ -27,8 +28,6 @@ import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.util.CompareUtils;
 
 import io.vertx.core.json.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Abstract implementation for a field schema comparator.
@@ -149,7 +148,7 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 		compareAndAddSchemaProperty(changes, SchemaChangeModel.NAME_KEY, containerA.getName(), containerB.getName(), classOfFC);
 
 		// Compare the description
-		compareAndAddSchemaProperty(changes, SchemaChangeModel.DESCRIPTION_KEY, containerA.getDescription(), containerB.getDescription(), classOfFC, true);
+		compareAndAddSchemaProperty(changes, SchemaChangeModel.DESCRIPTION_KEY, containerA.getDescription(), containerB.getDescription(), classOfFC, true, true);
 
 		return changes;
 	}
@@ -216,7 +215,7 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 	 */
 	protected void compareAndAddSchemaProperty(List<SchemaChangeModel> changes, String key, Object objectA, Object objectB,
 		Class<? extends FC> classOfFC) {
-		compareAndAddSchemaProperty(changes, key, objectA, objectB, classOfFC, false);
+		compareAndAddSchemaProperty(changes, key, objectA, objectB, classOfFC, false, false);
 	}
 
 	/**
@@ -228,16 +227,11 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 	 * @param objectB
 	 * @param classOfFC
 	 * @param nullIsEmpty true if null value is logically equal to an empty value
+	 * @param nullIsUnchanged true if null value for objectB shall be treated as "unchanged"
 	 */
 	protected void compareAndAddSchemaProperty(List<SchemaChangeModel> changes, String key, Object objectA, Object objectB,
-		Class<? extends FC> classOfFC, boolean nullIsEmpty) {
-		if (!CompareUtils.equals(objectA, objectB)) {
-			if (nullIsEmpty && (
-					(objectB == null && objectA != null && StringUtils.isEmpty(objectA.toString())) ||
-					(objectA == null && objectB != null && StringUtils.isEmpty(objectB.toString()))
-				)) {
-				return;
-			}
+		Class<? extends FC> classOfFC, boolean nullIsEmpty, boolean nullIsUnchanged) {
+		if (!CompareUtils.equals(objectA, objectB, nullIsEmpty, nullIsUnchanged)) {
 			SchemaChangeModel change = createFieldContainerUpdateChange(classOfFC);
 			change.getProperties().put(key, objectB);
 			changes.add(change);

@@ -90,6 +90,7 @@ public class SchemaComparatorSchemaTest extends AbstractMeshTest {
 		SchemaModel schemaB = FieldUtil.createMinimalValidSchema();
 		schemaB.setDisplayField("displayFieldName");
 		schemaB.addField(FieldUtil.createStringFieldSchema("displayFieldName"));
+		schemaB.setSegmentField("");
 		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
 		assertEquals(SchemaChangeOperation.UPDATESCHEMA, changes.get(0).getOperation());
 	}
@@ -256,8 +257,18 @@ public class SchemaComparatorSchemaTest extends AbstractMeshTest {
 		schemaA.setDescription("test123");
 		schemaB.setDescription(null);
 		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
+		assertThat(changes).isEmpty();
+	}
+
+	@Test
+	public void testDescriptionUpdatedToEmpty() throws IOException {
+		SchemaModel schemaA = FieldUtil.createMinimalValidSchema();
+		SchemaModel schemaB = FieldUtil.createMinimalValidSchema();
+		schemaA.setDescription("test123");
+		schemaB.setDescription("");
+		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
 		assertThat(changes).hasSize(1);
-		assertThat(changes.get(0)).is(UPDATESCHEMA).hasProperty(DESCRIPTION_KEY, null);
+		assertThat(changes.get(0)).is(UPDATESCHEMA).hasProperty(DESCRIPTION_KEY, "");
 	}
 
 	@Test

@@ -1452,7 +1452,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		SchemaResponse schema = call(() -> client().findSchemaByUuid(schemaUuid));
 
 		waitForJobs(() -> {
-			call(() -> client().updateSchema(schemaUuid, schema.toUpdateRequest().setSegmentField(null)));
+			call(() -> client().updateSchema(schemaUuid, schema.toUpdateRequest().setSegmentField("")));
 		}, COMPLETED, 1);		
 
 		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new NodeParametersImpl().setResolveLinks(
