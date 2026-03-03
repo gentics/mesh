@@ -31,7 +31,7 @@ public abstract class MeshOptions implements Option {
 	public static final String MESH_UPDATECHECK_ENV = "MESH_UPDATECHECK";
 	public static final String MESH_TEMP_DIR_ENV = "MESH_TEMP_DIR";
 	public static final String MESH_PLUGIN_DIR_ENV = "MESH_PLUGIN_DIR";
-	public static final String MESH_OPENAPI_INCLUDE_PLUGINS_ENV = "MESH_OPENAPI_INCLUDE_PLUGINS";
+	public static final String MESH_OPENAPI_EXCLUDE_PLUGINS_ENV = "MESH_OPENAPI_EXCLUDE_PLUGINS";
 	public static final String MESH_PLUGIN_USE_HTTP2_ENV = "MESH_PLUGIN_USE_HTTP2";
 	public static final String MESH_PLUGIN_TIMEOUT_ENV = "MESH_PLUGIN_TIMEOUT";
 	public static final String MESH_NODE_NAME_ENV = "MESH_NODE_NAME";
@@ -163,9 +163,9 @@ public abstract class MeshOptions implements Option {
 	private boolean pluginUseHttp2 = false;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Should the endpoints of the included plugins be served in the OpenAPI specification generation requests. Default is false.")
-	@EnvironmentVariable(name = MESH_OPENAPI_INCLUDE_PLUGINS_ENV, description = "Override the flag to include endpoints of the plugins be served in the OpenAPI specification generation requests")
-	private boolean openapiIncludePlugins = false;
+	@JsonPropertyDescription("Should the endpoints of the included plugins be excluded from the OpenAPI specification generation requests. Default is true.")
+	@EnvironmentVariable(name = MESH_OPENAPI_EXCLUDE_PLUGINS_ENV, description = "Override the flag to exclude endpoints of the plugins from the OpenAPI specification generation requests")
+	private boolean openapiExcludePlugins = true;
 
 	/* EXTRA Command Line Arguments */
 	@JsonIgnore
@@ -550,13 +550,13 @@ public abstract class MeshOptions implements Option {
 		return this;
 	}
 
-	public boolean isOpenapiIncludePlugins() {
-		return openapiIncludePlugins;
+	public boolean isOpenapiExcludePlugins() {
+		return openapiExcludePlugins;
 	}
 
 	@Setter
-	public MeshOptions setOpenapiIncludePlugins(boolean openapiIncludePlugins) {
-		this.openapiIncludePlugins = openapiIncludePlugins;
+	public MeshOptions setOpenapiExcludePlugins(boolean openapiExcludePlugins) {
+		this.openapiExcludePlugins = openapiExcludePlugins;
 		return this;
 	}
 
