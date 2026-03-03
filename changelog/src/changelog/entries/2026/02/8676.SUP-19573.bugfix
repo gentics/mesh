@@ -1,0 +1,1 @@
+Fixed classpath static handler to return 404 for directory requests instead of caching them as files in plugin storage
