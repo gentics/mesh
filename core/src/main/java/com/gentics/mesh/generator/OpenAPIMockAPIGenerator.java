@@ -28,29 +28,29 @@ import io.vertx.ext.web.Router;
  * @author plyhun
  *
  */
-public class OpenAPIRuntimeGenerator extends AbstractEndpointGenerator<OpenAPIv3Generator> {
+public class OpenAPIMockAPIGenerator extends AbstractEndpointGenerator<OpenAPIv3Generator> {
 
-	private static final Logger log = LoggerFactory.getLogger(OpenAPIRuntimeGenerator.class);
+	private static final Logger log = LoggerFactory.getLogger(OpenAPIMockAPIGenerator.class);
 
 	private final MeshOpenAPIv3Generator generator;
 	private final Map<Router, String> routers = new HashMap<>();
 	private final String fileName;
 
-	public OpenAPIRuntimeGenerator() {
+	public OpenAPIMockAPIGenerator() {
 		super();
 		this.fileName = null;
 		this.generator = new MeshOpenAPIv3Generator(MeshVersion.getPlainVersion(), Collections.emptyList(),
 				Optional.empty(), Optional.empty());
 	}
 
-	public OpenAPIRuntimeGenerator(File outputFolder, String fileName, boolean cleanup) throws IOException {
+	public OpenAPIMockAPIGenerator(File outputFolder, String fileName, boolean cleanup) throws IOException {
 		super(new File(outputFolder, "api"), false);
 		this.fileName = fileName;
 		this.generator = new MeshOpenAPIv3Generator(MeshVersion.getPlainVersion(), Collections.emptyList(),
 				Optional.empty(), Optional.empty());
 	}
 
-	public OpenAPIRuntimeGenerator(File outputFolder, String fileName) throws IOException {
+	public OpenAPIMockAPIGenerator(File outputFolder, String fileName) throws IOException {
 		super(new File(outputFolder, "api"), false);
 		this.fileName = fileName;
 		this.generator = new MeshOpenAPIv3Generator(MeshVersion.getPlainVersion(), Collections.emptyList(),
