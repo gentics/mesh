@@ -7,13 +7,12 @@ import org.raml.model.ParamType;
 import org.raml.model.parameter.QueryParameter;
 
 import com.gentics.mesh.handler.ActionContext;
-import com.gentics.mesh.parameter.AbstractParameters;
 import com.gentics.mesh.parameter.GenericParameters;
 
 /**
  * @see GenericParameters
  */
-public class GenericParametersImpl extends AbstractParameters implements GenericParameters {
+public class GenericParametersImpl extends EtagParametersImpl implements GenericParameters {
 
 	public GenericParametersImpl(ActionContext ac) {
 		super(ac);
@@ -35,7 +34,7 @@ public class GenericParametersImpl extends AbstractParameters implements Generic
 
 	@Override
 	public Map<? extends String, ? extends QueryParameter> getRAMLParameters() {
-		Map<String, QueryParameter> parameters = new HashMap<>();
+		Map<String, QueryParameter> parameters = new HashMap<>(super.getRAMLParameters());
 
 		QueryParameter fieldsParam = new QueryParameter();
 		fieldsParam.setDescription("Limit the output to certain fields. This is useful in order to reduce the response JSON overhead.");
@@ -43,13 +42,6 @@ public class GenericParametersImpl extends AbstractParameters implements Generic
 		fieldsParam.setDefaultValue("");
 		fieldsParam.setExample("uuid,name");
 		parameters.put(FIELDS_PARAM_KEY, fieldsParam);
-
-		QueryParameter etagParam = new QueryParameter();
-		etagParam.setDescription(
-			"Parameter which can be used to disable the etag parameter generation and thus increase performance when etags are not needed.");
-		etagParam.setType(ParamType.BOOLEAN);
-		etagParam.setDefaultValue("true");
-		parameters.put(ETAG_PARAM_KEY, etagParam);
 
 		return parameters;
 	}

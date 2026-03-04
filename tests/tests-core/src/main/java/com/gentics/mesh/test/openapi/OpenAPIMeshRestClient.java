@@ -100,6 +100,7 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.BackupParameters;
 import com.gentics.mesh.parameter.BranchParameters;
 import com.gentics.mesh.parameter.DeleteParameters;
+import com.gentics.mesh.parameter.EtagParameters;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.JobParameters;
@@ -145,7 +146,7 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 	 * @param parameters
 	 * @return
 	 */
-	private static final <T> T findParameter(String key, ParameterProvider... parameters) {
+	protected static final <T> T findParameter(String key, ParameterProvider... parameters) {
 		return (T) Arrays.stream(parameters).map(p -> p.getParameter(key)).findAny().orElse(null);
 	}
 
@@ -157,7 +158,7 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 	 * @param r
 	 * @return
 	 */
-	private static <R extends RestModel, O> O adaptRequest(R r) {
+	protected static <R extends RestModel, O> O adaptRequest(R r) {
 		if (r == null) {
 			return null;
 		}
@@ -370,36 +371,38 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 	@Override
 	public MeshRequest<ObjectPermissionResponse> grantNodeRolePermissions(String projectName, String uuid,
 			ObjectPermissionGrantRequest request) {
-		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectNodesNodeUuidRolePermissionsPostWithHttpInfo(uuid, projectName, org.openapitools.client.model.ObjectPermissionGrantRequest.fromJson(JsonUtil.toJson(request))), ObjectPermissionResponse.class);
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectNodesNodeUuidRolePermissionsPostWithHttpInfo(uuid, projectName, adaptRequest(request)), ObjectPermissionResponse.class);
 	}
 
 	@Override
 	public MeshRequest<ObjectPermissionResponse> revokeNodeRolePermissions(String projectName, String uuid,
 			ObjectPermissionRevokeRequest request) {
-		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectNodesNodeUuidRolePermissionsPutWithHttpInfo(uuid, projectName, org.openapitools.client.model.ObjectPermissionRevokeRequest.fromJson(JsonUtil.toJson(request))), ObjectPermissionResponse.class);
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectNodesNodeUuidRolePermissionsPutWithHttpInfo(uuid, projectName, adaptRequest(request)), ObjectPermissionResponse.class);
 	}
 
 	@Override
 	public MeshRequest<TagResponse> createTag(String projectName, String tagFamilyUuid, TagCreateRequest request) {
-		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectTagFamiliesTagFamilyUuidTagsPostWithHttpInfo(tagFamilyUuid, projectName, org.openapitools.client.model.TagCreateRequest.fromJson(JsonUtil.toJson(request))), TagResponse.class);
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectTagFamiliesTagFamilyUuidTagsPostWithHttpInfo(tagFamilyUuid, projectName, adaptRequest(request)), TagResponse.class);
 	}
 
 	@Override
 	public MeshRequest<TagResponse> findTagByUuid(String projectName, String tagFamilyUuid, String uuid,
 			ParameterProvider... parameters) {
-		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectTagFamiliesTagFamilyUuidTagsTagUuidGetWithHttpInfo(tagFamilyUuid, uuid, projectName, findParameter(GenericParameters.FIELDS_PARAM_KEY, parameters), findParameter(GenericParameters.ETAG_PARAM_KEY, parameters)), TagResponse.class);
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectTagFamiliesTagFamilyUuidTagsTagUuidGetWithHttpInfo(tagFamilyUuid, uuid, projectName,
+				findParameter(GenericParameters.FIELDS_PARAM_KEY, parameters),
+				findParameter(GenericParameters.ETAG_PARAM_KEY, parameters)), TagResponse.class);
 	}
 
 	@Override
 	public MeshRequest<TagResponse> updateTag(String projectName, String tagFamilyUuid, String uuid,
 			TagUpdateRequest request) {
-		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectTagFamiliesTagFamilyUuidTagsTagUuidPostWithHttpInfo(tagFamilyUuid, uuid, projectName, org.openapitools.client.model.TagUpdateRequest.fromJson(JsonUtil.toJson(request))), TagResponse.class);
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectTagFamiliesTagFamilyUuidTagsTagUuidPostWithHttpInfo(tagFamilyUuid, uuid, projectName, adaptRequest(request)), TagResponse.class);
 	}
 
 	@Override
 	public MeshRequest<TagResponse> createTag(String projectName, String tagFamilyUuid, String uuid,
 			TagCreateRequest request) {
-		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectTagFamiliesTagFamilyUuidTagsPostWithHttpInfo(tagFamilyUuid, projectName, org.openapitools.client.model.TagCreateRequest.fromJson(JsonUtil.toJson(request))), TagResponse.class);
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectTagFamiliesTagFamilyUuidTagsPostWithHttpInfo(tagFamilyUuid, projectName, adaptRequest(request)), TagResponse.class);
 	}
 
 	@Override
@@ -428,126 +431,116 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 	@Override
 	public MeshRequest<ObjectPermissionResponse> grantTagRolePermissions(String projectName, String tagFamilyUuid,
 			String uuid, ObjectPermissionGrantRequest request) {
-		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectTagFamiliesTagFamilyUuidTagsTagUuidRolePermissionsPostWithHttpInfo(tagFamilyUuid, uuid, projectName, org.openapitools.client.model.ObjectPermissionGrantRequest.fromJson(JsonUtil.toJson(request))), ObjectPermissionResponse.class);
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectTagFamiliesTagFamilyUuidTagsTagUuidRolePermissionsPostWithHttpInfo(tagFamilyUuid, uuid, projectName, adaptRequest(request)), ObjectPermissionResponse.class);
 	}
 
 	@Override
 	public MeshRequest<ObjectPermissionResponse> revokeTagRolePermissions(String projectName, String tagFamilyUuid,
 			String uuid, ObjectPermissionRevokeRequest request) {
-	//	api.apiV2ProjectTagFamiliesTagFamilyUuidTagsTagUuidRolePermissions
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectTagFamiliesTagFamilyUuidTagsTagUuidRolePermissionsPutWithHttpInfo(tagFamilyUuid, uuid, projectName, adaptRequest(request)), ObjectPermissionResponse.class);
 	}
 
 	@Override
 	public MeshRequest<ProjectResponse> findProjectByUuid(String uuid, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectsProjectUuidGetWithHttpInfo(uuid, findParameter(RolePermissionParameters.ROLE_PERMISSION_QUERY_PARAM_KEY, parameters)), ProjectResponse.class);
 	}
 
 	@Override
 	public MeshRequest<ProjectResponse> findProjectByName(String name, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectGetWithHttpInfo(name), ProjectResponse.class);
 	}
 
 	@Override
 	public MeshRequest<ProjectListResponse> findProjects(ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectsGetWithHttpInfo(
+				findParameter(SortingParameters.SORT_BY_PARAMETER_KEY, parameters), 
+				findParameter(PagingParameters.PAGE_PARAMETER_KEY, parameters), 
+				findParameter(PagingParameters.PER_PAGE_PARAMETER_KEY, parameters),
+				findParameter(RolePermissionParameters.ROLE_PERMISSION_QUERY_PARAM_KEY, parameters),
+				findParameter(SortingParameters.SORT_ORDER_PARAMETER_KEY, parameters)), ProjectListResponse.class);
 	}
 
 	@Override
-	public MeshRequest<ProjectResponse> assignLanguageToProject(String projectUuid, String languageUuid) {
-		// TODO Auto-generated method stub
-		return null;
+	public MeshRequest<ProjectResponse> assignLanguageToProject(String projectUuid, String languageUuid, ParameterProvider... parameters) {
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectLanguagesLanguageUuidPostWithHttpInfo(languageUuid, projectUuid, findParameter(ProjectLoadParameters.LANGS_QUERY_PARAM_KEY, parameters)), ProjectResponse.class);
 	}
 
 	@Override
-	public MeshRequest<ProjectResponse> unassignLanguageFromProject(String projectUuid, String languageUuid) {
-		// TODO Auto-generated method stub
-		return null;
+	public MeshRequest<ProjectResponse> unassignLanguageFromProject(String projectUuid, String languageUuid, ParameterProvider... parameters) {
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectLanguagesLanguageUuidDeleteWithHttpInfo(languageUuid, projectUuid, findParameter(ProjectLoadParameters.LANGS_QUERY_PARAM_KEY, parameters)), ProjectResponse.class);
 	}
 
 	@Override
 	public MeshRequest<ProjectResponse> createProject(ProjectCreateRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectsPostWithHttpInfo(adaptRequest(request)), ProjectResponse.class);
 	}
 
 	@Override
 	public MeshRequest<ProjectResponse> createProject(String uuid, ProjectCreateRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectsProjectUuidPutWithHttpInfo(uuid, adaptRequest(request)), ProjectResponse.class);
 	}
 
 	@Override
 	public MeshRequest<ProjectResponse> updateProject(String uuid, ProjectUpdateRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectsProjectUuidPostWithHttpInfo(uuid, adaptRequest(request)), ProjectResponse.class);
 	}
 
 	@Override
 	public MeshRequest<EmptyResponse> deleteProject(String uuid) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectsProjectUuidDeleteWithHttpInfo(uuid), EmptyResponse.class);
 	}
 
 	@Override
 	public MeshRequest<GenericMessageResponse> purgeProject(String uuid, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectsProjectUuidDeleteWithHttpInfo(uuid), GenericMessageResponse.class);
 	}
 
 	@Override
 	public MeshRequest<ObjectPermissionResponse> getProjectRolePermissions(String uuid) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectsProjectUuidRolePermissionsGetWithHttpInfo(uuid), ObjectPermissionResponse.class);
 	}
 
 	@Override
 	public MeshRequest<ObjectPermissionResponse> grantProjectRolePermissions(String uuid,
 			ObjectPermissionGrantRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectsProjectUuidRolePermissionsPostWithHttpInfo(uuid, adaptRequest(request)), ObjectPermissionGrantRequest.class);
 	}
 
 	@Override
 	public MeshRequest<ObjectPermissionResponse> revokeProjectRolePermissions(String uuid,
 			ObjectPermissionRevokeRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectsProjectUuidRolePermissionsPutWithHttpInfo(uuid, adaptRequest(request)), ObjectPermissionGrantRequest.class);
 	}
 
 	@Override
 	public MeshRequest<TagFamilyResponse> findTagFamilyByUuid(String projectName, String uuid,
 			ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectTagFamiliesTagFamilyUuidGetWithHttpInfo(uuid, projectName, findParameter(EtagParameters.ETAG_PARAM_KEY, parameters)), TagFamilyResponse.class);
 	}
 
 	@Override
-	public MeshRequest<TagFamilyListResponse> findTagFamilies(String projectName, PagingParameters pagingInfo) {
-		// TODO Auto-generated method stub
-		return null;
+	public MeshRequest<TagFamilyListResponse> findTagFamilies(String projectName, PagingParameters parameters) {
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectTagFamiliesGetWithHttpInfo(projectName,
+				findParameter(SortingParameters.SORT_BY_PARAMETER_KEY, parameters), 
+				findParameter(PagingParameters.PAGE_PARAMETER_KEY, parameters), 
+				findParameter(PagingParameters.PER_PAGE_PARAMETER_KEY, parameters),
+				findParameter(SortingParameters.SORT_ORDER_PARAMETER_KEY, parameters)), TagFamilyListResponse.class);
 	}
 
 	@Override
 	public MeshRequest<TagFamilyResponse> createTagFamily(String projectName, TagFamilyCreateRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectTagFamiliesPostWithHttpInfo(projectName, adaptRequest(request)), TagFamilyResponse.class);
 	}
 
 	@Override
 	public MeshRequest<EmptyResponse> deleteTagFamily(String projectName, String uuid) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectTagFamiliesTagFamilyUuidDeleteWithHttpInfo(uuid, projectName), EmptyResponse.class);
 	}
 
 	@Override
 	public MeshRequest<TagFamilyResponse> updateTagFamily(String projectName, String tagFamilyUuid,
 			TagFamilyUpdateRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectTagFamiliesTagFamilyUuidPost(tagFamilyUuid, projectName, adaptRequest(request)), TagFamilyResponse.class);
 	}
 
 	@Override
