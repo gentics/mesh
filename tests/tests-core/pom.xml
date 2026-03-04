@@ -177,9 +177,7 @@
 							<generateApiTests>false</generateApiTests>
 							<generateSupportingFiles>true</generateSupportingFiles>
 							<generateModelTests>false</generateModelTests>
-							<schemaMappings>
-									JsonObject=com.google.gson.JsonObject
-								</schemaMappings>
+							<schemaMappings>JsonObject=com.google.gson.JsonObject</schemaMappings>
 							<configOptions>
 								<useEnumCaseInsensitive>true</useEnumCaseInsensitive>
 								<useJakartaEe>true</useJakartaEe>

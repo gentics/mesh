@@ -414,13 +414,13 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<ProjectResponse> assignLanguageToProject(String projectUuid, String languageUuid) {
-		return assignLanguageToProjectByUuid(projectUuid, languageUuid);
+	public MeshRequest<ProjectResponse> assignLanguageToProject(String projectUuid, String languageUuid, ParameterProvider... parameters) {
+		return assignLanguageToProjectByUuid(projectUuid, languageUuid, parameters);
 	}
 
 	@Override
-	public MeshRequest<ProjectResponse> unassignLanguageFromProject(String projectUuid, String languageUuid) {
-		return unassignLanguageFromProjectByUuid(projectUuid, languageUuid);
+	public MeshRequest<ProjectResponse> unassignLanguageFromProject(String projectUuid, String languageUuid, ParameterProvider... parameters) {
+		return unassignLanguageFromProjectByUuid(projectUuid, languageUuid, parameters);
 	}
 
 	@Override

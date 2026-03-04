@@ -13,6 +13,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
+import static io.vertx.core.http.HttpMethod.PUT;
 
 import javax.inject.Inject;
 
@@ -70,15 +71,32 @@ public class ProjectEndpoint extends RolePermissionHandlingEndpoint {
 		InternalEndpointRoute updateEndpoint = createRoute();
 		updateEndpoint.path("/:projectUuid");
 		updateEndpoint
-			.description("Update the project with the given uuid. The project is created if no project with the specified uuid could be found.");
+			.description("Update the project with the given uuid.");
 		updateEndpoint.addUriParameter("projectUuid", "Uuid of the project.", PROJECT_DEMO_UUID);
-		updateEndpoint.method(POST);
+		updateEndpoint.method(PUT);
 		updateEndpoint.consumes(APPLICATION_JSON);
 		updateEndpoint.produces(APPLICATION_JSON);
 		updateEndpoint.exampleRequest(projectExamples.getProjectUpdateRequest("New project name"));
 		updateEndpoint.exampleResponse(OK, projectExamples.getProjectResponse("New project name"), "Updated project.");
 		updateEndpoint.events(PROJECT_UPDATED);
 		updateEndpoint.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String uuid = ac.getParameter("projectUuid");
+			crudHandler.handleUpdate(ac, uuid);
+		}, isOrderedBlockingHandlers());
+
+		InternalEndpointRoute upsertEndpoint = createRoute();
+		upsertEndpoint.path("/:projectUuid");
+		upsertEndpoint
+			.description("Update the project with the given uuid. The project is created if no project with the specified uuid could be found.");
+		upsertEndpoint.addUriParameter("projectUuid", "Uuid of the project.", PROJECT_DEMO_UUID);
+		upsertEndpoint.method(POST);
+		upsertEndpoint.consumes(APPLICATION_JSON);
+		upsertEndpoint.produces(APPLICATION_JSON);
+		upsertEndpoint.exampleRequest(projectExamples.getProjectCreateRequest("New project name"));
+		upsertEndpoint.exampleResponse(OK, projectExamples.getProjectResponse("New project name"), "Updated project.");
+		upsertEndpoint.events(PROJECT_UPDATED);
+		upsertEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("projectUuid");
 			crudHandler.handleUpdate(ac, uuid);

@@ -34,6 +34,7 @@ import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.endpoint.tag.TagCrudHandler;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.impl.BranchParametersImpl;
+import com.gentics.mesh.parameter.impl.EtagParametersImpl;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
@@ -294,6 +295,7 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 		readOne.path("/:tagFamilyUuid");
 		readOne.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
 		readOne.method(GET);
+		readOne.addQueryParameters(EtagParametersImpl.class);
 		readOne.description("Read the tag family with the given uuid.");
 		readOne.produces(APPLICATION_JSON);
 		readOne.exampleResponse(OK, tagFamilyExamples.getTagFamilyResponse("Colors"), "Loaded tag family.");
@@ -333,17 +335,33 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 	}
 
 	private void addTagFamilyUpdateHandler() {
-		InternalEndpointRoute endpoint = createRoute();
-		endpoint.path("/:tagFamilyUuid");
-		endpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
-		endpoint.method(POST);
-		endpoint.description("Update the tag family with the given uuid. The tag family will be created if it can't be found for the given uuid.");
-		endpoint.consumes(APPLICATION_JSON);
-		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleRequest(tagFamilyExamples.getTagFamilyUpdateRequest("Nicer colors"));
-		endpoint.exampleResponse(OK, tagFamilyExamples.getTagFamilyResponse("Nicer colors"), "Updated tag family.");
-		endpoint.events(TAG_FAMILY_UPDATED, TAG_FAMILY_CREATED);
-		endpoint.blockingHandler(rc -> {
+		InternalEndpointRoute updateEndpoint = createRoute();
+		updateEndpoint.path("/:tagFamilyUuid");
+		updateEndpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
+		updateEndpoint.method(PUT);
+		updateEndpoint.description("Update the tag family with the given uuid.");
+		updateEndpoint.consumes(APPLICATION_JSON);
+		updateEndpoint.produces(APPLICATION_JSON);
+		updateEndpoint.exampleRequest(tagFamilyExamples.getTagFamilyUpdateRequest("Nicer colors"));
+		updateEndpoint.exampleResponse(OK, tagFamilyExamples.getTagFamilyResponse("Nicer colors"), "Updated tag family.");
+		updateEndpoint.events(TAG_FAMILY_UPDATED, TAG_FAMILY_CREATED);
+		updateEndpoint.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String tagFamilyUuid = PathParameters.getTagFamilyUuid(rc);
+			tagFamilyCrudHandler.handleUpdate(ac, tagFamilyUuid);
+		}, isOrderedBlockingHandlers());
+
+		InternalEndpointRoute upsertEndpoint = createRoute();
+		upsertEndpoint.path("/:tagFamilyUuid");
+		upsertEndpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
+		upsertEndpoint.method(POST);
+		upsertEndpoint.description("Update the tag family with the given uuid. The tag family will be created if it can't be found for the given uuid.");
+		upsertEndpoint.consumes(APPLICATION_JSON);
+		upsertEndpoint.produces(APPLICATION_JSON);
+		upsertEndpoint.exampleRequest(tagFamilyExamples.getTagFamilyCreateRequest("Nicer colors"));
+		upsertEndpoint.exampleResponse(OK, tagFamilyExamples.getTagFamilyResponse("Nicer colors"), "Updated or created tag family.");
+		upsertEndpoint.events(TAG_FAMILY_UPDATED, TAG_FAMILY_CREATED);
+		upsertEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String tagFamilyUuid = PathParameters.getTagFamilyUuid(rc);
 			tagFamilyCrudHandler.handleUpdate(ac, tagFamilyUuid);
