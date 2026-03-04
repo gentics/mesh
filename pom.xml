@@ -14,7 +14,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<projectRoot>${project.basedir}</projectRoot>
-		<mesh.build.version>${project.version}</mesh.build.version>
+		<mesh.build.version>3.3.0-SNAPSHOT</mesh.build.version>
 		<mesh.build.timestamp>${maven.build.timestamp}</mesh.build.timestamp>
 
 		<vertx.version>5.0.5</vertx.version>
