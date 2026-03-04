@@ -25,6 +25,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.router.RouterStorageImpl;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.util.MeshOpenAPIv3Generator;
 
 import dagger.Module;
 import dagger.Provides;
@@ -47,7 +48,7 @@ public class AdminEndpointProviderModule {
 	public static AdminHandler provideAdminHandler(Vertx vertx, Database db, RouterStorageImpl routerStorage, BootstrapInitializer boot,
 			SearchProvider searchProvider, HandlerUtilities utils, MeshOptions options,
 			RouterStorageRegistryImpl routerStorageRegistry, Coordinator coordinator, WriteLock writeLock,
-			ConsistencyCheckHandler consistencyCheckHandler, CacheRegistry cacheRegistry, ContentCachedStorage contentCache) {
-		return new HibAdminHandler(vertx, db, routerStorage, boot, searchProvider, utils, options, routerStorageRegistry, coordinator, writeLock, consistencyCheckHandler, cacheRegistry, contentCache);
+			ConsistencyCheckHandler consistencyCheckHandler, CacheRegistry cacheRegistry, ContentCachedStorage contentCache, MeshOpenAPIv3Generator generator) {
+		return new HibAdminHandler(vertx, db, routerStorage, boot, searchProvider, utils, options, routerStorageRegistry, coordinator, writeLock, consistencyCheckHandler, cacheRegistry, contentCache, generator);
 	}
 }
