@@ -1,6 +1,6 @@
-package com.gentics.mesh.core.rest.openapi;
+package com.gentics.mesh.etc.config;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * OpenAPI output format
@@ -9,11 +9,26 @@ public enum Format {
 	/**
 	 * Yaml
 	 */
-	YAML,
+	YAML(0),
 	/**
 	 * JSON
 	 */
-	JSON;
+	JSON(1);
+
+	private final int level;
+
+	private Format(int level) {
+		this.level = level;
+	}
+
+	/**
+	 * Get the filtering int value.
+	 * 
+	 * @return
+	 */
+	public int getLevel() {
+		return level;
+	}
 
 	/**
 	 * Safe parse string value

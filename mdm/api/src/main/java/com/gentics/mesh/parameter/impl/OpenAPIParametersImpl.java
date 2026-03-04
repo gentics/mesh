@@ -8,8 +8,8 @@ import java.util.stream.Collectors;
 import org.raml.model.ParamType;
 import org.raml.model.parameter.QueryParameter;
 
-import com.gentics.mesh.core.rest.openapi.Format;
-import com.gentics.mesh.core.rest.openapi.Version;
+import com.gentics.mesh.etc.config.Format;
+import com.gentics.mesh.etc.config.Version;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.AbstractParameters;
 import com.gentics.mesh.parameter.OpenAPIParameters;

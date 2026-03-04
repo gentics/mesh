@@ -15,8 +15,8 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
 import com.gentics.mesh.MeshVersion;
-import com.gentics.mesh.core.rest.openapi.Format;
-import com.gentics.mesh.core.rest.openapi.Version;
+import com.gentics.mesh.etc.config.Format;
+import com.gentics.mesh.etc.config.Version;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 

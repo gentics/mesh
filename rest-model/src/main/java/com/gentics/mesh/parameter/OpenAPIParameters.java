@@ -1,7 +1,7 @@
 package com.gentics.mesh.parameter;
 
-import com.gentics.mesh.core.rest.openapi.Format;
-import com.gentics.mesh.core.rest.openapi.Version;
+import com.gentics.mesh.etc.config.Format;
+import com.gentics.mesh.etc.config.Version;
 
 /**
  * Parameters for an OpenAPI definition request

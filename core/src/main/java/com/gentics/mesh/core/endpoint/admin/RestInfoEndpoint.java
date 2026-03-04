@@ -11,7 +11,7 @@ import javax.inject.Inject;
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.db.Database;
-import com.gentics.mesh.core.rest.openapi.Format;
+import com.gentics.mesh.etc.config.Format;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.example.RestInfoExamples;
 import com.gentics.mesh.parameter.impl.OpenAPIParametersImpl;
@@ -84,30 +84,19 @@ public class RestInfoEndpoint extends AbstractInternalEndpoint {
 			adminHandler.handleOpenAPIv3(ac);
 		}, false);
 
-		secure("/openapi.yaml");
+
+		MeshOptions options = getOptions();
+		secure("/openapi." + options.getOpenAPIOptions().getDefaultFormat().name().toLowerCase());
 		InternalEndpointRoute openapiYml = createRoute();
-		openapiYml.path("/openapi.yaml");
+		openapiYml.path("/openapi." + options.getOpenAPIOptions().getDefaultFormat().name().toLowerCase());
 		openapiYml.method(GET);
-		openapiYml.description("Endpoint which provides a OpenAPIv3.0 YAML document for all registed endpoints.");
+		openapiYml.description("Endpoint which provides a OpenAPI v" + options.getOpenAPIOptions().getDefaultVersion().pretty() + " " + options.getOpenAPIOptions().getDefaultFormat().name() + " document for all registed endpoints.");
 		openapiYml.displayName("OpenAPI specification");
 		openapiYml.exampleResponse(OK, "Not yet specified");
-		openapiYml.produces(APPLICATION_YAML);
+		openapiYml.produces(options.getOpenAPIOptions().getDefaultFormat() == Format.JSON ? APPLICATION_JSON : APPLICATION_YAML);
 		openapiYml.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
-			adminHandler.handleOpenAPIv3(ac, Format.YAML);
-		}, false);
-
-		secure("/openapi.json");
-		InternalEndpointRoute openapiJson = createRoute();
-		openapiJson.path("/openapi.json");
-		openapiJson.method(GET);
-		openapiJson.description("Endpoint which provides a OpenAPIv3.0 JSON document for all registed endpoints.");
-		openapiJson.displayName("OpenAPI specification");
-		openapiJson.exampleResponse(OK, "Not yet specified");
-		openapiJson.produces(APPLICATION_JSON);
-		openapiJson.blockingHandler(rc -> {
-			InternalActionContext ac = wrap(rc);
-			adminHandler.handleOpenAPIv3(ac, Format.JSON);
+			adminHandler.handleOpenAPIv3(ac, options.getOpenAPIOptions().getDefaultFormat(), options.getOpenAPIOptions().getDefaultVersion());
 		}, false);
 
 		secure("/");

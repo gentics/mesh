@@ -31,7 +31,6 @@ public abstract class MeshOptions implements Option {
 	public static final String MESH_UPDATECHECK_ENV = "MESH_UPDATECHECK";
 	public static final String MESH_TEMP_DIR_ENV = "MESH_TEMP_DIR";
 	public static final String MESH_PLUGIN_DIR_ENV = "MESH_PLUGIN_DIR";
-	public static final String MESH_OPENAPI_EXCLUDE_PLUGINS_ENV = "MESH_OPENAPI_EXCLUDE_PLUGINS";
 	public static final String MESH_PLUGIN_USE_HTTP2_ENV = "MESH_PLUGIN_USE_HTTP2";
 	public static final String MESH_PLUGIN_TIMEOUT_ENV = "MESH_PLUGIN_TIMEOUT";
 	public static final String MESH_NODE_NAME_ENV = "MESH_NODE_NAME";
@@ -154,6 +153,10 @@ public abstract class MeshOptions implements Option {
 	private long migrationTriggerInterval = DEFAULT_MIGRATION_TRIGGER_INTERVAL;
 
 	@JsonProperty(required = true)
+	@JsonPropertyDescription("OpenAPI options.")
+	private OpenAPIOptions openApiOptions = new OpenAPIOptions();
+
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("GraphQL options.")
 	private GraphQLOptions graphQLOptions = new GraphQLOptions();
 
@@ -161,11 +164,6 @@ public abstract class MeshOptions implements Option {
 	@JsonPropertyDescription("If true, plugin HTTP client will be forced to use HTTP/2 protocol version.")
 	@EnvironmentVariable(name = MESH_PLUGIN_USE_HTTP2_ENV, description = "Override the HTTP/2 usage flag for plugins.")
 	private boolean pluginUseHttp2 = false;
-
-	@JsonProperty(required = false)
-	@JsonPropertyDescription("Should the endpoints of the included plugins be excluded from the OpenAPI specification generation requests. Default is true.")
-	@EnvironmentVariable(name = MESH_OPENAPI_EXCLUDE_PLUGINS_ENV, description = "Override the flag to exclude endpoints of the plugins from the OpenAPI specification generation requests")
-	private boolean openapiExcludePlugins = true;
 
 	/* EXTRA Command Line Arguments */
 	@JsonIgnore
@@ -278,6 +276,24 @@ public abstract class MeshOptions implements Option {
 		return this;
 	}
 
+	/**
+	 * Get the OpenAPI options
+	 * @return options
+	 */
+	@JsonProperty("openApi")
+	public OpenAPIOptions getOpenAPIOptions() {
+		return openApiOptions;
+	}
+
+	/**
+	 * Set the OpenAPI options
+	 * @param openApiOptions options
+	 * @return fluent API
+	 */
+	public MeshOptions setOpenAPIOptions(OpenAPIOptions openApiOptions) {
+		this.openApiOptions = openApiOptions;
+		return this;
+	}
 
 	/**
 	 * Get the graphql options
@@ -547,16 +563,6 @@ public abstract class MeshOptions implements Option {
 	@Setter
 	public MeshOptions setPluginUseHttp2(boolean pluginUseHttp2) {
 		this.pluginUseHttp2 = pluginUseHttp2;
-		return this;
-	}
-
-	public boolean isOpenapiExcludePlugins() {
-		return openapiExcludePlugins;
-	}
-
-	@Setter
-	public MeshOptions setOpenapiExcludePlugins(boolean openapiExcludePlugins) {
-		this.openapiExcludePlugins = openapiExcludePlugins;
 		return this;
 	}
 

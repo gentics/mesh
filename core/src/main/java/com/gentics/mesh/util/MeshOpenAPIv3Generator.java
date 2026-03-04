@@ -45,6 +45,7 @@ public class MeshOpenAPIv3Generator extends OpenAPIv3Generator {
 	/**
 	 * Generate the specification using some functional shortcuts.
 	 * 
+	 * @param name
 	 * @param routers
 	 * @param format
 	 * @param pretty
@@ -53,7 +54,22 @@ public class MeshOpenAPIv3Generator extends OpenAPIv3Generator {
 	 * @throws OpenAPIGenerationException
 	 */
 	public String generate(Map<Router, String> routers, Format format, boolean pretty, boolean useVersion31) throws OpenAPIGenerationException {
-		return generate("Gentics Mesh REST API", routers, format, pretty, useVersion31, 
+		return generate("Gentics Mesh REST API", routers, format, pretty, useVersion31);
+	}
+
+	/**
+	 * Generate the specification using some functional shortcuts and an API name.
+	 * 
+	 * @param name
+	 * @param routers
+	 * @param format
+	 * @param pretty
+	 * @param useVersion31
+	 * @return
+	 * @throws OpenAPIGenerationException
+	 */
+	public String generate(String name, Map<Router, String> routers, Format format, boolean pretty, boolean useVersion31) throws OpenAPIGenerationException {
+		return generate(name, routers, format, pretty, useVersion31, 
 				// transform project path item
 				Optional.of((path, item) -> {
 					if (path.contains("/{project}/")) {
