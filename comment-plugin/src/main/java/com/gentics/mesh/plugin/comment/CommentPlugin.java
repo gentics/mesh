@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.gentics.mesh.http.HttpConstants;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.plugin.AbstractPlugin;
+import com.gentics.mesh.plugin.AbstractCommercialRestPlugin;
 import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.RestPlugin;
 import com.gentics.mesh.plugin.comment.config.Configuration;
@@ -46,7 +46,7 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 
-public class CommentPlugin extends AbstractPlugin implements RestPlugin {
+public class CommentPlugin extends AbstractCommercialRestPlugin<Configuration> implements RestPlugin {
 
 	private static final Logger log = LoggerFactory.getLogger(CommentPlugin.class);
 	private Configuration configuration;

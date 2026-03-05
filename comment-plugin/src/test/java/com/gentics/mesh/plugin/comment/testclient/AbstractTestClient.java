@@ -50,8 +50,6 @@ import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryMetadataRequest;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryUploadRequest;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3RestResponse;
 import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
-import com.gentics.mesh.core.rest.openapi.Format;
-import com.gentics.mesh.core.rest.openapi.Version;
 import com.gentics.mesh.core.rest.plugin.PluginDeploymentRequest;
 import com.gentics.mesh.core.rest.plugin.PluginListResponse;
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
@@ -93,6 +91,8 @@ import com.gentics.mesh.core.rest.user.UserResetTokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.core.rest.validation.SchemaValidationResponse;
+import com.gentics.mesh.etc.config.Format;
+import com.gentics.mesh.etc.config.Version;
 import com.gentics.mesh.parameter.BackupParameters;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -550,12 +550,12 @@ public abstract class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<ProjectResponse> assignLanguageToProject(String projectUuid, String languageUuid) {
+	public MeshRequest<ProjectResponse> assignLanguageToProject(String projectUuid, String languageUuid, ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
 	@Override
-	public MeshRequest<ProjectResponse> unassignLanguageFromProject(String projectUuid, String languageUuid) {
+	public MeshRequest<ProjectResponse> unassignLanguageFromProject(String projectUuid, String languageUuid, ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 

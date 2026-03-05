@@ -26,7 +26,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.gentics.mesh.RestAPIVersion;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.plugin.AbstractPlugin;
+import com.gentics.mesh.plugin.AbstractCommercialRestPlugin;
 import com.gentics.mesh.plugin.RestPlugin;
 import com.gentics.mesh.plugin.common.license.LicenseService;
 import com.gentics.mesh.plugin.common.license.LicensedPlugin;
@@ -50,7 +50,7 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 
-public class ExportPlugin extends AbstractPlugin implements RestPlugin, ExportConfigValuePlugin {
+public class ExportPlugin extends AbstractCommercialRestPlugin<PluginConfiguration> implements RestPlugin, ExportConfigValuePlugin {
 
 	private static final Logger log = LoggerFactory.getLogger(ExportPlugin.class);
 

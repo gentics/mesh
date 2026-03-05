@@ -17,7 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.core.rest.error.GenericRestException;
-import com.gentics.mesh.plugin.AbstractPlugin;
+import com.gentics.mesh.plugin.AbstractCommercialRestPlugin;
 import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.RestPlugin;
 import com.gentics.mesh.plugin.common.MeshPluginException;
@@ -43,7 +43,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 
-public class FavoritePlugin extends AbstractPlugin implements RestPlugin {
+public class FavoritePlugin extends AbstractCommercialRestPlugin<FavoritePluginConfig> implements RestPlugin {
 
 	public final static String NAME = "Favorite Plugin";
 

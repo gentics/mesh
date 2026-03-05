@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.example.NodeExamples;
 import com.gentics.mesh.http.HttpConstants;
-import com.gentics.mesh.plugin.AbstractPlugin;
+import com.gentics.mesh.plugin.AbstractCommercialRestPlugin;
 import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.RestPlugin;
 import com.gentics.mesh.plugin.common.MeshPluginException;
@@ -65,7 +65,7 @@ import io.vertx.ext.web.RoutingContext;
 /**
  * Main class for the forms plugin
  */
-public class FormsPlugin extends AbstractPlugin implements RestPlugin {
+public class FormsPlugin extends AbstractCommercialRestPlugin<FormsConfig> implements RestPlugin {
 	private static final Logger log = LoggerFactory.getLogger(FormsPlugin.class);
 
 	private FormsConfig configuration;

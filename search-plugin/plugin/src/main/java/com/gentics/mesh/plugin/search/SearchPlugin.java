@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.http.HttpConstants;
-import com.gentics.mesh.plugin.AbstractPlugin;
+import com.gentics.mesh.plugin.AbstractCommercialRestPlugin;
 import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.RestPlugin;
 import com.gentics.mesh.plugin.common.license.LicenseService;
@@ -41,7 +41,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 
-public class SearchPlugin extends AbstractPlugin implements RestPlugin {
+public class SearchPlugin extends AbstractCommercialRestPlugin<SearchConfiguration> implements RestPlugin {
 
 	private static final Logger log = LoggerFactory.getLogger(SearchPlugin.class);
 
