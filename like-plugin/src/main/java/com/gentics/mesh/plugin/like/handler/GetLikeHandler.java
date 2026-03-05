@@ -8,9 +8,11 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.plugin.PluginContext;
+import com.gentics.mesh.plugin.common.util.ParameterUtil;
 import com.gentics.mesh.plugin.like.service.LikeService;
 
 import io.reactivex.Completable;
+import io.reactivex.Single;
 import io.vertx.core.http.HttpServerResponse;
 
 @Singleton
@@ -25,14 +27,15 @@ public class GetLikeHandler extends AbstractLikeHandler {
 	@Override
 	public Completable handle(PluginContext context) {
 		String projectName = context.project().getString("name");
-		String uuid = context.pathParam("nodeUuid");
-		String lang = context.pathParam("lang");
+		Single<String> uuidSingle = ParameterUtil.getUuidFromPath(context, "nodeUuid");
+		Single<String> langSingle = ParameterUtil.getFromPath(context, "lang", ParameterUtil.LANGUAGE_PATTERN);
 
-		return likeService.getLike(projectName, uuid, lang).doOnSuccess(model -> {
-			HttpServerResponse resp = context.response();
-			resp.putHeader(CONTENT_TYPE, APPLICATION_JSON);
-			resp.end(JsonUtil.toJson(model));
-		}).ignoreElement();
+		return Single.zip(uuidSingle, langSingle, (uuid, lang) -> likeService.getLike(projectName, uuid, lang))
+				.flatMap(x -> x).doOnSuccess(model -> {
+					HttpServerResponse resp = context.response();
+					resp.putHeader(CONTENT_TYPE, APPLICATION_JSON);
+					resp.end(JsonUtil.toJson(model));
+				}).ignoreElement();
 	}
 
 }

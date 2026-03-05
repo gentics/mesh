@@ -15,5 +15,6 @@ public abstract class AbstractFavoriteHandler {
 	public final String regexMatch = "[A-Za-z0-9\\-\\_]+";
 	public final Pattern pattern = Pattern.compile(regexMatch);
 
+	public final Pattern idPattern = Pattern.compile(".*");
 
 }

@@ -1,14 +1,17 @@
 package com.gentics.mesh.plugin.forms.handler;
 
+import java.util.regex.Pattern;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.plugin.PluginContext;
+import com.gentics.mesh.plugin.common.util.ParameterUtil;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 
-import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Completable;
+import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerResponse;
@@ -16,6 +19,7 @@ import io.vertx.ext.auth.User;
 
 @Singleton
 public class LoadFormDataBinaryHandler extends AbstractFormsHandler {
+	public final static Pattern BINARY_FIELD_NAME_PATTERN = Pattern.compile("\\w+", Pattern.CASE_INSENSITIVE);
 
 	private final FormDataService formDataService;
 
@@ -29,11 +33,12 @@ public class LoadFormDataBinaryHandler extends AbstractFormsHandler {
 		User user = context.user();
 
 		String projectName = context.project().getString("name");
-		String formUuid = context.pathParam("formUuid");
-		String formDataUuid = context.pathParam("formDataUuid");
-		String binaryFieldName = context.pathParam("binaryFieldName");
+		Single<String> formUuidSingle = ParameterUtil.getUuidFromPath(context, "formUuid");
+		Single<String> formDataUuidSingle = ParameterUtil.getUuidFromPath(context, "formDataUuid");
+		Single<String> binaryFieldNameSingle = ParameterUtil.getFromPath(context, "binaryFieldName", BINARY_FIELD_NAME_PATTERN);
 
-		return formDataService.loadBinary(projectName, formUuid, formDataUuid, binaryFieldName).doOnSuccess(meshResponse -> {
+		return Single.zip(formUuidSingle, formDataUuidSingle, binaryFieldNameSingle, (formUuid, formDataUuid, binaryFieldName) -> formDataService.loadBinary(projectName, formUuid, formDataUuid, binaryFieldName))
+			.flatMap(x -> x).doOnSuccess(meshResponse -> {
 			MeshBinaryResponse downloadResponse = meshResponse.getBody();
 			HttpServerResponse response = context.response();
 

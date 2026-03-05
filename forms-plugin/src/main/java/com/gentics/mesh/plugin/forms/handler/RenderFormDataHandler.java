@@ -7,10 +7,11 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.plugin.PluginContext;
+import com.gentics.mesh.plugin.common.util.ParameterUtil;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
-import com.gentics.mesh.plugin.forms.util.ParameterUtil;
 
 import io.reactivex.Completable;
+import io.reactivex.Single;
 
 @Singleton
 public class RenderFormDataHandler extends AbstractFormsHandler {
@@ -24,10 +25,12 @@ public class RenderFormDataHandler extends AbstractFormsHandler {
 	@Override
 	public Completable handle(PluginContext context) {
 		String projectName = context.project().getString("name");
-		String formUuid = context.pathParam("formUuid");
-		String formDataUuid = context.pathParam("formDataUuid");
+		Single<String> formUuidSingle = ParameterUtil.getUuidFromPath(context, "formUuid");
+		Single<String> formDataUuidSingle = ParameterUtil.getUuidFromPath(context, "formDataUuid");
+		Single<String[]> languagesSingle = ParameterUtil.getLanguages(context);
 
-		return formDataService.render(projectName, formUuid, formDataUuid, context, ParameterUtil.getLanguages(context)).doOnEvent((buffer, t) -> {
+		return Single.zip(formUuidSingle, formDataUuidSingle, languagesSingle, (formUuid, formDataUuid, languages) -> formDataService.render(projectName,
+				formUuid, formDataUuid, context, languages)).flatMap(x -> x).doOnEvent((buffer, t) -> {
 			if (buffer != null) {
 				context.response().putHeader(CONTENT_TYPE, String.format("%s; charset=UTF-8", DEFAULT_CONTENT_TYPE)).end(buffer.toString());
 			}

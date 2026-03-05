@@ -1,14 +1,16 @@
 package com.gentics.mesh.plugin.forms.handler.downloads;
 
-import com.gentics.mesh.plugin.PluginContext;
-import com.gentics.mesh.plugin.common.util.HandlerUtil;
-import com.gentics.mesh.plugin.forms.handler.AbstractFormsHandler;
-import com.gentics.mesh.plugin.forms.service.FormDataService;
-import com.gentics.mesh.plugin.forms.util.ParameterUtil;
-import io.reactivex.Completable;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import com.gentics.mesh.plugin.PluginContext;
+import com.gentics.mesh.plugin.common.util.HandlerUtil;
+import com.gentics.mesh.plugin.common.util.ParameterUtil;
+import com.gentics.mesh.plugin.forms.handler.AbstractFormsHandler;
+import com.gentics.mesh.plugin.forms.service.FormDataService;
+
+import io.reactivex.Completable;
+import io.reactivex.Single;
 
 /**
  * Handler for requesting creation of an export.
@@ -25,11 +27,12 @@ public class RequestFilesZipHandler extends AbstractFormsHandler {
 	@Override
 	public Completable handle(PluginContext context) {
 		String projectName = context.project().getString("name");
-		String formUuid = context.pathParam("formUuid");
+		Single<String> formUuidSingle = ParameterUtil.getUuidFromPath(context, "formUuid");
+		Single<String[]> languagesSingle = ParameterUtil.getLanguages(context);
 
-		return formDataService
-			.requestZipBinaries(projectName, formUuid, ParameterUtil.getLanguages(context))
-			.doOnEvent(HandlerUtil.nodeUuidHandler(context, "downloadUuid", false))
-			.ignoreElement();
+		return Single
+				.zip(formUuidSingle, languagesSingle,
+						(formUuid, languages) -> formDataService.requestZipBinaries(projectName, formUuid, languages))
+				.flatMap(x -> x).doOnEvent(HandlerUtil.nodeUuidHandler(context, "downloadUuid", false)).ignoreElement();
 	}
 }

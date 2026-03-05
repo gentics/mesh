@@ -56,6 +56,7 @@ import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.dagger.UserClient;
 import com.gentics.mesh.plugin.common.service.RenderService;
+import com.gentics.mesh.plugin.common.util.ParameterUtil;
 import com.gentics.mesh.plugin.forms.FormsError;
 import com.gentics.mesh.plugin.forms.FormsPlugin;
 import com.gentics.mesh.plugin.forms.SchemaInitializer;
@@ -67,7 +68,6 @@ import com.gentics.mesh.plugin.forms.model.FormType;
 import com.gentics.mesh.plugin.forms.model.ValidationError;
 import com.gentics.mesh.plugin.forms.model.response.RenderResponse;
 import com.gentics.mesh.plugin.forms.util.FormUtil;
-import com.gentics.mesh.plugin.forms.util.ParameterUtil;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.impl.EmptyResponse;
 
@@ -570,32 +570,34 @@ public class FormService {
 			.setQuery(query)
 			.setVariables(new JsonObject().put("formUuid", formUuid).put("lang", Arrays.asList(lang)));
 
-		return adminClient.graphql(projectName, request).toSingle()
-			.map(rs -> Optional.ofNullable(rs.getData())
-				.map(data -> data.getJsonObject("node"))
-				.map(node -> node.getJsonObject("children"))
-				.map(children -> children.getJsonArray("elements"))
-				.orElse(new JsonArray())
-				.stream()
-				.filter(o -> o instanceof JsonObject && folderName.equals(((JsonObject) o).getString("displayName")))
-				.map(o -> ((JsonObject) o).getString("uuid"))
-				.findFirst())
-			.flatMap(folderUuid -> {
-				if (folderUuid.isPresent()) {
-					return Single.just(folderUuid.get());
-				}
-
-				NodeCreateRequest createRequest = new NodeCreateRequest()
-					.setParentNodeUuid(formUuid)
-					.setLanguage("en")
-					.setSchemaName(SchemaInitializer.FOLDER_SCHEMA_NAME)
-					.setPublish(publishFormFolder(folderName));
-
-				createRequest.getFields().put("name", new StringFieldImpl().setString(folderName));
-
-				return adminClient.createNode(projectName, createRequest).toSingle()
-					.map(NodeResponse::getUuid);
-			});
+		return loadAsAdmin(projectName, formUuid, true).flatMap(form -> {
+			return adminClient.graphql(projectName, request).toSingle()
+					.map(rs -> Optional.ofNullable(rs.getData())
+							.map(data -> data.getJsonObject("node"))
+							.map(node -> node.getJsonObject("children"))
+							.map(children -> children.getJsonArray("elements"))
+							.orElse(new JsonArray())
+							.stream()
+							.filter(o -> o instanceof JsonObject && folderName.equals(((JsonObject) o).getString("displayName")))
+							.map(o -> ((JsonObject) o).getString("uuid"))
+							.findFirst())
+					.flatMap(folderUuid -> {
+						if (folderUuid.isPresent()) {
+							return Single.just(folderUuid.get());
+						}
+						
+						NodeCreateRequest createRequest = new NodeCreateRequest()
+								.setParentNodeUuid(formUuid)
+								.setLanguage("en")
+								.setSchemaName(SchemaInitializer.FOLDER_SCHEMA_NAME)
+								.setPublish(publishFormFolder(folderName));
+						
+						createRequest.getFields().put("name", new StringFieldImpl().setString(folderName));
+						
+						return adminClient.createNode(projectName, createRequest).toSingle()
+								.map(NodeResponse::getUuid);
+					});
+		});
 	}
 
 	private Completable ensureFormFolders(String projectName, String formUuid, String lang, String ...folderNames) throws IOException {
@@ -760,15 +762,16 @@ public class FormService {
 	 * @return single buffer
 	 */
 	public Single<Buffer> renderForm(String uuid, String formData, String pathPrefix, PluginContext rc) {
-		Form form;
+		Single<Form> formSingle = ParameterUtil.getFirstLanguage(rc, "en").flatMap(lang -> {
+			try {
+				return Single.just(toForm(formData, uuid, lang));
+			} catch (IOException e) {
+				log.error("Could not create form instance from form data");
+				return Single.error(e);
+			}
+		});
 
-		try {
-			form = toForm(formData, uuid, ParameterUtil.getFirstLanguage(rc, "en"));
-		} catch (IOException e) {
-			log.error("Could not create form instance from form data");
-			return Single.error(e);
-		}
-		return renderForm(uuid, form, pathPrefix, rc);
+		return formSingle.flatMap(form -> renderForm(uuid, form, pathPrefix, rc));
 	}
 
 	/**

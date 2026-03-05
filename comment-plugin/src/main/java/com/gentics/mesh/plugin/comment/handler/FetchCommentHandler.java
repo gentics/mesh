@@ -2,7 +2,10 @@ package com.gentics.mesh.plugin.comment.handler;
 
 import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.comment.service.CommentService;
+import com.gentics.mesh.plugin.common.util.ParameterUtil;
+
 import io.reactivex.Completable;
+import io.reactivex.Single;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -19,8 +22,8 @@ public class FetchCommentHandler extends AbstractCommentHandler {
 
 	@Override
 	public Completable handle(PluginContext context) {
-		String uuid = context.pathParam("uuid");
-		return commentService.fetchComment(uuid, true)
+		Single<String> uuidSingle = ParameterUtil.getUuidFromPath(context, "uuid");
+		return uuidSingle.flatMap(uuid -> commentService.fetchComment(uuid, true))
 			.doOnEvent(jsonHandler(context))
 			.ignoreElement();
 	}
