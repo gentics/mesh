@@ -8,6 +8,8 @@ import java.nio.file.StandardCopyOption;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.VertxOptions;
 
@@ -43,6 +45,15 @@ public interface RestPlugin extends MeshPlugin {
 	 */
 	default Router createProjectRouter() {
 		return null;
+	}
+
+	/**
+	 * Create a pair of routers, global and project. Note that this method will be invoked multiple times in order to register the endpoints to all REST verticles.
+	 * 
+	 * @return
+	 */
+	default Pair<Router, Router> createRouters() {
+		return Pair.of(createGlobalRouter(), createProjectRouter());
 	}
 
 	/**
