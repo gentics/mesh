@@ -11,10 +11,17 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang.StringUtils;
@@ -29,6 +36,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.db.cluster.ClusterManager;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
@@ -39,6 +47,7 @@ import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.distributed.coordinator.Coordinator;
 import com.gentics.mesh.distributed.coordinator.MasterServer;
+import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.Version;
 import com.gentics.mesh.generator.RAMLGenerator;
@@ -87,12 +96,12 @@ public abstract class AdminHandler extends AbstractHandler {
 
 	protected final CacheRegistry cacheRegistry;
 
-	protected final MeshOpenAPIv3Generator generator;
+	protected final ClusterManager clusterManager;
 
 	protected AdminHandler(Vertx vertx, Database db, RouterStorageImpl routerStorage, BootstrapInitializer boot, SearchProvider searchProvider,
 		HandlerUtilities utils,
 		MeshOptions options, RouterStorageRegistryImpl routerStorageRegistry, Coordinator coordinator, WriteLock writeLock,
-		ConsistencyCheckHandler consistencyCheckHandler, CacheRegistry cacheRegistry, MeshOpenAPIv3Generator generator) {
+		ConsistencyCheckHandler consistencyCheckHandler, CacheRegistry cacheRegistry, ClusterManager clusterManager) {
 		this.vertx = vertx;
 		this.db = db;
 		this.routerStorage = routerStorage;
@@ -105,7 +114,7 @@ public abstract class AdminHandler extends AbstractHandler {
 		this.writeLock = writeLock;
 		this.consistencyCheckHandler = consistencyCheckHandler;
 		this.cacheRegistry = cacheRegistry;
-		this.generator = generator;
+		this.clusterManager = clusterManager;
 	}
 
 	/**
@@ -261,9 +270,42 @@ public abstract class AdminHandler extends AbstractHandler {
 		boolean useVersion31 = Optional.ofNullable(version).orElse(options.getOpenAPIOptions().getDefaultVersion()) == Version.V31;
 		String format = Optional.ofNullable(format2).orElse(options.getOpenAPIOptions().getDefaultFormat()).name().toLowerCase();
 
+		// Collect available servers
+		HttpServerConfig httpServerConfig = options.getHttpServerOptions();	
+		Supplier<List<String>> noClusterServerSupplier = () -> Collections.singletonList((httpServerConfig.isSsl() ? "https://" : "http://") + httpServerConfig.getHost() + ":" + (httpServerConfig.isSsl() ? httpServerConfig.getSslPort() : httpServerConfig.getPort()));
+		List<String> servers;
+		try {
+			servers = Optional.ofNullable(clusterManager.getHazelcast())
+					.map(hz -> hz.getCluster().getMembers().stream().map(m -> m.getAddress().getHost() + ":" + m.getAddress().getPort()).collect(Collectors.toList()))
+					.orElseGet(noClusterServerSupplier);
+		} catch (Throwable e) {
+			log.error("Could not retrieve the server list out of Hazelcast", e);
+			servers = noClusterServerSupplier.get();
+		}
+
+		/*
+		 * Blacklist 
+		 * a) all the actual project roots
+		 * b) old api version roots
+		 * c) an `apiversion` selector parameter root
+		 * d) plugin paths, optionally
+		 */
+		Set<String> blacklistedRouteRegex = new HashSet<>(routerStorageRegistry.getInstances().stream()
+				.flatMap(rr -> rr.root().apiRouter().projectsRouter().getProjectRouters().keySet().stream())
+				.map(project -> "\\/api\\/v" + MeshVersion.CURRENT_API_VERSION + "\\/" + project + "[.]*").collect(Collectors.toSet()));
+		blacklistedRouteRegex.addAll(IntStream.range(1, MeshVersion.CURRENT_API_VERSION).mapToObj(v -> "\\/api\\/v" + v + "[.]*").collect(Collectors.toList()));
+		blacklistedRouteRegex.addAll(List.of("\\/api\\/\\{apiversion\\}[.]*", "\\/api\\/v" + MeshVersion.CURRENT_API_VERSION + "\\/eventbus\\/"));
+		if (options.getOpenAPIOptions().isExcludePlugins()) {
+			blacklistedRouteRegex.addAll(List.of("\\/api\\/v" + MeshVersion.CURRENT_API_VERSION + "\\/\\{project\\}\\/plugins[.]*", "\\/api\\/v" + MeshVersion.CURRENT_API_VERSION + "\\/plugins[.]*"));
+		}
+
+		// Make an instance with blacklist path patterns
+		MeshOpenAPIv3Generator generator = new MeshOpenAPIv3Generator(MeshVersion.getPlainVersion(), servers, Optional.of(blacklistedRouteRegex.stream().map(Pattern::compile).collect(Collectors.toList())), Optional.empty());
+
 		// Generate...
 		try {
 			ac.send(generator.generate(
+					"Gentics Mesh REST API",
 					Stream.of(
 							//... from base root
 							routerStorageRegistry.getInstances().stream().map(rr -> Pair.of(rr.root().getRouter(), StringUtils.EMPTY)),
@@ -275,7 +317,7 @@ public abstract class AdminHandler extends AbstractHandler {
 							options.getOpenAPIOptions().isExcludePlugins() ? Stream.<Pair<Router, String>>empty() : routerStorageRegistry.getInstances().stream().map(rr -> Pair.of(rr.root().apiRouter().pluginRouter().getRouter(), "/api/v" + MeshVersion.CURRENT_API_VERSION + "/plugins/"))
 						).flatMap(Function.identity()).collect(Collectors.toMap(Pair::getKey, Pair::getValue)), 
 					// ...with desired format
-					Format.parse(format), 
+					Format.parse(format),
 					// ...with desired pretty printing
 					!options.getHttpServerOptions().isMinifyJson(),
 					// ...with desired spec version

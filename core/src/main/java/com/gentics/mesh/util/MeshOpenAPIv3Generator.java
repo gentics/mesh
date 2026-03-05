@@ -45,7 +45,6 @@ public class MeshOpenAPIv3Generator extends OpenAPIv3Generator {
 	/**
 	 * Generate the specification using some functional shortcuts.
 	 * 
-	 * @param name
 	 * @param routers
 	 * @param format
 	 * @param pretty
@@ -60,7 +59,6 @@ public class MeshOpenAPIv3Generator extends OpenAPIv3Generator {
 	/**
 	 * Generate the specification using some functional shortcuts and an API name.
 	 * 
-	 * @param name
 	 * @param routers
 	 * @param format
 	 * @param pretty
