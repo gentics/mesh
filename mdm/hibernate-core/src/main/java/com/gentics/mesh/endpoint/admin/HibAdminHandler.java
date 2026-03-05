@@ -12,6 +12,7 @@ import com.gentics.mesh.contentoperation.ContentCachedStorage;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.db.cluster.ClusterManager;
 import com.gentics.mesh.core.endpoint.admin.AdminHandler;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
@@ -21,7 +22,6 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.router.RouterStorageImpl;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
 import com.gentics.mesh.search.SearchProvider;
-import com.gentics.mesh.util.MeshOpenAPIv3Generator;
 
 import io.vertx.core.Vertx;
 
@@ -38,8 +38,8 @@ public class HibAdminHandler extends AdminHandler {
 	public HibAdminHandler(Vertx vertx, Database db, RouterStorageImpl routerStorage, BootstrapInitializer boot,
 			SearchProvider searchProvider, HandlerUtilities utils, MeshOptions options,
 			RouterStorageRegistryImpl routerStorageRegistry, Coordinator coordinator, WriteLock writeLock,
-			ConsistencyCheckHandler consistencyCheckHandler, CacheRegistry cacheRegistry, ContentCachedStorage contentCache, MeshOpenAPIv3Generator meshOpenAPIv3Generator) {
-		super(vertx, db, routerStorage, boot, searchProvider, utils, options, routerStorageRegistry, coordinator, writeLock, consistencyCheckHandler, cacheRegistry, meshOpenAPIv3Generator);
+			ConsistencyCheckHandler consistencyCheckHandler, CacheRegistry cacheRegistry, ContentCachedStorage contentCache, ClusterManager clusterManager) {
+		super(vertx, db, routerStorage, boot, searchProvider, utils, options, routerStorageRegistry, coordinator, writeLock, consistencyCheckHandler, cacheRegistry, clusterManager);
 		this.contentCache = contentCache;
 	}
 

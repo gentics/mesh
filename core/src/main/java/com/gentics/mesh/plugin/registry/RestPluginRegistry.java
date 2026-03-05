@@ -11,8 +11,11 @@ import static io.vertx.core.http.HttpMethod.GET;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -25,7 +28,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.MeshVersion;
+import com.gentics.mesh.core.db.cluster.ClusterManager;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.Version;
 import com.gentics.mesh.plugin.MeshPlugin;
@@ -59,13 +64,13 @@ public class RestPluginRegistry implements PluginRegistry {
 
 	private final MeshOptions options;
 
-	private final MeshOpenAPIv3Generator openApiV3Generator;
+	private final ClusterManager clusterManager;
 
 	@Inject
-	public RestPluginRegistry(RouterStorageRegistryImpl routerStorageRegistry, MeshOptions options, MeshOpenAPIv3Generator openAPIv3Generator) {
+	public RestPluginRegistry(RouterStorageRegistryImpl routerStorageRegistry, MeshOptions options, ClusterManager clustterManager) {
 		this.routerStorageRegistry = routerStorageRegistry;
 		this.options = options;
-		this.openApiV3Generator = openAPIv3Generator;
+		this.clusterManager = clustterManager;
 	}
 
 	@Override
@@ -94,10 +99,10 @@ public class RestPluginRegistry implements PluginRegistry {
 					if (globalRouter != null) {
 						if (StringUtils.isNotBlank(pluginsWithOpenAPI) 
 								&& ("ALL".equals(pluginsWithOpenAPI) 
-										|| Arrays.stream(pluginsWithOpenAPI.split(",")).anyMatch(id -> id.equals(restPlugin.id())))) {
+										|| Arrays.stream(pluginsWithOpenAPI.split(",")).map(String::trim).anyMatch(id -> id.equals(restPlugin.id())))) {
 							Version defaultVersion = options.getOpenAPIOptions().getDefaultVersion();
 							com.gentics.mesh.etc.config.Format defaultFormat = options.getOpenAPIOptions().getDefaultFormat();
-							Pair<Router, String> globalRouterPair = Pair.of(globalRouter, "/api/v" + MeshVersion.CURRENT_API_VERSION + "/{project}/plugins/");
+							Pair<Router, String> globalRouterPair = Pair.of(globalRouter, "/api/v" + MeshVersion.CURRENT_API_VERSION + "/plugins/" + restPlugin.restApiName());
 							InternalEndpointBuilder.wrap(globalRouter)
 									.withPath("/openapi." + defaultFormat.name().toLowerCase())
 									.withMethod(GET)
@@ -107,12 +112,28 @@ public class RestPluginRegistry implements PluginRegistry {
 									.produces(defaultFormat == com.gentics.mesh.etc.config.Format.JSON ? APPLICATION_JSON : APPLICATION_YAML)
 									.withBlockingHandler(rc -> {
 											try {
+												// Collect available servers
+												HttpServerConfig httpServerConfig = options.getHttpServerOptions();	
+												Supplier<List<String>> noClusterServerSupplier = () -> Collections.singletonList((httpServerConfig.isSsl() ? "https://" : "http://") + httpServerConfig.getHost() + ":" + (httpServerConfig.isSsl() ? httpServerConfig.getSslPort() : httpServerConfig.getPort()));
+												List<String> servers;
+												try {
+													servers = Optional.ofNullable(clusterManager.getHazelcast())
+															.map(hz -> hz.getCluster().getMembers().stream().map(m -> m.getAddress().getHost() + ":" + m.getAddress().getPort()).collect(Collectors.toList()))
+															.orElseGet(noClusterServerSupplier);
+												} catch (Throwable e) {
+													log.error("Could not retrieve the server list out of Hazelcast", e);
+													servers = noClusterServerSupplier.get();
+												}
+
+												// Make an instance with blacklist path patterns
+												MeshOpenAPIv3Generator openApiV3Generator = new MeshOpenAPIv3Generator(MeshVersion.getPlainVersion(), servers, Optional.empty(), Optional.empty());
+
 												rc.response().send(openApiV3Generator.generate(
 														restPlugin.name() + " OpenAPI v" + defaultVersion.pretty() + " specification",
 														projectRouter != null 
 															? Stream.of(
 																	//... from plugin project root
-																	Pair.of(projectRouter, "/api/v" + MeshVersion.CURRENT_API_VERSION + "/plugins/" + restPlugin.restApiName()),
+																	Pair.of(projectRouter, "/api/v" + MeshVersion.CURRENT_API_VERSION + "/{project}/plugins/" + restPlugin.restApiName()),
 																	//... from generic plugin root
 																	globalRouterPair
 																).collect(Collectors.toMap(Pair::getKey, Pair::getValue))
