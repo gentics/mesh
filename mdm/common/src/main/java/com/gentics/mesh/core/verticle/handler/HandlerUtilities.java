@@ -4,7 +4,11 @@ import static com.gentics.mesh.core.action.DAOActionContext.context;
 import static com.gentics.mesh.core.data.perm.InternalPermission.DELETE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.event.EventCauseAction.DELETE;
-import static io.netty.handler.codec.http.HttpResponseStatus.*;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -17,7 +21,6 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,10 +43,8 @@ import com.gentics.mesh.core.db.TxEventAction;
 import com.gentics.mesh.core.db.TxEventAction0;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
-import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.UUIDUtil;
 import com.gentics.mesh.util.ValidationUtil;
@@ -215,22 +216,12 @@ public class HandlerUtilities {
 					RM model = actions.transformToRestSync(tx, updateElement, ac, 0);
 					return model;
 				} else {
-					// the create request must have a schema info
-					SchemaReferenceInfo schemaInfo = JsonUtil.readValue(ac.getBodyAsString(), SchemaReferenceInfo.class);
-					boolean missingSchemaInfo = schemaInfo.getSchema() == null
-							|| (StringUtils.isEmpty(schemaInfo.getSchema().getUuid())
-							&& StringUtils.isEmpty(schemaInfo.getSchema().getName()));
-					if (missingSchemaInfo && uuid != null) {
-						// otherwise it is a flawed update request
-						throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
-					} else {
-						created.set(true);
-						T createdElement =  actions.create(tx, ac, bac.batch(), uuid);
-						RM model = actions.transformToRestSync(tx, createdElement, ac, 0);
-						String path = actions.getAPIPath(tx, ac, createdElement);
-						ac.setLocation(path);
-						return model;
-					}					
+					created.set(true);
+					T createdElement =  actions.create(tx, ac, bac.batch(), uuid);
+					RM model = actions.transformToRestSync(tx, createdElement, ac, 0);
+					String path = actions.getAPIPath(tx, ac, createdElement);
+					ac.setLocation(path);
+					return model;
 				}
 			}, model -> ac.send(model, created.get() ? CREATED : OK));
 		}
