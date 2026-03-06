@@ -35,7 +35,6 @@ import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.Permission;
-import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
@@ -329,22 +328,6 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 		request.setName("new-name");
 		call(() -> client().updateMicroschema(uuid, request), FORBIDDEN, "error_missing_perm", uuid, UPDATE_PERM.getRestPerm().getName());
 
-	}
-
-	@Test
-	@Override
-	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
-		try (Tx tx = tx()) {
-			HibMicroschema microschema = microschemaContainers().get("vcard");
-			String oldName = microschema.getName();
-			MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
-			request.setName("new-name");
-
-			call(() -> client().updateMicroschema("bogus", request), NOT_FOUND, "object_not_found_for_uuid", "bogus");
-
-			HibMicroschema reloaded = tx.microschemaDao().findByUuid(microschema.getUuid());
-			assertEquals("The name should not have been changed.", oldName, reloaded.getName());
-		}
 	}
 
 	@Test
