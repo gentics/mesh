@@ -153,6 +153,12 @@
 										<exclude>io/vertx/spi/cluster/hazelcast/HazelcastClusterManager.class</exclude>
 									</excludes>
 								</filter>
+								<filter>
+									<artifact>com.hazelcast:hazelcast</artifact>
+									<excludes>
+										<exclude>META-INF/maven/com.fasterxml.jackson.core/jackson-core/*</exclude>
+									</excludes>
+								</filter>
 							</filters>
 							<transformers>
 								<transformer

@@ -1,3 +1,4 @@
 Some Dependencies have been updated:
 * Jackson: 2.21.1
 * Jackson Annotations: 2.21
+* Hazelcast: 5.6.0
