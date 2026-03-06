@@ -64,7 +64,7 @@ public class StaticHandlerUtilsTest {
         Handler<RoutingContext> handler = handlerCaptor.getAllValues().get(0); //get the prehandler
 
         RoutingContext rc = mock(RoutingContext.class);
-        when(rc.normalisedPath()).thenReturn("/");
+        when(rc.normalizedPath()).thenReturn("/");
 
         CountDownLatch latch = new CountDownLatch(1);
         doAnswer(inv -> {
@@ -96,7 +96,7 @@ public class StaticHandlerUtilsTest {
         RoutingContext rc = mock(RoutingContext.class);
         when(rc.currentRoute()).thenReturn(currentRoute);
         when(rc.mountPoint()).thenReturn(null);
-        when(rc.normalisedPath()).thenReturn("/static/StaticHandlerUtilsTest.class");
+        when(rc.normalizedPath()).thenReturn("/static/StaticHandlerUtilsTest.class");
 
         CountDownLatch nextLatch = new CountDownLatch(1);
         doAnswer(inv -> {
