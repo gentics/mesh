@@ -14,9 +14,9 @@ import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.http.HttpConstants;
-import com.gentics.mesh.plugin.AbstractCommercialRestPlugin;
+import com.gentics.mesh.plugin.AbstractPlugin;
+import com.gentics.mesh.plugin.CommercialRestPlugin;
 import com.gentics.mesh.plugin.PluginContext;
-import com.gentics.mesh.plugin.RestPlugin;
 import com.gentics.mesh.plugin.common.license.LicenseService;
 import com.gentics.mesh.plugin.common.license.LicensedPlugin;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
@@ -41,7 +41,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 
-public class LikePlugin extends AbstractCommercialRestPlugin<LikePluginConfig> implements RestPlugin {
+public class LikePlugin extends AbstractPlugin implements CommercialRestPlugin {
 
 	public final static String NAME = "Like Plugin";
 

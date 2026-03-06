@@ -10,8 +10,8 @@ import org.pf4j.PluginWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gentics.mesh.plugin.AbstractCommercialRestPlugin;
-import com.gentics.mesh.plugin.RestPlugin;
+import com.gentics.mesh.plugin.AbstractPlugin;
+import com.gentics.mesh.plugin.CommercialRestPlugin;
 import com.gentics.mesh.plugin.common.MeshPluginException;
 import com.gentics.mesh.plugin.common.license.LicenseService;
 import com.gentics.mesh.plugin.common.license.LicensedPlugin;
@@ -40,7 +40,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 
-public class MustReadPlugin extends AbstractCommercialRestPlugin<MustReadConfig> implements RestPlugin {
+public class MustReadPlugin extends AbstractPlugin implements CommercialRestPlugin {
 
     private static final Logger log = LoggerFactory.getLogger(MustReadPlugin.class);
 

@@ -17,33 +17,32 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.pf4j.PluginWrapper;
 
 import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.OpenAPIOptions;
 import com.gentics.mesh.etc.config.Version;
-import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.util.MeshOpenAPIv3Generator;
 import com.gentics.vertx.openapi.model.Format;
 import com.gentics.vertx.openapi.model.OpenAPIGenerationException;
 import com.gentics.vertx.openapi.route.InternalEndpointBuilder;
 
+import io.vertx.core.Vertx;
 import io.vertx.ext.web.Router;
 
-public abstract class AbstractCommercialRestPlugin<T> extends AbstractCommercialPlugin<T> implements RestPlugin {
-
-	public AbstractCommercialRestPlugin(PluginWrapper wrapper, PluginEnvironment env) {
-		super(wrapper, env);
-	}
+public interface CommercialRestPlugin extends RestPlugin {
 
 	@Override
-	public Pair<Router, Router> createRouters() {
+	default Pair<Router, Router> createRouters() {
 		Pair<Router, Router> routers = RestPlugin.super.createRouters();
 		Router globalRouter = routers.getLeft();
 		Router projectRouter = routers.getRight();
 		OpenAPIOptions openApiOptions = environment().options().getOpenAPIOptions();
 		String pluginsWithOpenAPI = environment().options().getOpenAPIOptions().getPluginsWithOwnEndpoints();
+		if (globalRouter == null && !"NONE".equals(pluginsWithOpenAPI)) {
+			globalRouter = Router.router(Vertx.vertx());
+			routers = Pair.of(globalRouter, projectRouter);
+		}
 		if (StringUtils.isNotBlank(pluginsWithOpenAPI) 
 				&& ("ALL".equals(pluginsWithOpenAPI) 
 						|| Arrays.stream(pluginsWithOpenAPI.split(",")).map(String::trim).anyMatch(id -> id.equals(id())))) {

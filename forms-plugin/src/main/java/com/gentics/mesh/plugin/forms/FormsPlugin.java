@@ -1,7 +1,6 @@
 package com.gentics.mesh.plugin.forms;
 
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
-import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_OCTET_STREAM;
 import static com.gentics.mesh.http.HttpConstants.MULTIPART_FORM_DATA;
 import static io.vertx.core.http.HttpMethod.DELETE;
@@ -27,9 +26,9 @@ import org.slf4j.LoggerFactory;
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.example.NodeExamples;
 import com.gentics.mesh.http.HttpConstants;
-import com.gentics.mesh.plugin.AbstractCommercialRestPlugin;
+import com.gentics.mesh.plugin.AbstractPlugin;
+import com.gentics.mesh.plugin.CommercialRestPlugin;
 import com.gentics.mesh.plugin.PluginContext;
-import com.gentics.mesh.plugin.RestPlugin;
 import com.gentics.mesh.plugin.common.MeshPluginException;
 import com.gentics.mesh.plugin.common.license.LicenseService;
 import com.gentics.mesh.plugin.common.license.LicensedPlugin;
@@ -65,7 +64,7 @@ import io.vertx.ext.web.RoutingContext;
 /**
  * Main class for the forms plugin
  */
-public class FormsPlugin extends AbstractCommercialRestPlugin<FormsConfig> implements RestPlugin {
+public class FormsPlugin extends AbstractPlugin implements CommercialRestPlugin {
 	private static final Logger log = LoggerFactory.getLogger(FormsPlugin.class);
 
 	private FormsConfig configuration;
