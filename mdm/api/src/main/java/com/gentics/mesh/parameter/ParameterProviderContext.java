@@ -6,12 +6,14 @@ import com.gentics.mesh.parameter.impl.BranchParametersImpl;
 import com.gentics.mesh.parameter.impl.ConsistencyCheckParametersImpl;
 import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
 import com.gentics.mesh.parameter.impl.DisplayParametersImpl;
+import com.gentics.mesh.parameter.impl.EtagParametersImpl;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.parameter.impl.ImageManipulationRetrievalParametersImpl;
 import com.gentics.mesh.parameter.impl.IndexMaintenanceParametersImpl;
 import com.gentics.mesh.parameter.impl.JobParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
+import com.gentics.mesh.parameter.impl.OpenAPIParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.ProjectLoadParametersImpl;
 import com.gentics.mesh.parameter.impl.ProjectPurgeParametersImpl;
@@ -80,6 +82,10 @@ public interface ParameterProviderContext extends ActionContext {
 		return new GenericParametersImpl(this);
 	}
 
+	default EtagParameters getEtagParameters() {
+		return new EtagParametersImpl(this);
+	}
+
 	default ImageManipulationRetrievalParameters getImageManipulationRetrievalParameters() {
 		return new ImageManipulationRetrievalParametersImpl(this);
 	}
@@ -110,5 +116,9 @@ public interface ParameterProviderContext extends ActionContext {
 
 	default ConsistencyCheckParameters getConsistencyCheckParameters() {
 		return new ConsistencyCheckParametersImpl(this);
+	}
+
+	default OpenAPIParameters getOpenAPIParameters() {
+		return new OpenAPIParametersImpl(this);
 	}
 }

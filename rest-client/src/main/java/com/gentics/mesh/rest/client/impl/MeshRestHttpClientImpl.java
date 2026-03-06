@@ -105,12 +105,15 @@ import com.gentics.mesh.core.rest.user.UserResetTokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.core.rest.validation.SchemaValidationResponse;
+import com.gentics.mesh.etc.config.Format;
+import com.gentics.mesh.etc.config.Version;
 import com.gentics.mesh.parameter.BackupParameters;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.parameter.client.BinaryCheckParametersImpl;
 import com.gentics.mesh.parameter.client.NodeParametersImpl;
+import com.gentics.mesh.parameter.client.OpenAPIParametersImpl;
 import com.gentics.mesh.parameter.client.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.AbstractMeshRestHttpClient;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
@@ -411,13 +414,13 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<ProjectResponse> assignLanguageToProject(String projectUuid, String languageUuid) {
-		return assignLanguageToProjectByUuid(projectUuid, languageUuid);
+	public MeshRequest<ProjectResponse> assignLanguageToProject(String projectUuid, String languageUuid, ParameterProvider... parameters) {
+		return assignLanguageToProjectByUuid(projectUuid, languageUuid, parameters);
 	}
 
 	@Override
-	public MeshRequest<ProjectResponse> unassignLanguageFromProject(String projectUuid, String languageUuid) {
-		return unassignLanguageFromProjectByUuid(projectUuid, languageUuid);
+	public MeshRequest<ProjectResponse> unassignLanguageFromProject(String projectUuid, String languageUuid, ParameterProvider... parameters) {
+		return unassignLanguageFromProjectByUuid(projectUuid, languageUuid, parameters);
 	}
 
 	@Override
@@ -1375,6 +1378,13 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	public MeshRequest<String> getRAML() {
 		MeshRequest<String> request = prepareRequest(GET, "/raml", String.class);
 		request.setHeader("Accept", APPLICATION_YAML_UTF8);
+		return request;
+	}
+
+	@Override
+	public MeshRequest<String> getOpenAPI(Format format, Version version) {
+		MeshRequest<String> request = prepareRequest(GET, "/openapi" + getQuery(getConfig(), new OpenAPIParametersImpl().setFormat(format).setVersion(version)), String.class);
+		request.setHeader("Accept", "*/*");
 		return request;
 	}
 

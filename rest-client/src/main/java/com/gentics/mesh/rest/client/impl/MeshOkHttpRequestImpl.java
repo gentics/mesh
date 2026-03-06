@@ -309,7 +309,7 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 			return (T) new OkHttpWebrootResponse(response);
 		} else if (resultClass.isAssignableFrom(MeshWebrootFieldResponse.class)) {
 			return (T) new OkHttpWebrootFieldResponse(response, config.isMinifyJson());
-		} else if (contentType != null && contentType.startsWith("application/json")) {
+		} else if (contentType != null && contentType.startsWith("application/json") && !resultClass.isAssignableFrom(String.class)) {
 			return JsonUtil.readValue(response.body().string(), resultClass);
 		} else if (resultClass.isAssignableFrom(String.class)) {
 			return (T) response.body().string();

@@ -33,7 +33,7 @@ public class MeshRestClientMessageException extends Exception {
 	}
 
 	public MeshRestClientMessageException(int statusCode, String statusMessage, GenericMessageResponse responseMessage, HttpMethod method, String uri) {
-		super("Error:" + statusCode + " in " + method.name() + " " + uri + " : " + statusMessage);
+		super("Error:" + statusCode + (method != null ? (" in " + method.name()) : "") + " " + uri + " : " + statusMessage);
 		this.responseMessage = responseMessage;
 		this.statusCode = statusCode;
 		this.uri = uri;

@@ -153,6 +153,10 @@ public abstract class MeshOptions implements Option {
 	private long migrationTriggerInterval = DEFAULT_MIGRATION_TRIGGER_INTERVAL;
 
 	@JsonProperty(required = true)
+	@JsonPropertyDescription("OpenAPI options.")
+	private OpenAPIOptions openApiOptions = new OpenAPIOptions();
+
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("GraphQL options.")
 	private GraphQLOptions graphQLOptions = new GraphQLOptions();
 
@@ -272,6 +276,24 @@ public abstract class MeshOptions implements Option {
 		return this;
 	}
 
+	/**
+	 * Get the OpenAPI options
+	 * @return options
+	 */
+	@JsonProperty("openApi")
+	public OpenAPIOptions getOpenAPIOptions() {
+		return openApiOptions;
+	}
+
+	/**
+	 * Set the OpenAPI options
+	 * @param openApiOptions options
+	 * @return fluent API
+	 */
+	public MeshOptions setOpenAPIOptions(OpenAPIOptions openApiOptions) {
+		this.openApiOptions = openApiOptions;
+		return this;
+	}
 
 	/**
 	 * Get the graphql options

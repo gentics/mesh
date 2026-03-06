@@ -123,6 +123,8 @@ import com.gentics.mesh.core.rest.user.UserResetTokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.core.rest.validation.SchemaValidationResponse;
+import com.gentics.mesh.etc.config.Format;
+import com.gentics.mesh.etc.config.Version;
 import com.gentics.mesh.parameter.BackupParameters;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -468,15 +470,13 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 
 	@Override
 	@Deprecated
-	public MeshRequest<ProjectResponse> assignLanguageToProject(String projectUuid, String languageUuid) {
-		return assignLanguageToProjectByUuid(projectUuid, languageUuid);
+	public MeshRequest<ProjectResponse> assignLanguageToProject(String projectUuid, String languageUuid, ParameterProvider... parameters) {
+		return assignLanguageToProjectByUuid(projectUuid, languageUuid, parameters);
 	}
 
 	@Override
-	public MeshRequest<ProjectResponse> unassignLanguageFromProject(String projectUuid, String languageUuid) {
-		LocalActionContextImpl<ProjectResponse> ac = createContext(ProjectResponse.class);
-		// TODO add implementation
-		return new MeshLocalRequestImpl<>(ac.getFuture());
+	public MeshRequest<ProjectResponse> unassignLanguageFromProject(String projectUuid, String languageUuid, ParameterProvider... parameters) {
+		return unassignLanguageFromProjectByUuid(projectUuid, languageUuid, parameters);
 	}
 
 	@Override
@@ -1617,6 +1617,12 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 
 	@Override
 	public MeshRequest<String> getRAML() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public MeshRequest<String> getOpenAPI(Format format, Version version) {
 		// TODO Auto-generated method stub
 		return null;
 	}

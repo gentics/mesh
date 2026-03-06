@@ -17,6 +17,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
+import static io.vertx.core.http.HttpMethod.PUT;
 
 import javax.inject.Inject;
 
@@ -33,6 +34,7 @@ import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.endpoint.tag.TagCrudHandler;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.impl.BranchParametersImpl;
+import com.gentics.mesh.parameter.impl.EtagParametersImpl;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
@@ -199,8 +201,8 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 
 		InternalEndpointRoute grantPermissionsEndpoint = createRoute();
 		grantPermissionsEndpoint.path("/:tagFamilyUuid/tags/:tagUuid/rolePermissions");
-		readPermissionsEndpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
-		readPermissionsEndpoint.addUriParameter("tagUuid", "Uuid of the tag.", TAG_BLUE_UUID);
+		grantPermissionsEndpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
+		grantPermissionsEndpoint.addUriParameter("tagUuid", "Uuid of the tag.", TAG_BLUE_UUID);
 		grantPermissionsEndpoint.method(POST);
 		grantPermissionsEndpoint.description("Grant permissions on the tag to multiple roles.");
 		grantPermissionsEndpoint.consumes(APPLICATION_JSON);
@@ -215,18 +217,37 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 			tagCrudHandler.handleGrantPermissions(ac, tagFamilyUuid, uuid);
 		}, isOrderedBlockingHandlers());
 
-		InternalEndpointRoute revokePermissionsEndpoint = createRoute();
-		revokePermissionsEndpoint.path("/:tagFamilyUuid/tags/:tagUuid/rolePermissions");
-		readPermissionsEndpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
-		readPermissionsEndpoint.addUriParameter("tagUuid", "Uuid of the tag.", TAG_BLUE_UUID);
-		revokePermissionsEndpoint.method(DELETE);
-		revokePermissionsEndpoint.description("Revoke permissions on the tag from multiple roles.");
-		revokePermissionsEndpoint.consumes(APPLICATION_JSON);
-		revokePermissionsEndpoint.produces(APPLICATION_JSON);
-		revokePermissionsEndpoint.exampleRequest(roleExamples.getObjectPermissionRevokeRequest(false));
-		revokePermissionsEndpoint.exampleResponse(OK, roleExamples.getObjectPermissionResponse(false), "Updated permissions.");
-		revokePermissionsEndpoint.events(ROLE_PERMISSIONS_CHANGED);
-		revokePermissionsEndpoint.blockingHandler(rc -> {
+		InternalEndpointRoute revokePermissionsEndpointNonStandard = createRoute();
+		revokePermissionsEndpointNonStandard.path("/:tagFamilyUuid/tags/:tagUuid/rolePermissions");
+		revokePermissionsEndpointNonStandard.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
+		revokePermissionsEndpointNonStandard.addUriParameter("tagUuid", "Uuid of the tag.", TAG_BLUE_UUID);
+		revokePermissionsEndpointNonStandard.method(DELETE);
+		revokePermissionsEndpointNonStandard.description("Revoke permissions on the tag from multiple roles.");
+		revokePermissionsEndpointNonStandard.consumes(APPLICATION_JSON);
+		revokePermissionsEndpointNonStandard.produces(APPLICATION_JSON);
+		revokePermissionsEndpointNonStandard.exampleRequest(roleExamples.getObjectPermissionRevokeRequest(false));
+		revokePermissionsEndpointNonStandard.exampleResponse(OK, roleExamples.getObjectPermissionResponse(false), "Updated permissions.");
+		revokePermissionsEndpointNonStandard.events(ROLE_PERMISSIONS_CHANGED);
+		revokePermissionsEndpointNonStandard.setHidden(true);
+		revokePermissionsEndpointNonStandard.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String tagFamilyUuid = PathParameters.getTagFamilyUuid(rc);
+			String uuid = PathParameters.getTagUuid(rc);
+			tagCrudHandler.handleRevokePermissions(ac, tagFamilyUuid, uuid);
+		}, isOrderedBlockingHandlers());
+
+		InternalEndpointRoute revokePermissionsEndpointStandard = createRoute();
+		revokePermissionsEndpointStandard.path("/:tagFamilyUuid/tags/:tagUuid/rolePermissions");
+		revokePermissionsEndpointStandard.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
+		revokePermissionsEndpointStandard.addUriParameter("tagUuid", "Uuid of the tag.", TAG_BLUE_UUID);
+		revokePermissionsEndpointStandard.method(PUT);
+		revokePermissionsEndpointStandard.description("Revoke permissions on the tag from multiple roles.");
+		revokePermissionsEndpointStandard.consumes(APPLICATION_JSON);
+		revokePermissionsEndpointStandard.produces(APPLICATION_JSON);
+		revokePermissionsEndpointStandard.exampleRequest(roleExamples.getObjectPermissionRevokeRequest(false));
+		revokePermissionsEndpointStandard.exampleResponse(OK, roleExamples.getObjectPermissionResponse(false), "Updated permissions.");
+		revokePermissionsEndpointStandard.events(ROLE_PERMISSIONS_CHANGED);
+		revokePermissionsEndpointStandard.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String tagFamilyUuid = PathParameters.getTagFamilyUuid(rc);
 			String uuid = PathParameters.getTagUuid(rc);
@@ -274,6 +295,7 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 		readOne.path("/:tagFamilyUuid");
 		readOne.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
 		readOne.method(GET);
+		readOne.addQueryParameters(EtagParametersImpl.class);
 		readOne.description("Read the tag family with the given uuid.");
 		readOne.produces(APPLICATION_JSON);
 		readOne.exampleResponse(OK, tagFamilyExamples.getTagFamilyResponse("Colors"), "Loaded tag family.");
@@ -313,17 +335,33 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 	}
 
 	private void addTagFamilyUpdateHandler() {
-		InternalEndpointRoute endpoint = createRoute();
-		endpoint.path("/:tagFamilyUuid");
-		endpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
-		endpoint.method(POST);
-		endpoint.description("Update the tag family with the given uuid. The tag family will be created if it can't be found for the given uuid.");
-		endpoint.consumes(APPLICATION_JSON);
-		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleRequest(tagFamilyExamples.getTagFamilyUpdateRequest("Nicer colors"));
-		endpoint.exampleResponse(OK, tagFamilyExamples.getTagFamilyResponse("Nicer colors"), "Updated tag family.");
-		endpoint.events(TAG_FAMILY_UPDATED, TAG_FAMILY_CREATED);
-		endpoint.blockingHandler(rc -> {
+		InternalEndpointRoute updateEndpoint = createRoute();
+		updateEndpoint.path("/:tagFamilyUuid");
+		updateEndpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
+		updateEndpoint.method(PUT);
+		updateEndpoint.description("Update the tag family with the given uuid.");
+		updateEndpoint.consumes(APPLICATION_JSON);
+		updateEndpoint.produces(APPLICATION_JSON);
+		updateEndpoint.exampleRequest(tagFamilyExamples.getTagFamilyUpdateRequest("Nicer colors"));
+		updateEndpoint.exampleResponse(OK, tagFamilyExamples.getTagFamilyResponse("Nicer colors"), "Updated tag family.");
+		updateEndpoint.events(TAG_FAMILY_UPDATED, TAG_FAMILY_CREATED);
+		updateEndpoint.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String tagFamilyUuid = PathParameters.getTagFamilyUuid(rc);
+			tagFamilyCrudHandler.handleUpdate(ac, tagFamilyUuid);
+		}, isOrderedBlockingHandlers());
+
+		InternalEndpointRoute upsertEndpoint = createRoute();
+		upsertEndpoint.path("/:tagFamilyUuid");
+		upsertEndpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
+		upsertEndpoint.method(POST);
+		upsertEndpoint.description("Update the tag family with the given uuid. The tag family will be created if it can't be found for the given uuid.");
+		upsertEndpoint.consumes(APPLICATION_JSON);
+		upsertEndpoint.produces(APPLICATION_JSON);
+		upsertEndpoint.exampleRequest(tagFamilyExamples.getTagFamilyCreateRequest("Nicer colors"));
+		upsertEndpoint.exampleResponse(OK, tagFamilyExamples.getTagFamilyResponse("Nicer colors"), "Updated or created tag family.");
+		upsertEndpoint.events(TAG_FAMILY_UPDATED, TAG_FAMILY_CREATED);
+		upsertEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String tagFamilyUuid = PathParameters.getTagFamilyUuid(rc);
 			tagFamilyCrudHandler.handleUpdate(ac, tagFamilyUuid);

@@ -49,6 +49,10 @@ public class ExampleGeneratorRunner {
 		}, true);
 		ramlGenerator.run();
 
+		// Generate OpenAPI base spec
+		OpenAPIMockAPIGenerator openApiGenerator = new OpenAPIMockAPIGenerator(OUTPUT_ROOT_FOLDER, "openapi.yaml", false);
+		openApiGenerator.run();
+
 		// Generate elasticsearch flattened models
 		SearchModelGenerator searchModelGen = new SearchModelGenerator(OUTPUT_ROOT_FOLDER);
 		searchModelGen.run();

@@ -6,17 +6,12 @@ import com.gentics.mesh.parameter.value.FieldsSetImpl;
 /**
  * Interface for generic query parameters.
  */
-public interface GenericParameters extends ParameterProvider {
+public interface GenericParameters extends EtagParameters {
 
 	/**
 	 * Query parameter key: {@value #FIELDS_PARAM_KEY}
 	 */
 	public static final String FIELDS_PARAM_KEY = "fields";
-
-	/**
-	 * Query parameter key: {@value #ETAG_PARAM_KEY}
-	 */
-	public static final String ETAG_PARAM_KEY = "etag";
 
 	/**
 	 * Return the fields which should be included in the response.
@@ -43,27 +38,9 @@ public interface GenericParameters extends ParameterProvider {
 		return this;
 	}
 
-	/**
-	 * Return whether the etag should be omitted or included.
-	 * 
-	 * @return
-	 */
-	default boolean getETag() {
-		String value = getParameter(ETAG_PARAM_KEY);
-		if (value != null) {
-			return Boolean.valueOf(value);
-		} else {
-			return true;
-		}
-	}
-
-	/**
-	 * Set the etag inclusion flag.
-	 * 
-	 * @param includeEtag
-	 */
+	@Override
 	default GenericParameters setETag(boolean includeEtag) {
-		setParameter(ETAG_PARAM_KEY, String.valueOf(includeEtag));
+		EtagParameters.super.setETag(includeEtag);
 		return this;
 	}
 }
