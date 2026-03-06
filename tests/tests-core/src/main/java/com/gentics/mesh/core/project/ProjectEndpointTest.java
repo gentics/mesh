@@ -64,7 +64,6 @@ import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
-import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -648,15 +647,6 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			HibProject reloadedProject = tx.projectDao().findByUuid(uuid);
 			assertEquals(newName, reloadedProject.getName());
 		}
-
-	}
-
-	@Test
-	@Override
-	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
-		ProjectUpdateRequest request = new ProjectUpdateRequest();
-		request.setName("new Name");
-		call(() -> client().updateProject("bogus", request), BAD_REQUEST, "error_illegal_uuid", "bogus");
 
 	}
 

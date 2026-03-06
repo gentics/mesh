@@ -10,14 +10,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.tuple.Pair;
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,11 +24,23 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
+import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
+import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
+import com.gentics.mesh.parameter.BackupParameters;
+import com.gentics.mesh.parameter.ImageManipulationParameters;
+import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.ParameterProvider;
+import com.gentics.mesh.parameter.client.BackupParametersImpl;
+import com.gentics.mesh.parameter.client.ImageManipulationParametersImpl;
+import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.rest.client.MeshRestClientConfig;
 import com.gentics.mesh.rest.client.impl.MeshRestOkHttpClientImpl;
 import com.gentics.mesh.rest.client.method.AdminClientMethods;
@@ -63,11 +74,6 @@ import com.gentics.mesh.rest.client.method.WebRootClientMethods;
 import com.gentics.mesh.rest.client.method.WebRootFieldClientMethods;
 import com.gentics.mesh.util.UUIDUtil;
 
-import io.github.classgraph.ClassGraph;
-import io.github.classgraph.ClassInfo;
-import io.github.classgraph.MethodInfo;
-import io.github.classgraph.ScanResult;
-
 /**
  * Test cases for parameter validation on the MeshRestClient.
  */
@@ -91,15 +97,19 @@ public class RestClientInputValidationTest {
 			Pair.of("get", "path"), Pair.of("put", "path"), Pair.of("delete", "path"), Pair.of("post", "path"),
 			Pair.of("deleteEmpty", "path"));
 
+	protected final static Map<Class<?>, Class<?>> IMPLEMENTING_CLASSES = Map.of(
+			PagingParameters.class, PagingParametersImpl.class,
+			SchemaModel.class, SchemaModelImpl.class,
+			BackupParameters.class, BackupParametersImpl.class,
+			MicroschemaModel.class, MicroschemaModelImpl.class,
+			ImageManipulationParameters.class, ImageManipulationParametersImpl.class,
+			RestModel.class, NodeResponse.class
+			);
+
 	/**
 	 * Client instance
 	 */
 	private static MeshRestOkHttpClientImpl client;
-
-	/**
-	 * Scan Result
-	 */
-	private static ScanResult scanResult;
 
 	@Parameters(name = "{index}: {0}, argument {2}")
 	public static Collection<Object[]> data() {
@@ -147,15 +157,6 @@ public class RestClientInputValidationTest {
 	@BeforeClass
 	public static void setupOnce() {
 		client = new MeshRestOkHttpClientImpl(MeshRestClientConfig.newConfig().setHost("localhost").build());
-		scanResult = new ClassGraph().enableAllInfo().scan();
-	}
-
-	@AfterClass
-	public static void tearDownOnce() {
-		if (scanResult != null) {
-			scanResult.close();
-			scanResult = null;
-		}
 	}
 
 	/**
@@ -307,33 +308,13 @@ public class RestClientInputValidationTest {
 			return Object.class;
 		default:
 			try {
-				return getImplClass(parameter.getType()).getConstructor().newInstance();
+				return IMPLEMENTING_CLASSES.getOrDefault(parameter.getType(), parameter.getType()).getConstructor().newInstance();
 			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
 					| InvocationTargetException | NoSuchMethodException | SecurityException e) {
 				fail("Unknown parameter type %s".formatted(typeName));
 			}
 		}
 		return null;
-	}
-
-	/**
-	 * If the given class is an interface, get the first implementing class, which has a zero argument constructor
-	 * or return the class otherwise
-	 * @param clazz class
-	 * @return implementing class or the class itself
-	 */
-	protected Class<?> getImplClass(Class<?> clazz) {
-		if (clazz.isInterface()) {
-			for (ClassInfo implClass : scanResult.getClassesImplementing(clazz)) {
-				Optional<MethodInfo> zeroArgConstructor = implClass.getConstructorInfo().stream().filter(methodInfo -> methodInfo.getParameterInfo().length == 0).findFirst();
-				if (zeroArgConstructor.isPresent()) {
-					return implClass.loadClass();
-				}
-			}
-			return clazz;
-		} else {
-			return clazz;
-		}
 	}
 
 	/**
