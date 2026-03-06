@@ -110,6 +110,7 @@ import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.parameter.ProjectLoadParameters;
 import com.gentics.mesh.parameter.PublishParameters;
 import com.gentics.mesh.parameter.RolePermissionParameters;
+import com.gentics.mesh.parameter.SchemaUpdateParameters;
 import com.gentics.mesh.parameter.SortingParameters;
 import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.rest.JWTAuthentication;
@@ -640,7 +641,9 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 	public MeshRequest<GenericMessageResponse> updateSchema(String uuid, SchemaUpdateRequest request,
 			ParameterProvider... parameters) {
 		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2SchemasSchemaUuidPostWithHttpInfo(uuid, 
-				null, uuid, null, 
+				findParameter(SchemaUpdateParameters.UPDATE_ASSIGNED_BRANCHES_QUERY_PARAM_KEY, parameters),
+				findParameter(SchemaUpdateParameters.UPDATE_BRANCH_NAMES_QUERY_PARAM_KEY, parameters),
+				findParameter(SchemaUpdateParameters.STRICT_VALIDATION_KEY, parameters),
 				adaptRequest(request)), GenericMessageResponse.class);
 	}
 
