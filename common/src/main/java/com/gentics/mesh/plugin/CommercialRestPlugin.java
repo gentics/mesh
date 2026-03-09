@@ -20,7 +20,6 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.etc.config.HttpServerConfig;
-import com.gentics.mesh.etc.config.OpenAPIOptions;
 import com.gentics.mesh.etc.config.Version;
 import com.gentics.mesh.util.MeshOpenAPIv3Generator;
 import com.gentics.vertx.openapi.model.Format;
@@ -37,17 +36,16 @@ public interface CommercialRestPlugin extends RestPlugin {
 		Pair<Router, Router> routers = RestPlugin.super.createRouters();
 		Router globalRouter = routers.getLeft();
 		Router projectRouter = routers.getRight();
-		OpenAPIOptions openApiOptions = environment().options().getOpenAPIOptions();
-		String pluginsWithOpenAPI = environment().options().getOpenAPIOptions().getPluginsWithOwnEndpoints();
-		if (globalRouter == null && !"NONE".equals(pluginsWithOpenAPI)) {
-			globalRouter = Router.router(Vertx.vertx());
-			routers = Pair.of(globalRouter, projectRouter);
-		}
-		if (StringUtils.isNotBlank(pluginsWithOpenAPI) 
-				&& ("ALL".equals(pluginsWithOpenAPI) 
-						|| Arrays.stream(pluginsWithOpenAPI.split(",")).map(String::trim).anyMatch(id -> id.equals(id())))) {
-			Version defaultVersion = openApiOptions.getDefaultVersion();
-			com.gentics.mesh.etc.config.Format defaultFormat = openApiOptions.getDefaultFormat();
+		String pluginsWithNoOpenAPI = environment().options().getNoApiInfoPlugins();
+
+		if (StringUtils.isBlank(pluginsWithNoOpenAPI) 
+				|| (!"*".equals(pluginsWithNoOpenAPI) && Arrays.stream(pluginsWithNoOpenAPI.split(",")).map(String::trim).noneMatch(id -> id.equals(id())))) {
+			if (globalRouter == null) {
+				globalRouter = Router.router(Vertx.vertx());
+				routers = Pair.of(globalRouter, projectRouter);
+			}
+			Version defaultVersion = environment().options().getDefaultOpenAPIVersion();
+			com.gentics.mesh.etc.config.Format defaultFormat = environment().options().getDefaultOpenAPIFormat();
 			Pair<Router, String> globalRouterPair = Pair.of(globalRouter, "/api/v" + MeshVersion.CURRENT_API_VERSION + "/plugins/" + restApiName());
 			InternalEndpointBuilder.wrap(globalRouter)
 					.withPath("/openapi." + defaultFormat.name().toLowerCase())

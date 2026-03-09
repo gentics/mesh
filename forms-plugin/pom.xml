@@ -80,12 +80,6 @@
 			<version>1.6</version>
 		</dependency>
 
-		<!-- Misc -->
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-lang3</artifactId>
-		</dependency>
-
 		<!-- Classpath scanning for @FormElementType discovery -->
 		<dependency>
 			<groupId>org.reflections</groupId>
