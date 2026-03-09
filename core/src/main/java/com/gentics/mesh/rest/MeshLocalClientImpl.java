@@ -123,8 +123,6 @@ import com.gentics.mesh.core.rest.user.UserResetTokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.core.rest.validation.SchemaValidationResponse;
-import com.gentics.mesh.etc.config.Format;
-import com.gentics.mesh.etc.config.Version;
 import com.gentics.mesh.parameter.BackupParameters;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -1622,7 +1620,7 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	}
 
 	@Override
-	public MeshRequest<String> getOpenAPI(Format format, Version version) {
+	public MeshRequest<String> getOpenAPI() {
 		// TODO Auto-generated method stub
 		return null;
 	}

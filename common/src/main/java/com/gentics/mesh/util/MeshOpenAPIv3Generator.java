@@ -88,4 +88,14 @@ public class MeshOpenAPIv3Generator extends OpenAPIv3Generator {
 						.filter(ty -> ty.getPackageName().startsWith("com.gentics.mesh"))
 						.collect(Collectors.toSet()))));
 	}
+
+	@Override
+	protected String getComponentName(Class<?> cls) {
+		String componentName = super.getComponentName(cls);
+
+		if (componentName.endsWith("Impl")) {
+			componentName = componentName.substring(0, componentName.length()-4);
+		}
+		return componentName;
+	}
 }

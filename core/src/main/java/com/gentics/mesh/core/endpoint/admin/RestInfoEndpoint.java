@@ -2,11 +2,8 @@ package com.gentics.mesh.core.endpoint.admin;
 
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_YAML;
-import static com.gentics.mesh.http.HttpConstants.TEXT_PLAIN_UTF8;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
-
-import javax.inject.Inject;
 
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.context.InternalActionContext;
@@ -14,7 +11,6 @@ import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.etc.config.Format;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.example.RestInfoExamples;
-import com.gentics.mesh.parameter.impl.OpenAPIParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
@@ -27,13 +23,12 @@ import io.vertx.ext.web.Router;
  */
 public class RestInfoEndpoint extends AbstractInternalEndpoint {
 
-	private RestInfoExamples examples = new RestInfoExamples();
+	protected RestInfoExamples examples = new RestInfoExamples();
 
-	private AdminHandler adminHandler;
+	protected AdminHandler adminHandler;
 
-	private RouterStorage routerStorage;
+	protected RouterStorage routerStorage;
 
-	@Inject
 	public RestInfoEndpoint(MeshAuthChain chain, AdminHandler adminHandler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
 		super(null, chain, localConfigApi, db, options);
 		this.adminHandler = adminHandler;
@@ -70,33 +65,18 @@ public class RestInfoEndpoint extends AbstractInternalEndpoint {
 			adminHandler.handleRAML(ac);
 		}, false);
 
-		secure("/openapi");
-		InternalEndpointRoute openapi = createRoute();
-		openapi.path("/openapi");
-		openapi.method(GET);
-		openapi.description("Endpoint which provides a OpenAPIv3 document for all registed endpoints.");
-		openapi.displayName("OpenAPI specification");
-		openapi.exampleResponse(OK, "Not yet specified");
-		openapi.produces(TEXT_PLAIN_UTF8);
-		openapi.addQueryParameters(OpenAPIParametersImpl.class);
-		openapi.blockingHandler(rc -> {
-			InternalActionContext ac = wrap(rc);
-			adminHandler.handleOpenAPIv3(ac);
-		}, false);
-
-
 		MeshOptions options = getOptions();
-		secure("/openapi." + options.getOpenAPIOptions().getDefaultFormat().name().toLowerCase());
+		secure("/openapi." + options.getDefaultOpenAPIFormat().name().toLowerCase());
 		InternalEndpointRoute openapiYml = createRoute();
-		openapiYml.path("/openapi." + options.getOpenAPIOptions().getDefaultFormat().name().toLowerCase());
+		openapiYml.path("/openapi." + options.getDefaultOpenAPIFormat().name().toLowerCase());
 		openapiYml.method(GET);
-		openapiYml.description("Endpoint which provides a OpenAPI v" + options.getOpenAPIOptions().getDefaultVersion().pretty() + " " + options.getOpenAPIOptions().getDefaultFormat().name() + " document for all registed endpoints.");
+		openapiYml.description("Endpoint which provides an OpenAPI v" + options.getDefaultOpenAPIVersion().pretty() + " " + options.getDefaultOpenAPIFormat().name() + " document for all registed endpoints.");
 		openapiYml.displayName("OpenAPI specification");
 		openapiYml.exampleResponse(OK, "Not yet specified");
-		openapiYml.produces(options.getOpenAPIOptions().getDefaultFormat() == Format.JSON ? APPLICATION_JSON : APPLICATION_YAML);
+		openapiYml.produces(options.getDefaultOpenAPIFormat() == Format.JSON ? APPLICATION_JSON : APPLICATION_YAML);
 		openapiYml.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
-			adminHandler.handleOpenAPIv3(ac, options.getOpenAPIOptions().getDefaultFormat(), options.getOpenAPIOptions().getDefaultVersion());
+			adminHandler.handleOpenAPIv3(ac);
 		}, false);
 
 		secure("/");

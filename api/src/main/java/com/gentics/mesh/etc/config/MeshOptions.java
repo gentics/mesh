@@ -152,9 +152,6 @@ public abstract class MeshOptions implements Option {
 	@EnvironmentVariable(name = MESH_MIGRATION_TRIGGER_INTERVAL, description = "Override the migration trigger interval")
 	private long migrationTriggerInterval = DEFAULT_MIGRATION_TRIGGER_INTERVAL;
 
-	@JsonProperty(required = true)
-	@JsonPropertyDescription("OpenAPI options.")
-	private OpenAPIOptions openApiOptions = new OpenAPIOptions();
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("GraphQL options.")
@@ -273,25 +270,6 @@ public abstract class MeshOptions implements Option {
 	@Setter
 	public MeshOptions setMonitoringOptions(MonitoringConfig monitoringOptions) {
 		this.monitoringOptions = monitoringOptions;
-		return this;
-	}
-
-	/**
-	 * Get the OpenAPI options
-	 * @return options
-	 */
-	@JsonProperty("openApi")
-	public OpenAPIOptions getOpenAPIOptions() {
-		return openApiOptions;
-	}
-
-	/**
-	 * Set the OpenAPI options
-	 * @param openApiOptions options
-	 * @return fluent API
-	 */
-	public MeshOptions setOpenAPIOptions(OpenAPIOptions openApiOptions) {
-		this.openApiOptions = openApiOptions;
 		return this;
 	}
 
@@ -630,4 +608,24 @@ public abstract class MeshOptions implements Option {
 	}
 
 	public abstract boolean hasDatabaseLevelCache();
+
+	/**
+	 * Get default OpenAPI spec version
+	 * 
+	 * @return
+	 */
+	public abstract Version getDefaultOpenAPIVersion();
+
+	/**
+	 * Get default OpenAPI spec format
+	 * 
+	 * @return
+	 */
+	public abstract Format getDefaultOpenAPIFormat();
+
+	/**
+	 * Get the comma separated list of plugin, that should provide no API info. Can be null or empty.
+	 * @return
+	 */
+	public abstract String getNoApiInfoPlugins();
 }

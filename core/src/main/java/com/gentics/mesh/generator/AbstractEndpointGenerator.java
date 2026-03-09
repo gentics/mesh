@@ -35,8 +35,9 @@ import com.gentics.mesh.core.endpoint.user.UserEndpoint;
 import com.gentics.mesh.core.endpoint.utility.UtilityEndpoint;
 import com.gentics.mesh.core.endpoint.webroot.WebRootEndpoint;
 import com.gentics.mesh.core.endpoint.webrootfield.WebRootFieldEndpoint;
+import com.gentics.mesh.etc.config.Format;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.OpenAPIOptions;
+import com.gentics.mesh.etc.config.Version;
 import com.gentics.mesh.graphql.GraphQLEndpoint;
 import com.gentics.mesh.router.APIRouterImpl;
 import com.gentics.mesh.router.RootRouterImpl;
@@ -233,7 +234,8 @@ public abstract class AbstractEndpointGenerator<T> extends AbstractGenerator {
 		MeshOptions options = mock(MeshOptions.class);
 		Mockito.when(endpoint.getRouter()).thenReturn(Router.router(vertx));
 		Mockito.when(endpoint.getOptions()).thenReturn(options);
-		Mockito.when(options.getOpenAPIOptions()).thenReturn(new OpenAPIOptions());
+		Mockito.when(options.getDefaultOpenAPIFormat()).thenReturn(Format.YAML);
+		Mockito.when(options.getDefaultOpenAPIVersion()).thenReturn(Version.V30);
 		endpoint.registerEndPoints();
 	}
 

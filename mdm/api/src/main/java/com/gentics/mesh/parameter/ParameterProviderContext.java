@@ -13,7 +13,6 @@ import com.gentics.mesh.parameter.impl.ImageManipulationRetrievalParametersImpl;
 import com.gentics.mesh.parameter.impl.IndexMaintenanceParametersImpl;
 import com.gentics.mesh.parameter.impl.JobParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
-import com.gentics.mesh.parameter.impl.OpenAPIParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.ProjectLoadParametersImpl;
 import com.gentics.mesh.parameter.impl.ProjectPurgeParametersImpl;
@@ -116,9 +115,5 @@ public interface ParameterProviderContext extends ActionContext {
 
 	default ConsistencyCheckParameters getConsistencyCheckParameters() {
 		return new ConsistencyCheckParametersImpl(this);
-	}
-
-	default OpenAPIParameters getOpenAPIParameters() {
-		return new OpenAPIParametersImpl(this);
 	}
 }
