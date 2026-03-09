@@ -1,8 +1,6 @@
 package com.gentics.mesh.rest.client.method;
 
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
-import com.gentics.mesh.etc.config.Format;
-import com.gentics.mesh.etc.config.Version;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.monitoring.MonitoringRestClient;
 
@@ -28,9 +26,9 @@ public interface ApiInfoClientMethods {
 	MeshRequest<String> getRAML();
 
 	/**
-	 * Generate an OpenAPI
+	 * Generate an OpenAPI specification
 	 * 
 	 * @return
 	 */
-	MeshRequest<String> getOpenAPI(Format format, Version version);
+	MeshRequest<String> getOpenAPI();
 }
