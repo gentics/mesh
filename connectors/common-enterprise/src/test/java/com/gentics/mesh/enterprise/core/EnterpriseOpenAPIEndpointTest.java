@@ -50,17 +50,12 @@ public class EnterpriseOpenAPIEndpointTest extends OpenAPIEndpointTest {
 	public void testOpenAPI() throws IOException {
 		String input = null;
 		if (noClient) {
-			input = "http://localhost:" 
-					+ options().getHttpServerOptions().getPort() 
-					+ MeshVersion.CURRENT_API_BASE_PATH 
-					+ "/openapi?format=" 
-					+ format.name().toLowerCase() 
-					+ "&version=" + version.name().toLowerCase();
+			input = String.format("http://localhost:%s%s/openapi?format=%s&version=%s", port(), MeshVersion.CURRENT_API_BASE_PATH, format.name().toLowerCase(), version.name().toLowerCase());
 		} else {
 			grantAdmin();
 			OpenAPIParameters parameters = new OpenAPIParametersImpl().setFormat(format).setVersion(version);
 			input = httpClient().newCall(new Request.Builder()
-					.url("/admin/openapi?" + parameters.getQueryParameters())
+					.url(String.format("http://localhost:%s%s/openapi?%s", port(), MeshVersion.CURRENT_API_BASE_PATH, parameters.getQueryParameters()))
 					.get()
 					.build()
 				).execute().body().string();

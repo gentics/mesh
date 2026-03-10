@@ -38,7 +38,7 @@ import okhttp3.Response;
 
 @MeshTestSetting(testSize = PROJECT, startServer = true, inMemoryDB = true)
 public class LicenseManagementEndpointTest extends AbstractMeshTest {
-
+	
 	private static OkHttpClient okHttpClient;
 
 	@BeforeClass
