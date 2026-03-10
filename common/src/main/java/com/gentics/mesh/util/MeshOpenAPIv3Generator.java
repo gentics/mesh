@@ -6,11 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
-import org.reflections.Reflections;
-
-import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.vertx.openapi.OpenAPIv3Generator;
 import com.gentics.vertx.openapi.model.ExtendedSecurityScheme;
 import com.gentics.vertx.openapi.model.Format;
@@ -81,12 +77,7 @@ public class MeshOpenAPIv3Generator extends OpenAPIv3Generator {
 					return path;
 				}), 
 				// fill the component model
-				Optional.of(() -> Collections.unmodifiableCollection(
-						new Reflections("com.gentics.mesh")
-						.getSubTypesOf(RestModel.class)
-						.stream()
-						.filter(ty -> ty.getPackageName().startsWith("com.gentics.mesh"))
-						.collect(Collectors.toSet()))));
+				Optional.empty());
 	}
 
 	@Override
