@@ -64,11 +64,13 @@ import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.dagger.StorageDir;
 import com.gentics.mesh.plugin.common.dagger.UserClient;
 import com.gentics.mesh.plugin.common.service.RenderService;
+import com.gentics.mesh.plugin.common.util.ParameterUtil;
 import com.gentics.mesh.plugin.forms.FormsError;
 import com.gentics.mesh.plugin.forms.FormsPlugin;
 import com.gentics.mesh.plugin.forms.SchemaInitializer;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
-import com.gentics.mesh.plugin.forms.context.FormDataSaveContext;
+import com.gentics.mesh.plugin.forms.context.FormDataCreateContext;
+import com.gentics.mesh.plugin.forms.context.FormDataUpdateContext;
 import com.gentics.mesh.plugin.forms.export.ExportData;
 import com.gentics.mesh.plugin.forms.export.Exporter;
 import com.gentics.mesh.plugin.forms.model.FileElement;
@@ -79,7 +81,7 @@ import com.gentics.mesh.plugin.forms.model.FormpageElement;
 import com.gentics.mesh.plugin.forms.model.PostDataResponse;
 import com.gentics.mesh.plugin.forms.model.ValidationError;
 import com.gentics.mesh.plugin.forms.util.FormUtil;
-import com.gentics.mesh.plugin.forms.util.ParameterUtil;
+import com.gentics.mesh.plugin.forms.util.FormParameterUtil;
 import com.gentics.mesh.plugin.forms.util.RxUtil;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshResponse;
@@ -276,7 +278,7 @@ public class FormDataService {
 	 * @param ctx Request context
 	 * @return single of the post data response
 	 */
-	public Single<PostDataResponse> create(FormDataSaveContext ctx) {
+	public Single<PostDataResponse> create(FormDataCreateContext ctx) {
 		return formService.loadAsAdminWithLanguageFallback(ctx.getProjectName(), ctx.getFormUuid(), true, ctx.getLanguages())
 			.doOnSuccess(ctx::setFormNode)
 			.flatMap(formService::toForm)
@@ -290,7 +292,7 @@ public class FormDataService {
 	 * @param ctx Request context
 	 * @return single of the post data response
 	 */
-	public Single<PostDataResponse> update(FormDataSaveContext ctx) {
+	public Single<PostDataResponse> update(FormDataUpdateContext ctx) {
 		return Single.zip(
 			formService.loadAsAdminWithLanguageFallback(ctx.getProjectName(), ctx.getFormUuid(), true, ctx.getLanguages()),
 				load(ctx.getProjectName(), ctx.getFormUuid(), ctx.getFormDataUuid()),
@@ -332,14 +334,19 @@ public class FormDataService {
 		Single<NodeResponse> singleFormDataNode = adminClient.findNodeByUuid(projectName, formDataUuid).toSingle();
 		Single<String> singleFormDataFolderUuid = getFormDataFolderUuid(projectName, formUuid);
 
-		return Single.zip(singleFormDataNode, singleFormDataFolderUuid, Pair::of).flatMap(pair -> {
-			NodeResponse formDataNode = pair.getLeft();
-			String formDataFolderUuid = pair.getRight();
-			if (FormUtil.isFormDataNode(formDataNode) && formDataFolderUuid.equals(formDataNode.getParentNode().getUuid()) && (allowPublished || !isFormDataPublished(formDataNode))) {
-				return Single.just(formDataNode);
+		return singleFormDataNode.flatMap(formDataNode -> {
+			if (FormUtil.isFormDataNode(formDataNode)) {
+				return singleFormDataFolderUuid.flatMap(formDataFolderUuid -> {
+					if (formDataFolderUuid.equals(formDataNode.getParentNode().getUuid()) && (allowPublished || !isFormDataPublished(formDataNode))) {
+						return Single.just(formDataNode);
+					} else {
+						String message = String.format("Object with uuid \"%s\" could not be found.", formDataUuid);
+						return Single.error(new FormsError(message, 404));
+					}
+				});
 			} else {
 				String message = String.format("Object with uuid \"%s\" could not be found.", formDataUuid);
-					return Single.error(new FormsError(message, 404));
+				return Single.error(new FormsError(message, 404));
 			}
 		});
 	}
@@ -359,7 +366,7 @@ public class FormDataService {
 	 * @return The created export node.
 	 */
 	public Single<NodeResponse> requestExport(String projectName, String formUuid, PluginContext context, String... lang)  {
-		String options = ParameterUtil.getExportOptions(context, configuration);
+		String options = FormParameterUtil.getExportOptions(context, configuration);
 
 		return formService.getFormFolderUuid(projectName, formUuid, lang, FormService.DOWNLOADS_FOLDER_NAME)
 			.flatMap(folderUuid -> formService.loadForm(projectName, formUuid, lang)
@@ -1065,7 +1072,7 @@ public class FormDataService {
 			.flatMap(pathPrefix -> Single.zip(
 				statusService.languageFallback(projectName, lang)
 					.flatMap(langFallback -> formService.loadAsAdmin(projectName, formUuid, true, langFallback)),
-				load(projectName, formUuid, formDataUuid).onErrorReturn(t -> null),
+				load(projectName, formUuid, formDataUuid),
 				(formNode, formDataNode) -> {
 					Form form = formService.toForm(formNode.getFields().getStringField("json").getString(), formNode.getUuid(), formNode.getLanguage())
 						.removeInactiveElements();
@@ -1112,7 +1119,7 @@ public class FormDataService {
 	 * @param ctx
 	 * @return single redirect URL
 	 */
-	private Single<PostDataResponse> savePostedData(FormDataSaveContext ctx) {
+	private Single<PostDataResponse> savePostedData(FormDataCreateContext ctx) {
 		Form form = ctx.getForm();
 		MultiMap postedData = ctx.getPostedData();
 		Single<Map<String, ValidationError>> errorSingle = Single.zip(
@@ -1149,8 +1156,9 @@ public class FormDataService {
 			} else {
 				String projectName = ctx.getProjectName();
 				NodeResponse formNode = ctx.getFormNode();
-				Single<String> dataFolderUuidSingle = getFormDataFolderUuid(projectName, formNode.getUuid(),
-						ParameterUtil.getLanguages(ctx.getContext()));
+
+				Single<String> dataFolderUuidSingle = ParameterUtil.getLanguages(ctx.getContext())
+						.flatMap(languages -> getFormDataFolderUuid(projectName, formNode.getUuid(), languages));
 
 				return Single.just(errors1).zipWith(
 						dataFolderUuidSingle, 
@@ -1301,7 +1309,7 @@ public class FormDataService {
 	 * @param errors
 	 * @return single
 	 */
-	private Single<PostDataResponse> publishFormData(FormDataSaveContext ctx, NodeResponse savedFileUploads, Map<String, ValidationError> errors) {
+	private Single<PostDataResponse> publishFormData(FormDataCreateContext ctx, NodeResponse savedFileUploads, Map<String, ValidationError> errors) {
 		return adminClient.publishNode(ctx.getProjectName(), savedFileUploads.getUuid()).toSingle().flatMap(publishStatus -> {
 			PluginContext meshContext = ctx.getContext();
 			Form form = ctx.getForm();
@@ -1358,7 +1366,7 @@ public class FormDataService {
 	 *
 	 * @param ctx The current form data save context
 	 */
-	private void addPollCookie(FormDataSaveContext ctx) {
+	private void addPollCookie(FormDataCreateContext ctx) {
 		PluginContext pc = ctx.getContext();
 		String formUuid = ctx.getFormUuid();
 		String votedPolls = Optional.ofNullable(pc.request().getCookie(COOKIE_NAME_VOTED))

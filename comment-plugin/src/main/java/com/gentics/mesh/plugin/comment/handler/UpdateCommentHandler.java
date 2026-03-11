@@ -4,7 +4,10 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.comment.model.request.UpdateCommentRequest;
 import com.gentics.mesh.plugin.comment.service.CommentService;
+import com.gentics.mesh.plugin.common.util.ParameterUtil;
+
 import io.reactivex.Completable;
+import io.reactivex.Single;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -21,9 +24,9 @@ public class UpdateCommentHandler extends AbstractCommentHandler {
 
 	@Override
 	public Completable handle(PluginContext context) {
-		String commentUuid = context.pathParam("uuid");
+		Single<String> uuidSingle = ParameterUtil.getUuidFromPath(context, "uuid");
 		UpdateCommentRequest request = JsonUtil.readValue(context.body().asString(), UpdateCommentRequest.class);
-		return commentService.updateComment(commentUuid, request)
+		return uuidSingle.flatMap(commentUuid -> commentService.updateComment(commentUuid, request))
 			.doOnEvent(jsonHandler(context))
 			.ignoreElement();
 	}
