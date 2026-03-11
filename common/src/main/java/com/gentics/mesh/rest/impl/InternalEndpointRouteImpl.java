@@ -11,6 +11,7 @@ import java.util.Set;
 import org.codehaus.jettison.json.JSONObject;
 import org.raml.model.MimeType;
 
+import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -53,8 +54,13 @@ public class InternalEndpointRouteImpl extends com.gentics.vertx.openapi.metadat
 	}
 
 	@Override
-	protected String getJsonSchema(Class<?> clazz) {
-		return JsonUtil.getJsonSchema(clazz);
+	protected String getJsonSchema(JsonSchema schema) {
+		return JsonUtil.getJsonSchema(schema);
+	}
+
+	@Override
+	protected JsonSchema getJsonSchemaObject(Class<?> clazz) {
+		return JsonUtil.getJsonSchemaObject(clazz);
 	}
 
 	@Override
