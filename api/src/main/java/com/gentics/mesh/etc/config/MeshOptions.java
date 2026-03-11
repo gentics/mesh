@@ -37,6 +37,7 @@ public abstract class MeshOptions implements Option {
 	public static final String MESH_CLUSTER_INIT_ENV = "MESH_CLUSTER_INIT";
 	public static final String MESH_LOCK_PATH_ENV = "MESH_LOCK_PATH";
 	public static final String MESH_LIVE_PATH_ENV = "MESH_LIVE_PATH";
+	public static final String MESH_SERVE_OPENAPI_ENV = "MESH_SERVE_OPENAPI";
 	public static final String MESH_START_IN_READ_ONLY_ENV = "MESH_START_IN_READ_ONLY";
 	public static final String MESH_INITIAL_ADMIN_PASSWORD_ENV = "MESH_INITIAL_ADMIN_PASSWORD";
 	public static final String MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET_ENV = "MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET";
@@ -152,6 +153,9 @@ public abstract class MeshOptions implements Option {
 	@EnvironmentVariable(name = MESH_MIGRATION_TRIGGER_INTERVAL, description = "Override the migration trigger interval")
 	private long migrationTriggerInterval = DEFAULT_MIGRATION_TRIGGER_INTERVAL;
 
+	@JsonProperty(required = false)
+	@EnvironmentVariable(name = MESH_SERVE_OPENAPI_ENV, description = "Serve OpenAPI specification under `/openapi*` endpoints. Default: true")
+	private boolean serveOpenApi = true;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("GraphQL options.")
@@ -542,6 +546,15 @@ public abstract class MeshOptions implements Option {
 	public MeshOptions setPluginUseHttp2(boolean pluginUseHttp2) {
 		this.pluginUseHttp2 = pluginUseHttp2;
 		return this;
+	}
+
+	public boolean isServeOpenApi() {
+		return serveOpenApi;
+	}
+
+	@Setter
+	public void setServeOpenApi(boolean serveOpenApi) {
+		this.serveOpenApi = serveOpenApi;
 	}
 
 	@JsonIgnore
