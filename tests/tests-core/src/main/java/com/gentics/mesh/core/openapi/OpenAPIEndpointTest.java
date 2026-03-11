@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -19,6 +20,7 @@ import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.swagger.parser.OpenAPIParser;
 import io.swagger.parser.models.ParseOptions;
 import io.swagger.parser.models.SwaggerParseResult;
@@ -27,17 +29,27 @@ import io.swagger.parser.models.SwaggerParseResult;
 @RunWith(Parameterized.class)
 public class OpenAPIEndpointTest extends AbstractMeshTest {
 
-	@Parameters(name = "{index}: no Mesh Client = {0}")
+	@Parameters(name = "{index}: no Mesh Client = {0}, OpenAPI disabled: {1}")
 	public static Collection<Object[]> parameters() throws Exception {
 		List<Object[]> params = new ArrayList<>();
 		for (boolean noClient : new Boolean[] {false, true}) {
-			params.add(new Object[] {noClient});
+			for (boolean apiDisabled : new Boolean[] {false, true}) {
+				params.add(new Object[] {noClient, apiDisabled});
+			}
 		}
 		return params;
 	}
 
 	@Parameter(0)
 	public boolean noClient;
+
+	@Parameter(1)
+	public boolean apiDisabled;
+
+	@Before
+	public void setup() {
+		testContext.getOptions().setServeOpenApi(!apiDisabled);
+	}
 
 	@Test
 	public void testOpenAPI() throws IOException {
@@ -49,7 +61,12 @@ public class OpenAPIEndpointTest extends AbstractMeshTest {
 					+ "/openapi.yaml";
 		} else {
 			grantAdmin();
-			input = call(() -> client().getOpenAPI());
+			if (apiDisabled) {
+				call(() -> client().getOpenAPI(), HttpResponseStatus.FORBIDDEN);
+				return;
+			} else {
+				input = call(() -> client().getOpenAPI());
+			}
 		}
 		assertNoErrors(input);
 	}
@@ -63,7 +80,12 @@ public class OpenAPIEndpointTest extends AbstractMeshTest {
 				? parser.readLocation(input, null, null)
 				: parser.readContents(input, null, null);
 
-		assertThat(result.getOpenAPI()).as("Parsed API").isNotNull();
-		assertThat(result.getMessages()).as("Error messages").isNullOrEmpty();
+		if (apiDisabled) {
+			assertThat(result.getOpenAPI()).as("Parsed API").isNull();
+			assertThat(result.getMessages()).as("Error messages").isNotEmpty();
+		} else {
+			assertThat(result.getOpenAPI()).as("Parsed API").isNotNull();
+			assertThat(result.getMessages()).as("Error messages").isNullOrEmpty();
+		}		
 	}
 }

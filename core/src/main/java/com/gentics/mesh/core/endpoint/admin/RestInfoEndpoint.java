@@ -15,6 +15,7 @@ import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.Router;
 
@@ -76,7 +77,11 @@ public class RestInfoEndpoint extends AbstractInternalEndpoint {
 		openapiYml.produces(options.getDefaultOpenAPIFormat() == Format.JSON ? APPLICATION_JSON : APPLICATION_YAML);
 		openapiYml.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
-			adminHandler.handleOpenAPIv3(ac);
+			if (getOptions().isServeOpenApi()) {
+				adminHandler.handleOpenAPIv3(ac);
+			} else {
+				ac.send(HttpResponseStatus.FORBIDDEN);
+			}
 		}, false);
 
 		secure("/");
