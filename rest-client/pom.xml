@@ -76,6 +76,30 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${compiler.plugin.version}</version>
+				<configuration>
+					<forceJavacCompilerUse>true</forceJavacCompilerUse>
+					<verbose>false</verbose>
+					<release>17</release>
+					<compilerArgs>
+						<!-- See https://github.com/google/dagger/releases/tag/dagger-2.48-->
+						<arg>-Adagger.ignoreProvisionKeyWildcards=DISABLED</arg>
+						<!-- Include parameter names into compiled classed, because RestClientInputValidationTest uses it -->
+						<arg>-parameters</arg>
+					</compilerArgs>
+				</configuration>
+				<dependencies>
+					<dependency>
+						<groupId>com.google.dagger</groupId>
+						<artifactId>dagger-compiler</artifactId>
+						<version>${dagger.version}</version>
+						<optional>true</optional>
+					</dependency>
+				</dependencies>
+			</plugin>
 		</plugins>
 	</build>
 

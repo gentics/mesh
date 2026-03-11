@@ -34,6 +34,7 @@ import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.parameter.client.GenericParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.util.UUIDUtil;
 
 @MeshTestSetting(testSize = FULL, startServer = true)
 public class BranchTagEndpointTest extends AbstractMeshTest {
@@ -127,7 +128,8 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 		HibBranch branch = tx(() -> project().getLatestBranch());
 		String branchUuid = tx(() -> branch.getUuid());
 
-		call(() -> client().addTagToBranch(PROJECT_NAME, branchUuid, "bogus"), NOT_FOUND, "object_not_found_for_uuid", "bogus");
+		String bogusUuid = UUIDUtil.randomUUID();
+		call(() -> client().addTagToBranch(PROJECT_NAME, branchUuid, bogusUuid), NOT_FOUND, "object_not_found_for_uuid", bogusUuid);
 	}
 
 	@Test
@@ -135,7 +137,8 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 		HibTag tag = tag("red");
 		String tagUuid = tx(() -> tag.getUuid());
 
-		call(() -> client().addTagToBranch(PROJECT_NAME, "bogus", tagUuid), NOT_FOUND, "object_not_found_for_uuid", "bogus");
+		String bogusUuid = UUIDUtil.randomUUID();
+		call(() -> client().addTagToBranch(PROJECT_NAME, bogusUuid, tagUuid), NOT_FOUND, "object_not_found_for_uuid", bogusUuid);
 	}
 
 	@Test
@@ -230,7 +233,8 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 		HibBranch branch = tx(() -> project().getLatestBranch());
 		String branchUuid = tx(() -> branch.getUuid());
 
-		call(() -> client().removeTagFromBranch(PROJECT_NAME, branchUuid, "bogus"), NOT_FOUND, "object_not_found_for_uuid", "bogus");
+		String bogusUuid = UUIDUtil.randomUUID();
+		call(() -> client().removeTagFromBranch(PROJECT_NAME, branchUuid, bogusUuid), NOT_FOUND, "object_not_found_for_uuid", bogusUuid);
 	}
 
 	@Test
@@ -238,7 +242,8 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 		HibTag tag = tag("red");
 		String tagUuid = tx(() -> tag.getUuid());
 
-		call(() -> client().removeTagFromBranch(PROJECT_NAME, "bogus", tagUuid), NOT_FOUND, "object_not_found_for_uuid", "bogus");
+		String bogusUuid = UUIDUtil.randomUUID();
+		call(() -> client().removeTagFromBranch(PROJECT_NAME, bogusUuid, tagUuid), NOT_FOUND, "object_not_found_for_uuid", bogusUuid);
 	}
 
 	@Test
@@ -303,7 +308,8 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadTagsFromBogusBranch() throws Exception {
-		call(() -> client().findTagsForBranch(PROJECT_NAME, "bogus"), NOT_FOUND, "object_not_found_for_uuid", "bogus");
+		String bogusUuid = UUIDUtil.randomUUID();
+		call(() -> client().findTagsForBranch(PROJECT_NAME, bogusUuid), NOT_FOUND, "object_not_found_for_uuid", bogusUuid);
 	}
 
 	@Test
@@ -421,9 +427,10 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 		HibTag red = tag("red");
 		HibTag car = tag("car");
 
-		call(() -> client().updateTagsForBranch(PROJECT_NAME, "bogus", new TagListUpdateRequest().setTags(Arrays.asList(ref(red), ref(car)))),
+		String bogusUuid = UUIDUtil.randomUUID();
+		call(() -> client().updateTagsForBranch(PROJECT_NAME, bogusUuid, new TagListUpdateRequest().setTags(Arrays.asList(ref(red), ref(car)))),
 			NOT_FOUND,
-			"object_not_found_for_uuid", "bogus");
+			"object_not_found_for_uuid", bogusUuid);
 	}
 
 	@Test

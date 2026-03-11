@@ -134,8 +134,8 @@ public interface NodeBinaryFieldClientMethods {
 	 *            field key
 	 * @param secret
 	 *            Binary check secret
-	 * @param branchUuid
-	 *            Branch UUID
+	 * @param branch
+	 *            Branch UUID or name
 	 * @param status
 	 *            Status to set
 	 * @param reason
@@ -143,7 +143,7 @@ public interface NodeBinaryFieldClientMethods {
 	 * @return Mesh request
 	 */
 	MeshRequest<NodeResponse> updateNodeBinaryFieldCheckStatus(String projectName, String nodeUuid, String languageTag, String nodeVersion,
-		String fieldKey, String secret, String branchUuid, BinaryCheckStatus status, String reason);
+		String fieldKey, String secret, String branch, BinaryCheckStatus status, String reason);
 
 	/**
 	 * Update/insert the set of image variants of the binary behind the specified binary field.
