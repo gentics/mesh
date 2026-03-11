@@ -38,8 +38,8 @@ public interface CommercialRestPlugin extends RestPlugin {
 		Router projectRouter = routers.getRight();
 		String pluginsWithNoOpenAPI = environment().options().getNoApiInfoPlugins();
 
-		if (StringUtils.isBlank(pluginsWithNoOpenAPI) 
-				|| (!"*".equals(pluginsWithNoOpenAPI) && Arrays.stream(pluginsWithNoOpenAPI.split(",")).map(String::trim).noneMatch(id -> id.equals(id())))) {
+		if (environment().options().isServeOpenApi() && (StringUtils.isBlank(pluginsWithNoOpenAPI) 
+				|| (!"*".equals(pluginsWithNoOpenAPI) && Arrays.stream(pluginsWithNoOpenAPI.split(",")).map(String::trim).noneMatch(id -> id.equals(id()))))) {
 			if (globalRouter == null) {
 				globalRouter = Router.router(Vertx.vertx());
 				routers = Pair.of(globalRouter, projectRouter);
