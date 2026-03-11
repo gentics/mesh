@@ -4,11 +4,12 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.plugin.PluginContext;
+import com.gentics.mesh.plugin.common.util.ParameterUtil;
 import com.gentics.mesh.plugin.forms.handler.AbstractFormsHandler;
 import com.gentics.mesh.plugin.forms.service.FormService;
-import com.gentics.mesh.plugin.forms.util.ParameterUtil;
 
 import io.reactivex.Completable;
+import io.reactivex.Single;
 
 @Singleton
 public class LoadFormHandler extends AbstractFormsHandler {
@@ -23,11 +24,16 @@ public class LoadFormHandler extends AbstractFormsHandler {
 	@Override
 	public Completable handle(PluginContext context) {
 		String projectName = context.project().getString("name");
-		String uuid = context.pathParam("formUuid");
-		return formService.loadForm(projectName, uuid, ParameterUtil.getLanguages(context)).doOnEvent((response, t) -> {
-			if (response != null) {
-				context.response().end(response.toString());
-			}
-		}).ignoreElement();
+		Single<String> uuidSingle = ParameterUtil.getUuidFromPath(context, "formUuid");
+		Single<String[]> languagesSingle = ParameterUtil.getLanguages(context);
+
+		return Single
+				.zip(uuidSingle, languagesSingle,
+						(uuid, languages) -> formService.loadForm(projectName, uuid, languages))
+				.flatMap(x -> x).doOnEvent((response, t) -> {
+					if (response != null) {
+						context.response().end(response.toString());
+					}
+				}).ignoreElement();
 	}
 }

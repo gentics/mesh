@@ -1,17 +1,20 @@
 package com.gentics.mesh.plugin.forms.handler.downloads;
 
-import com.gentics.mesh.plugin.PluginContext;
-import com.gentics.mesh.plugin.forms.handler.AbstractFormsHandler;
-import com.gentics.mesh.plugin.forms.service.FormDataService;
-import com.gentics.mesh.plugin.forms.util.ParameterUtil;
-import com.google.common.net.HttpHeaders;
-import io.reactivex.Completable;
-import io.vertx.reactivex.core.http.HttpServerResponse;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+
+import com.gentics.mesh.plugin.PluginContext;
+import com.gentics.mesh.plugin.common.util.ParameterUtil;
+import com.gentics.mesh.plugin.forms.handler.AbstractFormsHandler;
+import com.gentics.mesh.plugin.forms.service.FormDataService;
+import com.google.common.net.HttpHeaders;
+
+import io.reactivex.Completable;
+import io.reactivex.Single;
+import io.vertx.reactivex.core.http.HttpServerResponse;
 
 @Singleton
 public class LoadFilesZipHandler extends AbstractFormsHandler {
@@ -26,13 +29,17 @@ public class LoadFilesZipHandler extends AbstractFormsHandler {
 	@Override
 	public Completable handle(PluginContext context) {
 		String projectName = context.project().getString("name");
-		String uuid = context.pathParam("formUuid");
+		Single<String> uuidSingle = ParameterUtil.getUuidFromPath(context, "formUuid");
+		Single<String[]> languagesSingle = ParameterUtil.getLanguages(context);
 
-		return formDataService.zipBinaries(projectName, uuid, ParameterUtil.getLanguages(context))
-			.flatMapCompletable(formAndFile -> {
-				context.response().putHeader(HttpHeaders.CONTENT_DISPOSITION, getContentDisposition(uuid, formAndFile.getLeft().getName(), "zip"));
-				return new HttpServerResponse(context.response()).rxSendFile(formAndFile.getRight().getAbsolutePath()).doFinally(formAndFile.getRight()::delete);
-			});
+		return Single.zip(uuidSingle, languagesSingle, (uuid, languages) -> formDataService
+				.zipBinaries(projectName, uuid, languages).flatMapCompletable(formAndFile -> {
+					context.response().putHeader(HttpHeaders.CONTENT_DISPOSITION,
+							getContentDisposition(uuid, formAndFile.getLeft().getName(), "zip"));
+					return new HttpServerResponse(context.response())
+							.rxSendFile(formAndFile.getRight().getAbsolutePath())
+							.doFinally(formAndFile.getRight()::delete);
+				})).flatMapCompletable(x -> x);
 	}
 
 	/**

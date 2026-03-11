@@ -5,7 +5,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.plugin.PluginContext;
-import com.gentics.mesh.plugin.forms.context.FormDataSaveContext;
+import com.gentics.mesh.plugin.forms.context.FormDataCreateContext;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
 
 import io.reactivex.Completable;
@@ -21,7 +21,7 @@ public class PostJsonDataHandler extends AbstractFormsHandler {
 
 	@Override
 	public Completable handle(PluginContext context) {
-		return formDataService.create(new FormDataSaveContext(context, false)).doOnSuccess(response -> {
+		return FormDataCreateContext.getCreate(context, false).flatMap(saveContext -> formDataService.create(saveContext)).doOnSuccess(response -> {
 			context.response().end(JsonUtil.toJson(response));
 		}).ignoreElement();
 	}

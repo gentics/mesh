@@ -1,11 +1,14 @@
 package com.gentics.mesh.plugin.comment.handler;
 
-import com.gentics.mesh.plugin.PluginContext;
-import com.gentics.mesh.plugin.comment.service.CommentService;
-import io.reactivex.Completable;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import com.gentics.mesh.plugin.PluginContext;
+import com.gentics.mesh.plugin.comment.service.CommentService;
+import com.gentics.mesh.plugin.common.util.ParameterUtil;
+
+import io.reactivex.Completable;
+import io.reactivex.Single;
 
 @Singleton
 public class DeleteCommentHandler extends AbstractCommentHandler {
@@ -19,8 +22,8 @@ public class DeleteCommentHandler extends AbstractCommentHandler {
 
 	@Override
 	public Completable handle(PluginContext context) {
-		String uuid = context.pathParam("uuid");
-		return commentService.deleteComment(uuid)
+		Single<String> singleUuid = ParameterUtil.getUuidFromPath(context, "uuid");
+		return singleUuid.flatMapCompletable(uuid -> commentService.deleteComment(uuid))
 			.doOnEvent(emptyResponseHandler(context));
 	}
 }

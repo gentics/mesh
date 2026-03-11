@@ -4,13 +4,12 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.plugin.PluginContext;
+import com.gentics.mesh.plugin.common.util.ParameterUtil;
 import com.gentics.mesh.plugin.favorite.FavoriteService;
-import com.gentics.mesh.plugin.favorite.error.InvalidTypeError;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Completable;
-
-import java.util.regex.Matcher;
+import io.reactivex.Single;
 
 @Singleton
 public class OverrideFavoriteHandler extends AbstractFavoriteHandler {
@@ -23,15 +22,13 @@ public class OverrideFavoriteHandler extends AbstractFavoriteHandler {
 
 	public Completable handle(PluginContext context) {
 		String projectName = context.project().getString("name");
-		String type = context.pathParam("type");
-		if(!pattern.matcher(type).matches()) {
-			throw new InvalidTypeError(type);
-		}
-		return favoriteService.overrideFavorite(projectName, type, context.getBodyAsJson()).doOnEvent((response, t) -> {
-			if (t == null) {
-				context.response().setStatusCode(HttpResponseStatus.CREATED.code()).end();
-			}
-		}).ignoreElement();
+		Single<String> typeSingle = ParameterUtil.getFromPath(context, "type", pattern);
+		return typeSingle.flatMap(type -> favoriteService.overrideFavorite(projectName, type, context.getBodyAsJson()))
+				.doOnEvent((response, t) -> {
+					if (t == null) {
+						context.response().setStatusCode(HttpResponseStatus.CREATED.code()).end();
+					}
+				}).ignoreElement();
 	}
 
 }

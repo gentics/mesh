@@ -4,13 +4,12 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.plugin.PluginContext;
+import com.gentics.mesh.plugin.common.util.ParameterUtil;
 import com.gentics.mesh.plugin.favorite.FavoriteService;
-import com.gentics.mesh.plugin.favorite.error.InvalidTypeError;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Completable;
-
-import java.util.regex.Matcher;
+import io.reactivex.Single;
 
 @Singleton
 public class StoreFavoriteHandler extends AbstractFavoriteHandler{
@@ -23,17 +22,17 @@ public class StoreFavoriteHandler extends AbstractFavoriteHandler{
 
 	public Completable handle(PluginContext context) {
 		String projectName = context.project().getString("name");
-		String type = context.pathParam("type");
-		String favoriteID = context.pathParam("id");
-		if(!pattern.matcher(type).matches()) {
-			throw new InvalidTypeError(type);
-		}
+		Single<String> typeSingle = ParameterUtil.getFromPath(context, "type", pattern);
+		Single<String> favoriteIDSingle = ParameterUtil.getFromPath(context, "id", idPattern);
 
-		return favoriteService.postFavorite(projectName, type, favoriteID).doOnEvent((response, t) -> {
-			if (t == null) {
-				context.response().setStatusCode(HttpResponseStatus.CREATED.code()).end();
-			}
-		}).ignoreElement();
+		return Single
+				.zip(typeSingle, favoriteIDSingle,
+						(type, favoriteID) -> favoriteService.postFavorite(projectName, type, favoriteID))
+				.flatMap(x -> x).doOnEvent((response, t) -> {
+					if (t == null) {
+						context.response().setStatusCode(HttpResponseStatus.CREATED.code()).end();
+					}
+				}).ignoreElement();
 	}
 
 }

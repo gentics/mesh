@@ -6,16 +6,17 @@ import java.util.Set;
 
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.plugin.PluginContext;
+import com.gentics.mesh.plugin.common.util.ParameterUtil;
 import com.gentics.mesh.plugin.forms.model.Form;
-import com.gentics.mesh.plugin.forms.util.ParameterUtil;
 
+import io.reactivex.Single;
 import io.vertx.core.MultiMap;
 import io.vertx.ext.web.FileUpload;
 
 /**
- * This context holds everything that the form data update/create handlers need.
+ * This context holds everything that the form data create handlers need.
  */
-public class FormDataSaveContext {
+public class FormDataCreateContext {
 	private static final String CTX_KEY_FORM = "FDS_Form";
 	private static final String CTX_KEY_FORMNODE = "FDS_FormNode";
 	private static final String CTX_KEY_FORMDATANODE = "FDS_FormDataNode";
@@ -23,10 +24,28 @@ public class FormDataSaveContext {
 	private final PluginContext context;
 	private final Set<FileUpload> fileUploads;
 	private final boolean handleCookies;
+	private final String formUuid;
+	private final String[] languages;
 
-	public FormDataSaveContext(PluginContext pluginContext, boolean handleCookies) {
+	/**
+	 * Get a Single that emits the instance or an error if validation on any of the parameters fails
+	 * @param pluginContext plugin context
+	 * @param handleCookies true to handle cookies
+	 * @return single
+	 */
+	public static Single<FormDataCreateContext> getCreate(PluginContext pluginContext, boolean handleCookies) {
+		Single<String> formUuidSingle = ParameterUtil.getUuidFromPath(pluginContext, "formUuid");
+		Single<String[]> languagesSingle = ParameterUtil.getLanguages(pluginContext);
+
+		return Single.zip(formUuidSingle, languagesSingle,
+				(formUuid, languages) -> new FormDataCreateContext(pluginContext, handleCookies, formUuid, languages));
+	}
+
+	protected FormDataCreateContext(PluginContext pluginContext, boolean handleCookies, String formUuid, String[] languages) {
 		this.context = pluginContext;
 		this.handleCookies = handleCookies;
+		this.formUuid = formUuid;
+		this.languages = languages;
 		fileUploads = new HashSet<>(context.fileUploads());
 		// remove empty uploads
 		fileUploads.removeIf(up -> up.size() == 0);
@@ -37,7 +56,7 @@ public class FormDataSaveContext {
 	}
 
 	public String getFormUuid() {
-		return context.pathParam("formUuid");
+		return formUuid;
 	}
 
 	public MultiMap getPostedData() {
@@ -60,7 +79,7 @@ public class FormDataSaveContext {
 		return context.get(CTX_KEY_FORM);
 	}
 
-	public FormDataSaveContext setForm(Form form) {
+	public FormDataCreateContext setForm(Form form) {
 		context.put(CTX_KEY_FORM, form);
 		return this;
 	}
@@ -69,7 +88,7 @@ public class FormDataSaveContext {
 		return context.get(CTX_KEY_FORMDATANODE);
 	}
 
-	public FormDataSaveContext setFormDataNode(NodeResponse formDataNode) {
+	public FormDataCreateContext setFormDataNode(NodeResponse formDataNode) {
 		context.put(CTX_KEY_FORMDATANODE, formDataNode);
 		return this;
 	}
@@ -78,7 +97,7 @@ public class FormDataSaveContext {
 		return context.get(CTX_KEY_FORMNODE);
 	}
 
-	public FormDataSaveContext setFormNode(NodeResponse formNode) {
+	public FormDataCreateContext setFormNode(NodeResponse formNode) {
 		context.put(CTX_KEY_FORMNODE, formNode);
 		return this;
 	}
@@ -93,11 +112,7 @@ public class FormDataSaveContext {
 		return handleCookies;
 	}
 
-	public String getFormDataUuid() {
-		return context.pathParam("formDataUuid");
-	}
-
 	public String[] getLanguages() {
-		return ParameterUtil.getLanguages(context);
+		return languages;
 	}
 }
