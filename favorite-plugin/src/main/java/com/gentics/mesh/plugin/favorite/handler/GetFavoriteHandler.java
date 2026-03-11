@@ -1,19 +1,17 @@
 package com.gentics.mesh.plugin.favorite.handler;
 
+import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.http.HttpConstants;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.plugin.PluginContext;
+import com.gentics.mesh.plugin.common.util.ParameterUtil;
 import com.gentics.mesh.plugin.favorite.FavoriteService;
-import com.gentics.mesh.plugin.favorite.error.InvalidTypeError;
 
 import io.reactivex.Completable;
-
-import java.util.regex.Matcher;
-
-import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
+import io.reactivex.Single;
 
 @Singleton
 public class GetFavoriteHandler extends AbstractFavoriteHandler {
@@ -27,12 +25,10 @@ public class GetFavoriteHandler extends AbstractFavoriteHandler {
 	@Override
 	public Completable handle(PluginContext context) {
 		String projectName = context.project().getString("name");
-		String type = context.pathParam("type");
-		if(!pattern.matcher(type).matches()) {
-			throw new InvalidTypeError(type);
-		}
 
-		return favoriteService.getFavorite(projectName, type).doOnSuccess(response -> {
+		Single<String> typeSingle = ParameterUtil.getFromPath(context, "type", pattern);
+
+		return typeSingle.flatMap(type -> favoriteService.getFavorite(projectName, type)).doOnSuccess(response -> {
 			context.response().putHeader("Content-Type", APPLICATION_JSON);
 			context.response().end(JsonUtil.toJson(response));
 		}).ignoreElement();

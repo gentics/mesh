@@ -11,6 +11,8 @@ import io.netty.handler.codec.http.HttpResponseStatus;
  */
 public class MeshPluginException extends Exception implements RestModel {
 
+	private static final long serialVersionUID = -8867074854068854584L;
+
 	@JsonProperty
 	@JsonPropertyDescription("The HTTP status code to send when this exception occurs")
 	private int statusCode;

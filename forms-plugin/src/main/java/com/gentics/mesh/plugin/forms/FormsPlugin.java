@@ -6,6 +6,7 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 
+import com.gentics.mesh.plugin.common.MeshPluginException;
 import com.gentics.mesh.plugin.common.license.LicenseService;
 import com.gentics.mesh.plugin.common.license.LicensedPlugin;
 import com.gentics.mesh.plugin.common.util.MiscUtil;
@@ -167,8 +168,7 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 
 				if (mrcmException != null) {
 					context.response().setStatusCode(mrcmException.getStatusCode()).setStatusMessage(mrcmException.getMessage()).end();
-				} else if (t instanceof FormsError) {
-					FormsError meshException = (FormsError) t;
+				} else if (t instanceof MeshPluginException meshException) {
 					context.response()
 						.setStatusCode(meshException.getStatusCode())
 						.setStatusMessage(MiscUtil.getFirstLine(meshException.getMessage()))

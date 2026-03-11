@@ -4,7 +4,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.plugin.PluginContext;
-import com.gentics.mesh.plugin.forms.context.FormDataSaveContext;
+import com.gentics.mesh.plugin.forms.context.FormDataCreateContext;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
 
 import io.reactivex.Completable;
@@ -20,7 +20,7 @@ public class PostDataHandler extends AbstractFormsHandler {
 
 	@Override
 	public Completable handle(PluginContext context) {
-		return formDataService.create(new FormDataSaveContext(context, true))
+		return FormDataCreateContext.getCreate(context, true).flatMap(saveContext -> formDataService.create(saveContext))
 			.doOnSuccess(response -> {
 				String redirectUrl = response.getRedirectUrl();
 				if (redirectUrl != null && !"".equals(redirectUrl)) {

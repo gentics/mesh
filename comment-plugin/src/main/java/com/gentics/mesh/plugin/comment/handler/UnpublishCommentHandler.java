@@ -5,8 +5,10 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.comment.service.CommentService;
+import com.gentics.mesh.plugin.common.util.ParameterUtil;
 
 import io.reactivex.Completable;
+import io.reactivex.Single;
 
 @Singleton
 public class UnpublishCommentHandler extends AbstractCommentHandler {
@@ -20,8 +22,8 @@ public class UnpublishCommentHandler extends AbstractCommentHandler {
 	
 	@Override
 	public Completable handle(PluginContext context) {
-		String uuid = context.pathParam("uuid");
-		return commentService.unpublishComment(uuid);
+		Single<String> uuidSingle = ParameterUtil.getUuidFromPath(context, "uuid");
+		return uuidSingle.flatMapCompletable(uuid -> commentService.unpublishComment(uuid));
 	}
 
 }
