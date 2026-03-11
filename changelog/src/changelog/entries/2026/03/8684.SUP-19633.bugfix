@@ -1,0 +1,2 @@
+Core: Additional indices have been added to improve query performance. The indices will be created during startup
+of Mesh, which might increase the first startup time after updating to this version.

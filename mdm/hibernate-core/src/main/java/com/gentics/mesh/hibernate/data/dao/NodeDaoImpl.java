@@ -92,6 +92,7 @@ import com.gentics.mesh.database.CurrentTransaction;
 import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.database.HibernateTxImpl;
 import com.gentics.mesh.database.connector.DatabaseConnector;
+import com.gentics.mesh.graphql.type.NodeTypeProvider;
 import com.gentics.mesh.hibernate.ContentInterceptor;
 import com.gentics.mesh.hibernate.data.domain.HibBranchImpl;
 import com.gentics.mesh.hibernate.data.domain.HibBranchNodeParent;
@@ -120,6 +121,8 @@ import com.gentics.mesh.query.ReferencedNodesFilterJoin;
 import com.gentics.mesh.unhibernate.Select;
 import com.gentics.mesh.util.CollectionUtil;
 import com.gentics.mesh.util.UUIDUtil;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Streams;
 
 import dagger.Lazy;
 import io.vertx.core.Vertx;
@@ -681,18 +684,39 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 	@Override
 	public Stream<NodeContent> findAllContent(HibProject project, InternalActionContext ac, List<String> languageTags, ContainerType type, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter) {
 		if (maybeFilter.isPresent()) {
-			ContentDao contentDao = Tx.get().contentDao();
 			UUID branchUuid = (UUID) Tx.get().getBranch(ac).getId();
-			return findAllStream(project, ac, type == ContainerType.PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM, paging, 
-						Optional.ofNullable(type), maybeFilter, Optional.empty(), Optional.empty(), Optional.empty(), Optional.ofNullable(languageTags), Optional.of(branchUuid), false, true)
-					.map(nodeContentParent -> new NodeContent(nodeContentParent.getNode(), 
-						nodeContentParent.getContent() != null 
-							? nodeContentParent.getContent() 
-							: contentDao.findVersion(nodeContentParent.getNode(), languageTags, UUIDUtil.toShortUuid(branchUuid), type.getHumanCode()), languageTags, type))
-					.filter(content -> content.getContainer() != null);
+			Stream<NodeData> nodeDataStream = findAllStream(project, ac, type == ContainerType.PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM, paging, 
+					Optional.ofNullable(type), maybeFilter, Optional.empty(), Optional.empty(), Optional.empty(), Optional.ofNullable(languageTags), Optional.of(branchUuid), false, true);
+
+			return attachContents(nodeDataStream, UUIDUtil.toShortUuid(branchUuid), languageTags, type);
 		} else {
 			return PersistingNodeDao.super.findAllContent(project, ac, languageTags, type, paging, maybeFilter);
 		}
+	}
+
+	/**
+	 * Convert the given stream of {@link NodeData} instance into a stream of {@link  NodeContent} instances by attaching the contents in batches
+	 * @param nodeDataStream input stream
+	 * @param branchUuid branch UUID
+	 * @param languageTags language tags
+	 * @param type content type
+	 * @return stream of NodeContents
+	 */
+	private Stream<NodeContent> attachContents(Stream<NodeData> nodeDataStream, String branchUuid, List<String> languageTags, ContainerType type) {
+		ContentDao contentDao = Tx.get().contentDao();
+		return Streams.stream(Iterators.partition(nodeDataStream.iterator(), 1000)).flatMap(list -> {
+			Set<HibNode> nodes = list.stream().map(NodeData::getNode).collect(Collectors.toSet());
+
+			Map<HibNode,List<HibNodeFieldContainer>> fieldsContainers = contentDao.getFieldsContainers(nodes, branchUuid, type);
+
+			return list.stream().map(nodeData -> {
+				HibNode node = nodeData.getNode();
+				List<HibNodeFieldContainer> containersForNode = fieldsContainers.getOrDefault(node, Collections.emptyList());
+				HibNodeFieldContainer container = NodeTypeProvider.getContainerWithFallback(languageTags, containersForNode);
+
+				return new NodeContent(node, container, languageTags, type);
+			});
+		}).filter(content -> content.getContainer() != null);
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -1190,9 +1214,9 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 			FilterOperation<?> schemaVersionFilter = Comparison.eq(new FieldOperand<>(ElementType.NODE, "schemaContainer_dbUuid", Optional.empty(), Optional.of("schemaUuid")), new LiteralOperand<>(schemaVersion.getSchemaContainer().getId(), false), StringUtils.EMPTY);
 			FilterOperation allFilter = maybeFilter.map(filter -> (FilterOperation) Combiner.and(Arrays.asList(schemaVersionFilter, filter), StringUtils.EMPTY)).orElse(schemaVersionFilter);
 
-			return findAllStream(tx.getProject(ac), ac, type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM, paging, 
-						Optional.of(type), Optional.of(allFilter), Optional.empty(), Optional.empty(), Optional.ofNullable(schemaVersion), Optional.of(languageTags), Optional.of(branchId), false, true)
-					.map(nc -> new NodeContent(nc.getNode(), nc.getContent(), languageTags, type));
+			Stream<NodeData> nodeDataStream = findAllStream(tx.getProject(ac), ac, type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM, paging, 
+					Optional.of(type), Optional.of(allFilter), Optional.empty(), Optional.empty(), Optional.ofNullable(schemaVersion), Optional.of(languageTags), Optional.of(branchId), false, true);
+			return attachContents(nodeDataStream, UUIDUtil.toShortUuid(branchId), languageTags, type);
 		} else {
 			HibUser user = ac.getUser();
 			List<HibRole> roles = user.isAdmin() ? Collections.emptyList() : IteratorUtils.toList(Tx.get().userDao().getRoles(user).iterator());
