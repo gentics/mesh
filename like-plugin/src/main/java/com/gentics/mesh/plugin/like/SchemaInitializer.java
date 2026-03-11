@@ -1,6 +1,8 @@
 package com.gentics.mesh.plugin.like;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -103,7 +105,7 @@ public class SchemaInitializer {
 	 * @return single schema response
 	 */
 	private Single<SchemaResponse> assignToProjects(SchemaResponse schema) {
-		return Observable.fromIterable(configuration.getProjects()).flatMapSingle(name -> adminClient.assignSchemaToProject(name, schema.getUuid()).toSingle())
+		return Observable.fromIterable(Optional.ofNullable(configuration.getProjects()).orElse(Collections.emptyList())).flatMapSingle(name -> adminClient.assignSchemaToProject(name, schema.getUuid()).toSingle())
 				.lastOrError();
 	}
 
@@ -117,7 +119,7 @@ public class SchemaInitializer {
 	 * @return completable
 	 */
 	private Completable initProjects() {
-		return Observable.fromIterable(configuration.getProjects()).flatMapSingle(name -> adminClient.findProjectByName(name).toSingle())
+		return Observable.fromIterable(Optional.ofNullable(configuration.getProjects()).orElse(Collections.emptyList())).flatMapSingle(name -> adminClient.findProjectByName(name).toSingle())
 				.flatMapCompletable(projectResponse -> {
 					return initPluginRootNode(projectResponse).flatMapCompletable(rootNodeUuid -> {
 						schemaService.setRootNodeUuid(projectResponse.getName(), rootNodeUuid);

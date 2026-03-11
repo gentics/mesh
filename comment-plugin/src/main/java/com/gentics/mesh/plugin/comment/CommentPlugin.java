@@ -154,7 +154,7 @@ public class CommentPlugin extends AbstractPlugin implements CommercialRestPlugi
 			.withDescription("Get JS Template")
 			.withPath("/templates/js")
 			.produces("application/javascript")
-			.withExampleResponse(HttpResponseStatus.OK, "function example() {}", "Compiled JS template")
+			.withExampleResponse(HttpResponseStatus.OK, "Compiled JS template")
 			// TODO caching headers or static handler
 			.withMethod(GET)
 			.withHandler(fromComponent(CommentPluginComponent::templateEngineHandler))

@@ -61,7 +61,7 @@ public interface CommercialRestPlugin extends RestPlugin {
 								List<String> servers = Collections.singletonList((httpServerConfig.isSsl() ? "https://" : "http://") + httpServerConfig.getHost() + ":" + (httpServerConfig.isSsl() ? httpServerConfig.getSslPort() : httpServerConfig.getPort()));
 
 								// Make an instance with blacklist path patterns
-								MeshOpenAPIv3Generator openApiV3Generator = new MeshOpenAPIv3Generator(MeshVersion.getPlainVersion(), servers, Optional.empty(), Optional.empty());
+								MeshOpenAPIv3Generator openApiV3Generator = new MeshOpenAPIv3Generator(MeshVersion.getPlainVersion(), servers, true, Optional.empty(), Optional.empty());
 
 								rc.response().send(openApiV3Generator.generate(
 										name() + " OpenAPI v" + defaultVersion.pretty() + " specification",
