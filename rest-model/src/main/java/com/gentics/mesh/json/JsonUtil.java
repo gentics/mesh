@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.module.SimpleAbstractTypeResolver;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
 import com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator;
 import com.gentics.mesh.core.rest.error.AbstractRestException;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -243,16 +244,41 @@ public final class JsonUtil {
 	}
 
 	/**
-	 * Generate the JSON schema for the given model class.
+	 * Generate the JSON string for the given model schema.
+	 * 
+	 * @param clazz
+	 *            Model class
+	 * @return
+	 */
+	public static String getJsonSchema(JsonSchema schema) {
+		try {
+			return defaultMapper.writerWithDefaultPrettyPrinter().writeValueAsString(schema);
+		} catch (Exception e) {
+			throw new GenericRestException(INTERNAL_SERVER_ERROR, "error_internal", e);
+		}
+	}
+
+	/**
+	 * Generate the JSON schema model for the given model class.
 	 * 
 	 * @param clazz
 	 *            Model class
 	 * @return
 	 */
 	public static String getJsonSchema(Class<?> clazz) {
+		return getJsonSchema(getJsonSchemaObject(clazz));
+	}
+
+	/**
+	 * Generate the JSON schema for the given model class.
+	 * 
+	 * @param clazz
+	 *            Model class
+	 * @return
+	 */
+	public static JsonSchema getJsonSchemaObject(Class<?> clazz) {
 		try {
-			com.fasterxml.jackson.module.jsonSchema.JsonSchema schema = schemaGen.generateSchema(clazz);
-			return defaultMapper.writerWithDefaultPrettyPrinter().writeValueAsString(schema);
+			return schemaGen.generateSchema(clazz);
 		} catch (Exception e) {
 			throw new GenericRestException(INTERNAL_SERVER_ERROR, "error_internal", e);
 		}

@@ -79,14 +79,4 @@ public class MeshOpenAPIv3Generator extends OpenAPIv3Generator {
 				// fill the component model
 				Optional.empty());
 	}
-
-	@Override
-	protected String getComponentName(Class<?> cls) {
-		String componentName = super.getComponentName(cls);
-
-		if (componentName.endsWith("Impl")) {
-			componentName = componentName.substring(0, componentName.length()-4);
-		}
-		return componentName;
-	}
 }

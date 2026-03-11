@@ -44,17 +44,14 @@ public class OpenAPIMockAPIGenerator extends AbstractEndpointGenerator<OpenAPIv3
 	}
 
 	public OpenAPIMockAPIGenerator(File outputFolder, String fileName, boolean cleanup) throws IOException {
-		super(new File(outputFolder, "api"), false);
+		super(new File(outputFolder, "api"), cleanup);
 		this.fileName = fileName;
 		this.generator = new MeshOpenAPIv3Generator(MeshVersion.getPlainVersion(), Collections.emptyList(),
 				Optional.empty(), Optional.empty());
 	}
 
 	public OpenAPIMockAPIGenerator(File outputFolder, String fileName) throws IOException {
-		super(new File(outputFolder, "api"), false);
-		this.fileName = fileName;
-		this.generator = new MeshOpenAPIv3Generator(MeshVersion.getPlainVersion(), Collections.emptyList(),
-				Optional.empty(), Optional.empty());
+		this(outputFolder, fileName, false);
 	}
 
 	public String generate(String format) throws IOException, OpenAPIGenerationException {
