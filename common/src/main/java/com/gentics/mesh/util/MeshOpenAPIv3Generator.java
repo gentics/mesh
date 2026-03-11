@@ -23,19 +23,23 @@ import io.vertx.ext.web.Router;
  */
 public class MeshOpenAPIv3Generator extends OpenAPIv3Generator {
 
-	protected static ExtendedSecurityScheme securityBearerAuth;
-
-	static {
-		securityBearerAuth = new ExtendedSecurityScheme(false);
-		securityBearerAuth.getScheme().setScheme("bearer");
-		securityBearerAuth.getScheme().setType(SecurityScheme.Type.HTTP);
-		securityBearerAuth.getScheme().setBearerFormat("JWT");
-	}
+	protected final ExtendedSecurityScheme securityBearerAuth;
 
 	public MeshOpenAPIv3Generator(String version, List<String> servers,
 			Optional<? extends Collection<Pattern>> maybePathBlacklist,
 			Optional<? extends Collection<Pattern>> maybePathWhitelist) {	
-		super(version, servers, Collections.singletonMap("bearerAuth", securityBearerAuth), maybePathBlacklist, maybePathWhitelist);
+		this(version, servers, false, maybePathBlacklist, maybePathWhitelist);
+	}
+
+	public MeshOpenAPIv3Generator(String version, List<String> servers,
+			boolean secureByDefault,
+			Optional<? extends Collection<Pattern>> maybePathBlacklist,
+			Optional<? extends Collection<Pattern>> maybePathWhitelist) {	
+		super(version, servers, Collections.singletonMap("bearerAuth", new ExtendedSecurityScheme(secureByDefault)), maybePathBlacklist, maybePathWhitelist);
+		securityBearerAuth = security.get("bearerAuth");
+		securityBearerAuth.getScheme().setScheme("bearer");
+		securityBearerAuth.getScheme().setType(SecurityScheme.Type.HTTP);
+		securityBearerAuth.getScheme().setBearerFormat("JWT");
 	}
 
 	/**
