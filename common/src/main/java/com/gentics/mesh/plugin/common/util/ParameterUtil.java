@@ -48,6 +48,12 @@ public final class ParameterUtil {
 		return Single.just(languages);
 	}
 
+	/**
+	 * Get the first language contained in the request as query parameter "lang" or the default value
+	 * @param context plugin context
+	 * @param def default value
+	 * @return language
+	 */
 	public static Single<String> getFirstLanguage(PluginContext context, String def) {
 		return getLanguages(context).map(languages -> {
 			if (languages.length > 0) {
