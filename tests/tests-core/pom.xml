@@ -127,6 +127,29 @@
 		</resources>
 		<plugins>
 			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.5.0</version>
+				<executions>
+					<execution>
+						<id>Generate OpenAPI</id>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<phase>generate-resources</phase>
+						<configuration>
+							<executable>${env.JAVA_HOME}/bin/java</executable>
+							<arguments>
+								<argument>-classpath</argument>
+								<classpath />
+								<argument>com.gentics.mesh.generator.runner.OpenAPISpecGeneratorRunner</argument>
+								<argument>${basedir}/../../doc/src/main/docs/generated</argument>
+							</arguments>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<artifactId>maven-invoker-plugin</artifactId>
 				<version>3.1.0</version>
 				<executions>
@@ -177,7 +200,6 @@
 							<generateApiTests>false</generateApiTests>
 							<generateSupportingFiles>true</generateSupportingFiles>
 							<generateModelTests>false</generateModelTests>
-							<schemaMappings>JsonObject=com.google.gson.JsonObject</schemaMappings>
 							<configOptions>
 								<useEnumCaseInsensitive>true</useEnumCaseInsensitive>
 								<useJakartaEe>true</useJakartaEe>
