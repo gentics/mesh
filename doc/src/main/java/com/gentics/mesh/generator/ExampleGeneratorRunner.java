@@ -6,6 +6,8 @@ import static com.gentics.mesh.MeshEnv.MESH_CONF_FILENAME;
 import java.io.File;
 import java.io.IOException;
 
+import com.gentics.mesh.generator.runner.OpenAPISpecGeneratorRunner;
+
 /**
  * Runner for various example generators.
  */
@@ -50,8 +52,7 @@ public class ExampleGeneratorRunner {
 		ramlGenerator.run();
 
 		// Generate OpenAPI base spec
-		OpenAPIMockAPIGenerator openApiGenerator = new OpenAPIMockAPIGenerator(OUTPUT_ROOT_FOLDER, "openapi.yaml", false);
-		openApiGenerator.run();
+		OpenAPISpecGeneratorRunner.main(new String[] { OUTPUT_ROOT_FOLDER.getPath() });
 
 		// Generate elasticsearch flattened models
 		SearchModelGenerator searchModelGen = new SearchModelGenerator(OUTPUT_ROOT_FOLDER);
