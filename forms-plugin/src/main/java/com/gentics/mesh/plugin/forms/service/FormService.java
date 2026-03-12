@@ -570,7 +570,7 @@ public class FormService {
 			.setQuery(query)
 			.setVariables(new JsonObject().put("formUuid", formUuid).put("lang", Arrays.asList(lang)));
 
-		return loadAsAdmin(projectName, formUuid, true).flatMap(form -> {
+		return loadAsAdminWithLanguageFallback(projectName, formUuid, false, lang).flatMap(form -> {
 			return adminClient.graphql(projectName, request).toSingle()
 					.map(rs -> Optional.ofNullable(rs.getData())
 							.map(data -> data.getJsonObject("node"))
@@ -585,15 +585,15 @@ public class FormService {
 						if (folderUuid.isPresent()) {
 							return Single.just(folderUuid.get());
 						}
-						
+
 						NodeCreateRequest createRequest = new NodeCreateRequest()
 								.setParentNodeUuid(formUuid)
 								.setLanguage("en")
 								.setSchemaName(SchemaInitializer.FOLDER_SCHEMA_NAME)
 								.setPublish(publishFormFolder(folderName));
-						
+
 						createRequest.getFields().put("name", new StringFieldImpl().setString(folderName));
-						
+
 						return adminClient.createNode(projectName, createRequest).toSingle()
 								.map(NodeResponse::getUuid);
 					});

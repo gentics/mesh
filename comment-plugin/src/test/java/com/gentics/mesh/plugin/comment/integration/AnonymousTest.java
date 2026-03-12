@@ -7,6 +7,8 @@ import com.gentics.mesh.plugin.comment.model.Comment;
 import com.gentics.mesh.plugin.comment.model.CommentStatus;
 import com.gentics.mesh.plugin.comment.model.NestedCommentSection;
 import com.gentics.mesh.plugin.comment.model.request.UpdateCommentRequest;
+import com.gentics.mesh.util.UUIDUtil;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -98,9 +100,9 @@ public class AnonymousTest extends AbstractLocalIntegrationTest {
 
 	@Test
 	public void fetchCommentsOfBogusNodeMultiple() {
-		assertStatusCode(404, client.getCommentsOfNode("abcdef", "en"));
-		assertStatusCode(404, client.getCommentsOfNode("abcdef", "en"));
-		assertStatusCode(404, client.getCommentsOfNode("abcfdef", "en"));
+		assertStatusCode(404, client.getCommentsOfNode(UUIDUtil.randomUUID(), "en"));
+		assertStatusCode(404, client.getCommentsOfNode(UUIDUtil.randomUUID(), "en"));
+		assertStatusCode(404, client.getCommentsOfNode(UUIDUtil.randomUUID(), "en"));
 	}
 
 	@Test

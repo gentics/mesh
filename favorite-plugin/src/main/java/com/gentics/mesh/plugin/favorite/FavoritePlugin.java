@@ -4,6 +4,7 @@ import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.plugin.AbstractPlugin;
 import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.RestPlugin;
+import com.gentics.mesh.plugin.common.MeshPluginException;
 import com.gentics.mesh.plugin.common.license.LicenseService;
 import com.gentics.mesh.plugin.common.license.LicensedPlugin;
 import com.gentics.mesh.plugin.common.service.MeshPluginService;
@@ -132,6 +133,8 @@ public class FavoritePlugin extends AbstractPlugin implements RestPlugin {
 			FavoritePluginError FavoritePluginError = (FavoritePluginError) t;
 			context.response().setStatusCode(FavoritePluginError.getHttpStatusCode()).setStatusMessage(FavoritePluginError.getMessage())
 					.end();
+		} else if (t instanceof MeshPluginException meshPluginException) {
+			context.response().setStatusCode(meshPluginException.getStatusCode()).setStatusMessage(meshPluginException.getMessage()).end();
 		} else {
 			context.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()).setStatusMessage("Internal Server Error").end();
 		}

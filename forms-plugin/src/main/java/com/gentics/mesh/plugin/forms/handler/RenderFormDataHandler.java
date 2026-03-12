@@ -3,6 +3,8 @@ package com.gentics.mesh.plugin.forms.handler;
 import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
 import static io.vertx.ext.web.handler.TemplateHandler.DEFAULT_CONTENT_TYPE;
 
+import java.util.regex.Pattern;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -17,6 +19,8 @@ import io.reactivex.Single;
 public class RenderFormDataHandler extends AbstractFormsHandler {
 	private final FormDataService formDataService;
 
+	private final Pattern FORMDATA_INFO_PATTERN = Pattern.compile("(\\w{8})(\\w{4})(\\w{4})(\\w{4})(\\w{12})(\\-.*)?");
+
 	@Inject
 	public RenderFormDataHandler(FormDataService formDataService) {
 		this.formDataService = formDataService;
@@ -24,9 +28,11 @@ public class RenderFormDataHandler extends AbstractFormsHandler {
 
 	@Override
 	public Completable handle(PluginContext context) {
+		
+
 		String projectName = context.project().getString("name");
 		Single<String> formUuidSingle = ParameterUtil.getUuidFromPath(context, "formUuid");
-		Single<String> formDataUuidSingle = ParameterUtil.getUuidFromPath(context, "formDataUuid");
+		Single<String> formDataUuidSingle = ParameterUtil.getFromPath(context, "formDataUuid", FORMDATA_INFO_PATTERN);
 		Single<String[]> languagesSingle = ParameterUtil.getLanguages(context);
 
 		return Single.zip(formUuidSingle, formDataUuidSingle, languagesSingle, (formUuid, formDataUuid, languages) -> formDataService.render(projectName,
