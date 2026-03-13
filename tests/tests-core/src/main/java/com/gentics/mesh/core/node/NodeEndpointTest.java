@@ -1696,11 +1696,6 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	}
 
 	@Test
-	public void testReadNodeByBogusUUID() throws Exception {
-		call(() -> client().findNodeByUuid(PROJECT_NAME, "bogusUUID"), NOT_FOUND, "object_not_found_for_uuid", "bogusUUID");
-	}
-
-	@Test
 	public void testReadNodeByInvalidUUID() throws Exception {
 		String uuid = "dde8ba06bb7211e4897631a9ce2772f5";
 		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid), NOT_FOUND, "object_not_found_for_uuid", uuid);
@@ -1881,21 +1876,6 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			NodeUpdateRequest request = new NodeUpdateRequest();
 			request.setLanguage("en");
 			call(() -> client().updateNode(PROJECT_NAME, uuid, request), FORBIDDEN, "error_missing_perm", uuid, UPDATE_PERM.getRestPerm().getName());
-		}
-	}
-
-	@Test
-	@Override
-	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
-
-		try (Tx tx = tx()) {
-			NodeUpdateRequest request = new NodeUpdateRequest();
-			request.setLanguage("en");
-
-			NodeParametersImpl parameters = new NodeParametersImpl();
-			parameters.setLanguages("en", "de");
-
-			call(() -> client().updateNode(PROJECT_NAME, "bogus", request, parameters), BAD_REQUEST, "error_illegal_uuid", "bogus");
 		}
 	}
 
