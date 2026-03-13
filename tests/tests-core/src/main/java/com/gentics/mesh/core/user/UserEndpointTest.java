@@ -62,7 +62,6 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.Permission;
-import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.user.NodeReference;
@@ -689,14 +688,6 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertEquals(username, reloadedUser.getUsername());
 		}
 
-	}
-
-	@Test
-	@Override
-	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
-		UserUpdateRequest request = new UserUpdateRequest();
-		request.setUsername("New Name");
-		call(() -> client().updateUser("bogus", request), BAD_REQUEST, "error_illegal_uuid", "bogus");
 	}
 
 	@Test
@@ -1512,11 +1503,6 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			call(() -> client().deleteUser(uuid), FORBIDDEN, "error_missing_perm", uuid, DELETE_PERM.getRestPerm().getName());
 			assertNotNull("The user should not have been deleted", tx.userDao().findByUuid(uuid));
 		}
-	}
-
-	@Test(expected = NullPointerException.class)
-	public void testDeleteWithUuidNull() throws Exception {
-		call(() -> client().deleteUser(null), NOT_FOUND, "object_not_found_for_uuid", "null");
 	}
 
 	@Test

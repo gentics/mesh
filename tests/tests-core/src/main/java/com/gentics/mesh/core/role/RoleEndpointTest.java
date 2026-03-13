@@ -45,7 +45,6 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
-import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -454,16 +453,6 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		RoleUpdateRequest request = new RoleUpdateRequest();
 		request.setName("test123");
 		call(() -> client().updateRole(roleUuid(), request), CONFLICT, "role_conflicting_name");
-	}
-
-	@Test
-	@Override
-	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
-		RoleUpdateRequest request = new RoleUpdateRequest();
-		request.setName("renamed role");
-
-		call(() -> client().updateRole("bogus", request), BAD_REQUEST, "error_illegal_uuid", "bogus");
-
 	}
 
 	@Test

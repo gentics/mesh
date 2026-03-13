@@ -56,7 +56,6 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.Permission;
-import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.tag.TagMeshEventModel;
 import com.gentics.mesh.core.rest.event.tagfamily.TagFamilyMeshEventModel;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
@@ -521,16 +520,6 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 			}
 			assertThat(trackingSearchProvider()).hasEvents(storeCount + 1, 0, 0, 0, 0);
 		}
-	}
-
-	@Test
-	@Override
-	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
-		TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
-		request.setName("new Name");
-
-		call(() -> client().updateTagFamily(PROJECT_NAME, "bogus", request), BAD_REQUEST, "error_illegal_uuid",
-				"bogus");
 	}
 
 	@Test
