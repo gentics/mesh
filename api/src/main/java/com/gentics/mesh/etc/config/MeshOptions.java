@@ -37,6 +37,7 @@ public abstract class MeshOptions implements Option {
 	public static final String MESH_CLUSTER_INIT_ENV = "MESH_CLUSTER_INIT";
 	public static final String MESH_LOCK_PATH_ENV = "MESH_LOCK_PATH";
 	public static final String MESH_LIVE_PATH_ENV = "MESH_LIVE_PATH";
+	public static final String MESH_SERVE_OPENAPI_ENV = "MESH_SERVE_OPENAPI";
 	public static final String MESH_START_IN_READ_ONLY_ENV = "MESH_START_IN_READ_ONLY";
 	public static final String MESH_INITIAL_ADMIN_PASSWORD_ENV = "MESH_INITIAL_ADMIN_PASSWORD";
 	public static final String MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET_ENV = "MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET";
@@ -151,6 +152,10 @@ public abstract class MeshOptions implements Option {
 	@JsonPropertyDescription("Interval in ms for the automatic migration job trigger. Setting this to a non-positive value will disable automatic job triggering. Default: " + DEFAULT_MIGRATION_TRIGGER_INTERVAL + " ms.")
 	@EnvironmentVariable(name = MESH_MIGRATION_TRIGGER_INTERVAL, description = "Override the migration trigger interval")
 	private long migrationTriggerInterval = DEFAULT_MIGRATION_TRIGGER_INTERVAL;
+
+	@JsonProperty(required = false)
+	@EnvironmentVariable(name = MESH_SERVE_OPENAPI_ENV, description = "Serve OpenAPI specification under `/openapi*` endpoints. Default: true")
+	private boolean serveOpenApi = true;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("GraphQL options.")
@@ -271,7 +276,6 @@ public abstract class MeshOptions implements Option {
 		this.monitoringOptions = monitoringOptions;
 		return this;
 	}
-
 
 	/**
 	 * Get the graphql options
@@ -544,6 +548,15 @@ public abstract class MeshOptions implements Option {
 		return this;
 	}
 
+	public boolean isServeOpenApi() {
+		return serveOpenApi;
+	}
+
+	@Setter
+	public void setServeOpenApi(boolean serveOpenApi) {
+		this.serveOpenApi = serveOpenApi;
+	}
+
 	@JsonIgnore
 	public abstract NativeQueryFiltering getNativeQueryFiltering();
 
@@ -608,4 +621,24 @@ public abstract class MeshOptions implements Option {
 	}
 
 	public abstract boolean hasDatabaseLevelCache();
+
+	/**
+	 * Get default OpenAPI spec version
+	 * 
+	 * @return
+	 */
+	public abstract Version getDefaultOpenAPIVersion();
+
+	/**
+	 * Get default OpenAPI spec format
+	 * 
+	 * @return
+	 */
+	public abstract Format getDefaultOpenAPIFormat();
+
+	/**
+	 * Get the comma separated list of plugin, that should provide no API info. Can be null or empty.
+	 * @return
+	 */
+	public abstract String getNoApiInfoPlugins();
 }

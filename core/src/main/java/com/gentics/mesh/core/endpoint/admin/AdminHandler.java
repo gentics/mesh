@@ -227,6 +227,13 @@ public abstract class AdminHandler extends AbstractHandler {
 	}
 
 	/**
+	 * Handle a request of generating OpenAPI spec for all the routes. All the necessary parameters will be taken from an action context.
+	 * 
+	 * @param ac internal action context.
+	 */
+	public abstract void handleOpenAPIv3(InternalActionContext ac);
+
+	/**
 	 * Generate and return the RAML of the server.
 	 * 
 	 * @param ac

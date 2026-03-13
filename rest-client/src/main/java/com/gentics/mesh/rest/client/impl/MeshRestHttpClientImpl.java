@@ -420,13 +420,13 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<ProjectResponse> assignLanguageToProject(String projectUuid, String languageUuid) {
-		return assignLanguageToProjectByUuid(projectUuid, languageUuid);
+	public MeshRequest<ProjectResponse> assignLanguageToProject(String projectUuid, String languageUuid, ParameterProvider... parameters) {
+		return assignLanguageToProjectByUuid(projectUuid, languageUuid, parameters);
 	}
 
 	@Override
-	public MeshRequest<ProjectResponse> unassignLanguageFromProject(String projectUuid, String languageUuid) {
-		return unassignLanguageFromProjectByUuid(projectUuid, languageUuid);
+	public MeshRequest<ProjectResponse> unassignLanguageFromProject(String projectUuid, String languageUuid, ParameterProvider... parameters) {
+		return unassignLanguageFromProjectByUuid(projectUuid, languageUuid, parameters);
 	}
 
 	@Override
@@ -1418,6 +1418,13 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	public MeshRequest<String> getRAML() {
 		MeshRequest<String> request = prepareRequest(GET, "/raml", String.class);
 		request.setHeader("Accept", APPLICATION_YAML_UTF8);
+		return request;
+	}
+
+	@Override
+	public MeshRequest<String> getOpenAPI() {
+		MeshRequest<String> request = prepareRequest(GET, "/openapi.yaml" + getQuery(getConfig()), String.class);
+		request.setHeader("Accept", "*/*");
 		return request;
 	}
 

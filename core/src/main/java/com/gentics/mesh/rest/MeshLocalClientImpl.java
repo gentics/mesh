@@ -468,15 +468,13 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 
 	@Override
 	@Deprecated
-	public MeshRequest<ProjectResponse> assignLanguageToProject(String projectUuid, String languageUuid) {
-		return assignLanguageToProjectByUuid(projectUuid, languageUuid);
+	public MeshRequest<ProjectResponse> assignLanguageToProject(String projectUuid, String languageUuid, ParameterProvider... parameters) {
+		return assignLanguageToProjectByUuid(projectUuid, languageUuid, parameters);
 	}
 
 	@Override
-	public MeshRequest<ProjectResponse> unassignLanguageFromProject(String projectUuid, String languageUuid) {
-		LocalActionContextImpl<ProjectResponse> ac = createContext(ProjectResponse.class);
-		// TODO add implementation
-		return new MeshLocalRequestImpl<>(ac.getFuture());
+	public MeshRequest<ProjectResponse> unassignLanguageFromProject(String projectUuid, String languageUuid, ParameterProvider... parameters) {
+		return unassignLanguageFromProjectByUuid(projectUuid, languageUuid, parameters);
 	}
 
 	@Override
@@ -1617,6 +1615,12 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 
 	@Override
 	public MeshRequest<String> getRAML() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public MeshRequest<String> getOpenAPI() {
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -8,6 +8,7 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.gentics.mesh.core.rest.auth.LoginRequest;
+import com.gentics.mesh.core.rest.auth.TokenResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.search.EntityMetrics;
 import com.gentics.mesh.core.rest.search.SearchStatusResponse;
@@ -76,15 +77,10 @@ public class MiscExamples extends AbstractExamples {
 		return node;
 	}
 
-	public JSONObject getAuthTokenResponse() {
-		JSONObject node = new JSONObject();
-		try {
-			node.put("token",
-				"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyVXVpZCI6IlVVSURPRlVTRVIxIiwiZXhwIjoxNDY5MTE3MjQ3LCJpYXQiOjE0NjkxMTM2NDd9.i1u4RMs4K7zBkGhmcpp1P79Wpz2UQYJkZKJTVdFp_iU=");
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-		return node;
+	public TokenResponse getAuthTokenResponse() {
+		TokenResponse response = new TokenResponse();
+		response.setToken("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyVXVpZCI6IlVVSURPRlVTRVIxIiwiZXhwIjoxNDY5MTE3MjQ3LCJpYXQiOjE0NjkxMTM2NDd9.i1u4RMs4K7zBkGhmcpp1P79Wpz2UQYJkZKJTVdFp_iU=");
+		return response;
 	}
 
 	public JsonObject createSearchResponse() {

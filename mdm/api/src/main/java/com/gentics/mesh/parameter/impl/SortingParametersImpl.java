@@ -3,6 +3,7 @@ package com.gentics.mesh.parameter.impl;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -56,11 +57,11 @@ public class SortingParametersImpl extends AbstractParameters implements Sorting
 
 		// sort order
 		QueryParameter sortOrderParameter = new QueryParameter();
-		sortOrderParameter.setDescription("Field order (ASC/DESC/UNSORTED) to sort the result by.");
-		sortOrderParameter.setDefaultValue(SortingParameters.DEFAULT_SORT_ORDER.name());
+		sortOrderParameter.setDescription("Field order (ASC/DESC) to sort the result by.");
 		sortOrderParameter.setExample(SortOrder.ASCENDING.name());
 		sortOrderParameter.setRequired(false);
 		sortOrderParameter.setType(ParamType.STRING);
+		sortOrderParameter.setEnumeration(Arrays.asList(SortOrder.values()).stream().filter(e -> SortOrder.UNSORTED != e).map(e -> e.getValue().toLowerCase()).collect(Collectors.toList()));
 		parameters.put(SortingParameters.SORT_ORDER_PARAMETER_KEY, sortOrderParameter);
 
 		return parameters;

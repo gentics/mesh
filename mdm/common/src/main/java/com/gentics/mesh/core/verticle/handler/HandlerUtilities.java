@@ -266,7 +266,7 @@ public class HandlerUtilities {
 			T element = actions.loadByUuid(context(tx, ac, parent), uuid, perm, true);
 
 			// Handle etag
-			if (ac.getGenericParameters().getETag()) {
+			if (ac.getEtagParameters().getETag()) {
 				String etag = actions.getETag(tx, ac, element);
 				ac.setEtag(etag, true);
 				if (ac.matches(etag, true)) {
