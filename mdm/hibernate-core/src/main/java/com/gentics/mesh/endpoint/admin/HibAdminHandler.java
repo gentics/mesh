@@ -81,9 +81,9 @@ public class HibAdminHandler extends AdminHandler {
 	}
 
 	@Override
-	public void handleOpenAPIv3(InternalActionContext ac) {
-		boolean useVersion31 = options.getDefaultOpenAPIVersion() == Version.V31;
-		String format = options.getDefaultOpenAPIFormat().name().toLowerCase();
+	public void handleOpenAPIv3(InternalActionContext ac, com.gentics.mesh.etc.config.Format formatConf, Version version) {
+		boolean useVersion31 = version == Version.V31;
+		String format = formatConf.name().toLowerCase();
 
 		// Collect available servers
 		HttpServerConfig httpServerConfig = options.getHttpServerOptions();	

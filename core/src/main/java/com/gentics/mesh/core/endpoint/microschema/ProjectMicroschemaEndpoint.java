@@ -18,6 +18,8 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.parameter.impl.GenericParametersImpl;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 
@@ -56,6 +58,8 @@ public class ProjectMicroschemaEndpoint extends AbstractProjectEndpoint {
 		endpoint.path("/");
 		endpoint.method(GET);
 		endpoint.produces(APPLICATION_JSON);
+		endpoint.addQueryParameters(PagingParametersImpl.class);
+		endpoint.addQueryParameters(GenericParametersImpl.class);
 		endpoint.description("Read all microschemas which are assigned to the project.");
 		endpoint.exampleResponse(OK, microschemaExamples.getMicroschemaListResponse(), "List of assigned microschemas.");
 		endpoint.handler(rc -> {
