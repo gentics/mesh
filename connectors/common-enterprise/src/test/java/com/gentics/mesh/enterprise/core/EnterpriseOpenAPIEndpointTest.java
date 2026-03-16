@@ -23,6 +23,10 @@ import com.gentics.mesh.etc.config.Version;
 import com.gentics.mesh.test.MeshTestSetting;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.parser.OpenAPIV3Parser;
+import io.swagger.v3.parser.core.models.ParseOptions;
+import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import okhttp3.Request;
 import okhttp3.Response;
 
@@ -71,6 +75,32 @@ public class EnterpriseOpenAPIEndpointTest extends OpenAPIEndpointTest {
 			}
 		}
 		assertNoErrors(input);
+	}
+
+	@Override
+	protected OpenAPI assertNoErrors(String input) {
+		System.out.println(input);
+		OpenAPIV3Parser parser = new OpenAPIV3Parser();
+		ParseOptions options = new ParseOptions();
+		options.setResolve(true);
+		options.setResolveFully(true);
+
+		SwaggerParseResult result = noClient 
+				? parser.readLocation(input, null, options)
+				: parser.readContents(input, null, options);
+
+		if (apiDisabled) {
+			assertThat(result.getOpenAPI()).as("Parsed API").isNull();
+			assertThat(result.getMessages()).as("Error messages").isNotEmpty();
+		} else {
+			// https://github.com/swagger-api/swagger-parser/issues/2271
+			if (version == Version.V30) {
+				assertThat(result.getMessages()).as("Error messages").isNullOrEmpty();
+			}
+			assertThat(result.getOpenAPI()).as("Parsed API").isNotNull();
+			assertThat(result.getOpenAPI().getOpenapi()).as("Spec version").isEqualTo((version == Version.V31) ? "3.1.0" : "3.0.1");
+		}
+		return result.getOpenAPI();
 	}
 }
 
