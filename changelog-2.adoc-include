@@ -6,6 +6,9 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v3.2.5]]
+== 3.2.5 (17.03.2026)
+
 [[v3.2.4]]
 == 3.2.4 (25.02.2026)
 
@@ -29,6 +32,22 @@ icon:plus[] Core: The `Vert.x` async IO / routing framework has been updated to 
 
 icon:plus[] Some dependencies have been updated:
 * Hibernate: 7.1.8.Final
+
+
+[[v3.1.12]]
+== 3.1.12 (17.03.2026)
+
+icon:check[] Fixed classpath static handler to return 404 for directory requests instead of caching them as files in plugin storage
+
+icon:check[] GraphQL: The performance of loading nodes with filters has been improved by reducing the number
+of required SQL queries.
+
+
+icon:check[] Core: Additional indices have been added to improve query performance. The indices will be created during startup
+of Mesh, which might increase the first startup time after updating to this version.
+
+
+icon:check[] Rest Client: Validation of parameters has been improved.
 
 
 [[v3.1.11]]
