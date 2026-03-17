@@ -106,7 +106,7 @@ public class SchemaInitializer {
 	 */
 	private Single<SchemaResponse> assignToProjects(SchemaResponse schema) {
 		return Observable.fromIterable(Optional.ofNullable(configuration.getProjects()).orElse(Collections.emptyList())).flatMapSingle(name -> adminClient.assignSchemaToProject(name, schema.getUuid()).toSingle())
-				.lastOrError();
+				.last(schema);
 	}
 
 	/**

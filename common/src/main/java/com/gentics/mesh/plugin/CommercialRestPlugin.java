@@ -9,7 +9,6 @@ import static io.vertx.core.http.HttpMethod.GET;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -19,7 +18,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.MeshVersion;
-import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.Version;
 import com.gentics.mesh.util.MeshOpenAPIv3Generator;
 import com.gentics.vertx.openapi.model.Format;
@@ -29,6 +27,9 @@ import com.gentics.vertx.openapi.route.InternalEndpointBuilder;
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.Router;
 
+/**
+ * An extension to {@link RestPlugin} to include the OpenAPI specification generation global routes. 
+ */
 public interface CommercialRestPlugin extends RestPlugin {
 
 	@Override
@@ -56,12 +57,8 @@ public interface CommercialRestPlugin extends RestPlugin {
 					.produces(defaultFormat == com.gentics.mesh.etc.config.Format.JSON ? APPLICATION_JSON : APPLICATION_YAML)
 					.withBlockingHandler(rc -> {
 							try {
-								// Collect available servers
-								HttpServerConfig httpServerConfig = environment().options().getHttpServerOptions();	
-								List<String> servers = Collections.singletonList((httpServerConfig.isSsl() ? "https://" : "http://") + httpServerConfig.getHost() + ":" + (httpServerConfig.isSsl() ? httpServerConfig.getSslPort() : httpServerConfig.getPort()));
-
 								// Make an instance with blacklist path patterns
-								MeshOpenAPIv3Generator openApiV3Generator = new MeshOpenAPIv3Generator(MeshVersion.getPlainVersion(), servers, true, Optional.empty(), Optional.empty());
+								MeshOpenAPIv3Generator openApiV3Generator = new MeshOpenAPIv3Generator(MeshVersion.getPlainVersion(), Collections.emptyList(), true, Optional.empty(), Optional.empty());
 
 								rc.response().send(openApiV3Generator.generate(
 										name() + " OpenAPI v" + defaultVersion.pretty() + " specification",

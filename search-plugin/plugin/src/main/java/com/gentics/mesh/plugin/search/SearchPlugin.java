@@ -142,7 +142,8 @@ public class SearchPlugin extends AbstractPlugin implements CommercialRestPlugin
 			InternalEndpointBuilder.wrap(customRouter).withPath(path)
 					.withMethod(HttpMethod.GET)
 					.produces(HttpConstants.APPLICATION_JSON)
-					.withHandler(fromCustomhandler(handler));
+					.withHandler(fromCustomhandler(handler))
+					.build();
 
 			Handler<RoutingContext> wrappedHandler = handler.type() == HandlerType.AUTOCOMPLETE
 					? fromComponent(SearchPluginComponent::autocompleteHandler, handler)
@@ -151,7 +152,8 @@ public class SearchPlugin extends AbstractPlugin implements CommercialRestPlugin
 			InternalEndpointBuilder.wrap(customRouter).withPath(path)
 					.withMethod(HttpMethod.GET)
 					.produces(HttpConstants.APPLICATION_JSON)
-					.withHandler(wrappedHandler);
+					.withHandler(wrappedHandler)
+					.build();
 		});
 
 		InternalEndpointBuilder.wrap(projectRouter).withPath("/custom*").withSubRouter(customRouter);
@@ -188,16 +190,22 @@ public class SearchPlugin extends AbstractPlugin implements CommercialRestPlugin
 		log.trace("Registering caching routes");
 
 		InternalEndpointBuilder.wrap(globalRouter).withPath("/cache/clear")
+			.withDescription("Clear the cache")
 			.withMethod(HttpMethod.POST)
-			.withHandler(cachingHandler(null));
+			.withHandler(cachingHandler(null))
+			.build();
 
 		InternalEndpointBuilder.wrap(globalRouter).withPath("/cache/enable")
+			.withDescription("Enable caching")
 			.withMethod(HttpMethod.POST)
-			.withHandler(cachingHandler(true));
+			.withHandler(cachingHandler(true))
+			.build();
 
 		InternalEndpointBuilder.wrap(globalRouter).withPath("/cache/disable")
+			.withDescription("Disable caching")
 			.withMethod(HttpMethod.POST)
-			.withHandler(cachingHandler(false));
+			.withHandler(cachingHandler(false))
+			.build();
 	}
 
 	private Handler<RoutingContext> fromComponent(Function<SearchPluginComponent, AbstractQueryHandler> handler) {
