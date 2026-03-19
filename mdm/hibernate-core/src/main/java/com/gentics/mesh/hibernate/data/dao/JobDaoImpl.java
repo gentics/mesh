@@ -147,28 +147,23 @@ public class JobDaoImpl extends AbstractHibDaoGlobal<HibJob, JobResponse, HibJob
 	}
 
 	@Override
+	public HibJob enqueueSchemaVersionPurge(HibUser user) {
+		return mergeIntoPersisted(enqueue(user, JobType.schemaversionpurge, "schema version purge"));
+	}
+
+	@Override
+	public HibJob enqueueMicrochemaVersionPurge(HibUser user) {
+		return mergeIntoPersisted(enqueue(user, JobType.microschemaversionpurge, "microschema version purge"));
+	}
+
+	@Override
 	public HibJob enqueueConsistencyCheck(HibUser user, boolean repair) {
-		HibJob job = createPersisted(null, j -> {
-			j.setType(repair ? JobType.consistencyrepair : JobType.consistencycheck);
-			j.setCreationTimestamp();
-			j.setStatus(QUEUED);
-		});
-		mergeIntoPersisted(job);
-		return job;
+		return mergeIntoPersisted(enqueue(user, repair ? JobType.consistencyrepair : JobType.consistencycheck, repair ? "consistency repair" : "consistency check"));
 	}
 
 	@Override
 	public HibJob enqueueImageCacheMigration(HibUser user) {
-		HibJob job = createPersisted(null, j -> {
-			j.setType(JobType.imagecache);
-			j.setCreationTimestamp();
-			j.setStatus(QUEUED);
-		});
-		if (log.isDebugEnabled()) {
-			log.debug("Enqueued image cache migration job {" + job.getUuid() + "}");
-		}
-		mergeIntoPersisted(job);
-		return job;
+		return mergeIntoPersisted(enqueue(user, JobType.imagecache, "image cache migration"));
 	}
 
 	@Override
@@ -202,5 +197,17 @@ public class JobDaoImpl extends AbstractHibDaoGlobal<HibJob, JobResponse, HibJob
 	@Override
 	public void clear() {
 		em().createQuery("delete from job").executeUpdate();
+	}
+
+	protected HibJob enqueue(HibUser user, JobType jobType, String debugInfoLog) {
+		HibJob job = createPersisted(null, j -> {
+			j.setType(jobType);
+			j.setCreationTimestamp();
+			j.setStatus(QUEUED);
+		});
+		if (log.isDebugEnabled()) {
+			log.debug("Enqueued {} {}", debugInfoLog, job.getUuid());
+		}
+		return job;
 	}
 }

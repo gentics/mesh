@@ -28,6 +28,8 @@ import java.util.stream.Stream;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
@@ -46,6 +48,7 @@ import com.gentics.mesh.core.data.node.field.HibStringField;
 import com.gentics.mesh.core.data.node.field.list.HibStringFieldList;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
@@ -83,9 +86,6 @@ import com.gentics.mesh.util.VersionNumber;
 import com.google.common.base.Equivalence;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public interface PersistingContentDao extends ContentDao {
 
@@ -1098,6 +1098,22 @@ public interface PersistingContentDao extends ContentDao {
 	 */
 	default boolean isType(HibNodeFieldContainerEdge edge, ContainerType type, String branchUuid) {
 		return edge.getType().equals(type) && edge.getBranchUuid().equals(branchUuid);
-	}		
+	}
+
+	/**
+	 * Find all occurrences of containers of the given schema version
+	 * 
+	 * @param version
+	 * @return
+	 */
+	Stream<? extends HibNodeFieldContainer> getFieldsContainers(HibSchemaVersion version);
+
+	/**
+	 * Find all occurrences of containers of the given microschema version
+	 * 
+	 * @param version
+	 * @return
+	 */
+	Stream<? extends HibMicronode> getFieldsContainers(HibMicroschemaVersion version);		
 }
 

@@ -3,7 +3,6 @@ package com.gentics.mesh.core.data.dao;
 import java.time.ZonedDateTime;
 import java.util.function.Predicate;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.job.HibJob;
@@ -134,6 +133,20 @@ public interface JobDao extends DaoGlobal<HibJob>, DaoTransformable<HibJob, JobR
 	 * @return
 	 */
 	HibJob enqueueVersionPurge(HibUser user, HibProject project);
+
+	/**
+	 * Enqueue a schema version purge job.
+	 * @param user
+	 * @return
+	 */
+	HibJob enqueueSchemaVersionPurge(HibUser user);
+
+	/**
+	 * Enqueue a microschema version purge job.
+	 * @param user
+	 * @return
+	 */
+	HibJob enqueueMicrochemaVersionPurge(HibUser user);
 
 	/**
 	 * Enqueue a consistency check job.
