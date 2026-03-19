@@ -1,0 +1,21 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+	xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.6.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd">
+	<changeSet id="sup-19633-1"	author="n.pomaroli@gentics.com">
+		<createIndex tableName="mesh_nodefieldcontainer" indexName="idx_mesh_nodefieldcontainer_type_branch_language">
+			<column name="type" />
+			<column name="branch_dbuuid" />
+			<column name="languagetag" />
+		</createIndex>
+	</changeSet>
+	<changeSet id="sup-19633-2" author="n.pomaroli@gentics.com">
+		<createIndex tableName="mesh_node" indexName="idx_mesh_node_project_schema">
+			<column name="project_dbuuid"/>
+			<column name="schemacontainer_dbuuid"/>
+		</createIndex>
+	</changeSet>
+</databaseChangeLog>
