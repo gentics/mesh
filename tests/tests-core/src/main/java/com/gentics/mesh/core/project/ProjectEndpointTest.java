@@ -656,7 +656,8 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
 		ProjectUpdateRequest request = new ProjectUpdateRequest();
 		request.setName("new Name");
-		call(() -> client().updateProject("bogus", request), BAD_REQUEST, "error_illegal_uuid", "bogus");
+		String uuid = UUIDUtil.randomUUID();
+		call(() -> client().updateProject(uuid, request), NOT_FOUND, "object_not_found_for_uuid", uuid);
 
 	}
 

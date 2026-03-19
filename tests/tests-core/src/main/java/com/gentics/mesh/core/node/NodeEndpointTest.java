@@ -1895,7 +1895,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en", "de");
 
-			call(() -> client().updateNode(PROJECT_NAME, "bogus", request, parameters), BAD_REQUEST, "error_illegal_uuid", "bogus");
+			String uuid = UUIDUtil.randomUUID();
+			call(() -> client().updateNode(PROJECT_NAME, uuid, request, parameters), NOT_FOUND, "object_not_found_for_uuid", uuid);
 		}
 	}
 

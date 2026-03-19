@@ -95,24 +95,41 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 	}
 
 	private void addTagUpdateHandler() {
-		InternalEndpointRoute endpoint = createRoute();
-		endpoint.path("/:tagFamilyUuid/tags/:tagUuid");
-		endpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
-		endpoint.addUriParameter("tagUuid", "Uuid of the tag.", TAG_BLUE_UUID);
-		endpoint.method(POST);
-		endpoint.consumes(APPLICATION_JSON);
-		endpoint.produces(APPLICATION_JSON);
-		endpoint.description("Update the specified tag. The tag is created if no tag with the specified uuid could be found.");
-		endpoint.exampleRequest(tagExamples.createTagUpdateRequest("Red"));
-		endpoint.exampleResponse(OK, tagExamples.createTagResponse1("Red"), "Updated tag.");
-		endpoint.events(TAG_UPDATED, TAG_CREATED);
-		endpoint.blockingHandler(rc -> {
+		InternalEndpointRoute upsertEndpoint = createRoute();
+		upsertEndpoint.path("/:tagFamilyUuid/tags/:tagUuid");
+		upsertEndpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
+		upsertEndpoint.addUriParameter("tagUuid", "Uuid of the tag.", TAG_BLUE_UUID);
+		upsertEndpoint.method(POST);
+		upsertEndpoint.consumes(APPLICATION_JSON);
+		upsertEndpoint.produces(APPLICATION_JSON);
+		upsertEndpoint.description("Update the specified tag. The tag is created if no tag with the specified uuid could be found.");
+		upsertEndpoint.exampleRequest(tagExamples.createTagUpdateRequest("Red"));
+		upsertEndpoint.exampleResponse(OK, tagExamples.createTagResponse1("Red"), "Updated tag.");
+		upsertEndpoint.events(TAG_UPDATED, TAG_CREATED);
+		upsertEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String tagFamilyUuid = PathParameters.getTagFamilyUuid(rc);
 			String uuid = PathParameters.getTagUuid(rc);
-			tagCrudHandler.handleUpdate(ac, tagFamilyUuid, uuid);
+			tagCrudHandler.handleUpdate(ac, tagFamilyUuid, uuid, true);
 		}, isOrderedBlockingHandlers());
 
+		InternalEndpointRoute updateEndpoint = createRoute();
+		updateEndpoint.path("/:tagFamilyUuid/tags/:tagUuid");
+		updateEndpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
+		updateEndpoint.addUriParameter("tagUuid", "Uuid of the tag.", TAG_BLUE_UUID);
+		updateEndpoint.method(PUT);
+		updateEndpoint.consumes(APPLICATION_JSON);
+		updateEndpoint.produces(APPLICATION_JSON);
+		updateEndpoint.description("Update the specified tag.");
+		updateEndpoint.exampleRequest(tagExamples.createTagUpdateRequest("Red"));
+		updateEndpoint.exampleResponse(OK, tagExamples.createTagResponse1("Red"), "Updated tag.");
+		updateEndpoint.events(TAG_UPDATED);
+		updateEndpoint.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String tagFamilyUuid = PathParameters.getTagFamilyUuid(rc);
+			String uuid = PathParameters.getTagUuid(rc);
+			tagCrudHandler.handleUpdate(ac, tagFamilyUuid, uuid, false);
+		}, isOrderedBlockingHandlers());
 	}
 
 	private void addTagCreateHandler() {
@@ -348,7 +365,7 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 		updateEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String tagFamilyUuid = PathParameters.getTagFamilyUuid(rc);
-			tagFamilyCrudHandler.handleUpdate(ac, tagFamilyUuid);
+			tagFamilyCrudHandler.handleUpdate(ac, tagFamilyUuid, false);
 		}, isOrderedBlockingHandlers());
 
 		InternalEndpointRoute upsertEndpoint = createRoute();

@@ -83,7 +83,7 @@ public class WebRootEndpoint extends AbstractProjectEndpoint {
 
 		updateEndpoint.description("Update a node for the given path.");
 		updateEndpoint.blockingHandler(rc -> {
-			handler.handleUpdateCreatePath(rc, POST);
+			handler.handleUpdateCreatePath(rc, POST, false);
 		}, isOrderedBlockingHandlers());
 
 		InternalEndpointRoute upsertEndpoint = createRoute();
@@ -100,7 +100,7 @@ public class WebRootEndpoint extends AbstractProjectEndpoint {
 
 		upsertEndpoint.description("Update or create a node for the given path.");
 		upsertEndpoint.blockingHandler(rc -> {
-			handler.handleUpdateCreatePath(rc, POST);
+			handler.handleUpdateCreatePath(rc, POST, true);
 		}, isOrderedBlockingHandlers());
 	}
 

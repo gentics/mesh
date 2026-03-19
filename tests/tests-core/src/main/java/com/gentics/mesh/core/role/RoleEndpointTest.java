@@ -18,6 +18,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -462,7 +463,8 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		RoleUpdateRequest request = new RoleUpdateRequest();
 		request.setName("renamed role");
 
-		call(() -> client().updateRole("bogus", request), BAD_REQUEST, "error_illegal_uuid", "bogus");
+		String uuid = UUIDUtil.randomUUID();
+		call(() -> client().updateRole(uuid, request), NOT_FOUND, "object_not_found_for_uuid", uuid);
 
 	}
 

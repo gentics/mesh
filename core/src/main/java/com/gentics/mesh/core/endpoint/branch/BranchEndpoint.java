@@ -20,6 +20,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
+import static io.vertx.core.http.HttpMethod.PUT;
 
 import javax.inject.Inject;
 
@@ -237,12 +238,30 @@ public class BranchEndpoint extends RolePermissionHandlingProjectEndpoint {
 			crudHandler.handleSetLatest(ac, uuid);
 		}, isOrderedBlockingHandlers());
 
+		InternalEndpointRoute upsertBranch = createRoute();
+		upsertBranch.path("/:branchUuid");
+		upsertBranch.addUriParameter("branchUuid", "Uuid of the branch", BRANCH_UUID);
+		upsertBranch
+			.description("Update the branch with the given uuid. The branch is created if no branch with the specified uuid could be found.");
+		upsertBranch.method(POST);
+		upsertBranch.setMutating(true);
+		upsertBranch.consumes(APPLICATION_JSON);
+		upsertBranch.produces(APPLICATION_JSON);
+		upsertBranch.exampleRequest(versioningExamples.createBranchUpdateRequest("Winter Collection Branch"));
+		upsertBranch.exampleResponse(OK, versioningExamples.createBranchResponse("Winter Collection Branch", false), "Updated branch");
+		upsertBranch.events(BRANCH_CREATED, BRANCH_UPDATED);
+		upsertBranch.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String uuid = rc.request().params().get("branchUuid");
+			crudHandler.handleUpdate(ac, uuid);
+		}, isOrderedBlockingHandlers());
+
 		InternalEndpointRoute updateBranch = createRoute();
 		updateBranch.path("/:branchUuid");
 		updateBranch.addUriParameter("branchUuid", "Uuid of the branch", BRANCH_UUID);
 		updateBranch
-			.description("Update the branch with the given uuid. The branch is created if no branch with the specified uuid could be found.");
-		updateBranch.method(POST);
+			.description("Update the branch with the given uuid.");
+		updateBranch.method(PUT);
 		updateBranch.setMutating(true);
 		updateBranch.consumes(APPLICATION_JSON);
 		updateBranch.produces(APPLICATION_JSON);
@@ -252,7 +271,7 @@ public class BranchEndpoint extends RolePermissionHandlingProjectEndpoint {
 		updateBranch.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().params().get("branchUuid");
-			crudHandler.handleUpdate(ac, uuid);
+			crudHandler.handleUpdate(ac, uuid, false);
 		}, isOrderedBlockingHandlers());
 	}
 

@@ -340,7 +340,8 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 			MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
 			request.setName("new-name");
 
-			call(() -> client().updateMicroschema("bogus", request), NOT_FOUND, "object_not_found_for_uuid", "bogus");
+			String uuid = UUIDUtil.randomUUID();
+			call(() -> client().updateMicroschema(uuid, request), NOT_FOUND, "object_not_found_for_uuid", uuid);
 
 			HibMicroschema reloaded = tx.microschemaDao().findByUuid(microschema.getUuid());
 			assertEquals("The name should not have been changed.", oldName, reloaded.getName());

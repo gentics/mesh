@@ -82,7 +82,7 @@ public class ProjectEndpoint extends RolePermissionHandlingEndpoint {
 		updateEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("projectUuid");
-			crudHandler.handleUpdate(ac, uuid);
+			crudHandler.handleUpdate(ac, uuid, false);
 		}, isOrderedBlockingHandlers());
 
 		InternalEndpointRoute upsertEndpoint = createRoute();
@@ -95,7 +95,7 @@ public class ProjectEndpoint extends RolePermissionHandlingEndpoint {
 		upsertEndpoint.produces(APPLICATION_JSON);
 		upsertEndpoint.exampleRequest(projectExamples.getProjectCreateRequest("New project name"));
 		upsertEndpoint.exampleResponse(OK, projectExamples.getProjectResponse("New project name"), "Updated project.");
-		upsertEndpoint.events(PROJECT_UPDATED);
+		upsertEndpoint.events(PROJECT_CREATED, PROJECT_UPDATED);
 		upsertEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("projectUuid");

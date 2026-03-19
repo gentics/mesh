@@ -504,7 +504,8 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		final String name = "New Name";
 		GroupUpdateRequest request = new GroupUpdateRequest();
 		request.setName(name);
-		call(() -> client().updateGroup("bogus", request), BAD_REQUEST, "error_illegal_uuid", "bogus");
+		String uuid = UUIDUtil.randomUUID();
+		call(() -> client().updateGroup(uuid, request), NOT_FOUND, "object_not_found_for_uuid", uuid);
 	}
 
 	@Test

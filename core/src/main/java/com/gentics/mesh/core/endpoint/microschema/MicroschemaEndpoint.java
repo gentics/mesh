@@ -14,6 +14,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
+import static io.vertx.core.http.HttpMethod.PUT;
 
 import javax.inject.Inject;
 
@@ -162,21 +163,38 @@ public class MicroschemaEndpoint extends RolePermissionHandlingEndpoint {
 	}
 
 	private void addUpdateHandler() {
-		InternalEndpointRoute endpoint = createRoute();
-		endpoint.path("/:microschemaUuid");
-		endpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", MICROSCHEMA_UUID);
-		endpoint.method(POST);
-		endpoint.produces(APPLICATION_JSON);
-		endpoint.consumes(APPLICATION_JSON);
-		endpoint.exampleRequest(microschemaExamples.getGeolocationMicroschemaUpdateRequest());
+		InternalEndpointRoute upserEndpoint = createRoute();
+		upserEndpoint.path("/:microschemaUuid");
+		upserEndpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", MICROSCHEMA_UUID);
+		upserEndpoint.method(POST);
+		upserEndpoint.produces(APPLICATION_JSON);
+		upserEndpoint.consumes(APPLICATION_JSON);
+		upserEndpoint.exampleRequest(microschemaExamples.getGeolocationMicroschemaUpdateRequest());
 		// endpoint.exampleResponse(OK, microschemaExamples.getGeolocationMicroschemaResponse(), "Updated microschema.");
-		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Migration message.");
-		endpoint.description("Update the microschema with the given uuid.");
-		endpoint.events(MICROSCHEMA_UPDATED, MICROSCHEMA_MIGRATION_START, MICROSCHEMA_MIGRATION_FINISHED);
-		endpoint.blockingHandler(rc -> {
+		upserEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Migration message.");
+		upserEndpoint.description("Update or create the microschema with the given uuid.");
+		upserEndpoint.events(MICROSCHEMA_UPDATED, MICROSCHEMA_CREATED, MICROSCHEMA_MIGRATION_START, MICROSCHEMA_MIGRATION_FINISHED);
+		upserEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("microschemaUuid");
 			crudHandler.handleUpdate(ac, uuid);
+		}, isOrderedBlockingHandlers());
+
+		InternalEndpointRoute updateEndpoint = createRoute();
+		updateEndpoint.path("/:microschemaUuid");
+		updateEndpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", MICROSCHEMA_UUID);
+		updateEndpoint.method(PUT);
+		updateEndpoint.produces(APPLICATION_JSON);
+		updateEndpoint.consumes(APPLICATION_JSON);
+		updateEndpoint.exampleRequest(microschemaExamples.getGeolocationMicroschemaUpdateRequest());
+		// endpoint.exampleResponse(OK, microschemaExamples.getGeolocationMicroschemaResponse(), "Updated microschema.");
+		updateEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Migration message.");
+		updateEndpoint.description("Update the microschema with the given uuid.");
+		updateEndpoint.events(MICROSCHEMA_UPDATED, MICROSCHEMA_MIGRATION_START, MICROSCHEMA_MIGRATION_FINISHED);
+		updateEndpoint.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String uuid = ac.getParameter("microschemaUuid");
+			crudHandler.handleUpdate(ac, uuid, false);
 		}, isOrderedBlockingHandlers());
 	}
 

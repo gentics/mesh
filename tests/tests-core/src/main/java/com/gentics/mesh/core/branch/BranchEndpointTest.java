@@ -734,7 +734,8 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
 		BranchUpdateRequest request = new BranchUpdateRequest();
 		// request.setActive(false);
-		call(() -> client().updateBranch(PROJECT_NAME, "bogus", request), BAD_REQUEST, "error_illegal_uuid", "bogus");
+		String uuid = UUIDUtil.randomUUID();
+		call(() -> client().updateBranch(PROJECT_NAME, uuid, request), NOT_FOUND, "object_not_found_for_uuid", uuid);
 	}
 
 	@Test

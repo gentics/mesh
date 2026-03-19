@@ -696,7 +696,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
 		UserUpdateRequest request = new UserUpdateRequest();
 		request.setUsername("New Name");
-		call(() -> client().updateUser("bogus", request), BAD_REQUEST, "error_illegal_uuid", "bogus");
+		String uuid = UUIDUtil.randomUUID();
+		call(() -> client().updateUser(uuid, request), NOT_FOUND, "object_not_found_for_uuid", uuid);
 	}
 
 	@Test

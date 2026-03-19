@@ -611,7 +611,8 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			SchemaUpdateRequest request = new SchemaUpdateRequest();
 			request.setName("new-name");
 
-			call(() -> client().updateSchema("bogus", request), NOT_FOUND, "object_not_found_for_uuid", "bogus");
+			String uuid = UUIDUtil.randomUUID();
+			call(() -> client().updateSchema(uuid, request), NOT_FOUND, "object_not_found_for_uuid", uuid);
 
 			HibSchema reloaded = schemaDao.findByUuid(schema.getUuid());
 			assertEquals("The name should not have been changed.", oldName, reloaded.getName());
