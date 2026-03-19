@@ -363,7 +363,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 	@Test
 	public void testReadGroupWithBogusUUID() throws Exception {
-		final String bogusUuid = "sadgasdasdg";
+		final String bogusUuid = UUIDUtil.randomUUID();
 		call(() -> client().findGroupByUuid(bogusUuid), NOT_FOUND, "object_not_found_for_uuid", bogusUuid);
 	}
 

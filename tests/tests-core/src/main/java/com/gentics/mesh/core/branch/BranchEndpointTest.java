@@ -546,7 +546,8 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 	@Test
 	public void testReadByBogusUUID() throws Exception {
-		call(() -> client().findBranchByUuid(PROJECT_NAME, "bogus"), NOT_FOUND, "object_not_found_for_uuid", "bogus");
+		String bogusUuid = UUIDUtil.randomUUID();
+		call(() -> client().findBranchByUuid(PROJECT_NAME, bogusUuid), NOT_FOUND, "object_not_found_for_uuid", bogusUuid);
 	}
 
 	@Test

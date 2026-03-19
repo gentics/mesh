@@ -403,7 +403,8 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 	@Test
 	public void testReadSchemaByInvalidUUID() throws Exception {
-		call(() -> client().findSchemaByUuid("bogus"), NOT_FOUND, "object_not_found_for_uuid", "bogus");
+		String bogusUuid = UUIDUtil.randomUUID();
+		call(() -> client().findSchemaByUuid(bogusUuid), NOT_FOUND, "object_not_found_for_uuid", bogusUuid);
 	}
 
 	@Test

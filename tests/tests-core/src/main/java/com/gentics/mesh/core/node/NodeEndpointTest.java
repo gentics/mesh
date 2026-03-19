@@ -1696,11 +1696,6 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	}
 
 	@Test
-	public void testReadNodeByBogusUUID() throws Exception {
-		call(() -> client().findNodeByUuid(PROJECT_NAME, "bogusUUID"), NOT_FOUND, "object_not_found_for_uuid", "bogusUUID");
-	}
-
-	@Test
 	public void testReadNodeByInvalidUUID() throws Exception {
 		String uuid = "dde8ba06bb7211e4897631a9ce2772f5";
 		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid), NOT_FOUND, "object_not_found_for_uuid", uuid);

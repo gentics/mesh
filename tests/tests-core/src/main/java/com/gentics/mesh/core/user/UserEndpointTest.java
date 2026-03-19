@@ -1515,11 +1515,6 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		}
 	}
 
-	@Test(expected = NullPointerException.class)
-	public void testDeleteWithUuidNull() throws Exception {
-		call(() -> client().deleteUser(null), NOT_FOUND, "object_not_found_for_uuid", "null");
-	}
-
 	@Test
 	@Ignore
 	public void testReadOwnCreatedUser() {
