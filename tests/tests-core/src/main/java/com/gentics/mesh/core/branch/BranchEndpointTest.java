@@ -730,6 +730,15 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	}
 
 	@Test
+	@Override
+	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
+		BranchUpdateRequest request = new BranchUpdateRequest();
+		// request.setActive(false);
+		String uuid = UUIDUtil.randomUUID();
+		call(() -> client().updateBranch(PROJECT_NAME, uuid, request), NOT_FOUND, "object_not_found_for_uuid", uuid);
+	}
+
+	@Test
 	public void testUpdateHostname() {
 		String hostname = "new.hostname";
 

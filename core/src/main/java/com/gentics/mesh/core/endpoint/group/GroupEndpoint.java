@@ -197,7 +197,7 @@ public class GroupEndpoint extends RolePermissionHandlingEndpoint {
 		updateEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("groupUuid");
-			crudHandler.handleUpdate(ac, uuid);
+			crudHandler.handleUpdate(ac, uuid, false);
 		}, isOrderedBlockingHandlers());
 
 		InternalEndpointRoute upsertEndpoint = createRoute();

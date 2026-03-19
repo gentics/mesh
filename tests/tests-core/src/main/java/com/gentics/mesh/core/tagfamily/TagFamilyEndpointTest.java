@@ -22,6 +22,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -520,6 +521,16 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 			}
 			assertThat(trackingSearchProvider()).hasEvents(storeCount + 1, 0, 0, 0, 0);
 		}
+	}
+
+	@Test
+	@Override
+	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
+		TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
+		request.setName("new Name");
+
+		String uuid = UUIDUtil.randomUUID();
+		call(() -> client().updateTagFamily(PROJECT_NAME, uuid, request), NOT_FOUND, "object_not_found_for_uuid", uuid);
 	}
 
 	@Test

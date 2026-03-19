@@ -603,6 +603,24 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	}
 
 	@Test
+	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
+		try (Tx tx = tx()) {
+			SchemaDao schemaDao = tx.schemaDao();
+			
+			HibSchema schema = schemaContainer("content");
+			String oldName = schema.getName();
+			SchemaUpdateRequest request = new SchemaUpdateRequest();
+			request.setName("new-name");
+
+			String uuid = UUIDUtil.randomUUID();
+			call(() -> client().updateSchema(uuid, request), NOT_FOUND, "object_not_found_for_uuid", uuid);
+
+			HibSchema reloaded = schemaDao.findByUuid(schema.getUuid());
+			assertEquals("The name should not have been changed.", oldName, reloaded.getName());
+		}
+	}
+
+	@Test
 	public void testDeleteWithChanges() {
 		SchemaCreateRequest schemaCreateRequest = new SchemaCreateRequest();
 		schemaCreateRequest.setName("fordeletion");

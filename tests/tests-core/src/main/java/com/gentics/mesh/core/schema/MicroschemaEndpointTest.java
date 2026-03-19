@@ -332,6 +332,23 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 
 	@Test
 	@Override
+	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
+		try (Tx tx = tx()) {
+			HibMicroschema microschema = microschemaContainers().get("vcard");
+			String oldName = microschema.getName();
+			MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
+			request.setName("new-name");
+
+			String uuid = UUIDUtil.randomUUID();
+			call(() -> client().updateMicroschema(uuid, request), NOT_FOUND, "object_not_found_for_uuid", uuid);
+
+			HibMicroschema reloaded = tx.microschemaDao().findByUuid(microschema.getUuid());
+			assertEquals("The name should not have been changed.", oldName, reloaded.getName());
+		}
+	}
+
+	@Test
+	@Override
 	public void testDeleteByUUID() throws Exception {
 		String uuid = tx(() -> microschemaContainer("vcard").getUuid());
 

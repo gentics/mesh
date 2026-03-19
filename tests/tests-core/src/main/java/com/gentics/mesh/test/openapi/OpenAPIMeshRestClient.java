@@ -825,34 +825,45 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 
 	@Override
 	public MeshRequest<UserResponse> findUserByUuid(String uuid, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2UsersUserUuidGetWithHttpInfo(uuid,
+				findParameter(GenericParameters.ETAG_PARAM_KEY, parameters),
+				findParameter(RolePermissionParameters.ROLE_PERMISSION_QUERY_PARAM_KEY, parameters),
+				findParameter(NodeParameters.LANGUAGES_QUERY_PARAM_KEY, parameters),
+				findParameter(GenericParameters.FIELDS_PARAM_KEY, parameters),
+				findParameter(NodeParameters.RESOLVE_LINKS_QUERY_PARAM_KEY, parameters),
+				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, parameters)), UserResponse.class);
 	}
 
 	@Override
 	public MeshRequest<UserListResponse> findUsers(ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2UsersGetWithHttpInfo(
+				findParameter(RolePermissionParameters.ROLE_PERMISSION_QUERY_PARAM_KEY, parameters),
+				findParameter(PagingParameters.PER_PAGE_PARAMETER_KEY, parameters),
+				findParameter(NodeParameters.RESOLVE_LINKS_QUERY_PARAM_KEY, parameters),
+				findParameter(GenericParameters.ETAG_PARAM_KEY, parameters),
+				findParameter(SortingParameters.SORT_BY_PARAMETER_KEY, parameters),
+				findParameter(PagingParameters.PAGE_PARAMETER_KEY, parameters),
+				findParameter(NodeParameters.LANGUAGES_QUERY_PARAM_KEY, parameters),
+				findParameter(GenericParameters.FIELDS_PARAM_KEY, parameters),
+				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, parameters),
+				findParameter(SortingParameters.SORT_ORDER_PARAMETER_KEY, parameters)), UserListResponse.class);
 	}
 
 	@Override
 	public MeshRequest<UserResponse> createUser(UserCreateRequest request, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2UsersPostWithHttpInfo(adaptRequest(request)), UserResponse.class);
 	}
 
 	@Override
 	public MeshRequest<UserResponse> createUser(String uuid, UserCreateRequest request,
 			ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2UsersUserUuidPostWithHttpInfo(uuid, getAPIKey(), adaptRequest(request)), UserResponse.class);
 	}
 
 	@Override
 	public MeshRequest<UserResponse> updateUser(String uuid, UserUpdateRequest request,
 			ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2UsersUserUuidPutWithHttpInfo(uuid, getAPIKey(), adaptRequest(request)), UserResponse.class);
 	}
 
 	@Override

@@ -150,7 +150,7 @@ public class SchemaEndpoint extends RolePermissionHandlingEndpoint {
 			synchronized (schemaLock.mutex()) {
 				InternalActionContext ac = wrap(rc);
 				String uuid = ac.getParameter("schemaUuid");
-				crudHandler.handleUpdate(ac, uuid);
+				crudHandler.handleUpdate(ac, uuid, false);
 			}
 		}, isOrderedBlockingHandlers());
 

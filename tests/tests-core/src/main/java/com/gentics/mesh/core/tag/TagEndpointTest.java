@@ -24,6 +24,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -662,6 +663,19 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 
 		call(() -> client().findTagByUuid(PROJECT_NAME, parentTagFamilyUuid, uuid), FORBIDDEN, "error_missing_perm", uuid,
 			READ_PERM.getRestPerm().getName());
+
+	}
+
+	@Test
+	@Override
+	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
+		TagUpdateRequest request = new TagUpdateRequest();
+		request.setName("newName");
+		String uuid = UUIDUtil.randomUUID();
+		try (Tx tx = tx()) {
+			HibTagFamily parentTagFamily = tagFamily("colors");
+			call(() -> client().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid, request), NOT_FOUND, "object_not_found_for_uuid", uuid);
+		}
 
 	}
 

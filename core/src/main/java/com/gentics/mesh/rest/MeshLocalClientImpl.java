@@ -411,7 +411,7 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 		ac.setPayloadObject(request);
 		ac.setParameter("tagUuid", uuid);
 		ac.setParameter("tagFamilyUuid", tagFamilyUuid);
-		tagCrudHandler.handleUpdate(ac, tagFamilyUuid, uuid);
+		tagCrudHandler.handleUpdate(ac, tagFamilyUuid, uuid, false);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -422,7 +422,7 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 		ac.setPayloadObject(request);
 		ac.setParameter("tagUuid", uuid);
 		ac.setParameter("tagFamilyUuid", tagFamilyUuid);
-		tagCrudHandler.handleUpdate(ac, tagFamilyUuid, uuid);
+		tagCrudHandler.handleUpdate(ac, tagFamilyUuid, uuid, true);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 

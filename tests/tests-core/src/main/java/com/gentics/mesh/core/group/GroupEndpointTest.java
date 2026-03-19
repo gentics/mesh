@@ -500,6 +500,16 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 	@Test
 	@Override
+	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
+		final String name = "New Name";
+		GroupUpdateRequest request = new GroupUpdateRequest();
+		request.setName(name);
+		String uuid = UUIDUtil.randomUUID();
+		call(() -> client().updateGroup(uuid, request), NOT_FOUND, "object_not_found_for_uuid", uuid);
+	}
+
+	@Test
+	@Override
 	public void testDeleteByUUID() throws Exception {
 
 		String name = tx(() -> group().getName());
