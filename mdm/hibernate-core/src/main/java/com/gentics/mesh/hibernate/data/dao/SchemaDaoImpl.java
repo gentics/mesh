@@ -251,7 +251,7 @@ public class SchemaDaoImpl
 			schema.setLatestVersion(version.getPreviousVersion());
 		}
 		if (version.getPreviousVersion() != null) {
-			version.getPreviousVersion().setNextVersion(null);
+			version.getPreviousVersion().setNextVersion(version.getNextVersion());
 		}
 		if (version.getNextVersion() != null) {
 			version.getNextVersion().setPreviousVersion(version.getPreviousVersion());
@@ -275,5 +275,10 @@ public class SchemaDaoImpl
 
 		return versions.stream().sorted((v1, v2) -> VersionUtil.compareVersions(v2.getVersion(), v1.getVersion()))
 				.findFirst().orElse(null);
+	}
+
+	@Override
+	public long countVersionEdges(HibSchemaVersion version) {
+		return em().createNamedQuery("contentEdge.countContentByVersion", Long.class).setParameter("version", version).getSingleResult();
 	}
 }

@@ -99,6 +99,14 @@ public interface ContainerDao<
 	Result<SCV> findActiveSchemaVersions(HibBranch branch);
 
 	/**
+	 * Find all active schema versions.
+	 * 
+	 * @param branch
+	 * @return
+	 */
+	Result<SCV> findActiveSchemaVersions();
+
+	/**
 	 * Load the contents that use the given schema version for the given branch.
 	 * 
 	 * @param version
@@ -190,4 +198,12 @@ public interface ContainerDao<
 	 * @param batch
 	 */
 	void unassign(SC schema, HibProject project, EventQueueBatch batch);
+
+	/**
+	 * Count content (edges) belonging to the given container version.
+	 * 
+	 * @param version
+	 * @return
+	 */
+	long countVersionEdges(SCV version);
 }

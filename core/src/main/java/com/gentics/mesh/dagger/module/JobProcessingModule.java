@@ -7,11 +7,13 @@ import com.gentics.mesh.core.jobs.ImageCacheMigrationProcessor;
 import com.gentics.mesh.core.jobs.JobProcessor;
 import com.gentics.mesh.core.jobs.JobProcessorImpl;
 import com.gentics.mesh.core.jobs.MicronodeJobProcessor;
+import com.gentics.mesh.core.jobs.MicroschemaVersionPurgeJobProcessor;
 import com.gentics.mesh.core.jobs.NodeJobProcessor;
 import com.gentics.mesh.core.jobs.SchemaVersionPurgeJobProcessor;
 import com.gentics.mesh.core.jobs.SingleJobProcessor;
 import com.gentics.mesh.core.jobs.VersionPurgeJobProcessor;
 import com.gentics.mesh.core.rest.job.JobType;
+
 import dagger.Binds;
 import dagger.Module;
 import dagger.multibindings.IntoMap;
@@ -50,7 +52,7 @@ public abstract class JobProcessingModule {
 	@Binds
 	@IntoMap
 	@JobTypeKey(JobType.microschemaversionpurge)
-	abstract SingleJobProcessor microschemaVersionPurgeJobProcessor(SchemaVersionPurgeJobProcessor e);
+	abstract SingleJobProcessor microschemaVersionPurgeJobProcessor(MicroschemaVersionPurgeJobProcessor e);
 
 	@Binds
 	@IntoMap

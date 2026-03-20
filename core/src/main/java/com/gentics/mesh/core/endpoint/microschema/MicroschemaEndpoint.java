@@ -159,6 +159,18 @@ public class MicroschemaEndpoint extends RolePermissionHandlingEndpoint {
 			String uuid = ac.getParameter("microschemaUuid");
 			crudHandler.handleDelete(ac, uuid);
 		}, isOrderedBlockingHandlers());
+
+
+		InternalEndpointRoute purgeVersionsEndpoint = createRoute();
+		purgeVersionsEndpoint.path("/");
+		purgeVersionsEndpoint.method(DELETE);
+		purgeVersionsEndpoint.description("Purge the unused microschema versions.");
+		purgeVersionsEndpoint.produces(APPLICATION_JSON);
+		purgeVersionsEndpoint.exampleResponse(OK, "Microschema version purge job initialized.");
+		purgeVersionsEndpoint.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			crudHandler.handlePurge(ac);
+		}, isOrderedBlockingHandlers());
 	}
 
 	private void addUpdateHandler() {

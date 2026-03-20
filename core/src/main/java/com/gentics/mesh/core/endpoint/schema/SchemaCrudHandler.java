@@ -329,4 +329,24 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 
 	}
 
+	/**
+	 * Create a stale schema version purge job.
+	 * 
+	 * @param ac
+	 */
+	public void handlePurge(InternalActionContext ac) {
+		try (WriteLock lock = writeLock.lock(ac)) {
+			utils.syncTx(ac, tx -> {
+				if (!ac.getUser().isAdmin()) {
+					throw error(FORBIDDEN, "error_admin_permission_required");
+				}
+				HibUser user = ac.getUser();
+				tx.jobDao().enqueueSchemaVersionPurge(user);
+				return message(ac, "project_version_purge_enqueued");
+			}, message -> {
+				MeshEvent.triggerJobWorker(boot.get().mesh());
+				ac.send(message, OK);
+			});
+		}
+	}
 }

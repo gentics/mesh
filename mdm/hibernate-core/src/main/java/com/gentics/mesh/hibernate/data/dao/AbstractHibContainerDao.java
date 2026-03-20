@@ -143,6 +143,17 @@ public abstract class AbstractHibContainerDao<
 	}
 
 	@Override
+	public Result<SCV> findActiveSchemaVersions() {
+		EntityManager em = currentTransaction.getEntityManager();
+		return new TraversalResult<>(em.createQuery(
+					"select e.version" +
+					" from branch_" + getVersionFieldLabel() + "_version_edge e" +
+					" where e.active = true",
+				getVersionPersistenceClass())
+			.getResultStream());
+	}
+
+	@Override
 	public SCV findVersionByRev(SC schema, String version) {
 		EntityManager em = currentTransaction.getEntityManager();
 		return em.createQuery("select v" +

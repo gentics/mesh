@@ -61,6 +61,9 @@ import jakarta.persistence.UniqueConstraint;
 			name = "micronodefieldref.removeByContainerUuids",
 			query =  "delete from micronodefieldref where containerUuid in :containerUuids"),
 	@NamedQuery(
+			name = "micronodefieldref.countByVersion",
+			query =  "select count(distinct edge.valueOrUuid) from micronodefieldref edge where edge.microschemaVersion = :version"),
+	@NamedQuery(
 			name = "micronodefieldref.findDuplicate",
 			query =  "select edge from micronodefieldref edge where containerUuid = :containerUuid and fieldKey = :fieldKey and containerType = :containerType and containerVersionUuid = :containerVersionUuid and microschemaVersion = :microschemaVersion"),
 

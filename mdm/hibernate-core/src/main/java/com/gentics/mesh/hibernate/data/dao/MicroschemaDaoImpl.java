@@ -267,4 +267,9 @@ public class MicroschemaDaoImpl
 		return versions.stream().sorted((v1, v2) -> VersionUtil.compareVersions(v2.getVersion(), v1.getVersion()))
 				.findFirst().orElse(null);
 	}
+
+	@Override
+    public long countVersionEdges(HibMicroschemaVersion version) {
+		return em().createNamedQuery("micronodefieldref.countByVersion", Long.class).setParameter("version", version).getSingleResult();
+    }
 }

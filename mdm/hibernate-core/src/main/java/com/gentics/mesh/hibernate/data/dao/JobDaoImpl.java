@@ -152,7 +152,7 @@ public class JobDaoImpl extends AbstractHibDaoGlobal<HibJob, JobResponse, HibJob
 	}
 
 	@Override
-	public HibJob enqueueMicrochemaVersionPurge(HibUser user) {
+	public HibJob enqueueMicroschemaVersionPurge(HibUser user) {
 		return mergeIntoPersisted(enqueue(user, JobType.microschemaversionpurge, "microschema version purge"));
 	}
 

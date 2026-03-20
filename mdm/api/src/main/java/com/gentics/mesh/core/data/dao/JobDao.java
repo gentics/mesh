@@ -146,7 +146,7 @@ public interface JobDao extends DaoGlobal<HibJob>, DaoTransformable<HibJob, JobR
 	 * @param user
 	 * @return
 	 */
-	HibJob enqueueMicrochemaVersionPurge(HibUser user);
+	HibJob enqueueMicroschemaVersionPurge(HibUser user);
 
 	/**
 	 * Enqueue a consistency check job.
