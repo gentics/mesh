@@ -2,6 +2,7 @@ package com.gentics.mesh.core.jobs;
 
 import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.job.JobStatus.FAILED;
+import static com.gentics.mesh.core.rest.job.JobStatus.RUNNING;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -9,6 +10,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.gentics.mesh.core.data.dao.JobDao;
 import com.gentics.mesh.core.data.dao.PersistingBranchDao;
 import com.gentics.mesh.core.data.dao.PersistingContainerDao;
 import com.gentics.mesh.core.data.dao.PersistingProjectDao;
@@ -18,6 +20,7 @@ import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
+import com.gentics.mesh.core.rest.job.warning.JobWarning;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.util.StreamUtil;
@@ -46,21 +49,23 @@ public abstract class ContentVersionPurgeJobProcessor<
 	private static final Logger log = LoggerFactory.getLogger(ContentVersionPurgeJobProcessor.class);
 
 	protected final Database db;
+	protected final JobDao jobDao;
 	protected final PersistingContainerDao<R, RM, RE, SC, SCV, M> containerDao;
 	protected final PersistingProjectDao projectDao;
 	protected final PersistingBranchDao branchDao;
 
-	public ContentVersionPurgeJobProcessor(Database db, PersistingContainerDao<R, RM, RE, SC, SCV, M> containerDao,
+	public ContentVersionPurgeJobProcessor(Database db, JobDao jobDao, PersistingContainerDao<R, RM, RE, SC, SCV, M> containerDao,
 			PersistingProjectDao projectDao, PersistingBranchDao branchDao) {
 		this.containerDao = containerDao;
 		this.projectDao = projectDao;
 		this.branchDao = branchDao;
+		this.jobDao = jobDao;
 		this.db = db;
 	}
 
 	@Override
 	public Completable process(HibJob job) {
-		return Completable.defer(() -> purge()).doOnComplete(() -> {
+		return Completable.defer(() -> purge(job)).doOnComplete(() -> {
 			db.tx(tx -> {
 				job.setStopTimestamp();
 				job.setStatus(COMPLETED);
@@ -81,7 +86,11 @@ public abstract class ContentVersionPurgeJobProcessor<
 	 * 
 	 * @return
 	 */
-	protected Completable purge() {
+	protected Completable purge(HibJob job) {
+		db.tx(tx -> {
+			job.setStatus(RUNNING);
+			tx.<CommonTx>unwrap().jobDao().mergeIntoPersisted(job);
+		});
 		return Completable.defer(() -> db.asyncTx(() -> {
 			Set<String> usedVersionUuids = containerDao.findActiveSchemaVersions().stream()
 					.map(version -> version.getUuid())
@@ -91,6 +100,7 @@ public abstract class ContentVersionPurgeJobProcessor<
 					.flatMap(ms -> StreamUtil.toStream(containerDao.findAllVersions(ms)))
 					.filter(msv -> !usedVersionUuids.contains(msv.getUuid()))
 					.filter(msv -> containerDao.countVersionEdges(msv) < 1)
+					.peek(msv -> job.getWarnings().add(new JobWarning().setType("purged").setMessage(msv.getName() + " / " + msv.getVersion() + " / " + msv.getUuid())))
 					.forEach(msv -> containerDao.deleteVersion(msv));
 		}));
 	}
