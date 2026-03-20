@@ -1,0 +1,2 @@
+Core: Now it is possible to purge empty (micro)schema versions automatically, via new background jobs. This will save database and runtime resources.
+ The purge process is triggered via REST API `DELETE /schemas/` and `DELETE /microschemas/` respectively.
