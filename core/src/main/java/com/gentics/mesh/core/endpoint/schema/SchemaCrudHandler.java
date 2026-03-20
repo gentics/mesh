@@ -98,7 +98,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 			// Delegate to handle update which will create the schema
 			if (delegateToCreate) {
 				ac.skipWriteLock();
-				super.handleUpdate(ac, uuid);
+				super.handleUpdate(ac, uuid, createInexisting);
 				return;
 			}
 
