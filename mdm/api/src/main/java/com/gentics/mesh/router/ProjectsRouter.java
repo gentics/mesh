@@ -6,7 +6,7 @@ import javax.naming.InvalidNameException;
 
 import io.vertx.ext.web.Router;
 
-public interface ProjectsRouter {
+public interface ProjectsRouter extends InternalRouter {
 
 	/**
 	 * Common router which holds project specific routes (e.g: /nodes /tagFamilies)

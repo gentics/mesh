@@ -9,22 +9,8 @@ import io.vertx.core.shareddata.Shareable;
  * Marker interface for all rest models.
  */
 @GenerateDocumentation
-public interface RestModel extends Shareable {
+public interface RestModel extends com.gentics.vertx.openapi.model.RestModel, Shareable {
 
-	/**
-	 * Transforms the model into a JSON string, with pretty formatting.
-	 * 
-	 * @return
-	 */
-	default String toJson() {
-		return toJson(true);
-	}
-
-	/**
-	 * Transforms the model into a JSON string.
-	 * 
-	 * @return
-	 */
 	default String toJson(boolean minify) {
 		return JsonUtil.toJson(this, minify);
 	}

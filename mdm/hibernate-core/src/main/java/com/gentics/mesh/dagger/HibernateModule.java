@@ -93,8 +93,6 @@ import com.gentics.mesh.database.HibernateDatabase;
 import com.gentics.mesh.database.cluster.HibClusterManager;
 import com.gentics.mesh.distributed.MasterInfoProvider;
 import com.gentics.mesh.distributed.MasterInfoProviderImpl;
-import com.gentics.mesh.etc.config.HibernateMeshOptions;
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.hibernate.HibernateRootResolver;
 import com.gentics.mesh.hibernate.data.binary.impl.HibBinariesImpl;
 import com.gentics.mesh.hibernate.data.dao.BinaryDaoImpl;
@@ -291,15 +289,6 @@ public abstract class HibernateModule {
 
 	@Binds
 	abstract S3Binaries bindS3Binaries(S3HibBinariesImpl e);
-
-	@Provides
-	public static HibernateMeshOptions hibernateMeshOptions(MeshOptions meshOptions) {
-		if (meshOptions instanceof HibernateMeshOptions) {
-			return (HibernateMeshOptions) meshOptions;
-		} else {
-			throw new IllegalArgumentException("Unsupported MeshOptions class:" + meshOptions.getClass().getCanonicalName());
-		}
-	}
 
 	@Provides
 	@Singleton

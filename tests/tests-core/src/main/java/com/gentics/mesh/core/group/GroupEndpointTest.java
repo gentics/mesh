@@ -113,9 +113,9 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		final String name = "New Name";
 		String uuid = UUIDUtil.randomUUID();
 
-		GroupUpdateRequest request = new GroupUpdateRequest();
+		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName(name);
-		GroupResponse restGroup = call(() -> client().updateGroup(uuid, request));
+		GroupResponse restGroup = call(() -> client().createGroup(uuid, request));
 
 		waitForSearchIdleEvent();
 
@@ -496,6 +496,16 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 				assertNotNull(msg, grp.getRolePerms());
 			}
 		}
+	}
+
+	@Test
+	@Override
+	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
+		final String name = "New Name";
+		GroupUpdateRequest request = new GroupUpdateRequest();
+		request.setName(name);
+		String uuid = UUIDUtil.randomUUID();
+		call(() -> client().updateGroup(uuid, request), NOT_FOUND, "object_not_found_for_uuid", uuid);
 	}
 
 	@Test

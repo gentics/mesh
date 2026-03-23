@@ -1,11 +1,15 @@
 package com.gentics.mesh.parameter.impl;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.raml.model.ParamType;
 import org.raml.model.parameter.QueryParameter;
 
+import com.gentics.mesh.core.rest.job.JobStatus;
+import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.AbstractParameters;
 import com.gentics.mesh.parameter.JobParameters;
@@ -34,9 +38,9 @@ public class JobParametersImpl extends AbstractParameters implements JobParamete
 		Map<String, QueryParameter> parameters = new HashMap<>();
 
 		parameters.put(STATUS_PARAMETER_KEY, createQueryParameter(
-				"Parameter for filtering jobs by their status. Multiple values can be given separated by commas."));
+				"Parameter for filtering jobs by their status. Multiple values can be given separated by commas.", ArrayUtils.toStringArray(JobStatus.values())));
 		parameters.put(TYPE_PARAMETER_KEY, createQueryParameter(
-				"Parameter for filtering jobs by their type. Multiple values can be given separated by commas."));
+				"Parameter for filtering jobs by their type. Multiple values can be given separated by commas.", ArrayUtils.toStringArray(JobType.values())));
 		parameters.put(BRANCH_NAME_PARAMETER_KEY, createQueryParameter(
 				"Parameter for filtering jobs by the branch name. Multiple values can be given separated by commas."));
 		parameters.put(BRANCH_UUID_PARAMETER_KEY, createQueryParameter(
@@ -67,11 +71,15 @@ public class JobParametersImpl extends AbstractParameters implements JobParamete
 	 * @param description parameter description
 	 * @return query parameter
 	 */
-	protected QueryParameter createQueryParameter(String description) {
+	protected QueryParameter createQueryParameter(String description, String... enumValues) {
 		QueryParameter param = new QueryParameter();
 		param.setDescription(description);
 		param.setType(ParamType.STRING);
-		param.setDefaultValue("");
+		if (enumValues.length > 0) {
+			param.setEnumeration(Arrays.asList(enumValues));
+		} else {
+			param.setDefaultValue("");
+		}
 		return param;
 	}
 }

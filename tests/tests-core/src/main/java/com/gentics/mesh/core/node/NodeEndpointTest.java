@@ -1880,6 +1880,22 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	}
 
 	@Test
+	@Override
+	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
+
+		try (Tx tx = tx()) {
+			NodeUpdateRequest request = new NodeUpdateRequest();
+			request.setLanguage("en");
+
+			NodeParametersImpl parameters = new NodeParametersImpl();
+			parameters.setLanguages("en", "de");
+
+			String uuid = UUIDUtil.randomUUID();
+			call(() -> client().updateNode(PROJECT_NAME, uuid, request, parameters), NOT_FOUND, "object_not_found_for_uuid", uuid);
+		}
+	}
+
+	@Test
 	public void testCreateNodeWithExtraField() throws UnknownHostException, InterruptedException {
 		try (Tx tx = tx()) {
 			HibNode parentNode = folder("news");

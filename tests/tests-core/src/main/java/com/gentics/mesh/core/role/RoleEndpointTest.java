@@ -18,6 +18,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -45,6 +46,7 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -453,6 +455,17 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		RoleUpdateRequest request = new RoleUpdateRequest();
 		request.setName("test123");
 		call(() -> client().updateRole(roleUuid(), request), CONFLICT, "role_conflicting_name");
+	}
+
+	@Test
+	@Override
+	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
+		RoleUpdateRequest request = new RoleUpdateRequest();
+		request.setName("renamed role");
+
+		String uuid = UUIDUtil.randomUUID();
+		call(() -> client().updateRole(uuid, request), NOT_FOUND, "object_not_found_for_uuid", uuid);
+
 	}
 
 	@Test

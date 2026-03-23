@@ -6,6 +6,7 @@ import com.gentics.mesh.parameter.impl.BranchParametersImpl;
 import com.gentics.mesh.parameter.impl.ConsistencyCheckParametersImpl;
 import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
 import com.gentics.mesh.parameter.impl.DisplayParametersImpl;
+import com.gentics.mesh.parameter.impl.EtagParametersImpl;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.parameter.impl.ImageManipulationRetrievalParametersImpl;
@@ -78,6 +79,10 @@ public interface ParameterProviderContext extends ActionContext {
 
 	default GenericParameters getGenericParameters() {
 		return new GenericParametersImpl(this);
+	}
+
+	default EtagParameters getEtagParameters() {
+		return new EtagParametersImpl(this);
 	}
 
 	default ImageManipulationRetrievalParameters getImageManipulationRetrievalParameters() {

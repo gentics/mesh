@@ -7,6 +7,7 @@ import static com.gentics.mesh.core.rest.event.EventCauseAction.DELETE;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
@@ -162,6 +163,20 @@ public class HandlerUtilities {
 	}
 
 	/**
+	 * Locate and update or create the element using the action context data.
+	 * 
+	 * @param ac
+	 * @param uuid
+	 *            Uuid of the element which should be updated
+	 * @param actions
+	 *            Handler which provides the root vertex which should be used when loading the element
+	 */
+	public <T extends HibCoreElement<RM>, RM extends RestModel> void updateElement(InternalActionContext ac, String uuid,
+		DAOActions<T, RM> actions, boolean createInexisting) {
+		createOrUpdateElement(ac, null, uuid, actions, createInexisting);
+	}
+
+	/**
 	 * Handle a create/update of the given element by uuid
 	 * 
 	 * @param <T>
@@ -177,7 +192,7 @@ public class HandlerUtilities {
 	 */
 	public <T extends HibCoreElement<RM>, RM extends RestModel> void createOrUpdateElement(InternalActionContext ac, String uuid,
 		DAOActions<T, RM> actions) {
-		createOrUpdateElement(ac, null, uuid, actions);
+		createOrUpdateElement(ac, null, uuid, actions, true);
 	}
 
 	/**
@@ -189,9 +204,10 @@ public class HandlerUtilities {
 	 * @param uuid
 	 *            Uuid of the element to create or update. If null, an element will be created with random Uuid
 	 * @param actions
+	 * @param createInexisting if true, and the existing user with given UUID is not found, a new one will be created.
 	 */
 	public <T extends HibCoreElement<RM>, RM extends RestModel> void createOrUpdateElement(InternalActionContext ac, Function<Tx, Object> parentLoader,
-		String uuid, DAOActions<T, RM> actions) {
+		String uuid, DAOActions<T, RM> actions, boolean createInexisting) {
 		ac.setHttpServerConfig(meshOptions.getHttpServerOptions());
 		try (WriteLock lock = writeLock.lock(ac)) {
 			AtomicBoolean created = new AtomicBoolean(false);
@@ -215,13 +231,15 @@ public class HandlerUtilities {
 					actions.update(tx, updateElement, ac, bac.batch());
 					RM model = actions.transformToRestSync(tx, updateElement, ac, 0);
 					return model;
-				} else {
+				} else if (createInexisting) {
 					created.set(true);
 					T createdElement =  actions.create(tx, ac, bac.batch(), uuid);
 					RM model = actions.transformToRestSync(tx, createdElement, ac, 0);
 					String path = actions.getAPIPath(tx, ac, createdElement);
 					ac.setLocation(path);
 					return model;
+				} else {
+					throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
 				}
 			}, model -> ac.send(model, created.get() ? CREATED : OK));
 		}
@@ -266,7 +284,7 @@ public class HandlerUtilities {
 			T element = actions.loadByUuid(context(tx, ac, parent), uuid, perm, true);
 
 			// Handle etag
-			if (ac.getGenericParameters().getETag()) {
+			if (ac.getEtagParameters().getETag()) {
 				String etag = actions.getETag(tx, ac, element);
 				ac.setEtag(etag, true);
 				if (ac.matches(etag, true)) {

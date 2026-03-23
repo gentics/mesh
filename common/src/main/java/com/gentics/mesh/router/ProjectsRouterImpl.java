@@ -36,9 +36,9 @@ public class ProjectsRouterImpl implements ProjectsRouter {
 
 	private final Vertx vertx;
 
-	private APIRouterImpl apiRouter;
+	private final APIRouterImpl apiRouter;
 
-	private Router router;
+	private final Router router;
 
 	public ProjectsRouterImpl(Vertx vertx, APIRouterImpl apiRouter) {
 		this.vertx = vertx;
@@ -121,4 +121,8 @@ public class ProjectsRouterImpl implements ProjectsRouter {
 		return projectRouter;
 	}
 
+	@Override
+	public Router getRouter() {
+		return router;
+	}
 }

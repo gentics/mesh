@@ -16,7 +16,6 @@ import static com.gentics.mesh.example.ExampleUuids.NODE_DELOREAN_UUID;
 import static com.gentics.mesh.example.ExampleUuids.TAG_RED_UUID;
 import static com.gentics.mesh.example.ExampleUuids.UUID_1;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
-import static com.gentics.mesh.http.HttpConstants.APPLICATION_OCTET_STREAM;
 import static com.gentics.mesh.http.HttpConstants.MULTIPART_FORM_DATA;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
@@ -26,11 +25,14 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
+import static io.vertx.core.http.HttpMethod.PUT;
 
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
+import org.raml.model.ParamType;
 import org.raml.model.Resource;
+import org.raml.model.parameter.QueryParameter;
 
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -40,6 +42,7 @@ import com.gentics.mesh.core.endpoint.RolePermissionHandlingProjectEndpoint;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.BranchParametersImpl;
 import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
@@ -54,6 +57,7 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 
 import io.vertx.core.MultiMap;
+import io.vertx.core.json.JsonObject;
 
 /**
  * The content verticle adds rest endpoints for manipulating nodes.
@@ -176,6 +180,8 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		endpoint.addUriParameter("language", "Language tag of the content which should be deleted.", "en");
 		endpoint.method(DELETE);
 		endpoint.produces(APPLICATION_JSON);
+		endpoint.addQueryParameters(DeleteParametersImpl.class);
+		endpoint.addQueryParameters(BranchParametersImpl.class);
 		endpoint.description("Delete the language specific content of the node.");
 		endpoint.exampleResponse(NO_CONTENT, "Language variation of the node has been deleted.");
 		endpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
@@ -189,11 +195,16 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 	}
 
 	private void addBinaryHandlers() {
+		QueryParameter publishQueryParameter = new QueryParameter();
+		publishQueryParameter.setDescription("Should the saved data be published at once");
+		publishQueryParameter.setDefaultValue("false");
+		publishQueryParameter.setType(ParamType.BOOLEAN);
+
 		InternalEndpointRoute fieldUpdate = createRoute();
 		fieldUpdate.path("/:nodeUuid/binary/:fieldName");
 		fieldUpdate.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
 		fieldUpdate.addUriParameter("fieldName", "Name of the field which should be created.", "stringField");
-		fieldUpdate.addUriParameter("publish", "Whether the node shall be published after updating the binary field", "true");
+		fieldUpdate.addQueryParameter("publish", publishQueryParameter);
 		fieldUpdate.method(POST);
 		fieldUpdate.consumes(MULTIPART_FORM_DATA);
 		fieldUpdate.produces(APPLICATION_JSON);
@@ -253,6 +264,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		fieldGet.addQueryParameters(ImageManipulationParametersImpl.class);
 		fieldGet.addQueryParameters(VersioningParametersImpl.class);
 		fieldGet.method(GET);
+		fieldGet.produces("*/*");
 		fieldGet.description(
 			"Download the binary field with the given name. You can use image query parameters for crop and resize if the binary data represents an image.");
 		fieldGet.blockingHandler(rc -> {
@@ -569,25 +581,45 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 	// TODO use schema and only handle those i18n properties that were specified
 	// within the schema.
 	private void addUpdateHandler() {
-		InternalEndpointRoute endpoint = createRoute();
-		endpoint.description("Update or create the node with the given uuid. "
+		InternalEndpointRoute postEndpoint = createRoute();
+		postEndpoint.description("Update or create the node with the given uuid. "
 			+ "Mesh will automatically check for version conflicts if a version was specified in the request and return a 409 error if a conflict has been detected. "
 			+ "Additional conflict checks for WebRoot path conflicts will also be performed. The node is created if no node with the specified uuid could be found.");
+		postEndpoint.path("/:nodeUuid");
+		postEndpoint.addUriParameter("nodeUuid", "Uuid of the node", NODE_DELOREAN_UUID);
+		postEndpoint.method(POST);
+		postEndpoint.consumes(APPLICATION_JSON);
+		postEndpoint.produces(APPLICATION_JSON);
+		postEndpoint.exampleRequest(new JsonObject(JsonUtil.toJson(nodeExamples.getNodeCreateRequest2())));
+		postEndpoint.exampleResponse(OK, nodeExamples.getNodeResponse2(), "New or updated node.");
+		postEndpoint.exampleResponse(CONFLICT, miscExamples.createMessageResponse(), "A conflict has been detected.");
+		postEndpoint.events(NODE_UPDATED, NODE_CREATED, NODE_CONTENT_CREATED, NODE_UPDATED);
+		postEndpoint.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String uuid = ac.getParameter("nodeUuid");
+			ac.getVersioningParameters().setVersion("draft");
+			crudHandler.handleUpdate(ac, uuid);
+		}, isOrderedBlockingHandlers());
+
+		InternalEndpointRoute endpoint = createRoute();
+		endpoint.description("Update the node with the given uuid. "
+			+ "Mesh will automatically check for version conflicts if a version was specified in the request and return a 409 error if a conflict has been detected. "
+			+ "Additional conflict checks for WebRoot path conflicts will also be performed.");
 		endpoint.path("/:nodeUuid");
 		endpoint.addUriParameter("nodeUuid", "Uuid of the node", NODE_DELOREAN_UUID);
-		endpoint.method(POST);
+		endpoint.method(PUT);
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(nodeExamples.getNodeUpdateRequest());
 		endpoint.exampleResponse(OK, nodeExamples.getNodeResponse2(), "Updated node.");
 		endpoint.exampleResponse(CONFLICT, miscExamples.createMessageResponse(), "A conflict has been detected.");
 		endpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
-		endpoint.events(NODE_UPDATED, NODE_CREATED, NODE_CONTENT_CREATED, NODE_UPDATED);
+		endpoint.events(NODE_UPDATED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");
 			ac.getVersioningParameters().setVersion("draft");
-			crudHandler.handleUpdate(ac, uuid);
+			crudHandler.handleUpdate(ac, uuid, false);
 		}, isOrderedBlockingHandlers());
 	}
 

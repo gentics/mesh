@@ -20,6 +20,8 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.parameter.impl.GenericParametersImpl;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 
@@ -75,6 +77,8 @@ public class ProjectSchemaEndpoint extends AbstractProjectEndpoint {
 		readAll.path("/");
 		readAll.method(GET);
 		readAll.description("Read multiple schemas and return a paged list response.");
+		readAll.addQueryParameters(PagingParametersImpl.class);
+		readAll.addQueryParameters(GenericParametersImpl.class);
 		readAll.exampleResponse(OK, schemaExamples.getSchemaListResponse(), "Loaded list of schemas.");
 		readAll.produces(APPLICATION_JSON);
 		readAll.blockingHandler(rc -> {

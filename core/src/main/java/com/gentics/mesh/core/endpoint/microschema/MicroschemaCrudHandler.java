@@ -62,7 +62,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<HibMicroschema, 
 	}
 
 	@Override
-	public void handleUpdate(InternalActionContext ac, String uuid) {
+	public void handleUpdate(InternalActionContext ac, String uuid, boolean createInexisting) {
 		validateParameter(uuid, "uuid");
 
 		try (WriteLock lock = writeLock.lock(ac)) {
@@ -78,13 +78,13 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<HibMicroschema, 
 				}
 				MicroschemaDao microschemaDao = tx.microschemaDao();
 				HibMicroschema microschema = microschemaDao.findByUuid(uuid);
-				return microschema == null;
+				return microschema == null && createInexisting;
 			});
 
 			// Delegate to handle update which will create the microschema
 			if (delegateToCreate) {
 				ac.skipWriteLock();
-				super.handleUpdate(ac, uuid);
+				super.handleUpdate(ac, uuid, createInexisting);
 				return;
 			}
 

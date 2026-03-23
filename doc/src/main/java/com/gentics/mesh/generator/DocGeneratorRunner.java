@@ -1,12 +1,6 @@
 package com.gentics.mesh.generator;
 
-import com.gentics.mesh.etc.config.env.EnvironmentVariable;
-import com.gentics.mesh.generator.TableGenerator;
-import com.github.jknack.handlebars.Handlebars;
-import com.github.jknack.handlebars.Template;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.reflections.Reflections;
+import static org.reflections.scanners.Scanners.FieldsAnnotated;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,7 +13,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import static org.reflections.scanners.Scanners.FieldsAnnotated;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.reflections.Reflections;
+
+import com.gentics.mesh.etc.config.env.EnvironmentVariable;
+import com.github.jknack.handlebars.Handlebars;
+import com.github.jknack.handlebars.Template;
 
 /**
  * Class responsible for invoking all documentation generators.

@@ -17,6 +17,7 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.rest.SortOrder;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.lang.LanguageListResponse;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -122,6 +123,12 @@ public class LanguageEndpointTest extends AbstractMeshTest implements BasicRestT
 	@Ignore
 	@Test
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
+	}
+
+	@Override
+	@Ignore("No Language creation allowed")
+	@Test
+	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
 	}
 
 	@Override
