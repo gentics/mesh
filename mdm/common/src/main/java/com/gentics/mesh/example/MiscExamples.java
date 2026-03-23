@@ -4,9 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
-
 import com.gentics.mesh.core.rest.auth.LoginRequest;
 import com.gentics.mesh.core.rest.auth.TokenResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -63,17 +60,13 @@ public class MiscExamples extends AbstractExamples {
 		return message;
 	}
 
-	public JSONObject getSearchQueryExample() {
-		JSONObject node = new JSONObject();
-		try {
-			JSONObject query = new JSONObject();
-			JSONObject queryString = new JSONObject();
-			queryString.put("query", "some name");
-			query.put("query_string", queryString);
-			node.put("query", query);
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
+	public JsonObject getSearchQueryExample() {
+		JsonObject node = new JsonObject();
+		JsonObject query = new JsonObject();
+		JsonObject queryString = new JsonObject();
+		queryString.put("query", "some name");
+		query.put("query_string", queryString);
+		node.put("query", query);
 		return node;
 	}
 

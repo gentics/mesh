@@ -96,12 +96,13 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.core.rest.validation.SchemaValidationResponse;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.parameter.BackupParameters;
 import com.gentics.mesh.parameter.BranchParameters;
+import com.gentics.mesh.parameter.ConsistencyCheckParameters;
 import com.gentics.mesh.parameter.DeleteParameters;
 import com.gentics.mesh.parameter.EtagParameters;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
+import com.gentics.mesh.parameter.IndexMaintenanceParameters;
 import com.gentics.mesh.parameter.JobParameters;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -110,8 +111,10 @@ import com.gentics.mesh.parameter.ProjectLoadParameters;
 import com.gentics.mesh.parameter.PublishParameters;
 import com.gentics.mesh.parameter.RolePermissionParameters;
 import com.gentics.mesh.parameter.SchemaUpdateParameters;
+import com.gentics.mesh.parameter.SearchParameters;
 import com.gentics.mesh.parameter.SortingParameters;
 import com.gentics.mesh.parameter.VersioningParameters;
+import com.gentics.mesh.parameter.impl.ConsistencyCheckParametersImpl;
 import com.gentics.mesh.rest.JWTAuthentication;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshRequest;
@@ -868,133 +871,127 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 
 	@Override
 	public MeshRequest<EmptyResponse> deleteUser(String uuid) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2UsersUserUuidDeleteWithHttpInfo(uuid), EmptyResponse.class);
 	}
 
 	@Override
 	public MeshRequest<UserListResponse> findUsersOfGroup(String groupUuid, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2GroupsGroupUuidUsersGetWithHttpInfo(groupUuid,
+				findParameter(SortingParameters.SORT_BY_PARAMETER_KEY, parameters), 
+				findParameter(PagingParameters.PAGE_PARAMETER_KEY, parameters), 
+				findParameter(PagingParameters.PER_PAGE_PARAMETER_KEY, parameters),
+				findParameter(SortingParameters.SORT_ORDER_PARAMETER_KEY, parameters)), UserListResponse.class);
 	}
 
 	@Override
 	public MeshRequest<UserPermissionResponse> readUserPermissions(String uuid, String pathToElement) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2UsersUserUuidPermissionsPathGetWithHttpInfo(pathToElement, uuid), UserPermissionResponse.class);
 	}
 
 	@Override
 	public MeshRequest<UserResetTokenResponse> getUserResetToken(String userUuid) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2UsersUserUuidResetTokenPostWithHttpInfo(userUuid), UserResetTokenResponse.class);
 	}
 
 	@Override
 	public MeshRequest<UserAPITokenResponse> issueAPIToken(String userUuid) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2UsersUserUuidTokenPostWithHttpInfo(userUuid), UserAPITokenResponse.class);
 	}
 
 	@Override
 	public MeshRequest<GenericMessageResponse> invalidateAPIToken(String userUuid) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2UsersUserUuidTokenDeleteWithHttpInfo(userUuid), GenericMessageResponse.class);
 	}
 
 	@Override
 	public MeshRequest<ObjectPermissionResponse> getUserRolePermissions(String uuid) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2UsersUserUuidRolePermissionsGetWithHttpInfo(uuid), ObjectPermissionResponse.class);
 	}
 
 	@Override
 	public MeshRequest<ObjectPermissionResponse> grantUserRolePermissions(String uuid,
 			ObjectPermissionGrantRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2UsersUserUuidRolePermissionsPostWithHttpInfo(uuid, adaptRequest(request)), ObjectPermissionResponse.class);
 	}
 
 	@Override
 	public MeshRequest<ObjectPermissionResponse> revokeUserRolePermissions(String uuid,
 			ObjectPermissionRevokeRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2UsersUserUuidRolePermissionsPutWithHttpInfo(uuid, adaptRequest(request)), ObjectPermissionResponse.class);
 	}
 
 	@Override
 	public MeshRequest<RoleResponse> findRoleByUuid(String uuid, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2RolesRoleUuidGetWithHttpInfo(uuid,
+				findParameter(GenericParameters.FIELDS_PARAM_KEY, parameters),
+				findParameter(GenericParameters.ETAG_PARAM_KEY, parameters)), RoleResponse.class);
 	}
 
 	@Override
-	public MeshRequest<RoleListResponse> findRoles(ParameterProvider... parameter) {
-		// TODO Auto-generated method stub
-		return null;
+	public MeshRequest<RoleListResponse> findRoles(ParameterProvider... parameters) {
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2RolesGetWithHttpInfo(
+				findParameter(SortingParameters.SORT_BY_PARAMETER_KEY, parameters), 
+				findParameter(GenericParameters.ETAG_PARAM_KEY, parameters),
+				findParameter(PagingParameters.PAGE_PARAMETER_KEY, parameters), 
+				findParameter(PagingParameters.PER_PAGE_PARAMETER_KEY, parameters),
+				findParameter(GenericParameters.FIELDS_PARAM_KEY, parameters),
+				findParameter(SortingParameters.SORT_ORDER_PARAMETER_KEY, parameters)), RoleListResponse.class);
 	}
 
 	@Override
 	public MeshRequest<RoleResponse> createRole(RoleCreateRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2RolesPostWithHttpInfo(adaptRequest(request)), RoleResponse.class);
 	}
 
 	@Override
 	public MeshRequest<RoleResponse> createRole(String uuid, RoleCreateRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2RolesRoleUuidPostWithHttpInfo(uuid, adaptRequest(request)), RoleResponse.class);
 	}
 
 	@Override
 	public MeshRequest<EmptyResponse> deleteRole(String uuid) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2RolesRoleUuidDeleteWithHttpInfo(uuid), EmptyResponse.class);
 	}
 
 	@Override
 	public MeshRequest<RoleListResponse> findRolesForGroup(String groupUuid, ParameterProvider... parameter) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2GroupsGroupUuidRolesGetWithHttpInfo(groupUuid,
+				groupUuid, null, null, groupUuid, groupUuid), RoleListResponse.class);
 	}
 
 	@Override
 	public MeshRequest<GenericMessageResponse> updateRolePermissions(String roleUuid, String pathToElement,
 			RolePermissionRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2RolesRoleUuidPermissionsPathPostWithHttpInfo(pathToElement, roleUuid, adaptRequest(request)), GenericMessageResponse.class);
 	}
 
 	@Override
 	public MeshRequest<RolePermissionResponse> readRolePermissions(String roleUuid, String pathToElement) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2RolesRoleUuidPermissionsPathGetWithHttpInfo(pathToElement, roleUuid), RolePermissionResponse.class);
 	}
 
 	@Override
 	public MeshRequest<RoleResponse> updateRole(String uuid, RoleUpdateRequest restRole) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2RolesRoleUuidPostWithHttpInfo(uuid, adaptRequest(restRole)), RoleResponse.class);
 	}
 
 	@Override
-	public MeshRequest<ObjectPermissionResponse> getRoleRolePermissions(String uuid) {
-		// TODO Auto-generated method stub
-		return null;
+	public MeshRequest<ObjectPermissionResponse> getRoleRolePermissions(String uuid, ParameterProvider... parameters) {
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2RolesRoleUuidGetWithHttpInfo(uuid,
+				findParameter(GenericParameters.FIELDS_PARAM_KEY, parameters),
+				findParameter(GenericParameters.ETAG_PARAM_KEY, parameters)), ObjectPermissionResponse.class);
 	}
 
 	@Override
 	public MeshRequest<ObjectPermissionResponse> grantRoleRolePermissions(String uuid,
 			ObjectPermissionGrantRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2RolesRoleUuidRolePermissionsPostWithHttpInfo(uuid, adaptRequest(request)), ObjectPermissionResponse.class);
 	}
 
 	@Override
 	public MeshRequest<ObjectPermissionResponse> revokeRoleRolePermissions(String uuid,
 			ObjectPermissionRevokeRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2RolesRoleUuidRolePermissionsPutWithHttpInfo(uuid, adaptRequest(request)), ObjectPermissionResponse.class);
 	}
 
 	@Override
@@ -1021,32 +1018,44 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 
 	@Override
 	public MeshRequest<UserResponse> me(ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2AuthMeGetWithHttpInfo(), UserResponse.class);
 	}
 
 	@Override
 	public MeshRequest<NodeListResponse> searchNodes(String json, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2SearchNodesPostWithHttpInfo(json, 
+				findParameter(SearchParameters.WAIT_PARAMETER_KEY, parameters),
+				findParameter(PagingParameters.PER_PAGE_PARAMETER_KEY, parameters),
+				findParameter(SortingParameters.SORT_BY_PARAMETER_KEY, parameters), 
+				findParameter(GenericParameters.ETAG_PARAM_KEY, parameters),
+				findParameter(PagingParameters.PAGE_PARAMETER_KEY, parameters), 
+				findParameter(GenericParameters.FIELDS_PARAM_KEY, parameters),
+				findParameter(BranchParameters.BRANCH_QUERY_PARAM_KEY, parameters),
+				findParameter(SortingParameters.SORT_ORDER_PARAMETER_KEY, parameters)), NodeListResponse.class);
 	}
 
 	@Override
 	public MeshRequest<ObjectNode> searchNodesRaw(String json, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2RawSearchNodesPost(json, 
+				findParameter(SearchParameters.WAIT_PARAMETER_KEY, parameters)), ObjectNode.class);
 	}
 
 	@Override
 	public MeshRequest<NodeListResponse> searchNodes(String projectName, String json, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectSearchNodesPostWithHttpInfo(json, projectName, 
+				findParameter(SearchParameters.WAIT_PARAMETER_KEY, parameters),
+				findParameter(PagingParameters.PER_PAGE_PARAMETER_KEY, parameters),
+				findParameter(SortingParameters.SORT_BY_PARAMETER_KEY, parameters), 
+				findParameter(GenericParameters.ETAG_PARAM_KEY, parameters),
+				findParameter(PagingParameters.PAGE_PARAMETER_KEY, parameters), 
+				findParameter(GenericParameters.FIELDS_PARAM_KEY, parameters),
+				findParameter(SortingParameters.SORT_ORDER_PARAMETER_KEY, parameters)), NodeListResponse.class);
 	}
 
 	@Override
 	public MeshRequest<ObjectNode> searchNodesRaw(String projectName, String json, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectRawSearchNodesPostWithHttpInfo(json, projectName, 
+				findParameter(SearchParameters.WAIT_PARAMETER_KEY, parameters)), ObjectNode.class);
 	}
 
 	@Override
@@ -1172,165 +1181,122 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 
 	@Override
 	public MeshRequest<GenericMessageResponse> invokeIndexClear(ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2SearchClearPostWithHttpInfo(
+				findParameter(IndexMaintenanceParameters.INDEX_PARAMETER_KEY, parameters)), GenericMessageResponse.class);
 	}
 
 	@Override
 	public MeshRequest<GenericMessageResponse> invokeIndexSync(ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2SearchSyncPostWithHttpInfo(
+				findParameter(IndexMaintenanceParameters.INDEX_PARAMETER_KEY, parameters)), GenericMessageResponse.class);
 	}
 
 	@Override
 	public MeshRequest<SearchStatusResponse> searchStatus() {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2SearchStatusGetWithHttpInfo(), SearchStatusResponse.class);
 	}
 
 	@Override
 	public MeshRequest<MeshStatusResponse> meshStatus() {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2AdminStatusGetWithHttpInfo(), MeshStatusResponse.class);
 	}
 
 	@Override
 	public MeshRequest<ClusterStatusResponse> clusterStatus() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public MeshRequest<GenericMessageResponse> invokeBackup() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public MeshRequest<GenericMessageResponse> invokeBackup(BackupParameters parameters) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public MeshRequest<GenericMessageResponse> invokeExport() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public MeshRequest<GenericMessageResponse> invokeRestore() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public MeshRequest<GenericMessageResponse> invokeImport() {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2AdminClusterStatusGetWithHttpInfo(), ClusterStatusResponse.class);
 	}
 
 	@Override
 	public MeshRequest<ConsistencyCheckResponse> checkConsistency(ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2AdminConsistencyCheckGetWithHttpInfo(
+				findParameter(ConsistencyCheckParameters.ASYNC_PARAMETER_KEY, parameters)), ConsistencyCheckResponse.class);
 	}
 
 	@Override
 	public MeshRequest<ConsistencyCheckResponse> repairConsistency(ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2AdminConsistencyRepairPostWithHttpInfo(
+				findParameter(ConsistencyCheckParameters.ASYNC_PARAMETER_KEY, parameters)), ConsistencyCheckResponse.class);
 	}
 
 	@Override
 	public MeshRequest<MeshBinaryResponse> debugInfo(String... include) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2AdminDebuginfoGetWithHttpInfo(Arrays.stream(include).collect(Collectors.joining(","))), MeshBinaryResponse.class);
 	}
 
 	@Override
 	public MeshRequest<CoordinatorMasterResponse> loadCoordinationMaster() {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2AdminCoordinatorMasterGetWithHttpInfo(), CoordinatorMasterResponse.class);
 	}
 
 	@Override
 	public MeshRequest<GenericMessageResponse> setCoordinationMaster() {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2AdminCoordinatorMasterPostWithHttpInfo(), GenericMessageResponse.class);
 	}
 
 	@Override
 	public MeshRequest<GenericMessageResponse> clearCache() {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2AdminCacheDeleteWithHttpInfo(), GenericMessageResponse.class);
 	}
 
 	@Override
 	public MeshRequest<PluginResponse> deployPlugin(PluginDeploymentRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2AdminPluginsPostWithHttpInfo(adaptRequest(request)), PluginResponse.class);
 	}
 
 	@Override
 	public MeshRequest<PluginListResponse> findPlugins(ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2AdminPluginsGetWithHttpInfo(
+				findParameter(SortingParameters.SORT_BY_PARAMETER_KEY, parameters), 
+				findParameter(PagingParameters.PAGE_PARAMETER_KEY, parameters), 
+				findParameter(PagingParameters.PER_PAGE_PARAMETER_KEY, parameters),
+				findParameter(SortingParameters.SORT_ORDER_PARAMETER_KEY, parameters)), PluginListResponse.class);
 	}
 
 	@Override
 	public MeshRequest<PluginResponse> findPlugin(String id) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2AdminPluginsIdGetWithHttpInfo(id), PluginResponse.class);
 	}
 
 	@Override
 	public MeshRequest<GenericMessageResponse> undeployPlugin(String id) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2AdminPluginsIdDeleteWithHttpInfo(id), GenericMessageResponse.class);
 	}
 
 	@Override
 	public MeshRequest<MicroschemaResponse> createMicroschema(MicroschemaCreateRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2MicroschemasPostWithHttpInfo(adaptRequest(request)), MicroschemaResponse.class);
 	}
 
 	@Override
 	public MeshRequest<MicroschemaResponse> createMicroschema(String uuid, MicroschemaCreateRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2MicroschemasMicroschemaUuidPostWithHttpInfo(uuid, adaptRequest(request)), MicroschemaResponse.class);
 	}
 
 	@Override
 	public MeshRequest<MicroschemaResponse> findMicroschemaByUuid(String uuid, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2MicroschemasMicroschemaUuidGetWithHttpInfo(uuid, 
+				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, parameters)), MicroschemaResponse.class);
 	}
 
 	@Override
 	public MeshRequest<GenericMessageResponse> updateMicroschema(String uuid, MicroschemaUpdateRequest request,
 			ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2MicroschemasMicroschemaUuidPutWithHttpInfo(uuid, adaptRequest(request)), GenericMessageResponse.class);
 	}
 
 	@Override
 	public MeshRequest<EmptyResponse> deleteMicroschema(String uuid) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2MicroschemasMicroschemaUuidDeleteWithHttpInfo(uuid), EmptyResponse.class);
 	}
 
 	@Override
 	public MeshRequest<GenericMessageResponse> applyChangesToMicroschema(String uuid, SchemaChangesListModel changes) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2MicroschemasMicroschemaUuidChangesPostWithHttpInfo(uuid, adaptRequest(changes)), GenericMessageResponse.class);
 	}
 
 	@Override
 	public MeshRequest<SchemaChangesListModel> diffMicroschema(String uuid, MicroschemaModel request) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2MicroschemasMicroschemaUuidDiffPostWithHttpInfo(uuid, adaptRequest(request)), SchemaChangesListModel.class);
 	}
 
 	@Override

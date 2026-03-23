@@ -169,7 +169,7 @@ public class MicroschemaEndpoint extends RolePermissionHandlingEndpoint {
 		upserEndpoint.method(POST);
 		upserEndpoint.produces(APPLICATION_JSON);
 		upserEndpoint.consumes(APPLICATION_JSON);
-		upserEndpoint.exampleRequest(microschemaExamples.getGeolocationMicroschemaUpdateRequest());
+		upserEndpoint.exampleRequest(microschemaExamples.getGeolocationMicroschemaCreateRequest());
 		// endpoint.exampleResponse(OK, microschemaExamples.getGeolocationMicroschemaResponse(), "Updated microschema.");
 		upserEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Migration message.");
 		upserEndpoint.description("Update or create the microschema with the given uuid.");
