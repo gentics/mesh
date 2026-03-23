@@ -3,6 +3,7 @@ package com.gentics.mesh.core.jobs;
 import javax.inject.Inject;
 
 import com.gentics.mesh.core.data.dao.PersistingBranchDao;
+import com.gentics.mesh.core.data.dao.PersistingJobDao;
 import com.gentics.mesh.core.data.dao.PersistingMicroschemaDao;
 import com.gentics.mesh.core.data.dao.PersistingProjectDao;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
@@ -19,7 +20,7 @@ import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 public class MicroschemaVersionPurgeJobProcessor extends ContentVersionPurgeJobProcessor<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschema, HibMicroschemaVersion, MicroschemaModel> {
 
 	@Inject
-	public MicroschemaVersionPurgeJobProcessor(Database db, PersistingMicroschemaDao containerDao,	PersistingProjectDao projectDao, PersistingBranchDao branchDao) {
-		super(db, containerDao, projectDao, branchDao);
+	public MicroschemaVersionPurgeJobProcessor(Database db, PersistingJobDao jobDao, PersistingMicroschemaDao containerDao,	PersistingProjectDao projectDao, PersistingBranchDao branchDao) {
+		super(db, jobDao, containerDao, projectDao, branchDao);
 	}
 }
