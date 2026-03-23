@@ -6,9 +6,6 @@ import static com.gentics.mesh.core.rest.job.JobStatus.FAILED;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.gentics.mesh.core.data.dao.JobDao;
 import com.gentics.mesh.core.data.dao.PersistingBranchDao;
 import com.gentics.mesh.core.data.dao.PersistingContainerDao;
@@ -36,7 +33,7 @@ import io.reactivex.Completable;
  * @param <SCV>
  * @param <M>
  */
-public abstract class ContentVersionPurgeJobProcessor<
+public abstract class ContainerVersionPurgeJobProcessor<
 			R extends FieldSchemaContainer, 
 			RM extends FieldSchemaContainerVersion, 
 			RE extends NameUuidReference<RE>, 
@@ -45,15 +42,13 @@ public abstract class ContentVersionPurgeJobProcessor<
 			M extends FieldSchemaContainer
 		> implements SingleJobProcessor {
 
-	private static final Logger log = LoggerFactory.getLogger(ContentVersionPurgeJobProcessor.class);
-
 	protected final Database db;
 	protected final JobDao jobDao;
 	protected final PersistingContainerDao<R, RM, RE, SC, SCV, M> containerDao;
 	protected final PersistingProjectDao projectDao;
 	protected final PersistingBranchDao branchDao;
 
-	public ContentVersionPurgeJobProcessor(Database db, JobDao jobDao, PersistingContainerDao<R, RM, RE, SC, SCV, M> containerDao,
+	public ContainerVersionPurgeJobProcessor(Database db, JobDao jobDao, PersistingContainerDao<R, RM, RE, SC, SCV, M> containerDao,
 			PersistingProjectDao projectDao, PersistingBranchDao branchDao) {
 		this.containerDao = containerDao;
 		this.projectDao = projectDao;

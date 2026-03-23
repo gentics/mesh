@@ -14,7 +14,7 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 
-public class SchemaVersionPurgeJobProcessor extends ContentVersionPurgeJobProcessor<SchemaResponse, SchemaVersionModel, SchemaReference, HibSchema, HibSchemaVersion, SchemaModel> {
+public class SchemaVersionPurgeJobProcessor extends ContainerVersionPurgeJobProcessor<SchemaResponse, SchemaVersionModel, SchemaReference, HibSchema, HibSchemaVersion, SchemaModel> {
 
 	@Inject
 	public SchemaVersionPurgeJobProcessor(Database db, PersistingJobDao jobDao, PersistingSchemaDao schemaDao, PersistingProjectDao projectDao, PersistingBranchDao branchDao) {

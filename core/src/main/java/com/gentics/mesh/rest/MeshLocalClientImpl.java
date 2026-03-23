@@ -524,6 +524,13 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	}
 
 	@Override
+	public MeshRequest<GenericMessageResponse> purgeMicroschemaVersions() {
+		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
+		microschemaCrudHandler.handlePurge(ac);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
 	public MeshRequest<SchemaResponse> assignSchemaToProject(String projectName, String schemaUuid) {
 		LocalActionContextImpl<SchemaResponse> ac = createContext(SchemaResponse.class);
 		ac.setProject(projectName);

@@ -202,4 +202,10 @@ public interface SchemaClientMethods {
 	 * @return request that returns a status message
 	 */
 	MeshRequest<GenericMessageResponse> purgeSchemaVersions();
+
+	/**
+	 * Request a purge for unused/empty microschema versions.
+	 * @return request that returns a status message
+	 */
+	MeshRequest<GenericMessageResponse> purgeMicroschemaVersions();
 }
