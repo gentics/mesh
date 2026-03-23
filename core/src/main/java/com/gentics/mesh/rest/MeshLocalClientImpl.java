@@ -123,7 +123,6 @@ import com.gentics.mesh.core.rest.user.UserResetTokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.core.rest.validation.SchemaValidationResponse;
-import com.gentics.mesh.parameter.BackupParameters;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.ParameterProvider;
@@ -1632,36 +1631,6 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> invokeBackup() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public MeshRequest<GenericMessageResponse> invokeBackup(BackupParameters backupParameters) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public MeshRequest<GenericMessageResponse> invokeExport() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public MeshRequest<GenericMessageResponse> invokeRestore() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public MeshRequest<GenericMessageResponse> invokeImport() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public MeshRequest<UserAPITokenResponse> issueAPIToken(String userUuid) {
 		// TODO Auto-generated method stub
 		return null;
@@ -2032,8 +2001,8 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	}
 
 	@Override
-	public MeshRequest<ObjectPermissionResponse> getRoleRolePermissions(String uuid) {
-		LocalActionContextImpl<ObjectPermissionResponse> ac = createContext(ObjectPermissionResponse.class);
+	public MeshRequest<ObjectPermissionResponse> getRoleRolePermissions(String uuid, ParameterProvider... parameters) {
+		LocalActionContextImpl<ObjectPermissionResponse> ac = createContext(ObjectPermissionResponse.class, parameters);
 		roleCrudHandler.handleReadPermissions(ac, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}

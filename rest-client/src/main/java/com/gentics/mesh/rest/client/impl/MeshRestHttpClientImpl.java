@@ -105,7 +105,6 @@ import com.gentics.mesh.core.rest.user.UserResetTokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.core.rest.validation.SchemaValidationResponse;
-import com.gentics.mesh.parameter.BackupParameters;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.ParameterProvider;
@@ -1118,31 +1117,6 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> invokeBackup() {
-		return prepareRequest(POST, "/admin/graphdb/backup", GenericMessageResponse.class);
-	}
-
-	@Override
-	public MeshRequest<GenericMessageResponse> invokeBackup(BackupParameters parameters) {
-		return prepareRequest(POST, "/admin/graphdb/backup" + getQuery(getConfig(), parameters), GenericMessageResponse.class);
-	}
-
-	@Override
-	public MeshRequest<GenericMessageResponse> invokeExport() {
-		return prepareRequest(POST, "/admin/graphdb/export", GenericMessageResponse.class);
-	}
-
-	@Override
-	public MeshRequest<GenericMessageResponse> invokeImport() {
-		return prepareRequest(POST, "/admin/graphdb/import", GenericMessageResponse.class);
-	}
-
-	@Override
-	public MeshRequest<GenericMessageResponse> invokeRestore() {
-		return prepareRequest(POST, "/admin/graphdb/restore", GenericMessageResponse.class);
-	}
-
-	@Override
 	public MeshRequest<ConsistencyCheckResponse> checkConsistency(ParameterProvider... parameters) {
 		return prepareRequest(GET, "/admin/consistency/check" + getQuery(getConfig(), parameters), ConsistencyCheckResponse.class);
 	}
@@ -1928,9 +1902,9 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<ObjectPermissionResponse> getRoleRolePermissions(String uuid) {
+	public MeshRequest<ObjectPermissionResponse> getRoleRolePermissions(String uuid, ParameterProvider... parameters) {
 		Util.requireUuid(uuid, "uuid");
-		return prepareRequest(GET, "/roles/" + uuid + "/rolePermissions", ObjectPermissionResponse.class);
+		return prepareRequest(GET, "/roles/" + uuid + "/rolePermissions" + getQuery(getConfig(), parameters), ObjectPermissionResponse.class);
 	}
 
 	@Override

@@ -4,12 +4,8 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
-
-import org.codehaus.jettison.json.JSONObject;
-import org.raml.model.MimeType;
 
 import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
 import com.gentics.mesh.core.db.Database;
@@ -66,17 +62,6 @@ public class InternalEndpointRouteImpl extends com.gentics.vertx.openapi.metadat
 	@Override
 	public InternalEndpointRoute events(MeshEvent... events) {
 		this.events.addAll(Arrays.asList(events));
-		return this;
-	}
-
-	@Override
-	public InternalEndpointRoute exampleRequest(JSONObject jsonObject) {
-		HashMap<String, MimeType> bodyMap = new HashMap<>();
-		MimeType mimeType = new MimeType();
-		String json = jsonObject.toString();
-		mimeType.setExample(json);
-		bodyMap.put("application/json", mimeType);
-		this.exampleRequestMap = bodyMap;
 		return this;
 	}
 

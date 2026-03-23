@@ -29,6 +29,7 @@ import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.impl.ConsistencyCheckParametersImpl;
 import com.gentics.mesh.parameter.impl.JobParametersImpl;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
@@ -139,16 +140,16 @@ public abstract class AdminEndpoint extends AbstractInternalEndpoint {
 		}, isOrderedBlockingHandlers());
 
 		InternalEndpointRoute readEndpoint = createRoute();
-		readEndpoint.path("/plugins/:uuid");
+		readEndpoint.path("/plugins/:id");
 		readEndpoint.method(GET);
 		readEndpoint.description("Loads deployment information for the plugin with the given id.");
 		readEndpoint.produces(APPLICATION_JSON);
-		readEndpoint.addUriParameter("uuid", "Uuid of the plugin.", PLUGIN_1_ID);
+		readEndpoint.addUriParameter("id", "Id of the plugin.", PLUGIN_1_ID);
 		readEndpoint.exampleResponse(OK, adminExamples.createHelloWorldPluginResponse(), "Plugin response.");
 		readEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
-			String uuid = ac.getParameter("uuid");
-			pluginHandler.handleRead(ac, uuid);
+			String id = ac.getParameter("id");
+			pluginHandler.handleRead(ac, id);
 		}, false);
 
 		InternalEndpointRoute readAllEndpoint = createRoute();
@@ -157,6 +158,7 @@ public abstract class AdminEndpoint extends AbstractInternalEndpoint {
 		readAllEndpoint.description("Loads deployment information for all deployed plugins.");
 		readAllEndpoint.produces(APPLICATION_JSON);
 		readAllEndpoint.exampleResponse(OK, adminExamples.createPluginListResponse(), "Plugin list response.");
+		readAllEndpoint.addQueryParameters(PagingParametersImpl.class);
 		readAllEndpoint.blockingHandler(rc -> {
 			pluginHandler.handleReadList(wrap(rc));
 		}, false);

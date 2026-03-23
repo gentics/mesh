@@ -124,7 +124,7 @@ public class RoleEndpoint extends RolePermissionHandlingEndpoint {
 		upsertEndpoint.description("Update the role with the given uuid. The role is created if no role with the specified uuid could be found.");
 		upsertEndpoint.method(POST);
 		upsertEndpoint.consumes(APPLICATION_JSON);
-		upsertEndpoint.exampleRequest(roleExamples.getRoleUpdateRequest("New role name"));
+		upsertEndpoint.exampleRequest(roleExamples.getRoleCreateRequest("New role name"));
 		upsertEndpoint.exampleResponse(OK, roleExamples.getRoleResponse1("New role name"), "Updated or new role.");
 		upsertEndpoint.events(ROLE_UPDATED, ROLE_CREATED);
 		upsertEndpoint.blockingHandler(rc -> {

@@ -119,7 +119,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 
 			assertThat((List) conflictException.getResponseMessage().getProperty("conflicts")).hasSize(1).containsExactly("teaser");
 			assertThat(conflictException.getStatusCode()).isEqualTo(CONFLICT.code());
-			assertThat(conflictException.getMessage()).isEqualTo("Error:409 in POST " + CURRENT_API_BASE_PATH + "/dummy/nodes/" + node.getUuid()
+			assertThat(conflictException.getMessage()).isEqualTo("Error:409 in PUT " + CURRENT_API_BASE_PATH + "/dummy/nodes/" + node.getUuid()
 				+ "?lang=en,de : Conflict Info: " + I18NUtil.get(Locale.ENGLISH, "node_error_conflict_detected"));
 			assertThat(conflictException.getResponseMessage().getProperty("oldVersion")).isEqualTo("1.0");
 			assertThat(conflictException.getResponseMessage().getProperty("newVersion")).isEqualTo("1.2");
@@ -357,7 +357,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 			assertThat(((List) conflictException.getResponseMessage().getProperty("conflicts"))).hasSize(2).containsExactly("micronode.firstName",
 				"micronode.lastName");
 			assertThat(conflictException.getStatusCode()).isEqualTo(CONFLICT.code());
-			assertThat(conflictException.getMessage()).isEqualTo("Error:409 in POST " + CURRENT_API_BASE_PATH + "/dummy/nodes/" + node.getUuid()
+			assertThat(conflictException.getMessage()).isEqualTo("Error:409 in PUT " + CURRENT_API_BASE_PATH + "/dummy/nodes/" + node.getUuid()
 				+ "?lang=en,de : Conflict Info: " + I18NUtil.get(Locale.ENGLISH, "node_error_conflict_detected"));
 			assertThat(conflictException.getResponseMessage().getProperty("oldVersion")).isEqualTo("1.1");
 			assertThat(conflictException.getResponseMessage().getProperty("newVersion")).isEqualTo("1.2");
