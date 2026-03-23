@@ -2,7 +2,6 @@ package com.gentics.mesh.core.jobs;
 
 import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.job.JobStatus.FAILED;
-import static com.gentics.mesh.core.rest.job.JobStatus.RUNNING;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -87,10 +86,6 @@ public abstract class ContentVersionPurgeJobProcessor<
 	 * @return
 	 */
 	protected Completable purge(HibJob job) {
-		db.tx(tx -> {
-			job.setStatus(RUNNING);
-			tx.<CommonTx>unwrap().jobDao().mergeIntoPersisted(job);
-		});
 		return Completable.defer(() -> db.asyncTx(() -> {
 			Set<String> usedVersionUuids = containerDao.findActiveSchemaVersions().stream()
 					.map(version -> version.getUuid())

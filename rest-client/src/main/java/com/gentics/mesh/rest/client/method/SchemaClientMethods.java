@@ -196,4 +196,10 @@ public interface SchemaClientMethods {
 	 * @return mesh request
 	 */
 	MeshRequest<ObjectPermissionResponse> revokeSchemaRolePermissions(String uuid, ObjectPermissionRevokeRequest request);
+
+	/**
+	 * Request a purge for unused/empty schema versions.
+	 * @return request that returns a status message
+	 */
+	MeshRequest<GenericMessageResponse> purgeSchemaVersions();
 }

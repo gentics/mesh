@@ -1965,6 +1965,11 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
+	public MeshRequest<GenericMessageResponse> purgeSchemaVersions() {
+		return prepareRequest(DELETE, "/schemas/", GenericMessageResponse.class);
+	}
+
+	@Override
 	public MeshRequest<ObjectPermissionResponse> getTagFamilyRolePermissions(String projectName, String tagFamilyUuid) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Util.requireUuid(tagFamilyUuid, "tagFamilyUuid");
