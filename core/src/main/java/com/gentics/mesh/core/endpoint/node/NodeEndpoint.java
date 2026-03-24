@@ -42,7 +42,6 @@ import com.gentics.mesh.core.endpoint.RolePermissionHandlingProjectEndpoint;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.BinaryCheckParametersImpl;
 import com.gentics.mesh.parameter.impl.BranchParametersImpl;
 import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
@@ -58,7 +57,6 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 
 import io.vertx.core.MultiMap;
-import io.vertx.core.json.JsonObject;
 
 /**
  * The content verticle adds rest endpoints for manipulating nodes.
@@ -598,7 +596,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		postEndpoint.method(POST);
 		postEndpoint.consumes(APPLICATION_JSON);
 		postEndpoint.produces(APPLICATION_JSON);
-		postEndpoint.exampleRequest(new JsonObject(JsonUtil.toJson(nodeExamples.getNodeCreateRequest2())));
+		postEndpoint.exampleRequest(nodeExamples.getNodeCreateRequest2());
 		postEndpoint.exampleResponse(OK, nodeExamples.getNodeResponse2(), "New or updated node.");
 		postEndpoint.exampleResponse(CONFLICT, miscExamples.createMessageResponse(), "A conflict has been detected.");
 		postEndpoint.events(NODE_UPDATED, NODE_CREATED, NODE_CONTENT_CREATED, NODE_UPDATED);

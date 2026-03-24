@@ -983,9 +983,9 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<ObjectNode> searchUsersRaw(String json) {
+	public MeshRequest<ObjectNode> searchUsersRaw(String json, ParameterProvider... parameters) {
 		Objects.requireNonNull(json, "json must not be null");
-		return handleRequest(POST, "/rawSearch/users", ObjectNode.class, json);
+		return handleRequest(POST, "/rawSearch/users" + getQuery(getConfig(), parameters), ObjectNode.class, json);
 	}
 
 	@Override
@@ -995,9 +995,9 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<ObjectNode> searchGroupsRaw(String json) {
+	public MeshRequest<ObjectNode> searchGroupsRaw(String json, ParameterProvider... parameters) {
 		Objects.requireNonNull(json, "json must not be null");
-		return handleRequest(POST, "/rawSearch/groups", ObjectNode.class, json);
+		return handleRequest(POST, "/rawSearch/groups" + getQuery(getConfig(), parameters), ObjectNode.class, json);
 	}
 
 	@Override
@@ -1007,9 +1007,9 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<ObjectNode> searchRolesRaw(String json) {
+	public MeshRequest<ObjectNode> searchRolesRaw(String json, ParameterProvider... parameters) {
 		Objects.requireNonNull(json, "json must not be null");
-		return handleRequest(POST, "/rawSearch/roles", ObjectNode.class, json);
+		return handleRequest(POST, "/rawSearch/roles" + getQuery(getConfig(), parameters), ObjectNode.class, json);
 	}
 
 	@Override
@@ -1019,9 +1019,9 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<ObjectNode> searchMicroschemasRaw(String json) {
+	public MeshRequest<ObjectNode> searchMicroschemasRaw(String json, ParameterProvider... parameters) {
 		Objects.requireNonNull(json, "json must not be null");
-		return handleRequest(POST, "/rawSearch/microschemas", ObjectNode.class, json);
+		return handleRequest(POST, "/rawSearch/microschemas" + getQuery(getConfig(), parameters), ObjectNode.class, json);
 	}
 
 	@Override
@@ -1031,9 +1031,9 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<ObjectNode> searchProjectsRaw(String json) {
+	public MeshRequest<ObjectNode> searchProjectsRaw(String json, ParameterProvider... parameters) {
 		Objects.requireNonNull(json, "json must not be null");
-		return handleRequest(POST, "/rawSearch/projects", ObjectNode.class, json);
+		return handleRequest(POST, "/rawSearch/projects" + getQuery(getConfig(), parameters), ObjectNode.class, json);
 	}
 
 	@Override
@@ -1043,9 +1043,9 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<ObjectNode> searchTagsRaw(String json) {
+	public MeshRequest<ObjectNode> searchTagsRaw(String json, ParameterProvider... parameters) {
 		Objects.requireNonNull(json, "json must not be null");
-		return handleRequest(POST, "/rawSearch/tags", ObjectNode.class, json);
+		return handleRequest(POST, "/rawSearch/tags" + getQuery(getConfig(), parameters), ObjectNode.class, json);
 	}
 
 	@Override
@@ -1056,10 +1056,10 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<ObjectNode> searchTagsRaw(String projectName, String json) {
+	public MeshRequest<ObjectNode> searchTagsRaw(String projectName, String json, ParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(json, "json must not be null");
-		return handleRequest(POST, "/" + encodeSegment(projectName) + "/rawSearch/tags", ObjectNode.class, json);
+		return handleRequest(POST, "/" + encodeSegment(projectName) + "/rawSearch/tags" + getQuery(getConfig(), parameters), ObjectNode.class, json);
 	}
 
 	@Override
@@ -1069,9 +1069,9 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<ObjectNode> searchSchemasRaw(String json) {
+	public MeshRequest<ObjectNode> searchSchemasRaw(String json, ParameterProvider... parameters) {
 		Objects.requireNonNull(json, "json must not be null");
-		return handleRequest(POST, "/rawSearch/schemas", ObjectNode.class, json);
+		return handleRequest(POST, "/rawSearch/schemas" + getQuery(getConfig(), parameters), ObjectNode.class, json);
 	}
 
 	@Override
@@ -1081,9 +1081,9 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<ObjectNode> searchTagFamiliesRaw(String json) {
+	public MeshRequest<ObjectNode> searchTagFamiliesRaw(String json, ParameterProvider... parameters) {
 		Objects.requireNonNull(json, "json must not be null");
-		return handleRequest(POST, "/rawSearch/tagFamilies", ObjectNode.class, json);
+		return handleRequest(POST, "/rawSearch/tagFamilies" + getQuery(getConfig(), parameters), ObjectNode.class, json);
 	}
 
 	@Override
@@ -1095,10 +1095,10 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<ObjectNode> searchTagFamiliesRaw(String projectName, String json) {
+	public MeshRequest<ObjectNode> searchTagFamiliesRaw(String projectName, String json, ParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(json, "json must not be null");
-		return handleRequest(POST, "/" + encodeSegment(projectName) + "/rawSearch/tagFamilies", ObjectNode.class, json);
+		return handleRequest(POST, "/" + encodeSegment(projectName) + "/rawSearch/tagFamilies" + getQuery(getConfig(), parameters), ObjectNode.class, json);
 	}
 
 	@Override

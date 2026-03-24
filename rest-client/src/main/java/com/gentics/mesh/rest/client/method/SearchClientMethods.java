@@ -77,7 +77,7 @@ public interface SearchClientMethods {
 	 * @param json
 	 * @return
 	 */
-	MeshRequest<ObjectNode> searchUsersRaw(String json);
+	MeshRequest<ObjectNode> searchUsersRaw(String json, ParameterProvider... parameters);
 
 	/**
 	 * Search groups.
@@ -95,7 +95,7 @@ public interface SearchClientMethods {
 	 * @param json
 	 * @return
 	 */
-	MeshRequest<ObjectNode> searchGroupsRaw(String json);
+	MeshRequest<ObjectNode> searchGroupsRaw(String json, ParameterProvider... parameters);
 
 	/**
 	 * Search roles.
@@ -113,7 +113,7 @@ public interface SearchClientMethods {
 	 * @param json
 	 * @return
 	 */
-	MeshRequest<ObjectNode> searchRolesRaw(String json);
+	MeshRequest<ObjectNode> searchRolesRaw(String json, ParameterProvider... parameters);
 
 	/**
 	 * Search projects.
@@ -131,7 +131,7 @@ public interface SearchClientMethods {
 	 * @param json
 	 * @return
 	 */
-	MeshRequest<ObjectNode> searchProjectsRaw(String json);
+	MeshRequest<ObjectNode> searchProjectsRaw(String json, ParameterProvider... parameters);
 
 	/**
 	 * Search tags.
@@ -149,7 +149,7 @@ public interface SearchClientMethods {
 	 * @param json
 	 * @return
 	 */
-	MeshRequest<ObjectNode> searchTagsRaw(String json);
+	MeshRequest<ObjectNode> searchTagsRaw(String json, ParameterProvider... parameters);
 
 	/**
 	 * Search tags in project
@@ -170,7 +170,7 @@ public interface SearchClientMethods {
 	 * @param json
 	 * @return
 	 */
-	MeshRequest<ObjectNode> searchTagsRaw(String projectName, String json);
+	MeshRequest<ObjectNode> searchTagsRaw(String projectName, String json, ParameterProvider... parameters);
 
 	/**
 	 * Search tag families.
@@ -187,7 +187,7 @@ public interface SearchClientMethods {
 	 * @param json
 	 * @return
 	 */
-	MeshRequest<ObjectNode> searchTagFamiliesRaw(String json);
+	MeshRequest<ObjectNode> searchTagFamiliesRaw(String json, ParameterProvider... parameters);
 
 	/**
 	 * Search tag families in project.
@@ -206,7 +206,7 @@ public interface SearchClientMethods {
 	 * @param json
 	 * @return
 	 */
-	MeshRequest<ObjectNode> searchTagFamiliesRaw(String projectName, String json);
+	MeshRequest<ObjectNode> searchTagFamiliesRaw(String projectName, String json, ParameterProvider... parameters);
 
 	/**
 	 * Search schemas.
@@ -224,7 +224,7 @@ public interface SearchClientMethods {
 	 * @param json
 	 * @return
 	 */
-	MeshRequest<ObjectNode> searchSchemasRaw(String json);
+	MeshRequest<ObjectNode> searchSchemasRaw(String json, ParameterProvider... parameters);
 
 	/**
 	 * Search microschemas.
@@ -243,7 +243,7 @@ public interface SearchClientMethods {
 	 *            Elasticsearch search request
 	 * @return
 	 */
-	MeshRequest<ObjectNode> searchMicroschemasRaw(String json);
+	MeshRequest<ObjectNode> searchMicroschemasRaw(String json, ParameterProvider... parameters);
 
 	/**
 	 * Clear all search indices by removing and re-creating them.
