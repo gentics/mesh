@@ -331,6 +331,8 @@ public abstract class AdminEndpoint extends AbstractInternalEndpoint {
 		postRoute.method(POST);
 		postRoute.setMutating(false);
 		postRoute.produces(APPLICATION_JSON);
+		postRoute.consumes(APPLICATION_JSON);
+		postRoute.exampleRequest(localConfig.createExample());
 		postRoute.description("Sets the currently active local configuration of this instance.");
 		postRoute.exampleResponse(OK, localConfig.createExample(), "The currently active local configuration");
 		postRoute.handler(rc -> localConfigHandler.handleSetActiveConfig(wrap(rc)));

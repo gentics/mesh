@@ -1197,18 +1197,13 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	@Override
 	public MeshRequest<MeshBinaryResponse> downloadBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey, long from,
 		long to, ParameterProvider... parameters) {
-		Objects.requireNonNull(projectName, "projectName must not be null");
-		Util.requireUuid(nodeUuid, "nodeUuid");
-		Objects.requireNonNull(fieldKey, "fieldKey must not be null");
 		Util.requireNonNegative(from, "from");
 		Util.requireNonNegative(to, "to");
 		if (to < from) {
 			throw new InvalidParameterException(String.format("Parameter to must be equal or greater then from. Given values: %d-%d", from, to));
 		}
 
-		String path = "/" + encodeSegment(projectName) + "/nodes/" + nodeUuid + "/binary/" + encodeSegment(fieldKey) + getQuery(getConfig(), parameters);
-
-		MeshRequest<MeshBinaryResponse> request = prepareRequest(GET, path, MeshBinaryResponse.class);
+		MeshRequest<MeshBinaryResponse> request = downloadBinaryField(projectName, nodeUuid, languageTag, fieldKey, parameters);
 		request.setHeader("Range", String.format("bytes=%d-%d", from, to));
 		return request;
 	}
@@ -1403,11 +1398,11 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<BranchInfoSchemaList> getBranchSchemaVersions(String projectName, String branchUuid) {
+	public MeshRequest<BranchInfoSchemaList> getBranchSchemaVersions(String projectName, String branchUuid, ParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Util.requireUuid(branchUuid, "branchUuid");
 
-		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/branches/" + branchUuid + "/schemas", BranchInfoSchemaList.class);
+		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/branches/" + branchUuid + "/schemas" + getQuery(getConfig(), parameters), BranchInfoSchemaList.class);
 	}
 
 	@Override
@@ -1430,11 +1425,11 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<BranchInfoMicroschemaList> getBranchMicroschemaVersions(String projectName, String branchUuid) {
+	public MeshRequest<BranchInfoMicroschemaList> getBranchMicroschemaVersions(String projectName, String branchUuid, ParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Util.requireUuid(branchUuid, "branchUuid");
 
-		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/branches/" + branchUuid + "/microschemas",
+		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/branches/" + branchUuid + "/microschemas" + getQuery(getConfig(), parameters),
 			BranchInfoMicroschemaList.class);
 	}
 

@@ -43,6 +43,7 @@ import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.impl.BinaryCheckParametersImpl;
 import com.gentics.mesh.parameter.impl.BranchParametersImpl;
 import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
@@ -221,10 +222,17 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 			binaryUploadHandler.handleUpdateField(ac, uuid, fieldName, attributes);
 		}, isOrderedBlockingHandlers());
 
+		QueryParameter lang = new QueryParameter();
+		lang.setExample("en");
+		lang.setRequired(true);
+		lang.setDescription("Node language");
 		InternalEndpointRoute checkCallback = createRoute();
 		checkCallback.path("/:nodeUuid/binary/:fieldName/checkCallback");
 		checkCallback.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
 		checkCallback.addUriParameter("fieldName", "Name of the field for which the check status is to be updated.", "stringField");
+		checkCallback.addQueryParameters(VersioningParametersImpl.class);
+		checkCallback.addQueryParameter("lang", lang);
+		checkCallback.addQueryParameters(BinaryCheckParametersImpl.class);
 		checkCallback.method(POST);
 		checkCallback.produces(APPLICATION_JSON);
 		checkCallback.exampleRequest(nodeExamples.getExampleBinaryCheckCallbackParameters());
@@ -337,7 +345,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		fieldUpdate.addQueryParameters(VersioningParametersImpl.class);
 		fieldUpdate.method(POST);
 		fieldUpdate.produces(APPLICATION_JSON);
-		fieldUpdate.exampleRequest(nodeExamples.getExampleBinaryUploadFormParameters());
+		fieldUpdate.exampleRequest(nodeExamples.getExampleS3BinaryUploadFormParameters());
 		fieldUpdate.exampleResponse(OK, nodeExamples.getNodeResponseWithAllFields(), "The response contains the updated node.");
 		fieldUpdate.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the field could not be found.");
 		fieldUpdate.description("Create the s3 binaryfield with the given name.");
@@ -375,7 +383,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		fieldMetadataExtraction.addQueryParameters(VersioningParametersImpl.class);
 		fieldMetadataExtraction.method(POST);
 		fieldMetadataExtraction.produces(APPLICATION_JSON);
-		fieldMetadataExtraction.exampleRequest(nodeExamples.getExampleBinaryUploadFormParameters());
+		fieldMetadataExtraction.exampleRequest(nodeExamples.getExampleS3BinaryUploadFormParameters());
 		fieldMetadataExtraction.exampleResponse(OK, nodeExamples.getNodeResponseWithAllFields(), "The response contains the updated node.");
 		fieldMetadataExtraction.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the field could not be found.");
 		fieldMetadataExtraction.description("Parse metadata of s3 binaryfield with the given name.");
