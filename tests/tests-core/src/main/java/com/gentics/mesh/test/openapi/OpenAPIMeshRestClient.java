@@ -212,14 +212,14 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 	@Override
 	public MeshRequest<NodeResponse> createNode(String uuid, String projectName, NodeCreateRequest nodeCreateRequest,
 			ParameterProvider... parameters) {
-		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidPostWithHttpInfo(uuid, projectName, new JsonObject(nodeCreateRequest.toJson())), 
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidPostWithHttpInfo(uuid, projectName, adaptRequest(nodeCreateRequest)), 
 				NodeResponse.class);
 	}
 
 	@Override
 	public MeshRequest<NodeResponse> upsertNode(String projectName, String uuid, NodeUpsertRequest nodeUpsertRequest,
 			ParameterProvider... parameters) {
-		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidPostWithHttpInfo(uuid, projectName, new JsonObject(nodeUpsertRequest.toJson())), 
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidPostWithHttpInfo(uuid, projectName, adaptRequest(nodeUpsertRequest)), 
 				NodeResponse.class);
 	}
 
@@ -1037,160 +1037,272 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 
 	@Override
 	public MeshRequest<NodeListResponse> searchNodes(String json, ParameterProvider... parameters) {
-		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2SearchNodesPostWithHttpInfo(json, 
-				findParameter(SearchParameters.WAIT_PARAMETER_KEY, parameters),
-				findParameter(PagingParameters.PER_PAGE_PARAMETER_KEY, parameters),
-				findParameter(SortingParameters.SORT_BY_PARAMETER_KEY, parameters), 
-				findParameter(GenericParameters.ETAG_PARAM_KEY, parameters),
-				findParameter(PagingParameters.PAGE_PARAMETER_KEY, parameters), 
-				findParameter(GenericParameters.FIELDS_PARAM_KEY, parameters),
-				findParameter(BranchParameters.BRANCH_QUERY_PARAM_KEY, parameters),
-				findParameter(SortingParameters.SORT_ORDER_PARAMETER_KEY, parameters)), NodeListResponse.class);
+		try {
+			return new OpenAPIMeshRawRequestImpl<>(apiClient.getHttpClient(), api.apiV2SearchNodesPostCall(json, 
+					findParameter(SearchParameters.WAIT_PARAMETER_KEY, parameters),
+					findParameter(PagingParameters.PER_PAGE_PARAMETER_KEY, parameters),
+					findParameter(SortingParameters.SORT_BY_PARAMETER_KEY, parameters), 
+					findParameter(GenericParameters.ETAG_PARAM_KEY, parameters),
+					findParameter(PagingParameters.PAGE_PARAMETER_KEY, parameters), 
+					findParameter(GenericParameters.FIELDS_PARAM_KEY, parameters),
+					findParameter(BranchParameters.BRANCH_QUERY_PARAM_KEY, parameters),
+					findParameter(SortingParameters.SORT_ORDER_PARAMETER_KEY, parameters), null), NodeListResponse.class);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
 	public MeshRequest<ObjectNode> searchNodesRaw(String json, ParameterProvider... parameters) {
-		return new OpenAPIMeshRequestImpl(() -> api.apiV2RawSearchNodesPost(json, 
-				findParameter(SearchParameters.WAIT_PARAMETER_KEY, parameters)), ObjectNode.class);
+		try {
+			return new OpenAPIMeshRawRequestImpl<>(apiClient.getHttpClient(), api.apiV2RawSearchNodesPostCall(json, 
+					findParameter(SearchParameters.WAIT_PARAMETER_KEY, parameters), null), ObjectNode.class);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
 	public MeshRequest<NodeListResponse> searchNodes(String projectName, String json, ParameterProvider... parameters) {
-		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectSearchNodesPostWithHttpInfo(json, projectName, 
-				findParameter(SearchParameters.WAIT_PARAMETER_KEY, parameters),
-				findParameter(PagingParameters.PER_PAGE_PARAMETER_KEY, parameters),
-				findParameter(SortingParameters.SORT_BY_PARAMETER_KEY, parameters), 
-				findParameter(GenericParameters.ETAG_PARAM_KEY, parameters),
-				findParameter(PagingParameters.PAGE_PARAMETER_KEY, parameters), 
-				findParameter(GenericParameters.FIELDS_PARAM_KEY, parameters),
-				findParameter(SortingParameters.SORT_ORDER_PARAMETER_KEY, parameters)), NodeListResponse.class);
+		try {
+			return new OpenAPIMeshRawRequestImpl<>(apiClient.getHttpClient(), api.apiV2ProjectSearchNodesPostCall(json, projectName, 
+					findParameter(SearchParameters.WAIT_PARAMETER_KEY, parameters),
+					findParameter(PagingParameters.PER_PAGE_PARAMETER_KEY, parameters),
+					findParameter(SortingParameters.SORT_BY_PARAMETER_KEY, parameters), 
+					findParameter(GenericParameters.ETAG_PARAM_KEY, parameters),
+					findParameter(PagingParameters.PAGE_PARAMETER_KEY, parameters), 
+					findParameter(GenericParameters.FIELDS_PARAM_KEY, parameters),
+					findParameter(SortingParameters.SORT_ORDER_PARAMETER_KEY, parameters), null), NodeListResponse.class);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
 	public MeshRequest<ObjectNode> searchNodesRaw(String projectName, String json, ParameterProvider... parameters) {
-		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectRawSearchNodesPostWithHttpInfo(json, projectName, 
-				findParameter(SearchParameters.WAIT_PARAMETER_KEY, parameters)), ObjectNode.class);
+		try {
+			return new OpenAPIMeshRawRequestImpl(apiClient.getHttpClient(), api.apiV2ProjectRawSearchNodesPostCall(json, projectName, findParameter(SearchParameters.WAIT_PARAMETER_KEY, parameters), null), ObjectNode.class);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
 	public MeshRequest<UserListResponse> searchUsers(String json, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			return new OpenAPIMeshRawRequestImpl<>(apiClient.getHttpClient(), api.apiV2SearchUsersPostCall(json,
+					findParameter(SortingParameters.SORT_BY_PARAMETER_KEY, parameters), 
+					findParameter(SearchParameters.WAIT_PARAMETER_KEY, parameters),
+					findParameter(PagingParameters.PAGE_PARAMETER_KEY, parameters), 
+					findParameter(PagingParameters.PER_PAGE_PARAMETER_KEY, parameters),
+					findParameter(SortingParameters.SORT_ORDER_PARAMETER_KEY, parameters), null), UserListResponse.class);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
-	public MeshRequest<ObjectNode> searchUsersRaw(String json) {
-		// TODO Auto-generated method stub
-		return null;
+	public MeshRequest<ObjectNode> searchUsersRaw(String json, ParameterProvider... parameters) {
+		try {
+			return new OpenAPIMeshRawRequestImpl<>(apiClient.getHttpClient(), api.apiV2RawSearchUsersPostCall(json, findParameter(SearchParameters.WAIT_PARAMETER_KEY, parameters), null), ObjectNode.class);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
 	public MeshRequest<GroupListResponse> searchGroups(String json, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			return new OpenAPIMeshRawRequestImpl<>(apiClient.getHttpClient(), api.apiV2SearchGroupsPostCall(json, findParameter(SortingParameters.SORT_BY_PARAMETER_KEY, parameters), 
+						findParameter(SearchParameters.WAIT_PARAMETER_KEY, parameters),
+						findParameter(PagingParameters.PAGE_PARAMETER_KEY, parameters), 
+						findParameter(PagingParameters.PER_PAGE_PARAMETER_KEY, parameters),
+						findParameter(SortingParameters.SORT_ORDER_PARAMETER_KEY, parameters), null), GroupListResponse.class);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
-	public MeshRequest<ObjectNode> searchGroupsRaw(String json) {
-		// TODO Auto-generated method stub
-		return null;
+	public MeshRequest<ObjectNode> searchGroupsRaw(String json, ParameterProvider... parameters) {
+		try {
+			return new OpenAPIMeshRawRequestImpl<>(apiClient.getHttpClient(), api.apiV2RawSearchGroupsPostCall(json, findParameter(SearchParameters.WAIT_PARAMETER_KEY, parameters), null), ObjectNode.class);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
 	public MeshRequest<RoleListResponse> searchRoles(String json, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			return new OpenAPIMeshRawRequestImpl<>(apiClient.getHttpClient(), api.apiV2SearchRolesPostCall(json, findParameter(SortingParameters.SORT_BY_PARAMETER_KEY, parameters), 
+						findParameter(SearchParameters.WAIT_PARAMETER_KEY, parameters),
+						findParameter(PagingParameters.PAGE_PARAMETER_KEY, parameters), 
+						findParameter(PagingParameters.PER_PAGE_PARAMETER_KEY, parameters),
+						findParameter(SortingParameters.SORT_ORDER_PARAMETER_KEY, parameters), null), RoleListResponse.class);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
-	public MeshRequest<ObjectNode> searchRolesRaw(String json) {
-		// TODO Auto-generated method stub
-		return null;
+	public MeshRequest<ObjectNode> searchRolesRaw(String json, ParameterProvider... parameters) {
+		try {
+			return new OpenAPIMeshRawRequestImpl<>(apiClient.getHttpClient(), api.apiV2RawSearchRolesPostCall(json, findParameter(SearchParameters.WAIT_PARAMETER_KEY, parameters), null), ObjectNode.class);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
 	public MeshRequest<ProjectListResponse> searchProjects(String json, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			return new OpenAPIMeshRawRequestImpl<>(apiClient.getHttpClient(), api.apiV2SearchProjectsPostCall(json, findParameter(SortingParameters.SORT_BY_PARAMETER_KEY, parameters), 
+						findParameter(SearchParameters.WAIT_PARAMETER_KEY, parameters),
+						findParameter(PagingParameters.PAGE_PARAMETER_KEY, parameters), 
+						findParameter(PagingParameters.PER_PAGE_PARAMETER_KEY, parameters),
+						findParameter(SortingParameters.SORT_ORDER_PARAMETER_KEY, parameters), null), ProjectListResponse.class);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
-	public MeshRequest<ObjectNode> searchProjectsRaw(String json) {
-		// TODO Auto-generated method stub
-		return null;
+	public MeshRequest<ObjectNode> searchProjectsRaw(String json, ParameterProvider... parameters) {
+		try {
+			return new OpenAPIMeshRawRequestImpl<>(apiClient.getHttpClient(), api.apiV2RawSearchProjectsPostCall(json, findParameter(SearchParameters.WAIT_PARAMETER_KEY, parameters), null), ObjectNode.class);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
 	public MeshRequest<TagListResponse> searchTags(String json, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			return new OpenAPIMeshRawRequestImpl<>(apiClient.getHttpClient(), api.apiV2SearchTagsPostCall(json, findParameter(SortingParameters.SORT_BY_PARAMETER_KEY, parameters), 
+						findParameter(SearchParameters.WAIT_PARAMETER_KEY, parameters),
+						findParameter(PagingParameters.PAGE_PARAMETER_KEY, parameters), 
+						findParameter(PagingParameters.PER_PAGE_PARAMETER_KEY, parameters),
+						findParameter(SortingParameters.SORT_ORDER_PARAMETER_KEY, parameters), null), TagListResponse.class);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
-	public MeshRequest<ObjectNode> searchTagsRaw(String json) {
-		// TODO Auto-generated method stub
-		return null;
+	public MeshRequest<ObjectNode> searchTagsRaw(String json, ParameterProvider... parameters) {
+		try {
+			return new OpenAPIMeshRawRequestImpl<>(apiClient.getHttpClient(), api.apiV2RawSearchTagsPostCall(json, findParameter(SearchParameters.WAIT_PARAMETER_KEY, parameters), null), ObjectNode.class);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
 	public MeshRequest<TagListResponse> searchTags(String projectName, String json, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			return new OpenAPIMeshRawRequestImpl<>(apiClient.getHttpClient(), api.apiV2ProjectSearchTagsPostCall(json, projectName, findParameter(SortingParameters.SORT_BY_PARAMETER_KEY, parameters), 
+						findParameter(SearchParameters.WAIT_PARAMETER_KEY, parameters),
+						findParameter(PagingParameters.PAGE_PARAMETER_KEY, parameters), 
+						findParameter(PagingParameters.PER_PAGE_PARAMETER_KEY, parameters),
+						findParameter(SortingParameters.SORT_ORDER_PARAMETER_KEY, parameters), null), TagListResponse.class);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
-	public MeshRequest<ObjectNode> searchTagsRaw(String projectName, String json) {
-		// TODO Auto-generated method stub
-		return null;
+	public MeshRequest<ObjectNode> searchTagsRaw(String projectName, String json, ParameterProvider... parameters) {
+		try {
+			return new OpenAPIMeshRawRequestImpl(apiClient.getHttpClient(), api.apiV2ProjectRawSearchTagsPostCall(json, projectName, findParameter(SearchParameters.WAIT_PARAMETER_KEY, parameters), null), ObjectNode.class);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
 	public MeshRequest<TagFamilyListResponse> searchTagFamilies(String json, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			return new OpenAPIMeshRawRequestImpl(apiClient.getHttpClient(), api.apiV2RawSearchTagFamiliesPostCall(json, findParameter(SearchParameters.WAIT_PARAMETER_KEY, parameters), null), ObjectNode.class);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
-	public MeshRequest<ObjectNode> searchTagFamiliesRaw(String json) {
-		// TODO Auto-generated method stub
-		return null;
+	public MeshRequest<ObjectNode> searchTagFamiliesRaw(String json, ParameterProvider... parameters) {
+		try {
+			return new OpenAPIMeshRawRequestImpl(apiClient.getHttpClient(), api.apiV2RawSearchTagFamiliesPostCall(json, findParameter(SearchParameters.WAIT_PARAMETER_KEY, parameters), null), ObjectNode.class);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
 	public MeshRequest<TagFamilyListResponse> searchTagFamilies(String projectName, String json,
 			ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			return new OpenAPIMeshRawRequestImpl<>(apiClient.getHttpClient(), api.apiV2ProjectSearchTagFamiliesPostCall(json, projectName, findParameter(SortingParameters.SORT_BY_PARAMETER_KEY, parameters), 
+						findParameter(SearchParameters.WAIT_PARAMETER_KEY, parameters),
+						findParameter(PagingParameters.PAGE_PARAMETER_KEY, parameters), 
+						findParameter(PagingParameters.PER_PAGE_PARAMETER_KEY, parameters),
+						findParameter(SortingParameters.SORT_ORDER_PARAMETER_KEY, parameters), null), TagFamilyListResponse.class);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
-	public MeshRequest<ObjectNode> searchTagFamiliesRaw(String projectName, String json) {
-		// TODO Auto-generated method stub
-		return null;
+	public MeshRequest<ObjectNode> searchTagFamiliesRaw(String projectName, String json, ParameterProvider... parameters) {
+		try {
+			return new OpenAPIMeshRawRequestImpl(apiClient.getHttpClient(), api.apiV2ProjectRawSearchTagFamiliesPostCall(json, projectName, findParameter(SearchParameters.WAIT_PARAMETER_KEY, parameters), null), ObjectNode.class);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
 	public MeshRequest<SchemaListResponse> searchSchemas(String json, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			return new OpenAPIMeshRawRequestImpl<>(apiClient.getHttpClient(), api.apiV2SearchSchemasPostCall(json, findParameter(SortingParameters.SORT_BY_PARAMETER_KEY, parameters), 
+						findParameter(SearchParameters.WAIT_PARAMETER_KEY, parameters),
+						findParameter(PagingParameters.PAGE_PARAMETER_KEY, parameters), 
+						findParameter(PagingParameters.PER_PAGE_PARAMETER_KEY, parameters),
+						findParameter(SortingParameters.SORT_ORDER_PARAMETER_KEY, parameters), null), SchemaListResponse.class);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
-	public MeshRequest<ObjectNode> searchSchemasRaw(String json) {
-		// TODO Auto-generated method stub
-		return null;
+	public MeshRequest<ObjectNode> searchSchemasRaw(String json, ParameterProvider... parameters) {
+		try {
+			return new OpenAPIMeshRawRequestImpl<>(apiClient.getHttpClient(), api.apiV2RawSearchSchemasPostCall(json, findParameter(SearchParameters.WAIT_PARAMETER_KEY, parameters), null), ObjectNode.class);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
 	public MeshRequest<MicroschemaListResponse> searchMicroschemas(String json, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			return new OpenAPIMeshRawRequestImpl<>(apiClient.getHttpClient(), api.apiV2SearchMicroschemasPostCall(json, findParameter(SortingParameters.SORT_BY_PARAMETER_KEY, parameters), 
+						findParameter(SearchParameters.WAIT_PARAMETER_KEY, parameters),
+						findParameter(PagingParameters.PAGE_PARAMETER_KEY, parameters), 
+						findParameter(PagingParameters.PER_PAGE_PARAMETER_KEY, parameters),
+						findParameter(SortingParameters.SORT_ORDER_PARAMETER_KEY, parameters), null), MicroschemaListResponse.class);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
-	public MeshRequest<ObjectNode> searchMicroschemasRaw(String json) {
-		// TODO Auto-generated method stub
-		return null;
+	public MeshRequest<ObjectNode> searchMicroschemasRaw(String json, ParameterProvider... parameters) {
+		try {
+			return new OpenAPIMeshRawRequestImpl<>(apiClient.getHttpClient(), api.apiV2RawSearchMicroschemasPostCall(json, findParameter(SearchParameters.WAIT_PARAMETER_KEY, parameters), null), ObjectNode.class);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
