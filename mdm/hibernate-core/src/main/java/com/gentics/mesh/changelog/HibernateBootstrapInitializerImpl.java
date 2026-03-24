@@ -15,6 +15,7 @@ import java.util.function.Predicate;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.monitoring.liveness.LivenessManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -48,7 +49,6 @@ import com.gentics.mesh.event.EventBusStore;
 import com.gentics.mesh.hibernate.data.dao.RoleDaoImpl;
 import com.gentics.mesh.hibernate.data.permission.HibPermissionRoots;
 import com.gentics.mesh.monitor.liveness.EventBusLivenessManager;
-import com.gentics.mesh.monitor.liveness.LivenessManager;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
 import com.gentics.mesh.search.DevNullSearchProvider;
@@ -102,13 +102,13 @@ public class HibernateBootstrapInitializerImpl extends AbstractBootstrapInitiali
 
 	@Inject
 	public HibernateBootstrapInitializerImpl(ServerSchemaStorageImpl schemaStorage, HibernateDatabase db,
-			SearchProvider searchProvider, BCryptPasswordEncoder encoder, DistributedEventManager eventManager,
-			Lazy<IndexHandlerRegistryImpl> indexHandlerRegistry, Lazy<CoreVerticleLoader> loader,
-			HighLevelChangelogSystem highlevelChangelogSystem, CacheRegistry cacheRegistry, MeterRegistry meterRegistry,
-			MeshPluginManager pluginManager, MeshOptions options, RouterStorageRegistryImpl routerStorageRegistry,
-			MetricsOptions metricsOptions, LocalConfigApiImpl localConfigApi, BCryptPasswordEncoder passwordEncoder,
-			MasterElector coordinatorMasterElector, LivenessManager liveness, EventBusLivenessManager eventbusLiveness,
-			EventBusStore eventBusStore, ContentCachedStorage contentCachedStorage, HibPermissionRoots permRoots, RootResolver rootResolver, ChangelogDao changelogDao) {
+											 SearchProvider searchProvider, BCryptPasswordEncoder encoder, DistributedEventManager eventManager,
+											 Lazy<IndexHandlerRegistryImpl> indexHandlerRegistry, Lazy<CoreVerticleLoader> loader,
+											 HighLevelChangelogSystem highlevelChangelogSystem, CacheRegistry cacheRegistry, MeterRegistry meterRegistry,
+											 MeshPluginManager pluginManager, MeshOptions options, RouterStorageRegistryImpl routerStorageRegistry,
+											 MetricsOptions metricsOptions, LocalConfigApiImpl localConfigApi, BCryptPasswordEncoder passwordEncoder,
+											 MasterElector coordinatorMasterElector, LivenessManager liveness, EventBusLivenessManager eventbusLiveness,
+											 EventBusStore eventBusStore, ContentCachedStorage contentCachedStorage, HibPermissionRoots permRoots, RootResolver rootResolver, ChangelogDao changelogDao) {
 		super(schemaStorage, db, searchProvider, passwordEncoder, eventManager, indexHandlerRegistry, loader,
 				highlevelChangelogSystem, cacheRegistry, meterRegistry, pluginManager, options, routerStorageRegistry, metricsOptions,
 				localConfigApi, passwordEncoder, coordinatorMasterElector, liveness, eventbusLiveness, eventBusStore);

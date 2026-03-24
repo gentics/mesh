@@ -32,6 +32,10 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>com.gentics</groupId>
+			<artifactId>cmp-liveness-dagger</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-mdm-common</artifactId>
 		</dependency>
