@@ -1,8 +1,5 @@
 package com.gentics.mesh.dagger.module;
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-
 import com.gentics.mesh.auth.MeshOAuthService;
 import com.gentics.mesh.auth.oauth2.MeshOAuth2ServiceImpl;
 import com.gentics.mesh.cache.CacheCollection;
@@ -107,11 +104,9 @@ import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.event.impl.EventQueueBatchImpl;
 import com.gentics.mesh.handler.RangeRequestHandler;
 import com.gentics.mesh.handler.impl.RangeRequestHandlerImpl;
-import com.gentics.mesh.liveness.LivenessManagerImpl;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.metric.MetricsServiceImpl;
 import com.gentics.mesh.monitor.liveness.EventBusLivenessManager;
-import com.gentics.mesh.monitor.liveness.LivenessManager;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import com.gentics.mesh.plugin.manager.MeshPluginManagerImpl;
@@ -148,15 +143,21 @@ import com.gentics.mesh.search.index.user.UserIndexHandlerImpl;
 import com.gentics.mesh.security.SecurityUtils;
 import com.gentics.mesh.security.SecurityUtilsImpl;
 import com.gentics.mesh.storage.LocalBinaryStorageImpl;
-
+import com.gentics.monitoring.liveness.dagger.LivenessManagerModule;
 import dagger.Binds;
 import dagger.Module;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
  * Dagger module for common bindings
  */
-@Module
+@Module(includes = {
+	LivenessManagerModule .class,
+	MeshLivenessModule.class
+})
 public abstract class CommonBindModule {
+
 
 	@Binds
 	abstract LocalConfigApi localConfigApi(LocalConfigApiImpl e);
@@ -322,9 +323,6 @@ public abstract class CommonBindModule {
 
 	@Binds
 	abstract SecurityUtils bindSecurityUtils(SecurityUtilsImpl e);
-
-	@Binds
-	abstract LivenessManager bindLivenessManager(LivenessManagerImpl e);
 
 	@Binds
 	abstract EventBusLivenessManager bindEventbusLivenessManager(EventBusLivenessManagerImpl e);

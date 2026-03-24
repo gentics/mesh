@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_UPDATED;
 import javax.inject.Inject;
 import javax.naming.InvalidNameException;
 
+import com.gentics.monitoring.liveness.LivenessManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +18,6 @@ import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.handler.VersionHandlerImpl;
-import com.gentics.mesh.monitor.liveness.LivenessManager;
 
 import dagger.Lazy;
 import io.vertx.core.Vertx;
@@ -59,10 +59,10 @@ public class RouterStorageImpl implements RouterStorage {
 
 	@Inject
 	public RouterStorageImpl(Vertx vertx, MeshOptions options, MeshAuthChain authChain, CorsHandler corsHandler, BodyHandlerImpl bodyHandler,
-		Lazy<BootstrapInitializer> boot,
-		Lazy<Database> db, VersionHandlerImpl versionHandler,
-		RouterStorageRegistryImpl routerStorageRegistry,
-		LivenessManager liveness, LocalConfigApi localConfigApi) {
+							 Lazy<BootstrapInitializer> boot,
+							 Lazy<Database> db, VersionHandlerImpl versionHandler,
+							 RouterStorageRegistryImpl routerStorageRegistry,
+							 LivenessManager liveness, LocalConfigApi localConfigApi) {
 		this.vertx = vertx;
 		this.options = options;
 		this.boot = boot;
