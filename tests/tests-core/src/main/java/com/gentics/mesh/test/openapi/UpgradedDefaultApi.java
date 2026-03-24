@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.openapitools.client.ApiCallback;
-import org.openapitools.client.ApiClient;
 import org.openapitools.client.ApiException;
 import org.openapitools.client.ApiResponse;
 import org.openapitools.client.Pair;
@@ -27,32 +26,246 @@ import io.vertx.core.json.JsonObject;
 @SuppressWarnings("rawtypes")
 public class UpgradedDefaultApi extends DefaultApi {
 
-	public UpgradedDefaultApi() {
-		super();
-	}
+	private UpgradedApiClient localVarApiClient;
 
-	public UpgradedDefaultApi(ApiClient apiClient) {
+	public UpgradedDefaultApi(UpgradedApiClient apiClient) {
 		super(apiClient);
+		this.localVarApiClient = apiClient;
 	}
 
-    /**
-     * Build call for apiV2ProjectNodesNodeUuidPost
-     * @param nodeUuid Uuid of the node (required)
-     * @param project  (required)
-     * @param body Json body
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> New or updated node. </td><td>  -  </td></tr>
-        <tr><td> 409 </td><td> A conflict has been detected. </td><td>  -  </td></tr>
-        <tr><td> 0 </td><td> application/json </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apiV2ProjectNodesNodeUuidPostCall(@jakarta.annotation.Nonnull String nodeUuid, @jakarta.annotation.Nonnull String project, JsonObject body, final ApiCallback _callback) throws ApiException {
+	@Override
+	public UpgradedApiClient getApiClient() {
+		return localVarApiClient;
+	}
+
+	// Fix for no generated response
+
+	public UpgradedCall apiV2RamlGetCall(final ApiCallback _callback) throws ApiException {
+        String basePath = null;
+        // Operation Servers
+        String[] localBasePaths = new String[] {  };
+
+        // Determine Base Path to Use
+        if (getCustomBaseUrl() != null){
+            basePath = getCustomBaseUrl();
+        } else if ( localBasePaths.length > 0 ) {
+            basePath = localBasePaths[getHostIndex()];
+        } else {
+            basePath = null;
+        }
+
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/api/v2/raml";
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+
+        final String[] localVarAccepts = {
+            "application/x-yaml"
+        };
+        final String localVarAccept = getApiClient().selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+        };
+        final String localVarContentType = getApiClient().selectHeaderContentType(localVarContentTypes);
+        if (localVarContentType != null) {
+            localVarHeaderParams.put("Content-Type", localVarContentType);
+        }
+
+        String[] localVarAuthNames = new String[] { "bearerAuth" };
+        return getApiClient().buildCall(basePath, localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+	public UpgradedCall apiV2ProjectWebrootfieldFieldNamePathGetCall(@jakarta.annotation.Nonnull String path, @jakarta.annotation.Nonnull String fieldName, @jakarta.annotation.Nonnull String project, @jakarta.annotation.Nullable Double fpz, @jakarta.annotation.Nullable String rect, @jakarta.annotation.Nullable Double w, @jakarta.annotation.Nullable Double h, @jakarta.annotation.Nullable String resize, @jakarta.annotation.Nullable String version, @jakarta.annotation.Nullable Double fpy, @jakarta.annotation.Nullable String crop, @jakarta.annotation.Nullable Double fpx, final ApiCallback _callback) throws ApiException {
+        String basePath = null;
+        // Operation Servers
+        String[] localBasePaths = new String[] {  };
+
+        // Determine Base Path to Use
+        if (getCustomBaseUrl() != null){
+            basePath = getCustomBaseUrl();
+        } else if ( localBasePaths.length > 0 ) {
+            basePath = localBasePaths[getHostIndex()];
+        } else {
+            basePath = null;
+        }
+
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/api/v2/{project}/webrootfield/{fieldName}/{path}"
+            .replace("{" + "path" + "}", getApiClient().escapeString(path.toString()))
+            .replace("{" + "fieldName" + "}", getApiClient().escapeString(fieldName.toString()))
+            .replace("{" + "project" + "}", getApiClient().escapeString(project.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+
+        if (fpz != null) {
+            localVarQueryParams.addAll(getApiClient().parameterToPair("fpz", fpz));
+        }
+
+        if (rect != null) {
+            localVarQueryParams.addAll(getApiClient().parameterToPair("rect", rect));
+        }
+
+        if (w != null) {
+            localVarQueryParams.addAll(getApiClient().parameterToPair("w", w));
+        }
+
+        if (h != null) {
+            localVarQueryParams.addAll(getApiClient().parameterToPair("h", h));
+        }
+
+        if (resize != null) {
+            localVarQueryParams.addAll(getApiClient().parameterToPair("resize", resize));
+        }
+
+        if (version != null) {
+            localVarQueryParams.addAll(getApiClient().parameterToPair("version", version));
+        }
+
+        if (fpy != null) {
+            localVarQueryParams.addAll(getApiClient().parameterToPair("fpy", fpy));
+        }
+
+        if (crop != null) {
+            localVarQueryParams.addAll(getApiClient().parameterToPair("crop", crop));
+        }
+
+        if (fpx != null) {
+            localVarQueryParams.addAll(getApiClient().parameterToPair("fpx", fpx));
+        }
+
+        final String[] localVarAccepts = {
+        };
+        final String localVarAccept = getApiClient().selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+        };
+        final String localVarContentType = getApiClient().selectHeaderContentType(localVarContentTypes);
+        if (localVarContentType != null) {
+            localVarHeaderParams.put("Content-Type", localVarContentType);
+        }
+
+        String[] localVarAuthNames = new String[] { "bearerAuth" };
+        return getApiClient().buildCall(basePath, localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+	public UpgradedCall apiV2OpenapiYamlGetCall(final ApiCallback _callback) throws ApiException {
+        String basePath = null;
+        // Operation Servers
+        String[] localBasePaths = new String[] {  };
+
+        // Determine Base Path to Use
+        if (getCustomBaseUrl() != null){
+            basePath = getCustomBaseUrl();
+        } else if ( localBasePaths.length > 0 ) {
+            basePath = localBasePaths[getHostIndex()];
+        } else {
+            basePath = null;
+        }
+
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/api/v2/openapi.yaml";
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+
+        final String[] localVarAccepts = {
+            "application/x-yaml"
+        };
+        final String localVarAccept = getApiClient().selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+        };
+        final String localVarContentType = getApiClient().selectHeaderContentType(localVarContentTypes);
+        if (localVarContentType != null) {
+            localVarHeaderParams.put("Content-Type", localVarContentType);
+        }
+
+        String[] localVarAuthNames = new String[] { "bearerAuth" };
+        return getApiClient().buildCall(basePath, localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    // Fix for no generated body parameter
+
+	public UpgradedCall apiV2UtilitiesLinkResolverPostCall(String body, String lang, String resolveLinks, ApiCallback _callback) throws ApiException {
+		String basePath = null;
+        // Operation Servers
+        String[] localBasePaths = new String[] {  };
+
+        // Determine Base Path to Use
+        if (getCustomBaseUrl() != null){
+            basePath = getCustomBaseUrl();
+        } else if ( localBasePaths.length > 0 ) {
+            basePath = localBasePaths[getHostIndex()];
+        } else {
+            basePath = null;
+        }
+
+        Object localVarPostBody = body;
+
+        // create path and map variables
+        String localVarPath = "/api/v2/utilities/linkResolver";
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+
+        if (lang != null) {
+            localVarQueryParams.addAll(getApiClient().parameterToPair("lang", lang));
+        }
+
+        if (resolveLinks != null) {
+            localVarQueryParams.addAll(getApiClient().parameterToPair("resolveLinks", resolveLinks));
+        }
+
+        final String[] localVarAccepts = {
+        };
+        final String localVarAccept = getApiClient().selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            "text/plain"
+        };
+        final String localVarContentType = getApiClient().selectHeaderContentType(localVarContentTypes);
+        if (localVarContentType != null) {
+            localVarHeaderParams.put("Content-Type", localVarContentType);
+        }
+
+        String[] localVarAuthNames = new String[] { "bearerAuth" };
+        
+        return getApiClient().buildCall(basePath, localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+	public okhttp3.Call apiV2ProjectNodesNodeUuidPostCall(@jakarta.annotation.Nonnull String nodeUuid, @jakarta.annotation.Nonnull String project, JsonObject body, final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -182,6 +395,7 @@ public class UpgradedDefaultApi extends DefaultApi {
     }
 
     // Missing JSON body fix
+
     /**
      * Build call for apiV2SearchNodesPost
      * @param wait Specify whether search should wait for the search to be idle before responding. (optional)

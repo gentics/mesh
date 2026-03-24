@@ -1,10 +1,16 @@
 package com.gentics.mesh.test.openapi;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.openapitools.client.ApiClient;
+import org.apache.commons.io.FileUtils;
+import org.openapitools.client.ApiException;
 import org.openapitools.client.JSON;
 import org.openapitools.client.model.LoginRequest;
 
@@ -40,6 +46,7 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
+import com.gentics.mesh.core.rest.node.BinaryCheckUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -48,6 +55,7 @@ import com.gentics.mesh.core.rest.node.NodeUpsertRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
+import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
 import com.gentics.mesh.core.rest.node.field.image.ImageManipulationRequest;
 import com.gentics.mesh.core.rest.node.field.image.ImageVariantsResponse;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryMetadataRequest;
@@ -102,8 +110,10 @@ import com.gentics.mesh.parameter.DeleteParameters;
 import com.gentics.mesh.parameter.EtagParameters;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
+import com.gentics.mesh.parameter.ImageManipulationRetrievalParameters;
 import com.gentics.mesh.parameter.IndexMaintenanceParameters;
 import com.gentics.mesh.parameter.JobParameters;
+import com.gentics.mesh.parameter.NavigationParameters;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.ParameterProvider;
@@ -114,7 +124,6 @@ import com.gentics.mesh.parameter.SchemaUpdateParameters;
 import com.gentics.mesh.parameter.SearchParameters;
 import com.gentics.mesh.parameter.SortingParameters;
 import com.gentics.mesh.parameter.VersioningParameters;
-import com.gentics.mesh.parameter.impl.ConsistencyCheckParametersImpl;
 import com.gentics.mesh.rest.JWTAuthentication;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshRequest;
@@ -136,7 +145,7 @@ import okhttp3.OkHttpClient;
 @SuppressWarnings({"unchecked","rawtypes"})
 public class OpenAPIMeshRestClient implements MeshRestClient {
 
-	private final ApiClient apiClient;
+	private final UpgradedApiClient apiClient;
 	private final UpgradedDefaultApi api;
 	private final MeshRestClientConfig config;
 	private JWTAuthentication authentication = new JWTAuthentication();
@@ -175,7 +184,8 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 	}
 
 	public OpenAPIMeshRestClient(MeshRestClientConfig config, OkHttpClient okHttp) {
-		this.apiClient = new ApiClient(okHttp).setBasePath("%s://%s:%d".formatted((config.isSsl() ? "https" : "http"), config.getHost(), config.getPort()));
+		this.apiClient = new UpgradedApiClient(okHttp);
+		this.apiClient.setBasePath("%s://%s:%d".formatted((config.isSsl() ? "https" : "http"), config.getHost(), config.getPort()));
 		this.api = new UpgradedDefaultApi(this.apiClient);
 		this.config = config;
 	}
@@ -580,16 +590,20 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 
 	@Override
 	public MeshRequest<MeshWebrootResponse> webroot(String projectName, String path, ParameterProvider... parameters) {
-		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectWebrootPathGetWithHttpInfo(path, projectName,
-				findParameter(ImageManipulationParameters.FOCAL_POINT_Z_QUERY_PARAM_KEY, parameters), 
-				findParameter(ImageManipulationParameters.RECT_QUERY_PARAM_KEY, parameters),
-				findParameter(ImageManipulationParameters.WIDTH_QUERY_PARAM_KEY, parameters), 
-				findParameter(ImageManipulationParameters.HEIGHT_QUERY_PARAM_KEY, parameters), 
-				findParameter(ImageManipulationParameters.RESIZE_MODE_QUERY_PARAM_KEY, parameters),
-				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, parameters),
-				findParameter(ImageManipulationParameters.FOCAL_POINT_Y_QUERY_PARAM_KEY, parameters),
-				findParameter(ImageManipulationParameters.CROP_MODE_QUERY_PARAM_KEY, parameters), 
-				findParameter(ImageManipulationParameters.FOCAL_POINT_X_QUERY_PARAM_KEY, parameters)), MeshWebrootResponse.class);
+		try {
+			return new OpenAPIMeshRawRequestImpl<>(apiClient.getHttpClient(), (UpgradedCall) api.apiV2ProjectWebrootPathGetCall(path, projectName,
+					findParameter(ImageManipulationParameters.FOCAL_POINT_Z_QUERY_PARAM_KEY, parameters), 
+					findParameter(ImageManipulationParameters.RECT_QUERY_PARAM_KEY, parameters),
+					findParameter(ImageManipulationParameters.WIDTH_QUERY_PARAM_KEY, parameters), 
+					findParameter(ImageManipulationParameters.HEIGHT_QUERY_PARAM_KEY, parameters), 
+					findParameter(ImageManipulationParameters.RESIZE_MODE_QUERY_PARAM_KEY, parameters),
+					findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, parameters),
+					findParameter(ImageManipulationParameters.FOCAL_POINT_Y_QUERY_PARAM_KEY, parameters),
+					findParameter(ImageManipulationParameters.CROP_MODE_QUERY_PARAM_KEY, parameters), 
+					findParameter(ImageManipulationParameters.FOCAL_POINT_X_QUERY_PARAM_KEY, parameters), null), MeshWebrootResponse.class);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
@@ -1301,299 +1315,343 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 
 	@Override
 	public MeshRequest<ObjectPermissionResponse> getMicroschemaRolePermissions(String uuid) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2MicroschemasMicroschemaUuidRolePermissionsGetWithHttpInfo(uuid), ObjectPermissionResponse.class);
 	}
 
 	@Override
 	public MeshRequest<ObjectPermissionResponse> grantMicroschemaRolePermissions(String uuid,
 			ObjectPermissionGrantRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2MicroschemasMicroschemaUuidRolePermissionsPostWithHttpInfo(uuid, adaptRequest(request)), ObjectPermissionResponse.class);
 	}
 
 	@Override
 	public MeshRequest<ObjectPermissionResponse> revokeMicroschemaRolePermissions(String uuid,
 			ObjectPermissionRevokeRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2MicroschemasMicroschemaUuidRolePermissionsPutWithHttpInfo(uuid, adaptRequest(request)), ObjectPermissionResponse.class);
 	}
 
 	@Override
 	public MeshRequest<NodeResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag,
 			String nodeVersion, String fieldKey, InputStream fileData, long fileSize, String fileName,
 			String contentType, boolean publish, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			File tmpFile = Files.createTempFile(fileName, fieldKey).toFile();
+			FileUtils.copyInputStreamToFile(fileData, tmpFile);
+			return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidBinaryFieldNamePostWithHttpInfo(fieldKey, nodeUuid, projectName, 
+					findParameter("publish", parameters), tmpFile, languageTag, nodeVersion), NodeResponse.class);
+		} catch (IOException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
 	public MeshRequest<MeshBinaryResponse> downloadBinaryField(String projectName, String nodeUuid, String languageTag,
 			String fieldKey, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			return new OpenAPIMeshRawRequestImpl(apiClient.getHttpClient(), (UpgradedCall) api.apiV2ProjectNodesNodeUuidBinaryFieldNameGetCall(fieldKey, nodeUuid, projectName,
+					findParameter(ImageManipulationParameters.FOCAL_POINT_Z_QUERY_PARAM_KEY, parameters), 
+					findParameter(ImageManipulationParameters.RECT_QUERY_PARAM_KEY, parameters),
+					findParameter(ImageManipulationParameters.WIDTH_QUERY_PARAM_KEY, parameters), 
+					findParameter(ImageManipulationParameters.HEIGHT_QUERY_PARAM_KEY, parameters), 
+					findParameter(ImageManipulationParameters.RESIZE_MODE_QUERY_PARAM_KEY, parameters),
+					findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, parameters),
+					findParameter(ImageManipulationParameters.FOCAL_POINT_Y_QUERY_PARAM_KEY, parameters),
+					findParameter(ImageManipulationParameters.CROP_MODE_QUERY_PARAM_KEY, parameters), 
+					findParameter(ImageManipulationParameters.FOCAL_POINT_X_QUERY_PARAM_KEY, parameters), null), MeshBinaryResponse.class);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
 	public MeshRequest<MeshBinaryResponse> downloadBinaryField(String projectName, String nodeUuid, String languageTag,
 			String fieldKey, long from, long to, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		MeshRequest<MeshBinaryResponse> request = downloadBinaryField(projectName, nodeUuid, languageTag, fieldKey, parameters);
+		request.setHeader("Range", String.format("bytes=%d-%d", from, to));
+		return request;
 	}
 
 	@Override
 	public MeshRequest<NodeResponse> transformNodeBinaryField(String projectName, String nodeUuid, String languageTag,
-			String version, String fieldKey, ImageManipulationParameters imageManipulationParameter) {
-		// TODO Auto-generated method stub
-		return null;
+			String version, String fieldKey, ImageManipulationParameters parameters) {
+		BinaryFieldTransformRequest transformRequest = new BinaryFieldTransformRequest();
+		transformRequest.setCropRect(parameters.getRect());
+		transformRequest.setWidth(parameters.getWidth());
+		transformRequest.setHeight(parameters.getHeight());
+		transformRequest.setCropMode(parameters.getCropMode());
+		transformRequest.setResizeMode(parameters.getResizeMode());
+		transformRequest.setLanguage(languageTag).setVersion(version);
+		if (parameters.hasFocalPoint()) {
+			transformRequest.setFocalPoint(parameters.getFocalPoint());
+		}
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectNodesNodeUuidBinaryTransformFieldNamePostWithHttpInfo(fieldKey, nodeUuid, projectName, adaptRequest(transformRequest)), NodeResponse.class);
 	}
 
 	@Override
 	public MeshRequest<NodeResponse> updateNodeBinaryFieldCheckStatus(String projectName, String nodeUuid,
 			String languageTag, String nodeVersion, String fieldKey, String secret, String branchUuid,
 			BinaryCheckStatus status, String reason) {
-		// TODO Auto-generated method stub
-		return null;
+		BinaryCheckUpdateRequest updateRequest = new BinaryCheckUpdateRequest()
+			.setStatus(status)
+			.setReason(reason);
+		
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidBinaryFieldNameCheckCallbackPostWithHttpInfo(languageTag, secret, fieldKey, nodeUuid, projectName, nodeVersion, adaptRequest(updateRequest)), NodeResponse.class);
 	}
 
 	@Override
 	public MeshRequest<ImageVariantsResponse> upsertNodeBinaryFieldImageVariants(String projectName, String nodeUuid,
 			String fieldKey, ImageManipulationRequest request, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectNodesNodeUuidBinaryFieldNameVariantsPostWithHttpInfo(fieldKey, nodeUuid, projectName,
+				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, parameters),
+				findParameter(ImageManipulationRetrievalParameters.ORIGINAL_QUERY_PARAM_KEY, parameters),
+				findParameter(ImageManipulationRetrievalParameters.FILESIZE_QUERY_PARAM_KEY, parameters),
+				adaptRequest(request)), ImageVariantsResponse.class);
 	}
 
 	@Override
 	public MeshRequest<EmptyResponse> clearNodeBinaryFieldImageVariants(String projectName, String nodeUuid,
 			String fieldKey, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectNodesNodeUuidBinaryFieldNameVariantsDeleteWithHttpInfo(fieldKey, nodeUuid, projectName,
+				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, parameters),
+				findParameter(ImageManipulationRetrievalParameters.ORIGINAL_QUERY_PARAM_KEY, parameters),
+				findParameter(ImageManipulationRetrievalParameters.FILESIZE_QUERY_PARAM_KEY, parameters)), EmptyResponse.class);
 	}
 
 	@Override
 	public MeshRequest<ImageVariantsResponse> getNodeBinaryFieldImageVariants(String projectName, String nodeUuid,
 			String fieldKey, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectNodesNodeUuidBinaryFieldNameVariantsGetWithHttpInfo(fieldKey, nodeUuid, projectName,
+				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, parameters),
+				findParameter(ImageManipulationRetrievalParameters.ORIGINAL_QUERY_PARAM_KEY, parameters),
+				findParameter(ImageManipulationRetrievalParameters.FILESIZE_QUERY_PARAM_KEY, parameters)), ImageVariantsResponse.class);
 	}
 
 	@Override
 	public MeshRequest<S3RestResponse> updateNodeS3BinaryField(String projectName, String nodeUuid, String fieldKey,
 			S3BinaryUploadRequest request, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidS3binaryFieldNamePostWithHttpInfo(fieldKey, nodeUuid, projectName, 
+				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, parameters), adaptRequest(request)), S3RestResponse.class);
 	}
 
 	@Override
 	public MeshRequest<NodeResponse> extractMetadataNodeS3BinaryField(String projectName, String nodeUuid,
 			String fieldKey, S3BinaryMetadataRequest request, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectNodesNodeUuidS3binaryFieldNameParseMetadataPostWithHttpInfo(fieldKey, nodeUuid, projectName, 
+				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, parameters), adaptRequest(request)), NodeResponse.class);
 	}
 
 	@Override
 	public MeshRequest<String> resolveLinks(String body, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			return new OpenAPIMeshRawRequestImpl(apiClient.getHttpClient(), api.apiV2UtilitiesLinkResolverPostCall(body, 
+					findParameter(NodeParameters.LANGUAGES_QUERY_PARAM_KEY, parameters), 
+					findParameter(NodeParameters.RESOLVE_LINKS_QUERY_PARAM_KEY, parameters), null), String.class);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
 	public MeshRequest<SchemaValidationResponse> validateSchema(SchemaModel schema) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2UtilitiesValidateSchemaPostWithHttpInfo(adaptRequest(schema)), SchemaValidationResponse.class);
 	}
 
 	@Override
 	public MeshRequest<SchemaValidationResponse> validateMicroschema(MicroschemaModel microschemaModel) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2UtilitiesValidateMicroschemaPostWithHttpInfo(adaptRequest(microschemaModel)), SchemaValidationResponse.class);
 	}
 
 	@Override
 	public MeshRequest<NavigationResponse> loadNavigation(String projectName, String uuid,
 			ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectNodesNodeUuidNavigationGetWithHttpInfo(uuid, projectName,
+				findParameter(NavigationParameters.MAX_DEPTH_QUERY_PARAM_KEY, parameters),
+				findParameter(NavigationParameters.INCLUDE_ALL_QUERY_PARAM_KEY, parameters)), NavigationResponse.class);
 	}
 
 	@Override
 	public MeshRequest<NavigationResponse> navroot(String projectName, String path, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectNavrootPathGetWithHttpInfo(path, projectName, 
+				findParameter(NavigationParameters.MAX_DEPTH_QUERY_PARAM_KEY, parameters),
+				findParameter(NavigationParameters.INCLUDE_ALL_QUERY_PARAM_KEY, parameters)), NavigationResponse.class);
 	}
 
 	@Override
 	public MeshWebsocket eventbus() {
-		// TODO Auto-generated method stub
+		// OpenAPI supports no websocket
 		return null;
 	}
 
 	@Override
 	public MeshRequest<BranchResponse> createBranch(String projectName, BranchCreateRequest branchCreateRequest,
 			ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectBranchesPostWithHttpInfo(projectName, adaptRequest(branchCreateRequest)), BranchResponse.class);
 	}
 
 	@Override
 	public MeshRequest<BranchResponse> createBranch(String projectName, String uuid,
 			BranchCreateRequest branchCreateRequest, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectBranchesBranchUuidPostWithHttpInfo(uuid, projectName, adaptRequest(branchCreateRequest)), BranchResponse.class);
 	}
 
 	@Override
 	public MeshRequest<BranchResponse> findBranchByUuid(String projectName, String branchUuid,
 			ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectBranchesBranchUuidGetWithHttpInfo(branchUuid, projectName,
+				findParameter(GenericParameters.FIELDS_PARAM_KEY, parameters),
+				findParameter(GenericParameters.ETAG_PARAM_KEY, parameters)), BranchResponse.class);
 	}
 
 	@Override
 	public MeshRequest<BranchListResponse> findBranches(String projectName, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectBranchesGetWithHttpInfo(projectName,
+				findParameter(SortingParameters.SORT_BY_PARAMETER_KEY, parameters), 
+				findParameter(GenericParameters.ETAG_PARAM_KEY, parameters),
+				findParameter(PagingParameters.PAGE_PARAMETER_KEY, parameters), 
+				findParameter(PagingParameters.PER_PAGE_PARAMETER_KEY, parameters),
+				findParameter(GenericParameters.FIELDS_PARAM_KEY, parameters),
+				findParameter(SortingParameters.SORT_ORDER_PARAMETER_KEY, parameters)), BranchListResponse.class);
 	}
 
 	@Override
 	public MeshRequest<BranchResponse> updateBranch(String projectName, String branchUuid,
 			BranchUpdateRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectBranchesBranchUuidPutWithHttpInfo(branchUuid, projectName, adaptRequest(request)), BranchResponse.class);
 	}
 
 	@Override
-	public MeshRequest<BranchInfoSchemaList> getBranchSchemaVersions(String projectName, String branchUuid) {
-		// TODO Auto-generated method stub
-		return null;
+	public MeshRequest<BranchInfoSchemaList> getBranchSchemaVersions(String projectName, String branchUuid, ParameterProvider... parameters) {
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectBranchesBranchUuidSchemasGetWithHttpInfo(branchUuid, projectName, 
+				findParameter(SortingParameters.SORT_BY_PARAMETER_KEY, parameters), 
+				findParameter(PagingParameters.PAGE_PARAMETER_KEY, parameters), 
+				findParameter(PagingParameters.PER_PAGE_PARAMETER_KEY, parameters),
+				findParameter(SortingParameters.SORT_ORDER_PARAMETER_KEY, parameters)), BranchInfoSchemaList.class);
 	}
 
 	@Override
 	public MeshRequest<BranchInfoSchemaList> assignBranchSchemaVersions(String projectName, String branchUuid,
 			BranchInfoSchemaList schemaVersionReferences) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectBranchesBranchUuidSchemasPostWithHttpInfo(branchUuid, projectName, adaptRequest(schemaVersionReferences)), BranchInfoSchemaList.class);
 	}
 
 	@Override
 	public MeshRequest<BranchInfoSchemaList> assignBranchSchemaVersions(String projectName, String branchUuid,
 			SchemaReference... schemaVersionReferences) {
-		// TODO Auto-generated method stub
-		return null;
+		BranchInfoSchemaList list = new BranchInfoSchemaList();
+		list.add(schemaVersionReferences);
+		return assignBranchSchemaVersions(projectName, branchUuid, list);
 	}
 
 	@Override
-	public MeshRequest<BranchInfoMicroschemaList> getBranchMicroschemaVersions(String projectName, String branchUuid) {
-		// TODO Auto-generated method stub
-		return null;
+	public MeshRequest<BranchInfoMicroschemaList> getBranchMicroschemaVersions(String projectName, String branchUuid, ParameterProvider... parameters) {
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectBranchesBranchUuidMicroschemasGetWithHttpInfo(branchUuid, projectName, 
+				findParameter(SortingParameters.SORT_BY_PARAMETER_KEY, parameters), 
+				findParameter(PagingParameters.PAGE_PARAMETER_KEY, parameters), 
+				findParameter(PagingParameters.PER_PAGE_PARAMETER_KEY, parameters),
+				findParameter(SortingParameters.SORT_ORDER_PARAMETER_KEY, parameters)), BranchInfoMicroschemaList.class);
 	}
 
 	@Override
 	public MeshRequest<BranchInfoMicroschemaList> assignBranchMicroschemaVersions(String projectName, String branchUuid,
 			BranchInfoMicroschemaList microschemaVersionReferences) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectBranchesBranchUuidMicroschemasPostWithHttpInfo(branchUuid, projectName, adaptRequest(microschemaVersionReferences)), BranchInfoMicroschemaList.class);
 	}
 
 	@Override
 	public MeshRequest<BranchInfoMicroschemaList> assignBranchMicroschemaVersions(String projectName, String branchUuid,
 			MicroschemaReference... microschemaVersionReferences) {
-		// TODO Auto-generated method stub
-		return null;
+		BranchInfoMicroschemaList list = new BranchInfoMicroschemaList();
+		list.add(microschemaVersionReferences);
+		return assignBranchMicroschemaVersions(projectName, branchUuid, list);
 	}
 
 	@Override
 	public MeshRequest<GenericMessageResponse> migrateBranchSchemas(String projectName, String branchUuid) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectBranchesBranchUuidMigrateSchemasPostWithHttpInfo(branchUuid, projectName), GenericMessageResponse.class);
 	}
 
 	@Override
 	public MeshRequest<GenericMessageResponse> migrateBranchMicroschemas(String projectName, String branchUuid) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectBranchesBranchUuidMigrateMicroschemasPostWithHttpInfo(branchUuid, projectName), GenericMessageResponse.class);
 	}
 
 	@Override
 	public MeshRequest<BranchResponse> setLatestBranch(String projectName, String branchUuid) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectBranchesBranchUuidLatestPostWithHttpInfo(branchUuid, projectName), BranchResponse.class);
 	}
 
 	@Override
 	public MeshRequest<BranchResponse> addTagToBranch(String projectName, String branchUuid, String tagUuid) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectBranchesBranchUuidTagsTagUuidPostWithHttpInfo(tagUuid, branchUuid, projectName), BranchResponse.class);
 	}
 
 	@Override
 	public MeshRequest<EmptyResponse> removeTagFromBranch(String projectName, String branchUuid, String tagUuid) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectBranchesBranchUuidTagsTagUuidDeleteWithHttpInfo(tagUuid, branchUuid, projectName), BranchResponse.class);
 	}
 
 	@Override
 	public MeshRequest<TagListResponse> findTagsForBranch(String projectName, String branchUuid,
 			ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectBranchesBranchUuidTagsGetWithHttpInfo(branchUuid, projectName), TagListResponse.class);
 	}
 
 	@Override
 	public MeshRequest<TagListResponse> updateTagsForBranch(String projectName, String branchUuid,
 			TagListUpdateRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectBranchesBranchUuidTagsPostWithHttpInfo(branchUuid, projectName, adaptRequest(request)), TagListResponse.class);
 	}
 
 	@Override
 	public MeshRequest<ObjectPermissionResponse> getBranchRolePermissions(String projectName, String uuid) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectBranchesBranchUuidRolePermissionsGetWithHttpInfo(uuid, projectName), ObjectPermissionResponse.class);
 	}
 
 	@Override
 	public MeshRequest<ObjectPermissionResponse> grantBranchRolePermissions(String projectName, String uuid,
 			ObjectPermissionGrantRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectBranchesBranchUuidRolePermissionsPostWithHttpInfo(uuid, projectName, adaptRequest(request)), ObjectPermissionResponse.class);
 	}
 
 	@Override
 	public MeshRequest<ObjectPermissionResponse> revokeBranchRolePermissions(String projectName, String uuid,
 			ObjectPermissionRevokeRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectBranchesBranchUuidRolePermissionsPutWithHttpInfo(uuid, projectName, adaptRequest(request)), ObjectPermissionResponse.class);
 	}
 
 	@Override
 	public MeshRequest<MeshServerInfoModel> getApiInfo() {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2GetWithHttpInfo(), MeshServerInfoModel.class);
 	}
 
 	@Override
 	public MeshRequest<String> getRAML() {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			return new OpenAPIMeshRawRequestImpl<>(apiClient.getHttpClient(), api.apiV2RamlGetCall(null), String.class);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
 	public MeshRequest<String> getOpenAPI() {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			return new OpenAPIMeshRawRequestImpl(apiClient.getHttpClient(), api.apiV2OpenapiYamlGetCall(null), String.class);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
 	public MeshRequest<GraphQLResponse> graphql(String projectName, GraphQLRequest request,
 			ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectGraphqlPostWithHttpInfo(projectName, 
+				findParameter(BranchParameters.BRANCH_QUERY_PARAM_KEY, parameters),
+				findParameter(SearchParameters.WAIT_PARAMETER_KEY, parameters), adaptRequest(request)), GraphQLResponse.class);
 	}
 
 	@Override
 	public MeshRequest<JobListResponse> findJobs(ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
 		return new OpenAPIMeshRequestImpl(() -> api.apiV2AdminJobsGetWithHttpInfo(
 				findParameter(JobParameters.FROM_VERSION_PARAMETER_KEY, parameters), 
 				findParameter(JobParameters.MICROSCHEMA_NAME_PARAMETER_KEY, parameters), 
@@ -1634,137 +1692,211 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 
 	@Override
 	public MeshRequest<JsonObject> get(String path) {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			return new OpenAPIMeshRawRequestImpl<>(apiClient.getHttpClient(), 
+					new UpgradedCall(api.getApiClient().buildRequestBuilder(apiClient.getBasePath(), path, "GET", List.of(), List.of(), null, Map.of(), Map.of(), Map.of(), null, null), apiClient.getHttpClient()), 
+					JsonObject.class);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
 	public <R> MeshRequest<R> get(String path, Class<R> responseClass) {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			return new OpenAPIMeshRawRequestImpl<>(apiClient.getHttpClient(), 
+					new UpgradedCall(api.getApiClient().buildRequestBuilder(apiClient.getBasePath(), path, "GET", List.of(), List.of(), null, Map.of(), Map.of(), Map.of(), null, null), apiClient.getHttpClient()), 
+					responseClass);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
 	public MeshRequest<JsonObject> post(String path) {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			return new OpenAPIMeshRawRequestImpl<>(apiClient.getHttpClient(), 
+					new UpgradedCall(api.getApiClient().buildRequestBuilder(apiClient.getBasePath(), path, "POST", List.of(), List.of(), null, Map.of(), Map.of(), Map.of(), null, null), apiClient.getHttpClient()), 
+					JsonObject.class);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
 	public MeshRequest<JsonObject> post(String path, JsonObject body) {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			return new OpenAPIMeshRawRequestImpl<>(apiClient.getHttpClient(), 
+					new UpgradedCall(api.getApiClient().buildRequestBuilder(apiClient.getBasePath(), path, "POST", List.of(), List.of(), body, Map.of(), Map.of(), Map.of(), null, null), apiClient.getHttpClient()), 
+					JsonObject.class);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
 	public <R> MeshRequest<R> post(String path, Class<R> responseClass) {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			return new OpenAPIMeshRawRequestImpl<>(apiClient.getHttpClient(), 
+					new UpgradedCall(api.getApiClient().buildRequestBuilder(apiClient.getBasePath(), path, "POST", List.of(), List.of(), null, Map.of(), Map.of(), Map.of(), null, null), apiClient.getHttpClient()), 
+					responseClass);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
 	public <R, T extends RestModel> MeshRequest<R> post(String path, T request, Class<R> responseClass) {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			return new OpenAPIMeshRawRequestImpl<>(apiClient.getHttpClient(), 
+					new UpgradedCall(api.getApiClient().buildRequestBuilder(apiClient.getBasePath(), path, "POST", List.of(), List.of(), request, Map.of(), Map.of(), Map.of(), null, null), apiClient.getHttpClient()), 
+					responseClass);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
 	public MeshRequest<JsonObject> put(String path) {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			return new OpenAPIMeshRawRequestImpl<>(apiClient.getHttpClient(), 
+					new UpgradedCall(api.getApiClient().buildRequestBuilder(apiClient.getBasePath(), path, "PUT", List.of(), List.of(), null, Map.of(), Map.of(), Map.of(), null, null), apiClient.getHttpClient()), 
+					JsonObject.class);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
 	public MeshRequest<JsonObject> put(String path, JsonObject body) {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			return new OpenAPIMeshRawRequestImpl<>(apiClient.getHttpClient(), 
+					new UpgradedCall(api.getApiClient().buildRequestBuilder(apiClient.getBasePath(), path, "PUT", List.of(), List.of(), body, Map.of(), Map.of(), Map.of(), null, null), apiClient.getHttpClient()), 
+					JsonObject.class);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
 	public <R> MeshRequest<R> put(String path, Class<R> responseClass) {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			return new OpenAPIMeshRawRequestImpl<>(apiClient.getHttpClient(), 
+					new UpgradedCall(api.getApiClient().buildRequestBuilder(apiClient.getBasePath(), path, "PUT", List.of(), List.of(), null, Map.of(), Map.of(), Map.of(), null, null), apiClient.getHttpClient()), 
+					responseClass);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
 	public <R, T extends RestModel> MeshRequest<R> put(String path, T request, Class<R> responseClass) {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			return new OpenAPIMeshRawRequestImpl<>(apiClient.getHttpClient(), 
+					new UpgradedCall(api.getApiClient().buildRequestBuilder(apiClient.getBasePath(), path, "PUT", List.of(), List.of(), request, Map.of(), Map.of(), Map.of(), null, null), apiClient.getHttpClient()), 
+					responseClass);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
 	public MeshRequest<JsonObject> delete(String path) {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			return new OpenAPIMeshRawRequestImpl<>(apiClient.getHttpClient(), 
+					new UpgradedCall(api.getApiClient().buildRequestBuilder(apiClient.getBasePath(), path, "DELETE", List.of(), List.of(), null, Map.of(), Map.of(), Map.of(), null, null), apiClient.getHttpClient()), 
+					JsonObject.class);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
 	public MeshRequest<EmptyResponse> deleteEmpty(String path) {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			return new OpenAPIMeshRawRequestImpl<>(apiClient.getHttpClient(), 
+					new UpgradedCall(api.getApiClient().buildRequestBuilder(apiClient.getBasePath(), path, "DELETE", List.of(), List.of(), null, Map.of(), Map.of(), Map.of(), null, null), apiClient.getHttpClient()), 
+					EmptyResponse.class);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
 	public <R> MeshRequest<R> delete(String path, Class<R> responseClass) {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			return new OpenAPIMeshRawRequestImpl<>(apiClient.getHttpClient(), 
+					new UpgradedCall(api.getApiClient().buildRequestBuilder(apiClient.getBasePath(), path, "DELETE", List.of(), List.of(), null, Map.of(), Map.of(), Map.of(), null, null), apiClient.getHttpClient()), 
+					responseClass);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
 	public MeshRequest<EmptyResponse> ready() {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2HealthReadyGetWithHttpInfo(), EmptyResponse.class);
 	}
 
 	@Override
 	public MeshRequest<EmptyResponse> live() {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2HealthLiveGetWithHttpInfo(), EmptyResponse.class);
 	}
 
 	@Override
 	public MeshRequest<EmptyResponse> writable() {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2HealthWritableGetWithHttpInfo(), EmptyResponse.class);
 	}
 
 	@Override
 	public MeshRequest<LocalConfigModel> loadLocalConfig() {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2AdminConfigGetWithHttpInfo(), LocalConfigModel.class);
 	}
 
 	@Override
 	public MeshRequest<LocalConfigModel> updateLocalConfig(LocalConfigModel localConfigModel) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2AdminConfigPostWithHttpInfo(adaptRequest(localConfigModel)), LocalConfigModel.class);
 	}
 
 	@Override
 	public MeshRequest<MeshWebrootFieldResponse> webrootField(String projectName, String fieldName, String path,
 			ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			return new OpenAPIMeshRawRequestImpl(apiClient.getHttpClient(), api.apiV2ProjectWebrootfieldFieldNamePathGetCall(path, fieldName, projectName,
+					findParameter(ImageManipulationParameters.FOCAL_POINT_Z_QUERY_PARAM_KEY, parameters), 
+					findParameter(ImageManipulationParameters.RECT_QUERY_PARAM_KEY, parameters),
+					findParameter(ImageManipulationParameters.WIDTH_QUERY_PARAM_KEY, parameters), 
+					findParameter(ImageManipulationParameters.HEIGHT_QUERY_PARAM_KEY, parameters), 
+					findParameter(ImageManipulationParameters.RESIZE_MODE_QUERY_PARAM_KEY, parameters),
+					findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, parameters),
+					findParameter(ImageManipulationParameters.FOCAL_POINT_Y_QUERY_PARAM_KEY, parameters),
+					findParameter(ImageManipulationParameters.CROP_MODE_QUERY_PARAM_KEY, parameters), 
+					findParameter(ImageManipulationParameters.FOCAL_POINT_X_QUERY_PARAM_KEY, parameters), null), MeshWebrootFieldResponse.class);
+		} catch (ApiException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
 	public MeshRequest<MeshWebrootFieldResponse> webrootField(String projectName, String fieldName,
 			String[] pathSegments, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return webrootField(projectName, fieldName, Arrays.stream(pathSegments).collect(Collectors.joining("/")), parameters);
 	}
 
 	@Override
 	public MeshRequest<ImageVariantsResponse> upsertWebrootFieldImageVariants(String projectName, String fieldName,
 			String path, ImageManipulationRequest request, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectWebrootfieldFieldNamePathPostWithHttpInfo(path, fieldName, projectName,
+				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, parameters),
+				findParameter(ImageManipulationRetrievalParameters.ORIGINAL_QUERY_PARAM_KEY, parameters),
+				findParameter(ImageManipulationRetrievalParameters.FILESIZE_QUERY_PARAM_KEY, parameters),
+				adaptRequest(request)), ImageVariantsResponse.class);
 	}
 
 	@Override
 	public MeshRequest<ImageVariantsResponse> upsertWebrootFieldImageVariants(String projectName, String fieldName,
 			String[] pathSegments, ImageManipulationRequest request, ParameterProvider... parameters) {
-		return null;
+		return upsertWebrootFieldImageVariants(projectName, fieldName, Arrays.stream(pathSegments).collect(Collectors.joining("/")), request, parameters);
 	}
 
 	@Override
@@ -1863,13 +1995,13 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 
 	@Override
 	public MeshRestClient disableAnonymousAccess() {
-		// TODO Auto-generated method stub
+		apiClient.disableAnonymousAccess(true);
 		return this;
 	}
 
 	@Override
 	public MeshRestClient enableAnonymousAccess() {
-		// TODO Auto-generated method stub
+		apiClient.disableAnonymousAccess(false);
 		return this;
 	}
 

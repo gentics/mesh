@@ -81,7 +81,7 @@ public interface BranchClientMethods {
 	 * @param branchUuid
 	 * @return
 	 */
-	MeshRequest<BranchInfoSchemaList> getBranchSchemaVersions(String projectName, String branchUuid);
+	MeshRequest<BranchInfoSchemaList> getBranchSchemaVersions(String projectName, String branchUuid, ParameterProvider... parameters);
 
 	/**
 	 * Assign the given schema versions to the branch.
@@ -110,7 +110,7 @@ public interface BranchClientMethods {
 	 * @param branchUuid
 	 * @return
 	 */
-	MeshRequest<BranchInfoMicroschemaList> getBranchMicroschemaVersions(String projectName, String branchUuid);
+	MeshRequest<BranchInfoMicroschemaList> getBranchMicroschemaVersions(String projectName, String branchUuid, ParameterProvider... parameters);
 
 	/**
 	 * Assign the given microschema versions to the branch.

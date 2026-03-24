@@ -247,7 +247,7 @@ public class BranchEndpoint extends RolePermissionHandlingProjectEndpoint {
 		upsertBranch.setMutating(true);
 		upsertBranch.consumes(APPLICATION_JSON);
 		upsertBranch.produces(APPLICATION_JSON);
-		upsertBranch.exampleRequest(versioningExamples.createBranchUpdateRequest("Winter Collection Branch"));
+		upsertBranch.exampleRequest(versioningExamples.createBranchCreateRequest("Winter Collection Branch"));
 		upsertBranch.exampleResponse(OK, versioningExamples.createBranchResponse("Winter Collection Branch", false), "Updated or new branch");
 		upsertBranch.events(BRANCH_CREATED, BRANCH_UPDATED);
 		upsertBranch.blockingHandler(rc -> {
