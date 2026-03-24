@@ -2,6 +2,7 @@ package com.gentics.mesh.util;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -34,12 +35,32 @@ public class MeshOpenAPIv3Generator extends OpenAPIv3Generator {
 	public MeshOpenAPIv3Generator(String version, List<String> servers,
 			boolean secureByDefault,
 			Optional<? extends Collection<Pattern>> maybePathBlacklist,
-			Optional<? extends Collection<Pattern>> maybePathWhitelist) {	
-		super(version, servers, Collections.singletonMap("bearerAuth", new ExtendedSecurityScheme(secureByDefault)), maybePathBlacklist, maybePathWhitelist);
+			Optional<? extends Collection<Pattern>> maybePathWhitelist) {
+		super(version, servers, buildSecurity(secureByDefault), maybePathBlacklist, maybePathWhitelist);
 		securityBearerAuth = security.get("bearerAuth");
 		securityBearerAuth.getScheme().setScheme("bearer");
 		securityBearerAuth.getScheme().setType(SecurityScheme.Type.HTTP);
 		securityBearerAuth.getScheme().setBearerFormat("JWT");
+
+		ExtendedSecurityScheme backOffice = security.get("backOfficeAuth");
+		backOffice.getScheme().setType(SecurityScheme.Type.APIKEY);
+		backOffice.getScheme().setIn(SecurityScheme.In.HEADER);
+		backOffice.getScheme().setName("X-Authorization");
+		backOffice.getScheme().setDescription("BackOffice JWT passed in a configurable request header (header name is defined in the server configuration, e.g. X-Authorization). Only required when BackOffice JWT authentication is enabled.");
+
+		ExtendedSecurityScheme cleanup = security.get("cleanupSecret");
+		cleanup.getScheme().setType(SecurityScheme.Type.APIKEY);
+		cleanup.getScheme().setIn(SecurityScheme.In.QUERY);
+		cleanup.getScheme().setName("secret");
+		cleanup.getScheme().setDescription("Shared secret required to authorize cleanup operations.");
+	}
+
+	private static Map<String, ExtendedSecurityScheme> buildSecurity(boolean secureByDefault) {
+		Map<String, ExtendedSecurityScheme> map = new HashMap<>();
+		map.put("bearerAuth", new ExtendedSecurityScheme(secureByDefault));
+		map.put("backOfficeAuth", new ExtendedSecurityScheme(false));
+		map.put("cleanupSecret", new ExtendedSecurityScheme(false));
+		return map;
 	}
 
 	/**

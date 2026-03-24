@@ -38,6 +38,7 @@ public abstract class MeshOptions implements Option {
 	public static final String MESH_LOCK_PATH_ENV = "MESH_LOCK_PATH";
 	public static final String MESH_LIVE_PATH_ENV = "MESH_LIVE_PATH";
 	public static final String MESH_SERVE_OPENAPI_ENV = "MESH_SERVE_OPENAPI";
+	public static final String MESH_NO_API_INFO_PLUGINS_ENV = "MESH_NO_API_INFO_PLUGINS";
 	public static final String MESH_START_IN_READ_ONLY_ENV = "MESH_START_IN_READ_ONLY";
 	public static final String MESH_INITIAL_ADMIN_PASSWORD_ENV = "MESH_INITIAL_ADMIN_PASSWORD";
 	public static final String MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET_ENV = "MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET";
@@ -156,6 +157,11 @@ public abstract class MeshOptions implements Option {
 	@JsonProperty(required = false)
 	@EnvironmentVariable(name = MESH_SERVE_OPENAPI_ENV, description = "Serve OpenAPI specification under `/openapi*` endpoints. Default: true")
 	private boolean serveOpenApi = true;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Comma-separated list of plugin names for which no OpenAPI info should be included. Use '*' to disable for all plugins.")
+	@EnvironmentVariable(name = MESH_NO_API_INFO_PLUGINS_ENV, description = "Override the list of plugins excluded from OpenAPI info.")
+	private String noApiInfoPlugins;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("GraphQL options.")
@@ -557,6 +563,16 @@ public abstract class MeshOptions implements Option {
 		this.serveOpenApi = serveOpenApi;
 	}
 
+	public String getNoApiInfoPlugins() {
+		return noApiInfoPlugins;
+	}
+
+	@Setter
+	public MeshOptions setNoApiInfoPlugins(String noApiInfoPlugins) {
+		this.noApiInfoPlugins = noApiInfoPlugins;
+		return this;
+	}
+
 	@JsonIgnore
 	public abstract NativeQueryFiltering getNativeQueryFiltering();
 
@@ -636,9 +652,4 @@ public abstract class MeshOptions implements Option {
 	 */
 	public abstract Format getDefaultOpenAPIFormat();
 
-	/**
-	 * Get the comma separated list of plugin, that should provide no API info. Can be null or empty.
-	 * @return
-	 */
-	public abstract String getNoApiInfoPlugins();
 }
