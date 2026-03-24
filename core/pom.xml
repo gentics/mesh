@@ -36,7 +36,6 @@
 
 
 	<dependencies>
-
 		<!-- Internal dependencies -->
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
@@ -67,6 +66,11 @@
 			<artifactId>mesh-content-rag-mesh-sync</artifactId>
 			<version>${project.version}</version>
 		</dependency>   
+
+		<dependency>
+			<groupId>com.gentics</groupId>
+			<artifactId>cmp-liveness-dagger</artifactId>
+		</dependency>
 
 		<!-- Plugin dependency -->
 		<dependency>

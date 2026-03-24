@@ -12,10 +12,10 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.monitor.liveness.EventBusLivenessManager;
-import com.gentics.mesh.monitor.liveness.LivenessManager;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.BucketManager;
 import com.gentics.mesh.util.SearchWaitUtil;
+import com.gentics.monitoring.liveness.LivenessManager;
 
 /**
  * Central dagger mesh component which will expose dependencies.
