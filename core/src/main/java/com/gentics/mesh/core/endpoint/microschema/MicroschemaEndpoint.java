@@ -25,6 +25,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.RolePermissionHandlingEndpoint;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
@@ -188,7 +189,7 @@ public class MicroschemaEndpoint extends RolePermissionHandlingEndpoint {
 		updateEndpoint.consumes(APPLICATION_JSON);
 		updateEndpoint.exampleRequest(microschemaExamples.getGeolocationMicroschemaUpdateRequest());
 		// endpoint.exampleResponse(OK, microschemaExamples.getGeolocationMicroschemaResponse(), "Updated microschema.");
-		updateEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Migration message.");
+		updateEndpoint.exampleResponse(OK, new GenericMessageResponse("The schema has been updated. Migration has been invoked."), "Migration message.");
 		updateEndpoint.description("Update the microschema with the given uuid.");
 		updateEndpoint.events(MICROSCHEMA_UPDATED, MICROSCHEMA_MIGRATION_START, MICROSCHEMA_MIGRATION_FINISHED);
 		updateEndpoint.blockingHandler(rc -> {

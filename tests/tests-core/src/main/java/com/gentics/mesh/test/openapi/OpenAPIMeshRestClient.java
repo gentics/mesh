@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
@@ -103,7 +104,6 @@ import com.gentics.mesh.core.rest.user.UserResetTokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.core.rest.validation.SchemaValidationResponse;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.BranchParameters;
 import com.gentics.mesh.parameter.ConsistencyCheckParameters;
 import com.gentics.mesh.parameter.DeleteParameters;
@@ -159,7 +159,33 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 	 * @return
 	 */
 	protected static final <T> T findParameter(String key, ParameterProvider... parameters) {
-		return (T) Arrays.stream(parameters).map(p -> p.getParameter(key)).findAny().orElse(null);
+		return findParameter(key, false, parameters);
+	}
+
+	/**
+	 * Find the parameter in the providers.
+	 * 
+	 * @param <T>
+	 * @param key
+	 * @param forceString do not cast to the desired type
+	 * @param parameters
+	 * @return
+	 */
+	protected static final <T> T findParameter(String key, boolean forceString, ParameterProvider... parameters) {
+		return (T) Arrays.stream(parameters).map(p -> p.getParameter(key)).filter(Objects::nonNull).map(p -> {
+			if (forceString) {
+				return String.valueOf(p);
+			}
+			try {
+				return Boolean.valueOf(p);
+			} catch (Throwable e) {
+			}
+			try {
+				return Double.valueOf(p);
+			} catch (Throwable e) {
+			}
+			return p;
+		}).findAny().orElse(null);
 	}
 
 	/**
@@ -198,7 +224,7 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 				findParameter(RolePermissionParameters.ROLE_PERMISSION_QUERY_PARAM_KEY, parameters), 
 				findParameter(NodeParameters.LANGUAGES_QUERY_PARAM_KEY, parameters), 
 				findParameter(GenericParameters.FIELDS_PARAM_KEY, parameters), 
-				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, parameters), 
+				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, true, parameters), 
 				findParameter(NodeParameters.RESOLVE_LINKS_QUERY_PARAM_KEY, parameters)), NodeResponse.class);
 	}
 
@@ -206,7 +232,7 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 	public MeshRequest<NodeResponse> createNode(String projectName, NodeCreateRequest nodeCreateRequest,
 			ParameterProvider... parameters) {
 		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesPostWithHttpInfo(projectName, 
-				org.openapitools.client.model.NodeCreateRequest.fromJson(JsonUtil.toJson(nodeCreateRequest))), NodeResponse.class);
+				adaptRequest(nodeCreateRequest)), NodeResponse.class);
 	}
 
 	@Override
@@ -227,7 +253,7 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 	public MeshRequest<NodeResponse> updateNode(String projectName, String uuid, NodeUpdateRequest nodeUpdateRequest,
 			ParameterProvider... parameters) {
 		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidPutWithHttpInfo(uuid, projectName, 
-				org.openapitools.client.model.NodeUpdateRequest.fromJson(JsonUtil.toJson(nodeUpdateRequest))), NodeResponse.class);
+				adaptRequest(nodeUpdateRequest)), NodeResponse.class);
 	}
 
 	@Override
@@ -257,7 +283,7 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 				findParameter(PagingParameters.PAGE_PARAMETER_KEY, parameters), 
 				findParameter(NodeParameters.LANGUAGES_QUERY_PARAM_KEY, parameters), 
 				findParameter(GenericParameters.FIELDS_PARAM_KEY, parameters), 
-				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, parameters), 
+				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, true, parameters), 
 				findParameter(PagingParameters.SORT_ORDER_PARAMETER_KEY, parameters)), NodeListResponse.class);
 	}
 
@@ -273,7 +299,7 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 				findParameter(PagingParameters.PAGE_PARAMETER_KEY, parameters), 
 				findParameter(NodeParameters.LANGUAGES_QUERY_PARAM_KEY, parameters), 
 				findParameter(GenericParameters.FIELDS_PARAM_KEY, parameters), 
-				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, parameters), 
+				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, true, parameters), 
 				findParameter(PagingParameters.SORT_ORDER_PARAMETER_KEY, parameters)), NodeListResponse.class);
 	}
 
@@ -292,7 +318,7 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 			ParameterProvider... parameters) {
 		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidTagsTagUuidPostWithHttpInfo(
 				tagUuid, nodeUuid, projectName,
-				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, parameters)), NodeResponse.class);
+				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, true, parameters)), NodeResponse.class);
 	}
 
 	@Override
@@ -306,7 +332,7 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 			ParameterProvider... parameters) {
 		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidMoveToToUuidPostWithHttpInfo(
 				targetFolderUuid, nodeUuid, projectName,
-				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, parameters)), EmptyResponse.class);
+				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, true, parameters)), EmptyResponse.class);
 	}
 
 	@Override
@@ -314,7 +340,7 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 			ParameterProvider... parameters) {
 		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidTagsGetWithHttpInfo(nodeUuid, projectName, 
 				findParameter(GenericParameters.FIELDS_PARAM_KEY, parameters), 
-				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, parameters), 
+				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, true, parameters), 
 				findParameter(GenericParameters.ETAG_PARAM_KEY, parameters)), TagListResponse.class);
 	}
 
@@ -323,7 +349,7 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 			TagListUpdateRequest request, ParameterProvider... parameters) {
 		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidTagsPostWithHttpInfo(
 				nodeUuid, projectName, 
-				org.openapitools.client.model.TagListUpdateRequest.fromJson(JsonUtil.toJson(request))), TagListResponse.class);
+				adaptRequest(request)), TagListResponse.class);
 	}
 
 	@Override
@@ -597,7 +623,7 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 					findParameter(ImageManipulationParameters.WIDTH_QUERY_PARAM_KEY, parameters), 
 					findParameter(ImageManipulationParameters.HEIGHT_QUERY_PARAM_KEY, parameters), 
 					findParameter(ImageManipulationParameters.RESIZE_MODE_QUERY_PARAM_KEY, parameters),
-					findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, parameters),
+					findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, true, parameters),
 					findParameter(ImageManipulationParameters.FOCAL_POINT_Y_QUERY_PARAM_KEY, parameters),
 					findParameter(ImageManipulationParameters.CROP_MODE_QUERY_PARAM_KEY, parameters), 
 					findParameter(ImageManipulationParameters.FOCAL_POINT_X_QUERY_PARAM_KEY, parameters), null), MeshWebrootResponse.class);
@@ -655,7 +681,7 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 	public MeshRequest<SchemaResponse> findSchemaByUuid(String uuid, ParameterProvider... parameters) {
 		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2SchemasSchemaUuidGetWithHttpInfo(uuid,
 				findParameter(GenericParameters.FIELDS_PARAM_KEY, parameters),
-				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, parameters),
+				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, true, parameters),
 				findParameter(GenericParameters.ETAG_PARAM_KEY, parameters)), SchemaResponse.class);
 	}
 
@@ -767,7 +793,7 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 	public MeshRequest<GroupResponse> findGroupByUuid(String uuid, ParameterProvider... parameters) {
 		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2GroupsGroupUuidGetWithHttpInfo(uuid, 
 				findParameter(GenericParameters.FIELDS_PARAM_KEY, parameters),
-				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, parameters),
+				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, true, parameters),
 				findParameter(GenericParameters.ETAG_PARAM_KEY, parameters)), GroupResponse.class);
 	}
 
@@ -848,7 +874,7 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 				findParameter(NodeParameters.LANGUAGES_QUERY_PARAM_KEY, parameters),
 				findParameter(GenericParameters.FIELDS_PARAM_KEY, parameters),
 				findParameter(NodeParameters.RESOLVE_LINKS_QUERY_PARAM_KEY, parameters),
-				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, parameters)), UserResponse.class);
+				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, true, parameters)), UserResponse.class);
 	}
 
 	@Override
@@ -862,7 +888,7 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 				findParameter(PagingParameters.PAGE_PARAMETER_KEY, parameters),
 				findParameter(NodeParameters.LANGUAGES_QUERY_PARAM_KEY, parameters),
 				findParameter(GenericParameters.FIELDS_PARAM_KEY, parameters),
-				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, parameters),
+				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, true, parameters),
 				findParameter(SortingParameters.SORT_ORDER_PARAMETER_KEY, parameters)), UserListResponse.class);
 	}
 
@@ -1401,7 +1427,7 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 	@Override
 	public MeshRequest<MicroschemaResponse> findMicroschemaByUuid(String uuid, ParameterProvider... parameters) {
 		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2MicroschemasMicroschemaUuidGetWithHttpInfo(uuid, 
-				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, parameters)), MicroschemaResponse.class);
+				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, true, parameters)), MicroschemaResponse.class);
 	}
 
 	@Override
@@ -1466,7 +1492,7 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 					findParameter(ImageManipulationParameters.WIDTH_QUERY_PARAM_KEY, parameters), 
 					findParameter(ImageManipulationParameters.HEIGHT_QUERY_PARAM_KEY, parameters), 
 					findParameter(ImageManipulationParameters.RESIZE_MODE_QUERY_PARAM_KEY, parameters),
-					findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, parameters),
+					findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, true, parameters),
 					findParameter(ImageManipulationParameters.FOCAL_POINT_Y_QUERY_PARAM_KEY, parameters),
 					findParameter(ImageManipulationParameters.CROP_MODE_QUERY_PARAM_KEY, parameters), 
 					findParameter(ImageManipulationParameters.FOCAL_POINT_X_QUERY_PARAM_KEY, parameters), null), MeshBinaryResponse.class);
@@ -1514,7 +1540,7 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 	public MeshRequest<ImageVariantsResponse> upsertNodeBinaryFieldImageVariants(String projectName, String nodeUuid,
 			String fieldKey, ImageManipulationRequest request, ParameterProvider... parameters) {
 		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectNodesNodeUuidBinaryFieldNameVariantsPostWithHttpInfo(fieldKey, nodeUuid, projectName,
-				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, parameters),
+				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, true, parameters),
 				findParameter(ImageManipulationRetrievalParameters.ORIGINAL_QUERY_PARAM_KEY, parameters),
 				findParameter(ImageManipulationRetrievalParameters.FILESIZE_QUERY_PARAM_KEY, parameters),
 				adaptRequest(request)), ImageVariantsResponse.class);
@@ -1524,7 +1550,7 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 	public MeshRequest<EmptyResponse> clearNodeBinaryFieldImageVariants(String projectName, String nodeUuid,
 			String fieldKey, ParameterProvider... parameters) {
 		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectNodesNodeUuidBinaryFieldNameVariantsDeleteWithHttpInfo(fieldKey, nodeUuid, projectName,
-				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, parameters),
+				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, true, parameters),
 				findParameter(ImageManipulationRetrievalParameters.ORIGINAL_QUERY_PARAM_KEY, parameters),
 				findParameter(ImageManipulationRetrievalParameters.FILESIZE_QUERY_PARAM_KEY, parameters)), EmptyResponse.class);
 	}
@@ -1533,7 +1559,7 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 	public MeshRequest<ImageVariantsResponse> getNodeBinaryFieldImageVariants(String projectName, String nodeUuid,
 			String fieldKey, ParameterProvider... parameters) {
 		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectNodesNodeUuidBinaryFieldNameVariantsGetWithHttpInfo(fieldKey, nodeUuid, projectName,
-				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, parameters),
+				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, true, parameters),
 				findParameter(ImageManipulationRetrievalParameters.ORIGINAL_QUERY_PARAM_KEY, parameters),
 				findParameter(ImageManipulationRetrievalParameters.FILESIZE_QUERY_PARAM_KEY, parameters)), ImageVariantsResponse.class);
 	}
@@ -1542,14 +1568,14 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 	public MeshRequest<S3RestResponse> updateNodeS3BinaryField(String projectName, String nodeUuid, String fieldKey,
 			S3BinaryUploadRequest request, ParameterProvider... parameters) {
 		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidS3binaryFieldNamePostWithHttpInfo(fieldKey, nodeUuid, projectName, 
-				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, parameters), adaptRequest(request)), S3RestResponse.class);
+				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, true, parameters), adaptRequest(request)), S3RestResponse.class);
 	}
 
 	@Override
 	public MeshRequest<NodeResponse> extractMetadataNodeS3BinaryField(String projectName, String nodeUuid,
 			String fieldKey, S3BinaryMetadataRequest request, ParameterProvider... parameters) {
 		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectNodesNodeUuidS3binaryFieldNameParseMetadataPostWithHttpInfo(fieldKey, nodeUuid, projectName, 
-				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, parameters), adaptRequest(request)), NodeResponse.class);
+				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, true, parameters), adaptRequest(request)), NodeResponse.class);
 	}
 
 	@Override
@@ -1980,7 +2006,7 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 					findParameter(ImageManipulationParameters.WIDTH_QUERY_PARAM_KEY, parameters), 
 					findParameter(ImageManipulationParameters.HEIGHT_QUERY_PARAM_KEY, parameters), 
 					findParameter(ImageManipulationParameters.RESIZE_MODE_QUERY_PARAM_KEY, parameters),
-					findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, parameters),
+					findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, true, parameters),
 					findParameter(ImageManipulationParameters.FOCAL_POINT_Y_QUERY_PARAM_KEY, parameters),
 					findParameter(ImageManipulationParameters.CROP_MODE_QUERY_PARAM_KEY, parameters), 
 					findParameter(ImageManipulationParameters.FOCAL_POINT_X_QUERY_PARAM_KEY, parameters), null), MeshWebrootFieldResponse.class);
@@ -1999,7 +2025,7 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 	public MeshRequest<ImageVariantsResponse> upsertWebrootFieldImageVariants(String projectName, String fieldName,
 			String path, ImageManipulationRequest request, ParameterProvider... parameters) {
 		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectWebrootfieldFieldNamePathPostWithHttpInfo(path, fieldName, projectName,
-				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, parameters),
+				findParameter(VersioningParameters.VERSION_QUERY_PARAM_KEY, true, parameters),
 				findParameter(ImageManipulationRetrievalParameters.ORIGINAL_QUERY_PARAM_KEY, parameters),
 				findParameter(ImageManipulationRetrievalParameters.FILESIZE_QUERY_PARAM_KEY, parameters),
 				adaptRequest(request)), ImageVariantsResponse.class);
