@@ -24,7 +24,7 @@ NOTE: All REST API responses are available in JSON, only, except for binary data
 The link:https://swagger.io/specification/[OpenAPI specification] is available for Gentics Mesh in two variants:
 
 * The generic link:https://spec.openapis.org/oas/v3.0.0.html[OpenAPI v3.0 specification], unrelated to any actual Gentics Mesh installation, can be checked right link:/docs/api/openapi.yaml[here] in the YAML format.
-* The installation-aware specification, which is generated right in Mesh at runtime, and, in addition to the generic specification, contains also the endpoints of all the plugins currently running along, as well as some technical info of an installation (servers). It also allows choosing the right specification version, either 3.0 or 3.1.
+* The installation-aware specification, which is generated right in Mesh at runtime, and, in addition to the generic specification, contains also the endpoints of all the plugins currently running along, as well as some technical info of an installation (servers).
 
 === RAML Specification
 
