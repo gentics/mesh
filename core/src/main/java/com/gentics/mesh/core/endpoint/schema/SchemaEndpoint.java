@@ -25,6 +25,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.RolePermissionHandlingEndpoint;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -143,7 +144,7 @@ public class SchemaEndpoint extends RolePermissionHandlingEndpoint {
 		updateEndpoint.produces(APPLICATION_JSON);
 		updateEndpoint.addQueryParameters(SchemaUpdateParametersImpl.class);
 		updateEndpoint.exampleRequest(schemaExamples.getSchemaUpdateRequest());
-		updateEndpoint.exampleResponse(OK, schemaExamples.getSchemaResponse(), "Updated schema.");
+		updateEndpoint.exampleResponse(OK, new GenericMessageResponse("The schema has been updated. Migration has been invoked."), "Updated schema.");
 		updateEndpoint.events(SCHEMA_UPDATED, SCHEMA_MIGRATION_START, SCHEMA_MIGRATION_FINISHED);
 		updateEndpoint.blockingHandler(rc -> {
 			// Update operations should always be executed sequentially - never in parallel
