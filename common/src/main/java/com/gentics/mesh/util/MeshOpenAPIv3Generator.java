@@ -83,4 +83,15 @@ public class MeshOpenAPIv3Generator extends OpenAPIv3Generator {
 				// fill the component model
 				Optional.empty());
 	}
+
+	@SuppressWarnings("rawtypes")
+	@Override
+	protected void postProcess(Context context) {
+		// The JSON schema mapper behaves awfully with the field map, making it unusable.
+		Schema fieldMapSchema = new Schema<>();
+		fieldMapSchema.set$ref("#/components/schemas/AnyJson");
+		context.usedComponents.add("AnyJson");
+		context.openApi.getComponents().addSchemas("FieldMap", fieldMapSchema);
+		super.postProcess(context);
+	}
 }
