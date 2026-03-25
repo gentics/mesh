@@ -176,9 +176,11 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 			if (forceString) {
 				return String.valueOf(p);
 			}
-			try {
-				return Boolean.valueOf(p);
-			} catch (Throwable e) {
+			if ("true".equalsIgnoreCase(p)) {
+				return Boolean.TRUE;
+			}
+			if ("false".equalsIgnoreCase(p)) {
+				return Boolean.FALSE;
 			}
 			try {
 				return Double.valueOf(p);
