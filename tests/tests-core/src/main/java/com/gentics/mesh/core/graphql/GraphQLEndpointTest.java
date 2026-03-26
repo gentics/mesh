@@ -172,9 +172,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 				Arrays.asList("microschemas-query", true, false, "draft"),
 				Arrays.asList("paging-query", true, false, "draft"),
 				Arrays.asList("tagFamily-query", true, false, "draft"),
-				// waits until SUP-19066
-				//Arrays.asList("tagfamilies-query", true, false, "draft"),
-				Arrays.asList("tagfamilies-query-ersatz", true, false, "draft"),
+				Arrays.asList("tagfamilies-query", true, false, "draft"),
 				Arrays.asList("node-query", true, false, "draft"),
 				Arrays.asList("node-tag-query", true, false, "draft"),
 				Arrays.asList("nodes-query", true, false, "draft"),
