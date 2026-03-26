@@ -4,16 +4,15 @@ import static com.gentics.mesh.handler.VersionHandlerImpl.API_MOUNTPOINT;
 
 import com.gentics.mesh.annotation.Getter;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.log.RouterLoggerHandlerImpl;
 import com.gentics.mesh.router.route.DefaultNotFoundHandler;
 import com.gentics.mesh.router.route.FailureHandler;
 import com.gentics.mesh.router.route.PoweredByHandler;
 import com.gentics.mesh.router.route.SecurityLoggingHandler;
 
 import com.gentics.monitoring.liveness.LivenessManager;
+import com.gentics.vertx.logging.CmpLoggerHandlerImpl;
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.handler.LoggerFormat;
 
 /**
  * @see RootRouter
@@ -35,7 +34,7 @@ public class RootRouterImpl implements RootRouter {
 		this.vertx = vertx;
 		this.router = Router.router(vertx);
 		// Root handlersA
-		router.route().handler(new RouterLoggerHandlerImpl(LoggerFormat.SHORT));
+		router.route().handler(new CmpLoggerHandlerImpl());
 		// TODO add a dedicated error for api router that informs about
 		// APPLICATION_JSON requirements. This may not be true for other
 		// routes (eg. custom

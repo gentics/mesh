@@ -36,6 +36,10 @@
 			<artifactId>cmp-liveness-dagger</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>com.gentics.vertx</groupId>
+			<artifactId>vertx-common</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-mdm-common</artifactId>
 		</dependency>
