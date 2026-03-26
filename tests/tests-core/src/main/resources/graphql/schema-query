@@ -22,6 +22,8 @@
 		name
 		# [$.data.folderSchema.isAutoPurge=true]
 		isAutoPurge
+		# [$.data.folderSchema.isNoIndex=<is-null>]
+		isNoIndex
 	}
 
 	schema(name:"content") {

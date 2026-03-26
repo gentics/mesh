@@ -1,0 +1,17 @@
+{
+	microschemas (filter: {name: {oneOf: ["vcard", "whatever"]}}, sort: {name: ASCENDING}) {
+		# [$.data.microschemas.totalCount=1]
+		totalCount
+		elements {
+			# [$.data.microschemas.elements[0].name=vcard]
+			name
+			# [$.data.microschemas.elements[0].uuid=<is-uuid>]
+			uuid
+			# [$.data.microschemas.elements[0].isNoIndex=<is-null>]
+			isNoIndex
+			# [$.data.microschemas.elements[0].isEmpty=false]
+			isEmpty
+		}
+	}
+}
+# [$.errors=<is-undefined>]

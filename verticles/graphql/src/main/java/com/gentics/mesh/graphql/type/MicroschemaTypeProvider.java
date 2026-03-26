@@ -12,6 +12,9 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -29,8 +32,6 @@ import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLOutputType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * GraphQL type provider for microschema types.
@@ -87,6 +88,12 @@ public class MicroschemaTypeProvider extends AbstractTypeProvider {
 		schemaType.field(newFieldDefinition().name("isEmpty").type(GraphQLBoolean).dataFetcher((env) -> {
 			MicroschemaVersionModel model = loadModelWithFallback(env);
 			return model == null || model.getFields() == null || model.getFields().isEmpty();
+		}));
+
+		// .isNoIndex
+		schemaType.field(newFieldDefinition().name("isNoIndex").type(GraphQLBoolean).dataFetcher((env) -> {
+			MicroschemaVersionModel model = loadModelWithFallback(env);
+			return model != null ? model.getNoIndex() : null;
 		}));
 
 		// .fields

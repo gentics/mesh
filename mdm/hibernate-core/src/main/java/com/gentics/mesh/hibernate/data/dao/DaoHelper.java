@@ -1502,11 +1502,24 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 		} else if (actualFieldName.startsWith("USER.")) {
 			actualFieldName = parts[1];
 			maybeOwner = Optional.of("USER");
+		} else if (actualFieldName.startsWith("TAGFAMILY.")) {
+			actualFieldName = parts[1];
+			maybeOwner = Optional.of("TAGFAMILY");
 		} else if (maybeOwner.filter(o -> "USER".equals(o)).isPresent()) {
 			maybeOwner = joins.stream().map(j -> {
 				if ("USER".equals(j.getLeft().getTable())) {
 					return j.getRight().getField();
 				} else if ("USER".equals(j.getRight().getTable())) {
+					return j.getLeft().getField();
+				} else {
+					return null;
+				}
+			}).filter(s -> StringUtils.isNotBlank(s)).findAny().or(() -> op.maybeGetOwner());
+		} else if (maybeOwner.filter(o -> "TAGFAMILY".equals(o)).isPresent()) {
+			maybeOwner = joins.stream().map(j -> {
+				if ("TAGFAMILY".equals(j.getLeft().getTable())) {
+					return j.getRight().getField();
+				} else if ("TAGFAMILY".equals(j.getRight().getTable())) {
 					return j.getLeft().getField();
 				} else {
 					return null;

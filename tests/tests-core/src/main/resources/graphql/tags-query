@@ -1,0 +1,13 @@
+{
+	tags (filter: {name: {oneOf: ["red", "jeep", "whatever"]}, tagFamily: {name: {oneOf: ["colors"]}}}, sort: {name: ASCENDING}) {
+		# [$.data.tags.totalCount=1]
+		totalCount
+		elements {
+			# [$.data.tags.elements[0].name=red]
+			name
+			# [$.data.tags.elements[0].uuid=<is-uuid>]
+			uuid
+		}
+	}
+}
+# [$.errors=<is-undefined>]

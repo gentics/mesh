@@ -598,14 +598,27 @@ public abstract class AbstractTypeProvider {
 			parameters.setPerPage(perPage);
 		}
 		String sortBy = env.getArgument("sortBy");
-		SortOrder sortOrder = env.getArgument("sortOrder");
+		Sorting sortOrder = env.getArgument("sortOrder");
 		if (StringUtils.isNotBlank(sortBy) && sortOrder != null) {
-			parameters.putSort(sortBy, sortOrder);
+			parameters.putSort(sortBy, fromGraphQl(sortOrder));
 		}
 		Map<String, ?> sortArgument = env.getArgument("sort");
 		parameters.putSort(parseGraphQlSort(sortArgument, Optional.empty()));
 		parameters.validate();
 		return parameters;
+	}
+
+	private static SortOrder fromGraphQl(Sorting sorting) {
+		if (sorting == null) {
+			return null;
+		}
+		switch (sorting) {
+		case ASCENDING:
+			return SortOrder.ASCENDING;
+		case DESCENDING:
+			return SortOrder.DESCENDING;		
+		}
+		return SortOrder.UNSORTED;
 	}
 
 	@SuppressWarnings("unchecked")

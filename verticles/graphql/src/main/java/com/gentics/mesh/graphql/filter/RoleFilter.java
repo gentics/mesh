@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Optional;
 
 import com.gentics.graphqlfilter.filter.FilterField;
-import com.gentics.graphqlfilter.filter.StartMainFilter;
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.data.role.HibRole;
 

@@ -1,0 +1,21 @@
+{
+	tagFamilies (filter: {name: {oneOf: ["colors", "basic", "whatever"]}}, sort: {name: DESCENDING}) {
+		# [$.data.tagFamilies.totalCount=2]
+		totalCount
+		elements {
+			# [$.data.tagFamilies.elements[0].name=colors]
+			name
+			# [$.data.tagFamilies.elements[0].uuid=<is-uuid>]
+			uuid
+			tags {
+				# [$.data.tagFamilies.elements[0].tags.totalCount=3]
+				totalCount
+				elements {
+					# [$.data.tagFamilies.elements[0].tags.elements[0].name=red]
+					name
+				}
+			}
+		}
+	}
+}
+# [$.errors=<is-undefined>]
