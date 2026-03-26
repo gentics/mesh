@@ -38,6 +38,7 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.util.UUIDUtil;
 
 @MeshTestSetting(elasticsearch = TRACKING, testSize = PROJECT, startServer = true)
 public class GroupUserEndpointTest extends AbstractMeshTest {
@@ -101,7 +102,8 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		call(() -> client().addUserToGroup("bogus", userUuid), NOT_FOUND, "object_not_found_for_uuid", "bogus");
+		String bogusUuid = UUIDUtil.randomUUID();
+		call(() -> client().addUserToGroup(bogusUuid, userUuid), NOT_FOUND, "object_not_found_for_uuid", bogusUuid);
 
 	}
 
@@ -289,7 +291,8 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testRemoveUserFromGroupWithBogusUserUuid() throws Exception {
-		call(() -> client().removeUserFromGroup(groupUuid(), "bogus"), NOT_FOUND, "object_not_found_for_uuid", "bogus");
+		String bogusUuid = UUIDUtil.randomUUID();
+		call(() -> client().removeUserFromGroup(groupUuid(), bogusUuid), NOT_FOUND, "object_not_found_for_uuid", bogusUuid);
 		try (Tx tx = tx()) {
 			GroupDao groupDao = tx.groupDao();
 			assertTrue("User should still be member of the group.", groupDao.hasUser(group(), user()));

@@ -34,6 +34,7 @@ import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.util.UUIDUtil;
 
 @MeshTestSetting(elasticsearch = TRACKING, testSize = PROJECT, startServer = true)
 public class GroupRolesEndpointTest extends AbstractMeshTest {
@@ -139,7 +140,8 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 			GroupDao groupDao = tx.groupDao();
 			assertEquals(1, groupDao.getRoles(group()).count());
 		}
-		call(() -> client().addRoleToGroup(groupUuid(), "bogus"), NOT_FOUND, "object_not_found_for_uuid", "bogus");
+		String bogusUuid = UUIDUtil.randomUUID();
+		call(() -> client().addRoleToGroup(groupUuid(), bogusUuid), NOT_FOUND, "object_not_found_for_uuid", bogusUuid);
 	}
 
 	@Test
@@ -285,7 +287,8 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testAddRoleToGroupWithBogusRoleUUID() throws Exception {
 		try (Tx tx = tx()) {
-			call(() -> client().addRoleToGroup(group().getUuid(), "bogus"), NOT_FOUND, "object_not_found_for_uuid", "bogus");
+			String bogusUuid = UUIDUtil.randomUUID();
+			call(() -> client().addRoleToGroup(group().getUuid(), bogusUuid), NOT_FOUND, "object_not_found_for_uuid", bogusUuid);
 		}
 	}
 

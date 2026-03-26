@@ -45,6 +45,7 @@ import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.util.UUIDUtil;
 
 @MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true)
 public class NodePublishEndpointTest extends AbstractMeshTest {
@@ -322,7 +323,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testGetPublishStatusBogusUuid() {
-		String bogusUuid = "bogus";
+		String bogusUuid = UUIDUtil.randomUUID();
 		call(() -> client().getNodePublishStatus(PROJECT_NAME, bogusUuid), NOT_FOUND, "object_not_found_for_uuid", bogusUuid);
 	}
 
@@ -397,7 +398,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testPublishNodeBogusUuid() {
-		String bogusUuid = "bogus";
+		String bogusUuid = UUIDUtil.randomUUID();
 		call(() -> client().publishNode(PROJECT_NAME, bogusUuid), NOT_FOUND, "object_not_found_for_uuid", bogusUuid);
 	}
 

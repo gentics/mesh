@@ -6,6 +6,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
@@ -128,6 +129,17 @@ public interface RestPlugin extends MeshPlugin {
 
 			// get the url of the requested file from the classpath (will be null, if the resource does not exist)
 			URL url = getClass().getClassLoader().getResource(filePath);
+
+            // Special case: requests that resolve to a directory path (e.g. "/webroot/formgen")
+            // must not be treated as a file. Otherwise we would cache a file at storage/[base]/formgen
+            // which then blocks creation of the correct directory structure.
+			// We only allow to request a file otherwise 404
+            URL dirUrl = getClass().getClassLoader().getResource(filePath.endsWith("/") ? filePath : filePath + "/");
+            if (dirUrl != null) {
+				rc.fail(HttpResponseStatus.NOT_FOUND.code());
+                return;
+            }
+
 			if (url != null) {
 				// this is the handler, which will copy the file
 				Handler<Promise<Object>> copy = prom -> {

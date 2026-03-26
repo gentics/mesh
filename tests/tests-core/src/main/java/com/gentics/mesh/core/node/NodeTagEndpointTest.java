@@ -48,6 +48,7 @@ import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.util.UUIDUtil;
 
 @MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true)
 public class NodeTagEndpointTest extends AbstractMeshTest {
@@ -279,9 +280,10 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			HibNode node = folder("2015");
 			String uuid = node.getUuid();
+			String bogusUuid = UUIDUtil.randomUUID();
 
-			call(() -> client().removeTagFromNode(PROJECT_NAME, uuid, "bogus"), NOT_FOUND, "object_not_found_for_uuid",
-				"bogus");
+			call(() -> client().removeTagFromNode(PROJECT_NAME, uuid, bogusUuid), NOT_FOUND, "object_not_found_for_uuid",
+				bogusUuid);
 		}
 	}
 

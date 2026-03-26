@@ -45,6 +45,7 @@ import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.util.TestUtils;
+import com.gentics.mesh.util.UUIDUtil;
 
 @MeshTestSetting(testSize = PROJECT_AND_NODE, startServer = true)
 public class JobEndpointTest extends AbstractMeshTest {
@@ -262,7 +263,8 @@ public class JobEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testLoadBogusJob() {
 		grantAdmin();
-		call(() -> client().findJobByUuid("bogus"), NOT_FOUND, "object_not_found_for_uuid", "bogus");
+		String bogusUuid = UUIDUtil.randomUUID();
+		call(() -> client().findJobByUuid(bogusUuid), NOT_FOUND, "object_not_found_for_uuid", bogusUuid);
 	}
 
 	@Test

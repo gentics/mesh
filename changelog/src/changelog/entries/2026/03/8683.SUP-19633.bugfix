@@ -1,0 +1,2 @@
+GraphQL: The performance of loading nodes with filters has been improved by reducing the number
+of required SQL queries.
