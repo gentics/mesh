@@ -213,7 +213,7 @@ public class WebRootHandler extends AbstractWebrootHandler {
 		}
 
 		if (uuid != null) {
-			nodeCrudHandler.handleUpdate(ac, uuid);
+			nodeCrudHandler.handleUpdate(ac, uuid, createInexisting);
 		} else {
 			nodeCrudHandler.handleCreate(ac);
 		}
