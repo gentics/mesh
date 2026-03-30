@@ -70,7 +70,7 @@ public interface TagFamilyClientMethods {
 	 *            Update request
 	 * @return
 	 */
-	MeshRequest<TagFamilyResponse> updateTagFamily(String projectName, String tagFamilyUuid, TagFamilyUpdateRequest request);
+	MeshRequest<TagFamilyResponse> updateTagFamily(String projectName, String tagFamilyUuid, TagFamilyUpdateRequest request, ParameterProvider... parameters);
 
 	/**
 	 * Create the tag family with the given uuid.

@@ -32,6 +32,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
+import com.gentics.mesh.parameter.impl.UpdateParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 
 /**
@@ -207,13 +208,14 @@ public class GroupEndpoint extends RolePermissionHandlingEndpoint {
 		upsertEndpoint.method(POST);
 		upsertEndpoint.consumes(APPLICATION_JSON);
 		upsertEndpoint.produces(APPLICATION_JSON);
+		upsertEndpoint.addQueryParameters(UpdateParametersImpl.class);
 		upsertEndpoint.exampleRequest(groupExamples.getGroupCreateRequest("New group name"));
 		upsertEndpoint.exampleResponse(OK, groupExamples.getGroupResponse1("New group name"), "Updated or new group.");
 		upsertEndpoint.events(GROUP_CREATED, GROUP_UPDATED);
 		upsertEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("groupUuid");
-			crudHandler.handleUpdate(ac, uuid);
+			crudHandler.handleUpdate(ac, uuid, ac.getUpdateParameters().isUpsert());
 		}, isOrderedBlockingHandlers());
 	}
 

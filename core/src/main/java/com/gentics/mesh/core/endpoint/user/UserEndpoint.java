@@ -25,6 +25,7 @@ import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
+import com.gentics.mesh.parameter.impl.UpdateParametersImpl;
 import com.gentics.mesh.parameter.impl.UserParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
@@ -237,6 +238,7 @@ public class UserEndpoint extends RolePermissionHandlingEndpoint {
 		upsertEndpoint.setMutating(true);
 		upsertEndpoint.consumes(APPLICATION_JSON);
 		upsertEndpoint.produces(APPLICATION_JSON);
+		upsertEndpoint.addQueryParameters(UpdateParametersImpl.class);
 		upsertEndpoint.addQueryParameters(UserParametersImpl.class);
 		upsertEndpoint.exampleRequest(userExamples.getUserCreateRequest("jdoe42"));
 		upsertEndpoint.exampleResponse(OK, userExamples.getUserResponse1("jdoe42"), "Updated or created user response.");
@@ -244,7 +246,7 @@ public class UserEndpoint extends RolePermissionHandlingEndpoint {
 		upsertEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("userUuid");
-			crudHandler.handleUpdate(ac, uuid);
+			crudHandler.handleUpdate(ac, uuid, ac.getUpdateParameters().isUpsert());
 		}, isOrderedBlockingHandlers());
 	}
 

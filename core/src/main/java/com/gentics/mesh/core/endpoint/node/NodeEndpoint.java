@@ -53,6 +53,7 @@ import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
+import com.gentics.mesh.parameter.impl.UpdateParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 
@@ -596,6 +597,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		postEndpoint.method(POST);
 		postEndpoint.consumes(APPLICATION_JSON);
 		postEndpoint.produces(APPLICATION_JSON);
+		postEndpoint.addQueryParameters(UpdateParametersImpl.class);
 		postEndpoint.exampleRequest(nodeExamples.getNodeCreateRequest2());
 		postEndpoint.exampleResponse(OK, nodeExamples.getNodeResponse2(), "New or updated node.");
 		postEndpoint.exampleResponse(CONFLICT, miscExamples.createMessageResponse(), "A conflict has been detected.");
@@ -604,7 +606,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");
 			ac.getVersioningParameters().setVersion("draft");
-			crudHandler.handleUpdate(ac, uuid);
+			crudHandler.handleUpdate(ac, uuid, ac.getUpdateParameters().isUpsert());
 		}, isOrderedBlockingHandlers());
 
 		InternalEndpointRoute endpoint = createRoute();

@@ -37,6 +37,7 @@ import com.gentics.mesh.parameter.impl.BranchParametersImpl;
 import com.gentics.mesh.parameter.impl.EtagParametersImpl;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.parameter.impl.UpdateParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 
 /**
@@ -100,6 +101,7 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 		upsertEndpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
 		upsertEndpoint.addUriParameter("tagUuid", "Uuid of the tag.", TAG_BLUE_UUID);
 		upsertEndpoint.method(POST);
+		upsertEndpoint.addQueryParameters(UpdateParametersImpl.class);
 		upsertEndpoint.consumes(APPLICATION_JSON);
 		upsertEndpoint.produces(APPLICATION_JSON);
 		upsertEndpoint.description("Update the specified tag. The tag is created if no tag with the specified uuid could be found.");
@@ -110,7 +112,7 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String tagFamilyUuid = PathParameters.getTagFamilyUuid(rc);
 			String uuid = PathParameters.getTagUuid(rc);
-			tagCrudHandler.handleUpdate(ac, tagFamilyUuid, uuid, true);
+			tagCrudHandler.handleUpdate(ac, tagFamilyUuid, uuid, ac.getUpdateParameters().isUpsert());
 		}, isOrderedBlockingHandlers());
 
 		InternalEndpointRoute updateEndpoint = createRoute();
@@ -375,13 +377,14 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 		upsertEndpoint.description("Update the tag family with the given uuid. The tag family will be created if it can't be found for the given uuid.");
 		upsertEndpoint.consumes(APPLICATION_JSON);
 		upsertEndpoint.produces(APPLICATION_JSON);
+		upsertEndpoint.addQueryParameters(UpdateParametersImpl.class);
 		upsertEndpoint.exampleRequest(tagFamilyExamples.getTagFamilyCreateRequest("Nicer colors"));
 		upsertEndpoint.exampleResponse(OK, tagFamilyExamples.getTagFamilyResponse("Nicer colors"), "Updated or created tag family.");
 		upsertEndpoint.events(TAG_FAMILY_UPDATED, TAG_FAMILY_CREATED);
 		upsertEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String tagFamilyUuid = PathParameters.getTagFamilyUuid(rc);
-			tagFamilyCrudHandler.handleUpdate(ac, tagFamilyUuid);
+			tagFamilyCrudHandler.handleUpdate(ac, tagFamilyUuid, ac.getUpdateParameters().isUpsert());
 		}, isOrderedBlockingHandlers());
 	}
 }

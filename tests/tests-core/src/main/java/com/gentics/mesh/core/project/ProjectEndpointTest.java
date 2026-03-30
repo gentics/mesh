@@ -81,6 +81,7 @@ import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.SortingParametersImpl;
+import com.gentics.mesh.parameter.impl.UpdateParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
@@ -657,7 +658,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		ProjectUpdateRequest request = new ProjectUpdateRequest();
 		request.setName("new Name");
 		String uuid = UUIDUtil.randomUUID();
-		call(() -> client().updateProject(uuid, request), NOT_FOUND, "object_not_found_for_uuid", uuid);
+		call(() -> client().updateProject(uuid, request, new UpdateParametersImpl().setUpsert(false)), NOT_FOUND, "object_not_found_for_uuid", uuid);
 
 	}
 

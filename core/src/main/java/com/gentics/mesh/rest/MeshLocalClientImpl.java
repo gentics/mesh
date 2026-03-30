@@ -261,7 +261,7 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 		ac.setProject(projectName);
 		ac.setPayloadObject(nodeUpsetRequest);
 		ac.getVersioningParameters().setVersion("draft");
-		nodeCrudHandler.handleUpdate(ac, uuid);
+		nodeCrudHandler.handleUpdate(ac, uuid, ac.getUpdateParameters().isUpsert());
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -282,7 +282,7 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 		ac.setProject(projectName);
 		ac.setPayloadObject(nodeCreateRequest);
 		ac.getVersioningParameters().setVersion("draft");
-		nodeCrudHandler.handleUpdate(ac, uuid);
+		nodeCrudHandler.handleUpdate(ac, uuid, true);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -292,7 +292,7 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 		LocalActionContextImpl<NodeResponse> ac = createContext(NodeResponse.class, parameters);
 		ac.setPayloadObject(nodeUpdateRequest);
 		ac.setProject(projectName);
-		nodeCrudHandler.handleUpdate(ac, uuid);
+		nodeCrudHandler.handleUpdate(ac, uuid, ac.getUpdateParameters().isUpsert());
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -404,13 +404,13 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	}
 
 	@Override
-	public MeshRequest<TagResponse> updateTag(String projectName, String tagFamilyUuid, String uuid, TagUpdateRequest request) {
-		LocalActionContextImpl<TagResponse> ac = createContext(TagResponse.class);
+	public MeshRequest<TagResponse> updateTag(String projectName, String tagFamilyUuid, String uuid, TagUpdateRequest request, ParameterProvider... parameters) {
+		LocalActionContextImpl<TagResponse> ac = createContext(TagResponse.class, parameters);
 		ac.setProject(projectName);
 		ac.setPayloadObject(request);
 		ac.setParameter("tagUuid", uuid);
 		ac.setParameter("tagFamilyUuid", tagFamilyUuid);
-		tagCrudHandler.handleUpdate(ac, tagFamilyUuid, uuid, false);
+		tagCrudHandler.handleUpdate(ac, tagFamilyUuid, uuid, ac.getUpdateParameters().isUpsert());
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -488,14 +488,14 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	public MeshRequest<ProjectResponse> createProject(String uuid, ProjectCreateRequest request) {
 		LocalActionContextImpl<ProjectResponse> ac = createContext(ProjectResponse.class);
 		ac.setPayloadObject(request);
-		projectCrudHandler.handleUpdate(ac, uuid);
+		projectCrudHandler.handleUpdate(ac, uuid, true);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
 	@Override
-	public MeshRequest<ProjectResponse> updateProject(String uuid, ProjectUpdateRequest request) {
-		LocalActionContextImpl<ProjectResponse> ac = createContext(ProjectResponse.class);
-		projectCrudHandler.handleUpdate(ac, uuid);
+	public MeshRequest<ProjectResponse> updateProject(String uuid, ProjectUpdateRequest request, ParameterProvider... parameters) {
+		LocalActionContextImpl<ProjectResponse> ac = createContext(ProjectResponse.class, parameters);
+		projectCrudHandler.handleUpdate(ac, uuid, ac.getUpdateParameters().isUpsert());
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -590,11 +590,11 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	}
 
 	@Override
-	public MeshRequest<TagFamilyResponse> updateTagFamily(String projectName, String tagFamilyUuid, TagFamilyUpdateRequest request) {
-		LocalActionContextImpl<TagFamilyResponse> ac = createContext(TagFamilyResponse.class);
+	public MeshRequest<TagFamilyResponse> updateTagFamily(String projectName, String tagFamilyUuid, TagFamilyUpdateRequest request, ParameterProvider... parameters) {
+		LocalActionContextImpl<TagFamilyResponse> ac = createContext(TagFamilyResponse.class, parameters);
 		ac.setPayloadObject(request);
 		ac.setProject(projectName);
-		tagFamilyCrudHandler.handleUpdate(ac, tagFamilyUuid);
+		tagFamilyCrudHandler.handleUpdate(ac, tagFamilyUuid, ac.getUpdateParameters().isUpsert());
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -603,7 +603,7 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 		LocalActionContextImpl<TagFamilyResponse> ac = createContext(TagFamilyResponse.class);
 		ac.setPayloadObject(request);
 		ac.setProject(projectName);
-		tagFamilyCrudHandler.handleUpdate(ac, tagFamilyUuid);
+		tagFamilyCrudHandler.handleUpdate(ac, tagFamilyUuid, true);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -709,7 +709,7 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	public MeshRequest<SchemaResponse> createSchema(String uuid, SchemaCreateRequest request, ParameterProvider... parameters) {
 		LocalActionContextImpl<SchemaResponse> ac = createContext(SchemaResponse.class, parameters);
 		ac.setPayloadObject(request);
-		schemaCrudHandler.handleUpdate(ac, uuid);
+		schemaCrudHandler.handleUpdate(ac, uuid, true);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -724,7 +724,7 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	public MeshRequest<GenericMessageResponse> updateSchema(String uuid, SchemaUpdateRequest request, ParameterProvider... parameters) {
 		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class, parameters);
 		ac.setPayloadObject(request);
-		schemaCrudHandler.handleUpdate(ac, uuid);
+		schemaCrudHandler.handleUpdate(ac, uuid, ac.getUpdateParameters().isUpsert());
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -791,15 +791,15 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	public MeshRequest<GroupResponse> createGroup(String uuid, GroupCreateRequest createRequest) {
 		LocalActionContextImpl<GroupResponse> ac = createContext(GroupResponse.class);
 		ac.setPayloadObject(createRequest);
-		groupCrudHandler.handleUpdate(ac, uuid);
+		groupCrudHandler.handleUpdate(ac, uuid, true);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
 	@Override
-	public MeshRequest<GroupResponse> updateGroup(String uuid, GroupUpdateRequest request) {
-		LocalActionContextImpl<GroupResponse> ac = createContext(GroupResponse.class);
+	public MeshRequest<GroupResponse> updateGroup(String uuid, GroupUpdateRequest request, ParameterProvider... parameters) {
+		LocalActionContextImpl<GroupResponse> ac = createContext(GroupResponse.class, parameters);
 		ac.setPayloadObject(request);
-		groupCrudHandler.handleUpdate(ac, uuid);
+		groupCrudHandler.handleUpdate(ac, uuid, ac.getUpdateParameters().isUpsert());
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -864,7 +864,7 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	public MeshRequest<UserResponse> createUser(String uuid, UserCreateRequest request, ParameterProvider... parameters) {
 		LocalActionContextImpl<UserResponse> ac = createContext(UserResponse.class, parameters);
 		ac.setPayloadObject(request);
-		userCrudHandler.handleUpdate(ac, uuid);
+		userCrudHandler.handleUpdate(ac, uuid, true);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -872,7 +872,7 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	public MeshRequest<UserResponse> updateUser(String uuid, UserUpdateRequest request, ParameterProvider... parameters) {
 		LocalActionContextImpl<UserResponse> ac = createContext(UserResponse.class, parameters);
 		ac.setPayloadObject(request);
-		userCrudHandler.handleUpdate(ac, uuid);
+		userCrudHandler.handleUpdate(ac, uuid, ac.getUpdateParameters().isUpsert());
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -923,7 +923,7 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	public MeshRequest<RoleResponse> createRole(String uuid, RoleCreateRequest request) {
 		LocalActionContextImpl<RoleResponse> ac = createContext(RoleResponse.class);
 		ac.setPayloadObject(request);
-		roleCrudHandler.handleUpdate(ac, uuid);
+		roleCrudHandler.handleUpdate(ac, uuid, true);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -956,10 +956,10 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	}
 
 	@Override
-	public MeshRequest<RoleResponse> updateRole(String uuid, RoleUpdateRequest restRole) {
-		LocalActionContextImpl<RoleResponse> ac = createContext(RoleResponse.class);
+	public MeshRequest<RoleResponse> updateRole(String uuid, RoleUpdateRequest restRole, ParameterProvider... parameters) {
+		LocalActionContextImpl<RoleResponse> ac = createContext(RoleResponse.class, parameters);
 		ac.setPayloadObject(restRole);
-		roleCrudHandler.handleUpdate(ac, uuid);
+		roleCrudHandler.handleUpdate(ac, uuid, ac.getUpdateParameters().isUpsert());
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -1139,7 +1139,7 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	public MeshRequest<MicroschemaResponse> createMicroschema(String uuid, MicroschemaCreateRequest request) {
 		LocalActionContextImpl<MicroschemaResponse> ac = createContext(MicroschemaResponse.class);
 		ac.setPayloadObject(request);
-		microschemaCrudHandler.handleUpdate(ac, uuid);
+		microschemaCrudHandler.handleUpdate(ac, uuid, true);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -1154,7 +1154,7 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	public MeshRequest<GenericMessageResponse> updateMicroschema(String uuid, MicroschemaUpdateRequest request, ParameterProvider... parameters) {
 		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class, parameters);
 		ac.setPayloadObject(request);
-		microschemaCrudHandler.handleUpdate(ac, uuid);
+		microschemaCrudHandler.handleUpdate(ac, uuid, ac.getUpdateParameters().isUpsert());
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -1474,9 +1474,13 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	}
 
 	@Override
-	public MeshRequest<BranchResponse> updateBranch(String projectName, String branchUuid, BranchUpdateRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+	public MeshRequest<BranchResponse> updateBranch(String projectName, String branchUuid, BranchUpdateRequest request, ParameterProvider... parameters) {
+		LocalActionContextImpl<BranchResponse> ac = createContext(BranchResponse.class, parameters);
+		ac.setProject(projectName);
+		ac.setPayloadObject(request);
+		ac.setParameter("uuid", branchUuid);
+		branchCrudHandler.handleUpdate(ac, branchUuid, ac.getUpdateParameters().isUpsert());
+		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
 	@Override

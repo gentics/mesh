@@ -35,6 +35,7 @@ import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.parameter.impl.UpdateParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 
 /**
@@ -247,13 +248,14 @@ public class BranchEndpoint extends RolePermissionHandlingProjectEndpoint {
 		upsertBranch.setMutating(true);
 		upsertBranch.consumes(APPLICATION_JSON);
 		upsertBranch.produces(APPLICATION_JSON);
+		upsertBranch.addQueryParameters(UpdateParametersImpl.class);
 		upsertBranch.exampleRequest(versioningExamples.createBranchCreateRequest("Winter Collection Branch"));
 		upsertBranch.exampleResponse(OK, versioningExamples.createBranchResponse("Winter Collection Branch", false), "Updated or new branch");
 		upsertBranch.events(BRANCH_CREATED, BRANCH_UPDATED);
 		upsertBranch.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().params().get("branchUuid");
-			crudHandler.handleUpdate(ac, uuid);
+			crudHandler.handleUpdate(ac, uuid, ac.getUpdateParameters().isUpsert());
 		}, isOrderedBlockingHandlers());
 
 		InternalEndpointRoute updateBranch = createRoute();

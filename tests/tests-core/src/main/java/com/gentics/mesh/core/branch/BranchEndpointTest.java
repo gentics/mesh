@@ -93,6 +93,7 @@ import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
 import com.gentics.mesh.parameter.impl.SortingParametersImpl;
+import com.gentics.mesh.parameter.impl.UpdateParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -736,7 +737,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		BranchUpdateRequest request = new BranchUpdateRequest();
 		// request.setActive(false);
 		String uuid = UUIDUtil.randomUUID();
-		call(() -> client().updateBranch(PROJECT_NAME, uuid, request), NOT_FOUND, "object_not_found_for_uuid", uuid);
+		call(() -> client().updateBranch(PROJECT_NAME, uuid, request, new UpdateParametersImpl().setUpsert(false)), NOT_FOUND, "object_not_found_for_uuid", uuid);
 	}
 
 	@Test
