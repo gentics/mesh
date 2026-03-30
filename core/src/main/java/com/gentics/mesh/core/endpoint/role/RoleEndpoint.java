@@ -26,6 +26,7 @@ import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.parameter.impl.UpdateParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 
 /**
@@ -124,13 +125,14 @@ public class RoleEndpoint extends RolePermissionHandlingEndpoint {
 		upsertEndpoint.description("Update the role with the given uuid. The role is created if no role with the specified uuid could be found.");
 		upsertEndpoint.method(POST);
 		upsertEndpoint.consumes(APPLICATION_JSON);
+		upsertEndpoint.addQueryParameters(UpdateParametersImpl.class);
 		upsertEndpoint.exampleRequest(roleExamples.getRoleCreateRequest("New role name"));
 		upsertEndpoint.exampleResponse(OK, roleExamples.getRoleResponse1("New role name"), "Updated or new role.");
 		upsertEndpoint.events(ROLE_UPDATED, ROLE_CREATED);
 		upsertEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("roleUuid");
-			crudHandler.handleUpdate(ac, uuid);
+			crudHandler.handleUpdate(ac, uuid, ac.getUpdateParameters().isUpsert());
 		}, isOrderedBlockingHandlers());
 
 		InternalEndpointRoute updateEndpoint = createRoute();

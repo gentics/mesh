@@ -30,6 +30,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
+import com.gentics.mesh.parameter.impl.UpdateParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 
@@ -162,6 +163,7 @@ public class SchemaEndpoint extends RolePermissionHandlingEndpoint {
 		upsertEndpoint.description("Update or create the schema.");
 		upsertEndpoint.consumes(APPLICATION_JSON);
 		upsertEndpoint.produces(APPLICATION_JSON);
+		upsertEndpoint.addQueryParameters(UpdateParametersImpl.class);
 		upsertEndpoint.addQueryParameters(SchemaUpdateParametersImpl.class);
 		upsertEndpoint.exampleRequest(schemaExamples.getSchemaCreateRequest());
 		upsertEndpoint.exampleResponse(OK, schemaExamples.getSchemaResponse(), "Updated or new schema.");
@@ -171,7 +173,7 @@ public class SchemaEndpoint extends RolePermissionHandlingEndpoint {
 			synchronized (schemaLock.mutex()) {
 				InternalActionContext ac = wrap(rc);
 				String uuid = ac.getParameter("schemaUuid");
-				crudHandler.handleUpdate(ac, uuid);
+				crudHandler.handleUpdate(ac, uuid, ac.getUpdateParameters().isUpsert());
 			}
 		}, isOrderedBlockingHandlers());
 	}

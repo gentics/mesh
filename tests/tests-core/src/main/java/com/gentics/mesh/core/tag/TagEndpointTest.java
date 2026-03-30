@@ -61,6 +61,7 @@ import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.SortingParametersImpl;
+import com.gentics.mesh.parameter.impl.UpdateParametersImpl;
 import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -674,7 +675,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		String uuid = UUIDUtil.randomUUID();
 		try (Tx tx = tx()) {
 			HibTagFamily parentTagFamily = tagFamily("colors");
-			call(() -> client().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid, request), NOT_FOUND, "object_not_found_for_uuid", uuid);
+			call(() -> client().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid, request, new UpdateParametersImpl().setUpsert(false)), NOT_FOUND, "object_not_found_for_uuid", uuid);
 		}
 
 	}

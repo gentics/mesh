@@ -38,15 +38,6 @@ public interface CrudHandler {
 	 * @param ac
 	 * @param uuid
 	 *            Uuid of the element which should be updated
-	 */
-	void handleUpdate(InternalActionContext ac, String uuid);
-
-	/**
-	 * Handle update requests.
-	 * 
-	 * @param ac
-	 * @param uuid
-	 *            Uuid of the element which should be updated
 	 * @param createInexisting if true, and the existing user with given UUID is not found, a new one will be created.
 	 */
 	void handleUpdate(InternalActionContext ac, String uuid, boolean createInexisting);

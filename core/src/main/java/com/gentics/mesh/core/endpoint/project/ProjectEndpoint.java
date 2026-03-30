@@ -28,6 +28,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.ProjectPurgeParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
+import com.gentics.mesh.parameter.impl.UpdateParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 
 /**
@@ -93,13 +94,14 @@ public class ProjectEndpoint extends RolePermissionHandlingEndpoint {
 		upsertEndpoint.method(POST);
 		upsertEndpoint.consumes(APPLICATION_JSON);
 		upsertEndpoint.produces(APPLICATION_JSON);
+		upsertEndpoint.addQueryParameters(UpdateParametersImpl.class);
 		upsertEndpoint.exampleRequest(projectExamples.getProjectCreateRequest("New project name"));
 		upsertEndpoint.exampleResponse(OK, projectExamples.getProjectResponse("New project name"), "Updated project.");
 		upsertEndpoint.events(PROJECT_CREATED, PROJECT_UPDATED);
 		upsertEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("projectUuid");
-			crudHandler.handleUpdate(ac, uuid);
+			crudHandler.handleUpdate(ac, uuid, ac.getUpdateParameters().isUpsert());
 		}, isOrderedBlockingHandlers());
 	}
 

@@ -66,6 +66,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.SortingParametersImpl;
+import com.gentics.mesh.parameter.impl.UpdateParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
@@ -530,7 +531,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		request.setName("new Name");
 
 		String uuid = UUIDUtil.randomUUID();
-		call(() -> client().updateTagFamily(PROJECT_NAME, uuid, request), NOT_FOUND, "object_not_found_for_uuid", uuid);
+		call(() -> client().updateTagFamily(PROJECT_NAME, uuid, request, new UpdateParametersImpl().setUpsert(false)), NOT_FOUND, "object_not_found_for_uuid", uuid);
 	}
 
 	@Test

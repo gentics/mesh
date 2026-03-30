@@ -56,6 +56,7 @@ import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.SortingParametersImpl;
+import com.gentics.mesh.parameter.impl.UpdateParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
@@ -463,7 +464,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.setName("renamed role");
 
 		String uuid = UUIDUtil.randomUUID();
-		call(() -> client().updateRole(uuid, request), NOT_FOUND, "object_not_found_for_uuid", uuid);
+		call(() -> client().updateRole(uuid, request, new UpdateParametersImpl().setUpsert(false)), NOT_FOUND, "object_not_found_for_uuid", uuid);
 
 	}
 

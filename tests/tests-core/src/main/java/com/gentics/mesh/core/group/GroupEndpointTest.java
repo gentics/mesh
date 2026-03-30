@@ -54,6 +54,7 @@ import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.SortingParametersImpl;
+import com.gentics.mesh.parameter.impl.UpdateParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
@@ -505,7 +506,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		GroupUpdateRequest request = new GroupUpdateRequest();
 		request.setName(name);
 		String uuid = UUIDUtil.randomUUID();
-		call(() -> client().updateGroup(uuid, request), NOT_FOUND, "object_not_found_for_uuid", uuid);
+		call(() -> client().updateGroup(uuid, request, new UpdateParametersImpl().setUpsert(false)), NOT_FOUND, "object_not_found_for_uuid", uuid);
 	}
 
 	@Test

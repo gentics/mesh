@@ -28,6 +28,7 @@ import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.parameter.impl.UpdateParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 
@@ -170,6 +171,7 @@ public class MicroschemaEndpoint extends RolePermissionHandlingEndpoint {
 		upserEndpoint.method(POST);
 		upserEndpoint.produces(APPLICATION_JSON);
 		upserEndpoint.consumes(APPLICATION_JSON);
+		upserEndpoint.addQueryParameters(UpdateParametersImpl.class);
 		upserEndpoint.exampleRequest(microschemaExamples.getGeolocationMicroschemaCreateRequest());
 		// endpoint.exampleResponse(OK, microschemaExamples.getGeolocationMicroschemaResponse(), "Updated microschema.");
 		upserEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Migration message.");
@@ -178,7 +180,7 @@ public class MicroschemaEndpoint extends RolePermissionHandlingEndpoint {
 		upserEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("microschemaUuid");
-			crudHandler.handleUpdate(ac, uuid);
+			crudHandler.handleUpdate(ac, uuid, ac.getUpdateParameters().isUpsert());
 		}, isOrderedBlockingHandlers());
 
 		InternalEndpointRoute updateEndpoint = createRoute();

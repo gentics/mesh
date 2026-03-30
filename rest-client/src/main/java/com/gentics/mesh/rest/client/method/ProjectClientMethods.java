@@ -88,7 +88,7 @@ public interface ProjectClientMethods {
 	 * @param request
 	 * @return
 	 */
-	MeshRequest<ProjectResponse> updateProject(String uuid, ProjectUpdateRequest request);
+	MeshRequest<ProjectResponse> updateProject(String uuid, ProjectUpdateRequest request, ParameterProvider... parameters);
 
 	/**
 	 * Delete the project.

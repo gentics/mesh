@@ -102,6 +102,7 @@ import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.SortingParametersImpl;
+import com.gentics.mesh.parameter.impl.UpdateParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.gentics.mesh.test.MeshTestSetting;
@@ -1886,11 +1887,10 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			NodeUpdateRequest request = new NodeUpdateRequest();
 			request.setLanguage("en");
 
-			NodeParametersImpl parameters = new NodeParametersImpl();
-			parameters.setLanguages("en", "de");
-
 			String uuid = UUIDUtil.randomUUID();
-			call(() -> client().updateNode(PROJECT_NAME, uuid, request, parameters), NOT_FOUND, "object_not_found_for_uuid", uuid);
+			call(() -> client().updateNode(PROJECT_NAME, uuid, request,
+					new NodeParametersImpl().setLanguages("en", "de"), new UpdateParametersImpl().setUpsert(false)),
+						NOT_FOUND, "object_not_found_for_uuid", uuid);
 		}
 	}
 

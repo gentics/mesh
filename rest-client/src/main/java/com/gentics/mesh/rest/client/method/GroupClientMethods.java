@@ -57,7 +57,7 @@ public interface GroupClientMethods {
 	 * @param request
 	 * @return
 	 */
-	MeshRequest<GroupResponse> updateGroup(String uuid, GroupUpdateRequest request);
+	MeshRequest<GroupResponse> updateGroup(String uuid, GroupUpdateRequest request, ParameterProvider... parameters);
 
 	/**
 	 * Delete the group.
