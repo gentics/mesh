@@ -334,17 +334,17 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 	}
 
 	private void addTagFamilyUpdateHandler() {
-		InternalEndpointRoute updateEndpoint = createRoute();
-		updateEndpoint.path("/:tagFamilyUuid");
-		updateEndpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
-		updateEndpoint.method(POST);
-		updateEndpoint.description("Update the tag family with the given uuid. The tag family will be created if it can't be found for the given uuid.");
-		updateEndpoint.consumes(APPLICATION_JSON);
-		updateEndpoint.produces(APPLICATION_JSON);
-		updateEndpoint.exampleRequest(tagFamilyExamples.getTagFamilyUpdateRequest("Nicer colors"));
-		updateEndpoint.exampleResponse(OK, tagFamilyExamples.getTagFamilyResponse("Nicer colors"), "Updated or new tag family.");
-		updateEndpoint.events(TAG_FAMILY_UPDATED, TAG_FAMILY_CREATED);
-		updateEndpoint.blockingHandler(rc -> {
+		InternalEndpointRoute endpoint = createRoute();
+		endpoint.path("/:tagFamilyUuid");
+		endpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
+		endpoint.method(POST);
+		endpoint.description("Update the tag family with the given uuid. The tag family will be created if it can't be found for the given uuid.");
+		endpoint.consumes(APPLICATION_JSON);
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleRequest(tagFamilyExamples.getTagFamilyUpdateRequest("Nicer colors"));
+		endpoint.exampleResponse(OK, tagFamilyExamples.getTagFamilyResponse("Nicer colors"), "Updated or new tag family.");
+		endpoint.events(TAG_FAMILY_UPDATED, TAG_FAMILY_CREATED);
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String tagFamilyUuid = PathParameters.getTagFamilyUuid(rc);
 			tagFamilyCrudHandler.handleUpdate(ac, tagFamilyUuid);
