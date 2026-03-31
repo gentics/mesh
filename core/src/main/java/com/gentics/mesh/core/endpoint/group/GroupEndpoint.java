@@ -19,7 +19,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
-import static io.vertx.core.http.HttpMethod.PUT;
 
 import javax.inject.Inject;
 
@@ -32,7 +31,6 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
-import com.gentics.mesh.parameter.impl.UpdateParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 
 /**
@@ -188,34 +186,17 @@ public class GroupEndpoint extends RolePermissionHandlingEndpoint {
 		InternalEndpointRoute updateEndpoint = createRoute();
 		updateEndpoint.path("/:groupUuid");
 		updateEndpoint.addUriParameter("groupUuid", "Uuid of the group which should be updated.", GROUP_CLIENT_UUID);
-		updateEndpoint.description("Update the group with the given uuid.");
-		updateEndpoint.method(PUT);
+		updateEndpoint.description("Update the group with the given uuid. The group is created if no group with the specified uuid could be found.");
+		updateEndpoint.method(POST);
 		updateEndpoint.consumes(APPLICATION_JSON);
 		updateEndpoint.produces(APPLICATION_JSON);
-		updateEndpoint.exampleRequest(groupExamples.getGroupUpdateRequest("Group name"));
-		updateEndpoint.exampleResponse(OK, groupExamples.getGroupResponse1("Group name"), "Updated group.");
-		updateEndpoint.events(GROUP_UPDATED);
+		updateEndpoint.exampleRequest(groupExamples.getGroupUpdateRequest("New group name"));
+		updateEndpoint.exampleResponse(OK, groupExamples.getGroupResponse1("New group name"), "Updated or new group.");
+		updateEndpoint.events(GROUP_CREATED, GROUP_UPDATED);
 		updateEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("groupUuid");
-			crudHandler.handleUpdate(ac, uuid, false);
-		}, isOrderedBlockingHandlers());
-
-		InternalEndpointRoute upsertEndpoint = createRoute();
-		upsertEndpoint.path("/:groupUuid");
-		upsertEndpoint.addUriParameter("groupUuid", "Uuid of the group which should be updated.", GROUP_CLIENT_UUID);
-		upsertEndpoint.description("Update the group with the given uuid. The group is created if no group with the specified uuid could be found.");
-		upsertEndpoint.method(POST);
-		upsertEndpoint.consumes(APPLICATION_JSON);
-		upsertEndpoint.produces(APPLICATION_JSON);
-		upsertEndpoint.addQueryParameters(UpdateParametersImpl.class);
-		upsertEndpoint.exampleRequest(groupExamples.getGroupCreateRequest("New group name"));
-		upsertEndpoint.exampleResponse(OK, groupExamples.getGroupResponse1("New group name"), "Updated or new group.");
-		upsertEndpoint.events(GROUP_CREATED, GROUP_UPDATED);
-		upsertEndpoint.blockingHandler(rc -> {
-			InternalActionContext ac = wrap(rc);
-			String uuid = ac.getParameter("groupUuid");
-			crudHandler.handleUpdate(ac, uuid, ac.getUpdateParameters().isUpsert());
+			crudHandler.handleUpdate(ac, uuid);
 		}, isOrderedBlockingHandlers());
 	}
 

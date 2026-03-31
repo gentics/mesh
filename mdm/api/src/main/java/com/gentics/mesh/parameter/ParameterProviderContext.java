@@ -23,7 +23,6 @@ import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
 import com.gentics.mesh.parameter.impl.SearchParametersImpl;
 import com.gentics.mesh.parameter.impl.SortingParametersImpl;
-import com.gentics.mesh.parameter.impl.UpdateParametersImpl;
 import com.gentics.mesh.parameter.impl.UserParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 
@@ -126,9 +125,5 @@ public interface ParameterProviderContext extends ActionContext {
 
 	default BinaryCheckParameters getBinaryCheckParameters() {
 		return new BinaryCheckParametersImpl(this);
-	}
-
-	default UpdateParameters getUpdateParameters() {
-		return new UpdateParametersImpl(this);
 	}
 }

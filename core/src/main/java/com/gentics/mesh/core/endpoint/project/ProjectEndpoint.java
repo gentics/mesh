@@ -13,7 +13,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
-import static io.vertx.core.http.HttpMethod.PUT;
 
 import javax.inject.Inject;
 
@@ -28,7 +27,6 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.ProjectPurgeParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
-import com.gentics.mesh.parameter.impl.UpdateParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 
 /**
@@ -72,9 +70,9 @@ public class ProjectEndpoint extends RolePermissionHandlingEndpoint {
 		InternalEndpointRoute updateEndpoint = createRoute();
 		updateEndpoint.path("/:projectUuid");
 		updateEndpoint
-			.description("Update the project with the given uuid.");
+			.description("Update the project with the given uuid. The project is created if no project with the specified uuid could be found.");
 		updateEndpoint.addUriParameter("projectUuid", "Uuid of the project.", PROJECT_DEMO_UUID);
-		updateEndpoint.method(PUT);
+		updateEndpoint.method(POST);
 		updateEndpoint.consumes(APPLICATION_JSON);
 		updateEndpoint.produces(APPLICATION_JSON);
 		updateEndpoint.exampleRequest(projectExamples.getProjectUpdateRequest("New project name"));
@@ -83,25 +81,7 @@ public class ProjectEndpoint extends RolePermissionHandlingEndpoint {
 		updateEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("projectUuid");
-			crudHandler.handleUpdate(ac, uuid, false);
-		}, isOrderedBlockingHandlers());
-
-		InternalEndpointRoute upsertEndpoint = createRoute();
-		upsertEndpoint.path("/:projectUuid");
-		upsertEndpoint
-			.description("Update the project with the given uuid. The project is created if no project with the specified uuid could be found.");
-		upsertEndpoint.addUriParameter("projectUuid", "Uuid of the project.", PROJECT_DEMO_UUID);
-		upsertEndpoint.method(POST);
-		upsertEndpoint.consumes(APPLICATION_JSON);
-		upsertEndpoint.produces(APPLICATION_JSON);
-		upsertEndpoint.addQueryParameters(UpdateParametersImpl.class);
-		upsertEndpoint.exampleRequest(projectExamples.getProjectCreateRequest("New project name"));
-		upsertEndpoint.exampleResponse(OK, projectExamples.getProjectResponse("New project name"), "Updated project.");
-		upsertEndpoint.events(PROJECT_CREATED, PROJECT_UPDATED);
-		upsertEndpoint.blockingHandler(rc -> {
-			InternalActionContext ac = wrap(rc);
-			String uuid = ac.getParameter("projectUuid");
-			crudHandler.handleUpdate(ac, uuid, ac.getUpdateParameters().isUpsert());
+			crudHandler.handleUpdate(ac, uuid);
 		}, isOrderedBlockingHandlers());
 	}
 

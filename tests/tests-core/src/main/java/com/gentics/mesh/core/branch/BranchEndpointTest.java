@@ -63,7 +63,6 @@ import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaList;
 import com.gentics.mesh.core.rest.branch.info.BranchMicroschemaInfo;
 import com.gentics.mesh.core.rest.branch.info.BranchSchemaInfo;
 import com.gentics.mesh.core.rest.common.ListResponse;
-import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.branch.BranchMicroschemaAssignModel;
 import com.gentics.mesh.core.rest.event.branch.BranchSchemaAssignEventModel;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
@@ -93,7 +92,6 @@ import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
 import com.gentics.mesh.parameter.impl.SortingParametersImpl;
-import com.gentics.mesh.parameter.impl.UpdateParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -729,15 +727,6 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		// request.setActive(false);
 		call(() -> client().updateBranch(PROJECT_NAME, initialBranchUuid(), request), FORBIDDEN, "error_missing_perm", initialBranchUuid(),
 			UPDATE_PERM.getRestPerm().getName());
-	}
-
-	@Test
-	@Override
-	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
-		BranchUpdateRequest request = new BranchUpdateRequest();
-		// request.setActive(false);
-		String uuid = UUIDUtil.randomUUID();
-		call(() -> client().updateBranch(PROJECT_NAME, uuid, request, new UpdateParametersImpl().setUpsert(false)), NOT_FOUND, "object_not_found_for_uuid", uuid);
 	}
 
 	@Test

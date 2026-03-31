@@ -62,7 +62,6 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.Permission;
-import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.user.NodeReference;
@@ -78,7 +77,6 @@ import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.SortingParametersImpl;
-import com.gentics.mesh.parameter.impl.UpdateParametersImpl;
 import com.gentics.mesh.parameter.impl.UserParametersImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
@@ -690,15 +688,6 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertEquals(username, reloadedUser.getUsername());
 		}
 
-	}
-
-	@Test
-	@Override
-	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
-		UserUpdateRequest request = new UserUpdateRequest();
-		request.setUsername("New Name");
-		String uuid = UUIDUtil.randomUUID();
-		call(() -> client().updateUser(uuid, request, new UpdateParametersImpl().setUpsert(false)), NOT_FOUND, "object_not_found_for_uuid", uuid);
 	}
 
 	@Test

@@ -25,7 +25,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
-import static io.vertx.core.http.HttpMethod.PUT;
 
 import javax.inject.Inject;
 
@@ -53,7 +52,6 @@ import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
-import com.gentics.mesh.parameter.impl.UpdateParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 
@@ -597,8 +595,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		postEndpoint.method(POST);
 		postEndpoint.consumes(APPLICATION_JSON);
 		postEndpoint.produces(APPLICATION_JSON);
-		postEndpoint.addQueryParameters(UpdateParametersImpl.class);
-		postEndpoint.exampleRequest(nodeExamples.getNodeCreateRequest2());
+		postEndpoint.exampleRequest(nodeExamples.getNodeUpdateRequest2());
 		postEndpoint.exampleResponse(OK, nodeExamples.getNodeResponse2(), "New or updated node.");
 		postEndpoint.exampleResponse(CONFLICT, miscExamples.createMessageResponse(), "A conflict has been detected.");
 		postEndpoint.events(NODE_UPDATED, NODE_CREATED, NODE_CONTENT_CREATED, NODE_UPDATED);
@@ -606,28 +603,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");
 			ac.getVersioningParameters().setVersion("draft");
-			crudHandler.handleUpdate(ac, uuid, ac.getUpdateParameters().isUpsert());
-		}, isOrderedBlockingHandlers());
-
-		InternalEndpointRoute endpoint = createRoute();
-		endpoint.description("Update the node with the given uuid. "
-			+ "Mesh will automatically check for version conflicts if a version was specified in the request and return a 409 error if a conflict has been detected. "
-			+ "Additional conflict checks for WebRoot path conflicts will also be performed.");
-		endpoint.path("/:nodeUuid");
-		endpoint.addUriParameter("nodeUuid", "Uuid of the node", NODE_DELOREAN_UUID);
-		endpoint.method(PUT);
-		endpoint.consumes(APPLICATION_JSON);
-		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleRequest(nodeExamples.getNodeUpdateRequest());
-		endpoint.exampleResponse(OK, nodeExamples.getNodeResponse2(), "Updated node.");
-		endpoint.exampleResponse(CONFLICT, miscExamples.createMessageResponse(), "A conflict has been detected.");
-		endpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
-		endpoint.events(NODE_UPDATED);
-		endpoint.blockingHandler(rc -> {
-			InternalActionContext ac = wrap(rc);
-			String uuid = ac.getParameter("nodeUuid");
-			ac.getVersioningParameters().setVersion("draft");
-			crudHandler.handleUpdate(ac, uuid, false);
+			crudHandler.handleUpdate(ac, uuid);
 		}, isOrderedBlockingHandlers());
 	}
 

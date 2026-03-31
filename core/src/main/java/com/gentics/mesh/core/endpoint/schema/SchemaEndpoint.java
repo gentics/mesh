@@ -14,7 +14,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
-import static io.vertx.core.http.HttpMethod.PUT;
 
 import javax.inject.Inject;
 
@@ -25,12 +24,10 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.RolePermissionHandlingEndpoint;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
-import com.gentics.mesh.parameter.impl.UpdateParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 
@@ -136,44 +133,24 @@ public class SchemaEndpoint extends RolePermissionHandlingEndpoint {
 	}
 
 	private void addUpdateHandler() {
-		InternalEndpointRoute updateEndpoint = createRoute();
-		updateEndpoint.path("/:schemaUuid");
-		updateEndpoint.addUriParameter("schemaUuid", "Uuid of the schema.", SCHEMA_VEHICLE_UUID);
-		updateEndpoint.method(PUT);
-		updateEndpoint.description("Update the schema.");
-		updateEndpoint.consumes(APPLICATION_JSON);
-		updateEndpoint.produces(APPLICATION_JSON);
-		updateEndpoint.addQueryParameters(SchemaUpdateParametersImpl.class);
-		updateEndpoint.exampleRequest(schemaExamples.getSchemaUpdateRequest());
-		updateEndpoint.exampleResponse(OK, new GenericMessageResponse("The schema has been updated. Migration has been invoked."), "Updated schema.");
-		updateEndpoint.events(SCHEMA_UPDATED, SCHEMA_MIGRATION_START, SCHEMA_MIGRATION_FINISHED);
-		updateEndpoint.blockingHandler(rc -> {
+		InternalEndpointRoute endpoint = createRoute();
+		endpoint.path("/:schemaUuid");
+		endpoint.addUriParameter("schemaUuid", "Uuid of the schema.", SCHEMA_VEHICLE_UUID);
+		endpoint.method(POST);
+		endpoint.description("Update or create the schema.");
+		endpoint.consumes(APPLICATION_JSON);
+		endpoint.produces(APPLICATION_JSON);
+		
+		endpoint.addQueryParameters(SchemaUpdateParametersImpl.class);
+		endpoint.exampleRequest(schemaExamples.getSchemaUpdateRequest());
+		endpoint.exampleResponse(OK, schemaExamples.getSchemaResponse(), "Updated or new schema.");
+		endpoint.events(SCHEMA_CREATED, SCHEMA_UPDATED, SCHEMA_MIGRATION_START, SCHEMA_MIGRATION_FINISHED);
+		endpoint.blockingHandler(rc -> {
 			// Update operations should always be executed sequentially - never in parallel
 			synchronized (schemaLock.mutex()) {
 				InternalActionContext ac = wrap(rc);
 				String uuid = ac.getParameter("schemaUuid");
-				crudHandler.handleUpdate(ac, uuid, false);
-			}
-		}, isOrderedBlockingHandlers());
-
-		InternalEndpointRoute upsertEndpoint = createRoute();
-		upsertEndpoint.path("/:schemaUuid");
-		upsertEndpoint.addUriParameter("schemaUuid", "Uuid of the schema.", SCHEMA_VEHICLE_UUID);
-		upsertEndpoint.method(POST);
-		upsertEndpoint.description("Update or create the schema.");
-		upsertEndpoint.consumes(APPLICATION_JSON);
-		upsertEndpoint.produces(APPLICATION_JSON);
-		upsertEndpoint.addQueryParameters(UpdateParametersImpl.class);
-		upsertEndpoint.addQueryParameters(SchemaUpdateParametersImpl.class);
-		upsertEndpoint.exampleRequest(schemaExamples.getSchemaCreateRequest());
-		upsertEndpoint.exampleResponse(OK, schemaExamples.getSchemaResponse(), "Updated or new schema.");
-		upsertEndpoint.events(SCHEMA_CREATED, SCHEMA_UPDATED, SCHEMA_MIGRATION_START, SCHEMA_MIGRATION_FINISHED);
-		upsertEndpoint.blockingHandler(rc -> {
-			// Update operations should always be executed sequentially - never in parallel
-			synchronized (schemaLock.mutex()) {
-				InternalActionContext ac = wrap(rc);
-				String uuid = ac.getParameter("schemaUuid");
-				crudHandler.handleUpdate(ac, uuid, ac.getUpdateParameters().isUpsert());
+				crudHandler.handleUpdate(ac, uuid);
 			}
 		}, isOrderedBlockingHandlers());
 	}

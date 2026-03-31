@@ -84,9 +84,9 @@ public abstract class AbstractCrudHandler<T extends HibCoreElement<RM>, RM exten
 	}
 
 	@Override
-	public void handleUpdate(InternalActionContext ac, String uuid, boolean createInexisting) {
+	public void handleUpdate(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		utils.updateElement(ac, uuid, crudActions(), createInexisting);
+		utils.updateElement(ac, uuid, crudActions());
 	}
 
 	@Override

@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
@@ -123,7 +124,6 @@ import com.gentics.mesh.parameter.RolePermissionParameters;
 import com.gentics.mesh.parameter.SchemaUpdateParameters;
 import com.gentics.mesh.parameter.SearchParameters;
 import com.gentics.mesh.parameter.SortingParameters;
-import com.gentics.mesh.parameter.UpdateParameters;
 import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.rest.JWTAuthentication;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
@@ -191,6 +191,7 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 		}).findAny().orElse(null);
 	}
 
+
 	/**
 	 * Adapt the request of Mesh REST model to an OpenAPI model.
 	 * 
@@ -200,11 +201,24 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 	 * @return
 	 */
 	protected static <R extends RestModel, O> O adaptRequest(R r) {
+		return adaptRequest(r, Optional.empty());
+	}
+
+	/**
+	 * Adapt the request of a selected Mesh REST model to an OpenAPI model.
+	 * 
+	 * @param <R>
+	 * @param <O>
+	 * @param r
+	 * @param maybeEndClass optional custom end model
+	 * @return
+	 */
+	protected static <R extends RestModel, O> O adaptRequest(R r, Optional<Class<? extends O>> maybeEndClass) {
 		if (r == null) {
 			return null;
 		}
 		try {
-			String modelName = r.getClass().getSimpleName();
+			String modelName = maybeEndClass.map(Class::getSimpleName).orElse(r.getClass().getSimpleName());
 			Class<O> openApiModelClass = (Class<O>) Class.forName("org.openapitools.client.model." + modelName);
 			return JSON.getGson().fromJson(r.toJson(), openApiModelClass);
 		} catch (JsonSyntaxException | ClassNotFoundException e) {
@@ -241,21 +255,21 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 	@Override
 	public MeshRequest<NodeResponse> createNode(String uuid, String projectName, NodeCreateRequest nodeCreateRequest,
 			ParameterProvider... parameters) {
-		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidPostWithHttpInfo(uuid, projectName, true, adaptRequest(nodeCreateRequest)), 
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidPostWithHttpInfo(uuid, projectName, adaptRequest(nodeCreateRequest)), 
 				NodeResponse.class);
 	}
 
 	@Override
 	public MeshRequest<NodeResponse> upsertNode(String projectName, String uuid, NodeUpsertRequest nodeUpsertRequest,
 			ParameterProvider... parameters) {
-		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidPostWithHttpInfo(uuid, projectName, true, adaptRequest(nodeUpsertRequest)), 
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidPostWithHttpInfo(uuid, projectName, adaptRequest(nodeUpsertRequest, Optional.of(org.openapitools.client.model.NodeUpdateRequest.class))), 
 				NodeResponse.class);
 	}
 
 	@Override
 	public MeshRequest<NodeResponse> updateNode(String projectName, String uuid, NodeUpdateRequest nodeUpdateRequest,
 			ParameterProvider... parameters) {
-		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidPutWithHttpInfo(uuid, projectName, 
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectNodesNodeUuidPostWithHttpInfo(uuid, projectName, 
 				adaptRequest(nodeUpdateRequest)), NodeResponse.class);
 	}
 
@@ -439,7 +453,7 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 	public MeshRequest<TagResponse> updateTag(String projectName, String tagFamilyUuid, String uuid,
 			TagUpdateRequest request, ParameterProvider... parameters) {
 		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectTagFamiliesTagFamilyUuidTagsTagUuidPostWithHttpInfo(tagFamilyUuid, uuid, projectName,
-				findParameter(UpdateParameters.UPSERT_PARAMETER_KEY, parameters), adaptRequest(request)), TagResponse.class);
+				adaptRequest(request)), TagResponse.class);
 	}
 
 	@Override
@@ -520,13 +534,12 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 
 	@Override
 	public MeshRequest<ProjectResponse> createProject(String uuid, ProjectCreateRequest request) {
-		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectsProjectUuidPutWithHttpInfo(uuid, adaptRequest(request)), ProjectResponse.class);
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectsProjectUuidPostWithHttpInfo(uuid, adaptRequest(request, Optional.of(org.openapitools.client.model.ProjectUpdateRequest.class))), ProjectResponse.class);
 	}
 
 	@Override
 	public MeshRequest<ProjectResponse> updateProject(String uuid, ProjectUpdateRequest request, ParameterProvider... parameters) {
-		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectsProjectUuidPostWithHttpInfo(uuid, 
-				findParameter(UpdateParameters.UPSERT_PARAMETER_KEY, parameters), adaptRequest(request)), ProjectResponse.class);
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectsProjectUuidPostWithHttpInfo(uuid, adaptRequest(request)), ProjectResponse.class);
 	}
 
 	@Override
@@ -585,13 +598,13 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 	public MeshRequest<TagFamilyResponse> updateTagFamily(String projectName, String tagFamilyUuid,
 			TagFamilyUpdateRequest request, ParameterProvider... parameters) {
 		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectTagFamiliesTagFamilyUuidPost(tagFamilyUuid, projectName,
-				findParameter(UpdateParameters.UPSERT_PARAMETER_KEY, parameters), adaptRequest(request)), TagFamilyResponse.class);
+				adaptRequest(request)), TagFamilyResponse.class);
 	}
 
 	@Override
 	public MeshRequest<TagFamilyResponse> createTagFamily(String projectName, String tagFamilyUuid,
 			TagFamilyCreateRequest request) {
-		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectTagFamiliesTagFamilyUuidPost(tagFamilyUuid, projectName, true, adaptRequest(request)), TagFamilyResponse.class);
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectTagFamiliesTagFamilyUuidPost(tagFamilyUuid, projectName, adaptRequest(request, Optional.of(org.openapitools.client.model.TagFamilyUpdateRequest.class))), TagFamilyResponse.class);
 	}
 
 	@Override
@@ -647,7 +660,7 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 	@Override
 	public MeshRequest<NodeResponse> webrootUpdate(String projectName, String path, NodeUpdateRequest nodeUpdateRequest,
 			ParameterProvider... parameters) {
-		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectWebrootPathPutWithHttpInfo(path, projectName, adaptRequest(nodeUpdateRequest)), NodeResponse.class);
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectWebrootPathPostWithHttpInfo(path, projectName, adaptRequest(nodeUpdateRequest)), NodeResponse.class);
 	}
 
 	@Override
@@ -659,7 +672,7 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 	@Override
 	public MeshRequest<NodeResponse> webrootCreate(String projectName, String path, NodeCreateRequest nodeCreateRequest,
 			ParameterProvider... parameters) {
-		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectWebrootPathPostWithHttpInfo(path, projectName, adaptRequest(nodeCreateRequest)), NodeResponse.class);
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectWebrootPathPostWithHttpInfo(path, projectName, adaptRequest(nodeCreateRequest, Optional.of(org.openapitools.client.model.NodeUpdateRequest.class))), NodeResponse.class);
 	}
 
 	@Override
@@ -676,12 +689,11 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 	@Override
 	public MeshRequest<SchemaResponse> createSchema(String uuid, SchemaCreateRequest request,
 			ParameterProvider... parameters) {
-		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2SchemasSchemaUuidPostWithHttpInfo(uuid,
-				findParameter(UpdateParameters.UPSERT_PARAMETER_KEY, parameters),
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2SchemasSchemaUuidPostWithHttpInfo(uuid,
 				findParameter(SchemaUpdateParameters.UPDATE_ASSIGNED_BRANCHES_QUERY_PARAM_KEY, parameters),
 				findParameter(SchemaUpdateParameters.UPDATE_BRANCH_NAMES_QUERY_PARAM_KEY, parameters),
 				findParameter(SchemaUpdateParameters.STRICT_VALIDATION_KEY, parameters),
-				adaptRequest(request)), SchemaResponse.class);
+				adaptRequest(request, Optional.of(org.openapitools.client.model.SchemaUpdateRequest.class))), SchemaResponse.class);
 	}
 
 	@Override
@@ -695,7 +707,7 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 	@Override
 	public MeshRequest<GenericMessageResponse> updateSchema(String uuid, SchemaUpdateRequest request,
 			ParameterProvider... parameters) {
-		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2SchemasSchemaUuidPutWithHttpInfo(uuid, 
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2SchemasSchemaUuidPostWithHttpInfo(uuid, 
 				findParameter(SchemaUpdateParameters.UPDATE_ASSIGNED_BRANCHES_QUERY_PARAM_KEY, parameters),
 				findParameter(SchemaUpdateParameters.UPDATE_BRANCH_NAMES_QUERY_PARAM_KEY, parameters),
 				findParameter(SchemaUpdateParameters.STRICT_VALIDATION_KEY, parameters),
@@ -823,13 +835,13 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 
 	@Override
 	public MeshRequest<GroupResponse> createGroup(String uuid, GroupCreateRequest createRequest) {
-		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2GroupsGroupUuidPostWithHttpInfo(uuid, true, adaptRequest(createRequest)), GroupResponse.class);
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2GroupsGroupUuidPostWithHttpInfo(uuid, adaptRequest(createRequest, Optional.of(org.openapitools.client.model.GroupUpdateRequest.class))), GroupResponse.class);
 	}
 
 	@Override
 	public MeshRequest<GroupResponse> updateGroup(String uuid, GroupUpdateRequest request, ParameterProvider... parameters) {
 		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2GroupsGroupUuidPostWithHttpInfo(uuid,
-				findParameter(UpdateParameters.UPSERT_PARAMETER_KEY, parameters), adaptRequest(request)), GroupResponse.class);
+				adaptRequest(request)), GroupResponse.class);
 	}
 
 	@Override
@@ -908,15 +920,14 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 	@Override
 	public MeshRequest<UserResponse> createUser(String uuid, UserCreateRequest request,
 			ParameterProvider... parameters) {
-		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2UsersUserUuidPostWithHttpInfo(uuid,
-				findParameter(UpdateParameters.UPSERT_PARAMETER_KEY, parameters),
-				getAPIKey(), adaptRequest(request)), UserResponse.class);
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2UsersUserUuidPostWithHttpInfo(uuid,
+				getAPIKey(), adaptRequest(request, Optional.of(org.openapitools.client.model.UserUpdateRequest.class))), UserResponse.class);
 	}
 
 	@Override
 	public MeshRequest<UserResponse> updateUser(String uuid, UserUpdateRequest request,
 			ParameterProvider... parameters) {
-		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2UsersUserUuidPutWithHttpInfo(uuid, getAPIKey(), adaptRequest(request)), UserResponse.class);
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2UsersUserUuidPostWithHttpInfo(uuid, getAPIKey(), adaptRequest(request)), UserResponse.class);
 	}
 
 	@Override
@@ -995,7 +1006,7 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 
 	@Override
 	public MeshRequest<RoleResponse> createRole(String uuid, RoleCreateRequest request) {
-		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2RolesRoleUuidPostWithHttpInfo(uuid, true, adaptRequest(request)), RoleResponse.class);
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2RolesRoleUuidPostWithHttpInfo(uuid, adaptRequest(request, Optional.of(org.openapitools.client.model.RoleUpdateRequest.class))), RoleResponse.class);
 	}
 
 	@Override
@@ -1023,7 +1034,7 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 	@Override
 	public MeshRequest<RoleResponse> updateRole(String uuid, RoleUpdateRequest restRole, ParameterProvider... parameters) {
 		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2RolesRoleUuidPostWithHttpInfo(uuid,
-				findParameter(UpdateParameters.UPSERT_PARAMETER_KEY, parameters), adaptRequest(restRole)), RoleResponse.class);
+				adaptRequest(restRole)), RoleResponse.class);
 	}
 
 	@Override
@@ -1432,7 +1443,7 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 
 	@Override
 	public MeshRequest<MicroschemaResponse> createMicroschema(String uuid, MicroschemaCreateRequest request) {
-		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2MicroschemasMicroschemaUuidPostWithHttpInfo(uuid, true, adaptRequest(request)), MicroschemaResponse.class);
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2MicroschemasMicroschemaUuidPostWithHttpInfo(uuid, adaptRequest(request)), MicroschemaResponse.class);
 	}
 
 	@Override
@@ -1444,7 +1455,7 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 	@Override
 	public MeshRequest<GenericMessageResponse> updateMicroschema(String uuid, MicroschemaUpdateRequest request,
 			ParameterProvider... parameters) {
-		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2MicroschemasMicroschemaUuidPutWithHttpInfo(uuid, adaptRequest(request)), GenericMessageResponse.class);
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2MicroschemasMicroschemaUuidPostWithHttpInfo(uuid, adaptRequest(request)), GenericMessageResponse.class);
 	}
 
 	@Override
@@ -1640,7 +1651,7 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 	@Override
 	public MeshRequest<BranchResponse> createBranch(String projectName, String uuid,
 			BranchCreateRequest branchCreateRequest, ParameterProvider... parameters) {
-		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectBranchesBranchUuidPostWithHttpInfo(uuid, projectName, true, adaptRequest(branchCreateRequest)), BranchResponse.class);
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectBranchesBranchUuidPostWithHttpInfo(uuid, projectName, adaptRequest(branchCreateRequest, Optional.of(org.openapitools.client.model.BranchUpdateRequest.class))), BranchResponse.class);
 	}
 
 	@Override
@@ -1666,7 +1677,7 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 	public MeshRequest<BranchResponse> updateBranch(String projectName, String branchUuid,
 			BranchUpdateRequest request, ParameterProvider... parameters) {
 		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2ProjectBranchesBranchUuidPostWithHttpInfo(branchUuid, projectName,
-				findParameter(UpdateParameters.UPSERT_PARAMETER_KEY, parameters), adaptRequest(request)), BranchResponse.class);
+				adaptRequest(request)), BranchResponse.class);
 	}
 
 	@Override

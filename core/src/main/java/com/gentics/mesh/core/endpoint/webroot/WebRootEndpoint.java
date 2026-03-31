@@ -69,23 +69,6 @@ public class WebRootEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addPathUpdateCreateHandler() {
-		InternalEndpointRoute updateEndpoint = createRoute();
-		updateEndpoint.pathRegex("\\/(.*)");
-		updateEndpoint.setRAMLPath("/{path}");
-		updateEndpoint.addUriParameter("path", "Path to the node", "/News/2015/Images/flower.jpg");
-		updateEndpoint.method(PUT);
-		updateEndpoint.consumes(APPLICATION_JSON);
-		updateEndpoint.produces(APPLICATION_JSON);
-
-		updateEndpoint.exampleRequest(nodeExamples.getNodeUpdateRequest());
-		updateEndpoint.exampleResponse(OK, nodeExamples.getNodeResponse2(), "Updated node.");
-		updateEndpoint.exampleResponse(CONFLICT, miscExamples.createMessageResponse(), "A conflict has been detected.");
-
-		updateEndpoint.description("Update a node for the given path.");
-		updateEndpoint.blockingHandler(rc -> {
-			handler.handleUpdateCreatePath(rc, POST, false);
-		}, isOrderedBlockingHandlers());
-
 		InternalEndpointRoute upsertEndpoint = createRoute();
 		upsertEndpoint.pathRegex("\\/(.*)");
 		upsertEndpoint.setRAMLPath("/{path}");
@@ -100,7 +83,7 @@ public class WebRootEndpoint extends AbstractProjectEndpoint {
 
 		upsertEndpoint.description("Update or create a node for the given path.");
 		upsertEndpoint.blockingHandler(rc -> {
-			handler.handleUpdateCreatePath(rc, POST, true);
+			handler.handleUpdateCreatePath(rc, POST);
 		}, isOrderedBlockingHandlers());
 	}
 

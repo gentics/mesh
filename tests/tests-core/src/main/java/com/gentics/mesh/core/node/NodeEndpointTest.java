@@ -102,7 +102,6 @@ import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.SortingParametersImpl;
-import com.gentics.mesh.parameter.impl.UpdateParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.gentics.mesh.test.MeshTestSetting;
@@ -1877,21 +1876,6 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			NodeUpdateRequest request = new NodeUpdateRequest();
 			request.setLanguage("en");
 			call(() -> client().updateNode(PROJECT_NAME, uuid, request), FORBIDDEN, "error_missing_perm", uuid, UPDATE_PERM.getRestPerm().getName());
-		}
-	}
-
-	@Test
-	@Override
-	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
-
-		try (Tx tx = tx()) {
-			NodeUpdateRequest request = new NodeUpdateRequest();
-			request.setLanguage("en");
-
-			String uuid = UUIDUtil.randomUUID();
-			call(() -> client().updateNode(PROJECT_NAME, uuid, request,
-					new NodeParametersImpl().setLanguages("en", "de"), new UpdateParametersImpl().setUpsert(false)),
-						NOT_FOUND, "object_not_found_for_uuid", uuid);
 		}
 	}
 
