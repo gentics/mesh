@@ -586,20 +586,20 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 	// TODO use schema and only handle those i18n properties that were specified
 	// within the schema.
 	private void addUpdateHandler() {
-		InternalEndpointRoute postEndpoint = createRoute();
-		postEndpoint.description("Update or create the node with the given uuid. "
+		InternalEndpointRoute endpoint = createRoute();
+		endpoint.description("Update or create the node with the given uuid. "
 			+ "Mesh will automatically check for version conflicts if a version was specified in the request and return a 409 error if a conflict has been detected. "
 			+ "Additional conflict checks for WebRoot path conflicts will also be performed. The node is created if no node with the specified uuid could be found.");
-		postEndpoint.path("/:nodeUuid");
-		postEndpoint.addUriParameter("nodeUuid", "Uuid of the node", NODE_DELOREAN_UUID);
-		postEndpoint.method(POST);
-		postEndpoint.consumes(APPLICATION_JSON);
-		postEndpoint.produces(APPLICATION_JSON);
-		postEndpoint.exampleRequest(nodeExamples.getNodeUpdateRequest2());
-		postEndpoint.exampleResponse(OK, nodeExamples.getNodeResponse2(), "New or updated node.");
-		postEndpoint.exampleResponse(CONFLICT, miscExamples.createMessageResponse(), "A conflict has been detected.");
-		postEndpoint.events(NODE_UPDATED, NODE_CREATED, NODE_CONTENT_CREATED, NODE_UPDATED);
-		postEndpoint.blockingHandler(rc -> {
+		endpoint.path("/:nodeUuid");
+		endpoint.addUriParameter("nodeUuid", "Uuid of the node", NODE_DELOREAN_UUID);
+		endpoint.method(POST);
+		endpoint.consumes(APPLICATION_JSON);
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleRequest(nodeExamples.getNodeUpdateRequest2());
+		endpoint.exampleResponse(OK, nodeExamples.getNodeResponse2(), "New or updated node.");
+		endpoint.exampleResponse(CONFLICT, miscExamples.createMessageResponse(), "A conflict has been detected.");
+		endpoint.events(NODE_UPDATED, NODE_CREATED, NODE_CONTENT_CREATED, NODE_UPDATED);
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");
 			ac.getVersioningParameters().setVersion("draft");

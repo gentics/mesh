@@ -183,17 +183,17 @@ public class GroupEndpoint extends RolePermissionHandlingEndpoint {
 	// TODO Determine what we should do about conflicting group names. Should we let neo4j handle those cases?
 	// TODO update timestamps
 	private void addUpdateHandler() {
-		InternalEndpointRoute updateEndpoint = createRoute();
-		updateEndpoint.path("/:groupUuid");
-		updateEndpoint.addUriParameter("groupUuid", "Uuid of the group which should be updated.", GROUP_CLIENT_UUID);
-		updateEndpoint.description("Update the group with the given uuid. The group is created if no group with the specified uuid could be found.");
-		updateEndpoint.method(POST);
-		updateEndpoint.consumes(APPLICATION_JSON);
-		updateEndpoint.produces(APPLICATION_JSON);
-		updateEndpoint.exampleRequest(groupExamples.getGroupUpdateRequest("New group name"));
-		updateEndpoint.exampleResponse(OK, groupExamples.getGroupResponse1("New group name"), "Updated or new group.");
-		updateEndpoint.events(GROUP_CREATED, GROUP_UPDATED);
-		updateEndpoint.blockingHandler(rc -> {
+		InternalEndpointRoute endpoint = createRoute();
+		endpoint.path("/:groupUuid");
+		endpoint.addUriParameter("groupUuid", "Uuid of the group which should be updated.", GROUP_CLIENT_UUID);
+		endpoint.description("Update the group with the given uuid. The group is created if no group with the specified uuid could be found.");
+		endpoint.method(POST);
+		endpoint.consumes(APPLICATION_JSON);
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleRequest(groupExamples.getGroupUpdateRequest("New group name"));
+		endpoint.exampleResponse(OK, groupExamples.getGroupResponse1("New group name"), "Updated or new group.");
+		endpoint.events(GROUP_CREATED, GROUP_UPDATED);
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("groupUuid");
 			crudHandler.handleUpdate(ac, uuid);

@@ -69,20 +69,20 @@ public class WebRootEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addPathUpdateCreateHandler() {
-		InternalEndpointRoute upsertEndpoint = createRoute();
-		upsertEndpoint.pathRegex("\\/(.*)");
-		upsertEndpoint.setRAMLPath("/{path}");
-		upsertEndpoint.addUriParameter("path", "Path to the node", "/News/2015/Images/flower.jpg");
-		upsertEndpoint.method(POST);
-		upsertEndpoint.consumes(APPLICATION_JSON);
-		upsertEndpoint.produces(APPLICATION_JSON);
+		InternalEndpointRoute endpoint = createRoute();
+		endpoint.pathRegex("\\/(.*)");
+		endpoint.setRAMLPath("/{path}");
+		endpoint.addUriParameter("path", "Path to the node", "/News/2015/Images/flower.jpg");
+		endpoint.method(POST);
+		endpoint.consumes(APPLICATION_JSON);
+		endpoint.produces(APPLICATION_JSON);
 
-		upsertEndpoint.exampleRequest(nodeExamples.getNodeUpdateRequest());
-		upsertEndpoint.exampleResponse(CREATED, nodeExamples.getNodeResponse2(), "Created node.");
-		upsertEndpoint.exampleResponse(CONFLICT, miscExamples.createMessageResponse(), "A conflict has been detected.");
+		endpoint.exampleRequest(nodeExamples.getNodeUpdateRequest());
+		endpoint.exampleResponse(CREATED, nodeExamples.getNodeResponse2(), "Created node.");
+		endpoint.exampleResponse(CONFLICT, miscExamples.createMessageResponse(), "A conflict has been detected.");
 
-		upsertEndpoint.description("Update or create a node for the given path.");
-		upsertEndpoint.blockingHandler(rc -> {
+		endpoint.description("Update or create a node for the given path.");
+		endpoint.blockingHandler(rc -> {
 			handler.handleUpdateCreatePath(rc, POST);
 		}, isOrderedBlockingHandlers());
 	}
