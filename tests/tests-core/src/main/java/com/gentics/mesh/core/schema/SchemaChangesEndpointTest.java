@@ -612,7 +612,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 			// Update the schema server side
 			GenericMessageResponse status = call(() -> client().updateSchema(container.getUuid(), schema));
-			assertThat(status).matches("schema_update_no_difference_detected");
+			assertThat(status).matches("schema_update_no_difference_detected", "content");
 		}
 	}
 
