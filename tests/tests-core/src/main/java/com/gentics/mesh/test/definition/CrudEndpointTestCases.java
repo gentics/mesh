@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.ListResponse;
-import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.parameter.SortingParameters;
 import com.gentics.mesh.parameter.client.SortingParametersImpl;
 

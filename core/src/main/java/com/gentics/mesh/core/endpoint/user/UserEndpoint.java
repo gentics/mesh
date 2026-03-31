@@ -25,7 +25,6 @@ import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
-import com.gentics.mesh.parameter.impl.UpdateParametersImpl;
 import com.gentics.mesh.parameter.impl.UserParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
@@ -199,54 +198,28 @@ public class UserEndpoint extends RolePermissionHandlingEndpoint {
 	private void addUpdateHandler() {
 
 		// Add the user token handler first in order to allow for recovery token handling
-		getRouter().route("/:userUuid").method(PUT).handler(userTokenHandler);
-		// Chain the regular auth handler afterwards in order to handle non-token code requests
-		if (chain != null) {
-			chain.secure(getRouter().route("/:userUuid").method(PUT));
-		}
-
-		InternalEndpointRoute updateEndpoint = createRoute();
-		updateEndpoint.path("/:userUuid");
-		updateEndpoint.addUriParameter("userUuid", "Uuid of the user.", USER_EDITOR_UUID);
-		updateEndpoint.description("Update the user with the given uuid.");
-		updateEndpoint.method(PUT);
-		updateEndpoint.setMutating(true);
-		updateEndpoint.consumes(APPLICATION_JSON);
-		updateEndpoint.produces(APPLICATION_JSON);
-		updateEndpoint.addQueryParameters(UserParametersImpl.class);
-		updateEndpoint.exampleRequest(userExamples.getUserUpdateRequest("jdoe42"));
-		updateEndpoint.exampleResponse(OK, userExamples.getUserResponse1("jdoe42"), "Updated user response.");
-		updateEndpoint.events(USER_UPDATED);
-		updateEndpoint.blockingHandler(rc -> {
-			InternalActionContext ac = wrap(rc);
-			String uuid = ac.getParameter("userUuid");
-			crudHandler.handleUpdate(ac, uuid, false);
-		}, isOrderedBlockingHandlers());
-
-		// Add the user token handler first in order to allow for recovery token handling
 		getRouter().route("/:userUuid").method(POST).handler(userTokenHandler);
 		// Chain the regular auth handler afterwards in order to handle non-token code requests
 		if (chain != null) {
 			chain.secure(getRouter().route("/:userUuid").method(POST));
 		}
 
-		InternalEndpointRoute upsertEndpoint = createRoute();
-		upsertEndpoint.path("/:userUuid");
-		upsertEndpoint.addUriParameter("userUuid", "Uuid of the user.", USER_EDITOR_UUID);
-		upsertEndpoint.description("Update the user with the given uuid. The user is created if no user with the specified uuid could be found.");
-		upsertEndpoint.method(POST);
-		upsertEndpoint.setMutating(true);
-		upsertEndpoint.consumes(APPLICATION_JSON);
-		upsertEndpoint.produces(APPLICATION_JSON);
-		upsertEndpoint.addQueryParameters(UpdateParametersImpl.class);
-		upsertEndpoint.addQueryParameters(UserParametersImpl.class);
-		upsertEndpoint.exampleRequest(userExamples.getUserCreateRequest("jdoe42"));
-		upsertEndpoint.exampleResponse(OK, userExamples.getUserResponse1("jdoe42"), "Updated or created user response.");
-		upsertEndpoint.events(USER_CREATED, USER_UPDATED);
-		upsertEndpoint.blockingHandler(rc -> {
+		InternalEndpointRoute endpoint = createRoute();
+		endpoint.path("/:userUuid");
+		endpoint.addUriParameter("userUuid", "Uuid of the user.", USER_EDITOR_UUID);
+		endpoint.description("Update the user with the given uuid. The user is created if no user with the specified uuid could be found.");
+		endpoint.method(POST);
+		endpoint.setMutating(true);
+		endpoint.consumes(APPLICATION_JSON);
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.addQueryParameters(UserParametersImpl.class);
+		endpoint.exampleRequest(userExamples.getUserUpdateRequest("jdoe42"));
+		endpoint.exampleResponse(OK, userExamples.getUserResponse1("jdoe42"), "Updated or new user response.");
+		endpoint.events(USER_CREATED, USER_UPDATED);
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("userUuid");
-			crudHandler.handleUpdate(ac, uuid, ac.getUpdateParameters().isUpsert());
+			crudHandler.handleUpdate(ac, uuid);
 		}, isOrderedBlockingHandlers());
 	}
 

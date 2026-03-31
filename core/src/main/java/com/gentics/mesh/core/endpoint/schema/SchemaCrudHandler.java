@@ -77,7 +77,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 	 * Update the schema in a blocking manner in order to keep the execution sequential.
 	 */
 	@Override
-	public void handleUpdate(InternalActionContext ac, String uuid, boolean createInexisting) {
+	public void handleUpdate(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 		try (WriteLock lock = writeLock.lock(ac)) {
 
@@ -92,13 +92,13 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 					return false;
 				}
 				HibSchema schemaContainer = tx.schemaDao().findByUuid(uuid);
-				return schemaContainer == null && createInexisting;
+				return schemaContainer == null;
 			});
 
 			// Delegate to handle update which will create the schema
 			if (delegateToCreate) {
 				ac.skipWriteLock();
-				super.handleUpdate(ac, uuid, createInexisting);
+				super.handleUpdate(ac, uuid);
 				return;
 			}
 

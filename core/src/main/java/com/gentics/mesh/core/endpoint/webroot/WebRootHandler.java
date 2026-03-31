@@ -141,7 +141,7 @@ public class WebRootHandler extends AbstractWebrootHandler {
 
 	}
 
-	public void handleUpdateCreatePath(RoutingContext rc, HttpMethod method, boolean createInexisting) {
+	public void handleUpdateCreatePath(RoutingContext rc, HttpMethod method) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 		String path = rc.request().path().substring(
 			rc.mountPoint().length());
@@ -179,7 +179,7 @@ public class WebRootHandler extends AbstractWebrootHandler {
 					}
 					ac.setBody(request);
 					return contentDao.getNode(container).getUuid();
-				} else if (createInexisting) {
+				} else {
 					int diff = nodePath.getInitialStack().size() - nodePath.getSegments().size();
 					if (diff > 1) {
 						String resolvedPath = nodePath.getResolvedPath();
@@ -206,14 +206,12 @@ public class WebRootHandler extends AbstractWebrootHandler {
 					ac.put(WEBROOT_LAST_SEGMENT, nodePath.getInitialStack().firstElement());
 					ac.setBody(request);
 					return null;
-				} else {
-					throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(nodePath.getTargetPath()));
 				}
 			});
 		}
 
 		if (uuid != null) {
-			nodeCrudHandler.handleUpdate(ac, uuid, createInexisting);
+			nodeCrudHandler.handleUpdate(ac, uuid);
 		} else {
 			nodeCrudHandler.handleCreate(ac);
 		}

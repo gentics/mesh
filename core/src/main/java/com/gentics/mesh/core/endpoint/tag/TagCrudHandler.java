@@ -157,16 +157,15 @@ public class TagCrudHandler extends AbstractHandler {
 	 *            The tags tagfamily uuid
 	 * @param tagUuid
 	 *            Uuid of the tag which should be deleted
-	 * @param createInexisting if true, and the existing user with given UUID is not found, a new one will be created.
 	 */
-	public void handleUpdate(InternalActionContext ac, String tagFamilyUuid, String tagUuid, boolean createInexisting) {
+	public void handleUpdate(InternalActionContext ac, String tagFamilyUuid, String tagUuid) {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 		validateParameter(tagUuid, "tagUuid");
 
 		Function<Tx, Object> tagFamilyLoader = tx -> {
 			return tx.tagFamilyActions().loadByUuid(context(tx, ac), tagFamilyUuid, READ_PERM, true);
 		};
-		utils.createOrUpdateElement(ac, tagFamilyLoader, tagUuid, tagActions, createInexisting);
+		utils.createOrUpdateElement(ac, tagFamilyLoader, tagUuid, tagActions);
 	}
 
 	/**

@@ -14,7 +14,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
-import static io.vertx.core.http.HttpMethod.PUT;
 
 import javax.inject.Inject;
 
@@ -26,7 +25,6 @@ import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.parameter.impl.UpdateParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 
 /**
@@ -119,35 +117,19 @@ public class RoleEndpoint extends RolePermissionHandlingEndpoint {
 	}
 
 	private void addUpdateHandler() {
-		InternalEndpointRoute upsertEndpoint = createRoute();
-		upsertEndpoint.path("/:roleUuid");
-		upsertEndpoint.addUriParameter("roleUuid", "Uuid of the role.", ROLE_CLIENT_UUID);
-		upsertEndpoint.description("Update the role with the given uuid. The role is created if no role with the specified uuid could be found.");
-		upsertEndpoint.method(POST);
-		upsertEndpoint.consumes(APPLICATION_JSON);
-		upsertEndpoint.addQueryParameters(UpdateParametersImpl.class);
-		upsertEndpoint.exampleRequest(roleExamples.getRoleCreateRequest("New role name"));
-		upsertEndpoint.exampleResponse(OK, roleExamples.getRoleResponse1("New role name"), "Updated or new role.");
-		upsertEndpoint.events(ROLE_UPDATED, ROLE_CREATED);
-		upsertEndpoint.blockingHandler(rc -> {
+		InternalEndpointRoute endpoint = createRoute();
+		endpoint.path("/:roleUuid");
+		endpoint.addUriParameter("roleUuid", "Uuid of the role.", ROLE_CLIENT_UUID);
+		endpoint.description("Update the role with the given uuid. The role is created if no role with the specified uuid could be found.");
+		endpoint.method(POST);
+		endpoint.consumes(APPLICATION_JSON);
+		endpoint.exampleRequest(roleExamples.getRoleUpdateRequest("New role name"));
+		endpoint.exampleResponse(OK, roleExamples.getRoleResponse1("New role name"), "Updated or new role.");
+		endpoint.events(ROLE_UPDATED, ROLE_CREATED);
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("roleUuid");
-			crudHandler.handleUpdate(ac, uuid, ac.getUpdateParameters().isUpsert());
-		}, isOrderedBlockingHandlers());
-
-		InternalEndpointRoute updateEndpoint = createRoute();
-		updateEndpoint.path("/:roleUuid");
-		updateEndpoint.addUriParameter("roleUuid", "Uuid of the role.", ROLE_CLIENT_UUID);
-		updateEndpoint.description("Update the role with the given uuid.");
-		updateEndpoint.method(PUT);
-		updateEndpoint.consumes(APPLICATION_JSON);
-		updateEndpoint.exampleRequest(roleExamples.getRoleUpdateRequest("New role name"));
-		updateEndpoint.exampleResponse(OK, roleExamples.getRoleResponse1("New role name"), "Updated role.");
-		updateEndpoint.events(ROLE_UPDATED);
-		updateEndpoint.blockingHandler(rc -> {
-			InternalActionContext ac = wrap(rc);
-			String uuid = ac.getParameter("roleUuid");
-			crudHandler.handleUpdate(ac, uuid, false);
+			crudHandler.handleUpdate(ac, uuid);
 		}, isOrderedBlockingHandlers());
 	}
 

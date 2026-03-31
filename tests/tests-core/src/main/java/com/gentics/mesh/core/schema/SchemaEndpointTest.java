@@ -86,7 +86,6 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.SortingParametersImpl;
-import com.gentics.mesh.parameter.impl.UpdateParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -601,24 +600,6 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		updateRequest.setName("folder");
 
 		call(() -> client().updateSchema(response.getUuid(), updateRequest), CONFLICT, "schema_conflicting_name", "folder");
-	}
-
-	@Test
-	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
-		try (Tx tx = tx()) {
-			SchemaDao schemaDao = tx.schemaDao();
-			
-			HibSchema schema = schemaContainer("content");
-			String oldName = schema.getName();
-			SchemaUpdateRequest request = new SchemaUpdateRequest();
-			request.setName("new-name");
-
-			String uuid = UUIDUtil.randomUUID();
-			call(() -> client().updateSchema(uuid, request, new UpdateParametersImpl().setUpsert(false)), NOT_FOUND, "object_not_found_for_uuid", uuid);
-
-			HibSchema reloaded = schemaDao.findByUuid(schema.getUuid());
-			assertEquals("The name should not have been changed.", oldName, reloaded.getName());
-		}
 	}
 
 	@Test
