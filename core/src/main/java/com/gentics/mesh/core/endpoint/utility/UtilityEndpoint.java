@@ -50,7 +50,7 @@ public class UtilityEndpoint extends AbstractInternalEndpoint {
 
 	private void addVersionPurgeHandler() {
 		InternalEndpointRoute purgeSchemaVersionsEndpoint = createRoute();
-		purgeSchemaVersionsEndpoint.path("/purge/schema/versions");
+		purgeSchemaVersionsEndpoint.path("/purgeSchemaVersions");
 		purgeSchemaVersionsEndpoint.method(POST);
 		purgeSchemaVersionsEndpoint.description("Purge the unused schema versions.");
 		purgeSchemaVersionsEndpoint.consumes(APPLICATION_JSON);
@@ -63,7 +63,7 @@ public class UtilityEndpoint extends AbstractInternalEndpoint {
 		}, isOrderedBlockingHandlers());
 
 		InternalEndpointRoute purgeMicroschemaVersionsEndpoint = createRoute();
-		purgeMicroschemaVersionsEndpoint.path("/purge/microschema/versions");
+		purgeMicroschemaVersionsEndpoint.path("/purgeMicroschemaVersions");
 		purgeMicroschemaVersionsEndpoint.method(POST);
 		purgeMicroschemaVersionsEndpoint.description("Purge the unused microschema versions.");
 		purgeMicroschemaVersionsEndpoint.consumes(APPLICATION_JSON);
