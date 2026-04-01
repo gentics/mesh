@@ -148,8 +148,8 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 	 * @return
 	 */
 	public static <T> MeshOkHttpRequestImpl<T> JsonRequest(MeshRestClient meshClient, OkHttpClient client, MeshRestClientConfig config, String method, String url, Map<String, String> headers,
-		Class<? extends T> classOfT, String json) {
-		if (StringUtils.isNotBlank(json)) {
+		Class<? extends T> classOfT, String json, boolean nullBodyAllowed) {
+		if (StringUtils.isNotBlank(json) || !nullBodyAllowed) {
 			return new MeshOkHttpRequestImpl<>(meshClient, client, config, classOfT, method, url, headers, RequestBody.create(MediaType.get("application/json"), json));
 		} else {
 			headers = new HashMap<>(headers);
@@ -174,8 +174,8 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 	 * @return
 	 */
 	public static <T> MeshOkHttpRequestImpl<T> TextRequest(MeshRestClient meshClient, OkHttpClient client, MeshRestClientConfig config, String method, String url, Map<String, String> headers,
-		Class<? extends T> classOfT, String text) {
-		if (StringUtils.isNotBlank(text)) {
+		Class<? extends T> classOfT, String text, boolean nullBodyAllowed) {
+		if (StringUtils.isNotBlank(text) || !nullBodyAllowed) {
 			return new MeshOkHttpRequestImpl<>(meshClient, client, config, classOfT, method, url, headers, RequestBody.create(MediaType.get("text/plain"), text));
 		} else {
 			headers = new HashMap<>(headers);

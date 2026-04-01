@@ -1967,12 +1967,12 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 
 	@Override
 	public MeshRequest<GenericMessageResponse> purgeSchemaVersions(NameOrUUIDsRequest request) {
-		return prepareRequest(POST, "/utilities/purgeSchemaVersions", GenericMessageResponse.class, request);
+		return prepareRequest(POST, "/utilities/purgeSchemaVersions", GenericMessageResponse.class, request, true);
 	}
 
 	@Override
 	public MeshRequest<GenericMessageResponse> purgeMicroschemaVersions(NameOrUUIDsRequest request) {
-		return prepareRequest(POST, "/utilities/purgeMicroschemaVersions", GenericMessageResponse.class, request);
+		return prepareRequest(POST, "/utilities/purgeMicroschemaVersions", GenericMessageResponse.class, request, true);
 	}
 
 	@Override
