@@ -155,15 +155,15 @@ public class SchemaEndpoint extends RolePermissionHandlingEndpoint {
 	}
 
 	private void addDeleteHandler() {
-		InternalEndpointRoute deleteSchemaEndpoint = createRoute();
-		deleteSchemaEndpoint.path("/:schemaUuid");
-		deleteSchemaEndpoint.addUriParameter("schemaUuid", "Uuid of the schema.", SCHEMA_VEHICLE_UUID);
-		deleteSchemaEndpoint.method(DELETE);
-		deleteSchemaEndpoint.description("Delete the schema with the given uuid.");
-		deleteSchemaEndpoint.produces(APPLICATION_JSON);
-		deleteSchemaEndpoint.exampleResponse(NO_CONTENT, "Schema was successfully deleted.");
-		deleteSchemaEndpoint.events(SCHEMA_DELETED);
-		deleteSchemaEndpoint.blockingHandler(rc -> {
+		InternalEndpointRoute endpoint = createRoute();
+		endpoint.path("/:schemaUuid");
+		endpoint.addUriParameter("schemaUuid", "Uuid of the schema.", SCHEMA_VEHICLE_UUID);
+		endpoint.method(DELETE);
+		endpoint.description("Delete the schema with the given uuid.");
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleResponse(NO_CONTENT, "Schema was successfully deleted.");
+		endpoint.events(SCHEMA_DELETED);
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("schemaUuid");
 			crudHandler.handleDelete(ac, uuid);

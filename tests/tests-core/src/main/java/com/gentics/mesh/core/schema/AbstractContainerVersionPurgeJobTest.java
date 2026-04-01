@@ -25,7 +25,7 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.UUIDUtil;
 
-public abstract class ContainerVersionPurgeJobTest<
+public abstract class AbstractContainerVersionPurgeJobTest<
 			R extends FieldSchemaContainer, 
 			RM extends FieldSchemaContainerVersion, 
 			RE extends NameUuidReference<RE>, 
@@ -34,7 +34,7 @@ public abstract class ContainerVersionPurgeJobTest<
 			M extends FieldSchemaContainer
 		> extends AbstractMeshTest {
 
-	@Parameters(name = "{index}: {0}")
+	@Parameters(name = "{index}: {0} change(s)")
 	public static Collection<Object[]> parameters() {
 		return List.of(new Object[] { 0 }, new Object[] { 1 }, new Object[] { 2 }, new Object[] { 5 }, new Object[] { 8 });
 	}

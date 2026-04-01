@@ -25,7 +25,7 @@ import com.gentics.mesh.test.TestSize;
 
 @MeshTestSetting(elasticsearch = NONE, testSize = TestSize.FULL, startServer = true)
 @RunWith(Parameterized.class)
-public class MicroschemaVersionPurgeJobTest extends ContainerVersionPurgeJobTest<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschema, HibMicroschemaVersion, MicroschemaModel> {
+public class MicroschemaVersionPurgeJobTest extends AbstractContainerVersionPurgeJobTest<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschema, HibMicroschemaVersion, MicroschemaModel> {
 
 	@Override
 	protected HibMicroschema containerSchema() {
