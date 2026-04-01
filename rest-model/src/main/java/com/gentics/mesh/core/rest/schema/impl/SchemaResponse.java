@@ -79,7 +79,7 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 
 	@Override
 	public SchemaResponse setNoIndex(Boolean noIndex) {
-		this.noIndex = noIndex;
+		this.noIndex = noIndex == Boolean.TRUE;
 		return this;
 	}
 
