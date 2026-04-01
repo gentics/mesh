@@ -96,6 +96,18 @@ public class MicroschemaTypeProvider extends AbstractTypeProvider {
 			return model != null ? model.getNoIndex() : null;
 		}));
 
+		// .version
+		schemaType.field(newFieldDefinition().name("version").type(GraphQLString).dataFetcher((env) -> {
+			MicroschemaVersionModel model = loadModelWithFallback(env);
+			return model != null ? model.getVersion() : null;
+		}));
+
+		// .description
+		schemaType.field(newFieldDefinition().name("description").type(GraphQLString).dataFetcher((env) -> {
+			MicroschemaVersionModel model = loadModelWithFallback(env);
+			return model != null ? model.getDescription() : null;
+		}));
+
 		// .fields
 		Builder fieldListBuilder = newObject().name(MICROSCHEMA_FIELD_TYPE).description("List of schema fields");
 
@@ -107,6 +119,9 @@ public class MicroschemaTypeProvider extends AbstractTypeProvider {
 
 		// .required
 		fieldListBuilder.field(newFieldDefinition().name("required").type(GraphQLBoolean).description("Whether this field is required"));
+
+		// .noIndex
+		fieldListBuilder.field(newFieldDefinition().name("noIndex").type(GraphQLBoolean).description("Whether this field disallows indexing over it"));
 
 		// .type
 		fieldListBuilder.field(newFieldDefinition().name("type").type(GraphQLString).description("The type of the field"));

@@ -221,4 +221,9 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 		return getName() + " fields: {" + fields + "}";
 	}
 
+	@Override
+	public SchemaResponse setUuid(String uuid) {
+		super.setUuid(uuid);
+		return this;
+	}
 }

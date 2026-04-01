@@ -116,6 +116,18 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 			return model != null ? model.getSegmentField() : null;
 		}));
 
+		// .version
+		schemaType.field(newFieldDefinition().name("version").type(GraphQLString).dataFetcher((env) -> {
+			SchemaVersionModel model = loadModelWithFallback(env);
+			return model != null ? model.getVersion() : null;
+		}));
+
+		// .description
+		schemaType.field(newFieldDefinition().name("description").type(GraphQLString).dataFetcher((env) -> {
+			SchemaVersionModel model = loadModelWithFallback(env);
+			return model != null ? model.getDescription() : null;
+		}));
+
 		// .nodes
 		NodeFilter nodeFilter = NodeFilter.filter(context);
 		schemaType
@@ -148,6 +160,9 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 
 		// .required
 		fieldListBuilder.field(newFieldDefinition().name("required").type(GraphQLBoolean).description("Whether this field is required"));
+
+		// .noIndex
+		fieldListBuilder.field(newFieldDefinition().name("noIndex").type(GraphQLBoolean).description("Whether this field disallows indexing over it"));
 
 		// .type
 		fieldListBuilder.field(newFieldDefinition().name("type").type(GraphQLString).description("The type of the field"));

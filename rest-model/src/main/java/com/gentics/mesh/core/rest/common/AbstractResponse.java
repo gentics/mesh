@@ -20,8 +20,9 @@ public abstract class AbstractResponse implements RestResponse {
 	}
 
 	@Override
-	public void setUuid(String uuid) {
+	public AbstractResponse setUuid(String uuid) {
 		this.uuid = uuid;
+		return this;
 	}
 
 	@Override

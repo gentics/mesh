@@ -7,10 +7,22 @@
 			name
 			# [$.data.microschemas.elements[0].uuid=<is-uuid>]
 			uuid
+			# [$.data.microschemas.elements[0].version=<is-not-null>]
+			version
+			# [$.data.microschemas.elements[0].description=<is-not-null>]
+			description
 			# [$.data.microschemas.elements[0].isNoIndex=<is-null>]
 			isNoIndex
 			# [$.data.microschemas.elements[0].isEmpty=false]
 			isEmpty
+			# [$.data.microschemas.elements[0].fields=<is-not-null>]
+			fields {
+				name
+				label
+				required
+				type
+				noIndex
+			}
 		}
 	}
 }
