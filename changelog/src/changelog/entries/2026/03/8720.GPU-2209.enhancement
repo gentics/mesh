@@ -1,2 +1,2 @@
 Core: Now it is possible to purge empty (micro)schema versions automatically, via new background jobs. This will save storage and runtime resources of the database.
- The purge process is triggered via REST API `DELETE /schemas/` and `DELETE /microschemas/` respectively.
+ The purge process is triggered via REST API `POST /utilities/purge/schemas/versions` and `POST /utilities/purge/microschemas/versions` respectively, and can be parameterized by schema name/UUID filters.
