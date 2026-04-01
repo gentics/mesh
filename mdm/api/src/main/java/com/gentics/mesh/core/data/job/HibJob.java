@@ -142,6 +142,18 @@ public interface HibJob extends HibCoreElement<JobResponse>, HibCreatorTracking 
 	void setStatus(JobStatus status);
 
 	/**
+	 * Get the job start query.
+	 * 
+	 * @return
+	 */
+	String getQuery();
+
+	/**
+	 * Set the job start query.
+	 */
+	void setQuery(String query);
+
+	/**
 	 * Removes the error information from the job and thus it can be processed again.
 	 */
 	default void resetJob() {

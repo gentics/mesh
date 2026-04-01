@@ -11,6 +11,7 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.rest.common.NameOrUUIDsRequest;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -136,17 +137,19 @@ public interface JobDao extends DaoGlobal<HibJob>, DaoTransformable<HibJob, JobR
 
 	/**
 	 * Enqueue a schema version purge job.
-	 * @param user
+	 * @param user creating user
+	 * @param request optional request with limits
 	 * @return
 	 */
-	HibJob enqueueSchemaVersionPurge(HibUser user);
+	HibJob enqueueSchemaVersionPurge(HibUser user, NameOrUUIDsRequest request);
 
 	/**
 	 * Enqueue a microschema version purge job.
-	 * @param user
+	 * @param user creating user
+	 * @param request optional request with limits.
 	 * @return
 	 */
-	HibJob enqueueMicroschemaVersionPurge(HibUser user);
+	HibJob enqueueMicroschemaVersionPurge(HibUser user, NameOrUUIDsRequest request);
 
 	/**
 	 * Enqueue a consistency check job.

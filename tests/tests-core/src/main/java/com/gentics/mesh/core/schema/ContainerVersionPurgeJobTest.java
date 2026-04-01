@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -17,12 +16,14 @@ import com.gentics.mesh.core.data.schema.HibFieldSchemaElement;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.common.NameOrUUIDsRequest;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.util.StreamUtil;
+import com.gentics.mesh.util.UUIDUtil;
 
 public abstract class ContainerVersionPurgeJobTest<
 			R extends FieldSchemaContainer, 
@@ -51,8 +52,51 @@ public abstract class ContainerVersionPurgeJobTest<
 
 	@Test
 	public void testPurge() {
+		successfulTest(purgeJob());
+	}
+
+	@Test
+	public void testPurgeIncludingName() {
+		successfulTest(purgeJob((NameOrUUIDsRequest) new NameOrUUIDsRequest().add(containerSchema().getName())));
+	}
+
+	@Test
+	public void testPurgeIncludingUuid() {
+		successfulTest(purgeJob((NameOrUUIDsRequest) new NameOrUUIDsRequest().add(containerSchema().getUuid())));
+	}
+
+	@Test
+	public void testSkipExcludingName() {
+		skippedTest(purgeJob((NameOrUUIDsRequest) new NameOrUUIDsRequest().setExcluded(true).add(containerSchema().getName())));
+	}
+
+	@Test
+	public void testSkipExcludingUuid() {
+		skippedTest(purgeJob((NameOrUUIDsRequest) new NameOrUUIDsRequest().setExcluded(true).add(containerSchema().getUuid())));
+	}
+
+	@Test
+	public void testPurgeExcludingName() {
+		successfulTest(purgeJob((NameOrUUIDsRequest) new NameOrUUIDsRequest().setExcluded(true).add("whatever")));
+	}
+
+	@Test
+	public void testPurgeExcludingUuid() {
+		successfulTest(purgeJob((NameOrUUIDsRequest) new NameOrUUIDsRequest().setExcluded(true).add(UUIDUtil.randomUUID())));
+	}
+
+	@Test
+	public void testSkipIncludingName() {
+		skippedTest(purgeJob((NameOrUUIDsRequest) new NameOrUUIDsRequest().add("whatever")));
+	}
+
+	@Test
+	public void testSkipIncludingUuid() {
+		skippedTest(purgeJob((NameOrUUIDsRequest) new NameOrUUIDsRequest().add(UUIDUtil.randomUUID())));
+	}
+
+	protected void run(MeshRequest<GenericMessageResponse> job) {
 		String[] versionsBefore = versionsBefore();
-		String[] versionsAfter = versionsAfter();
 
 		List<String> versions = tx((Tx tx) -> orderedVersions(tx));
 		assertThat(versions).as("Versions of content before the test").containsExactly(versionsBefore);
@@ -62,10 +106,25 @@ public abstract class ContainerVersionPurgeJobTest<
 		versions = tx((Tx tx) -> orderedVersions(tx));
 		assertThat(versions).as("Versions of content after the content purge").containsExactly(versionsBefore);
 
-		waitForJob(() -> runAsAdmin(() -> call(() -> purgeJob())));
+		waitForJob(() -> runAsAdmin(() -> call(() -> job)));
+	}
 
-		versions = tx((Tx tx) -> orderedVersions(tx));
+	protected void successfulTest(MeshRequest<GenericMessageResponse> job) {
+		String[] versionsAfter = versionsAfter();
+
+		run(job);
+
+		List<String> versions = tx((Tx tx) -> orderedVersions(tx));
 		assertThat(versions).as("Versions of content after the schema versions purge").containsExactly(versionsAfter);
+	}
+
+	protected void skippedTest(MeshRequest<GenericMessageResponse> job) {
+		String[] versionsBefore = versionsBefore();
+
+		run(job);
+
+		List<String> versions = tx((Tx tx) -> orderedVersions(tx));
+		assertThat(versions).as("Versions of content after the schema versions purge").containsExactly(versionsBefore);
 	}
 
 	protected List<String> orderedVersions(Tx tx) {
@@ -83,4 +142,6 @@ public abstract class ContainerVersionPurgeJobTest<
 	protected abstract Iterable<? extends SCV> findAllVersions(Tx tx, SC container);
 
 	protected abstract MeshRequest<GenericMessageResponse> purgeJob();
+
+	protected abstract MeshRequest<GenericMessageResponse> purgeJob(NameOrUUIDsRequest request);
 }

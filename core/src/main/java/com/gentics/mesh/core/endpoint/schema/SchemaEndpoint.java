@@ -27,7 +27,6 @@ import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.parameter.impl.ProjectPurgeParametersImpl;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
@@ -168,17 +167,6 @@ public class SchemaEndpoint extends RolePermissionHandlingEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("schemaUuid");
 			crudHandler.handleDelete(ac, uuid);
-		}, isOrderedBlockingHandlers());
-
-		InternalEndpointRoute purgeVersionsEndpoint = createRoute();
-		purgeVersionsEndpoint.path("/");
-		purgeVersionsEndpoint.method(DELETE);
-		purgeVersionsEndpoint.description("Purge the unused schema versions.");
-		purgeVersionsEndpoint.produces(APPLICATION_JSON);
-		purgeVersionsEndpoint.exampleResponse(OK, "Schema version purge job initialized.");
-		purgeVersionsEndpoint.blockingHandler(rc -> {
-			InternalActionContext ac = wrap(rc);
-			crudHandler.handlePurge(ac);
 		}, isOrderedBlockingHandlers());
 	}
 

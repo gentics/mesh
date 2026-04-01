@@ -6,19 +6,23 @@ import static com.gentics.mesh.core.rest.job.JobStatus.FAILED;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.gentics.mesh.core.data.dao.JobDao;
+import org.apache.commons.lang3.tuple.Pair;
+
 import com.gentics.mesh.core.data.dao.PersistingBranchDao;
 import com.gentics.mesh.core.data.dao.PersistingContainerDao;
+import com.gentics.mesh.core.data.dao.PersistingJobDao;
 import com.gentics.mesh.core.data.dao.PersistingProjectDao;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaElement;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.rest.common.NameOrUUIDsRequest;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.job.warning.JobWarning;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.StreamUtil;
 
 import io.reactivex.Completable;
@@ -33,7 +37,7 @@ import io.reactivex.Completable;
  * @param <SCV>
  * @param <M>
  */
-public abstract class ContainerVersionPurgeJobProcessor<
+public abstract class AbstractContainerVersionPurgeJobProcessor<
 			R extends FieldSchemaContainer, 
 			RM extends FieldSchemaContainerVersion, 
 			RE extends NameUuidReference<RE>, 
@@ -43,12 +47,12 @@ public abstract class ContainerVersionPurgeJobProcessor<
 		> implements SingleJobProcessor {
 
 	protected final Database db;
-	protected final JobDao jobDao;
+	protected final PersistingJobDao jobDao;
 	protected final PersistingContainerDao<R, RM, RE, SC, SCV, M> containerDao;
 	protected final PersistingProjectDao projectDao;
 	protected final PersistingBranchDao branchDao;
 
-	public ContainerVersionPurgeJobProcessor(Database db, JobDao jobDao, PersistingContainerDao<R, RM, RE, SC, SCV, M> containerDao,
+	public AbstractContainerVersionPurgeJobProcessor(Database db, PersistingJobDao jobDao, PersistingContainerDao<R, RM, RE, SC, SCV, M> containerDao,
 			PersistingProjectDao projectDao, PersistingBranchDao branchDao) {
 		this.containerDao = containerDao;
 		this.projectDao = projectDao;
@@ -81,17 +85,43 @@ public abstract class ContainerVersionPurgeJobProcessor<
 	 * @return
 	 */
 	protected Completable purge(HibJob job) {
-		return Completable.defer(() -> db.asyncTx(() -> {
-			Set<String> usedVersionUuids = containerDao.findActiveSchemaVersions().stream()
-					.map(version -> version.getUuid())
-					.collect(Collectors.toSet());
+		return Completable.defer(() -> {
+			NameOrUUIDsRequest request = JsonUtil.readValue(job.getQuery(), NameOrUUIDsRequest.class, true);
+			Set<Pair<String, String>> affectedVersions = db.tx(tx -> {
+				Set<String> usedVersionUuids = containerDao.findActiveSchemaVersions().stream()
+						.map(version -> version.getUuid())
+						.collect(Collectors.toSet());
 
-			containerDao.findAll().stream()
-					.flatMap(ms -> StreamUtil.toStream(containerDao.findAllVersions(ms)))
-					.filter(msv -> !usedVersionUuids.contains(msv.getUuid()))
-					.filter(msv -> containerDao.countVersionEdges(msv) < 1)
-					.peek(msv -> job.getWarnings().add(new JobWarning().setType("purged").setMessage(msv.getName() + " / " + msv.getVersion() + " / " + msv.getUuid())))
-					.forEach(msv -> containerDao.deleteVersion(msv));
-		}));
+				return containerDao.findAll().stream()
+						.flatMap(ms -> StreamUtil.toStream(containerDao.findAllVersions(ms)))
+						.filter(msv -> !usedVersionUuids.contains(msv.getUuid()))
+						.filter(msv -> {
+							if (request != null && request.getData() != null) {
+								if (request.isExcluded()) {
+									return !request.getData().contains(msv.getSchemaContainer().getUuid()) && !request.getData().contains(msv.getName());
+								} else {
+									return request.getData().contains(msv.getSchemaContainer().getUuid()) || request.getData().contains(msv.getName());
+								}
+							} else {
+								return true;
+							}
+						})
+						.filter(msv -> containerDao.countVersionEdges(msv) < 1)
+						.map(msv -> Pair.of(msv.getUuid(), msv.getSchemaContainer().getUuid()))
+						.collect(Collectors.toSet());
+			});
+
+			return affectedVersions.isEmpty() 
+					? Completable.complete()
+					: Completable.concat(affectedVersions.stream()
+							.map(pair -> db.asyncTx(() -> {
+								SC sc = containerDao.findByUuid(pair.getRight());
+								SCV scv = containerDao.findVersionByUuid(sc, pair.getLeft());
+								containerDao.deleteVersion(scv);
+								job.getWarnings().add(new JobWarning().setType("purged").setMessage(scv.getName() + " / " + scv.getVersion() + " / " + scv.getUuid()));
+							})).collect(Collectors.toList()));
+		}).doOnComplete(() -> {
+			db.tx(() -> jobDao.mergeIntoPersisted(job));
+		});
 	}
 }

@@ -15,7 +15,6 @@ import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.PersistingMicroschemaDao;
 import com.gentics.mesh.core.data.job.HibJob;
-import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
@@ -182,7 +181,7 @@ public class MicroschemaDaoImpl
 			microschema.setLatestVersion(version.getPreviousVersion());
 		}
 		if (version.getPreviousVersion() != null) {
-			version.getPreviousVersion().setNextVersion(null);
+			version.getPreviousVersion().setNextVersion(version.getNextVersion());
 		}
 		if (version.getNextVersion() != null) {
 			version.getNextVersion().setPreviousVersion(version.getPreviousVersion());
@@ -211,11 +210,6 @@ public class MicroschemaDaoImpl
 		HibMicroschemaVersion version = super.createPersistedVersion(container, inflater);
 		HibernateTx.get().contentDao().createContentTable(version);
 		return version;
-	}
-
-	@Override
-	public Result<? extends HibMicronode> findMicronodes(HibMicroschemaVersion version) {
-		return new TraversalResult<>(HibernateTx.get().contentDao().getFieldsContainers(version));
 	}
 
 	@Override

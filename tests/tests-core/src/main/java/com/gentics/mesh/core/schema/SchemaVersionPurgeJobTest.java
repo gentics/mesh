@@ -13,6 +13,7 @@ import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.common.NameOrUUIDsRequest;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
@@ -25,7 +26,6 @@ import com.gentics.mesh.test.TestSize;
 @MeshTestSetting(elasticsearch = NONE, testSize = TestSize.FULL, startServer = true)
 @RunWith(Parameterized.class)
 public class SchemaVersionPurgeJobTest extends ContainerVersionPurgeJobTest<SchemaResponse, SchemaVersionModel, SchemaReference, HibSchema, HibSchemaVersion, SchemaModel> {
-
 
 	@Override
 	protected HibSchema containerSchema() {
@@ -53,6 +53,11 @@ public class SchemaVersionPurgeJobTest extends ContainerVersionPurgeJobTest<Sche
 	}
 
 	@Override
+	protected MeshRequest<GenericMessageResponse> purgeJob(NameOrUUIDsRequest request) {
+		return client().purgeSchemaVersions(request);
+	}
+
+	@Override
 	protected String[] versionsBefore() {
 		return numChanges < 1 
 				? new String[] { "1.0" } 
@@ -65,4 +70,5 @@ public class SchemaVersionPurgeJobTest extends ContainerVersionPurgeJobTest<Sche
 				? versionsBefore()
 				: new String[] { "1.0", "%d.0".formatted(numChanges+1) };
 	}
+
 }

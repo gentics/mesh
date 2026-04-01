@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.endpoint.utility;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.rest.Messages.message;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.util.Map;
@@ -8,12 +11,16 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.i18n.I18NUtil;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.link.WebRootLinkReplacerImpl;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.common.NameOrUUIDsRequest;
 import com.gentics.mesh.core.rest.error.AbstractRestException;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
@@ -22,10 +29,12 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.validation.SchemaValidationResponse;
 import com.gentics.mesh.core.rest.validation.ValidationStatus;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.search.index.node.NodeIndexHandlerImpl;
 
+import dagger.Lazy;
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
@@ -49,14 +58,20 @@ public class UtilityHandler extends AbstractHandler {
 
 	private final HandlerUtilities utils;
 
+	private final Lazy<BootstrapInitializer> boot;
+
+	private final WriteLock writeLock;
+
 	@Inject
 	public UtilityHandler(MeshOptions options, Database db, WebRootLinkReplacerImpl linkReplacer, NodeIndexHandlerImpl nodeIndexHandler,
-		HandlerUtilities utils) {
+		HandlerUtilities utils, Lazy<BootstrapInitializer> boot, WriteLock writeLock) {
 		this.options = options;
 		this.db = db;
 		this.linkReplacer = linkReplacer;
 		this.nodeIndexHandler = nodeIndexHandler;
 		this.utils = utils;
+		this.boot = boot;
+		this.writeLock = writeLock;
 	}
 
 	/**
@@ -135,4 +150,47 @@ public class UtilityHandler extends AbstractHandler {
 		}, msg -> ac.send(msg, OK));
 	}
 
+	/**
+	 * Create a stale schema version purge job.
+	 * 
+	 * @param ac
+	 */
+	public void handleSchemaVersionPurge(InternalActionContext ac) {
+		try (WriteLock lock = writeLock.lock(ac)) {
+			utils.syncTx(ac, tx -> {
+				if (!ac.getUser().isAdmin()) {
+					throw error(FORBIDDEN, "error_admin_permission_required");
+				}
+				HibUser user = ac.getUser();
+				NameOrUUIDsRequest request = ac.fromJson(NameOrUUIDsRequest.class, true);
+				tx.jobDao().enqueueSchemaVersionPurge(user, request);
+				return message(ac, "project_version_purge_enqueued");
+			}, message -> {
+				MeshEvent.triggerJobWorker(boot.get().mesh());
+				ac.send(message, OK);
+			});
+		}
+	}
+
+	/**
+	 * Create a stale microschema version purge job.
+	 * 
+	 * @param ac
+	 */
+	public void handleMicroschemaVersionPurge(InternalActionContext ac) {
+		try (WriteLock lock = writeLock.lock(ac)) {
+			utils.syncTx(ac, tx -> {
+				if (!ac.getUser().isAdmin()) {
+					throw error(FORBIDDEN, "error_admin_permission_required");
+				}
+				NameOrUUIDsRequest request = ac.fromJson(NameOrUUIDsRequest.class, true);
+				HibUser user = ac.getUser();
+				tx.jobDao().enqueueMicroschemaVersionPurge(user, request);
+				return message(ac, "project_version_purge_enqueued");
+			}, message -> {
+				MeshEvent.triggerJobWorker(boot.get().mesh());
+				ac.send(message, OK);
+			});
+		}
+	}
 }

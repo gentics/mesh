@@ -13,6 +13,7 @@ import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.common.NameOrUUIDsRequest;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
@@ -43,6 +44,11 @@ public class MicroschemaVersionPurgeJobTest extends ContainerVersionPurgeJobTest
 	@Override
 	protected Iterable<? extends HibMicroschemaVersion> findAllVersions(Tx tx, HibMicroschema container) {
 		return tx.microschemaDao().findAllVersions(containerSchema());
+	}
+
+	@Override
+	protected MeshRequest<GenericMessageResponse> purgeJob(NameOrUUIDsRequest request) {
+		return client().purgeMicroschemaVersions(request);
 	}
 
 	@Override

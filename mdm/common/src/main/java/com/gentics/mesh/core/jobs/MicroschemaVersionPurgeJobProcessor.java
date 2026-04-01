@@ -17,7 +17,7 @@ import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 /**
  * Purge microschema versions processor
  */
-public class MicroschemaVersionPurgeJobProcessor extends ContainerVersionPurgeJobProcessor<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschema, HibMicroschemaVersion, MicroschemaModel> {
+public class MicroschemaVersionPurgeJobProcessor extends AbstractContainerVersionPurgeJobProcessor<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschema, HibMicroschemaVersion, MicroschemaModel> {
 
 	@Inject
 	public MicroschemaVersionPurgeJobProcessor(Database db, PersistingJobDao jobDao, PersistingMicroschemaDao containerDao,	PersistingProjectDao projectDao, PersistingBranchDao branchDao) {

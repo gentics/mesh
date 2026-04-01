@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.URI;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -148,7 +149,13 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 	 */
 	public static <T> MeshOkHttpRequestImpl<T> JsonRequest(MeshRestClient meshClient, OkHttpClient client, MeshRestClientConfig config, String method, String url, Map<String, String> headers,
 		Class<? extends T> classOfT, String json) {
-		return new MeshOkHttpRequestImpl<>(meshClient, client, config, classOfT, method, url, headers, RequestBody.create(MediaType.get("application/json"), json));
+		if (StringUtils.isNotBlank(json)) {
+			return new MeshOkHttpRequestImpl<>(meshClient, client, config, classOfT, method, url, headers, RequestBody.create(MediaType.get("application/json"), json));
+		} else {
+			headers = new HashMap<>(headers);
+			headers.put("Content-Type", "application/json");
+			return EmptyRequest(meshClient, client, config, method, url, headers, classOfT);
+		}
 	}
 
 	/**
@@ -168,7 +175,13 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 	 */
 	public static <T> MeshOkHttpRequestImpl<T> TextRequest(MeshRestClient meshClient, OkHttpClient client, MeshRestClientConfig config, String method, String url, Map<String, String> headers,
 		Class<? extends T> classOfT, String text) {
-		return new MeshOkHttpRequestImpl<>(meshClient, client, config, classOfT, method, url, headers, RequestBody.create(MediaType.get("text/plain"), text));
+		if (StringUtils.isNotBlank(text)) {
+			return new MeshOkHttpRequestImpl<>(meshClient, client, config, classOfT, method, url, headers, RequestBody.create(MediaType.get("text/plain"), text));
+		} else {
+			headers = new HashMap<>(headers);
+			headers.put("Content-Type", "text/plain");
+			return EmptyRequest(meshClient, client, config, method, url, headers, classOfT);
+		}
 	}
 
 	/**
