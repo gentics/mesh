@@ -16,6 +16,8 @@ public enum FieldTypes {
 
 	HTML(HtmlFieldSchema.class, HtmlFieldSchemaImpl.class, HtmlField.class, HtmlFieldImpl.class),
 
+	JSON(JsonFieldSchema.class, JsonFieldSchemaImpl.class, JsonField.class, JsonFieldImpl.class),
+
 	NUMBER(NumberFieldSchema.class, NumberFieldSchemaImpl.class, NumberField.class, NumberFieldImpl.class),
 
 	DATE(DateFieldSchema.class, DateFieldSchemaImpl.class, DateField.class, DateFieldImpl.class),

@@ -88,6 +88,7 @@ import com.gentics.mesh.hibernate.data.domain.HibDateListFieldEdgeImpl;
 import com.gentics.mesh.hibernate.data.domain.HibFieldEdge;
 import com.gentics.mesh.hibernate.data.domain.HibHtmlListFieldEdgeImpl;
 import com.gentics.mesh.hibernate.data.domain.HibImageVariantImpl;
+import com.gentics.mesh.hibernate.data.domain.HibJsonListFieldEdgeImpl;
 import com.gentics.mesh.hibernate.data.domain.HibMicronodeContainerImpl;
 import com.gentics.mesh.hibernate.data.domain.HibMicronodeFieldEdgeImpl;
 import com.gentics.mesh.hibernate.data.domain.HibMicronodeListFieldEdgeImpl;
@@ -124,6 +125,7 @@ import com.gentics.mesh.util.UUIDUtil;
 import com.gentics.mesh.util.VersionNumber;
 
 import io.reactivex.Completable;
+import io.vertx.core.json.JsonObject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
 
@@ -529,6 +531,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 					case HTML:
 					case NUMBER:
 					case DATE:
+					case JSON:
 					case BOOLEAN:
 						// nothing to do
 						break;
@@ -604,6 +607,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 				case HTML:
 				case NUMBER:
 				case DATE:
+				case JSON:
 				case BOOLEAN:
 					// These are stored in the content table, so they will be deleted later on.
 					break;
@@ -653,6 +657,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 				case HTML:
 				case NUMBER:
 				case DATE:
+				case JSON:
 				case BOOLEAN:
 					// nothing to do
 					break;
@@ -874,6 +879,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 				case HTML:
 				case NUMBER:
 				case DATE:
+				case JSON:
 				case BOOLEAN:
 					// These are stored in the content table, so they will be deleted later on.
 					break;
@@ -957,6 +963,8 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 				return HibStringListFieldEdgeImpl.class;
 			case HTML:
 				return HibHtmlListFieldEdgeImpl.class;
+			case JSON:
+				return HibJsonListFieldEdgeImpl.class;
 			case NUMBER:
 				return HibNumberListFieldEdgeImpl.class;
 			case DATE:
@@ -1535,6 +1543,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 				case HTML:
 				case NUMBER:
 				case DATE:
+				case JSON:
 				case BOOLEAN:
 					// These are stored in the content table, so they will be deleted later on.
 					break;
@@ -1621,6 +1630,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 				case HTML:
 				case NUMBER:
 				case DATE:
+				case JSON:
 				case BOOLEAN:
 					// These are stored in the content table, so they will be deleted later on.
 					break;
@@ -1843,6 +1853,11 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	@Override
 	public Map<String, List<Long>> getDateListFieldValues(List<String> listUuids) {
 		return getListValues(listUuids, HibDateListFieldEdgeImpl::getDate, HibDateListFieldEdgeImpl.class);
+	}
+
+	@Override
+	public Map<String, List<JsonObject>> getJsonListFieldValues(List<String> listUuids) {
+		return getListValues(listUuids, HibJsonListFieldEdgeImpl::getJson, HibJsonListFieldEdgeImpl.class);
 	}
 
 	@Override

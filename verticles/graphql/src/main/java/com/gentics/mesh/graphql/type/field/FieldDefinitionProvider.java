@@ -54,6 +54,7 @@ import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.node.field.HibBooleanField;
 import com.gentics.mesh.core.data.node.field.HibDateField;
 import com.gentics.mesh.core.data.node.field.HibHtmlField;
+import com.gentics.mesh.core.data.node.field.HibJsonField;
 import com.gentics.mesh.core.data.node.field.HibNumberField;
 import com.gentics.mesh.core.data.node.field.HibStringField;
 import com.gentics.mesh.core.data.node.field.list.HibBooleanFieldList;
@@ -577,6 +578,17 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 			HibBooleanField booleanField = container.getBoolean(schema.getName());
 			if (booleanField != null) {
 				return booleanField.getBoolean();
+			}
+			return null;
+		}).build();
+	}
+
+	public GraphQLFieldDefinition createJsonDef(FieldSchema schema) {
+		return newFieldDefinition().name(schema.getName()).description(schema.getLabel()).type(GraphQLString).dataFetcher(env -> {
+			HibFieldContainer container = env.getSource();
+			HibJsonField booleanField = container.getJson(schema.getName());
+			if (booleanField != null) {
+				return booleanField.getJson();
 			}
 			return null;
 		}).build();

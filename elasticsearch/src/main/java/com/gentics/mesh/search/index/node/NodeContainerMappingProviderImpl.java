@@ -196,6 +196,9 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 		case BOOLEAN:
 			addBooleanFieldMapping(fieldInfo, customIndexOptions);
 			break;
+		case JSON:
+			addJsonFieldMapping(fieldInfo, customIndexOptions);
+			break;
 		case DATE:
 			addDataFieldMapping(fieldInfo, customIndexOptions);
 			break;
@@ -234,6 +237,15 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 			fieldInfo.mergeIn(customIndexOptions);
 		} else {
 			fieldInfo.put("type", BOOLEAN);
+		}
+	}
+
+	private void addJsonFieldMapping(JsonObject fieldInfo, JsonObject customIndexOptions) {
+		if (isStrictMode()) {
+			fieldInfo.mergeIn(customIndexOptions);
+		} else {
+			fieldInfo.put("type", OBJECT);
+			fieldInfo.put("schema", OBJECT);
 		}
 	}
 

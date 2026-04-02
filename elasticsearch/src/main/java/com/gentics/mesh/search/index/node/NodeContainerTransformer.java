@@ -41,6 +41,7 @@ import com.gentics.mesh.core.data.node.field.HibBooleanField;
 import com.gentics.mesh.core.data.node.field.HibDateField;
 import com.gentics.mesh.core.data.node.field.HibHtmlField;
 import com.gentics.mesh.core.data.node.field.HibImageDataField;
+import com.gentics.mesh.core.data.node.field.HibJsonField;
 import com.gentics.mesh.core.data.node.field.HibNumberField;
 import com.gentics.mesh.core.data.node.field.HibStringField;
 import com.gentics.mesh.core.data.node.field.list.HibBooleanFieldList;
@@ -234,6 +235,12 @@ public class NodeContainerTransformer extends AbstractTransformer<HibNodeFieldCo
 				HibBooleanField booleanField = container.getBoolean(name);
 				if (booleanField != null) {
 					fieldsMap.put(name, booleanField.getBoolean());
+				}
+				break;
+			case JSON:
+				HibJsonField jsonField = container.getJson(name);
+				if (jsonField != null) {
+					fieldsMap.put(name, jsonField.getJson());
 				}
 				break;
 			case DATE:

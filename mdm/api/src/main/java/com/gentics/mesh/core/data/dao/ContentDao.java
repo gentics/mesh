@@ -44,6 +44,8 @@ import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.util.VersionNumber;
 
+import io.vertx.core.json.JsonObject;
+
 /**
  * DAO for contained data.
  */
@@ -1101,6 +1103,13 @@ public interface ContentDao {
 	 * @return true when prefetching list field values is supported, false if not
 	 */
 	boolean supportsPrefetchingListFieldValues();
+
+	/**
+	 * Get the JSON object list field values for the given list UUIDs
+	 * @param listUuids list UUIDs
+	 * @return map of list UUIDs to lists of JSON values
+	 */
+	Map<String, List<JsonObject>> getJsonListFieldValues(List<String> listUuids);
 
 	/**
 	 * Get the boolean list field values for the given list UUIDs

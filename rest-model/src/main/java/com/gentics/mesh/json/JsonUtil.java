@@ -4,6 +4,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.io.IOException;
+import java.util.Comparator;
 
 import org.codehaus.jettison.json.JSONObject;
 
@@ -73,6 +74,26 @@ import org.slf4j.LoggerFactory;
  * Main JSON Util which is used to register all custom JSON specific handlers and deserializers.
  */
 public final class JsonUtil {
+
+	/**
+	 * JSON object comparator
+	 */
+	public static Comparator<JsonObject> COMPARATOR = (a,b) -> {
+		if (a == null && b == null) {
+			return 0;
+		}
+		if (a == null) {
+			return -1;
+		}
+		if (b == null) {
+			return 1;
+		}
+		if (a.equals(b)) {
+			return 0;
+		} else {
+			return a.toString().compareTo(b.toString());
+		}
+	};
 
 	protected static ObjectMapper defaultMapper;
 	protected static JsonSchemaGenerator schemaGen;
