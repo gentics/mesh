@@ -21,14 +21,33 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.POJONode;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
-import com.gentics.mesh.core.rest.node.field.*;
-import com.gentics.mesh.core.rest.node.field.impl.*;
+import com.gentics.mesh.core.rest.node.field.BinaryField;
+import com.gentics.mesh.core.rest.node.field.BooleanField;
+import com.gentics.mesh.core.rest.node.field.DateField;
+import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.HtmlField;
+import com.gentics.mesh.core.rest.node.field.JsonField;
+import com.gentics.mesh.core.rest.node.field.NodeField;
+import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
+import com.gentics.mesh.core.rest.node.field.NumberField;
+import com.gentics.mesh.core.rest.node.field.S3BinaryField;
+import com.gentics.mesh.core.rest.node.field.StringField;
+import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.JsonFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.S3BinaryFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.node.field.list.FieldList;
 import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.JsonFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
@@ -38,6 +57,8 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.json.JsonUtil;
 import com.google.common.collect.Lists;
+
+import io.vertx.core.json.JsonObject;
 
 /**
  * Implementation of a fieldmap which uses a central JsonNode to access the field specific data. Fields will be mapped during runtime.
@@ -83,6 +104,8 @@ public class FieldMapImpl implements FieldMap {
 				return (T) transformNumberFieldJsonNode(jsonNode, key);
 			case BOOLEAN:
 				return (T) transformBooleanFieldJsonNode(jsonNode, key);
+			case JSON:
+				return (T) transformJsonFieldJsonNode(jsonNode, key);
 			case DATE:
 				return (T) transformDateFieldJsonNode(jsonNode, key);
 			case LIST:
@@ -331,6 +354,27 @@ public class FieldMapImpl implements FieldMap {
 		return booleanField;
 	}
 
+	private JsonField transformJsonFieldJsonNode(JsonNode jsonNode, String key) {
+		// Unwrap stored pojos
+		if (jsonNode.isPojo()) {
+			JsonField field = pojoNodeToValue(jsonNode, JsonField.class, key);
+			if (field == null || field.getValue() == null) {
+				return null;
+			} else {
+				return field;
+			}
+		}
+
+		JsonField jsonField = new JsonFieldImpl();
+		if (!jsonNode.isNull() && jsonNode.isObject()) {
+			jsonField.setJson(new JsonObject(jsonNode.toString()));
+		}
+		if (!jsonNode.isNull() && !jsonNode.isObject()) {
+			throw error(BAD_REQUEST, "The field value for {" + key + "} is not a JSON object value. The value was {" + jsonNode.toString() + "}");
+		}
+		return jsonField;
+	}
+
 	private NumberField transformNumberFieldJsonNode(JsonNode jsonNode, String key) {
 		// Unwrap stored pojos
 		if (jsonNode.isPojo()) {
@@ -446,6 +490,11 @@ public class FieldMapImpl implements FieldMap {
 	}
 
 	@Override
+	public JsonFieldImpl getJsonField(String key) {
+		return getField(key, FieldTypes.JSON);
+	}
+
+	@Override
 	public BinaryField getBinaryField(String key) {
 		return getField(key, FieldTypes.BINARY);
 	}
@@ -512,6 +561,11 @@ public class FieldMapImpl implements FieldMap {
 	@Override
 	public NumberFieldListImpl getNumberFieldList(String key) {
 		return getField(key, FieldTypes.LIST, "number");
+	}
+
+	@Override
+	public JsonFieldListImpl getJsonFieldList(String key) {
+		return getField(key, FieldTypes.LIST, "json");
 	}
 
 	@Override

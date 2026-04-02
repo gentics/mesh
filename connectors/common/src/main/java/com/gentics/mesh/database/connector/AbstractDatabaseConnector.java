@@ -57,6 +57,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.query.MetadataExtractorIntegrator;
 import com.gentics.mesh.util.UUIDUtil;
 
+import io.vertx.core.json.JsonObject;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityManager;
 
@@ -385,6 +386,11 @@ public abstract class AbstractDatabaseConnector implements DatabaseConnector {
 		TypeConfiguration typeConfig = getSessionMetadataIntegrator().getSessionFactoryImplementor().getTypeConfiguration();
 		Dialect dialect = getHibernateDialect();
 		switch (type) {
+			case JSON:
+				return typeConfig.getDdlTypeRegistry().getTypeName(
+								Types.OTHER, 
+								new Size(getSqlTypePrecision(type), getSqlTypeScale(type), getSqlTypeLength(type)), 
+								typeConfig.getBasicTypeForJavaType(JsonObject.class));
 			case STRING:
 			case HTML:
 				return typeConfig.getDdlTypeRegistry().getTypeName(

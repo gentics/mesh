@@ -52,6 +52,7 @@ public class DynamicContentColumn implements ContentColumn, Serializable {
 	@Override
 	public Class<?> getJavaClass() {
 		switch (fieldType) {
+			case JSON:
 			case STRING:
 			case HTML:
 				return String.class;

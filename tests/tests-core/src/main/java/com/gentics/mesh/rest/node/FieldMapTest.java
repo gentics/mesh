@@ -23,6 +23,7 @@ import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.HtmlField;
+import com.gentics.mesh.core.rest.node.field.JsonField;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.NumberField;
@@ -198,6 +199,13 @@ public class FieldMapTest {
 
 		assertNull(fieldMap.getField("booleanFieldNullValue", FieldTypes.BOOLEAN, null, false));
 		assertNull("The field was explicitly set to null and should be null but it was not.", fieldMap.getBooleanField("booleanFieldNull"));
+
+		JsonField jsonField = fieldMap.getField("jsonField", FieldTypes.JSON, null, false);
+		assertNotNull(jsonField);
+		assertNotNull(fieldMap.getBooleanField("jsonField"));
+
+		assertNull(fieldMap.getField("jsonFieldNullValue", FieldTypes.JSON, null, false));
+		assertNull("The field was explicitly set to null and should be null but it was not.", fieldMap.getJsonField("jsonFieldNull"));
 
 		DateField dateField = fieldMap.getField("dateField", FieldTypes.DATE, null, false);
 		assertNotNull(dateField);

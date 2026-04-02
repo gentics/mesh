@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import com.gentics.mesh.cache.CacheStatus;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.node.field.HibHtmlField;
+import com.gentics.mesh.core.data.node.field.HibJsonField;
 import com.gentics.mesh.core.data.node.field.HibStringField;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoBufferEntry;
@@ -37,6 +38,7 @@ import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.etc.config.hibernate.HibernateCacheConfig;
 import com.gentics.mesh.hibernate.data.domain.HibUnmanagedFieldContainer;
 import com.gentics.mesh.hibernate.util.StringScale;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.metric.MetricsService;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.CacheLoader;
@@ -48,6 +50,7 @@ import com.hazelcast.topic.ITopic;
 import dagger.Lazy;
 import io.micrometer.core.instrument.binder.cache.CaffeineCacheMetrics;
 import io.reactivex.Flowable;
+import io.vertx.core.json.JsonObject;
 
 /**
  * Implements a cached data storage for content. When running in standalone mode, the cache is backed by caffeine.
@@ -306,6 +309,15 @@ public class ContentCachedStorage implements DebugInfoProvider {
 				String string = sValue.getString();
 				if (string != null) {
 					return StringScale.getWeight(string);
+				}
+			}
+			return 0;
+		case JSON:
+			HibJsonField jValue = container.getJson(field.getName());
+			if (jValue != null) {
+				JsonObject json = jValue.getJson();
+				if (json != null) {
+					return StringScale.getWeight(JsonUtil.toJson(json, true));
 				}
 			}
 			return 0;
