@@ -34,6 +34,8 @@ import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.filter.operation.ListItemOperationOperand;
 import com.gentics.mesh.graphql.model.NodeReferenceIn;
 
+import io.vertx.core.json.JsonObject;
+
 /**
  * List filter.
  * 
@@ -55,6 +57,7 @@ public class ListFilter<T, Q> extends MainFilter<Collection<T>> {
 	private static ListFilter<String, ?> htmlListFilterInstance;
 	private static ListFilter<Number, ?> numberListFilterInstance;
 	private static ListFilter<Boolean, ?> booleanListFilterInstance;
+	private static ListFilter<JsonObject, ?> jsonListFilterInstance;
 	private static ListFilter<Long, ?> dateListFilterInstance;
 	private static ListFilter<HibNode, ?> nodeListFilterInstance;
 	private static ListFilter<HibMicronode, ?> micronodeListFilterInstance;
@@ -170,6 +173,13 @@ public class ListFilter<T, Q> extends MainFilter<Collection<T>> {
 			booleanListFilterInstance = new ListFilter<>("BooleanListFilter", "Filters boolean lists", BooleanFilter.filter(), Optional.of("BOOLEANLIST"), false);
 		}
 		return booleanListFilterInstance;
+	}
+
+	public static final ListFilter<JsonObject, ?> jsonListFilter() {
+		if (jsonListFilterInstance == null) {
+			jsonListFilterInstance = new ListFilter<>("JsonListFilter", "Filters JSON object lists", JsonFilter.filter(), Optional.of("JSONLIST"), false);
+		}
+		return jsonListFilterInstance;
 	}
 
 	public static final ListFilter<Long, ?> dateListFilter() {

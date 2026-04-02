@@ -11,11 +11,13 @@ import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.HtmlField;
+import com.gentics.mesh.core.rest.node.field.JsonField;
 import com.gentics.mesh.core.rest.node.field.NumberField;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.JsonFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -67,6 +69,14 @@ public class BasicFieldSerializer<T extends Field> extends JsonSerializer<T> {
 					gen.writeNull();
 				} else {
 					gen.writeBoolean(booleanField.getValue());
+				}
+				break;
+			case JSON:
+				JsonField jsonField = (JsonFieldImpl) value;
+				if (jsonField.getValue() == null) {
+					gen.writeNull();
+				} else {
+					gen.writeObject(jsonField.getValue());
 				}
 				break;
 			case DATE:

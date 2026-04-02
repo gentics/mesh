@@ -22,11 +22,13 @@ import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.node.field.HibBooleanField;
 import com.gentics.mesh.core.data.node.field.HibDateField;
 import com.gentics.mesh.core.data.node.field.HibHtmlField;
+import com.gentics.mesh.core.data.node.field.HibJsonField;
 import com.gentics.mesh.core.data.node.field.HibNumberField;
 import com.gentics.mesh.core.data.node.field.HibStringField;
 import com.gentics.mesh.core.data.node.field.list.HibBooleanFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibDateFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibHtmlFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibJsonFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibNodeFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibNumberFieldList;
@@ -251,6 +253,14 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	HibStringField getString(String key);
 
 	/**
+	 * Return the JSON object field for the given key.
+	 * 
+	 * @param key
+	 * @return
+	 */
+	HibJsonField getJson(String key);
+
+	/**
 	 * Return the binary  field for the given key.
 	 * 
 	 * @param key
@@ -353,6 +363,14 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	 * @return
 	 */
 	HibNumberFieldList getNumberList(String fieldKey);
+
+	/**
+	 * Return JSOB object list.
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
+	HibJsonFieldList getJsonList(String fieldKey);
 
 	/**
 	 * Return node list.
@@ -491,6 +509,14 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	 * @return
 	 */
 	HibDateField createDate(String key);
+
+	/**
+	 * Create a new JSON object field.
+	 * 
+	 * @param key
+	 * @return
+	 */
+	HibJsonField createJson(String key);
 
 	/**
 	 * Create a new node field.
