@@ -494,16 +494,6 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 	}
 
 	/**
-	 * Get the formtype configurations for the project
-	 * @param project project
-	 * @return formtype configs model
-	 */
-	protected FormtypeConfigsModel getFormtypeConfigs(String project) {
-		return call(() -> server.client().get(
-				String.format("/%s/plugins/forms/formtypeconfigs", URIUtils.encodeSegment(project)), FormtypeConfigsModel.class));
-	}
-
-	/**
 	 * Set the formtype configurations for the project
 	 * @param project project
 	 * @param model formtype configs to store

@@ -68,8 +68,7 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 		projectRouter.route("/languages").method(GET).handler(fromComponent(FormsPluginComponent::getLanguagesHandler));
 		projectRouter.route("/languages").method(PUT).handler(fromComponent(FormsPluginComponent::setLanguagesHandler));
 
-		// routes for getting/setting formtype configurations
-		projectRouter.route("/formtypeconfigs").method(GET).handler(fromComponent(FormsPluginComponent::getFormtypeConfigsHandler));
+		// route for setting formtype configurations
 		projectRouter.route("/formtypeconfigs").method(POST).handler(fromComponent(FormsPluginComponent::setFormtypeConfigsHandler));
 
 		// TODO cors
@@ -144,7 +143,7 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 
 	}
 
-	private FormsPluginComponent component(MeshRestClient userClient) {
+	protected FormsPluginComponent component(MeshRestClient userClient) {
 		return DaggerFormsPluginComponent.builder()
 			.adminClient(adminClient())
 			.userClient(userClient)

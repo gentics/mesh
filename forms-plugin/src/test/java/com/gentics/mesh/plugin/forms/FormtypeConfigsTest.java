@@ -16,8 +16,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 /**
- * Integration tests for the formtypeconfigs endpoints:
- * GET  /{project}/plugins/forms/formtypeconfigs
+ * Integration tests for the formtypeconfigs endpoint:
  * POST /{project}/plugins/forms/formtypeconfigs
  */
 public class FormtypeConfigsTest extends AbstractFormsPluginIntegrationTest {
@@ -30,72 +29,57 @@ public class FormtypeConfigsTest extends AbstractFormsPluginIntegrationTest {
 	}
 
 	@Test
-	public void testGetReturnsEmptyObjectInitially() {
-		FormtypeConfigsModel result = getFormtypeConfigs(PROJECT_NAME);
-		assertThat(result).as("Response").isNotNull();
-		assertThat(result.getConfigs()).as("Initially no configs stored").isEmpty();
-	}
-
-	@Test
-	public void testPostAndGet() throws IOException {
-		String body = "{\"poll\":{\"maxChoices\":1},\"generic\":{\"maxElements\":5}}";
-		Response postResponse = client().newCall(new Request.Builder()
-				.url(projectUrl("/formtypeconfigs"))
-				.headers(auth(true))
-				.post(RequestBody.create(MediaType.parse("application/json"), body))
-				.build()).execute();
+	public void testSaveFormtypeConfigs() throws IOException {
+		Response postResponse = setFormtypeConfigs(PROJECT_NAME, buildModel("{\"poll\":{\"maxChoices\":1},\"generic\":{\"maxElements\":5}}"));
 
 		assertThat(postResponse.code()).as("POST status code").isEqualTo(200);
 
 		FormtypeConfigsModel saved = JsonUtil.readValue(postResponse.body().string(), FormtypeConfigsModel.class);
 		assertThat(saved.getConfigs()).as("Saved configs contain both keys").containsKeys("poll", "generic");
-
-		FormtypeConfigsModel loaded = getFormtypeConfigs(PROJECT_NAME);
-		assertThat(loaded.getConfigs()).as("Loaded configs contain both keys").containsKeys("poll", "generic");
-		assertThat(loaded.getConfigs().get("poll").get("maxChoices").asInt()).as("poll.maxChoices").isEqualTo(1);
-		assertThat(loaded.getConfigs().get("generic").get("maxElements").asInt()).as("generic.maxElements").isEqualTo(5);
+		assertThat(saved.getConfigs().get("poll").get("maxChoices").asInt()).as("poll.maxChoices").isEqualTo(1);
+		assertThat(saved.getConfigs().get("generic").get("maxElements").asInt()).as("generic.maxElements").isEqualTo(5);
 	}
 
 	@Test
-	public void testPostOverwritesEntireConfig() throws IOException {
-		// store initial config with two keys
+	public void testSaveOverwritesEntireConfig() throws IOException {
 		setFormtypeConfigs(PROJECT_NAME, buildModel("{\"poll\":{\"maxChoices\":1},\"generic\":{}}"));
 
-		// overwrite with a config containing only one key
 		Response overwriteResponse = setFormtypeConfigs(PROJECT_NAME, buildModel("{\"custom\":{\"someFlag\":true}}"));
 		assertThat(overwriteResponse.code()).as("Overwrite POST status code").isEqualTo(200);
 
-		FormtypeConfigsModel loaded = getFormtypeConfigs(PROJECT_NAME);
-		assertThat(loaded.getConfigs()).as("Only new key present after overwrite").containsOnlyKeys("custom");
-		assertThat(loaded.getConfigs().get("custom").get("someFlag").asBoolean()).as("custom.someFlag").isTrue();
+		FormtypeConfigsModel result = JsonUtil.readValue(overwriteResponse.body().string(), FormtypeConfigsModel.class);
+		assertThat(result.getConfigs()).as("Only new key present after overwrite").containsOnlyKeys("custom");
+		assertThat(result.getConfigs().get("custom").get("someFlag").asBoolean()).as("custom.someFlag").isTrue();
 	}
 
 	@Test
-	public void testPostEmptyObjectClearsConfig() throws IOException {
-		// store something first
+	public void testSaveEmptyConfigClearsExisting() throws IOException {
 		setFormtypeConfigs(PROJECT_NAME, buildModel("{\"poll\":{}}"));
 
-		// clear by posting an empty object
 		Response clearResponse = setFormtypeConfigs(PROJECT_NAME, new FormtypeConfigsModel());
 		assertThat(clearResponse.code()).as("Clear POST status code").isEqualTo(200);
 
-		FormtypeConfigsModel loaded = getFormtypeConfigs(PROJECT_NAME);
-		assertThat(loaded.getConfigs()).as("Configs cleared").isEmpty();
+		FormtypeConfigsModel result = JsonUtil.readValue(clearResponse.body().string(), FormtypeConfigsModel.class);
+		assertThat(result.getConfigs()).as("Configs cleared").isEmpty();
 	}
 
 	@Test
-	public void testGetWithoutPermissionIsForbidden() throws IOException {
-		Response response = client().newCall(new Request.Builder()
-				.url(projectUrl("/formtypeconfigs"))
-				.headers(auth(false))
-				.get()
-				.build()).execute();
-
-		assertForbidden(response);
+	public void testNoConfigStoredInitially() {
+		FormtypeConfigsModel result = FormsTestPlugin.instance.getFormtypeConfigs(PROJECT_NAME, server.client());
+		assertThat(result.getConfigs()).as("No formtypeconfigs stored initially").isEmpty();
 	}
 
 	@Test
-	public void testPostWithoutPermissionIsForbidden() throws IOException {
+	public void testConfigPersistedInRootNode() throws IOException {
+		setFormtypeConfigs(PROJECT_NAME, buildModel("{\"poll\":{\"maxChoices\":1}}"));
+
+		FormtypeConfigsModel result = FormsTestPlugin.instance.getFormtypeConfigs(PROJECT_NAME, server.client());
+		assertThat(result.getConfigs()).as("poll key present").containsKey("poll");
+		assertThat(result.getConfigs().get("poll").get("maxChoices").asInt()).as("poll.maxChoices").isEqualTo(1);
+	}
+
+	@Test
+	public void testSaveRequiresAuthentication() throws IOException {
 		Response response = client().newCall(new Request.Builder()
 				.url(projectUrl("/formtypeconfigs"))
 				.headers(auth(false))

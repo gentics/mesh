@@ -38,7 +38,6 @@ import com.gentics.mesh.plugin.forms.handler.form.RenderFormPreviewHandler;
 import com.gentics.mesh.plugin.forms.handler.form.SetFormOfflineHandler;
 import com.gentics.mesh.plugin.forms.handler.form.SetFormOnlineHandler;
 import com.gentics.mesh.plugin.forms.handler.form.UpsertFormHandler;
-import com.gentics.mesh.plugin.forms.handler.formtypeconfig.GetFormtypeConfigsHandler;
 import com.gentics.mesh.plugin.forms.handler.formtypeconfig.SetFormtypeConfigsHandler;
 import com.gentics.mesh.plugin.forms.handler.status.ActivateHandler;
 import com.gentics.mesh.plugin.forms.handler.status.CheckStatusHandler;
@@ -72,8 +71,6 @@ public interface FormsPluginComponent {
 	GetLanguagesHandler getLanguagesHandler();
 
 	SetLanguagesHandler setLanguagesHandler();
-
-	GetFormtypeConfigsHandler getFormtypeConfigsHandler();
 
 	SetFormtypeConfigsHandler setFormtypeConfigsHandler();
 
