@@ -3,10 +3,10 @@ package com.gentics.mesh.database.connector;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.dialect.HSQLDialect;
 import org.hsqldb.jdbcDriver;
 
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
+import com.gentics.mesh.hibernate.dialect.HSQLJsonAwareDialect;
 
 /**
  * HSQLDB Mesh database connector
@@ -47,8 +47,7 @@ public class HSQLDBConnector extends AbstractDatabaseConnector {
 
 	@Override
 	protected String getDefaultDialectClassName() {
-		// TODO Auto-generated method stub
-		return HSQLDialect.class.getCanonicalName();
+		return HSQLJsonAwareDialect.class.getCanonicalName();
 	}
 
 	@Override

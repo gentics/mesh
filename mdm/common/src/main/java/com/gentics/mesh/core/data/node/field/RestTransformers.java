@@ -6,6 +6,7 @@ import java.util.function.Supplier;
 import com.gentics.mesh.core.data.node.field.list.HibBooleanFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibDateFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibHtmlFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibJsonFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibNodeFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibNumberFieldList;
@@ -22,6 +23,7 @@ import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.HtmlField;
+import com.gentics.mesh.core.rest.node.field.JsonField;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.NumberField;
@@ -32,9 +34,13 @@ import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.JsonFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.LinkType;
+
+import io.vertx.core.json.JsonObject;
 
 public interface RestTransformers {
 
@@ -155,6 +161,38 @@ public interface RestTransformers {
 			return null;
 		} else {
 			return htmlFieldList.transformToRest(ac, fieldKey, languageTags, level);
+		}
+	};
+
+	FieldTransformer<JsonField> JSON_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
+		CommonTx tx = CommonTx.get();
+		WebRootLinkReplacer webRootLinkReplacer = tx.data().mesh().webRootLinkReplacer();
+		HibJsonField sqlJsonField = container.getJson(fieldKey);
+		if (sqlJsonField == null) {
+			return null;
+		} else {
+			JsonField field = sqlJsonField.transformToRest(ac);
+			// If needed resolve links within the JSON
+			if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
+				HibProject project = tx.getProject(ac);
+				if (project == null) {
+					project = parentNode.get().getProject();
+				}
+				field.setJson(new JsonObject(webRootLinkReplacer.replace(ac, tx.getBranch(ac).getUuid(),
+						ContainerType.forVersion(ac.getVersioningParameters().getVersion()), JsonUtil.toJson(field.getJson(), true),
+						ac.getNodeParameters().getResolveLinks(), project.getName(), languageTags)));
+			}
+			return field;
+		}
+	};
+
+	FieldTransformer<JsonFieldListImpl> JSON_LIST_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,
+																			   parentNode) -> {
+		HibJsonFieldList jsonFieldList = container.getJsonList(fieldKey);
+		if (jsonFieldList == null) {
+			return null;
+		} else {
+			return jsonFieldList.transformToRest(ac, fieldKey, languageTags, level);
 		}
 	};
 

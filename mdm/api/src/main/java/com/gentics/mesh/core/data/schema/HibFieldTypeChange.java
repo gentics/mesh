@@ -3,16 +3,16 @@ package com.gentics.mesh.core.data.schema;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
-import java.util.*;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
 import com.gentics.mesh.core.data.node.handler.TypeConverter;
+import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.FieldMap;
-import com.gentics.mesh.core.rest.node.field.*;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.DateField;
@@ -21,6 +21,7 @@ import com.gentics.mesh.core.rest.node.field.HtmlField;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.NumberField;
+import com.gentics.mesh.core.rest.node.field.S3BinaryField;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
@@ -34,7 +35,6 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
-import com.gentics.mesh.core.rest.schema.impl.*;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
@@ -43,6 +43,7 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.S3BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.google.common.collect.ImmutableSet;
 
@@ -318,36 +319,42 @@ public interface HibFieldTypeChange extends HibSchemaFieldChange {
 		Object oldValue = oldField.getValue();
 		String oldType = fieldSchema.getType();
 
-		switch (listType) {
-		case "boolean":
+		switch (FieldTypes.valueByName(listType)) {
+		case BOOLEAN:
 			return typeConverter.toBooleanList(oldValue);
-		case "number":
+		case NUMBER:
 			if (isUuidType(fieldSchema)) {
 				return null;
 			}
-			switch (oldType) {
-			case "number":
+			switch (FieldTypes.valueByName(oldType)) {
+			case NUMBER:
 				return new NumberFieldListImpl().setItems(Collections.singletonList(oldFields.getNumberField(fieldName).getNumber()));
 			default:
 				return typeConverter.toNumberList(oldValue);
 			}
-		case "date":
+		case DATE:
 			return typeConverter.toDateList(oldValue);
-		case "html":
+		case HTML:
 			if (isNonNodeUuidType(fieldSchema)) {
 				return null;
 			} else {
 				return typeConverter.toHtmlList(oldValue);
 			}
-		case "string":
+		case STRING:
 			if (isNonNodeUuidType(fieldSchema)) {
 				return null;
 			} else {
 				return typeConverter.toStringList(oldValue);
 			}
-		case "micronode":
+		case JSON:
+			if (isNonNodeUuidType(fieldSchema)) {
+				return null;
+			} else {
+				return typeConverter.toJsonList(oldValue);
+			}
+		case MICRONODE:
 			return typeConverter.toMicronodeList(oldField);
-		case "node":
+		case NODE:
 			return typeConverter.toNodeList(oldField);
 		default:
 			throw error(BAD_REQUEST, "Unknown list type {" + listType + "} for change " + getUuid());
@@ -367,6 +374,7 @@ public interface HibFieldTypeChange extends HibSchemaFieldChange {
 		}
 	}
 
+	@SuppressWarnings("unused")
 	private <T> FieldList<T> nullableList(T[] input, Supplier<FieldList<T>> output) {
 		if (input == null) {
 			return null;

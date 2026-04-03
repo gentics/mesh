@@ -445,6 +445,14 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	HibNumberFieldList createNumberList(String fieldKey);
 
 	/**
+	 * Create a new JSON object list.
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
+	HibJsonFieldList createJsonList(String fieldKey);
+
+	/**
 	 * Create a new html list.
 	 * 
 	 * @param fieldKey

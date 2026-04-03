@@ -1,17 +1,11 @@
 package com.gentics.mesh.hibernate.type;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.io.StringWriter;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
 
-import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.type.SqlTypes;
 import org.hibernate.usertype.UserType;
@@ -41,39 +35,33 @@ public class JsonObjectType implements UserType<JsonObject> {
 	}
 
 	@Override
+	public Serializable disassemble(JsonObject value) {
+		if (value == null) {
+			return null;
+		}
+		return JsonUtil.toJson(value);
+	}
+
+	@Override
 	public void nullSafeSet(PreparedStatement st, JsonObject value, int index, SharedSessionContractImplementor session) throws SQLException {
 		if (value == null) {
-			st.setNull(index, Types.OTHER);
+			st.setNull(index, SqlTypes.LONGVARCHAR);
 			return;
 		}
 		try {
 			final StringWriter w = new StringWriter();
 			JsonUtil.getMapper().writeValue(w, value);
 			w.flush();
-			st.setObject(index, w.toString(), Types.OTHER);
+			st.setObject(index, w.toString(), SqlTypes.LONGVARCHAR);
 		} catch (final Exception ex) {
-			throw new RuntimeException("Failed to convert MyJson to JsonObject: " + ex.getMessage(), ex);
+			throw new RuntimeException("Failed to convert JsonObject to String: " + ex.getMessage(), ex);
 		}
 	}
 
 	@Override
     public JsonObject deepCopy(JsonObject value) {
-        try {
-            // use serialization to create a deep copy
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(bos);
-            oos.writeObject(value);
-            oos.flush();
-            oos.close();
-            bos.close();
-             
-            ByteArrayInputStream bais = new ByteArrayInputStream(bos.toByteArray());
-            JsonObject obj = (JsonObject)new ObjectInputStream(bais).readObject();
-            bais.close();
-            return obj;
-        } catch (ClassNotFoundException | IOException ex) {
-            throw new HibernateException(ex);
-        }
+		String value1 = JsonUtil.toJson(value);
+        return JsonUtil.readValue(value1, JsonObject.class);
     }
 
 	@Override
