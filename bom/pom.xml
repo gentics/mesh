@@ -17,7 +17,8 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-		<!-- when updating version, don't forget to update administration-guide.asciidoc -->
+		<!-- when updating version, don't forget to update
+		administration-guide.asciidoc -->
 		<graphql.version>21.5</graphql.version>
 		<graphql-scalars.version>21.0</graphql-scalars.version>
 		<graphql-dataloader.version>3.2.2</graphql-dataloader.version>
@@ -49,7 +50,8 @@
 		<micrometer.version>1.15.5</micrometer.version>
 	</properties>
 
-	<!-- IMPORTANT: Always keep dependencies in-sync with mesh-plugin-parent pom in order to avoid duplicate libraries in shaded plugin jars -->
+	<!-- IMPORTANT: Always keep dependencies in-sync with mesh-plugin-parent pom
+	in order to avoid duplicate libraries in shaded plugin jars -->
 	<dependencyManagement>
 		<dependencies>
 			<!-- Logging -->
@@ -183,11 +185,11 @@
 				<exclusions>
 					<exclusion>
 						<groupId>org.slf4j</groupId>
-  						<artifactId>slf4j-api</artifactId>
+						<artifactId>slf4j-api</artifactId>
 					</exclusion>
 					<exclusion>
 						<groupId>org.slf4j</groupId>
-  						<artifactId>jcl-over-slf4j</artifactId>
+						<artifactId>jcl-over-slf4j</artifactId>
 					</exclusion>
 				</exclusions>
 			</dependency>
@@ -198,11 +200,11 @@
 				<exclusions>
 					<exclusion>
 						<groupId>org.slf4j</groupId>
-  						<artifactId>slf4j-api</artifactId>
+						<artifactId>slf4j-api</artifactId>
 					</exclusion>
 					<exclusion>
 						<groupId>org.slf4j</groupId>
-  						<artifactId>jcl-over-slf4j</artifactId>
+						<artifactId>jcl-over-slf4j</artifactId>
 					</exclusion>
 				</exclusions>
 			</dependency>
@@ -283,7 +285,7 @@
 				<version>2.7.1</version>
 			</dependency>
 			<dependency>
-			<groupId>org.testcontainers</groupId>
+				<groupId>org.testcontainers</groupId>
 				<artifactId>testcontainers</artifactId>
 				<version>${testcontainers.version}</version>
 			</dependency>
@@ -379,6 +381,11 @@
 			<dependency>
 				<groupId>io.vertx</groupId>
 				<artifactId>vertx-hazelcast</artifactId>
+				<version>${vertx.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.vertx</groupId>
+				<artifactId>vertx-json-schema</artifactId>
 				<version>${vertx.version}</version>
 			</dependency>
 			<dependency>
@@ -808,9 +815,9 @@
 				<version>3.2.0</version>
 			</dependency>
 			<dependency>
-			    <groupId>jakarta.persistence</groupId>
-			    <artifactId>jakarta.persistence-api</artifactId>
-			    <version>3.2.0</version>
+				<groupId>jakarta.persistence</groupId>
+				<artifactId>jakarta.persistence-api</artifactId>
+				<version>3.2.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.squareup.inject</groupId>
@@ -833,9 +840,9 @@
 				<version>${hazelcast-hibernate.version}</version>
 			</dependency>
 			<dependency>
-			      <groupId>org.hibernate.orm</groupId>
-			      <artifactId>hibernate-jcache</artifactId>
-			      <version>${hibernate.version}</version>
+				<groupId>org.hibernate.orm</groupId>
+				<artifactId>hibernate-jcache</artifactId>
+				<version>${hibernate.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hibernate.orm</groupId>

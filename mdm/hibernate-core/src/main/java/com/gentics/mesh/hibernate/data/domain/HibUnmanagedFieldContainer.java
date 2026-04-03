@@ -36,6 +36,7 @@ import com.gentics.mesh.core.data.node.field.HibStringField;
 import com.gentics.mesh.core.data.node.field.list.HibBooleanFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibDateFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibHtmlFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibJsonFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibNodeFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibNumberFieldList;
@@ -474,6 +475,14 @@ public interface HibUnmanagedFieldContainer<
 		ensureColumnExists(key, FieldTypes.LIST);
 		ensureOldReferenceRemoved(tx, key, this::getNumberList, false);
 		return HibNumberListFieldImpl.fromContainer(tx, this, key, Collections.emptyList());
+	}
+
+	@Override
+	default HibJsonFieldList createJsonList(String key) {
+		HibernateTx tx = HibernateTx.get();
+		ensureColumnExists(key, FieldTypes.LIST);
+		ensureOldReferenceRemoved(tx, key, this::getJsonList, false);
+		return HibJsonListFieldImpl.fromContainer(tx, this, key, Collections.emptyList());
 	}
 
 	@Override

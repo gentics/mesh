@@ -34,6 +34,8 @@ public interface FieldSchemaCreator {
 	public final static FieldSchemaCreator CREATENUMBERLIST = name -> FieldUtil.createListFieldSchema(name, "number");
 	public final static FieldSchemaCreator CREATESTRING = name -> FieldUtil.createStringFieldSchema(name);
 	public final static FieldSchemaCreator CREATESTRINGLIST = name -> FieldUtil.createListFieldSchema(name, "string");
+	public final static FieldSchemaCreator CREATEJSON = name -> FieldUtil.createJsonFieldSchema(name);
+	public final static FieldSchemaCreator CREATEJSONLIST = name -> FieldUtil.createListFieldSchema(name, "json");
 
 	FieldSchema create(String name);
 }

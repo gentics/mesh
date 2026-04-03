@@ -1,0 +1,36 @@
+{
+	jsonContains: nodes(filter: {
+	    schema: {is: content}
+	    fields: {
+	      content: {
+	        json:{contains: "Mickey"}
+	      }
+	    }
+	  }) {
+	    # [$.data.jsonContains.elements.length()=1]
+	    elements {
+	      uuid
+	      schema {
+	        json
+	      }	      
+	    }
+	}
+	
+	jsonSchema: nodes(filter: {
+	    schema: {is: content}
+	    fields: {
+	      content: {
+	        json:{hasSchema: "{'firstName':'text','lastName':'text'}"}
+	      }
+	    }
+	  }) {
+	    # [$.data.nameRegex.elements.length()=2]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }	      
+	    }
+	}
+}
+# [$.errors=<is-undefined>]

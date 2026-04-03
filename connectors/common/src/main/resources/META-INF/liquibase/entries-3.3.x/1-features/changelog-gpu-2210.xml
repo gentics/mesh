@@ -1,0 +1,45 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+	xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.6.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd">
+
+	<property name="json.type" value="NCLOB" dbms="oracle"/>
+	<property name="json.type" value="JSON" dbms="mariadb,mysql"/>
+    <property name="json.type" value="TEXT" dbms="postgresql,hsqldb"/>
+    <property name="json.type" value="NTEXT" dbms="mssql"/>
+
+	    <changeSet author="s.plyhun@gentics.com" id="gpu-2210-1">
+        <createTable tableName="mesh_jsonlistitem">
+            <column name="dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_jsonlistitem_pkey"/>
+            </column>
+            <column name="containertype" type="${smalltext.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="containeruuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="containerversionuuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fieldkey" type="${fieldkey.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="valueoruuid" type="${largetext.type}"/>
+            <column name="itemindex" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="listuuid" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex tableName="mesh_jsonlistitem" indexName="idx_mesh_jsonlistitem_containeruuid_containertype_fieldkey" clustered="false">
+			<column name="containeruuid" />
+			<column name="containertype" />
+			<column name="fieldkey" />
+		</createIndex>
+    </changeSet>
+</databaseChangeLog>

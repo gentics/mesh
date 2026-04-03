@@ -12,6 +12,7 @@ import java.util.function.Supplier;
 
 import com.gentics.mesh.core.data.node.handler.TypeConverter;
 import com.gentics.mesh.core.rest.common.FieldContainer;
+import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.*;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
@@ -318,36 +319,42 @@ public interface HibFieldTypeChange extends HibSchemaFieldChange {
 		Object oldValue = oldField.getValue();
 		String oldType = fieldSchema.getType();
 
-		switch (listType) {
-		case "boolean":
+		switch (FieldTypes.valueByName(listType)) {
+		case BOOLEAN:
 			return typeConverter.toBooleanList(oldValue);
-		case "number":
+		case NUMBER:
 			if (isUuidType(fieldSchema)) {
 				return null;
 			}
-			switch (oldType) {
-			case "number":
+			switch (FieldTypes.valueByName(oldType)) {
+			case NUMBER:
 				return new NumberFieldListImpl().setItems(Collections.singletonList(oldContent.getFields().getNumberField(fieldName).getNumber()));
 			default:
 				return typeConverter.toNumberList(oldValue);
 			}
-		case "date":
+		case DATE:
 			return typeConverter.toDateList(oldValue);
-		case "html":
+		case HTML:
 			if (isNonNodeUuidType(fieldSchema)) {
 				return null;
 			} else {
 				return typeConverter.toHtmlList(oldValue);
 			}
-		case "string":
+		case STRING:
 			if (isNonNodeUuidType(fieldSchema)) {
 				return null;
 			} else {
 				return typeConverter.toStringList(oldValue);
 			}
-		case "micronode":
+		case JSON:
+			if (isNonNodeUuidType(fieldSchema)) {
+				return null;
+			} else {
+				return typeConverter.toJsonList(oldValue);
+			}
+		case MICRONODE:
 			return typeConverter.toMicronodeList(oldField);
-		case "node":
+		case NODE:
 			return typeConverter.toNodeList(oldField);
 		default:
 			throw error(BAD_REQUEST, "Unknown list type {" + listType + "} for change " + getUuid());
@@ -367,6 +374,7 @@ public interface HibFieldTypeChange extends HibSchemaFieldChange {
 		}
 	}
 
+	@SuppressWarnings("unused")
 	private <T> FieldList<T> nullableList(T[] input, Supplier<FieldList<T>> output) {
 		if (input == null) {
 			return null;

@@ -10,10 +10,12 @@ import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.hikaricp.internal.HikariCPConnectionProvider;
 import org.hibernate.jpa.boot.spi.IntegratorProvider;
 import org.hibernate.jpa.boot.spi.JpaSettings;
+import org.hibernate.type.format.jackson.JacksonJsonFormatMapper;
 
 import com.gentics.mesh.database.connector.DatabaseConnector;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.hibernate.ContentInterceptor;
+import com.gentics.mesh.json.JsonUtil;
 import com.google.common.collect.ImmutableMap;
 import com.hazelcast.hibernate.HazelcastLocalCacheRegionFactory;
 
@@ -117,6 +119,7 @@ public class DefaultSQLDatabase implements DatabaseProvider {
 			.put(AvailableSettings.ORDER_UPDATES, "true")
 			.put(AvailableSettings.PHYSICAL_NAMING_STRATEGY, databaseConnector.getPhysicalNamingStrategyClass().getCanonicalName())
 			.put(AvailableSettings.INTERCEPTOR, ContentInterceptor.class.getName())
+			.put(AvailableSettings.JSON_FORMAT_MAPPER, new JacksonJsonFormatMapper(JsonUtil.getMapper()))
 			.put(JpaSettings.INTEGRATOR_PROVIDER, (IntegratorProvider) () -> Collections.singletonList(databaseConnector.getSessionMetadataIntegrator()))
 			// don't save timezones in the dates for backwards compatibility
 			.put(AvailableSettings.PREFERRED_INSTANT_JDBC_TYPE, "TIMESTAMP");
