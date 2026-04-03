@@ -17,25 +17,21 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.graphqlfilter.filter.FilterField;
 import com.gentics.graphqlfilter.filter.MainFilter;
 import com.gentics.graphqlfilter.filter.operation.Comparison;
-import com.gentics.mesh.json.JsonUtil;
-import com.github.fge.jsonschema.core.exceptions.ProcessingException;
-import com.github.fge.jsonschema.main.JsonSchemaFactory;
-import com.github.fge.jsonschema.main.JsonValidator;
 
 import graphql.schema.GraphQLList;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
+import io.vertx.json.schema.JsonSchemaOptions;
+import io.vertx.reactivex.json.schema.JsonSchema;
+import io.vertx.reactivex.json.schema.Validator;
 
 public class JsonFilter extends MainFilter<JsonObject> {
 
 	private static final Logger log = LoggerFactory.getLogger(JsonFilter.class);
 
-	private static final JsonValidator validator = JsonSchemaFactory.byDefault().getValidator();
 	private static JsonFilter instance;
 
 	/**
@@ -66,7 +62,7 @@ public class JsonFilter extends MainFilter<JsonObject> {
 				this::oneOf, 
 				Optional.of(query -> Comparison.in(query.makeFieldOperand(Optional.empty()), query.makeValueOperand(true, JsonFilter::parseJsons), query.getInitiatingFilterName()))),
 			FilterField.create("hasSchema", "Tests if the object has the given JSON schema.", GraphQLString, objectSchemaPredicate(),
-				Optional.of(query -> Comparison.gt(query.makeFieldOperand(Optional.empty()), query.makeValueOperand(true, JsonFilter::parseJson), query.getInitiatingFilterName()))));
+				Optional.empty()));
 	}
 
 	private Function<String, Predicate<JsonObject>> objectValuePredicate(BiPredicate<JsonObject, JsonObject> predicate) {
@@ -78,21 +74,9 @@ public class JsonFilter extends MainFilter<JsonObject> {
 
 	private Function<String, Predicate<JsonObject>> objectSchemaPredicate() {
 		return query -> {
-			JsonNode schema;
-			try {
-				schema = JsonUtil.getMapper().readTree(query);
-			} catch (Throwable e) {
-				log.error("The provided input cannot be parsed to a JSON node: " + query, e);
-				return unused -> false;
-			}
-			return nullablePredicate(object -> {
-				try {
-					return validator.validate(schema, JsonUtil.getMapper().readTree(object.encode())).isSuccess();
-				} catch (JsonProcessingException | ProcessingException e) {
-					log.error("The object cannot be validated against JSON schema:\n\tschema: " + query + "\n\tobject: " + object, e);
-					return false;
-				}
-			});
+			JsonSchema schema = JsonSchema.of(new JsonObject(query));
+			Validator validator = Validator.create(schema, new JsonSchemaOptions());
+			return nullablePredicate(object -> validator.validate(object).getValid() == Boolean.TRUE);
 		};
 	}
 

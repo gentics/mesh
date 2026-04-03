@@ -7,6 +7,8 @@ import static com.gentics.mesh.core.data.node.field.RestGetters.DATE_GETTER;
 import static com.gentics.mesh.core.data.node.field.RestGetters.DATE_LIST_GETTER;
 import static com.gentics.mesh.core.data.node.field.RestGetters.HTML_GETTER;
 import static com.gentics.mesh.core.data.node.field.RestGetters.HTML_LIST_GETTER;
+import static com.gentics.mesh.core.data.node.field.RestGetters.JSON_GETTER;
+import static com.gentics.mesh.core.data.node.field.RestGetters.JSON_LIST_GETTER;
 import static com.gentics.mesh.core.data.node.field.RestGetters.MICRONODE_GETTER;
 import static com.gentics.mesh.core.data.node.field.RestGetters.MICRONODE_LIST_GETTER;
 import static com.gentics.mesh.core.data.node.field.RestGetters.NODE_GETTER;
@@ -23,6 +25,8 @@ import static com.gentics.mesh.core.data.node.field.RestTransformers.DATE_LIST_T
 import static com.gentics.mesh.core.data.node.field.RestTransformers.DATE_TRANSFORMER;
 import static com.gentics.mesh.core.data.node.field.RestTransformers.HTML_LIST_TRANSFORMER;
 import static com.gentics.mesh.core.data.node.field.RestTransformers.HTML_TRANSFORMER;
+import static com.gentics.mesh.core.data.node.field.RestTransformers.JSON_LIST_TRANSFORMER;
+import static com.gentics.mesh.core.data.node.field.RestTransformers.JSON_TRANSFORMER;
 import static com.gentics.mesh.core.data.node.field.RestTransformers.MICRONODE_LIST_TRANSFORMER;
 import static com.gentics.mesh.core.data.node.field.RestTransformers.MICRONODE_TRANSFORMER;
 import static com.gentics.mesh.core.data.node.field.RestTransformers.NODE_LIST_TRANSFORMER;
@@ -39,6 +43,8 @@ import static com.gentics.mesh.core.data.node.field.RestUpdaters.DATE_LIST_UPDAT
 import static com.gentics.mesh.core.data.node.field.RestUpdaters.DATE_UPDATER;
 import static com.gentics.mesh.core.data.node.field.RestUpdaters.HTML_LIST_UPDATER;
 import static com.gentics.mesh.core.data.node.field.RestUpdaters.HTML_UPDATER;
+import static com.gentics.mesh.core.data.node.field.RestUpdaters.JSON_LIST_UPDATER;
+import static com.gentics.mesh.core.data.node.field.RestUpdaters.JSON_UPDATER;
 import static com.gentics.mesh.core.data.node.field.RestUpdaters.MICRONODE_LIST_UPDATER;
 import static com.gentics.mesh.core.data.node.field.RestUpdaters.MICRONODE_UPDATER;
 import static com.gentics.mesh.core.data.node.field.RestUpdaters.NODE_LIST_UPDATER;
@@ -83,6 +89,8 @@ public enum HibFieldTypes {
 	BOOLEAN_LIST("list.boolean", BOOLEAN_LIST_TRANSFORMER, BOOLEAN_LIST_UPDATER, BOOLEAN_LIST_GETTER),
 	HTML("html", HTML_TRANSFORMER, HTML_UPDATER, HTML_GETTER),
 	HTML_LIST("list.html", HTML_LIST_TRANSFORMER, HTML_LIST_UPDATER, HTML_LIST_GETTER),
+	JSON("json", JSON_TRANSFORMER, JSON_UPDATER, JSON_GETTER),
+	JSON_LIST("list.json", JSON_LIST_TRANSFORMER, JSON_LIST_UPDATER, JSON_LIST_GETTER),
 	MICRONODE("micronode", MICRONODE_TRANSFORMER, MICRONODE_UPDATER, MICRONODE_GETTER),
 	MICRONODE_LIST("list.micronode", MICRONODE_LIST_TRANSFORMER, MICRONODE_LIST_UPDATER, MICRONODE_LIST_GETTER),
 	NODE("node", NODE_TRANSFORMER, NODE_UPDATER, NODE_GETTER),

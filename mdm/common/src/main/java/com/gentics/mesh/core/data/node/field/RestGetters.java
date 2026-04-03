@@ -22,6 +22,10 @@ public class RestGetters {
 
 	public static FieldGetter HTML_LIST_GETTER = (container, fieldSchema) -> container.getHTMLList(fieldSchema.getName());
 
+	public static FieldGetter JSON_GETTER = (container, fieldSchema) -> container.getJson(fieldSchema.getName());
+
+	public static FieldGetter JSON_LIST_GETTER = (container, fieldSchema) -> container.getJsonList(fieldSchema.getName());
+
 	public static FieldGetter MICRONODE_GETTER = (container, fieldSchema) -> container.getMicronode(fieldSchema.getName());
 
 	public static FieldGetter MICRONODE_LIST_GETTER = (container, fieldSchema) -> container.getMicronodeList(fieldSchema.getName());

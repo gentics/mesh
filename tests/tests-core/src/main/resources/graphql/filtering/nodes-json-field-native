@@ -1,0 +1,214 @@
+{
+	jsonEqualsMickeyMouse: nodes(filter: {
+		schema: {is: content}
+		fields: {
+			content: {
+				json: {equals: "{'firstName':'Mickey','lastName':'Mouse'}"}
+			}
+		}
+	}) {
+		# [$.data.jsonEqualsMickeyMouse.elements.length()=1]
+		elements {
+	      	...output
+		}
+	}
+	notNameEqualsMickeyMouse: nodes(filter: {
+		schema: {is: content}
+		not: {
+			fields: {
+				content: {
+					json: {equals: "{'firstName':'Mickey','lastName':'Mouse'}"}
+				}
+			}
+		}
+	}) {
+		# [$.data.notNameEqualsMickeyMouse.elements.length()=8]
+		elements {
+			...output
+		}
+	}
+	jsonContainsMouse: nodes(filter: {
+		schema: {is: content}
+		fields: {
+			content: {
+				json: {like: "%Mouse%"}
+			}
+		}
+	}) {
+		# [$.data.jsonContainsMouse.elements.length()=1]
+		elements {
+			...output
+		}
+	}
+	notNameContainsMouse: nodes(filter: {
+		schema: {is: content}
+		not: {
+			fields: {
+				content: {
+					json: {like: "%Mouse%"}
+				}
+			}
+		}
+	}) {
+		# [$.data.notNameContainsMouse.elements.length()=8]
+		elements {
+			...output
+		}
+	}
+	jsonNotEqualsMickeyMouse: nodes(filter: {
+		schema: {is: content}
+		fields: {
+			content: {
+				json: {notEquals: "{'firstName':'Mickey','lastName':'Mouse'}" isNull: false}
+			}
+		}
+	}) {
+		# [$.data.jsonNotEqualsMickeyMouse.elements.length()=5]
+		elements {
+			...output
+		}
+	}
+	notNameNotEqualsMickeyMouse: nodes(filter: {
+		schema: {is: content}
+		not: {
+			fields: {
+				content: {
+					json: {notEquals: "{'firstName':'Mickey','lastName':'Mouse'}" isNull: false}
+				}
+			}
+		}
+	}) {
+		# [$.data.notNameNotEqualsMickeyMouse.elements.length()=4]
+		elements {
+			...output
+		}
+	}
+	jsonNotEqualsMickeyMouseWithNull: nodes(filter: {
+		schema: {is: content}
+		fields: {
+			content: {
+				json: {notEquals: "{'firstName':'Mickey','lastName':'Mouse'}"}
+			}
+		}
+	}) {
+		# [$.data.jsonNotEqualsMickeyMouseWithNull.elements.length()=8]
+		elements {
+			...output
+		}
+	}
+	notNameNotEqualsMickeyMouseWithNull: nodes(filter: {
+		schema: {is: content}
+		not: {
+			fields: {
+				content: {
+					json: {notEquals: "{'firstName':'Mickey','lastName':'Mouse'}"}
+				}
+			}
+		}
+	}) {
+		# [$.data.notNameNotEqualsMickeyMouseWithNull.elements.length()=1]
+		elements {
+			...output
+		}
+	}
+	jsonOneOf: nodes(filter: {
+		schema: {is: content}
+		fields: {
+			content: {
+				json:{oneOf: ["{'firstName':'Mickey','lastName':'Mouse'}"]}
+			}
+		}
+	}) {
+		# [$.data.jsonOneOf.elements.length()=1]
+		elements {
+			...output
+		}
+	}
+	notNameOneOf: nodes(filter: {
+		schema: {is: content}
+		not: {
+			fields: {
+				content: {
+					json:{oneOf: ["{'firstName':'Mickey','lastName':'Mouse'}"]}
+				}
+			}
+		}
+	}) {
+		# [$.data.notNameOneOf.elements.length()=6]
+		elements {
+			...output
+		}
+	}
+	jsonIsNotNull: nodes(filter: {
+		schema: {is: content}
+		fields: {
+			content: {
+				json: {isNull: false}
+			}
+		}
+	}) {
+		# [$.data.jsonIsNotNull.elements.length()=6]
+		elements {
+			...output
+		}
+	}
+	notNameIsNotNull: nodes(filter: {
+		schema: {is: content}
+		not: {
+			fields: {
+				content: {
+					json: {isNull: false}
+				}
+			}
+		}
+	}) {
+		# [$.data.notNameIsNotNull.elements.length()=3]
+		elements {
+			...output
+		}
+	}
+	jsonIsNull: nodes(filter: {
+		schema: {is: content}
+		fields: {
+			content: {
+				json: {isNull: true}
+			}
+		}
+	}) {
+		# [$.data.jsonIsNull.elements.length()=3]
+		elements {
+			...output
+		}
+	}
+	notNameIsNull: nodes(filter: {
+		schema: {is: content}
+		fields: {
+			content: {
+				json: {isNull: true}
+			}
+		}
+	}) {
+		# [$.data.notNameIsNull.elements.length()=3]
+		elements {
+			...output
+		}
+	}
+	jsonIsNotUUID: nodes(filter: {
+		schema: {is: content}
+		fields: {
+			content: {
+				json: {notEquals: "b660375495454667b34e385ab6fa7e4c"}
+			}
+		}
+	}) {
+		# [$.data.jsonIsNotUUID.elements.length()=9]
+		elements {
+			...output
+		}
+	}
+}
+# [$.errors=<is-undefined>]
+
+fragment output on Node {
+	uuid
+}

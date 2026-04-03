@@ -37,6 +37,7 @@ import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
 import org.hibernate.query.Query;
 import org.hibernate.query.internal.QueryOptionsImpl;
 import org.hibernate.query.spi.Limit;
+import org.hibernate.type.SqlTypes;
 import org.hibernate.type.spi.TypeConfiguration;
 import org.slf4j.Logger;
 
@@ -388,7 +389,7 @@ public abstract class AbstractDatabaseConnector implements DatabaseConnector {
 		switch (type) {
 			case JSON:
 				return typeConfig.getDdlTypeRegistry().getTypeName(
-								Types.OTHER, 
+								SqlTypes.JSON, 
 								new Size(getSqlTypePrecision(type), getSqlTypeScale(type), getSqlTypeLength(type)), 
 								typeConfig.getBasicTypeForJavaType(JsonObject.class));
 			case STRING:

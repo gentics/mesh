@@ -28,7 +28,11 @@
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-plugin-api</artifactId>
 		</dependency>
-	
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-json-schema</artifactId>
+		</dependency>
+
 		<!-- Dagger -->
 		<dependency>
 			<groupId>com.google.dagger</groupId>

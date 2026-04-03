@@ -27,9 +27,11 @@ import com.gentics.mesh.etc.config.hibernate.HibernateCacheConfig;
 import com.gentics.mesh.hibernate.data.domain.AbstractHibListFieldEdgeImpl;
 import com.gentics.mesh.hibernate.data.domain.HibDateListFieldEdgeImpl;
 import com.gentics.mesh.hibernate.data.domain.HibHtmlListFieldEdgeImpl;
+import com.gentics.mesh.hibernate.data.domain.HibJsonListFieldEdgeImpl;
 import com.gentics.mesh.hibernate.data.domain.HibNumberListFieldEdgeImpl;
 import com.gentics.mesh.hibernate.data.domain.HibStringListFieldEdgeImpl;
 import com.gentics.mesh.hibernate.util.StringScale;
+import com.gentics.mesh.json.JsonUtil;
 
 import io.reactivex.Flowable;
 
@@ -80,7 +82,9 @@ public class ListableFieldCacheImpl extends AbstractMeshCache<UUID, List<? exten
 			return 0;
 		}
 		int w;
-		if (list.get(0) instanceof HibStringListFieldEdgeImpl) {
+		if (list.get(0) instanceof HibJsonListFieldEdgeImpl) {
+			w = list.stream().map(HibJsonListFieldEdgeImpl.class::cast).map(HibJsonListFieldEdgeImpl::getJson).map(JsonUtil::toJson).filter(Objects::nonNull).map(StringScale::getWeight).reduce(0, Integer::sum);
+		} else if (list.get(0) instanceof HibStringListFieldEdgeImpl) {
 			w = list.stream().map(HibStringListFieldEdgeImpl.class::cast).map(HibStringListFieldEdgeImpl::getString).filter(Objects::nonNull).map(StringScale::getWeight).reduce(0, Integer::sum);
 		} else if (list.get(0) instanceof HibHtmlListFieldEdgeImpl) {
 			w = list.stream().map(HibHtmlListFieldEdgeImpl.class::cast).map(HibHtmlListFieldEdgeImpl::getHTML).filter(Objects::nonNull).map(StringScale::getWeight).reduce(0, Integer::sum);

@@ -111,6 +111,7 @@ import com.gentics.mesh.hibernate.data.node.field.impl.AbstractReferenceHibField
 import com.gentics.mesh.hibernate.data.node.field.impl.HibBooleanListFieldImpl;
 import com.gentics.mesh.hibernate.data.node.field.impl.HibDateListFieldImpl;
 import com.gentics.mesh.hibernate.data.node.field.impl.HibHtmlListFieldImpl;
+import com.gentics.mesh.hibernate.data.node.field.impl.HibJsonListFieldImpl;
 import com.gentics.mesh.hibernate.data.node.field.impl.HibMicronodeFieldImpl;
 import com.gentics.mesh.hibernate.data.node.field.impl.HibMicronodeListFieldImpl;
 import com.gentics.mesh.hibernate.data.node.field.impl.HibNumberListFieldImpl;
@@ -1820,6 +1821,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 		getNumberListFieldValues(getListFieldListUuids(containers, HibNumberListFieldImpl.class));
 		getHtmlListFieldValues(getListFieldListUuids(containers, HibHtmlListFieldImpl.class));
 		getStringListFieldValues(getListFieldListUuids(containers, HibStringListFieldImpl.class));
+		getJsonListFieldValues(getListFieldListUuids(containers, HibJsonListFieldImpl.class));
 		getMicronodeListFieldValues(getListFieldListUuids(containers, HibMicronodeListFieldImpl.class));
 	}
 

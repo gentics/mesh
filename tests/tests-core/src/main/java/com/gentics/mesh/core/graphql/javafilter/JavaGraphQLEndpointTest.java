@@ -37,6 +37,7 @@ public class JavaGraphQLEndpointTest extends GraphQLEndpointTest {
 				Arrays.asList("filtering/roles-java", true, false, "draft"),
 				Arrays.asList("filtering/nodes-string-field-java", true, false, "draft"),
 				Arrays.asList("filtering/nodes-number-field-java", true, false, "draft"),
+				Arrays.asList("filtering/nodes-json-field-java", true, false, "draft"),
 				Arrays.asList("filtering/nodes-nodereferences-java", true, false, "draft")
 			);
 	}

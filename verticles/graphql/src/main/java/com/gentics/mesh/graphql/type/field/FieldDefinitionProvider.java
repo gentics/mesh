@@ -14,7 +14,6 @@ import static graphql.scalars.java.JavaPrimitives.GraphQLLong;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -35,7 +34,6 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.dataloader.BatchLoaderWithContext;
@@ -72,6 +70,7 @@ import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.link.WebRootLinkReplacerImpl;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
@@ -85,7 +84,6 @@ import com.gentics.mesh.graphql.filter.NodeFilter;
 import com.gentics.mesh.graphql.type.AbstractTypeProvider;
 import com.gentics.mesh.graphql.type.NodeTypeProvider;
 import com.gentics.mesh.parameter.LinkType;
-import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.util.DateUtils;
 import com.google.common.base.Functions;
 
@@ -870,20 +868,19 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	}
 
 	private GraphQLType getElementTypeOfList(ListFieldSchema schema) {
-		switch (schema.getListType()) {
-		case "boolean":
+		switch (FieldTypes.valueByName(schema.getListType())) {
+		case BOOLEAN:
 			return GraphQLBoolean;
-		case "html":
+		case DATE:
+		case JSON:
+		case HTML:
+		case STRING:
 			return GraphQLString;
-		case "string":
-			return GraphQLString;
-		case "number":
+		case NUMBER:
 			return GraphQLBigDecimal;
-		case "date":
-			return GraphQLString;
-		case "node":
+		case NODE:
 			return new GraphQLTypeReference(NODE_TYPE_NAME);
-		case "micronode":
+		case MICRONODE:
 			return new GraphQLTypeReference(MICRONODE_TYPE_NAME);
 		default:
 			return null;

@@ -6,6 +6,8 @@ import java.util.UUID;
 
 public class ContentFieldKey extends ContentKey {
 
+	private static final long serialVersionUID = 5266850877996936062L;
+
 	private final String fieldKey;
 
 	public ContentFieldKey(UUID contentUuid, UUID schemaVersionUuid, ReferenceType type, String fieldKey) {

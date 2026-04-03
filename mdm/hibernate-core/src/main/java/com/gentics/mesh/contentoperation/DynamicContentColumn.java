@@ -13,6 +13,8 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.hibernate.data.node.field.impl.HibNumberFieldImpl;
 import com.gentics.mesh.util.DateUtils;
 
+import io.vertx.core.json.JsonObject;
+
 /**
  * A dynamic content column, that is, a column that is not common to all the content table, but is rather
  * specific for the content schema.
@@ -53,6 +55,7 @@ public class DynamicContentColumn implements ContentColumn, Serializable {
 	public Class<?> getJavaClass() {
 		switch (fieldType) {
 			case JSON:
+				return JsonObject.class;
 			case STRING:
 			case HTML:
 				return String.class;
