@@ -3,8 +3,8 @@
 	    schema: {is: folder}
 	    fields: {
 	      folder: {
-	        stringList: {
-	          anyMatch: {equals: "{'firstName':'Minnie','lastName':'Mouse'}"}
+	        jsonList: {
+	          anyMatch: {equals: "{\"firstName\":\"Minnie\",\"lastName\":\"Mouse\"}"}
 	        }
 	      }
 	    }
@@ -21,8 +21,8 @@
 	    schema: {is: folder}
 	    fields: {
 	      folder: {
-	        stringList: {
-	          allMatch: {equals: "{'firstName':'Minnie','lastName':'Mouse'}"}
+	        jsonList: {
+	          allMatch: {equals: "{\"firstName\":\"Minnie\",\"lastName\":\"Mouse\"}"}
 	        }
 	      }
 	    }
@@ -39,13 +39,13 @@
 	    schema: {is: folder}
 	    fields: {
 	      folder: {
-	        stringList: {
-	          noneMatch: {equals: "{'firstName':'Darkwing','lastName':'Duck'}"} isNull:false
+	        jsonList: {
+	          noneMatch: {equals: "{\"firstName\":\"Darkwing\",\"lastName\":\"Duck\"}"} isNull:false
 	        }
 	      }
 	    }
 	  }) {
-	    # [$.data.noneMatch.elements.length()=2]
+	    # [$.data.noneMatch.elements.length()=1]
 	    elements {
 	      uuid
 	      schema {
@@ -57,13 +57,13 @@
 	    schema: {is: folder}
 	    fields: {
 	      folder: {
-	        stringList: {
-	          anyNotMatch: {equals: "{'firstName':'Darkwing','lastName':'Duck'}"}
+	        jsonList: {
+	          anyNotMatch: {equals: "{\"firstName\":\"Darkwing\",\"lastName\":\"Duck\"}"}
 	        }
 	      }
 	    }
 	  }) {
-	    # [$.data.anyNotMatch.elements.length()=2]
+	    # [$.data.anyNotMatch.elements.length()=1]
 	    elements {
 	      uuid
 	      schema {
@@ -75,7 +75,7 @@
 	    schema: {is: folder}
 	    fields: {
 	      folder: {
-	      	stringList: {
+	      	jsonList: {
 		      count: {gte: 0}
 		    }
 	      }
