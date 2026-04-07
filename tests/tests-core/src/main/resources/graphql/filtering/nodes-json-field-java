@@ -1,8 +1,8 @@
 {
 	jsonContains: nodes(filter: {
-	    schema: {is: content}
+	    schema: {is: folder}
 	    fields: {
-	      content: {
+	      folder: {
 	        json:{contains: "Mickey"}
 	      }
 	    }
@@ -11,20 +11,54 @@
 	    elements {
 	      uuid
 	      schema {
-	        json
+	        name
 	      }	      
 	    }
 	}
 	
 	jsonSchema: nodes(filter: {
-	    schema: {is: content}
+	    schema: {is: folder}
 	    fields: {
-	      content: {
-	        json:{hasSchema: "{'firstName':'text','lastName':'text'}"}
+	      folder: {
+	        json:{hasSchema: "{\"type\":\"object\",\"properties\":{\"firstName\":{\"type\":\"string\"},\"lastName\":{\"type\":\"string\"}},\"required\":[\"firstName\",\"lastName\"]}"}
 	      }
 	    }
 	  }) {
-	    # [$.data.nameRegex.elements.length()=2]
+	    # [$.data.jsonSchema.elements.length()=1]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }	      
+	    }
+	}
+	
+	noJsonSchema: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        json:{hasSchema: "{\"type\":\"object\",\"properties\":{\"whatever\":{\"type\":\"string\"},\"whenever\":{\"type\":\"string\"}},\"required\":[\"whatever\",\"whenever\"]}"}
+	      }
+	    }
+	  }) {
+	    # [$.data.noJsonSchema.elements.length()=0]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }	      
+	    }
+	}
+	
+	incompleteJsonSchema: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        json:{hasSchema: "{\"type\":\"object\",\"properties\":{\"firstName\":{\"type\":\"string\"},\"lastName\":{\"type\":\"string\"},\"middleName\":{\"type\":\"string\"}},\"required\":[\"firstName\",\"lastName\",\"middleName\"]}"}
+	      }
+	    }
+	  }) {
+	    # [$.data.incompleteJsonSchema.elements.length()=0]
 	    elements {
 	      uuid
 	      schema {

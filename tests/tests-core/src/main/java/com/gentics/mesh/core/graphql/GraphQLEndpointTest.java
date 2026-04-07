@@ -437,8 +437,8 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 				// json
 				container.createJson("json").setJson(new JsonObject("""
 						{
-								"firstName": "Donald",
-								"lastName": "Duck"
+								"firstName": "Mickey",
+								"lastName": "Mouse"
 						}
 				"""));
 
@@ -545,8 +545,8 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 					secondMicronode.createNode("nodeRef", content());
 					secondMicronode.createJson("json").setJson(new JsonObject("""
 							{
-									"firstName":"Mickey", 
-									"lastName": "Mouse"
+									"firstName":"Donald", 
+									"lastName": "Duck"
 							}
 					"""));
 					micrnodeNodeList = secondMicronode.createNodeList("nodeList");
