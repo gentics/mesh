@@ -20,7 +20,7 @@ public class SQLServerDatabaseContainer extends PreparingDatabaseContainer<SQLSe
 	 * Create an instance
 	 */
 	public SQLServerDatabaseContainer() {
-		super("mcr.microsoft.com/mssql/server:2022-latest");
+		super("mcr.microsoft.com/mssql/server:2025-latest");
 	}
 
 	@Override

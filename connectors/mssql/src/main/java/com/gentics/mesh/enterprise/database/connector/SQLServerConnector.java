@@ -67,4 +67,27 @@ public class SQLServerConnector extends AbstractEnterpriseDatabaseConnector {
 	protected String getDefaultDialectClassName() {
 		return SqlServerUnicodeDialect.class.getCanonicalName();
 	}
+
+// From SQL Server 17+ (2025) only
+//	@Override
+//	public String installListContentColumn(String listItemType, String listAlias, String operator, String paramName) {
+//		if ("jsonlist".equalsIgnoreCase(listItemType)) {
+//			return unblobJsonContentColumn(listAlias + "." + renderNonContentColumn("valueOrUuid"), false, false) + " " + operator + " " + ":" + paramName;
+//		} else {
+//			return super.installListContentColumn(listItemType, listAlias, operator, paramName);
+//		}
+//	}
+//
+//	@Override
+//	public String installStringContentColumn(String columnName, boolean makeAlias, boolean customAlias) {
+//		if (columnName.endsWith("-json]")) {
+//			return unblobJsonContentColumn(columnName, makeAlias, customAlias);
+//		} else {
+//			return super.installStringContentColumn(columnName, makeAlias, customAlias);
+//		}
+//	}
+//
+//	protected String unblobJsonContentColumn(String columnName, boolean makeAlias, boolean customAlias) {
+//		return " CAST(" + columnName + " AS NVARCHAR(MAX)) " + (makeAlias ? ("AS " + columnName.substring(columnName.indexOf(".") + 1, columnName.length() - 1) + (customAlias ? Integer.toHexString(columnName.hashCode()) : StringUtils.EMPTY) + "\"") : StringUtils.EMPTY);
+//	}
 }
