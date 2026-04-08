@@ -76,9 +76,7 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.DateUtils;
 
 import io.vertx.core.json.JsonObject;
-import io.vertx.json.schema.JsonSchemaOptions;
 import io.vertx.reactivex.json.schema.JsonSchema;
-import io.vertx.reactivex.json.schema.Validator;
 
 public class RestUpdaters {
 
@@ -379,19 +377,19 @@ public class RestUpdaters {
 
 	public static FieldUpdater JSON_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
 		JsonField jsonField = fieldMap.getJsonField(fieldKey);
-		HibJsonField jsonGraphField = container.getJson(fieldKey);
+		HibJsonField jsonSqlField = container.getJson(fieldKey);
 		boolean isJsonFieldSetToNull = fieldMap.hasField(fieldKey) && (jsonField == null || jsonField.getJson() == null);
-		HibField.failOnDeletionOfRequiredField(jsonGraphField, isJsonFieldSetToNull, fieldSchema, fieldKey, schema);
+		HibField.failOnDeletionOfRequiredField(jsonSqlField, isJsonFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean isJsonFieldNull = jsonField == null || jsonField.getJson() == null;
 
 		// Skip this check for no migrations
 		if (!ac.isMigrationContext()) {
-			HibField.failOnMissingRequiredField(jsonGraphField, isJsonFieldNull, fieldSchema, fieldKey, schema);
+			HibField.failOnMissingRequiredField(jsonSqlField, isJsonFieldNull, fieldSchema, fieldKey, schema);
 		}
 
 		// Handle Deletion - The field was explicitly set to null and is currently set within the graph thus we must remove it.
-		if (isJsonFieldSetToNull && jsonGraphField != null) {
-			container.removeField(jsonGraphField);
+		if (isJsonFieldSetToNull && jsonSqlField != null) {
+			container.removeField(jsonSqlField);
 			return;
 		}
 
@@ -408,16 +406,16 @@ public class RestUpdaters {
 		JsonSchema[] allowedSchemas = stringFieldSchema.getAllowedSchemas();
 		if (allowedSchemas != null && allowedSchemas.length != 0) {
 			if (jsonField.getJson() != null && Arrays.asList(allowedSchemas).stream()
-					.noneMatch(schema1 -> Validator.create(schema1, new JsonSchemaOptions()).validate(jsonField.getJson()).getValid() == Boolean.TRUE)) {
-				throw error(BAD_REQUEST, "node_error_invalid_string_field_value", fieldKey, JsonUtil.toJson(jsonField.getJson()));
+					.noneMatch(schema1 -> JsonUtil.newJsonSchemaValidator(schema1).validate(jsonField.getJson()).getValid() == Boolean.TRUE)) {
+				throw error(BAD_REQUEST, "node_error_invalid_json_field_value", fieldKey, JsonUtil.toJson(jsonField.getJson()));
 			}
 		}
 
 		// Handle Update / Create - Create new graph field if no existing one could be found
-		if (jsonGraphField == null) {
+		if (jsonSqlField == null) {
 			container.createJson(fieldKey).setJson(jsonField.getJson());
 		} else {
-			jsonGraphField.setJson(jsonField.getJson());
+			jsonSqlField.setJson(jsonField.getJson());
 		}
 	};
 

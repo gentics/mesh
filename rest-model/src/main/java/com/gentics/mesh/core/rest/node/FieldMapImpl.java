@@ -127,8 +127,8 @@ public class FieldMapImpl implements FieldMap {
 
 		ObjectMapper mapper = JsonUtil.getMapper();
 		// ListFieldSchemaImpl listFieldSchema = (ListFieldSchemaImpl) fieldSchema;
-		switch (listType) {
-		case "node":
+		switch (FieldTypes.valueByName(listType)) {
+		case NODE:
 			// Unwrap stored pojos
 			if (jsonNode.isPojo()) {
 				return pojoNodeToValue(jsonNode, NodeFieldList.class, key);
@@ -156,7 +156,7 @@ public class FieldMapImpl implements FieldMap {
 			// throw new MeshJsonException("Could not read node field for key {" + fieldKey + "}", e);
 			// }
 			return nodeListField;
-		case "micronode":
+		case MICRONODE:
 			// Unwrap stored pojos
 			if (jsonNode.isPojo()) {
 				return pojoNodeToValue(jsonNode, MicronodeFieldList.class, key);
@@ -167,35 +167,42 @@ public class FieldMapImpl implements FieldMap {
 			}
 			return micronodeFieldList;
 		// Basic types
-		case "string":
+		case STRING:
 			// Unwrap stored pojos
 			if (jsonNode.isPojo()) {
 				return pojoNodeToValue(jsonNode, StringFieldListImpl.class, key);
 			}
 			String[] itemsStringArray = mapper.treeToValue(jsonNode, String[].class);
 			return getBasicList(key, String[].class, new StringFieldListImpl(), String.class, itemsStringArray);
-		case "html":
+		case HTML:
 			// Unwrap stored pojos
 			if (jsonNode.isPojo()) {
 				return pojoNodeToValue(jsonNode, HtmlFieldListImpl.class, key);
 			}
 			String[] itemsHtmlArray = mapper.treeToValue(jsonNode, String[].class);
 			return getBasicList(key, String[].class, new HtmlFieldListImpl(), String.class, itemsHtmlArray);
-		case "date":
+		case DATE:
 			// Unwrap stored pojos
 			if (jsonNode.isPojo()) {
 				return pojoNodeToValue(jsonNode, DateFieldListImpl.class, key);
 			}
 			String[] itemsDateArray = mapper.treeToValue(jsonNode, String[].class);
 			return getBasicList(key, String[].class, new DateFieldListImpl(), String.class, itemsDateArray);
-		case "number":
+		case JSON:
+			// Unwrap stored pojos
+			if (jsonNode.isPojo()) {
+				return pojoNodeToValue(jsonNode, JsonFieldListImpl.class, key);
+			}
+			JsonObject[] itemsJsonArray = mapper.treeToValue(jsonNode, JsonObject[].class);
+			return getBasicList(key, JsonObject[].class, new JsonFieldListImpl(), JsonObject.class, itemsJsonArray);
+		case NUMBER:
 			// Unwrap stored pojos
 			if (jsonNode.isPojo()) {
 				return pojoNodeToValue(jsonNode, NumberFieldListImpl.class, key);
 			}
 			Number[] itemsNumberArray = mapper.treeToValue(jsonNode, Number[].class);
 			return getBasicList(key, Number[].class, new NumberFieldListImpl(), Number.class, itemsNumberArray);
-		case "boolean":
+		case BOOLEAN:
 			// Unwrap stored pojos
 			if (jsonNode.isPojo()) {
 				return pojoNodeToValue(jsonNode, BooleanFieldListImpl.class, key);
@@ -366,11 +373,11 @@ public class FieldMapImpl implements FieldMap {
 		}
 
 		JsonField jsonField = new JsonFieldImpl();
-		if (!jsonNode.isNull() && jsonNode.isObject()) {
-			jsonField.setJson(new JsonObject(jsonNode.toString()));
+		if (!jsonNode.isNull() && jsonNode.isObject() && jsonNode.get("json") != null && jsonNode.get("json").isObject()) {
+			jsonField.setJson(new JsonObject(jsonNode.get("json").toString()));
 		}
-		if (!jsonNode.isNull() && !jsonNode.isObject()) {
-			throw error(BAD_REQUEST, "The field value for {" + key + "} is not a JSON object value. The value was {" + jsonNode.toString() + "}");
+		if (!jsonNode.isNull() && (!jsonNode.isObject() || (jsonNode.get("json") != null && !jsonNode.get("json").isObject()))) {
+			throw error(BAD_REQUEST, "The field value for {" + key + "} is not a JSON object value. The value was {" + jsonNode.get("json") + "}");
 		}
 		return jsonField;
 	}

@@ -47,6 +47,7 @@ import com.gentics.mesh.core.data.node.field.HibStringField;
 import com.gentics.mesh.core.data.node.field.list.HibBooleanFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibDateFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibHtmlFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibJsonFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibNodeFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibNumberFieldList;
@@ -269,8 +270,8 @@ public class NodeContainerTransformer extends AbstractTransformer<HibNodeFieldCo
 			case LIST:
 				if (fieldSchema instanceof ListFieldSchemaImpl) {
 					ListFieldSchemaImpl listFieldSchema = (ListFieldSchemaImpl) fieldSchema;
-					switch (listFieldSchema.getListType()) {
-					case "node":
+					switch (FieldTypes.valueByName(listFieldSchema.getListType())) {
+					case NODE:
 						HibNodeFieldList graphNodeList = container.getNodeList(fieldSchema.getName());
 						if (graphNodeList != null) {
 							List<String> nodeItems = new ArrayList<>();
@@ -283,7 +284,7 @@ public class NodeContainerTransformer extends AbstractTransformer<HibNodeFieldCo
 							fieldsMap.put(fieldSchema.getName(), nodeItems);
 						}
 						break;
-					case "date":
+					case DATE:
 						HibDateFieldList graphDateList = container.getDateList(fieldSchema.getName());
 						if (graphDateList != null) {
 							List<Long> dateItems = new ArrayList<>();
@@ -293,7 +294,7 @@ public class NodeContainerTransformer extends AbstractTransformer<HibNodeFieldCo
 							fieldsMap.put(fieldSchema.getName(), dateItems);
 						}
 						break;
-					case "number":
+					case NUMBER:
 						HibNumberFieldList graphNumberList = container.getNumberList(fieldSchema.getName());
 						if (graphNumberList != null) {
 							List<Number> numberItems = new ArrayList<>();
@@ -305,7 +306,7 @@ public class NodeContainerTransformer extends AbstractTransformer<HibNodeFieldCo
 							fieldsMap.put(fieldSchema.getName(), numberItems);
 						}
 						break;
-					case "boolean":
+					case BOOLEAN:
 						HibBooleanFieldList graphBooleanList = container.getBooleanList(fieldSchema.getName());
 						if (graphBooleanList != null) {
 							List<String> booleanItems = new ArrayList<>();
@@ -315,7 +316,7 @@ public class NodeContainerTransformer extends AbstractTransformer<HibNodeFieldCo
 							fieldsMap.put(fieldSchema.getName(), booleanItems);
 						}
 						break;
-					case "micronode":
+					case MICRONODE:
 						HibMicronodeFieldList micronodeGraphFieldList = container.getMicronodeList(fieldSchema.getName());
 						if (micronodeGraphFieldList != null) {
 							// Add list of micronode objects
@@ -330,7 +331,7 @@ public class NodeContainerTransformer extends AbstractTransformer<HibNodeFieldCo
 							}).toList().blockingGet());
 						}
 						break;
-					case "string":
+					case STRING:
 						HibStringFieldList graphStringList = container.getStringList(fieldSchema.getName());
 						if (graphStringList != null) {
 							List<String> stringItems = new ArrayList<>();
@@ -344,7 +345,7 @@ public class NodeContainerTransformer extends AbstractTransformer<HibNodeFieldCo
 							fieldsMap.put(fieldSchema.getName(), stringItems);
 						}
 						break;
-					case "html":
+					case HTML:
 						HibHtmlFieldList graphHtmlList = container.getHTMLList(fieldSchema.getName());
 						if (graphHtmlList != null) {
 							List<String> htmlItems = new ArrayList<>();
@@ -361,6 +362,16 @@ public class NodeContainerTransformer extends AbstractTransformer<HibNodeFieldCo
 								}
 							}
 							fieldsMap.put(fieldSchema.getName(), htmlItems);
+						}
+						break;
+					case JSON:
+						HibJsonFieldList sqlJsonList = container.getJsonList(fieldSchema.getName());
+						if (sqlJsonList != null) {
+							List<JsonObject> jsonItems = new ArrayList<>();
+							for (HibJsonField listItem : sqlJsonList.getList()) {
+								jsonItems.add(listItem.getJson());
+							}
+							fieldsMap.put(fieldSchema.getName(), jsonItems);
 						}
 						break;
 					default:
