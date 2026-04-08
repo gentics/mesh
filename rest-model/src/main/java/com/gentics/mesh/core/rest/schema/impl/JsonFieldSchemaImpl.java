@@ -7,12 +7,11 @@ import java.util.Collection;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.gentics.mesh.core.rest.JsonSchema;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.JsonFieldSchema;
 
 import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.reactivex.json.schema.JsonSchema;
 
 /**
  * @see JsonFieldSchema
@@ -50,15 +49,17 @@ public class JsonFieldSchemaImpl extends AbstractFieldSchema implements JsonFiel
 		super.apply(fieldProperties);
 		Object allowedValues = fieldProperties.get(ALLOW_KEY);
 		if (allowedValues != null) {
-			if (allowedValues instanceof String[]) {
+			if (allowedValues instanceof JsonSchema[] allowedSchemas) {
+				setAllowedSchemas(allowedSchemas);
+			} else if (allowedValues instanceof String[]) {
 				String[] values = (String[]) allowedValues;
-				setAllowedSchemas(Arrays.stream(values).map(JsonObject::new).map(JsonSchema::of).toArray(size -> new JsonSchema[size]));
+				setAllowedSchemas(Arrays.stream(values).map(JsonSchema::new).toArray(size -> new JsonSchema[size]));
 			} else if (allowedValues instanceof Collection) {
-				setAllowedSchemas(((Collection<?>) allowedValues).stream().map(Object::toString).map(JsonObject::new).map(JsonSchema::of).toArray(size -> new JsonSchema[size]));
+				setAllowedSchemas(((Collection<?>) allowedValues).stream().map(Object::toString).map(JsonSchema::new).toArray(size -> new JsonSchema[size]));
 			} else if (allowedValues instanceof Object[]) {
-				setAllowedSchemas(Arrays.stream(((Object[]) allowedValues)).map(Object::toString).map(JsonObject::new).map(JsonSchema::of).toArray(size -> new JsonSchema[size]));
+				setAllowedSchemas(Arrays.stream(((Object[]) allowedValues)).map(Object::toString).map(JsonSchema::new).toArray(size -> new JsonSchema[size]));
 			} else if (allowedValues instanceof JsonArray) {
-				setAllowedSchemas(((JsonArray) allowedValues).stream().map(Object::toString).map(JsonObject::new).map(JsonSchema::of).toArray(size -> new JsonSchema[size]));
+				setAllowedSchemas(((JsonArray) allowedValues).stream().map(Object::toString).map(JsonSchema::new).toArray(size -> new JsonSchema[size]));
 			}  else {
 				throw new IllegalStateException("Unsupported allowed value type: " + allowedValues.getClass().getCanonicalName());
 			}

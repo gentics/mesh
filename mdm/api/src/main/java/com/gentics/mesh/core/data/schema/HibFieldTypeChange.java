@@ -3,9 +3,9 @@ package com.gentics.mesh.core.data.schema;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
-import java.util.*;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -13,19 +13,21 @@ import java.util.function.Supplier;
 import com.gentics.mesh.core.data.node.handler.TypeConverter;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.common.FieldTypes;
-import com.gentics.mesh.core.rest.node.field.*;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.HtmlField;
+import com.gentics.mesh.core.rest.node.field.JsonField;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.NumberField;
+import com.gentics.mesh.core.rest.node.field.S3BinaryField;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.JsonFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.node.field.list.FieldList;
@@ -35,15 +37,16 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
-import com.gentics.mesh.core.rest.schema.impl.*;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.JsonFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.S3BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.google.common.collect.ImmutableSet;
 
@@ -118,38 +121,41 @@ public interface HibFieldTypeChange extends HibSchemaFieldChange {
 		String newType = getType();
 		if (newType != null) {
 
-			switch (newType) {
-				case "boolean":
+			switch (FieldTypes.valueByName(newType)) {
+				case BOOLEAN:
 					field = new BooleanFieldSchemaImpl();
 					break;
-				case "number":
+				case NUMBER:
 					field = new NumberFieldSchemaImpl();
 					break;
-				case "date":
+				case DATE:
 					field = new DateFieldSchemaImpl();
 					break;
-				case "html":
+				case HTML:
 					field = new HtmlFieldSchemaImpl();
 					break;
-				case "string":
+				case STRING:
 					field = new StringFieldSchemaImpl();
 					break;
-				case "binary":
+				case BINARY:
 					field = new BinaryFieldSchemaImpl();
 					break;
-				case "s3binary":
+				case S3BINARY:
 					field = new S3BinaryFieldSchemaImpl();
 					break;
-				case "list":
+				case LIST:
 					ListFieldSchema listField = new ListFieldSchemaImpl();
 					listField.setListType(getListType());
 					field = listField;
 					break;
-				case "micronode":
+				case MICRONODE:
 					field = new MicronodeFieldSchemaImpl();
 					break;
-				case "node":
+				case NODE:
 					field = new NodeFieldSchemaImpl();
+					break;
+				case JSON:
+					field = new JsonFieldSchemaImpl();
 					break;
 				default:
 					throw error(BAD_REQUEST, "Unknown type {" + newType + "} for change " + getUuid());
@@ -182,27 +188,29 @@ public interface HibFieldTypeChange extends HibSchemaFieldChange {
 	default Map<String, Field> createFields(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
 		String newType = getType();
 
-		switch (newType) {
-			case "boolean":
+		switch (FieldTypes.valueByName(newType)) {
+			case BOOLEAN:
 				return Collections.singletonMap(getFieldName(), changeToBoolean(oldSchema, oldContent));
-			case "number":
+			case NUMBER:
 				return Collections.singletonMap(getFieldName(), changeToNumber(oldSchema, oldContent));
-			case "date":
+			case DATE:
 				return Collections.singletonMap(getFieldName(), changeToDate(oldSchema, oldContent));
-			case "html":
+			case HTML:
 				return Collections.singletonMap(getFieldName(), changeToHtml(oldSchema, oldContent));
-			case "string":
+			case STRING:
 				return Collections.singletonMap(getFieldName(), changeToString(oldSchema, oldContent));
-			case "binary":
+			case BINARY:
 				return Collections.singletonMap(getFieldName(), changeToBinary(oldSchema, oldContent));
-			case "s3binary":
+			case S3BINARY:
 				return Collections.singletonMap(getFieldName(), changeToS3Binary(oldSchema, oldContent));
-			case "list":
+			case LIST:
 				return Collections.singletonMap(getFieldName(), changeToList(oldSchema, oldContent));
-			case "micronode":
+			case MICRONODE:
 				return Collections.singletonMap(getFieldName(), changeToMicronode(oldSchema, oldContent));
-			case "node":
+			case NODE:
 				return Collections.singletonMap(getFieldName(), changeToNode(oldSchema, oldContent));
+			case JSON:
+				return Collections.singletonMap(getFieldName(), changeToJson(oldSchema, oldContent));
 			default:
 				throw error(BAD_REQUEST, "Unknown type {" + newType + "} for change " + getUuid());
 		}
@@ -251,6 +259,17 @@ public interface HibFieldTypeChange extends HibSchemaFieldChange {
 			return null;
 		}
 		return new DateFieldImpl().setDate(typeConverter.toDate(oldField.getValue()));
+	}
+
+	private JsonField changeToJson(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
+		String fieldName = getFieldName();
+		FieldSchema fieldSchema = oldSchema.getField(fieldName);
+
+		Field oldField = oldContent.getFields().getField(fieldName, fieldSchema);
+		if (oldField == null) {
+			return null;
+		}
+		return new JsonFieldImpl().setJson(typeConverter.toJsonObject(oldField.getValue()));
 	}
 
 	private HtmlField changeToHtml(FieldSchemaContainer oldSchema, FieldContainer oldContent) {

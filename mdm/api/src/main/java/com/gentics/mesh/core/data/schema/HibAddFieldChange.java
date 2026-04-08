@@ -1,18 +1,20 @@
 package com.gentics.mesh.core.data.schema;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.*;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.ADD_FIELD_AFTER_KEY;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.ALLOW_KEY;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.LIST_TYPE_KEY;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.TYPE_KEY;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import com.gentics.mesh.core.rest.schema.*;
-import com.gentics.mesh.core.rest.schema.impl.*;
-import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang3.BooleanUtils;
 
+import com.gentics.mesh.core.rest.JsonSchema;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -20,12 +22,28 @@ import com.gentics.mesh.core.rest.schema.BinaryExtractOptions;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
+import com.gentics.mesh.core.rest.schema.JsonFieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
+import com.gentics.mesh.core.rest.schema.S3BinaryExtractOptions;
+import com.gentics.mesh.core.rest.schema.S3BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
+import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.JsonFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.S3BinaryFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+
+import io.vertx.core.json.JsonObject;
 
 /**
  * Change entry which contains information for a field to be added to the schema.
@@ -153,7 +171,9 @@ public interface HibAddFieldChange extends HibSchemaFieldChange {
 		// TODO avoid case switches like this. We need a central delegator implementation which will be used in multiple places
 		switch (FieldTypes.valueByName(getType())) {
 			case JSON:
-				field = new JsonFieldSchemaImpl();
+				JsonFieldSchema jsonField = new JsonFieldSchemaImpl();
+				jsonField.setAllowedSchemas(getAllowProp() != null ? Arrays.stream(getAllowProp()).map(JsonSchema::new).toArray(size -> new JsonSchema[size]) : null);
+				field = jsonField;
 				break;
 			case HTML:
 				field = new HtmlFieldSchemaImpl();
