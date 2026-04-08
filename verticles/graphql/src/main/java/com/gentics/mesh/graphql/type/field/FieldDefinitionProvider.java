@@ -715,14 +715,17 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		NodeFilter nodeFilter = NodeFilter.filter(context);
 
 		// Add link resolving arg to html and string lists
-		switch (schema.getListType()) {
-		case "html":
-		case "string":
+		switch (FieldTypes.valueByName(schema.getListType())) {
+		case HTML:
+		case STRING:
+		case JSON:
 			fieldType.argument(createLinkTypeArg());
 			break;
-		case "node":
+		case NODE:
 			fieldType.argument(createNodeVersionArg());
 			fieldType.argument(nodeFilter.createFilterArgument());
+			break;
+		default:
 			break;
 		}
 

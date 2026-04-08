@@ -39,6 +39,7 @@ import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.JsonSchema;
 import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
@@ -76,7 +77,6 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.DateUtils;
 
 import io.vertx.core.json.JsonObject;
-import io.vertx.reactivex.json.schema.JsonSchema;
 
 public class RestUpdaters {
 
@@ -402,11 +402,11 @@ public class RestUpdaters {
 		checkStringLength(JsonUtil.toJson(jsonField.getJson()), fieldKey);
 
 		// check value restrictions
-		JsonFieldSchema stringFieldSchema = (JsonFieldSchema) fieldSchema;
-		JsonSchema[] allowedSchemas = stringFieldSchema.getAllowedSchemas();
+		JsonFieldSchema jsonFieldSchema = (JsonFieldSchema) fieldSchema;
+		JsonSchema[] allowedSchemas = jsonFieldSchema.getAllowedSchemas();
 		if (allowedSchemas != null && allowedSchemas.length != 0) {
 			if (jsonField.getJson() != null && Arrays.asList(allowedSchemas).stream()
-					.noneMatch(schema1 -> JsonUtil.newJsonSchemaValidator(schema1).validate(jsonField.getJson()).getValid() == Boolean.TRUE)) {
+					.noneMatch(schema1 -> JsonUtil.newJsonSchemaValidator(schema1.getVertxSchema()).validate(jsonField.getJson()).getValid() == Boolean.TRUE)) {
 				throw error(BAD_REQUEST, "node_error_invalid_json_field_value", fieldKey, JsonUtil.toJson(jsonField.getJson()));
 			}
 		}

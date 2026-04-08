@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleAbstractTypeResolver;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.AbstractRestException;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.EventCauseInfo;
@@ -278,8 +279,33 @@ public final class JsonUtil {
 		}
 	}
 
+	/**
+	 * Create new schema validator against the given input schema.
+	 * 
+	 * @param schema
+	 * @return
+	 */
 	public static Validator newJsonSchemaValidator(JsonSchema schema) {
 		return Validator.create(schema, new JsonSchemaOptions().setBaseUri("https://gentics.com/mesh").setDraft(Draft.DRAFT202012));
+	}
+
+	/**
+	 * Compare two {@link RestModel} implementor instances.
+	 * 
+	 * @param <A>
+	 * @param <B>
+	 * @param a
+	 * @param b
+	 * @return
+	 */
+	public static <A extends RestModel, B extends RestModel> boolean equals(A a, B b) {
+		if (a == null && b == null) {
+			return true;
+		}
+		if (a != null && b != null) {
+			return new JsonObject(toJson(a)).equals(new JsonObject(toJson(b)));
+		}
+		return false;
 	}
 
 	/**

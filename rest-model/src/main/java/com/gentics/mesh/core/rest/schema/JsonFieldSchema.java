@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.rest.schema;
 
-import io.vertx.reactivex.json.schema.JsonSchema;
+import com.gentics.mesh.core.rest.JsonSchema;
 
 /**
  * REST POJO for a JSON object field schema.

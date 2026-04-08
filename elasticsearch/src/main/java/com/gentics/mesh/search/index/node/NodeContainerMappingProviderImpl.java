@@ -298,21 +298,21 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 		} else {
 			ListFieldSchemaImpl listFieldSchema = (ListFieldSchemaImpl) fieldSchema;
 			String type = listFieldSchema.getListType();
-			switch (type) {
-			case "node":
+			switch (FieldTypes.valueByName(type)) {
+			case NODE:
 				fieldInfo.put("type", KEYWORD);
 				fieldInfo.put("index", INDEX_VALUE);
 				break;
-			case "date":
+			case DATE:
 				fieldInfo.put("type", DATE);
 				break;
-			case "number":
+			case NUMBER:
 				fieldInfo.put("type", DOUBLE);
 				break;
-			case "boolean":
+			case BOOLEAN:
 				fieldInfo.put("type", BOOLEAN);
 				break;
-			case "micronode":
+			case MICRONODE:
 				fieldInfo.put("type", NESTED);
 
 				// All allowed microschemas
@@ -323,9 +323,15 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 
 				// fieldProps.put(field.getName(), fieldInfo);
 				break;
-			case "string":
-			case "html":
+			case STRING:
+			case HTML:
 				fieldInfo.put("type", TEXT);
+				if (customIndexOptions != null) {
+					fieldInfo.put("fields", customIndexOptions);
+				}
+				break;
+			case JSON:
+				fieldInfo.put("type", OBJECT);
 				if (customIndexOptions != null) {
 					fieldInfo.put("fields", customIndexOptions);
 				}
