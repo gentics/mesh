@@ -1,6 +1,7 @@
 package com.gentics.mesh.contentoperation;
 
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.UUID;
@@ -99,6 +100,13 @@ public class DynamicContentColumn implements ContentColumn, Serializable {
 			} else {
 				return ContentColumn.super.transformToPersistedValue(value);
 			}
+// if JSON were BLOB, not String
+//		} else if (fieldType == FieldTypes.JSON) {
+//			if (value instanceof String) {
+//				return value.toString().getBytes(StandardCharsets.UTF_8);
+//			} else {
+//				return null;
+//			}
 		} else {
 			return ContentColumn.super.transformToPersistedValue(value);
 		}
