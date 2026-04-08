@@ -1,21 +1,4 @@
 {
-	jsonContains: nodes(filter: {
-	    schema: {is: folder}
-	    fields: {
-	      folder: {
-	        json:{contains: "Mickey"}
-	      }
-	    }
-	  }) {
-	    # [$.data.jsonContains.elements.length()=1]
-	    elements {
-	      uuid
-	      schema {
-	        name
-	      }	      
-	    }
-	}
-	
 	jsonSchema: nodes(filter: {
 	    schema: {is: folder}
 	    fields: {
@@ -59,6 +42,40 @@
 	    }
 	  }) {
 	    # [$.data.incompleteJsonSchema.elements.length()=0]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }	      
+	    }
+	}
+
+	jsonPathFound: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        json:{jsonPath: "$[?(@.firstName == 'Mickey')]"}
+	      }
+	    }
+	  }) {
+	    # [$.data.jsonPathFound.elements.length()=1]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }	      
+	    }
+	}
+
+	jsonPathNotFound: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        json:{jsonPath: "$[?(@.firstName == 'Donald')]"}
+	      }
+	    }
+	  }) {
+	    # [$.data.jsonPathNotFound.elements.length()=0]
 	    elements {
 	      uuid
 	      schema {
