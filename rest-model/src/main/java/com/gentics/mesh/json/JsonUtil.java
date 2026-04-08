@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.util.Comparator;
 
 import org.codehaus.jettison.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -67,8 +69,10 @@ import com.gentics.mesh.json.serializer.JsonObjectSerializer;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.vertx.json.schema.Draft;
+import io.vertx.json.schema.JsonSchemaOptions;
+import io.vertx.reactivex.json.schema.JsonSchema;
+import io.vertx.reactivex.json.schema.Validator;
 
 /**
  * Main JSON Util which is used to register all custom JSON specific handlers and deserializers.
@@ -272,6 +276,10 @@ public final class JsonUtil {
 		} catch (Exception e) {
 			throw new GenericRestException(INTERNAL_SERVER_ERROR, "error_internal", e);
 		}
+	}
+
+	public static Validator newJsonSchemaValidator(JsonSchema schema) {
+		return Validator.create(schema, new JsonSchemaOptions().setBaseUri("https://gentics.com/mesh").setDraft(Draft.DRAFT202012));
 	}
 
 	/**
