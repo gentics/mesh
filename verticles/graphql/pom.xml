@@ -46,10 +46,6 @@
 			<artifactId>graphql-java-filter</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>io.vertx</groupId>
-			<artifactId>vertx-json-schema</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>com.jayway.jsonpath</groupId>
 		    <artifactId>json-path</artifactId>
 		</dependency>

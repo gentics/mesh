@@ -119,7 +119,7 @@ public class JsonFilter extends MainFilter<JsonObject> {
 	private Function<String, Predicate<JsonObject>> objectSchemaPredicate() {
 		return query -> {
 			JsonSchema schema = JsonSchema.of(new JsonObject(query));
-			Validator validator = Validator.create(schema, new JsonSchemaOptions().setBaseUri("https://gentics.com/mesh").setDraft(Draft.DRAFT202012));
+			Validator validator = JsonUtil.newJsonSchemaValidator(schema);
 			return nullablePredicate(object -> validator.validate(object).getValid() == Boolean.TRUE);
 		};
 	}
