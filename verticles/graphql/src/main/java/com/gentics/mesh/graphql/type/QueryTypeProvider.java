@@ -679,6 +679,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			additionalTypes.add(interfaceTypeProvider.createPermInfoType());
 			additionalTypes.add(fieldDefProvider.createBinaryFieldType());
 			additionalTypes.add(fieldDefProvider.createS3BinaryFieldType());
+			additionalTypes.add(fieldDefProvider.createJsonFieldType());
 
 			Versioned.doSince(2, context, () -> {
 				List<GraphQLObjectType> schemaFieldTypes = context.getOrStore(NodeTypeProvider.SCHEMA_FIELD_TYPES, () -> nodeTypeProvider.generateSchemaFieldTypes(context).forVersion(context));

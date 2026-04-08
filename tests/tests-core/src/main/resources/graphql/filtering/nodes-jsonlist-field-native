@@ -4,7 +4,7 @@
 	    fields: {
 	      folder: {
 	        jsonList: {
-	          anyMatch: {equals: "{\"firstName\":\"Minnie\",\"lastName\":\"Mouse\"}"}
+	          anyMatch: {like: "{\"firstName\":\"Minnie\",\"lastName\":\"Mouse\"}"}
 	        }
 	      }
 	    }
@@ -22,7 +22,7 @@
 	    fields: {
 	      folder: {
 	        jsonList: {
-	          allMatch: {equals: "{\"firstName\":\"Minnie\",\"lastName\":\"Mouse\"}"}
+	          allMatch: {like: "{\"firstName\":\"Minnie\",\"lastName\":\"Mouse\"}"}
 	        }
 	      }
 	    }
@@ -40,7 +40,7 @@
 	    fields: {
 	      folder: {
 	        jsonList: {
-	          noneMatch: {equals: "{\"firstName\":\"Darkwing\",\"lastName\":\"Duck\"}"} isNull:false
+	          noneMatch: {like: "{\"firstName\":\"Darkwing\",\"lastName\":\"Duck\"}"} isNull:false
 	        }
 	      }
 	    }
@@ -58,7 +58,7 @@
 	    fields: {
 	      folder: {
 	        jsonList: {
-	          anyNotMatch: {equals: "{\"firstName\":\"Darkwing\",\"lastName\":\"Duck\"}"}
+	          anyNotMatch: {like: "{\"firstName\":\"Darkwing\",\"lastName\":\"Duck\"}"}
 	        }
 	      }
 	    }

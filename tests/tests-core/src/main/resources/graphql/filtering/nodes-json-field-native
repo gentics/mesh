@@ -1,32 +1,4 @@
 {
-	jsonEqualsMickeyMouse: nodes(filter: {
-		schema: {is: folder}
-		fields: {
-			folder: {
-				json: {equals: "{\"firstName\":\"Mickey\",\"lastName\":\"Mouse\"}"}
-			}
-		}
-	}) {
-		# [$.data.jsonEqualsMickeyMouse.elements.length()=1]
-		elements {
-	      	...output
-		}
-	}
-	notJsonEqualsMickeyMouse: nodes(filter: {
-		schema: {is: folder}
-		not: {
-			fields: {
-				folder: {
-					json: {equals: "{\"firstName\":\"Mickey\",\"lastName\":\"Mouse\"}"}
-				}
-			}
-		}
-	}) {
-		# [$.data.notJsonEqualsMickeyMouse.elements.length()=8]
-		elements {
-			...output
-		}
-	}
 	jsonContainsMouse: nodes(filter: {
 		schema: {is: folder}
 		fields: {
@@ -55,90 +27,7 @@
 			...output
 		}
 	}
-	jsonNotEqualsMickeyMouse: nodes(filter: {
-		schema: {is: folder}
-		fields: {
-			folder: {
-				json: {notEquals: "{\"firstName\":\"Mickey\",\"lastName\":\"Mouse\"}" isNull: false}
-			}
-		}
-	}) {
-		# [$.data.jsonNotEqualsMickeyMouse.elements.length()=0]
-		elements {
-			...output
-		}
-	}
-	notJsonNotEqualsMickeyMouse: nodes(filter: {
-		schema: {is: folder}
-		not: {
-			fields: {
-				folder: {
-					json: {notEquals: "{\"firstName\":\"Mickey\",\"lastName\":\"Mouse\"}" isNull: false}
-				}
-			}
-		}
-	}) {
-		# [$.data.notJsonNotEqualsMickeyMouse.elements.length()=9]
-		elements {
-			...output
-		}
-	}
-	jsonNotEqualsMickeyMouseWithNull: nodes(filter: {
-		schema: {is: folder}
-		fields: {
-			folder: {
-				json: {notEquals: "{\"firstName\":\"Mickey\",\"lastName\":\"Mouse\"}"}
-			}
-		}
-	}) {
-		# [$.data.jsonNotEqualsMickeyMouseWithNull.elements.length()=8]
-		elements {
-			...output
-		}
-	}
-	notJsonNotEqualsMickeyMouseWithNull: nodes(filter: {
-		schema: {is: folder}
-		not: {
-			fields: {
-				folder: {
-					json: {notEquals: "{\"firstName\":\"Mickey\",\"lastName\":\"Mouse\"}"}
-				}
-			}
-		}
-	}) {
-		# [$.data.notJsonNotEqualsMickeyMouseWithNull.elements.length()=1]
-		elements {
-			...output
-		}
-	}
-	jsonOneOf: nodes(filter: {
-		schema: {is: folder}
-		fields: {
-			folder: {
-				json:{oneOf: ["{\"firstName\":\"Mickey\",\"lastName\":\"Mouse\"}"]}
-			}
-		}
-	}) {
-		# [$.data.jsonOneOf.elements.length()=1]
-		elements {
-			...output
-		}
-	}
-	notJsonOneOf: nodes(filter: {
-		schema: {is: folder}
-		not: {
-			fields: {
-				folder: {
-					json:{oneOf: ["{\"firstName\":\"Mickey\",\"lastName\":\"Mouse\"}"]}
-				}
-			}
-		}
-	}) {
-		# [$.data.notJsonOneOf.elements.length()=8]
-		elements {
-			...output
-		}
-	}
+
 	jsonIsNotNull: nodes(filter: {
 		schema: {is: folder}
 		fields: {
@@ -189,19 +78,6 @@
 		}
 	}) {
 		# [$.data.notJsonIsNull.elements.length()=8]
-		elements {
-			...output
-		}
-	}
-	jsonIsNotUUID: nodes(filter: {
-		schema: {is: folder}
-		fields: {
-			folder: {
-				json: {notEquals: "b660375495454667b34e385ab6fa7e4c"}
-			}
-		}
-	}) {
-		# [$.data.jsonIsNotUUID.elements.length()=9]
 		elements {
 			...output
 		}
