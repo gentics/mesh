@@ -519,6 +519,13 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 					HibMicronode secondMicronode = micronodeList.createMicronode(microschemaDao.findByUuid(microschemaUuid).getLatestVersion());
 					secondMicronode.createString("text").setString("Joe");
 					secondMicronode.createNode("nodeRef", content());
+					secondMicronode.createJson("json").setJson(new JsonObject("""
+							{
+									"firstName":"Donald", 
+									"lastName": "Duck"
+							}
+					"""));
+
 					HibNodeFieldList micrnodeNodeList = secondMicronode.createNodeList("nodeList");
 					micrnodeNodeList.createNode(0, node2);
 					micrnodeNodeList.createNode(1, node3);
@@ -543,12 +550,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 					secondMicronode = micronodeList.createMicronode(microschemaDao.findByUuid(microschemaUuid).getLatestVersion());
 					secondMicronode.createString("text").setString("Jane");
 					secondMicronode.createNode("nodeRef", content());
-					secondMicronode.createJson("json").setJson(new JsonObject("""
-							{
-									"firstName":"Donald", 
-									"lastName": "Duck"
-							}
-					"""));
+
 					micrnodeNodeList = secondMicronode.createNodeList("nodeList");
 					micrnodeNodeList.createNode(0, node2);
 					micrnodeNodeList.createNode(1, node3);

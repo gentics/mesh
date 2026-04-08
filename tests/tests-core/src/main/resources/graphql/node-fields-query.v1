@@ -65,10 +65,12 @@
 				booleanList
 				numberList
 				jsonList {
+					# [$.data.node.fields.jsonList[0]=<is-not-null>]
 					text
 				}
 
 				json {
+					# [$.data.node.fields.json.json.firstName=Mickey]
 					json
 				}
 
@@ -122,7 +124,8 @@
 							language
 						}
 						json {
-							json
+							# [$.data.node.fields.micronodeList[1].json.json.firstName=Donald]
+                            json
 						}
 					}
 				}
