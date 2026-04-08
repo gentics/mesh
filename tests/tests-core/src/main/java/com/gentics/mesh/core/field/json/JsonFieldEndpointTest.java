@@ -18,6 +18,7 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.HibJsonField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
+import com.gentics.mesh.core.rest.JsonSchema;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.JsonField;
@@ -32,7 +33,7 @@ import com.gentics.mesh.util.VersionNumber;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.json.JsonObject;
-import io.vertx.reactivex.json.schema.JsonSchema;
+
 
 @MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class JsonFieldEndpointTest extends AbstractFieldEndpointTest {
@@ -57,7 +58,7 @@ public class JsonFieldEndpointTest extends AbstractFieldEndpointTest {
 			JsonFieldSchema restrictedJsonFieldSchema = new JsonFieldSchemaImpl();
 			restrictedJsonFieldSchema.setName("restrictedjsonField");
 			restrictedJsonFieldSchema.setLabel("Some label");
-			restrictedJsonFieldSchema.setAllowedSchemas(JsonSchema.of(new JsonObject("{\"type\":\"object\",\"properties\":{\"firstName\":{\"type\":\"string\"},\"lastName\":{\"type\":\"string\"}},\"required\":[\"firstName\",\"lastName\"]}")));
+			restrictedJsonFieldSchema.setAllowedSchemas(new JsonSchema("{\"type\":\"object\",\"properties\":{\"firstName\":{\"type\":\"string\"},\"lastName\":{\"type\":\"string\"}},\"required\":[\"firstName\",\"lastName\"]}"));
 
 			prepareTypedSchema(schemaContainer("folder"), List.of(jsonFieldSchema, restrictedJsonFieldSchema), Optional.empty());
 			tx.success();
