@@ -241,7 +241,6 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 			fieldInfo.mergeIn(customIndexOptions);
 		} else {
 			fieldInfo.put("type", OBJECT);
-			fieldInfo.put("schema", OBJECT);
 		}
 	}
 
