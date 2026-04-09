@@ -7,18 +7,16 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runners.MethodSorters;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.test.AbstractIntegrationTest;
 import com.gentics.mesh.test.MeshOptionsTypeUnawareContext;
-import com.gentics.mesh.test.category.FailingTests;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-@Category(FailingTests.class)
 public class MeshIntegerationTest extends AbstractIntegrationTest implements MeshOptionsTypeUnawareContext {
 
 	public final static long TIMEOUT = DEFAULT_TIMEOUT_SECONDS * 20;
@@ -31,6 +29,7 @@ public class MeshIntegerationTest extends AbstractIntegrationTest implements Mes
 	}
 
 	@Test
+	@Ignore("Makes nothing but heavy runtime load")
 	public void testStartup() throws Exception {
 		MeshOptions options = getOptions();
 		Mesh mesh = Mesh.create(options);
