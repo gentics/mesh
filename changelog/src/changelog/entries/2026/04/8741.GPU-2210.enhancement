@@ -1,0 +1,1 @@
+Core: A new field type, `JSON`, has been added. Having a string in its base, it provides such additional functionality, as JSON structure / schema verification, and extended JsonPath filtering in GraphQL requests.
