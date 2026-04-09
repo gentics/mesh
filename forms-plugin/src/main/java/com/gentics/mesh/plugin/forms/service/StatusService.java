@@ -15,9 +15,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
@@ -30,6 +32,7 @@ import com.gentics.mesh.plugin.common.service.MeshPluginService;
 import com.gentics.mesh.plugin.forms.FormsPlugin;
 import com.gentics.mesh.plugin.forms.SchemaInitializer;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
+import com.gentics.mesh.plugin.forms.model.FormtypeConfigsModel;
 import com.gentics.mesh.plugin.forms.model.LanguagesModel;
 import com.gentics.mesh.plugin.forms.model.response.StatusResponse;
 import com.gentics.mesh.plugin.forms.util.FormUtil;
@@ -61,6 +64,7 @@ public class StatusService {
 	private final SchemaInitializer schemaInitializer;
 	private final MeshPluginService meshPluginService;
 	private final Lazy<PurgeService> lazyPurgeService;
+	private final ObjectMapper mapper;
 
 	private final String pluginRootNodeQuery;
 	private final Vertx rxVertx;
@@ -73,12 +77,14 @@ public class StatusService {
 			MeshPluginService meshPluginService,
 			Lazy<PurgeService> lazyPurgeService,
 			io.vertx.core.Vertx vertx,
-			FormsConfig config) {
+			FormsConfig config,
+			ObjectMapper mapper) {
 		this.adminClient = adminClient;
 		this.userClient = userClient;
 		this.schemaInitializer = schemaInitializer;
 		this.meshPluginService = meshPluginService;
 		this.lazyPurgeService = lazyPurgeService;
+		this.mapper = mapper;
 		this.rxVertx = Vertx.newInstance(vertx);
 
 		try {
@@ -275,6 +281,54 @@ public class StatusService {
 						});
 					});
 		});
+	}
+
+	/**
+	 * Get the formtype configurations for the given project.
+	 *
+	 * @param projectName project name
+	 * @param client the Mesh REST client to use
+	 * @return single formtype configs model
+	 */
+	public Single<FormtypeConfigsModel> getFormtypeConfigs(String projectName, MeshRestClient client) {
+		return getRootNode(projectName, client).flatMap(response -> {
+			FieldMap fields = response.getFields();
+			if (fields.hasField("formtypeconfigs") && fields.getStringField("formtypeconfigs") != null) {
+				String json = fields.getStringField("formtypeconfigs").getString();
+				if (json != null && !json.isEmpty()) {
+					try {
+						return Single.just(mapper.readValue(json, FormtypeConfigsModel.class));
+					} catch (Exception e) {
+						return Single.error(e);
+					}
+				}
+			}
+			return Single.just(new FormtypeConfigsModel());
+		});
+	}
+
+	/**
+	 * Set the formtype configurations for the given project.
+	 *
+	 * @param projectName project name
+	 * @param model the formtype configs to store
+	 * @return single formtype configs model (as stored)
+	 */
+	public Single<FormtypeConfigsModel> setFormtypeConfigs(String projectName, FormtypeConfigsModel model) {
+		try {
+			String json = mapper.writeValueAsString(model);
+			NodeUpdateRequest update = new NodeUpdateRequest();
+			update.setVersion("draft");
+			update.setLanguage("en");
+			update.getFields().put("formtypeconfigs", new StringFieldImpl().setString(json));
+			return getRootNode(projectName, userClient).flatMap(rootNode ->
+				userClient.updateNode(projectName, rootNode.getUuid(), update,
+						new GenericParametersImpl().setETag(false).setFields("fields", "uuid")).toSingle()
+					.flatMap(response -> userClient.publishNode(projectName, response.getUuid()).toSingle()
+						.map(r -> model)));
+		} catch (Exception e) {
+			return Single.error(e);
+		}
 	}
 
 	/**

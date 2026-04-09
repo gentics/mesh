@@ -38,6 +38,7 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.client.DeleteParametersImpl;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.parameter.client.VersioningParametersImpl;
+import com.gentics.mesh.plugin.forms.model.FormtypeConfigsModel;
 import com.gentics.mesh.plugin.forms.model.LanguagesModel;
 import com.gentics.mesh.plugin.forms.model.response.FormOnlineResponse;
 import com.gentics.mesh.plugin.forms.model.response.StatusResponse;
@@ -490,6 +491,22 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 				() -> server.client().put(String.format("/%s/plugins/forms/languages", URIUtils.encodeSegment(project)),
 						new LanguagesModel().setLanguages(languages), LanguagesModel.class));
 		return response.getLanguages();
+	}
+
+	/**
+	 * Set the formtype configurations for the project
+	 * @param project project
+	 * @param model formtype configs to store
+	 * @return response body
+	 * @throws IOException
+	 */
+	protected Response setFormtypeConfigs(String project, FormtypeConfigsModel model) throws IOException {
+		String json = JsonUtil.toJson(model);
+		return client().newCall(new Request.Builder()
+				.url(projectUrl("/formtypeconfigs"))
+				.headers(auth(true))
+				.post(RequestBody.create(MediaType.parse("application/json"), json))
+				.build()).execute();
 	}
 
 	protected void submitMultiple(String formUuid, boolean expectRedirect, List<String[]> data) throws IOException {

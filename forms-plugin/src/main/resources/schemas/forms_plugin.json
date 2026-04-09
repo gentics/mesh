@@ -16,6 +16,12 @@
 			"type": "list",
 			"listType": "string",
 			"required": false
+		},
+		{
+			"name": "formtypeconfigs",
+			"label": "Form Type Configurations",
+			"type": "string",
+			"required": false
 		}
 	]
 }
