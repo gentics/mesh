@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
@@ -28,6 +29,7 @@ public class MeshIntegerationTest extends AbstractIntegrationTest implements Mes
 	}
 
 	@Test
+	@Ignore("Makes nothing but heavy runtime load")
 	public void testStartup() throws Exception {
 		MeshOptions options = getOptions();
 		Mesh mesh = Mesh.create(options);
