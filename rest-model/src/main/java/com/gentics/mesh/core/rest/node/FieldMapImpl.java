@@ -373,10 +373,10 @@ public class FieldMapImpl implements FieldMap {
 		}
 
 		JsonField jsonField = new JsonFieldImpl();
-		if (!jsonNode.isNull() && jsonNode.isObject() && jsonNode.get("json") != null && jsonNode.get("json").isObject()) {
-			jsonField.setJson(new JsonObject(jsonNode.get("json").toString()));
+		if (!jsonNode.isNull() && jsonNode.isObject()) {
+			jsonField.setJson(new JsonObject(jsonNode.toString()));
 		}
-		if (!jsonNode.isNull() && (!jsonNode.isObject() || (jsonNode.get("json") != null && !jsonNode.get("json").isObject()))) {
+		if (!jsonNode.isNull() && !jsonNode.isObject()) {
 			throw error(BAD_REQUEST, "The field value for {" + key + "} is not a JSON object value. The value was {" + jsonNode.get("json") + "}");
 		}
 		return jsonField;

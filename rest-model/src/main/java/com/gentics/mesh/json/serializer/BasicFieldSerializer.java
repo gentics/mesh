@@ -21,7 +21,6 @@ import com.gentics.mesh.core.rest.node.field.impl.JsonFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.json.JsonUtil;
 
 /**
  * Serializer which will handle basic fields (eg. String, html, number) which does not have a nested object within the field JSON format.
@@ -77,7 +76,7 @@ public class BasicFieldSerializer<T extends Field> extends JsonSerializer<T> {
 				if (jsonField.getJson() == null) {
 					gen.writeNull();
 				} else {
-					gen.writeRaw(JsonUtil.toJson(jsonField.getJson()));
+					gen.writePOJO(jsonField.getJson());
 				}
 				break;
 			case DATE:
