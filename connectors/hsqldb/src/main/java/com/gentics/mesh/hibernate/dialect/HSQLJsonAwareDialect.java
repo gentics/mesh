@@ -15,6 +15,9 @@ import org.hibernate.type.descriptor.sql.spi.DdlTypeRegistry;
 
 import com.gentics.mesh.database.connector.QueryUtils;
 
+/**
+ * JSON object supporting (via VARCHAR) dialect of HSQLDB.
+ */
 public class HSQLJsonAwareDialect extends HSQLDialect {
 
 	@Override

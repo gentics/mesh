@@ -62,6 +62,7 @@ import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.JsonFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
@@ -290,7 +291,7 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 
 	@Test
 	public void testJsonFieldNotExists() throws IOException {
-		testBoolean(false, false);
+		testJson(false, false);
 	}
 
 	private void testJson(boolean fieldShouldExist, boolean contentShouldExist) throws IOException {
@@ -302,7 +303,7 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 		""");
 
 		Optional<FieldSchema> maybeField = fieldShouldExist
-				? Optional.of(new BooleanFieldSchemaImpl().setName("json_content").setLabel("JSON object content"))
+				? Optional.of(new JsonFieldSchemaImpl().setName("json_content").setLabel("JSON object content"))
 				: Optional.empty();
 
 		Optional<Consumer<HibNode>> maybeContentSupplier = contentShouldExist ? Optional.of(node -> {
@@ -317,9 +318,9 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 		}) : Optional.empty();
 
 		Consumer<MeshWebrootFieldResponse> resultsConsumer = response -> {
-			assertTrue(response.isPlainText());
+			assertFalse(response.isPlainText());
 			assertFalse(response.isBinary());
-			Assert.assertEquals(new JsonObject(response.getResponseAsPlainText()), value);
+			Assert.assertEquals(new JsonObject(response.getResponseAsJsonString()), value);
 		};
 
 		testField("/News/2015/News_2015.en.html", maybeField, maybeContentSupplier, resultsConsumer, false);
@@ -408,7 +409,20 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 	}
 
 	private void testJsonList(boolean fieldShouldExist, boolean contentShouldExist) throws IOException {
-		testList(fieldShouldExist, contentShouldExist, FieldTypes.JSON, false, true, false, true, false);
+		JsonObject[] values = new JsonObject[] {
+				new JsonObject().put("name", "Mickey"), 
+				new JsonObject().put("name", "Minnie"), 
+				new JsonObject().put("name", "Donald"), 
+				new JsonObject().put("name", "Daisy"), 
+				new JsonObject().put("name", "Pluto")
+		};
+		testList(fieldShouldExist, contentShouldExist, FieldTypes.JSON, 
+				List.of(values), Optional.of(response -> {
+					assertFalse(response.isPlainText());
+					assertFalse(response.isBinary());
+					JsonArray json = JsonUtil.readValue(response.getResponseAsJsonString(), JsonArray.class);
+					assertTrue(Arrays.equals(IntStream.range(0, json.size()).mapToObj(json::getJsonObject).toArray(size -> new JsonObject[size]), values));
+				}));
 	}
 
 	// Date field
@@ -829,7 +843,7 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 			} else {
 				assertFalse(response.isPlainText());
 				assertFalse(response.isBinary());
-				JsonArray json = new JsonArray(response.getResponseAsJsonString());
+				JsonArray json = JsonUtil.readValue(response.getResponseAsJsonString(), JsonArray.class);
 				assertTrue(Arrays.equals(json.getList().toArray(new Object[values.size()]),
 						values.toArray(new Object[values.size()])));
 			}

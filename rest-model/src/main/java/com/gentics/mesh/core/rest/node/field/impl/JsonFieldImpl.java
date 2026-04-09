@@ -3,6 +3,7 @@ package com.gentics.mesh.core.rest.node.field.impl;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.JsonField;
+import com.gentics.mesh.json.JsonUtil;
 
 import io.vertx.core.json.JsonObject;
 
@@ -30,4 +31,8 @@ public class JsonFieldImpl implements JsonField {
 		return this;
 	}
 
+	@Override
+	public String toString() {
+		return JsonUtil.toJson(getJson());
+	}
 }
