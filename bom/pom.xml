@@ -31,7 +31,7 @@
 		<jackson-databind.version>2.21.1</jackson-databind.version>
 		<jackson-annotations.version>2.21</jackson-annotations.version>
 		<netty.version>4.2.7.Final</netty.version>
-		<tika.version>3.3.0</tika.version>
+		<tika.version>3.2.2</tika.version>
 		<aws.sdk.version>2.16.83</aws.sdk.version>
 		<snakeyaml.version>2.2</snakeyaml.version>
 		<testcontainers.version>1.17.6</testcontainers.version>
