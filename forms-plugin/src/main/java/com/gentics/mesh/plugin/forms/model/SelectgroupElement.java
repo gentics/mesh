@@ -77,7 +77,7 @@ public class SelectgroupElement extends CombiElement {
 		List<String> options = getOptions().stream().map(ValueListItem::getKey).collect(Collectors.toList());
 
 		// check if posted data contains the value of an additional element
-		if (isMultivalue()) {
+		if (isList()) {
 			JsonArray postedData = object.getJsonArray(key.apply(this));
 			if (postedData != null) {
 				for (Object postedValue : postedData) {
@@ -118,7 +118,7 @@ public class SelectgroupElement extends CombiElement {
 	}
 
 	@Override
-	public boolean isMultivalue() {
+	public boolean isList() {
 		return (getSelectType() != null && getSelectType().startsWith("multiselect"));
 	}
 

@@ -4,18 +4,15 @@ package com.gentics.mesh.plugin.forms.model;
  * Enum containing element types
  */
 public enum ElementType {
+	string(InputElement.class),
 
-	input(InputElement.class), // OK
+	number(InputElement.class),
 
-	checkbox(CheckboxElement.class), // OK
+	checkbox(CheckboxElement.class), // TODO 8.5 Unname it to boolean ? 
 
-	textarea(TextareaElement.class), // OK
+	select(CombiElement.class),
 
-	combielem(CombiElement.class),
-
-	buttons(ButtonsElement.class), // OK
-
-	formpage(FormpageElement.class),
+	formpage(FormpageElement.class), // TODO 8.5 delete
 
 	adminmail(AdminMailElement.class),
 
@@ -31,9 +28,11 @@ public enum ElementType {
 
 	eyepin(EyepinElement.class),
 
-	file(FileElement.class), // OK
+	file(FileElement.class), // OK //TODO 8.5 unname it to binary ? 
 
-	conditionalcontainer(ConditionalContainerElement.class);
+	datetime(DatetimeElement.class),
+	time(DatetimeElement.class);
+
 
 	private Class<? extends FormElement> implementationClass;
 
@@ -42,12 +41,18 @@ public enum ElementType {
 	}
 
 	/**
-	 * Get the element type or null if not known
+	 * Get the element type or null if not known.
+	 * Handles both legacy type names (e.g. "input") and new schema type names (e.g. "string").
+	 * "boolean" is a Java keyword and cannot be an enum constant — it maps to {@link #checkbox}.
 	 *
 	 * @param type type string
 	 * @return type or null
 	 */
 	public static ElementType get(String type) {
+		// "boolean" is a Java keyword and cannot be an enum constant — maps to checkbox
+		if ("boolean".equals(type)) {
+			return checkbox;
+		}
 		try {
 			return valueOf(type);
 		} catch (Throwable t) {

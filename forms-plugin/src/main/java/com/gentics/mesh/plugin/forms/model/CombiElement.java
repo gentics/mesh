@@ -35,11 +35,6 @@ public class CombiElement extends ValueListElement {
 	}
 
 	@Override
-	public boolean isMultivalue() {
-		return "checkbox".equalsIgnoreCase(getSelectType());
-	}
-
-	@Override
 	public FormElement clone(boolean deep) {
 		return new CombiElement(this, deep);
 	}

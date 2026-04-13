@@ -3,6 +3,8 @@ package com.gentics.mesh.plugin.forms.model;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -58,14 +60,18 @@ public abstract class FormElement implements RestModel {
 
 	protected boolean mandatory;
 
-	protected String validation;
+	@JsonProperty("isList")
+	protected boolean isList;
 
-	protected List<FormElement> elements = new ArrayList<>();
+	protected String validation; //TODO f-gpu-2257
+
+	@JsonIgnore
+	protected List<FormElement> elements = new ArrayList<>(); // TODO 8.5
 
 	protected Map<String, Object> properties = new LinkedHashMap<>();
 
 	@JsonIgnore
-	protected FormElement container;
+	protected FormElement container; // TODO delete 8.5
 
 	@JsonIgnore
 	protected FormsConfig configuration;
@@ -85,6 +91,7 @@ public abstract class FormElement implements RestModel {
 		this.type = other.type;
 		this.active = other.active;
 		this.mandatory = other.mandatory;
+		this.isList = other.isList;
 		this.validation = other.validation;
 		this.elements = cloneField(other.elements, deep);
 		this.properties = cloneField(other.properties, deep);
@@ -182,6 +189,23 @@ public abstract class FormElement implements RestModel {
 	}
 
 	/**
+	 * If the value of this element is multivalue/a list
+	 * @return isList flag
+	 */
+	@JsonProperty("isList")
+	public boolean isList() {
+		return isList;
+	}
+
+	/**
+	 * Set the isList flag
+	 * @param isList isList flag
+	 */
+	public void setIsList(boolean isList) {
+		this.isList = isList;
+	}
+
+	/**
 	 * Validation type
 	 * @return validation
 	 */
@@ -195,6 +219,25 @@ public abstract class FormElement implements RestModel {
 	 */
 	public void setValidation(String validation) {
 		this.validation = validation;
+	}
+
+	/**
+	 * Jackson setter that handles both the old String form ("datepicker") and the new
+	 * object form ({"minLength": 2, "maxLength": 100}) of the validation field.
+	 * When an object is received it is stored in the properties map under "validation"
+	 * for downstream use; the String validation field is left null.
+	 *
+	 * @param value String or Map value from JSON
+	 * 
+	 */
+	@JsonSetter("validation")
+	public void setValidationFromJson(Object value) {
+		if (value instanceof String) {
+			this.validation = (String) value;
+		} else if (value != null) {
+			// new object form — store for downstream access, don't touch String field
+			this.properties.put("validation", value);
+		}
 	}
 
 	/**
@@ -246,19 +289,11 @@ public abstract class FormElement implements RestModel {
 	}
 
 	/**
-	 * Multivalue flag
-	 * @return true for multivalue
-	 */
-	public boolean isMultivalue() {
-		return false;
-	}
-
-	/**
 	 * Transform the element into a field schema and add it to the container
 	 * @param container container (will be modified)
 	 */
 	public void addFieldSchema(FieldSchemaContainer container) {
-		if (isMultivalue()) {
+		if (isList()) {
 			container.addField(new ListFieldSchemaImpl().setListType(FieldTypes.STRING.toString()).setName(name).setLabel(name));
 		} else {
 			container.addField(new StringFieldSchemaImpl().setName(name).setLabel(name));
@@ -320,7 +355,7 @@ public abstract class FormElement implements RestModel {
 		}
 
 		List<String> values = new ArrayList<>();
-		if (isMultivalue()) {
+		if (isList()) {
 			List<String> data = getMultiFormData(postedData);
 			if (data != null) {
 				values.addAll(data);
@@ -369,7 +404,7 @@ public abstract class FormElement implements RestModel {
 			return;
 		}
 
-		if (isMultivalue()) {
+		if (isList()) {
 			List<String> values = getMultiFormData(postedData);
 
 			if (values != null) {
@@ -450,7 +485,7 @@ public abstract class FormElement implements RestModel {
 	 * @param key key function
 	 */
 	public void addFormData(JsonObject object, FieldContainer container, Function<FormElement, String> key) {
-		if (isMultivalue()) {
+		if (isList()) {
 			StringFieldListImpl field = container.getFields().getStringFieldList(getName());
 			if (field != null) {
 				object.put(key.apply(this), new JsonArray(field.getItems()));

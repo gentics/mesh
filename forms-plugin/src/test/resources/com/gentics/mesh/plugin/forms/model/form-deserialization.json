@@ -1,0 +1,123 @@
+{
+ "name": "Test",
+  "language": "de",
+  "type": "GENERIC",
+  "email": "",
+  "mailsource": "",
+  "successurl": "http://portal-php.hotfix.gentics.com/de/Danke",
+  "templateContext": "",
+  "downloadBaseUrl": "null/editor/#proxy/rest/form/2/data",
+  "schema": {
+    "key": "test-schema",
+    "version": "1.0.0",
+    "properties": {
+      "firstName": {
+        "name": "Vorname",
+        "type": "string",
+        "active": true,
+        "mandatory": true,
+        "isList": false,
+        "validation": {
+          "minLength": 2,
+          "maxLength": 100
+        }
+      },
+      "appointmentDate": {
+        "name": "Termin",
+        "type": "datetime",
+        "active": true,
+        "mandatory": false,
+        "isList": false,
+        "dateOnly": true
+      },
+      "topic": {
+        "name": "Thema",
+        "type": "select",
+        "active": true,
+        "mandatory": true,
+        "isList": false,
+        "staticOptions": [
+          {
+            "value": "general",
+            "label": {
+              "de": "Allgemein",
+              "en": "General"
+            }
+          },
+          {
+            "value": "support",
+            "label": {
+              "de": "Support",
+              "en": "Support"
+            }
+          }
+        ]
+      },
+      "interests": {
+        "name": "Interessen",
+        "type": "select",
+        "active": true,
+        "mandatory": false,
+        "isList": true
+      },
+      "accepted": {
+        "name": "AGB akzeptiert",
+        "type": "boolean",
+        "active": true,
+        "mandatory": true,
+        "isList": false
+      }
+    }
+  },
+  "uiSchema": {
+    "key": "test-ui",
+    "version": "1.0.0",
+    "formname": {
+      "de": "Testformular",
+      "en": "Test Form"
+    },
+    "formdescription": {
+      "de": "Beschreibung",
+      "en": "Description"
+    },
+    "formwidth": "wide",
+    "formFlowKey": "default-flow",
+    "pages": [
+      {
+        "pagename": {
+          "de": "Seite 1",
+          "en": "Page 1"
+        },
+        "elements": [
+          {
+            "type": "control",
+            "id": "firstName",
+            "uiSchemaPage": 0
+          }
+        ]
+      }
+    ]
+  },
+  "data": {
+    "formID": "83C9CFC9-F7ED-4EB8-A3F2-9F8F53E048A9",
+    "version": "1",
+    "hasValidationErrors": false,
+    "properties": {
+      "firstName": {
+        "value": "Anna",
+        "visible": true,
+        "editable": true
+      },
+      "appointmentDate": {
+        "value": "2026-04-15T10:00:00Z"
+      },
+      "interests": {
+        "values": ["general", "support"]
+      },
+      "accepted": {
+        "value": false,
+        "validationMessage": "Pflichtfeld"
+      }
+    }
+  }
+}

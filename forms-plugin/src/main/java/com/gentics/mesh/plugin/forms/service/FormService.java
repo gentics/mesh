@@ -249,7 +249,7 @@ public class FormService {
 				// validate and return the result
 				return form.validateForm();
 			}
-		} catch (IOException e) {
+		} catch (IOException | FormsError e) {
 			log.error("Could not deserialize form: {}", e, e.getMessage());
 
 			if (log.isTraceEnabled()) {
@@ -360,8 +360,16 @@ public class FormService {
 	public Single<JsonObject> getElements(String projectName, String uuid, String...lang) {
 		return statusService.languageFallback(projectName, lang)
 				.flatMap(fallback -> loadAsAdmin(projectName, uuid, true, fallback).flatMap(formNode -> {
-					JsonObject formJson = new JsonObject(formNode.getFields().getStringField("json").getString());
-					return Single.just(new JsonObject().put("elements", formJson.getJsonArray("elements")));
+					try {
+						Form form = toForm(formNode.getFields().getStringField("json").getString(),
+								formNode.getUuid(), formNode.getLanguage());
+						JsonArray elements = new JsonArray(form.getSchema().getProperties().values().stream()
+								.map(e -> new JsonObject(e.toJson()))
+								.collect(Collectors.toList()));
+						return Single.just(new JsonObject().put("elements", elements));
+					} catch (IOException e) {
+						return Single.error(e);
+					}
 				}));
 	}
 
@@ -900,6 +908,7 @@ public class FormService {
 	 * @return true if the form is "multipage"
 	 */
 	public boolean isMultipage(JsonObject form) {
+		//TODO 8.5
 		JsonArray elements = form.getJsonArray("elements");
 		if (elements != null) {
 			for (int i = 0; i < elements.size(); i++) {
@@ -921,9 +930,8 @@ public class FormService {
 	 */
 	public Single<Form> toForm(NodeResponse formNode) {
 		try {
-
 			return Single.just(toForm(formNode.getFields().getStringField("json").toString(), formNode.getUuid(), formNode.getLanguage()));
-		} catch (IOException e) {
+		} catch (IOException | FormsError e) {
 			return Single.error(e);
 		}
 	}
@@ -936,13 +944,22 @@ public class FormService {
 	 * @return The deserialized <code>Form</code> object
 	 * @throws IOException When the object mapper cannot parse the string
 	 */
-	public Form toForm(String formData, String formUuid, String language) throws IOException {
+	public Form toForm(String formData, String formUuid, String language) throws IOException, FormsError {
 		Form form = objectMapper.readValue(formData, Form.class);
 
 		form.setUuid(formUuid);
 		if (language != null) {
 			form.setLanguage(language);
 		}
+		if (form.getSchema() == null || form.getSchema().getProperties() == null) {
+			throw new FormsError("Form JSON must contain 'schema.properties'",
+				HttpResponseStatus.BAD_REQUEST.code());
+		}
+		// Set name (map key) and configuration on each element once after deserialization
+		form.getSchema().getProperties().forEach((key, element) -> {
+			element.setName(key);
+			element.setConfiguration(configuration);
+		});
 
 		return form;
 	}

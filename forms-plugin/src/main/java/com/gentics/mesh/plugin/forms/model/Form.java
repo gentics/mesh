@@ -2,7 +2,11 @@ package com.gentics.mesh.plugin.forms.model;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.core.rest.common.FieldContainer;
+import com.gentics.mesh.plugin.forms.model.schema.FormData;
+import com.gentics.mesh.plugin.forms.model.schema.FormSchema;
+import com.gentics.mesh.plugin.forms.model.schema.FormUiSchema;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
@@ -61,7 +65,14 @@ public class Form implements RestModel {
 
 	private String successurl;
 
-	private List<FormElement> elements = new ArrayList<>();
+	@JsonProperty("schema")
+	private FormSchema schema;
+
+	@JsonProperty("uiSchema")
+	private FormUiSchema uiSchema;
+
+	@JsonProperty("data")
+	private FormData data;
 
 	private String currentPage;
 
@@ -94,7 +105,9 @@ public class Form implements RestModel {
 		this.mailtemp = other.mailtemp;
 		this.mailsource = other.mailsource;
 		this.successurl = other.successurl;
-		this.elements = other.elements == null ? new ArrayList<>() : new ArrayList<>(other.elements);
+		this.schema = other.schema;
+		this.uiSchema = other.uiSchema;
+		this.data = other.data;
 		this.currentPage = other.currentPage;
 		this.templateContext = other.templateContext;
 		this.properties = other.properties == null ? new LinkedHashMap<>() : new LinkedHashMap<>(other.properties);
@@ -244,11 +257,51 @@ public class Form implements RestModel {
 	}
 
 	/**
-	 * Get the form elements (direct members of the form)
-	 * @return form elements
+	 * Get the schema definition of this form.
+	 * @return form schema
 	 */
-	public List<FormElement> getElements() {
-		return elements;
+	public FormSchema getSchema() {
+		return schema;
+	}
+
+	/**
+	 * Set the schema definition of this form.
+	 * @param schema form schema
+	 */
+	public void setSchema(FormSchema schema) {
+		this.schema = schema;
+	}
+
+	/**
+	 * Get the UI schema definition of this form.
+	 * @return ui schema
+	 */
+	public FormUiSchema getUiSchema() {
+		return uiSchema;
+	}
+
+	/**
+	 * Set the UI schema definition of this form.
+	 * @param uiSchema ui schema
+	 */
+	public void setUiSchema(FormUiSchema uiSchema) {
+		this.uiSchema = uiSchema;
+	}
+
+	/**
+	 * Get the data (pre-filled / current control values) of this form.
+	 * @return form data
+	 */
+	public FormData getData() {
+		return data;
+	}
+
+	/**
+	 * Set the data (pre-filled / current control values) of this form.
+	 * @param data form data
+	 */
+	public void setData(FormData data) {
+		this.data = data;
 	}
 
 	/**
@@ -276,19 +329,16 @@ public class Form implements RestModel {
 	}
 
 	/**
-	 * Get all form elements as flattened stream
+	 * Get all form elements as flattened stream.
+	 * Derived on-demand from {@code schema.properties}.
+	 *
 	 * @return stream of all form elements
 	 */
 	public Stream<FormElement> flattened() {
-		return elements.stream().flatMap(FormElement::flattened);
-	}
-
-	/**
-	 * Set the direct form elements
-	 * @param elements form elements
-	 */
-	public void setElements(List<FormElement> elements) {
-		this.elements = elements;
+		if (schema == null || schema.getProperties() == null) {
+			return Stream.empty();
+		}
+		return schema.getProperties().values().stream().flatMap(FormElement::flattened);
 	}
 
 	/**
@@ -661,7 +711,7 @@ public class Form implements RestModel {
 		Map<String, String> valueLabels = listElem.getOptions().stream()
 			.collect(ValueListElement.OPTIONS_MAP_COLLECTOR);
 
-		if (elem.isMultivalue()) {
+		if (elem.isList()) {
 			JsonArray values = resultObj.getJsonArray(FIELD_VALUE);
 
 			if (values == null) {
@@ -736,7 +786,10 @@ public class Form implements RestModel {
 	 * @return true if at least one FormpageElement is found
 	 */
 	public boolean isMultipage() {
-		return flattened().anyMatch(elem -> elem instanceof FormpageElement);
+		if(uiSchema != null && uiSchema.getPages() != null && uiSchema.getPages().size() > 1){
+			return true;
+		}
+		return false;
 	}
 
 
@@ -753,17 +806,28 @@ public class Form implements RestModel {
 	}
 
 	/**
-	 * Create a copy of this form with only active form elements.
+	 * Create a copy of this form containing only active form elements.
+	 * Filters {@code schema.properties} by {@link FormElement#isActive()}.
 	 *
-	 * @return A copy of this form with only active form elements
+	 * @return A copy of this form with only active elements in its schema
 	 */
 	public Form removeInactiveElements() {
 		Form copy = new Form(this);
 
-		copy.elements = elements.stream()
-			.filter(FormElement::isActive)
-			.map(FormElement::removeInactiveElements)
-			.collect(Collectors.toList());
+		if (copy.schema != null && copy.schema.getProperties() != null) {
+			Map<String, FormElement> activeProperties = copy.schema.getProperties().entrySet().stream()
+				.filter(entry -> entry.getValue().isActive())
+				.collect(Collectors.toMap(
+					Map.Entry::getKey,
+					Map.Entry::getValue,
+					(u, v) -> u,
+					LinkedHashMap::new));
+			FormSchema filteredSchema = new FormSchema();
+			filteredSchema.setKey(copy.schema.getKey());
+			filteredSchema.setVersion(copy.schema.getVersion());
+			filteredSchema.setProperties(activeProperties);
+			copy.schema = filteredSchema;
+		}
 
 		return copy;
 	}
@@ -798,14 +862,18 @@ public class Form implements RestModel {
 	 * 		representation
 	 */
 	public Map<String, Object> elementMap() {
-		return flattened()
-			.map(elt -> {
-				JsonObject json = new JsonObject(elt.toJson());
-				Object name = json.remove("name");
+		if (schema == null || schema.getProperties() == null) {
+			return Collections.emptyMap();
+		}
 
-				return Pair.of(name == null ? "" : name.toString(), json);
-			})
-			.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+		return schema.getProperties().entrySet().stream()
+			.collect(Collectors.toMap(
+				Map.Entry::getKey,
+				entry -> {
+					JsonObject json = new JsonObject(entry.getValue().toJson());
+					json.remove("name"); // TODO f-gpu-2257: ist es wirklich notwendig das zu entfernen?
+					return json;
+				}));
 	}
 
 	@Override

@@ -993,8 +993,8 @@ public class FormDataService {
 				context.put("sorting", StringUtils.EMPTY);
 			}
 			if (forceNoES && StringUtils.isNotBlank(query)) {
-				String filter = form.getElements().stream().map(element -> {
-					if (element.isMultivalue()) {
+				String filter = form.getSchema().getProperties().values().stream().map(element -> {
+					if (element.isList()) {
 						return element.getGraphQLName() + ": {anyMatch: {like: \"%" + query + "%\"}}";
 					} else {
 						return element.getGraphQLName() + ": {like: \"%" + query + "%\"}";

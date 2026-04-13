@@ -23,10 +23,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 @Reportable
 public class AdminMailElement extends CombiElement {
 
-	@Override
-	public boolean isMultivalue() {
-		return (getSelectType() != null && getSelectType().startsWith("multiselect"));
-	}
+	
 
 	/**
 	 * Get the list of selected email addresses from the submitted form data.
@@ -36,7 +33,7 @@ public class AdminMailElement extends CombiElement {
 	 */
 	public List<String> getSelectedEmails(NodeResponse formDataNode) {
 		Optional<FieldMap> fields = Optional.ofNullable(formDataNode.getFields());
-		Optional<List<String>> selected = isMultivalue()
+		Optional<List<String>> selected = isList()
 			? fields.map(f -> f.getStringFieldList(getName()).getItems())
 			: fields.map(f -> f.getStringField(getName())).map(f -> Collections.singletonList(f.getString()));
 

@@ -1,6 +1,7 @@
 package com.gentics.mesh.plugin.forms.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -23,6 +24,8 @@ import java.util.Set;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
+//TODO 8.5 delete ? 
+
 /**
  * Base for elements which offer a predefined selection of possible values like radio buttons or dropdown fields.
  */
@@ -37,7 +40,7 @@ public class ValueListElement extends FormElement {
 		(u, v) -> u,
 		LinkedHashMap::new);
 
-	@JsonProperty
+	@JsonIgnore
 	protected List<ValueListItem> options = new ArrayList<>();
 
 	@JsonIgnore
@@ -77,6 +80,7 @@ public class ValueListElement extends FormElement {
 	}
 
 	@JsonProperty
+	@JsonIgnore
 	@Deprecated
 	public List<LegacyValueListItem> getListelements() {
 		return getOptions().stream()
@@ -154,7 +158,7 @@ public class ValueListElement extends FormElement {
 		String fieldName = getName();
 		FieldMap fields = formData.getFields();
 
-		if (isMultivalue()) {
+		if (isList()) {
 			Optional<List<String>> allValues = Optional.ofNullable(fields)
 				.map(f -> f.getStringFieldList(fieldName))
 				.map(l -> l.getItems());
