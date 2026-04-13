@@ -47,11 +47,7 @@ public class SqlServerUnicodeDialect extends SQLServerDialect {
 		ddlTypeRegistry.addDescriptor( new DdlTypeImpl( NVARCHAR, "nvarchar(max)", this ) );
 		ddlTypeRegistry.addDescriptor( new DdlTypeImpl( NCLOB, "nvarchar(max)", this ) );
 
-		//if (getVersion().isSameOrAfter( 17 )) {
-		//	ddlTypeRegistry.addDescriptor( new DdlTypeImpl( JSON, "json", this ) );
-		//} else {
-			ddlTypeRegistry.addDescriptor( new DdlTypeImpl( JSON, "nvarchar(max)", this ) );
-		//}
+		ddlTypeRegistry.addDescriptor( new DdlTypeImpl( JSON, "nvarchar(max)", this ) );
 	}
 
 	@Override
