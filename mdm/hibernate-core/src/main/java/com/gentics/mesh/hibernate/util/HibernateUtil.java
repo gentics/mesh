@@ -368,9 +368,10 @@ public final class HibernateUtil {
 	 */
 	public static int inQueriesLimitForSplitting(int availableParams) {
 		// 5 has been heuristically estimated as a bound value to cover all the (found so far) usecases.
-		int limit = inQueriesLimit() - availableParams - 5;
+		int inQueriesLimit = inQueriesLimit() - 5;
+		int limit = inQueriesLimit - availableParams;
 		if (limit < 1) {
-			limit = DEFAULT_IN_QUERY_LIMIT;
+			limit = inQueriesLimit;
 		}
 		return limit;
 	}

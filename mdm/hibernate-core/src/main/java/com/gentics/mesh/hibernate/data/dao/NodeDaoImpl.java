@@ -1502,6 +1502,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 				.getResultStream().collect(Collectors.toSet());
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Map<String, NodeChildrenInfo> getChildrenInfo(HibNode node, InternalActionContext ac, String branchUuid, boolean allowDataLoader) {
 		if (allowDataLoader && maybeChildrenInfoLoader().isPresent()) {
@@ -1543,6 +1544,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 		return childrenInfo;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Map<HibNode, Map<String, NodeChildrenInfo>> getChildrenInfo(Collection<HibNode> nodes,
 			InternalActionContext ac, String branchUuid) {
