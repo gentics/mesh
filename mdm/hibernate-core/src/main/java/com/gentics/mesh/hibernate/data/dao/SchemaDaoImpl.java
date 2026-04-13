@@ -1,14 +1,18 @@
 package com.gentics.mesh.hibernate.data.dao;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.commons.collections4.IteratorUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.contentoperation.CommonContentColumn;
 import com.gentics.mesh.contentoperation.ContentStorage;
@@ -280,5 +284,17 @@ public class SchemaDaoImpl
 	@Override
 	public long countVersionEdges(HibSchemaVersion version) {
 		return em().createNamedQuery("contentEdge.countContentByVersion", Long.class).setParameter("version", version).getSingleResult();
+	}
+
+	@Override
+	public Map<String, Long> countVersionEdges() {
+		@SuppressWarnings("unchecked")
+		List<Object[]> resultList = em().createNamedQuery("contentEdge.countContent").getResultList();
+
+		return resultList.stream().map(row -> {
+			String schemaVersionUuid = UUIDUtil.toShortUuid((UUID) row[0]);
+			Long count = (Long) row[1];
+			return Pair.of(schemaVersionUuid, count);
+		}).collect(Collectors.toMap(Pair::getKey, Pair::getValue));
 	}
 }

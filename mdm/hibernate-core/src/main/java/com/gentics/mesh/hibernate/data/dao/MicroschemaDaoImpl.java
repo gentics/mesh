@@ -2,6 +2,7 @@ package com.gentics.mesh.hibernate.data.dao;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -9,6 +10,8 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.contentoperation.ContentStorage;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -266,4 +269,16 @@ public class MicroschemaDaoImpl
     public long countVersionEdges(HibMicroschemaVersion version) {
 		return em().createNamedQuery("micronodefieldref.countByVersion", Long.class).setParameter("version", version).getSingleResult();
     }
+
+	@Override
+	public Map<String, Long> countVersionEdges() {
+		@SuppressWarnings("unchecked")
+		List<Object[]> resultList = em().createNamedQuery("micronodefieldref.countContent").getResultList();
+
+		return resultList.stream().map(row -> {
+			String schemaVersionUuid = UUIDUtil.toShortUuid((UUID) row[0]);
+			Long count = (Long) row[1];
+			return Pair.of(schemaVersionUuid, count);
+		}).collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+	}
 }

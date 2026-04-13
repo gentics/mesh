@@ -3,6 +3,7 @@ package com.gentics.mesh.core.jobs;
 import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.job.JobStatus.FAILED;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -22,6 +23,7 @@ import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.job.warning.JobWarning;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.StreamUtil;
 
@@ -92,23 +94,30 @@ public abstract class AbstractContainerVersionPurgeJobProcessor<
 						.map(version -> version.getUuid())
 						.collect(Collectors.toSet());
 
-				return containerDao.findAll().stream()
-						.flatMap(ms -> StreamUtil.toStream(containerDao.findAllVersions(ms)))
-						.filter(msv -> !usedVersionUuids.contains(msv.getUuid()))
-						.filter(msv -> {
+				Map<String, Long> contentCounts = containerDao.countVersionEdges();
+
+				Result<? extends SC> result = containerDao.findAll();
+
+				return result.stream()
+						.filter(ms -> {
 							if (request != null && request.getData() != null) {
 								if (request.isExcluded()) {
-									return !request.getData().contains(msv.getSchemaContainer().getUuid()) && !request.getData().contains(msv.getName());
+									return !request.getData().contains(ms.getUuid()) && !request.getData().contains(ms.getName());
 								} else {
-									return request.getData().contains(msv.getSchemaContainer().getUuid()) || request.getData().contains(msv.getName());
+									return request.getData().contains(ms.getUuid()) || request.getData().contains(ms.getName());
 								}
 							} else {
 								return true;
 							}
 						})
-						.filter(msv -> containerDao.countVersionEdges(msv) < 1)
-						.map(msv -> Pair.of(msv.getUuid(), msv.getSchemaContainer().getUuid()))
-						.collect(Collectors.toSet());
+						.flatMap(ms -> {
+							String schemaUuid = ms.getUuid();
+							Iterable<? extends SCV> versions = containerDao.findAllVersions(ms);
+							return StreamUtil.toStream(versions).map(msv -> msv.getUuid())
+									.filter(uuid -> !usedVersionUuids.contains(uuid))
+									.filter(uuid -> contentCounts.getOrDefault(uuid, 0L) < 1)
+									.map(uuid -> Pair.of(uuid, schemaUuid));
+						}).collect(Collectors.toSet());
 			});
 
 			return affectedVersions.isEmpty() 
@@ -118,6 +127,7 @@ public abstract class AbstractContainerVersionPurgeJobProcessor<
 								SC sc = containerDao.findByUuid(pair.getRight());
 								SCV scv = containerDao.findVersionByUuid(sc, pair.getLeft());
 								containerDao.deleteVersion(scv);
+
 								job.getWarnings().add(new JobWarning().setType("purged").setMessage(scv.getName() + " / " + scv.getVersion() + " / " + scv.getUuid()));
 							})).collect(Collectors.toList()));
 		}).doOnComplete(() -> {

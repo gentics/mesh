@@ -58,7 +58,7 @@
 	<parent>
 		<groupId>com.gentics</groupId>
 		<artifactId>maven-parent</artifactId>
-		<version>5.1.0</version>
+		<version>5.1.1</version>
 	</parent>
 	<organization>
 		<name>Gentics Software</name>

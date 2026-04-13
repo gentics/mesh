@@ -206,4 +206,11 @@ public interface ContainerDao<
 	 * @return
 	 */
 	long countVersionEdges(SCV version);
+
+	/**
+	 * Get the counts of contents per version uuid. If versions that are not used by any content are not
+	 * contained in the returned map
+	 * @return map containing the content counts
+	 */
+	Map<String, Long> countVersionEdges();
 }
