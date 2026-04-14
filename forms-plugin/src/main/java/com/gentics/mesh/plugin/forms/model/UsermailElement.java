@@ -21,6 +21,7 @@ import okhttp3.OkHttpClient;
  * Usermail element
  */
 @Reportable
+@FormElementType("usermail")
 public class UsermailElement extends FormElement {
 	@JsonProperty("mailsubject")
 	private String subject;

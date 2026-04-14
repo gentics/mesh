@@ -15,15 +15,16 @@ import io.vertx.core.json.JsonObject;
  * Checkbox field
  */
 @Reportable
-public class CheckboxElement extends FormElement {
+@FormElementType("boolean")
+public class BooleanElement extends FormElement {
 
 	@JsonProperty
 	private String value;
 
-	public CheckboxElement() {
+	public BooleanElement() {
 	}
 
-	protected CheckboxElement(CheckboxElement other, boolean deep) {
+	protected BooleanElement(BooleanElement other, boolean deep) {
 		super(other, deep);
 
 		this.value = other.value;
@@ -61,7 +62,7 @@ public class CheckboxElement extends FormElement {
 
 	@Override
 	protected FormElement clone(boolean deep) {
-		return new CheckboxElement(this, deep);
+		return new BooleanElement(this, deep);
 	}
 
 	@Override

@@ -73,7 +73,7 @@ import com.gentics.mesh.plugin.forms.context.FormDataCreateContext;
 import com.gentics.mesh.plugin.forms.context.FormDataUpdateContext;
 import com.gentics.mesh.plugin.forms.export.ExportData;
 import com.gentics.mesh.plugin.forms.export.Exporter;
-import com.gentics.mesh.plugin.forms.model.FileElement;
+import com.gentics.mesh.plugin.forms.model.BinaryElement;
 import com.gentics.mesh.plugin.forms.model.Form;
 import com.gentics.mesh.plugin.forms.model.FormElement;
 import com.gentics.mesh.plugin.forms.model.FormType;
@@ -729,9 +729,9 @@ public class FormDataService {
 	 * @return A {@code Pair} containing the form and the created zip file.
 	 */
 	public Single<Pair<Form, File>> zipBinaries(String projectName, Form form) {
-		Set<String> fileElementNames = form.flattened().filter(elem -> elem instanceof FileElement).map(FormElement::getName)
+		Set<String> fileElementNames = form.flattened().filter(elem -> elem instanceof BinaryElement).map(FormElement::getName)
 			.filter(Objects::nonNull).collect(Collectors.toSet());
-		Set<String> fileFieldNames = form.flattened().filter(elem -> elem instanceof FileElement).map(FormElement::getGraphQLName)
+		Set<String> fileFieldNames = form.flattened().filter(elem -> elem instanceof BinaryElement).map(FormElement::getGraphQLName)
 			.filter(Objects::nonNull).collect(Collectors.toSet());
 
 		Single<List<Downloadable>> singleDownloadables = null;
@@ -1221,6 +1221,8 @@ public class FormDataService {
 	 * @param errors map containing validation errors
 	 * @return single of the node response
 	 */
+
+	//TODO 8.5 kein formpage mehr
 	private Single<NodeResponse> saveFormData(String projectName, NodeResponse formNode, String dataFolderUuid, NodeResponse formDataNode, Form form,
 		MultiMap postedData, Map<String, ValidationError> errors) {
 		FieldContainer container = null;
@@ -1272,7 +1274,7 @@ public class FormDataService {
 	private Single<NodeResponse> saveFileUploads(String projectName, Form form, NodeResponse formDataNode, MultiMap postedData, Set<FileUpload> fileUploads) {
 		Set<String> validUploadElements = form.flattened()
 			.filter(FormElement::isActive)
-			.flatMap(elem -> elem instanceof FileElement && !elem.skipElement(postedData)
+			.flatMap(elem -> elem instanceof BinaryElement 
 				? Stream.of(elem.getName())
 				: Stream.empty())
 			.collect(Collectors.toSet());

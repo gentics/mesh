@@ -22,7 +22,7 @@ import com.gentics.mesh.plugin.common.service.RenderService;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.config.MailOptions;
 import com.gentics.mesh.plugin.forms.model.AdminMailElement;
-import com.gentics.mesh.plugin.forms.model.FileElement;
+import com.gentics.mesh.plugin.forms.model.BinaryElement;
 import com.gentics.mesh.plugin.forms.model.Form;
 import com.gentics.mesh.plugin.forms.model.FormElement;
 import com.gentics.mesh.plugin.forms.model.UsermailElement;
@@ -168,7 +168,7 @@ public class MailService {
 
 		rc.put("baseUrl", FormDataService.getDownloadBaseUrl(form, projectName));
 		rc.put("form", new JsonObject(form.removeInactiveElements().toJson()));
-		rc.put("data", form.getReportableFormData(formDataNode, e -> e.isActive() && !e.skipElement(formDataNode)));
+		rc.put("data", form.getReportableFormData(formDataNode, e -> e.isActive()));
 		rc.put("dataUuid", formDataNode.getUuid());
 
 		renderService.render(rc.data(), template, res -> {
@@ -232,7 +232,7 @@ public class MailService {
 	 */
 	private Single<MailMessage> addAttachments(String projectName, Form form, NodeResponse formDataNode, MailMessage message) {
 		List<String> fileFieldNames = form.flattened()
-			.filter(element -> element instanceof FileElement)
+			.filter(element -> element instanceof BinaryElement)
 			.map(FormElement::getName)
 			.filter(name -> {
 				BinaryField field = formDataNode.getFields().getBinaryField(name);

@@ -32,6 +32,7 @@ import okhttp3.ResponseBody;
 /**
  * Captcha Element. Implementation uses ReCaptcha
  */
+@FormElementType("recaptcha")
 public class ReCaptchaElement extends FormElement {
 	/**
 	 * URL for verification

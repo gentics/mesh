@@ -33,6 +33,7 @@ import okhttp3.ResponseBody;
  *
  * @TODO: Uses the same code as the ReCaptcha Element, we should rewrite this to use a utility class or an abstract class
  */
+@FormElementType("friendlycaptcha")
 public class FriendlyCaptchaElement extends FormElement {
 	public final static String TITLE_KEY = "error.validation.captcha.title";
 	public final static String MESSAGE_KEY = "error.validation.captcha";
