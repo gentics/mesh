@@ -647,28 +647,44 @@ public class Form implements RestModel {
 	}
 
 	/**
-	 * Get the form data as reportable json object
+	 * Get the form data as reportable JSON array, with value labels resolved without a specific language.
+	 *
 	 * @param container form data node
-	 * @return form data json
+	 * @return form data JSON array
 	 */
 	public JsonArray getReportableFormData(FieldContainer container) {
-		return getReportableFormData(container, ignored -> true);
+		return getReportableFormData(container, ignored -> true, null);
 	}
 
 	/**
-	 * Get the form data as reportable json object
+	 * Get the form data as reportable JSON array, with value labels resolved without a specific language.
+	 *
 	 * @param container form data node
 	 * @param filter additional filter for form elements
-	 * @return form data json
+	 * @return form data JSON array
 	 */
 	public JsonArray getReportableFormData(FieldContainer container, Predicate<FormElement> filter) {
+		return getReportableFormData(container, filter, null);
+	}
+
+	/**
+	 * Get the form data as reportable JSON array. For {@link ValueListElement} fields, the human-readable
+	 * label for each selected value is resolved using the given language. If {@code language} is
+	 * {@code null} or not found in the label map, the first available label is used as a fallback.
+	 *
+	 * @param container form data node
+	 * @param filter additional filter for form elements
+	 * @param language BCP-47 language tag used to resolve option labels (e.g. {@code "de"}), may be {@code null}
+	 * @return form data JSON array
+	 */
+	public JsonArray getReportableFormData(FieldContainer container, Predicate<FormElement> filter, String language) {
 		JsonArray array = new JsonArray();
 
 		flattened()
 			.filter(elt -> elt.isReportable() && filter.test(elt))
 			.forEach(elem -> {
 				JsonObject elemObj = new JsonObject(elem.toJson())
-					.put("isFile", elem instanceof FileElement);
+					.put("isFile", elem instanceof BinaryElement);
 				Object valueProperty = elemObj.remove(FIELD_VALUE);
 
 				if (valueProperty != null) {
@@ -683,33 +699,32 @@ public class Form implements RestModel {
 
 				elem.addFormData(elemObj, container, e -> FIELD_VALUE);
 
-				array.add(addValueLabels(elem, elemObj));
+				array.add(addValueLabels(elem, elemObj, language));
 			});
 
 		return array;
 	}
 
 	/**
-	 * Add the labels for selected values for the given {@link ValueListElement}
-	 * to the given result object.
+	 * Add the labels for selected values for the given {@link ValueListElement} to the given result object.
+	 * The label is resolved from the static options using the provided language; if the language is
+	 * {@code null} or not present in the label map, the first available label is used as a fallback.
 	 *
-	 * <p>
-	 *     The label will be stored in {@code resultObj} under the key
-	 *     {@code valueLabel}.
-	 * </p>
+	 * <p>The resolved label is stored in {@code resultObj} under the key {@code valueLabel}.</p>
 	 *
-	 * @param elem The form element being processed (this method does nothing for elements other than {@code ValueListElement})
-	 * @param resultObj The JSON object to add the value label to
-	 * @return The modified {@code resultObj}
+	 * @param elem      the form element being processed (no-op for non-{@link ValueListElement} elements)
+	 * @param resultObj the JSON object to add the value label to
+	 * @param language  BCP-47 language tag used to resolve option labels, may be {@code null}
+	 * @return the modified {@code resultObj}
 	 */
-	private JsonObject addValueLabels(FormElement elem, JsonObject resultObj) {
+	private JsonObject addValueLabels(FormElement elem, JsonObject resultObj, String language) {
 		if (!(elem instanceof ValueListElement)) {
 			return resultObj;
 		}
 
 		ValueListElement listElem = (ValueListElement) elem;
-		Map<String, String> valueLabels = listElem.getOptions().stream()
-			.collect(ValueListElement.OPTIONS_MAP_COLLECTOR);
+		Map<String, String> valueLabels = listElem.getStaticOptions().stream()
+			.collect(ValueListElement.optionsMapCollector(language));
 
 		if (elem.isList()) {
 			JsonArray values = resultObj.getJsonArray(FIELD_VALUE);
@@ -768,7 +783,7 @@ public class Form implements RestModel {
 	public Map<String, Boolean> getReportableElementsInfo() {
 		return flattened()
 			.filter(elt -> elt.isReportable() && StringUtils.isNotBlank(elt.getName()))
-			.collect(Collectors.toMap(FormElement::getName, e -> e instanceof FileElement, (u, v) -> u, LinkedHashMap::new));
+			.collect(Collectors.toMap(FormElement::getName, e -> e instanceof BinaryElement, (u, v) -> u, LinkedHashMap::new));
 	}
 
 	/**

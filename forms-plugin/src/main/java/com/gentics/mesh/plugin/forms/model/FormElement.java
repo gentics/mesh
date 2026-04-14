@@ -350,9 +350,7 @@ public abstract class FormElement implements RestModel {
 	 * @return validation error or null if posted data is valid
 	 */
 	public Maybe<ValidationError> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx, OkHttpClient httpClient) {
-		if (skipElement(postedData)) {
-			return RxUtil.emptyMaybe();
-		}
+
 
 		List<String> values = new ArrayList<>();
 		if (isList()) {
@@ -400,9 +398,6 @@ public abstract class FormElement implements RestModel {
 	 * @param errors true if validation errors were detected
 	 */
 	public void addField(FieldContainer container, MultiMap postedData, boolean errors) {
-		if (skipElement(postedData)) {
-			return;
-		}
 
 		if (isList()) {
 			List<String> values = getMultiFormData(postedData);
@@ -601,70 +596,7 @@ public abstract class FormElement implements RestModel {
 		return Completable.complete();
 	}
 
-	/**
-	 * Test whether this element should be skipped for validation and saving
-	 * form data via {@link #addField(FieldContainer, MultiMap, boolean)}.
-	 *
-	 * <p>
-	 *     Currently the only reason to skip an element is if it is a descendant
-	 *     of a {@link ConditionalContainerElement}, and the specified checked
-	 *     field is not set accordingly.
-	 * </p>
-	 *
-	 * @param postedData The posted form data.
-	 * @return {@code true} if the element should be skipped during validation
-	 * 		and saving data, and {@code false} otherwise.
-	 */
-	public boolean skipElement(MultiMap postedData) {
-		FormElement parent = container;
 
-		while (parent != null) {
-			if (parent instanceof ConditionalContainerElement) {
-				if (((ConditionalContainerElement) parent).skipElements(postedData)) {
-					// The conditional container could be nested. If we found
-					// a container that says skip, we can return here, otherwise
-					// we need to go further upwards.
-					return true;
-				}
-			}
-
-			parent = parent.container;
-		}
-
-		return false;
-	}
-
-	/**
-	 * Test whether this element should be skipped for email rendering.
-	 *
-	 * <p>
-	 *     Currently the only reason to skip an element is if it is a descendant
-	 *     of a {@link ConditionalContainerElement}, and the specified checked
-	 *     field is not set accordingly.
-	 * </p>
-	 *
-	 * @param formData The saved form data.
-	 * @return {@code true} if the element should be skipped during validation
-	 * 		and saving data, and {@code false} otherwise.
-	 */
-	public boolean skipElement(NodeResponse formData) {
-		FormElement parent = container;
-
-		while (parent != null) {
-			if (parent instanceof ConditionalContainerElement) {
-				if (((ConditionalContainerElement) parent).skipElements(formData)) {
-					// The conditional container could be nested. If we found
-					// a container that says skip, we can return here, otherwise
-					// we need to go further upwards.
-					return true;
-				}
-			}
-
-			parent = parent.container;
-		}
-
-		return false;
-	}
 
 	/**
 	 * Create a shallow clone of this form element.

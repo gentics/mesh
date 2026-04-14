@@ -85,14 +85,14 @@ public class FormDeserializationTest {
 	 public void selectElementIsDeserialized() throws Exception {
 	 	Form form = loadForm();
 	 	FormElement topic = form.getSchema().getProperties().get("topic");
-	 	assertThat(topic).as("topic element").isInstanceOf(CombiElement.class);
+	 	assertThat(topic).as("topic element").isInstanceOf(DropDownElement.class);
 	 }
 
 	 @Test
 	 public void booleanElementMapsToCheckbox() throws Exception {
 	 	Form form = loadForm();
 	 	FormElement accepted = form.getSchema().getProperties().get("accepted");
-	 	assertThat(accepted).as("accepted element").isInstanceOf(CheckboxElement.class);
+	 	assertThat(accepted).as("accepted element").isInstanceOf(BooleanElement.class);
 	 }
 
 	 @Test

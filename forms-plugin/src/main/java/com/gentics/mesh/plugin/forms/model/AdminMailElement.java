@@ -21,9 +21,19 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
  * </p>
  */
 @Reportable
-public class AdminMailElement extends CombiElement {
+@FormElementType("adminmail")
+public class AdminMailElement extends ValueListElement {
 
 	
+
+	@Override
+	public FormElement clone(boolean deep) {
+		return new AdminMailElement(this, deep);
+	}
+
+	protected AdminMailElement(AdminMailElement other, boolean deep) {
+		super(other, deep);
+	}
 
 	/**
 	 * Get the list of selected email addresses from the submitted form data.
@@ -31,14 +41,14 @@ public class AdminMailElement extends CombiElement {
 	 * @param formDataNode The submitted form data.
 	 * @return The list of selected email addresses from the submitted form data.
 	 */
-	public List<String> getSelectedEmails(NodeResponse formDataNode) {
+	public List<String> getSelectedEmails(NodeResponse formDataNode, String language) {
 		Optional<FieldMap> fields = Optional.ofNullable(formDataNode.getFields());
 		Optional<List<String>> selected = isList()
 			? fields.map(f -> f.getStringFieldList(getName()).getItems())
 			: fields.map(f -> f.getStringField(getName())).map(f -> Collections.singletonList(f.getString()));
 
 		return selected
-			.map(this::mapToMailAddresses)
+			.map(keys -> mapToMailAddresses(keys, language))
 			.orElse(Collections.emptyList());
 	}
 
@@ -47,12 +57,11 @@ public class AdminMailElement extends CombiElement {
 	 * @param selectedKeys The list of selected option keys.
 	 * @return The list of corresponding email addresses.
 	 */
-	private List<String> mapToMailAddresses(List<String> selectedKeys) {
+	private List<String> mapToMailAddresses(List<String> selectedKeys, String language) {
 		return selectedKeys.stream()
 			.filter(StringUtils::isNotBlank)
-			.flatMap(keys -> getOptions().stream()
-				.filter(item -> keys.contains(item.getKey()))
-				.map(ValueListItem::getValue))
+			.filter(selectedKey -> getStaticOptions().stream()
+				.anyMatch(item -> selectedKey.equals(item.getValue())))
 			.collect(Collectors.toList());
 	}
 }

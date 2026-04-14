@@ -32,7 +32,7 @@
       },
       "topic": {
         "name": "Thema",
-        "type": "select",
+        "type": "catalog",
         "active": true,
         "mandatory": true,
         "isList": false,
@@ -62,7 +62,7 @@
       },
       "accepted": {
         "name": "AGB akzeptiert",
-        "type": "checkbox",
+        "type": "boolean",
         "active": true,
         "mandatory": true,
         "isList": false

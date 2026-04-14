@@ -66,22 +66,21 @@ public class MailService {
 	}
 
 	/**
-	 * Send mails
+	 * Send admin and user mails for a submitted form. Option labels in the mail are resolved using
+	 * the given language; if {@code null}, the first available label is used as a fallback.
 	 *
-	 * @param projectName project name
-	 * @param form
-	 *            form
-	 * @param formDataNode
-	 *            form data
-	 * @param rc
-	 *            routing context
+	 * @param projectName  Mesh project name
+	 * @param form         the submitted form
+	 * @param formDataNode the saved form data node
+	 * @param rc           routing context
+	 * @param language     BCP-47 language tag for label resolution (e.g. {@code "de"}), may be {@code null}
 	 */
-	public void sendMails(String projectName, Form form, NodeResponse formDataNode, RoutingContext rc) {
+	public void sendMails(String projectName, Form form, NodeResponse formDataNode, RoutingContext rc, String language) {
 		boolean attachFileUploads = configuration.getMailOptions().isAttachFileUploads();
 		// Check for admin mails in AdminMailElements.
 		List<String> emails = form.flattened()
 			.filter(e -> e instanceof AdminMailElement)
-			.map(e -> ((AdminMailElement) e).getSelectedEmails(formDataNode))
+			.map(e -> ((AdminMailElement) e).getSelectedEmails(formDataNode, language))
 			.flatMap(List::stream)
 			.collect(Collectors.toList());
 
@@ -104,7 +103,7 @@ public class MailService {
 				subject = StringUtils.defaultIfBlank(subject, PLACEHOLDER_FORMNAME)
 					.replace(PLACEHOLDER_FORMNAME, form.getName());
 
-				sendMail(projectName, form, formDataNode, rc, subject, template, emails, attachFileUploads);
+				sendMail(projectName, form, formDataNode, rc, subject, template, emails, attachFileUploads, language);
 			} else {
 				log.error(
 						"Could not send admin mail for form {}, because no template configuration was found (template must be either configured in config.yml as \"adminMailTemplate\" or set in the form as \"mailtemp\").",
@@ -135,32 +134,26 @@ public class MailService {
 			subject = StringUtils.defaultIfBlank(subject, PLACEHOLDER_FORMNAME)
 				.replace(PLACEHOLDER_FORMNAME, form.getName());
 
-			sendMail(projectName, form, formDataNode, rc, subject, template, Collections.singletonList(userEmail), attachFileUploads);
+			sendMail(projectName, form, formDataNode, rc, subject, template, Collections.singletonList(userEmail), attachFileUploads, language);
 		});
 	}
 
 	/**
-	 * Send a mail asynchronously
+	 * Send a mail asynchronously. Option labels in the rendered template are resolved using
+	 * the given language.
 	 *
-	 * @param projectName
-	 *            The project name
-	 * @param form
-	 *            The form
-	 * @param formDataNode
-	 *            The form data node
-	 * @param rc
-	 *            The routing context
-	 * @param subject
-	 *            The mail subject
-	 * @param template
-	 *            The mail template
-	 * @param to
-	 *            recipient(s)
-	 * @param attachFiles
-	 *            flag for attaching binary fields as files
+	 * @param projectName  the Mesh project name
+	 * @param form         the form
+	 * @param formDataNode the form data node
+	 * @param rc           the routing context
+	 * @param subject      the mail subject
+	 * @param template     the mail template
+	 * @param to           recipient address(es)
+	 * @param attachFiles  whether to attach binary form fields as file attachments
+	 * @param language     BCP-47 language tag for label resolution, may be {@code null}
 	 */
 	private void sendMail(String projectName, Form form, NodeResponse formDataNode, RoutingContext rc, String subject, TemplateWrapper template, List<String> to,
-			boolean attachFiles) {
+			boolean attachFiles, String language) {
 		String from = configuration.getFromAddress();
 		if (StringUtils.isBlank(from)) {
 			log.warn("Sending mail will probably fail, because no \"fromAddress\" is configured in config.yml.");
@@ -168,7 +161,7 @@ public class MailService {
 
 		rc.put("baseUrl", FormDataService.getDownloadBaseUrl(form, projectName));
 		rc.put("form", new JsonObject(form.removeInactiveElements().toJson()));
-		rc.put("data", form.getReportableFormData(formDataNode, e -> e.isActive()));
+		rc.put("data", form.getReportableFormData(formDataNode, e -> e.isActive(), language));
 		rc.put("dataUuid", formDataNode.getUuid());
 
 		renderService.render(rc.data(), template, res -> {

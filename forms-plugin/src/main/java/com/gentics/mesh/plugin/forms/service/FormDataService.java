@@ -1318,7 +1318,7 @@ public class FormDataService {
 			MultiMap postedData = ctx.getPostedData();
 
 			// send mails to admin and user
-			mailService.sendMails(ctx.getProjectName(), ctx.getForm(), savedFileUploads, meshContext);
+			mailService.sendMails(ctx.getProjectName(), ctx.getForm(), savedFileUploads, meshContext, ctx.getLanguageForSendingEmail());
 
 			// perform actions
 			return Single.zip(

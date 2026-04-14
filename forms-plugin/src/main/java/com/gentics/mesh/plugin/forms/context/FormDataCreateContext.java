@@ -108,6 +108,17 @@ public class FormDataCreateContext {
 			.orElse(true);
 	}
 
+	/**
+	 * Returns the language for this request. First checks the {@code language} query parameter;
+	 * if absent, falls back to the first entry of the languages array derived from the request.
+	 *
+	 * @return language tag (e.g. {@code "de"}), or {@code null} if no language was specified
+	 */
+	public String getLanguageForSendingEmail() {
+		return Optional.ofNullable(context.queryParams().get("language"))
+			.orElse(languages != null && languages.length > 0 ? languages[0] : null);
+	}
+
 	public boolean handleCookies() {
 		return handleCookies;
 	}
