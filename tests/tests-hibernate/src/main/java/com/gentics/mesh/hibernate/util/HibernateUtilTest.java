@@ -14,12 +14,15 @@ import com.gentics.mesh.etc.config.HibernateMeshOptions;
 
 public class HibernateUtilTest {
 
+	protected static final int DEFINED_LIMIT = 10;
+	protected static final int CALCULATED_LIMIT = DEFINED_LIMIT - HibernateUtil.NUM_STALE_QUERY_PARAMETERS;
+
 	protected HibernateMeshOptions options;
 
 	@Before
 	public void setup() {
 		options = new HibernateMeshOptions();
-		options.getStorageOptions().setSqlParametersLimit(Integer.toString(10));
+		options.getStorageOptions().setSqlParametersLimit(Integer.toString(DEFINED_LIMIT));
 
 		HibTxData data = mock(HibTxData.class);
 		when(data.options()).thenReturn(options);
@@ -30,34 +33,28 @@ public class HibernateUtilTest {
 
 	@Test
 	public void testInQueriesLimitForSplittingLessThanLimit() {
-		int limit = HibernateUtil.inQueriesLimitForSplitting(1);
-		assertThat(limit).as("Calculated limit")
-			.isGreaterThan(0)
-			.isEqualTo(Integer.parseInt(options.getStorageOptions().getSqlParametersLimit()) - 5 - 1);
+		testInQueriesLimit(3);
 	}
 
 	@Test
 	public void testInQueriesLimitForSplittingMoreThanLimit() {
-		int limit = HibernateUtil.inQueriesLimitForSplitting(12);
-		assertThat(limit).as("Calculated limit")
-			.isGreaterThan(0)
-			.isEqualTo(Integer.parseInt(options.getStorageOptions().getSqlParametersLimit()) - 5);
+		testInQueriesLimit(13);
 	}
 
 	@Test
 	public void testInQueriesLimitForSplittingZero() {
-		int limit = HibernateUtil.inQueriesLimitForSplitting(0);
-		assertThat(limit).as("Calculated limit")
-			.isGreaterThan(0)
-			.isEqualTo(Integer.parseInt(options.getStorageOptions().getSqlParametersLimit()) - 5);
+		testInQueriesLimit(0);
 	}
 
-
 	@Test
-	public void testInQueriesLimitForSplittingLimit() {
-		int limit = HibernateUtil.inQueriesLimitForSplitting(Integer.parseInt(options.getStorageOptions().getSqlParametersLimit()));
+	public void testInQueriesLimitForSplittingExactLimit() {
+		testInQueriesLimit(Integer.parseInt(options.getStorageOptions().getSqlParametersLimit()));
+	}
+
+	protected void testInQueriesLimit(int numParams) {
+		int limit = HibernateUtil.inQueriesLimitForSplitting(numParams);
 		assertThat(limit).as("Calculated limit")
 			.isGreaterThan(0)
-			.isEqualTo(Integer.parseInt(options.getStorageOptions().getSqlParametersLimit()) - 5);
+			.isEqualTo(CALCULATED_LIMIT - ((numParams < DEFINED_LIMIT) ? numParams : 0));
 	}
 }

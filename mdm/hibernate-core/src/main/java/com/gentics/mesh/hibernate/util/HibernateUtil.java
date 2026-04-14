@@ -58,9 +58,11 @@ import jakarta.persistence.criteria.Root;
  * Utility functions for Hibernate-related components, DAOs and entities..
  */
 public final class HibernateUtil {
-	private static final Logger log = getLogger(HibernateUtil.class);
+		private static final Logger log = getLogger(HibernateUtil.class);
 
 	public static final int DEFAULT_IN_QUERY_LIMIT = Short.MAX_VALUE;
+	// 5 has been heuristically estimated as a bound value to cover all the (found so far) usecases.
+	public static final int NUM_STALE_QUERY_PARAMETERS = 5;
 
 	private HibernateUtil() {
 	}
@@ -354,7 +356,7 @@ public final class HibernateUtil {
 			return Integer.MAX_VALUE;
 		default:
 			int limit = Integer.parseInt(options.getSqlParametersLimit());
-			return limit > 0 ? limit : DEFAULT_IN_QUERY_LIMIT;
+			return limit > NUM_STALE_QUERY_PARAMETERS ? limit : DEFAULT_IN_QUERY_LIMIT;
 		}
 	}
 
@@ -367,8 +369,7 @@ public final class HibernateUtil {
 	 * @return
 	 */
 	public static int inQueriesLimitForSplitting(int availableParams) {
-		// 5 has been heuristically estimated as a bound value to cover all the (found so far) usecases.
-		int inQueriesLimit = inQueriesLimit() - 5;
+		int inQueriesLimit = inQueriesLimit() - NUM_STALE_QUERY_PARAMETERS;
 		int limit = inQueriesLimit - availableParams;
 		if (limit < 1) {
 			limit = inQueriesLimit;
