@@ -58,7 +58,7 @@ import jakarta.persistence.criteria.Root;
  * Utility functions for Hibernate-related components, DAOs and entities..
  */
 public final class HibernateUtil {
-		private static final Logger log = getLogger(HibernateUtil.class);
+	private static final Logger log = getLogger(HibernateUtil.class);
 
 	public static final int DEFAULT_IN_QUERY_LIMIT = Short.MAX_VALUE;
 	// 5 has been heuristically estimated as a bound value to cover all the (found so far) usecases.
