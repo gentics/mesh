@@ -49,10 +49,6 @@ public enum ElementType {
 	 * @return type or null
 	 */
 	public static ElementType get(String type) {
-		// "boolean" is a Java keyword and cannot be an enum constant — maps to checkbox
-		if ("boolean".equals(type)) {
-			return checkbox;
-		}
 		try {
 			return valueOf(type);
 		} catch (Throwable t) {

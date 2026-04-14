@@ -62,7 +62,7 @@
       },
       "accepted": {
         "name": "AGB akzeptiert",
-        "type": "boolean",
+        "type": "checkbox",
         "active": true,
         "mandatory": true,
         "isList": false
