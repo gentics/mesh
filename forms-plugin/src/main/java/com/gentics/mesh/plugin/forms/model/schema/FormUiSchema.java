@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * UI schema wrapper — contains the layout and presentation definitions for rendering a form.
@@ -90,5 +91,30 @@ public class FormUiSchema {
 
 	public void setPages(List<Map<String, Object>> pages) {
 		this.pages = pages;
+	}
+
+	/**
+	 * Find the formGridOptions for the element with the given key (matches the "id" field of UI schema elements).
+	 *
+	 * @param elementKey the key of the form element
+	 * @return the formGridOptions map, or empty if not found
+	 */
+	@SuppressWarnings("unchecked")
+	public Optional<Map<String, Object>> findFormGridOptions(String elementKey) {
+		if (pages == null || elementKey == null) {
+			return Optional.empty();
+		}
+		for (Map<String, Object> page : pages) {
+			List<Map<String, Object>> elements = (List<Map<String, Object>>) page.get("elements");
+			if (elements == null) {
+				continue;
+			}
+			for (Map<String, Object> element : elements) {
+				if (elementKey.equals(element.get("id"))) {
+					return Optional.ofNullable((Map<String, Object>) element.get("formGridOptions"));
+				}
+			}
+		}
+		return Optional.empty();
 	}
 }

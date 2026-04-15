@@ -16,6 +16,8 @@ import io.vertx.core.json.JsonObject;
 /**
  * Formpage element, which is a container for other elements. Stores boolean flag in mesh, which is true, when all nested elements were successfully posted
  */
+//TODO 8.5 delete
+@FormElementType("formpage")
 public class FormpageElement extends FormElement {
 
 	@JsonProperty

@@ -451,7 +451,7 @@ public class Form implements RestModel {
 					flattened()
 						.filter(FormElement::isActive)
 						.filter(filter)
-						.map(elem -> elem.validate(postedData, fileUploads, formDataNode, rxVertx, httpClient)
+						.map(elem -> elem.validate(postedData, fileUploads, formDataNode, rxVertx, httpClient, uiSchema)
 								.map(error -> Pair.of(elem.getName(), error))
 								.toSingle(Pair.of(null, null)))),
 					errors -> Arrays.stream(errors)

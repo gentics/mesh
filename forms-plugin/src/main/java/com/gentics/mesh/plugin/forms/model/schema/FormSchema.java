@@ -48,5 +48,6 @@ public class FormSchema {
 
 	public void setProperties(Map<String, FormElement> properties) {
 		this.properties = properties;
+		properties.forEach((k, element) -> element.setKey(k));
 	}
 }

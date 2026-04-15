@@ -16,6 +16,7 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
+import com.gentics.mesh.plugin.forms.model.schema.FormUiSchema;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
 import com.gentics.mesh.plugin.forms.util.RxUtil;
 import io.reactivex.Completable;
@@ -75,6 +76,9 @@ public abstract class FormElement implements RestModel {
 
 	@JsonIgnore
 	protected FormsConfig configuration;
+
+	@JsonIgnore
+	protected String key;
 
 	public FormElement() {
 	}
@@ -349,7 +353,7 @@ public abstract class FormElement implements RestModel {
 	 * @param httpClient a HTTP client for possible external validation calls
 	 * @return validation error or null if posted data is valid
 	 */
-	public Maybe<ValidationError> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx, OkHttpClient httpClient) {
+	public Maybe<ValidationError> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx, OkHttpClient httpClient, FormUiSchema uischema) {
 
 
 		List<String> values = new ArrayList<>();
@@ -564,6 +568,21 @@ public abstract class FormElement implements RestModel {
 	@JsonIgnore
 	public FormsConfig getConfiguration() {
 		return configuration;
+	}
+
+	public void setKey(String key) {
+		this.key = key;
+	}
+
+	public String getKey() {
+		return key;
+	}
+
+	public Optional<Map<String, Object>> getFormGridOptions(FormUiSchema uiSchema) {
+		if (uiSchema == null || key == null) {
+			return Optional.empty();
+		}
+		return uiSchema.findFormGridOptions(key);
 	}
 
 	/**
