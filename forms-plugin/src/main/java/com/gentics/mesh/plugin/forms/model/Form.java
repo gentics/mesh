@@ -723,7 +723,7 @@ public class Form implements RestModel {
 		}
 
 		ValueListElement listElem = (ValueListElement) elem;
-		Map<String, String> valueLabels = listElem.getStaticOptions().stream()
+		Map<String, String> valueLabels = listElem.getSelectOptions().stream()
 			.collect(ValueListElement.optionsMapCollector(language));
 
 		if (elem.isList()) {

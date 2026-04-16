@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.model.schema.FormData;
 import com.gentics.mesh.plugin.forms.model.schema.FormUiSchema;
@@ -86,6 +87,13 @@ public class FormDeserializationTest {
 	 	Form form = loadForm();
 	 	FormElement topic = form.getSchema().getProperties().get("topic");
 	 	assertThat(topic).as("topic element").isInstanceOf(DropDownElement.class);
+	 	assertThat(topic.getFormGridOptions()).as("topic.formGridOptions").isNotNull();
+	 	assertThat(topic.getFormGridOptions().getSelectOptions())
+	 		.as("topic.formGridOptions.selectOptions")
+	 		.hasSize(2);
+	 	assertThat(topic.getFormGridOptions().getSelectOptions().get(0).getValue())
+	 		.as("topic.formGridOptions.selectOptions[0].value")
+	 		.isEqualTo("general");
 	 }
 
 	 @Test
@@ -193,10 +201,13 @@ public class FormDeserializationTest {
 		assertThat(reserialized.get("schema").get("version")).as("schema.version")
 			.isEqualTo(original.get("schema").get("version"));
 
-		
+		// formGridOptions is write-only and is therefore not preserved in the serialized schema tree.
+		// Value-list elements still serialize their direct selectOptions field, which remains empty here.
+		JsonNode originalSchema = original.deepCopy();
+		((ObjectNode) originalSchema.get("schema").get("properties").get("topic")).remove("formGridOptions");
 
 		// uiSchema and data are pure pass-through — full tree must match
-		assertThat(reserialized.get("schema")).as("schema").isEqualTo(original.get("schema"));
+		assertThat(reserialized.get("schema")).as("schema").isEqualTo(originalSchema.get("schema"));
 		assertThat(reserialized.get("uiSchema")).as("uiSchema").isEqualTo(original.get("uiSchema"));
 		assertThat(reserialized.get("data")).as("data").isEqualTo(original.get("data"));
 	}

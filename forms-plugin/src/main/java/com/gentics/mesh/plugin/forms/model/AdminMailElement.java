@@ -60,7 +60,7 @@ public class AdminMailElement extends ValueListElement {
 	private List<String> mapToMailAddresses(List<String> selectedKeys, String language) {
 		return selectedKeys.stream()
 			.filter(StringUtils::isNotBlank)
-			.filter(selectedKey -> getStaticOptions().stream()
+			.filter(selectedKey -> getSelectOptions().stream()
 				.anyMatch(item -> selectedKey.equals(item.getValue())))
 			.collect(Collectors.toList());
 	}

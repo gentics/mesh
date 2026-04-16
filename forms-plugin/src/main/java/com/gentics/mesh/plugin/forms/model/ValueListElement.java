@@ -55,8 +55,7 @@ public class ValueListElement extends FormElement {
 			LinkedHashMap::new);
 	}
 
-	@JsonProperty("staticOptions")
-	protected List<ValueListItem> staticOptions = new ArrayList<>();
+	protected List<ValueListItem> selectOptions = new ArrayList<>();
 
 
 	@JsonIgnore
@@ -68,16 +67,18 @@ public class ValueListElement extends FormElement {
 	protected ValueListElement(ValueListElement other, boolean deep) {
 		super(other, deep);
 
-		this.staticOptions = cloneField(other.staticOptions, deep);
+		this.selectOptions = cloneField(other.selectOptions, deep);
 		updateValidValues();
 	}
 
-	public List<ValueListItem> getStaticOptions() {
-		return staticOptions;
+	@JsonIgnore
+	public List<ValueListItem> getSelectOptions() {
+		return selectOptions;
 	}
 
-	public void setStaticOptions(List<ValueListItem> staticOptions) {
-		this.staticOptions = Optional.ofNullable(staticOptions).orElse(new ArrayList<>());
+	@JsonProperty("selectOptions")
+	public void setSelectOptions(List<ValueListItem> selectOptions) {
+		this.selectOptions = Optional.ofNullable(selectOptions).orElse(new ArrayList<>());
 	}
 
 
@@ -93,13 +94,13 @@ public class ValueListElement extends FormElement {
 			.setName(getName())
 			.setTitle(I18nHelper.get(Locale.GERMAN, "error.validation.form.title"));
 
-		if (staticOptions == null || staticOptions.isEmpty()) {
+		if (selectOptions == null || selectOptions.isEmpty()) {
 			error.setMessage(I18nHelper.get(Locale.GERMAN, "error.validation.form.missing_list_elements", getLabelOrName()));
 
 			return Optional.of(error);
 		}
 
-		Optional<ValueListItem> invalid = staticOptions.stream()
+		Optional<ValueListItem> invalid = selectOptions.stream()
 			.filter(e -> StringUtils.isEmpty(e.getValue()) || (e.getLabel() == null || e.getLabel().isEmpty()))
 			.findAny();
 
@@ -122,14 +123,14 @@ public class ValueListElement extends FormElement {
 
 		results.put(
 			RC_VALUE_LABELS,
-			getStaticOptions().stream().sequential().collect(optionsMapCollector(null)));
+			getSelectOptions().stream().sequential().collect(optionsMapCollector(null)));
 
 		JsonObject values = results.getJsonObject(FormDataService.POLL_VALUES_NAME);
 
 		if (values.isEmpty()) {
 			// Prepare the values, to enforce element order, as they are defined
 			// in the form.
-			getStaticOptions().forEach(e -> values.put(e.getValue(), 0));
+			getSelectOptions().forEach(e -> values.put(e.getValue(), 0));
 		}
 
 		String fieldName = getName();
@@ -180,7 +181,7 @@ public class ValueListElement extends FormElement {
 	@Override
 	protected boolean isInvalidValue(String value) {
 		// This is also checked in validateForm(), but just to be sure.
-		if (CollectionUtils.isEmpty(staticOptions)) {
+		if (CollectionUtils.isEmpty(selectOptions)) {
 			return true;
 		}
 
@@ -192,6 +193,6 @@ public class ValueListElement extends FormElement {
 	 */
 	private void updateValidValues() {
 		validValues.clear();
-		validValues.addAll(staticOptions.stream().map(ValueListItem::getValue).collect(Collectors.toSet()));
+		validValues.addAll(selectOptions.stream().map(ValueListItem::getValue).collect(Collectors.toSet()));
 	}
 }

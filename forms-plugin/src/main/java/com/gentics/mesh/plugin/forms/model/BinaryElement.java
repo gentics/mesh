@@ -19,7 +19,6 @@ import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaCoreProperties;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
@@ -79,7 +78,7 @@ public class BinaryElement extends FormElement {
 	@Override
 	public Maybe<ValidationError> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx, OkHttpClient httpClient, FormUiSchema uiSchema) {
 
-		Map<String, Object> gridOptions = getFormGridOptions(uiSchema).orElse(null);
+		Map<String, Object> gridOptions = getFormGridOptionsFromUiSchema(uiSchema).orElse(null);
 
 		FileUpload fileUpload = getFileUpload(fileUploads);
 		if (fileUpload == null) {

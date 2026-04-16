@@ -80,6 +80,10 @@ public abstract class FormElement implements RestModel {
 	@JsonIgnore
 	protected String key;
 
+	// This will be integrated inside "data" for frontend, and will be removed inside "schema"
+	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+	protected SchemaFormGridOptions formGridOptions;
+
 	public FormElement() {
 	}
 
@@ -101,6 +105,7 @@ public abstract class FormElement implements RestModel {
 		this.properties = cloneField(other.properties, deep);
 		this.container = other.container;
 		this.configuration = other.configuration;
+		this.formGridOptions = other.formGridOptions;
 	}
 
 	/**
@@ -578,7 +583,16 @@ public abstract class FormElement implements RestModel {
 		return key;
 	}
 
-	public Optional<Map<String, Object>> getFormGridOptions(FormUiSchema uiSchema) {
+	@JsonIgnore
+	public SchemaFormGridOptions getFormGridOptions() {
+		return formGridOptions;
+	}
+
+	public void setFormGridOptions(SchemaFormGridOptions formGridOptions) {
+		this.formGridOptions = formGridOptions;
+	}
+
+	public Optional<Map<String, Object>> getFormGridOptionsFromUiSchema(FormUiSchema uiSchema) {
 		if (uiSchema == null || key == null) {
 			return Optional.empty();
 		}

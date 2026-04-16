@@ -36,22 +36,25 @@
         "active": true,
         "mandatory": true,
         "isList": false,
-        "staticOptions": [
-          {
-            "value": "general",
-            "label": {
-              "de": "Allgemein",
-              "en": "General"
+        "formGridOptions": {
+          "defaultValue": "general",
+          "selectOptions": [
+            {
+              "value": "general",
+              "label": {
+                "de": "Allgemein",
+                "en": "General"
+              }
+            },
+            {
+              "value": "support",
+              "label": {
+                "de": "Support",
+                "en": "Support"
+              }
             }
-          },
-          {
-            "value": "support",
-            "label": {
-              "de": "Support",
-              "en": "Support"
-            }
-          }
-        ]
+          ]
+        }
       },
       "interests": {
         "name": "Interessen",
