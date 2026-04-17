@@ -1,5 +1,5 @@
 # This Dockerfile is used to create a Jenkins agent that connects to the controller and is used to as a worker
-FROM jenkins/inbound-agent:latest-trixie-jdk17
+FROM jenkins/inbound-agent:latest-trixie-jdk21
 
 ARG DEBIAN_RELEASE="trixie"
 ARG USER_NAME="jenkins"
@@ -37,7 +37,7 @@ RUN apt update
 RUN apt install --assume-yes docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
 # Maven
-RUN cd /opt && wget -nv -O maven.tar.gz "https://dlcdn.apache.org/maven/maven-3/3.9.11/binaries/apache-maven-3.9.11-bin.tar.gz" && \
+RUN cd /opt && wget -nv -O maven.tar.gz "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.11/apache-maven-3.9.11-bin.tar.gz" && \
     tar -xzf maven.tar.gz && mv apache-maven* maven && rm maven.tar.gz && \
     ln -s /opt/maven/bin/mvn /usr/local/bin/mvn
 
