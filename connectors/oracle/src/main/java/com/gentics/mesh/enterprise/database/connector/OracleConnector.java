@@ -147,4 +147,9 @@ public class OracleConnector extends AbstractEnterpriseDatabaseConnector {
 	protected String getDefaultDialectClassName() {
 		return OracleLongTextDialect.class.getCanonicalName();
 	}
+
+	@Override
+	public String getCteFunctionDefinition(String name, List<String> arguments, boolean recursive) {
+		return name + (arguments.isEmpty() ? "" : arguments.stream().collect(Collectors.joining(",", "(", ")")));
+	}
 }

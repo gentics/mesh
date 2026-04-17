@@ -1,6 +1,8 @@
 package com.gentics.mesh.enterprise.database.connector;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -66,5 +68,10 @@ public class SQLServerConnector extends AbstractEnterpriseDatabaseConnector {
 	@Override
 	protected String getDefaultDialectClassName() {
 		return SqlServerUnicodeDialect.class.getCanonicalName();
+	}
+
+	@Override
+	public String getCteFunctionDefinition(String name, List<String> arguments, boolean recursive) {
+		return name + (arguments.isEmpty() ? "" : arguments.stream().collect(Collectors.joining(",", "(", ")")));
 	}
 }
