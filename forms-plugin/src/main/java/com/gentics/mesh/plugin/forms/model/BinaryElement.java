@@ -27,6 +27,7 @@ import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.plugin.forms.config.FileUploadOptions;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
+import com.gentics.mesh.plugin.forms.model.schema.FormPageElementOptions;
 import com.gentics.mesh.plugin.forms.model.schema.FormUiSchema;
 import com.gentics.mesh.plugin.forms.util.RxUtil;
 
@@ -78,7 +79,7 @@ public class BinaryElement extends FormElement {
 	@Override
 	public Maybe<ValidationError> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx, OkHttpClient httpClient, FormUiSchema uiSchema) {
 
-		Map<String, Object> gridOptions = getFormGridOptionsFromUiSchema(uiSchema).orElse(null);
+		FormPageElementOptions gridOptions = getFormGridOptionsFromUiSchema(uiSchema).orElse(null);
 
 		FileUpload fileUpload = getFileUpload(fileUploads);
 		if (fileUpload == null) {
@@ -151,10 +152,10 @@ public class BinaryElement extends FormElement {
 	 *            grid options
 	 * @return max file size
 	 */
-	protected int getMaxFileSize(Map<String, Object> gridOptions) {
+	protected int getMaxFileSize(FormPageElementOptions gridOptions) {
 		int maxFileSize = 0;
-		if (maxFileSize <= 0 && gridOptions != null && gridOptions.get("maxFileSize") instanceof Number) {
-			maxFileSize = ((Number) gridOptions.get("maxFileSize")).intValue();
+		if (maxFileSize <= 0 && gridOptions != null && gridOptions.getMaxFileSize() != null) {
+			maxFileSize = gridOptions.getMaxFileSize().intValue();
 		}
 		return maxFileSize;
 	}
@@ -166,12 +167,10 @@ public class BinaryElement extends FormElement {
 	 *            grid options
 	 * @return allowed file types collection
 	 */
-	protected Collection<String> getAllowedFiletypes(Map<String, Object> gridOptions) {
+	protected Collection<String> getAllowedFiletypes(FormPageElementOptions gridOptions) {
 		Collection<String> allowedTypes = null;
-		if ((allowedTypes == null || allowedTypes.isEmpty()) && gridOptions != null && gridOptions.get("allowedFiletypes") instanceof List) {
-			@SuppressWarnings("unchecked")
-			List<String> uiAllowedTypes = (List<String>) gridOptions.get("allowedFiletypes");
-			allowedTypes = uiAllowedTypes;
+		if ((allowedTypes == null || allowedTypes.isEmpty()) && gridOptions != null && gridOptions.getAllowedFiletypes() != null) {
+			allowedTypes = gridOptions.getAllowedFiletypes();
 		}
 		return allowedTypes;
 	}

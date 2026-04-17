@@ -35,7 +35,7 @@ public class FormUiSchema {
 	private String formFlowKey;
 
 	@JsonProperty("pages")
-	private List<Map<String, Object>> pages;
+	private List<FormPage> pages;
 
 	public String getKey() {
 		return key;
@@ -85,11 +85,11 @@ public class FormUiSchema {
 		this.formFlowKey = formFlowKey;
 	}
 
-	public List<Map<String, Object>> getPages() {
+	public List<FormPage> getPages() {
 		return pages;
 	}
 
-	public void setPages(List<Map<String, Object>> pages) {
+	public void setPages(List<FormPage> pages) {
 		this.pages = pages;
 	}
 
@@ -97,21 +97,20 @@ public class FormUiSchema {
 	 * Find the formGridOptions for the element with the given key (matches the "id" field of UI schema elements).
 	 *
 	 * @param elementKey the key of the form element
-	 * @return the formGridOptions map, or empty if not found
+	 * @return the formGridOptions, or empty if not found
 	 */
-	@SuppressWarnings("unchecked")
-	public Optional<Map<String, Object>> findFormGridOptions(String elementKey) {
+	public Optional<FormPageElementOptions> findFormGridOptions(String elementKey) {
 		if (pages == null || elementKey == null) {
 			return Optional.empty();
 		}
-		for (Map<String, Object> page : pages) {
-			List<Map<String, Object>> elements = (List<Map<String, Object>>) page.get("elements");
+		for (FormPage page : pages) {
+			List<FormPageElement> elements = page.getElements();
 			if (elements == null) {
 				continue;
 			}
-			for (Map<String, Object> element : elements) {
-				if (elementKey.equals(element.get("id"))) {
-					return Optional.ofNullable((Map<String, Object>) element.get("formGridOptions"));
+			for (FormPageElement element : elements) {
+				if (elementKey.equals(element.getId())) {
+					return Optional.ofNullable(element.getFormGridOptions());
 				}
 			}
 		}
