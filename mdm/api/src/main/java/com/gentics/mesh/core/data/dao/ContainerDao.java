@@ -1,6 +1,11 @@
 package com.gentics.mesh.core.data.dao;
 
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
+import java.util.Set;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -55,6 +60,19 @@ public interface ContainerDao<
 	 */
 	void deleteVersion(SCV version);
 
+	/**
+	 * Delete the schema versions by UUIDs, notifying the context, if necessary
+	 * 
+	 * @param affectedVersions pairs of UUIDS of version and owning schema
+	 */
+	default void deleteVersions(Set<Pair<String, String>> affectedVersions) {
+		Map<String, SC> schemaVersions = affectedVersions.stream()
+				.map(pair -> Pair.of(pair.getKey(), findByUuid(pair.getValue())))
+				.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+		for (Entry<String, SC> pair : schemaVersions.entrySet()) {
+			deleteVersion(findVersionByUuid(pair.getValue(), pair.getKey()));
+		}
+	}
 	/**
 	 * Load the schema version via the schema and version.
 	 * 

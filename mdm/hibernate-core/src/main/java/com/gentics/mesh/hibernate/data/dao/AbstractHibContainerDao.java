@@ -4,6 +4,8 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.firstOrNull;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -291,6 +293,42 @@ public abstract class AbstractHibContainerDao<
 		return resultList.stream().collect(Collectors.toMap(row -> HibBranch.class.cast(row[0]),
 				row -> getVersionPersistenceClass().cast(row[1]), (v1, v2) -> v1));
 	}
+
+	/**
+	 * Build sparse chains of container version by UUID triplets (previous, current, next)
+	 * 
+	 * @param list
+	 * @return
+	 */
+	protected List<List<UUID>> buildChains(List<UUID[]> list) {
+		List<List<UUID>> chains = list.stream().map(Arrays::asList).map(ArrayList::new).collect(Collectors.toList());
+		int size;
+		do {
+			size = chains.size();
+			for (int i = chains.size()-1; i >= 0; i--) {
+				List<UUID> source = chains.get(i);
+				UUID prev = source.get(0);
+				UUID next = source.get(source.size() - 1);
+				for (int j = chains.size()-1; j >= 0; j--) {
+					List<UUID> destination = chains.get(j);
+					if (destination == source) {
+						continue;
+					}
+					int iprev = destination.indexOf(prev);
+					if (iprev == (destination.size() - 2)) {
+						destination.addAll(source.subList(2, source.size()));
+						chains.remove(source);
+					}
+					int inext = destination.indexOf(next);
+					if (inext == 1) {
+						destination.addAll(0, source.subList(0, source.size() - 2));
+						chains.remove(source);
+					}
+				}
+			}
+		} while (size > chains.size());
+		return chains;
+    }
 
 	/**
 	 * Get the field label for the container version.

@@ -566,4 +566,9 @@ public abstract class AbstractDatabaseConnector implements DatabaseConnector {
 				jdbcEnvironment
 		);
 	}
+
+	@Override
+	public String getCteFunctionDefinition(String name, List<String> arguments, boolean recursive) {
+		return (recursive ? "RECURSIVE " : "") + name + (arguments.isEmpty() ? "" : arguments.stream().collect(Collectors.joining(",", "(", ")")));
+	}
 }
