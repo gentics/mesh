@@ -20,6 +20,7 @@ import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.common.NameOrUUIDsRequest;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
+import com.gentics.mesh.core.rest.job.warning.JobWarning;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.core.result.Result;
@@ -110,8 +111,10 @@ public abstract class AbstractContainerVersionPurgeJobProcessor<
 					}).flatMap(ms -> {
 						String schemaUuid = ms.getUuid();
 						Iterable<? extends SCV> versions = containerDao.findAllVersions(ms);
-						return StreamUtil.toStream(versions).map(msv -> msv.getUuid())
-								.filter(uuid -> !usedVersionUuids.contains(uuid) && contentCounts.getOrDefault(uuid, 0L) < 1)
+						return StreamUtil.toStream(versions)
+								.filter(msv -> !usedVersionUuids.contains(msv.getUuid()) && contentCounts.getOrDefault(msv.getUuid(), 0L) < 1)
+								.peek(msv -> job.getWarnings().add(new JobWarning().setType("scheduled").setMessage(ms.getName() + " / " + msv.getVersion() + " / " + msv.getUuid())))
+								.map(msv -> msv.getUuid())
 								.map(uuid -> Pair.of(uuid, schemaUuid));
 						}).collect(Collectors.toSet());
 			});
@@ -119,6 +122,11 @@ public abstract class AbstractContainerVersionPurgeJobProcessor<
 					? Completable.complete()
 					: db.asyncTx(() -> {
 						containerDao.deleteVersions(affectedVersions);
+						job.getWarnings().getData().stream()
+							.filter(w -> "scheduled".equals(w.getType()))
+							.forEach(w -> {
+								w.setType("purged");
+							});
 					});
 		}).doOnComplete(() -> {
 			db.tx(() -> jobDao.mergeIntoPersisted(job));
