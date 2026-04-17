@@ -42,7 +42,7 @@ def registryHost = registryHostStaging;
 final def testPart(partName, current, branches) {
 	def partId = "split${partName}${current}"
 	branches[partId] = {
-		node('mesh-worker-17') {
+		node('mesh-worker-3.2') {
 			echo "Preparing slave environment for ${partId}"
 			sh "rm -rf ${partId}"
 			sh "mkdir ${partId}"
@@ -93,7 +93,7 @@ final def testPart(partName, current, branches) {
 }
 
 stage("Setup Build Environment") {
-	node("mesh-root-worker-17") {
+	node("mesh-root-worker-3.2") {
 		githubBuildStarted()
 		try {
 			stage("Checkout") {
