@@ -27,7 +27,7 @@ import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.plugin.forms.config.FileUploadOptions;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
-import com.gentics.mesh.plugin.forms.model.schema.FormPageElementOptions;
+import com.gentics.mesh.plugin.forms.model.schema.UischemaFormgridOptions;
 import com.gentics.mesh.plugin.forms.model.schema.FormUiSchema;
 import com.gentics.mesh.plugin.forms.util.RxUtil;
 
@@ -79,7 +79,7 @@ public class BinaryElement extends FormElement {
 	@Override
 	public Maybe<ValidationError> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx, OkHttpClient httpClient, FormUiSchema uiSchema) {
 
-		FormPageElementOptions gridOptions = getFormGridOptionsFromUiSchema(uiSchema).orElse(null);
+		UischemaFormgridOptions gridOptions = getFormGridOptionsFromUiSchema(uiSchema).orElse(null);
 
 		FileUpload fileUpload = getFileUpload(fileUploads);
 		if (fileUpload == null) {
@@ -152,7 +152,7 @@ public class BinaryElement extends FormElement {
 	 *            grid options
 	 * @return max file size
 	 */
-	protected int getMaxFileSize(FormPageElementOptions gridOptions) {
+	protected int getMaxFileSize(UischemaFormgridOptions gridOptions) {
 		int maxFileSize = 0;
 		if (maxFileSize <= 0 && gridOptions != null && gridOptions.getMaxFileSize() != null) {
 			maxFileSize = gridOptions.getMaxFileSize().intValue();
@@ -167,7 +167,7 @@ public class BinaryElement extends FormElement {
 	 *            grid options
 	 * @return allowed file types collection
 	 */
-	protected Collection<String> getAllowedFiletypes(FormPageElementOptions gridOptions) {
+	protected Collection<String> getAllowedFiletypes(UischemaFormgridOptions gridOptions) {
 		Collection<String> allowedTypes = null;
 		if ((allowedTypes == null || allowedTypes.isEmpty()) && gridOptions != null && gridOptions.getAllowedFiletypes() != null) {
 			allowedTypes = gridOptions.getAllowedFiletypes();
