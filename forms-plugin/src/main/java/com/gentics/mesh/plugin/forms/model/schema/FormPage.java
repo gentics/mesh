@@ -13,7 +13,7 @@ public class FormPage {
 	private Map<String, String> pagename;
 
 	@JsonProperty("elements")
-	private List<FormPageElement> elements;
+	private List<UiSchemaPageElement> elements;
 
 	public Map<String, String> getPagename() {
 		return pagename;
@@ -23,11 +23,11 @@ public class FormPage {
 		this.pagename = pagename;
 	}
 
-	public List<FormPageElement> getElements() {
+	public List<UiSchemaPageElement> getElements() {
 		return elements;
 	}
 
-	public void setElements(List<FormPageElement> elements) {
+	public void setElements(List<UiSchemaPageElement> elements) {
 		this.elements = elements;
 	}
 }

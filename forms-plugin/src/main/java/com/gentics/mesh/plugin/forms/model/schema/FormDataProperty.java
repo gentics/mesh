@@ -1,9 +1,13 @@
 package com.gentics.mesh.plugin.forms.model.schema;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Represents the data entry for a single form control inside {@link FormData#getProperties()}.
@@ -31,6 +35,8 @@ public class FormDataProperty {
 
 	@JsonProperty("editable")
 	private Boolean editable;
+
+	protected Map<String, Object> properties = new LinkedHashMap<>();
 
 	public Object getValue() {
 		return value;
@@ -70,5 +76,20 @@ public class FormDataProperty {
 
 	public void setEditable(Boolean editable) {
 		this.editable = editable;
+	}
+
+	@JsonAnyGetter
+	public Map<String, Object> getAny() {
+		if (properties == null) {
+			properties = new LinkedHashMap<>();
+		}
+		return properties;
+	}
+
+	@JsonAnySetter
+	public void setProperty(String key, Object value) {
+		if (key != null && !key.isEmpty()) {
+			getAny().put(key, value);
+		}
 	}
 }

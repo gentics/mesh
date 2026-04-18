@@ -99,16 +99,16 @@ public class FormUiSchema {
 	 * @param elementKey the key of the form element
 	 * @return the formGridOptions, or empty if not found
 	 */
-	public Optional<FormPageElementOptions> findFormGridOptions(String elementKey) {
+	public Optional<UischemaFormgridOptions> findFormGridOptions(String elementKey) {
 		if (pages == null || elementKey == null) {
 			return Optional.empty();
 		}
 		for (FormPage page : pages) {
-			List<FormPageElement> elements = page.getElements();
+			List<UiSchemaPageElement> elements = page.getElements();
 			if (elements == null) {
 				continue;
 			}
-			for (FormPageElement element : elements) {
+			for (UiSchemaPageElement element : elements) {
 				if (elementKey.equals(element.getId())) {
 					return Optional.ofNullable(element.getFormGridOptions());
 				}

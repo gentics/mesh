@@ -16,7 +16,7 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
-import com.gentics.mesh.plugin.forms.model.schema.FormPageElementOptions;
+import com.gentics.mesh.plugin.forms.model.schema.UischemaFormgridOptions;
 import com.gentics.mesh.plugin.forms.model.schema.FormUiSchema;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
 import com.gentics.mesh.plugin.forms.util.RxUtil;
@@ -593,7 +593,7 @@ public abstract class FormElement implements RestModel {
 		this.formGridOptions = formGridOptions;
 	}
 
-	public Optional<FormPageElementOptions> getFormGridOptionsFromUiSchema(FormUiSchema uiSchema) {
+	public Optional<UischemaFormgridOptions> getFormGridOptionsFromUiSchema(FormUiSchema uiSchema) {
 		if (uiSchema == null || key == null) {
 			return Optional.empty();
 		}
