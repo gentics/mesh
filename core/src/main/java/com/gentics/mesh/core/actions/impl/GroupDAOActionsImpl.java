@@ -55,9 +55,7 @@ public class GroupDAOActionsImpl implements GroupDAOActions {
 
 	@Override
 	public Page<? extends HibGroup> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, Predicate<HibGroup> extraFilter) {
-		return ctx.tx().groupDao().findAll(ctx.ac(), pagingInfo, group -> {
-			return extraFilter.test(group);
-		});
+		return ctx.tx().groupDao().findAll(ctx.ac(), pagingInfo, extraFilter);
 	}
 
 	@Override

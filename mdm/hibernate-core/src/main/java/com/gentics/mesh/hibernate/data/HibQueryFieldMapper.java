@@ -18,6 +18,16 @@ public interface HibQueryFieldMapper {
 	String[] getHibernateEntityName(Object... arg);
 
 	/**
+	 * Get a list of field names, allowed for the usage in GraphQL / REST sorting API
+	 * @param noDependencies check, if no dependent entity fields should be included
+	 * 
+	 * @return null, if getting the list is not supported
+	 */
+	default String[] getGraphQlSortingFieldNames(boolean noDependencies) {
+		return null;
+	}
+
+	/**
 	 * Map a field name coming from GraphQL filter API onto the actual table column name.
 	 * 
 	 * @param gqlName

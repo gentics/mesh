@@ -97,6 +97,12 @@ public class HSQLMemoryTestContextProvider extends HibernateTestContextProvider 
 				if (Character.isDigit(a.charAt(0)) && !Character.isDigit(b.charAt(0))) {
 					return -1;
 				}
+				if (!Character.isUpperCase(a.charAt(0)) && Character.isUpperCase(b.charAt(0))) {
+					return 1;
+				}
+				if (Character.isUpperCase(a.charAt(0)) && !Character.isUpperCase(b.charAt(0))) {
+					return -1;
+				}
 				return a.compareTo(b);
 			}
 
@@ -116,6 +122,12 @@ public class HSQLMemoryTestContextProvider extends HibernateTestContextProvider 
 						return -1;
 					}
 					if (Character.isDigit(a.charAt(0)) && !Character.isDigit(b.charAt(0))) {
+						return 1;
+					}
+					if (!Character.isUpperCase(a.charAt(0)) && Character.isUpperCase(b.charAt(0))) {
+						return -1;
+					}
+					if (Character.isUpperCase(a.charAt(0)) && !Character.isUpperCase(b.charAt(0))) {
 						return 1;
 					}
 					return -(a.compareTo(b));

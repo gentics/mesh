@@ -22,6 +22,7 @@ import jakarta.persistence.EntityManager;
  * @param <T>
  */
 public abstract class AbstractHibDao<T extends HibBaseElement> implements Dao<T>, HibQueryFieldMapper {
+	public static final String[] SORT_FIELDS = new String[] { "uuid" };
 
 	protected final Lazy<Vertx> vertx;
 	protected final HibPermissionRoots permissionRoots;
@@ -64,5 +65,10 @@ public abstract class AbstractHibDao<T extends HibBaseElement> implements Dao<T>
 		case "height": return "imageHeight";
 		}
 		return HibQueryFieldMapper.super.mapGraphQlFilterFieldName(gqlName);
+	}
+
+	@Override
+	public String[] getGraphQlSortingFieldNames(boolean noDependencies) {
+		return SORT_FIELDS;
 	}
 }
