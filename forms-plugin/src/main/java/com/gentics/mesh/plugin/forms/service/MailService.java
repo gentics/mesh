@@ -16,13 +16,15 @@ import org.slf4j.LoggerFactory;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.common.TemplateWrapper;
 import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.service.RenderService;
+import com.gentics.mesh.plugin.common.util.ParameterUtil;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.config.MailOptions;
 import com.gentics.mesh.plugin.forms.model.AdminMailElement;
-import com.gentics.mesh.plugin.forms.model.FileElement;
+import com.gentics.mesh.plugin.forms.model.BinaryElement;
 import com.gentics.mesh.plugin.forms.model.Form;
 import com.gentics.mesh.plugin.forms.model.FormElement;
 import com.gentics.mesh.plugin.forms.model.UsermailElement;
@@ -38,7 +40,6 @@ import io.vertx.ext.mail.MailAttachment;
 import io.vertx.ext.mail.MailClient;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.MailMessage;
-import io.vertx.ext.web.RoutingContext;
 
 @Singleton
 public class MailService {
@@ -66,112 +67,106 @@ public class MailService {
 	}
 
 	/**
-	 * Send mails
+	 * Send admin and user mails for a submitted form. The language for label resolution is extracted
+	 * from the {@code lang} query parameter of the given context.
 	 *
-	 * @param projectName project name
-	 * @param form
-	 *            form
-	 * @param formDataNode
-	 *            form data
-	 * @param rc
-	 *            routing context
+	 * @param projectName  Mesh project name
+	 * @param form         the submitted form
+	 * @param formDataNode the saved form data node
+	 * @param context      plugin context
 	 */
-	public void sendMails(String projectName, Form form, NodeResponse formDataNode, RoutingContext rc) {
-		boolean attachFileUploads = configuration.getMailOptions().isAttachFileUploads();
-		// Check for admin mails in AdminMailElements.
-		List<String> emails = form.flattened()
-			.filter(e -> e instanceof AdminMailElement)
-			.map(e -> ((AdminMailElement) e).getSelectedEmails(formDataNode))
-			.flatMap(List::stream)
-			.collect(Collectors.toList());
+	public void sendMails(String projectName, Form form, NodeResponse formDataNode, PluginContext context) {
+		ParameterUtil.getFirstLanguage(context, null).subscribe(language -> {
+			boolean attachFileUploads = configuration.getMailOptions().isAttachFileUploads();
+			// Check for admin mails in AdminMailElements.
+			List<String> emails = form.getElementsInsideProperties()
+				.filter(e -> e instanceof AdminMailElement)
+				.map(e -> ((AdminMailElement) e).getSelectedEmails(formDataNode, language))
+				.flatMap(List::stream)
+				.collect(Collectors.toList());
 
-		// Fallback to admin mail configured in the form itself.
-		if (emails.isEmpty()) {
-			String configuredAdminMail = StringUtils.trim(form.getEmail());
+			// Fallback to admin mail configured in the form itself.
+			if (emails.isEmpty()) {
+				String configuredAdminMail = StringUtils.trim(form.getEmail());
 
-			emails = StringUtils.isBlank(configuredAdminMail)
-				? Collections.emptyList()
-				: Arrays.asList(StringUtils.split(configuredAdminMail, ','));
-		}
+				emails = StringUtils.isBlank(configuredAdminMail)
+					? Collections.emptyList()
+					: Arrays.asList(StringUtils.split(configuredAdminMail, ','));
+			}
 
-		// send mail to admins
-		if (!emails.isEmpty()) {
-			TemplateWrapper template = TemplateWrapper.wrap(form.getMailsource(), form.getMailtemp(), configuration.getAdminMailTemplate());
+			// send mail to admins
+			if (!emails.isEmpty()) {
+				TemplateWrapper template = TemplateWrapper.wrap(form.getMailsource(), form.getMailtemp(), configuration.getAdminMailTemplate());
 
-			if (template.isValid()) {
-				String subject = StringUtils.defaultIfBlank(form.getMailsubject(), configuration.getAdminMailSubject());
+				if (template.isValid()) {
+					String subject = StringUtils.defaultIfBlank(form.getMailsubject(), configuration.getAdminMailSubject());
+
+					subject = StringUtils.defaultIfBlank(subject, PLACEHOLDER_FORMNAME)
+						.replace(PLACEHOLDER_FORMNAME, form.getName());
+
+					sendMail(projectName, form, formDataNode, context, subject, template, emails, attachFileUploads, language);
+				} else {
+					log.error(
+							"Could not send admin mail for form {}, because no template configuration was found (template must be either configured in config.yml as \"adminMailTemplate\" or set in the form as \"mailtemp\").",
+							form.getName());
+				}
+			}
+
+			form.getElementsInsideProperties().filter(e -> e instanceof UsermailElement).map(e -> (UsermailElement) e).forEach(element -> {
+				StringFieldImpl field = formDataNode.getFields().getStringField(element.getName());
+				if (field == null) {
+					return;
+				}
+				String userEmail = field.getString();
+				if (StringUtils.isBlank(userEmail)) {
+					return;
+				}
+
+				TemplateWrapper template = TemplateWrapper.wrap(element.getMailsource(), element.getTemplate(), configuration.getUserMailTemplate());
+
+				if (!template.isValid()) {
+					log.error(
+							"Could not send user mail for element {} in form {}, because no template configuration was found (template must be either configured in config.yml as \"userMailTemplate\" or set in the element as \"mailtemplate\").",
+							element.getLabelOrName(), form.getName());
+					return;
+				}
+				String subject = StringUtils.defaultIfBlank(element.getSubject(), configuration.getUserMailSubject());
 
 				subject = StringUtils.defaultIfBlank(subject, PLACEHOLDER_FORMNAME)
 					.replace(PLACEHOLDER_FORMNAME, form.getName());
 
-				sendMail(projectName, form, formDataNode, rc, subject, template, emails, attachFileUploads);
-			} else {
-				log.error(
-						"Could not send admin mail for form {}, because no template configuration was found (template must be either configured in config.yml as \"adminMailTemplate\" or set in the form as \"mailtemp\").",
-						form.getName());
-			}
-		}
-
-		form.flattened().filter(e -> e instanceof UsermailElement).map(e -> (UsermailElement) e).forEach(element -> {
-			StringFieldImpl field = formDataNode.getFields().getStringField(element.getName());
-			if (field == null) {
-				return;
-			}
-			String userEmail = field.getString();
-			if (StringUtils.isBlank(userEmail)) {
-				return;
-			}
-
-			TemplateWrapper template = TemplateWrapper.wrap(element.getMailsource(), element.getTemplate(), configuration.getUserMailTemplate());
-
-			if (!template.isValid()) {
-				log.error(
-						"Could not send user mail for element {} in form {}, because no template configuration was found (template must be either configured in config.yml as \"userMailTemplate\" or set in the element as \"mailtemplate\").",
-						element.getLabelOrName(), form.getName());
-				return;
-			}
-			String subject = StringUtils.defaultIfBlank(element.getSubject(), configuration.getUserMailSubject());
-
-			subject = StringUtils.defaultIfBlank(subject, PLACEHOLDER_FORMNAME)
-				.replace(PLACEHOLDER_FORMNAME, form.getName());
-
-			sendMail(projectName, form, formDataNode, rc, subject, template, Collections.singletonList(userEmail), attachFileUploads);
-		});
+				sendMail(projectName, form, formDataNode, context, subject, template, Collections.singletonList(userEmail), attachFileUploads, language);
+			});
+		}, error -> log.error("Error extracting language for mail sending", error));
 	}
 
 	/**
-	 * Send a mail asynchronously
+	 * Send a mail asynchronously. Option labels in the rendered template are resolved using
+	 * the given language.
 	 *
-	 * @param projectName
-	 *            The project name
-	 * @param form
-	 *            The form
-	 * @param formDataNode
-	 *            The form data node
-	 * @param rc
-	 *            The routing context
-	 * @param subject
-	 *            The mail subject
-	 * @param template
-	 *            The mail template
-	 * @param to
-	 *            recipient(s)
-	 * @param attachFiles
-	 *            flag for attaching binary fields as files
+	 * @param projectName  the Mesh project name
+	 * @param form         the form
+	 * @param formDataNode the form data node
+	 * @param context      the plugin context
+	 * @param subject      the mail subject
+	 * @param template     the mail template
+	 * @param to           recipient address(es)
+	 * @param attachFiles  whether to attach binary form fields as file attachments
+	 * @param language     BCP-47 language tag for label resolution, may be {@code null}
 	 */
-	private void sendMail(String projectName, Form form, NodeResponse formDataNode, RoutingContext rc, String subject, TemplateWrapper template, List<String> to,
-			boolean attachFiles) {
+	private void sendMail(String projectName, Form form, NodeResponse formDataNode, PluginContext context, String subject, TemplateWrapper template, List<String> to,
+			boolean attachFiles, String language) {
 		String from = configuration.getFromAddress();
 		if (StringUtils.isBlank(from)) {
 			log.warn("Sending mail will probably fail, because no \"fromAddress\" is configured in config.yml.");
 		}
 
-		rc.put("baseUrl", FormDataService.getDownloadBaseUrl(form, projectName));
-		rc.put("form", new JsonObject(form.removeInactiveElements().toJson()));
-		rc.put("data", form.getReportableFormData(formDataNode, e -> e.isActive() && !e.skipElement(formDataNode)));
-		rc.put("dataUuid", formDataNode.getUuid());
+		context.put("baseUrl", FormDataService.getDownloadBaseUrl(form, projectName));
+		context.put("form", new JsonObject(form.removeInactiveElements().toJson()));
+		context.put("data", form.getReportableFormData(formDataNode, e -> e.isActive(), language));
+		context.put("dataUuid", formDataNode.getUuid());
 
-		renderService.render(rc.data(), template, res -> {
+		renderService.render(context.data(), template, res -> {
 			if (res.succeeded()) {
 				MailMessage message = new MailMessage().setTo(to).setFrom(from).setSubject(subject).setHtml(res.result().toString());
 
@@ -231,8 +226,8 @@ public class MailService {
 	 * @return single message
 	 */
 	private Single<MailMessage> addAttachments(String projectName, Form form, NodeResponse formDataNode, MailMessage message) {
-		List<String> fileFieldNames = form.flattened()
-			.filter(element -> element instanceof FileElement)
+		List<String> fileFieldNames = form.getElementsInsideProperties()
+			.filter(element -> element instanceof BinaryElement)
 			.map(FormElement::getName)
 			.filter(name -> {
 				BinaryField field = formDataNode.getFields().getBinaryField(name);

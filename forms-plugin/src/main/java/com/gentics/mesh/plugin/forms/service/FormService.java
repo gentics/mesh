@@ -249,7 +249,7 @@ public class FormService {
 				// validate and return the result
 				return form.validateForm();
 			}
-		} catch (IOException e) {
+		} catch (IOException | FormsError e) {
 			log.error("Could not deserialize form: {}", e, e.getMessage());
 
 			if (log.isTraceEnabled()) {
@@ -360,8 +360,16 @@ public class FormService {
 	public Single<JsonObject> getElements(String projectName, String uuid, String...lang) {
 		return statusService.languageFallback(projectName, lang)
 				.flatMap(fallback -> loadAsAdmin(projectName, uuid, true, fallback).flatMap(formNode -> {
-					JsonObject formJson = new JsonObject(formNode.getFields().getStringField("json").getString());
-					return Single.just(new JsonObject().put("elements", formJson.getJsonArray("elements")));
+					try {
+						Form form = toForm(formNode.getFields().getStringField("json").getString(),
+								formNode.getUuid(), formNode.getLanguage());
+						JsonArray elements = new JsonArray(form.getSchema().getProperties().values().stream()
+								.map(e -> new JsonObject(e.toJson()))
+								.collect(Collectors.toList()));
+						return Single.just(new JsonObject().put("elements", elements));
+					} catch (IOException e) {
+						return Single.error(e);
+					}
 				}));
 	}
 
@@ -723,102 +731,6 @@ public class FormService {
 	}
 
 	/**
-	 * Prepare an existing form to be rendered by the template handler
-	 * @param projectName project name
-	 * @param uuid form uuid
-	 * @param rc routing context
-	 * @param lang optional languages
-	 * @return single buffer
-	 */
-	public Single<Buffer> render(String projectName, String uuid, RoutingContext rc, String...lang) {
-		return statusService.languageFallback(projectName, lang)
-			.flatMap(langFallback -> statusService.getPathPrefixOfDefaultBranch(projectName)
-				.flatMap(pathPrefix ->loadAsAdmin(projectName, uuid, true, langFallback)
-					.flatMap(this::toForm)
-					.flatMap(form -> {
-						if (form.getType() == FormType.POLL) {
-							boolean showResults = !rc.queryParam(PARAM_SHOW_RESULTS).isEmpty()
-								|| Stream.of(rc.request().getCookie(FormDataService.COOKIE_NAME_VOTED))
-									.filter(Objects::nonNull)
-									.map(c -> c.getValue().split(FormDataService.COOKIE_VOTED_SEPARATOR))
-									.flatMap(Arrays::stream)
-									.anyMatch(form.getUuid()::equals);
-
-							if (showResults) {
-								return renderPollResults(rc, projectName, form);
-							}
-						}
-
-						return renderForm(uuid, form, pathPrefix, rc);
-					})));
-	}
-
-	/**
-	 * Render the form for the given {@code formJson}.
-	 *
-	 * @param uuid form uuid
-	 * @param formData form to render encoded as JSON
-	 * @param rc plugin context
-	 * @return single buffer
-	 */
-	public Single<Buffer> renderForm(String uuid, String formData, String pathPrefix, PluginContext rc) {
-		Single<Form> formSingle = ParameterUtil.getFirstLanguage(rc, "en").flatMap(lang -> {
-			try {
-				return Single.just(toForm(formData, uuid, lang));
-			} catch (IOException e) {
-				log.error("Could not create form instance from form data");
-				return Single.error(e);
-			}
-		});
-
-		return formSingle.flatMap(form -> renderForm(uuid, form, pathPrefix, rc));
-	}
-
-	/**
-	 * Render the form for the given {@code formJson}.
-	 *
-	 * @param uuid form uuid
-	 * @param form form to render
-	 * @param rc routing context
-	 * @return single buffer
-	 */
-	public Single<Buffer> renderForm(String uuid, Form form, String pathPrefix, RoutingContext rc) {
-		JsonObject formJson = form.removeInactiveElements()
-			.prepareRenderContext(pathPrefix, configuration);
-
-		markFormpages(formJson, null, Collections.emptySet());
-
-		rc.put("form", formJson);
-
-		return renderTemplate(rc, form.getTemplateContext(), "form");
-	}
-
-	/**
-	 * Render a preview for the given formJson and return as JSON
-	 * @param projectName project name
-	 * @param uuid form uuid
-	 * @param formJson form JSON to render
-	 * @param rc routing context
-	 * @return single buffer
-	 */
-	public Single<RenderResponse> renderPreviewAsJson(String projectName, String uuid, JsonObject formJson, RoutingContext rc) {
-		FormUtil.removeInactiveElements(formJson);
-
-		// add id
-		formJson.put("id", uuid);
-		// add property "multipage"
-		formJson.put("multipage", isMultipage(formJson));
-		// add options
-		formJson.put("options", JsonObject.mapFrom(configuration));
-		markFormpages(formJson, null, Collections.emptySet());
-
-		rc.put("form", formJson);
-
-		return renderTemplate(rc, formJson.getString(PARAM_TEMPLATE_CONTEXT), "form")
-			.map(buffer -> new RenderResponse().setHtml(buffer.toString()));
-	}
-
-	/**
 	 * Mark completed and active formpages
 	 *
 	 * @param form
@@ -900,6 +812,7 @@ public class FormService {
 	 * @return true if the form is "multipage"
 	 */
 	public boolean isMultipage(JsonObject form) {
+		//TODO 8.5
 		JsonArray elements = form.getJsonArray("elements");
 		if (elements != null) {
 			for (int i = 0; i < elements.size(); i++) {
@@ -921,9 +834,8 @@ public class FormService {
 	 */
 	public Single<Form> toForm(NodeResponse formNode) {
 		try {
-
 			return Single.just(toForm(formNode.getFields().getStringField("json").toString(), formNode.getUuid(), formNode.getLanguage()));
-		} catch (IOException e) {
+		} catch (IOException | FormsError e) {
 			return Single.error(e);
 		}
 	}
@@ -936,13 +848,22 @@ public class FormService {
 	 * @return The deserialized <code>Form</code> object
 	 * @throws IOException When the object mapper cannot parse the string
 	 */
-	public Form toForm(String formData, String formUuid, String language) throws IOException {
+	public Form toForm(String formData, String formUuid, String language) throws IOException, FormsError {
 		Form form = objectMapper.readValue(formData, Form.class);
 
 		form.setUuid(formUuid);
 		if (language != null) {
 			form.setLanguage(language);
 		}
+		if (form.getSchema() == null || form.getSchema().getProperties() == null) {
+			throw new FormsError("Form JSON must contain 'schema.properties'",
+				HttpResponseStatus.BAD_REQUEST.code());
+		}
+		// Set name (map key) and configuration on each element once after deserialization
+		form.getSchema().getProperties().forEach((key, element) -> {
+			element.setName(key);
+			element.setConfiguration(configuration);
+		});
 
 		return form;
 	}

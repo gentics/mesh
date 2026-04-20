@@ -32,9 +32,6 @@ import com.gentics.mesh.plugin.forms.handler.form.ListFormsHandler;
 import com.gentics.mesh.plugin.forms.handler.form.LoadFormElementsHandler;
 import com.gentics.mesh.plugin.forms.handler.form.LoadFormHandler;
 import com.gentics.mesh.plugin.forms.handler.form.LoadFormSchemaHandler;
-import com.gentics.mesh.plugin.forms.handler.form.RenderFormHandler;
-import com.gentics.mesh.plugin.forms.handler.form.RenderFormPreviewAsJsonHandler;
-import com.gentics.mesh.plugin.forms.handler.form.RenderFormPreviewHandler;
 import com.gentics.mesh.plugin.forms.handler.form.SetFormOfflineHandler;
 import com.gentics.mesh.plugin.forms.handler.form.SetFormOnlineHandler;
 import com.gentics.mesh.plugin.forms.handler.form.UpsertFormHandler;
@@ -91,12 +88,6 @@ public interface FormsPluginComponent {
 	LoadFormElementsHandler loadFormElementsHandler();
 
 	LoadFormSchemaHandler loadFormSchemaHandler();
-
-	RenderFormHandler renderFormHandler();
-
-	RenderFormPreviewHandler renderFormPreviewHandler();
-
-	RenderFormPreviewAsJsonHandler renderFormPreviewAsJsonHandler();
 
 	PostDataHandler postDataHandler();
 

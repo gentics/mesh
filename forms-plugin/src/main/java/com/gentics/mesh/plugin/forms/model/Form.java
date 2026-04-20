@@ -2,7 +2,12 @@ package com.gentics.mesh.plugin.forms.model;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.core.rest.common.FieldContainer;
+import com.gentics.mesh.plugin.forms.model.schema.FormData;
+import com.gentics.mesh.plugin.forms.model.schema.FormSchema;
+import com.gentics.mesh.plugin.forms.model.schema.FormUiSchema;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
@@ -61,7 +66,14 @@ public class Form implements RestModel {
 
 	private String successurl;
 
-	private List<FormElement> elements = new ArrayList<>();
+	@JsonProperty("schema")
+	private FormSchema schema;
+
+	@JsonProperty("uiSchema")
+	private FormUiSchema uiSchema;
+
+	@JsonProperty("data")
+	private FormData data;
 
 	private String currentPage;
 
@@ -94,7 +106,9 @@ public class Form implements RestModel {
 		this.mailtemp = other.mailtemp;
 		this.mailsource = other.mailsource;
 		this.successurl = other.successurl;
-		this.elements = other.elements == null ? new ArrayList<>() : new ArrayList<>(other.elements);
+		this.schema = other.schema;
+		this.uiSchema = other.uiSchema;
+		this.data = other.data;
 		this.currentPage = other.currentPage;
 		this.templateContext = other.templateContext;
 		this.properties = other.properties == null ? new LinkedHashMap<>() : new LinkedHashMap<>(other.properties);
@@ -244,11 +258,51 @@ public class Form implements RestModel {
 	}
 
 	/**
-	 * Get the form elements (direct members of the form)
-	 * @return form elements
+	 * Get the schema definition of this form.
+	 * @return form schema
 	 */
-	public List<FormElement> getElements() {
-		return elements;
+	public FormSchema getSchema() {
+		return schema;
+	}
+
+	/**
+	 * Set the schema definition of this form.
+	 * @param schema form schema
+	 */
+	public void setSchema(FormSchema schema) {
+		this.schema = schema;
+	}
+
+	/**
+	 * Get the UI schema definition of this form.
+	 * @return ui schema
+	 */
+	public FormUiSchema getUiSchema() {
+		return uiSchema;
+	}
+
+	/**
+	 * Set the UI schema definition of this form.
+	 * @param uiSchema ui schema
+	 */
+	public void setUiSchema(FormUiSchema uiSchema) {
+		this.uiSchema = uiSchema;
+	}
+
+	/**
+	 * Get the data (pre-filled / current control values) of this form.
+	 * @return form data
+	 */
+	public FormData getData() {
+		return data;
+	}
+
+	/**
+	 * Set the data (pre-filled / current control values) of this form.
+	 * @param data form data
+	 */
+	public void setData(FormData data) {
+		this.data = data;
 	}
 
 	/**
@@ -276,19 +330,12 @@ public class Form implements RestModel {
 	}
 
 	/**
-	 * Get all form elements as flattened stream
-	 * @return stream of all form elements
+	 * Get all elements as a stream.
+	 * @return stream of form elements from schema properties
 	 */
-	public Stream<FormElement> flattened() {
-		return elements.stream().flatMap(FormElement::flattened);
-	}
-
-	/**
-	 * Set the direct form elements
-	 * @param elements form elements
-	 */
-	public void setElements(List<FormElement> elements) {
-		this.elements = elements;
+	@JsonIgnore
+	public Stream<FormElement> getElementsInsideProperties() {
+		return getSchema().getProperties().values().stream();
 	}
 
 	/**
@@ -364,7 +411,7 @@ public class Form implements RestModel {
 	 * @param container container (will be modified)
 	 */
 	public void addFieldSchemas(FieldSchemaContainer container) {
-		flattened().forEach(elem -> elem.addFieldSchema(container));
+		getElementsInsideProperties().forEach(elem -> elem.addFieldSchema(container));
 	}
 
 	/**
@@ -374,7 +421,7 @@ public class Form implements RestModel {
 	 * @param errors true, if validation errors were detected
 	 */
 	public void addFields(FieldContainer container, MultiMap postedData, boolean errors) {
-		flattened().filter(FormElement::isActive).forEach(elem -> {
+		getElementsInsideProperties().filter(FormElement::isActive).forEach(elem -> {
 			elem.addField(container, postedData, errors);
 		});
 	}
@@ -398,10 +445,10 @@ public class Form implements RestModel {
 		}
 		return Single.zip(
 				StreamUtil.toIterable(
-					flattened()
+					getElementsInsideProperties()
 						.filter(FormElement::isActive)
 						.filter(filter)
-						.map(elem -> elem.validate(postedData, fileUploads, formDataNode, rxVertx, httpClient)
+						.map(elem -> elem.validate(postedData, fileUploads, formDataNode, rxVertx, httpClient, uiSchema)
 								.map(error -> Pair.of(elem.getName(), error))
 								.toSingle(Pair.of(null, null)))),
 					errors -> Arrays.stream(errors)
@@ -531,7 +578,7 @@ public class Form implements RestModel {
 	 * @return The respective error or {@link Optional#empty()} when the form is valid
 	 */
 	public Optional<ValidationError> validateForm() {
-		return flattened()
+		return getElementsInsideProperties()
 			.filter(FormElement::isActive)
 			.map(FormElement::validateForm)
 			.filter(Optional::isPresent)
@@ -545,7 +592,7 @@ public class Form implements RestModel {
 	 * @return true if the form is completed, false if not
 	 */
 	public boolean isCompleted(NodeResponse formDataNode) {
-		return flattened().allMatch(elem -> elem.isCompleted(formDataNode));
+		return getElementsInsideProperties().allMatch(elem -> elem.isCompleted(formDataNode));
 	}
 
 	/**
@@ -558,7 +605,7 @@ public class Form implements RestModel {
 		JsonObject errors = (errorsJson != null && !"".equals(errorsJson)) ? new JsonObject(errorsJson) : new JsonObject();
 
 		JsonObject object = new JsonObject();
-		flattened().forEach(elem -> {
+		getElementsInsideProperties().forEach(elem -> {
 			if (elem.getName() != null) {
 				JsonObject elemJson = new JsonObject();
 				elem.addFormData(elemJson, container, e -> FIELD_VALUE);
@@ -581,7 +628,7 @@ public class Form implements RestModel {
 	 * @return The {@code results} object for fluent API.
 	 */
 	public JsonObject gatherPollResults(JsonObject results, FieldContainer formData) {
-		flattened().forEach(elem -> {
+		getElementsInsideProperties().forEach(elem -> {
 			String name = elem.getName();
 
 			if (StringUtils.isNotBlank(name)) {
@@ -597,28 +644,44 @@ public class Form implements RestModel {
 	}
 
 	/**
-	 * Get the form data as reportable json object
+	 * Get the form data as reportable JSON array, with value labels resolved without a specific language.
+	 *
 	 * @param container form data node
-	 * @return form data json
+	 * @return form data JSON array
 	 */
 	public JsonArray getReportableFormData(FieldContainer container) {
-		return getReportableFormData(container, ignored -> true);
+		return getReportableFormData(container, ignored -> true, null);
 	}
 
 	/**
-	 * Get the form data as reportable json object
+	 * Get the form data as reportable JSON array, with value labels resolved without a specific language.
+	 *
 	 * @param container form data node
 	 * @param filter additional filter for form elements
-	 * @return form data json
+	 * @return form data JSON array
 	 */
 	public JsonArray getReportableFormData(FieldContainer container, Predicate<FormElement> filter) {
+		return getReportableFormData(container, filter, null);
+	}
+
+	/**
+	 * Get the form data as reportable JSON array. For {@link ValueListElement} fields, the human-readable
+	 * label for each selected value is resolved using the given language. If {@code language} is
+	 * {@code null} or not found in the label map, the first available label is used as a fallback.
+	 *
+	 * @param container form data node
+	 * @param filter additional filter for form elements
+	 * @param language BCP-47 language tag used to resolve option labels (e.g. {@code "de"}), may be {@code null}
+	 * @return form data JSON array
+	 */
+	public JsonArray getReportableFormData(FieldContainer container, Predicate<FormElement> filter, String language) {
 		JsonArray array = new JsonArray();
 
-		flattened()
+		getElementsInsideProperties()
 			.filter(elt -> elt.isReportable() && filter.test(elt))
 			.forEach(elem -> {
 				JsonObject elemObj = new JsonObject(elem.toJson())
-					.put("isFile", elem instanceof FileElement);
+					.put("isFile", elem instanceof BinaryElement);
 				Object valueProperty = elemObj.remove(FIELD_VALUE);
 
 				if (valueProperty != null) {
@@ -633,35 +696,34 @@ public class Form implements RestModel {
 
 				elem.addFormData(elemObj, container, e -> FIELD_VALUE);
 
-				array.add(addValueLabels(elem, elemObj));
+				array.add(addValueLabels(elem, elemObj, language));
 			});
 
 		return array;
 	}
 
 	/**
-	 * Add the labels for selected values for the given {@link ValueListElement}
-	 * to the given result object.
+	 * Add the labels for selected values for the given {@link ValueListElement} to the given result object.
+	 * The label is resolved from the static options using the provided language; if the language is
+	 * {@code null} or not present in the label map, the first available label is used as a fallback.
 	 *
-	 * <p>
-	 *     The label will be stored in {@code resultObj} under the key
-	 *     {@code valueLabel}.
-	 * </p>
+	 * <p>The resolved label is stored in {@code resultObj} under the key {@code valueLabel}.</p>
 	 *
-	 * @param elem The form element being processed (this method does nothing for elements other than {@code ValueListElement})
-	 * @param resultObj The JSON object to add the value label to
-	 * @return The modified {@code resultObj}
+	 * @param elem      the form element being processed (no-op for non-{@link ValueListElement} elements)
+	 * @param resultObj the JSON object to add the value label to
+	 * @param language  BCP-47 language tag used to resolve option labels, may be {@code null}
+	 * @return the modified {@code resultObj}
 	 */
-	private JsonObject addValueLabels(FormElement elem, JsonObject resultObj) {
+	private JsonObject addValueLabels(FormElement elem, JsonObject resultObj, String language) {
 		if (!(elem instanceof ValueListElement)) {
 			return resultObj;
 		}
 
 		ValueListElement listElem = (ValueListElement) elem;
-		Map<String, String> valueLabels = listElem.getOptions().stream()
-			.collect(ValueListElement.OPTIONS_MAP_COLLECTOR);
+		Map<String, String> valueLabels = listElem.getSelectOptions().stream()
+			.collect(ValueListElement.optionsMapCollector(language));
 
-		if (elem.isMultivalue()) {
+		if (elem.isList()) {
 			JsonArray values = resultObj.getJsonArray(FIELD_VALUE);
 
 			if (values == null) {
@@ -698,7 +760,7 @@ public class Form implements RestModel {
 	 * @return A set of names of form elements containing submitted data.
 	 */
 	public List<String> getReportableElementNamesForGraphQL() {
-		return flattened()
+		return getElementsInsideProperties()
 			.filter(FormElement::isReportable)
 			.map(FormElement::getGraphQLName)
 			.filter(Objects::nonNull)
@@ -716,9 +778,9 @@ public class Form implements RestModel {
 	 * 		if the field is a file element or not
 	 */
 	public Map<String, Boolean> getReportableElementsInfo() {
-		return flattened()
+		return getElementsInsideProperties()
 			.filter(elt -> elt.isReportable() && StringUtils.isNotBlank(elt.getName()))
-			.collect(Collectors.toMap(FormElement::getName, e -> e instanceof FileElement, (u, v) -> u, LinkedHashMap::new));
+			.collect(Collectors.toMap(FormElement::getName, e -> e instanceof BinaryElement, (u, v) -> u, LinkedHashMap::new));
 	}
 
 	/**
@@ -726,7 +788,7 @@ public class Form implements RestModel {
 	 * @return map of name -> label
 	 */
 	public Map<String, String> getReportableFields() {
-		return flattened()
+		return getElementsInsideProperties()
 			.filter(FormElement::isReportable)
 			.collect(Collectors.toMap(FormElement::getName, FormElement::getLabelOrName));
 	}
@@ -736,7 +798,10 @@ public class Form implements RestModel {
 	 * @return true if at least one FormpageElement is found
 	 */
 	public boolean isMultipage() {
-		return flattened().anyMatch(elem -> elem instanceof FormpageElement);
+		if(uiSchema != null && uiSchema.getPages() != null && uiSchema.getPages().size() > 1){
+			return true;
+		}
+		return false;
 	}
 
 
@@ -745,7 +810,7 @@ public class Form implements RestModel {
 	 * @param postedData The posted form data
 	 */
 	public void updateFormPage(MultiMap postedData) {
-		flattened()
+		getElementsInsideProperties()
 			.filter(elt -> elt.isActive() && elt instanceof FormpageElement && "1".equals(elt.getSingleFormData(postedData)))
 			.map(FormElement::getName)
 			.findFirst()
@@ -753,17 +818,28 @@ public class Form implements RestModel {
 	}
 
 	/**
-	 * Create a copy of this form with only active form elements.
+	 * Create a copy of this form containing only active form elements.
+	 * Filters {@code schema.properties} by {@link FormElement#isActive()}.
 	 *
-	 * @return A copy of this form with only active form elements
+	 * @return A copy of this form with only active elements in its schema
 	 */
 	public Form removeInactiveElements() {
 		Form copy = new Form(this);
 
-		copy.elements = elements.stream()
-			.filter(FormElement::isActive)
-			.map(FormElement::removeInactiveElements)
-			.collect(Collectors.toList());
+		if (copy.schema != null && copy.schema.getProperties() != null) {
+			Map<String, FormElement> activeProperties = copy.schema.getProperties().entrySet().stream()
+				.filter(entry -> entry.getValue().isActive())
+				.collect(Collectors.toMap(
+					Map.Entry::getKey,
+					Map.Entry::getValue,
+					(u, v) -> u,
+					LinkedHashMap::new));
+			FormSchema filteredSchema = new FormSchema();
+			filteredSchema.setKey(copy.schema.getKey());
+			filteredSchema.setVersion(copy.schema.getVersion());
+			filteredSchema.setProperties(activeProperties);
+			copy.schema = filteredSchema;
+		}
 
 		return copy;
 	}
@@ -798,14 +874,18 @@ public class Form implements RestModel {
 	 * 		representation
 	 */
 	public Map<String, Object> elementMap() {
-		return flattened()
-			.map(elt -> {
-				JsonObject json = new JsonObject(elt.toJson());
-				Object name = json.remove("name");
+		if (schema == null || schema.getProperties() == null) {
+			return Collections.emptyMap();
+		}
 
-				return Pair.of(name == null ? "" : name.toString(), json);
-			})
-			.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+		return schema.getProperties().entrySet().stream()
+			.collect(Collectors.toMap(
+				Map.Entry::getKey,
+				entry -> {
+					JsonObject json = new JsonObject(entry.getValue().toJson());
+					json.remove("name"); // TODO f-gpu-2257: ist es wirklich notwendig das zu entfernen?
+					return json;
+				}));
 	}
 
 	@Override

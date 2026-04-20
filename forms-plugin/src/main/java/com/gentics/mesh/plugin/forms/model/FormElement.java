@@ -3,6 +3,8 @@ package com.gentics.mesh.plugin.forms.model;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -14,6 +16,8 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
+import com.gentics.mesh.plugin.forms.model.schema.UischemaFormgridOptions;
+import com.gentics.mesh.plugin.forms.model.schema.FormUiSchema;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
 import com.gentics.mesh.plugin.forms.util.RxUtil;
 import io.reactivex.Completable;
@@ -39,7 +43,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Abstract form element
@@ -58,17 +61,28 @@ public abstract class FormElement implements RestModel {
 
 	protected boolean mandatory;
 
-	protected String validation;
+	@JsonProperty("isList")
+	protected boolean isList;
 
-	protected List<FormElement> elements = new ArrayList<>();
+	protected String validation; //TODO f-gpu-2257
+
+	@JsonIgnore
+	protected List<FormElement> elements = new ArrayList<>(); // TODO 8.5
 
 	protected Map<String, Object> properties = new LinkedHashMap<>();
 
 	@JsonIgnore
-	protected FormElement container;
+	protected FormElement container; // TODO delete 8.5
 
 	@JsonIgnore
 	protected FormsConfig configuration;
+
+	@JsonIgnore
+	protected String key;
+
+	// This will be integrated inside "data" for frontend, and will be removed inside "schema"
+	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+	protected SchemaFormGridOptions formGridOptions;
 
 	public FormElement() {
 	}
@@ -85,11 +99,13 @@ public abstract class FormElement implements RestModel {
 		this.type = other.type;
 		this.active = other.active;
 		this.mandatory = other.mandatory;
+		this.isList = other.isList;
 		this.validation = other.validation;
 		this.elements = cloneField(other.elements, deep);
 		this.properties = cloneField(other.properties, deep);
 		this.container = other.container;
 		this.configuration = other.configuration;
+		this.formGridOptions = other.formGridOptions;
 	}
 
 	/**
@@ -182,6 +198,23 @@ public abstract class FormElement implements RestModel {
 	}
 
 	/**
+	 * If the value of this element is multivalue/a list
+	 * @return isList flag
+	 */
+	@JsonProperty("isList")
+	public boolean isList() {
+		return isList;
+	}
+
+	/**
+	 * Set the isList flag
+	 * @param isList isList flag
+	 */
+	public void setIsList(boolean isList) {
+		this.isList = isList;
+	}
+
+	/**
 	 * Validation type
 	 * @return validation
 	 */
@@ -195,6 +228,25 @@ public abstract class FormElement implements RestModel {
 	 */
 	public void setValidation(String validation) {
 		this.validation = validation;
+	}
+
+	/**
+	 * Jackson setter that handles both the old String form ("datepicker") and the new
+	 * object form ({"minLength": 2, "maxLength": 100}) of the validation field.
+	 * When an object is received it is stored in the properties map under "validation"
+	 * for downstream use; the String validation field is left null.
+	 *
+	 * @param value String or Map value from JSON
+	 * 
+	 */
+	@JsonSetter("validation")
+	public void setValidationFromJson(Object value) {
+		if (value instanceof String) {
+			this.validation = (String) value;
+		} else if (value != null) {
+			// new object form — store for downstream access, don't touch String field
+			this.properties.put("validation", value);
+		}
 	}
 
 	/**
@@ -246,19 +298,11 @@ public abstract class FormElement implements RestModel {
 	}
 
 	/**
-	 * Multivalue flag
-	 * @return true for multivalue
-	 */
-	public boolean isMultivalue() {
-		return false;
-	}
-
-	/**
 	 * Transform the element into a field schema and add it to the container
 	 * @param container container (will be modified)
 	 */
 	public void addFieldSchema(FieldSchemaContainer container) {
-		if (isMultivalue()) {
+		if (isList()) {
 			container.addField(new ListFieldSchemaImpl().setListType(FieldTypes.STRING.toString()).setName(name).setLabel(name));
 		} else {
 			container.addField(new StringFieldSchemaImpl().setName(name).setLabel(name));
@@ -314,13 +358,11 @@ public abstract class FormElement implements RestModel {
 	 * @param httpClient a HTTP client for possible external validation calls
 	 * @return validation error or null if posted data is valid
 	 */
-	public Maybe<ValidationError> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx, OkHttpClient httpClient) {
-		if (skipElement(postedData)) {
-			return RxUtil.emptyMaybe();
-		}
+	public Maybe<ValidationError> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx, OkHttpClient httpClient, FormUiSchema uischema) {
+
 
 		List<String> values = new ArrayList<>();
-		if (isMultivalue()) {
+		if (isList()) {
 			List<String> data = getMultiFormData(postedData);
 			if (data != null) {
 				values.addAll(data);
@@ -365,11 +407,8 @@ public abstract class FormElement implements RestModel {
 	 * @param errors true if validation errors were detected
 	 */
 	public void addField(FieldContainer container, MultiMap postedData, boolean errors) {
-		if (skipElement(postedData)) {
-			return;
-		}
 
-		if (isMultivalue()) {
+		if (isList()) {
 			List<String> values = getMultiFormData(postedData);
 
 			if (values != null) {
@@ -450,7 +489,7 @@ public abstract class FormElement implements RestModel {
 	 * @param key key function
 	 */
 	public void addFormData(JsonObject object, FieldContainer container, Function<FormElement, String> key) {
-		if (isMultivalue()) {
+		if (isList()) {
 			StringFieldListImpl field = container.getFields().getStringFieldList(getName());
 			if (field != null) {
 				object.put(key.apply(this), new JsonArray(field.getItems()));
@@ -471,14 +510,6 @@ public abstract class FormElement implements RestModel {
 	public boolean isCompleted(NodeResponse formDataNode) {
 		// generally, all elements are completed
 		return true;
-	}
-
-	/**
-	 * Get flattened stream of all elements (including nested elements)
-	 * @return flattened element stream
-	 */
-	public Stream<FormElement> flattened() {
-		return Stream.concat(Stream.of(this), elements.stream().flatMap(FormElement::flattened));
 	}
 
 	/**
@@ -536,6 +567,30 @@ public abstract class FormElement implements RestModel {
 		return configuration;
 	}
 
+	public void setKey(String key) {
+		this.key = key;
+	}
+
+	public String getKey() {
+		return key;
+	}
+
+	@JsonIgnore
+	public SchemaFormGridOptions getFormGridOptions() {
+		return formGridOptions;
+	}
+
+	public void setFormGridOptions(SchemaFormGridOptions formGridOptions) {
+		this.formGridOptions = formGridOptions;
+	}
+
+	public Optional<UischemaFormgridOptions> getFormGridOptionsFromUiSchema(FormUiSchema uiSchema) {
+		if (uiSchema == null || key == null) {
+			return Optional.empty();
+		}
+		return uiSchema.findFormGridOptions(key);
+	}
+
 	/**
 	 * Create a clone of this element which has all inactive child elements
 	 * removed.
@@ -566,70 +621,7 @@ public abstract class FormElement implements RestModel {
 		return Completable.complete();
 	}
 
-	/**
-	 * Test whether this element should be skipped for validation and saving
-	 * form data via {@link #addField(FieldContainer, MultiMap, boolean)}.
-	 *
-	 * <p>
-	 *     Currently the only reason to skip an element is if it is a descendant
-	 *     of a {@link ConditionalContainerElement}, and the specified checked
-	 *     field is not set accordingly.
-	 * </p>
-	 *
-	 * @param postedData The posted form data.
-	 * @return {@code true} if the element should be skipped during validation
-	 * 		and saving data, and {@code false} otherwise.
-	 */
-	public boolean skipElement(MultiMap postedData) {
-		FormElement parent = container;
 
-		while (parent != null) {
-			if (parent instanceof ConditionalContainerElement) {
-				if (((ConditionalContainerElement) parent).skipElements(postedData)) {
-					// The conditional container could be nested. If we found
-					// a container that says skip, we can return here, otherwise
-					// we need to go further upwards.
-					return true;
-				}
-			}
-
-			parent = parent.container;
-		}
-
-		return false;
-	}
-
-	/**
-	 * Test whether this element should be skipped for email rendering.
-	 *
-	 * <p>
-	 *     Currently the only reason to skip an element is if it is a descendant
-	 *     of a {@link ConditionalContainerElement}, and the specified checked
-	 *     field is not set accordingly.
-	 * </p>
-	 *
-	 * @param formData The saved form data.
-	 * @return {@code true} if the element should be skipped during validation
-	 * 		and saving data, and {@code false} otherwise.
-	 */
-	public boolean skipElement(NodeResponse formData) {
-		FormElement parent = container;
-
-		while (parent != null) {
-			if (parent instanceof ConditionalContainerElement) {
-				if (((ConditionalContainerElement) parent).skipElements(formData)) {
-					// The conditional container could be nested. If we found
-					// a container that says skip, we can return here, otherwise
-					// we need to go further upwards.
-					return true;
-				}
-			}
-
-			parent = parent.container;
-		}
-
-		return false;
-	}
 
 	/**
 	 * Create a shallow clone of this form element.

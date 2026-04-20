@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -19,7 +20,6 @@ import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaCoreProperties;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
@@ -28,6 +28,8 @@ import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.plugin.forms.config.FileUploadOptions;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
+import com.gentics.mesh.plugin.forms.model.schema.UischemaFormgridOptions;
+import com.gentics.mesh.plugin.forms.model.schema.FormUiSchema;
 import com.gentics.mesh.plugin.forms.util.RxUtil;
 
 import io.reactivex.Maybe;
@@ -42,42 +44,14 @@ import okhttp3.OkHttpClient;
  * Element for file uploads
  */
 @Reportable
-public class FileElement extends FormElement {
-
-	@JsonProperty("max_filesize")
-	private int maxSizeMB;
-
-	@JsonProperty("allowed_filetypes")
-	private List<String> allowedFiletypes;
-
-	public FileElement() {
+@FormElementType("binary")
+public class BinaryElement extends FormElement {
+	public BinaryElement() {
 	}
 
-	protected FileElement(FileElement other, boolean deep) {
+	protected BinaryElement(BinaryElement other, boolean deep) {
 		super(other, deep);
 
-		this.maxSizeMB = other.maxSizeMB;;
-		this.allowedFiletypes = cloneField(other.allowedFiletypes, deep);
-	}
-
-	@JsonProperty("max_filesize")
-	public int getMaxSizeMB() {
-		return maxSizeMB;
-	}
-
-	@JsonProperty("max_filesize")
-	public void setMaxSizeMB(int maxSizeMB) {
-		this.maxSizeMB = maxSizeMB;
-	}
-
-	@JsonProperty("allowed_filetypes")
-	public List<String> getAllowedFiletypes() {
-		return allowedFiletypes;
-	}
-
-	@JsonProperty("allowed_filetypes")
-	public void setAllowedFiletypes(List<String> allowedFiletypes) {
-		this.allowedFiletypes = allowedFiletypes;
 	}
 
 	@Override
@@ -104,10 +78,9 @@ public class FileElement extends FormElement {
 	}
 
 	@Override
-	public Maybe<ValidationError> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx, OkHttpClient httpClient) {
-		if (skipElement(postedData)) {
-			return RxUtil.emptyMaybe();
-		}
+	public Maybe<ValidationError> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx, OkHttpClient httpClient, FormUiSchema uiSchema) {
+
+		UischemaFormgridOptions gridOptions = getFormGridOptionsFromUiSchema(uiSchema).orElse(null);
 
 		FileUpload fileUpload = getFileUpload(fileUploads);
 		if (fileUpload == null) {
@@ -125,13 +98,14 @@ public class FileElement extends FormElement {
 			}
 		}
 
-		if (maxSizeMB > 0 && fileUpload.size() > (maxSizeMB * 1024 * 1024)) {
+		int maxFileSize = getMaxFileSize(gridOptions);
+		if (maxFileSize > 0 && fileUpload.size() > (maxFileSize * 1024 * 1024)) {
 			fileUploads.remove(fileUpload);
 			return Maybe.just(new ValidationError().setName(getName()).setTitle(I18nHelper.get(Locale.GERMAN, "error.validation.file.size.title"))
-				.setMessage(I18nHelper.get(Locale.GERMAN, "error.validation.file.size", fileUpload.fileName(), Integer.toString(maxSizeMB))));
+				.setMessage(I18nHelper.get(Locale.GERMAN, "error.validation.file.size", fileUpload.fileName(), Integer.toString(maxFileSize))));
 		}
 
-		Collection<String> allowedTypes = getAllowedFiletypes();
+		Collection<String> allowedTypes = getAllowedFiletypes(gridOptions);
 		if (allowedTypes == null) {
 			allowedTypes = getDefaultAllowedConfiguration();
 		}
@@ -169,7 +143,34 @@ public class FileElement extends FormElement {
 
 	@Override
 	protected FormElement clone(boolean deep) {
-		return new FileElement(this, deep);
+		return new BinaryElement(this, deep);
+	}
+
+	/**
+	 * Get max file size from grid options
+	 *
+	 * @param gridOptions
+	 *            grid options
+	 * @return max file size
+	 */
+	protected int getMaxFileSize(UischemaFormgridOptions gridOptions) {
+		return Optional.ofNullable(gridOptions)
+			.map(UischemaFormgridOptions::getMaxFileSize)
+			.map(Number::intValue)
+			.orElse(0);
+	}
+
+	/**
+	 * Get allowed file types from grid options or default
+	 *
+	 * @param gridOptions
+	 *            grid options
+	 * @return allowed file types collection
+	 */
+	protected Collection<String> getAllowedFiletypes(UischemaFormgridOptions gridOptions) {
+		return Optional.ofNullable(gridOptions)
+			.map(UischemaFormgridOptions::getAllowedFiletypes)
+			.orElse(null);
 	}
 
 	/**

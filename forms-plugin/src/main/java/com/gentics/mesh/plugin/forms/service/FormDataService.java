@@ -73,7 +73,7 @@ import com.gentics.mesh.plugin.forms.context.FormDataCreateContext;
 import com.gentics.mesh.plugin.forms.context.FormDataUpdateContext;
 import com.gentics.mesh.plugin.forms.export.ExportData;
 import com.gentics.mesh.plugin.forms.export.Exporter;
-import com.gentics.mesh.plugin.forms.model.FileElement;
+import com.gentics.mesh.plugin.forms.model.BinaryElement;
 import com.gentics.mesh.plugin.forms.model.Form;
 import com.gentics.mesh.plugin.forms.model.FormElement;
 import com.gentics.mesh.plugin.forms.model.FormType;
@@ -729,9 +729,9 @@ public class FormDataService {
 	 * @return A {@code Pair} containing the form and the created zip file.
 	 */
 	public Single<Pair<Form, File>> zipBinaries(String projectName, Form form) {
-		Set<String> fileElementNames = form.flattened().filter(elem -> elem instanceof FileElement).map(FormElement::getName)
+		Set<String> fileElementNames = form.getElementsInsideProperties().filter(elem -> elem instanceof BinaryElement).map(FormElement::getName)
 			.filter(Objects::nonNull).collect(Collectors.toSet());
-		Set<String> fileFieldNames = form.flattened().filter(elem -> elem instanceof FileElement).map(FormElement::getGraphQLName)
+		Set<String> fileFieldNames = form.getElementsInsideProperties().filter(elem -> elem instanceof BinaryElement).map(FormElement::getGraphQLName)
 			.filter(Objects::nonNull).collect(Collectors.toSet());
 
 		Single<List<Downloadable>> singleDownloadables = null;
@@ -993,8 +993,8 @@ public class FormDataService {
 				context.put("sorting", StringUtils.EMPTY);
 			}
 			if (forceNoES && StringUtils.isNotBlank(query)) {
-				String filter = form.getElements().stream().map(element -> {
-					if (element.isMultivalue()) {
+				String filter = form.getSchema().getProperties().values().stream().map(element -> {
+					if (element.isList()) {
 						return element.getGraphQLName() + ": {anyMatch: {like: \"%" + query + "%\"}}";
 					} else {
 						return element.getGraphQLName() + ": {like: \"%" + query + "%\"}";
@@ -1093,7 +1093,7 @@ public class FormDataService {
 								result = Collections.emptySet();
 							} else {
 								// get completed formpages
-								result = form.flattened().filter(elem -> elem instanceof FormpageElement)
+								result = form.getElementsInsideProperties().filter(elem -> elem instanceof FormpageElement)
 									.filter(elem -> elem.isCompleted(fdn))
 									.map(FormElement::getName)
 									.collect(Collectors.toSet());
@@ -1221,6 +1221,8 @@ public class FormDataService {
 	 * @param errors map containing validation errors
 	 * @return single of the node response
 	 */
+
+	//TODO 8.5 kein formpage mehr
 	private Single<NodeResponse> saveFormData(String projectName, NodeResponse formNode, String dataFolderUuid, NodeResponse formDataNode, Form form,
 		MultiMap postedData, Map<String, ValidationError> errors) {
 		FieldContainer container = null;
@@ -1270,9 +1272,9 @@ public class FormDataService {
 	 * @return single of the form data node
 	 */
 	private Single<NodeResponse> saveFileUploads(String projectName, Form form, NodeResponse formDataNode, MultiMap postedData, Set<FileUpload> fileUploads) {
-		Set<String> validUploadElements = form.flattened()
+		Set<String> validUploadElements = form.getElementsInsideProperties()
 			.filter(FormElement::isActive)
-			.flatMap(elem -> elem instanceof FileElement && !elem.skipElement(postedData)
+			.flatMap(elem -> elem instanceof BinaryElement 
 				? Stream.of(elem.getName())
 				: Stream.empty())
 			.collect(Collectors.toSet());
@@ -1320,7 +1322,7 @@ public class FormDataService {
 
 			// perform actions
 			return Single.zip(
-					StreamUtil.toIterable(ctx.getForm().flattened().map(e -> e.performSubmit(ctx.getForm(), postedData, rxVertx, okHttpClientService.getClient()).toSingleDefault(1))), 
+					StreamUtil.toIterable(ctx.getForm().getElementsInsideProperties().map(e -> e.performSubmit(ctx.getForm(), postedData, rxVertx, okHttpClientService.getClient()).toSingleDefault(1))), 
 					allSubmitted -> {
 						boolean isPoll = ctx.getForm().getType() == FormType.POLL;
 

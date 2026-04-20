@@ -7,6 +7,7 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 
+import com.gentics.mesh.plugin.forms.model.schema.FormUiSchema;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -33,6 +34,7 @@ import okhttp3.ResponseBody;
  *
  * @TODO: Uses the same code as the ReCaptcha Element, we should rewrite this to use a utility class or an abstract class
  */
+@FormElementType("friendlycaptcha")
 public class FriendlyCaptchaElement extends FormElement {
 	public final static String TITLE_KEY = "error.validation.captcha.title";
 	public final static String MESSAGE_KEY = "error.validation.captcha";
@@ -65,7 +67,7 @@ public class FriendlyCaptchaElement extends FormElement {
 	}
 
 	@Override
-	public Maybe<ValidationError> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx, OkHttpClient httpClient) {
+	public Maybe<ValidationError> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx, OkHttpClient httpClient, FormUiSchema uiSchema) {
 		String solution = postedData.get(this.getConfiguration().getFriendlyCaptcha().getSolutionKey());
 
 		return isValid(solution, httpClient).toMaybe()

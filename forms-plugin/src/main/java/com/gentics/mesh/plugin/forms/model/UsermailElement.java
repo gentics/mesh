@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
+import com.gentics.mesh.plugin.forms.model.schema.FormUiSchema;
 import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -21,6 +22,7 @@ import okhttp3.OkHttpClient;
  * Usermail element
  */
 @Reportable
+@FormElementType("usermail")
 public class UsermailElement extends FormElement {
 	@JsonProperty("mailsubject")
 	private String subject;
@@ -87,7 +89,7 @@ public class UsermailElement extends FormElement {
 	}
 
 	@Override
-	public Maybe<ValidationError> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx, OkHttpClient httpClient) {
+	public Maybe<ValidationError> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx, OkHttpClient httpClient, FormUiSchema uiSchema) {
 		Callable<Maybe<ValidationError>> ifSuperIsEmpty = () -> {
 			String value = getSingleFormData(postedData);
 			if (StringUtils.isNotBlank(value)) {
@@ -96,7 +98,7 @@ public class UsermailElement extends FormElement {
 				return RxUtil.emptyMaybe();
 			}
 		};
-		return super.validate(postedData, fileUploads, formDataNode, rxVertx, httpClient)
+		return super.validate(postedData, fileUploads, formDataNode, rxVertx, httpClient, uiSchema)
 				.switchIfEmpty(Maybe.fromCallable(ifSuperIsEmpty).flatMap(x -> x));
 	}
 

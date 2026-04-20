@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import com.gentics.mesh.plugin.forms.model.schema.FormUiSchema;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -32,6 +33,7 @@ import okhttp3.ResponseBody;
 /**
  * Captcha Element. Implementation uses ReCaptcha
  */
+@FormElementType("recaptcha")
 public class ReCaptchaElement extends FormElement {
 	/**
 	 * URL for verification
@@ -74,7 +76,7 @@ public class ReCaptchaElement extends FormElement {
 	}
 
 	@Override
-	public Maybe<ValidationError> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx, OkHttpClient httpClient) {
+	public Maybe<ValidationError> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx, OkHttpClient httpClient, FormUiSchema uiSchema) {
 		String captchaResponse = postedData.get(RESPONSE_KEY);
 
 		if (StringUtils.isEmpty(captchaResponse)) {

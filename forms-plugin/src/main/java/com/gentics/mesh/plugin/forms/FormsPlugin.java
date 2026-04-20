@@ -75,7 +75,6 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 		projectRouter.route("/forms").method(GET).handler(fromComponent(FormsPluginComponent::listFormsHandler));
 
 		projectRouter.route("/forms/:formUuid").method(GET).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::loadFormHandler));
-		projectRouter.route("/forms/:formUuid").method(GET).produces("text/html").handler(fromComponent(FormsPluginComponent::renderFormHandler));
 		projectRouter.route("/forms/:formUuid").method(POST).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::upsertFormHandler));
 		projectRouter.route("/forms/:formUuid").method(DELETE).handler(fromComponent(FormsPluginComponent::deleteFormHandler));
 
@@ -83,10 +82,6 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 		projectRouter.route("/forms/:formUuid/online/:lang").method(GET).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::getFormOnlineStatusHandler));
 		projectRouter.route("/forms/:formUuid/online/:lang").method(PUT).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::setFormOnlineHandler));
 		projectRouter.route("/forms/:formUuid/online/:lang").method(DELETE).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::setFormOfflineHandler));
-
-		// routes for rendering previews of forms
-		projectRouter.route("/forms/:formUuid/preview").method(POST).produces("text/html").handler(fromComponent(FormsPluginComponent::renderFormPreviewHandler));
-		projectRouter.route("/forms/:formUuid/preview").method(POST).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::renderFormPreviewAsJsonHandler));
 
 		projectRouter.route("/forms/:formUuid/elements").method(GET).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::loadFormElementsHandler));
 

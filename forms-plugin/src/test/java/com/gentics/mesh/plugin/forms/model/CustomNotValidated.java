@@ -19,4 +19,9 @@ public class CustomNotValidated extends ValueListElement {
 	public Optional<ValidationError> validateForm() {
 		return Optional.empty();
 	}
+
+	@Override
+	protected FormElement clone(boolean deep) {
+		return new CustomNotValidated(this, deep);
+	}
 }
