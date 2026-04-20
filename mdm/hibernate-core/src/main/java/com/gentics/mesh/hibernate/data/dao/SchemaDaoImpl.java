@@ -308,7 +308,7 @@ public class SchemaDaoImpl
 				""").setParameter("changes", changes).executeUpdate());
 			}
 			// Delete jobs
-			SplittingUtils.splitAndConsume(versionUuids, versionUuids.size() / 2, split -> {
+			SplittingUtils.splitAndConsume(versionUuids, (versionUuids.size() < 2) ? 1 : versionUuids.size() / 2, split -> {
 				log.info("Referencing jobs dropped: {}", em().createQuery("""
 						delete from job where toSchemaVersion.dbUuid in :versionUuids or fromSchemaVersion.dbUuid in :versionUuids
 					""").setParameter("versionUuids", split).executeUpdate());
