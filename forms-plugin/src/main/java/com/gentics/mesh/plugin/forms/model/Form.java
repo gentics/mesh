@@ -2,6 +2,7 @@ package com.gentics.mesh.plugin.forms.model;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.plugin.forms.model.schema.FormData;
@@ -329,16 +330,12 @@ public class Form implements RestModel {
 	}
 
 	/**
-	 * Get all form elements as flattened stream.
-	 * Derived on-demand from {@code schema.properties}.
-	 *
-	 * @return stream of all form elements
+	 * Get all elements as a stream.
+	 * @return stream of form elements from schema properties
 	 */
-	public Stream<FormElement> flattened() {
-		if (schema == null || schema.getProperties() == null) {
-			return Stream.empty();
-		}
-		return schema.getProperties().values().stream().flatMap(FormElement::flattened);
+	@JsonIgnore
+	public Stream<FormElement> getElementsInsideProperties() {
+		return getSchema().getProperties().values().stream();
 	}
 
 	/**
@@ -414,7 +411,7 @@ public class Form implements RestModel {
 	 * @param container container (will be modified)
 	 */
 	public void addFieldSchemas(FieldSchemaContainer container) {
-		flattened().forEach(elem -> elem.addFieldSchema(container));
+		getElementsInsideProperties().forEach(elem -> elem.addFieldSchema(container));
 	}
 
 	/**
@@ -424,7 +421,7 @@ public class Form implements RestModel {
 	 * @param errors true, if validation errors were detected
 	 */
 	public void addFields(FieldContainer container, MultiMap postedData, boolean errors) {
-		flattened().filter(FormElement::isActive).forEach(elem -> {
+		getElementsInsideProperties().filter(FormElement::isActive).forEach(elem -> {
 			elem.addField(container, postedData, errors);
 		});
 	}
@@ -448,7 +445,7 @@ public class Form implements RestModel {
 		}
 		return Single.zip(
 				StreamUtil.toIterable(
-					flattened()
+					getElementsInsideProperties()
 						.filter(FormElement::isActive)
 						.filter(filter)
 						.map(elem -> elem.validate(postedData, fileUploads, formDataNode, rxVertx, httpClient, uiSchema)
@@ -581,7 +578,7 @@ public class Form implements RestModel {
 	 * @return The respective error or {@link Optional#empty()} when the form is valid
 	 */
 	public Optional<ValidationError> validateForm() {
-		return flattened()
+		return getElementsInsideProperties()
 			.filter(FormElement::isActive)
 			.map(FormElement::validateForm)
 			.filter(Optional::isPresent)
@@ -595,7 +592,7 @@ public class Form implements RestModel {
 	 * @return true if the form is completed, false if not
 	 */
 	public boolean isCompleted(NodeResponse formDataNode) {
-		return flattened().allMatch(elem -> elem.isCompleted(formDataNode));
+		return getElementsInsideProperties().allMatch(elem -> elem.isCompleted(formDataNode));
 	}
 
 	/**
@@ -608,7 +605,7 @@ public class Form implements RestModel {
 		JsonObject errors = (errorsJson != null && !"".equals(errorsJson)) ? new JsonObject(errorsJson) : new JsonObject();
 
 		JsonObject object = new JsonObject();
-		flattened().forEach(elem -> {
+		getElementsInsideProperties().forEach(elem -> {
 			if (elem.getName() != null) {
 				JsonObject elemJson = new JsonObject();
 				elem.addFormData(elemJson, container, e -> FIELD_VALUE);
@@ -631,7 +628,7 @@ public class Form implements RestModel {
 	 * @return The {@code results} object for fluent API.
 	 */
 	public JsonObject gatherPollResults(JsonObject results, FieldContainer formData) {
-		flattened().forEach(elem -> {
+		getElementsInsideProperties().forEach(elem -> {
 			String name = elem.getName();
 
 			if (StringUtils.isNotBlank(name)) {
@@ -680,7 +677,7 @@ public class Form implements RestModel {
 	public JsonArray getReportableFormData(FieldContainer container, Predicate<FormElement> filter, String language) {
 		JsonArray array = new JsonArray();
 
-		flattened()
+		getElementsInsideProperties()
 			.filter(elt -> elt.isReportable() && filter.test(elt))
 			.forEach(elem -> {
 				JsonObject elemObj = new JsonObject(elem.toJson())
@@ -763,7 +760,7 @@ public class Form implements RestModel {
 	 * @return A set of names of form elements containing submitted data.
 	 */
 	public List<String> getReportableElementNamesForGraphQL() {
-		return flattened()
+		return getElementsInsideProperties()
 			.filter(FormElement::isReportable)
 			.map(FormElement::getGraphQLName)
 			.filter(Objects::nonNull)
@@ -781,7 +778,7 @@ public class Form implements RestModel {
 	 * 		if the field is a file element or not
 	 */
 	public Map<String, Boolean> getReportableElementsInfo() {
-		return flattened()
+		return getElementsInsideProperties()
 			.filter(elt -> elt.isReportable() && StringUtils.isNotBlank(elt.getName()))
 			.collect(Collectors.toMap(FormElement::getName, e -> e instanceof BinaryElement, (u, v) -> u, LinkedHashMap::new));
 	}
@@ -791,7 +788,7 @@ public class Form implements RestModel {
 	 * @return map of name -> label
 	 */
 	public Map<String, String> getReportableFields() {
-		return flattened()
+		return getElementsInsideProperties()
 			.filter(FormElement::isReportable)
 			.collect(Collectors.toMap(FormElement::getName, FormElement::getLabelOrName));
 	}
@@ -813,7 +810,7 @@ public class Form implements RestModel {
 	 * @param postedData The posted form data
 	 */
 	public void updateFormPage(MultiMap postedData) {
-		flattened()
+		getElementsInsideProperties()
 			.filter(elt -> elt.isActive() && elt instanceof FormpageElement && "1".equals(elt.getSingleFormData(postedData)))
 			.map(FormElement::getName)
 			.findFirst()

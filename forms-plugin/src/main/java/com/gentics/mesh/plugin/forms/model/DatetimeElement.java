@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * When {@code dateOnly} is {@code true}, only a date can be selected (no time component).
  */
 @Reportable
-@FormElementType({"datetime", "time"})
+@FormElementType("datetime")
 public class DatetimeElement extends FormElement {
 
 	

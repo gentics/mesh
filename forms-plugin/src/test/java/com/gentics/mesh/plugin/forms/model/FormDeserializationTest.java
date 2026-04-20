@@ -69,7 +69,7 @@ public class FormDeserializationTest {
 	 public void stringElementIsDeserialized() throws Exception {
 	 	Form form = loadForm();
 	 	FormElement firstName = form.getSchema().getProperties().get("firstName");
-	 	assertThat(firstName).as("firstName element").isInstanceOf(InputElement.class);
+	 	assertThat(firstName).as("firstName element").isInstanceOf(StringInputElement.class);
 	 	assertThat(firstName.isMandatory()).as("firstName mandatory").isTrue();
 	 	assertThat(firstName.isList()).as("firstName isList").isFalse();
 	 }
@@ -86,7 +86,7 @@ public class FormDeserializationTest {
 	 public void selectElementIsDeserialized() throws Exception {
 	 	Form form = loadForm();
 	 	FormElement topic = form.getSchema().getProperties().get("topic");
-	 	assertThat(topic).as("topic element").isInstanceOf(DropDownElement.class);
+	 	assertThat(topic).as("topic element").isInstanceOf(CatalogElement.class);
 	 	assertThat(topic.getFormGridOptions()).as("topic.formGridOptions").isNotNull();
 	 	assertThat(topic.getFormGridOptions().getSelectOptions())
 	 		.as("topic.formGridOptions.selectOptions")

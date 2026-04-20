@@ -43,7 +43,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Abstract form element
@@ -511,14 +510,6 @@ public abstract class FormElement implements RestModel {
 	public boolean isCompleted(NodeResponse formDataNode) {
 		// generally, all elements are completed
 		return true;
-	}
-
-	/**
-	 * Get flattened stream of all elements (including nested elements)
-	 * @return flattened element stream
-	 */
-	public Stream<FormElement> flattened() {
-		return Stream.concat(Stream.of(this), elements.stream().flatMap(FormElement::flattened));
 	}
 
 	/**

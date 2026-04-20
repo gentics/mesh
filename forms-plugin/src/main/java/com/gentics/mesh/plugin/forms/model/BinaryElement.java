@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -153,11 +154,10 @@ public class BinaryElement extends FormElement {
 	 * @return max file size
 	 */
 	protected int getMaxFileSize(UischemaFormgridOptions gridOptions) {
-		int maxFileSize = 0;
-		if (maxFileSize <= 0 && gridOptions != null && gridOptions.getMaxFileSize() != null) {
-			maxFileSize = gridOptions.getMaxFileSize().intValue();
-		}
-		return maxFileSize;
+		return Optional.ofNullable(gridOptions)
+			.map(UischemaFormgridOptions::getMaxFileSize)
+			.map(Number::intValue)
+			.orElse(0);
 	}
 
 	/**
@@ -168,11 +168,9 @@ public class BinaryElement extends FormElement {
 	 * @return allowed file types collection
 	 */
 	protected Collection<String> getAllowedFiletypes(UischemaFormgridOptions gridOptions) {
-		Collection<String> allowedTypes = null;
-		if ((allowedTypes == null || allowedTypes.isEmpty()) && gridOptions != null && gridOptions.getAllowedFiletypes() != null) {
-			allowedTypes = gridOptions.getAllowedFiletypes();
-		}
-		return allowedTypes;
+		return Optional.ofNullable(gridOptions)
+			.map(UischemaFormgridOptions::getAllowedFiletypes)
+			.orElse(null);
 	}
 
 	/**

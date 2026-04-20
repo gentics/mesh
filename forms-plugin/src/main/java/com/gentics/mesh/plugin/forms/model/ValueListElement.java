@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 /**
  * Base for elements which offer a predefined selection of possible values like radio buttons or dropdown fields.
  */
-public class ValueListElement extends FormElement {
+public abstract class ValueListElement extends FormElement {
 
 	public static final String RC_VALUE_LABELS = "valueLabels";
 
@@ -156,9 +156,7 @@ public class ValueListElement extends FormElement {
 	}
 
 	@Override
-	protected FormElement clone(boolean deep) {
-		return new ValueListElement(this, deep);
-	}
+	protected abstract FormElement clone(boolean deep);
 
 	/**
 	 * Increment the integer field with the name {@code value} in the given

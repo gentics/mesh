@@ -16,10 +16,10 @@ public class UischemaFormgridOptions {
 	private Map<String, Object> condition;
 
 	@JsonProperty("numberOfColumns")
-	private Object numberOfColumns;
+	private Integer numberOfColumns;
 
 	@JsonProperty("numberOfLines")
-	private Object numberOfLines;
+	private Integer numberOfLines;
 
 	@JsonProperty("inForm")
 	private Boolean inForm;
@@ -78,19 +78,19 @@ public class UischemaFormgridOptions {
 		this.condition = condition;
 	}
 
-	public Object getNumberOfColumns() {
+	public Integer getNumberOfColumns() {
 		return numberOfColumns;
 	}
 
-	public void setNumberOfColumns(Object numberOfColumns) {
+	public void setNumberOfColumns(Integer numberOfColumns) {
 		this.numberOfColumns = numberOfColumns;
 	}
 
-	public Object getNumberOfLines() {
+	public Integer getNumberOfLines() {
 		return numberOfLines;
 	}
 
-	public void setNumberOfLines(Object numberOfLines) {
+	public void setNumberOfLines(Integer numberOfLines) {
 		this.numberOfLines = numberOfLines;
 	}
 

@@ -48,7 +48,7 @@ public class AdminMailElement extends ValueListElement {
 			: fields.map(f -> f.getStringField(getName())).map(f -> Collections.singletonList(f.getString()));
 
 		return selected
-			.map(keys -> mapToMailAddresses(keys, language))
+			.map(keys -> mapToMailAddresses(keys))
 			.orElse(Collections.emptyList());
 	}
 
@@ -57,7 +57,7 @@ public class AdminMailElement extends ValueListElement {
 	 * @param selectedKeys The list of selected option keys.
 	 * @return The list of corresponding email addresses.
 	 */
-	private List<String> mapToMailAddresses(List<String> selectedKeys, String language) {
+	private List<String> mapToMailAddresses(List<String> selectedKeys) {
 		return selectedKeys.stream()
 			.filter(StringUtils::isNotBlank)
 			.filter(selectedKey -> getSelectOptions().stream()

@@ -17,8 +17,8 @@ import java.lang.annotation.Target;
  *
  * <p>Example — multiple types for the same class:
  * <pre>
- *   &#64;FormElementType({"string", "number"})
- *   public class InputElement extends FormElement { ... }
+ *   &#64;FormElementType({"c1", "c2"})
+ *   public class CustomElement extends FormElement { ... }
  * </pre>
  */
 @Retention(RetentionPolicy.RUNTIME)

@@ -729,9 +729,9 @@ public class FormDataService {
 	 * @return A {@code Pair} containing the form and the created zip file.
 	 */
 	public Single<Pair<Form, File>> zipBinaries(String projectName, Form form) {
-		Set<String> fileElementNames = form.flattened().filter(elem -> elem instanceof BinaryElement).map(FormElement::getName)
+		Set<String> fileElementNames = form.getElementsInsideProperties().filter(elem -> elem instanceof BinaryElement).map(FormElement::getName)
 			.filter(Objects::nonNull).collect(Collectors.toSet());
-		Set<String> fileFieldNames = form.flattened().filter(elem -> elem instanceof BinaryElement).map(FormElement::getGraphQLName)
+		Set<String> fileFieldNames = form.getElementsInsideProperties().filter(elem -> elem instanceof BinaryElement).map(FormElement::getGraphQLName)
 			.filter(Objects::nonNull).collect(Collectors.toSet());
 
 		Single<List<Downloadable>> singleDownloadables = null;
@@ -1093,7 +1093,7 @@ public class FormDataService {
 								result = Collections.emptySet();
 							} else {
 								// get completed formpages
-								result = form.flattened().filter(elem -> elem instanceof FormpageElement)
+								result = form.getElementsInsideProperties().filter(elem -> elem instanceof FormpageElement)
 									.filter(elem -> elem.isCompleted(fdn))
 									.map(FormElement::getName)
 									.collect(Collectors.toSet());
@@ -1272,7 +1272,7 @@ public class FormDataService {
 	 * @return single of the form data node
 	 */
 	private Single<NodeResponse> saveFileUploads(String projectName, Form form, NodeResponse formDataNode, MultiMap postedData, Set<FileUpload> fileUploads) {
-		Set<String> validUploadElements = form.flattened()
+		Set<String> validUploadElements = form.getElementsInsideProperties()
 			.filter(FormElement::isActive)
 			.flatMap(elem -> elem instanceof BinaryElement 
 				? Stream.of(elem.getName())
@@ -1318,11 +1318,11 @@ public class FormDataService {
 			MultiMap postedData = ctx.getPostedData();
 
 			// send mails to admin and user
-			mailService.sendMails(ctx.getProjectName(), ctx.getForm(), savedFileUploads, meshContext, ctx.getLanguageForSendingEmail());
+			mailService.sendMails(ctx.getProjectName(), ctx.getForm(), savedFileUploads, meshContext);
 
 			// perform actions
 			return Single.zip(
-					StreamUtil.toIterable(ctx.getForm().flattened().map(e -> e.performSubmit(ctx.getForm(), postedData, rxVertx, okHttpClientService.getClient()).toSingleDefault(1))), 
+					StreamUtil.toIterable(ctx.getForm().getElementsInsideProperties().map(e -> e.performSubmit(ctx.getForm(), postedData, rxVertx, okHttpClientService.getClient()).toSingleDefault(1))), 
 					allSubmitted -> {
 						boolean isPoll = ctx.getForm().getType() == FormType.POLL;
 
