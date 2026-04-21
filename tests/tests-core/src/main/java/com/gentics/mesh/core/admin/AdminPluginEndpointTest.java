@@ -176,6 +176,22 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 	}
 
 	@Test
+	public void testDeployIncorrectPluginPath() throws IOException {
+		grantAdmin();
+
+		setPluginBaseDir("incorrect");
+		copy(BASIC_PATH, "plugin.jar");
+
+		setPluginBaseDir("correct");
+
+		call(() -> client().deployPlugin(new PluginDeploymentRequest().setPath("../incorrect/plugin.jar")), BAD_REQUEST,
+				"admin_plugin_error_plugin_deployment_failed", "plugin.jar");
+
+		PluginListResponse pluginListResponse = call(() -> client().findPlugins());
+		assertThat(pluginListResponse.getData()).as("List of deployed plugins").isEmpty();
+	}
+
+	@Test
 	public void testStaticHandler() throws IOException, TimeoutException {
 		grantAdmin();
 
