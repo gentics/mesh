@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "3.1.13"
+version: "3.1.14"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -1516,7 +1516,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "6680f113ee944b4bbcf2a2e966612a8f"
+                            "uuid" : "938b48a35a914d4eaf43a6307bb9c51e"
                           } ]
                         }
             responses: 
@@ -3049,7 +3049,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "b82ce291b1a446c8b21a6b0c0b02d738"
+                            "uuid" : "53e5503c0c414f4cba518f3f6914c426"
                           } ]
                         }
             responses: 
@@ -4355,7 +4355,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "256a53a8310d428388ca5a1cd85ca4d7"
+                            "uuid" : "8c0a0a67608546cf8664e0b0b2d1087b"
                           } ]
                         }
             responses: 
@@ -6864,7 +6864,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "1023cc3b718d437bb759b1c3b440a231"
+                            "uuid" : "da5000f16b1d4313a960b09e23989a88"
                           } ]
                         }
             responses: 
@@ -8247,12 +8247,6 @@ mediaType: application/json
         post: 
             description: Update the schema.
             queryParameters: 
-                strictValidation: 
-                    description: Validate the Elasticsearch settings in the schema. When this parameter is set, a schema update or creation will fail, when the respective Elasticsearch index cannot be created.
-                    type: boolean
-                    required: false
-                    repeat: false
-                    default: false
                 updateAssignedBranches: 
                     description: Update the schema version for all branches which already utilize the schema.
                     type: boolean
@@ -8265,6 +8259,12 @@ mediaType: application/json
                     required: false
                     repeat: false
                     example: summerBranch,winterBranch
+                strictValidation: 
+                    description: Validate the Elasticsearch settings in the schema. When this parameter is set, a schema update or creation will fail, when the respective Elasticsearch index cannot be created.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    default: false
             body: 
                 application/json: 
                     schema: |
@@ -9314,7 +9314,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "b72e58464e6d46eb9a33c0f49916083b"
+                            "uuid" : "dcba6aca1f2847c48c717a83a5d4a4b9"
                           } ]
                         }
             responses: 
@@ -11065,7 +11065,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "be2aee2352e8483ea136a7e4e04ab50b"
+                            "uuid" : "40e46f7d6e5e4393b5154f3e64f7f1da"
                           } ]
                         }
             responses: 
@@ -17315,7 +17315,7 @@ mediaType: application/json
                                 }
                             example: |
                                 {
-                                  "meshVersion" : "3.1.13",
+                                  "meshVersion" : "3.1.14",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "mariadb",
                                   "databaseVersion" : "10.7",
@@ -19549,6 +19549,9 @@ mediaType: application/json
                                       "focalPointZoom" : {
                                         "type" : "number"
                                       },
+                                      "cacheKey" : {
+                                        "type" : "string"
+                                      },
                                       "size" : {
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:Point",
@@ -19563,9 +19566,6 @@ mediaType: application/json
                                             "type" : "number"
                                           }
                                         }
-                                      },
-                                      "cacheKey" : {
-                                        "type" : "string"
                                       }
                                     }
                                   }
@@ -21065,6 +21065,9 @@ mediaType: application/json
                                   "focalPointZoom" : {
                                     "type" : "number"
                                   },
+                                  "cacheKey" : {
+                                    "type" : "string"
+                                  },
                                   "size" : {
                                     "type" : "object",
                                     "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:Point",
@@ -21079,9 +21082,6 @@ mediaType: application/json
                                         "type" : "number"
                                       }
                                     }
-                                  },
-                                  "cacheKey" : {
-                                    "type" : "string"
                                   }
                                 }
                               }
@@ -23770,7 +23770,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "fcbd5fe568f54276bb7f35556df1c87a"
+                            "uuid" : "fdcf3ed28076433f98891f3bd4d0d902"
                           } ]
                         }
             responses: 
@@ -27245,7 +27245,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "e975ad5873ef41cb910b1bd4e6bc3e4e"
+                            "uuid" : "bf4fe63ad91d4ca3b032a7a2bf6bcc21"
                           } ]
                         }
             responses: 
@@ -29141,7 +29141,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "902528cb54c04f739e3a643e5ea1cd74"
+                            "uuid" : "911c23da648546a5a62e4aea02620494"
                           } ]
                         }
             responses: 
@@ -30402,6 +30402,9 @@ mediaType: application/json
                                       "focalPointZoom" : {
                                         "type" : "number"
                                       },
+                                      "cacheKey" : {
+                                        "type" : "string"
+                                      },
                                       "size" : {
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:Point",
@@ -30416,9 +30419,6 @@ mediaType: application/json
                                             "type" : "number"
                                           }
                                         }
-                                      },
-                                      "cacheKey" : {
-                                        "type" : "string"
                                       }
                                     }
                                   }
@@ -31427,6 +31427,9 @@ mediaType: application/json
                                   "focalPointZoom" : {
                                     "type" : "number"
                                   },
+                                  "cacheKey" : {
+                                    "type" : "string"
+                                  },
                                   "size" : {
                                     "type" : "object",
                                     "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:Point",
@@ -31441,9 +31444,6 @@ mediaType: application/json
                                         "type" : "number"
                                       }
                                     }
-                                  },
-                                  "cacheKey" : {
-                                    "type" : "string"
                                   }
                                 }
                               }
@@ -33334,7 +33334,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "f981ef6e7ea94445af32a6db06bbfbf4"
+                            "uuid" : "28c3614ff4204894851629d8f5d878c0"
                           } ]
                         }
             responses: 
