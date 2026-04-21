@@ -118,7 +118,10 @@ public class JsonFilter extends MainFilter<JsonContent> {
 		return query -> {
 			JsonSchema schema = JsonSchema.of(new JsonObject(query));
 			Validator validator = JsonUtil.newJsonSchemaValidator(schema);
-			return nullablePredicate(object -> validator.validate(object).getValid() == Boolean.TRUE);
+			return nullablePredicate(object -> {
+				Object jsonContent = object.isArray() ? object.getArray() : object.getObject();
+				return validator.validate(jsonContent).getValid() == Boolean.TRUE;
+			});
 		};
 	}
 

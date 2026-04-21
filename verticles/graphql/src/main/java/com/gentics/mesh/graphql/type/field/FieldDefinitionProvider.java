@@ -344,11 +344,11 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		Builder type = newObject().name(JSON_FIELD_TYPE_NAME).description("JSON object field");
 
 		type.field(newFieldDefinition().name("text").description("Value as JSON string").type(GraphQLString).dataFetcher(fetcher -> {
-			JsonObject json = fetcher.getSource();
+			JsonContent json = fetcher.getSource();
 			return json == null ? null : JsonUtil.toJson(json, options.getHttpServerOptions().isMinifyJson());
 		}));
 		type.field(newFieldDefinition().name("json").description("Value as JSON object").type(ExtendedScalars.Json).dataFetcher(fetcher -> {
-			JsonObject json = fetcher.getSource();
+			JsonContent json = fetcher.getSource();
 			return json == null ? null : json;
 		}));
 
