@@ -2,10 +2,9 @@ package com.gentics.mesh.core.rest.node.field.impl;
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.FieldTypes;
+import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.core.rest.node.field.JsonField;
 import com.gentics.mesh.json.JsonUtil;
-
-import io.vertx.core.json.JsonObject;
 
 /**
  * @see JsonField
@@ -13,7 +12,7 @@ import io.vertx.core.json.JsonObject;
 public class JsonFieldImpl implements JsonField {
 
 	@JsonPropertyDescription("JSON field value")
-	private JsonObject json;
+	private JsonContent json;
 
 	@Override
 	public String getType() {
@@ -21,12 +20,12 @@ public class JsonFieldImpl implements JsonField {
 	}
 
 	@Override
-	public JsonObject getJson() {
+	public JsonContent getJson() {
 		return json;
 	}
 
 	@Override
-	public JsonField setJson(JsonObject json) {
+	public JsonField setJson(JsonContent json) {
 		this.json = json;
 		return this;
 	}

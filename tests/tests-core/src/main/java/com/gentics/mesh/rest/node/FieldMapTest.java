@@ -23,6 +23,7 @@ import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.HtmlField;
+import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.core.rest.node.field.JsonField;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.node.field.NodeField;
@@ -49,6 +50,7 @@ import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
 
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 public class FieldMapTest {
@@ -84,7 +86,7 @@ public class FieldMapTest {
 		fieldMap.put("booleanFieldNull", null);
 		fieldMap.put("booleanFieldNullValue", new BooleanFieldImpl().setValue(null));
 
-		fieldMap.put("jsonField", new JsonFieldImpl().setJson(new JsonObject().put("content", "whatever")));
+		fieldMap.put("jsonField", new JsonFieldImpl().setJson(new JsonContent().setArray(new JsonArray().add("whatever").add("wherever"))));
 		fieldMap.put("jsonFieldNull", null);
 		fieldMap.put("jsonFieldNullValue", new JsonFieldImpl().setJson(null));
 
@@ -147,9 +149,9 @@ public class FieldMapTest {
 		fieldMap.put("numberListField", numberList);
 
 		JsonFieldListImpl jsonList = new JsonFieldListImpl();
-		jsonList.add(new JsonObject().put("content", "A"));
-		jsonList.add(new JsonObject().put("content", "B"));
-		jsonList.add(new JsonObject().put("content", "C"));
+		jsonList.add(new JsonContent().setObject(new JsonObject().put("content", "A")));
+		jsonList.add(new JsonContent().setObject(new JsonObject().put("content", "B")));
+		jsonList.add(new JsonContent().setObject(new JsonObject().put("content", "C")));
 		fieldMap.put("jsonListField", jsonList);
 
 		fieldMap.put("nulled", null);

@@ -22,5 +22,4 @@ public class JsonObjectDeserializer extends JsonDeserializer<JsonObject> {
 		JsonNode node = oc.readTree(jsonParser);
 		return new JsonObject(node.toString());
 	}
-
 }

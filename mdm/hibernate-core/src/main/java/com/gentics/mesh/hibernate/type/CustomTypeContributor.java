@@ -11,6 +11,6 @@ public class CustomTypeContributor implements TypeContributor {
 
 	@Override
 	public void contribute(TypeContributions typeContributions, ServiceRegistry serviceRegistry) {
-		typeContributions.contributeType(JsonObjectType.INSTANCE);
+		typeContributions.contributeType(JsonContentType.INSTANCE);
 	}
 }

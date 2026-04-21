@@ -72,6 +72,7 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.link.WebRootLinkReplacerImpl;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.FieldTypes;
+import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
@@ -219,7 +220,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	/**
 	 * DataLoader implementation for values of JSON object lists
 	 */
-	public BatchLoaderWithContext<String, List<JsonObject>> JSON_LIST_VALUE_LOADER = (keys, environment) -> {
+	public BatchLoaderWithContext<String, List<JsonContent>> JSON_LIST_VALUE_LOADER = (keys, environment) -> {
 		ContentDao contentDao = Tx.get().contentDao();
 		return listValueDataLoader(keys, contentDao::getJsonListFieldValues, Functions.identity());
 	};

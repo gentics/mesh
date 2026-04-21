@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import com.gentics.graphqlfilter.filter.FilterField;
 import com.gentics.graphqlfilter.filter.MainFilter;
 import com.gentics.graphqlfilter.filter.operation.Comparison;
+import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.json.JsonUtil;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.ParseContext;
@@ -25,14 +26,11 @@ import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
 import com.jayway.jsonpath.spi.json.JsonProvider;
 
 import io.vertx.core.json.DecodeException;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
-import io.vertx.json.schema.Draft;
-import io.vertx.json.schema.JsonSchemaOptions;
 import io.vertx.reactivex.json.schema.JsonSchema;
 import io.vertx.reactivex.json.schema.Validator;
 
-public class JsonFilter extends MainFilter<JsonObject> {
+public class JsonFilter extends MainFilter<JsonContent> {
 
 	private static final Logger log = LoggerFactory.getLogger(JsonFilter.class);
 
@@ -56,12 +54,12 @@ public class JsonFilter extends MainFilter<JsonObject> {
 	}
 
 	@Override
-	protected List<FilterField<JsonObject, ?>> getFilters() {
+	protected List<FilterField<JsonContent, ?>> getFilters() {
 		return Arrays.asList(
 			FilterField.isNull(),
-			FilterField.<JsonObject, String>create("like", "Checks if the JSON object matches the given SQL LIKE expression.", GraphQLString, likePredicate(),
+			FilterField.<JsonContent, String>create("like", "Checks if the JSON object matches the given SQL LIKE expression.", GraphQLString, likePredicate(),
 				Optional.of((query) -> Comparison.like(query.makeFieldOperand(Optional.empty()), query.makeValueOperand(true), query.getInitiatingFilterName()))),
-			FilterField.<JsonObject, String>create("regex", "Checks if the JSON object representation matches the given regular expression.", GraphQLString, regexPredicate(),
+			FilterField.<JsonContent, String>create("regex", "Checks if the JSON object representation matches the given regular expression.", GraphQLString, regexPredicate(),
 				Optional.empty()),
 			FilterField.create("hasSchema", "Tests if the object has the given JSON schema.", GraphQLString, objectSchemaPredicate(),
 				Optional.empty()),
@@ -69,7 +67,7 @@ public class JsonFilter extends MainFilter<JsonObject> {
 				Optional.empty()));
 	}
 
-	private Function<String, Predicate<JsonObject>> jsonPathPredicate() {
+	private Function<String, Predicate<JsonContent>> jsonPathPredicate() {
 		return query -> {
 			JsonPath jsonPath = JsonPath.compile(query);
 			JsonProvider provider = new JacksonJsonProvider(JsonUtil.getMapper());
@@ -87,7 +85,7 @@ public class JsonFilter extends MainFilter<JsonObject> {
 	 * @param objects
 	 * @return
 	 */
-	public static Collection<JsonObject> parseJsons(Collection<String> objects) {
+	public static Collection<JsonContent> parseJsons(Collection<String> objects) {
 		return objects.stream().map(JsonFilter::parseJson).collect(Collectors.toList());
 	}
 
@@ -97,16 +95,16 @@ public class JsonFilter extends MainFilter<JsonObject> {
 	 * @param object
 	 * @return
 	 */
-	public static JsonObject parseJson(String object) {
+	public static JsonContent parseJson(String object) {
 		try {
-			Object decoded = Json.decodeValue(object);
-			if (decoded instanceof JsonObject o) {
+			Object decoded = JsonUtil.readValue(object, JsonContent.class);
+			if (decoded instanceof JsonContent o) {
 				return o;
 			}
 		} catch (DecodeException e) {
 			log.warn("JSON decode failed for " + object, e);
 		}
-		return new JsonObject();
+		return new JsonContent();
 	}
 
 	private String likeToRegex(String likeQuery) {
@@ -116,7 +114,7 @@ public class JsonFilter extends MainFilter<JsonObject> {
 				.replace(DOT_PLACEHOLDER, ".").replace(PERCENT_PLACEHOLDER, "%").replace(UNDERSCORE_PLACEHOLDER, "_");
 	}
 
-	private Function<String, Predicate<JsonObject>> objectSchemaPredicate() {
+	private Function<String, Predicate<JsonContent>> objectSchemaPredicate() {
 		return query -> {
 			JsonSchema schema = JsonSchema.of(new JsonObject(query));
 			Validator validator = JsonUtil.newJsonSchemaValidator(schema);
@@ -124,14 +122,14 @@ public class JsonFilter extends MainFilter<JsonObject> {
 		};
 	}
 
-	private Function<String, Predicate<JsonObject>> likePredicate() {
+	private Function<String, Predicate<JsonContent>> likePredicate() {
 		return query -> {
 			Pattern regex = Pattern.compile(likeToRegex(query));
 			return nullablePredicate(object -> regex.matcher(JsonUtil.toJson(object)).find());
 		};
 	}
 
-	private Function<String, Predicate<JsonObject>> regexPredicate() {
+	private Function<String, Predicate<JsonContent>> regexPredicate() {
 		return query -> {
 			Pattern regex = Pattern.compile(query);
 			return nullablePredicate(object -> regex.matcher(JsonUtil.toJson(object)).find());

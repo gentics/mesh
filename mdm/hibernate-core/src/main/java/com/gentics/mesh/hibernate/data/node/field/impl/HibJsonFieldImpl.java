@@ -2,9 +2,8 @@ package com.gentics.mesh.hibernate.data.node.field.impl;
 
 import com.gentics.mesh.core.data.node.field.HibJsonField;
 import com.gentics.mesh.core.rest.common.FieldTypes;
+import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.hibernate.data.domain.HibUnmanagedFieldContainer;
-
-import io.vertx.core.json.JsonObject;
 
 /**
  * JSON object field of Hibernate content.
@@ -12,19 +11,19 @@ import io.vertx.core.json.JsonObject;
  * @author plyhun
  *
  */
-public class HibJsonFieldImpl extends AbstractBasicHibField<JsonObject> implements HibJsonField {
+public class HibJsonFieldImpl extends AbstractBasicHibField<JsonContent> implements HibJsonField {
 
-	public HibJsonFieldImpl(String fieldKey, HibUnmanagedFieldContainer<?, ?, ?, ?, ?> parent, JsonObject value) {
+	public HibJsonFieldImpl(String fieldKey, HibUnmanagedFieldContainer<?, ?, ?, ?, ?> parent, JsonContent value) {
 		super(fieldKey, parent, FieldTypes.JSON, value);
 	}
 
 	@Override
-	public JsonObject getJson() {
+	public JsonContent getJson() {
 		return valueOrNull();
 	}
 
 	@Override
-	public void setJson(JsonObject string) {
+	public void setJson(JsonContent string) {
 		storeValue(string);
 	}
 

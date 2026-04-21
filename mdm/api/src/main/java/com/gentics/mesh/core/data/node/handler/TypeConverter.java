@@ -22,6 +22,7 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.core.rest.node.field.ListField;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.node.field.NodeField;
@@ -40,8 +41,6 @@ import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
-
-import io.vertx.core.json.JsonObject;
 
 /**
  * Type converter for the script engine used by the node migration handler.
@@ -95,7 +94,7 @@ public class TypeConverter {
 	 * @return String array
 	 */
 	public JsonFieldListImpl toJsonList(Object value) {
-		return listField(JsonFieldListImpl::new, this::toJsonObject, value);
+		return listField(JsonFieldListImpl::new, this::toJsonContent, value);
 	}
 
 	/**
@@ -139,7 +138,7 @@ public class TypeConverter {
 	 *            Value to be converted
 	 * @return Boolean value
 	 */
-	public JsonObject toJsonObject(Object value) {
+	public JsonContent toJsonContent(Object value) {
 		value = firstIfList(value);
 
 		if (value == null) {
@@ -147,7 +146,7 @@ public class TypeConverter {
 		}
 
 		try {
-			return new JsonObject(value.toString());
+			return new JsonContent().setString(value.toString());
 		} catch (Exception e) {
 			if (log.isDebugEnabled()) {
 				log.debug("Could not convert to JsonObject {" + value.toString() + "}", e);

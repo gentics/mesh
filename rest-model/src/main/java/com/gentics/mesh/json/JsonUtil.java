@@ -36,6 +36,7 @@ import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
+import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.core.rest.node.field.ListableField;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
@@ -59,6 +60,7 @@ import com.gentics.mesh.json.deserializer.FieldDeserializer;
 import com.gentics.mesh.json.deserializer.FieldMapDeserializer;
 import com.gentics.mesh.json.deserializer.FieldSchemaDeserializer;
 import com.gentics.mesh.json.deserializer.JsonArrayDeserializer;
+import com.gentics.mesh.json.deserializer.JsonContentDeserializer;
 import com.gentics.mesh.json.deserializer.JsonObjectDeserializer;
 import com.gentics.mesh.json.deserializer.NodeFieldListItemDeserializer;
 import com.gentics.mesh.json.deserializer.PermissionChangedEventModelDeserializer;
@@ -67,6 +69,7 @@ import com.gentics.mesh.json.deserializer.UserNodeReferenceDeserializer;
 import com.gentics.mesh.json.serializer.BasicFieldSerializer;
 import com.gentics.mesh.json.serializer.FieldListSerializer;
 import com.gentics.mesh.json.serializer.JsonArraySerializer;
+import com.gentics.mesh.json.serializer.JsonContentSerializer;
 import com.gentics.mesh.json.serializer.JsonObjectSerializer;
 
 import io.vertx.core.json.JsonArray;
@@ -84,7 +87,7 @@ public final class JsonUtil {
 	/**
 	 * JSON object comparator
 	 */
-	public static Comparator<JsonObject> COMPARATOR = (a,b) -> {
+	public static Comparator<JsonContent> COMPARATOR = (a,b) -> {
 		if (a == null && b == null) {
 			return 0;
 		}
@@ -135,6 +138,7 @@ public final class JsonUtil {
 		module.addSerializer(FieldList.class, new FieldListSerializer());
 		module.addSerializer(JsonObject.class, new JsonObjectSerializer());
 		module.addSerializer(JsonArray.class, new JsonArraySerializer());
+		module.addSerializer(JsonContent.class, new JsonContentSerializer());
 
 		module.addSerializer(FieldMapImpl.class, new JsonSerializer<FieldMapImpl>() {
 			@Override
@@ -151,6 +155,7 @@ public final class JsonUtil {
 		module.addDeserializer(FieldSchema.class, new FieldSchemaDeserializer<FieldSchema>());
 		module.addDeserializer(EventCauseInfo.class, new EventCauseInfoDeserializer());
 		module.addDeserializer(PermissionChangedEventModel.class, new PermissionChangedEventModelDeserializer());
+		module.addDeserializer(JsonContent.class, new JsonContentDeserializer());
 
 		defaultMapper.registerModule(module);
 		defaultMapper.registerModule(new SimpleModule("interfaceMapping") {

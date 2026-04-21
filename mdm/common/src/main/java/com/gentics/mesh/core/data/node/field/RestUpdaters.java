@@ -45,6 +45,7 @@ import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.HtmlField;
+import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.core.rest.node.field.JsonField;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.node.field.NodeField;
@@ -75,8 +76,6 @@ import com.gentics.mesh.core.rest.schema.S3BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.DateUtils;
-
-import io.vertx.core.json.JsonObject;
 
 public class RestUpdaters {
 
@@ -405,9 +404,10 @@ public class RestUpdaters {
 		JsonFieldSchema jsonFieldSchema = (JsonFieldSchema) fieldSchema;
 		JsonSchema[] allowedSchemas = jsonFieldSchema.getAllowedSchemas();
 		if (allowedSchemas != null && allowedSchemas.length != 0) {
+			Object jsonContent = jsonField.getJson().getContent();
 			if (jsonField.getJson() != null && Arrays.asList(allowedSchemas).stream()
-					.noneMatch(schema1 -> JsonUtil.newJsonSchemaValidator(schema1.getVertxSchema()).validate(jsonField.getJson()).getValid() == Boolean.TRUE)) {
-				throw error(BAD_REQUEST, "node_error_invalid_json_field_value", fieldKey, JsonUtil.toJson(jsonField.getJson()));
+					.noneMatch(schema1 -> JsonUtil.newJsonSchemaValidator(schema1.getVertxSchema()).validate(jsonContent).getValid() == Boolean.TRUE)) {
+				throw error(BAD_REQUEST, "node_error_invalid_json_field_value", fieldKey, JsonUtil.toJson(jsonContent));
 			}
 		}
 
@@ -451,7 +451,7 @@ public class RestUpdaters {
 		graphJsonFieldList = container.createJsonList(fieldKey);
 
 		// Add items from rest model
-		for (JsonObject item : jsonList.getItems()) {
+		for (JsonContent item : jsonList.getItems()) {
 			if (item == null) {
 				throw error(BAD_REQUEST, "field_list_error_null_not_allowed", fieldKey);
 			}

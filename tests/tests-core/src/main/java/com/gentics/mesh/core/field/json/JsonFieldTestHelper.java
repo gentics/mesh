@@ -2,6 +2,7 @@ package com.gentics.mesh.core.field.json;
 
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.FieldFetcher;
+import com.gentics.mesh.core.rest.node.field.JsonContent;
 
 import io.vertx.core.json.JsonObject;
 
@@ -13,7 +14,7 @@ public interface JsonFieldTestHelper {
 	static final DataProvider CREATE_EMPTY = (container, name) -> container.createJson(name).setJson(null);
 	static final FieldFetcher FETCH = (container, name) -> container.getJson(name);
 
-	public static JsonObject make(String content) {
-		return new JsonObject().put("content", content);
+	public static JsonContent make(String content) {
+		return new JsonContent().setObject(new JsonObject().put("content", content));
 	}
 }

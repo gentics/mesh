@@ -47,6 +47,7 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.rest.common.FieldTypes;
+import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.hibernate.MeshTablePrefixStrategy;
@@ -58,7 +59,6 @@ import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.query.MetadataExtractorIntegrator;
 import com.gentics.mesh.util.UUIDUtil;
 
-import io.vertx.core.json.JsonObject;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityManager;
 
@@ -391,7 +391,7 @@ public abstract class AbstractDatabaseConnector implements DatabaseConnector {
 				return typeConfig.getDdlTypeRegistry().getTypeName(
 								SqlTypes.JSON, 
 								new Size(getSqlTypePrecision(type), getSqlTypeScale(type), getSqlTypeLength(type)), 
-								typeConfig.getBasicTypeForJavaType(JsonObject.class));
+								typeConfig.getBasicTypeForJavaType(JsonContent.class));
 			case STRING:
 			case HTML:
 				return typeConfig.getDdlTypeRegistry().getTypeName(

@@ -61,6 +61,7 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.HtmlField;
+import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
@@ -435,12 +436,12 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 				container.createString("stringLink").setString("Link: {{mesh.link(\"" + CONTENT_UUID + "\", \"en\")}}");
 
 				// json
-				container.createJson("json").setJson(new JsonObject("""
+				container.createJson("json").setJson(new JsonContent().setObject(new JsonObject("""
 						{
 								"firstName": "Mickey",
 								"lastName": "Mouse"
 						}
-				"""));
+				""")));
 
 				// boolean
 				container.createBoolean("boolean").setBoolean(true);
@@ -464,18 +465,18 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 
 				// jsonList
 				HibJsonFieldList jsonList = container.createJsonList("jsonList");
-				jsonList.createJson(new JsonObject("""
+				jsonList.createJson(new JsonContent().setObject(new JsonObject("""
 						{
 								"firstName": "Minnie",
 								"lastName": "Mouse"
 						}
-				"""));
-				jsonList.createJson(new JsonObject("""
+				""")));
+				jsonList.createJson(new JsonContent().setObject(new JsonObject("""
 						{
 								"firstName": "Daisy",
 								"lastName": "Duck"
 						}
-				"""));
+				""")));
 
 				// htmlList
 				HibHtmlFieldList htmlList = container.createHTMLList("htmlList");
@@ -519,12 +520,12 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 					HibMicronode secondMicronode = micronodeList.createMicronode(microschemaDao.findByUuid(microschemaUuid).getLatestVersion());
 					secondMicronode.createString("text").setString("Joe");
 					secondMicronode.createNode("nodeRef", content());
-					secondMicronode.createJson("json").setJson(new JsonObject("""
+					secondMicronode.createJson("json").setJson(new JsonContent().setObject(new JsonObject("""
 							{
 									"firstName":"Donald", 
 									"lastName": "Duck"
 							}
-					"""));
+					""")));
 
 					HibNodeFieldList micrnodeNodeList = secondMicronode.createNodeList("nodeList");
 					micrnodeNodeList.createNode(0, node2);

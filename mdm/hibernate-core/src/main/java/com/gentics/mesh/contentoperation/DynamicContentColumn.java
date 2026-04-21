@@ -1,7 +1,6 @@
 package com.gentics.mesh.contentoperation;
 
 import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.UUID;
@@ -9,12 +8,11 @@ import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.core.rest.common.FieldTypes;
+import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.hibernate.data.node.field.impl.HibNumberFieldImpl;
 import com.gentics.mesh.util.DateUtils;
-
-import io.vertx.core.json.JsonObject;
 
 /**
  * A dynamic content column, that is, a column that is not common to all the content table, but is rather
@@ -56,7 +54,7 @@ public class DynamicContentColumn implements ContentColumn, Serializable {
 	public Class<?> getJavaClass() {
 		switch (fieldType) {
 			case JSON:
-				return JsonObject.class;
+				return JsonContent.class;
 			case STRING:
 			case HTML:
 				return String.class;

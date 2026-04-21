@@ -7,13 +7,12 @@ import java.util.stream.Collectors;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.node.field.HibJsonField;
 import com.gentics.mesh.core.data.node.field.nesting.HibMicroschemaListableField;
+import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.core.rest.node.field.list.impl.JsonFieldListImpl;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.CompareUtils;
 
-import io.vertx.core.json.JsonObject;
-
-public interface HibJsonFieldList extends HibMicroschemaListableField, HibListField<HibJsonField, JsonFieldListImpl, JsonObject> {
+public interface HibJsonFieldList extends HibMicroschemaListableField, HibListField<HibJsonField, JsonFieldListImpl, JsonContent> {
 
 	String TYPE = "json";
 
@@ -24,14 +23,14 @@ public interface HibJsonFieldList extends HibMicroschemaListableField, HibListFi
 	 *            Json to be set for the new field
 	 * @return
 	 */
-	HibJsonField createJson(JsonObject json);
+	HibJsonField createJson(JsonContent json);
 
 	/**
 	 * Create an ordered list of json fields from values, adding all to the list.
 	 * 
 	 * @param jsons
 	 */
-	default void createJsons(List<JsonObject> jsons) {
+	default void createJsons(List<JsonContent> jsons) {
 		jsons.stream().forEach(this::createJson);
 	}
 
@@ -53,7 +52,7 @@ public interface HibJsonFieldList extends HibMicroschemaListableField, HibListFi
 	}
 
 	@Override
-	default List<JsonObject> getValues() {
+	default List<JsonContent> getValues() {
 		return getList().stream().map(HibJsonField::getJson).collect(Collectors.toList());
 	}
 
@@ -61,9 +60,9 @@ public interface HibJsonFieldList extends HibMicroschemaListableField, HibListFi
 	default boolean listEquals(Object obj) {
 		if (obj instanceof JsonFieldListImpl) {
 			JsonFieldListImpl restField = (JsonFieldListImpl) obj;
-			List<JsonObject> restList = restField.getItems();
+			List<JsonContent> restList = restField.getItems();
 			List<? extends HibJsonField> sqlList = getList();
-			List<JsonObject> valueList = sqlList.stream().map(e -> e.getJson()).collect(Collectors.toList());
+			List<JsonContent> valueList = sqlList.stream().map(e -> e.getJson()).collect(Collectors.toList());
 			return CompareUtils.equals(restList, valueList, Optional.of((a, b) -> JsonUtil.COMPARATOR.compare(a, b) == 0));
 		}
 		return HibListField.super.listEquals(obj);

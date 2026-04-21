@@ -23,16 +23,15 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractListFieldEndpointTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.core.rest.node.field.list.impl.JsonFieldListImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 
-import io.vertx.core.json.JsonObject;
-
 @MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class JsonFieldListEndpointTest extends AbstractListFieldEndpointTest {
 
-	protected static final List<JsonObject> TEST_LIST = List.of(make("A"), make("B"), make("C"));
+	protected static final List<JsonContent> TEST_LIST = List.of(make("A"), make("B"), make("C"));
 
 	@Override
 	public String getListFieldType() {
@@ -149,13 +148,13 @@ public class JsonFieldListEndpointTest extends AbstractListFieldEndpointTest {
 		HibNodeFieldContainer container = tx(tx -> { return tx.contentDao().getFieldContainer(node, "en"); });
 		for (int i = 0; i < 20; i++) {
 			JsonFieldListImpl list = new JsonFieldListImpl();
-			List<JsonObject> oldValue;
-			List<JsonObject> newValue;
+			List<JsonContent> oldValue;
+			List<JsonContent> newValue;
 			try (Tx tx = tx()) {
 				oldValue = getListValues(container::getJsonList, FIELD_NAME);
 				newValue = valueCombinations.get(i % valueCombinations.size()).stream().map(JsonFieldTestHelper::make).collect(Collectors.toList());
 
-				for (JsonObject value : newValue) {
+				for (JsonContent value : newValue) {
 					list.add(value);
 				}
 			}
@@ -198,7 +197,7 @@ public class JsonFieldListEndpointTest extends AbstractListFieldEndpointTest {
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getJsonList(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getJsonList(FIELD_NAME)).isNotNull();
-			List<JsonObject> oldValueList = latest.getPreviousVersion().getJsonList(FIELD_NAME).getList().stream().map(item -> item.getJson())
+			List<JsonContent> oldValueList = latest.getPreviousVersion().getJsonList(FIELD_NAME).getList().stream().map(item -> item.getJson())
 				.collect(Collectors.toList());
 			assertThat(oldValueList).containsExactlyElementsOf(TEST_LIST);
 		}

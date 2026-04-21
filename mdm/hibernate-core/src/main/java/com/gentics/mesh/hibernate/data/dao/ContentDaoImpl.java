@@ -66,6 +66,7 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.common.ReferenceType;
+import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -126,7 +127,6 @@ import com.gentics.mesh.util.UUIDUtil;
 import com.gentics.mesh.util.VersionNumber;
 
 import io.reactivex.Completable;
-import io.vertx.core.json.JsonObject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
 
@@ -1858,7 +1858,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	}
 
 	@Override
-	public Map<String, List<JsonObject>> getJsonListFieldValues(List<String> listUuids) {
+	public Map<String, List<JsonContent>> getJsonListFieldValues(List<String> listUuids) {
 		return getListValues(listUuids, HibJsonListFieldEdgeImpl::getJson, HibJsonListFieldEdgeImpl.class);
 	}
 

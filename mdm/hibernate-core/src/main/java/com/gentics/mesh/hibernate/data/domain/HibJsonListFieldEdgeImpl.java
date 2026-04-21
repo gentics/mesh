@@ -7,9 +7,9 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import com.gentics.mesh.core.data.node.field.HibJsonField;
+import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.database.HibernateTx;
 
-import io.vertx.core.json.JsonObject;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
@@ -31,25 +31,25 @@ import jakarta.persistence.UniqueConstraint;
 }, indexes = {
 		@Index(columnList = "listUuid")
 })
-public class HibJsonListFieldEdgeImpl extends AbstractHibPrimitiveListFieldEdgeImpl<HibJsonField, JsonObject> implements HibJsonField, Serializable {
+public class HibJsonListFieldEdgeImpl extends AbstractHibPrimitiveListFieldEdgeImpl<HibJsonField, JsonContent> implements HibJsonField, Serializable {
 
 	private static final long serialVersionUID = -6554262711404820079L;
 
 	public HibJsonListFieldEdgeImpl() {
 	}
 
-	public HibJsonListFieldEdgeImpl(HibernateTx tx, UUID listUuid, int index, String fieldKey, JsonObject value, 
+	public HibJsonListFieldEdgeImpl(HibernateTx tx, UUID listUuid, int index, String fieldKey, JsonContent value, 
 			HibUnmanagedFieldContainer<?,?,?,?,?> parentFieldContainer) {
 		super(tx, listUuid, index, fieldKey, value, parentFieldContainer);
 	}
 
 	@Override
-	public JsonObject getJson() {
+	public JsonContent getJson() {
 		return valueOrUuid;
 	}
 
 	@Override
-	public void setJson(JsonObject value) {
+	public void setJson(JsonContent value) {
 		this.valueOrUuid = value;
 		HibernateTx.get().entityManager().merge(this);
 	}

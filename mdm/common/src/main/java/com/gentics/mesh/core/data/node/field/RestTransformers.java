@@ -23,6 +23,7 @@ import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.HtmlField;
+import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.core.rest.node.field.JsonField;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.node.field.NodeField;
@@ -39,8 +40,6 @@ import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.LinkType;
-
-import io.vertx.core.json.JsonObject;
 
 public interface RestTransformers {
 
@@ -178,7 +177,7 @@ public interface RestTransformers {
 				if (project == null) {
 					project = parentNode.get().getProject();
 				}
-				field.setJson(new JsonObject(webRootLinkReplacer.replace(ac, tx.getBranch(ac).getUuid(),
+				field.setJson(new JsonContent().setString(webRootLinkReplacer.replace(ac, tx.getBranch(ac).getUuid(),
 						ContainerType.forVersion(ac.getVersioningParameters().getVersion()), JsonUtil.toJson(field.getJson(), true),
 						ac.getNodeParameters().getResolveLinks(), project.getName(), languageTags)));
 			}

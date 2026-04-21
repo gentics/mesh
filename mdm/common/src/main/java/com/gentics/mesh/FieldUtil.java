@@ -10,6 +10,7 @@ import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.HtmlField;
+import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.core.rest.node.field.JsonField;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.node.field.NumberField;
@@ -59,8 +60,6 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.util.Tuple;
-
-import io.vertx.core.json.JsonObject;
 
 /**
  * Utility class that is commonly used for tests and the RAML generator.
@@ -178,7 +177,7 @@ public final class FieldUtil {
 	 * @param stringValue
 	 * @return
 	 */
-	public static JsonField createJsonField(JsonObject jsonValue) {
+	public static JsonField createJsonField(JsonContent jsonValue) {
 		JsonField field = new JsonFieldImpl();
 		field.setJson(jsonValue);
 		return field;

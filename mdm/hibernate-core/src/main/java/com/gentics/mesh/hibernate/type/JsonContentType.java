@@ -10,19 +10,18 @@ import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.type.SqlTypes;
 import org.hibernate.usertype.UserType;
 
+import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.json.JsonUtil;
 
-import io.vertx.core.json.JsonObject;
-
 /**
- * JSON object mapping type
+ * JSON content mapping type
  */
-public class JsonObjectType implements UserType<JsonObject> {
+public class JsonContentType implements UserType<JsonContent> {
 
-	public static final JsonObjectType INSTANCE = new JsonObjectType();
+	public static final JsonContentType INSTANCE = new JsonContentType();
 
 	@Override
-	public JsonObject nullSafeGet(ResultSet rs, int position, SharedSessionContractImplementor session, Object owner) throws SQLException {
+	public JsonContent nullSafeGet(ResultSet rs, int position, SharedSessionContractImplementor session, Object owner) throws SQLException {
 		final String cellContent = rs.getString(position);
 		if (cellContent == null) {
 			return null;
@@ -35,7 +34,7 @@ public class JsonObjectType implements UserType<JsonObject> {
 	}
 
 	@Override
-	public Serializable disassemble(JsonObject value) {
+	public Serializable disassemble(JsonContent value) {
 		if (value == null) {
 			return null;
 		}
@@ -43,7 +42,7 @@ public class JsonObjectType implements UserType<JsonObject> {
 	}
 
 	@Override
-	public void nullSafeSet(PreparedStatement st, JsonObject value, int index, SharedSessionContractImplementor session) throws SQLException {
+	public void nullSafeSet(PreparedStatement st, JsonContent value, int index, SharedSessionContractImplementor session) throws SQLException {
 		if (value == null) {
 			st.setNull(index, SqlTypes.LONGVARCHAR);
 			return;
@@ -59,9 +58,9 @@ public class JsonObjectType implements UserType<JsonObject> {
 	}
 
 	@Override
-    public JsonObject deepCopy(JsonObject value) {
+    public JsonContent deepCopy(JsonContent value) {
 		String value1 = JsonUtil.toJson(value);
-        return JsonUtil.readValue(value1, JsonObject.class);
+        return JsonUtil.readValue(value1, JsonContent.class);
     }
 
 	@Override
@@ -70,8 +69,8 @@ public class JsonObjectType implements UserType<JsonObject> {
 	}
 
 	@Override
-	public Class<JsonObject> returnedClass() {
-		return JsonObject.class;
+	public Class<JsonContent> returnedClass() {
+		return JsonContent.class;
 	}
 
 	@Override

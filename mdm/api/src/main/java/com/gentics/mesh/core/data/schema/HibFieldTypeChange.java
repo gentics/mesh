@@ -269,7 +269,7 @@ public interface HibFieldTypeChange extends HibSchemaFieldChange {
 		if (oldField == null) {
 			return null;
 		}
-		return new JsonFieldImpl().setJson(typeConverter.toJsonObject(oldField.getValue()));
+		return new JsonFieldImpl().setJson(typeConverter.toJsonContent(oldField.getValue()));
 	}
 
 	private HtmlField changeToHtml(FieldSchemaContainer oldSchema, FieldMap oldFields) {

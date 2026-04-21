@@ -38,6 +38,7 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.HtmlField;
+import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.core.rest.node.field.JsonField;
 import com.gentics.mesh.core.rest.node.field.NumberField;
 import com.gentics.mesh.core.rest.node.field.StringField;
@@ -295,12 +296,9 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 	}
 
 	private void testJson(boolean fieldShouldExist, boolean contentShouldExist) throws IOException {
-		JsonObject value = new JsonObject("""				
-				{
-						"firstName":"Mickey",
-						"lastName":"Mouse"
-				}
-		""");
+		JsonContent value = new JsonContent().setArray(new JsonArray("""
+				["Mickey", "Mouse"]
+		"""));
 
 		Optional<FieldSchema> maybeField = fieldShouldExist
 				? Optional.of(new JsonFieldSchemaImpl().setName("json_content").setLabel("JSON object content"))
@@ -320,7 +318,7 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 		Consumer<MeshWebrootFieldResponse> resultsConsumer = response -> {
 			assertFalse(response.isPlainText());
 			assertFalse(response.isBinary());
-			Assert.assertEquals(new JsonObject(response.getResponseAsJsonString()), value);
+			Assert.assertEquals(new JsonContent().setString(response.getResponseAsJsonString()), value);
 		};
 
 		testField("/News/2015/News_2015.en.html", maybeField, maybeContentSupplier, resultsConsumer, false);

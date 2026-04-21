@@ -25,6 +25,7 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.JsonFieldListImpl;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
@@ -33,8 +34,6 @@ import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.NoConsistencyCheck;
 import com.gentics.mesh.util.CoreTestUtils;
-
-import io.vertx.core.json.JsonObject;
 
 @MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = false)
 public class JsonListFieldTest extends AbstractFieldTest<ListFieldSchema> {
@@ -110,7 +109,7 @@ public class JsonListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 		try (Tx tx = tx()) {
 			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
 			HibJsonFieldList list = container.createJsonList(JSON_LIST);
-			List<JsonObject> params = List.of("1","2","3","4","whatever").stream().map(JsonFieldTestHelper::make).collect(Collectors.toList());
+			List<JsonContent> params = List.of("1","2","3","4","whatever").stream().map(JsonFieldTestHelper::make).collect(Collectors.toList());
 			list.createJsons(params);
 			assertEquals(5, list.getSize());
 			assertEquals(5, list.getList().size());

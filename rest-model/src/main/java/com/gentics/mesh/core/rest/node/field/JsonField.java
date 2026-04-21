@@ -2,8 +2,6 @@ package com.gentics.mesh.core.rest.node.field;
 
 import com.gentics.mesh.core.rest.node.field.impl.JsonFieldImpl;
 
-import io.vertx.core.json.JsonObject;
-
 /**
  * REST POJO for the JSON formatted information.
  */
@@ -14,7 +12,7 @@ public interface JsonField extends ListableField, MicroschemaListableField {
 	 * 
 	 * @return
 	 */
-	JsonObject getJson();
+	JsonContent getJson();
 
 	/**
 	 * Store the given JSON object
@@ -22,7 +20,7 @@ public interface JsonField extends ListableField, MicroschemaListableField {
 	 * @param json
 	 * @return
 	 */
-	JsonField setJson(JsonObject json);
+	JsonField setJson(JsonContent json);
 
 	@Override
 	default Object getValue() {
@@ -35,7 +33,7 @@ public interface JsonField extends ListableField, MicroschemaListableField {
 	 * @param json
 	 * @return
 	 */
-	static JsonField of(JsonObject json) {
+	static JsonField of(JsonContent json) {
 		return new JsonFieldImpl().setJson(json);
 	}
 }
