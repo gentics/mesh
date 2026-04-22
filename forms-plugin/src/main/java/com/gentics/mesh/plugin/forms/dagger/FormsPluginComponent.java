@@ -30,6 +30,7 @@ import com.gentics.mesh.plugin.forms.handler.form.DeleteFormHandler;
 import com.gentics.mesh.plugin.forms.handler.form.GetFormOnlineStatusHandler;
 import com.gentics.mesh.plugin.forms.handler.form.ListFormsHandler;
 import com.gentics.mesh.plugin.forms.handler.form.LoadFormElementsHandler;
+import com.gentics.mesh.plugin.forms.handler.form.LoadFormGenHandler;
 import com.gentics.mesh.plugin.forms.handler.form.LoadFormHandler;
 import com.gentics.mesh.plugin.forms.handler.form.LoadFormSchemaHandler;
 import com.gentics.mesh.plugin.forms.handler.form.SetFormOfflineHandler;
@@ -74,6 +75,8 @@ public interface FormsPluginComponent {
 	UpsertFormHandler upsertFormHandler();
 
 	ListFormsHandler listFormsHandler();
+
+	LoadFormGenHandler loadFormGenHandler();
 
 	LoadFormHandler loadFormHandler();
 
