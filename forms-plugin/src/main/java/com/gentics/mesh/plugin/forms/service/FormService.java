@@ -866,33 +866,58 @@ public class FormService {
 			form.getSchema().getProperties().forEach((key, element) -> {
 				FormDataProperty prop = new FormDataProperty();
 				List<ValueListItem> selectOptions = resolveSelectOptions(element);
-				if (element.isList()) {
-					StringFieldListImpl listField =
-							node.getFields().getStringFieldList(element.getName());
-					if (listField != null) {
-						List<Object> values = new ArrayList<>();
-						if (selectOptions != null && !selectOptions.isEmpty()) {
-							values.addAll(listField.getItems().stream()
-									.map(item -> (Object) buildSelectOptionValue(String.valueOf(item), selectOptions, language))
+				boolean isCatalog = "catalog".equals(element.getType());
+
+				if (isCatalog) {
+					// Validate stored values against current formGridOptions.selectOptions;
+					// stale values (removed from schema) are dropped via null-filter.
+					if (element.isList()) {
+						StringFieldListImpl listField = node.getFields().getStringFieldList(element.getName());
+						if (listField != null) {
+							List<Object> values = listField.getItems().stream()
+									.map(item -> (Object) findPossibleValue(String.valueOf(item), selectOptions, language))
 									.filter(Objects::nonNull)
-									.collect(Collectors.toList()));
-						} else {
-							values.addAll(listField.getItems());
+									.collect(Collectors.toList());
+							prop.setValues(values);
 						}
-						prop.setValues(values);
+					} else {
+						StringFieldImpl strField = node.getFields().getStringField(element.getName());
+						if (strField != null) {
+							prop.setValue(findPossibleValue(strField.getString(), selectOptions, language));
+						}
+					}
+					if (selectOptions != null && !selectOptions.isEmpty()) {
+						prop.setPossibleValues(buildPossibleValues(selectOptions, language));
 					}
 				} else {
-					StringFieldImpl strField = node.getFields().getStringField(element.getName());
-					if (strField != null) {
-						if (selectOptions != null && !selectOptions.isEmpty()) {
-							prop.setValue(buildSelectOptionValue(strField.getString(), selectOptions, language));
-						} else {
-							prop.setValue(strField.getString());
+					if (element.isList()) {
+						StringFieldListImpl listField =
+								node.getFields().getStringFieldList(element.getName());
+						if (listField != null) {
+							List<Object> values = new ArrayList<>();
+							if (selectOptions != null && !selectOptions.isEmpty()) {
+								values.addAll(listField.getItems().stream()
+										.map(item -> (Object) buildSelectOptionValue(String.valueOf(item), selectOptions, language))
+										.filter(Objects::nonNull)
+										.collect(Collectors.toList()));
+							} else {
+								values.addAll(listField.getItems());
+							}
+							prop.setValues(values);
+						}
+					} else {
+						StringFieldImpl strField = node.getFields().getStringField(element.getName());
+						if (strField != null) {
+							if (selectOptions != null && !selectOptions.isEmpty()) {
+								prop.setValue(buildSelectOptionValue(strField.getString(), selectOptions, language));
+							} else {
+								prop.setValue(strField.getString());
+							}
 						}
 					}
-				}
-				if (selectOptions != null && !selectOptions.isEmpty()) {
-					prop.setPossibleValues(buildPossibleValues(selectOptions, language));
+					if (selectOptions != null && !selectOptions.isEmpty()) {
+						prop.setPossibleValues(buildPossibleValues(selectOptions, language));
+					}
 				}
 
 				properties.put(key, prop);
