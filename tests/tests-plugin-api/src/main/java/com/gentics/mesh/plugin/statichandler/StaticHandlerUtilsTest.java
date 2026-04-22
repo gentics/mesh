@@ -40,6 +40,11 @@ public class StaticHandlerUtilsTest {
     private Vertx vertx;
     private File storageDir;
 
+    static {
+    	// https://github.com/mockito/mockito/issues/3121
+    	System.setProperty("net.bytebuddy.experimental", "true");
+    }
+
     @Before
     public void setup() throws IOException {
         vertx = Vertx.vertx();
