@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "3.2.6"
+version: "3.2.7"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -1516,7 +1516,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "4a585b2540ed4ac9999283a7311c2328"
+                            "uuid" : "ee7a70e620bb475ea078bf89c75d2516"
                           } ]
                         }
             responses: 
@@ -3049,7 +3049,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "c2e3970b33a248ebb477dba6c4338a9b"
+                            "uuid" : "64b957ed9b3a432d8920715f9fe6eed8"
                           } ]
                         }
             responses: 
@@ -4355,7 +4355,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "94d10c7197224d78b57cca0f9ae00d56"
+                            "uuid" : "9de628dc09674e39ad06229f4fbe7537"
                           } ]
                         }
             responses: 
@@ -6864,7 +6864,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "18255faca2a2452ebe3831bbd0fc28aa"
+                            "uuid" : "91b80c0e6a764e59bd600031f7d81aab"
                           } ]
                         }
             responses: 
@@ -8247,12 +8247,6 @@ mediaType: application/json
         post: 
             description: Update the schema.
             queryParameters: 
-                strictValidation: 
-                    description: Validate the Elasticsearch settings in the schema. When this parameter is set, a schema update or creation will fail, when the respective Elasticsearch index cannot be created.
-                    type: boolean
-                    required: false
-                    repeat: false
-                    default: false
                 updateAssignedBranches: 
                     description: Update the schema version for all branches which already utilize the schema.
                     type: boolean
@@ -8265,6 +8259,12 @@ mediaType: application/json
                     required: false
                     repeat: false
                     example: summerBranch,winterBranch
+                strictValidation: 
+                    description: Validate the Elasticsearch settings in the schema. When this parameter is set, a schema update or creation will fail, when the respective Elasticsearch index cannot be created.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    default: false
             body: 
                 application/json: 
                     schema: |
@@ -9314,7 +9314,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "08bc57755fb94a1b9d2e099776ce7933"
+                            "uuid" : "39afdc5ff4b74869824499b4f5b25470"
                           } ]
                         }
             responses: 
@@ -11065,7 +11065,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "cc956bac2db346de96eab28140d2bd1f"
+                            "uuid" : "fb6d1ce44a424b9b8756ce10b1f12161"
                           } ]
                         }
             responses: 
@@ -17315,7 +17315,7 @@ mediaType: application/json
                                 }
                             example: |
                                 {
-                                  "meshVersion" : "3.2.6",
+                                  "meshVersion" : "3.2.7",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "mariadb",
                                   "databaseVersion" : "10.7",
@@ -23770,7 +23770,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "1940e6213f044a399f990fc32361e2aa"
+                            "uuid" : "7e74bbd024f64f8996e44b7364a0b480"
                           } ]
                         }
             responses: 
@@ -27245,7 +27245,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "c7a09d0d061440e1ad8aa085220eb323"
+                            "uuid" : "9d781bece583485f884c6fad46c174c9"
                           } ]
                         }
             responses: 
@@ -29141,7 +29141,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "f3fd37c7a7e24264832d2dfd6c1c3fb2"
+                            "uuid" : "994ebbab5bb74e879919916c5e8dc731"
                           } ]
                         }
             responses: 
@@ -33334,7 +33334,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "d056ee340fbf4c2e983f707dfcafb467"
+                            "uuid" : "47f17d66f7d14146a6e530acb096af01"
                           } ]
                         }
             responses: 
