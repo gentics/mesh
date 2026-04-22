@@ -177,7 +177,7 @@ public interface RestTransformers {
 				if (project == null) {
 					project = parentNode.get().getProject();
 				}
-				field.setJson(new JsonContent().setString(webRootLinkReplacer.replace(ac, tx.getBranch(ac).getUuid(),
+				field.setJson(JsonContent.fromString(webRootLinkReplacer.replace(ac, tx.getBranch(ac).getUuid(),
 						ContainerType.forVersion(ac.getVersioningParameters().getVersion()), JsonUtil.toJson(field.getJson(), true),
 						ac.getNodeParameters().getResolveLinks(), project.getName(), languageTags)));
 			}

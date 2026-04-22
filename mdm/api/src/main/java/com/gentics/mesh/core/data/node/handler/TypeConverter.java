@@ -144,9 +144,8 @@ public class TypeConverter {
 		if (value == null) {
 			return null;
 		}
-
 		try {
-			return new JsonContent().setString(value.toString());
+			return JsonContent.fromString(value.toString());
 		} catch (Exception e) {
 			if (log.isDebugEnabled()) {
 				log.debug("Could not convert to JsonObject {" + value.toString() + "}", e);

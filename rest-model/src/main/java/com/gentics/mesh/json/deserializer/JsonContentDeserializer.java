@@ -16,7 +16,7 @@ public class JsonContentDeserializer extends JsonDeserializer<JsonContent> {
 	public JsonContent deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JacksonException {
 		ObjectCodec oc = p.getCodec();
 		JsonNode node = oc.readTree(p);
-		return new JsonContent().setString(node.toString());
+		return JsonContent.fromString(node.toString());
 	}
 
 }

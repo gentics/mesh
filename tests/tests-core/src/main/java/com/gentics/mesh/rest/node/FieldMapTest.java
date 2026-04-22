@@ -86,7 +86,7 @@ public class FieldMapTest {
 		fieldMap.put("booleanFieldNull", null);
 		fieldMap.put("booleanFieldNullValue", new BooleanFieldImpl().setValue(null));
 
-		fieldMap.put("jsonField", new JsonFieldImpl().setJson(new JsonContent().setArray(new JsonArray().add("whatever").add("wherever"))));
+		fieldMap.put("jsonField", new JsonFieldImpl().setJson(JsonContent.fromArray(new JsonArray().add("whatever").add("wherever"))));
 		fieldMap.put("jsonFieldNull", null);
 		fieldMap.put("jsonFieldNullValue", new JsonFieldImpl().setJson(null));
 
@@ -149,9 +149,9 @@ public class FieldMapTest {
 		fieldMap.put("numberListField", numberList);
 
 		JsonFieldListImpl jsonList = new JsonFieldListImpl();
-		jsonList.add(new JsonContent().setObject(new JsonObject().put("content", "A")));
-		jsonList.add(new JsonContent().setObject(new JsonObject().put("content", "B")));
-		jsonList.add(new JsonContent().setObject(new JsonObject().put("content", "C")));
+		jsonList.add(JsonContent.fromObject(new JsonObject().put("content", "A")));
+		jsonList.add(JsonContent.fromObject(new JsonObject().put("content", "B")));
+		jsonList.add(JsonContent.fromObject(new JsonObject().put("content", "C")));
 		fieldMap.put("jsonListField", jsonList);
 
 		fieldMap.put("nulled", null);

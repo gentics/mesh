@@ -90,7 +90,7 @@ public class JsonFilter extends MainFilter<JsonContent> {
 	}
 
 	/**
-	 * Try parse the given string to a JSOB object, or return an empty one.
+	 * Try parse the given string to a JSON object, or return an empty one.
 	 * 
 	 * @param object
 	 * @return
@@ -104,7 +104,7 @@ public class JsonFilter extends MainFilter<JsonContent> {
 		} catch (DecodeException e) {
 			log.warn("JSON decode failed for " + object, e);
 		}
-		return new JsonContent();
+		return null;
 	}
 
 	private String likeToRegex(String likeQuery) {

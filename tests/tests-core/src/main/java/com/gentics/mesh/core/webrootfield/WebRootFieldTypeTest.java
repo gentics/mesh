@@ -296,7 +296,7 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 	}
 
 	private void testJson(boolean fieldShouldExist, boolean contentShouldExist) throws IOException {
-		JsonContent value = new JsonContent().setArray(new JsonArray("""
+		JsonContent value = JsonContent.fromArray(new JsonArray("""
 				["Mickey", "Mouse"]
 		"""));
 
@@ -318,7 +318,7 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 		Consumer<MeshWebrootFieldResponse> resultsConsumer = response -> {
 			assertFalse(response.isPlainText());
 			assertFalse(response.isBinary());
-			Assert.assertEquals(new JsonContent().setString(response.getResponseAsJsonString()), value);
+			Assert.assertEquals(JsonContent.fromString(response.getResponseAsJsonString()), value);
 		};
 
 		testField("/News/2015/News_2015.en.html", maybeField, maybeContentSupplier, resultsConsumer, false);

@@ -186,7 +186,7 @@ public class JsonFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Test
 	public void testValueRestrictionValidValue() {
-		JsonContent valid = new JsonContent().setObject(new JsonObject().put("firstName", "Mickey").put("lastName", "Mouse"));
+		JsonContent valid = JsonContent.fromObject(new JsonObject().put("firstName", "Mickey").put("lastName", "Mouse"));
 		NodeResponse response = updateNode("restrictedjsonField", new JsonFieldImpl().setJson(valid));
 		JsonFieldImpl field = response.getFields().getJsonField("restrictedjsonField");
 		assertEquals(valid, field.getJson());

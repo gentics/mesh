@@ -15,6 +15,6 @@ public interface JsonFieldTestHelper {
 	static final FieldFetcher FETCH = (container, name) -> container.getJson(name);
 
 	public static JsonContent make(String content) {
-		return new JsonContent().setObject(new JsonObject().put("content", content));
+		return JsonContent.fromObject(new JsonObject().put("content", content));
 	}
 }

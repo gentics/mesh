@@ -16,7 +16,16 @@ import io.vertx.core.json.JsonObject;
 public class JsonContent {
 
 	@JsonIgnore
-	private String jsonString;
+	private final String jsonString;
+
+	/**
+	 * Inner ctor, accepting an already validated json content (array/object) string.
+	 * 
+	 * @param jsonString
+	 */
+	protected JsonContent(String jsonString) {
+		this.jsonString = jsonString;
+	}
 
 	/**
 	 * Is this content a JSON array?
@@ -73,31 +82,27 @@ public class JsonContent {
 	}
 
 	/**
-	 * Set the JSON object as content.
+	 * Utility method for creating a JsonObject from the JSON object.
 	 * 
 	 * @param object
 	 * @return
 	 */
-	@JsonIgnore
-	public JsonContent setObject(JsonObject object) {
-		this.jsonString = JsonUtil.toJson(object);
-		return this;
+	public static JsonContent fromObject(JsonObject object) {
+		return new JsonContent(JsonUtil.toJson(object));
 	}
 
 	/**
-	 * Set the JSON array as content
+	 * Utility method for creating a JsonObject from the JSON array.
 	 * 
 	 * @param array
 	 * @return
 	 */
-	@JsonIgnore
-	public JsonContent setArray(JsonArray array) {
-		this.jsonString = JsonUtil.toJson(array);
-		return this;
+	public static JsonContent fromArray(JsonArray array) {
+		return new JsonContent(JsonUtil.toJson(array));
 	}
 
 	/**
-	 * Get a string representation of the JSON content
+	 * Get a string representation of the JSON content.
 	 * 
 	 * @return
 	 */
@@ -107,17 +112,20 @@ public class JsonContent {
 	}
 
 	/**
-	 * Set a JSON content via its string representation.
+	 * Utility method for creating a JsonObject from the JSON object/array string representation. May return null.
 	 * 
 	 * @param jsonString
 	 * @return 
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public JsonContent setString(String jsonString) {
-		this.jsonString = StringUtils.isNotBlank(jsonString) ? (
-					JsonUtil.toJson(JsonUtil.readValue(jsonString, jsonString.trim().startsWith("[") ? (Class) JsonArray.class : JsonObject.class), true)
-				) : jsonString;
-		return this;
+	public static JsonContent fromString(String jsonString) {
+		if (StringUtils.isNotBlank(jsonString)) {
+			if (jsonString.trim().startsWith("[")) {
+				return new JsonContent(JsonUtil.toJson(JsonUtil.readValue(jsonString, JsonArray.class), true));
+			} else {
+				return new JsonContent(JsonUtil.toJson(JsonUtil.readValue(jsonString, JsonObject.class), true));
+			}
+		}
+		return null;
 	}
 
 	@Override

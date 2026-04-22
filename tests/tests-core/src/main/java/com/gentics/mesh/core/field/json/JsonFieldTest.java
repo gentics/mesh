@@ -33,6 +33,8 @@ import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.NoConsistencyCheck;
 import com.gentics.mesh.util.CoreTestUtils;
 
+import io.vertx.core.json.JsonObject;
+
 @MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = false)
 public class JsonFieldTest extends AbstractFieldTest<JsonFieldSchema> {
 
@@ -94,7 +96,7 @@ public class JsonFieldTest extends AbstractFieldTest<JsonFieldSchema> {
 		try (Tx tx = tx()) {
 			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
 			HibJsonField testField = container.createJson(JSON_FIELD);
-			testField.setJson(new JsonContent());
+			testField.setJson(JsonContent.fromObject(new JsonObject()));
 
 			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer(createFieldSchema(true));
 			testField.cloneTo(otherContainer);

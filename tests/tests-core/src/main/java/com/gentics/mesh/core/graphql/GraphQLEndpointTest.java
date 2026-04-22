@@ -436,7 +436,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 				container.createString("stringLink").setString("Link: {{mesh.link(\"" + CONTENT_UUID + "\", \"en\")}}");
 
 				// json
-				container.createJson("json").setJson(new JsonContent().setObject(new JsonObject("""
+				container.createJson("json").setJson(JsonContent.fromObject(new JsonObject("""
 						{
 								"firstName": "Mickey",
 								"lastName": "Mouse"
@@ -465,13 +465,13 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 
 				// jsonList
 				HibJsonFieldList jsonList = container.createJsonList("jsonList");
-				jsonList.createJson(new JsonContent().setObject(new JsonObject("""
+				jsonList.createJson(JsonContent.fromObject(new JsonObject("""
 						{
 								"firstName": "Minnie",
 								"lastName": "Mouse"
 						}
 				""")));
-				jsonList.createJson(new JsonContent().setObject(new JsonObject("""
+				jsonList.createJson(JsonContent.fromObject(new JsonObject("""
 						{
 								"firstName": "Daisy",
 								"lastName": "Duck"
@@ -520,7 +520,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 					HibMicronode secondMicronode = micronodeList.createMicronode(microschemaDao.findByUuid(microschemaUuid).getLatestVersion());
 					secondMicronode.createString("text").setString("Joe");
 					secondMicronode.createNode("nodeRef", content());
-					secondMicronode.createJson("json").setJson(new JsonContent().setObject(new JsonObject("""
+					secondMicronode.createJson("json").setJson(JsonContent.fromObject(new JsonObject("""
 							{
 									"firstName":"Donald", 
 									"lastName": "Duck"

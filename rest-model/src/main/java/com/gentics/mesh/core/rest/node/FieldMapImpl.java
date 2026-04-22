@@ -377,9 +377,9 @@ public class FieldMapImpl implements FieldMap {
 		JsonField jsonField = new JsonFieldImpl();
 		if (!jsonNode.isNull()) {
 			if (jsonNode.isArray()) {
-				jsonField.setJson(new JsonContent().setArray(new JsonArray(jsonNode.toString())));
+				jsonField.setJson(JsonContent.fromArray(new JsonArray(jsonNode.toString())));
 			} else if (jsonNode.isObject()) {
-				jsonField.setJson(new JsonContent().setObject(new JsonObject(jsonNode.toString())));
+				jsonField.setJson(JsonContent.fromObject(new JsonObject(jsonNode.toString())));
 			} else {
 				throw error(BAD_REQUEST, "The field value for {" + key + "} is not a valid JSON. The value was {" + jsonNode.get("json") + "}");
 			}
