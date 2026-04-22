@@ -1,6 +1,6 @@
 {
   "name": "@gentics/mesh-models",
-  "version": "3.2.5",
+  "version": "3.2.7",
   "description": "TypeScript models for Gentics Mesh",
   "license": "Apache-2.0",
   "dependencies": {}
