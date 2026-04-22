@@ -3,7 +3,22 @@ package com.gentics.mesh.database;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
+import javax.cache.CacheManager;
+import javax.cache.Caching;
+import javax.cache.spi.CachingProvider;
+
+import org.ehcache.config.CacheConfiguration;
+import org.ehcache.config.ResourceUnit;
+import org.ehcache.config.builders.CacheConfigurationBuilder;
+import org.ehcache.config.builders.ExpiryPolicyBuilder;
+import org.ehcache.config.builders.ResourcePoolsBuilder;
+import org.ehcache.config.units.EntryUnit;
+import org.ehcache.config.units.MemoryUnit;
+import org.ehcache.jsr107.Eh107Configuration;
+import org.ehcache.jsr107.EhcacheCachingProvider;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.cache.jcache.internal.JCacheRegionFactory;
 import org.hibernate.cfg.AvailableSettings;
@@ -12,6 +27,7 @@ import org.hibernate.jpa.boot.spi.IntegratorProvider;
 import org.hibernate.jpa.boot.spi.JpaSettings;
 
 import com.gentics.mesh.database.connector.DatabaseConnector;
+import com.gentics.mesh.etc.config.ConfigUtils;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.hibernate.ContentInterceptor;
 import com.google.common.collect.ImmutableMap;
@@ -21,7 +37,7 @@ import com.hazelcast.hibernate.HazelcastLocalCacheRegionFactory;
  * Hibernate-backed DB wrapper.
  */
 public class DefaultSQLDatabase implements DatabaseProvider {
-	
+
 	private static final String CHARSET = StandardCharsets.UTF_8.name();
 	private final HibernateMeshOptions options;
 	private final DatabaseConnector databaseConnector;
@@ -84,13 +100,58 @@ public class DefaultSQLDatabase implements DatabaseProvider {
 					.put("hibernate.cache.use_query_cache", Boolean.TRUE.toString())
 					.put("hibernate.cache.use_second_level_cache", Boolean.TRUE.toString());
 			if (options.getClusterOptions().isEnabled()) {
+				// Cache sizes are configured in com.gentics.mesh.database.cluster.HibClusterManager.getHazelcast()
 				optionBuilder
 						.put("hibernate.cache.region.factory_class", HazelcastLocalCacheRegionFactory.class.getName())
 						.put("hibernate.cache.hazelcast.instance_name", options.getNodeName());
 			} else {
+				AtomicLong size = new AtomicLong();
+				AtomicReference<ResourceUnit> unit = new AtomicReference<>();
+
+				ConfigUtils.parseQuotaSetting(options.getCacheConfig().getNonClusteredHibernateCacheSize(),
+						Runtime.getRuntime().maxMemory(), value -> {
+							size.set(value);
+							unit.set(MemoryUnit.B);
+						}, value -> {
+							size.set(value);
+							unit.set(MemoryUnit.B);
+						}, value -> {
+							size.set(value);
+							unit.set(EntryUnit.ENTRIES);
+						}, value -> {
+							size.set(50000);
+							unit.set(EntryUnit.ENTRIES);
+						}, () -> {
+							size.set(50000);
+							unit.set(EntryUnit.ENTRIES);
+						});
+
+				// create the cache configuration for the entity cache
+				CacheConfiguration<Object, Object> entityCacheConfiguration = CacheConfigurationBuilder
+						.newCacheConfigurationBuilder(Object.class, Object.class,
+								ResourcePoolsBuilder.newResourcePoolsBuilder().heap(size.get(), unit.get()))
+						.withExpiry(ExpiryPolicyBuilder.noExpiration()).build();
+
+				// create the cache configuration for the other caches (query cache)
+				CacheConfiguration<Object, Object> otherCacheConfiguration = CacheConfigurationBuilder
+						.newCacheConfigurationBuilder(Object.class, Object.class, ResourcePoolsBuilder.heap(10000))
+						.withExpiry(ExpiryPolicyBuilder.noExpiration()).build();
+
+				CachingProvider cachingProvider = Caching.getCachingProvider(EhcacheCachingProvider.class.getName());
+				if (cachingProvider instanceof EhcacheCachingProvider ehCachingProvider) {
+						CacheManager jCacheManager = ehCachingProvider.getCacheManager(ehCachingProvider.getDefaultURI(),
+								ehCachingProvider.getDefaultClassLoader());
+						jCacheManager.createCache("HibEntityCache",
+								Eh107Configuration.fromEhcacheCacheConfiguration(entityCacheConfiguration));
+						jCacheManager.createCache("default-update-timestamps-region",
+								Eh107Configuration.fromEhcacheCacheConfiguration(otherCacheConfiguration));
+						jCacheManager.createCache("default-query-results-region",
+								Eh107Configuration.fromEhcacheCacheConfiguration(otherCacheConfiguration));
+					}
+
 				optionBuilder
 						.put("hibernate.cache.region.factory_class", JCacheRegionFactory.class.getName())
-						.put("hibernate.javax.cache.provider", "org.ehcache.jsr107.EhcacheCachingProvider");
+						.put("hibernate.javax.cache.provider", EhcacheCachingProvider.class.getName());
 			}
 		} else {
 			optionBuilder

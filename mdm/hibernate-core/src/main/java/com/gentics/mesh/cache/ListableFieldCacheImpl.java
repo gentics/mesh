@@ -4,13 +4,14 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.regex.Matcher;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.cache.impl.EventAwareCacheFactory;
 import com.gentics.mesh.cache.impl.EventAwareCacheImpl.Builder;
@@ -20,9 +21,9 @@ import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoUtil;
 import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.etc.config.ConfigUtils;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.etc.config.hibernate.HibernateCacheConfig;
-import com.gentics.mesh.etc.config.ConfigUtils;
 import com.gentics.mesh.hibernate.data.domain.AbstractHibListFieldEdgeImpl;
 import com.gentics.mesh.hibernate.data.domain.HibDateListFieldEdgeImpl;
 import com.gentics.mesh.hibernate.data.domain.HibHtmlListFieldEdgeImpl;
@@ -31,8 +32,6 @@ import com.gentics.mesh.hibernate.data.domain.HibStringListFieldEdgeImpl;
 import com.gentics.mesh.hibernate.util.StringScale;
 
 import io.reactivex.Flowable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of {@link ListableFieldCache}
@@ -139,21 +138,20 @@ public class ListableFieldCacheImpl extends AbstractMeshCache<UUID, List<? exten
 
 	private static final Pair<Long, Boolean> getCacheSize(HibernateCacheConfig config) {
 		String cacheSizeRaw = config.getListFieldCacheSize();
-		if (StringUtils.isNotBlank(cacheSizeRaw)) {
-			cacheSizeRaw = cacheSizeRaw.replace("_", "");
-			Matcher percentageMatcher = ConfigUtils.QUOTA_PATTERN_PERCENTAGE.matcher(cacheSizeRaw);
-			Matcher sizeMatcher = ConfigUtils.QUOTA_PATTERN_SIZE.matcher(cacheSizeRaw);
-			Matcher numberMatcher = ConfigUtils.QUOTA_PATTERN_NUMBER.matcher(cacheSizeRaw);
-			if (percentageMatcher.matches()) {
-				return Pair.of(Runtime.getRuntime().maxMemory() / 100L * Long.parseLong(percentageMatcher.group("value")), true);
-			} else if (sizeMatcher.matches()) {
-				return Pair.of(ConfigUtils.getBytes(sizeMatcher), true);
-			} else if (numberMatcher.matches()) {
-				return Pair.of(Long.parseLong(numberMatcher.group("value")), false);
-			} else {
-				log.warn("Invalid list container cache size value `{}`. Caching is disabled.", cacheSizeRaw);
-			}
-		}
+
+		AtomicReference<Pair<Long, Boolean>> retVal = new AtomicReference<>(Pair.of(0L, false));
+
+		ConfigUtils.parseQuotaSetting(cacheSizeRaw, Runtime.getRuntime().maxMemory(), value -> {
+			retVal.set(Pair.of(value, true));
+		}, value -> {
+			retVal.set(Pair.of(value, true));
+		}, value -> {
+			retVal.set(Pair.of(value, false));
+		}, value -> {
+			log.warn("Invalid list container cache size value `{}`. Caching is disabled.", value);
+		}, () -> {
+		});
+
 		return Pair.of(0L, false);
 	}
 }

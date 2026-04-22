@@ -35,7 +35,7 @@ import com.gentics.mesh.hibernate.util.HibernateUtil;
 import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.image.ResizeMode;
 
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "HibEntityCache")
 @Entity(name = "imagevariant")
 @NamedQueries({
 	@NamedQuery(

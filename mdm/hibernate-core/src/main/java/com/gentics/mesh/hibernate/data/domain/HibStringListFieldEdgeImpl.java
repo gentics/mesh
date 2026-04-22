@@ -19,7 +19,7 @@ import com.gentics.mesh.database.HibernateTx;
  * @author plyhun
  *
  */
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "HibEntityCache")
 @Entity(name = "stringlistitem")
 @Table(uniqueConstraints = { 
 		@UniqueConstraint(

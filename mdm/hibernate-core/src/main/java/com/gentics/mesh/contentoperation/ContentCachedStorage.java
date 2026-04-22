@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.stream.Stream;
 
 import javax.annotation.CheckForNull;
@@ -16,7 +15,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
@@ -88,7 +86,7 @@ public class ContentCachedStorage implements DebugInfoProvider {
 
 	private Optional<LoadingCache<ContentKey, HibUnmanagedFieldContainer<?, ?, ?, ?, ?>>> caffeineCache = Optional.empty();
 	private long maxCacheSize;
-	private final boolean isWeight;
+	private boolean isWeight;
 
 	@Inject
 	public ContentCachedStorage(Lazy<HazelcastInstance> hazelcast, ContentNoCacheStorage storage, HibernateMeshOptions options) {
@@ -97,29 +95,24 @@ public class ContentCachedStorage implements DebugInfoProvider {
 		this.isClustered = options.getClusterOptions().isEnabled();
 		this.options = options;
 		String cacheSizeRaw = ((HibernateCacheConfig) options.getCacheConfig()).getFieldContainerCacheSize();
-		if (StringUtils.isNotBlank(cacheSizeRaw)) {
-			cacheSizeRaw = cacheSizeRaw.replace("_", "");
-			Matcher percentageMatcher = ConfigUtils.QUOTA_PATTERN_PERCENTAGE.matcher(cacheSizeRaw);
-			Matcher sizeMatcher = ConfigUtils.QUOTA_PATTERN_SIZE.matcher(cacheSizeRaw);
-			Matcher numberMatcher = ConfigUtils.QUOTA_PATTERN_NUMBER.matcher(cacheSizeRaw);
-			if (percentageMatcher.matches()) {
-				this.isWeight = true;
-				this.maxCacheSize = Runtime.getRuntime().maxMemory() / 100L * Long.parseLong(percentageMatcher.group("value"));
-			} else if (sizeMatcher.matches()) {
-				this.isWeight = true;
-				this.maxCacheSize = ConfigUtils.getBytes(sizeMatcher);
-			} else if (numberMatcher.matches()) {
-				this.isWeight = false;
-				this.maxCacheSize = Long.parseLong(numberMatcher.group("value"));
-			} else {
-				log.warn("Invalid field container cache size value `{}`. Caching is disabled.", cacheSizeRaw);
-				this.maxCacheSize = 0;
-				this.isWeight = false;
-			}
-		} else {
+
+		ConfigUtils.parseQuotaSetting(cacheSizeRaw, Runtime.getRuntime().maxMemory(), value -> {
+			this.isWeight = true;
+			this.maxCacheSize = value;
+		}, value -> {
+			this.isWeight = true;
+			this.maxCacheSize = value;
+		}, value -> {
+			this.isWeight = false;
+			this.maxCacheSize = value;
+		}, value -> {
+			log.warn("Invalid field container cache size value `{}`. Caching is disabled.", value);
 			this.maxCacheSize = 0;
 			this.isWeight = false;
-		}
+		}, () -> {
+			this.maxCacheSize = 0;
+			this.isWeight = false;
+		});
 	}
 
 	/**
