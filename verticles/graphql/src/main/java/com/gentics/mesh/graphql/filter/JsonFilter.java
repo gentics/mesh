@@ -73,8 +73,14 @@ public class JsonFilter extends MainFilter<JsonContent> {
 			JsonProvider provider = new JacksonJsonProvider(JsonUtil.getMapper());
 			ParseContext context = JsonPath.using(provider);
 			return nullablePredicate(object -> {
-				List<?> parsed = context.parse(JsonUtil.toJson(object)).read(jsonPath, List.class);
-				return parsed != null && !parsed.isEmpty();
+				Object parsed = context.parse(JsonUtil.toJson(object)).read(jsonPath);
+				if (parsed == null) {
+					return false;
+				} else if (parsed instanceof List list) {
+					return !list.isEmpty();
+				} else {
+					return true;
+				}
 			});
 		};
 	}
