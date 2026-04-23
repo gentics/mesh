@@ -822,17 +822,15 @@ public class FormService {
 	 *
 	 * <p>Dispatch by element type and default-value shape:</p>
 	 * <ul>
-	 *   <li>Catalog — {@code List} default: each identifier resolved to a {@link PossibleValue};
-	 *       identifiers absent from the current options are dropped.</li>
-	 *   <li>Catalog — scalar default: single {@link PossibleValue}; {@code null} when unmatched.</li>
-	 *   <li>Non-catalog with selectOptions — {@code List} default: each value resolved to a
-	 *       {@code {label, value}} map; unmatched entries dropped.</li>
-	 *   <li>Non-catalog with selectOptions — scalar default: single {@code {label, value}} map.</li>
-	 *   <li>Non-catalog — {@code List} default (no options): written directly into {@code values}.</li>
-	 *   <li>Non-catalog — {@code Map} with {@code "userReference"}: JWT claim value read by field name.</li>
-	 *   <li>Non-catalog — {@code Map} without {@code "userReference"}: treated as translation map;
+	 *   <li>Element with selectOptions — {@code List} default: each identifier resolved to a
+	 *       {@link PossibleValue}; identifiers absent from current options are dropped.</li>
+	 *   <li>Element with selectOptions — scalar default: single {@link PossibleValue};
+	 *       {@code null} when unmatched.</li>
+	 *   <li>No selectOptions — {@code List} default: written directly into {@code values}.</li>
+	 *   <li>No selectOptions — {@code Map} with {@code "userReference"}: JWT claim value read by field name.</li>
+	 *   <li>No selectOptions — {@code Map} without {@code "userReference"}: treated as translation map;
 	 *       value for {@code language} is used.</li>
-	 *   <li>Non-catalog — scalar or {@code null}: written directly into {@code value}.</li>
+	 *   <li>No selectOptions — scalar or {@code null}: written directly into {@code value}.</li>
 	 * </ul>
 	 *
 	 * @param element   schema element to build the property for
@@ -846,9 +844,8 @@ public class FormService {
 				? element.getFormGridOptions().getDefaultValue()
 				: null;
 		List<ValueListItem> selectOptions = resolveSelectOptions(element);
-		boolean isCatalog = "catalog".equals(element.getType());
 
-		if (isCatalog) {
+		if (selectOptions != null && !selectOptions.isEmpty()) {
 			if (rawDefault instanceof List) {
 				prop.setValues(((List<?>) rawDefault).stream()
 						.map(id -> (Object) findPossibleValue(String.valueOf(id), selectOptions, language))
@@ -857,17 +854,6 @@ public class FormService {
 			} else if (rawDefault != null) {
 				prop.setValue(findPossibleValue(String.valueOf(rawDefault), selectOptions, language));
 			}
-			if (selectOptions != null && !selectOptions.isEmpty()) {
-				prop.setPossibleValues(buildPossibleValues(selectOptions, language));
-			}
-		} else if (selectOptions != null && rawDefault instanceof List) {
-			prop.setValues(((List<?>) rawDefault).stream()
-					.map(item -> (Object) buildSelectOptionValue(String.valueOf(item), selectOptions, language))
-					.filter(Objects::nonNull)
-					.collect(Collectors.toList()));
-			prop.setPossibleValues(buildPossibleValues(selectOptions, language));
-		} else if (selectOptions != null && rawDefault != null) {
-			prop.setValue(buildSelectOptionValue(String.valueOf(rawDefault), selectOptions, language));
 			prop.setPossibleValues(buildPossibleValues(selectOptions, language));
 		} else if (rawDefault instanceof List) {
 			prop.setValues((List<Object>) rawDefault);
@@ -890,10 +876,9 @@ public class FormService {
 	 * Mesh submission node.
 	 *
 	 * <p>The field is looked up by {@link FormElement#getName()} on the node's field container.
-	 * Catalog elements map stored identifiers to {@link PossibleValue}s via the current
-	 * {@code formGridOptions.selectOptions}; identifiers no longer present in the schema are
-	 * silently dropped. Non-catalog elements with select options are mapped to
-	 * {@code {label, value}} entries. If the node carries no field for this element,
+	 * Elements with {@code selectOptions} map stored identifiers to {@link PossibleValue}s via the
+	 * current {@code formGridOptions.selectOptions}; identifiers no longer present in the schema are
+	 * silently dropped. If the node carries no field for this element,
 	 * {@code value}/{@code values} is left unset.</p>
 	 *
 	 * @param element  schema element to build the property for
@@ -904,9 +889,8 @@ public class FormService {
 	private FormDataProperty buildPropertyFromNode(FormElement element, String language, NodeResponse node) {
 		FormDataProperty prop = new FormDataProperty();
 		List<ValueListItem> selectOptions = resolveSelectOptions(element);
-		boolean isCatalog = "catalog".equals(element.getType());
 
-		if (isCatalog) {
+		if (selectOptions != null && !selectOptions.isEmpty()) {
 			if (element.isList()) {
 				StringFieldListImpl listField = node.getFields().getStringFieldList(element.getName());
 				if (listField != null) {
@@ -921,32 +905,18 @@ public class FormService {
 					prop.setValue(findPossibleValue(strField.getString(), selectOptions, language));
 				}
 			}
-			if (selectOptions != null && !selectOptions.isEmpty()) {
-				prop.setPossibleValues(buildPossibleValues(selectOptions, language));
-			}
+			prop.setPossibleValues(buildPossibleValues(selectOptions, language));
 		} else {
 			if (element.isList()) {
 				StringFieldListImpl listField = node.getFields().getStringFieldList(element.getName());
 				if (listField != null) {
-					if (selectOptions != null && !selectOptions.isEmpty()) {
-						prop.setValues(listField.getItems().stream()
-								.map(item -> (Object) buildSelectOptionValue(String.valueOf(item), selectOptions, language))
-								.filter(Objects::nonNull)
-								.collect(Collectors.toList()));
-					} else {
-						prop.setValues(new ArrayList<>(listField.getItems()));
-					}
+					prop.setValues(new ArrayList<>(listField.getItems()));
 				}
 			} else {
 				StringFieldImpl strField = node.getFields().getStringField(element.getName());
 				if (strField != null) {
-					prop.setValue(selectOptions != null && !selectOptions.isEmpty()
-							? buildSelectOptionValue(strField.getString(), selectOptions, language)
-							: strField.getString());
+					prop.setValue(strField.getString());
 				}
-			}
-			if (selectOptions != null && !selectOptions.isEmpty()) {
-				prop.setPossibleValues(buildPossibleValues(selectOptions, language));
 			}
 		}
 		return prop;
@@ -985,28 +955,6 @@ public class FormService {
 				.filter(item -> identifier.equals(item.getValue()))
 				.findFirst()
 				.map(item -> new PossibleValue(identifier, resolveOptionLabel(item, language)))
-				.orElse(null);
-	}
-
-	/**
-	 * Looks up {@code value} in {@code options} and returns a {@code {label, value}} map suitable
-	 * for non-catalog select elements. Returns {@code null} when no matching option is found.
-	 *
-	 * @param value    stored field value to look up
-	 * @param options  available select options
-	 * @param language language code for label resolution
-	 * @return map with {@code "label"} and {@code "value"} keys, or {@code null}
-	 */
-	private Map<String, Object> buildSelectOptionValue(String value, List<ValueListItem> options, String language) {
-		return options.stream()
-				.filter(item -> value.equals(item.getValue()))
-				.findFirst()
-				.map(item -> {
-					Map<String, Object> result = new LinkedHashMap<>();
-					result.put("label", resolveOptionLabel(item, language));
-					result.put("value", StringUtils.defaultString(item.getValue()));
-					return result;
-				})
 				.orElse(null);
 	}
 

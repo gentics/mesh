@@ -96,8 +96,8 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 		JsonNode adminmail = JsonUtil.readValue(responseBody, JsonNode.class)
 				.get("data").get("properties").get("adminmail").get("value");
 
-		assertThat(adminmail.get("value").asText()).as("adminmail.value").isEqualTo("mr");
-		assertThat(adminmail.get("label").asText()).as("adminmail.label de").isEqualTo("Herr");
+		assertThat(adminmail.get("identifier").asText()).as("adminmail.value").isEqualTo("mr");
+		assertThat(adminmail.get("displayName").asText()).as("adminmail.label de").isEqualTo("Herr");
 	}
 
 	@Test
@@ -188,8 +188,8 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 		JsonNode adminmail = JsonUtil.readValue(responseBody, JsonNode.class)
 				.get("data").get("properties").get("adminmail").get("value");
 
-		assertThat(adminmail.get("value").asText()).as("adminmail.value").isEqualTo("ms");
-		assertThat(adminmail.get("label").asText()).as("adminmail.label en").isEqualTo("Ms");
+		assertThat(adminmail.get("identifier").asText()).as("adminmail.value").isEqualTo("ms");
+		assertThat(adminmail.get("displayName").asText()).as("adminmail.label en").isEqualTo("Ms");
 	}
 
 	@Test
