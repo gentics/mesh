@@ -26,37 +26,21 @@ import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
-import com.gentics.mesh.core.field.AbstractFieldTestBase;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.util.StreamUtil;
 
 @MeshTestSetting(testSize = FULL, startServer = true)
-public class ReferencedByMicronodeTest extends AbstractFieldTestBase<MicronodeFieldSchema> {
-
-	private static final String MICRONODE_FIELD = "micronodeField";
-
-	@Override
-	protected MicronodeFieldSchema createFieldSchema(boolean isRequired) {
-		return createFieldSchema(MICRONODE_FIELD, isRequired);
-	}
-	protected MicronodeFieldSchema createFieldSchema(String fieldKey, boolean isRequired) {
-		MicronodeFieldSchema schema = new MicronodeFieldSchemaImpl();
-		schema.setLabel("Some microschema label");
-		schema.setName(fieldKey);
-		schema.setRequired(isRequired);
-		schema.setAllowedMicroSchemas("vcard");
-		return schema;
-	}
+public class ReferencedByMicronodeTest extends AbstractMeshTest {
 
 	@Test
 	public void testReferencedByMicronode() throws IOException {
