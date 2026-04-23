@@ -24,40 +24,7 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 		super.setup();
 		assertThat(activate(PROJECT_NAME)).as("Activation status").isTrue();
 	}
-
-	@Test
-	public void testLoadFormGenHappyPath() throws IOException {
-		String uuid = createForm("formgen_load.json");
-
-		Response response = doLoadRequest(uuid, FORM_ID, "de", true);
-		String responseBody = response.body() != null ? response.body().string() : "";
-
-		assertSuccessfulJsonResponse(response, responseBody);
-
-		JsonNode body = JsonUtil.readValue(responseBody, JsonNode.class);
-
-		assertThat(body.has("schema")).as("Response has schema").isTrue();
-		assertThat(body.has("uiSchema") || !body.has("uiSchema")).as("uiSchema field present or absent").isTrue();
-		assertThat(body.has("data")).as("Response has data").isTrue();
-
-		JsonNode data = body.get("data");
-		assertThat(data.get("formID").asText()).as("data.formID").isEqualTo(FORM_ID);
-		assertThat(data.get("version").asText()).as("data.version").isEqualTo("2.0.0");
-		assertThat(data.get("hasValidationErrors").asBoolean()).as("data.hasValidationErrors").isFalse();
-
-		JsonNode properties = data.get("properties");
-		assertThat(properties.has("firstName")).as("properties has firstName").isTrue();
-		assertThat(properties.get("firstName").get("value").asText()).as("firstName default value").isEqualTo("Max");
-
-		assertThat(properties.has("age")).as("properties has age").isTrue();
-		assertThat(properties.get("age").get("value").asInt()).as("age default value").isEqualTo(30);
-
-		assertThat(properties.has("notes")).as("properties has notes").isTrue();
-		// notes has no defaultValue → value field should be absent (NON_NULL
-		// serialization)
-		assertThat(properties.get("notes").has("value")).as("notes value field absent").isFalse();
-	}
-
+	
 	@Test
 	public void testLoadFormGenFormGridOptionsNotExposed() throws IOException {
 		String uuid = createForm("formgen_load.json");

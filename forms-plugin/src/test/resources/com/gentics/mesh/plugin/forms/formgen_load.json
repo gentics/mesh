@@ -148,5 +148,100 @@
       }
     }
   },
+  "uiSchema": {
+    "key": "test-ui",
+    "version": "1.0.0",
+    "formname": {
+      "de": "Testformular",
+      "en": "Test Form"
+    },
+    "formdescription": {
+      "de": "Beispielbeschreibung",
+      "en": "Example description"
+    },
+    "formwidth": "9",
+    "pages": [
+      {
+        "pagename": {
+          "de": "Seite 1",
+          "en": "Page 1"
+        },
+        "elements": [
+          {
+            "type": "control",
+            "id": "firstName",
+            "label": {
+              "de": "Vorname",
+              "en": "First name"
+            },
+            "uiSchemaPage": 0
+          },
+          {
+            "type": "control",
+            "id": "age",
+            "label": {
+              "de": "Alter",
+              "en": "Age"
+            },
+            "uiSchemaPage": 0
+          },
+          {
+            "type": "control",
+            "id": "notes",
+            "label": {
+              "de": "Notizen",
+              "en": "Notes"
+            },
+            "uiSchemaPage": 0
+          },
+          {
+            "type": "control",
+            "id": "topic",
+            "label": {
+              "de": "Thema",
+              "en": "Topic"
+            },
+            "uiSchemaPage": 0
+          },
+          {
+            "type": "control",
+            "id": "topicMulti",
+            "label": {
+              "de": "Themen mehrfach",
+              "en": "Topics multiple"
+            },
+            "uiSchemaPage": 0
+          },
+          {
+            "type": "control",
+            "id": "tags",
+            "label": {
+              "de": "Tags",
+              "en": "Tags"
+            },
+            "uiSchemaPage": 0
+          },
+          {
+            "type": "control",
+            "id": "greeting",
+            "label": {
+              "de": "Begruessung",
+              "en": "Greeting"
+            },
+            "uiSchemaPage": 0
+          },
+          {
+            "type": "control",
+            "id": "adminmail",
+            "label": {
+              "de": "Anrede",
+              "en": "Salutation"
+            },
+            "uiSchemaPage": 0
+          }
+        ]
+      }
+    ]
+  },
   "data": {}
 }

@@ -1,6 +1,7 @@
 package com.gentics.mesh.plugin.forms.service;
 
 import java.io.IOException;
+import java.util.function.BiFunction;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -761,91 +762,22 @@ public class FormService {
 
 	/**
 	 * Builds {@link FormData} using schema {@code formGridOptions.defaultValue} entries.
-	 *
-	 * <p>Default value dispatch by type:</p>
-	 * <ul>
-	 *   <li>Catalog element: identifier(s) from defaultValue are looked up in selectOptions and converted
-	 *       to {@link PossibleValue} objects written into {@code value} or {@code values}.</li>
-	 *   <li>Non-catalog — {@code List}: written into {@code values}.</li>
-	 *   <li>Non-catalog — {@code Map} with {@code "userReference"} key: the named claim is read from
-	 *       the decoded JWT claims and written into {@code value}.</li>
-	 *   <li>Non-catalog — {@code Map} without {@code "userReference"}: treated as a translation object;
-	 *       the value for {@code language} is written into {@code value}.</li>
-	 *   <li>Non-catalog — scalar (String, Number, Boolean, null): written directly into {@code value}.</li>
-	 * </ul>
+	 * {@code hasValidationErrors} is always {@code false} in this mode.
 	 *
 	 * @param form      the loaded form definition
 	 * @param formID    client-supplied form instance identifier
 	 * @param language  language code for label and translation resolution
 	 * @param jwtClaims decoded JWT payload claims; used to resolve {@code userReference} defaults
-	 * @return populated {@link FormData}; {@code hasValidationErrors} is always {@code false}
+	 * @return populated {@link FormData}
 	 */
 	private FormData buildDefaultFormData(Form form, String formID, String language, Map<String, Object> jwtClaims) {
-		FormData data = new FormData();
-		data.setFormID(formID);
-		data.setVersion(form.getSchema() != null ? form.getSchema().getVersion() : null);
-		data.setHasValidationErrors(false);
-
-		Map<String, FormDataProperty> properties = new LinkedHashMap<>();
-		if (form.getSchema() != null && form.getSchema().getProperties() != null) {
-			form.getSchema().getProperties().forEach((key, element) -> {
-				FormDataProperty prop = new FormDataProperty();
-				Object rawDefault = element.getFormGridOptions() != null
-						? element.getFormGridOptions().getDefaultValue()
-						: null;
-
-				List<ValueListItem> selectOptions = resolveSelectOptions(element);
-				boolean isCatalog = element.getType().equals("catalog");
-
-				if (isCatalog) {
-					if (rawDefault instanceof List) {
-						List<Object> possibleValueList = ((List<?>) rawDefault).stream()
-								.map(id -> (Object) findPossibleValue(String.valueOf(id), selectOptions, language))
-								.filter(Objects::nonNull)
-								.collect(Collectors.toList());
-						prop.setValues(possibleValueList);
-					} else if (rawDefault != null) {
-						prop.setValue(findPossibleValue(String.valueOf(rawDefault), selectOptions, language));
-					}
-					prop.setPossibleValues(buildPossibleValues(selectOptions, language));
-				} else if (selectOptions != null && rawDefault instanceof List) {
-					prop.setValues(((List<?>) rawDefault).stream()
-							.map(item -> (Object) buildSelectOptionValue(String.valueOf(item), selectOptions, language))
-							.filter(Objects::nonNull)
-							.collect(Collectors.toList()));
-					prop.setPossibleValues(buildPossibleValues(selectOptions, language));
-				} else if (selectOptions != null && rawDefault != null) {
-					prop.setValue(buildSelectOptionValue(String.valueOf(rawDefault), selectOptions, language));
-					prop.setPossibleValues(buildPossibleValues(selectOptions, language));
-				} else if (rawDefault instanceof List) {
-					prop.setValues((List<Object>) rawDefault);
-				} else if (rawDefault instanceof Map) {
-					Map<?, ?> map = (Map<?, ?>) rawDefault;
-					if (map.containsKey("userReference")) {
-						String fieldName = String.valueOf(map.get("userReference"));
-						prop.setValue(jwtClaims != null ? jwtClaims.get(fieldName) : null);
-					} else {
-						prop.setValue(map.get(language));
-					}
-				} else {
-					prop.setValue(rawDefault);
-				}
-
-				properties.put(key, prop);
-			});
-		}
-		data.setProperties(properties);
-		return data;
+		return initFormData(form, formID, false,
+				(key, element) -> buildDefaultProperty(element, language, jwtClaims));
 	}
 
 	/**
 	 * Builds {@link FormData} by reading stored field values from a Mesh submission node.
-	 *
-	 * <p>Each schema property is matched to a Mesh node field via {@link FormElement#getName()}.
-	 * List elements read a {@code StringFieldList}; scalar elements read a {@code StringField}.
-	 * If a field is absent on the node the corresponding {@code value}/{@code values} is left unset
-	 * (serialized as absent due to {@code NON_NULL} configuration).
-	 * {@code hasValidationErrors} is {@code true} when the node's {@code errors} field is non-blank.</p>
+	 * {@code hasValidationErrors} reflects the node's {@code _errors} field.
 	 *
 	 * @param form     the loaded form definition
 	 * @param formID   client-supplied form instance identifier
@@ -854,123 +786,217 @@ public class FormService {
 	 * @return populated {@link FormData} reflecting the stored submission
 	 */
 	private FormData buildFormDataFromNode(Form form, String formID, String language, NodeResponse node) {
+		StringFieldImpl errField = node.getFields().getStringField(Form.ERRORS_FIELD_NAME);
+		boolean hasErrors = errField != null && StringUtils.isNotBlank(errField.getString());
+		return initFormData(form, formID, hasErrors,
+				(key, element) -> buildPropertyFromNode(element, language, node));
+	}
+
+	/**
+	 * Creates a {@link FormData} shell, iterates all schema properties, and populates the
+	 * {@code properties} map by applying {@code propertyBuilder} to each element.
+	 *
+	 * @param form            the loaded form definition
+	 * @param formID          client-supplied form instance identifier
+	 * @param hasErrors       value for {@link FormData#setHasValidationErrors}
+	 * @param propertyBuilder produces a {@link FormDataProperty} for each (key, element) pair
+	 * @return fully assembled {@link FormData}
+	 */
+	private FormData initFormData(Form form, String formID, boolean hasErrors,
+			BiFunction<String, FormElement, FormDataProperty> propertyBuilder) {
 		FormData data = new FormData();
 		data.setFormID(formID);
 		data.setVersion(form.getSchema() != null ? form.getSchema().getVersion() : null);
-
-		StringFieldImpl errField = node.getFields().getStringField(Form.ERRORS_FIELD_NAME);
-		data.setHasValidationErrors(errField != null && StringUtils.isNotBlank(errField.getString()));
-
+		data.setHasValidationErrors(hasErrors);
 		Map<String, FormDataProperty> properties = new LinkedHashMap<>();
 		if (form.getSchema() != null && form.getSchema().getProperties() != null) {
-			form.getSchema().getProperties().forEach((key, element) -> {
-				FormDataProperty prop = new FormDataProperty();
-				List<ValueListItem> selectOptions = resolveSelectOptions(element);
-				boolean isCatalog = "catalog".equals(element.getType());
-
-				if (isCatalog) {
-					// Validate stored values against current formGridOptions.selectOptions;
-					// stale values (removed from schema) are dropped via null-filter.
-					if (element.isList()) {
-						StringFieldListImpl listField = node.getFields().getStringFieldList(element.getName());
-						if (listField != null) {
-							List<Object> values = listField.getItems().stream()
-									.map(item -> (Object) findPossibleValue(String.valueOf(item), selectOptions, language))
-									.filter(Objects::nonNull)
-									.collect(Collectors.toList());
-							prop.setValues(values);
-						}
-					} else {
-						StringFieldImpl strField = node.getFields().getStringField(element.getName());
-						if (strField != null) {
-							prop.setValue(findPossibleValue(strField.getString(), selectOptions, language));
-						}
-					}
-					if (selectOptions != null && !selectOptions.isEmpty()) {
-						prop.setPossibleValues(buildPossibleValues(selectOptions, language));
-					}
-				} else {
-					if (element.isList()) {
-						StringFieldListImpl listField =
-								node.getFields().getStringFieldList(element.getName());
-						if (listField != null) {
-							List<Object> values = new ArrayList<>();
-							if (selectOptions != null && !selectOptions.isEmpty()) {
-								values.addAll(listField.getItems().stream()
-										.map(item -> (Object) buildSelectOptionValue(String.valueOf(item), selectOptions, language))
-										.filter(Objects::nonNull)
-										.collect(Collectors.toList()));
-							} else {
-								values.addAll(listField.getItems());
-							}
-							prop.setValues(values);
-						}
-					} else {
-						StringFieldImpl strField = node.getFields().getStringField(element.getName());
-						if (strField != null) {
-							if (selectOptions != null && !selectOptions.isEmpty()) {
-								prop.setValue(buildSelectOptionValue(strField.getString(), selectOptions, language));
-							} else {
-								prop.setValue(strField.getString());
-							}
-						}
-					}
-					if (selectOptions != null && !selectOptions.isEmpty()) {
-						prop.setPossibleValues(buildPossibleValues(selectOptions, language));
-					}
-				}
-
-				properties.put(key, prop);
-			});
+			form.getSchema().getProperties().forEach((key, element) ->
+					properties.put(key, propertyBuilder.apply(key, element)));
 		}
 		data.setProperties(properties);
 		return data;
 	}
 
 	/**
-	 * Converts a list of {@link ValueListItem}s to {@link PossibleValue}s, resolving the display name
-	 * for the given language. Falls back to an empty string when the language key is absent.
+	 * Builds a {@link FormDataProperty} for one schema element using {@code formGridOptions.defaultValue}.
 	 *
-	 * @param selectOptions source items from the form schema
-	 * @param language      language code to look up in each item's label map
+	 * <p>Dispatch by element type and default-value shape:</p>
+	 * <ul>
+	 *   <li>Catalog — {@code List} default: each identifier resolved to a {@link PossibleValue};
+	 *       identifiers absent from the current options are dropped.</li>
+	 *   <li>Catalog — scalar default: single {@link PossibleValue}; {@code null} when unmatched.</li>
+	 *   <li>Non-catalog with selectOptions — {@code List} default: each value resolved to a
+	 *       {@code {label, value}} map; unmatched entries dropped.</li>
+	 *   <li>Non-catalog with selectOptions — scalar default: single {@code {label, value}} map.</li>
+	 *   <li>Non-catalog — {@code List} default (no options): written directly into {@code values}.</li>
+	 *   <li>Non-catalog — {@code Map} with {@code "userReference"}: JWT claim value read by field name.</li>
+	 *   <li>Non-catalog — {@code Map} without {@code "userReference"}: treated as translation map;
+	 *       value for {@code language} is used.</li>
+	 *   <li>Non-catalog — scalar or {@code null}: written directly into {@code value}.</li>
+	 * </ul>
+	 *
+	 * @param element   schema element to build the property for
+	 * @param language  language code for label and translation resolution
+	 * @param jwtClaims decoded JWT payload claims; used to resolve {@code userReference} defaults
+	 * @return populated {@link FormDataProperty}
+	 */
+	private FormDataProperty buildDefaultProperty(FormElement element, String language, Map<String, Object> jwtClaims) {
+		FormDataProperty prop = new FormDataProperty();
+		Object rawDefault = element.getFormGridOptions() != null
+				? element.getFormGridOptions().getDefaultValue()
+				: null;
+		List<ValueListItem> selectOptions = resolveSelectOptions(element);
+		boolean isCatalog = "catalog".equals(element.getType());
+
+		if (isCatalog) {
+			if (rawDefault instanceof List) {
+				prop.setValues(((List<?>) rawDefault).stream()
+						.map(id -> (Object) findPossibleValue(String.valueOf(id), selectOptions, language))
+						.filter(Objects::nonNull)
+						.collect(Collectors.toList()));
+			} else if (rawDefault != null) {
+				prop.setValue(findPossibleValue(String.valueOf(rawDefault), selectOptions, language));
+			}
+			if (selectOptions != null && !selectOptions.isEmpty()) {
+				prop.setPossibleValues(buildPossibleValues(selectOptions, language));
+			}
+		} else if (selectOptions != null && rawDefault instanceof List) {
+			prop.setValues(((List<?>) rawDefault).stream()
+					.map(item -> (Object) buildSelectOptionValue(String.valueOf(item), selectOptions, language))
+					.filter(Objects::nonNull)
+					.collect(Collectors.toList()));
+			prop.setPossibleValues(buildPossibleValues(selectOptions, language));
+		} else if (selectOptions != null && rawDefault != null) {
+			prop.setValue(buildSelectOptionValue(String.valueOf(rawDefault), selectOptions, language));
+			prop.setPossibleValues(buildPossibleValues(selectOptions, language));
+		} else if (rawDefault instanceof List) {
+			prop.setValues((List<Object>) rawDefault);
+		} else if (rawDefault instanceof Map) {
+			Map<?, ?> map = (Map<?, ?>) rawDefault;
+			if (map.containsKey("userReference")) {
+				String fieldName = String.valueOf(map.get("userReference"));
+				prop.setValue(jwtClaims != null ? jwtClaims.get(fieldName) : null);
+			} else {
+				prop.setValue(map.get(language));
+			}
+		} else {
+			prop.setValue(rawDefault);
+		}
+		return prop;
+	}
+
+	/**
+	 * Builds a {@link FormDataProperty} for one schema element by reading its stored value from a
+	 * Mesh submission node.
+	 *
+	 * <p>The field is looked up by {@link FormElement#getName()} on the node's field container.
+	 * Catalog elements map stored identifiers to {@link PossibleValue}s via the current
+	 * {@code formGridOptions.selectOptions}; identifiers no longer present in the schema are
+	 * silently dropped. Non-catalog elements with select options are mapped to
+	 * {@code {label, value}} entries. If the node carries no field for this element,
+	 * {@code value}/{@code values} is left unset.</p>
+	 *
+	 * @param element  schema element to build the property for
+	 * @param language language code for {@code possibleValues} label resolution
+	 * @param node     Mesh submission node supplying stored field values
+	 * @return populated {@link FormDataProperty}
+	 */
+	private FormDataProperty buildPropertyFromNode(FormElement element, String language, NodeResponse node) {
+		FormDataProperty prop = new FormDataProperty();
+		List<ValueListItem> selectOptions = resolveSelectOptions(element);
+		boolean isCatalog = "catalog".equals(element.getType());
+
+		if (isCatalog) {
+			if (element.isList()) {
+				StringFieldListImpl listField = node.getFields().getStringFieldList(element.getName());
+				if (listField != null) {
+					prop.setValues(listField.getItems().stream()
+							.map(item -> (Object) findPossibleValue(String.valueOf(item), selectOptions, language))
+							.filter(Objects::nonNull)
+							.collect(Collectors.toList()));
+				}
+			} else {
+				StringFieldImpl strField = node.getFields().getStringField(element.getName());
+				if (strField != null) {
+					prop.setValue(findPossibleValue(strField.getString(), selectOptions, language));
+				}
+			}
+			if (selectOptions != null && !selectOptions.isEmpty()) {
+				prop.setPossibleValues(buildPossibleValues(selectOptions, language));
+			}
+		} else {
+			if (element.isList()) {
+				StringFieldListImpl listField = node.getFields().getStringFieldList(element.getName());
+				if (listField != null) {
+					if (selectOptions != null && !selectOptions.isEmpty()) {
+						prop.setValues(listField.getItems().stream()
+								.map(item -> (Object) buildSelectOptionValue(String.valueOf(item), selectOptions, language))
+								.filter(Objects::nonNull)
+								.collect(Collectors.toList()));
+					} else {
+						prop.setValues(new ArrayList<>(listField.getItems()));
+					}
+				}
+			} else {
+				StringFieldImpl strField = node.getFields().getStringField(element.getName());
+				if (strField != null) {
+					prop.setValue(selectOptions != null && !selectOptions.isEmpty()
+							? buildSelectOptionValue(strField.getString(), selectOptions, language)
+							: strField.getString());
+				}
+			}
+			if (selectOptions != null && !selectOptions.isEmpty()) {
+				prop.setPossibleValues(buildPossibleValues(selectOptions, language));
+			}
+		}
+		return prop;
+	}
+
+	/**
+	 * Converts a list of {@link ValueListItem}s to {@link PossibleValue}s.
+	 * The display name for each item is resolved via {@link #resolveOptionLabel}.
+	 *
+	 * @param selectOptions source items; must not be {@code null}
+	 * @param language      language code for display name resolution
 	 * @return list of {@link PossibleValue}s in the same order as {@code selectOptions}
 	 */
 	private List<PossibleValue> buildPossibleValues(List<ValueListItem> selectOptions, String language) {
 		return selectOptions.stream()
-				.map(item -> {
-					Map<String, String> labels = item.getLabel();
-					String displayName = (labels != null && language != null)
-							? StringUtils.defaultString(labels.get(language))
-							: "";
-					return new PossibleValue(StringUtils.defaultString(item.getValue()), displayName);
-				})
+				.map(item -> new PossibleValue(StringUtils.defaultString(item.getValue()),
+						resolveOptionLabel(item, language)))
 				.collect(Collectors.toList());
 	}
 
 	/**
-	 * Finds the {@link ValueListItem} matching {@code identifier} in {@code options} and converts it
-	 * to a {@link PossibleValue} with the display name resolved for {@code language}.
-	 * Returns {@code null} when no matching option is found.
+	 * Looks up {@code identifier} in {@code options} and returns a {@link PossibleValue} with the
+	 * display name resolved for {@code language}. Returns {@code null} when {@code options} is
+	 * {@code null} or the identifier has no match.
 	 *
-	 * @param identifier the option value to look up (matched against {@link ValueListItem#getValue()})
-	 * @param options    the full list of available select options
+	 * @param identifier the option value to look up
+	 * @param options    available select options; may be {@code null}
 	 * @param language   language code for display name resolution
-	 * @return matching {@link PossibleValue}, or {@code null} if {@code identifier} is not in {@code options}
+	 * @return matching {@link PossibleValue}, or {@code null}
 	 */
 	private PossibleValue findPossibleValue(String identifier, List<ValueListItem> options, String language) {
+		if (options == null) {
+			return null;
+		}
 		return options.stream()
 				.filter(item -> identifier.equals(item.getValue()))
 				.findFirst()
-				.map(item -> {
-					Map<String, String> labels = item.getLabel();
-					String displayName = (labels != null && language != null)
-							? StringUtils.defaultString(labels.get(language))
-							: "";
-					return new PossibleValue(identifier, displayName);
-				})
+				.map(item -> new PossibleValue(identifier, resolveOptionLabel(item, language)))
 				.orElse(null);
 	}
 
+	/**
+	 * Looks up {@code value} in {@code options} and returns a {@code {label, value}} map suitable
+	 * for non-catalog select elements. Returns {@code null} when no matching option is found.
+	 *
+	 * @param value    stored field value to look up
+	 * @param options  available select options
+	 * @param language language code for label resolution
+	 * @return map with {@code "label"} and {@code "value"} keys, or {@code null}
+	 */
 	private Map<String, Object> buildSelectOptionValue(String value, List<ValueListItem> options, String language) {
 		return options.stream()
 				.filter(item -> value.equals(item.getValue()))
@@ -984,6 +1010,14 @@ public class FormService {
 				.orElse(null);
 	}
 
+	/**
+	 * Resolves the display label of {@code item} for {@code language}.
+	 * Falls back to an empty string when the language key is absent.
+	 *
+	 * @param item     option item whose label map is queried
+	 * @param language language code to look up
+	 * @return resolved label, never {@code null}
+	 */
 	private String resolveOptionLabel(ValueListItem item, String language) {
 		Map<String, String> labels = item.getLabel();
 		return (labels != null && language != null)
@@ -992,11 +1026,12 @@ public class FormService {
 	}
 
 	/**
-	 * Returns the {@code selectOptions} of {@code element} when it is a {@link ValueListElement}
-	 * with at least one entry, otherwise {@code null}.
+	 * Returns the select options for {@code element}, preferring {@code formGridOptions.selectOptions}
+	 * over {@link ValueListElement#getSelectOptions()}. Returns {@code null} when neither source
+	 * provides a non-empty list.
 	 *
 	 * @param element form element to inspect
-	 * @return non-empty list of options, or {@code null} if the element has none
+	 * @return non-empty list of options, or {@code null}
 	 */
 	private List<ValueListItem> resolveSelectOptions(FormElement element) {
 		if (element.getFormGridOptions() != null) {
