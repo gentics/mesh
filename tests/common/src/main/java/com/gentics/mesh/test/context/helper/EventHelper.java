@@ -33,6 +33,7 @@ import com.gentics.mesh.test.helper.ExpectedEvent;
 import com.gentics.mesh.test.helper.UnexpectedEvent;
 import com.gentics.mesh.test.util.TestUtils;
 
+import graphql.com.google.common.base.Objects;
 import io.reactivex.Completable;
 import io.reactivex.functions.Action;
 import io.vertx.core.eventbus.MessageConsumer;
@@ -389,6 +390,9 @@ public interface EventHelper extends BaseHelper {
 				if (status != null) {
 					boolean allMatching = true;
 					for (JobResponse info : response.getData()) {
+						if (before.getData().stream().anyMatch(j -> Objects.equal(j.getUuid(), info.getUuid()))) {
+							continue;
+						}
 						if (!status.equals(info.getStatus())) {
 							allMatching = false;
 						}
@@ -397,10 +401,15 @@ public interface EventHelper extends BaseHelper {
 						return response;
 					}
 				}
+			} else {
+				log.warn("No new jobs have been started, skipping waiting");
+				return null;
 			}
 			if (i == waitSeconds - 1) {
-				String json = response == null ? "NULL" : response.toJson(false);
-				throw new RuntimeException("Migration did not complete within " + waitSeconds + " seconds. Last job response was:\n" + json);
+				if (status != null) {
+					String json = response == null ? "NULL" : response.toJson(false);
+					throw new RuntimeException("Migration did not complete within " + waitSeconds + " seconds. Last job response was:\n" + json);
+				}
 			}
 			sleep(1000);
 		}
