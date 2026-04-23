@@ -200,19 +200,4 @@
             </plugin>
 		</plugins>
 	</build>
-	<!-- The repository section is important. Otherwise you will not be able 
-		to download the artifacts -->
-	<repositories>
-		<repository>
-			<id>maven.gentics.com</id>
-			<name>Gentics Maven Repository</name>
-			<url>https://maven.gentics.com/maven2</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
 </project>
