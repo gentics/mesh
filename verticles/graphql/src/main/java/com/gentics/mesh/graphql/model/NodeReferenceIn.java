@@ -4,13 +4,17 @@ import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.graphqlfilter.util.Lazy;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -24,9 +28,6 @@ import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.graphql.context.GraphQLContext;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Represents an incoming node reference. Use the fromContent methods to create a stream of references.
@@ -103,7 +104,11 @@ public class NodeReferenceIn {
 		Map<HibNodeField, HibNode> refNodes = contentDao.getInboundReferences(nodeOriginalContent.keySet()).collect(Collectors.toMap(Pair::getKey, Pair::getValue));
 
 		// field belonging to the referencing content
-		Map<HibNodeField, Collection<HibNodeFieldContainer>> fieldReferencingContents = contentDao.getReferencingContents(refNodes.keySet()).collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+		Map<HibNodeField, Collection<HibNodeFieldContainer>> fieldReferencingContents = contentDao.getReferencingContents(refNodes.keySet()).collect(Collectors.toMap(Pair::getKey, Pair::getValue, (a, b) -> {
+			Set<HibNodeFieldContainer> merged = new HashSet<>(a);
+			merged.addAll(b);
+			return merged;
+		}));
 
 		if (tx.data().options().hasDatabaseLevelCache()) {
 			// Here we preload the content nodes to the cache for performance reasons.

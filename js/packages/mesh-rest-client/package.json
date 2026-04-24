@@ -1,6 +1,6 @@
 {
   "name": "@gentics/mesh-rest-client",
-  "version": "3.2.7",
+  "version": "3.2.8",
   "description": "The JS Client for Gentics Mesh",
   "license": "Apache-2.0",
   "dependencies": {
