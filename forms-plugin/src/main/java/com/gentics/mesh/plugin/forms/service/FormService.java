@@ -55,17 +55,17 @@ import com.gentics.mesh.parameter.client.DeleteParametersImpl;
 import com.gentics.mesh.parameter.client.NodeParametersImpl;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.parameter.client.VersioningParametersImpl;
-import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.dagger.UserClient;
 import com.gentics.mesh.plugin.common.service.RenderService;
-import com.gentics.mesh.plugin.common.util.ParameterUtil;
+;
 import com.gentics.mesh.plugin.forms.FormsError;
 import com.gentics.mesh.plugin.forms.FormsPlugin;
 import com.gentics.mesh.plugin.forms.SchemaInitializer;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.config.MultipageRenderMode;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
+import com.gentics.mesh.plugin.forms.model.DefaultValue;
 import com.gentics.mesh.plugin.forms.model.Form;
 import com.gentics.mesh.plugin.forms.model.FormElement;
 import com.gentics.mesh.plugin.forms.model.FormType;
@@ -747,17 +747,13 @@ public class FormService {
 					HttpResponseStatus.BAD_REQUEST.code()));
 		}
 		return loadForm(projectName, uuid)
-				.flatMap(jsonObj -> {
-					try {
-						Form form = toForm(jsonObj.encode(), uuid, null);
-						form.setData(formDataNode != null
-								? buildFormDataFromNode(form, formID, language, formDataNode)
-								: buildDefaultFormData(form, formID, language, jwtClaims));
-						return Single.just(form);
-					} catch (IOException | FormsError e) {
-						return Single.error(e);
-					}
-				});
+				.flatMap(jsonObj -> Single.fromCallable(() -> {
+					Form form = toForm(jsonObj.encode(), uuid, null);
+					form.setData(formDataNode != null
+							? buildFormDataFromNode(form, formID, language, formDataNode)
+							: buildDefaultFormData(form, formID, language, jwtClaims));
+					return form;
+				}));
 	}
 
 	/**
@@ -820,18 +816,9 @@ public class FormService {
 	/**
 	 * Builds a {@link FormDataProperty} for one schema element using {@code formGridOptions.defaultValue}.
 	 *
-	 * <p>Dispatch by element type and default-value shape:</p>
-	 * <ul>
-	 *   <li>Element with selectOptions — {@code List} default: each identifier resolved to a
-	 *       {@link PossibleValue}; identifiers absent from current options are dropped.</li>
-	 *   <li>Element with selectOptions — scalar default: single {@link PossibleValue};
-	 *       {@code null} when unmatched.</li>
-	 *   <li>No selectOptions — {@code List} default: written directly into {@code values}.</li>
-	 *   <li>No selectOptions — {@code Map} with {@code "userReference"}: JWT claim value read by field name.</li>
-	 *   <li>No selectOptions — {@code Map} without {@code "userReference"}: treated as translation map;
-	 *       value for {@code language} is used.</li>
-	 *   <li>No selectOptions — scalar or {@code null}: written directly into {@code value}.</li>
-	 * </ul>
+	 * <p>When {@code selectOptions} are present the default value is mapped to a {@link PossibleValue}
+	 * (list or scalar). Without options, the {@link DefaultValue} resolves itself via
+	 * {@link DefaultValue#resolve(String, Map)} — covering SCALAR, LIST, USER_REFERENCE, and TRANSLATION.</p>
 	 *
 	 * @param element   schema element to build the property for
 	 * @param language  language code for label and translation resolution
@@ -840,33 +827,28 @@ public class FormService {
 	 */
 	private FormDataProperty buildDefaultProperty(FormElement element, String language, Map<String, Object> jwtClaims) {
 		FormDataProperty prop = new FormDataProperty();
-		Object rawDefault = element.getFormGridOptions() != null
-				? element.getFormGridOptions().getDefaultValue()
-				: null;
+		DefaultValue defaultValue = element.getFormGridOptions().getDefaultValue();
 		List<ValueListItem> selectOptions = resolveSelectOptions(element);
 
 		if (selectOptions != null && !selectOptions.isEmpty()) {
-			if (rawDefault instanceof List) {
-				prop.setValues(((List<?>) rawDefault).stream()
+			if (defaultValue != null && defaultValue.isList()) {
+				// get the list of values (Ids) from selectoptions
+				List<?> ids = (List<?>) defaultValue.resolve(language, jwtClaims);
+				prop.setValues(ids.stream()
 						.map(id -> (Object) findPossibleValue(String.valueOf(id), selectOptions, language))
 						.filter(Objects::nonNull)
 						.collect(Collectors.toList()));
-			} else if (rawDefault != null) {
-				prop.setValue(findPossibleValue(String.valueOf(rawDefault), selectOptions, language));
+			} else if (defaultValue != null) {
+				prop.setValue(findPossibleValue(
+						String.valueOf(defaultValue.resolve(language, jwtClaims)), selectOptions, language));
 			}
 			prop.setPossibleValues(buildPossibleValues(selectOptions, language));
-		} else if (rawDefault instanceof List) {
-			prop.setValues((List<Object>) rawDefault);
-		} else if (rawDefault instanceof Map) {
-			Map<?, ?> map = (Map<?, ?>) rawDefault;
-			if (map.containsKey("userReference")) {
-				String fieldName = String.valueOf(map.get("userReference"));
-				prop.setValue(jwtClaims != null ? jwtClaims.get(fieldName) : null);
+		} else if (defaultValue != null) {
+			if (defaultValue.isList()) {
+				prop.setValues((List<Object>) defaultValue.resolve(language, jwtClaims));
 			} else {
-				prop.setValue(map.get(language));
+				prop.setValue(defaultValue.resolve(language, jwtClaims));
 			}
-		} else {
-			prop.setValue(rawDefault);
 		}
 		return prop;
 	}
@@ -974,25 +956,16 @@ public class FormService {
 	}
 
 	/**
-	 * Returns the select options for {@code element}, preferring {@code formGridOptions.selectOptions}
-	 * over {@link ValueListElement#getSelectOptions()}. Returns {@code null} when neither source
+	 * Returns the select options for {@code element}. Returns {@code null} when neither source
 	 * provides a non-empty list.
 	 *
 	 * @param element form element to inspect
 	 * @return non-empty list of options, or {@code null}
 	 */
 	private List<ValueListItem> resolveSelectOptions(FormElement element) {
-		if (element.getFormGridOptions() != null) {
-			List<ValueListItem> opts = element.getFormGridOptions().getSelectOptions();
-			if (opts != null && !opts.isEmpty()) {
-				return opts;
-			}
-		}
-		if (element instanceof ValueListElement) {
-			List<ValueListItem> opts = ((ValueListElement) element).getSelectOptions();
-			if (opts != null && !opts.isEmpty()) {
-				return opts;
-			}
+		List<ValueListItem> opts = element.getFormGridOptions().getSelectOptions();
+		if (opts != null && !opts.isEmpty()) {
+			return opts;
 		}
 		return null;
 	}

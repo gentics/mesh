@@ -40,31 +40,31 @@
         "mandatory": false,
         "isList": false,
         "formGridOptions": {
-          "defaultValue": "general"
-        },
-        "selectOptions": [
-          {
-            "value": "general",
-            "label": {
-              "de": "Allgemein",
-              "en": "General"
+          "defaultValue": "general",
+          "selectOptions": [
+            {
+              "value": "general",
+              "label": {
+                "de": "Allgemein",
+                "en": "General"
+              }
+            },
+            {
+              "value": "support",
+              "label": {
+                "de": "Support",
+                "en": "Support"
+              }
+            },
+            {
+              "value": "drama",
+              "label": {
+                "de": "Drama",
+                "en": "DramaEng"
+              }
             }
-          },
-          {
-            "value": "support",
-            "label": {
-              "de": "Support",
-              "en": "Support"
-            }
-          },
-          {
-            "value": "drama",
-            "label": {
-              "de": "Drama",
-              "en": "DramaEng"
-            }
-          }
-        ]
+          ]
+        }
       },
       "topicMulti": {
         "name": "topicMulti",
@@ -73,31 +73,31 @@
         "mandatory": false,
         "isList": true,
         "formGridOptions": {
-          "defaultValue": ["general", "support"]
-        },
-        "selectOptions": [
-          {
-            "value": "general",
-            "label": {
-              "de": "Allgemein",
-              "en": "General"
+          "defaultValue": ["general", "support"],
+          "selectOptions": [
+            {
+              "value": "general",
+              "label": {
+                "de": "Allgemein",
+                "en": "General"
+              }
+            },
+            {
+              "value": "support",
+              "label": {
+                "de": "Support",
+                "en": "Support"
+              }
+            },
+            {
+              "value": "drama",
+              "label": {
+                "de": "Drama",
+                "en": "DramaEng"
+              }
             }
-          },
-          {
-            "value": "support",
-            "label": {
-              "de": "Support",
-              "en": "Support"
-            }
-          },
-          {
-            "value": "drama",
-            "label": {
-              "de": "Drama",
-              "en": "DramaEng"
-            }
-          }
-        ]
+          ]
+        }
       },
       "tags": {
         "name": "tags",

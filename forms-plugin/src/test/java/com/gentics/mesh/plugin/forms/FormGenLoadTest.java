@@ -101,7 +101,7 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 	}
 
 	@Test
-	public void testLoadFormGenNoPossibleValuesForNonCatalog() throws IOException {
+	public void testLoadFormGenNoPossibleValuesForNonValueListElement() throws IOException {
 		String uuid = createForm("formgen_load.json");
 
 		Response response = doLoadRequest(uuid, FORM_ID, "de", true);
@@ -209,7 +209,7 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 
 	@Test
 	public void testLoadFormGenCatalogDefaultMulti() throws IOException {
-		String uuid = createForm("formgen_load.json");
+ 		String uuid = createForm("formgen_load.json");
 
 		Response response = doLoadRequest(uuid, FORM_ID, "en", true);
 		String responseBody = response.body() != null ? response.body().string() : "";
