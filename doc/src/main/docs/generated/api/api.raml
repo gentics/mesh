@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "3.1.14"
+version: "3.1.15"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -1516,7 +1516,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "938b48a35a914d4eaf43a6307bb9c51e"
+                            "uuid" : "3a05fc76ffa849dc834be0a7749c2e41"
                           } ]
                         }
             responses: 
@@ -3049,7 +3049,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "53e5503c0c414f4cba518f3f6914c426"
+                            "uuid" : "e8133f503a2f41cd81a32280bd518dfc"
                           } ]
                         }
             responses: 
@@ -4355,7 +4355,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "8c0a0a67608546cf8664e0b0b2d1087b"
+                            "uuid" : "9d81df1b2ccb4c74b98a5609ff3ffce0"
                           } ]
                         }
             responses: 
@@ -6864,7 +6864,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "da5000f16b1d4313a960b09e23989a88"
+                            "uuid" : "6f9a45f77b014948bde3242e40f19861"
                           } ]
                         }
             responses: 
@@ -9314,7 +9314,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "dcba6aca1f2847c48c717a83a5d4a4b9"
+                            "uuid" : "6ba817496fc3431cb20c63d70ed6ff19"
                           } ]
                         }
             responses: 
@@ -11065,7 +11065,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "40e46f7d6e5e4393b5154f3e64f7f1da"
+                            "uuid" : "0a67f21b45e4469c941b886f14eb0bd4"
                           } ]
                         }
             responses: 
@@ -17315,7 +17315,7 @@ mediaType: application/json
                                 }
                             example: |
                                 {
-                                  "meshVersion" : "3.1.14",
+                                  "meshVersion" : "3.1.15",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "mariadb",
                                   "databaseVersion" : "10.7",
@@ -19549,9 +19549,6 @@ mediaType: application/json
                                       "focalPointZoom" : {
                                         "type" : "number"
                                       },
-                                      "cacheKey" : {
-                                        "type" : "string"
-                                      },
                                       "size" : {
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:Point",
@@ -19566,6 +19563,9 @@ mediaType: application/json
                                             "type" : "number"
                                           }
                                         }
+                                      },
+                                      "cacheKey" : {
+                                        "type" : "string"
                                       }
                                     }
                                   }
@@ -21065,9 +21065,6 @@ mediaType: application/json
                                   "focalPointZoom" : {
                                     "type" : "number"
                                   },
-                                  "cacheKey" : {
-                                    "type" : "string"
-                                  },
                                   "size" : {
                                     "type" : "object",
                                     "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:Point",
@@ -21082,6 +21079,9 @@ mediaType: application/json
                                         "type" : "number"
                                       }
                                     }
+                                  },
+                                  "cacheKey" : {
+                                    "type" : "string"
                                   }
                                 }
                               }
@@ -23770,7 +23770,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "fdcf3ed28076433f98891f3bd4d0d902"
+                            "uuid" : "ee064f47e8b9494b9f4f91d8d202b8c9"
                           } ]
                         }
             responses: 
@@ -27245,7 +27245,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "bf4fe63ad91d4ca3b032a7a2bf6bcc21"
+                            "uuid" : "0ca1638c4b094652b642cf9403c73cb1"
                           } ]
                         }
             responses: 
@@ -29141,7 +29141,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "911c23da648546a5a62e4aea02620494"
+                            "uuid" : "df11b3a69aae4bd9af724caef6328d3b"
                           } ]
                         }
             responses: 
@@ -30402,9 +30402,6 @@ mediaType: application/json
                                       "focalPointZoom" : {
                                         "type" : "number"
                                       },
-                                      "cacheKey" : {
-                                        "type" : "string"
-                                      },
                                       "size" : {
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:Point",
@@ -30419,6 +30416,9 @@ mediaType: application/json
                                             "type" : "number"
                                           }
                                         }
+                                      },
+                                      "cacheKey" : {
+                                        "type" : "string"
                                       }
                                     }
                                   }
@@ -31427,9 +31427,6 @@ mediaType: application/json
                                   "focalPointZoom" : {
                                     "type" : "number"
                                   },
-                                  "cacheKey" : {
-                                    "type" : "string"
-                                  },
                                   "size" : {
                                     "type" : "object",
                                     "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:Point",
@@ -31444,6 +31441,9 @@ mediaType: application/json
                                         "type" : "number"
                                       }
                                     }
+                                  },
+                                  "cacheKey" : {
+                                    "type" : "string"
                                   }
                                 }
                               }
@@ -33334,7 +33334,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "28c3614ff4204894851629d8f5d878c0"
+                            "uuid" : "f30e45009da74ad985d8bedd7946d8a5"
                           } ]
                         }
             responses: 
