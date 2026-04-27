@@ -42,7 +42,6 @@ public class FormSchema {
 	}
 
 	public Map<String, FormElement> getProperties() {
-		
 		return properties;
 	}
 

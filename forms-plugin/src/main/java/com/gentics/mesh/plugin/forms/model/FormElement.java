@@ -577,6 +577,9 @@ public abstract class FormElement implements RestModel {
 
 	@JsonIgnore
 	public SchemaFormGridOptions getFormGridOptions() {
+		if (formGridOptions == null) {
+			formGridOptions = new SchemaFormGridOptions();
+		}
 		return formGridOptions;
 	}
 

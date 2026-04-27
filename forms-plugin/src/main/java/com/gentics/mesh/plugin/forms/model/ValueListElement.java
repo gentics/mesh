@@ -94,13 +94,17 @@ public abstract class ValueListElement extends FormElement {
 			.setName(getName())
 			.setTitle(I18nHelper.get(Locale.GERMAN, "error.validation.form.title"));
 
-		if (selectOptions == null || selectOptions.isEmpty()) {
+		List<ValueListItem> effectiveOptions = (selectOptions != null && !selectOptions.isEmpty())
+			? selectOptions
+			: getFormGridOptions().getSelectOptions();
+
+		if (effectiveOptions == null || effectiveOptions.isEmpty()) {
 			error.setMessage(I18nHelper.get(Locale.GERMAN, "error.validation.form.missing_list_elements", getLabelOrName()));
 
 			return Optional.of(error);
 		}
 
-		Optional<ValueListItem> invalid = selectOptions.stream()
+		Optional<ValueListItem> invalid = effectiveOptions.stream()
 			.filter(e -> StringUtils.isEmpty(e.getValue()) || (e.getLabel() == null || e.getLabel().isEmpty()))
 			.findAny();
 

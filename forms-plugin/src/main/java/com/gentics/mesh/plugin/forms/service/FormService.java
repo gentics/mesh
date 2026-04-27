@@ -1,17 +1,19 @@
 package com.gentics.mesh.plugin.forms.service;
 
 import java.io.IOException;
+import java.util.function.BiFunction;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.stream.Collector;
@@ -22,6 +24,7 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -44,6 +47,7 @@ import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
+import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -52,21 +56,25 @@ import com.gentics.mesh.parameter.client.DeleteParametersImpl;
 import com.gentics.mesh.parameter.client.NodeParametersImpl;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.parameter.client.VersioningParametersImpl;
-import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.dagger.UserClient;
 import com.gentics.mesh.plugin.common.service.RenderService;
-import com.gentics.mesh.plugin.common.util.ParameterUtil;
+
 import com.gentics.mesh.plugin.forms.FormsError;
 import com.gentics.mesh.plugin.forms.FormsPlugin;
 import com.gentics.mesh.plugin.forms.SchemaInitializer;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.config.MultipageRenderMode;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
+import com.gentics.mesh.plugin.forms.model.DefaultValue;
 import com.gentics.mesh.plugin.forms.model.Form;
+import com.gentics.mesh.plugin.forms.model.FormElement;
 import com.gentics.mesh.plugin.forms.model.FormType;
+import com.gentics.mesh.plugin.forms.model.ValueListItem;
+import com.gentics.mesh.plugin.forms.model.schema.FormData;
+import com.gentics.mesh.plugin.forms.model.schema.FormDataProperty;
+import com.gentics.mesh.plugin.forms.model.schema.PossibleValue;
 import com.gentics.mesh.plugin.forms.model.ValidationError;
-import com.gentics.mesh.plugin.forms.model.response.RenderResponse;
 import com.gentics.mesh.plugin.forms.util.FormUtil;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.impl.EmptyResponse;
@@ -264,25 +272,6 @@ public class FormService {
 			return Optional.of(error);
 		}
 	}
-
-//	/**
-//	 * Load the form node by uuid
-//	 *
-//	 * @param projectName project name
-//	 * @param uuid
-//	 *            uuid
-//	 * @return single noderesponse
-//	 */
-//	public Single<NodeResponse> load(String projectName, String uuid) {
-//		return userClient.findNodeByUuid(projectName, uuid).toSingle().flatMap(nodeResponse -> {
-//			if (isFormNode(nodeResponse)) {
-//				return Single.just(nodeResponse);
-//			} else {
-//				String message = String.format("Object with uuid \"%s\" could not be found.", uuid);
-//				return Single.error(new FormsError(HttpResponseStatus.NOT_FOUND.code(), message));
-//			}
-//		});
-//	}
 
 	/**
 	 * Load the form node by uuid in the given language
@@ -722,12 +711,269 @@ public class FormService {
 		});
 	}
 
-	public Single<JsonObject> loadForm(String projectName, String uuid, String... lang) {
-		return statusService.languageFallback(projectName, lang)
-				.flatMap(langFallback -> load(projectName, uuid, langFallback)).map(formNode -> {
-					// TODO if the node has no fields, no specified language was found
-					return new JsonObject(formNode.getFields().getStringField("json").getString());
-				});
+	/**
+	 * load form only in language en
+	 * @param projectName
+	 * @param uuid
+	 * @return
+	 */
+	public Single<JsonObject> loadForm(String projectName, String uuid) {
+		return load(projectName, uuid, "en").map(formNode -> {
+			// TODO if the node has no fields, no specified language was found
+			return new JsonObject(formNode.getFields().getStringField("json").getString());
+		});
+	}
+
+
+	/**
+	 * Loads the form identified by {@code uuid} and assembles a Form Generator response.
+	 *
+	 * <p>When {@code formDataNode} is {@code null}, {@code data.properties} are populated from
+	 * the schema {@code formGridOptions.defaultValue} entries. When a node is supplied, field
+	 * values are read from that submission node instead.</p>
+	 *
+	 * @param projectName   Mesh project name
+	 * @param uuid          UUID of the form node
+	 * @param formID        client-supplied form instance identifier; must not be blank
+	 * @param language      language code used for {@code possibleValues} label resolution
+	 * @param formDataNode  optional previously stored submission node; {@code null} for default-value mode
+	 * @param jwtClaims     decoded JWT payload claims from the request; used to resolve {@code userReference} defaults
+	 * @return Single emitting the assembled {@link Form}
+	 */
+	public Single<Form> loadFormForFormGen(String projectName, String uuid, String formID, String language,
+			NodeResponse formDataNode, Map<String, Object> jwtClaims) {
+		if (StringUtils.isBlank(formID)) {
+			return Single.error(new FormsError("Request body must contain non-empty 'formID'",
+					HttpResponseStatus.BAD_REQUEST.code()));
+		}
+		if (formDataNode != null && isFormDataNodePublished(formDataNode)) {
+			return Single.error(new FormsError(
+					String.format("Form data with uuid \"%s\" is already published and cannot be loaded for editing.",
+							formDataNode.getUuid()),
+					HttpResponseStatus.CONFLICT.code()));
+		}
+		return loadForm(projectName, uuid)
+				.flatMap(jsonObj -> Single.fromCallable(() -> {
+					Form form = toForm(jsonObj.encode(), uuid, null);
+					form.setData(formDataNode != null
+							? buildFormDataFromNode(form, formID, language, formDataNode)
+							: buildDefaultFormData(form, formID, language, jwtClaims));
+					return form;
+				}));
+	}
+
+	/**
+	 * Builds {@link FormData} using schema {@code formGridOptions.defaultValue} entries.
+	 * {@code hasValidationErrors} is always {@code false} in this mode.
+	 *
+	 * @param form      the loaded form definition
+	 * @param formID    client-supplied form instance identifier
+	 * @param language  language code for label and translation resolution
+	 * @param jwtClaims decoded JWT payload claims; used to resolve {@code userReference} defaults
+	 * @return populated {@link FormData}
+	 */
+	private FormData buildDefaultFormData(Form form, String formID, String language, Map<String, Object> jwtClaims) {
+		return initFormData(form, formID, false,
+				(key, element) -> buildDefaultProperty(element, language, jwtClaims));
+	}
+
+	/**
+	 * Builds {@link FormData} by reading stored field values from a Mesh submission node.
+	 * {@code hasValidationErrors} reflects the node's {@code _errors} field.
+	 *
+	 * @param form     the loaded form definition
+	 * @param formID   client-supplied form instance identifier
+	 * @param language language code for {@code possibleValues} label resolution
+	 * @param node     the Mesh submission node whose fields supply the property values
+	 * @return populated {@link FormData} reflecting the stored submission
+	 */
+	private FormData buildFormDataFromNode(Form form, String formID, String language, NodeResponse node) {
+		StringFieldImpl errField = node.getFields().getStringField(Form.ERRORS_FIELD_NAME);
+		boolean hasErrors = errField != null && StringUtils.isNotBlank(errField.getString());
+		return initFormData(form, formID, hasErrors,
+				(key, element) -> buildPropertyFromNode(element, language, node));
+	}
+
+	/**
+	 * Creates a {@link FormData} shell, iterates all schema properties, and populates the
+	 * {@code properties} map by applying {@code propertyBuilder} to each element.
+	 *
+	 * @param form            the loaded form definition
+	 * @param formID          client-supplied form instance identifier
+	 * @param hasErrors       value for {@link FormData#setHasValidationErrors}
+	 * @param propertyBuilder produces a {@link FormDataProperty} for each (key, element) pair
+	 * @return fully assembled {@link FormData}
+	 */
+	private FormData initFormData(Form form, String formID, boolean hasErrors,
+			BiFunction<String, FormElement, FormDataProperty> propertyBuilder) {
+		FormData data = new FormData();
+		data.setFormID(formID);
+		data.setVersion(form.getSchema() != null ? form.getSchema().getVersion() : null);
+		data.setHasValidationErrors(hasErrors);
+		Map<String, FormDataProperty> properties = new LinkedHashMap<>();
+		if (form.getSchema() != null && form.getSchema().getProperties() != null) {
+			form.getSchema().getProperties().forEach((key, element) ->
+					properties.put(key, propertyBuilder.apply(key, element)));
+		}
+		data.setProperties(properties);
+		return data;
+	}
+
+	/**
+	 * Builds a {@link FormDataProperty} for one schema element using {@code formGridOptions.defaultValue}.
+	 *
+	 * <p>When {@code selectOptions} are present the default value is mapped to a {@link PossibleValue}
+	 * (list or scalar). Without options, the {@link DefaultValue} resolves itself via
+	 * {@link DefaultValue#resolve(String, Map)} — covering SCALAR, LIST, USER_REFERENCE, and TRANSLATION.</p>
+	 *
+	 * @param element   schema element to build the property for
+	 * @param language  language code for label and translation resolution
+	 * @param jwtClaims decoded JWT payload claims; used to resolve {@code userReference} defaults
+	 * @return populated {@link FormDataProperty}
+	 */
+	private FormDataProperty buildDefaultProperty(FormElement element, String language, Map<String, Object> jwtClaims) {
+		FormDataProperty prop = new FormDataProperty();
+		DefaultValue defaultValue = element.getFormGridOptions().getDefaultValue();
+		List<ValueListItem> selectOptions = resolveSelectOptions(element);
+
+		if (selectOptions != null && !selectOptions.isEmpty()) {
+			if (defaultValue != null && defaultValue.isList()) {
+				// get the list of values (Ids) from selectoptions
+				List<?> ids = (List<?>) defaultValue.resolve(language, jwtClaims);
+				prop.setValues(ids.stream()
+						.map(id -> (Object) findPossibleValue(String.valueOf(id), selectOptions, language))
+						.filter(Objects::nonNull)
+						.collect(Collectors.toList()));
+			} else if (defaultValue != null) {
+				prop.setValue(findPossibleValue(
+						String.valueOf(defaultValue.resolve(language, jwtClaims)), selectOptions, language));
+			}
+			prop.setPossibleValues(buildPossibleValues(selectOptions, language));
+		} else if (defaultValue != null) {
+			if (defaultValue.isList()) {
+				prop.setValues((List<Object>) defaultValue.resolve(language, jwtClaims));
+			} else {
+				prop.setValue(defaultValue.resolve(language, jwtClaims));
+			}
+		}
+		return prop;
+	}
+
+	/**
+	 * Builds a {@link FormDataProperty} for one schema element by reading its stored value from a
+	 * Mesh submission node.
+	 *
+	 * <p>The field is looked up by {@link FormElement#getName()} on the node's field container.
+	 * Elements with {@code selectOptions} map stored identifiers to {@link PossibleValue}s via the
+	 * current {@code formGridOptions.selectOptions}; identifiers no longer present in the schema are
+	 * silently dropped. If the node carries no field for this element,
+	 * {@code value}/{@code values} is left unset.</p>
+	 *
+	 * @param element  schema element to build the property for
+	 * @param language language code for {@code possibleValues} label resolution
+	 * @param node     Mesh submission node supplying stored field values
+	 * @return populated {@link FormDataProperty}
+	 */
+	private FormDataProperty buildPropertyFromNode(FormElement element, String language, NodeResponse node) {
+		FormDataProperty prop = new FormDataProperty();
+		List<ValueListItem> selectOptions = resolveSelectOptions(element);
+
+		if (selectOptions != null && !selectOptions.isEmpty()) {
+			if (element.isList()) {
+				StringFieldListImpl listField = node.getFields().getStringFieldList(element.getName());
+				if (listField != null) {
+					prop.setValues(listField.getItems().stream()
+							.map(item -> (Object) findPossibleValue(String.valueOf(item), selectOptions, language))
+							.filter(Objects::nonNull)
+							.collect(Collectors.toList()));
+				}
+			} else {
+				StringFieldImpl strField = node.getFields().getStringField(element.getName());
+				if (strField != null) {
+					prop.setValue(findPossibleValue(strField.getString(), selectOptions, language));
+				}
+			}
+			prop.setPossibleValues(buildPossibleValues(selectOptions, language));
+		} else {
+			if (element.isList()) {
+				StringFieldListImpl listField = node.getFields().getStringFieldList(element.getName());
+				if (listField != null) {
+					prop.setValues(new ArrayList<>(listField.getItems()));
+				}
+			} else {
+				StringFieldImpl strField = node.getFields().getStringField(element.getName());
+				if (strField != null) {
+					prop.setValue(strField.getString());
+				}
+			}
+		}
+		return prop;
+	}
+
+	/**
+	 * Converts a list of {@link ValueListItem}s to {@link PossibleValue}s.
+	 * The display name for each item is resolved via {@link #resolveOptionLabel}.
+	 *
+	 * @param selectOptions source items; must not be {@code null}
+	 * @param language      language code for display name resolution
+	 * @return list of {@link PossibleValue}s in the same order as {@code selectOptions}
+	 */
+	private List<PossibleValue> buildPossibleValues(List<ValueListItem> selectOptions, String language) {
+		return selectOptions.stream()
+				.map(item -> new PossibleValue(StringUtils.defaultString(item.getValue()),
+						resolveOptionLabel(item, language)))
+				.collect(Collectors.toList());
+	}
+
+	/**
+	 * Looks up {@code identifier} in {@code options} and returns a {@link PossibleValue} with the
+	 * display name resolved for {@code language}. Returns {@code null} when {@code options} is
+	 * {@code null} or the identifier has no match.
+	 *
+	 * @param identifier the option value to look up
+	 * @param options    available select options; may be {@code null}
+	 * @param language   language code for display name resolution
+	 * @return matching {@link PossibleValue}, or {@code null}
+	 */
+	private PossibleValue findPossibleValue(String identifier, List<ValueListItem> options, String language) {
+		if (options == null) {
+			return null;
+		}
+		return options.stream()
+				.filter(item -> identifier.equals(item.getValue()))
+				.findFirst()
+				.map(item -> new PossibleValue(identifier, resolveOptionLabel(item, language)))
+				.orElse(null);
+	}
+
+	/**
+	 * Resolves the display label of {@code item} for {@code language}.
+	 * Falls back to an empty string when the language key is absent.
+	 *
+	 * @param item     option item whose label map is queried
+	 * @param language language code to look up
+	 * @return resolved label, never {@code null}
+	 */
+	private String resolveOptionLabel(ValueListItem item, String language) {
+		Map<String, String> labels = item.getLabel();
+		return (labels != null && language != null)
+				? StringUtils.defaultString(labels.get(language))
+				: "";
+	}
+
+	/**
+	 * Returns the select options for {@code element}. Returns {@code null} when neither source
+	 * provides a non-empty list.
+	 *
+	 * @param element form element to inspect
+	 * @return non-empty list of options, or {@code null}
+	 */
+	private List<ValueListItem> resolveSelectOptions(FormElement element) {
+		List<ValueListItem> opts = element.getFormGridOptions().getSelectOptions();
+		if (opts != null && !opts.isEmpty()) {
+			return opts;
+		}
+		return null;
 	}
 
 	/**
@@ -1106,5 +1352,12 @@ public class FormService {
 		default:
 			return false;
 		}
+	}
+
+	private boolean isFormDataNodePublished(NodeResponse formDataNode) {
+		Map<String, PublishStatusModel> languages = formDataNode.getAvailableLanguages();
+		if (languages == null) return false;
+		PublishStatusModel enStatus = languages.get("en");
+		return enStatus != null && enStatus.isPublished();
 	}
 }

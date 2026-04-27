@@ -25,12 +25,10 @@ public class LoadFormHandler extends AbstractFormsHandler {
 	public Completable handle(PluginContext context) {
 		String projectName = context.project().getString("name");
 		Single<String> uuidSingle = ParameterUtil.getUuidFromPath(context, "formUuid");
-		Single<String[]> languagesSingle = ParameterUtil.getLanguages(context);
 
-		return Single
-				.zip(uuidSingle, languagesSingle,
-						(uuid, languages) -> formService.loadForm(projectName, uuid, languages))
-				.flatMap(x -> x).doOnEvent((response, t) -> {
+		return uuidSingle
+				.flatMap(uuid -> formService.loadForm(projectName, uuid))
+				.doOnEvent((response, t) -> {
 					if (response != null) {
 						context.response().end(response.toString());
 					}

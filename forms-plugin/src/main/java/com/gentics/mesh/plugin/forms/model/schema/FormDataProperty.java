@@ -36,6 +36,9 @@ public class FormDataProperty {
 	@JsonProperty("editable")
 	private Boolean editable;
 
+	@JsonProperty("possibleValues")
+	private List<PossibleValue> possibleValues;
+
 	protected Map<String, Object> properties = new LinkedHashMap<>();
 
 	public Object getValue() {
@@ -76,6 +79,14 @@ public class FormDataProperty {
 
 	public void setEditable(Boolean editable) {
 		this.editable = editable;
+	}
+
+	public List<PossibleValue> getPossibleValues() {
+		return possibleValues;
+	}
+
+	public void setPossibleValues(List<PossibleValue> possibleValues) {
+		this.possibleValues = possibleValues;
 	}
 
 	@JsonAnyGetter

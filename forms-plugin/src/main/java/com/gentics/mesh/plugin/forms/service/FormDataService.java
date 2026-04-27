@@ -369,7 +369,7 @@ public class FormDataService {
 		String options = FormParameterUtil.getExportOptions(context, configuration);
 
 		return formService.getFormFolderUuid(projectName, formUuid, lang, FormService.DOWNLOADS_FOLDER_NAME)
-			.flatMap(folderUuid -> formService.loadForm(projectName, formUuid, lang)
+			.flatMap(folderUuid -> formService.loadForm(projectName, formUuid) //TODO 8.5 language ?
 				.flatMap(form -> createDownloadNode(projectName, folderUuid, "export", "form-export", form.getString("name"), options)))
 			.flatMap(exportNode -> {
 				MessageConsumer<Object> consumer = rxVertx.eventBus()
