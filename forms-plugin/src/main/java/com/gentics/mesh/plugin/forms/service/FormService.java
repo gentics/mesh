@@ -47,6 +47,7 @@ import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
+import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -58,7 +59,7 @@ import com.gentics.mesh.parameter.client.VersioningParametersImpl;
 import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.dagger.UserClient;
 import com.gentics.mesh.plugin.common.service.RenderService;
-;
+
 import com.gentics.mesh.plugin.forms.FormsError;
 import com.gentics.mesh.plugin.forms.FormsPlugin;
 import com.gentics.mesh.plugin.forms.SchemaInitializer;
@@ -69,7 +70,6 @@ import com.gentics.mesh.plugin.forms.model.DefaultValue;
 import com.gentics.mesh.plugin.forms.model.Form;
 import com.gentics.mesh.plugin.forms.model.FormElement;
 import com.gentics.mesh.plugin.forms.model.FormType;
-import com.gentics.mesh.plugin.forms.model.ValueListElement;
 import com.gentics.mesh.plugin.forms.model.ValueListItem;
 import com.gentics.mesh.plugin.forms.model.schema.FormData;
 import com.gentics.mesh.plugin.forms.model.schema.FormDataProperty;
@@ -746,6 +746,12 @@ public class FormService {
 			return Single.error(new FormsError("Request body must contain non-empty 'formID'",
 					HttpResponseStatus.BAD_REQUEST.code()));
 		}
+		if (formDataNode != null && isFormDataNodePublished(formDataNode)) {
+			return Single.error(new FormsError(
+					String.format("Form data with uuid \"%s\" is already published and cannot be loaded for editing.",
+							formDataNode.getUuid()),
+					HttpResponseStatus.CONFLICT.code()));
+		}
 		return loadForm(projectName, uuid)
 				.flatMap(jsonObj -> Single.fromCallable(() -> {
 					Form form = toForm(jsonObj.encode(), uuid, null);
@@ -1346,5 +1352,12 @@ public class FormService {
 		default:
 			return false;
 		}
+	}
+
+	private boolean isFormDataNodePublished(NodeResponse formDataNode) {
+		Map<String, PublishStatusModel> languages = formDataNode.getAvailableLanguages();
+		if (languages == null) return false;
+		PublishStatusModel enStatus = languages.get("en");
+		return enStatus != null && enStatus.isPublished();
 	}
 }
