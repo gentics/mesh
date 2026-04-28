@@ -79,9 +79,9 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 		projectRouter.route("/forms/:formUuid").method(DELETE).handler(fromComponent(FormsPluginComponent::deleteFormHandler));
 
 		// routes for handling the online status of forms
-		projectRouter.route("/forms/:formUuid/online/:lang").method(GET).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::getFormOnlineStatusHandler));
-		projectRouter.route("/forms/:formUuid/online/:lang").method(PUT).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::setFormOnlineHandler));
-		projectRouter.route("/forms/:formUuid/online/:lang").method(DELETE).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::setFormOfflineHandler));
+		projectRouter.route("/forms/:formUuid/online").method(GET).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::getFormOnlineStatusHandler));
+		projectRouter.route("/forms/:formUuid/online").method(PUT).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::setFormOnlineHandler));
+		projectRouter.route("/forms/:formUuid/online").method(DELETE).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::setFormOfflineHandler));
 
 		projectRouter.route("/forms/:formUuid/load").method(POST).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::loadFormGenHandler));
 

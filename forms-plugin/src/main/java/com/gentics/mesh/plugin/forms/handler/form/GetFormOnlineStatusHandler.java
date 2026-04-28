@@ -33,10 +33,9 @@ public class GetFormOnlineStatusHandler extends AbstractFormsHandler {
 	public Completable handle(PluginContext context) {
 		String projectName = context.project().getString("name");
 		Single<String> uuidSingle = ParameterUtil.getUuidFromPath(context, "formUuid");
-		Single<String> languageSingle = ParameterUtil.getFromPath(context, "lang", ParameterUtil.LANGUAGE_PATTERN);
 
-		return Single.zip(uuidSingle, languageSingle, (uuid, language) -> {
-			return formOnlineStatusService.get(projectName, uuid, language);
+		return uuidSingle.map(uuid -> {
+			return formOnlineStatusService.get(projectName, uuid);
 		}).flatMap(x -> x).doOnEvent((response, t) -> {
 			if (response != null) {
 				context.response().putHeader(HttpHeaders.CONTENT_TYPE, HttpConstants.APPLICATION_JSON_UTF8)
