@@ -143,7 +143,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		requestBody.writeTo(buffer);
 		System.out.println(buffer.readUtf8());
 
-		Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data")).header("Referer", "ref")
+		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit")).header("Referer", "ref")
 			.post(requestBody).build();
 		Response response = client().newCall(postRequest).execute();
 		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
@@ -176,7 +176,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 				.addFormDataPart("input1", "")
 				.build();
 
-		Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data")).header("Referer", "ref").post(requestBody).build();
+		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit")).header("Referer", "ref").post(requestBody).build();
 		Response response = client().newCall(postRequest).execute();
 		assertThat(response.isRedirect()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
 		assertThat(response.header("Location")).as("Location Header").isEqualTo("ref");
@@ -216,7 +216,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 				.build();
 
 		Request postRequest = new Request.Builder()
-			.url(projectUrl("/forms/" + formUuid + "/data"))
+			.url(projectUrl("/form/" + formUuid + "/submit"))
 			.header("Referer", "ref")
 			.post(requestBody)
 			.build();
@@ -294,7 +294,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 				.addFormDataPart("input1", "Bla")
 				.build();
 
-		Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data")).header("Referer", "ref").post(requestBody).build();
+		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit")).header("Referer", "ref").post(requestBody).build();
 		Response response = client().newCall(postRequest).execute();
 		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
 		assertThat(response.code()).as("Response code").isEqualTo(205);
@@ -320,7 +320,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 				.addFormDataPart("input2", "Bla")
 				.build();
 
-		Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data")).header("Referer", "ref").post(requestBody).build();
+		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit")).header("Referer", "ref").post(requestBody).build();
 		Response response = client().newCall(postRequest).execute();
 		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
 		assertThat(response.code()).as("Response code").isEqualTo(205);
@@ -379,7 +379,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 			.addFormDataPart("file1", "fake-filename-actually-zip.json", requestBodyFromFile("file-uploads/test.zip"))
 			.build();
 
-		Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data")).header("Referer", "ref").post(requestBody).build();
+		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit")).header("Referer", "ref").post(requestBody).build();
 		Response response = client().newCall(postRequest).execute();
 		assertThat(response.isRedirect()).as(String.format("Response is redirect %d (%s)", response.code(), response.message())).isTrue();
 
@@ -393,7 +393,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 			.setType(MultipartBody.FORM)
 			.addFormDataPart("file1", "test.json", requestBodyFromFile("file-uploads/test.json"))
 			.build();
-		postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data/" + dataNode.getUuid())).header("Referer", "ref").post(requestBody).build();
+		postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit")).header("Referer", "ref").post(requestBody).build();
 		response = client().newCall(postRequest).execute();
 
 		assertThat(response.isSuccessful()).as(String.format("Response is success %d (%s)", response.code(), response.message())).isTrue();
@@ -419,7 +419,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 			.addFormDataPart("file1", "filefield_allow_image.json", requestBodyFromFile("filefield_allow_image.json"))
 			.build();
 
-		Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data")).header("Referer", "ref").post(requestBody).build();
+		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit")).header("Referer", "ref").post(requestBody).build();
 		Response response = client().newCall(postRequest).execute();
 		assertThat(response.isRedirect()).as(String.format("Response is redirect %d (%s)", response.code(), response.message())).isTrue();
 
@@ -433,7 +433,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 				.setType(MultipartBody.FORM)
 				.addFormDataPart("file1", "test.txt", RequestBody.create(MediaType.parse("text/html"), fromFile("file-uploads/test.txt")))
 				.build();
-		postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data/" + dataNode.getUuid())).header("Referer", "ref").post(requestBody).build();
+		postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit")).header("Referer", "ref").post(requestBody).build();
 		response = client().newCall(postRequest).execute();
 		assertThat(response.isSuccessful()).as(String.format("Response is success %d (%s)", response.code(), response.message())).isTrue();
 
@@ -459,7 +459,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 			.addFormDataPart("file1", "admin_mail_element_mail.html", RequestBody.create(MediaType.parse("text/html"), fromFile("admin_mail_element_mail.html")))
 			.build();
 
-		Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data")).header("Referer", "ref").post(requestBody).build();
+		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit")).header("Referer", "ref").post(requestBody).build();
 		Response response = client().newCall(postRequest).execute();
 		assertThat(response.isRedirect()).as(String.format("Response is redirect %d (%s)", response.code(), response.message())).isTrue();
 
@@ -471,9 +471,10 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		// try again with html file (allowed)
 		requestBody = new MultipartBody.Builder()
 				.setType(MultipartBody.FORM)
+				.addFormDataPart("formDataUuid", dataNode.getUuid())
 				.addFormDataPart("file1", "filefield_allow_by_default.json", RequestBody.create(MediaType.parse("application/json"), fromFile("filefield_allow_by_default.json")))
 				.build();
-		postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data/" + dataNode.getUuid())).header("Referer", "ref").post(requestBody).build();
+		postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit")).header("Referer", "ref").post(requestBody).build();
 		response = client().newCall(postRequest).execute();
 		assertThat(response.isSuccessful()).as(String.format("Response is success %d (%s)", response.code(), response.message())).isTrue();
 
@@ -857,7 +858,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 			.addFormDataPart("file1", formFile, requestBodyFromFile(formFile))
 			.build();
 
-		Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data")).header("Referer", "ref").post(requestBody).build();
+		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit")).header("Referer", "ref").post(requestBody).build();
 		Response response = client().newCall(postRequest).execute();
 		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
 
@@ -883,7 +884,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 				.setType(MultipartBody.FORM)
 				.addFormDataPart("input1", "")
 				.build();
-		Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data")).header("Referer", "ref").post(requestBody).build();
+		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit")).header("Referer", "ref").post(requestBody).build();
 		Response response = client().newCall(postRequest).execute();
 		assertThat(response.isRedirect()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
 		Optional<Cookie> cookie = Cookie.parseAll(postRequest.url(), response.headers()).stream().filter(c -> FormDataService.COOKIE_NAME_DATA.equals(c.name()))
@@ -895,7 +896,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 				.setType(MultipartBody.FORM)
 				.addFormDataPart("input1", "someValue")
 				.build();
-		postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data/" + formDataUuid)).header("Referer", "ref")
+		postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit")).header("Referer", "ref")
 				.post(requestBody).build();
 		response = client().newCall(postRequest).execute();
 		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
@@ -920,7 +921,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 					.setType(MultipartBody.FORM)
 					.addFormDataPart("input1", value)
 					.build();
-			Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data")).post(requestBody).build();
+			Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit")).post(requestBody).build();
 			client().newCall(postRequest).execute();
 		}
 
@@ -948,7 +949,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 				.addFormDataPart("custom1", "someValue")
 				.build();
 
-		Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data")).header("Referer", "ref").post(requestBody).build();
+		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit")).header("Referer", "ref").post(requestBody).build();
 		Response response = client().newCall(postRequest).execute();
 		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
 
@@ -979,7 +980,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 				.addFormDataPart("customconfig1", "someValue")
 				.build();
 
-		Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data")).header("Referer", "ref").post(requestBody).build();
+		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit")).header("Referer", "ref").post(requestBody).build();
 		Response response = client().newCall(postRequest).execute();
 		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
 
@@ -1007,9 +1008,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 			.build();
 
 		Request postRequest = new Request.Builder()
-			.url(HttpUrl.get(projectUrl("/forms/" + uuid + "/data"))
-				.newBuilder()
-				.addQueryParameter("publish", "false").build())
+			.url(projectUrl("/form/" + uuid + "/save"))
 			.header("Referer", "ref")
 			.post(requestBody)
 			.build();
@@ -1021,8 +1020,13 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		});
 
 		// Empty update to publish
+		requestBody = new MultipartBody.Builder()
+			.setType(MultipartBody.FORM)
+			.addFormDataPart("formDataUuid", dataNode.getUuid())
+			.addFormDataPart("input1", "someValue")
+			.build();
 		postRequest = new Request.Builder()
-			.url(HttpUrl.get(projectUrl("/forms/" + uuid + "/data/" + dataNode.getUuid())))
+			.url(projectUrl("/form/" + uuid + "/submit"))
 			.header("Referer", "ref")
 			.post(requestBody)
 			.build();
@@ -1052,7 +1056,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 				.addFormDataPart("input1", "bla").build();
 		okio.Buffer buffer = new okio.Buffer();
 		requestBody.writeTo(buffer);
-		Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data"))
+		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit"))
 				.header("Referer", "ref").post(requestBody).build();
 		Response postResponse = client().newCall(postRequest).execute();
 		assertThat(postResponse.isSuccessful())
@@ -1489,7 +1493,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		okio.Buffer buffer = new okio.Buffer();
 		requestBody.writeTo(buffer);
 
-		Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data?lang=" + language)).header("Referer", "ref")
+		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=" + language)).header("Referer", "ref")
 			.post(requestBody).build();
 		Response response = client().newCall(postRequest).execute();
 		assertThat(response.isRedirect()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
@@ -1523,7 +1527,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 				.addFormDataPart("input1", "")
 				.build();
 
-		Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data?lang=" + language)).header("Referer", "ref").post(requestBody).build();
+		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=" + language)).header("Referer", "ref").post(requestBody).build();
 		Response response = client().newCall(postRequest).execute();
 		assertThat(response.isRedirect()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
 		assertThat(response.header("Location")).as("Location Header").isEqualTo("ref");

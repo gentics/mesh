@@ -94,10 +94,6 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 		projectRouter.route("/form/:formUuid/submit").method(POST).handler(fromComponent(FormsPluginComponent::submitDataHandler));
 		projectRouter.route("/forms/:formUuid/data").method(GET).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::findFormDataHandler));
 
-		//TODO 8.5 brauchen wir das noch??
-		projectRouter.route("/forms/:formUuid/data/:formDataUuid").method(GET).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::loadFormDataHandler));
-		projectRouter.route("/forms/:formUuid/data/:formDataUuid").method(GET).produces("text/html").handler(fromComponent(FormsPluginComponent::renderFormDataHandler));
-
 		projectRouter.route("/forms/:formUuid/data/:formDataUuid").method(DELETE).handler(fromComponent(FormsPluginComponent::deleteFormDataHandler));
 
 		projectRouter.route("/forms/:formUuid/data/:formDataUuid/binary/:binaryFieldName").method(GET).blockingHandler(fromComponent(FormsPluginComponent::loadFormDataBinaryHandler));

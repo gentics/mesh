@@ -73,11 +73,11 @@ public abstract class AbstractEndpointValidationTest extends AbstractFormsPlugin
 			formUuid = createForm("inputfield.json");
 
 			Request postRequest = new Request.Builder()
-					.url(HttpUrl.get(projectUrl("/forms/%s/data".formatted(formUuid))).newBuilder().build())
+					.url(HttpUrl.get(projectUrl("/form/%s/save".formatted(formUuid))).newBuilder().build())
 					.header("Referer", "ref").post(DUMMY_REQUEST_BODY).build();
 
 			Response response = client().newCall(postRequest).execute();
-			assertResponse(response, 205);
+			assertResponse(response, 200);
 
 			formDataUuid = getSingleFormDataNode(formUuid).getUuid();
 

@@ -289,7 +289,7 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 		String bodyJson = formDataUuid != null
 				? "{\"formID\": \"" + formID + "\", \"formDataUuid\": \"" + formDataUuid + "\"}"
 				: "{\"formID\": \"" + formID + "\"}";
-		String url = projectUrl("/forms/" + formUuid + "/load");
+		String url = projectUrl("/form/" + formUuid + "/load");
 		if (language != null) {
 			url = url + "?lang=" + language;
 		}

@@ -13,9 +13,7 @@ import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.handler.DeleteFormDataHandler;
 import com.gentics.mesh.plugin.forms.handler.FindFormDataHandler;
 import com.gentics.mesh.plugin.forms.handler.LoadFormDataBinaryHandler;
-import com.gentics.mesh.plugin.forms.handler.LoadFormDataHandler;
 import com.gentics.mesh.plugin.forms.handler.PurgeStaleDataHandler;
-import com.gentics.mesh.plugin.forms.handler.RenderFormDataHandler;
 import com.gentics.mesh.plugin.forms.handler.SaveDataHandler;
 import com.gentics.mesh.plugin.forms.handler.SubmitDataHandler;
 import com.gentics.mesh.plugin.forms.handler.downloads.CheckDownloadHandler;
@@ -102,15 +100,11 @@ public interface FormsPluginComponent {
 
 	DownloadHandler downloadHandler();
 
-	LoadFormDataHandler loadFormDataHandler();
-
 	FindFormDataHandler findFormDataHandler();
 
 	LoadFormDataBinaryHandler loadFormDataBinaryHandler();
 
 	DeleteFormDataHandler deleteFormDataHandler();
-
-	RenderFormDataHandler renderFormDataHandler();
 
 	LoadFilesZipHandler loadFilesZipHandler();
 

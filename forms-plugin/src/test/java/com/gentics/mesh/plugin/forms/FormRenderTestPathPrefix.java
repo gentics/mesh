@@ -75,7 +75,7 @@ public class FormRenderTestPathPrefix extends AbstractFormsPluginIntegrationTest
 		okio.Buffer buffer = new okio.Buffer();
 		requestBody.writeTo(buffer);
 
-		Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data"))
+		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit"))
 			.header("Referer", "ref").post(requestBody).build();
 		Response postDataResponse = client().newCall(postRequest).execute();
 		assertThat(postDataResponse.isRedirect())
@@ -95,7 +95,7 @@ public class FormRenderTestPathPrefix extends AbstractFormsPluginIntegrationTest
 		buffer = new okio.Buffer();
 		requestBody.writeTo(buffer);
 
-		postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data/" + dataNode.getUuid()))
+		postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit"))
 			.header("Referer", "ref").post(requestBody).build();
 		postDataResponse = client().newCall(postRequest).execute();
 		assertThat(postDataResponse.isRedirect())

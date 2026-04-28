@@ -12,7 +12,9 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
 import okhttp3.HttpUrl;
+import okhttp3.MultipartBody;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 /**
@@ -53,46 +55,23 @@ public class FormDataEndpointValidationTest extends AbstractEndpointValidationTe
 	public int expectedResponseCode;
 
 	/**
-	 * Test loading form data
+	 * Test submitting (updating + publishing) form data
 	 * @throws IOException
 	 */
 	@Test
-	public void testLoadData() throws IOException {
-		Request loadRequest = request(false).get().build();
-		Response response = client().newCall(loadRequest).execute();
-		assertResponse(response, expectedResponseCode);
-	}
-
-	/**
-	 * Test rendering form data
-	 * with header <code>Accept: text/html</code>
-	 * @throws IOException
-	 */
-	@Test
-	public void testRenderData() throws IOException {
-		Request loadRequest = request(false).header("Accept", "text/html").get().build();
-		Response response = client().newCall(loadRequest).execute();
-		assertResponse(response, expectedResponseCode);
-	}
-
-	/**
-	 * Test updating form data
-	 * @throws IOException
-	 */
-	@Test
-	public void testUpdateData() throws IOException {
-		Request postRequest = request(false).post(DUMMY_REQUEST_BODY).build();
+	public void testSubmitData() throws IOException {
+		Request postRequest = requestSubmit().post(updateRequestBody()).build();
 		Response response = client().newCall(postRequest).execute();
 		assertResponse(response, expectedResponseCode);
 	}
 
 	/**
-	 * Test updating form data as JSON
+	 * Test saving (updating without publishing) form data
 	 * @throws IOException
 	 */
 	@Test
-	public void testUpdateJsonData() throws IOException {
-		Request postRequest = request(true).post(DUMMY_REQUEST_BODY).build();
+	public void testSaveData() throws IOException {
+		Request postRequest = requestSave().post(updateRequestBody()).build();
 		Response response = client().newCall(postRequest).execute();
 		assertResponse(response, expectedResponseCode);
 	}
@@ -103,20 +82,35 @@ public class FormDataEndpointValidationTest extends AbstractEndpointValidationTe
 	 */
 	@Test
 	public void testDeleteData() throws IOException {
-		Request deleteRequest = request(false).delete().build();
+		Request deleteRequest = request().delete().build();
 		Response response = client().newCall(deleteRequest).execute();
 		assertResponse(response, expectedResponseCode);
 	}
 
-	/**
-	 * Create a request builder for a form data endpoint
-	 * @param json true for jsondata instead of data
-	 * @return request builder
-	 */
-	protected Request.Builder request(boolean json) {
+	protected Request.Builder request() {
 		return new Request.Builder()
-				.url(HttpUrl.get(projectUrl("/forms/%s/%s/%s".formatted(formUuidSupplier.get(),
-						json ? "jsondata" : "data", formDataUuidSupplier.get()))).newBuilder().build())
+				.url(HttpUrl.get(projectUrl("/forms/%s/data/%s".formatted(formUuidSupplier.get(),
+						formDataUuidSupplier.get()))).newBuilder().build())
 				.header("Referer", "ref");
+	}
+
+	protected Request.Builder requestSubmit() {
+		return new Request.Builder()
+				.url(HttpUrl.get(projectUrl("/forms/%s/submit".formatted(formUuidSupplier.get()))).newBuilder().build())
+				.header("Referer", "ref");
+	}
+
+	protected Request.Builder requestSave() {
+		return new Request.Builder()
+				.url(HttpUrl.get(projectUrl("/form/%s/save".formatted(formUuidSupplier.get()))).newBuilder().build())
+				.header("Referer", "ref");
+	}
+
+	protected RequestBody updateRequestBody() {
+		return new MultipartBody.Builder()
+				.setType(MultipartBody.FORM)
+				.addFormDataPart("formDataUuid", formDataUuidSupplier.get())
+				.addFormDataPart("input1", "bla")
+				.build();
 	}
 }

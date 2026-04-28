@@ -7,7 +7,7 @@ public class PostDataResponse {
 
 	private String created;
 
-	private String redirectUrl;
+	private String redirectUrl; // TODO 8.5 delete 
 
 	private boolean finished;
 

@@ -3,7 +3,7 @@ package com.gentics.mesh.plugin.forms.handler;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.common.util.ParameterUtil;
 import com.gentics.mesh.plugin.forms.context.FormDataCreateContext;
@@ -27,14 +27,7 @@ public class SubmitDataHandler extends AbstractFormsHandler {
 		return (formDataUuid == null
 				? FormDataCreateContext.getCreate(context, true, true).flatMap(saveContext -> formDataService.create(saveContext))
 				: FormDataUpdateContext.getUpdate(context, true, true, formDataUuid).flatMap(saveContext -> formDataService.update(saveContext)))
-			.doOnSuccess(response -> {
-				String redirectUrl = response.getRedirectUrl();
-				if (redirectUrl != null && !"".equals(redirectUrl)) {
-					context.response().setStatusCode(303).putHeader("Location", redirectUrl).end();
-				} else {
-					context.response().setStatusCode(205).end();
-				}
-			})
+			.doOnSuccess(response -> context.response().end(JsonUtil.toJson(response)))
 			.ignoreElement();
 	}
 }
