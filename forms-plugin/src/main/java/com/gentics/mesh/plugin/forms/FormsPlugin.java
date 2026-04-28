@@ -83,20 +83,20 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 		projectRouter.route("/forms/:formUuid/online/:lang").method(PUT).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::setFormOnlineHandler));
 		projectRouter.route("/forms/:formUuid/online/:lang").method(DELETE).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::setFormOfflineHandler));
 
-		projectRouter.route("/forms/:formUuid/load").method(POST).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::loadFormGenHandler));
+		// load form for formgen
+		projectRouter.route("/form/:formUuid/load").method(POST).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::loadFormGenHandler));
 
 		projectRouter.route("/forms/:formUuid/elements").method(GET).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::loadFormElementsHandler));
 
 		projectRouter.route("/forms/:formUuid/schema").method(GET).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::loadFormSchemaHandler));
 
-		projectRouter.route("/forms/:formUuid/data").method(POST).handler(fromComponent(FormsPluginComponent::postDataHandler));
-		projectRouter.route("/forms/:formUuid/jsondata").method(POST).handler(fromComponent(FormsPluginComponent::postJsonDataHandler));
+		projectRouter.route("/form/:formUuid/save").method(POST).handler(fromComponent(FormsPluginComponent::saveDataHandler));
+		projectRouter.route("/form/:formUuid/submit").method(POST).handler(fromComponent(FormsPluginComponent::submitDataHandler));
 		projectRouter.route("/forms/:formUuid/data").method(GET).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::findFormDataHandler));
 
+		//TODO 8.5 brauchen wir das noch??
 		projectRouter.route("/forms/:formUuid/data/:formDataUuid").method(GET).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::loadFormDataHandler));
 		projectRouter.route("/forms/:formUuid/data/:formDataUuid").method(GET).produces("text/html").handler(fromComponent(FormsPluginComponent::renderFormDataHandler));
-		projectRouter.route("/forms/:formUuid/data/:formDataUuid").method(POST).handler(fromComponent(FormsPluginComponent::updatePostedDataHandler));
-		projectRouter.route("/forms/:formUuid/jsondata/:formDataUuid").method(POST).handler(fromComponent(FormsPluginComponent::updatePostedJsonDataHandler));
 
 		projectRouter.route("/forms/:formUuid/data/:formDataUuid").method(DELETE).handler(fromComponent(FormsPluginComponent::deleteFormDataHandler));
 

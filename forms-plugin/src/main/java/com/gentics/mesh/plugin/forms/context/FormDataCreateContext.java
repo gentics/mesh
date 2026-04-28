@@ -1,7 +1,6 @@
 package com.gentics.mesh.plugin.forms.context;
 
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -24,6 +23,7 @@ public class FormDataCreateContext {
 	private final PluginContext context;
 	private final Set<FileUpload> fileUploads;
 	private final boolean handleCookies;
+	private final boolean publish;
 	private final String formUuid;
 	private final String[] languages;
 
@@ -33,17 +33,18 @@ public class FormDataCreateContext {
 	 * @param handleCookies true to handle cookies
 	 * @return single
 	 */
-	public static Single<FormDataCreateContext> getCreate(PluginContext pluginContext, boolean handleCookies) {
+	public static Single<FormDataCreateContext> getCreate(PluginContext pluginContext, boolean handleCookies, boolean publish) {
 		Single<String> formUuidSingle = ParameterUtil.getUuidFromPath(pluginContext, "formUuid");
 		Single<String[]> languagesSingle = ParameterUtil.getLanguages(pluginContext);
 
 		return Single.zip(formUuidSingle, languagesSingle,
-				(formUuid, languages) -> new FormDataCreateContext(pluginContext, handleCookies, formUuid, languages));
+				(formUuid, languages) -> new FormDataCreateContext(pluginContext, handleCookies, publish, formUuid, languages));
 	}
 
-	protected FormDataCreateContext(PluginContext pluginContext, boolean handleCookies, String formUuid, String[] languages) {
+	protected FormDataCreateContext(PluginContext pluginContext, boolean handleCookies, boolean publish, String formUuid, String[] languages) {
 		this.context = pluginContext;
 		this.handleCookies = handleCookies;
+		this.publish = publish;
 		this.formUuid = formUuid;
 		this.languages = languages;
 		fileUploads = new HashSet<>(context.fileUploads());
@@ -103,9 +104,7 @@ public class FormDataCreateContext {
 	}
 
 	public boolean isPublish() {
-		return Optional.ofNullable(context.queryParams().get("publish"))
-			.map(param -> !"false".equals(param))
-			.orElse(true);
+		return publish;
 	}
 
 	public boolean handleCookies() {
