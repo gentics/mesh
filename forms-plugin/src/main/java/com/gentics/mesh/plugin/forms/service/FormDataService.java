@@ -37,6 +37,7 @@ import javax.inject.Singleton;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,7 +77,6 @@ import com.gentics.mesh.plugin.forms.export.Exporter;
 import com.gentics.mesh.plugin.forms.model.BinaryElement;
 import com.gentics.mesh.plugin.forms.model.Form;
 import com.gentics.mesh.plugin.forms.model.FormElement;
-import com.gentics.mesh.plugin.forms.model.FormType;
 import com.gentics.mesh.plugin.forms.model.FormpageElement;
 import com.gentics.mesh.plugin.forms.model.PostDataResponse;
 import com.gentics.mesh.plugin.forms.model.ValidationError;
@@ -1324,7 +1324,8 @@ public class FormDataService {
 			return Single.zip(
 					StreamUtil.toIterable(ctx.getForm().getElementsInsideProperties().map(e -> e.performSubmit(ctx.getForm(), postedData, rxVertx, okHttpClientService.getClient()).toSingleDefault(1))), 
 					allSubmitted -> {
-						boolean isPoll = ctx.getForm().getType() == FormType.POLL;
+						// TODO: this is actually wrong, we must not check the form type
+						boolean isPoll = Strings.CI.equals(ctx.getForm().getType(), "poll");
 
 						// remove the data cookie
 						if (ctx.handleCookies()) {

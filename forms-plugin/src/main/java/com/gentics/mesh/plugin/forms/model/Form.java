@@ -54,7 +54,7 @@ public class Form implements RestModel {
 
 	private String language;
 
-	private FormType type;
+	private String type;
 
 	private String email;
 
@@ -160,11 +160,7 @@ public class Form implements RestModel {
 	 * @return The form type
 	 */
 	@Nonnull
-	public FormType getType() {
-		if (type == null) {
-			type = FormType.GENERIC;
-		}
-
+	public String getType() {
 		return type;
 	}
 
@@ -173,7 +169,7 @@ public class Form implements RestModel {
 	 *
 	 * @param type The form type
 	 */
-	public void setType(FormType type) {
+	public void setType(String type) {
 		this.type = type;
 	}
 
