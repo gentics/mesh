@@ -28,6 +28,7 @@ properties([
 		booleanParam(name: 'consistencyChecks',   defaultValue: false, description: "Whether to do consistency checks for every test. Enabling this will increase overall test runtime."),
 		string(	     name: 'testingVersion',      defaultValue: "",    description: "Version for testing"),
 		string(		 name: 'meshVersion',         defaultValue: "",    description: "Override Mesh version"),
+		string(		 name: 'meshJsVersion',       defaultValue: "",    description: "Override Mesh JS version for the testing deployment"),
 	])
 ])
 
@@ -423,7 +424,7 @@ stage("Setup Build Environment") {
 						}
 					}
 
-					if (Boolean.valueOf(params.runDeploy)) {
+					if (Boolean.valueOf(params.runDeploy) || (Boolean.valueOf(params.runDeploy) && )) {
 						sh "echo @gentics:registry=https://repo.gentics.com/repository/npm-products/ > js/.npmrc"
 						sh "echo 'git-tag-version = false' >> js/.npmrc"
 						sh "echo 'allow-same-version = true' >> js/.npmrc"
@@ -434,11 +435,17 @@ stage("Setup Build Environment") {
 						}
 
 						dir(path: 'js') {
+							// Patch test version, if requested
+							def jsVersion = version
+							if (params.meshJsVersion?.trim()) {
+								jsVersion = params.meshJsVersion.trim()
+							}
+
 							// Install dependencies
 							sh 'npm ci --no-audit --no-fund'
 
 							// Set the version for the packages
-							sh "npm run nx -- release version ${version}"
+							sh "npm run nx -- release version ${jsVersion}"
 
 							// Build all JS packages
 							sh 'npm run nx -- run-many --targets build'
