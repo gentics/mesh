@@ -69,7 +69,6 @@ import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
 import com.gentics.mesh.plugin.forms.model.DefaultValue;
 import com.gentics.mesh.plugin.forms.model.Form;
 import com.gentics.mesh.plugin.forms.model.FormElement;
-import com.gentics.mesh.plugin.forms.model.FormType;
 import com.gentics.mesh.plugin.forms.model.ValueListItem;
 import com.gentics.mesh.plugin.forms.model.schema.FormData;
 import com.gentics.mesh.plugin.forms.model.schema.FormDataProperty;
@@ -489,8 +488,6 @@ public class FormService {
 				new FormsError(error.toString(), HttpResponseStatus.BAD_REQUEST.code()));
 		}
 
-		ensureFormType(formData);
-
 		return statusService.getRootNode(projectName, userClient).flatMap(rootNode -> {
 			String language = formData.getString("language", "en");
 			NodeParameters languageParameter = new NodeParametersImpl().setLanguages(language);
@@ -629,41 +626,6 @@ public class FormService {
 
 				return userClient.createNode(projectName, createRequest).toCompletable();
 			});
-	}
-
-	/**
-	 * Make sure the  given form specification contains a valid form type.
-	 *
-	 * <p>
-	 *     Currently only two types are supported:
-	 *     <ol>
-	 *         <li>
-	 *             <em>GENERIC</em>: A generic form with no special restrictions
-	 *             or behavior.
-	 *         </li>
-	 *         <li>
-	 *             <em>POLL</em>: Only selection fields, read only text and
-	 *             recaptchas are allowed. Requests to render the form will
-	 *             instead render the results, if a cookie indicates that the
-	 *             user already voted in the poll.
-	 *         </li>
-	 *     </ol>
-	 * </p>
-	 *
-	 * @param formData The posted form
-	 * @return The posted form with added or corrected form type field
-	 */
-	private JsonObject ensureFormType(JsonObject formData) {
-		String rawType = formData.getString(FIELD_FORM_TYPE);
-
-		try {
-			FormType.valueOf(rawType);
-		} catch (Exception e) {
-			log.warn("Missing or invalid form type <{}> for form \"{}\"", rawType, formData.getString("name"));
-			formData.put(FIELD_FORM_TYPE, FormType.GENERIC.name());
-		}
-
-		return formData;
 	}
 
 	/**

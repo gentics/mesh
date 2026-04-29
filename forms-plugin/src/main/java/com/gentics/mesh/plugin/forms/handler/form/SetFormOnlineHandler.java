@@ -33,12 +33,9 @@ public class SetFormOnlineHandler extends AbstractFormsHandler {
 	public Completable handle(PluginContext context) {
 		String projectName = context.project().getString("name");
 		Single<String> uuidSingle = ParameterUtil.getUuidFromPath(context, "formUuid");
-		Single<String> languageSingle = ParameterUtil.getFromPath(context, "lang", ParameterUtil.LANGUAGE_PATTERN);
 
-		return Single
-				.zip(uuidSingle, languageSingle,
-						(uuid, language) -> formOnlineStatusService.setOnline(projectName, uuid, language))
-				.flatMap(x -> x).doOnEvent((response, t) -> {
+		return uuidSingle.map(uuid -> formOnlineStatusService.setOnline(projectName, uuid)).flatMap(x -> x)
+				.doOnEvent((response, t) -> {
 					if (response != null) {
 						context.response().putHeader(HttpHeaders.CONTENT_TYPE, HttpConstants.APPLICATION_JSON_UTF8)
 								.end(mapper.writeValueAsString(response));

@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import com.gentics.mesh.plugin.forms.model.FormType;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -77,7 +76,7 @@ public class FormCRUDTest extends AbstractFormsPluginIntegrationTest {
 			.as("Form fields")
 			.doesNotContain("type");
 
-		expectedJson.put("type", FormType.GENERIC.name());
+		expectedJson.put("type", "generic");
 
 		assertCreatedForm(inputFilename, expectedJson);
 	}
