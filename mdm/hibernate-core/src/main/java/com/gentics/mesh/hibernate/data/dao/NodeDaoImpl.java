@@ -1405,15 +1405,15 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 						.getResultList();
 			});
 		} else {
-			edges = SplittingUtils.splitAndMergeInList(nodes, HibernateUtil.inQueriesLimitForSplitting(3 + roles.size() + languageTags.size()), (params) -> {
-				return em().createNamedQuery("contentEdge.findByNodeTypeBranchAndLanguage", HibNodeFieldContainerEdgeImpl.class)
-						.setParameter("nodes", params)
-						.setParameter("type", type)
-						.setParameter("branchUuid", UUIDUtil.toJavaUuid(branchUuid))
-						.setParameter("languageTags", languageTags)
-						.setParameter("roles", roles)
-						.getResultList();
-			});
+			edges = SplittingUtils.splitAndMergeInList(nodes, HibernateUtil.inQueriesLimitForSplitting(3 + languageTags.size()),
+					(nodeSplit) -> SplittingUtils.splitAndMergeInList(roles, HibernateUtil.inQueriesLimitForSplitting(3 + nodeSplit.size() + languageTags.size()), 
+							roleSplit -> em().createNamedQuery("contentEdge.findByNodeTypeBranchAndLanguage", HibNodeFieldContainerEdgeImpl.class)
+								.setParameter("nodes", nodeSplit)
+								.setParameter("type", type)
+								.setParameter("branchUuid", UUIDUtil.toJavaUuid(branchUuid))
+								.setParameter("languageTags", languageTags)
+								.setParameter("roles", roleSplit)
+								.getResultList()));
 		}
 
 		List<HibNodeFieldContainerImpl> schemaContent = contentStorage.findMany(edges);
@@ -1502,6 +1502,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 				.getResultStream().collect(Collectors.toSet());
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Map<String, NodeChildrenInfo> getChildrenInfo(HibNode node, InternalActionContext ac, String branchUuid, boolean allowDataLoader) {
 		if (allowDataLoader && maybeChildrenInfoLoader().isPresent()) {
@@ -1543,6 +1544,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 		return childrenInfo;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Map<HibNode, Map<String, NodeChildrenInfo>> getChildrenInfo(Collection<HibNode> nodes,
 			InternalActionContext ac, String branchUuid) {
@@ -1622,7 +1624,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 
 		SplittingUtils.splitAndConsume(nodeUuids, inQueriesLimitForSplitting(0), split -> {
 			em().createQuery("select edge from nodefieldcontainer edge where edge.node.dbUuid in :uuids",
-					HibNodeFieldContainerEdgeImpl.class).setParameter("uuids", nodeUuids).getResultList();
+					HibNodeFieldContainerEdgeImpl.class).setParameter("uuids", split).getResultList();
 		});
 	}
 }
