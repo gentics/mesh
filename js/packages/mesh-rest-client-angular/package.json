@@ -1,19 +1,19 @@
 {
   "name": "@gentics/mesh-rest-client-angular",
-  "version": "3.2.12",
+  "version": "3.3.0",
   "description": "The Angular specific Client for Gentics Mesh",
   "license": "Apache-2.0",
   "dependencies": {},
   "peerDependencies": {
-    "@gentics/mesh-models": "^3.2.0",
-    "@gentics/mesh-rest-client": "^3.2.0",
+    "@gentics/mesh-models": "^3.3.0-alpha",
+    "@gentics/mesh-rest-client": "^3.3.0-alpha",
     "@angular/common": ">=20.0.0",
     "@angular/core": ">=20.0.0",
     "rxjs": "^7.8.1"
   },
   "devDependencies": {
-    "@gentics/mesh-models": "^3.2.0",
-    "@gentics/mesh-rest-client": "^3.2.0",
+    "@gentics/mesh-models": "^3.3.0-alpha",
+    "@gentics/mesh-rest-client": "^3.3.0-alpha",
     "@angular/common": ">=20.0.0",
     "@angular/core": ">=20.0.0",
     "rxjs": "^7.8.1"
