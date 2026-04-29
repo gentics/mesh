@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSetter;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -16,8 +15,9 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
-import com.gentics.mesh.plugin.forms.model.schema.UischemaFormgridOptions;
 import com.gentics.mesh.plugin.forms.model.schema.FormUiSchema;
+import com.gentics.mesh.plugin.forms.model.schema.UischemaFormgridOptions;
+import com.gentics.mesh.plugin.forms.model.schema.Validation;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
 import com.gentics.mesh.plugin.forms.util.RxUtil;
 import io.reactivex.Completable;
@@ -64,7 +64,7 @@ public abstract class FormElement implements RestModel {
 	@JsonProperty("isList")
 	protected boolean isList;
 
-	protected String validation; //TODO f-gpu-2257
+	protected Validation validation;
 
 	@JsonIgnore
 	protected List<FormElement> elements = new ArrayList<>(); // TODO 8.5
@@ -218,7 +218,7 @@ public abstract class FormElement implements RestModel {
 	 * Validation type
 	 * @return validation
 	 */
-	public String getValidation() {
+	public Validation getValidation() {
 		return validation;
 	}
 
@@ -226,27 +226,8 @@ public abstract class FormElement implements RestModel {
 	 * Set validation type
 	 * @param validation validation
 	 */
-	public void setValidation(String validation) {
+	public void setValidation(Validation validation) {
 		this.validation = validation;
-	}
-
-	/**
-	 * Jackson setter that handles both the old String form ("datepicker") and the new
-	 * object form ({"minLength": 2, "maxLength": 100}) of the validation field.
-	 * When an object is received it is stored in the properties map under "validation"
-	 * for downstream use; the String validation field is left null.
-	 *
-	 * @param value String or Map value from JSON
-	 * 
-	 */
-	@JsonSetter("validation")
-	public void setValidationFromJson(Object value) {
-		if (value instanceof String) {
-			this.validation = (String) value;
-		} else if (value != null) {
-			// new object form — store for downstream access, don't touch String field
-			this.properties.put("validation", value);
-		}
 	}
 
 	/**
@@ -382,11 +363,11 @@ public abstract class FormElement implements RestModel {
 			}
 		}
 
-		Validator validator = Validator.get(getValidation());
-		if (validator != null) {
-			return validator.validate(getName(), values);
+		if (validation != null) {
+			return validation.validate(getName(), values);
 		}
-// Apart from user defined validation rules, some elements might have restrictions on the values that can
+
+		// Apart from user defined validation rules, some elements might have restrictions on the values that can
 		// be submitted (e.g. value list elements, like select boxes, only accepting values from their defined options).
 		var invalidValue = values.stream().filter(this::isInvalidValue).findAny();
 
@@ -708,7 +689,7 @@ public abstract class FormElement implements RestModel {
 	 * Check whether the given value is valid for this element.
 	 *
 	 * <p>
-	 *     Unlike the checks in {@link #validate(MultiMap, Set, NodeResponse, Vertx, OkHttpClient)}, this
+	 *     Unlike the checks in {@link #validate(MultiMap, Set, NodeResponse, Vertx, OkHttpClient, FormUiSchema)}, this
 	 *     checks implicit restrictions for fields, like for example that only available options for a value
 	 *     list element can be submitted.
 	 * </p>
