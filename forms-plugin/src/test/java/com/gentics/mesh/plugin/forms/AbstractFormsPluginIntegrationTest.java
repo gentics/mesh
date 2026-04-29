@@ -552,9 +552,8 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 			body.addFormDataPart(field, value);
 		}
 
-		String publishParam = publish ? "" : "?publish=false";
 		Request.Builder requestBuilder = new Request.Builder()
-			.url(projectUrl(String.format("/forms/%s/%sdata%s", formUuid, (json ? "json" : ""), publishParam)))
+			.url(projectUrl(String.format("/form/%s/%s", formUuid, publish ? "submit" : "save")))
 			.header("Referer", "ref");
 
 		if (cookie) {
@@ -564,19 +563,13 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 		Request postRequest = requestBuilder.post(body.build()).build();
 		Response response = client().newCall(postRequest).execute();
 
-		if (expectRedirect) {
-			assertThat(response.isRedirect())
-				.as(String.format("Response is redirect %d (%s)", response.code(), response.message()))
-				.isTrue();
-		} else {
-			assertThat(response.isSuccessful())
-				.as(String.format("Response success %d (%s)", response.code(), response.message()))
-				.isTrue();
+		assertThat(response.isSuccessful())
+			.as(String.format("Response success %d (%s)", response.code(), response.message()))
+			.isTrue();
 
-			assertThat(response.code())
-				.as("Response code")
-				.isEqualTo(json ? HttpResponseStatus.OK.code() : HttpResponseStatus.RESET_CONTENT.code());
-		}
+		assertThat(response.code())
+			.as("Response code")
+			.isEqualTo(HttpResponseStatus.OK.code());
 
 		return new ResponseWithCookies(response, Cookie.parseAll(postRequest.url(), response.headers()));
 	}

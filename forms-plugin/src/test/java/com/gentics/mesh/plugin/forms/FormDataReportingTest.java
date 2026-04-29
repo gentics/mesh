@@ -120,7 +120,8 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 		}
 		records.add(StringUtils.join(headers, ","));
 
-		String postUrl = projectUrl("/forms/" + uuid + "/data");
+		String postUrl = projectUrl("/form/" + uuid + "/submit");
+		String saveUrl = projectUrl("/form/" + uuid + "/save");
 
 		for (String value : Arrays.asList("one", "two", "three")) {
 			String value1 = value + " in field 1";
@@ -164,7 +165,7 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 		}
 
 		Request postRequest = new Request.Builder()
-			.url(postUrl + "?publish=false")
+			.url(saveUrl)
 			.post(requestBodyBuilder.build())
 			.build();
 
@@ -224,7 +225,7 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 					.addFormDataPart("input3", value3)
 					.addFormDataPart("input4", value4)
 					.build();
-			Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data")).post(requestBody).build();
+			Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/submit")).post(requestBody).build();
 			client().newCall(postRequest).execute();
 
 			// add the line to the set of expected records
@@ -286,7 +287,7 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 					.addFormDataPart("input3", value3)
 					.addFormDataPart("input4", value4)
 					.build();
-			Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data")).post(requestBody).build();
+			Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit")).post(requestBody).build();
 			client().newCall(postRequest).execute();
 
 			// add the line to the set of expected records
@@ -369,7 +370,7 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 					.addFormDataPart("input1", value)
 					.build();
 			Request postRequest = new Request.Builder()
-					.url(projectUrl("/forms/" + uuid + "/data"))
+					.url(projectUrl("/form/" + uuid + "/submit"))
 					.post(requestBody)
 					.build();
 			client().newCall(postRequest).execute();
@@ -380,7 +381,7 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 		}
 
 		Request loadRequest = new Request.Builder()
-				.url(projectUrl("/forms/" + uuid + "/data"))
+				.url(projectUrl("/forms/" + uuid + "/submit"))
 				.headers(auth(permission))
 				.get()
 				.build();
@@ -407,7 +408,7 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 					.setType(MultipartBody.FORM)
 					.addFormDataPart("input1", value)
 					.build();
-			Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data")).post(requestBody).build();
+			Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit")).post(requestBody).build();
 			client().newCall(postRequest).execute();
 		}
 
@@ -437,7 +438,7 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 					.setType(MultipartBody.FORM)
 					.addFormDataPart("input1", value)
 					.build();
-			Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data")).post(requestBody).build();
+			Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit")).post(requestBody).build();
 			client().newCall(postRequest).execute();
 		}
 
@@ -445,7 +446,7 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 			setFormOffline(uuid, "en", true, true);
 		}
 
-		Request findRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data?q=two&sortBy=created&sortOrder=desc")).headers(auth(permission)).get().build();
+		Request findRequest = new Request.Builder().url(projectUrl("/form" + uuid + "/data?q=two&sortBy=created&sortOrder=desc")).headers(auth(permission)).get().build();
 		Response response = client().newCall(findRequest).execute();
 		if (permission) {
 			assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
@@ -485,7 +486,7 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 			.setType(MultipartBody.FORM)
 			.addFormDataPart(fieldName, filename, requestBodyFromFile(filename))
 			.build();
-		Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/jsondata")).post(requestBody).build();
+		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit")).post(requestBody).build();
 		Response postResponse = client().newCall(postRequest).execute();
 		Request exportRequest = new Request.Builder()
 			.url(projectUrl("/forms/" + uuid + "/export"))
@@ -518,7 +519,7 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 				.addFormDataPart("file1", "filefield.json", requestBodyFromFile("filefield.json"))
 				.build();
 
-		Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data")).post(requestBody).build();
+		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit")).post(requestBody).build();
 		client().newCall(postRequest).execute();
 
 		if (!online) {
@@ -559,7 +560,7 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 				.addFormDataPart("file1", "filefield.json", requestBodyFromFile("filefield.json"))
 				.build();
 
-		Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data")).post(requestBody).build();
+		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit")).post(requestBody).build();
 		client().newCall(postRequest).execute();
 
 		if (!online) {
@@ -600,7 +601,7 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 					.setType(MultipartBody.FORM)
 					.addFormDataPart("input1", value)
 					.build();
-			Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data")).post(requestBody).build();
+			Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit")).post(requestBody).build();
 			client().newCall(postRequest).execute();
 		}
 
@@ -647,7 +648,7 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 						.setType(MultipartBody.FORM)
 						.addFormDataPart("file1", fileName, requestBodyFromFile(fileName))
 						.build();
-				Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/jsondata")).header("Referer", "ref").post(requestBody).build();
+				Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit")).header("Referer", "ref").post(requestBody).build();
 				Response response = client().newCall(postRequest).execute();
 				assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
 				return new JsonObject(response.body().string()).getValue("dataUuid") + "/file1/" + fileName;
@@ -705,7 +706,7 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 						.setType(MultipartBody.FORM)
 						.addFormDataPart("file1", fileName, requestBodyFromFile(fileName))
 						.build();
-				Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/jsondata")).header("Referer", "ref").post(requestBody).build();
+				Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit")).header("Referer", "ref").post(requestBody).build();
 				Response response = client().newCall(postRequest).execute();
 				assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
 				return new JsonObject(response.body().string()).getValue("dataUuid") + "/file1/" + fileName;
@@ -763,7 +764,7 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 						.setType(MultipartBody.FORM)
 						.addFormDataPart("file1", fileName, requestBodyFromFile(fileName))
 						.build();
-				Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/jsondata")).header("Referer", "ref").post(requestBody).build();
+				Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit")).header("Referer", "ref").post(requestBody).build();
 				Response response = client().newCall(postRequest).execute();
 				assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
 				return new JsonObject(response.body().string()).getValue("dataUuid") + "/file1/" + fileName;

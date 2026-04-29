@@ -184,8 +184,8 @@ public class FormEndpointValidationTest extends AbstractEndpointValidationTest {
 	 * @throws IOException
 	 */
 	@Test
-	public void testPostData() throws IOException {
-		Request request = request("/data")
+	public void testSubmitData() throws IOException {
+		Request request = request("/submit")
 			.post(DUMMY_REQUEST_BODY)
 			.build();
 		Response response = client().newCall(request).execute();
@@ -193,12 +193,12 @@ public class FormEndpointValidationTest extends AbstractEndpointValidationTest {
 	}
 
 	/**
-	 * Test POSTing data to a form as JSON
+	 * Test POSTing data to a form without publishing (save)
 	 * @throws IOException
 	 */
 	@Test
-	public void testPostDataAsJson() throws IOException {
-		Request request = request("/jsondata")
+	public void testSaveData() throws IOException {
+		Request request = request("/save")
 			.post(DUMMY_REQUEST_BODY)
 			.build();
 		Response response = client().newCall(request).execute();

@@ -1100,9 +1100,10 @@ public class FormService {
 		schema.setName(getSchemaName(formNode.getUuid()));
 		schema.setContainer(false);
 		try {
-			Form form = objectMapper.readValue(formNode.getFields().getStringField("json").toString(), Form.class);
+			Form form = toForm(formNode.getFields().getStringField("json").getString(), formNode.getUuid(),
+				formNode.getLanguage());
 			form.addFieldSchemas(schema);
-		} catch (IOException e) {
+		} catch (IOException | FormsError e) {
 			return Single.error(new FormsError("Error while deserializing form JSON", e, HttpResponseStatus.BAD_REQUEST.code()));
 		}
 

@@ -103,7 +103,7 @@ public class FormDataExportOptionsTest extends AbstractFormsPluginIntegrationTes
 				.addFormDataPart("input2", value.v1())
 				.addFormDataPart("input3", value.v1())
 				.build();
-			Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/jsondata")).post(requestBody).build();
+			Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit")).post(requestBody).build();
 			Response response = client().newCall(postRequest).execute();
 			// add the line to the set of expected records
 			List<String> values = prepareValues(response, value.v2(), value.v2(), value.v2());

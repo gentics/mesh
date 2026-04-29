@@ -64,7 +64,6 @@ import com.gentics.mesh.plugin.PluginManifest;
 import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.dagger.StorageDir;
 import com.gentics.mesh.plugin.common.dagger.UserClient;
-import com.gentics.mesh.plugin.common.service.RenderService;
 import com.gentics.mesh.plugin.common.util.ParameterUtil;
 import com.gentics.mesh.plugin.forms.FormsError;
 import com.gentics.mesh.plugin.forms.FormsPlugin;
@@ -77,12 +76,12 @@ import com.gentics.mesh.plugin.forms.export.Exporter;
 import com.gentics.mesh.plugin.forms.model.BinaryElement;
 import com.gentics.mesh.plugin.forms.model.Form;
 import com.gentics.mesh.plugin.forms.model.FormElement;
+import com.gentics.mesh.plugin.forms.model.FormType;
 import com.gentics.mesh.plugin.forms.model.FormpageElement;
 import com.gentics.mesh.plugin.forms.model.PostDataResponse;
 import com.gentics.mesh.plugin.forms.model.ValidationError;
 import com.gentics.mesh.plugin.forms.util.FormUtil;
 import com.gentics.mesh.plugin.forms.util.FormParameterUtil;
-import com.gentics.mesh.plugin.forms.util.RxUtil;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -97,12 +96,10 @@ import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.MultiMap;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.Cookie;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.FileUpload;
-import io.vertx.ext.web.RoutingContext;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.eventbus.Message;
 import io.vertx.reactivex.core.eventbus.MessageConsumer;
@@ -166,8 +163,6 @@ public class FormDataService {
 
 	private final MailService mailService;
 
-	private final RenderService renderService;
-
 	private final StatusService statusService;
 
 	private final OkHttpClientService okHttpClientService;
@@ -186,7 +181,6 @@ public class FormDataService {
 			FormService formService,
 			PagingService pagingService,
 			MailService mailService,
-			RenderService renderService,
 			StatusService statusService,
 			OkHttpClientService okHttpClientService,
 			PluginManifest manifest,
@@ -199,7 +193,6 @@ public class FormDataService {
 		this.formService = formService;
 		this.pagingService = pagingService;
 		this.mailService = mailService;
-		this.renderService = renderService;
 		this.statusService = statusService;
 		this.okHttpClientService = okHttpClientService;
 		this.storageDir = storageDir;
@@ -1045,75 +1038,6 @@ public class FormDataService {
 	}
 
 	/**
-	 * Render the form with data
-	 *
-	 * @param projectName project name
-	 * @param formUuid form UUID
-	 * @param formDataInfo form data UUID and optional form page element name (separated by comma)
-	 * @param rc routing context
-	 * @param lang optional languages
-	 * @return single buffer of rendered form
-	 */
-	public Single<Buffer> render(String projectName, String formUuid, String formDataInfo, RoutingContext rc, String... lang) {
-		String formDataUuid;
-		String currentPage;
-
-		if (StringUtils.isNotEmpty(formDataInfo)) {
-			String[] parts = formDataInfo.split("-");
-
-			formDataUuid = parts[0];
-			currentPage = parts.length > 1 ? parts[1] : null;
-		} else {
-			formDataUuid = formDataInfo;
-			currentPage = null;
-		}
-
-		return statusService.getPathPrefixOfDefaultBranch(projectName)
-			.flatMap(pathPrefix -> Single.zip(
-				statusService.languageFallback(projectName, lang)
-					.flatMap(langFallback -> formService.loadAsAdmin(projectName, formUuid, true, langFallback)),
-				load(projectName, formUuid, formDataUuid),
-				(formNode, formDataNode) -> {
-					Form form = formService.toForm(formNode.getFields().getStringField("json").getString(), formNode.getUuid(), formNode.getLanguage())
-						.removeInactiveElements();
-					JsonObject formJson = form.prepareRenderContext(pathPrefix, configuration);
-
-					return RxUtil.fromNullable(formDataNode)
-						.flatMapSingleElement(fdn -> {
-							// only fill in data, if form is not published
-							if (!isFormDataPublished(fdn)) {
-								JsonObject formDataJson = form.getFormDataJson(fdn);
-								formJson.put("dataid", formDataUuid);
-								mergeData(formJson, formDataJson);
-							}
-
-							Set<String> result;
-
-							if (form.isCompleted(fdn)) {
-								result = Collections.emptySet();
-							} else {
-								// get completed formpages
-								result = form.getElementsInsideProperties().filter(elem -> elem instanceof FormpageElement)
-									.filter(elem -> elem.isCompleted(fdn))
-									.map(FormElement::getName)
-									.collect(Collectors.toSet());
-							}
-
-							return Single.just(result);
-						})
-						.toSingle(Collections.emptySet())
-						.flatMap(completed -> {
-							formService.markFormpages(formJson, currentPage, completed);
-
-							rc.put("form", formJson);
-
-							return renderService.rxRender(rc.data(), "form");
-						});
-				}))
-			.flatMap(s -> s);
-	}
-
-	/**
 	 * Validate and save the data to mesh. publish form, if completed. Redirect to success url or referer
 	 *
 	 * @param ctx
@@ -1444,21 +1368,6 @@ public class FormDataService {
 			mustQuery.remove(1);
 		}
 		return esQuery;
-	}
-
-	/**
-	 * Merge the form data into the form
-	 *
-	 * @param form form
-	 * @param formData form data
-	 */
-	private void mergeData(JsonObject form, JsonObject formData) {
-		for (String elementName : formData.fieldNames()) {
-			JsonObject element = formService.findElement(form, elementName);
-			if (element != null) {
-				element.put("data", formData.getJsonObject(elementName));
-			}
-		}
 	}
 
 	/**

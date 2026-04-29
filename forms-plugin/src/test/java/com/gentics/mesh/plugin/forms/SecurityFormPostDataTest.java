@@ -176,7 +176,7 @@ public class SecurityFormPostDataTest extends AbstractFormPostDataTest {
 		requestBody.writeTo(buffer);
 
 		Request postRequest = new Request.Builder()
-			.url(projectUrl("/forms/" + uuid + "/jsondata"))
+			.url(projectUrl("/form/" + uuid + "/submit"))
 			.header("Referer", "ref")
 			.post(requestBody)
 			.build();
