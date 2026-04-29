@@ -424,7 +424,7 @@ stage("Setup Build Environment") {
 						}
 					}
 
-					if (Boolean.valueOf(params.runDeploy) || (Boolean.valueOf(params.runDeploy) && )) {
+					if (Boolean.valueOf(params.runDeploy) || (Boolean.valueOf(params.runDeploy) && params.meshJsVersion?.trim())) {
 						sh "echo @gentics:registry=https://repo.gentics.com/repository/npm-products/ > js/.npmrc"
 						sh "echo 'git-tag-version = false' >> js/.npmrc"
 						sh "echo 'allow-same-version = true' >> js/.npmrc"
