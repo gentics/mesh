@@ -296,6 +296,41 @@ public class FormDataService {
 	}
 
 	/**
+	 * Validate data posted by a user for the form without saving it.
+	 *
+	 * @param ctx Request context
+	 * @return single of form data validation state
+	 */
+	public Single<FormData> validate(FormDataCreateContext ctx) {
+		return formService.loadAsAdminWithLanguageFallback(ctx.getProjectName(), ctx.getFormUuid(), true, ctx.getLanguages())
+			.doOnSuccess(ctx::setFormNode)
+			.flatMap(formService::toForm)
+			.doOnSuccess(ctx::setForm)
+			.flatMap(form -> validatePostedData(ctx))
+			.map(this::toValidationResponse);
+	}
+
+	/**
+	 * Validate data posted by a user for an existing form data node without saving it.
+	 *
+	 * @param ctx Request context
+	 * @return single of form data validation state
+	 */
+	public Single<FormData> validate(FormDataUpdateContext ctx) {
+		return Single.zip(
+			formService.loadAsAdminWithLanguageFallback(ctx.getProjectName(), ctx.getFormUuid(), true, ctx.getLanguages()),
+				load(ctx.getProjectName(), ctx.getFormUuid(), ctx.getFormDataUuid()),
+				(formNode, formDataNode) -> formService.toForm(formNode)
+					.flatMap(form -> {
+						ctx.setFormNode(formNode);
+						ctx.setFormDataNode(formDataNode);
+						ctx.setForm(form);
+						return validatePostedData(ctx).map(this::toValidationResponse);
+					}))
+			.flatMap(x -> x);
+	}
+
+	/**
 	 * Load the form data by uuid. Only unpublished form data nodes will be returned, otherwise a 404 response is returned.
 	 *
 	 * @param projectName
@@ -1042,17 +1077,8 @@ public class FormDataService {
 	private Single<FormData> savePostedData(FormDataCreateContext ctx) {
 		Form form = ctx.getForm();
 		MultiMap postedData = ctx.getPostedData();
-		Single<Map<String, ValidationError>> errorSingle = Single.zip(
-				Single.just(form.preventInjection(postedData, configuration.getSecurityOptions())), 
-				form.validate(postedData, ctx.getFileUploads(), ctx.getFormDataNode(), rxVertx, okHttpClientService.getClient()), 
-				(a,b) -> {
-					HashMap<String, ValidationError> errors = new HashMap<>();
-					errors.putAll(a);
-					errors.putAll(b);
-					return errors;
-				});
 
-		return errorSingle.flatMap(errors1 -> {
+		return validatePostedData(ctx).flatMap(errors1 -> {
 			// check whether we have any validation errors, that prevent storing of the data
 			Optional<ValidationError> errorPreventingDataStorage = errors1.values().stream()
 					.filter(ValidationError::isPreventStoring).findAny();
@@ -1104,6 +1130,41 @@ public class FormDataService {
 					});
 			}
 		});
+	}
+
+	/**
+	 * Validate posted form data with the same rules used before saving.
+	 *
+	 * @param ctx Request context with the loaded form
+	 * @return single of validation errors keyed by form element name
+	 */
+	private Single<Map<String, ValidationError>> validatePostedData(FormDataCreateContext ctx) {
+		Form form = ctx.getForm();
+		MultiMap postedData = ctx.getPostedData();
+
+		return Single.zip(
+				Single.just(form.preventInjection(postedData, configuration.getSecurityOptions())),
+				form.validate(postedData, ctx.getFileUploads(), ctx.getFormDataNode(), rxVertx, okHttpClientService.getClient()),
+				(a, b) -> {
+					HashMap<String, ValidationError> errors = new HashMap<>();
+					errors.putAll(a);
+					errors.putAll(b);
+					return errors;
+				});
+	}
+
+	/**
+	 * Create a form data response containing the validation state.
+	 *
+	 * @param errors validation errors keyed by form element name
+	 * @return form data response
+	 */
+	private FormData toValidationResponse(Map<String, ValidationError> errors) {
+		var response = new FormData();
+
+		response.setHasValidationErrors(!errors.isEmpty());
+
+		return response;
 	}
 
 	/**

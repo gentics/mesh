@@ -92,29 +92,29 @@ public class Validation {
 		Predicate<String> filter = null;
 
 		if (minValue != null) {
-			filter = value -> NumberUtils.isDigits(value) && Integer.parseInt(value) >= minValue;
+			filter = value -> !NumberUtils.isDigits(value) || Integer.parseInt(value) < minValue;
 		}
 
 		if (maxValue != null) {
-			Predicate<String> f = value -> NumberUtils.isDigits(value) && Integer.parseInt(value) <= maxValue;
+			Predicate<String> f = value -> !NumberUtils.isDigits(value) || Integer.parseInt(value) > maxValue;
 
 			filter = filter == null ? f : filter.or(f);
 		}
 
 		if (minLength != null) {
-			Predicate<String> f = value -> value != null && value.length() >= minLength;
+			Predicate<String> f = value -> value != null && value.length() < minLength;
 
 			filter = filter == null ? f : filter.or(f);
 		}
 
 		if (maxLength != null) {
-			Predicate<String> f = value -> value != null && value.length() <= maxLength;
+			Predicate<String> f = value -> value != null && value.length() > maxLength;
 
 			filter = filter == null ? f : filter.or(f);
 		}
 
 		if (regex != null) {
-			Predicate<String> f = value -> value != null && value.matches(regex);
+			Predicate<String> f = value -> value != null && !value.matches(regex);
 
 			filter = filter == null ? f : filter.or(f);
 		}

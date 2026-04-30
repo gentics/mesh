@@ -14,6 +14,11 @@
         "isList": false,
         "formGridOptions": {
           "defaultValue": "Max"
+        },
+        "validation": {
+          "minValue": 5,
+          "maxValue": 23,
+          "regex": "^[13579]+$"
         }
       }
     }
