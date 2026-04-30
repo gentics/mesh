@@ -206,6 +206,19 @@ public class FormEndpointValidationTest extends AbstractEndpointValidationTest {
 	}
 
 	/**
+	 * Test POSTing data to a form without publishing (save)
+	 * @throws IOException
+	 */
+	@Test
+	public void testValidateData() throws IOException {
+		Request request = request("/validate")
+			.post(DUMMY_REQUEST_BODY)
+			.build();
+		Response response = client().newCall(request).execute();
+		assertResponse(response, expectedResponseCodeLoad);
+	}
+
+	/**
 	 * Test getting all form data
 	 * @throws IOException
 	 */

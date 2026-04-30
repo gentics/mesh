@@ -15,13 +15,8 @@ import io.vertx.ext.web.FileUpload;
 /**
  * This context holds everything that the form data create handlers need.
  */
-public class FormDataCreateContext {
-	private static final String CTX_KEY_FORM = "FDS_Form";
-	private static final String CTX_KEY_FORMNODE = "FDS_FormNode";
-	private static final String CTX_KEY_FORMDATANODE = "FDS_FormDataNode";
+public class FormDataCreateContext extends FormDataValidateContext {
 
-	private final PluginContext context;
-	private final Set<FileUpload> fileUploads;
 	private final boolean handleCookies;
 	private final boolean publish;
 	private final String formUuid;
@@ -42,64 +37,36 @@ public class FormDataCreateContext {
 	}
 
 	protected FormDataCreateContext(PluginContext pluginContext, boolean handleCookies, boolean publish, String formUuid, String[] languages) {
-		this.context = pluginContext;
+		super(pluginContext);
 		this.handleCookies = handleCookies;
 		this.publish = publish;
 		this.formUuid = formUuid;
 		this.languages = languages;
-		fileUploads = new HashSet<>(context.fileUploads());
-		// remove empty uploads
-		fileUploads.removeIf(up -> up.size() == 0);
 	}
 
 	public String getProjectName() {
-		return context.project().getString("name");
+		return getContext().project().getString("name");
 	}
 
 	public String getFormUuid() {
 		return formUuid;
 	}
 
-	public MultiMap getPostedData() {
-		return context.request().formAttributes();
-	}
-
-	public String getReferer() {
-		return context.request().getHeader("Referer");
-	}
-
-	public Set<FileUpload> getFileUploads() {
-		return fileUploads;
-	}
-
-	public PluginContext getContext() {
-		return context;
-	}
-
-	public Form getForm() {
-		return context.get(CTX_KEY_FORM);
-	}
-
+	@Override
 	public FormDataCreateContext setForm(Form form) {
-		context.put(CTX_KEY_FORM, form);
+		super.setForm(form);
 		return this;
 	}
 
-	public NodeResponse getFormDataNode() {
-		return context.get(CTX_KEY_FORMDATANODE);
-	}
-
+	@Override
 	public FormDataCreateContext setFormDataNode(NodeResponse formDataNode) {
-		context.put(CTX_KEY_FORMDATANODE, formDataNode);
+		super.setFormDataNode(formDataNode);
 		return this;
 	}
 
-	public NodeResponse getFormNode() {
-		return context.get(CTX_KEY_FORMNODE);
-	}
-
+	@Override
 	public FormDataCreateContext setFormNode(NodeResponse formNode) {
-		context.put(CTX_KEY_FORMNODE, formNode);
+		super.setFormNode(formNode);
 		return this;
 	}
 
