@@ -20,6 +20,8 @@ public class FormData {
 	@JsonProperty("formID")
 	private String formID;
 
+	private String formDataID;
+
 	@JsonProperty("version")
 	private String version;
 
@@ -35,6 +37,14 @@ public class FormData {
 
 	public void setFormID(String formID) {
 		this.formID = formID;
+	}
+
+	public String getFormDataID() {
+		return formDataID;
+	}
+
+	public void setFormDataID(String formDataID) {
+		this.formDataID = formDataID;
 	}
 
 	public String getVersion() {

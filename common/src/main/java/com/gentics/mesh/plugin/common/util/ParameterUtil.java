@@ -1,6 +1,7 @@
 package com.gentics.mesh.plugin.common.util;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -150,6 +151,10 @@ public final class ParameterUtil {
 		} catch (NumberFormatException e) {
 			return Single.error(illegalPathParameter(pathParamName));
 		}
+	}
+
+	public static String getQueryParam(PluginContext context, String name) {
+		return context.queryParams().get(name);
 	}
 
 	/**

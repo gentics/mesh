@@ -34,9 +34,10 @@ import com.gentics.mesh.plugin.forms.export.Exporter;
 import com.gentics.mesh.plugin.forms.model.BinaryElement;
 import com.gentics.mesh.plugin.forms.model.Form;
 import com.gentics.mesh.plugin.forms.model.FormElement;
-import com.gentics.mesh.plugin.forms.model.PostDataResponse;
 import com.gentics.mesh.plugin.forms.model.ValidationError;
+import com.gentics.mesh.plugin.forms.model.schema.FormData;
 import com.gentics.mesh.plugin.forms.util.FormParameterUtil;
+import com.gentics.mesh.plugin.forms.util.FormUtil;
 import com.gentics.mesh.plugin.forms.util.FormUtil;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshResponse;
@@ -266,7 +267,7 @@ public class FormDataService {
 	 * @param ctx Request context
 	 * @return single of the post data response
 	 */
-	public Single<PostDataResponse> create(FormDataCreateContext ctx) {
+	public Single<FormData> create(FormDataCreateContext ctx) {
 		return formService.loadAsAdminWithLanguageFallback(ctx.getProjectName(), ctx.getFormUuid(), true, ctx.getLanguages())
 			.doOnSuccess(ctx::setFormNode)
 			.flatMap(formService::toForm)
@@ -280,7 +281,7 @@ public class FormDataService {
 	 * @param ctx Request context
 	 * @return single of the post data response
 	 */
-	public Single<PostDataResponse> update(FormDataUpdateContext ctx) {
+	public Single<FormData> update(FormDataUpdateContext ctx) {
 		return Single.zip(
 			formService.loadAsAdminWithLanguageFallback(ctx.getProjectName(), ctx.getFormUuid(), true, ctx.getLanguages()),
 				load(ctx.getProjectName(), ctx.getFormUuid(), ctx.getFormDataUuid()),
@@ -1038,7 +1039,7 @@ public class FormDataService {
 	 * @param ctx
 	 * @return single redirect URL
 	 */
-	private Single<PostDataResponse> savePostedData(FormDataCreateContext ctx) {
+	private Single<FormData> savePostedData(FormDataCreateContext ctx) {
 		Form form = ctx.getForm();
 		MultiMap postedData = ctx.getPostedData();
 		Single<Map<String, ValidationError>> errorSingle = Single.zip(
@@ -1061,15 +1062,10 @@ public class FormDataService {
 				log.warn("Storing of POSTed data to form {} prevented by field {}. Validation error: {}", form.getUuid(),
 						errorPreventingDataStorage.get().getName(), errorPreventingDataStorage.get().getMessage());
 
-				// just return the errors in the response, but don't save anything
-				PostDataResponse response = new PostDataResponse();
-				response.setErrors(errors1);
-				response.setFinished(false);
-				if (ctx.getReferer() != null) {
-					response.setRedirectUrl(ctx.getReferer());
-				} else {
-					response.setRedirectUrl("");
-				}
+				// just return the errors in the response but don't save anything
+				var response = new FormData();
+
+				response.setHasValidationErrors(true);
 
 				return Single.just(response);
 			} else {
@@ -1098,17 +1094,10 @@ public class FormDataService {
 								ctx.getContext().response().addCookie(cookie);
 							}
 
-							PostDataResponse response = new PostDataResponse();
-							response.setDataUuid(savedFileUploads.getUuid());
-							response.setCreated(savedFileUploads.getCreated());
-							response.setErrors(errors);
-							// TODO Set this to false?
-							response.setFinished(true);
-							if (ctx.getReferer() != null) {
-								response.setRedirectUrl(ctx.getReferer());
-							} else {
-								response.setRedirectUrl("");
-							}
+							var response = new FormData();
+
+							response.setFormDataID(savedFileUploads.getUuid());
+							response.setHasValidationErrors(!errors.isEmpty());
 
 							return Single.just(response);
 						}
@@ -1230,7 +1219,7 @@ public class FormDataService {
 	 * @param errors
 	 * @return single
 	 */
-	private Single<PostDataResponse> publishFormData(FormDataCreateContext ctx, NodeResponse savedFileUploads, Map<String, ValidationError> errors) {
+	private Single<FormData> publishFormData(FormDataCreateContext ctx, NodeResponse savedFileUploads, Map<String, ValidationError> errors) {
 		return adminClient.publishNode(ctx.getProjectName(), savedFileUploads.getUuid()).toSingle().flatMap(publishStatus -> {
 			PluginContext meshContext = ctx.getContext();
 			Form form = ctx.getForm();
@@ -1260,18 +1249,10 @@ public class FormDataService {
 							}
 						}
 
-						PostDataResponse response = new PostDataResponse();
-						response.setDataUuid(savedFileUploads.getUuid());
-						response.setCreated(savedFileUploads.getCreated());
-						response.setErrors(errors);
-						response.setFinished(true);
-						if (form.getSuccessurl() != null) {
-							response.setRedirectUrl(form.getSuccessurl());
-						} else if (isPoll) {
-							response.setRedirectUrl(ctx.getReferer());
-						} else {
-							response.setRedirectUrl("");
-						}
+						var response = new FormData();
+
+						response.setFormDataID(savedFileUploads.getUuid());
+						response.setHasValidationErrors(!errors.isEmpty());
 
 						return response;
 					});			

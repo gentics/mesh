@@ -784,7 +784,7 @@ public class FormService {
 	 * @param node     the Mesh submission node whose fields supply the property values
 	 * @return populated {@link FormData} reflecting the stored submission
 	 */
-	private FormData buildFormDataFromNode(Form form, String formID, String language, NodeResponse node) {
+	public static FormData buildFormDataFromNode(Form form, String formID, String language, NodeResponse node) {
 		StringFieldImpl errField = node.getFields().getStringField(Form.ERRORS_FIELD_NAME);
 		boolean hasErrors = errField != null && StringUtils.isNotBlank(errField.getString());
 		return initFormData(form, formID, hasErrors,
@@ -801,7 +801,7 @@ public class FormService {
 	 * @param propertyBuilder produces a {@link FormDataProperty} for each (key, element) pair
 	 * @return fully assembled {@link FormData}
 	 */
-	private FormData initFormData(Form form, String formID, boolean hasErrors,
+	private static FormData initFormData(Form form, String formID, boolean hasErrors,
 			BiFunction<String, FormElement, FormDataProperty> propertyBuilder) {
 		FormData data = new FormData();
 		data.setFormID(formID);
@@ -871,7 +871,7 @@ public class FormService {
 	 * @param node     Mesh submission node supplying stored field values
 	 * @return populated {@link FormDataProperty}
 	 */
-	private FormDataProperty buildPropertyFromNode(FormElement element, String language, NodeResponse node) {
+	private static FormDataProperty buildPropertyFromNode(FormElement element, String language, NodeResponse node) {
 		FormDataProperty prop = new FormDataProperty();
 		List<ValueListItem> selectOptions = resolveSelectOptions(element);
 
@@ -915,7 +915,7 @@ public class FormService {
 	 * @param language      language code for display name resolution
 	 * @return list of {@link PossibleValue}s in the same order as {@code selectOptions}
 	 */
-	private List<PossibleValue> buildPossibleValues(List<ValueListItem> selectOptions, String language) {
+	private static List<PossibleValue> buildPossibleValues(List<ValueListItem> selectOptions, String language) {
 		return selectOptions.stream()
 				.map(item -> new PossibleValue(StringUtils.defaultString(item.getValue()),
 						resolveOptionLabel(item, language)))
@@ -932,7 +932,7 @@ public class FormService {
 	 * @param language   language code for display name resolution
 	 * @return matching {@link PossibleValue}, or {@code null}
 	 */
-	private PossibleValue findPossibleValue(String identifier, List<ValueListItem> options, String language) {
+	private static PossibleValue findPossibleValue(String identifier, List<ValueListItem> options, String language) {
 		if (options == null) {
 			return null;
 		}
@@ -951,7 +951,7 @@ public class FormService {
 	 * @param language language code to look up
 	 * @return resolved label, never {@code null}
 	 */
-	private String resolveOptionLabel(ValueListItem item, String language) {
+	private static String resolveOptionLabel(ValueListItem item, String language) {
 		Map<String, String> labels = item.getLabel();
 		return (labels != null && language != null)
 				? StringUtils.defaultString(labels.get(language))
@@ -965,7 +965,7 @@ public class FormService {
 	 * @param element form element to inspect
 	 * @return non-empty list of options, or {@code null}
 	 */
-	private List<ValueListItem> resolveSelectOptions(FormElement element) {
+	private static List<ValueListItem> resolveSelectOptions(FormElement element) {
 		List<ValueListItem> opts = element.getFormGridOptions().getSelectOptions();
 		if (opts != null && !opts.isEmpty()) {
 			return opts;
