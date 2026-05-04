@@ -161,15 +161,4 @@ public final class ParameterUtil {
 	protected static MeshPluginException illegalPathParameter(String pathParamName) {
 		return new MeshPluginException("Illegal path parameter for %s".formatted(pathParamName), 400);
 	}
-
-	/**
-	 * Find a first occurrence of a query param, or null.
-	 * 
-	 * @param context
-	 * @param key
-	 * @return
-	 */
-	public static String getQueryParam(PluginContext context, String key) {
-		return context.queryParam(key).stream().map(StringUtils::trimToEmpty).findAny().orElse(null);
-	}
 }

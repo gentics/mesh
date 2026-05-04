@@ -16,7 +16,6 @@ import com.gentics.mesh.plugin.forms.handler.LoadFormDataBinaryHandler;
 import com.gentics.mesh.plugin.forms.handler.PurgeStaleDataHandler;
 import com.gentics.mesh.plugin.forms.handler.SaveDataHandler;
 import com.gentics.mesh.plugin.forms.handler.SubmitDataHandler;
-import com.gentics.mesh.plugin.forms.handler.ValidateDataHandler;
 import com.gentics.mesh.plugin.forms.handler.downloads.CheckDownloadHandler;
 import com.gentics.mesh.plugin.forms.handler.downloads.DownloadHandler;
 import com.gentics.mesh.plugin.forms.handler.downloads.ExportHandler;
@@ -90,8 +89,6 @@ public interface FormsPluginComponent {
 	LoadFormSchemaHandler loadFormSchemaHandler();
 
 	SaveDataHandler saveDataHandler();
-
-	ValidateDataHandler validateDataHandler();
 
 	SubmitDataHandler submitDataHandler();
 

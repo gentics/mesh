@@ -71,16 +71,17 @@ import com.gentics.mesh.plugin.forms.SchemaInitializer;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.context.FormDataCreateContext;
 import com.gentics.mesh.plugin.forms.context.FormDataUpdateContext;
-import com.gentics.mesh.plugin.forms.context.FormDataValidateContext;
 import com.gentics.mesh.plugin.forms.export.ExportData;
 import com.gentics.mesh.plugin.forms.export.Exporter;
 import com.gentics.mesh.plugin.forms.model.BinaryElement;
 import com.gentics.mesh.plugin.forms.model.Form;
 import com.gentics.mesh.plugin.forms.model.FormElement;
+import com.gentics.mesh.plugin.forms.model.FormType;
+import com.gentics.mesh.plugin.forms.model.FormpageElement;
 import com.gentics.mesh.plugin.forms.model.PostDataResponse;
 import com.gentics.mesh.plugin.forms.model.ValidationError;
-import com.gentics.mesh.plugin.forms.util.FormParameterUtil;
 import com.gentics.mesh.plugin.forms.util.FormUtil;
+import com.gentics.mesh.plugin.forms.util.FormParameterUtil;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -1037,57 +1038,6 @@ public class FormDataService {
 	}
 
 	/**
-	 * Validate the form data.
-	 * 
-	 * @param ctx
-	 * @return
-	 */
-	public Single<PostDataResponse> validate(FormDataValidateContext ctx) {
-		Form form = ctx.getForm();
-		Single<Map<String, ValidationError>> errorSingle = validatePostedData(ctx);
-
-		return errorSingle.flatMap(errors1 -> {
-			// check whether we have any validation errors, that prevent storing of the data
-			Optional<ValidationError> errorPreventingDataStorage = errors1.values().stream()
-					.filter(ValidationError::isPreventStoring).findAny();
-
-			PostDataResponse response = new PostDataResponse();
-			response.setFinished(false);
-
-			if (errorPreventingDataStorage.isPresent()) {
-				// log a warning
-				log.warn("Validating of POSTed data to form {} failed at field {}. Validation error: {}", form.getUuid(),
-						errorPreventingDataStorage.get().getName(), errorPreventingDataStorage.get().getMessage());
-
-				// just return the errors in the response, but don't save anything
-				response.setErrors(errors1);
-			}
-
-			return Single.just(response);
-		});
-	}
-
-	/**
-	 * Internal form validation.
-	 * 
-	 * @param ctx
-	 * @return
-	 */
-	private Single<Map<String, ValidationError>> validatePostedData(FormDataValidateContext ctx) {
-		Form form = ctx.getForm();
-		MultiMap postedData = ctx.getPostedData();
-		return Single.zip(
-				Single.just(form.preventInjection(postedData, configuration.getSecurityOptions())), 
-				form.validate(postedData, ctx.getFileUploads(), ctx.getFormDataNode(), rxVertx, okHttpClientService.getClient()), 
-				(a,b) -> {
-					HashMap<String, ValidationError> errors = new HashMap<>();
-					errors.putAll(a);
-					errors.putAll(b);
-					return errors;
-				});
-	}
-
-	/**
 	 * Validate and save the data to mesh. publish form, if completed. Redirect to success url or referer
 	 *
 	 * @param ctx
@@ -1096,8 +1046,17 @@ public class FormDataService {
 	private Single<PostDataResponse> savePostedData(FormDataCreateContext ctx) {
 		Form form = ctx.getForm();
 		MultiMap postedData = ctx.getPostedData();
+		Single<Map<String, ValidationError>> errorSingle = Single.zip(
+				Single.just(form.preventInjection(postedData, configuration.getSecurityOptions())), 
+				form.validate(postedData, ctx.getFileUploads(), ctx.getFormDataNode(), rxVertx, okHttpClientService.getClient()), 
+				(a,b) -> {
+					HashMap<String, ValidationError> errors = new HashMap<>();
+					errors.putAll(a);
+					errors.putAll(b);
+					return errors;
+				});
 
-		return validatePostedData(ctx).flatMap(errors1 -> {
+		return errorSingle.flatMap(errors1 -> {
 			// check whether we have any validation errors, that prevent storing of the data
 			Optional<ValidationError> errorPreventingDataStorage = errors1.values().stream()
 					.filter(ValidationError::isPreventStoring).findAny();
