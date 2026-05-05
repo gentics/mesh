@@ -32,7 +32,7 @@ import com.gentics.mesh.util.UUIDUtil;
  * @author plyhun
  *
  */
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "HibEntityCache")
 @Entity(name = "schemachange")
 @Table(name = "schemachange")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)

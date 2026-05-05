@@ -17,9 +17,14 @@ import com.gentics.mesh.core.rest.admin.cluster.ClusterInstanceInfo;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.distributed.coordinator.MasterElector;
 import com.gentics.mesh.distributed.coordinator.MeshMemberInfo;
+import com.gentics.mesh.etc.config.ConfigUtils;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.util.UUIDUtil;
 import com.hazelcast.config.Config;
+import com.hazelcast.config.EvictionConfig;
+import com.hazelcast.config.EvictionPolicy;
+import com.hazelcast.config.MapConfig;
+import com.hazelcast.config.MaxSizePolicy;
 import com.hazelcast.config.XmlConfigBuilder;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
@@ -59,6 +64,38 @@ public class HibClusterManager implements ClusterManager {
 			config.setClusterName(options.getClusterOptions().getClusterName());
 			config.setClassLoader(Thread.currentThread().getContextClassLoader());
 			config.getMemberAttributeConfig().setAttribute("__vertx.nodeId", options.getNodeName());
+
+			EvictionConfig entityCacheEvictionConfig = new EvictionConfig().setEvictionPolicy(EvictionPolicy.LRU);
+
+			ConfigUtils.parseQuotaSetting(options.getCacheConfig().getClusteredHibernateCacheHeapFree(),
+					Runtime.getRuntime().maxMemory(), value -> {
+						entityCacheEvictionConfig.setMaxSizePolicy(MaxSizePolicy.FREE_HEAP_SIZE)
+								.setSize(value.intValue());
+					}, value -> {
+						entityCacheEvictionConfig.setMaxSizePolicy(MaxSizePolicy.FREE_HEAP_SIZE)
+								.setSize(value.intValue());
+					}, value -> {
+						// actually not allowed (validation should fail), but we set as limit anyways
+						entityCacheEvictionConfig.setMaxSizePolicy(MaxSizePolicy.PER_NODE)
+							.setSize(value.intValue());
+					}, value -> {
+						entityCacheEvictionConfig.setMaxSizePolicy(MaxSizePolicy.PER_NODE)
+							.setSize(50000);
+					}, () -> {
+						entityCacheEvictionConfig.setMaxSizePolicy(MaxSizePolicy.PER_NODE)
+							.setSize(50000);
+					});
+
+			// add map configs for the second level caches of hibernate
+			config.addMapConfig(new MapConfig("HibEntityCache")
+					.setEvictionConfig(entityCacheEvictionConfig));
+			config.addMapConfig(new MapConfig("default-update-timestamps-region")
+					.setEvictionConfig(new EvictionConfig().setEvictionPolicy(EvictionPolicy.LRU)
+							.setMaxSizePolicy(MaxSizePolicy.PER_NODE).setSize(10000)));
+			config.addMapConfig(new MapConfig("default-query-results-region")
+					.setEvictionConfig(new EvictionConfig().setEvictionPolicy(EvictionPolicy.LRU)
+							.setMaxSizePolicy(MaxSizePolicy.PER_NODE).setSize(10000)));
+
 			hazelcastInstance = Hazelcast.getOrCreateHazelcastInstance(config);
 		}
 		return hazelcastInstance;

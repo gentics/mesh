@@ -66,7 +66,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 			}
 	)
 })
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "HibEntityCache")
 @Entity(name = "project")
 @ElementTypeKey(ElementType.PROJECT)
 public class HibProjectImpl extends AbstractHibUserTrackedElement<ProjectResponse> implements HibProject, Serializable {
@@ -79,11 +79,11 @@ public class HibProjectImpl extends AbstractHibUserTrackedElement<ProjectRespons
 	@OneToMany(mappedBy = "project", targetEntity = HibBranchImpl.class, fetch = FetchType.LAZY)
 	private Set<HibBranch> branches = new HashSet<>();
 
-	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "HibEntityCache")
 	@ManyToMany(targetEntity = HibSchemaImpl.class, fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
 	private Set<HibSchema> schemas = new HashSet<>();
 
-	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "HibEntityCache")
 	@ManyToMany(targetEntity = HibMicroschemaImpl.class, fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
 	private Set<HibMicroschema> microschemas = new HashSet<>();
 

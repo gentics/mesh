@@ -24,7 +24,7 @@ import com.gentics.mesh.hibernate.data.node.field.impl.HibNodeFieldImpl;
  * @author plyhun
  *
  */
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "HibEntityCache")
 @Entity(name = "nodefieldref")
 @NamedQueries({
 	@NamedQuery(

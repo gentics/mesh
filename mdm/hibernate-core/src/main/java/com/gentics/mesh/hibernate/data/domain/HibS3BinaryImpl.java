@@ -19,7 +19,7 @@ import com.gentics.mesh.core.data.s3binary.S3HibBinary;
  * @author plyhun
  *
  */
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "HibEntityCache")
 @Entity(name = "s3binary")
 @NamedQueries({
 	@NamedQuery(
