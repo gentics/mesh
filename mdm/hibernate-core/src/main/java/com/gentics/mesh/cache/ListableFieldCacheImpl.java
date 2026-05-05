@@ -152,6 +152,6 @@ public class ListableFieldCacheImpl extends AbstractMeshCache<UUID, List<? exten
 		}, () -> {
 		});
 
-		return Pair.of(0L, false);
+		return retVal.get();
 	}
 }

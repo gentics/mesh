@@ -141,6 +141,12 @@ public class DefaultSQLDatabase implements DatabaseProvider {
 				if (cachingProvider instanceof EhcacheCachingProvider ehCachingProvider) {
 						CacheManager jCacheManager = ehCachingProvider.getCacheManager(ehCachingProvider.getDefaultURI(),
 								ehCachingProvider.getDefaultClassLoader());
+						// first destroy the caches (in case they already existed)
+						jCacheManager.destroyCache("HibEntityCache");
+						jCacheManager.destroyCache("default-update-timestamps-region");
+						jCacheManager.destroyCache("default-query-results-region");
+
+						// now create the caches
 						jCacheManager.createCache("HibEntityCache",
 								Eh107Configuration.fromEhcacheCacheConfiguration(entityCacheConfiguration));
 						jCacheManager.createCache("default-update-timestamps-region",
