@@ -57,6 +57,13 @@ public class MeshImpl implements Mesh {
 
 	boolean shutdown = false;
 
+	/**
+	 * Flag that is set, once the instance has been successfully initialized.
+	 * The only purpose of the flag is to omit logging of errors during shutdown due to
+	 * incomplete prior initialization.
+	 */
+	boolean initialized = false;
+
 	public MeshImpl(MeshOptions options, MeshComponent.Builder builder) {
 		this.builder = builder;
 		Objects.requireNonNull(options, "Please specify a valid options object.");
@@ -122,6 +129,7 @@ public class MeshImpl implements Mesh {
 		setMeshInternal(meshInternal);
 		try {
 			meshInternal.boot().init(this, forceIndexSync, options, verticleLoader);
+			initialized = true;
 		} catch (Throwable e1) {
 			log.error("FATAL: error on Mesh init", e1);
 			shutdown();
@@ -364,7 +372,9 @@ public class MeshImpl implements Mesh {
 			log.info("Setting shutdown status");
 			setStatus(MeshStatus.SHUTTING_DOWN);
 		} catch (Throwable t) {
-			log.error("Error while setting shutdown status", t);
+			if (initialized) {
+				log.error("Error while setting shutdown status", t);
+			}
 		}
 
 		// plugins
@@ -372,7 +382,9 @@ public class MeshImpl implements Mesh {
 			log.info("Undeploying plugins");
 			meshInternal.pluginManager().stop().blockingAwait(getOptions().getPluginTimeout(), TimeUnit.SECONDS);
 		} catch (Throwable t) {
-			log.error("One of the plugins could not be undeployed in the allotted time.", t);
+			if (initialized) {
+				log.error("One of the plugins could not be undeployed in the allotted time.", t);
+			}
 		}
 
 		// search
@@ -380,7 +392,9 @@ public class MeshImpl implements Mesh {
 			log.info("Stopping search provider");
 			meshInternal.searchProvider().stop();
 		} catch (Throwable t) {
-			log.error("The search provider did encounter an error while stopping", t);
+			if (initialized) {
+				log.error("The search provider did encounter an error while stopping", t);
+			}
 		}
 
 		// vert.x
@@ -391,26 +405,38 @@ public class MeshImpl implements Mesh {
 				rxVertx.rxClose().blockingAwait();
 			}
 		} catch (Throwable t) {
-			log.error("Error while stopping Vert.x", t);
+			if (initialized) {
+				log.error("Error while stopping Vert.x", t);
+			}
 		}
 
 		// image manipulator
-		log.info("Stopping image manipulator");
-		meshInternal.imageManipulator().shutdown();
+		try {
+			log.info("Stopping image manipulator");
+			meshInternal.imageManipulator().shutdown();
+		} catch (Throwable t) {
+			if (initialized) {
+				log.error("Error while stopping image manipulator", t);
+			}
+		}
 
 		// database
 		try {
 			log.info("Stopping and closing database provider");
 			meshInternal.database().stop();
 		} catch (Throwable t) {
-			log.error("Error while stopping database", t);
+			if (initialized) {
+				log.error("Error while stopping database", t);
+			}
 		}
 
 		try {
 			log.info("Shutting database provider down");
 			meshInternal.database().shutdown();
 		} catch (Throwable t) {
-			log.error("Error while stopping database", t);
+			if (initialized) {
+				log.error("Error while stopping database", t);
+			}
 		}
 
 		// boot
@@ -421,7 +447,9 @@ public class MeshImpl implements Mesh {
 				boot.clearReferences();
 			}
 		} catch (Throwable t) {
-			log.error("Error while clearing refs", t);
+			if (initialized) {
+				log.error("Error while clearing refs", t);
+			}
 		}
 
 		// liveness manager
@@ -435,7 +463,9 @@ public class MeshImpl implements Mesh {
 		try {
 			latch.countDown();
 		} catch (Exception e) {
-			log.debug("Error while releasing latch. Maybe it was already released.", e);
+			if (initialized) {
+				log.debug("Error while releasing latch. Maybe it was already released.", e);
+			}
 		}
 
 		shutdown = true;
