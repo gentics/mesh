@@ -22,6 +22,7 @@ import com.gentics.mesh.plugin.PluginManifest;
 import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.dagger.StorageDir;
 import com.gentics.mesh.plugin.common.dagger.UserClient;
+import com.gentics.mesh.plugin.common.util.AuthUtil;
 import com.gentics.mesh.plugin.common.util.ParameterUtil;
 import com.gentics.mesh.plugin.forms.FormsError;
 import com.gentics.mesh.plugin.forms.FormsPlugin;
@@ -307,7 +308,7 @@ public class FormDataService {
 			.flatMap(formService::toForm)
 			.doOnSuccess(ctx::setForm)
 			.flatMap(form -> validatePostedData(ctx))
-			.map(this::toValidationResponse);
+			.map(errors -> toValidationResponse(ctx, errors));
 	}
 
 	/**
@@ -325,7 +326,7 @@ public class FormDataService {
 						ctx.setFormNode(formNode);
 						ctx.setFormDataNode(formDataNode);
 						ctx.setForm(form);
-						return validatePostedData(ctx).map(this::toValidationResponse);
+						return validatePostedData(ctx).map(errors -> toValidationResponse(ctx, errors));
 					}))
 			.flatMap(x -> x);
 	}
@@ -1084,16 +1085,10 @@ public class FormDataService {
 					.filter(ValidationError::isPreventStoring).findAny();
 
 			if (errorPreventingDataStorage.isPresent()) {
-				// log a warning
 				log.warn("Storing of POSTed data to form {} prevented by field {}. Validation error: {}", form.getUuid(),
 						errorPreventingDataStorage.get().getName(), errorPreventingDataStorage.get().getMessage());
 
-				// just return the errors in the response but don't save anything
-				var response = new FormData();
-
-				response.setHasValidationErrors(true);
-
-				return Single.just(response);
+				return Single.just(toValidationResponse(ctx, errors1));
 			} else {
 				String projectName = ctx.getProjectName();
 				NodeResponse formNode = ctx.getFormNode();
@@ -1120,10 +1115,9 @@ public class FormDataService {
 								ctx.getContext().response().addCookie(cookie);
 							}
 
-							var response = new FormData();
+							var response = toValidationResponse(ctx, errors);
 
 							response.setFormDataID(savedFileUploads.getUuid());
-							response.setHasValidationErrors(!errors.isEmpty());
 
 							return Single.just(response);
 						}
@@ -1159,8 +1153,14 @@ public class FormDataService {
 	 * @param errors validation errors keyed by form element name
 	 * @return form data response
 	 */
-	private FormData toValidationResponse(Map<String, ValidationError> errors) {
-		var response = new FormData();
+	private FormData toValidationResponse(FormDataCreateContext ctx, Map<String, ValidationError> errors) {
+		var form = ctx.getForm();
+		var pluginContext = ctx.getContext();
+		var lang = ParameterUtil.getQueryParam(pluginContext, "lang");
+		var formDataNode = ctx.getFormDataNode();
+		var response = formDataNode == null
+			? FormService.buildDefaultFormData(ctx.getPostedData(), form, form.getUuid(), errors, lang, AuthUtil.decodeToken(pluginContext).getMap())
+			: FormService.buildFormDataFromNode(ctx.getPostedData(), form, form.getUuid(), errors, lang, formDataNode);
 
 		response.setHasValidationErrors(!errors.isEmpty());
 

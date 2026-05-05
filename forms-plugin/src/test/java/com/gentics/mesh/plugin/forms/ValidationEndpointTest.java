@@ -3,7 +3,9 @@ package com.gentics.mesh.plugin.forms;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import com.gentics.mesh.core.rest.node.NodeResponse;
 
@@ -13,6 +15,7 @@ import okhttp3.MultipartBody;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.junit.Test;
 
 /**
  * Test cases for validating form data without saving it.
@@ -23,11 +26,11 @@ public class ValidationEndpointTest extends AbstractEndpointValidationTest {
 	 *
 	 * @throws IOException
 	 */
-	@org.junit.Test
+	@Test
 	public void testValidateNewDataWithoutErrors() throws IOException {
 		Response response = client().newCall(request(null, requestBody("11"))).execute();
 
-		assertValidationResponse(response, false);
+		assertValidationResponse(response, Collections.emptyMap());
 		assertThat(getFormDataNodes(formUuid)).as("Form Data Nodes").hasSize(1);
 	}
 
@@ -36,11 +39,11 @@ public class ValidationEndpointTest extends AbstractEndpointValidationTest {
 	 *
 	 * @throws IOException
 	 */
-	@org.junit.Test
+	@Test
 	public void testValidateNewDataWithErrors() throws IOException {
 		Response response = client().newCall(request(null, requestBody("25"))).execute();
 
-		assertValidationResponse(response, true);
+		assertValidationResponse(response, Map.of("number", "Der Wert 25 ist ungültig."));
 		assertThat(getFormDataNodes(formUuid)).as("Form Data Nodes").hasSize(1);
 	}
 
@@ -49,11 +52,11 @@ public class ValidationEndpointTest extends AbstractEndpointValidationTest {
 	 *
 	 * @throws IOException
 	 */
-	@org.junit.Test
+	@Test
 	public void testValidateNewDataWithRegexErrors() throws IOException {
 		Response response = client().newCall(request(null, requestBody("12"))).execute();
 
-		assertValidationResponse(response, true);
+		assertValidationResponse(response, Map.of("number", "Does not fit regex"));
 		assertThat(getFormDataNodes(formUuid)).as("Form Data Nodes").hasSize(1);
 	}
 
@@ -62,13 +65,13 @@ public class ValidationEndpointTest extends AbstractEndpointValidationTest {
 	 *
 	 * @throws IOException
 	 */
-	@org.junit.Test
+	@Test
 	public void testValidateExistingDataWithoutErrors() throws IOException {
 		List<NodeResponse> dataNodesBeforeValidation = getFormDataNodes(formUuid);
 
 		Response response = client().newCall(request(formDataUuid, requestBody("11"))).execute();
 
-		assertValidationResponse(response, false);
+		assertValidationResponse(response, Collections.emptyMap());
 		assertThat(getFormDataNodes(formUuid))
 			.as("Form Data Nodes")
 			.extracting(NodeResponse::getUuid)
@@ -80,13 +83,13 @@ public class ValidationEndpointTest extends AbstractEndpointValidationTest {
 	 *
 	 * @throws IOException
 	 */
-	@org.junit.Test
+	@Test
 	public void testValidateExistingDataWithErrors() throws IOException {
 		List<NodeResponse> dataNodesBeforeValidation = getFormDataNodes(formUuid);
 
 		Response response = client().newCall(request(formDataUuid, requestBody("3"))).execute();
 
-		assertValidationResponse(response, true);
+		assertValidationResponse(response, Map.of("number", "Too small"));
 		assertThat(getFormDataNodes(formUuid))
 			.as("Form Data Nodes")
 			.extracting(NodeResponse::getUuid)
@@ -110,17 +113,23 @@ public class ValidationEndpointTest extends AbstractEndpointValidationTest {
 	private RequestBody requestBody(String value) {
 		return new MultipartBody.Builder()
 			.setType(MultipartBody.FORM)
-			.addFormDataPart("firstName", value)
+			.addFormDataPart("firstName", "John")
+			.addFormDataPart("number", value)
 			.build();
 	}
 
-	private void assertValidationResponse(Response response, boolean expectedHasValidationErrors) throws IOException {
+	private void assertValidationResponse(Response response, Map<String, String> expectedValidationErrors) throws IOException {
 		assertResponse(response, 200);
 
 		JsonObject json = new JsonObject(response.body().string());
 
 		assertThat(json.getBoolean("hasValidationErrors"))
 			.as("hasValidationErrors")
-			.isEqualTo(expectedHasValidationErrors);
+			.isEqualTo(!expectedValidationErrors.isEmpty());
+
+		System.out.println(json.encodePrettily());
+
+		for (var entry: expectedValidationErrors.entrySet()) {
+		}
 	}
 }
