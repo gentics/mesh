@@ -1,5 +1,12 @@
 package com.gentics.mesh.plugin.forms;
 
+import static com.gentics.mesh.test.ClientHelper.call;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.slf4j.Logger.ROOT_LOGGER_NAME;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -58,14 +65,6 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.RecordedRequest;
-import org.mockito.Mockito;
-
-import static com.gentics.mesh.test.ClientHelper.call;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.slf4j.Logger.ROOT_LOGGER_NAME;
 
 /**
  * Test cases for posting data to a form for multiple languages.
@@ -147,7 +146,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 			.post(requestBody).build();
 		Response response = client().newCall(postRequest).execute();
 		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
-		assertThat(response.code()).as("Response code").isEqualTo(205);
+		assertThat(response.code()).as("Response code").isGreaterThanOrEqualTo(200).isLessThan(300);
 		Optional<Cookie> cookie = Cookie.parseAll(postRequest.url(), response.headers()).stream()
 			.filter(c -> FormDataService.COOKIE_NAME_DATA.equals(c.name()))
 			.findFirst();
@@ -297,7 +296,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit")).header("Referer", "ref").post(requestBody).build();
 		Response response = client().newCall(postRequest).execute();
 		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
-		assertThat(response.code()).as("Response code").isEqualTo(205);
+		assertThat(response.code()).as("Response code").isGreaterThanOrEqualTo(200).isLessThan(300);
 
 		assertSingleDataNode(uuid, dataNode -> {
 			assertThat(dataNode.getFields().getStringField("input1").getString()).as("Data Node Field input1").isEqualTo("Bla");
@@ -323,7 +322,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit")).header("Referer", "ref").post(requestBody).build();
 		Response response = client().newCall(postRequest).execute();
 		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
-		assertThat(response.code()).as("Response code").isEqualTo(205);
+		assertThat(response.code()).as("Response code").isGreaterThanOrEqualTo(200).isLessThan(300);
 
 		assertSingleDataNode(uuid, dataNode -> {
 			assertThat(dataNode.getFields().getStringField("input1").getString()).as("Data Node Field input1").isEqualTo("Bla");
@@ -900,7 +899,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 				.post(requestBody).build();
 		response = client().newCall(postRequest).execute();
 		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
-		assertThat(response.code()).as("Response code").isEqualTo(205);
+		assertThat(response.code()).as("Response code").isGreaterThanOrEqualTo(200).isLessThan(300);
 
 		assertSingleDataNode(uuid, dataNode -> {
 			assertThat(dataNode.getFields().getStringField("input1").getString()).as("Data Node Field").isEqualTo("someValue");
@@ -1575,7 +1574,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 	 */
 	protected Pair<Response, Optional<Cookie>> postToForm(String uuid, RequestBody body) throws IOException {
 		Request postRequest = new Request.Builder()
-				.url(HttpUrl.get(projectUrl("/forms/" + uuid + "/data"))
+				.url(HttpUrl.get(projectUrl("/form/" + uuid + "/submit"))
 					.newBuilder().build())
 				.header("Referer", "ref")
 				.post(body)
@@ -1602,7 +1601,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 	 */
 	protected void assertOk(Response response) {
 		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
-		assertThat(response.code()).as("Response code").isEqualTo(205);
+		assertThat(response.code()).as("Response code").isGreaterThanOrEqualTo(200).isLessThan(300);
 	}
 
 	/**

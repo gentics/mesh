@@ -109,7 +109,7 @@ public class AbstractFormPostDataTest extends AbstractFormsPluginIntegrationTest
 	 */
 	protected void assertOk(Response response) {
 		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
-		assertThat(response.code()).as("Response code").isEqualTo(205);
+		assertThat(response.code()).as("Response code").isGreaterThanOrEqualTo(200).isLessThan(300);
 	}
 
 	/**

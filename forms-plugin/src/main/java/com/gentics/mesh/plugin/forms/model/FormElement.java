@@ -340,8 +340,6 @@ public abstract class FormElement implements RestModel {
 	 * @return validation error or null if posted data is valid
 	 */
 	public Maybe<ValidationError> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx, OkHttpClient httpClient, FormUiSchema uischema) {
-
-
 		List<String> values = new ArrayList<>();
 		if (isList()) {
 			List<String> data = getMultiFormData(postedData);
