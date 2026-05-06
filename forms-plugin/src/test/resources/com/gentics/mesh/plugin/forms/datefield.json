@@ -4,21 +4,25 @@
 	"email": "test@green.mail",
 	"mailsubject": "testmail",
 	"mailtemp": "testmail",
-	"elements": [
-		{
-			"type": "input",
-			"name": "date1",
-			"placeholderName": "",
-			"label": "Date",
-			"mandatory": true,
-			"info": "",
-			"tooltip": "",
-			"validation": "datepicker",
-			"value": "",
-			"minVal": "",
-			"maxVal": "",
-			"maxCharCount": "",
-			"elements": []
+	"schema": {
+		"key": "test-schema",
+	    "version": "1.0.0",
+	    "properties": {
+			"date1": {
+				"type": "string",
+				"name": "date1",
+				"placeholderName": "",
+				"label": "Date",
+				"mandatory": true,
+				"info": "",
+				"tooltip": "",
+				"validation": "datepicker",
+				"value": "",
+				"minVal": "",
+				"maxVal": "",
+				"maxCharCount": "",
+				"elements": []
+			}
 		}
-	]
+	}
 }

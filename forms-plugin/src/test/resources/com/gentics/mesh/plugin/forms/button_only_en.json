@@ -1,15 +1,19 @@
 {
-	"elements": [
-		{
-			"name": "buttons_1",
-			"type": "buttons",
-			"active": true,
-			"elements": [],
-			"submitlabel": "Absenden",
-			"resetlabel": null,
-			"showreset": false
+	"schema": {
+		"key": "test-schema",
+	    "version": "1.0.0",
+	    "properties": {
+			"buttons_1": {
+				"name": "buttons_1",
+				"type": "buttons",
+				"active": true,
+				"elements": [],
+				"submitlabel": "Absenden",
+				"resetlabel": null,
+				"showreset": false
+			}
 		}
-	],
+	},
 	"email": "",
 	"successurl": "",
 	"mailsubject": null,

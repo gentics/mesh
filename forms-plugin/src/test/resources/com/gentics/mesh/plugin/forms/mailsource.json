@@ -4,12 +4,14 @@
 	"email": "admin@test.com",
 	"mailsubject": "admin mail",
 	"mailsource": "Custom admin mail source, value: {{#each data}}{{{value}}}{{/each}}",
-	"elements": [
-		{
-			"type": "usermail",
-			"name": "usermail1",
-			"mailsubject": "user mail",
-			"mailsource": "Custom user mail source, value: {{#each data}}{{{value}}}{{/each}}"
+	"schema": {
+		"properties": {
+			"usermail1": {
+				"type": "usermail",
+				"name": "usermail1",
+				"mailsubject": "user mail",
+				"mailsource": "Custom user mail source, value: {{#each data}}{{{value}}}{{/each}}"
+			}
 		}
-	]
+	}
 }

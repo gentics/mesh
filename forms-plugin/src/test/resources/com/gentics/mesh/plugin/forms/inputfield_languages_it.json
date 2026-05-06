@@ -2,21 +2,25 @@
 	"name": "Form with Textfield",
 	"language": "it",
 	"cms_id": 4,
-	"elements": [
-		{
-			"type": "input",
-			"name": "input1",
-			"placeholderName": "",
-			"label": "Italiano",
-			"mandatory": true,
-			"info": "",
-			"tooltip": "",
-			"validation": "",
-			"value": "",
-			"minVal": "",
-			"maxVal": "",
-			"maxCharCount": "",
-			"elements": []
+	"schema": {
+		"key": "test-schema",
+	    "version": "1.0.0",
+	    "properties": {
+			"input1": {
+				"type": "string",
+				"name": "input1",
+				"placeholderName": "",
+				"label": "Italiano",
+				"mandatory": true,
+				"info": "",
+				"tooltip": "",
+				
+				"value": "",
+				"minVal": "",
+				"maxVal": "",
+				"maxCharCount": "",
+				"elements": []
+			}
 		}
-	]
+	}
 }

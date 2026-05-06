@@ -2,35 +2,40 @@
 	"name": "Form with Friendly Captcha",
 	"cms_id": 1,
     "type": "GENERIC",
-	"elements": [
-		{
-			"type": "input",
-			"name": "input1",
-			"placeholderName": "",
-			"label": "Text",
-			"mandatory": false,
-			"info": "",
-			"tooltip": "",
-			"validation": "",
-			"value": "",
-			"minVal": "",
-			"maxVal": "",
-			"maxCharCount": "",
-			"elements": []
-		}, {
-			"type": "friendlycaptcha",
-			"name": "friendlycaptcha1",
-			"placeholderName": "",
-			"label": "FriendlyCaptcha",
-			"mandatory": false,
-			"info": "",
-			"tooltip": "",
-			"validation": "",
-			"value": "",
-			"minVal": "",
-			"maxVal": "",
-			"maxCharCount": "",
-			"elements": []
-        }
-	]
+	"schema": {
+		"key": "test-schema",
+	    "version": "1.0.0",
+	    "properties": {
+			"input1": {
+				"type": "string",
+				"name": "input1",
+				"placeholderName": "",
+				"label": "Text",
+				"mandatory": false,
+				"info": "",
+				"tooltip": "",
+				
+				"value": "",
+				"minVal": "",
+				"maxVal": "",
+				"maxCharCount": "",
+				"elements": []
+			},
+			"friendlycaptcha1": {
+				"type": "friendlycaptcha",
+				"name": "friendlycaptcha1",
+				"placeholderName": "",
+				"label": "FriendlyCaptcha",
+				"mandatory": false,
+				"info": "",
+				"tooltip": "",
+				
+				"value": "",
+				"minVal": "",
+				"maxVal": "",
+				"maxCharCount": "",
+				"elements": []
+	        }
+		}
+	}
 }

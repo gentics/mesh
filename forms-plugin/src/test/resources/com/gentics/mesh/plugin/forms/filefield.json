@@ -1,18 +1,22 @@
 {
 	"name": "Form with Filefield",
-	"elements": [
-		{
-			"type": "file",
-			"name": "file1",
-			"placeholderName": "",
-			"label": "Datei",
-			"mandatory": false,
-			"info": "",
-			"tooltip": "",
-			"validation": "",
-			"allowed_filetypes": [],
-			"max_filesize": "10",
-			"elements": []
+	"schema": {
+		"key": "test-schema",
+	    "version": "1.0.0",
+	    "properties": {
+			"file1": {
+				"type": "file",
+				"name": "file1",
+				"placeholderName": "",
+				"label": "Datei",
+				"mandatory": false,
+				"info": "",
+				"tooltip": "",
+				
+				"allowed_filetypes": [],
+				"max_filesize": "10",
+				"elements": []
+			}
 		}
-	]
+	}
 }

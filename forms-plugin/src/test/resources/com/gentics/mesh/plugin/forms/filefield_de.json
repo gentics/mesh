@@ -1,8 +1,10 @@
 {
 	"name": "Form with Filefield",
 	"language": "de",
-	"elements": [
-		{
+	"schema": {
+		"key": "test-schema",
+	    "version": "1.0.0",
+	    "properties": {
 			"type": "file",
 			"name": "file1",
 			"placeholderName": "",
@@ -10,10 +12,10 @@
 			"mandatory": false,
 			"info": "",
 			"tooltip": "",
-			"validation": "",
+			
 			"allowed_filetypes": [],
 			"max_filesize": "10",
 			"elements": []
 		}
-	]
+	}
 }
