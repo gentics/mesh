@@ -32,7 +32,7 @@
 						"mandatory": true
 					},
 					{
-						"type": "file",
+						"type": "binary",
 						"name": "conditional_file",
 						"label": "Conditional file",
 						"mandatory": true

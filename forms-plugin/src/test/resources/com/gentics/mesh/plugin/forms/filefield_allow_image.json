@@ -5,7 +5,7 @@
 	    "version": "1.0.0",
 	    "properties": {
 			"file1": {
-				"type": "file",
+				"type": "binary",
 				"name": "file1",
 				"placeholderName": "",
 				"label": "Datei",

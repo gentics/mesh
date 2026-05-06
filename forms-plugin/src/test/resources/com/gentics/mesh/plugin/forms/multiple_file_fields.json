@@ -21,7 +21,7 @@
 				"elements": []
 			},
 			"file1": {
-				"type": "file",
+				"type": "binary",
 				"name": "file1",
 				"placeholderName": "",
 				"label": "File1",
@@ -34,7 +34,7 @@
 				"elements": []
 			},
 			"file2": {
-				"type": "file",
+				"type": "binary",
 				"name": "file2",
 				"placeholderName": "",
 				"label": "File2",
