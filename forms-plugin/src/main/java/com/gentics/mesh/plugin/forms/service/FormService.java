@@ -25,8 +25,11 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
+import com.gentics.mesh.plugin.PluginContext;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1145,47 +1148,48 @@ public class FormService {
 	}
 
 	/**
-	 * Render the results for the specified poll form.
-	 *
-	 * @param rc The current routing context
-	 * @param projectName The project name
-	 * @param form The form for which results should be rendered
-	 * @return A {@code Single} containing the rendered result as a {@code Buffer}
-	 */
-	private Single<Buffer> renderPollResults(RoutingContext rc, String projectName, Form form) {
-		return getPollResults(projectName, form, form.getUuid())
-			.flatMap(rs -> {
-				JsonObject poll = new JsonObject()
-					.put("id", form.getUuid())
-					.put("options", JsonObject.mapFrom(configuration))
-					.put("result", rs);
-
-				rc.put("poll", poll);
-
-				return renderTemplate(rc, form.getTemplateContext(), configuration.getPollOptions().getResultTemplate());
-			});
-	}
-
-	/**
 	 * Load the results for the specified poll form.
 	 *
-	 * @param projectName The project name
-	 * @param form The poll form
+	 * @param pc The plugin context for the request
 	 * @param formUuid The UUID of the form node
 	 * @return A {@code Single} containing the results in a JSON array
 	 */
-	private Single<JsonArray> getPollResults(String projectName, Form form, String formUuid) {
-		JsonObject results = new JsonObject();
+	public Single<JsonObject> loadPollResults(PluginContext pc, String formUuid) {
+		var projectName = pc.projectName();
 
-		Single<String> singleFormDataFolderUuid = getFormFolderUuid(projectName, formUuid, new String[] {}, DATA_FOLDER_NAME);
-		return singleFormDataFolderUuid.flatMap(formDataFolderUuid -> loadFormData(projectName, formDataFolderUuid)
-			.doOnNext(formData -> form.gatherPollResults(results, formData))
-			.ignoreElements()
-			.andThen(Single.just(results))
-			.map(rs -> rs.stream()
-				.filter(entry -> entry.getValue() instanceof JsonObject)
-				.map(entry -> ((JsonObject) entry.getValue()).put("name", entry.getKey()))
-				.collect(Collector.of(JsonArray::new, (a, o) -> a.add(o), (u, v) -> u.addAll(v)))));
+		return loadAsAdmin(projectName, formUuid, true)
+			.flatMap(this::toForm)
+			.flatMap(form -> {
+				if (!form.isSubmitOnce()) {
+					return Single.error(new FormsError("Specified form is not a poll", HttpResponseStatus.BAD_REQUEST.code()));
+				}
+
+				var noResultsAvailable = CollectionUtils.isEmpty(pc.queryParam(PARAM_SHOW_RESULTS))
+					&& Stream.of(pc.request().getCookie(FormDataService.COOKIE_NAME_VOTED))
+						.filter(Objects::nonNull)
+						.map(c -> c.getValue().split(FormDataService.COOKIE_VOTED_SEPARATOR))
+						.flatMap(Arrays::stream)
+						.noneMatch(form.getUuid()::equals);
+
+				if (noResultsAvailable) {
+					var msg = "Results require forcing results or form UUID in cookie '%s'".formatted(FormDataService.COOKIE_NAME_VOTED);
+
+					return Single.error(new FormsError(msg, HttpResponseStatus.BAD_REQUEST.code()));
+				}
+
+				var pollResults = new JsonObject();
+
+				return getFormFolderUuid(projectName, formUuid, new String[]{}, DATA_FOLDER_NAME)
+					.flatMap(formDataFolderUuid -> loadFormData(projectName, formDataFolderUuid)
+						.doOnNext(formData -> form.gatherPollResults(pollResults, formData))
+						.ignoreElements()
+						.andThen(Single.just(pollResults))
+						.map(rs -> rs.stream()
+							.filter(entry -> entry.getValue() instanceof JsonObject)
+							.map(entry -> ((JsonObject) entry.getValue()).put("name", entry.getKey()))
+							.collect(Collector.of(JsonArray::new, JsonArray::add, JsonArray::addAll))))
+					.map(results -> new JsonObject().put("results", results).put("templateContext", form.getTemplateContext()));
+			});
 	}
 
 	/**

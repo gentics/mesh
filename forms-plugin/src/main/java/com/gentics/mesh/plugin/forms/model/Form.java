@@ -56,6 +56,8 @@ public class Form implements RestModel {
 
 	private String type;
 
+	private boolean submitOnce;
+
 	private String email;
 
 	private String mailsubject;
@@ -171,6 +173,26 @@ public class Form implements RestModel {
 	 */
 	public void setType(String type) {
 		this.type = type;
+	}
+
+	/**
+	 * Whether the form can only be submitted once by a user.
+	 *
+	 * @return Whether the form can only be submitted once by a user.
+	 */
+	public boolean isSubmitOnce() {
+		return submitOnce;
+	}
+
+	/**
+	 * Set whether the form can only be submitted once by a user.
+	 * @param submitOnce Whether the form can only be submitted once by a user.
+	 * @return Fluent API
+	 */
+	public Form setSubmitOnce(boolean submitOnce) {
+		this.submitOnce = submitOnce;
+
+		return this;
 	}
 
 	/**

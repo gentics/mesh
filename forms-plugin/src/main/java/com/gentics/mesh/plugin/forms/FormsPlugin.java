@@ -86,6 +86,8 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 		// load form for formgen
 		projectRouter.route("/form/:formUuid/load").method(POST).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::loadFormGenHandler));
 
+		projectRouter.route("/form/:formUuid/results").method(GET).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::loadPollResultsHandler));
+
 		projectRouter.route("/forms/:formUuid/elements").method(GET).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::loadFormElementsHandler));
 
 		projectRouter.route("/forms/:formUuid/schema").method(GET).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::loadFormSchemaHandler));
