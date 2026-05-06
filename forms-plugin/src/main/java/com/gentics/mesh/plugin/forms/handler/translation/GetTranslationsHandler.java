@@ -37,7 +37,7 @@ public class GetTranslationsHandler extends AbstractFormsHandler {
 			if (response != null) {
 				context.response()
 						.putHeader(HttpHeaders.CONTENT_TYPE, HttpConstants.APPLICATION_JSON_UTF8)
-						.end();
+						.end(mapper.writeValueAsString(response));
 				return;
 			}
 			
