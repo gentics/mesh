@@ -10,13 +10,12 @@ import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.parameter.client.GenericParametersImpl;
+import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.dagger.UserClient;
 import com.gentics.mesh.plugin.forms.model.Form;
 import com.gentics.mesh.plugin.forms.model.TranslationLanguageModel;
@@ -32,9 +31,9 @@ import io.reactivex.Single;
 public class TranslationsService {
 	private static final Logger log = LoggerFactory.getLogger(TranslationsService.class);
 	
-	private static final TypeReference<Map<String, String>> STRING_MAP = new TypeReference<Map<String, String>>() {};
 
 	private final MeshRestClient userClient;
+	private final MeshRestClient adminClient;
 	private final StatusService statusService;
 	private final FormService formService;
 	private final ObjectMapper mapper;
@@ -42,10 +41,12 @@ public class TranslationsService {
 	@Inject
 	public TranslationsService(
 			@UserClient @Nullable MeshRestClient userClient,
+			@AdminClient @Nullable MeshRestClient adminClient,
 			StatusService statusService,
 			FormService formService,
 			ObjectMapper mapper) {
 		this.userClient = userClient;
+		this.adminClient = adminClient;
 		this.statusService = statusService;
 		this.formService = formService;
 		this.mapper = mapper;
@@ -58,7 +59,7 @@ public class TranslationsService {
 	 * @return single translations model
 	 */
 	public Single<TranslationsModel> getTranslations(String projectName) {
-		return statusService.getRootNode(projectName, userClient).flatMap(response -> {
+		return statusService.getRootNode(projectName, adminClient).flatMap(response -> {
 			FieldMap fields = response.getFields();
 			if (fields.hasField("translations") && fields.getStringField("translations") != null) {
 				String json = fields.getStringField("translations").getString();
@@ -88,7 +89,7 @@ public class TranslationsService {
 	 * @return single map of translation key → translated string
 	 */
 	public Single<Map<String, String>> getTranslations(String projectName, String formUuid, String lang) {
-		return formService.loadForm(projectName, formUuid)
+		return formService.loadFormAsAdmin(projectName, formUuid)
 			.flatMap(formJson -> {
 				try {
 					Form form = formService.toForm(formJson.encode(), formUuid, null);
@@ -118,7 +119,7 @@ public class TranslationsService {
 			update.setVersion("draft");
 			update.setLanguage("en");
 			update.getFields().put("translations", new StringFieldImpl().setString(json));
-			return statusService.getRootNode(projectName, userClient).flatMap(rootNode -> {				
+			return statusService.getRootNode(projectName, adminClient).flatMap(rootNode -> {				
 				FieldMap fields = rootNode.getFields();
 				if (fields.hasField("translations") && fields.getStringField("translations") != null) {
 					String savedJson = fields.getStringField("translations").getString();
@@ -140,8 +141,8 @@ public class TranslationsService {
 	}
 
 	private Map<String, String> translationsForType(TranslationsModel model, String formType, String lang) {
-		if (formType != null && model.getTypes() != null) {
-			TranslationLanguageModel typeModel = model.getTypes().get(formType);
+		if (formType != null && model.types != null) {
+			TranslationLanguageModel typeModel = model.types.get(formType);
 			if (typeModel != null) {
 				Map<String, String> result = translationsForLang(typeModel, lang);
 				if (!result.isEmpty()) {
@@ -153,7 +154,7 @@ public class TranslationsService {
 	}
 
 	private Map<String, String> translationsForDefault(TranslationsModel model, String lang) {
-		TranslationLanguageModel defaultModel = model.getDefaultTranslations();
+		TranslationLanguageModel defaultModel = model.defaultTranslations;
 		if (defaultModel == null) {
 			return Collections.emptyMap();
 		}
@@ -161,14 +162,6 @@ public class TranslationsService {
 	}
 
 	private Map<String, String> translationsForLang(TranslationLanguageModel langModel, String lang) {
-		JsonNode langNode = langModel.getTranslations().get(lang);
-		if (langNode == null || langNode.isNull()) {
-			return Collections.emptyMap();
-		}
-		try {
-			return mapper.convertValue(langNode, STRING_MAP);
-		} catch (Exception e) {
-			return Collections.emptyMap();
-		}
+		return langModel.getOrDefault(lang, Collections.emptyMap());
 	}
 }

@@ -273,7 +273,7 @@ public class FormService {
 	}
 
 	/**
-	 * Load the form node by uuid in the given language
+	 * Load the form node as User by uuid in the given language
 	 *
 	 * @param projectName project name
 	 * @param uuid uuid
@@ -286,6 +286,29 @@ public class FormService {
 			nParams.setLanguages(lang);
 		}
 		return userClient.findNodeByUuid(projectName, uuid, nParams).toSingle().flatMap(nodeResponse -> {
+			if (isFormNode(nodeResponse)) {
+				return Single.just(nodeResponse);
+			} else {
+				String message = String.format("Object with uuid \"%s\" could not be found.", uuid);
+				return Single.error(new FormsError(message, HttpResponseStatus.NOT_FOUND.code()));
+			}
+		});
+	}
+	
+	/**
+	 * Load the form node as admin by uuid in the given language
+	 *
+	 * @param projectName project name
+	 * @param uuid uuid
+	 * @param lang optional languages
+	 * @return single noderesponse
+	 */
+	public Single<NodeResponse> loadFormAsAdmin(String projectName, String uuid, String...lang) {
+		NodeParameters nParams = new NodeParametersImpl();
+		if (lang.length > 0) {
+			nParams.setLanguages(lang);
+		}
+		return adminClient.findNodeByUuid(projectName, uuid, nParams).toSingle().flatMap(nodeResponse -> {
 			if (isFormNode(nodeResponse)) {
 				return Single.just(nodeResponse);
 			} else {
@@ -682,6 +705,15 @@ public class FormService {
 	public Single<JsonObject> loadForm(String projectName, String uuid) {
 		return load(projectName, uuid, "en").map(formNode -> {
 			// TODO if the node has no fields, no specified language was found
+			return new JsonObject(formNode.getFields().getStringField("json").getString());
+		});
+	}
+	
+	/**
+	 * load form as admin in langugae de
+	 */
+	public Single<JsonObject> loadFormAsAdmin(String projectName, String uuid) {
+		return loadFormAsAdmin(projectName, uuid, "en").map(formNode -> {
 			return new JsonObject(formNode.getFields().getStringField("json").getString());
 		});
 	}
