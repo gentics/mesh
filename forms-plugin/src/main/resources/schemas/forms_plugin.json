@@ -22,6 +22,12 @@
 			"label": "Form Type Configurations",
 			"type": "string",
 			"required": false
+		},
+		{
+			"name": "translations",
+			"label": "Translations",
+			"type": "string",
+			"required": false
 		}
 	]
 }
