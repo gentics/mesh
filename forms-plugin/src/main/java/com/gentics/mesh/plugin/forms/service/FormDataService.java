@@ -269,7 +269,7 @@ public class FormDataService {
 	 * @return single of the post data response
 	 */
 	public Single<FormData> create(FormDataCreateContext ctx) {
-		return formService.loadAsAdminWithLanguageFallback(ctx.getProjectName(), ctx.getFormUuid(), true, ctx.getLanguages())
+		return formService.loadAsAdmin(ctx.getProjectName(), ctx.getFormUuid(), true, "en")
 			.doOnSuccess(ctx::setFormNode)
 			.flatMap(formService::toForm)
 			.doOnSuccess(ctx::setForm)
@@ -284,16 +284,17 @@ public class FormDataService {
 	 */
 	public Single<FormData> update(FormDataUpdateContext ctx) {
 		return Single.zip(
-			formService.loadAsAdminWithLanguageFallback(ctx.getProjectName(), ctx.getFormUuid(), true, ctx.getLanguages()),
+				// always load English version of form
+				formService.loadAsAdmin(ctx.getProjectName(), ctx.getFormUuid(), true, "en"),
 				load(ctx.getProjectName(), ctx.getFormUuid(), ctx.getFormDataUuid()),
 				(formNode, formDataNode) -> formService.toForm(formNode)
-					.flatMap(form -> {
-						ctx.setFormNode(formNode);
-						ctx.setFormDataNode(formDataNode);
-						ctx.setForm(form);
-						return savePostedData(ctx);
-					}))
-			.flatMap(x -> x);
+						.flatMap(form -> {
+							ctx.setFormNode(formNode);
+							ctx.setFormDataNode(formDataNode);
+							ctx.setForm(form);
+							return savePostedData(ctx);
+						}))
+				.flatMap(x -> x);
 	}
 
 	/**
@@ -303,7 +304,7 @@ public class FormDataService {
 	 * @return single of form data validation state
 	 */
 	public Single<FormData> validate(FormDataCreateContext ctx) {
-		return formService.loadAsAdminWithLanguageFallback(ctx.getProjectName(), ctx.getFormUuid(), true, ctx.getLanguages())
+		return formService.loadAsAdminWithLanguageFallback(ctx.getProjectName(), ctx.getFormUuid(), true, "en")
 			.doOnSuccess(ctx::setFormNode)
 			.flatMap(formService::toForm)
 			.doOnSuccess(ctx::setForm)
@@ -319,7 +320,7 @@ public class FormDataService {
 	 */
 	public Single<FormData> validate(FormDataUpdateContext ctx) {
 		return Single.zip(
-			formService.loadAsAdminWithLanguageFallback(ctx.getProjectName(), ctx.getFormUuid(), true, ctx.getLanguages()),
+			formService.loadAsAdminWithLanguageFallback(ctx.getProjectName(), ctx.getFormUuid(), true, "en"),
 				load(ctx.getProjectName(), ctx.getFormUuid(), ctx.getFormDataUuid()),
 				(formNode, formDataNode) -> formService.toForm(formNode)
 					.flatMap(form -> {
@@ -1093,8 +1094,7 @@ public class FormDataService {
 				String projectName = ctx.getProjectName();
 				NodeResponse formNode = ctx.getFormNode();
 
-				Single<String> dataFolderUuidSingle = ParameterUtil.getLanguages(ctx.getContext())
-						.flatMap(languages -> getFormDataFolderUuid(projectName, formNode.getUuid(), languages));
+				Single<String> dataFolderUuidSingle = getFormDataFolderUuid(projectName, formNode.getUuid(), "en");
 
 				return Single.just(errors1).zipWith(
 						dataFolderUuidSingle, 
@@ -1115,8 +1115,8 @@ public class FormDataService {
 								ctx.getContext().response().addCookie(cookie);
 							}
 
+							ctx.setFormDataNode(savedFileUploads); // updated formdata node
 							var response = toValidationResponse(ctx, errors);
-
 							response.setFormDataID(savedFileUploads.getUuid());
 
 							return Single.just(response);
@@ -1211,7 +1211,6 @@ public class FormDataService {
 		}
 
 		form.addFields(container, postedData, !errors.isEmpty());
-		form.updateFormPage(postedData);
 
 		if (!errors.isEmpty()) {
 			try {
@@ -1248,7 +1247,23 @@ public class FormDataService {
 				: Stream.empty())
 			.collect(Collectors.toSet());
 
-		fileUploads = fileUploads.stream().filter(fileUpload -> validUploadElements.contains(fileUpload.name())).collect(Collectors.toSet());
+		fileUploads = fileUploads.stream().filter(fileUpload -> {
+			String id = BinaryElement.extractFieldId(fileUpload.name());
+			return validUploadElements.contains(id != null ? id : fileUpload.name());
+		}).collect(Collectors.toSet());
+
+		// Only one binary upload per element is allowed — keep the first encountered per ID
+		fileUploads = fileUploads.stream()
+			.collect(Collectors.toMap(
+				fu -> {
+					String id = BinaryElement.extractFieldId(fu.name());
+					return id != null ? id : fu.name();
+				},
+				fu -> fu,
+				(a, b) -> a
+			))
+			.values().stream()
+			.collect(Collectors.toSet());
 
 		if (fileUploads.isEmpty()) {
 			return Single.just(formDataNode);
@@ -1261,10 +1276,15 @@ public class FormDataService {
 				long size = fileUpload.size();
 				InputStream ins = new FileInputStream(fileUpload.uploadedFileName());
 
+				String fieldName = BinaryElement.extractFieldId(fileUpload.name());
+				if (fieldName == null) {
+					fieldName = fileUpload.name();
+				}
+
 				// Always use the draft version because updating the binary field will increase the version of the node,
 				// which can lead to problems when multiple files are uploaded.
 				return adminClient.updateNodeBinaryField(projectName, formDataNode.getUuid(), formDataNode.getLanguage(), "draft",
-						fileUpload.name(),
+						fieldName,
 						ins, size, fileUpload.fileName(), fileUpload.contentType())
 					.toSingle();
 			}).flatMapSingle(single -> single), false, 1)
@@ -1319,7 +1339,6 @@ public class FormDataService {
 					});			
 		});
 	}
-
 	/**
 	 * Add or update the {@link #COOKIE_NAME_VOTED forms-voted} cookie to include the UUID of the form for which data
 	 * was saved.

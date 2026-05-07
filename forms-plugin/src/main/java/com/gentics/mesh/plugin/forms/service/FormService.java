@@ -43,6 +43,7 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpsertRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
+import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.NumberField;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
@@ -69,6 +70,7 @@ import com.gentics.mesh.plugin.forms.SchemaInitializer;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.config.MultipageRenderMode;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
+import com.gentics.mesh.plugin.forms.model.BinaryElement;
 import com.gentics.mesh.plugin.forms.model.DefaultValue;
 import com.gentics.mesh.plugin.forms.model.Form;
 import com.gentics.mesh.plugin.forms.model.FormElement;
@@ -916,6 +918,19 @@ public class FormService {
 	 */
 	private static FormDataProperty buildPropertyFromNode(FormElement element, String language, NodeResponse node) {
 		FormDataProperty prop = new FormDataProperty();
+
+		if (element instanceof BinaryElement) {
+			BinaryField binaryField = node.getFields().getBinaryField(element.getName());
+			if (binaryField != null) {
+				Map<String, Object> binaryValue = new LinkedHashMap<>();
+				binaryValue.put("fileName", binaryField.getFileName());
+				binaryValue.put("size", binaryField.getFileSize());
+				binaryValue.put("value", node.getUuid() + ":" + element.getName());
+				prop.setValue(binaryValue);
+			}
+			return prop;
+		}
+
 		List<ValueListItem> selectOptions = resolveSelectOptions(element);
 
 		if (selectOptions != null && !selectOptions.isEmpty()) {
