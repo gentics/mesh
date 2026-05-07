@@ -9,6 +9,7 @@ import com.gentics.mesh.plugin.PluginManifest;
 import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.dagger.StorageDir;
 import com.gentics.mesh.plugin.common.dagger.UserClient;
+import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.handler.DeleteFormDataHandler;
 import com.gentics.mesh.plugin.forms.handler.FindFormDataHandler;
@@ -144,6 +145,9 @@ public interface FormsPluginComponent {
 
 		@BindsInstance
 		Builder manifest(PluginManifest manifest);
+
+		@BindsInstance
+		Builder env(PluginEnvironment env);
 
 		FormsPluginComponent build();
 	}

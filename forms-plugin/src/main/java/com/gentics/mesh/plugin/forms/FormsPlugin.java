@@ -151,6 +151,7 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 			.vertx(vertx())
 			.storageDir(getStorageDir())
 			.manifest(getManifest())
+			.env(environment())
 			.build();
 	}
 
