@@ -15,7 +15,7 @@ import jakarta.persistence.Id;
  *
  */
 
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "HibEntityCache")
 @Entity(name = "version")
 public class MeshVersionEntityImpl implements Serializable {
 	private static final long serialVersionUID = -6656851988049381970L;

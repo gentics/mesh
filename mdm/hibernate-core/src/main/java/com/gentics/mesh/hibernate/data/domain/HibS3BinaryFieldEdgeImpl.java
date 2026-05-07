@@ -29,7 +29,7 @@ import com.gentics.mesh.hibernate.data.node.field.impl.HibS3BinaryFieldImpl;
  * @author plyhun
  *
  */
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "HibEntityCache")
 @Entity(name = "s3binaryfieldref")
 @NamedQueries({
 	@NamedQuery(

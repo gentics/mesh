@@ -22,7 +22,7 @@ import jakarta.persistence.MapsId;
  * @author plyhun
  *
  */
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "HibEntityCache")
 @Entity(name = "node_tag")
 public class HibNodeTag implements Serializable {
 

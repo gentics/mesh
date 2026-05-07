@@ -33,7 +33,7 @@ import com.google.common.collect.ImmutableMap;
  * @author plyhun
  *
  */
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "HibEntityCache")
 @Entity(name = "permissionroot")
 public class HibPermissionRootImpl extends AbstractHibBaseElement implements Serializable {
 

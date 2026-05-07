@@ -44,7 +44,7 @@ import com.gentics.mesh.dagger.annotations.ElementTypeKey;
 		}
 	)
 })
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "HibEntityCache")
 @Entity(name = "schema")
 @ElementTypeKey(ElementType.SCHEMA)
 public class HibSchemaImpl extends AbstractHibUserTrackedElement<SchemaResponse> implements HibSchema, Serializable {
@@ -57,7 +57,7 @@ public class HibSchemaImpl extends AbstractHibUserTrackedElement<SchemaResponse>
 	@OneToOne(targetEntity = HibSchemaVersionImpl.class)
 	private HibSchemaVersion latestVersion;
 
-	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "HibEntityCache")
 	@OneToMany(mappedBy = "schema", targetEntity = HibSchemaVersionImpl.class, cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
 	private Set<HibSchemaVersion> versions = new HashSet<>();
 
