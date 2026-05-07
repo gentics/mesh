@@ -16,7 +16,9 @@
 				"mandatory": true,
 				"info": "",
 				"tooltip": "",
-				"validation": "datepicker",
+				"validation": {
+					"regex": "\\d{2}\\.\\d{2}\\.\\d{4}"
+				},
 				"value": "",
 				"minVal": "",
 				"maxVal": "",

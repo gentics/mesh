@@ -1,7 +1,6 @@
 package com.gentics.mesh.plugin.common.util;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 

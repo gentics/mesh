@@ -42,8 +42,8 @@ import org.mockito.ArgumentCaptor;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.plugin.forms.model.PostDataResponse;
 import com.gentics.mesh.plugin.forms.model.response.FormOnlineResponse;
+import com.gentics.mesh.plugin.forms.model.schema.FormData;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
 import com.gentics.mesh.plugin.forms.test.ResponseWithCookies;
 import com.gentics.mesh.plugin.forms.util.RxUtil;
@@ -546,7 +546,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 	@Test
 	public void testAdminMailElement() throws IOException, MessagingException {
 		String uuid = createForm("admin_mail_element.json");
-		submit(uuid, true, false, false, "input1", "test input", "adminmail1", "Admin 1");
+		submit(uuid, true, false, false, "input1", "test input", "adminmail1", "admin1@green.mail");
 
 		assertThat(greenMail.waitForIncomingEmail(MAIL_TIMEOUT, 1))
 			.as("Mail sent in time")
@@ -580,7 +580,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 	@Test
 	public void testAdminMailElementMultiple() throws IOException, MessagingException {
 		String uuid = createForm("admin_mail_element_multiselect.json");
-		submit(uuid, true, false, false, "input1", "test input", "adminmail1", "Admin 1", "adminmail1", "Admin 3");
+		submit(uuid, true, false, false, "input1", "test input", "adminmail1", "admin1@green.mail", "adminmail1", "admin3@green.mail");
 
 		assertThat(greenMail.waitForIncomingEmail(MAIL_TIMEOUT, 1))
 			.as("Mail sent in time")
@@ -1282,13 +1282,12 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		String uuid = createForm("conditional_container.json", true, true);
 		ResponseWithCookies rs = submit(uuid, true,
 			"checked_input", "process_conditional_container");
-		PostDataResponse postResponse = JsonUtil.readValue(rs.response.body().string(), PostDataResponse.class);
-		JsonObject savedDataFields = loadNode(postResponse.getDataUuid()).map(node -> new JsonObject(node.getFields().toJson())).get();
+		FormData postResponse = JsonUtil.readValue(rs.response.body().string(), FormData.class);
+		JsonObject savedDataFields = loadNode(postResponse.getFormDataID()).map(node -> new JsonObject(node.getFields().toJson())).get();
 
 		assertThat(savedDataFields.fieldNames())
 			.as("Saved elements")
 			.containsOnly("checked_input", "errors");
-
 
 		assertThat(new JsonObject(savedDataFields.getString("errors")).fieldNames())
 			.as("Validation errors")
@@ -1318,13 +1317,13 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		ResponseWithCookies rs = submit(uuid, true,
 			"checked_input_inner", "process_conditional_container",
 			"checked_input_outer", "process_conditional_container");
-		PostDataResponse postResponse = JsonUtil.readValue(rs.response.body().string(), PostDataResponse.class);
-		JsonObject savedDataFields = loadNode(postResponse.getDataUuid()).map(node -> new JsonObject(node.getFields().toJson())).get();
+		FormData postResponse = JsonUtil.readValue(rs.response.body().string(), FormData.class);
+		JsonObject savedDataFields = loadNode(postResponse.getFormDataID()).map(node -> new JsonObject(node.getFields().toJson())).get();
 
 		assertThat(savedDataFields.fieldNames())
 			.as("Saved elements")
 			.containsOnly("checked_input_inner", "checked_input_outer", "errors");
-
+		assertThat(savedDataFields.getString("errors")).isNotEmpty();
 		assertThat(new JsonObject(savedDataFields.getString("errors")).fieldNames())
 			.as("Validation errors")
 			.containsOnly("conditional_input");
@@ -1357,7 +1356,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		body.addFormDataPart("conditional_file", formDefinition, requestBodyFromFile(formDefinition));
 
 		Request.Builder requestBuilder = new Request.Builder()
-			.url(projectUrl(String.format("/forms/%s/%sdata%s", uuid, "json", "")))
+			.url(projectUrl(String.format("/form/%s/submit?lang=%s", uuid, language)))
 			.header("Referer", "ref");
 
 		Request postRequest = requestBuilder.post(body.build()).build();
@@ -1373,8 +1372,8 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 
 		ResponseWithCookies rs = new ResponseWithCookies(response, Cookie.parseAll(postRequest.url(), response.headers()));
 
-		PostDataResponse postResponse = JsonUtil.readValue(rs.response.body().string(), PostDataResponse.class);
-		JsonObject savedDataFields = loadNode(postResponse.getDataUuid()).map(node -> new JsonObject(node.getFields().toJson())).get();
+		FormData postResponse = JsonUtil.readValue(rs.response.body().string(), FormData.class);
+		JsonObject savedDataFields = loadNode(postResponse.getFormDataID()).map(node -> new JsonObject(node.getFields().toJson())).get();
 
 		assertThat(savedDataFields)
 			.as("Saved elements")
@@ -1455,8 +1454,8 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 
 		ResponseWithCookies rs = new ResponseWithCookies(response, Cookie.parseAll(postRequest.url(), response.headers()));
 
-		PostDataResponse postResponse = JsonUtil.readValue(rs.response.body().string(), PostDataResponse.class);
-		JsonObject savedDataFields = loadNode(postResponse.getDataUuid()).map(node -> new JsonObject(node.getFields().toJson())).get();
+		FormData postResponse = JsonUtil.readValue(rs.response.body().string(), FormData.class);
+		JsonObject savedDataFields = loadNode(postResponse.getFormDataID()).map(node -> new JsonObject(node.getFields().toJson())).get();
 
 		assertThat(savedDataFields.fieldNames())
 			.as("Saved elements contains mandatory file")
@@ -1544,7 +1543,14 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		requestBody.writeTo(buffer);
 
 		postRequest = new Request.Builder()
-				.url(projectUrl("/forms/" + uuid + "/data/" + formDataUuid + "?lang=" + language))
+				.url(projectUrl("/form/" + uuid + "/save?formDataUuid=" + formDataUuid + "&lang=" + language))
+				.header("Referer", "ref").post(requestBody).build();
+		response = client().newCall(postRequest).execute();
+		assertThat(response.isRedirect()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+		assertThat(response.header("Location")).as("Location Header").isEqualTo("ref"); // no publish allowed!
+		
+		postRequest = new Request.Builder()
+				.url(projectUrl("/form/" + uuid + "/submit?formDataUuid=" + formDataUuid + "&lang=" + language))
 				.header("Referer", "ref").post(requestBody).build();
 		response = client().newCall(postRequest).execute();
 		assertThat(response.isRedirect()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();

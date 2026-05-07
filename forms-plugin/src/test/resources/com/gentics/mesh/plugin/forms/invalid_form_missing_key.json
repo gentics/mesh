@@ -7,8 +7,8 @@
 			"selectgroup1": {
 				"type": "selectgroup",
 				"name": "selectgroup1",
-				"label": "Select Group",
-				"options": [
+				"label": { "en": "Select group", "de": "Wahlgruppe" },
+				"selectOptions": [
 					{
 						"value": "No key"
 					}

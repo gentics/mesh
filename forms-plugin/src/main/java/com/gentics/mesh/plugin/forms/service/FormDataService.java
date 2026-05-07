@@ -1089,7 +1089,17 @@ public class FormDataService {
 				log.warn("Storing of POSTed data to form {} prevented by field {}. Validation error: {}", form.getUuid(),
 						errorPreventingDataStorage.get().getName(), errorPreventingDataStorage.get().getMessage());
 
-				return Single.just(toValidationResponse(ctx, errors1));
+				// just return the errors in the response but don't save anything
+				var response = new FormData();
+
+				response.setHasValidationErrors(true);
+				if (ctx.getReferer() != null) {
+					response.setRedirectUrl(ctx.getReferer());
+				} else {
+					response.setRedirectUrl("");
+				}
+
+				return Single.just(response);
 			} else {
 				String projectName = ctx.getProjectName();
 				NodeResponse formNode = ctx.getFormNode();
@@ -1118,6 +1128,12 @@ public class FormDataService {
 							ctx.setFormDataNode(savedFileUploads); // updated formdata node
 							var response = toValidationResponse(ctx, errors);
 							response.setFormDataID(savedFileUploads.getUuid());
+							response.setHasValidationErrors(!errors.isEmpty());
+							if (ctx.getReferer() != null) {
+								response.setRedirectUrl(ctx.getReferer());
+							} else {
+								response.setRedirectUrl("");
+							}
 
 							return Single.just(response);
 						}
@@ -1330,11 +1346,16 @@ public class FormDataService {
 							}
 						}
 
-						var response = new FormData();
-
+						FormData response = new FormData();
 						response.setFormDataID(savedFileUploads.getUuid());
 						response.setHasValidationErrors(!errors.isEmpty());
-
+						if (form.getSuccessurl() != null) {
+							response.setRedirectUrl(form.getSuccessurl());
+						} else if (isPoll) {
+							response.setRedirectUrl(ctx.getReferer());
+						} else {
+							response.setRedirectUrl("");
+						}
 						return response;
 					});			
 		});

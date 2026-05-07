@@ -563,13 +563,25 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 		Request postRequest = requestBuilder.post(body.build()).build();
 		Response response = client().newCall(postRequest).execute();
 
-		assertThat(response.isSuccessful())
-			.as(String.format("Response success %d (%s)", response.code(), response.message()))
-			.isTrue();
+		if (expectRedirect) {
+			assertThat(response.isRedirect())
+				.as(String.format("Response is redirect %d (%s)", response.code(), response.message()))
+				.isTrue();
+		} else {
+			assertThat(response.isSuccessful())
+				.as(String.format("Response success %d (%s)", response.code(), response.message()))
+				.isTrue();
 
-		assertThat(response.code())
-			.as("Response code")
-			.isEqualTo(HttpResponseStatus.OK.code());
+			if (json) {
+				assertThat(response.code())
+					.as("Response code")
+					.isEqualTo(HttpResponseStatus.OK.code());
+			} else {
+				assertThat(response.code())
+					.as("Response code")
+					.isGreaterThanOrEqualTo(HttpResponseStatus.OK.code()).isLessThan(HttpResponseStatus.MULTIPLE_CHOICES.code());
+			}
+		}
 
 		return new ResponseWithCookies(response, Cookie.parseAll(postRequest.url(), response.headers()));
 	}

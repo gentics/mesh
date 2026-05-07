@@ -10,7 +10,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @FormElementType("datetime")
 public class DatetimeElement extends FormElement {
 
-	
 	private boolean dateOnly;
 
 	public DatetimeElement() {

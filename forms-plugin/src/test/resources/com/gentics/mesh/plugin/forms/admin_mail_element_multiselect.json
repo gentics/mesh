@@ -28,18 +28,19 @@
 				"name": "adminmail1",
 				"select_type": "multiselect",
 				"label": "Admin email",
-				"options": [
+				"isList": true,
+				"selectOptions": [
 					{
 						"value": "admin1@green.mail",
-						"key": "Admin 1"
+						"label": { "en": "Admin 1", "de": "1.Admin" }
 					},
 					{
 						"value": "admin2@green.mail",
-						"key": "Admin 2"
+						"label": { "en": "Admin 2", "de": "2.Admin" }
 					},
 					{
 						"value": "admin3@green.mail",
-						"key": "Admin 3"
+						"label": { "en": "Admin 3", "de": "3.Admin" }
 					}
 				]
 			}

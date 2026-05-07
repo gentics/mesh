@@ -7,10 +7,10 @@
 			"selectgroup1": {
 				"type": "selectgroup",
 				"name": "selectgroup1",
-				"label": "Select group",
-				"options": [
+				"label": { "en": "Select group", "de": "Wahlgruppe" },
+				"selectOptions": [
 					{
-						"key": "no-value"
+						"label": { "en": "no-value", "de": "wein wert" }
 					}
 				]
 			}

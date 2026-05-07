@@ -12,6 +12,7 @@ import com.gentics.mesh.plugin.forms.context.FormDataUpdateContext;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
 
 import io.reactivex.Completable;
+import io.vertx.core.http.HttpServerResponse;
 
 @Singleton
 public class SubmitDataHandler extends AbstractFormsHandler {
@@ -28,7 +29,16 @@ public class SubmitDataHandler extends AbstractFormsHandler {
 		return (formDataUuid == null
 				? FormDataCreateContext.getCreate(context, true, true).flatMap(saveContext -> formDataService.create(saveContext))
 				: FormDataUpdateContext.getUpdate(context, true, true, formDataUuid).flatMap(saveContext -> formDataService.update(saveContext)))
-			.doOnSuccess(response -> context.response().end(JsonUtil.toJson(response)))
+			.doOnSuccess(response -> {
+				String redirectUrl = response.getRedirectUrl();
+				HttpServerResponse serverResponse = context.response();
+				if (redirectUrl != null && !"".equals(redirectUrl)) {
+					serverResponse = serverResponse.setStatusCode(303).putHeader("Location", redirectUrl);
+				} else {
+					serverResponse = serverResponse.setStatusCode(200);
+				}
+				serverResponse.end(JsonUtil.toJson(response));
+			})
 			.ignoreElement();
 	}
 }

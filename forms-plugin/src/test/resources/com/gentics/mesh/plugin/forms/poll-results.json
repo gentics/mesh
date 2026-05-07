@@ -32,26 +32,26 @@
 				"type": "selectgroup",
 				"name": "radiobuttons1",
 				"select_type": "radiobuttons",
-				"label": "Radio buttons element",
+				"label": { "en": "Radio button elements", "de": "Elemente der Radiotaste" },
 				"properties": {
 					"customProperty": "Custom Radio Buttons Property"
 				},
-				"options": [
+				"selectOptions": [
 					{
 						"value": "Option which is never selected at the beginning",
-						"key": "r_X"
+						"label": { "en": "r_X", "de": "r_X" }
 					},
 					{
 						"value": "Radio button option 1",
-						"key": "r_1"
+						"label": { "en": "r_1", "de": "r_1" }
 					},
 					{
 						"value": "Radio button option 2",
-						"key": "r_2"
+						"label": { "en": "r_2", "de": "r_2" }
 					},
 					{
 						"value": "Radio button option 3",
-						"key": "r_3"
+						"label": { "en": "r_3", "de": "r_3" }
 					}
 				]
 			},
@@ -59,24 +59,24 @@
 				"type": "selectgroup",
 				"name": "singleselect1",
 				"select_type": "singleselect",
-				"label": "Single-select element",
-				"options": [
+				"label": { "en": "Single select element", "de": "Einzelwahlelement" },
+				"selectOptions": [
 					{
 						"value": "Single-select option 1",
-						"key": "s_1"
+						"label": { "en": "s_1", "de": "s_1" }
 					},
 
 					{
 						"value": "Option which is never selected in the middle",
-						"key": "s_X"
+						"label": { "en": "s_X", "de": "s_X" }
 					},
 					{
 						"value": "Single-select option 2",
-						"key": "s_2"
+						"label": { "en": "s_2", "de": "s_2" }
 					},
 					{
 						"value": "Single-select option 3",
-						"key": "s_3"
+						"label": { "en": "s_3", "de": "s_3" }
 					}
 				]
 			},
@@ -84,23 +84,23 @@
 				"type": "selectgroup",
 				"name": "multiselect1",
 				"select_type": "multiselect",
-				"label": "Multi-select element",
-				"options": [
+				"label": { "en": "Multi select element", "de": "Mehrfachwahlelement" },
+				"selectOptions": [
 					{
 						"value": "Multi-select option 1",
-						"key": "m_1"
+						"label": { "en": "m_1", "de": "m_1" }
 					},
 					{
 						"value": "Multi-select option 2",
-						"key": "m_2"
+						"label": { "en": "m_2", "de": "m_2" }
 					},
 					{
 						"value": "Multi-select option 3",
-						"key": "m_3"
+						"label": { "en": "m_3", "de": "m_3" }
 					},
 					{
 						"value": "Option which is never selected at the end",
-						"key": "m_X"
+						"label": { "en": "m_X", "de": "m_X" }
 					}
 				]
 			}

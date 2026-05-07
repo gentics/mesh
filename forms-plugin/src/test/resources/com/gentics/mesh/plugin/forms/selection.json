@@ -15,7 +15,7 @@
 				"type": "selectgroup",
 				"name": "radiobuttons1",
 				"select_type": "radiobuttons",
-				"label": "Radio buttons element",
+				"label": { "en": "Radio buttons element", "de": "Radiotastenelement" },
 				"customProperty": "customValue",
 				"moreCustomProperties": {
 					"no": false,
@@ -26,7 +26,7 @@
 						"foo": "bar"
 					}
 				},
-				"options": [
+				"selectOptions": [
 					{
 						"value": "Option which is never selected",
 						"key": "r_X"
@@ -49,8 +49,8 @@
 				"type": "selectgroup",
 				"name": "singleselect1",
 				"select_type": "singleselect",
-				"label": "Single-select element",
-				"options": [
+				"label": { "en": "Single select element", "de": "Einzelwahlelement" },
+				"selectOptions": [
 					{
 						"value": "Single-select option 1",
 						"key": "s_1"
@@ -69,19 +69,19 @@
 				"type": "selectgroup",
 				"name": "multiselect1",
 				"select_type": "multiselect",
-				"label": "Multi-select element",
-				"options": [
+				"label": { "en": "Multi select element", "de": "Mehrfachwahlelement" },
+				"selectOptions": [
 					{
 						"value": "Multi-select option 1",
-						"key": "m_1"
+						"label": { "en": "m_1", "de": "m_1" }
 					},
 					{
 						"value": "Multi-select option 2",
-						"key": "m_2"
+						"label": { "en": "m_2", "de": "m_2" }
 					},
 					{
 						"value": "Multi-select option 3",
-						"key": "m_3"
+						"label": { "en": "m_3", "de": "m_3" }
 					}
 				]
 			}
