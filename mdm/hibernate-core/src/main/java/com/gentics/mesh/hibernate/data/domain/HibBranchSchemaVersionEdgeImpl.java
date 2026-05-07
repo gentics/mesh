@@ -16,7 +16,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
  * @author plyhun
  *
  */
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "HibEntityCache")
 @Entity(name = "branch_schema_version_edge")
 public class HibBranchSchemaVersionEdgeImpl extends AbstractHibBranchSchemaVersion<HibSchemaVersionImpl> implements HibBranchSchemaVersion, Serializable {
 

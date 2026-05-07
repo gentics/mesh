@@ -41,7 +41,7 @@ import jakarta.persistence.QueryHint;
  * @author plyhun
  *
  */
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "HibEntityCache")
 @Entity(name = "nodefieldcontainer")
 @NamedQueries({
 		@NamedQuery(

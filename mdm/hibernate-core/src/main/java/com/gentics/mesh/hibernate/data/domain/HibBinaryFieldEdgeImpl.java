@@ -40,7 +40,7 @@ import com.gentics.mesh.hibernate.data.node.field.impl.HibBinaryFieldImpl;
  * @author plyhun
  *
  */
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "HibEntityCache")
 @Entity(name = "binaryfieldref")
 @NamedEntityGraph(name = "binaryfieldref.metadataProperties", attributeNodes = @NamedAttributeNode("metadataProperties"))
 @NamedQueries({

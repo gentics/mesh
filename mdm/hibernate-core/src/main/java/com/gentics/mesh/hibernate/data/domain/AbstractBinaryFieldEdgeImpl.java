@@ -40,7 +40,7 @@ public abstract class AbstractBinaryFieldEdgeImpl<B extends HibImageDataElement>
 	protected Double locationLongitude;
 	protected Integer locationAltitude;
 
-	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "HibEntityCache")
 	@ElementCollection
 	@CollectionTable
 	@MapKeyColumn(name = "pkey")

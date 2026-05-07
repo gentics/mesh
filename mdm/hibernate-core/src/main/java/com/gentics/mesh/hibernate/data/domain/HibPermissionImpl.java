@@ -29,7 +29,7 @@ import org.hibernate.annotations.Cache;
  * @author plyhun
  *
  */
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "HibEntityCache")
 @Entity(name = "permission")
 @IdClass(HibPermissionPK.class)
 public class HibPermissionImpl implements Serializable {

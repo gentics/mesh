@@ -28,7 +28,7 @@ import jakarta.persistence.UniqueConstraint;
  * @author plyhun
  *
  */
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "HibEntityCache")
 @Entity(name = "micronodefieldref")
 @NamedQueries({
 	@NamedQuery(

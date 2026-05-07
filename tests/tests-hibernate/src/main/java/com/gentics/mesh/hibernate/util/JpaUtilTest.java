@@ -1,6 +1,5 @@
 package com.gentics.mesh.hibernate.util;
 
-import com.gentics.mesh.hibernate.util.JpaUtil;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
