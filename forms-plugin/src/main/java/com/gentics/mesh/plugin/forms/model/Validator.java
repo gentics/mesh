@@ -1,8 +1,9 @@
 package com.gentics.mesh.plugin.forms.model;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -101,21 +102,19 @@ public enum Validator {
 	 */
 	private static boolean isDate(String value) {
 //		SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
-		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 		try {
-			format.parse(value);
-			return true;
-		} catch (ParseException e) {
+			return LocalDate.parse(value, dateFormatter)!= null;
+		} catch (DateTimeParseException e) {
 			return false;
 		}
 	}
 	
 	private static boolean isDatepicker(String value) {
-		SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
+		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 		try {
-			format.parse(value);
-			return true;
-		} catch (ParseException e) {
+			return LocalDate.parse(value, dateFormatter) != null;
+		} catch (DateTimeParseException e) {
 			return false;
 		}
 	}
@@ -126,11 +125,10 @@ public enum Validator {
 	 * @return true for time
 	 */
 	private static boolean isTime(String value) {
-		SimpleDateFormat format = new SimpleDateFormat("HH:mm");
+		DateTimeFormatter format = DateTimeFormatter.ofPattern("HH:mm");
 		try {
-			format.parse(value);
-			return true;
-		} catch (ParseException e) {
+			return LocalTime.parse(value, format) != null;
+		} catch (DateTimeParseException e) {
 			return false;
 		}
 	}
