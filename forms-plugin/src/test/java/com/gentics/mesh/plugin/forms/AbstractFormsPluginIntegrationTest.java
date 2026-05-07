@@ -219,16 +219,17 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 	 * @param fileName file name
 	 * @param permission whether the request shall be made with the required permissions
 	 * @param expectSuccess whether the request is expected to be successful
+	 * @param args form args to apply in Java String format
 	 * @return form uuid (null if request fails)
 	 * @throws IOException
 	 */
-	protected String createForm(String fileName, boolean permission, boolean expectSuccess) throws IOException {
+	protected String createForm(String fileName, boolean permission, boolean expectSuccess, Object... args) throws IOException {
 		String uuid = UUIDUtil.randomUUID();
 
 		JsonNode response = doRequest(new Request.Builder()
 				.url(projectUrl("/forms/" + uuid))
 				.headers(auth(permission))
-				.post(requestBodyFromFile(fileName))
+				.post(requestBodyFromFile(fileName, args))
 				.build(), permission, expectSuccess, JsonNode.class);
 
 		if (permission && expectSuccess) {
@@ -323,8 +324,8 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 	 * @return RequestBody
 	 * @throws IOException
 	 */
-	protected RequestBody requestBodyFromFile(String name) throws IOException {
-		return RequestBody.create(MediaType.parse("application/json"), fromFile(name));
+	protected RequestBody requestBodyFromFile(String name, Object... args) throws IOException {
+		return RequestBody.create(MediaType.parse("application/json"), fromFile(name, args));
 	}
 
 	/**
@@ -333,14 +334,18 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 	 * @return contents
 	 * @throws IOException
 	 */
-	protected String fromFile(String name) throws IOException {
+	protected String fromFile(String name, Object... args) throws IOException {
 		InputStream contents = getClass().getResourceAsStream(name);
 
 		if (contents == null) {
 			throw new FileNotFoundException("File not found: " + name);
 		}
-
-		return IOUtils.toString(contents, "UTF-8");
+		String string = IOUtils.toString(contents, "UTF-8");
+		if (args.length > 0) {
+			return string.formatted(args);
+		} else {
+			return string;
+		}
 	}
 
 	/**
