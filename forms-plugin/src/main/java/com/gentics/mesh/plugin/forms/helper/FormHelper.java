@@ -65,7 +65,7 @@ public class FormHelper {
 		if (elementType instanceof String) {
 			switch ((String) elementType) {
 			case "checkbox":
-			case "selectgroup":
+			case "catalog":
 				return elementTemplate(elementType, "poll-results", options);
 
 			default:

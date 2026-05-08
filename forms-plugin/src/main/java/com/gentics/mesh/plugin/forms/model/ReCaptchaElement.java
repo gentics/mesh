@@ -5,12 +5,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-import com.gentics.mesh.plugin.forms.model.schema.FormUiSchema;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
+import com.gentics.mesh.plugin.forms.model.schema.FormUiSchema;
 import com.gentics.mesh.plugin.forms.util.RxUtil;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
@@ -19,6 +20,7 @@ import com.jayway.jsonpath.Option;
 import io.reactivex.Maybe;
 import io.reactivex.Single;
 import io.vertx.core.MultiMap;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.reactivex.core.Vertx;
@@ -124,38 +126,39 @@ public class ReCaptchaElement extends FormElement {
 			Request request = new Request.Builder().url(url).post(formBody).build();
 
 			// send request
-			Call call = httpClient.newCall(request);
-			return Single.<Response>create(sub -> {
+			return Single.<Pair<Integer, String>>create(sub -> {
+				Call call = httpClient.newCall(request);
+				sub.setCancellable(call::cancel);
 				call.enqueue(new Callback() {
 					@Override
 					public void onFailure(Call call, IOException e) {
+						String error = String.format("I/O Error in %s %s : %s (%s)", HttpMethod.POST, call.request().url(), e.getClass().getSimpleName(), e.getLocalizedMessage());
 						if (!sub.isDisposed()) {
-							// TODO FIXME shouldn't this be actually thrown through Rx?
-							//sub.onError(new IOException(String.format("I/O Error in %s %s : %s (%s)", HttpMethod.POST, apiUrl, e.getClass().getSimpleName(), e.getLocalizedMessage()), e));
-							log.error("OkHttp POST to ReCaptcha failed.", e);
-							sub.onSuccess(new Response.Builder().code(500).message(e.getMessage()).build());
+							sub.onError(new IOException(error, e));
+						} else {
+							log.error(error, e);
 						}
 					}
 
 					@Override
 					public void onResponse(Call call, Response response) throws IOException {
-						if (!sub.isDisposed()) {
-							sub.onSuccess(response);
-						} else {
-							response.close();
+						try (ResponseBody body = response.body()) {
+							if (!sub.isDisposed()) {
+								sub.onSuccess(Pair.of(response.code(), (body != null) ? body.string() : null));
+							}
 						}
 					}
 				});
 			}).map(response -> {
-				int status = response.code();
+				int status = response.getKey();
 
 				log.debug("Response status: {}", status);
 
 				if (status >= 200 && status < 300) {
-					ResponseBody responseEntity = response.body();
+					String responseEntity = response.getRight();
 					if (responseEntity != null) {
 						// https://developers.google.com/recaptcha/docs/verify#api-response
-						String body = responseEntity.string();
+						String body = responseEntity;
 						JsonObject json = new JsonObject(body);
 
 						boolean success = json.getBoolean("success", false);

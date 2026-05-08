@@ -291,29 +291,6 @@ public abstract class FormElement implements RestModel {
 	}
 
 	/**
-	 * Check whether any data were posted for this element
-	 * @param postedData posted data
-	 * @param fileUploads fileuploads
-	 * @return true if data were posted
-	 */
-	public boolean isPosted(MultiMap postedData, Set<FileUpload> fileUploads) {
-		// if the element has a container, it is supposed to be posted, when the container was posted
-		if (container != null) {
-			return container.isPosted(postedData, fileUploads);
-		}
-
-		if (getName() == null) {
-			return false;
-		}
-		for (String alternative : Arrays.asList(getName(), String.format("%s[]", getName()))) {
-			if (postedData.contains(alternative)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/**
 	 * Validate the definition of this form element.
 	 *
 	 * <p>
