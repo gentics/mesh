@@ -1256,11 +1256,12 @@ public class FormDataService {
 		fileUploads = fileUploads.stream()
 			.collect(Collectors.toMap(
 				fu -> {
+					// Extract the field ID to use as a unique key, fallback to name if extraction fails
 					String id = BinaryElement.extractFieldId(fu.name());
 					return id != null ? id : fu.name();
 				},
-				fu -> fu,
-				(a, b) -> a
+				fu -> fu, // Store the FileUpload object itself as the value
+				(a, b) -> a // Merge function: In case of duplicate keys (same field ID), keep the first 'a'
 			))
 			.values().stream()
 			.collect(Collectors.toSet());
@@ -1303,7 +1304,6 @@ public class FormDataService {
 	private Single<FormData> publishFormData(FormDataCreateContext ctx, NodeResponse savedFileUploads, Map<String, ValidationError> errors) {
 		return adminClient.publishNode(ctx.getProjectName(), savedFileUploads.getUuid()).toSingle().flatMap(publishStatus -> {
 			PluginContext meshContext = ctx.getContext();
-			Form form = ctx.getForm();
 			MultiMap postedData = ctx.getPostedData();
 
 			// send mails to admin and user
