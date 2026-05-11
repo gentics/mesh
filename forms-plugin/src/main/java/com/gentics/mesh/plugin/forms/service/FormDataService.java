@@ -1092,14 +1092,9 @@ public class FormDataService {
 				// just return the errors in the response but don't save anything
 				var response = new FormData();
 
-				response.setHasValidationErrors(true);
-				if (ctx.getReferer() != null) {
-					response.setRedirectUrl(ctx.getReferer());
-				} else {
-					response.setRedirectUrl("");
-				}
-
-				return Single.just(response);
+				FormData formData = toValidationResponse(ctx, errors1);
+				
+				return Single.just(formData);
 			} else {
 				String projectName = ctx.getProjectName();
 				NodeResponse formNode = ctx.getFormNode();
@@ -1128,13 +1123,6 @@ public class FormDataService {
 							ctx.setFormDataNode(savedFileUploads); // updated formdata node
 							var response = toValidationResponse(ctx, errors);
 							response.setFormDataID(savedFileUploads.getUuid());
-							response.setHasValidationErrors(!errors.isEmpty());
-							if (ctx.getReferer() != null) {
-								response.setRedirectUrl(ctx.getReferer());
-							} else {
-								response.setRedirectUrl("");
-							}
-
 							return Single.just(response);
 						}
 					});
@@ -1177,6 +1165,11 @@ public class FormDataService {
 		var response = formDataNode == null
 			? FormService.buildDefaultFormData(ctx.getPostedData(), form, form.getUuid(), errors, lang, AuthUtil.decodeToken(pluginContext).getMap())
 			: FormService.buildFormDataFromNode(ctx.getPostedData(), form, form.getUuid(), errors, lang, formDataNode);
+		if (ctx.getReferer() != null) {
+			response.setRedirectUrl(ctx.getReferer());
+		} else {
+			response.setRedirectUrl("");
+		}
 
 		response.setHasValidationErrors(!errors.isEmpty());
 
