@@ -358,7 +358,7 @@ stage("Setup Build Environment") {
 					sh "cd server ; docker build --network=host -t " + registryHost + "/gentics/mesh:latest -t " + registryHost + "/gentics/mesh:" + version + " . ; cd .. "
 
 					if (!params.omitScan) {
-						scanImage image: registryHost + "/gentics/mesh:" + version, exitCode: 1
+						scanImage image: registryHost + "/gentics/mesh:" + version, exitCode: 1, dockerParams: "-v ${env.WORKSPACE}/build/trivyignore:/tmp/trivyignore", params: "--ignorefile /tmp/trivyignore"
 					}
 
 					// connectors
@@ -367,8 +367,8 @@ stage("Setup Build Environment") {
 					sh "cd .docker ; cp ../connectors/mariadb/target/mesh-database-connector-mariadb-" + mavenVersion + ".jar ./mesh-connector.jar ; docker build --network=host -t " + registryHost + "/gentics/mesh-mariadb:latest -t " + registryHost + "/gentics/mesh-mariadb:" + version + " --build-arg MESH_VERSION=" + version + " --build-arg MESH_REGISTRY_HOST=" + registryHost + " . ; rm -f mesh-connector.jar ; cd .."
 
 					if (!params.omitScan) {
-						scanImage image: registryHost + "/gentics/mesh-hsqldb:" + version, exitCode: 1
-						scanImage image: registryHost + "/gentics/mesh-mariadb:" + version, exitCode: 1
+						scanImage image: registryHost + "/gentics/mesh-hsqldb:" + version, exitCode: 1, dockerParams: "-v ${env.WORKSPACE}/build/trivyignore:/tmp/trivyignore", params: "--ignorefile /tmp/trivyignore"
+						scanImage image: registryHost + "/gentics/mesh-mariadb:" + version, exitCode: 1, dockerParams: "-v ${env.WORKSPACE}/build/trivyignore:/tmp/trivyignore", params: "--ignorefile /tmp/trivyignore"
 					}
 
 				} else {
