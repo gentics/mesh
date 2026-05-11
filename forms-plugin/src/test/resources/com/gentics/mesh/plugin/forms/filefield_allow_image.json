@@ -18,5 +18,40 @@
 				"elements": []
 			}
 		}
+	},
+	"uiSchema": {
+	  "key": "test-ui",
+	  "version": "1.0.0",
+	  "formname": {
+	    "de": "Testformular",
+	    "en": "Test Form"
+	  },
+	  "formdescription": {
+	    "de": "Beispielbeschreibung",
+	    "en": "Example description"
+	  },
+	  "formwidth": "9",
+	  "pages": [
+	    {
+	      "pagename": {
+	        "de": "Seite 1",
+	        "en": "Page 1"
+	      },
+	      "elements": [
+	        {
+	          "type": "control",
+	          "id": "file1",
+	          "label": {
+	            "de": "Datei 1",
+	            "en": "File 1"
+	          },
+			  "formGridOptions": {
+				"allowedFiletypes": ["html"]
+			  },
+	          "uiSchemaPage": 0
+	        }
+	      ]
+	    }
+	  ]
 	}
 }

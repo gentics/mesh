@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -21,7 +22,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -43,11 +46,11 @@ import com.gentics.mesh.parameter.client.DeleteParametersImpl;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.parameter.client.VersioningParametersImpl;
 import com.gentics.mesh.plugin.forms.model.FormtypeConfigsModel;
-import com.gentics.mesh.plugin.forms.model.schema.FormData;
-import com.gentics.mesh.plugin.forms.model.schema.FormDataProperty;
 import com.gentics.mesh.plugin.forms.model.LanguagesModel;
 import com.gentics.mesh.plugin.forms.model.response.FormOnlineResponse;
 import com.gentics.mesh.plugin.forms.model.response.StatusResponse;
+import com.gentics.mesh.plugin.forms.model.schema.FormData;
+import com.gentics.mesh.plugin.forms.model.schema.FormDataProperty;
 import com.gentics.mesh.plugin.forms.service.FormService;
 import com.gentics.mesh.plugin.forms.service.SchemaService;
 import com.gentics.mesh.plugin.forms.test.ResponseWithCookies;
@@ -643,8 +646,17 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 		FormData formData = new FormData();
 		Map<String, FormDataProperty> properties = new LinkedHashMap<>();
 		for (int ii = cookie ? 1 : 0; ii < data.length - 1; ii += 2) {
-			FormDataProperty prop = new FormDataProperty();
-			prop.setValue(data[ii + 1]);
+			FormDataProperty prop;
+			if (properties.containsKey(data[ii])) {
+				prop = properties.get(data[ii]);
+				prop.setValues(Stream.of(
+						(prop.getValues() != null ? prop.getValues().stream() : Stream.empty()), 
+						Stream.of(prop.getValue(), data[ii+1])).flatMap(Function.identity()).filter(Objects::nonNull).collect(Collectors.toList()));
+				prop.setValue(null);
+			} else {
+				prop = new FormDataProperty();
+				prop.setValue(data[ii + 1]);
+			}
 			properties.put(data[ii], prop);
 		}
 		formData.setProperties(properties);

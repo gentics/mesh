@@ -1,17 +1,15 @@
 package com.gentics.mesh.plugin.common.util;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.gentics.mesh.plugin.PluginContext;
-import io.vertx.core.http.HttpHeaders;
+import java.util.Optional;
+
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.vertx.core.json.JsonObject;
+import com.gentics.mesh.plugin.PluginContext;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.Optional;
+import io.vertx.core.http.HttpHeaders;
+import io.vertx.core.json.JsonObject;
 
 /**
  * Utility methods for handling JWTs.

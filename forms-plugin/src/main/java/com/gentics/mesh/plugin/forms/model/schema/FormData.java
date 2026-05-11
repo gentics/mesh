@@ -39,47 +39,53 @@ public class FormData {
 		return formID;
 	}
 
-	public void setFormID(String formID) {
+	public FormData setFormID(String formID) {
 		this.formID = formID;
+		return this;
 	}
 
 	public String getFormDataID() {
 		return formDataID;
 	}
 
-	public void setFormDataID(String formDataID) {
+	public FormData setFormDataID(String formDataID) {
 		this.formDataID = formDataID;
+		return this;
 	}
 
 	public String getVersion() {
 		return version;
 	}
 
-	public void setVersion(String version) {
+	public FormData setVersion(String version) {
 		this.version = version;
+		return this;
 	}
 
 	public boolean isHasValidationErrors() {
 		return hasValidationErrors;
 	}
 
-	public void setHasValidationErrors(boolean hasValidationErrors) {
+	public FormData setHasValidationErrors(boolean hasValidationErrors) {
 		this.hasValidationErrors = hasValidationErrors;
+		return this;
 	}
 
 	public Map<String, FormDataProperty> getProperties() {
 		return properties;
 	}
 
-	public void setProperties(Map<String, FormDataProperty> properties) {
+	public FormData setProperties(Map<String, FormDataProperty> properties) {
 		this.properties = properties;
+		return this;
 	}
 
 	public String getRedirectUrl() {
 		return redirectUrl;
 	}
 
-	public void setRedirectUrl(String redirectUrl) {
+	public FormData setRedirectUrl(String redirectUrl) {
 		this.redirectUrl = redirectUrl;
+		return this;
 	}
 }

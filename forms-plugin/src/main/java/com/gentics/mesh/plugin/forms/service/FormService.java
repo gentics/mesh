@@ -1,21 +1,22 @@
 package com.gentics.mesh.plugin.forms.service;
 
 import java.io.IOException;
-import java.util.function.BiFunction;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.function.BiFunction;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -24,12 +25,10 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
-import com.gentics.mesh.plugin.PluginContext;
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,6 +60,7 @@ import com.gentics.mesh.parameter.client.DeleteParametersImpl;
 import com.gentics.mesh.parameter.client.NodeParametersImpl;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.parameter.client.VersioningParametersImpl;
+import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.dagger.UserClient;
 import com.gentics.mesh.plugin.common.service.RenderService;
@@ -82,6 +82,7 @@ import com.gentics.mesh.plugin.forms.model.schema.PossibleValue;
 import com.gentics.mesh.plugin.forms.util.FormUtil;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.impl.EmptyResponse;
+
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Completable;
 import io.reactivex.Emitter;
@@ -96,35 +97,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.file.FileSystem;
-import org.apache.commons.collections.MapUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.function.BiFunction;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Singleton
 public class FormService {
@@ -731,13 +703,13 @@ public class FormService {
 	}
 
 	/**
-	 * load form only in language en
+	 * Load form
 	 * @param projectName
 	 * @param uuid
 	 * @return
 	 */
-	public Single<JsonObject> loadForm(String projectName, String uuid) {
-		return load(projectName, uuid, "en").map(formNode -> {
+	public Single<JsonObject> loadForm(String projectName, String uuid, String... language) {
+		return load(projectName, uuid, language).map(formNode -> {
 			// TODO if the node has no fields, no specified language was found
 			return new JsonObject(formNode.getFields().getStringField("json").getString());
 		});
@@ -780,7 +752,7 @@ public class FormService {
 							formDataNode.getUuid()),
 					HttpResponseStatus.CONFLICT.code()));
 		}
-		return loadForm(projectName, uuid)
+		return loadForm(projectName, uuid, language)
 				.flatMap(jsonObj -> Single.fromCallable(() -> {
 					Form form = toForm(jsonObj.encode(), uuid, null);
 					form.setData(formDataNode != null

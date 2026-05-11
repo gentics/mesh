@@ -15,7 +15,7 @@
 				"type": "selectgroup",
 				"name": "radiobuttons1",
 				"select_type": "radiobuttons",
-				"label": { "en": "Radio buttons element", "de": "Radiotastenelement" },
+				"label": "Radio buttons element",
 				"customProperty": "customValue",
 				"moreCustomProperties": {
 					"no": false,
@@ -49,7 +49,7 @@
 				"type": "selectgroup",
 				"name": "singleselect1",
 				"select_type": "singleselect",
-				"label": { "en": "Single select element", "de": "Einzelwahlelement" },
+				"label": "Single select element",
 				"selectOptions": [
 					{
 						"value": "Single-select option 1",
@@ -69,7 +69,7 @@
 				"type": "selectgroup",
 				"name": "multiselect1",
 				"select_type": "multiselect",
-				"label": { "en": "Multi select element", "de": "Mehrfachwahlelement" },
+				"label": "Multi select element",
 				"selectOptions": [
 					{
 						"value": "Multi-select option 1",
