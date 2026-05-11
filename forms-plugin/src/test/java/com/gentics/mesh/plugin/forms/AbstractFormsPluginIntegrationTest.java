@@ -553,19 +553,7 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 		MultipartBody.Builder body = new MultipartBody.Builder()
 			.setType(MultipartBody.FORM);
 
-		FormData formData = new FormData();
-		Map<String, FormDataProperty> properties = new LinkedHashMap<>();
-		for (int ii = cookie ? 1 : 0; ii < data.length - 1; ii += 2) {
-			FormDataProperty prop = new FormDataProperty();
-			prop.setValue(data[ii + 1]);
-			properties.put(data[ii], prop);
-		}
-		formData.setProperties(properties);
-		try {
-			body.addFormDataPart("formdata", OBJECT_MAPPER.writeValueAsString(formData));
-		} catch (JsonProcessingException e) {
-			throw new RuntimeException(e);
-		}
+		addFormDataPart(body, cookie, data);
 
 		Request.Builder requestBuilder = new Request.Builder()
 			.url(projectUrl(String.format("/form/%s/%s?lang=%s", formUuid, publish ? "submit" : "save", lang)))
@@ -601,7 +589,7 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 		return new ResponseWithCookies(response, Cookie.parseAll(postRequest.url(), response.headers()));
 	}
 
-	/**
+		/**
 	 * Submit form data together with binary file uploads using the new multipart format.
 	 *
 	 * @param formUuid form UUID
@@ -615,25 +603,14 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 			String formUuid,
 			boolean publish,
 			boolean expectRedirect,
+			boolean cookie,
 			String lang,
 			Map<String, RequestBody> files,
 			String ...data) throws IOException {
 		MultipartBody.Builder body = new MultipartBody.Builder()
 			.setType(MultipartBody.FORM);
 
-		FormData formData = new FormData();
-		Map<String, FormDataProperty> properties = new LinkedHashMap<>();
-		for (int ii = 0; ii < data.length - 1; ii += 2) {
-			FormDataProperty prop = new FormDataProperty();
-			prop.setValue(data[ii + 1]);
-			properties.put(data[ii], prop);
-		}
-		formData.setProperties(properties);
-		try {
-			body.addFormDataPart("formdata", OBJECT_MAPPER.writeValueAsString(formData));
-		} catch (JsonProcessingException e) {
-			throw new RuntimeException(e);
-		}
+		addFormDataPart(body, cookie, data);
 
 		for (Map.Entry<String, RequestBody> entry : files.entrySet()) {
 			String partName = "properties." + entry.getKey() + ".value";
@@ -659,6 +636,23 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 		}
 
 		return new ResponseWithCookies(response, Cookie.parseAll(postRequest.url(), response.headers()));
+	}
+
+
+	private void addFormDataPart(MultipartBody.Builder body, boolean cookie, String[] data) {
+		FormData formData = new FormData();
+		Map<String, FormDataProperty> properties = new LinkedHashMap<>();
+		for (int ii = cookie ? 1 : 0; ii < data.length - 1; ii += 2) {
+			FormDataProperty prop = new FormDataProperty();
+			prop.setValue(data[ii + 1]);
+			properties.put(data[ii], prop);
+		}
+		formData.setProperties(properties);
+		try {
+			body.addFormDataPart("formdata", OBJECT_MAPPER.writeValueAsString(formData));
+		} catch (JsonProcessingException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	/**
