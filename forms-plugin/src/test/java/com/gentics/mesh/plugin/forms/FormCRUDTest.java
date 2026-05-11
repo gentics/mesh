@@ -244,7 +244,7 @@ public class FormCRUDTest extends AbstractFormsPluginIntegrationTest {
 
 		for (int i = 0; i < 20; i++) {
 			boolean empty = i % 2 == 0;
-			submit(uuid, true, empty, "input1", empty ? "" : "data %d".formatted(i));
+			submit(uuid, true, empty, "input1", "en", empty ? "" : "data %d".formatted(i));
 		}
 
 		Request deleteRequest = new Request.Builder()

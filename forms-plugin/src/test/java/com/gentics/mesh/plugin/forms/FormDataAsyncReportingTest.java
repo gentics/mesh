@@ -55,7 +55,7 @@ public class FormDataAsyncReportingTest extends AbstractFormsPluginIntegrationTe
 
 		records.add(StringUtils.join(headers, ","));
 
-		submit(uuid, "input1", "value1", "input2", "value2", "input3", "value3");
+		submit(uuid, "en", "input1", "value1", "input2", "value2", "input3", "value3");
 		records.add(String.join(",", Arrays.asList("value1", "value2", "value3")));
 
 		Request request = new Request.Builder()

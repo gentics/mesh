@@ -22,6 +22,7 @@ import com.gentics.mesh.plugin.PluginManifest;
 import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.dagger.StorageDir;
 import com.gentics.mesh.plugin.common.dagger.UserClient;
+import com.gentics.mesh.plugin.common.util.AuthUtil;
 import com.gentics.mesh.plugin.common.util.ParameterUtil;
 import com.gentics.mesh.plugin.forms.FormsError;
 import com.gentics.mesh.plugin.forms.FormsPlugin;
@@ -34,9 +35,10 @@ import com.gentics.mesh.plugin.forms.export.Exporter;
 import com.gentics.mesh.plugin.forms.model.BinaryElement;
 import com.gentics.mesh.plugin.forms.model.Form;
 import com.gentics.mesh.plugin.forms.model.FormElement;
-import com.gentics.mesh.plugin.forms.model.PostDataResponse;
 import com.gentics.mesh.plugin.forms.model.ValidationError;
+import com.gentics.mesh.plugin.forms.model.schema.FormData;
 import com.gentics.mesh.plugin.forms.util.FormParameterUtil;
+import com.gentics.mesh.plugin.forms.util.FormUtil;
 import com.gentics.mesh.plugin.forms.util.FormUtil;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshResponse;
@@ -266,8 +268,8 @@ public class FormDataService {
 	 * @param ctx Request context
 	 * @return single of the post data response
 	 */
-	public Single<PostDataResponse> create(FormDataCreateContext ctx) {
-		return formService.loadAsAdminWithLanguageFallback(ctx.getProjectName(), ctx.getFormUuid(), true, ctx.getLanguages())
+	public Single<FormData> create(FormDataCreateContext ctx) {
+		return formService.loadAsAdmin(ctx.getProjectName(), ctx.getFormUuid(), true, "en")
 			.doOnSuccess(ctx::setFormNode)
 			.flatMap(formService::toForm)
 			.doOnSuccess(ctx::setForm)
@@ -280,16 +282,52 @@ public class FormDataService {
 	 * @param ctx Request context
 	 * @return single of the post data response
 	 */
-	public Single<PostDataResponse> update(FormDataUpdateContext ctx) {
+	public Single<FormData> update(FormDataUpdateContext ctx) {
 		return Single.zip(
-			formService.loadAsAdminWithLanguageFallback(ctx.getProjectName(), ctx.getFormUuid(), true, ctx.getLanguages()),
+				// always load English version of form
+				formService.loadAsAdmin(ctx.getProjectName(), ctx.getFormUuid(), true, "en"),
+				load(ctx.getProjectName(), ctx.getFormUuid(), ctx.getFormDataUuid()),
+				(formNode, formDataNode) -> formService.toForm(formNode)
+						.flatMap(form -> {
+							ctx.setFormNode(formNode);
+							ctx.setFormDataNode(formDataNode);
+							ctx.setForm(form);
+							return savePostedData(ctx);
+						}))
+				.flatMap(x -> x);
+	}
+
+	/**
+	 * Validate data posted by a user for the form without saving it.
+	 *
+	 * @param ctx Request context
+	 * @return single of form data validation state
+	 */
+	public Single<FormData> validate(FormDataCreateContext ctx) {
+		return formService.loadAsAdminWithLanguageFallback(ctx.getProjectName(), ctx.getFormUuid(), true, "en")
+			.doOnSuccess(ctx::setFormNode)
+			.flatMap(formService::toForm)
+			.doOnSuccess(ctx::setForm)
+			.flatMap(form -> validatePostedData(ctx))
+			.map(errors -> toValidationResponse(ctx, errors));
+	}
+
+	/**
+	 * Validate data posted by a user for an existing form data node without saving it.
+	 *
+	 * @param ctx Request context
+	 * @return single of form data validation state
+	 */
+	public Single<FormData> validate(FormDataUpdateContext ctx) {
+		return Single.zip(
+			formService.loadAsAdminWithLanguageFallback(ctx.getProjectName(), ctx.getFormUuid(), true, "en"),
 				load(ctx.getProjectName(), ctx.getFormUuid(), ctx.getFormDataUuid()),
 				(formNode, formDataNode) -> formService.toForm(formNode)
 					.flatMap(form -> {
 						ctx.setFormNode(formNode);
 						ctx.setFormDataNode(formDataNode);
 						ctx.setForm(form);
-						return savePostedData(ctx);
+						return validatePostedData(ctx).map(errors -> toValidationResponse(ctx, errors));
 					}))
 			.flatMap(x -> x);
 	}
@@ -1038,46 +1076,30 @@ public class FormDataService {
 	 * @param ctx
 	 * @return single redirect URL
 	 */
-	private Single<PostDataResponse> savePostedData(FormDataCreateContext ctx) {
+	private Single<FormData> savePostedData(FormDataCreateContext ctx) {
 		Form form = ctx.getForm();
 		MultiMap postedData = ctx.getPostedData();
-		Single<Map<String, ValidationError>> errorSingle = Single.zip(
-				Single.just(form.preventInjection(postedData, configuration.getSecurityOptions())), 
-				form.validate(postedData, ctx.getFileUploads(), ctx.getFormDataNode(), rxVertx, okHttpClientService.getClient()), 
-				(a,b) -> {
-					HashMap<String, ValidationError> errors = new HashMap<>();
-					errors.putAll(a);
-					errors.putAll(b);
-					return errors;
-				});
 
-		return errorSingle.flatMap(errors1 -> {
+		return validatePostedData(ctx).flatMap(errors1 -> {
 			// check whether we have any validation errors, that prevent storing of the data
 			Optional<ValidationError> errorPreventingDataStorage = errors1.values().stream()
 					.filter(ValidationError::isPreventStoring).findAny();
 
 			if (errorPreventingDataStorage.isPresent()) {
-				// log a warning
 				log.warn("Storing of POSTed data to form {} prevented by field {}. Validation error: {}", form.getUuid(),
 						errorPreventingDataStorage.get().getName(), errorPreventingDataStorage.get().getMessage());
 
-				// just return the errors in the response, but don't save anything
-				PostDataResponse response = new PostDataResponse();
-				response.setErrors(errors1);
-				response.setFinished(false);
-				if (ctx.getReferer() != null) {
-					response.setRedirectUrl(ctx.getReferer());
-				} else {
-					response.setRedirectUrl("");
-				}
+				// just return the errors in the response but don't save anything
+				var response = new FormData();
 
-				return Single.just(response);
+				FormData formData = toValidationResponse(ctx, errors1);
+				
+				return Single.just(formData);
 			} else {
 				String projectName = ctx.getProjectName();
 				NodeResponse formNode = ctx.getFormNode();
 
-				Single<String> dataFolderUuidSingle = ParameterUtil.getLanguages(ctx.getContext())
-						.flatMap(languages -> getFormDataFolderUuid(projectName, formNode.getUuid(), languages));
+				Single<String> dataFolderUuidSingle = getFormDataFolderUuid(projectName, formNode.getUuid(), "en");
 
 				return Single.just(errors1).zipWith(
 						dataFolderUuidSingle, 
@@ -1098,23 +1120,60 @@ public class FormDataService {
 								ctx.getContext().response().addCookie(cookie);
 							}
 
-							PostDataResponse response = new PostDataResponse();
-							response.setDataUuid(savedFileUploads.getUuid());
-							response.setCreated(savedFileUploads.getCreated());
-							response.setErrors(errors);
-							// TODO Set this to false?
-							response.setFinished(true);
-							if (ctx.getReferer() != null) {
-								response.setRedirectUrl(ctx.getReferer());
-							} else {
-								response.setRedirectUrl("");
-							}
-
+							ctx.setFormDataNode(savedFileUploads); // updated formdata node
+							var response = toValidationResponse(ctx, errors);
+							response.setFormDataID(savedFileUploads.getUuid());
 							return Single.just(response);
 						}
 					});
 			}
 		});
+	}
+
+	/**
+	 * Validate posted form data with the same rules used before saving.
+	 *
+	 * @param ctx Request context with the loaded form
+	 * @return single of validation errors keyed by form element name
+	 */
+	private Single<Map<String, ValidationError>> validatePostedData(FormDataCreateContext ctx) {
+		Form form = ctx.getForm();
+		MultiMap postedData = ctx.getPostedData();
+
+		return Single.zip(
+				Single.just(form.preventInjection(postedData, configuration.getSecurityOptions())),
+				form.validate(postedData, ctx.getFileUploads(), ctx.getFormDataNode(), rxVertx, okHttpClientService.getClient()),
+				(a, b) -> {
+					HashMap<String, ValidationError> errors = new HashMap<>();
+					errors.putAll(a);
+					errors.putAll(b);
+					return errors;
+				});
+	}
+
+	/**
+	 * Create a form data response containing the validation state.
+	 *
+	 * @param errors validation errors keyed by form element name
+	 * @return form data response
+	 */
+	private FormData toValidationResponse(FormDataCreateContext ctx, Map<String, ValidationError> errors) {
+		var form = ctx.getForm();
+		var pluginContext = ctx.getContext();
+		var lang = ParameterUtil.getQueryParam(pluginContext, "lang");
+		var formDataNode = ctx.getFormDataNode();
+		var response = formDataNode == null
+			? FormService.buildDefaultFormData(ctx.getPostedData(), form, form.getUuid(), errors, lang, AuthUtil.decodeToken(pluginContext).getMap())
+			: FormService.buildFormDataFromNode(ctx.getPostedData(), form, form.getUuid(), errors, lang, formDataNode);
+		if (ctx.getReferer() != null) {
+			response.setRedirectUrl(ctx.getReferer());
+		} else {
+			response.setRedirectUrl("");
+		}
+
+		response.setHasValidationErrors(!errors.isEmpty());
+
+		return response;
 	}
 
 	/**
@@ -1161,7 +1220,6 @@ public class FormDataService {
 		}
 
 		form.addFields(container, postedData, !errors.isEmpty());
-		form.updateFormPage(postedData);
 
 		if (!errors.isEmpty()) {
 			try {
@@ -1198,7 +1256,24 @@ public class FormDataService {
 				: Stream.empty())
 			.collect(Collectors.toSet());
 
-		fileUploads = fileUploads.stream().filter(fileUpload -> validUploadElements.contains(fileUpload.name())).collect(Collectors.toSet());
+		fileUploads = fileUploads.stream().filter(fileUpload -> {
+			String id = BinaryElement.extractFieldId(fileUpload.name());
+			return validUploadElements.contains(id != null ? id : fileUpload.name());
+		}).collect(Collectors.toSet());
+
+		// Only one binary upload per element is allowed — keep the first encountered per ID
+		fileUploads = fileUploads.stream()
+			.collect(Collectors.toMap(
+				fu -> {
+					// Extract the field ID to use as a unique key, fallback to name if extraction fails
+					String id = BinaryElement.extractFieldId(fu.name());
+					return id != null ? id : fu.name();
+				},
+				fu -> fu, // Store the FileUpload object itself as the value
+				(a, b) -> a // Merge function: In case of duplicate keys (same field ID), keep the first 'a'
+			))
+			.values().stream()
+			.collect(Collectors.toSet());
 
 		if (fileUploads.isEmpty()) {
 			return Single.just(formDataNode);
@@ -1211,10 +1286,15 @@ public class FormDataService {
 				long size = fileUpload.size();
 				InputStream ins = new FileInputStream(fileUpload.uploadedFileName());
 
+				String fieldName = BinaryElement.extractFieldId(fileUpload.name());
+				if (fieldName == null) {
+					fieldName = fileUpload.name();
+				}
+
 				// Always use the draft version because updating the binary field will increase the version of the node,
 				// which can lead to problems when multiple files are uploaded.
 				return adminClient.updateNodeBinaryField(projectName, formDataNode.getUuid(), formDataNode.getLanguage(), "draft",
-						fileUpload.name(),
+						fieldName,
 						ins, size, fileUpload.fileName(), fileUpload.contentType())
 					.toSingle();
 			}).flatMapSingle(single -> single), false, 1)
@@ -1230,7 +1310,7 @@ public class FormDataService {
 	 * @param errors
 	 * @return single
 	 */
-	private Single<PostDataResponse> publishFormData(FormDataCreateContext ctx, NodeResponse savedFileUploads, Map<String, ValidationError> errors) {
+	private Single<FormData> publishFormData(FormDataCreateContext ctx, NodeResponse savedFileUploads, Map<String, ValidationError> errors) {
 		return adminClient.publishNode(ctx.getProjectName(), savedFileUploads.getUuid()).toSingle().flatMap(publishStatus -> {
 			PluginContext meshContext = ctx.getContext();
 			Form form = ctx.getForm();
@@ -1260,11 +1340,9 @@ public class FormDataService {
 							}
 						}
 
-						PostDataResponse response = new PostDataResponse();
-						response.setDataUuid(savedFileUploads.getUuid());
-						response.setCreated(savedFileUploads.getCreated());
-						response.setErrors(errors);
-						response.setFinished(true);
+						FormData response = new FormData();
+						response.setFormDataID(savedFileUploads.getUuid());
+						response.setHasValidationErrors(!errors.isEmpty());
 						if (form.getSuccessurl() != null) {
 							response.setRedirectUrl(form.getSuccessurl());
 						} else if (isPoll) {
@@ -1272,12 +1350,10 @@ public class FormDataService {
 						} else {
 							response.setRedirectUrl("");
 						}
-
 						return response;
 					});			
 		});
 	}
-
 	/**
 	 * Add or update the {@link #COOKIE_NAME_VOTED forms-voted} cookie to include the UUID of the form for which data
 	 * was saved.

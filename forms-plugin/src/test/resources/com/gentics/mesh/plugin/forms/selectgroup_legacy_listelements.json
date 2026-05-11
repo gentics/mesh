@@ -1,16 +1,20 @@
 {
 	"name": "Invalid form with selectgroup element with a missing value",
-	"elements": [
-		{
-			"type": "selectgroup",
-			"name": "selectgroup1",
-			"label": "Select Group",
-			"listelements": [
-				{
-					"value": "option-value",
-					"label": "Option Label"
-				}
-			]
+	"schema": {
+		"key": "test-schema",
+	    "version": "1.0.0",
+	    "properties": {
+			"selectgroup1": {
+				"type": "selectgroup",
+				"name": "selectgroup1",
+				"label": "Select Group",
+				"listelements": [
+					{
+						"value": "option-value",
+						"label": "Option Label"
+					}
+				]
+			}
 		}
-	]
+	}
 }

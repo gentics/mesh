@@ -27,9 +27,10 @@ public abstract class AbstractEndpointValidationTest extends AbstractFormsPlugin
 	 * Dummy request body
 	 */
 	protected final static RequestBody DUMMY_REQUEST_BODY = new MultipartBody.Builder()
-			.setType(MultipartBody.FORM)
-			.addFormDataPart("input1", "bla")
-			.build();
+		.setType(MultipartBody.FORM)
+		.addFormDataPart("firstName", "FirstName")
+		.addFormDataPart("number", "13")
+		.build();
 
 	protected static String formUuid;
 

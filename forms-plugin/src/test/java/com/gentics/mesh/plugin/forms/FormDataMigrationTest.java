@@ -58,7 +58,7 @@ public class FormDataMigrationTest extends AbstractFormsPluginIntegrationTest {
 		// post some data
 		for (int i = 0; i < NUM_DATA; i++) {
 			boolean empty = RandomUtils.nextInt(0, 2) == 0;
-			submit(formUuid, true, empty, "input1", empty ? "" : "data %d".formatted(i));
+			submit(formUuid, true, empty, "input1", "en", empty ? "" : "data %d".formatted(i));
 		}
 
 		// undeploy forms plugin

@@ -1,50 +1,54 @@
 {
 	"name": "Form with three Textfields",
-	"elements": [
-		{
-			"type": "input",
-			"name": "input3",
-			"placeholderName": "",
-			"label": "Third Field",
-			"mandatory": true,
-			"info": "",
-			"tooltip": "",
-			"validation": "",
-			"value": "",
-			"minVal": "",
-			"maxVal": "",
-			"maxCharCount": "",
-			"elements": []
-		},
-		{
-			"type": "input",
-			"name": "input2",
-			"placeholderName": "",
-			"label": "Second Field",
-			"mandatory": true,
-			"info": "",
-			"tooltip": "",
-			"validation": "",
-			"value": "",
-			"minVal": "",
-			"maxVal": "",
-			"maxCharCount": "",
-			"elements": []
-		},
-		{
-			"type": "input",
-			"name": "input1",
-			"placeholderName": "",
-			"label": "First Field",
-			"mandatory": true,
-			"info": "",
-			"tooltip": "",
-			"validation": "",
-			"value": "",
-			"minVal": "",
-			"maxVal": "",
-			"maxCharCount": "",
-			"elements": []
+	"schema": {
+		"key": "test-schema",
+	    "version": "1.0.0",
+	    "properties": {
+			"input3": {
+				"type": "string",
+				"name": "input3",
+				"placeholderName": "",
+				"label": "Third Field",
+				"mandatory": true,
+				"info": "",
+				"tooltip": "",
+				
+				"value": "",
+				"minVal": "",
+				"maxVal": "",
+				"maxCharCount": "",
+				"elements": []
+			},
+			"input2": {
+				"type": "string",
+				"name": "input2",
+				"placeholderName": "",
+				"label": "Second Field",
+				"mandatory": true,
+				"info": "",
+				"tooltip": "",
+				
+				"value": "",
+				"minVal": "",
+				"maxVal": "",
+				"maxCharCount": "",
+				"elements": []
+			},
+			"input1": {
+				"type": "string",
+				"name": "input1",
+				"placeholderName": "",
+				"label": "First Field",
+				"mandatory": true,
+				"info": "",
+				"tooltip": "",
+				
+				"value": "",
+				"minVal": "",
+				"maxVal": "",
+				"maxCharCount": "",
+				"elements": []
+			}
 		}
-	]
+	}
 }

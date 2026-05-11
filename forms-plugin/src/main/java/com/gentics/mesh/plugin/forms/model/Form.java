@@ -455,17 +455,10 @@ public class Form implements RestModel {
 	 */
 	public Single<Map<String, ValidationError>> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx, OkHttpClient httpClient) {
 		// only filter out the elements, which have not been POSTed, if the form contains multiple pages
-		Predicate<FormElement> filter = null;
-		if (isMultipage()) {
-			filter = elem -> elem.isPosted(postedData, fileUploads);
-		} else {
-			filter = elem -> true;
-		}
 		return Single.zip(
 				StreamUtil.toIterable(
 					getElementsInsideProperties()
 						.filter(FormElement::isActive)
-						.filter(filter)
 						.map(elem -> elem.validate(postedData, fileUploads, formDataNode, rxVertx, httpClient, uiSchema)
 								.map(error -> Pair.of(elem.getName(), error))
 								.toSingle(Pair.of(null, null)))),

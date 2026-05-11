@@ -55,8 +55,8 @@ public abstract class ValueListElement extends FormElement {
 			LinkedHashMap::new);
 	}
 
+	@JsonProperty
 	protected List<ValueListItem> selectOptions = new ArrayList<>();
-
 
 	@JsonIgnore
 	protected Set<String> validValues = new HashSet<>();
@@ -185,6 +185,9 @@ public abstract class ValueListElement extends FormElement {
 		// This is also checked in validateForm(), but just to be sure.
 		if (CollectionUtils.isEmpty(selectOptions)) {
 			return true;
+		}
+		if (validValues.isEmpty()) {
+			updateValidValues();
 		}
 
 		return !validValues.contains(value);

@@ -24,7 +24,8 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 @FormElementType("adminmail")
 public class AdminMailElement extends ValueListElement {
 
-	
+	public AdminMailElement() {
+	}
 
 	@Override
 	public FormElement clone(boolean deep) {

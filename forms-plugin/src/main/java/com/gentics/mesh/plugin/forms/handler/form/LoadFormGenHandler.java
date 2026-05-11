@@ -3,18 +3,16 @@ package com.gentics.mesh.plugin.forms.handler.form;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import java.util.Base64;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.http.HttpConstants;
 import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.common.MeshPluginException;
+import com.gentics.mesh.plugin.common.util.AuthUtil;
 import com.gentics.mesh.plugin.common.util.ParameterUtil;
 import com.gentics.mesh.plugin.forms.handler.AbstractFormsHandler;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
@@ -54,7 +52,7 @@ public class LoadFormGenHandler extends AbstractFormsHandler {
 		JsonObject body = context.body().asJsonObject();
 		String formID = body != null ? body.getString("formID") : null;
 		String formDataUuid = body != null ? body.getString("formDataUuid") : null;
-		Map<String, Object> jwtClaims = extractJwtClaims(context);
+		Map<String, Object> jwtClaims = AuthUtil.decodeToken(context).getMap();
 
 		return uuidSingle
 				.flatMap(uuid -> ParameterUtil.getFirstLanguage(context, "dump")
@@ -83,27 +81,5 @@ public class LoadFormGenHandler extends AbstractFormsHandler {
 					}
 				})
 				.ignoreElement();
-	}
-
-	/**
-	 * Decodes the JWT Bearer token from the Authorization header and returns its claims as a map.
-	 * Returns an empty map if no valid Bearer token is present or decoding fails.
-	 */
-	private Map<String, Object> extractJwtClaims(PluginContext context) {
-		String authHeader = context.request().getHeader("Authorization");
-		String bearerPrefix = "Bearer ";
-		if (authHeader != null && authHeader.startsWith(bearerPrefix)) {
-			try {
-				String token = authHeader.substring(bearerPrefix.length()); // Bearer + space
-				String[] parts = token.split("\\.");
-				if (parts.length >= 2) {
-					String base64 = parts[1]; // payload
-					String payload = new String(Base64.getUrlDecoder().decode(base64));
-					return objectMapper.readValue(payload, new TypeReference<Map<String, Object>>() {});
-				}
-			} catch (Exception ignored) {
-			}
-		}
-		return Collections.emptyMap();
 	}
 }

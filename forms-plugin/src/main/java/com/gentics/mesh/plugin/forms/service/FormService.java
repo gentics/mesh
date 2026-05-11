@@ -42,15 +42,17 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpsertRequest;
+import com.gentics.mesh.core.rest.node.PublishStatusModel;
+import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.NumberField;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
-import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -62,25 +64,24 @@ import com.gentics.mesh.parameter.client.VersioningParametersImpl;
 import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.dagger.UserClient;
 import com.gentics.mesh.plugin.common.service.RenderService;
-
 import com.gentics.mesh.plugin.forms.FormsError;
 import com.gentics.mesh.plugin.forms.FormsPlugin;
 import com.gentics.mesh.plugin.forms.SchemaInitializer;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.config.MultipageRenderMode;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
+import com.gentics.mesh.plugin.forms.model.BinaryElement;
 import com.gentics.mesh.plugin.forms.model.DefaultValue;
 import com.gentics.mesh.plugin.forms.model.Form;
 import com.gentics.mesh.plugin.forms.model.FormElement;
+import com.gentics.mesh.plugin.forms.model.ValidationError;
 import com.gentics.mesh.plugin.forms.model.ValueListItem;
 import com.gentics.mesh.plugin.forms.model.schema.FormData;
 import com.gentics.mesh.plugin.forms.model.schema.FormDataProperty;
 import com.gentics.mesh.plugin.forms.model.schema.PossibleValue;
-import com.gentics.mesh.plugin.forms.model.ValidationError;
 import com.gentics.mesh.plugin.forms.util.FormUtil;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.impl.EmptyResponse;
-
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Completable;
 import io.reactivex.Emitter;
@@ -88,12 +89,42 @@ import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.functions.BiConsumer;
+import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.file.FileSystem;
+import org.apache.commons.collections.MapUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.function.BiFunction;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Singleton
 public class FormService {
@@ -753,25 +784,26 @@ public class FormService {
 				.flatMap(jsonObj -> Single.fromCallable(() -> {
 					Form form = toForm(jsonObj.encode(), uuid, null);
 					form.setData(formDataNode != null
-							? buildFormDataFromNode(form, formID, language, formDataNode)
-							: buildDefaultFormData(form, formID, language, jwtClaims));
+							? buildFormDataFromNode(MultiMap.caseInsensitiveMultiMap(), form, formID, Collections.emptyMap(), language, formDataNode)
+							: buildDefaultFormData(MultiMap.caseInsensitiveMultiMap(), form, formID, Collections.emptyMap(), language, jwtClaims));
 					return form;
 				}));
 	}
 
 	/**
-	 * Builds {@link FormData} using schema {@code formGridOptions.defaultValue} entries.
-	 * {@code hasValidationErrors} is always {@code false} in this mode.
+	 * Builds {@link FormData} using schema {@code formGridOptions.defaultValue} entries. {@code hasValidationErrors} is
+	 * always {@code false} in this mode.
 	 *
-	 * @param form      the loaded form definition
-	 * @param formID    client-supplied form instance identifier
-	 * @param language  language code for label and translation resolution
+	 * @param postedData Posted form data
+	 * @param form the loaded form definition
+	 * @param formID client-supplied form instance identifier
+	 * @param language language code for label and translation resolution
 	 * @param jwtClaims decoded JWT payload claims; used to resolve {@code userReference} defaults
+	 *
 	 * @return populated {@link FormData}
 	 */
-	private FormData buildDefaultFormData(Form form, String formID, String language, Map<String, Object> jwtClaims) {
-		return initFormData(form, formID, false,
-				(key, element) -> buildDefaultProperty(element, language, jwtClaims));
+	public static FormData buildDefaultFormData(MultiMap postedData, Form form, String formID, Map<String, ValidationError> errors, String language, Map<String, Object> jwtClaims) {
+		return initFormData(postedData, form, formID, errors, (key, element) -> buildDefaultProperty(element, language, jwtClaims));
 	}
 
 	/**
@@ -784,33 +816,46 @@ public class FormService {
 	 * @param node     the Mesh submission node whose fields supply the property values
 	 * @return populated {@link FormData} reflecting the stored submission
 	 */
-	private FormData buildFormDataFromNode(Form form, String formID, String language, NodeResponse node) {
+	public static FormData buildFormDataFromNode(MultiMap postedData, Form form, String formID, Map<String, ValidationError> errors, String language, NodeResponse node) {
 		StringFieldImpl errField = node.getFields().getStringField(Form.ERRORS_FIELD_NAME);
 		boolean hasErrors = errField != null && StringUtils.isNotBlank(errField.getString());
-		return initFormData(form, formID, hasErrors,
-				(key, element) -> buildPropertyFromNode(element, language, node));
+
+		return initFormData(postedData, form, formID, errors, (key, element) -> buildPropertyFromNode(element, language, node));
 	}
 
 	/**
-	 * Creates a {@link FormData} shell, iterates all schema properties, and populates the
-	 * {@code properties} map by applying {@code propertyBuilder} to each element.
+	 * Creates a {@link FormData} shell, iterates all schema properties, and populates the {@code properties} map by
+	 * applying {@code propertyBuilder} to each element.
 	 *
-	 * @param form            the loaded form definition
-	 * @param formID          client-supplied form instance identifier
-	 * @param hasErrors       value for {@link FormData#setHasValidationErrors}
+	 * @param postedData Posted form data
+	 * @param form the loaded form definition
+	 * @param formID client-supplied form instance identifier
+	 * @param errors value for {@link FormData#setHasValidationErrors}
 	 * @param propertyBuilder produces a {@link FormDataProperty} for each (key, element) pair
+	 *
 	 * @return fully assembled {@link FormData}
 	 */
-	private FormData initFormData(Form form, String formID, boolean hasErrors,
-			BiFunction<String, FormElement, FormDataProperty> propertyBuilder) {
+	private static FormData initFormData(MultiMap postedData, Form form, String formID, Map<String, ValidationError> errors,
+	                                     BiFunction<String, FormElement, FormDataProperty> propertyBuilder) {
 		FormData data = new FormData();
 		data.setFormID(formID);
 		data.setVersion(form.getSchema() != null ? form.getSchema().getVersion() : null);
-		data.setHasValidationErrors(hasErrors);
+		data.setHasValidationErrors(MapUtils.isNotEmpty(errors));
 		Map<String, FormDataProperty> properties = new LinkedHashMap<>();
 		if (form.getSchema() != null && form.getSchema().getProperties() != null) {
-			form.getSchema().getProperties().forEach((key, element) ->
-					properties.put(key, propertyBuilder.apply(key, element)));
+			form.getSchema().getProperties().forEach((key, element) -> {
+				var prop = propertyBuilder.apply(key, element);
+
+				if (postedData.contains(key)) {
+					prop.setValue(postedData.get(key));
+				}
+
+				if (errors.containsKey(key)) {
+					prop.setValidationMessage(errors.get(key).getMessage());
+				}
+
+				properties.put(key, prop);
+			});
 		}
 		data.setProperties(properties);
 		return data;
@@ -828,7 +873,7 @@ public class FormService {
 	 * @param jwtClaims decoded JWT payload claims; used to resolve {@code userReference} defaults
 	 * @return populated {@link FormDataProperty}
 	 */
-	private FormDataProperty buildDefaultProperty(FormElement element, String language, Map<String, Object> jwtClaims) {
+	private static FormDataProperty buildDefaultProperty(FormElement element, String language, Map<String, Object> jwtClaims) {
 		FormDataProperty prop = new FormDataProperty();
 		DefaultValue defaultValue = element.getFormGridOptions().getDefaultValue();
 		List<ValueListItem> selectOptions = resolveSelectOptions(element);
@@ -871,8 +916,21 @@ public class FormService {
 	 * @param node     Mesh submission node supplying stored field values
 	 * @return populated {@link FormDataProperty}
 	 */
-	private FormDataProperty buildPropertyFromNode(FormElement element, String language, NodeResponse node) {
+	private static FormDataProperty buildPropertyFromNode(FormElement element, String language, NodeResponse node) {
 		FormDataProperty prop = new FormDataProperty();
+
+		if (element instanceof BinaryElement) {
+			BinaryField binaryField = node.getFields().getBinaryField(element.getName());
+			if (binaryField != null) {
+				Map<String, Object> binaryValue = new LinkedHashMap<>();
+				binaryValue.put("fileName", binaryField.getFileName());
+				binaryValue.put("size", binaryField.getFileSize());
+				binaryValue.put("value", node.getUuid() + ":" + element.getName());
+				prop.setValue(binaryValue);
+			}
+			return prop;
+		}
+
 		List<ValueListItem> selectOptions = resolveSelectOptions(element);
 
 		if (selectOptions != null && !selectOptions.isEmpty()) {
@@ -915,7 +973,7 @@ public class FormService {
 	 * @param language      language code for display name resolution
 	 * @return list of {@link PossibleValue}s in the same order as {@code selectOptions}
 	 */
-	private List<PossibleValue> buildPossibleValues(List<ValueListItem> selectOptions, String language) {
+	private static List<PossibleValue> buildPossibleValues(List<ValueListItem> selectOptions, String language) {
 		return selectOptions.stream()
 				.map(item -> new PossibleValue(StringUtils.defaultString(item.getValue()),
 						resolveOptionLabel(item, language)))
@@ -932,7 +990,7 @@ public class FormService {
 	 * @param language   language code for display name resolution
 	 * @return matching {@link PossibleValue}, or {@code null}
 	 */
-	private PossibleValue findPossibleValue(String identifier, List<ValueListItem> options, String language) {
+	private static PossibleValue findPossibleValue(String identifier, List<ValueListItem> options, String language) {
 		if (options == null) {
 			return null;
 		}
@@ -951,7 +1009,7 @@ public class FormService {
 	 * @param language language code to look up
 	 * @return resolved label, never {@code null}
 	 */
-	private String resolveOptionLabel(ValueListItem item, String language) {
+	private static String resolveOptionLabel(ValueListItem item, String language) {
 		Map<String, String> labels = item.getLabel();
 		return (labels != null && language != null)
 				? StringUtils.defaultString(labels.get(language))
@@ -965,7 +1023,7 @@ public class FormService {
 	 * @param element form element to inspect
 	 * @return non-empty list of options, or {@code null}
 	 */
-	private List<ValueListItem> resolveSelectOptions(FormElement element) {
+	private static List<ValueListItem> resolveSelectOptions(FormElement element) {
 		List<ValueListItem> opts = element.getFormGridOptions().getSelectOptions();
 		if (opts != null && !opts.isEmpty()) {
 			return opts;

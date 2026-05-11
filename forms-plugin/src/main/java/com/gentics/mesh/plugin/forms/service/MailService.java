@@ -21,6 +21,7 @@ import com.gentics.mesh.plugin.common.TemplateWrapper;
 import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.service.RenderService;
 import com.gentics.mesh.plugin.common.util.ParameterUtil;
+import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.config.MailOptions;
 import com.gentics.mesh.plugin.forms.model.AdminMailElement;
@@ -54,14 +55,18 @@ public class MailService {
 
 	private final RenderService renderService;
 
+	private final PluginEnvironment env;
+
 	@Inject
 	public MailService(
 			@AdminClient MeshRestClient adminClient,
 			Vertx vertx,
 			FormsConfig configuration,
+			PluginEnvironment env,
 			RenderService renderService) {
 		this.adminClient = adminClient;
 		this.vertx = vertx;
+		this.env = env;
 		this.configuration = configuration;
 		this.renderService = renderService;
 	}
@@ -76,7 +81,7 @@ public class MailService {
 	 * @param context      plugin context
 	 */
 	public void sendMails(String projectName, Form form, NodeResponse formDataNode, PluginContext context) {
-		ParameterUtil.getFirstLanguage(context, null).subscribe(language -> {
+		ParameterUtil.getFirstLanguage(context, env.options().getDefaultLanguage()).subscribe(language -> {
 			boolean attachFileUploads = configuration.getMailOptions().isAttachFileUploads();
 			// Check for admin mails in AdminMailElements.
 			List<String> emails = form.getElementsInsideProperties()

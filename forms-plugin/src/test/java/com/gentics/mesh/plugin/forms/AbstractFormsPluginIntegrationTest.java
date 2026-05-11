@@ -11,7 +11,9 @@ import java.io.StringReader;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -28,7 +30,9 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
@@ -39,6 +43,8 @@ import com.gentics.mesh.parameter.client.DeleteParametersImpl;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.parameter.client.VersioningParametersImpl;
 import com.gentics.mesh.plugin.forms.model.FormtypeConfigsModel;
+import com.gentics.mesh.plugin.forms.model.schema.FormData;
+import com.gentics.mesh.plugin.forms.model.schema.FormDataProperty;
 import com.gentics.mesh.plugin.forms.model.LanguagesModel;
 import com.gentics.mesh.plugin.forms.model.response.FormOnlineResponse;
 import com.gentics.mesh.plugin.forms.model.response.StatusResponse;
@@ -71,6 +77,8 @@ import okhttp3.Response;
  * Integration tests for the FormsPlugin
  */
 public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginLocalIntegrationTest {
+
+	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
 	public static final String FIELD_RS_DATA_UUID = "dataUuid";
 	public static final String FIELD_RS_CREATED = "created";
@@ -509,9 +517,9 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 				.build()).execute();
 	}
 
-	protected void submitMultiple(String formUuid, boolean expectRedirect, List<String[]> data) throws IOException {
+	protected void submitMultiple(String formUuid, boolean expectRedirect, String lang, List<String[]> data) throws IOException {
 		for (String[] vote : data) {
-			ResponseWithCookies rs = submit(formUuid, true, expectRedirect, false, vote);
+			ResponseWithCookies rs = submit(formUuid, true, expectRedirect, false, false, lang, vote);
 
 			if (expectRedirect) {
 				assertThat(rs.response.isRedirect())
@@ -525,35 +533,30 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 		}
 	}
 
-	protected ResponseWithCookies submit(String formUuid, String ...data) throws IOException {
-		return submit(formUuid, true, false, data);
+	protected ResponseWithCookies submit(String formUuid, String lang, String ...data) throws IOException {
+		return submit(formUuid, true, false, lang, data);
 	}
 
-	protected ResponseWithCookies submit(String formUuid, boolean json, String ...data) throws IOException {
-		return submit(formUuid, true, false, false, true, data);
+	protected ResponseWithCookies submit(String formUuid, boolean json, String lang, String ...data) throws IOException {
+		return submit(formUuid, true, false, false, true, lang, data);
 	}
 
-	protected ResponseWithCookies submit(String formUuid, boolean publish, boolean expectRedirect, String ...data) throws IOException {
-		return submit(formUuid, publish, expectRedirect, false, data);
+	protected ResponseWithCookies submit(String formUuid, boolean publish, boolean expectRedirect, String lang, String ...data) throws IOException {
+		return submit(formUuid, publish, expectRedirect, false, lang, data);
 	}
 
-	protected ResponseWithCookies submit(String formUuid, boolean publish, boolean expectRedirect, boolean cookie, String ...data) throws IOException {
-		return submit(formUuid, publish, expectRedirect, cookie, false, data);
+	protected ResponseWithCookies submit(String formUuid, boolean publish, boolean expectRedirect, boolean cookie, String lang, String ...data) throws IOException {
+		return submit(formUuid, publish, expectRedirect, cookie, false, lang, data);
 	}
 
-	protected ResponseWithCookies submit(String formUuid, boolean publish, boolean expectRedirect, boolean cookie, boolean json, String ...data) throws IOException {
+	protected ResponseWithCookies submit(String formUuid, boolean publish, boolean expectRedirect, boolean cookie, boolean json, String lang, String ...data) throws IOException {
 		MultipartBody.Builder body = new MultipartBody.Builder()
 			.setType(MultipartBody.FORM);
 
-		for (int ii = cookie ? 1 : 0; ii < data.length; ii++) {
-			String field = data[ii++];
-			String value = ii < data.length ? data[ii] : "";
-
-			body.addFormDataPart(field, value);
-		}
+		addFormDataPart(body, cookie, data);
 
 		Request.Builder requestBuilder = new Request.Builder()
-			.url(projectUrl(String.format("/form/%s/%s", formUuid, publish ? "submit" : "save")))
+			.url(projectUrl(String.format("/form/%s/%s?lang=%s", formUuid, publish ? "submit" : "save", lang)))
 			.header("Referer", "ref");
 
 		if (cookie) {
@@ -563,15 +566,93 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 		Request postRequest = requestBuilder.post(body.build()).build();
 		Response response = client().newCall(postRequest).execute();
 
-		assertThat(response.isSuccessful())
-			.as(String.format("Response success %d (%s)", response.code(), response.message()))
-			.isTrue();
+		if (expectRedirect) {
+			assertThat(response.isRedirect())
+				.as(String.format("Response is redirect %d (%s)", response.code(), response.message()))
+				.isTrue();
+		} else {
+			assertThat(response.isSuccessful())
+				.as(String.format("Response success %d (%s)", response.code(), response.message()))
+				.isTrue();
 
-		assertThat(response.code())
-			.as("Response code")
-			.isEqualTo(HttpResponseStatus.OK.code());
+			if (json) {
+				assertThat(response.code())
+					.as("Response code")
+					.isEqualTo(HttpResponseStatus.OK.code());
+			} else {
+				assertThat(response.code())
+					.as("Response code")
+					.isGreaterThanOrEqualTo(HttpResponseStatus.OK.code()).isLessThan(HttpResponseStatus.MULTIPLE_CHOICES.code());
+			}
+		}
 
 		return new ResponseWithCookies(response, Cookie.parseAll(postRequest.url(), response.headers()));
+	}
+
+		/**
+	 * Submit form data together with binary file uploads using the new multipart format.
+	 *
+	 * @param formUuid form UUID
+	 * @param publish true to use the submit endpoint, false for save
+	 * @param expectRedirect true if a redirect response is expected
+	 * @param lang language code (e.g. "en")
+	 * @param files map of field ID to binary RequestBody; each part is sent as {@code properties.{fieldId}.value}
+	 * @param data alternating field-ID / value pairs for non-binary fields
+	 */
+	protected ResponseWithCookies submitWithFiles(
+			String formUuid,
+			boolean publish,
+			boolean expectRedirect,
+			boolean cookie,
+			String lang,
+			Map<String, RequestBody> files,
+			String ...data) throws IOException {
+		MultipartBody.Builder body = new MultipartBody.Builder()
+			.setType(MultipartBody.FORM);
+
+		addFormDataPart(body, cookie, data);
+
+		for (Map.Entry<String, RequestBody> entry : files.entrySet()) {
+			String partName = "properties." + entry.getKey() + ".value";
+			body.addFormDataPart(partName, entry.getKey(), entry.getValue());
+		}
+
+		Request postRequest = new Request.Builder()
+			.url(projectUrl(String.format("/form/%s/%s?lang=%s", formUuid, publish ? "submit" : "save", lang)))
+			.header("Referer", "ref")
+			.post(body.build())
+			.build();
+
+		Response response = client().newCall(postRequest).execute();
+
+		if (expectRedirect) {
+			assertThat(response.isRedirect())
+				.as(String.format("Response is redirect %d (%s)", response.code(), response.message()))
+				.isTrue();
+		} else {
+			assertThat(response.isSuccessful())
+				.as(String.format("Response success %d (%s)", response.code(), response.message()))
+				.isTrue();
+		}
+
+		return new ResponseWithCookies(response, Cookie.parseAll(postRequest.url(), response.headers()));
+	}
+
+
+	private void addFormDataPart(MultipartBody.Builder body, boolean cookie, String[] data) {
+		FormData formData = new FormData();
+		Map<String, FormDataProperty> properties = new LinkedHashMap<>();
+		for (int ii = cookie ? 1 : 0; ii < data.length - 1; ii += 2) {
+			FormDataProperty prop = new FormDataProperty();
+			prop.setValue(data[ii + 1]);
+			properties.put(data[ii], prop);
+		}
+		formData.setProperties(properties);
+		try {
+			body.addFormDataPart("formdata", OBJECT_MAPPER.writeValueAsString(formData));
+		} catch (JsonProcessingException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	/**

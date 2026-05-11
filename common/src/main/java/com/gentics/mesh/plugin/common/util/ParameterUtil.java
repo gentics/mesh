@@ -152,6 +152,10 @@ public final class ParameterUtil {
 		}
 	}
 
+	public static String getQueryParam(PluginContext context, String name) {
+		return context.queryParams().get(name);
+	}
+
 	/**
 	 * Get the query parameter with the given name.
 	 * @param context The plugin context for the request.

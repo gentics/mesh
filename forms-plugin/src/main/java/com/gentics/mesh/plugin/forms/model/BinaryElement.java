@@ -2,6 +2,8 @@ package com.gentics.mesh.plugin.forms.model;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -12,6 +14,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.config.TikaConfig;
@@ -46,6 +50,26 @@ import okhttp3.OkHttpClient;
 @Reportable
 @FormElementType("binary")
 public class BinaryElement extends FormElement {
+	private static final Pattern BINARY_KEY_PATTERN = Pattern.compile("^properties\\.([^.]+)\\.value");
+
+	/**
+	 * Extracts the element ID from a FormGen binary part key.
+	 * Handles both URI-encoded and plain keys, matching:
+	 * {@code properties.{ID}.value}.
+	 *
+	 * @return the element ID, or null if the name does not match the pattern
+	 */
+	public static String extractFieldId(String binaryPartKey) {
+		try {
+			String decoded = URLDecoder.decode(binaryPartKey, StandardCharsets.UTF_8);
+			Matcher m = BINARY_KEY_PATTERN.matcher(decoded);
+			if (m.find()) {
+				return m.group(1);
+			}
+		} catch (Exception ignored) {
+		}
+		return null;
+	}
 	public BinaryElement() {
 	}
 
@@ -174,14 +198,21 @@ public class BinaryElement extends FormElement {
 	}
 
 	/**
-	 * Get the fileupload for this field
+	 * Finds the file upload belonging to this element.
 	 *
-	 * @param fileUploads
-	 *            fileuploads
-	 * @return fileupload or null
+	 * <p>FormGen sends binary parts with a structured key (e.g. {@code properties.{ID}.value}),
+	 * so {@link #extractFieldId(String)} is used to extract the element ID from the part name
+	 * before comparing it to {@link #getName()}. Plain element IDs (legacy format) are still
+	 * supported as a fallback.</p>
+	 *
+	 * @param fileUploads all file uploads from the current request
+	 * @return the matching upload, or null if none found
 	 */
 	protected FileUpload getFileUpload(Set<FileUpload> fileUploads) {
-		return fileUploads.stream().filter(fu -> getName().equals(fu.name())).findFirst().orElse(null);
+		return fileUploads.stream().filter(fu -> {
+			String id = extractFieldId(fu.name());
+			return getName().equals(id != null ? id : fu.name());
+		}).findFirst().orElse(null);
 	}
 
 	/**

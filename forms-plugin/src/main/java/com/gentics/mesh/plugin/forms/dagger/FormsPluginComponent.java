@@ -9,6 +9,7 @@ import com.gentics.mesh.plugin.PluginManifest;
 import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.dagger.StorageDir;
 import com.gentics.mesh.plugin.common.dagger.UserClient;
+import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.handler.DeleteFormDataHandler;
 import com.gentics.mesh.plugin.forms.handler.FindFormDataHandler;
@@ -16,6 +17,7 @@ import com.gentics.mesh.plugin.forms.handler.LoadFormDataBinaryHandler;
 import com.gentics.mesh.plugin.forms.handler.PurgeStaleDataHandler;
 import com.gentics.mesh.plugin.forms.handler.SaveDataHandler;
 import com.gentics.mesh.plugin.forms.handler.SubmitDataHandler;
+import com.gentics.mesh.plugin.forms.handler.ValidationHandler;
 import com.gentics.mesh.plugin.forms.handler.downloads.CheckDownloadHandler;
 import com.gentics.mesh.plugin.forms.handler.downloads.DownloadHandler;
 import com.gentics.mesh.plugin.forms.handler.downloads.ExportHandler;
@@ -101,6 +103,8 @@ public interface FormsPluginComponent {
 
 	SubmitDataHandler submitDataHandler();
 
+	ValidationHandler validationHandler();
+
 	ExportHandler exportHandler();
 
 	RequestExportHandler requestExportHandler();
@@ -141,6 +145,9 @@ public interface FormsPluginComponent {
 
 		@BindsInstance
 		Builder manifest(PluginManifest manifest);
+
+		@BindsInstance
+		Builder env(PluginEnvironment env);
 
 		FormsPluginComponent build();
 	}

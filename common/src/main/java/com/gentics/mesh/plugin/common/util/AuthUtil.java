@@ -1,10 +1,17 @@
 package com.gentics.mesh.plugin.common.util;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.gentics.mesh.plugin.PluginContext;
+import io.vertx.core.http.HttpHeaders;
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.vertx.core.json.JsonObject;
+
+import java.util.Collections;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * Utility methods for handling JWTs.
@@ -12,6 +19,21 @@ import io.vertx.core.json.JsonObject;
 public class AuthUtil {
 
 	private static final Logger log = LoggerFactory.getLogger(AuthUtil.class);
+
+	/**
+	 * Tries to decode a JWT which is taken from the {@code Authorization} header.
+	 * @param ctx The plugin context of the current request.
+	 * @return The decoded JWT as a <code>JsonObject</code>.
+	 */
+	public static JsonObject decodeToken(PluginContext ctx) {
+		var bearerPrefix = "Bearer ";
+		var token = Optional.ofNullable(ctx.request().getHeader(HttpHeaders.AUTHORIZATION))
+			.filter(header -> header.startsWith(bearerPrefix))
+			.map(header -> header.substring(bearerPrefix.length()))
+			.orElse(null);
+
+		return decodeToken(token);
+	}
 
 	/**
 	 * Tries to decode the given string as a JWT and returns the payload part.

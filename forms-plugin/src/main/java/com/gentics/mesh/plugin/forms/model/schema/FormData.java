@@ -1,5 +1,6 @@
 package com.gentics.mesh.plugin.forms.model.schema;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -20,6 +21,8 @@ public class FormData {
 	@JsonProperty("formID")
 	private String formID;
 
+	private String formDataID;
+
 	@JsonProperty("version")
 	private String version;
 
@@ -29,12 +32,23 @@ public class FormData {
 	@JsonProperty("properties")
 	private Map<String, FormDataProperty> properties = new LinkedHashMap<>();
 
+	@JsonIgnore
+	private String redirectUrl;
+
 	public String getFormID() {
 		return formID;
 	}
 
 	public void setFormID(String formID) {
 		this.formID = formID;
+	}
+
+	public String getFormDataID() {
+		return formDataID;
+	}
+
+	public void setFormDataID(String formDataID) {
+		this.formDataID = formDataID;
 	}
 
 	public String getVersion() {
@@ -59,5 +73,13 @@ public class FormData {
 
 	public void setProperties(Map<String, FormDataProperty> properties) {
 		this.properties = properties;
+	}
+
+	public String getRedirectUrl() {
+		return redirectUrl;
+	}
+
+	public void setRedirectUrl(String redirectUrl) {
+		this.redirectUrl = redirectUrl;
 	}
 }
