@@ -47,7 +47,7 @@ public class FormDataPurgeTest extends AbstractFormPostDataTest {
 		for (String formUuid : formUuids) {
 			for (int i = 0; i < NUM_DATA; i++) {
 				boolean empty = i % 2 == 0;
-				submit(formUuid, true, empty, "input1", empty ? "" : "data %d".formatted(i));
+				submit(formUuid, true, empty, "en", "input1", empty ? "" : "data %d".formatted(i));
 			}
 		}
 

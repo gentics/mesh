@@ -148,7 +148,7 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 	public void testLoadFormGenWithFormDataUuid() throws IOException {
 		String formUuid = createForm("formgen_load.json");
 
-		submit(formUuid, false, false, false, true, "firstName", "Hans", "notes", "Wichtige Notiz");
+		submit(formUuid, false, false, false, true, "en", "firstName", "Hans", "notes", "Wichtige Notiz");
 		String formDataUuid = getSingleFormDataNode(formUuid).getUuid();
 
 		Response response = doLoadRequest(formUuid, FORM_ID, "en", true, formDataUuid);
@@ -169,7 +169,7 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 	public void testLoadFormGenSelectOptionsValueFromSubmission() throws IOException {
 		String formUuid = createForm("formgen_load.json");
 
-		submit(formUuid, false, false, false, true,
+		submit(formUuid, false, false, false, true, "en",
 				"firstName", "Hans",
 				"age", "42",
 				"notes", "Wichtige Notiz",
@@ -272,7 +272,7 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 	public void testLoadFormGenPublishedFormDataReturnsConflict() throws IOException {
 		String formUuid = createForm("formgen_load.json");
 		// publish = true
-		submit(formUuid, true, "firstName", "Hans");
+		submit(formUuid, true, "en", "firstName", "Hans");
 		String formDataUuid = getSingleFormDataNode(formUuid).getUuid();
 
 		Response response = doLoadRequest(formUuid, FORM_ID, "en", true, formDataUuid);

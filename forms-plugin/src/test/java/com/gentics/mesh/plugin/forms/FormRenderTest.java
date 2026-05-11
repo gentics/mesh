@@ -77,6 +77,7 @@ public class FormRenderTest extends AbstractFormsPluginIntegrationTest {
 
 		submitMultiple(uuid,
 			true,
+			"en",
 			Arrays.asList(
 				new String[] {
 					"checkbox1", "1",
@@ -138,13 +139,13 @@ public class FormRenderTest extends AbstractFormsPluginIntegrationTest {
 	@Test
 	public void testRenderPollUnpublished() throws IOException {
 		String uuid = createForm("poll-results.json");
-		ResponseWithCookies rs = submit(uuid, false, true, false,
+		ResponseWithCookies rs = submit(uuid, false, true, false, "en",
 			"checkbox1", "1",
 			"radiobuttons1", "r_1",
 			"singleselect1", "s_1",
 			"multiselect1", "m_1", "multiselect1", "m_2", "multiselect1", "m_3");
 
-		rs = submit(uuid, true, true, false,
+		rs = submit(uuid, true, true, false, "en",
 			"radiobuttons1", "r_2",
 			"singleselect1", "s_1",
 			"multiselect1", "m_1", "multiselect1", "m_2", "multiselect1", "m_3");

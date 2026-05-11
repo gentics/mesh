@@ -1313,6 +1313,7 @@ public class FormDataService {
 	private Single<FormData> publishFormData(FormDataCreateContext ctx, NodeResponse savedFileUploads, Map<String, ValidationError> errors) {
 		return adminClient.publishNode(ctx.getProjectName(), savedFileUploads.getUuid()).toSingle().flatMap(publishStatus -> {
 			PluginContext meshContext = ctx.getContext();
+			Form form = ctx.getForm();
 			MultiMap postedData = ctx.getPostedData();
 
 			// send mails to admin and user

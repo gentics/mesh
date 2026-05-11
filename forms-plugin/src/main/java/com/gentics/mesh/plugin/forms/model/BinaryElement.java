@@ -55,7 +55,7 @@ public class BinaryElement extends FormElement {
 	/**
 	 * Extracts the element ID from a FormGen binary part key.
 	 * Handles both URI-encoded and plain keys, matching:
-	 * {@code properties.{ID}.value} and {@code properties.{ID}.values[N]}.
+	 * {@code properties.{ID}.value}.
 	 *
 	 * @return the element ID, or null if the name does not match the pattern
 	 */
