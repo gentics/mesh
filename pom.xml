@@ -17,7 +17,7 @@
 		<mesh.build.version>${project.version}</mesh.build.version>
 		<mesh.build.timestamp>${maven.build.timestamp}</mesh.build.timestamp>
 
-		<vertx.version>5.0.5</vertx.version>
+		<vertx.version>5.0.12</vertx.version>
 		<dagger.version>2.56.2</dagger.version>
 		<hibernate.version>7.1.8.Final</hibernate.version>
 		<auto-factory.version>1.0-beta8</auto-factory.version>
