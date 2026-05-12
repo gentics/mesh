@@ -5,7 +5,7 @@
 	    "version": "1.0.0",
 	    "properties": {
 			"selectgroup1": {
-				"type": "selectgroup",
+				"type": "catalog",
 				"name": "selectgroup1",
 				"label": { "en": "Select group", "de": "Wahlgruppe" },
 				"selectOptions": [

@@ -381,7 +381,7 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 		}
 
 		Request loadRequest = new Request.Builder()
-				.url(projectUrl("/forms/" + uuid + "/submit"))
+				.url(projectUrl("/forms/" + uuid + "/submit?lang=en"))
 				.headers(auth(permission))
 				.get()
 				.build();

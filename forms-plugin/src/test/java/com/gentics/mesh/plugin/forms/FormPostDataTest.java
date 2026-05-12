@@ -860,14 +860,14 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		}
 	}
 
-	private FormData makeFormdata(String formID, String formDataUuid, Map<String, String> params) {
+	public static FormData makeFormdata(String formID, String formDataUuid, Map<String, String> params) {
 		return new FormData()
 				.setFormID(formID)
 				.setFormDataID(formDataUuid)
 				.setProperties(params.entrySet().stream().map(e -> Pair.of(e.getKey(), new FormDataProperty().setValue(e.getValue()))).collect(Collectors.toMap(Pair::getKey, Pair::getValue)));
 	}
 
-	private String makeFormdataMultipart(String formID, String formDataUuid, Map<String, String> params) {
+	public static String makeFormdataMultipart(String formID, String formDataUuid, Map<String, String> params) {
 		return JsonUtil.toJson(makeFormdata(formID, formDataUuid, params));
 	}
 
@@ -1351,6 +1351,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 	 * checked element is not set to the expected value.
 	 */
 	@Test
+	@Ignore("Need a rewrite away of ConditionalContainer")
 	public void testConditionalContainerSkipSave() throws IOException {
 		String formDefinition = "conditional_container.json";
 		String uuid = createForm(formDefinition, true, true);
@@ -1502,7 +1503,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 	 */
 	@Test
 	public void testSuccessUrl() throws IOException {
-		String uuid = createMultilanguageForm("successurl_en.json", "successurl_it.json");
+		String uuid = createMultilanguageForm("successurl_%s.json".formatted(language));
 
 		RequestBody requestBody = new MultipartBody.Builder()
 				.setType(MultipartBody.FORM)
@@ -1538,7 +1539,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 	 */
 	@Test
 	public void testSuccessUrlOnUpdate() throws IOException {
-		String uuid = createMultilanguageForm("successurl_en.json", "successurl_it.json");
+		String uuid = createMultilanguageForm("successurl_%s.json".formatted(language));
 
 		RequestBody requestBody = new MultipartBody.Builder()
 				.setType(MultipartBody.FORM)

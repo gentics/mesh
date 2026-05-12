@@ -74,11 +74,11 @@ public abstract class AbstractEndpointValidationTest extends AbstractFormsPlugin
 			formUuid = createForm("inputfield.json");
 
 			Request postRequest = new Request.Builder()
-					.url(HttpUrl.get(projectUrl("/form/%s/save".formatted(formUuid))).newBuilder().build())
+					.url(HttpUrl.get(projectUrl("/form/%s/save?lang=en".formatted(formUuid))).newBuilder().build())
 					.header("Referer", "ref").post(DUMMY_REQUEST_BODY).build();
 
 			Response response = client().newCall(postRequest).execute();
-			assertResponse(response, 200);
+			assertResponse(response, 303);
 
 			formDataUuid = getSingleFormDataNode(formUuid).getUuid();
 
@@ -96,9 +96,6 @@ public abstract class AbstractEndpointValidationTest extends AbstractFormsPlugin
 	 * @param expectedResponseCode expected response code
 	 */
 	protected void assertResponse(Response response, int expectedResponseCode) {
-		boolean expectSuccess = expectedResponseCode < 400;
-		assertThat(response.isSuccessful())
-				.as(String.format("Response status %d (%s)", response.code(), response.message())).isEqualTo(expectSuccess);
 		assertThat(response.code()).as("Response code").isEqualTo(expectedResponseCode);
 	}
 }

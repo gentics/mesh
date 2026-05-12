@@ -309,6 +309,7 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 			.post(requestBodyFromFile(fileName))
 			.build();
 		Response response = client().newCall(updateRequest).execute();
+		String body = response.body().string();
 
 		if (permission) {
 			assertThat(response.isSuccessful())
@@ -318,7 +319,7 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 			assertThat(loadSchema(SchemaService.getSchemaName(uuid))).as("Update form Schema").isPresent();
 
 			if (expectSuccess) {
-				NodeResponse updatedNode = JsonUtil.readValue(response.body().string(), NodeResponse.class);
+				NodeResponse updatedNode = JsonUtil.readValue(body, NodeResponse.class);
 
 				return updatedNode;
 			}
@@ -412,7 +413,7 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 	 * @throws IOException
 	 */
 	protected FormOnlineResponse checkFormOnline(String uuid, String language, boolean permission, boolean expectSuccess) throws IOException {
-		return doRequest(new Request.Builder().url(projectUrl("/forms/" + uuid + "/online/" + language))
+		return doRequest(new Request.Builder().url(projectUrl("/forms/" + uuid + "/online?lang=" + language))
 				.headers(auth(permission)).get().build(), permission, expectSuccess, FormOnlineResponse.class);
 	}
 
