@@ -7,6 +7,11 @@
 | Description
 
 
+| clusteredHibernateCacheHeapFree
+| false
+| string
+| Set the minimum required amount of free heap memory for the eviction policy of the hibernate cache when using clustering. A value ended with K/M/G will mean an absolute value in [kil|mega|giga]bytes correspondingly. A value ended with % will mean a percent of mininum free memory. Default: 10%
+
 | fieldContainerCacheSize
 | false
 | string
@@ -16,6 +21,11 @@
 | false
 | string
 | Set the maximum size of the list field cache. A value of null will disable the cache. A value ended with K/M/G will mean an absolute value in [kil|mega|giga]bytes correspondingly. A value ended with % will mean a percent of maximum memory Mesh is allowed to use. Default: 50_000
+
+| nonClusteredHibernateCacheSize
+| false
+| string
+| Set the maximum size of the hibernate cache. A value of null will disable the cache. A value ended with K/M/G will mean an absolute value in [kil|mega|giga]bytes correspondingly. A value ended with % will mean a percent of maximum memory Mesh is allowed to use. Default: 50_000
 
 | pathCacheSize
 | false
