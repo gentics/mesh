@@ -350,14 +350,10 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 	@Test
 	public void testPostFile() throws IOException {
 		Pair<String, String> data = doPostFile("filefield.json");
-
-		RequestBody requestBody = RequestBody.create(
-				new JsonObject().put("formID", data.getLeft()).put("formDataUuid", data.getRight()).encode(), 
-				MediaType.parse("application/json; charset=utf-8"));
-
 		Request request = new Request.Builder()
-				.url(projectUrl("/form/" + data.getLeft() + "/load?lang=" + language))
-				.post(requestBody).build();
+			.url(projectUrl("/forms/" + data.getLeft() + "/data/" + data.getRight() + "/binary/file1"))
+			.get()
+			.build();
 		Response response = client().newCall(request).execute();
 
 		assertThat(response.code())
@@ -365,9 +361,10 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 			.isEqualTo(HttpResponseStatus.FORBIDDEN.code());
 
 		request = new Request.Builder()
-				.headers(auth(true))
-				.url(projectUrl("/form/" + data.getLeft() + "/load?lang=" + language))
-				.post(requestBody).build();
+			.url(projectUrl("/forms/" + data.getLeft() + "/data/" + data.getRight() + "/binary/file1"))
+			.headers(auth(true))
+			.get()
+			.build();
 		response = client().newCall(request).execute();
 
 		assertThat(response.code())
@@ -627,7 +624,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 	@Test
 	public void testSelectionInvalidValues() throws IOException, MessagingException {
 		String uuid = createForm("selection.json");
-		ResponseWithCookies rs = submit(uuid, true, false, false, true, language,
+		ResponseWithCookies rs = submit(uuid, true, true, false, true, language,
 			"checkbox1", "Y",
 			"radiobuttons1", "r_Nope",
 			"singleselect1", "s_Nope",
@@ -635,18 +632,18 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 
 		var rsBody = new JsonObject(rs.response.body().string());
 
-		assertThat(rsBody.getJsonObject("errors").getMap())
+		assertThat(rsBody.getBoolean("hasValidationErrors"))
 			.as("Field errors on submit")
-			.containsOnlyKeys("radiobuttons1", "multiselect1", "checkbox1", "singleselect1");
+			.isTrue();
 
-		var errors = rsBody.getJsonObject("errors");
+		var properties = rsBody.getJsonObject("properties");
 
-		assertError(errors, "checkbox1", "Y");
-		assertError(errors, "radiobuttons1", "r_Nope");
-		assertError(errors, "singleselect1", "s_Nope");
-		assertError(errors, "multiselect1", "m_Nope");
+		assertError(properties, "checkbox1", "Y", "validationMessage");
+		assertError(properties, "radiobuttons1", "r_Nope", "validationMessage");
+		assertError(properties, "singleselect1", "s_Nope", "validationMessage");
+		assertError(properties, "multiselect1", "m_Nope", "validationMessage");
 
-		var formDataUuid = rsBody.getString("dataUuid");
+		var formDataUuid = rsBody.getString("formDataID");
 		var formDataNode = getFormDataNode(formDataUuid);
 
 		var fields = new JsonObject(formDataNode.getFields().toJson());
@@ -659,23 +656,23 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 			.as("Saved multiselect values")
 			.containsExactly("m_1", "m_3");
 
-		errors = new JsonObject(fields.getString("errors"));
+		properties = new JsonObject(fields.getString("errors"));
 
-		assertError(errors, "checkbox1", "Y");
-		assertError(errors, "radiobuttons1", "r_Nope");
-		assertError(errors, "singleselect1", "s_Nope");
-		assertError(errors, "multiselect1", "m_Nope");
+		assertError(properties, "checkbox1", "Y", "message");
+		assertError(properties, "radiobuttons1", "r_Nope", "message");
+		assertError(properties, "singleselect1", "s_Nope", "message");
+		assertError(properties, "multiselect1", "m_Nope", "message");
 	}
 
 	/**
 	 * Check if the errors object contains an error message for the given field and value.
 	 *
-	 * @param errors The errors.
+	 * @param properties The properties with errors.
 	 * @param field The erroneous field.
 	 * @param value The invalid value for the field.
 	 */
-	private void assertError(JsonObject errors, String field, String value) {
-		assertThat(errors.getJsonObject(field).getString("message"))
+	private void assertError(JsonObject properties, String field, String value, String messageKey) {
+		assertThat(properties.getJsonObject(field).getString(messageKey))
 			.as("Error for field \"%s\"".formatted(field))
 			.isEqualTo("Der Wert \"%s\" is nicht erlaubt für das Feld \"%s\"".formatted(value, field));
 	}
@@ -965,6 +962,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 	 * @throws IOException
 	 */
 	@Test
+	@Ignore("Custom config is not applicable for the vanilla Forms 3rd gen")
 	public void testCustomElement() throws IOException {
 		String uuid = createForm("custom.json");
 
@@ -996,6 +994,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 	 * @throws IOException
 	 */
 	@Test
+	@Ignore("Custom config is not applicable for the vanilla Forms 3rd gen")
 	public void testCustomConfigElement() throws IOException {
 		String uuid = createForm("customconfig.json");
 
@@ -1079,7 +1078,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 				.addFormDataPart("formdata", makeFormdataMultipart(uuid, null, Map.of("input1", "bla"))).build();
 		okio.Buffer buffer = new okio.Buffer();
 		requestBody.writeTo(buffer);
-		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit"))
+		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=" + language))
 				.header("Referer", "ref").post(requestBody).build();
 		Response postResponse = client().newCall(postRequest).execute();
 		assertThat(postResponse.isSuccessful())
@@ -1295,6 +1294,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 	 * conditional container is missing.
 	 */
 	@Test
+	@Ignore("No conditional containers in Forms 3rd gen")
 	public void testConditionalContainerPerformValidation() throws IOException {
 		String uuid = createForm("conditional_container.json", true, true);
 		ResponseWithCookies rs = submit(uuid, true, language, "checked_input", "process_conditional_container");
@@ -1305,7 +1305,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 			.as("Saved elements")
 			.containsOnly("checked_input", "errors");
 
-		assertThat(new JsonObject(savedDataFields.getString("errors")).fieldNames())
+		assertThat(savedDataFields.stream().filter(e -> JsonObject.class.cast(e.getValue()).containsKey("validationMessage")).map(e -> e.getKey()).collect(Collectors.toList()))
 			.as("Validation errors")
 			.containsOnly("conditional_input", "conditional_file", "mandatory_group");
 	}
@@ -1434,6 +1434,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 	 * checked element is set to the expected value.
 	 */
 	@Test
+	@Ignore("No conditional container in Forms 3rd gen")
 	public void testConditionalContainerPerformSave() throws IOException {
 		String formDefinition = "conditional_container.json";
 		String uuid = createForm(formDefinition, true, true);
@@ -1457,7 +1458,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		body.addFormDataPart("conditional_file", formDefinition, requestBodyFromFile(formDefinition));
 
 		Request.Builder requestBuilder = new Request.Builder()
-			.url(projectUrl(projectUrl("/forms/" + uuid + "/submit?lang=" + language)))
+			.url(projectUrl("/form/" + uuid + "/submit?lang=" + language))
 			.header("Referer", "ref");
 
 		Request postRequest = requestBuilder.post(body.build()).build();
@@ -1636,7 +1637,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 	 * @return data node
 	 */
 	protected NodeResponse assertSingleDataNode(String formUuid, Consumer<NodeResponse> asserter) {
-		NodeResponse dataNode = getSingleFormDataNode(formUuid);
+		NodeResponse dataNode = getSingleFormDataNode(formUuid, language, "en");
 
 		if (asserter != null) {
 			asserter.accept(dataNode);

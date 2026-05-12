@@ -519,11 +519,10 @@ public class FormService {
 
 		return statusService.getRootNode(projectName, userClient).flatMap(rootNode -> {
 			String language = formData.getString("language", "en");
-			NodeParameters languageParameter = new NodeParametersImpl().setLanguages(language);
 			NodeUpsertRequest request = new NodeUpsertRequest()
 					.setSchemaName(SchemaInitializer.SCHEMA_NAME)
 					.setParentNodeUuid(rootNode.getUuid())
-					.setLanguage(language);
+					.setLanguage("en");
 
 			request.getFields().put("name", new StringFieldImpl().setString(formData.getString("name")));
 			request.getFields().put("json", new StringFieldImpl().setString(formData.encodePrettily()));
@@ -539,7 +538,7 @@ public class FormService {
 				}
 			}
 
-			return userClient.upsertNode(projectName, uuid, request, languageParameter)
+			return userClient.upsertNode(projectName, uuid, request)
 					.toSingle() /* .flatMap(formNode -> loadAsAdminWithLanguageFallback(projectName, formNode.getUuid(), false)) */
 					.flatMap(formNode -> {
 						return schemaService.loadSchemaByName(SchemaService.getSchemaName(uuid), false)
@@ -557,7 +556,7 @@ public class FormService {
 									}
 								});
 					}).flatMap(updatedForm -> {
-						return userClient.publishNode(projectName, updatedForm.getUuid(), languageParameter).toSingle()
+						return userClient.publishNode(projectName, updatedForm.getUuid()).toSingle()
 								.flatMap(r -> load(projectName, updatedForm.getUuid(), language));
 					}).flatMap(updatedForm -> {
 						return ensureFormFolders(projectName, updatedForm.getUuid(), language, DOWNLOADS_FOLDER_NAME, DATA_FOLDER_NAME)
@@ -703,13 +702,13 @@ public class FormService {
 	}
 
 	/**
-	 * Load form
+	 * load form only in language en
 	 * @param projectName
 	 * @param uuid
 	 * @return
 	 */
-	public Single<JsonObject> loadForm(String projectName, String uuid, String... language) {
-		return load(projectName, uuid, language).map(formNode -> {
+	public Single<JsonObject> loadForm(String projectName, String uuid) {
+		return load(projectName, uuid, "en").map(formNode -> {
 			// TODO if the node has no fields, no specified language was found
 			return new JsonObject(formNode.getFields().getStringField("json").getString());
 		});
@@ -752,7 +751,7 @@ public class FormService {
 							formDataNode.getUuid()),
 					HttpResponseStatus.CONFLICT.code()));
 		}
-		return loadForm(projectName, uuid, language)
+		return loadForm(projectName, uuid)
 				.flatMap(jsonObj -> Single.fromCallable(() -> {
 					Form form = toForm(jsonObj.encode(), uuid, null);
 					form.setData(formDataNode != null
@@ -789,9 +788,6 @@ public class FormService {
 	 * @return populated {@link FormData} reflecting the stored submission
 	 */
 	public static FormData buildFormDataFromNode(MultiMap postedData, Form form, String formID, Map<String, ValidationError> errors, String language, NodeResponse node) {
-		StringFieldImpl errField = node.getFields().getStringField(Form.ERRORS_FIELD_NAME);
-		boolean hasErrors = errField != null && StringUtils.isNotBlank(errField.getString());
-
 		return initFormData(postedData, form, formID, errors, (key, element) -> buildPropertyFromNode(element, language, node));
 	}
 

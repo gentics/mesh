@@ -45,6 +45,7 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.client.DeleteParametersImpl;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.parameter.client.VersioningParametersImpl;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.plugin.forms.model.FormtypeConfigsModel;
 import com.gentics.mesh.plugin.forms.model.LanguagesModel;
 import com.gentics.mesh.plugin.forms.model.response.FormOnlineResponse;
@@ -426,7 +427,7 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 	 */
 	protected FormOnlineResponse setFormOffline(String uuid, String language, boolean permission, boolean expectSuccess) throws IOException {
 		return doRequest(
-				new Request.Builder().url(projectUrl("/forms/" + uuid + "/online/" + language))
+				new Request.Builder().url(projectUrl("/forms/" + uuid + "/online?lang=" + language))
 						.headers(auth(permission)).delete().build(),
 				permission, expectSuccess, FormOnlineResponse.class);
 	}
@@ -442,7 +443,7 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 	 */
 	protected FormOnlineResponse setFormOnline(String uuid, String language, boolean permission, boolean expectSuccess) throws IOException {
 		return doRequest(
-				new Request.Builder().url(projectUrl("/forms/" + uuid + "/online/" + language))
+				new Request.Builder().url(projectUrl("/forms/" + uuid + "/online?lang=" + language))
 						.headers(auth(permission)).put(RequestBody.create(MediaType.get("text/plain"), "")).build(),
 				permission, expectSuccess, FormOnlineResponse.class);
 	}
@@ -691,13 +692,13 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 	 * @param formUuid form UUID
 	 * @return list of form data nodes
 	 */
-	protected List<NodeResponse> getFormDataNodes(String formUuid) {
+	protected List<NodeResponse> getFormDataNodes(String formUuid, String... langs) {
 		NodeListResponse formNodeChildren = call(() -> server.client().findNodeChildren(PROJECT_NAME, formUuid));
 		Optional<NodeResponse> optDataFolder = formNodeChildren.getData().stream()
 				.filter(n -> StringUtils.equals(n.getDisplayName(), FormService.DATA_FOLDER_NAME)).findFirst();
 		assertThat(optDataFolder).as("Form Data Folder").isNotEmpty();
 
-		NodeListResponse formDataFolderChildren = call(() -> server.client().findNodeChildren(PROJECT_NAME, optDataFolder.get().getUuid()));
+		NodeListResponse formDataFolderChildren = call(() -> server.client().findNodeChildren(PROJECT_NAME, optDataFolder.get().getUuid(), new NodeParametersImpl().setLanguages(langs)));
 		return formDataFolderChildren.getData().stream()
 				.filter(n -> StringUtils.equals(n.getSchema().getName(), "form_" + formUuid))
 				.collect(Collectors.toList());
@@ -708,8 +709,8 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 	 * @param formUuid form UUID
 	 * @return existing single form data node
 	 */
-	protected NodeResponse getSingleFormDataNode(String formUuid) {
-		List<NodeResponse> dataNodes = getFormDataNodes(formUuid);
+	protected NodeResponse getSingleFormDataNode(String formUuid, String... langs) {
+		List<NodeResponse> dataNodes = getFormDataNodes(formUuid, langs);
 
 		assertThat(dataNodes)
 			.as("Data node list")

@@ -1,5 +1,76 @@
 package com.gentics.mesh.plugin.forms.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gentics.mesh.core.rest.SortOrder;
+import com.gentics.mesh.core.rest.common.FieldContainer;
+import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
+import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
+import com.gentics.mesh.core.rest.node.FieldMap;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.PublishStatusModel;
+import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.parameter.VersioningParameters;
+import com.gentics.mesh.parameter.client.DeleteParametersImpl;
+import com.gentics.mesh.parameter.client.NodeParametersImpl;
+import com.gentics.mesh.parameter.client.VersioningParametersImpl;
+import com.gentics.mesh.plugin.PluginContext;
+import com.gentics.mesh.plugin.PluginManifest;
+import com.gentics.mesh.plugin.common.dagger.AdminClient;
+import com.gentics.mesh.plugin.common.dagger.StorageDir;
+import com.gentics.mesh.plugin.common.dagger.UserClient;
+import com.gentics.mesh.plugin.common.util.AuthUtil;
+import com.gentics.mesh.plugin.common.util.ParameterUtil;
+import com.gentics.mesh.plugin.forms.FormsError;
+import com.gentics.mesh.plugin.forms.FormsPlugin;
+import com.gentics.mesh.plugin.forms.SchemaInitializer;
+import com.gentics.mesh.plugin.forms.config.FormsConfig;
+import com.gentics.mesh.plugin.forms.context.FormDataCreateContext;
+import com.gentics.mesh.plugin.forms.context.FormDataUpdateContext;
+import com.gentics.mesh.plugin.forms.export.ExportData;
+import com.gentics.mesh.plugin.forms.export.Exporter;
+import com.gentics.mesh.plugin.forms.model.BinaryElement;
+import com.gentics.mesh.plugin.forms.model.Form;
+import com.gentics.mesh.plugin.forms.model.FormElement;
+import com.gentics.mesh.plugin.forms.model.ValidationError;
+import com.gentics.mesh.plugin.forms.model.schema.FormData;
+import com.gentics.mesh.plugin.forms.util.FormParameterUtil;
+import com.gentics.mesh.plugin.forms.util.FormUtil;
+import com.gentics.mesh.plugin.forms.util.FormUtil;
+import com.gentics.mesh.rest.client.MeshBinaryResponse;
+import com.gentics.mesh.rest.client.MeshResponse;
+import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.rest.client.impl.EmptyResponse;
+import com.gentics.mesh.util.StreamUtil;
+import com.gentics.mesh.util.UUIDUtil;
+import com.github.jknack.handlebars.Context;
+import com.github.jknack.handlebars.Handlebars;
+import io.reactivex.Completable;
+import io.reactivex.Flowable;
+import io.reactivex.Observable;
+import io.reactivex.Single;
+import io.vertx.core.MultiMap;
+import io.vertx.core.http.Cookie;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.FileUpload;
+import io.vertx.reactivex.core.Vertx;
+import io.vertx.reactivex.core.eventbus.Message;
+import io.vertx.reactivex.core.eventbus.MessageConsumer;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
+import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -30,78 +101,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
-import javax.annotation.Nullable;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Strings;
-import org.apache.commons.lang3.tuple.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gentics.mesh.core.rest.SortOrder;
-import com.gentics.mesh.core.rest.common.FieldContainer;
-import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
-import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
-import com.gentics.mesh.core.rest.node.FieldMap;
-import com.gentics.mesh.core.rest.node.NodeCreateRequest;
-import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.PublishStatusModel;
-import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
-import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
-import com.gentics.mesh.core.rest.project.ProjectResponse;
-import com.gentics.mesh.parameter.VersioningParameters;
-import com.gentics.mesh.parameter.client.DeleteParametersImpl;
-import com.gentics.mesh.parameter.client.VersioningParametersImpl;
-import com.gentics.mesh.plugin.PluginContext;
-import com.gentics.mesh.plugin.PluginManifest;
-import com.gentics.mesh.plugin.common.dagger.AdminClient;
-import com.gentics.mesh.plugin.common.dagger.StorageDir;
-import com.gentics.mesh.plugin.common.dagger.UserClient;
-import com.gentics.mesh.plugin.common.util.AuthUtil;
-import com.gentics.mesh.plugin.common.util.ParameterUtil;
-import com.gentics.mesh.plugin.forms.FormsError;
-import com.gentics.mesh.plugin.forms.FormsPlugin;
-import com.gentics.mesh.plugin.forms.SchemaInitializer;
-import com.gentics.mesh.plugin.forms.config.FormsConfig;
-import com.gentics.mesh.plugin.forms.context.FormDataCreateContext;
-import com.gentics.mesh.plugin.forms.context.FormDataUpdateContext;
-import com.gentics.mesh.plugin.forms.export.ExportData;
-import com.gentics.mesh.plugin.forms.export.Exporter;
-import com.gentics.mesh.plugin.forms.model.BinaryElement;
-import com.gentics.mesh.plugin.forms.model.Form;
-import com.gentics.mesh.plugin.forms.model.FormElement;
-import com.gentics.mesh.plugin.forms.model.ValidationError;
-import com.gentics.mesh.plugin.forms.model.schema.FormData;
-import com.gentics.mesh.plugin.forms.util.FormParameterUtil;
-import com.gentics.mesh.plugin.forms.util.FormUtil;
-import com.gentics.mesh.rest.client.MeshBinaryResponse;
-import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.rest.client.MeshRestClient;
-import com.gentics.mesh.rest.client.impl.EmptyResponse;
-import com.gentics.mesh.util.StreamUtil;
-import com.gentics.mesh.util.UUIDUtil;
-import com.github.jknack.handlebars.Context;
-import com.github.jknack.handlebars.Handlebars;
-
-import io.reactivex.Completable;
-import io.reactivex.Flowable;
-import io.reactivex.Observable;
-import io.reactivex.Single;
-import io.vertx.core.MultiMap;
-import io.vertx.core.http.Cookie;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.FileUpload;
-import io.vertx.reactivex.core.Vertx;
-import io.vertx.reactivex.core.eventbus.Message;
-import io.vertx.reactivex.core.eventbus.MessageConsumer;
 
 @Singleton
 public class FormDataService {
@@ -271,7 +270,7 @@ public class FormDataService {
 	 * @return single of the post data response
 	 */
 	public Single<FormData> create(FormDataCreateContext ctx) {
-		return formService.loadAsAdmin(ctx.getProjectName(), ctx.getFormUuid(), true, "en")
+		return formService.loadAsAdmin(ctx.getProjectName(), ctx.getFormUuid(), true, ctx.getLanguage(), "en")
 			.doOnSuccess(ctx::setFormNode)
 			.flatMap(formService::toForm)
 			.doOnSuccess(ctx::setForm)
@@ -287,7 +286,7 @@ public class FormDataService {
 	public Single<FormData> update(FormDataUpdateContext ctx) {
 		return Single.zip(
 				// always load English version of form
-				formService.loadAsAdmin(ctx.getProjectName(), ctx.getFormUuid(), true, "en"),
+				formService.loadAsAdmin(ctx.getProjectName(), ctx.getFormUuid(), true, ctx.getLanguage(), "en"),
 				load(ctx.getProjectName(), ctx.getFormUuid(), ctx.getFormDataUuid()),
 				(formNode, formDataNode) -> formService.toForm(formNode)
 						.flatMap(form -> {
@@ -306,7 +305,7 @@ public class FormDataService {
 	 * @return single of form data validation state
 	 */
 	public Single<FormData> validate(FormDataCreateContext ctx) {
-		return formService.loadAsAdminWithLanguageFallback(ctx.getProjectName(), ctx.getFormUuid(), true, "en")
+		return formService.loadAsAdminWithLanguageFallback(ctx.getProjectName(), ctx.getFormUuid(), true, ctx.getLanguage(), "en")
 			.doOnSuccess(ctx::setFormNode)
 			.flatMap(formService::toForm)
 			.doOnSuccess(ctx::setForm)
@@ -322,7 +321,7 @@ public class FormDataService {
 	 */
 	public Single<FormData> validate(FormDataUpdateContext ctx) {
 		return Single.zip(
-			formService.loadAsAdminWithLanguageFallback(ctx.getProjectName(), ctx.getFormUuid(), true, "en"),
+			formService.loadAsAdminWithLanguageFallback(ctx.getProjectName(), ctx.getFormUuid(), true, ctx.getLanguage(), "en"),
 				load(ctx.getProjectName(), ctx.getFormUuid(), ctx.getFormDataUuid()),
 				(formNode, formDataNode) -> formService.toForm(formNode)
 					.flatMap(form -> {
@@ -1091,6 +1090,9 @@ public class FormDataService {
 				log.warn("Storing of POSTed data to form {} prevented by field {}. Validation error: {}", form.getUuid(),
 						errorPreventingDataStorage.get().getName(), errorPreventingDataStorage.get().getMessage());
 
+				// just return the errors in the response but don't save anything
+				var response = new FormData();
+
 				FormData formData = toValidationResponse(ctx, errors1);
 				
 				return Single.just(formData);
@@ -1122,13 +1124,6 @@ public class FormDataService {
 							ctx.setFormDataNode(savedFileUploads); // updated formdata node
 							var response = toValidationResponse(ctx, errors);
 							response.setFormDataID(savedFileUploads.getUuid());
-							response.setHasValidationErrors(!errors.isEmpty());
-							if (ctx.getReferer() != null) {
-								response.setRedirectUrl(ctx.getReferer());
-							} else {
-								response.setRedirectUrl("");
-							}
-
 							return Single.just(response);
 						}
 					});
@@ -1216,12 +1211,12 @@ public class FormDataService {
 		if (formDataNode == null) {
 			createRequest = new NodeCreateRequest().setSchemaName(SchemaService.getSchemaName(formNode.getUuid()))
 				.setParentNodeUuid(dataFolderUuid)
-				.setLanguage("en");
+				.setLanguage(form.getLanguage());
 			container = createRequest;
 		} else {
 			updateRequest = new NodeUpdateRequest();
 			updateRequest.setVersion(formDataNode.getVersion());
-			updateRequest.setLanguage("en");
+			updateRequest.setLanguage(form.getLanguage());
 			container = updateRequest;
 		}
 
@@ -1238,9 +1233,9 @@ public class FormDataService {
 		}
 
 		if (formDataNode == null) {
-			return adminClient.createNode(projectName, createRequest).toSingle();
+			return adminClient.createNode(projectName, createRequest, new NodeParametersImpl().setLanguages(form.getLanguage())).toSingle();
 		} else {
-			return adminClient.updateNode(projectName, formDataNode.getUuid(), updateRequest).toSingle();
+			return adminClient.updateNode(projectName, formDataNode.getUuid(), updateRequest, new NodeParametersImpl().setLanguages(form.getLanguage())).toSingle();
 		}
 	}
 
