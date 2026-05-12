@@ -290,6 +290,9 @@
 | *MESH_S3_BINARY_EXPIRATION_TIME_UPLOAD*
 | Override the configured AWS S3 upload time.
 
+| *MESH_NON_CLUSTERED_HIBERNATE_CACHE_SIZE*
+| Override the field container cache size.
+
 | *MESH_MONITORING_HTTP_PORT*
 | Override the configured monitoring server http port.
 
@@ -301,6 +304,9 @@
 
 | *MESH_VERTX_EVENT_BUS_WARN_THRESHOLD*
 | Override the Vert.x eventBus warn threshold in ms.
+
+| *MESH_CLUSTERED_HIBERNATE_CACHE_HEAP_FREE*
+| Override the minimum required free heap memory for the eviction policy of the hibernate cache when using clustering.
 
 | *MESH_ELASTICSEARCH_INDEX_CHECK_INTERVAL*
 | Override the interval for index checks
