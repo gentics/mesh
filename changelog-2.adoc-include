@@ -6,6 +6,9 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v3.2.9]]
+== 3.2.9 (12.05.2026)
+
 [[v3.2.8]]
 == 3.2.8 (24.04.2026)
 
@@ -41,6 +44,22 @@ icon:plus[] Core: The `Vert.x` async IO / routing framework has been updated to 
 
 icon:plus[] Some dependencies have been updated:
 * Hibernate: 7.1.8.Final
+
+
+[[v3.1.16]]
+== 3.1.16 (12.05.2026)
+
+icon:check[] Core: An edge case of constructing a database request with too many parameters has been fixed.
+
+icon:check[] Core: When enabling the hibernate second level caches, the used cache instance were configured without limits, which
+effectively could lead to OOM errors.
+New configuration settings have been introduced to configure the limits for those caches in clustered and non-clustered instances:
+* `cache.clusteredHibernateCacheHeapFree` defines the required amount of free heap space in clustered instances (defaults to `10%`)
+* `cache.nonClusteredHibernateCacheSize` defines the maximum cache size in non-clustered instances (defaults to `50_000`)
+
+
+icon:check[] Core: When the initialization of an instance failed (e.g. due to unavailability of the database),
+the process could fail to terminate. This has been fixed.
 
 
 [[v3.1.15]]
