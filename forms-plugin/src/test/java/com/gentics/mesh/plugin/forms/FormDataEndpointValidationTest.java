@@ -3,6 +3,7 @@ package com.gentics.mesh.plugin.forms;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import org.junit.Test;
@@ -11,6 +12,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
+import io.vertx.core.json.JsonObject;
 import okhttp3.HttpUrl;
 import okhttp3.MultipartBody;
 import okhttp3.Request;
@@ -96,21 +98,20 @@ public class FormDataEndpointValidationTest extends AbstractEndpointValidationTe
 
 	protected Request.Builder requestSubmit() {
 		return new Request.Builder()
-				.url(HttpUrl.get(projectUrl("/forms/%s/submit".formatted(formUuidSupplier.get()))).newBuilder().build())
+				.url(HttpUrl.get(projectUrl("/form/%s/submit?lang=en&formDataUuid=%s".formatted(formUuidSupplier.get(), formDataUuidSupplier.get()))).newBuilder().build())
 				.header("Referer", "ref");
 	}
 
 	protected Request.Builder requestSave() {
 		return new Request.Builder()
-				.url(HttpUrl.get(projectUrl("/form/%s/save".formatted(formUuidSupplier.get()))).newBuilder().build())
+				.url(HttpUrl.get(projectUrl("/form/%s/save?lang=en&formDataUuid=%s".formatted(formUuidSupplier.get(), formDataUuidSupplier.get()))).newBuilder().build())
 				.header("Referer", "ref");
 	}
 
 	protected RequestBody updateRequestBody() {
 		return new MultipartBody.Builder()
 				.setType(MultipartBody.FORM)
-				.addFormDataPart("formDataUuid", formDataUuidSupplier.get())
-				.addFormDataPart("input1", "bla")
+				.addFormDataPart("formdata", makeFormdataMultipart(formUuidSupplier.get(), formDataUuidSupplier.get(), Map.of("input1", "bla")))
 				.build();
 	}
 }

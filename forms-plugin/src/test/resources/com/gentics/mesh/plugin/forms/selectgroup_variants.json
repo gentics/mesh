@@ -32,6 +32,26 @@
 				"isList": true,
                 "selectOptions": [
 					{
+                       "label": { "en": "Multi Value 1", "de": "1. Mehrfachwahl" },
+                       "value": "multi_key_1"
+                   },
+                   {
+                       "label": { "en": "Multi Value 2", "de": "2. Mehrfachwahl" },
+                       "value": "multi_key_2"
+                   },
+                   {
+                       "label": { "en": "Multi Value 3", "de": "3. Mehrfachwahl" },
+                       "value": "multi_key_3"
+                   }
+                ]
+            },
+            "single_with": {
+                "type": "catalog",
+                "select_type": "singleselect",
+                "additional_element": true,
+                "name": "single_with",
+                "selectOptions": [
+					{
                         "label": { "en": "Single Value 1", "de": "1. Einzehwahl" },
                         "value": "single_key_1"
                     },
@@ -42,26 +62,6 @@
                     {
                         "label": { "en": "Single Value 3", "de": "3. Einzelwahl" },
                         "value": "single_key_3"
-                    }
-                ]
-            },
-            "single_with": {
-                "type": "catalog",
-                "select_type": "singleselect",
-                "additional_element": true,
-                "name": "single_with",
-                "selectOptions": [
-                    {
-                        "label": { "en": "single_key_1", "de": "single_key_1" },
-                        "value": "Single Value 1"
-                    },
-                    {
-                        "label": { "en": "single_key_2", "de": "single_key_2" },
-                        "value": "Single Value 2"
-                    },
-                    {
-                        "label": { "en": "single_key_3", "de": "single_key_3" },
-                        "value": "Single Value 3"
                     }
                 ]
             },

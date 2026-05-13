@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import org.apache.commons.lang3.RandomStringUtils;
@@ -23,18 +24,17 @@ import okhttp3.Response;
  * Abstract base class for validation tests
  */
 public abstract class AbstractEndpointValidationTest extends AbstractFormsPluginIntegrationTest {
+
+	protected static String formUuid;
+
+	protected static String formDataUuid;
 	/**
 	 * Dummy request body
 	 */
 	protected final static RequestBody DUMMY_REQUEST_BODY = new MultipartBody.Builder()
 		.setType(MultipartBody.FORM)
-		.addFormDataPart("firstName", "FirstName")
-		.addFormDataPart("number", "13")
+		.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(formUuid, formDataUuid, Map.of("input1", "bla")))
 		.build();
-
-	protected static String formUuid;
-
-	protected static String formDataUuid;
 
 	/**
 	 * Supplier for a real form uuid
@@ -78,7 +78,7 @@ public abstract class AbstractEndpointValidationTest extends AbstractFormsPlugin
 					.header("Referer", "ref").post(DUMMY_REQUEST_BODY).build();
 
 			Response response = client().newCall(postRequest).execute();
-			assertResponse(response, 303);
+			assertResponse(response, 200);
 
 			formDataUuid = getSingleFormDataNode(formUuid).getUuid();
 

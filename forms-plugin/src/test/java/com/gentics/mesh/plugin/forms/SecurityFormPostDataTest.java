@@ -169,7 +169,7 @@ public class SecurityFormPostDataTest extends AbstractFormPostDataTest {
 
 		RequestBody requestBody = new MultipartBody.Builder()
 			.setType(MultipartBody.FORM)
-			.addFormDataPart("formdata", FormPostDataTest.makeFormdataMultipart(uuid, null, Map.of("input1", value)))
+			.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("input1", value)))
 			.build();
 		okio.Buffer buffer = new okio.Buffer();
 		requestBody.writeTo(buffer);

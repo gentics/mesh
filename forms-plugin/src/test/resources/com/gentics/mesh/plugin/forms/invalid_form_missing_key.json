@@ -7,7 +7,7 @@
 			"selectgroup1": {
 				"type": "catalog",
 				"name": "selectgroup1",
-				"label": { "en": "Select group", "de": "Wahlgruppe" },
+				"label": "Select group",
 				"selectOptions": [
 					{
 						"value": "No key"

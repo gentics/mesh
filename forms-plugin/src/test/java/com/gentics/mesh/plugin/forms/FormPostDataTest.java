@@ -139,7 +139,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 
 		RequestBody requestBody = new MultipartBody.Builder()
 			.setType(MultipartBody.FORM)
-			.addFormDataPart("formdata", makeFormdataMultipart(uuid, null, Map.of("input1", value)))
+			.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("input1", value)))
 			.build();
 		okio.Buffer buffer = new okio.Buffer();
 		requestBody.writeTo(buffer);
@@ -177,13 +177,11 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 
 		RequestBody requestBody = new MultipartBody.Builder()
 				.setType(MultipartBody.FORM)
-				.addFormDataPart("formdata", makeFormdataMultipart(uuid, null, Map.of("input1", "")))
+				.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("input1", "")))
 				.build();
 
 		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang="+language)).header("Referer", "ref").post(requestBody).build();
 		Response response = client().newCall(postRequest).execute();
-		assertThat(response.isRedirect()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
-		assertThat(response.header("Location")).as("Location Header").isEqualTo("ref");
 		Optional<Cookie> cookie = Cookie.parseAll(postRequest.url(), response.headers()).stream().filter(c -> FormDataService.COOKIE_NAME_DATA.equals(c.name()))
 				.findFirst();
 
@@ -223,7 +221,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		// First post incomplete data with missing files.
 		RequestBody requestBody = new MultipartBody.Builder()
 				.setType(MultipartBody.FORM)
-				.addFormDataPart("formdata", makeFormdataMultipart(formUuid, null, Map.of("input1", "test")))
+				.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(formUuid, null, Map.of("input1", "test")))
 				.build();
 
 		Request postRequest = new Request.Builder()
@@ -232,14 +230,6 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 			.post(requestBody)
 			.build();
 		Response response = client().newCall(postRequest).execute();
-
-		// Result must be a redirect.
-		assertThat(response.isRedirect())
-			.as(String.format("Response success %d (%s)", response.code(), response.message()))
-			.isTrue();
-		assertThat(response.header("Location"))
-			.as("Location Header")
-			.isEqualTo("ref");
 
 		// There must be exactly one data node now.
 		NodeResponse dataNode = assertSingleDataNode(formUuid, node -> {
@@ -255,7 +245,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		// Make update post containing all fields including two files.
 		requestBody = new MultipartBody.Builder()
 			.setType(MultipartBody.FORM)
-			.addFormDataPart("formdata", makeFormdataMultipart(formUuid, null, Map.of("input1", "test")))
+			.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(formUuid, null, Map.of("input1", "test")))
 			.addFormDataPart("file1", formDefinition, requestBodyFromFile(formDefinition))
 			.addFormDataPart("file2", formDefinition, requestBodyFromFile(formDefinition))
 			.build();
@@ -302,7 +292,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 
 		RequestBody requestBody = new MultipartBody.Builder()
 				.setType(MultipartBody.FORM)
-				.addFormDataPart("formdata", makeFormdataMultipart(uuid, null, Map.of("input1", "Bla")))
+				.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("input1", "Bla")))
 				.build();
 
 		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=" + language)).header("Referer", "ref").post(requestBody).build();
@@ -327,7 +317,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 
 		RequestBody requestBody = new MultipartBody.Builder()
 				.setType(MultipartBody.FORM)
-				.addFormDataPart("formdata", makeFormdataMultipart(uuid, null, Map.of("input1", "Bla")))
+				.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("input1", "Bla")))
 				.addFormDataPart("input2", "Bla")
 				.build();
 
@@ -391,7 +381,6 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 
 		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=" + language)).header("Referer", "ref").post(requestBody).build();
 		Response response = client().newCall(postRequest).execute();
-		assertThat(response.isRedirect()).as(String.format("Response is redirect %d (%s)", response.code(), response.message())).isTrue();
 
 		NodeResponse dataNode = assertSingleDataNode(uuid, node -> {
 			String errors = node.getFields().getStringField("errors").getString();
@@ -431,7 +420,6 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 
 		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=" + language)).header("Referer", "ref").post(requestBody).build();
 		Response response = client().newCall(postRequest).execute();
-		assertThat(response.isRedirect()).as(String.format("Response is redirect %d (%s)", response.code(), response.message())).isTrue();
 
 		NodeResponse dataNode = assertSingleDataNode(uuid, node -> {
 			String errors = node.getFields().getStringField("errors").getString();
@@ -471,7 +459,6 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 
 		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=" + language)).header("Referer", "ref").post(requestBody).build();
 		Response response = client().newCall(postRequest).execute();
-		assertThat(response.isRedirect()).as(String.format("Response is redirect %d (%s)", response.code(), response.message())).isTrue();
 
 		NodeResponse dataNode = assertSingleDataNode(uuid, node -> {
 			String errors = node.getFields().getStringField("errors").getString();
@@ -842,7 +829,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 			// post data
 			RequestBody requestBody = new MultipartBody.Builder()
 					.setType(MultipartBody.FORM)
-					.addFormDataPart("formdata", makeFormdataMultipart(uuid, null, Map.of("input1", "someValue")))
+					.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("input1", "someValue")))
 					.build();
 			Pair<Response, Optional<Cookie>> pair = postToForm(uuid, requestBody);
 			assertOk(pair.getLeft());
@@ -858,17 +845,6 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		} finally {
 			logger.detachAppender(appender);
 		}
-	}
-
-	public static FormData makeFormdata(String formID, String formDataUuid, Map<String, String> params) {
-		return new FormData()
-				.setFormID(formID)
-				.setFormDataID(formDataUuid)
-				.setProperties(params.entrySet().stream().map(e -> Pair.of(e.getKey(), new FormDataProperty().setValue(e.getValue()))).collect(Collectors.toMap(Pair::getKey, Pair::getValue)));
-	}
-
-	public static String makeFormdataMultipart(String formID, String formDataUuid, Map<String, String> params) {
-		return JsonUtil.toJson(makeFormdata(formID, formDataUuid, params));
 	}
 
 	private Pair<String, String> doPostFile(String formFile) throws IOException {
@@ -903,11 +879,10 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 
 		RequestBody requestBody = new MultipartBody.Builder()
 				.setType(MultipartBody.FORM)
-				.addFormDataPart("formdata", makeFormdataMultipart(uuid, null, Map.of("input1", "")))
+				.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("input1", "")))
 				.build();
 		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=" + language)).header("Referer", "ref").post(requestBody).build();
 		Response response = client().newCall(postRequest).execute();
-		assertThat(response.isRedirect()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
 		Optional<Cookie> cookie = Cookie.parseAll(postRequest.url(), response.headers()).stream().filter(c -> FormDataService.COOKIE_NAME_DATA.equals(c.name()))
 				.findFirst();
 		assertThat(cookie).as("Cookie").isPresent();
@@ -915,7 +890,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 
 		requestBody = new MultipartBody.Builder()
 				.setType(MultipartBody.FORM)
-				.addFormDataPart("formdata", makeFormdataMultipart(uuid, formDataUuid, Map.of("input1", "someValue")))
+				.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, formDataUuid, Map.of("input1", "someValue")))
 				.build();
 		postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?formDataUuid=" + formDataUuid + "&lang=" + language)).header("Referer", "ref")
 				.post(requestBody).build();
@@ -940,7 +915,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		for (String value : Arrays.asList("one", "two", "three")) {
 			RequestBody requestBody = new MultipartBody.Builder()
 					.setType(MultipartBody.FORM)
-					.addFormDataPart("formdata", makeFormdataMultipart(uuid, null, Map.of("input1", value)))
+					.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("input1", value)))
 					.build();
 			Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit")).post(requestBody).build();
 			client().newCall(postRequest).execute();
@@ -968,7 +943,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 
 		RequestBody requestBody = new MultipartBody.Builder()
 				.setType(MultipartBody.FORM)
-				.addFormDataPart("formdata", makeFormdataMultipart(uuid, null, Map.of("custom1", "someValue")))
+				.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("custom1", "someValue")))
 				.build();
 
 		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=" + language)).header("Referer", "ref").post(requestBody).build();
@@ -1000,7 +975,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 
 		RequestBody requestBody = new MultipartBody.Builder()
 				.setType(MultipartBody.FORM)
-				.addFormDataPart("formdata", makeFormdataMultipart(uuid, null, Map.of("customconfig1", "someValue")))
+				.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("customconfig1", "someValue")))
 				.build();
 
 		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=" + language)).header("Referer", "ref").post(requestBody).build();
@@ -1027,7 +1002,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 
 		RequestBody requestBody = new MultipartBody.Builder()
 			.setType(MultipartBody.FORM)
-			.addFormDataPart("formdata", makeFormdataMultipart(uuid, null, Map.of("input1", "someValue")))
+			.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("input1", "someValue")))
 			.build();
 
 		Request postRequest = new Request.Builder()
@@ -1045,7 +1020,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		// Empty update to publish
 		requestBody = new MultipartBody.Builder()
 			.setType(MultipartBody.FORM)
-			.addFormDataPart("formdata", makeFormdataMultipart(uuid, dataNode.getUuid(), Map.of("input1", "someValue")))
+			.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, dataNode.getUuid(), Map.of("input1", "someValue")))
 			.build();
 		postRequest = new Request.Builder()
 			.url(projectUrl("/form/" + uuid + "/submit?lang=" + language + "&formDataUuid=" + dataNode.getUuid()))
@@ -1075,7 +1050,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 
 		// post data (expected to not succeed)
 		RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
-				.addFormDataPart("formdata", makeFormdataMultipart(uuid, null, Map.of("input1", "bla"))).build();
+				.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("input1", "bla"))).build();
 		okio.Buffer buffer = new okio.Buffer();
 		requestBody.writeTo(buffer);
 		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=" + language))
@@ -1098,15 +1073,17 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		// post only the input field
 		RequestBody requestBody = new MultipartBody.Builder()
 				.setType(MultipartBody.FORM)
-				.addFormDataPart("formdata", makeFormdataMultipart(uuid, null, Map.of("input1", "someValue")))
+				.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("input1", "someValue")))
 				.build();
 		Pair<Response, Optional<Cookie>> pair = postToForm(uuid, requestBody);
 
 		// we expect no calls to the recaptcha verification server
 		assertThat(webServer.getRequestCount()).as("Requests to recaptcha").isEqualTo(0);
 
-		// we expect to be redirected back to the form
-		assertRedirect(pair.getLeft());
+		JsonObject body = new JsonObject(pair.getLeft().body().string());
+		// we expect a validation error
+		assertThat(body.getBoolean("hasValidationErrors")).isTrue();
+		assertThat(body.getJsonObject("properties").getJsonObject("recaptcha1").getString("validationMessage")).isEqualTo("Das Captcha wurde nicht ausgefüllt:");
 		// data node must not be present
 		assertThat(getFormDataNodes(uuid)).as("Form Data Nodes").isEmpty();
 
@@ -1130,7 +1107,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		// post the input field and an incorrect recaptcha response
 		RequestBody requestBody = new MultipartBody.Builder()
 				.setType(MultipartBody.FORM)
-				.addFormDataPart("formdata", makeFormdataMultipart(uuid, null, Map.of("input1", "someValue", "g-recaptcha-response", "incorrect")))
+				.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("input1", "someValue", "g-recaptcha-response", "incorrect")))
 				.build();
 		Pair<Response, Optional<Cookie>> pair = postToForm(uuid, requestBody);
 
@@ -1139,8 +1116,10 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		RecordedRequest request = webServer.takeRequest(1, TimeUnit.SECONDS);
 		assertThat(request.getBody().toString()).as("Request body").isEqualTo("[text=secret=your-secret-key&response=incorrect]");
 
-		// we expect to be redirected back to the form
-		assertRedirect(pair.getLeft());
+		JsonObject body = new JsonObject(pair.getLeft().body().string());
+		// we expect a validation error
+		assertThat(body.getBoolean("hasValidationErrors")).isTrue();
+		assertThat(body.getJsonObject("properties").getJsonObject("recaptcha1").getString("validationMessage")).isEqualTo("Das Captcha wurde nicht ausgefüllt:");
 		// data node must not be present
 		assertThat(getFormDataNodes(uuid)).as("Form Data Nodes").isEmpty();
 
@@ -1164,7 +1143,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		// post the input field and a correct recaptcha response
 		RequestBody requestBody = new MultipartBody.Builder()
 				.setType(MultipartBody.FORM)
-				.addFormDataPart("formdata", makeFormdataMultipart(uuid, null, Map.of("input1", "someValue", "g-recaptcha-response", "correct")))
+				.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("input1", "someValue", "g-recaptcha-response", "correct")))
 				.build();
 		Pair<Response, Optional<Cookie>> pair = postToForm(uuid, requestBody);
 
@@ -1189,7 +1168,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		// post input field from page 1
 		RequestBody requestBody = new MultipartBody.Builder()
 				.setType(MultipartBody.FORM)
-				.addFormDataPart("formdata", makeFormdataMultipart(uuid, null, Map.of("input1", "someValue")))
+				.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("input1", "someValue")))
 				.build();
 		Pair<Response, Optional<Cookie>> pair = postToForm(uuid, requestBody);
 
@@ -1219,7 +1198,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		RequestBody requestBody = new MultipartBody.Builder()
 				.setType(MultipartBody.FORM)
 				.addFormDataPart("page1", "1")
-				.addFormDataPart("formdata", makeFormdataMultipart(uuid, null, Map.of("input1", "someValue", "g-recaptcha-response", "incorrect")))
+				.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("input1", "someValue", "g-recaptcha-response", "incorrect")))
 				.build();
 		Pair<Response, Optional<Cookie>> pair = postToForm(uuid, requestBody);
 
@@ -1228,8 +1207,10 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		RecordedRequest request = webServer.takeRequest(1, TimeUnit.SECONDS);
 		assertThat(request.getBody().toString()).as("Request body").isEqualTo("[text=secret=your-secret-key&response=incorrect]");
 
-		// we expect to be redirected back to the form
-		assertRedirect(pair.getLeft());
+		JsonObject body = new JsonObject(pair.getLeft().body().string());
+		// we expect a validation error
+		assertThat(body.getBoolean("hasValidationErrors")).isTrue();
+		assertThat(body.getJsonObject("properties").getJsonObject("recaptcha1").getString("validationMessage")).isEqualTo("Das Captcha wurde nicht ausgefüllt:");
 		// data node must not be present
 		assertThat(getFormDataNodes(uuid)).as("Form Data Nodes").isEmpty();
 
@@ -1255,7 +1236,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		RequestBody requestBody = new MultipartBody.Builder()
 				.setType(MultipartBody.FORM)
 				.addFormDataPart("page1", "1")
-				.addFormDataPart("formdata", makeFormdataMultipart(uuid, null, Map.of("input1", "someValue", "g-recaptcha-response", "correct")))
+				.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("input1", "someValue", "g-recaptcha-response", "correct")))
 				.build();
 		Pair<Response, Optional<Cookie>> pair = postToForm(uuid, requestBody);
 
@@ -1264,8 +1245,10 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		RecordedRequest request = webServer.takeRequest(1, TimeUnit.SECONDS);
 		assertThat(request.getBody().toString()).as("Request body").isEqualTo("[text=secret=your-secret-key&response=correct]");
 
-		// we expect to be redirected back to the form (for page 2)
-		assertRedirect(pair.getLeft());
+		JsonObject body = new JsonObject(pair.getLeft().body().string());
+		// we expect a validation error
+		assertThat(body.getBoolean("hasValidationErrors")).isTrue();
+		assertThat(body.getJsonObject("properties").getJsonObject("recaptcha1").getString("validationMessage")).isEqualTo("Das Captcha wurde nicht ausgefüllt:");
 		// data node must not be published but first page complete
 		NodeResponse dataNode = assertSingleDataNode(uuid, n -> {
 			assertThat(n.getVersion()).as("Data Node Version").isEqualTo("0.1");
@@ -1363,7 +1346,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		};
 		MultipartBody.Builder body = new MultipartBody.Builder()
 			.setType(MultipartBody.FORM);
-		FormData formData = makeFormdata(uuid, null, Map.of());
+		FormData formData = AbstractFormsPluginIntegrationTest.makeFormdata(uuid, null, Map.of());
 
 		for (int ii = 0; ii < data.length; ii++) {
 			String field = data[ii++];
@@ -1447,7 +1430,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		};
 		MultipartBody.Builder body = new MultipartBody.Builder()
 			.setType(MultipartBody.FORM);
-		FormData formData = makeFormdata(uuid, null, Map.of());
+		FormData formData = AbstractFormsPluginIntegrationTest.makeFormdata(uuid, null, Map.of());
 
 		for (int ii = 0; ii < data.length; ii++) {
 			String field = data[ii++];
@@ -1502,12 +1485,13 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 	 * @throws IOException
 	 */
 	@Test
+	@Ignore("Redefine the redirection cases")
 	public void testSuccessUrl() throws IOException {
 		String uuid = createMultilanguageForm("successurl_%s.json".formatted(language));
 
 		RequestBody requestBody = new MultipartBody.Builder()
 				.setType(MultipartBody.FORM)
-				.addFormDataPart("formdata", makeFormdataMultipart(uuid, null, Map.of("input1", "bla")))
+				.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("input1", "bla")))
 				.build();
 		okio.Buffer buffer = new okio.Buffer();
 		requestBody.writeTo(buffer);
@@ -1538,18 +1522,17 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 	 * @throws IOException
 	 */
 	@Test
+	@Ignore("Redefine the redirection cases")
 	public void testSuccessUrlOnUpdate() throws IOException {
 		String uuid = createMultilanguageForm("successurl_%s.json".formatted(language));
 
 		RequestBody requestBody = new MultipartBody.Builder()
 				.setType(MultipartBody.FORM)
-				.addFormDataPart("formdata", makeFormdataMultipart(uuid, null, Map.of("input1", "")))
+				.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("input1", "")))
 				.build();
 
 		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=" + language)).header("Referer", "ref").post(requestBody).build();
 		Response response = client().newCall(postRequest).execute();
-		assertThat(response.isRedirect()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
-		assertThat(response.header("Location")).as("Location Header").isEqualTo("ref");
 
 		Optional<Cookie> cookie = Cookie.parseAll(postRequest.url(), response.headers()).stream().filter(c -> FormDataService.COOKIE_NAME_DATA.equals(c.name()))
 				.findFirst();
@@ -1558,7 +1541,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 
 		requestBody = new MultipartBody.Builder()
 				.setType(MultipartBody.FORM)
-				.addFormDataPart("formdata", makeFormdataMultipart(uuid, formDataUuid, Map.of("input1", "bla")))
+				.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, formDataUuid, Map.of("input1", "bla")))
 				.build();
 		okio.Buffer buffer = new okio.Buffer();
 		requestBody.writeTo(buffer);
@@ -1567,8 +1550,6 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 				.url(projectUrl("/form/" + uuid + "/save?formDataUuid=" + formDataUuid + "&lang=" + language))
 				.header("Referer", "ref").post(requestBody).build();
 		response = client().newCall(postRequest).execute();
-		assertThat(response.isRedirect()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
-		assertThat(response.header("Location")).as("Location Header").isEqualTo("ref"); // no publish allowed!
 		
 		postRequest = new Request.Builder()
 				.url(projectUrl("/form/" + uuid + "/submit?formDataUuid=" + formDataUuid + "&lang=" + language))

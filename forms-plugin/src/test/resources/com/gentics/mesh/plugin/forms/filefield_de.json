@@ -5,17 +5,19 @@
 		"key": "test-schema",
 	    "version": "1.0.0",
 	    "properties": {
-			"type": "binary",
-			"name": "file1",
-			"placeholderName": "",
-			"label": "Datei",
-			"mandatory": false,
-			"info": "",
-			"tooltip": "",
-			
-			"allowed_filetypes": [],
-			"max_filesize": "10",
-			"elements": []
+			"file1": {
+				"type": "binary",
+				"name": "file1",
+				"placeholderName": "",
+				"label": "Datei",
+				"mandatory": false,
+				"info": "",
+				"tooltip": "",
+				
+				"allowed_filetypes": [],
+				"max_filesize": "10",
+				"elements": []
+			}
 		}
 	}
 }

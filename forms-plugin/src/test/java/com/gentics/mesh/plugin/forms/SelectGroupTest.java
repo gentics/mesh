@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -67,6 +68,8 @@ public class SelectGroupTest extends AbstractFormsPluginIntegrationTest {
 	}
 
 	@Test
+	@Ignore("No additional elements allowed")
+	@Deprecated
 	public void testSingleWithAdditional() throws IOException  {
 		String additionalKey = "somethingelse";
 
@@ -89,6 +92,8 @@ public class SelectGroupTest extends AbstractFormsPluginIntegrationTest {
 	}
 
 	@Test
+	@Ignore("No additional elements allowed")
+	@Deprecated
 	public void testMultiWithAdditional() throws IOException  {
 		List<String> keys = getRandomKeys(AVAILABLE_MULTI_KEYS, 2);
 		String additionalKey = "somethingelse";

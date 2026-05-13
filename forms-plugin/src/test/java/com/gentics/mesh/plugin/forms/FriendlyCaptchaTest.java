@@ -68,12 +68,7 @@ public class FriendlyCaptchaTest extends AbstractFormPostDataTest {
 				.addFormDataPart("input1", "some data")
 				.build();
 		Pair<Response, Optional<Cookie>> pair = postToForm(formUuid, requestBody);
-		Response response = pair.getLeft();
 		Optional<Cookie> cookie = pair.getRight();
-
-		// we expect a redirect to the referer
-		assertThat(response.isRedirect()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
-		assertThat(response.header("Location")).as("Location Header").isEqualTo("ref");
 
 		// we expect no data cookie to be set
 		assertThat(cookie).as("Data cookie").isEmpty();
@@ -105,12 +100,7 @@ public class FriendlyCaptchaTest extends AbstractFormPostDataTest {
 				.addFormDataPart("frc-captcha-solution", solution)
 				.build();
 		Pair<Response, Optional<Cookie>> pair = postToForm(formUuid, requestBody);
-		Response response = pair.getLeft();
 		Optional<Cookie> cookie = pair.getRight();
-
-		// we expect a redirect to the referer
-		assertThat(response.isRedirect()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
-		assertThat(response.header("Location")).as("Location Header").isEqualTo("ref");
 
 		// we expect no data cookie to be set
 		assertThat(cookie).as("Data cookie").isEmpty();

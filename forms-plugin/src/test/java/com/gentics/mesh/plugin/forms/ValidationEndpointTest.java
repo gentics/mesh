@@ -7,6 +7,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Test;
+
 import com.gentics.mesh.core.rest.node.NodeResponse;
 
 import io.vertx.core.json.JsonObject;
@@ -15,7 +17,6 @@ import okhttp3.MultipartBody;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import org.junit.Test;
 
 /**
  * Test cases for validating form data without saving it.
@@ -54,7 +55,7 @@ public class ValidationEndpointTest extends AbstractEndpointValidationTest {
 	 */
 	@Test
 	public void testValidateNewDataWithRegexErrors() throws IOException {
-		Response response = client().newCall(request(null, requestBody("12"))).execute();
+		Response response = client().newCall(request(null, requestBody("OOOO"))).execute();
 
 		assertValidationResponse(response, Map.of("number", "Does not fit regex"));
 		assertThat(getFormDataNodes(formUuid)).as("Form Data Nodes").hasSize(1);
@@ -97,7 +98,7 @@ public class ValidationEndpointTest extends AbstractEndpointValidationTest {
 	}
 
 	private Request request(String formDataUuid, RequestBody requestBody) {
-		HttpUrl.Builder url = HttpUrl.get(projectUrl("/form/%s/validate".formatted(formUuid))).newBuilder();
+		HttpUrl.Builder url = HttpUrl.get(projectUrl("/form/%s/validate?lang=en".formatted(formUuid))).newBuilder();
 
 		if (formDataUuid != null) {
 			url.addQueryParameter("formDataUuid", formDataUuid);
@@ -113,8 +114,7 @@ public class ValidationEndpointTest extends AbstractEndpointValidationTest {
 	private RequestBody requestBody(String value) {
 		return new MultipartBody.Builder()
 			.setType(MultipartBody.FORM)
-			.addFormDataPart("firstName", "John")
-			.addFormDataPart("number", value)
+			.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(formUuid, formDataUuid, Map.of("input1", "bla", "number", value)))
 			.build();
 	}
 
