@@ -16,6 +16,7 @@ import com.gentics.mesh.plugin.common.util.ParameterUtil;
 import com.gentics.mesh.plugin.forms.model.Form;
 import com.gentics.mesh.plugin.forms.model.schema.FormData;
 import com.gentics.mesh.plugin.forms.model.schema.FormDataProperty;
+import com.gentics.mesh.plugin.forms.service.FormService;
 
 import io.reactivex.Single;
 import io.vertx.core.MultiMap;
@@ -77,15 +78,20 @@ public class FormDataCreateContext {
 	}
 
 	/**
-	 * Returns the form field data as a flat {@link MultiMap} (field ID → value).
+	 * Returns the form field data as a flat {@link MultiMap} (field ID → value), with
+	 * {@link com.gentics.mesh.plugin.forms.model.AdminMailElement} identifiers already reverse-mapped
+	 * to real email addresses.
 	 *
-	 * <p>The result is parsed lazily from the {@code formdata} multipart part, which the FormGen
-	 * frontend sends as a serialized {@link FormData} JSON object. Each property in
-	 * {@link FormData#getProperties()} is mapped as follows:</p>
+	 * <p>The raw JSON is parsed lazily from the {@code formdata} multipart part sent by FormGen.
+	 * Parsing is cached; the AdminMailElement reverse-mapping is applied on every call so it
+	 * always reflects the current form (set via {@link #setForm(Form)}).</p>
+	 *
+	 * <p>Each property in {@link FormData#getProperties()} is mapped as follows during parsing:</p>
 	 * <ul>
 	 *   <li><b>String value/values</b> — stored as-is.</li>
 	 *   <li><b>Possible-value objects</b> ({@code {identifier, displayName}}) — only the
-	 *       {@code identifier} is stored.</li>
+	 *       {@code identifier} is stored. For {@code AdminMailElement}, FormGen sends
+	 *       {@code identifier = displayName}; the reverse-mapping restores the real email address.</li>
 	 *   <li><b>Binary metadata objects</b> and other non-string types — skipped; binary fields
 	 *       are handled separately via file uploads.</li>
 	 * </ul>
@@ -93,43 +99,42 @@ public class FormDataCreateContext {
 	 * @return MultiMap of field ID → string value(s); empty map if {@code formdata} is absent or unparseable
 	 */
 	public MultiMap getPostedData() {
-		if (parsedPostedData != null) {
-			return parsedPostedData;
-		}
-		String formdataJson = context.request().formAttributes().get("formdata");
-		if (formdataJson == null || formdataJson.isBlank()) {
-			parsedPostedData = MultiMap.caseInsensitiveMultiMap();
-			return parsedPostedData;
-		}
-		try {
-			FormData formData = OBJECT_MAPPER.readValue(formdataJson, FormData.class);
-			MultiMap result = MultiMap.caseInsensitiveMultiMap();
-			if (formData.getProperties() != null) {
-				for (Map.Entry<String, FormDataProperty> entry : formData.getProperties().entrySet()) {
-					String key = entry.getKey();
-					FormDataProperty prop = entry.getValue();
-					List<Object> values = prop.getValues();
-					if (values != null && !values.isEmpty()) {
-						for (Object v : values) {
-							String sv = extractStringValue(v);
-							if (sv != null) {
-								result.add(key, sv);
+		if (parsedPostedData == null) {
+			String formdataJson = context.request().formAttributes().get("formdata");
+			if (formdataJson == null || formdataJson.isBlank()) {
+				parsedPostedData = MultiMap.caseInsensitiveMultiMap();
+			} else {
+				try {
+					FormData formData = OBJECT_MAPPER.readValue(formdataJson, FormData.class);
+					MultiMap result = MultiMap.caseInsensitiveMultiMap();
+					if (formData.getProperties() != null) {
+						for (Map.Entry<String, FormDataProperty> entry : formData.getProperties().entrySet()) {
+							String key = entry.getKey();
+							FormDataProperty prop = entry.getValue();
+							List<Object> values = prop.getValues();
+							if (values != null && !values.isEmpty()) {
+								for (Object v : values) {
+									String sv = extractStringValue(v);
+									if (sv != null) {
+										result.add(key, sv);
+									}
+								}
+							} else {
+								String sv = extractStringValue(prop.getValue());
+								if (sv != null) {
+									result.add(key, sv);
+								}
 							}
 						}
-					} else {
-						String sv = extractStringValue(prop.getValue());
-						if (sv != null) {
-							result.add(key, sv);
-						}
 					}
+					parsedPostedData = result;
+				} catch (Exception e) {
+					log.warn("Could not parse formdata JSON", e);
+					parsedPostedData = MultiMap.caseInsensitiveMultiMap();
 				}
 			}
-			parsedPostedData = result;
-		} catch (Exception e) {
-			log.warn("Could not parse formdata JSON", e);
-			parsedPostedData = MultiMap.caseInsensitiveMultiMap();
 		}
-		return parsedPostedData;
+		return FormService.adminMailLabelToValue(getForm(), parsedPostedData, language);
 	}
 
 	/**
