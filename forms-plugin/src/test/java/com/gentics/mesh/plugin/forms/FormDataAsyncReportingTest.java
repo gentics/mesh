@@ -128,10 +128,10 @@ public class FormDataAsyncReportingTest extends AbstractFormsPluginIntegrationTe
 						.setType(MultipartBody.FORM)
 						.addFormDataPart("file1", fileName, requestBodyFromFile(fileName))
 						.build();
-					Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit")).header("Referer", "ref").post(requestBody).build();
+					Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=en")).header("Referer", "ref").post(requestBody).build();
 					Response response = client().newCall(postRequest).execute();
 					assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
-					return new JsonObject(response.body().string()).getValue("dataUuid") + "/file1/" + fileName;
+					return new JsonObject(response.body().string()).getValue("formDataID") + "/file1/" + fileName;
 				} catch (IOException e) {
 					throw new IllegalStateException(e);
 				}

@@ -21,7 +21,7 @@
 			"elements": []
 		}, "number": {
 			"type": "string",
-			"name": "input1",
+			"name": "number",
 			"placeholderName": "",
 			"label": "Number",
 			"mandatory": false,

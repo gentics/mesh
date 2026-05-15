@@ -128,7 +128,7 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 		String uuid = createForm("formgen_load.json");
 
 		Request request = new Request.Builder()
-				.url(projectUrl("/forms/" + uuid + "/load?lang=en"))
+				.url(projectUrl("/form/" + uuid + "/load?lang=en"))
 				.headers(auth(true))
 				.post(RequestBody.create(MediaType.parse("application/json"), "{}"))
 				.build();

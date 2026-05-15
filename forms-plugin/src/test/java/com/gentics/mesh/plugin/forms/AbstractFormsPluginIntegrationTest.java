@@ -177,11 +177,12 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 		Response response = client().newCall(request).execute();
 
 		if (permission) {
+			String body = response.body().string();
 			assertThat(response.isSuccessful())
 					.as(String.format("Response status %d (%s)", response.code(), response.message()))
 					.isEqualTo(expectSuccess);
 			if (expectSuccess) {
-				return JsonUtil.readValue(response.body().string(), clazz);
+				return JsonUtil.readValue(body, clazz);
 			} else {
 				return null;
 			}
