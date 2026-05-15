@@ -21,7 +21,7 @@ public class MeshRestClientExample {
 		builder.addTrustedCA("certs/server.pem");
 		builder.setClientCert("certs/alice.pem");
 		builder.setClientKey("certs/alice.key");
-		builder.setHost("demo.getmesh.io");
+		builder.setHost("localhost");
 		builder.setPort(443);
 		builder.setSsl(true);
 		builder.setHostnameVerification(false);
