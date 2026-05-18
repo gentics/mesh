@@ -1,0 +1,1 @@
+Core: A crash on requesting node children recursively through GraphQL + native filtering has been fixed.

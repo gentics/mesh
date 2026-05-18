@@ -434,9 +434,12 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 	public Map<HibNode, List<NodeContent>> getChildren(Set<HibNode> nodes, InternalActionContext ac, String branchUuid, List<String> languageTags, ContainerType type, PagingParameters paging, Optional<FilterOperation<?>> maybeNativeFiltering) {
 		InternalPermission perm = type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM;
 		Map<HibNode, List<HibNode>> nodeChildrenMap = Optional.of(maybeNativeFiltering.isPresent() || PersistingRootDao.shouldSort(paging)).filter(b -> b)
-				.map(unused -> findAllStream(Tx.get().getProject(ac), ac, perm, paging, 
-								Optional.ofNullable(type), maybeNativeFiltering, Optional.ofNullable(nodes), Optional.empty(), Optional.empty(), Optional.ofNullable(languageTags), Optional.of(UUIDUtil.toJavaUuid(branchUuid)), true, true)
-						.collect(Collectors.groupingBy(p -> p.getParentEdge().getNodeParent(), Collectors.mapping(p -> p.getNode(), Collectors.toList()))))
+				.map(unused -> {
+					int limit = maybeNativeFiltering.map(nf -> nf.toSql().split(" :").length).orElse(1) + paging.getSort().size() + languageTags.size();
+					return SplittingUtils.splitAndMergeInMap(nodes, inQueriesLimitForSplitting(limit), uuids -> findAllStream(Tx.get().getProject(ac), ac, perm, paging, 
+							Optional.ofNullable(type), maybeNativeFiltering, Optional.ofNullable(new HashSet<>(uuids)), Optional.empty(), Optional.empty(), Optional.ofNullable(languageTags), Optional.of(UUIDUtil.toJavaUuid(branchUuid)), true, true)
+					.collect(Collectors.groupingBy(p -> p.getParentEdge().getNodeParent(), Collectors.mapping(p -> p.getNode(), Collectors.toList()))));
+				})
 				.orElseGet(() -> {
 					Map<HibNode, List<HibNode>> children = getChildren(nodes, branchUuid);
 
