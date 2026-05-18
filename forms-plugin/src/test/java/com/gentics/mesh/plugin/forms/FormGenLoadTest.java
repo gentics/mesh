@@ -328,6 +328,30 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 				.as("adminmail option 1 displayName").isEqualTo("Ms");
 	}
 
+	@Test
+	public void testLoadFormGenCaptchaConfig() throws IOException {
+		String uuid = createForm("formgen_load.json");
+
+		Response response = doLoadRequest(uuid, FORM_ID, "en", true);
+		String responseBody = response.body() != null ? response.body().string() : "";
+		assertSuccessfulJsonResponse(response, responseBody);
+
+		JsonNode captchaConfig = JsonUtil.readValue(responseBody, JsonNode.class).get("captchaConfig");
+		assertThat(captchaConfig).as("captchaConfig is present").isNotNull();
+		assertThat(captchaConfig.get("provider").asText()).as("provider").isEqualTo("recaptcha");
+		assertThat(captchaConfig.get("mode").asText()).as("mode").isEqualTo("background");
+		assertThat(captchaConfig.get("sitekey").asText()).as("sitekey").isEqualTo("your-site-key");
+	}
+
+	@Test
+	public void testLoadFormGenCaptchaIdWithoutSiteKeyThrows() throws IOException {
+		// friendlycaptcha has no siteKey in test config → expect 400
+		String uuid = createForm("formgen_load_captcha_nositekey.json");
+
+		Response response = doLoadRequest(uuid, FORM_ID, "en", true);
+		assertThat(response.code()).as("Response code when captchaId set but sitekey missing").isEqualTo(400);
+	}
+
 	private Response doLoadRequest(String formUuid, String formID, String language, boolean permission)
 			throws IOException {
 		return doLoadRequest(formUuid, formID, language, permission, null);

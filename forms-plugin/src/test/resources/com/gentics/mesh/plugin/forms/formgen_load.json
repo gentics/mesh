@@ -2,6 +2,7 @@
   "name": "Test",
   "language": "en",
   "type": "GENERIC",
+  "captchaId": "recaptcha_background",
   "schema": {
     "key": "test-schema",
     "version": "2.0.0",
