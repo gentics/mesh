@@ -166,6 +166,33 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 	}
 
 	@Test
+	public void testLoadFormGenSelectOptionsValueForAdminElement() throws IOException {
+		String formUuid = createForm("formgen_load.json");
+
+		submit(formUuid, false, false, false, true, "en",
+				"firstName", "Hans",
+				"age", "42",
+				"notes", "Wichtige Notiz",
+				"topic", "support",
+				"topicMulti", "drama",
+				"tags", "tag1",
+				"tags", "tag2",
+				"greeting", "Hallo",
+				"adminmail", "Ms");
+		String formDataUuid = getSingleFormDataNode(formUuid).getUuid();
+
+		Response response = doLoadRequest(formUuid, FORM_ID, "en", true, formDataUuid);
+		String responseBody = response.body() != null ? response.body().string() : "";
+
+		assertSuccessfulJsonResponse(response, responseBody);
+		JsonNode adminmail = JsonUtil.readValue(responseBody, JsonNode.class)
+				.get("data").get("properties").get("adminmail").get("value");
+
+		assertThat(adminmail.get("identifier").asText()).as("adminmail.value").isEqualTo("Ms");
+		assertThat(adminmail.get("displayName").asText()).as("adminmail.label en").isEqualTo("Ms");
+	}
+
+	@Test
 	public void testLoadFormGenSelectOptionsValueFromSubmission() throws IOException {
 		String formUuid = createForm("formgen_load.json");
 
@@ -178,7 +205,7 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 				"tags", "tag1",
 				"tags", "tag2",
 				"greeting", "Hallo",
-				"adminmail", "ms");
+				"adminmail", "Ms");
 		String formDataUuid = getSingleFormDataNode(formUuid).getUuid();
 
 		Response response = doLoadRequest(formUuid, FORM_ID, "en", true, formDataUuid);
@@ -188,9 +215,10 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 		JsonNode adminmail = JsonUtil.readValue(responseBody, JsonNode.class)
 				.get("data").get("properties").get("adminmail").get("value");
 
-		assertThat(adminmail.get("identifier").asText()).as("adminmail.value").isEqualTo("ms");
+		assertThat(adminmail.get("identifier").asText()).as("adminmail.value").isEqualTo("Ms");
 		assertThat(adminmail.get("displayName").asText()).as("adminmail.label en").isEqualTo("Ms");
 	}
+	
 
 	@Test
 	public void testLoadFormGenCatalogDefaultSingle() throws IOException {
@@ -277,6 +305,27 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 
 		Response response = doLoadRequest(formUuid, FORM_ID, "en", true, formDataUuid);
 		assertThat(response.code()).as("Response code for published formDataUuid").isEqualTo(409);
+	}
+
+	@Test
+	public void testAdminMailElementIdentifierMasking() throws IOException {
+		String uuid = createForm("formgen_load.json");
+
+		Response response = doLoadRequest(uuid, FORM_ID, "en", true);
+		String responseBody = response.body() != null ? response.body().string() : "";
+		assertSuccessfulJsonResponse(response, responseBody);
+
+		JsonNode possibleValues = JsonUtil.readValue(responseBody, JsonNode.class)
+				.get("data").get("properties").get("adminmail").get("possibleValues");
+
+		assertThat(possibleValues.get(0).get("identifier").asText())
+				.as("adminmail option 0 identifier is masked").isEqualTo("Mr");
+		assertThat(possibleValues.get(0).get("displayName").asText())
+				.as("adminmail option 0 displayName").isEqualTo("Mr");
+		assertThat(possibleValues.get(1).get("identifier").asText())
+				.as("adminmail option 1 identifier is masked").isEqualTo("Ms");
+		assertThat(possibleValues.get(1).get("displayName").asText())
+				.as("adminmail option 1 displayName").isEqualTo("Ms");
 	}
 
 	private Response doLoadRequest(String formUuid, String formID, String language, boolean permission)

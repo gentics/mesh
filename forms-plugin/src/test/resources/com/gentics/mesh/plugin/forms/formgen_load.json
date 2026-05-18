@@ -122,7 +122,7 @@
       "adminmail": {
         "_comment": "This is added just to verify that other element can also have selectOptions",
         "name": "adminmail",
-        "type": "string",
+        "type": "adminmail",
         "active": true,
         "mandatory": false,
         "isList": false,
@@ -130,14 +130,14 @@
           "defaultValue": "mr",
           "selectOptions": [
             {
-              "value": "mr",
+              "value": "mr@gmail.com",
               "label": {
                 "de": "Herr",
                 "en": "Mr"
               }
             },
             {
-              "value": "ms",
+              "value": "ms@gmail.com",
               "label": {
                 "de": "Frau",
                 "en": "Ms"
