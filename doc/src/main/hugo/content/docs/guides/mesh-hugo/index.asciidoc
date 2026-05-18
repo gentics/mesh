@@ -89,10 +89,6 @@ Now we can run the exporter which will connect to Gentics Mesh and load the cont
 
 `java -jar mesh2hugo-1.0.0.jar -c -p demo -url http://localhost:8080`
 
-Alternatively you can also use the Gentics Mesh Demo server to load the contents.
-
-`java -jar mesh2hugo-1.0.0.jar -c -p demo -url https://demo.getmesh.io`
-
 The exported content markdown files show now look like this:
 
 ```
