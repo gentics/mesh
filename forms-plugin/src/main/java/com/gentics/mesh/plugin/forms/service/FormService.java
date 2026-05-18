@@ -753,9 +753,12 @@ public class FormService {
 							formDataNode.getUuid()),
 					HttpResponseStatus.CONFLICT.code()));
 		}
-		return loadForm(projectName, uuid)
+
+		return statusService.getFormtypeConfigs(projectName, adminClient)
+			.flatMap(formTypeConfigs -> loadForm(projectName, uuid)
 				.flatMap(jsonObj -> Single.fromCallable(() -> {
 					Form form = toForm(jsonObj.encode(), uuid, null);
+					form.setProperty("flows", formTypeConfigs.getConfigs().get(form.getType()).get("flows"));
 					form.setData(formDataNode != null
 							? buildFormDataFromNode(MultiMap.caseInsensitiveMultiMap(), form, formID, Collections.emptyMap(), language, formDataNode)
 							: buildDefaultFormData(MultiMap.caseInsensitiveMultiMap(), form, formID, Collections.emptyMap(), language, jwtClaims));
@@ -774,7 +777,7 @@ public class FormService {
 						}
 					}
 					return form;
-				}));
+				})));
 	}
 
 	private String resolveCaptchaSiteKey(String provider) {
