@@ -70,6 +70,7 @@ import com.gentics.mesh.plugin.forms.config.MultipageRenderMode;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
 import com.gentics.mesh.plugin.forms.model.AdminMailElement;
 import com.gentics.mesh.plugin.forms.model.BinaryElement;
+import com.gentics.mesh.plugin.forms.model.CaptchaConfigModel;
 import com.gentics.mesh.plugin.forms.model.DefaultValue;
 import com.gentics.mesh.plugin.forms.model.Form;
 import com.gentics.mesh.plugin.forms.model.FormElement;
@@ -758,8 +759,30 @@ public class FormService {
 					form.setData(formDataNode != null
 							? buildFormDataFromNode(MultiMap.caseInsensitiveMultiMap(), form, formID, Collections.emptyMap(), language, formDataNode)
 							: buildDefaultFormData(MultiMap.caseInsensitiveMultiMap(), form, formID, Collections.emptyMap(), language, jwtClaims));
+					String captchaId = form.getCaptchaId();
+					if (StringUtils.isNotBlank(captchaId)) {
+						int sep = captchaId.indexOf('_');
+						if (sep > 0) {
+							String provider = captchaId.substring(0, sep);
+							String mode = captchaId.substring(sep + 1);
+							String sitekey = resolveCaptchaSiteKey(provider);
+							if(sitekey == null){
+								throw new FormsError("Invalid captchaId:" + captchaId, HttpResponseStatus.BAD_REQUEST.code());
+							}
+							form.setCaptchaConfig(new CaptchaConfigModel(provider, mode, sitekey));
+
+						}
+					}
 					return form;
 				}));
+	}
+
+	private String resolveCaptchaSiteKey(String provider) {
+		switch (provider) {
+			case "recaptcha":       return configuration.getReCaptcha() != null ? configuration.getReCaptcha().getSiteKey() : null;
+			case "friendlycaptcha": return configuration.getFriendlyCaptcha() != null ? configuration.getFriendlyCaptcha().getSiteKey() : null;
+			default:                return null;
+		}
 	}
 
 	/**
