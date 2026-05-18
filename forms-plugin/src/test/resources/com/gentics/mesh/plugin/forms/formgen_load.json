@@ -127,7 +127,7 @@
         "mandatory": false,
         "isList": false,
         "formGridOptions": {
-          "defaultValue": "mr",
+          "defaultValue": "mr@gmail.com",
           "selectOptions": [
             {
               "value": "mr@gmail.com",

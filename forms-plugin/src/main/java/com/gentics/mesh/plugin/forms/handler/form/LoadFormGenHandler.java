@@ -28,7 +28,7 @@ import io.vertx.core.json.JsonObject;
  *
  * <p>Builds a {@link com.gentics.mesh.plugin.forms.model.Form} response whose {@code data} section
  * is populated either from schema default values (no {@code formDataUuid}) or from a previously
- * stored form-data submission node ({@code formDataUuid} present in the request body).</p>
+ * stored form-data submission node ({@code formDataUuid} passed as query parameter).</p>
  */
 @Singleton
 public class LoadFormGenHandler extends AbstractFormsHandler {
@@ -51,7 +51,7 @@ public class LoadFormGenHandler extends AbstractFormsHandler {
 
 		JsonObject body = context.body().asJsonObject();
 		String formID = body != null ? body.getString("formID") : null;
-		String formDataUuid = body != null ? body.getString("formDataUuid") : null;
+		String formDataUuid = ParameterUtil.getQueryParam(context, "formDataUuid");
 		Map<String, Object> jwtClaims = AuthUtil.decodeToken(context).getMap();
 
 		return uuidSingle

@@ -96,7 +96,7 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 		JsonNode adminmail = JsonUtil.readValue(responseBody, JsonNode.class)
 				.get("data").get("properties").get("adminmail").get("value");
 
-		assertThat(adminmail.get("identifier").asText()).as("adminmail.value").isEqualTo("mr");
+		assertThat(adminmail.get("identifier").asText()).as("adminmail.value").isEqualTo("Herr");
 		assertThat(adminmail.get("displayName").asText()).as("adminmail.label de").isEqualTo("Herr");
 	}
 
@@ -128,7 +128,7 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 		String uuid = createForm("formgen_load.json");
 
 		Request request = new Request.Builder()
-				.url(projectUrl("/forms/" + uuid + "/load?lang=en"))
+				.url(projectUrl("/form/" + uuid + "/load?lang=en"))
 				.headers(auth(true))
 				.post(RequestBody.create(MediaType.parse("application/json"), "{}"))
 				.build();
@@ -335,12 +335,13 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 
 	private Response doLoadRequest(String formUuid, String formID, String language, boolean permission,
 			String formDataUuid) throws IOException {
-		String bodyJson = formDataUuid != null
-				? "{\"formID\": \"" + formID + "\", \"formDataUuid\": \"" + formDataUuid + "\"}"
-				: "{\"formID\": \"" + formID + "\"}";
+		String bodyJson = "{\"formID\": \"" + formID + "\"}";
 		String url = projectUrl("/form/" + formUuid + "/load");
 		if (language != null) {
 			url = url + "?lang=" + language;
+		}
+		if (formDataUuid != null) {
+			url = url + "&formDataUuid=" + formDataUuid;
 		}
 		return client().newCall(new Request.Builder()
 				.url(url)
