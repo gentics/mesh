@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -43,8 +44,8 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.SortOrder;
+import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -80,8 +81,8 @@ import com.gentics.mesh.plugin.forms.model.FormType;
 import com.gentics.mesh.plugin.forms.model.FormpageElement;
 import com.gentics.mesh.plugin.forms.model.PostDataResponse;
 import com.gentics.mesh.plugin.forms.model.ValidationError;
-import com.gentics.mesh.plugin.forms.util.FormUtil;
 import com.gentics.mesh.plugin.forms.util.FormParameterUtil;
+import com.gentics.mesh.plugin.forms.util.FormUtil;
 import com.gentics.mesh.plugin.forms.util.RxUtil;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshResponse;
@@ -253,22 +254,28 @@ public class FormDataService {
 				.setVariables(new JsonObject().put("uuid", formUuid).put("schema", schemaName).put("perPage", nodesPerPage));
 		VersioningParameters params = new VersioningParametersImpl().draft();
 
-		return getFormDataFolderUuid(projectName, formUuid, lang)
-			   .flatMapCompletable(formDataFolderUuid -> {
-					   AtomicBoolean hasMore = new AtomicBoolean(false);
-					   return adminClient.graphql(projectName, request, params).toSingle()
-							   .flatMapObservable(response -> {
-									   List<String> uuids = FormUtil.getFromResponse(response, "$.data.node.children.elements[*].uuid");
-									   log.info("{} form data nodes found for migration of project {} / form {}", uuids.size(), projectName, formUuid);
-									   hasMore.set(uuids.size() >= nodesPerPage);
-									   return Observable.fromIterable(uuids);
-							   })
-							   .flatMap(dataUuid -> adminClient.moveNode(projectName, dataUuid, formDataFolderUuid).toObservable()
-											   .doOnSubscribe(disp -> log.debug(String.format("Move misplaced form data node %s for form %s in project %s", dataUuid, formUuid, projectName))), 
-									   maxConcurrentMoveCalls)
-							   .flatMapCompletable(disp -> Completable.complete())
-							   .repeatWhen(handler -> handler.takeWhile((o) -> hasMore.get()));
-			   }).doOnSubscribe(disp -> log.debug(String.format("Checking misplaced form data nodes for form %s in project %s", formUuid, projectName)));
+		AtomicBoolean hasMore = new AtomicBoolean(false);
+		AtomicReference<String> formDataFolderUuid = new AtomicReference<>();
+		return adminClient.graphql(projectName, request, params).toSingle()
+		   .flatMapObservable(response -> {
+				   List<String> uuids = FormUtil.getFromResponse(response, "$.data.node.children.elements[*].uuid");
+				   log.info("{} form data nodes found for migration of project {} / form {}", uuids.size(), projectName, formUuid);
+				   hasMore.set(uuids.size() >= nodesPerPage);
+				   Observable<String> observables = Observable.fromIterable(uuids);
+				   if (uuids.size() > 0 && formDataFolderUuid.get() == null) {
+					   return getFormDataFolderUuid(projectName, formUuid, lang).flatMapObservable(uuid -> {
+						   formDataFolderUuid.set(uuid);
+						   return observables;
+					   });
+				   } else {
+					   return observables;
+				   }				   
+		   }).flatMap(dataUuid -> adminClient.moveNode(projectName, dataUuid, formDataFolderUuid.get()).toObservable()
+				   .doOnSubscribe(disp -> log.debug(String.format("Move misplaced form data node %s for form %s in project %s", dataUuid, formUuid, projectName))), 
+				   maxConcurrentMoveCalls)
+		   .flatMapCompletable(disp -> Completable.complete())
+		   .repeatWhen(handler -> handler.takeWhile((o) -> hasMore.get()))
+		   .doOnSubscribe(disp -> log.debug(String.format("Checking misplaced form data nodes for form %s in project %s", formUuid, projectName)));
 
 	}
 
