@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import org.apache.commons.lang3.RandomStringUtils;
@@ -23,18 +24,17 @@ import okhttp3.Response;
  * Abstract base class for validation tests
  */
 public abstract class AbstractEndpointValidationTest extends AbstractFormsPluginIntegrationTest {
+
+	protected static String formUuid;
+
+	protected static String formDataUuid;
 	/**
 	 * Dummy request body
 	 */
 	protected final static RequestBody DUMMY_REQUEST_BODY = new MultipartBody.Builder()
 		.setType(MultipartBody.FORM)
-		.addFormDataPart("firstName", "FirstName")
-		.addFormDataPart("number", "13")
+		.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(formUuid, formDataUuid, Map.of("input1", "bla")))
 		.build();
-
-	protected static String formUuid;
-
-	protected static String formDataUuid;
 
 	/**
 	 * Supplier for a real form uuid
@@ -74,7 +74,7 @@ public abstract class AbstractEndpointValidationTest extends AbstractFormsPlugin
 			formUuid = createForm("inputfield.json");
 
 			Request postRequest = new Request.Builder()
-					.url(HttpUrl.get(projectUrl("/form/%s/save".formatted(formUuid))).newBuilder().build())
+					.url(HttpUrl.get(projectUrl("/form/%s/save?lang=en".formatted(formUuid))).newBuilder().build())
 					.header("Referer", "ref").post(DUMMY_REQUEST_BODY).build();
 
 			Response response = client().newCall(postRequest).execute();
@@ -96,9 +96,6 @@ public abstract class AbstractEndpointValidationTest extends AbstractFormsPlugin
 	 * @param expectedResponseCode expected response code
 	 */
 	protected void assertResponse(Response response, int expectedResponseCode) {
-		boolean expectSuccess = expectedResponseCode < 400;
-		assertThat(response.isSuccessful())
-				.as(String.format("Response status %d (%s)", response.code(), response.message())).isEqualTo(expectSuccess);
 		assertThat(response.code()).as("Response code").isEqualTo(expectedResponseCode);
 	}
 }

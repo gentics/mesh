@@ -1,21 +1,22 @@
 package com.gentics.mesh.plugin.forms.service;
 
 import java.io.IOException;
-import java.util.function.BiFunction;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.function.BiFunction;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -24,9 +25,8 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
-import com.gentics.mesh.plugin.PluginContext;
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -47,6 +47,7 @@ import com.gentics.mesh.core.rest.node.field.NumberField;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
@@ -59,6 +60,7 @@ import com.gentics.mesh.parameter.client.DeleteParametersImpl;
 import com.gentics.mesh.parameter.client.NodeParametersImpl;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.parameter.client.VersioningParametersImpl;
+import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.dagger.UserClient;
 import com.gentics.mesh.plugin.common.service.RenderService;
@@ -82,6 +84,7 @@ import com.gentics.mesh.plugin.forms.model.schema.PossibleValue;
 import com.gentics.mesh.plugin.forms.util.FormUtil;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.impl.EmptyResponse;
+
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Completable;
 import io.reactivex.Emitter;
@@ -96,8 +99,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.file.FileSystem;
-import org.apache.commons.collections.MapUtils;
-import java.util.Collections;
 
 @Singleton
 public class FormService {
@@ -520,11 +521,10 @@ public class FormService {
 
 		return statusService.getRootNode(projectName, userClient).flatMap(rootNode -> {
 			String language = formData.getString("language", "en");
-			NodeParameters languageParameter = new NodeParametersImpl().setLanguages(language);
 			NodeUpsertRequest request = new NodeUpsertRequest()
 					.setSchemaName(SchemaInitializer.SCHEMA_NAME)
 					.setParentNodeUuid(rootNode.getUuid())
-					.setLanguage(language);
+					.setLanguage("en");
 
 			request.getFields().put("name", new StringFieldImpl().setString(formData.getString("name")));
 			request.getFields().put("json", new StringFieldImpl().setString(formData.encodePrettily()));
@@ -540,7 +540,7 @@ public class FormService {
 				}
 			}
 
-			return userClient.upsertNode(projectName, uuid, request, languageParameter)
+			return userClient.upsertNode(projectName, uuid, request)
 					.toSingle() /* .flatMap(formNode -> loadAsAdminWithLanguageFallback(projectName, formNode.getUuid(), false)) */
 					.flatMap(formNode -> {
 						return schemaService.loadSchemaByName(SchemaService.getSchemaName(uuid), false)
@@ -558,7 +558,7 @@ public class FormService {
 									}
 								});
 					}).flatMap(updatedForm -> {
-						return userClient.publishNode(projectName, updatedForm.getUuid(), languageParameter).toSingle()
+						return userClient.publishNode(projectName, updatedForm.getUuid()).toSingle()
 								.flatMap(r -> load(projectName, updatedForm.getUuid(), language));
 					}).flatMap(updatedForm -> {
 						return ensureFormFolders(projectName, updatedForm.getUuid(), language, DOWNLOADS_FOLDER_NAME, DATA_FOLDER_NAME)
@@ -815,9 +815,6 @@ public class FormService {
 	 * @return populated {@link FormData} reflecting the stored submission
 	 */
 	public static FormData buildFormDataFromNode(MultiMap postedData, Form form, String formID, Map<String, ValidationError> errors, String language, NodeResponse node) {
-		StringFieldImpl errField = node.getFields().getStringField(Form.ERRORS_FIELD_NAME);
-		boolean hasErrors = errField != null && StringUtils.isNotBlank(errField.getString());
-
 		return initFormData(postedData, form, formID, errors, (key, element) -> buildPropertyFromNode(element, language, node));
 	}
 

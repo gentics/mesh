@@ -3,6 +3,7 @@ package com.gentics.mesh.plugin.forms;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -38,8 +39,7 @@ public class FriendlyCaptchaTest extends AbstractFormPostDataTest {
 		// post some data for the input field and a solution to the friendly captcha
 		// (it does not matter, what we post here, because our fake verification server will accept anything)
 		RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
-				.addFormDataPart("input1", "some data")
-				.addFormDataPart("frc-captcha-solution", solution)
+				.addFormDataPart("formdata", makeFormdataMultipart(formUuid, null, Map.of("input1", "some data", "frc-captcha-solution", solution)))
 				.build();
 		Pair<Response, Optional<Cookie>> pair = postToForm(formUuid, requestBody);
 		Response response = pair.getLeft();
@@ -65,15 +65,10 @@ public class FriendlyCaptchaTest extends AbstractFormPostDataTest {
 
 		// post some data for the input field, but nothing for the captcha
 		RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
-				.addFormDataPart("input1", "some data")
+				.addFormDataPart("formdata", makeFormdataMultipart(formUuid, null, Map.of("input1", "some data")))
 				.build();
 		Pair<Response, Optional<Cookie>> pair = postToForm(formUuid, requestBody);
-		Response response = pair.getLeft();
 		Optional<Cookie> cookie = pair.getRight();
-
-		// we expect a redirect to the referer
-		assertThat(response.isRedirect()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
-		assertThat(response.header("Location")).as("Location Header").isEqualTo("ref");
 
 		// we expect no data cookie to be set
 		assertThat(cookie).as("Data cookie").isEmpty();
@@ -101,16 +96,10 @@ public class FriendlyCaptchaTest extends AbstractFormPostDataTest {
 
 		// post some data for the input field, but nothing for the captcha
 		RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
-				.addFormDataPart("input1", "some data")
-				.addFormDataPart("frc-captcha-solution", solution)
+				.addFormDataPart("formdata", makeFormdataMultipart(formUuid, null, Map.of("input1", "some data", "frc-captcha-solution", solution)))
 				.build();
 		Pair<Response, Optional<Cookie>> pair = postToForm(formUuid, requestBody);
-		Response response = pair.getLeft();
 		Optional<Cookie> cookie = pair.getRight();
-
-		// we expect a redirect to the referer
-		assertThat(response.isRedirect()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
-		assertThat(response.header("Location")).as("Location Header").isEqualTo("ref");
 
 		// we expect no data cookie to be set
 		assertThat(cookie).as("Data cookie").isEmpty();

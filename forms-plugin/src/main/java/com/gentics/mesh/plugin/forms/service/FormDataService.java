@@ -16,6 +16,7 @@ import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.parameter.client.DeleteParametersImpl;
+import com.gentics.mesh.parameter.client.NodeParametersImpl;
 import com.gentics.mesh.parameter.client.VersioningParametersImpl;
 import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.PluginManifest;
@@ -1093,11 +1094,12 @@ public class FormDataService {
 				log.warn("Storing of POSTed data to form {} prevented by field {}. Validation error: {}", form.getUuid(),
 						errorPreventingDataStorage.get().getName(), errorPreventingDataStorage.get().getMessage());
 
-				// just return the errors in the response but don't save anything
-				var response = new FormData();
-
 				FormData formData = toValidationResponse(ctx, errors1);
-				
+				if (ctx.getReferer() != null) {
+					formData.setRedirectUrl(ctx.getReferer());
+				} else {
+					formData.setRedirectUrl("");
+				}
 				return Single.just(formData);
 			} else {
 				String projectName = ctx.getProjectName();
@@ -1127,6 +1129,11 @@ public class FormDataService {
 							ctx.setFormDataNode(savedFileUploads); // updated formdata node
 							var response = toValidationResponse(ctx, errors);
 							response.setFormDataID(savedFileUploads.getUuid());
+							if (ctx.getReferer() != null) {
+								response.setRedirectUrl(ctx.getReferer());
+							} else {
+								response.setRedirectUrl("");
+							}
 							return Single.just(response);
 						}
 					});
@@ -1169,14 +1176,8 @@ public class FormDataService {
 		var response = formDataNode == null
 			? FormService.buildDefaultFormData(ctx.getPostedData(), form, form.getUuid(), errors, lang, AuthUtil.decodeToken(pluginContext).getMap())
 			: FormService.buildFormDataFromNode(ctx.getPostedData(), form, form.getUuid(), errors, lang, formDataNode);
-		if (ctx.getReferer() != null) {
-			response.setRedirectUrl(ctx.getReferer());
-		} else {
-			response.setRedirectUrl("");
-		}
 
 		response.setHasValidationErrors(!errors.isEmpty());
-
 		return response;
 	}
 
@@ -1214,12 +1215,12 @@ public class FormDataService {
 		if (formDataNode == null) {
 			createRequest = new NodeCreateRequest().setSchemaName(SchemaService.getSchemaName(formNode.getUuid()))
 				.setParentNodeUuid(dataFolderUuid)
-				.setLanguage("en");
+				.setLanguage(form.getLanguage());
 			container = createRequest;
 		} else {
 			updateRequest = new NodeUpdateRequest();
 			updateRequest.setVersion(formDataNode.getVersion());
-			updateRequest.setLanguage("en");
+			updateRequest.setLanguage(form.getLanguage());
 			container = updateRequest;
 		}
 
@@ -1236,9 +1237,9 @@ public class FormDataService {
 		}
 
 		if (formDataNode == null) {
-			return adminClient.createNode(projectName, createRequest).toSingle();
+			return adminClient.createNode(projectName, createRequest, new NodeParametersImpl().setLanguages(form.getLanguage())).toSingle();
 		} else {
-			return adminClient.updateNode(projectName, formDataNode.getUuid(), updateRequest).toSingle();
+			return adminClient.updateNode(projectName, formDataNode.getUuid(), updateRequest, new NodeParametersImpl().setLanguages(form.getLanguage())).toSingle();
 		}
 	}
 

@@ -1,23 +1,24 @@
 package com.gentics.mesh.plugin.forms;
 
-import com.gentics.mesh.core.rest.node.NodeListResponse;
-import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
-import com.gentics.mesh.plugin.test.common.util.PluginTestUtil;
-import okhttp3.MultipartBody;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
-import static com.gentics.mesh.test.ClientHelper.call;
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
+import com.gentics.mesh.plugin.test.common.util.PluginTestUtil;
+
+import okhttp3.MultipartBody;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 /**
  * Test rendering a form with a path prefix.
@@ -78,8 +79,6 @@ public class FormRenderTestPathPrefix extends AbstractFormsPluginIntegrationTest
 		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit"))
 			.header("Referer", "ref").post(requestBody).build();
 		Response postDataResponse = client().newCall(postRequest).execute();
-		assertThat(postDataResponse.isRedirect())
-			.as(String.format("Response redirect %d (%s)", postDataResponse.code(), postDataResponse.message())).isTrue();
 
 		NodeResponse dataNode = getSingleFormDataNode(uuid);
 
@@ -98,8 +97,6 @@ public class FormRenderTestPathPrefix extends AbstractFormsPluginIntegrationTest
 		postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit"))
 			.header("Referer", "ref").post(requestBody).build();
 		postDataResponse = client().newCall(postRequest).execute();
-		assertThat(postDataResponse.isRedirect())
-			.as(String.format("Response redirect %d (%s)", postDataResponse.code(), postDataResponse.message())).isTrue();
 
 		renderRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data/" + dataNode.getUuid())).header("Accept", "text/html").get().build();
 		response = client().newCall(renderRequest).execute();

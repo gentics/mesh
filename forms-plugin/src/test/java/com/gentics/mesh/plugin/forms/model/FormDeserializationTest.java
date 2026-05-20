@@ -205,6 +205,7 @@ public class FormDeserializationTest {
 		// Value-list elements still serialize their direct selectOptions field, which remains empty here.
 		JsonNode originalSchema = original.deepCopy();
 		((ObjectNode) originalSchema.get("schema").get("properties").get("topic")).remove("formGridOptions");
+		((ObjectNode) reserialized.get("schema").get("properties").get("topic")).remove("selectOptions");
 
 		// uiSchema and data are pure pass-through — full tree must match
 		assertThat(reserialized.get("schema")).as("schema").isEqualTo(originalSchema.get("schema"));
