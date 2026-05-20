@@ -8,6 +8,7 @@ import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.common.util.ParameterUtil;
 import com.gentics.mesh.plugin.forms.context.FormDataCreateContext;
 import com.gentics.mesh.plugin.forms.context.FormDataUpdateContext;
+import com.gentics.mesh.plugin.forms.model.CaptchaValidationException;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
 
 import io.reactivex.Completable;
@@ -38,6 +39,16 @@ public class SaveDataHandler extends AbstractFormsHandler {
 				}
 				serverResponse.end(JsonUtil.toJson(response));
 			})
-			.ignoreElement();
+			.ignoreElement()
+			.onErrorResumeNext(e -> {
+				if (e instanceof CaptchaValidationException captchaEx) {
+					context.response()
+						.setStatusCode(400)
+						.putHeader("content-type", "application/json")
+						.end(captchaEx.toResponseBody());
+					return Completable.complete();
+				}
+				return Completable.error(e);
+			});
 	}
 }

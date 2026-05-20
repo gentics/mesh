@@ -164,6 +164,8 @@ public class FormDataService {
 
 	private final OkHttpClientService okHttpClientService;
 
+	private final FriendlyCaptchaService friendlyCaptchaService;
+
 	private final File storageDir;
 
 	private final String loadFormDataToMigrateGraphQl;
@@ -180,6 +182,7 @@ public class FormDataService {
 			MailService mailService,
 			StatusService statusService,
 			OkHttpClientService okHttpClientService,
+			FriendlyCaptchaService friendlyCaptchaService,
 			PluginManifest manifest,
 			@StorageDir File storageDir) {
 		this.adminClient = adminClient;
@@ -192,6 +195,7 @@ public class FormDataService {
 		this.mailService = mailService;
 		this.statusService = statusService;
 		this.okHttpClientService = okHttpClientService;
+		this.friendlyCaptchaService = friendlyCaptchaService;
 		this.storageDir = storageDir;
 
 		try {
@@ -1080,7 +1084,7 @@ public class FormDataService {
 		Form form = ctx.getForm();
 		MultiMap postedData = ctx.getPostedData();
 
-		return validatePostedData(ctx).flatMap(errors1 -> {
+		return friendlyCaptchaService.validateFriendlyCaptcha(ctx).andThen(validatePostedData(ctx).flatMap(errors1 -> {
 			// check whether we have any validation errors, that prevent storing of the data
 			Optional<ValidationError> errorPreventingDataStorage = errors1.values().stream()
 					.filter(ValidationError::isPreventStoring).findAny();
@@ -1127,7 +1131,7 @@ public class FormDataService {
 						}
 					});
 			}
-		});
+		}));
 	}
 
 	/**
