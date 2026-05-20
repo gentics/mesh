@@ -32,6 +32,9 @@ public class LoadFormHandler extends AbstractFormsHandler {
 				.flatMap(uuid -> formService.loadForm(projectName, uuid))
 				.doOnEvent((response, t) -> {
 					if (response != null) {
+						if (response.containsKey("uiSchema")) {
+							response.put("ui-schema", response.remove("uiSchema"));
+						}
 						context.response().putHeader(HttpHeaders.CONTENT_TYPE, HttpConstants.APPLICATION_JSON_UTF8)
 								.end(response.toString());
 					}

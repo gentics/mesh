@@ -70,7 +70,9 @@ import com.gentics.mesh.plugin.forms.SchemaInitializer;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.config.MultipageRenderMode;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
+import com.gentics.mesh.plugin.forms.model.AdminMailElement;
 import com.gentics.mesh.plugin.forms.model.BinaryElement;
+import com.gentics.mesh.plugin.forms.model.CaptchaConfigModel;
 import com.gentics.mesh.plugin.forms.model.DefaultValue;
 import com.gentics.mesh.plugin.forms.model.Form;
 import com.gentics.mesh.plugin.forms.model.FormElement;
@@ -751,14 +753,39 @@ public class FormService {
 							formDataNode.getUuid()),
 					HttpResponseStatus.CONFLICT.code()));
 		}
-		return loadForm(projectName, uuid)
+
+		return statusService.getFormtypeConfigs(projectName, adminClient)
+			.flatMap(formTypeConfigs -> loadForm(projectName, uuid)
 				.flatMap(jsonObj -> Single.fromCallable(() -> {
 					Form form = toForm(jsonObj.encode(), uuid, null);
+					form.setProperty("flows", formTypeConfigs.getConfigs().get(form.getType()).get("flows"));
 					form.setData(formDataNode != null
 							? buildFormDataFromNode(MultiMap.caseInsensitiveMultiMap(), form, formID, Collections.emptyMap(), language, formDataNode)
 							: buildDefaultFormData(MultiMap.caseInsensitiveMultiMap(), form, formID, Collections.emptyMap(), language, jwtClaims));
+					String captchaId = form.getCaptchaId();
+					if (StringUtils.isNotBlank(captchaId)) {
+						int sep = captchaId.indexOf('_');
+						if (sep > 0) {
+							String provider = captchaId.substring(0, sep);
+							String mode = captchaId.substring(sep + 1);
+							String sitekey = resolveCaptchaSiteKey(provider);
+							if(sitekey == null){
+								throw new FormsError("Invalid captchaId:" + captchaId, HttpResponseStatus.BAD_REQUEST.code());
+							}
+							form.setCaptchaConfig(new CaptchaConfigModel(provider, mode, sitekey));
+
+						}
+					}
 					return form;
-				}));
+				})));
+	}
+
+	private String resolveCaptchaSiteKey(String provider) {
+		switch (provider) {
+			case "recaptcha":       return configuration.getReCaptcha() != null ? configuration.getReCaptcha().getSiteKey() : null;
+			case "friendlycaptcha": return configuration.getFriendlyCaptcha() != null ? configuration.getFriendlyCaptcha().getSiteKey() : null;
+			default:                return null;
+		}
 	}
 
 	/**
@@ -851,14 +878,14 @@ public class FormService {
 				// get the list of values (Ids) from selectoptions
 				List<?> ids = (List<?>) defaultValue.resolve(language, jwtClaims);
 				prop.setValues(ids.stream()
-						.map(id -> (Object) findPossibleValue(String.valueOf(id), selectOptions, language))
+						.map(id -> (Object) findPossibleValue(String.valueOf(id), selectOptions, language, element))
 						.filter(Objects::nonNull)
 						.collect(Collectors.toList()));
 			} else if (defaultValue != null) {
 				prop.setValue(findPossibleValue(
-						String.valueOf(defaultValue.resolve(language, jwtClaims)), selectOptions, language));
+						String.valueOf(defaultValue.resolve(language, jwtClaims)), selectOptions, language, element));
 			}
-			prop.setPossibleValues(buildPossibleValues(selectOptions, language));
+			prop.setPossibleValues(buildPossibleValues(selectOptions, language, element));
 		} else if (defaultValue != null) {
 			if (defaultValue.isList()) {
 				prop.setValues((List<Object>) defaultValue.resolve(language, jwtClaims));
@@ -906,17 +933,17 @@ public class FormService {
 				StringFieldListImpl listField = node.getFields().getStringFieldList(element.getName());
 				if (listField != null) {
 					prop.setValues(listField.getItems().stream()
-							.map(item -> (Object) findPossibleValue(String.valueOf(item), selectOptions, language))
+							.map(item -> (Object) findPossibleValue(String.valueOf(item), selectOptions, language, element))
 							.filter(Objects::nonNull)
 							.collect(Collectors.toList()));
 				}
 			} else {
 				StringFieldImpl strField = node.getFields().getStringField(element.getName());
 				if (strField != null) {
-					prop.setValue(findPossibleValue(strField.getString(), selectOptions, language));
+					prop.setValue(findPossibleValue(strField.getString(), selectOptions, language, element));
 				}
 			}
-			prop.setPossibleValues(buildPossibleValues(selectOptions, language));
+			prop.setPossibleValues(buildPossibleValues(selectOptions, language, element));
 		} else {
 			if (element.isList()) {
 				StringFieldListImpl listField = node.getFields().getStringFieldList(element.getName());
@@ -937,35 +964,54 @@ public class FormService {
 	 * Converts a list of {@link ValueListItem}s to {@link PossibleValue}s.
 	 * The display name for each item is resolved via {@link #resolveOptionLabel}.
 	 *
+	 * <p>For {@link AdminMailElement}, the {@code identifier} of each {@link PossibleValue} is set to
+	 * the resolved display name instead of the raw option value, so that email addresses are never
+	 * exposed to FormGen.</p>
+	 *
 	 * @param selectOptions source items; must not be {@code null}
 	 * @param language      language code for display name resolution
+	 * @param element       the form element owning the options; used to apply AdminMailElement masking
 	 * @return list of {@link PossibleValue}s in the same order as {@code selectOptions}
 	 */
-	private static List<PossibleValue> buildPossibleValues(List<ValueListItem> selectOptions, String language) {
+	private static List<PossibleValue> buildPossibleValues(List<ValueListItem> selectOptions, String language, FormElement element) {
 		return selectOptions.stream()
-				.map(item -> new PossibleValue(StringUtils.defaultString(item.getValue()),
-						resolveOptionLabel(item, language)))
+				.map(item -> {
+					String displayName = resolveOptionLabel(item, language);
+					String identifier = (element instanceof AdminMailElement)
+							? displayName
+							: StringUtils.defaultString(item.getValue());
+					return new PossibleValue(identifier, displayName);
+				})
 				.collect(Collectors.toList());
 	}
 
 	/**
-	 * Looks up {@code identifier} in {@code options} and returns a {@link PossibleValue} with the
+	 * Looks up {@code storedValue} in {@code options} and returns a {@link PossibleValue} with the
 	 * display name resolved for {@code language}. Returns {@code null} when {@code options} is
-	 * {@code null} or the identifier has no match.
+	 * {@code null} or the stored value has no match.
 	 *
-	 * @param identifier the option value to look up
-	 * @param options    available select options; may be {@code null}
-	 * @param language   language code for display name resolution
+	 * <p>For {@link AdminMailElement}, the returned {@link PossibleValue#getIdentifier()} is set to the
+	 * resolved display name instead of the raw stored value, so that email addresses are never exposed
+	 * to FormGen.</p>
+	 *
+	 * @param storedValue the raw option value stored in the Mesh node (e.g. an email address)
+	 * @param options     available select options; may be {@code null}
+	 * @param language    language code for display name resolution
+	 * @param element     the form element owning the options; used to apply AdminMailElement masking
 	 * @return matching {@link PossibleValue}, or {@code null}
 	 */
-	private static PossibleValue findPossibleValue(String identifier, List<ValueListItem> options, String language) {
+	private static PossibleValue findPossibleValue(String identifier, List<ValueListItem> options, String language, FormElement element) {
 		if (options == null) {
 			return null;
 		}
 		return options.stream()
 				.filter(item -> identifier.equals(item.getValue()))
 				.findFirst()
-				.map(item -> new PossibleValue(identifier, resolveOptionLabel(item, language)))
+				.map(item -> {
+					String displayName = resolveOptionLabel(item, language);
+					String storedIdentifier = (element instanceof AdminMailElement) ? displayName : identifier;
+					return new PossibleValue(storedIdentifier, displayName);
+				})
 				.orElse(null);
 	}
 
@@ -998,6 +1044,51 @@ public class FormService {
 		}
 		return null;
 	}
+
+	/**
+	 * Remaps submitted values for {@link AdminMailElement} fields from their masked form (displayName used as
+	 * identifier) back to the real stored identifiers (email addresses).
+	 *
+	 * <p>When FormGen receives a form, {@code AdminMailElement} options are sent with {@code identifier = displayName}
+	 * to avoid exposing raw email addresses. On the way back in (save/submit/validate), this method reverses that
+	 * mapping so the real email addresses are stored in Mesh.</p>
+	 *
+	 * @param form       the loaded form definition
+	 * @param postedData raw posted data as received from FormGen
+	 * @param language   language code used for display name resolution
+	 * @return a new {@link MultiMap} with AdminMailElement values replaced by real identifiers; all other entries are unchanged
+	 */
+	public static MultiMap adminMailLabelToValue(Form form, MultiMap postedData, String language) {
+		if (form == null || form.getSchema() == null || form.getSchema().getProperties() == null || postedData.isEmpty()) {
+			return postedData;
+		}
+		MultiMap result = MultiMap.caseInsensitiveMultiMap();
+		postedData.entries().forEach(e -> result.add(e.getKey(), e.getValue()));
+
+		form.getSchema().getProperties().forEach((key, element) -> {
+			if (!(element instanceof AdminMailElement)) {
+				return;
+			}
+			List<String> submittedDisplayNames = postedData.getAll(key);
+			if (submittedDisplayNames == null || submittedDisplayNames.isEmpty()) {
+				return;
+			}
+			List<ValueListItem> options = resolveSelectOptions(element);
+			if (options == null) {
+				return;
+			}
+			result.remove(key);
+			submittedDisplayNames.forEach(submittedDisplayName ->
+				options.stream()
+					.filter(item -> submittedDisplayName.equals(resolveOptionLabel(item, language)))
+					.findFirst()
+					.map(ValueListItem::getValue)
+					.ifPresent(realId -> result.add(key, realId))
+			);
+		});
+		return result;
+	}
+
 
 	/**
 	 * Mark completed and active formpages

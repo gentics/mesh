@@ -28,6 +28,10 @@ public class UpsertFormHandler extends AbstractFormsHandler {
 		Single<String> uuidSingle = ParameterUtil.getUuidFromPath(context, "formUuid");
 		JsonObject formData = context.body().asJsonObject();
 
+		if (formData != null && formData.containsKey("ui-schema")) {
+			formData.put("uiSchema", formData.remove("ui-schema"));
+		}
+
 		return uuidSingle.flatMap(uuid -> formService.upsert(projectName, uuid, formData)).doOnEvent((response, t) -> {
 			if (response != null) {
 				context.response().putHeader(HttpHeaders.CONTENT_TYPE, HttpConstants.APPLICATION_JSON_UTF8)

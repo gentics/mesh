@@ -2,6 +2,7 @@
   "name": "Test",
   "language": "en",
   "type": "GENERIC",
+  "captchaId": "recaptcha_background",
   "schema": {
     "key": "test-schema",
     "version": "2.0.0",
@@ -122,22 +123,22 @@
       "adminmail": {
         "_comment": "This is added just to verify that other element can also have selectOptions",
         "name": "adminmail",
-        "type": "string",
+        "type": "adminmail",
         "active": true,
         "mandatory": false,
         "isList": false,
         "formGridOptions": {
-          "defaultValue": "mr",
+          "defaultValue": "mr@gmail.com",
           "selectOptions": [
             {
-              "value": "mr",
+              "value": "mr@gmail.com",
               "label": {
                 "de": "Herr",
                 "en": "Mr"
               }
             },
             {
-              "value": "ms",
+              "value": "ms@gmail.com",
               "label": {
                 "de": "Frau",
                 "en": "Ms"

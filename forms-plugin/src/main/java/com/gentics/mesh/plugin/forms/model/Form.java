@@ -3,6 +3,7 @@ package com.gentics.mesh.plugin.forms.model;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.plugin.forms.model.schema.FormData;
@@ -67,6 +68,12 @@ public class Form implements RestModel {
 	private String mailsource;
 
 	private String successurl;
+
+	private String captchaId;
+
+	// relevant for formgen
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private CaptchaConfigModel captchaConfigModel;
 
 	@JsonProperty("schema")
 	private FormSchema schema;
@@ -370,6 +377,32 @@ public class Form implements RestModel {
 	 */
 	public void setTemplateContext(String templateContext) {
 		this.templateContext = templateContext;
+	}
+
+
+	/**
+	 * Get the captchaId
+	 * @return captchaId
+	 */
+	public String getCaptchaId() {
+		return captchaId;
+	}
+
+	/**
+	 * Set the captchaId
+	 * 
+	 * @param captchaId captchaId
+	 */
+	public void setCaptchaId(String captchaId) {
+		this.captchaId = captchaId;
+	}
+
+	public CaptchaConfigModel getCaptchaConfig() {
+		return captchaConfigModel;
+	}
+
+	public void setCaptchaConfig(CaptchaConfigModel captchaConfigModel) {
+		this.captchaConfigModel = captchaConfigModel;
 	}
 
 	/**
