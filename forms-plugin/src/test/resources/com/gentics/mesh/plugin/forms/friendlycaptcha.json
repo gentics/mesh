@@ -2,6 +2,7 @@
 	"name": "Form with Friendly Captcha",
 	"cms_id": 1,
     "type": "GENERIC",
+	"captchaId": "friendlycaptcha_background",
 	"schema": {
 		"key": "test-schema",
 	    "version": "1.0.0",
@@ -14,28 +15,13 @@
 				"mandatory": false,
 				"info": "",
 				"tooltip": "",
-				
+
 				"value": "",
 				"minVal": "",
 				"maxVal": "",
 				"maxCharCount": "",
 				"elements": []
-			},
-			"friendlycaptcha1": {
-				"type": "friendlycaptcha",
-				"name": "friendlycaptcha1",
-				"placeholderName": "",
-				"label": "FriendlyCaptcha",
-				"mandatory": false,
-				"info": "",
-				"tooltip": "",
-				
-				"value": "",
-				"minVal": "",
-				"maxVal": "",
-				"maxCharCount": "",
-				"elements": []
-	        }
+			}
 		}
 	}
 }

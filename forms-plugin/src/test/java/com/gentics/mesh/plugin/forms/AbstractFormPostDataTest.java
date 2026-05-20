@@ -5,6 +5,7 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -82,13 +83,27 @@ public class AbstractFormPostDataTest extends AbstractFormsPluginIntegrationTest
 	 * @throws IOException
 	 */
 	protected Pair<Response, Optional<Cookie>> postToForm(String uuid, RequestBody body) throws IOException {
-		Request postRequest = new Request.Builder()
+		return postToForm(uuid, body, Map.of());
+	}
+
+	/**
+	 * Post the given body to the form, adding extra HTTP headers (e.g. captcha tokens).
+	 * @param uuid form uuid
+	 * @param body post body
+	 * @param extraHeaders additional headers to include in the request
+	 * @return response
+	 * @throws IOException
+	 */
+	protected Pair<Response, Optional<Cookie>> postToForm(String uuid, RequestBody body, Map<String, String> extraHeaders) throws IOException {
+		Request.Builder builder = new Request.Builder()
 			.url(projectUrl("/form/" + uuid + "/submit?lang=en"))
 			.header("Referer", "ref")
-			.post(body)
-			.build();
+			.post(body);
+		extraHeaders.forEach(builder::header);
+		Request postRequest = builder.build();
 		Response response = client().newCall(postRequest).execute();
-		Optional<Cookie> cookie = Cookie.parseAll(postRequest.url(), response.headers()).stream().filter(c -> FormDataService.COOKIE_NAME_DATA.equals(c.name()))
+		Optional<Cookie> cookie = Cookie.parseAll(postRequest.url(), response.headers()).stream()
+			.filter(c -> FormDataService.COOKIE_NAME_DATA.equals(c.name()))
 			.findFirst();
 
 		return Pair.of(response, cookie);
