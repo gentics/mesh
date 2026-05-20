@@ -14,10 +14,9 @@ import org.slf4j.LoggerFactory;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.context.FormDataCreateContext;
 import com.gentics.mesh.plugin.forms.model.CaptchaValidationException;
-import com.gentics.mesh.plugin.forms.model.Form;
 
 import io.reactivex.Completable;
-import io.reactivex.Single; // needed for OkHttp bridge
+import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -28,8 +27,8 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 @Singleton
-public class FriendlyCaptchaService {
-	private static final Logger log = LoggerFactory.getLogger(FriendlyCaptchaService.class);
+public class FriendlyCaptchaProvider implements CaptchaProvider {
+	private static final Logger log = LoggerFactory.getLogger(FriendlyCaptchaProvider.class);
 
 	protected static final List<String> FAST_FAILER_SOLUTIONS = Arrays.asList(".FETCHING", ".UNSTARTED", ".UNFINISHED");
 
@@ -37,34 +36,18 @@ public class FriendlyCaptchaService {
 	private final OkHttpClientService okHttpClientService;
 
 	@Inject
-	public FriendlyCaptchaService(FormsConfig configuration, OkHttpClientService okHttpClientService) {
+	public FriendlyCaptchaProvider(FormsConfig configuration, OkHttpClientService okHttpClientService) {
 		this.configuration = configuration;
 		this.okHttpClientService = okHttpClientService;
 	}
 
-	/**
-	 * Validate the FriendlyCaptcha token from the request header when the form requires it.
-	 * Skipped for updates (existing formDataNode means the create was already validated).
-	 * Completes normally if valid or not required; errors with {@link CaptchaValidationException} if invalid.
-	 *
-	 * @param ctx request context
-	 */
-	public Completable validateFriendlyCaptcha(FormDataCreateContext ctx) {
-		Form form = ctx.getForm();
-		// getCaptchaConfig() is null on save/submit path; getCaptchaId() is always set
-		String captchaId = form.getCaptchaId();
-		if (StringUtils.isBlank(captchaId)) {
-			return Completable.complete();
-		}
-		String provider = captchaId.contains("_") ? captchaId.substring(0, captchaId.indexOf('_')) : captchaId;
-		if (!"friendlycaptcha".equals(provider)) {
-			return Completable.complete();
-		}
-		if (ctx.getFormDataNode() != null) {
-			// update path — node existence was verified by load(); no captcha needed
-			return Completable.complete();
-		}
+	@Override
+	public boolean supports(String provider) {
+		return "friendlycaptcha".equals(provider);
+	}
 
+	@Override
+	public Completable validate(FormDataCreateContext ctx) {
 		String solutionKey = configuration.getFriendlyCaptcha().getSolutionKey();
 		String solution = ctx.getContext().request().getHeader(solutionKey);
 		return isValid(solution, okHttpClientService.getClient());
@@ -74,9 +57,6 @@ public class FriendlyCaptchaService {
 	 * Check validity of the captcha response against the FriendlyCaptcha verification API.
 	 * Completes normally if valid; errors with {@link CaptchaValidationException} if invalid,
 	 * or {@link IllegalStateException} if the API returns a non-200 status.
-	 *
-	 * @param captchaSolution captcha solution token
-	 * @param httpClient HTTP client for the verification request
 	 */
 	public Completable isValid(String captchaSolution, OkHttpClient httpClient) {
 		log.debug("Trying to validate captchaResponse: {}", captchaSolution);

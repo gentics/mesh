@@ -164,7 +164,7 @@ public class FormDataService {
 
 	private final OkHttpClientService okHttpClientService;
 
-	private final FriendlyCaptchaService friendlyCaptchaService;
+	private final CaptchaService captchaService;
 
 	private final File storageDir;
 
@@ -182,7 +182,7 @@ public class FormDataService {
 			MailService mailService,
 			StatusService statusService,
 			OkHttpClientService okHttpClientService,
-			FriendlyCaptchaService friendlyCaptchaService,
+			CaptchaService captchaService,
 			PluginManifest manifest,
 			@StorageDir File storageDir) {
 		this.adminClient = adminClient;
@@ -195,7 +195,7 @@ public class FormDataService {
 		this.mailService = mailService;
 		this.statusService = statusService;
 		this.okHttpClientService = okHttpClientService;
-		this.friendlyCaptchaService = friendlyCaptchaService;
+		this.captchaService = captchaService;
 		this.storageDir = storageDir;
 
 		try {
@@ -1084,7 +1084,7 @@ public class FormDataService {
 		Form form = ctx.getForm();
 		MultiMap postedData = ctx.getPostedData();
 
-		return friendlyCaptchaService.validateFriendlyCaptcha(ctx).andThen(validatePostedData(ctx).flatMap(errors1 -> {
+		return captchaService.validate(ctx).andThen(validatePostedData(ctx).flatMap(errors1 -> {
 			// check whether we have any validation errors, that prevent storing of the data
 			Optional<ValidationError> errorPreventingDataStorage = errors1.values().stream()
 					.filter(ValidationError::isPreventStoring).findAny();
