@@ -45,48 +45,54 @@ public class FormDataProperty {
 		return value;
 	}
 
-	public void setValue(Object value) {
+	public FormDataProperty setValue(Object value) {
 		this.value = value;
+		return this;
 	}
 
 	public List<Object> getValues() {
 		return values;
 	}
 
-	public void setValues(List<Object> values) {
+	public FormDataProperty setValues(List<Object> values) {
 		this.values = values;
+		return this;
 	}
 
 	public String getValidationMessage() {
 		return validationMessage;
 	}
 
-	public void setValidationMessage(String validationMessage) {
+	public FormDataProperty setValidationMessage(String validationMessage) {
 		this.validationMessage = validationMessage;
+		return this;
 	}
 
 	public Boolean getVisible() {
 		return visible;
 	}
 
-	public void setVisible(Boolean visible) {
+	public FormDataProperty setVisible(Boolean visible) {
 		this.visible = visible;
+		return this;
 	}
 
 	public Boolean getEditable() {
 		return editable;
 	}
 
-	public void setEditable(Boolean editable) {
+	public FormDataProperty setEditable(Boolean editable) {
 		this.editable = editable;
+		return this;
 	}
 
 	public List<PossibleValue> getPossibleValues() {
 		return possibleValues;
 	}
 
-	public void setPossibleValues(List<PossibleValue> possibleValues) {
+	public FormDataProperty setPossibleValues(List<PossibleValue> possibleValues) {
 		this.possibleValues = possibleValues;
+		return this;
 	}
 
 	@JsonAnyGetter

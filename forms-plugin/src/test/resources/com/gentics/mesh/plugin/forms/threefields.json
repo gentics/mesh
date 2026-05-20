@@ -8,7 +8,8 @@
     "properties": {
       "input1": {
         "name": "input1",
-        "type": "string",
+		"label": "First Field",
+		"type": "string",
         "active": true,
         "mandatory": true,
         "isList": false,
@@ -19,7 +20,8 @@
       "input2": {
         "name": "input2",
         "type": "number",
-        "active": true,
+		"label": "Second Field",
+		"active": true,
         "mandatory": false,
         "isList": false,
         "formGridOptions": {
@@ -28,7 +30,8 @@
       },
       "input3": {
         "name": "input3",
-        "type": "string",
+		"label": "Third Field",
+		"type": "string",
         "active": true,
         "mandatory": false,
         "isList": false
@@ -56,28 +59,28 @@
         "elements": [
           {
             "type": "control",
-            "id": "firstName",
+            "id": "input1",
             "label": {
-              "de": "Vorname",
-              "en": "First name"
+              "de": "1. Eintrag",
+              "en": "First Field"
             },
             "uiSchemaPage": 0
           },
-          {
-            "type": "control",
-            "id": "age",
-            "label": {
-              "de": "Alter",
-              "en": "Age"
-            },
-            "uiSchemaPage": 0
+		  {
+          "type": "control",
+          "id": "input2",
+          "label": {
+            "de": "2. Eintrag",
+            "en": "Second Field"
           },
-          {
+          "uiSchemaPage": 0
+        },
+		{
             "type": "control",
-            "id": "notes",
+            "id": "input2",
             "label": {
-              "de": "Notizen",
-              "en": "Notes"
+              "de": "3. Eintrag",
+              "en": "Third Field"
             },
             "uiSchemaPage": 0
           }

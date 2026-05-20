@@ -83,7 +83,7 @@ public class AbstractFormPostDataTest extends AbstractFormsPluginIntegrationTest
 	 */
 	protected Pair<Response, Optional<Cookie>> postToForm(String uuid, RequestBody body) throws IOException {
 		Request postRequest = new Request.Builder()
-			.url(projectUrl("/form/" + uuid + "/submit"))
+			.url(projectUrl("/form/" + uuid + "/submit?lang=en"))
 			.header("Referer", "ref")
 			.post(body)
 			.build();

@@ -1,18 +1,13 @@
 package com.gentics.mesh.plugin.forms;
 
-import static com.gentics.mesh.test.ClientHelper.call;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.gentics.mesh.core.rest.node.NodeListResponse;
-import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.plugin.forms.config.InjectionPreventionMode;
-import com.gentics.mesh.plugin.forms.config.SecurityOptions;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.vertx.core.json.JsonObject;
-import okhttp3.MultipartBody;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -22,11 +17,15 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.plugin.forms.config.InjectionPreventionMode;
+import com.gentics.mesh.plugin.forms.config.SecurityOptions;
+
+import io.vertx.core.json.JsonObject;
+import okhttp3.MultipartBody;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 /**
  * Tests for rejecting or sanitizing potentially unsafe posted values.
@@ -170,13 +169,13 @@ public class SecurityFormPostDataTest extends AbstractFormPostDataTest {
 
 		RequestBody requestBody = new MultipartBody.Builder()
 			.setType(MultipartBody.FORM)
-			.addFormDataPart("input1", value)
+			.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("input1", value)))
 			.build();
 		okio.Buffer buffer = new okio.Buffer();
 		requestBody.writeTo(buffer);
 
 		Request postRequest = new Request.Builder()
-			.url(projectUrl("/form/" + uuid + "/submit"))
+			.url(projectUrl("/form/" + uuid + "/submit?lang=en"))
 			.header("Referer", "ref")
 			.post(requestBody)
 			.build();
@@ -184,15 +183,15 @@ public class SecurityFormPostDataTest extends AbstractFormPostDataTest {
 
 		assertThat(response.code())
 			.as("Post response code")
-			.isEqualTo(HttpResponseStatus.OK.code());
+			.isLessThan(400);
 
-		JsonObject errors = new JsonObject(response.body().string()).getJsonObject("errors");
+		JsonObject body = new JsonObject(response.body().string());
 		NodeResponse dataNode = getSingleFormDataNode(uuid);
 
 		if (expectValid) {
-			assertThat(errors)
+			assertThat(body.getBoolean("hasValidationErrors"))
 				.as("Post data errors")
-				.isNullOrEmpty();
+				.isFalse();
 
 			assertThat(dataNode.getVersion())
 				.as("Data Node Version")
@@ -202,9 +201,9 @@ public class SecurityFormPostDataTest extends AbstractFormPostDataTest {
 				.as("Stored data")
 				.isEqualTo(expectedStoredValue);
 		} else {
-			assertThat(errors)
+			assertThat(body.getBoolean("hasValidationErrors"))
 				.as("Post data errors")
-				.isNotEmpty();
+				.isTrue();
 
 			assertThat(dataNode.getVersion())
 				.as("Data Node Version")

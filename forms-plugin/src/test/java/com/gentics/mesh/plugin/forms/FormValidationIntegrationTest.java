@@ -27,13 +27,11 @@ public class FormValidationIntegrationTest extends AbstractFormsPluginIntegratio
 			new Object[] { "invalid_form_missing_key.json", false, true },
 			// test cases that pass the validation
 			new Object[] { "invalid_form_not_validated.json", true, true },
-			new Object[] { "selectgroup_legacy_listelements.json", true, true },
 			// test cases without validation
 			new Object[] { "invalid_form_no_list_elements.json", true, false },
 			new Object[] { "invalid_form_missing_value.json", true, false },
 			new Object[] { "invalid_form_missing_key.json", true, false },
 			new Object[] { "invalid_form_not_validated.json", true, false },
-			new Object[] { "selectgroup_legacy_listelements.json", true, false },
 			// test cases with invalid json
 			new Object[] { "invalid_form_json.json", false, true},
 			new Object[] { "invalid_form_json.json", false, false},

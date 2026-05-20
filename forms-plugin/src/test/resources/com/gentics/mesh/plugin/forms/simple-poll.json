@@ -7,7 +7,7 @@
 	    "version": "1.0.0",
 	    "properties": {
 			"checkbox1": {
-				"type": "checkbox",
+				"type": "boolean",
 				"name": "checkbox1",
 				"label": "Checkbox element",
 				"properties": {

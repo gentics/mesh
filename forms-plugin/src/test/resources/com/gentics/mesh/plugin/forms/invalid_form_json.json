@@ -1,6 +1,6 @@
 {
 	"name": "Invalid JSON",
-	"schema": {
+	"schema1": {
 		"key": "test-schema",
 	    "version": "1.0.0",
 	    "properties": {

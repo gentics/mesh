@@ -11,6 +11,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -22,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Test cases for rendering forms
  */
+@Ignore("No more own rendering")
 public class FormRenderTest extends AbstractFormsPluginIntegrationTest {
 
 	private static final String CUSTOM_TEMPLATE = "customTemplate";
@@ -111,7 +113,7 @@ public class FormRenderTest extends AbstractFormsPluginIntegrationTest {
 					"singleselect1", "s_3",
 					"multiselect1", "m_3" }));
 
-		StringBuilder url = new StringBuilder(projectUrl("/forms/" + uuid));
+		StringBuilder url = new StringBuilder(projectUrl("/forms/" + uuid + "/data"));
 		StringBuilder expectedResultFilename = new StringBuilder("poll-results");
 
 		if (StringUtils.isNotBlank(templateContext)) {
@@ -121,8 +123,8 @@ public class FormRenderTest extends AbstractFormsPluginIntegrationTest {
 
 		Request.Builder builder = new Request.Builder()
 			.url(url.toString())
-			.get()
-			.header("Accept", "text/html");
+			.headers(auth(true))
+			.get();
 
 		builder.header("Cookie", FormDataService.COOKIE_NAME_VOTED + "=" + uuid);
 
@@ -131,7 +133,9 @@ public class FormRenderTest extends AbstractFormsPluginIntegrationTest {
 		assertThat(response.isSuccessful())
 			.as(String.format("Render response success %d (%s)", response.code(), response.message()))
 			.isTrue();
-		assertThat(response.body().string())
+		JsonObject body = new JsonObject(response.body().string());
+		System.out.println(body.encodePrettily());
+		assertThat(body)
 			.as("Rendered result")
 			.isEqualTo(fromFile(expectedResultFilename.append(".html").toString()));
 	}

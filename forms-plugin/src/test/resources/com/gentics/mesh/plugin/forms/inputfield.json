@@ -6,31 +6,38 @@
     "key": "test-schema",
     "version": "2.0.0",
     "properties": {
-      "firstName": {
-        "name": "firstName",
-        "type": "string",
-        "active": true,
-        "mandatory": true,
-        "isList": false,
-        "formGridOptions": {
-          "defaultValue": "Max"
-        }
-      },
-      "number": {
-        "name": "number",
-        "type": "number",
-        "active": true,
-        "mandatory": false,
-        "isList": false,
-        "formGridOptions": {
-          "defaultValue": "1337"
-        },
-        "validation": {
-          "minValue": 5,
-          "maxValue": 23,
-          "regex": "^[13579]+$"
-        }
-      }
+      "input1": {
+			"type": "string",
+			"name": "input1",
+			"placeholderName": "",
+			"label": "Text",
+			"mandatory": true,
+			"info": "",
+			"tooltip": "",
+			"value": "",
+			"minVal": "",
+			"maxVal": "",
+			"maxCharCount": "",
+			"elements": []
+		}, "number": {
+			"type": "string",
+			"name": "number",
+			"placeholderName": "",
+			"label": "Number",
+			"mandatory": false,
+			"validation": {
+				"minValue": 10,
+				"maxValue": 20,
+				"regex": "^[\\d]+"
+			},
+			"info": "",
+			"tooltip": "",
+			"value": "",
+			"minVal": "",
+			"maxVal": "",
+			"maxCharCount": "",
+			"elements": []
+		}
     }
   },
   "uiSchema": {
@@ -54,10 +61,10 @@
         "elements": [
           {
             "type": "control",
-            "id": "firstName",
+            "id": "input1",
             "label": {
-              "de": "Vorname",
-              "en": "First name"
+              "de": "1. Eintrag",
+              "en": "Input 1"
             },
             "uiSchemaPage": 0
           }

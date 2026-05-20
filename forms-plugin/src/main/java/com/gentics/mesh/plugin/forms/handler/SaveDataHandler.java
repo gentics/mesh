@@ -29,13 +29,7 @@ public class SaveDataHandler extends AbstractFormsHandler {
 				? FormDataCreateContext.getCreate(context, true, false).flatMap(saveContext -> formDataService.create(saveContext))
 				: FormDataUpdateContext.getUpdate(context, true, false, formDataUuid).flatMap(saveContext -> formDataService.update(saveContext)))
 			.doOnSuccess(response -> {
-				String redirectUrl = response.getRedirectUrl();
 				HttpServerResponse serverResponse = context.response();
-				if (redirectUrl != null && !"".equals(redirectUrl)) {
-					serverResponse = serverResponse.setStatusCode(303).putHeader("Location", redirectUrl);
-				} else {
-					serverResponse = serverResponse.setStatusCode(200);
-				}
 				serverResponse.end(JsonUtil.toJson(response));
 			})
 			.ignoreElement();
