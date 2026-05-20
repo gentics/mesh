@@ -755,7 +755,7 @@ public class FormService {
 		}
 
 		return statusService.getFormtypeConfigs(projectName, adminClient)
-			.flatMap(formTypeConfigs -> loadForm(projectName, uuid)
+			.flatMap(formTypeConfigs -> loadFormAsAdmin(projectName, uuid)
 				.flatMap(jsonObj -> Single.fromCallable(() -> {
 					Form form = toForm(jsonObj.encode(), uuid, null);
 					form.setProperty("flows", formTypeConfigs.getConfigs().get(form.getType()).get("flows"));

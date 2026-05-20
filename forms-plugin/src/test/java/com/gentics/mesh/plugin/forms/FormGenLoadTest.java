@@ -1,6 +1,7 @@
 package com.gentics.mesh.plugin.forms;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.io.IOException;
 
@@ -23,13 +24,18 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 	public void setup() {
 		super.setup();
 		assertThat(activate(PROJECT_NAME)).as("Activation status").isTrue();
+		try {
+			setFormtypeConfigs(PROJECT_NAME, buildModel("{\"GENERIC\":{\"flows\":[]}}"));
+		} catch (IOException e) {
+			fail(e);
+		}
 	}
 	
 	@Test
 	public void testLoadFormGenFormGridOptionsNotExposed() throws IOException {
 		String uuid = createForm("formgen_load.json");
 
-		Response response = doLoadRequest(uuid, FORM_ID, "de", true);
+		Response response = doLoadRequest(uuid, FORM_ID, "de");
 		String responseBody = response.body() != null ? response.body().string() : "";
 		assertSuccessfulJsonResponse(response, responseBody);
 		JsonNode body = JsonUtil.readValue(responseBody, JsonNode.class);
@@ -46,7 +52,7 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 	public void testLoadFormGenPossibleValuesDe() throws IOException {
 		String uuid = createForm("formgen_load.json");
 
-		Response response = doLoadRequest(uuid, FORM_ID, "de", true);
+		Response response = doLoadRequest(uuid, FORM_ID, "de");
 		String responseBody = response.body() != null ? response.body().string() : "";
 
 		assertSuccessfulJsonResponse(response, responseBody);
@@ -74,7 +80,7 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 	public void testLoadFormGenPossibleValuesEn() throws IOException {
 		String uuid = createForm("formgen_load.json");
 
-		Response response = doLoadRequest(uuid, FORM_ID, "en", true);
+		Response response = doLoadRequest(uuid, FORM_ID, "en");
 		String responseBody = response.body() != null ? response.body().string() : "";
 
 		assertSuccessfulJsonResponse(response, responseBody);
@@ -89,7 +95,7 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 	public void testLoadFormGenSelectOptionsDefaultValue() throws IOException {
 		String uuid = createForm("formgen_load.json");
 
-		Response response = doLoadRequest(uuid, FORM_ID, "de", true);
+		Response response = doLoadRequest(uuid, FORM_ID, "de");
 		String responseBody = response.body() != null ? response.body().string() : "";
 
 		assertSuccessfulJsonResponse(response, responseBody);
@@ -104,7 +110,7 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 	public void testLoadFormGenNoPossibleValuesForNonValueListElement() throws IOException {
 		String uuid = createForm("formgen_load.json");
 
-		Response response = doLoadRequest(uuid, FORM_ID, "de", true);
+		Response response = doLoadRequest(uuid, FORM_ID, "de");
 		String responseBody = response.body() != null ? response.body().string() : "";
 		assertSuccessfulJsonResponse(response, responseBody);
 		JsonNode body = JsonUtil.readValue(responseBody, JsonNode.class);
@@ -119,7 +125,7 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 	public void testLoadFormGenMissingFormId() throws IOException {
 		String uuid = createForm("formgen_load.json");
 
-		Response response = doLoadRequest(uuid, "", "en", true);
+		Response response = doLoadRequest(uuid, "", "en");
 		assertThat(response.code()).as("Response code for empty formID").isEqualTo(400);
 	}
 
@@ -138,20 +144,13 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 	}
 
 	@Test
-	public void testLoadFormGenNoPermission() throws IOException {
-		String uuid = createForm("formgen_load.json");
-		Response response = doLoadRequest(uuid, FORM_ID, "en", false);
-		assertForbidden(response);
-	}
-
-	@Test
 	public void testLoadFormGenWithFormDataUuid() throws IOException {
 		String formUuid = createForm("formgen_load.json");
 
 		submit(formUuid, false, false, false, true, "en", "firstName", "Hans", "notes", "Wichtige Notiz");
 		String formDataUuid = getSingleFormDataNode(formUuid).getUuid();
 
-		Response response = doLoadRequest(formUuid, FORM_ID, "en", true, formDataUuid);
+		Response response = doLoadRequest(formUuid, FORM_ID, "en", formDataUuid);
 		String responseBody = response.body() != null ? response.body().string() : "";
 
 		assertSuccessfulJsonResponse(response, responseBody);
@@ -181,7 +180,7 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 				"adminmail", "Ms");
 		String formDataUuid = getSingleFormDataNode(formUuid).getUuid();
 
-		Response response = doLoadRequest(formUuid, FORM_ID, "en", true, formDataUuid);
+		Response response = doLoadRequest(formUuid, FORM_ID, "en", formDataUuid);
 		String responseBody = response.body() != null ? response.body().string() : "";
 
 		assertSuccessfulJsonResponse(response, responseBody);
@@ -208,7 +207,7 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 				"adminmail", "Ms");
 		String formDataUuid = getSingleFormDataNode(formUuid).getUuid();
 
-		Response response = doLoadRequest(formUuid, FORM_ID, "en", true, formDataUuid);
+		Response response = doLoadRequest(formUuid, FORM_ID, "en", formDataUuid);
 		String responseBody = response.body() != null ? response.body().string() : "";
 
 		assertSuccessfulJsonResponse(response, responseBody);
@@ -224,7 +223,7 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 	public void testLoadFormGenCatalogDefaultSingle() throws IOException {
 		String uuid = createForm("formgen_load.json");
 
-		Response response = doLoadRequest(uuid, FORM_ID, "de", true);
+		Response response = doLoadRequest(uuid, FORM_ID, "de");
 		String responseBody = response.body() != null ? response.body().string() : "";
 		assertSuccessfulJsonResponse(response, responseBody);
 		JsonNode properties = JsonUtil.readValue(responseBody, JsonNode.class).get("data").get("properties");
@@ -239,7 +238,7 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 	public void testLoadFormGenCatalogDefaultMulti() throws IOException {
  		String uuid = createForm("formgen_load.json");
 
-		Response response = doLoadRequest(uuid, FORM_ID, "en", true);
+		Response response = doLoadRequest(uuid, FORM_ID, "en");
 		String responseBody = response.body() != null ? response.body().string() : "";
 		assertSuccessfulJsonResponse(response, responseBody);
 		JsonNode properties = JsonUtil.readValue(responseBody, JsonNode.class).get("data").get("properties");
@@ -259,7 +258,7 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 	public void testLoadFormGenArrayDefault() throws IOException {
 		String uuid = createForm("formgen_load.json");
 
-		Response response = doLoadRequest(uuid, FORM_ID, "de", true);
+		Response response = doLoadRequest(uuid, FORM_ID, "de");
 		String responseBody = response.body() != null ? response.body().string() : "";
 		assertSuccessfulJsonResponse(response, responseBody);
 		JsonNode properties = JsonUtil.readValue(responseBody, JsonNode.class).get("data").get("properties");
@@ -276,7 +275,7 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 	public void testLoadFormGenTranslationDefaultDe() throws IOException {
 		String uuid = createForm("formgen_load.json");
 
-		Response response = doLoadRequest(uuid, FORM_ID, "de", true);
+		Response response = doLoadRequest(uuid, FORM_ID, "de");
 		String responseBody = response.body() != null ? response.body().string() : "";
 		assertSuccessfulJsonResponse(response, responseBody);
 		JsonNode properties = JsonUtil.readValue(responseBody, JsonNode.class).get("data").get("properties");
@@ -288,7 +287,7 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 	public void testLoadFormGenTranslationDefaultEn() throws IOException {
 		String uuid = createForm("formgen_load.json");
 
-		Response response = doLoadRequest(uuid, FORM_ID, "en", true);
+		Response response = doLoadRequest(uuid, FORM_ID, "en");
 		String responseBody = response.body() != null ? response.body().string() : "";
 		assertSuccessfulJsonResponse(response, responseBody);
 		JsonNode properties = JsonUtil.readValue(responseBody, JsonNode.class).get("data").get("properties");
@@ -303,7 +302,7 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 		submit(formUuid, true, "en", "firstName", "Hans");
 		String formDataUuid = getSingleFormDataNode(formUuid).getUuid();
 
-		Response response = doLoadRequest(formUuid, FORM_ID, "en", true, formDataUuid);
+		Response response = doLoadRequest(formUuid, FORM_ID, "en", formDataUuid);
 		assertThat(response.code()).as("Response code for published formDataUuid").isEqualTo(409);
 	}
 
@@ -311,7 +310,7 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 	public void testAdminMailElementIdentifierMasking() throws IOException {
 		String uuid = createForm("formgen_load.json");
 
-		Response response = doLoadRequest(uuid, FORM_ID, "en", true);
+		Response response = doLoadRequest(uuid, FORM_ID, "en");
 		String responseBody = response.body() != null ? response.body().string() : "";
 		assertSuccessfulJsonResponse(response, responseBody);
 
@@ -332,7 +331,7 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 	public void testLoadFormGenCaptchaConfig() throws IOException {
 		String uuid = createForm("formgen_load.json");
 
-		Response response = doLoadRequest(uuid, FORM_ID, "en", true);
+		Response response = doLoadRequest(uuid, FORM_ID, "en");
 		String responseBody = response.body() != null ? response.body().string() : "";
 		assertSuccessfulJsonResponse(response, responseBody);
 
@@ -348,17 +347,16 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 		// friendlycaptcha has no siteKey in test config → expect 400
 		String uuid = createForm("formgen_load_captcha_nositekey.json");
 
-		Response response = doLoadRequest(uuid, FORM_ID, "en", true);
+		Response response = doLoadRequest(uuid, FORM_ID, "en");
 		assertThat(response.code()).as("Response code when captchaId set but sitekey missing").isEqualTo(400);
 	}
 
-	private Response doLoadRequest(String formUuid, String formID, String language, boolean permission)
+	private Response doLoadRequest(String formUuid, String formID, String language)
 			throws IOException {
-		return doLoadRequest(formUuid, formID, language, permission, null);
+		return doLoadRequest(formUuid, formID, language, null);
 	}
 
-	private Response doLoadRequest(String formUuid, String formID, String language, boolean permission,
-			String formDataUuid) throws IOException {
+	private Response doLoadRequest(String formUuid, String formID, String language, String formDataUuid) throws IOException {
 		String bodyJson = "{\"formID\": \"" + formID + "\"}";
 		String url = projectUrl("/form/" + formUuid + "/load");
 		if (language != null) {
@@ -369,7 +367,6 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 		}
 		return client().newCall(new Request.Builder()
 				.url(url)
-				.headers(auth(permission))
 				.post(RequestBody.create(MediaType.parse("application/json"), bodyJson))
 				.build()).execute();
 	}
