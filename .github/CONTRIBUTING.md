@@ -28,7 +28,7 @@ Submit a pull request via the normal GitHub UI.
 
 ## Documentation
 
-If you want to contribute to the Gentics Mesh documentation, the right place is: https://github.com/gentics/mesh. Every release all the contributions are reviewed and published on the public [documentation](https://getmesh.io/docs/beta/).
+If you want to contribute to the Gentics Mesh documentation, the right place is: https://github.com/gentics/mesh. Every release all the contributions are reviewed and published on the public [documentation](https://gentics.com/mesh/docs/).
 
 ## Code formatting
 

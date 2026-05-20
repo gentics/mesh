@@ -71,7 +71,7 @@
   "ssh_url": "git@github.com:gentics/mesh.git",
   "clone_url": "https://github.com/gentics/mesh.git",
   "svn_url": "https://github.com/gentics/mesh",
-  "homepage": "https://getmesh.io",
+  "homepage": "https://gentics.com/mesh",
   "size": 312291,
   "stargazers_count": 570,
   "watchers_count": 570,

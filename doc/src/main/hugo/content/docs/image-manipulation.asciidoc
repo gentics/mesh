@@ -24,21 +24,9 @@ The following image formats are supported: `png`, `jpg`, `bmp`, `gif` and `webp`
 
 Endpoint: ```{apiLatest}/:projectName/nodes/:uuid/binary/:fieldname?w=220```
 
-.Try the example
-[TIP]
-https://demo.getmesh.io{apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?w=500
-
-.via UUID
-image::https://demo.getmesh.io{apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?w=300&version=1.0[Example Image,role="img-responsive"]
-
 === Using Path
 
-Images can be loaded similar to regular contents. It is also possible to load them using the WebRoot path.
-
-TIP: By Path: https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg?h=300
-
-.via webroot path
-image::https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg?w=500[Image By Path]
+Images can be loaded similar to regular contents. It is also possible to load them using the WebRoot path: ```{apiLatest}/:projectName/webroot/path/to/the/image/image.jpg?h=300```
 
 === Resizing Options
 
@@ -60,22 +48,14 @@ You can use the resizing option `resize=force` to request the source image with 
 Note that using the force-resizing mode can potentially lead to non-proportional resizing and thus potentially distort your image.
 
 .When providing width and height Mesh resizes and crops the image to the desired format. Cropping happens only if necessary and only in one dimension.
-image::https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg?w=500&h=200[Image with width and height]
-
 .When adding the resize parameter `prop` the image gets scaled proportionally to fit the dimensions.
-image::https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg?w=500&h=200&resize=prop[Image with width and height and forced resize]
-
 .When adding the resize parameter `force` the image gets distorted to fit the dimensions
-image::https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg?w=500&h=200&resize=force[Image with width and height and forced resize]
 
 == Crop
 
 You can also selectively extract a certain portion of your image by providing a cropping rectangle with the paramater `rect=:startPositionXCoordinate,:startPositionYCoordinate,:WidthOfRectangle,:HeightOfRectangle&crop=rect`.
 
 NOTE: It is mandatory to specify all four crop parameters when cropping an image.
-
-.Let's say we want to highlight the motorcycle behind the car. We could do this by cropping everything else.
-image::https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg?rect=520,70,280,160&crop=rect[Cropped image]
 
 TIP: Cropping can also be combined with resizing.
 
@@ -88,10 +68,6 @@ include::content/docs/examples/graphql/dominant-colors-query[]
 It is also possible to use the image manipulation in combination with the WebRoot endpoint.
 
 Endpoint: ```{apiLatest}/:projectName/webroot/:path?rect=10,100,800,400&crop=rect```
-
-.Try the example
-[TIP]
-https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg?rect=10,100,800,400&crop=rect
 
 == Focal Point
 
@@ -110,33 +86,14 @@ Otherwise Gentics Mesh can't tell which area of the image needs to be cropped.
 
 Finally the `fpdebug` parameter can be used to visualize the focal point. This is useful when testing designs and resize parameters.
 
-.Try the example
-[TIP]
-https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg?fpx=0.5&fpy=0.4&w=800&h=600&crop=fp&fpdebug=true
-
 In some cases you may want to show just a single area of the image. In this case you can use the `fpz` zoom parameter to zoom to the focal point area.
-
-.Try the example
-[TIP]
-https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg?fpx=0.5&fpy=0.35&fpz=3.0&w=800&h=600&crop=fp&fpdebug=true
 
 It is also possible to store focal point information along with the binary field. This way you can set the focal point once and omit it within the image request.
 In those cases it is not needed to specify the `fpx` and `fpy` parameter. Gentics Mesh will automatically load the missing parameter from the binary field if possible.
 
-.Try the example
-[TIP]
-https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg?fpz=1.2&w=800&h=600&crop=fp&fpdebug=true
-
-
 === Responsive Design
 
 You can use the focal point feature to mark the point of interest in your images. That information can be used to generate different size sets of your images. Different image sizes may be required by your responsive design. The focal point will be used by Gentics Mesh to crop the image in the desired way.
-
-image::https://demo.getmesh.io{apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?w=600&h=300&crop=fp&fpdebug=true&version=1.0[Image with FP]
-
-image::https://demo.getmesh.io{apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?w=200&h=200&crop=fp&fpdebug=true&version=1.0[Image with FP]
-
-image::https://demo.getmesh.io{apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?w=100&h=300&crop=fp&fpdebug=true&version=1.0[Image with FP]
 
 === Updating Focalpoint
 
@@ -145,7 +102,7 @@ The focal point can be updated by updating the node which contains the binary fi
 .Example Request:
 [source,bash,subs="+attributes"]
 ----
-POST {apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6
+POST {apiLatest}/demo/nodes/:imageNodeUuid
 
 {
   "language": "en",
@@ -166,7 +123,7 @@ Alternatively the focal can also be set when transforming the binary field.
 *Example Request:*
 [source,bash,subs="+attributes"]
 ----
-POST {apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binaryTransform/image
+POST {apiLatest}/demo/nodes/:imageNodeUuid/binaryTransform/image
 
 {
   "version" : "1.0",
@@ -191,7 +148,7 @@ Endpoint: ```POST {apiLatest}/:projectName/nodes/:uuid/binaryTransform/:fieldnam
 *Example Request:*
 [source,bash,subs="+attributes"]
 ----
-POST {apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binaryTransform/image
+POST {apiLatest}/demo/nodes/:imageNodeUuid/binaryTransform/image
 
 {
   "version" : "1.0",

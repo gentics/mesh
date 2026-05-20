@@ -31,30 +31,18 @@
                         features and fixes.</p>
                     <h3><a href="/docs/administration-guide/#_run_with_docker">Docker</a></h3>
                     <div class="listingblock">
-                        <pre class="prettyprint highlight"><code class="language-json" data-lang="json">docker run -p 8080:8080 gentics/mesh-demo:{{$version}}</code></pre>
+                        <pre class="prettyprint highlight"><code class="language-json" data-lang="json">docker run -p 8080:8080 gentics/mesh-hsqldb:{{$version}}</code></pre>
                     </div>
-                    <h3><a href="/docs/administration-guide/#_run_with_jar_file">Java</a></h3>
-                    <div class="listingblock">
-                        <pre class="prettyprint highlight"><code class="language-json" data-lang="json">java -jar mesh-demo-{{$version}}.jar</code></pre>
-                    </div>
-                    <p><a class="btn btn-primary btn-download btn-lg" 
-                          href="https://maven.gentics.com/maven2/com/gentics/mesh/mesh-demo/{{ $version }}/mesh-demo-{{ $version }}.jar"
-                          onclick="ga('send', 'event', 'Download', 'Download', '{{ $version }}', 0)">
-                          <span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span>
-                          Download</a>
-                          <a href="https://maven.gentics.com/maven2/com/gentics/mesh/mesh-demo/{{ $version }}/mesh-demo-{{ $version }}.jar.asc">(sig)</a>
-                    </p>
                     <hr/>
                     <p>GPG keys:
-                        <pre>curl https://getmesh.io/public-key.asc | gpg --import</pre>
-                        Demo: <a href="https://maven.gentics.com/maven2/com/gentics/mesh/mesh-demo/{{ $version }}/mesh-demo-{{ $version }}.jar.asc">GPG signature</a> - <a href="https://maven.gentics.com/maven2/com/gentics/mesh/mesh-demo/{{ $version }}/mesh-demo-{{ $version }}.jar.sha256">sha256</a><br/>
+                        <pre>curl https://gentics.com/mesh/public-key.asc | gpg --import</pre>
                         Server: <a href="https://maven.gentics.com/maven2/com/gentics/mesh/mesh-server/{{ $version }}/mesh-server-{{ $version }}.jar.asc">GPG signature</a> - <a href="https://maven.gentics.com/maven2/com/gentics/mesh/mesh-server/{{ $version }}/mesh-server-{{ $version }}.jar.sha256">sha256</a>
                     </p>
                     <hr/>
                     <p><strong>For production purposes please <a 
                     href="https://maven.gentics.com/maven2/com/gentics/mesh/mesh-server/{{ $version }}/mesh-server-{{ $version }}.jar"
                     onclick="ga('send', 'event', 'Download', 'Download Server', '{{ $version }}', 0)"
-                    ><span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span>download</a> the Gentics Mesh server or use the docker image <code>gentics/mesh</code> free from any demo content.</strong></p>
+                    ><span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span>download</a> the Gentics Mesh server or use the docker image <code>gentics/mesh</code></strong></p>
                 </div>
             </div>
         </div>
