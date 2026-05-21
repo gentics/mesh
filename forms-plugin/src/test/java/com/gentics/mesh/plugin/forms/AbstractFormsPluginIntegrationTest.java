@@ -744,4 +744,8 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 				.setFormDataID(formDataUuid)
 				.setProperties(params.entrySet().stream().map(e -> Pair.of(e.getKey(), new FormDataProperty().setValue(e.getValue()))).collect(Collectors.toMap(Pair::getKey, Pair::getValue)));
 	}
+
+	protected FormtypeConfigsModel buildModel(String json) throws IOException {
+		return JsonUtil.readValue(json, FormtypeConfigsModel.class);
+	}
 }

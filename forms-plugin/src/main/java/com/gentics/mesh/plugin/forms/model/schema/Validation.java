@@ -119,6 +119,10 @@ public class Validation {
 			filter = filter == null ? f : filter.or(f);
 		}
 
+		if (filter == null) {
+			filter = value -> false;
+		}
+
 		return filter;
 	}
 }

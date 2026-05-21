@@ -88,8 +88,4 @@ public class FormtypeConfigsTest extends AbstractFormsPluginIntegrationTest {
 
 		assertForbidden(response);
 	}
-
-	private FormtypeConfigsModel buildModel(String json) throws IOException {
-		return JsonUtil.readValue(json, FormtypeConfigsModel.class);
-	}
 }
