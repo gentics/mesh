@@ -10,8 +10,6 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Test;
 
-import com.gentics.mesh.plugin.forms.model.FriendlyCaptchaElement;
-
 import okhttp3.Cookie;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
@@ -20,7 +18,7 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.RecordedRequest;
 
 /**
- * Test cases for the {@link FriendlyCaptchaElement}
+ * Test cases for FriendlyCaptcha service-level validation.
  */
 public class FriendlyCaptchaTest extends AbstractFormPostDataTest {
 	/**
@@ -36,12 +34,11 @@ public class FriendlyCaptchaTest extends AbstractFormPostDataTest {
 		// let the captcha verification server answer with success: true
 		webServer.enqueue(new MockResponse().setBody("{\"success\": true}"));
 
-		// post some data for the input field and a solution to the friendly captcha
-		// (it does not matter, what we post here, because our fake verification server will accept anything)
+		// post form data and send the captcha solution as HTTP header
 		RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
-				.addFormDataPart("formdata", makeFormdataMultipart(formUuid, null, Map.of("input1", "some data", "frc-captcha-solution", solution)))
+				.addFormDataPart("formdata", makeFormdataMultipart(formUuid, null, Map.of("input1", "some data")))
 				.build();
-		Pair<Response, Optional<Cookie>> pair = postToForm(formUuid, requestBody);
+		Pair<Response, Optional<Cookie>> pair = postToForm(formUuid, requestBody, Map.of("frc-captcha-response", solution));
 		Response response = pair.getLeft();
 
 		// we expect the post to succeed
@@ -49,10 +46,10 @@ public class FriendlyCaptchaTest extends AbstractFormPostDataTest {
 				.as("Response success %d (%s)".formatted(response.code(), response.message())).isTrue();
 
 		// verification server must have answered one request
-		assertThat(webServer.getRequestCount()).as("Requests to recaptcha").isEqualTo(1);
+		assertThat(webServer.getRequestCount()).as("Requests to friendlycaptcha").isEqualTo(1);
 		RecordedRequest request = webServer.takeRequest(1, TimeUnit.SECONDS);
-		assertThat(request.getBody().toString()).as("Request body").isEqualTo("[text=secret=%s&sitekey=%s&solution=%s]"
-				.formatted(FRIENDLY_CAPTCHA_SECRET_KEY, FRIENDLY_CAPTCHA_SITE_KEY, solution));
+		assertThat(request.getBody().toString()).as("Request body").isEqualTo(
+				"[text={\"response\":\"%s\",\"sitekey\":\"%s\"}]".formatted(solution, FRIENDLY_CAPTCHA_SITE_KEY));
 	}
 
 	/**
@@ -63,7 +60,7 @@ public class FriendlyCaptchaTest extends AbstractFormPostDataTest {
 	public void testEmptyCaptcha() throws IOException {
 		String formUuid = createForm("friendlycaptcha.json");
 
-		// post some data for the input field, but nothing for the captcha
+		// post form data without a captcha header — FriendlyCaptchaProvider short-circuits before calling the API
 		RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
 				.addFormDataPart("formdata", makeFormdataMultipart(formUuid, null, Map.of("input1", "some data")))
 				.build();
@@ -73,12 +70,11 @@ public class FriendlyCaptchaTest extends AbstractFormPostDataTest {
 		// we expect no data cookie to be set
 		assertThat(cookie).as("Data cookie").isEmpty();
 
-		// we expect not data being written
+		// we expect no data being written
 		assertThat(getFormDataNodes(formUuid)).as("Form Data Nodes").isEmpty();
 
-		// we expect no calls to the recaptcha verification server
-		assertThat(webServer.getRequestCount()).as("Requests to recaptcha").isEqualTo(0);
-
+		// we expect no calls to the friendlycaptcha verification server
+		assertThat(webServer.getRequestCount()).as("Requests to friendlycaptcha").isEqualTo(0);
 	}
 
 	/**
@@ -94,24 +90,23 @@ public class FriendlyCaptchaTest extends AbstractFormPostDataTest {
 		// let the captcha verification server answer with success: false
 		webServer.enqueue(new MockResponse().setBody("{\"success\": false}"));
 
-		// post some data for the input field, but nothing for the captcha
+		// post form data and send the captcha solution as HTTP header
 		RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
-				.addFormDataPart("formdata", makeFormdataMultipart(formUuid, null, Map.of("input1", "some data", "frc-captcha-solution", solution)))
+				.addFormDataPart("formdata", makeFormdataMultipart(formUuid, null, Map.of("input1", "some data")))
 				.build();
-		Pair<Response, Optional<Cookie>> pair = postToForm(formUuid, requestBody);
+		Pair<Response, Optional<Cookie>> pair = postToForm(formUuid, requestBody, Map.of("frc-captcha-response", solution));
 		Optional<Cookie> cookie = pair.getRight();
 
 		// we expect no data cookie to be set
 		assertThat(cookie).as("Data cookie").isEmpty();
 
-		// we expect not data being written
+		// we expect no data being written
 		assertThat(getFormDataNodes(formUuid)).as("Form Data Nodes").isEmpty();
 
 		// verification server must have answered one request
-		assertThat(webServer.getRequestCount()).as("Requests to recaptcha").isEqualTo(1);
+		assertThat(webServer.getRequestCount()).as("Requests to friendlycaptcha").isEqualTo(1);
 		RecordedRequest request = webServer.takeRequest(1, TimeUnit.SECONDS);
-		assertThat(request.getBody().toString()).as("Request body").isEqualTo("[text=secret=%s&sitekey=%s&solution=%s]"
-				.formatted(FRIENDLY_CAPTCHA_SECRET_KEY, FRIENDLY_CAPTCHA_SITE_KEY, solution));
-
+		assertThat(request.getBody().toString()).as("Request body").isEqualTo(
+				"[text={\"response\":\"%s\",\"sitekey\":\"%s\"}]".formatted(solution, FRIENDLY_CAPTCHA_SITE_KEY));
 	}
 }

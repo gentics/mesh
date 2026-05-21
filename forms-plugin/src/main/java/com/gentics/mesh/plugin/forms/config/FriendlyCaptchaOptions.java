@@ -1,13 +1,13 @@
 package com.gentics.mesh.plugin.forms.config;
 
 /**
- * FriendlyCaptcha Options
+ * FriendlyCaptcha v2 Options
  */
 public class FriendlyCaptchaOptions {
 
-	private final String DEFAULT_SOLUTION_KEY = "frc-captcha-solution";
+	private final String DEFAULT_SOLUTION_KEY = "frc-captcha-response";
 
-	private final String DEFAULT_VERIFICATION_URL = "https://api.friendlycaptcha.com/api/v1/siteverify";
+	private final String DEFAULT_VERIFICATION_URL = "https://global.frcapi.com/api/v2/captcha/siteverify";
 
 	private String siteKey;
 
