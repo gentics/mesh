@@ -81,8 +81,6 @@ public abstract class ValueListElement extends FormElement {
 		this.selectOptions = Optional.ofNullable(selectOptions).orElse(new ArrayList<>());
 	}
 
-
-
 	/**
 	 * Tests if the element has a non-empty list of elements to choose from, and all of them have a value and a label.
 	 *
@@ -94,9 +92,7 @@ public abstract class ValueListElement extends FormElement {
 			.setName(getName())
 			.setTitle(I18nHelper.get(Locale.GERMAN, "error.validation.form.title"));
 
-		List<ValueListItem> effectiveOptions = (selectOptions != null && !selectOptions.isEmpty())
-			? selectOptions
-			: getFormGridOptions().getSelectOptions();
+		List<ValueListItem> effectiveOptions = getEffectiveSelectOptions();
 
 		if (effectiveOptions == null || effectiveOptions.isEmpty()) {
 			error.setMessage(I18nHelper.get(Locale.GERMAN, "error.validation.form.missing_list_elements", getLabelOrName()));
@@ -183,7 +179,7 @@ public abstract class ValueListElement extends FormElement {
 	@Override
 	protected boolean isInvalidValue(String value) {
 		// This is also checked in validateForm(), but just to be sure.
-		if (CollectionUtils.isEmpty(selectOptions)) {
+		if (CollectionUtils.isEmpty(getEffectiveSelectOptions())) {
 			return true;
 		}
 		if (validValues.isEmpty()) {
@@ -193,11 +189,18 @@ public abstract class ValueListElement extends FormElement {
 		return !validValues.contains(value);
 	}
 
+	@JsonIgnore
+	protected List<ValueListItem> getEffectiveSelectOptions() {
+		return (selectOptions != null && !selectOptions.isEmpty())
+				? selectOptions
+				: getFormGridOptions().getSelectOptions();
+	}
+
 	/**
 	 * Prepare the set of valid values from the current collection of options.
 	 */
 	private void updateValidValues() {
 		validValues.clear();
-		validValues.addAll(selectOptions.stream().map(ValueListItem::getValue).collect(Collectors.toSet()));
+		validValues.addAll(getEffectiveSelectOptions().stream().map(ValueListItem::getValue).collect(Collectors.toSet()));
 	}
 }

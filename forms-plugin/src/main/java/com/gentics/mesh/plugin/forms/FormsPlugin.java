@@ -64,10 +64,6 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 		projectRouter.route("/active").method(PUT).handler(fromComponent(FormsPluginComponent::activateHandler));
 		projectRouter.route("/active").method(DELETE).handler(fromComponent(FormsPluginComponent::deactivateHandler));
 
-		// routes for getting/setting supported languages
-		projectRouter.route("/languages").method(GET).handler(fromComponent(FormsPluginComponent::getLanguagesHandler));
-		projectRouter.route("/languages").method(PUT).handler(fromComponent(FormsPluginComponent::setLanguagesHandler));
-
 		// route for setting formtype configurations
 		projectRouter.route("/formtypeconfigs").method(POST).handler(fromComponent(FormsPluginComponent::setFormtypeConfigsHandler));
 

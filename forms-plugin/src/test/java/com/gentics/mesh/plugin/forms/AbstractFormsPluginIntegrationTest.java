@@ -48,7 +48,6 @@ import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.parameter.client.VersioningParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.plugin.forms.model.FormtypeConfigsModel;
-import com.gentics.mesh.plugin.forms.model.LanguagesModel;
 import com.gentics.mesh.plugin.forms.model.response.FormOnlineResponse;
 import com.gentics.mesh.plugin.forms.model.response.StatusResponse;
 import com.gentics.mesh.plugin.forms.model.schema.FormData;
@@ -482,30 +481,6 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 		StatusResponse response = call(() -> server.client()
 				.delete(String.format("/%s/plugins/forms/active", URIUtils.encodeSegment(project)), StatusResponse.class));
 		return response.isActive();
-	}
-
-	/**
-	 * Get the languages for the project
-	 * @param project project
-	 * @return list of languages (may be null or empty)
-	 */
-	protected List<String> getLanguages(String project) {
-		LanguagesModel response = call(() -> server.client().get(
-				String.format("/%s/plugins/forms/languages", URIUtils.encodeSegment(project)), LanguagesModel.class));
-		return response.getLanguages();
-	}
-
-	/**
-	 * Set the languages for the project
-	 * @param project project
-	 * @param languages language code list
-	 * @return list of languages (may be null or empty)
-	 */
-	protected List<String> setLanguages(String project, List<String> languages) {
-		LanguagesModel response = call(
-				() -> server.client().put(String.format("/%s/plugins/forms/languages", URIUtils.encodeSegment(project)),
-						new LanguagesModel().setLanguages(languages), LanguagesModel.class));
-		return response.getLanguages();
 	}
 
 	/**

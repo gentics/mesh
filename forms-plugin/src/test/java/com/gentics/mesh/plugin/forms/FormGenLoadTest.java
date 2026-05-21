@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.plugin.forms.test.ResponseWithCookies;
 
 import okhttp3.MediaType;
 import okhttp3.Request;
@@ -169,7 +170,7 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 	public void testLoadFormGenSelectOptionsValueForAdminElement() throws IOException {
 		String formUuid = createForm("formgen_load.json");
 
-		submit(formUuid, false, false, false, true, "en",
+		ResponseWithCookies submitted = submit(formUuid, false, false, false, true, "en",
 				"firstName", "Hans",
 				"age", "42",
 				"notes", "Wichtige Notiz",
@@ -179,10 +180,11 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 				"tags", "tag2",
 				"greeting", "Hallo",
 				"adminmail", "Ms");
+		String responseBody = submitted.response.body().string();
 		String formDataUuid = getSingleFormDataNode(formUuid).getUuid();
 
 		Response response = doLoadRequest(formUuid, FORM_ID, "en", true, formDataUuid);
-		String responseBody = response.body() != null ? response.body().string() : "";
+		responseBody = response.body() != null ? response.body().string() : "";
 
 		assertSuccessfulJsonResponse(response, responseBody);
 		JsonNode adminmail = JsonUtil.readValue(responseBody, JsonNode.class)

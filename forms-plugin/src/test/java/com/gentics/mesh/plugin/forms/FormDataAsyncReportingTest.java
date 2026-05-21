@@ -2,19 +2,6 @@ package com.gentics.mesh.plugin.forms;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.gentics.mesh.plugin.forms.service.FormDataService;
-import com.google.common.net.HttpHeaders;
-import io.vertx.core.json.JsonObject;
-import okhttp3.MultipartBody;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.junit.Before;
-import org.junit.Test;
-
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Arrays;
@@ -24,6 +11,21 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.junit.Before;
+import org.junit.Test;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.gentics.mesh.plugin.forms.service.FormDataService;
+import com.google.common.net.HttpHeaders;
+
+import io.vertx.core.json.JsonObject;
+import okhttp3.MultipartBody;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 /**
  * Test the asynchronous export and binary download endpoints.
@@ -35,7 +37,6 @@ public class FormDataAsyncReportingTest extends AbstractFormsPluginIntegrationTe
 		super.setup();
 		// activate plugin
 		assertThat(activate(PROJECT_NAME)).as("Activation status").isTrue();
-		assertThat(setLanguages(PROJECT_NAME, Arrays.asList("en", "de"))).as("Activated languages").containsOnly("en", "de");
 	}
 
 	/**

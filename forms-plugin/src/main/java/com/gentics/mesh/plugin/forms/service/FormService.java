@@ -32,6 +32,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
@@ -758,7 +759,10 @@ public class FormService {
 			.flatMap(formTypeConfigs -> loadForm(projectName, uuid)
 				.flatMap(jsonObj -> Single.fromCallable(() -> {
 					Form form = toForm(jsonObj.encode(), uuid, null);
-					form.setProperty("flows", formTypeConfigs.getConfigs().get(form.getType()).get("flows"));
+					JsonNode formTypeConfig = formTypeConfigs.getConfigs().get(form.getType());
+					if (formTypeConfig != null) {
+						form.setProperty("flows", formTypeConfig.get("flows"));
+					}
 					form.setData(formDataNode != null
 							? buildFormDataFromNode(MultiMap.caseInsensitiveMultiMap(), form, formID, Collections.emptyMap(), language, formDataNode)
 							: buildDefaultFormData(MultiMap.caseInsensitiveMultiMap(), form, formID, Collections.emptyMap(), language, jwtClaims));

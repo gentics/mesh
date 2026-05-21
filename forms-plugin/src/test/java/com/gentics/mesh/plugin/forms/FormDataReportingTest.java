@@ -68,7 +68,6 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 		super.setup();
 		// activate plugin
 		assertThat(activate(PROJECT_NAME)).as("Activation status").isTrue();
-		assertThat(setLanguages(PROJECT_NAME, Arrays.asList("en", "de"))).as("Activated languages").containsOnly("en", "de");
 	}
 
 	/**

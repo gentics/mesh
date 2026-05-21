@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -16,7 +15,6 @@ import com.gentics.mesh.plugin.forms.config.ReCaptchaOptions;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
 
 import okhttp3.Cookie;
-import okhttp3.HttpUrl;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -65,7 +63,6 @@ public class AbstractFormPostDataTest extends AbstractFormsPluginIntegrationTest
 
 		// activate plugin
 		assertThat(activate(PROJECT_NAME)).as("Activation status").isTrue();
-		setLanguages(PROJECT_NAME, Arrays.asList("en", "it"));
 	}
 
 	public void tearDown() throws IOException {
