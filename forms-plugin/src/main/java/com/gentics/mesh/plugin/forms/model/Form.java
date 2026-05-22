@@ -487,7 +487,6 @@ public class Form implements RestModel {
 	 * @return list containing error messages (empty if data is valid)
 	 */
 	public Single<Map<String, ValidationError>> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx, OkHttpClient httpClient) {
-		// only filter out the elements, which have not been POSTed, if the form contains multiple pages
 		return Single.zip(
 				StreamUtil.toIterable(
 					getElementsInsideProperties()

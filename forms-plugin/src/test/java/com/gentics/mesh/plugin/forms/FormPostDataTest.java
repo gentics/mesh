@@ -20,6 +20,7 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import javax.mail.Address;
@@ -424,6 +425,35 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 	@Test
 	public void testPostFile() throws IOException {
 		Pair<String, String> data = doPostFile("filefield.json");
+		Request request = new Request.Builder()
+			.url(projectUrl("/forms/" + data.getLeft() + "/data/" + data.getRight() + "/binary/file1"))
+			.get()
+			.build();
+		Response response = client().newCall(request).execute();
+
+		assertThat(response.code())
+			.as("Anonymous response code")
+			.isEqualTo(HttpResponseStatus.FORBIDDEN.code());
+
+		request = new Request.Builder()
+			.url(projectUrl("/forms/" + data.getLeft() + "/data/" + data.getRight() + "/binary/file1"))
+			.headers(auth(true))
+			.get()
+			.build();
+		response = client().newCall(request).execute();
+
+		assertThat(response.code())
+			.as("Authenticated response code")
+			.isEqualTo(HttpResponseStatus.OK.code());
+	}
+
+	/**
+	 * Test posting a file
+	 * @throws IOException
+	 */
+	@Test
+	public void testPostMultiFile() throws IOException {
+		Pair<String, String> data = doPostFile("filefield.json", "inputfield.html", "recaptcha.json");
 		Request request = new Request.Builder()
 			.url(projectUrl("/forms/" + data.getLeft() + "/data/" + data.getRight() + "/binary/file1"))
 			.get()
@@ -931,24 +961,36 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		}
 	}
 
-	private Pair<String, String> doPostFile(String formFile) throws IOException {
+	private Pair<String, String> doPostFile(String formFile, String... moreFiles) throws IOException {
 		String uuid = createForm(formFile);
 
-		RequestBody requestBody = new MultipartBody.Builder()
+		MultipartBody.Builder requestBody = new MultipartBody.Builder()
 			.setType(MultipartBody.FORM)
-			.addFormDataPart("file1", formFile, requestBodyFromFile(formFile))
-			.build();
+			.addFormDataPart("file1" + (moreFiles.length > 0 ? "[0]" : ""), formFile, requestBodyFromFile(formFile));
 
-		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang="+language)).header("Referer", "ref").post(requestBody).build();
+		for (int i = 0; i < moreFiles.length; i++) {
+			requestBody.addFormDataPart("file1[" + (i+1) + "]", moreFiles[i], requestBodyFromFile(moreFiles[i]));
+		}
+
+		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang="+language)).header("Referer", "ref").post(requestBody.build()).build();
 		Response response = client().newCall(postRequest).execute();
 		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
 
 		NodeResponse dataNode = assertSingleDataNode(uuid, node -> {/* Nothing more to assert on data node */});
-		MeshBinaryResponse download = call(() -> server.client().downloadBinaryField(PROJECT_NAME, dataNode.getUuid(), dataNode.getLanguage(), "file1"));
+		MeshBinaryResponse download = call(() -> server.client().downloadBinaryField(PROJECT_NAME, dataNode.getUuid(), dataNode.getLanguage(), "file1" + (moreFiles.length > 0 ? "_0" : "")));
 		assertThat(download.getFilename()).as("Filename").isEqualTo(formFile);
 
 		Buffer buffer = RxUtil.readEntireData(download.getFlowable()).blockingGet();
 		assertThat(buffer.toString()).as("File contents").isEqualTo(fromFile(formFile));
+
+		for (int i = 0; i < moreFiles.length; i++) {
+			int ii = i+1;
+			download = call(() -> server.client().downloadBinaryField(PROJECT_NAME, dataNode.getUuid(), dataNode.getLanguage(), "file1_" + (ii)));
+			assertThat(download.getFilename()).as("Filename").isEqualTo(moreFiles[i]);
+
+			buffer = RxUtil.readEntireData(download.getFlowable()).blockingGet();
+			assertThat(buffer.toString()).as("File contents").isEqualTo(fromFile(moreFiles[i]));
+		}
 
 		return Pair.of(uuid, dataNode.getUuid());
 	}
