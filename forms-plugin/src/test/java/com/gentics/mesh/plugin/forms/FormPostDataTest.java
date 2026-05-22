@@ -453,7 +453,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 	 */
 	@Test
 	public void testPostMultiFile() throws IOException {
-		Pair<String, String> data = doPostFile("filefield.json", "inputfield.html", "recaptcha.json");
+		Pair<String, String> data = doPostFile("multifilefield.json", "inputfield.html", "recaptcha.json");
 		Request request = new Request.Builder()
 			.url(projectUrl("/forms/" + data.getLeft() + "/data/" + data.getRight() + "/binary/file1"))
 			.get()

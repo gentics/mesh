@@ -1293,7 +1293,7 @@ public class FormDataService {
 					aid = aid.substring(aid.indexOf("[") + 1, aid.indexOf("]"));
 					bid = bid.substring(bid.indexOf("[") + 1, bid.indexOf("]"));
 					try {
-						return Integer.parseInt(bid) - Integer.parseInt(aid);
+						return Integer.parseInt(aid) - Integer.parseInt(bid);
 					} catch (NumberFormatException e1) {
 						log.warn("Could not parse upload index", e1);
 					}
