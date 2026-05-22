@@ -22,7 +22,9 @@ import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.parameter.GenericParameters;
+import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.client.GenericParametersImpl;
+import com.gentics.mesh.parameter.client.NodeParametersImpl;
 import com.gentics.mesh.parameter.client.PublishParametersImpl;
 import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.dagger.UserClient;
@@ -82,7 +84,7 @@ public class StatusService {
 		this.rxVertx = Vertx.newInstance(vertx);
 
 		try {
-			pluginRootNodeQuery = IOUtils.toString(FormsPlugin.class.getResource("forms_plugin_node.graphql"), "UTF-8");
+			pluginRootNodeQuery = IOUtils.toString(FormsPlugin.class.getResource("forms_plugin_node.graphql"), "UTF-8").formatted("");
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -123,8 +125,21 @@ public class StatusService {
 	private Single<StatusResponse> check(MeshRestClient client, String projectName) {
 		return client.graphqlQuery(projectName, pluginRootNodeQuery).toSingle().map(response -> {
 			List<Boolean> published = FormUtil.getFromResponse(response, "$.data.schema.nodes.elements[*].languages[*].isPublished");
-
 			return new StatusResponse().setActive(published.stream().filter(b -> b == Boolean.TRUE).findFirst().isPresent());
+		});
+	}
+
+	/**
+	 * Check with the given client, whether the project form data has been migrated
+	 * @param client mesh rest client to use
+	 * @param projectName project name
+	 * @return single 
+	 * @throws IOException 
+	 */
+	public Single<Boolean> isProjectFormDataMigrated(MeshRestClient client, String projectName) throws IOException {
+		return client.graphqlQuery(projectName, IOUtils.toString(FormsPlugin.class.getResource("forms_plugin_node.graphql"), "UTF-8").formatted("isMigrated")).toSingle().map(response -> {
+			List<Boolean> migrated = FormUtil.getFromResponse(response, "$.data.schema.nodes.elements[*].languages[*].isMigrated");
+			return migrated.stream().filter(b -> b == Boolean.TRUE).findFirst().isPresent();
 		});
 	}
 
@@ -282,7 +297,7 @@ public class StatusService {
 	 * @return observable
 	 */
 	public Observable<ProjectResponse> projectsWithPluginActive() {
-		return adminClient.findProjects().toSingle()
+		return adminClient.findProjects(new NodeParametersImpl().setResolveLinks(LinkType.SHORT)).toSingle()
 			.flatMapObservable(response -> Observable.fromIterable(response.getData())).flatMap(project -> {
 				return check(adminClient, project.getName()).flatMapObservable(status -> {
 					if (status.isActive()) {
@@ -305,7 +320,7 @@ public class StatusService {
 		return getPathPrefixOfDefaultBranch(projectName)
 			.flatMap(pathPrefix -> {
 				String path = pathPrefix + StringUtils.prependIfMissing(SchemaInitializer.PATH_FORMS_PLUGIN_ROOT, "/");
-				GenericParameters params = new GenericParametersImpl().setETag(false).setFields("fields", "uuid");
+				GenericParameters params = new GenericParametersImpl().setETag(false);
 
 				return client.webroot(projectName, path, params)
 					.toSingle()
