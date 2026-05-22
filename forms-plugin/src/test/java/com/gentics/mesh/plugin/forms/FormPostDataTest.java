@@ -132,6 +132,62 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		runCaseForValue("someValue");
 	}
 
+	/**
+	 * Test trying cancelling an already published form data
+	 *
+	 * @throws IOException
+	 */
+	@Test
+	public void testCancelPublishedData() throws IOException {
+		Pair<String, String> formDataPair = runCaseForValue("someValue");
+
+		RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
+				.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest
+						.makeFormdataMultipart(formDataPair.getKey(), formDataPair.getValue(), Map.of()))
+				.build();
+		okio.Buffer buffer = new okio.Buffer();
+		requestBody.writeTo(buffer);
+		System.out.println(buffer.readUtf8());
+
+		Request postRequest = new Request.Builder()
+				.headers(auth(true))
+				.url(projectUrl(String.format("/form/%s/cancel?formDataUuid=%s", formDataPair.getKey(), formDataPair.getValue()))).header("Referer", "ref")
+				.post(requestBody).build();
+		Response response = client().newCall(postRequest).execute();
+		assertThat(response.isSuccessful())
+				.as(String.format("Response success %d (%s)", response.code(), response.message())).isFalse();
+		assertThat(response.code()).as("Response code").isEqualTo(404);
+		assertThat(getFormDataNodes(formDataPair.getKey())).as("Form data").isNotEmpty();
+	}
+
+	/**
+	 * Test trying cancelling an already published form data
+	 *
+	 * @throws IOException
+	 */
+	@Test
+	public void testCancelDraftData() throws IOException {
+		Pair<String, String> formDataPair = runCaseForValue("someValue", false);
+
+		RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
+				.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest
+						.makeFormdataMultipart(formDataPair.getKey(), formDataPair.getValue(), Map.of()))
+				.build();
+		okio.Buffer buffer = new okio.Buffer();
+		requestBody.writeTo(buffer);
+		System.out.println(buffer.readUtf8());
+
+		Request postRequest = new Request.Builder()
+				.headers(auth(true))
+				.url(projectUrl(String.format("/form/%s/cancel?formDataUuid=%s", formDataPair.getKey(), formDataPair.getValue()))).header("Referer", "ref")
+				.post(requestBody).build();
+		Response response = client().newCall(postRequest).execute();
+		assertThat(response.isSuccessful())
+				.as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+		assertThat(response.code()).as("Response code").isGreaterThanOrEqualTo(200).isLessThan(300);
+		assertThat(getFormDataNodes(formDataPair.getKey(), language)).as("Form data").isEmpty();
+	}
+
 	@Test
 	public void testValidateDataWithDefaultValue() throws IOException {
 		String uuid = createForm("inputfield_number_validation.json");
@@ -156,7 +212,11 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		assertThat(body.getJsonObject("properties").getJsonObject("number").getString("validationMessage")).isEqualTo("Der eingegebene Wert 100500 ist keine gültige Zahl.");
 	}
 
-	private void runCaseForValue(String value) throws GenericRestException, IOException {
+	private Pair<String, String> runCaseForValue(String value) throws GenericRestException, IOException {
+		return runCaseForValue(value, true);
+	}
+
+	private Pair<String, String> runCaseForValue(String value, boolean publish) throws GenericRestException, IOException {
 		String uuid = createForm(inputFieldForm);
 
 		RequestBody requestBody = new MultipartBody.Builder()
@@ -168,12 +228,13 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		System.out.println(buffer.readUtf8());
 
 		Request postRequest = new Request.Builder()
-			.url(projectUrl(String.format("/form/%s/submit?lang=%s", uuid, language)))
+			.url(projectUrl(String.format("/form/%s/%s?lang=%s", uuid, (publish ? "submit" : "save"), language)))
 			.header("Referer", "ref")
 			.post(requestBody).build();
 		Response response = client().newCall(postRequest).execute();
 		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
 		assertThat(response.code()).as("Response code").isGreaterThanOrEqualTo(200).isLessThan(300);
+		if (publish) {
 		Optional<Cookie> cookie = Cookie.parseAll(postRequest.url(), response.headers()).stream()
 			.filter(c -> FormDataService.COOKIE_NAME_DATA.equals(c.name()))
 			.findFirst();
@@ -182,11 +243,12 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		assertThat(cookie.get()).as("Cookie").matches(c -> "".equals(c.value()), "Value is empty").matches(
 			c -> c.expiresAt() < System.currentTimeMillis(),
 			"is expired");
+		}
 
-		assertSingleDataNode(uuid, dataNode -> {
+		return Pair.of(uuid, assertSingleDataNode(uuid, dataNode -> {
 			assertThat(dataNode.getFields().getStringField("input1").getString()).as("Data Node Field").isEqualTo(value);
-			assertThat(dataNode.getVersion()).as("Data Node Version").isEqualTo("1.0");
-		});
+			assertThat(dataNode.getVersion()).as("Data Node Version").isEqualTo(publish ? "1.0" : "0.1");
+		}).getUuid());
 	}
 
 	/**

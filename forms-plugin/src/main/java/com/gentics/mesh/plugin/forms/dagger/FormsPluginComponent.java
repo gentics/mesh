@@ -12,6 +12,7 @@ import com.gentics.mesh.plugin.common.dagger.UserClient;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.handler.DeleteFormDataHandler;
+import com.gentics.mesh.plugin.forms.handler.CancelDataHandler;
 import com.gentics.mesh.plugin.forms.handler.FindFormDataHandler;
 import com.gentics.mesh.plugin.forms.handler.LoadFormDataBinaryHandler;
 import com.gentics.mesh.plugin.forms.handler.PurgeStaleDataHandler;
@@ -36,13 +37,13 @@ import com.gentics.mesh.plugin.forms.handler.form.SetFormOfflineHandler;
 import com.gentics.mesh.plugin.forms.handler.form.SetFormOnlineHandler;
 import com.gentics.mesh.plugin.forms.handler.form.UpsertFormHandler;
 import com.gentics.mesh.plugin.forms.handler.formtypeconfig.SetFormtypeConfigsHandler;
-import com.gentics.mesh.plugin.forms.handler.translation.GetTranslationsHandler;
-import com.gentics.mesh.plugin.forms.handler.translation.SetTranslationsHandler;
 import com.gentics.mesh.plugin.forms.handler.status.ActivateHandler;
 import com.gentics.mesh.plugin.forms.handler.status.CheckStatusHandler;
 import com.gentics.mesh.plugin.forms.handler.status.DeactivateHandler;
 import com.gentics.mesh.plugin.forms.handler.status.GetLanguagesHandler;
 import com.gentics.mesh.plugin.forms.handler.status.SetLanguagesHandler;
+import com.gentics.mesh.plugin.forms.handler.translation.GetTranslationsHandler;
+import com.gentics.mesh.plugin.forms.handler.translation.SetTranslationsHandler;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
 import com.gentics.mesh.plugin.forms.service.PurgeService;
 import com.gentics.mesh.plugin.forms.service.StatusService;
@@ -102,6 +103,8 @@ public interface FormsPluginComponent {
 	SaveDataHandler saveDataHandler();
 
 	SubmitDataHandler submitDataHandler();
+
+	CancelDataHandler cancelFormDataHandler();
 
 	ValidationHandler validationHandler();
 
