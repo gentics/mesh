@@ -13,6 +13,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 
 import io.vertx.core.json.JsonObject;
 import okhttp3.HttpUrl;
+import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -107,15 +108,14 @@ public class ValidationEndpointTest extends AbstractEndpointValidationTest {
 		return new Request.Builder()
 			.url(url.build())
 			.header("Referer", "ref")
+			.header("Content-Type", "application/json")
 			.post(requestBody)
 			.build();
 	}
 
 	private RequestBody requestBody(String value) {
-		return new MultipartBody.Builder()
-			.setType(MultipartBody.FORM)
-			.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(formUuid, formDataUuid, Map.of("input1", "bla", "number", value)))
-			.build();
+		return RequestBody.create(AbstractFormsPluginIntegrationTest.makeFormdataMultipart(formUuid, formDataUuid,
+				Map.of("input1", "bla", "number", value)), MediaType.get("application/json"));
 	}
 
 	private void assertValidationResponse(Response response, Map<String, String> expectedValidationErrors) throws IOException {

@@ -5,11 +5,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.http.HttpConstants;
 import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.common.MeshPluginException;
 import com.gentics.mesh.plugin.common.util.ParameterUtil;
@@ -20,6 +22,7 @@ import com.gentics.mesh.plugin.forms.service.FormService;
 
 import io.reactivex.Single;
 import io.vertx.core.MultiMap;
+import io.vertx.core.http.HttpHeaders;
 import io.vertx.ext.web.FileUpload;
 
 /**
@@ -82,7 +85,8 @@ public class FormDataCreateContext {
 	 * {@link com.gentics.mesh.plugin.forms.model.AdminMailElement} identifiers already reverse-mapped
 	 * to real email addresses.
 	 *
-	 * <p>The raw JSON is parsed lazily from the {@code formdata} multipart part sent by FormGen.
+	 * <p>The raw JSON is either parsed lazily from the {@code formdata} multipart part sent by FormGen or
+	 * from the request body, when the request header Content-Type: application/json is found.
 	 * Parsing is cached; the AdminMailElement reverse-mapping is applied on every call so it
 	 * always reflects the current form (set via {@link #setForm(Form)}).</p>
 	 *
@@ -100,7 +104,14 @@ public class FormDataCreateContext {
 	 */
 	public MultiMap getPostedData() {
 		if (parsedPostedData == null) {
-			String formdataJson = context.request().formAttributes().get("formdata");
+			String formdataJson = null;
+			String contentType = context.request().getHeader(HttpHeaders.CONTENT_TYPE);
+			if (Strings.CI.startsWith(contentType, HttpConstants.APPLICATION_JSON)) {
+				formdataJson = context.body().asString();
+			} else {
+				formdataJson = context.request().formAttributes().get("formdata");
+			}
+
 			if (formdataJson == null || formdataJson.isBlank()) {
 				parsedPostedData = MultiMap.caseInsensitiveMultiMap();
 			} else {
