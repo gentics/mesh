@@ -179,9 +179,6 @@ public class FormRenderTest extends AbstractFormsPluginIntegrationTest {
 	public void testRenderFallback() throws IOException {
 		List<String> languages = Arrays.asList("de", "en", "it", "fr");
 
-		// set the languages for fallback
-		setLanguages(PROJECT_NAME, languages);
-
 		String uuid = createMultilanguageForm("inputfield_languages_en.json", "inputfield_languages_it.json");
 
 		for (String language : languages) {

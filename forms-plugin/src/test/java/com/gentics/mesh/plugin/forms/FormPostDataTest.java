@@ -132,6 +132,30 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		runCaseForValue("someValue");
 	}
 
+	@Test
+	public void testValidateDataWithDefaultValue() throws IOException {
+		String uuid = createForm("inputfield_number_validation.json");
+
+		RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM).addFormDataPart("formdata",
+				AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("number", "100500")))
+				.build();
+		okio.Buffer buffer = new okio.Buffer();
+		requestBody.writeTo(buffer);
+		System.out.println(buffer.readUtf8());
+
+		Request postRequest = new Request.Builder()
+				.url(projectUrl(String.format("/form/%s/validate?lang=%s", uuid, language))).header("Referer", "ref")
+				.post(requestBody).build();
+		Response response = client().newCall(postRequest).execute();
+		assertThat(response.isSuccessful())
+				.as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+		assertThat(response.code()).as("Response code").isGreaterThanOrEqualTo(200).isLessThan(300);
+		JsonObject body = new JsonObject(response.body().string());
+		assertThat(body.getBoolean("hasValidationErrors")).isEqualTo(true);
+		assertThat(body.getJsonObject("properties").getJsonObject("number").getString("value")).isEqualTo("100500");
+		assertThat(body.getJsonObject("properties").getJsonObject("number").getString("validationMessage")).isEqualTo("Der eingegebene Wert 100500 ist keine gültige Zahl.");
+	}
+
 	private void runCaseForValue(String value) throws GenericRestException, IOException {
 		String uuid = createForm(inputFieldForm);
 

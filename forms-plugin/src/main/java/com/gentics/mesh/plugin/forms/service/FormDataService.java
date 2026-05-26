@@ -313,7 +313,7 @@ public class FormDataService {
 			.doOnSuccess(ctx::setFormNode)
 			.flatMap(formService::toForm)
 			.doOnSuccess(ctx::setForm)
-			.flatMap(form -> validatePostedData(ctx))
+			.flatMap(form -> validatePostedData(ctx.getPostedData(), ctx))
 			.map(errors -> toValidationResponse(ctx, errors));
 	}
 
@@ -332,7 +332,7 @@ public class FormDataService {
 						ctx.setFormNode(formNode);
 						ctx.setFormDataNode(formDataNode);
 						ctx.setForm(form);
-						return validatePostedData(ctx).map(errors -> toValidationResponse(ctx, errors));
+						return validatePostedData(ctx.getPostedData(), ctx).map(errors -> toValidationResponse(ctx, errors));
 					}))
 			.flatMap(x -> x);
 	}
@@ -1085,7 +1085,7 @@ public class FormDataService {
 		Form form = ctx.getForm();
 		MultiMap postedData = ctx.getPostedData();
 
-		return captchaService.validate(ctx).andThen(validatePostedData(ctx).flatMap(errors1 -> {
+		return captchaService.validate(ctx).andThen(validatePostedData(postedData, ctx).flatMap(errors1 -> {
 			// check whether we have any validation errors, that prevent storing of the data
 			Optional<ValidationError> errorPreventingDataStorage = errors1.values().stream()
 					.filter(ValidationError::isPreventStoring).findAny();
@@ -1147,10 +1147,8 @@ public class FormDataService {
 	 * @param ctx Request context with the loaded form
 	 * @return single of validation errors keyed by form element name
 	 */
-	private Single<Map<String, ValidationError>> validatePostedData(FormDataCreateContext ctx) {
+	private Single<Map<String, ValidationError>> validatePostedData(MultiMap postedData, FormDataCreateContext ctx) {
 		Form form = ctx.getForm();
-		MultiMap postedData = ctx.getPostedData();
-
 		return Single.zip(
 				Single.just(form.preventInjection(postedData, configuration.getSecurityOptions())),
 				form.validate(postedData, ctx.getFileUploads(), ctx.getFormDataNode(), rxVertx, okHttpClientService.getClient()),

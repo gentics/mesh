@@ -3,7 +3,6 @@ package com.gentics.mesh.plugin.forms;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.gentics.mesh.util.UUIDUtil;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,8 +22,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.parameter.client.NodeParametersImpl;
 import com.gentics.mesh.plugin.forms.service.SchemaService;
+import com.gentics.mesh.util.UUIDUtil;
 import com.jayway.jsonpath.JsonPath;
 
 import io.vertx.core.json.JsonObject;
@@ -110,20 +109,12 @@ public class FormCRUDTest extends AbstractFormsPluginIntegrationTest {
 	 */
 	@Test
 	public void testListForms() throws IOException {
-		setLanguages(PROJECT_NAME, Arrays.asList("en", "de", "it"));
 
 		createForm("list1.json");
 		createForm("list2.json");
 		createForm("list3.json");
 
 		doTestListForms(new String[0], new String[] { "Form List 1", "Form List 2", "Form List 3" });
-//		doTestListForms(new String[] { "en" }, new String[] { "Form List 1" });
-//		doTestListForms(new String[] { "de" }, new String[] { "Form List 1", "Form List 2" });
-//		doTestListForms(new String[] { "it" }, new String[] { "Form List 1", "Form List 3" });
-//		doTestListForms(new String[] { "en", "de" }, new String[] { "Form List 1", "Form List 2" });
-//		doTestListForms(new String[] { "en", "it" }, new String[] { "Form List 1", "Form List 3" });
-//		doTestListForms(new String[] { "de", "it" }, new String[] { "Form List 1", "Form List 2", "Form List 3" });
-//		doTestListForms(new String[] { "en", "de", "it" }, new String[] { "Form List 1", "Form List 2", "Form List 3" });
 	}
 
 	/**

@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -62,7 +61,6 @@ public class FormDataExportOptionsTest extends AbstractFormsPluginIntegrationTes
 		super.setup();
 		// activate plugin
 		assertThat(activate(PROJECT_NAME)).as("Activation status").isTrue();
-		assertThat(setLanguages(PROJECT_NAME, Arrays.asList("en", "de"))).as("Activated languages").containsOnly("en", "de");
 
 		FormsTestPlugin.instance.configuration.getExportOptions()
 			.setIncludeUuid(includeUuid)

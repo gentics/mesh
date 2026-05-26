@@ -4,7 +4,6 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -39,7 +38,6 @@ public class FormDataMigrationTest extends AbstractFormsPluginIntegrationTest {
 
 		// activate plugin
 		assertThat(activate(PROJECT_NAME)).as("Activation status").isTrue();
-		setLanguages(PROJECT_NAME, Arrays.asList("en"));
 	}
 
 	/**
