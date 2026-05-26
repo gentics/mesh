@@ -132,6 +132,20 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		runCaseForValue("someValue");
 	}
 
+	@Test
+	public void testCancelNoData() throws IOException {
+		String uuid = createForm(inputFieldForm);
+
+		Request postRequest = new Request.Builder()
+				.headers(auth(true))
+				.url(projectUrl(String.format("/form/%s/cancel", uuid))).header("Referer", "ref")
+				.post(RequestBody.EMPTY).build();
+		Response response = client().newCall(postRequest).execute();
+		assertThat(response.isSuccessful())
+				.as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+		assertThat(response.code()).as("Response code").isEqualTo(200);
+	}
+
 	/**
 	 * Test trying cancelling an already published form data
 	 *
