@@ -14,6 +14,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
+import com.gentics.mesh.plugin.forms.context.FormDataCreateContext;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
 import com.gentics.mesh.plugin.forms.model.schema.FormUiSchema;
 import com.gentics.mesh.plugin.forms.model.schema.UischemaFormgridOptions;
@@ -25,7 +26,6 @@ import io.reactivex.Maybe;
 import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.FileUpload;
 import io.vertx.reactivex.core.Vertx;
 import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.StringUtils;
@@ -37,10 +37,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -309,37 +307,37 @@ public abstract class FormElement implements RestModel {
 
 	/**
 	 * Validate the posted data
-	 * @param postedData posted data
-	 * @param fileUploads fileuploads
-	 * @param formDataNode form data node (may be null)
+	 * @param ctx Form data context
 	 * @param rxVertx Vert.x instance for the utility tasks
 	 * @param httpClient a HTTP client for possible external validation calls
 	 * @return validation error or null if posted data is valid
 	 */
-	public Maybe<ValidationError> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx, OkHttpClient httpClient, FormUiSchema uischema) {
+	public Maybe<ValidationError> validate(FormDataCreateContext ctx, Vertx rxVertx, OkHttpClient httpClient, FormUiSchema uischema) {
 		List<String> values = new ArrayList<>();
 		if (isList()) {
-			List<String> data = getMultiFormData(postedData);
+			List<String> data = getMultiFormData(ctx.getPostedData());
 			if (data != null) {
 				values.addAll(data);
 			}
 		} else {
-			String data = getSingleFormData(postedData);
+			String data = getSingleFormData(ctx.getPostedData());
 			if (StringUtils.isNotBlank(data)) {
 				values.add(data);
 			}
 		}
 
+		var locale = ctx.getLocale();
+
 		// check mandatory fields, that are not filled
 		if (mandatory) {
 			if (values.stream().noneMatch(v -> v != null && !"".equals(v))) {
-				return Maybe.just(new ValidationError().setName(getName()).setTitle(I18nHelper.get(Locale.GERMAN, "error.mandatory_field_not_filled.title"))
-						.setMessage(I18nHelper.get(Locale.GERMAN, "error.mandatory_field_not_filled", getLabel())));
+				return Maybe.just(new ValidationError().setName(getName()).setTitle(I18nHelper.get(locale, "error.mandatory_field_not_filled.title"))
+						.setMessage(I18nHelper.get(locale, "error.mandatory_field_not_filled", getLabel())));
 			}
 		}
 
 		if (validation != null) {
-			return validation.validate(getName(), values);
+			return validation.validate(getName(), values, locale);
 		}
 
 		// Apart from user defined validation rules, some elements might have restrictions on the values that can
@@ -349,8 +347,8 @@ public abstract class FormElement implements RestModel {
 		if (invalidValue.isPresent()) {
 			return Maybe.just(new ValidationError()
 				.setName(getName())
-				.setTitle(I18nHelper.get(Locale.GERMAN, "error.invalid_value.title"))
-				.setMessage(I18nHelper.get(Locale.GERMAN, "error.invalid_value", getName(), invalidValue.get())));
+				.setTitle(I18nHelper.get(locale, "error.invalid_value.title"))
+				.setMessage(I18nHelper.get(locale, "error.invalid_value", getName(), invalidValue.get())));
 		}
 
 		return RxUtil.emptyMaybe();
@@ -664,7 +662,7 @@ public abstract class FormElement implements RestModel {
 	 * Check whether the given value is valid for this element.
 	 *
 	 * <p>
-	 *     Unlike the checks in {@link #validate(MultiMap, Set, NodeResponse, Vertx, OkHttpClient, FormUiSchema)}, this
+	 *     Unlike the checks in {@link #validate(FormDataCreateContext, Vertx, OkHttpClient, FormUiSchema)}, this
 	 *     checks implicit restrictions for fields, like for example that only available options for a value
 	 *     list element can be submitted.
 	 * </p>

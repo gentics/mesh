@@ -40,7 +40,6 @@ import com.gentics.mesh.plugin.forms.model.ValidationError;
 import com.gentics.mesh.plugin.forms.model.schema.FormData;
 import com.gentics.mesh.plugin.forms.util.FormParameterUtil;
 import com.gentics.mesh.plugin.forms.util.FormUtil;
-import com.gentics.mesh.plugin.forms.util.FormUtil;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -313,7 +312,7 @@ public class FormDataService {
 			.doOnSuccess(ctx::setFormNode)
 			.flatMap(formService::toForm)
 			.doOnSuccess(ctx::setForm)
-			.flatMap(form -> validatePostedData(ctx.getPostedData(), ctx))
+			.flatMap(form -> validatePostedData(ctx))
 			.map(errors -> toValidationResponse(ctx, errors));
 	}
 
@@ -332,7 +331,7 @@ public class FormDataService {
 						ctx.setFormNode(formNode);
 						ctx.setFormDataNode(formDataNode);
 						ctx.setForm(form);
-						return validatePostedData(ctx.getPostedData(), ctx).map(errors -> toValidationResponse(ctx, errors));
+						return validatePostedData(ctx).map(errors -> toValidationResponse(ctx, errors));
 					}))
 			.flatMap(x -> x);
 	}
@@ -1085,7 +1084,7 @@ public class FormDataService {
 		Form form = ctx.getForm();
 		MultiMap postedData = ctx.getPostedData();
 
-		return captchaService.validate(ctx).andThen(validatePostedData(postedData, ctx).flatMap(errors1 -> {
+		return captchaService.validate(ctx).andThen(validatePostedData(ctx).flatMap(errors1 -> {
 			// check whether we have any validation errors, that prevent storing of the data
 			Optional<ValidationError> errorPreventingDataStorage = errors1.values().stream()
 					.filter(ValidationError::isPreventStoring).findAny();
@@ -1145,13 +1144,14 @@ public class FormDataService {
 	 * Validate posted form data with the same rules used before saving.
 	 *
 	 * @param ctx Request context with the loaded form
+	 *
 	 * @return single of validation errors keyed by form element name
 	 */
-	private Single<Map<String, ValidationError>> validatePostedData(MultiMap postedData, FormDataCreateContext ctx) {
+	private Single<Map<String, ValidationError>> validatePostedData(FormDataCreateContext ctx) {
 		Form form = ctx.getForm();
 		return Single.zip(
-				Single.just(form.preventInjection(postedData, configuration.getSecurityOptions())),
-				form.validate(postedData, ctx.getFileUploads(), ctx.getFormDataNode(), rxVertx, okHttpClientService.getClient()),
+				Single.just(form.preventInjection(ctx, configuration.getSecurityOptions())),
+				form.validate(ctx, rxVertx, okHttpClientService.getClient()),
 				(a, b) -> {
 					HashMap<String, ValidationError> errors = new HashMap<>();
 					errors.putAll(a);

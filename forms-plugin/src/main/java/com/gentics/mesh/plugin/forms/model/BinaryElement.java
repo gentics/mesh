@@ -17,6 +17,7 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.gentics.mesh.plugin.forms.context.FormDataCreateContext;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.detect.Detector;
@@ -102,21 +103,22 @@ public class BinaryElement extends FormElement {
 	}
 
 	@Override
-	public Maybe<ValidationError> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx, OkHttpClient httpClient, FormUiSchema uiSchema) {
+	public Maybe<ValidationError> validate(FormDataCreateContext ctx, Vertx rxVertx, OkHttpClient httpClient, FormUiSchema uiSchema) {
+		var locale = ctx.getLocale();
+		var fileUploads = ctx.getFileUploads();
+		var gridOptions = getFormGridOptionsFromUiSchema(uiSchema).orElse(null);
+		var fileUpload = getFileUpload(fileUploads);
 
-		UischemaFormgridOptions gridOptions = getFormGridOptionsFromUiSchema(uiSchema).orElse(null);
-
-		FileUpload fileUpload = getFileUpload(fileUploads);
 		if (fileUpload == null) {
 			if (isMandatory()) {
-				if (formDataNode != null) {
-					BinaryField field = formDataNode.getFields().getBinaryField(getName());
+				if (ctx.getFormDataNode() != null) {
+					BinaryField field = ctx.getFormDataNode().getFields().getBinaryField(getName());
 					if (field != null && field.hasValues()) {
 						return RxUtil.emptyMaybe();
 					}
 				}
-				return Maybe.just(new ValidationError().setName(getName()).setTitle(I18nHelper.get(Locale.GERMAN, "error.mandatory_field_not_filled.title"))
-					.setMessage(I18nHelper.get(Locale.GERMAN, "error.mandatory_field_not_filled", getLabel())));
+				return Maybe.just(new ValidationError().setName(getName()).setTitle(I18nHelper.get(locale, "error.mandatory_field_not_filled.title"))
+					.setMessage(I18nHelper.get(locale, "error.mandatory_field_not_filled", getLabel())));
 			} else {
 				return RxUtil.emptyMaybe();
 			}
@@ -125,8 +127,8 @@ public class BinaryElement extends FormElement {
 		int maxFileSize = getMaxFileSize(gridOptions);
 		if (maxFileSize > 0 && fileUpload.size() > (maxFileSize * 1024 * 1024)) {
 			fileUploads.remove(fileUpload);
-			return Maybe.just(new ValidationError().setName(getName()).setTitle(I18nHelper.get(Locale.GERMAN, "error.validation.file.size.title"))
-				.setMessage(I18nHelper.get(Locale.GERMAN, "error.validation.file.size", fileUpload.fileName(), Integer.toString(maxFileSize))));
+			return Maybe.just(new ValidationError().setName(getName()).setTitle(I18nHelper.get(locale, "error.validation.file.size.title"))
+				.setMessage(I18nHelper.get(locale, "error.validation.file.size", fileUpload.fileName(), Integer.toString(maxFileSize))));
 		}
 
 		Collection<String> allowedTypes = getAllowedFiletypes(gridOptions);
@@ -140,8 +142,8 @@ public class BinaryElement extends FormElement {
 					fileUploads.remove(fileUpload);
 					return Maybe.just(new ValidationError()
 						.setName(getName())
-						.setTitle(I18nHelper.get(Locale.GERMAN, "error.validation.file.type.title"))
-						.setMessage(I18nHelper.get(Locale.GERMAN, "error.validation.file.type.check", fileUpload.fileName())));
+						.setTitle(I18nHelper.get(locale, "error.validation.file.type.title"))
+						.setMessage(I18nHelper.get(locale, "error.validation.file.type.check", fileUpload.fileName())));
 				} else {
 					return RxUtil.emptyMaybe();
 				}
@@ -149,8 +151,8 @@ public class BinaryElement extends FormElement {
 				log.error("Could not check file type of uploaded file " + fileUpload.fileName() + " (" + fileUpload.contentType() + ")", e);
 				return Maybe.just(new ValidationError()
 					.setName(getName())
-					.setTitle(I18nHelper.get(Locale.GERMAN, "error.validation.file.type.title"))
-					.setMessage(I18nHelper.get(Locale.GERMAN, "error.validation.file.type.check", fileUpload.fileName())));
+					.setTitle(I18nHelper.get(locale, "error.validation.file.type.title"))
+					.setMessage(I18nHelper.get(locale, "error.validation.file.type.check", fileUpload.fileName())));
 			});
 		}
 		return RxUtil.emptyMaybe();

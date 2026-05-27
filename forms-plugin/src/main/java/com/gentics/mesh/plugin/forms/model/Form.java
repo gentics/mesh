@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.core.rest.common.FieldContainer;
+import com.gentics.mesh.plugin.forms.context.FormDataCreateContext;
 import com.gentics.mesh.plugin.forms.model.schema.FormData;
 import com.gentics.mesh.plugin.forms.model.schema.FormSchema;
 import com.gentics.mesh.plugin.forms.model.schema.FormUiSchema;
@@ -21,7 +22,6 @@ import io.reactivex.Single;
 import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.FileUpload;
 import io.vertx.reactivex.core.Vertx;
 import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.StringUtils;
@@ -479,20 +479,18 @@ public class Form implements RestModel {
 
 	/**
 	 * Validate the form data
-	 * @param postedData posted data
-	 * @param fileUploads fileuploads
-	 * @param formDataNode form data node (null if the form data are not yet saved)
+	 * @param ctx form data context
 	 * @param rxVertx vert.x instance for the utility tasks
 	 * @param httpClient a HTTP client for an external validation
 	 * @return list containing error messages (empty if data is valid)
 	 */
-	public Single<Map<String, ValidationError>> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx, OkHttpClient httpClient) {
+	public Single<Map<String, ValidationError>> validate(FormDataCreateContext ctx, Vertx rxVertx, OkHttpClient httpClient) {
 		// only filter out the elements, which have not been POSTed, if the form contains multiple pages
 		return Single.zip(
 				StreamUtil.toIterable(
 					getElementsInsideProperties()
 						.filter(FormElement::isActive)
-						.map(elem -> elem.validate(postedData, fileUploads, formDataNode, rxVertx, httpClient, uiSchema)
+						.map(elem -> elem.validate(ctx, rxVertx, httpClient, uiSchema)
 								.map(error -> Pair.of(elem.getName(), error))
 								.toSingle(Pair.of(null, null)))),
 					errors -> Arrays.stream(errors)
@@ -508,13 +506,15 @@ public class Form implements RestModel {
 	 * Either sanitize unsafe input or create validation errors for every
 	 * posted element with unsafe data.
 	 *
-	 * @param postedData The posted form data.
+	 * @param ctx The form data context.
 	 * @param options The security configuration.
 	 * @return A map from element names to {@code ValidationErrors} for elements
 	 * 		with unsafe values. Note that only elements which where not already
 	 * 		sanitized are contained in this map.
 	 */
-	public Map<String, ValidationError> preventInjection(MultiMap postedData, SecurityOptions options) {
+	public Map<String, ValidationError> preventInjection(FormDataCreateContext ctx, SecurityOptions options) {
+		var postedData = ctx.getPostedData();
+		var locale = ctx.getLocale();
 		InjectionPreventionMode mode = options.getInjectionPreventionMode();
 		Map<Pattern, String> rules = options.getCompiledSanitationRules();
 
@@ -536,8 +536,8 @@ public class Form implements RestModel {
 				invalidName,
 				new ValidationError()
 					.setName(invalidName)
-					.setTitle(I18nHelper.get(Locale.GERMAN, "error.validation.unsafe_value.title"))
-					.setMessage(I18nHelper.get(Locale.GERMAN, "error.validation.unsafe_value", invalidName))))
+					.setTitle(I18nHelper.get(locale, "error.validation.unsafe_value.title"))
+					.setMessage(I18nHelper.get(locale, "error.validation.unsafe_value", invalidName))))
 			.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
 	}
 

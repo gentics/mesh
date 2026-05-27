@@ -2,6 +2,7 @@ package com.gentics.mesh.plugin.forms.context;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -215,5 +216,9 @@ public class FormDataCreateContext {
 
 	public String getLanguage() {
 		return language;
+	}
+
+	public Locale getLocale() {
+		return Locale.forLanguageTag(language);
 	}
 }
