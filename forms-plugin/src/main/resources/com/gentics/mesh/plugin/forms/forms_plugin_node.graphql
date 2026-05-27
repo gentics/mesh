@@ -6,8 +6,12 @@
         languages {
           uuid
           isPublished
-          %s
           language
+          fields {
+            ... on forms_plugin {
+              isMigrated
+            }
+          }
         }
       }
     }

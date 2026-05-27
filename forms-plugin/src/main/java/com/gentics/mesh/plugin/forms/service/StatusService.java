@@ -84,7 +84,7 @@ public class StatusService {
 		this.rxVertx = Vertx.newInstance(vertx);
 
 		try {
-			pluginRootNodeQuery = IOUtils.toString(FormsPlugin.class.getResource("forms_plugin_node.graphql"), "UTF-8").formatted("");
+			pluginRootNodeQuery = IOUtils.toString(FormsPlugin.class.getResource("forms_plugin_node.graphql"), "UTF-8");
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -125,6 +125,7 @@ public class StatusService {
 	private Single<StatusResponse> check(MeshRestClient client, String projectName) {
 		return client.graphqlQuery(projectName, pluginRootNodeQuery).toSingle().map(response -> {
 			List<Boolean> published = FormUtil.getFromResponse(response, "$.data.schema.nodes.elements[*].languages[*].isPublished");
+
 			return new StatusResponse().setActive(published.stream().filter(b -> b == Boolean.TRUE).findFirst().isPresent());
 		});
 	}
@@ -136,9 +137,9 @@ public class StatusService {
 	 * @return single 
 	 * @throws IOException 
 	 */
-	public Single<Boolean> isProjectFormDataMigrated(MeshRestClient client, String projectName) throws IOException {
-		return client.graphqlQuery(projectName, IOUtils.toString(FormsPlugin.class.getResource("forms_plugin_node.graphql"), "UTF-8").formatted("isMigrated")).toSingle().map(response -> {
-			List<Boolean> migrated = FormUtil.getFromResponse(response, "$.data.schema.nodes.elements[*].languages[*].isMigrated");
+	public Single<Boolean> isProjectFormDataMigrated(MeshRestClient client, String projectName) {
+		return client.graphqlQuery(projectName, pluginRootNodeQuery).toSingle().map(response -> {
+			List<Boolean> migrated = FormUtil.getFromResponse(response, "$.data.schema.nodes.elements[*].languages[*].fields.isMigrated");
 			return migrated.stream().filter(b -> b == Boolean.TRUE).findFirst().isPresent();
 		});
 	}
@@ -252,20 +253,28 @@ public class StatusService {
 	 * @return single languages
 	 */
 	public Single<String[]> languageFallback(String projectName, String...langs) {
-		return getRootNode(projectName, adminClient).flatMap(response -> {
-					FieldMap fields = response.getFields();
-					List<String> langList = new ArrayList<>();
-					langList.addAll(Arrays.asList(langs));
-					if (fields.hasField("languages")) {
-						for (String fallbackLang : fields.getStringFieldList("languages").getItems()) {
-							if (!langList.contains(fallbackLang)) {
-								langList.add(fallbackLang);
-							}
-						}
-					}
+		return getRootNode(projectName, adminClient).map(response -> languageFallback(response, langs));
+	}
 
-					return Single.just(langList.toArray(new String[langList.size()]));
-				});
+	/**
+	 * Get the languages for the forms root node
+	 * @param response response containing the forms root node
+	 * @param langs languages
+	 * @return language list
+	 */
+	public String[] languageFallback(NodeResponse response, String...langs) {
+		FieldMap fields = response.getFields();
+		List<String> langList = new ArrayList<>();
+		langList.addAll(Arrays.asList(langs));
+		if (fields.hasField("languages")) {
+			for (String fallbackLang : fields.getStringFieldList("languages").getItems()) {
+				if (!langList.contains(fallbackLang)) {
+					langList.add(fallbackLang);
+				}
+			}
+		}
+
+		return langList.toArray(new String[langList.size()]);
 	}
 
 	/**

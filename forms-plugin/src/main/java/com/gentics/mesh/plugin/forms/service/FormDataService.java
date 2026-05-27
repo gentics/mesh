@@ -65,6 +65,7 @@ import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.dagger.StorageDir;
 import com.gentics.mesh.plugin.common.dagger.UserClient;
 import com.gentics.mesh.plugin.common.service.RenderService;
+import com.gentics.mesh.plugin.common.util.GraphQlPagingFetcher;
 import com.gentics.mesh.plugin.common.util.ParameterUtil;
 import com.gentics.mesh.plugin.forms.FormsError;
 import com.gentics.mesh.plugin.forms.FormsPlugin;
@@ -175,6 +176,10 @@ public class FormDataService {
 
 	private final File storageDir;
 
+	private final String loadFormDataToMigrateGraphQl;
+
+	private final String findFormsToMigrateGraphQl;
+
 	@Inject
 	public FormDataService(
 			@AdminClient MeshRestClient adminClient,
@@ -202,6 +207,14 @@ public class FormDataService {
 		this.statusService = statusService;
 		this.okHttpClientService = okHttpClientService;
 		this.storageDir = storageDir;
+
+		try {
+			this.loadFormDataToMigrateGraphQl = IOUtils.toString(FormsPlugin.class.getResource("loadFormDataToMigrate.graphql"), StandardCharsets.UTF_8);
+			this.findFormsToMigrateGraphQl = IOUtils.toString(FormsPlugin.class.getResource("findFormsToMigrate.graphql"), StandardCharsets.UTF_8);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+
 	}
 
 	/**
@@ -216,22 +229,24 @@ public class FormDataService {
 	 * Migrate form data nodes for all forms of the project
 	 * @param project project
 	 * @return completable
-	 * @throws IOException 
 	 */
-	private Completable migrateFormDataNodes(ProjectResponse project) throws IOException {
+	private Completable migrateFormDataNodes(ProjectResponse project) {
 		String projectName = project.getName();
 
 		return statusService.isProjectFormDataMigrated(adminClient, projectName).flatMapCompletable(yesItIs -> {
 			if (Boolean.TRUE.equals(yesItIs)) {
 				return Completable.complete();
 			} else {
-				return statusService.languageFallback(projectName).flatMapCompletable(lang -> {
-					return formService.listUuids(project.getName())
+				return statusService.getRootNode(projectName, adminClient).flatMapCompletable(pluginRootNode -> {
+					String[] lang = statusService.languageFallback(pluginRootNode);
+
+					return getFormsNeedingMigration(project, pluginRootNode, lang)
 							.flatMapCompletable(formUuid -> migrateFormDataNodes(project, formUuid));
 				}).doOnComplete(() -> {
 					statusService.getRootNode(projectName, adminClient).flatMap(node -> {
 						NodeUpdateRequest update = node.toRequest();
 						update.getFields().put("isMigrated", new BooleanFieldImpl().setValue(true));
+						update.setPublish(true);
 						return adminClient.updateNode(projectName, node.getUuid(), update).toSingle();
 					}).doOnSuccess(node -> {
 						log.info("Node migration completed");
@@ -242,14 +257,68 @@ public class FormDataService {
 	}
 
 	/**
+	 * 
+	 * Get the uuid of forms, which have data nodes needing to be migrated as observable
+	 * @param project project
+	 * @param pluginRootNode plugin root node
+	 * @param lang languages
+	 * @return observable emitting the form uuids
+	 */
+	private Observable<String> getFormsNeedingMigration(ProjectResponse project, NodeResponse pluginRootNode, String[] lang) {
+		// set the root node uuid and languages as vaariables
+		Map<String, Object> variables = Map.of("rootNodeUuid", pluginRootNode.getUuid(), "lang", lang);
+
+		// data extractor, which will extract uuids of forms, that have datanodes.totalCount > 0
+		Function<GraphQLResponse, List<String>> dataExtractor = response -> {
+			List<Object> elements = FormUtil.getFromResponse(response, "$.data.node.children.elements[*]");
+
+			List<String> uuids = elements.stream().filter(element -> {
+				if (element instanceof Map<?, ?> elementMap) {
+					Object datanodes = elementMap.get("datanodes");
+					if (datanodes instanceof Map<?, ?> datanodesMap) {
+						Object totalCount = datanodesMap.get("totalCount");
+						if (totalCount instanceof Integer iTotalCount) {
+							return iTotalCount.intValue() > 0;
+						}
+					}
+				}
+				return false;
+			}).map(element -> {
+				if (element instanceof Map<?, ?> elementMap) {
+					Object uuid = elementMap.get("uuid");
+					if (uuid instanceof String uuidString) {
+						return uuidString;
+					}
+				}
+				return null;
+			}).filter(uuid -> uuid != null).collect(Collectors.toList());
+
+			return uuids;
+		};
+
+		// extractor for the boolean flag that there are more pages
+		Function<GraphQLResponse, Boolean> hasNextPageExtractor = response -> {
+			int pageCount = FormUtil.getFromResponse(response, "$.data.node.children.pageCount");
+			int currentPage = FormUtil.getFromResponse(response, "$.data.node.children.currentPage");
+
+			return currentPage < pageCount;
+		};
+
+		return new GraphQlPagingFetcher()
+				.withClient(adminClient)
+				.withProject(project.getName())
+				.withPageSize(1000)
+				.fetch(findFormsToMigrateGraphQl, variables, dataExtractor, hasNextPageExtractor);
+	}
+
+	/**
 	 * Migrate form data nodes for the given form
 	 * @param project project
 	 * @param formUuid form uuid
 	 * @param lang languages
 	 * @return completable
-	 * @throws IOException 
 	 */
-	private Completable migrateFormDataNodes(ProjectResponse project, String formUuid, String...lang) throws IOException {
+	private Completable migrateFormDataNodes(ProjectResponse project, String formUuid, String...lang) {
 		int maxConcurrentMoveCalls = getOptionalConfig(MESH_FORMS_PLUGIN_MAX_CONCURRENT_MIGRATION_MOVE_CALLS, 10, Integer::parseInt, Object::toString);
 		int nodesPerPage = getOptionalConfig(MESH_FORMS_PLUGIN_MAX_CONCURRENT_MIGRATION_FETCH_NODES, 10_000, Integer::parseInt, Object::toString);
 
@@ -257,7 +326,7 @@ public class FormDataService {
 		String projectName = project.getName();
 
 		GraphQLRequest request = new GraphQLRequest()
-				.setQuery(IOUtils.toString(FormsPlugin.class.getResource("loadFormDataToMigrate.graphql"), StandardCharsets.UTF_8))
+				.setQuery(loadFormDataToMigrateGraphQl)
 				.setVariables(new JsonObject().put("uuid", formUuid).put("schema", schemaName).put("perPage", nodesPerPage));
 		VersioningParameters params = new VersioningParametersImpl().draft();
 
