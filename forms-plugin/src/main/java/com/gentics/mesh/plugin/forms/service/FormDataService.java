@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -43,8 +44,8 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.SortOrder;
+import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -64,6 +65,7 @@ import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.dagger.StorageDir;
 import com.gentics.mesh.plugin.common.dagger.UserClient;
 import com.gentics.mesh.plugin.common.service.RenderService;
+import com.gentics.mesh.plugin.common.util.GraphQlPagingFetcher;
 import com.gentics.mesh.plugin.common.util.ParameterUtil;
 import com.gentics.mesh.plugin.forms.FormsError;
 import com.gentics.mesh.plugin.forms.FormsPlugin;
@@ -80,8 +82,8 @@ import com.gentics.mesh.plugin.forms.model.FormType;
 import com.gentics.mesh.plugin.forms.model.FormpageElement;
 import com.gentics.mesh.plugin.forms.model.PostDataResponse;
 import com.gentics.mesh.plugin.forms.model.ValidationError;
-import com.gentics.mesh.plugin.forms.util.FormUtil;
 import com.gentics.mesh.plugin.forms.util.FormParameterUtil;
+import com.gentics.mesh.plugin.forms.util.FormUtil;
 import com.gentics.mesh.plugin.forms.util.RxUtil;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshResponse;
@@ -176,6 +178,8 @@ public class FormDataService {
 
 	private final String loadFormDataToMigrateGraphQl;
 
+	private final String findFormsToMigrateGraphQl;
+
 	@Inject
 	public FormDataService(
 			@AdminClient MeshRestClient adminClient,
@@ -206,6 +210,7 @@ public class FormDataService {
 
 		try {
 			this.loadFormDataToMigrateGraphQl = IOUtils.toString(FormsPlugin.class.getResource("loadFormDataToMigrate.graphql"), StandardCharsets.UTF_8);
+			this.findFormsToMigrateGraphQl = IOUtils.toString(FormsPlugin.class.getResource("findFormsToMigrate.graphql"), StandardCharsets.UTF_8);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -228,10 +233,82 @@ public class FormDataService {
 	private Completable migrateFormDataNodes(ProjectResponse project) {
 		String projectName = project.getName();
 
-		return statusService.languageFallback(projectName).flatMapCompletable(lang -> {
-			return formService.listUuids(project.getName())
-					.flatMapCompletable(formUuid -> migrateFormDataNodes(project, formUuid));
+		return statusService.isProjectFormDataMigrated(adminClient, projectName).flatMapCompletable(yesItIs -> {
+			if (Boolean.TRUE.equals(yesItIs)) {
+				return Completable.complete();
+			} else {
+				return statusService.getRootNode(projectName, adminClient).flatMapCompletable(pluginRootNode -> {
+					String[] lang = statusService.languageFallback(pluginRootNode);
+
+					return getFormsNeedingMigration(project, pluginRootNode, lang)
+							.flatMapCompletable(formUuid -> migrateFormDataNodes(project, formUuid));
+				}).doOnComplete(() -> {
+					statusService.getRootNode(projectName, adminClient).flatMap(node -> {
+						NodeUpdateRequest update = node.toRequest();
+						update.getFields().put("isMigrated", new BooleanFieldImpl().setValue(true));
+						update.setPublish(true);
+						return adminClient.updateNode(projectName, node.getUuid(), update).toSingle();
+					}).doOnSuccess(node -> {
+						log.info("Node migration completed");
+					}).subscribe();
+				});
+			}
 		});
+	}
+
+	/**
+	 * 
+	 * Get the uuid of forms, which have data nodes needing to be migrated as observable
+	 * @param project project
+	 * @param pluginRootNode plugin root node
+	 * @param lang languages
+	 * @return observable emitting the form uuids
+	 */
+	private Observable<String> getFormsNeedingMigration(ProjectResponse project, NodeResponse pluginRootNode, String[] lang) {
+		// set the root node uuid and languages as vaariables
+		Map<String, Object> variables = Map.of("rootNodeUuid", pluginRootNode.getUuid(), "lang", lang);
+
+		// data extractor, which will extract uuids of forms, that have datanodes.totalCount > 0
+		Function<GraphQLResponse, List<String>> dataExtractor = response -> {
+			List<Object> elements = FormUtil.getFromResponse(response, "$.data.node.children.elements[*]");
+
+			List<String> uuids = elements.stream().filter(element -> {
+				if (element instanceof Map<?, ?> elementMap) {
+					Object datanodes = elementMap.get("datanodes");
+					if (datanodes instanceof Map<?, ?> datanodesMap) {
+						Object totalCount = datanodesMap.get("totalCount");
+						if (totalCount instanceof Integer iTotalCount) {
+							return iTotalCount.intValue() > 0;
+						}
+					}
+				}
+				return false;
+			}).map(element -> {
+				if (element instanceof Map<?, ?> elementMap) {
+					Object uuid = elementMap.get("uuid");
+					if (uuid instanceof String uuidString) {
+						return uuidString;
+					}
+				}
+				return null;
+			}).filter(uuid -> uuid != null).collect(Collectors.toList());
+
+			return uuids;
+		};
+
+		// extractor for the boolean flag that there are more pages
+		Function<GraphQLResponse, Boolean> hasNextPageExtractor = response -> {
+			int pageCount = FormUtil.getFromResponse(response, "$.data.node.children.pageCount");
+			int currentPage = FormUtil.getFromResponse(response, "$.data.node.children.currentPage");
+
+			return currentPage < pageCount;
+		};
+
+		return new GraphQlPagingFetcher()
+				.withClient(adminClient)
+				.withProject(project.getName())
+				.withPageSize(1000)
+				.fetch(findFormsToMigrateGraphQl, variables, dataExtractor, hasNextPageExtractor);
 	}
 
 	/**
@@ -253,23 +330,28 @@ public class FormDataService {
 				.setVariables(new JsonObject().put("uuid", formUuid).put("schema", schemaName).put("perPage", nodesPerPage));
 		VersioningParameters params = new VersioningParametersImpl().draft();
 
-		return getFormDataFolderUuid(projectName, formUuid, lang)
-			   .flatMapCompletable(formDataFolderUuid -> {
-					   AtomicBoolean hasMore = new AtomicBoolean(false);
-					   return adminClient.graphql(projectName, request, params).toSingle()
-							   .flatMapObservable(response -> {
-									   List<String> uuids = FormUtil.getFromResponse(response, "$.data.node.children.elements[*].uuid");
-									   log.info("{} form data nodes found for migration of project {} / form {}", uuids.size(), projectName, formUuid);
-									   hasMore.set(uuids.size() >= nodesPerPage);
-									   return Observable.fromIterable(uuids);
-							   })
-							   .flatMap(dataUuid -> adminClient.moveNode(projectName, dataUuid, formDataFolderUuid).toObservable()
-											   .doOnSubscribe(disp -> log.debug(String.format("Move misplaced form data node %s for form %s in project %s", dataUuid, formUuid, projectName))), 
-									   maxConcurrentMoveCalls)
-							   .flatMapCompletable(disp -> Completable.complete())
-							   .repeatWhen(handler -> handler.takeWhile((o) -> hasMore.get()));
-			   }).doOnSubscribe(disp -> log.debug(String.format("Checking misplaced form data nodes for form %s in project %s", formUuid, projectName)));
-
+		AtomicBoolean hasMore = new AtomicBoolean(false);
+		AtomicReference<String> formDataFolderUuid = new AtomicReference<>();
+		return adminClient.graphql(projectName, request, params).toSingle()
+		   .flatMapObservable(response -> {
+				   List<String> uuids = FormUtil.getFromResponse(response, "$.data.node.children.elements[*].uuid");
+				   log.info("{} form data nodes found for migration of project {} / form {}", uuids.size(), projectName, formUuid);
+				   hasMore.set(uuids.size() >= nodesPerPage);
+				   Observable<String> observables = Observable.fromIterable(uuids);
+				   if (uuids.size() > 0 && formDataFolderUuid.get() == null) {
+					   return getFormDataFolderUuid(projectName, formUuid, lang).flatMapObservable(uuid -> {
+						   formDataFolderUuid.set(uuid);
+						   return observables;
+					   });
+				   } else {
+					   return observables;
+				   }				   
+		   }).flatMap(dataUuid -> adminClient.moveNode(projectName, dataUuid, formDataFolderUuid.get()).toObservable()
+				   .doOnSubscribe(disp -> log.debug(String.format("Move misplaced form data node %s for form %s in project %s", dataUuid, formUuid, projectName))), 
+				   maxConcurrentMoveCalls)
+		   .flatMapCompletable(disp -> Completable.complete())
+		   .repeatWhen(handler -> handler.takeWhile((o) -> hasMore.get()))
+		   .doOnSubscribe(disp -> log.debug(String.format("Checking misplaced form data nodes for form %s in project %s", formUuid, projectName)));
 	}
 
 	/**

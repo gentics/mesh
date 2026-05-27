@@ -16,6 +16,12 @@
 			"type": "list",
 			"listType": "string",
 			"required": false
+		},
+		{
+			"name": "isMigrated",
+			"label": "Has form data been migrated?",
+			"type": "boolean",
+			"required": false
 		}
 	]
 }
