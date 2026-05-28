@@ -1,5 +1,6 @@
 package com.gentics.mesh.plugin.forms.model.schema;
 
+import com.gentics.mesh.plugin.forms.context.FormDataCreateContext;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
 import com.gentics.mesh.plugin.forms.model.ValidationError;
 import com.gentics.mesh.plugin.forms.util.RxUtil;
@@ -9,7 +10,6 @@ import org.apache.commons.lang3.math.NumberUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -148,12 +148,14 @@ public class Validation {
 	/**
 	 * Validate the given values by checking them against all validation constraints.
 	 *
+	 * @param ctx The form data create context.
 	 * @param name The name of the element.
 	 * @param values The values to validate.
-	 * @param locale The locale to use for the error messages.
 	 * @return A {@link Maybe} containing the first validation error or an empty {@link Maybe} if no validation error was found.
 	 */
-	public Maybe<ValidationError> validate(String name, Collection<String> values, Locale locale) {
+	public Maybe<ValidationError> validate(FormDataCreateContext ctx, String name, Collection<String> values) {
+		var translations = ctx.getTranslations();
+
 		return values.stream()
 			.filter(Objects::nonNull)
 			.flatMap(value -> findViolation(value).stream())
@@ -161,8 +163,8 @@ public class Validation {
 			.map(violation -> {
 				var error = new ValidationError()
 					.setName(name)
-					.setTitle(I18nHelper.get(locale, "error.validation.%s.title".formatted(violation.key())))
-					.setMessage(I18nHelper.get(locale, "error.validation.%s".formatted(violation.key()), violation.value()));
+					.setTitle(I18nHelper.get(translations, "form_validation_error_%s_title".formatted(violation.key())))
+					.setMessage(I18nHelper.get(translations, "form_validation_error_%s".formatted(violation.key()), violation.value()));
 
 				return Maybe.just(error);
 			})

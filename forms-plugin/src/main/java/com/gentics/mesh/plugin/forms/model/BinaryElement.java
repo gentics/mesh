@@ -1,5 +1,30 @@
 package com.gentics.mesh.plugin.forms.model;
 
+import com.gentics.mesh.core.rest.common.FieldContainer;
+import com.gentics.mesh.core.rest.node.field.BinaryField;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
+import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
+import com.gentics.mesh.plugin.forms.config.FileUploadOptions;
+import com.gentics.mesh.plugin.forms.config.FormsConfig;
+import com.gentics.mesh.plugin.forms.context.FormDataCreateContext;
+import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
+import com.gentics.mesh.plugin.forms.model.schema.FormUiSchema;
+import com.gentics.mesh.plugin.forms.model.schema.UischemaFormgridOptions;
+import com.gentics.mesh.plugin.forms.util.RxUtil;
+import io.reactivex.Maybe;
+import io.reactivex.Single;
+import io.vertx.core.MultiMap;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.FileUpload;
+import io.vertx.reactivex.core.Vertx;
+import okhttp3.OkHttpClient;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.tika.config.TikaConfig;
+import org.apache.tika.detect.Detector;
+import org.apache.tika.io.TikaInputStream;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.metadata.TikaCoreProperties;
+
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.net.URLDecoder;
@@ -8,7 +33,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -16,34 +40,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.gentics.mesh.plugin.forms.context.FormDataCreateContext;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.tika.config.TikaConfig;
-import org.apache.tika.detect.Detector;
-import org.apache.tika.io.TikaInputStream;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.metadata.TikaCoreProperties;
-
-import com.gentics.mesh.core.rest.common.FieldContainer;
-import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.BinaryField;
-import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
-import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
-import com.gentics.mesh.plugin.forms.config.FileUploadOptions;
-import com.gentics.mesh.plugin.forms.config.FormsConfig;
-import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
-import com.gentics.mesh.plugin.forms.model.schema.UischemaFormgridOptions;
-import com.gentics.mesh.plugin.forms.model.schema.FormUiSchema;
-import com.gentics.mesh.plugin.forms.util.RxUtil;
-
-import io.reactivex.Maybe;
-import io.reactivex.Single;
-import io.vertx.core.MultiMap;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.FileUpload;
-import io.vertx.reactivex.core.Vertx;
-import okhttp3.OkHttpClient;
 
 /**
  * Element for file uploads
@@ -104,10 +100,10 @@ public class BinaryElement extends FormElement {
 
 	@Override
 	public Maybe<ValidationError> validate(FormDataCreateContext ctx, Vertx rxVertx, OkHttpClient httpClient, FormUiSchema uiSchema) {
-		var locale = ctx.getLocale();
 		var fileUploads = ctx.getFileUploads();
 		var gridOptions = getFormGridOptionsFromUiSchema(uiSchema).orElse(null);
 		var fileUpload = getFileUpload(fileUploads);
+		var translations = ctx.getTranslations();
 
 		if (fileUpload == null) {
 			if (isMandatory()) {
@@ -117,18 +113,23 @@ public class BinaryElement extends FormElement {
 						return RxUtil.emptyMaybe();
 					}
 				}
-				return Maybe.just(new ValidationError().setName(getName()).setTitle(I18nHelper.get(locale, "error.mandatory_field_not_filled.title"))
-					.setMessage(I18nHelper.get(locale, "error.mandatory_field_not_filled", getLabel())));
+				return Maybe.just(new ValidationError()
+					.setName(getName())
+					.setTitle(I18nHelper.get(translations, "form_validation_error_missing_mandatory_field_title"))
+					.setMessage(I18nHelper.get(translations, "form_validation_error_missing_mandatory_field", getLabel())));
 			} else {
 				return RxUtil.emptyMaybe();
 			}
 		}
 
-		int maxFileSize = getMaxFileSize(gridOptions);
-		if (maxFileSize > 0 && fileUpload.size() > (maxFileSize * 1024 * 1024)) {
+		var maxFileSize = getMaxFileSize(gridOptions);
+
+		if (maxFileSize > 0 && fileUpload.size() > maxFileSize * 1024 * 1024) {
 			fileUploads.remove(fileUpload);
-			return Maybe.just(new ValidationError().setName(getName()).setTitle(I18nHelper.get(locale, "error.validation.file.size.title"))
-				.setMessage(I18nHelper.get(locale, "error.validation.file.size", fileUpload.fileName(), Integer.toString(maxFileSize))));
+			return Maybe.just(new ValidationError()
+				.setName(getName())
+				.setTitle(I18nHelper.get(translations, "form_validation_error_file_size_title"))
+				.setMessage(I18nHelper.get(translations, "form_validation_error_file_size", fileUpload.fileName(), Long.toString(maxFileSize))));
 		}
 
 		Collection<String> allowedTypes = getAllowedFiletypes(gridOptions);
@@ -142,8 +143,8 @@ public class BinaryElement extends FormElement {
 					fileUploads.remove(fileUpload);
 					return Maybe.just(new ValidationError()
 						.setName(getName())
-						.setTitle(I18nHelper.get(locale, "error.validation.file.type.title"))
-						.setMessage(I18nHelper.get(locale, "error.validation.file.type.check", fileUpload.fileName())));
+						.setTitle(I18nHelper.get(translations, "form_validation_error_file_type_title"))
+						.setMessage(I18nHelper.get(translations, "form_validation_error_file_type", fileUpload.fileName())));
 				} else {
 					return RxUtil.emptyMaybe();
 				}
@@ -151,8 +152,8 @@ public class BinaryElement extends FormElement {
 				log.error("Could not check file type of uploaded file " + fileUpload.fileName() + " (" + fileUpload.contentType() + ")", e);
 				return Maybe.just(new ValidationError()
 					.setName(getName())
-					.setTitle(I18nHelper.get(locale, "error.validation.file.type.title"))
-					.setMessage(I18nHelper.get(locale, "error.validation.file.type.check", fileUpload.fileName())));
+					.setTitle(I18nHelper.get(translations, "form_validation_error_file_type_title"))
+					.setMessage(I18nHelper.get(translations, "form_validation_error_file_type", fileUpload.fileName())));
 			});
 		}
 		return RxUtil.emptyMaybe();
@@ -179,11 +180,11 @@ public class BinaryElement extends FormElement {
 	 *            grid options
 	 * @return max file size
 	 */
-	protected int getMaxFileSize(UischemaFormgridOptions gridOptions) {
+	protected long getMaxFileSize(UischemaFormgridOptions gridOptions) {
 		return Optional.ofNullable(gridOptions)
 			.map(UischemaFormgridOptions::getMaxFileSize)
-			.map(Number::intValue)
-			.orElse(0);
+			.map(Number::longValue)
+			.orElse(0L);
 	}
 
 	/**

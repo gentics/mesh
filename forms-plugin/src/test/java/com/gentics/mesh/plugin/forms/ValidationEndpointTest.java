@@ -43,7 +43,7 @@ public class ValidationEndpointTest extends AbstractEndpointValidationTest {
 	public void testValidateNewDataWithErrors() throws IOException {
 		Response response = client().newCall(request(null, requestBody("number", "25"))).execute();
 
-		assertValidationResponse(response, Map.of("number", "The entered value 25 is too big."));
+		assertValidationResponse(response, Map.of("number", "The value 25 is too large."));
 		assertThat(getFormDataNodes(formUuid)).as("Form Data Nodes").hasSize(1);
 	}
 
@@ -56,7 +56,7 @@ public class ValidationEndpointTest extends AbstractEndpointValidationTest {
 	public void testValidateNewDataWithRegexErrors() throws IOException {
 		Response response = client().newCall(request(null, requestBody("pattern", "invalidvalue"))).execute();
 
-		assertValidationResponse(response, Map.of("pattern", "The entered value invalidvalue does not match the allowed pattern."));
+		assertValidationResponse(response, Map.of("pattern", "The value invalidvalue does not match the expected pattern."));
 		assertThat(getFormDataNodes(formUuid)).as("Form Data Nodes").hasSize(1);
 	}
 
@@ -89,7 +89,7 @@ public class ValidationEndpointTest extends AbstractEndpointValidationTest {
 
 		Response response = client().newCall(request(formDataUuid, requestBody("number", "3"))).execute();
 
-		assertValidationResponse(response, Map.of("number", "The entered value 3 is too small."));
+		assertValidationResponse(response, Map.of("number", "The value 3 is too small."));
 		assertThat(getFormDataNodes(formUuid))
 			.as("Form Data Nodes")
 			.extracting(NodeResponse::getUuid)

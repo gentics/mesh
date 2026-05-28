@@ -6,17 +6,17 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.core.rest.common.FieldContainer;
-import com.gentics.mesh.plugin.forms.context.FormDataCreateContext;
-import com.gentics.mesh.plugin.forms.model.schema.FormData;
-import com.gentics.mesh.plugin.forms.model.schema.FormSchema;
-import com.gentics.mesh.plugin.forms.model.schema.FormUiSchema;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.config.InjectionPreventionMode;
 import com.gentics.mesh.plugin.forms.config.SecurityOptions;
+import com.gentics.mesh.plugin.forms.context.FormDataCreateContext;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
+import com.gentics.mesh.plugin.forms.model.schema.FormData;
+import com.gentics.mesh.plugin.forms.model.schema.FormSchema;
+import com.gentics.mesh.plugin.forms.model.schema.FormUiSchema;
 import com.gentics.mesh.util.StreamUtil;
 import io.reactivex.Single;
 import io.vertx.core.MultiMap;
@@ -29,7 +29,14 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.jsoup.Jsoup;
 
 import javax.annotation.Nonnull;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -514,7 +521,6 @@ public class Form implements RestModel {
 	 */
 	public Map<String, ValidationError> preventInjection(FormDataCreateContext ctx, SecurityOptions options) {
 		var postedData = ctx.getPostedData();
-		var locale = ctx.getLocale();
 		InjectionPreventionMode mode = options.getInjectionPreventionMode();
 		Map<Pattern, String> rules = options.getCompiledSanitationRules();
 
@@ -529,6 +535,7 @@ public class Form implements RestModel {
 		}
 
 		Predicate<String> blacklistFilter = getBlacklistFilter(mode == InjectionPreventionMode.REJECT_MARKUP, rules.keySet());
+		Map<String, String> translations = ctx.getTranslations();
 
 		return postedData.names().stream()
 			.filter(name -> postedData.getAll(name).stream().map(s -> s == null ? "" : s).anyMatch(blacklistFilter))
@@ -536,8 +543,8 @@ public class Form implements RestModel {
 				invalidName,
 				new ValidationError()
 					.setName(invalidName)
-					.setTitle(I18nHelper.get(locale, "error.validation.unsafe_value.title"))
-					.setMessage(I18nHelper.get(locale, "error.validation.unsafe_value", invalidName))))
+					.setTitle(I18nHelper.get(translations, "form_validation_error_unsafe_value_title"))
+					.setMessage(I18nHelper.get(translations, "form_validation_error_unsafe_value", invalidName))))
 			.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
 	}
 

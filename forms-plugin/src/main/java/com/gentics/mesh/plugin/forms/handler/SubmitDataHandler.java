@@ -12,24 +12,27 @@ import com.gentics.mesh.plugin.forms.context.FormDataUpdateContext;
 import com.gentics.mesh.plugin.forms.model.CaptchaValidationException;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
 
+import com.gentics.mesh.plugin.forms.service.TranslationsService;
 import io.reactivex.Completable;
 import io.vertx.core.http.HttpServerResponse;
 
 @Singleton
 public class SubmitDataHandler extends AbstractFormsHandler {
 	private final FormDataService formDataService;
+	private final TranslationsService translationService;
 
 	@Inject
-	public SubmitDataHandler(FormDataService formDataService) {
+	public SubmitDataHandler(FormDataService formDataService, TranslationsService translationService) {
 		this.formDataService = formDataService;
+		this.translationService = translationService;
 	}
 
 	@Override
 	public Completable handle(PluginContext context) {
 		String formDataUuid = ParameterUtil.getQueryParam(context, "formDataUuid");
 		return (formDataUuid == null
-				? FormDataCreateContext.getCreate(context, true, true).flatMap(saveContext -> formDataService.create(saveContext))
-				: FormDataUpdateContext.getUpdate(context, true, true, formDataUuid).flatMap(saveContext -> formDataService.update(saveContext)))
+				? FormDataCreateContext.getCreate(context, true, true, translationService).flatMap(formDataService::create)
+				: FormDataUpdateContext.getUpdate(context, true, true, formDataUuid, translationService).flatMap(formDataService::update))
 			.doOnSuccess(response -> {
 				HttpServerResponse serverResponse = context.response();
 				serverResponse.end(JsonUtil.toJson(response));

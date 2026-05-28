@@ -326,18 +326,22 @@ public abstract class FormElement implements RestModel {
 			}
 		}
 
-		var locale = ctx.getLocale();
+		Map<String, String> translations = ctx.getTranslations();
 
 		// check mandatory fields, that are not filled
 		if (mandatory) {
 			if (values.stream().noneMatch(v -> v != null && !"".equals(v))) {
-				return Maybe.just(new ValidationError().setName(getName()).setTitle(I18nHelper.get(locale, "error.mandatory_field_not_filled.title"))
-						.setMessage(I18nHelper.get(locale, "error.mandatory_field_not_filled", getLabel())));
+				var error = new ValidationError()
+					.setName(getName())
+					.setTitle(I18nHelper.get(translations, "form_validation_error_missing_mandatory_field_title"))
+					.setMessage(I18nHelper.get(translations, "form_validation_error_missing_mandatory_field", getLabel()));
+
+				return Maybe.just(error);
 			}
 		}
 
 		if (validation != null) {
-			return validation.validate(getName(), values, locale);
+			return validation.validate(ctx, getName(), values);
 		}
 
 		// Apart from user defined validation rules, some elements might have restrictions on the values that can
@@ -347,8 +351,8 @@ public abstract class FormElement implements RestModel {
 		if (invalidValue.isPresent()) {
 			return Maybe.just(new ValidationError()
 				.setName(getName())
-				.setTitle(I18nHelper.get(locale, "error.invalid_value.title"))
-				.setMessage(I18nHelper.get(locale, "error.invalid_value", getName(), invalidValue.get())));
+				.setTitle(I18nHelper.get(translations, "form_validation_error_invalid_value_title"))
+				.setMessage(I18nHelper.get(translations, "form_validation_error_invalid_value", getName(), invalidValue.get())));
 		}
 
 		return RxUtil.emptyMaybe();

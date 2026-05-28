@@ -1,15 +1,5 @@
 package com.gentics.mesh.plugin.forms.context;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.commons.lang3.Strings;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.http.HttpConstants;
@@ -20,11 +10,22 @@ import com.gentics.mesh.plugin.forms.model.Form;
 import com.gentics.mesh.plugin.forms.model.schema.FormData;
 import com.gentics.mesh.plugin.forms.model.schema.FormDataProperty;
 import com.gentics.mesh.plugin.forms.service.FormService;
-
+import com.gentics.mesh.plugin.forms.service.TranslationsService;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Single;
 import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.ext.web.FileUpload;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * This context holds everything that the form data create handlers need.
@@ -43,6 +44,7 @@ public class FormDataCreateContext {
 	private final boolean publish;
 	private final String formUuid;
 	private final String language; // Language of the request sent from the frontend
+	private final Map<String, String> translations;
 	private MultiMap parsedPostedData;
 
 	/**
@@ -51,23 +53,23 @@ public class FormDataCreateContext {
 	 * @param handleCookies true to handle cookies
 	 * @return single
 	 */
-	public static Single<FormDataCreateContext> getCreate(PluginContext pluginContext, boolean handleCookies, boolean publish) {
-		Single<String> formUuidSingle = ParameterUtil.getUuidFromPath(pluginContext, "formUuid");
-		Single<String> languageSingle = ParameterUtil.getFirstLanguage(pluginContext, "")
-				.flatMap(lang -> lang.isEmpty()
-						? Single.error(new MeshPluginException("lang query parameter is required", 400))
-						: Single.just(lang));
-
-		return Single.zip(formUuidSingle, languageSingle,
-				(formUuid, language) -> new FormDataCreateContext(pluginContext, handleCookies, publish, formUuid, language));
+	public static Single<FormDataCreateContext> getCreate(PluginContext pluginContext, boolean handleCookies, boolean publish, TranslationsService translationsService) {
+		return ParameterUtil.getUuidFromPath(pluginContext, "formUuid")
+			.flatMap(formUuid -> ParameterUtil.getFirstLanguage(pluginContext, "")
+				.flatMap(lang -> StringUtils.isBlank(lang)
+					? Single.error(new MeshPluginException("lang query parameter is required", HttpResponseStatus.BAD_REQUEST.code()))
+					: Single.just(lang))
+				.flatMap(lang -> translationsService.getTranslations(pluginContext.projectName(), formUuid, lang)
+					.map(translations -> new FormDataCreateContext(pluginContext, handleCookies, publish, formUuid, lang, translations))));
 	}
 
-	protected FormDataCreateContext(PluginContext pluginContext, boolean handleCookies, boolean publish, String formUuid, String language) {
+	protected FormDataCreateContext(PluginContext pluginContext, boolean handleCookies, boolean publish, String formUuid, String language, Map<String, String> translations) {
 		this.context = pluginContext;
 		this.handleCookies = handleCookies;
 		this.publish = publish;
 		this.formUuid = formUuid;
 		this.language = language;
+		this.translations = Collections.unmodifiableMap(translations);
 		fileUploads = new HashSet<>(context.fileUploads());
 		// remove empty uploads
 		fileUploads.removeIf(up -> up.size() == 0);
@@ -218,7 +220,7 @@ public class FormDataCreateContext {
 		return language;
 	}
 
-	public Locale getLocale() {
-		return Locale.forLanguageTag(language);
+	public Map<String, String> getTranslations() {
+		return translations;
 	}
 }
