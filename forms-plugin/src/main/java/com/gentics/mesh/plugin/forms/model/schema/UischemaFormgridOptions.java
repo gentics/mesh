@@ -54,14 +54,6 @@ public class UischemaFormgridOptions {
 	@JsonProperty("overlayOptions")
 	private Map<String, Object> overlayOptions;
 
-	/** Not in JSON schema, used by BinaryElement for file size validation. */
-	@JsonProperty("maxFileSize")
-	private Number maxFileSize;
-
-	/** Not in JSON schema, used by BinaryElement for file type validation. */
-	@JsonProperty("allowedFiletypes")
-	private List<String> allowedFiletypes;
-
 	public String getType() {
 		return type;
 	}
@@ -180,21 +172,5 @@ public class UischemaFormgridOptions {
 
 	public void setOverlayOptions(Map<String, Object> overlayOptions) {
 		this.overlayOptions = overlayOptions;
-	}
-
-	public Number getMaxFileSize() {
-		return maxFileSize;
-	}
-
-	public void setMaxFileSize(Number maxFileSize) {
-		this.maxFileSize = maxFileSize;
-	}
-
-	public List<String> getAllowedFiletypes() {
-		return allowedFiletypes;
-	}
-
-	public void setAllowedFiletypes(List<String> allowedFiletypes) {
-		this.allowedFiletypes = allowedFiletypes;
 	}
 }

@@ -1,35 +1,9 @@
 package com.gentics.mesh.plugin.forms.model;
 
-import com.gentics.mesh.core.rest.common.FieldContainer;
-import com.gentics.mesh.core.rest.node.field.BinaryField;
-import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
-import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
-import com.gentics.mesh.plugin.forms.config.FileUploadOptions;
-import com.gentics.mesh.plugin.forms.config.FormsConfig;
-import com.gentics.mesh.plugin.forms.context.FormDataCreateContext;
-import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
-import com.gentics.mesh.plugin.forms.model.schema.FormUiSchema;
-import com.gentics.mesh.plugin.forms.model.schema.UischemaFormgridOptions;
-import com.gentics.mesh.plugin.forms.util.RxUtil;
-import io.reactivex.Maybe;
-import io.reactivex.Single;
-import io.vertx.core.MultiMap;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.FileUpload;
-import io.vertx.reactivex.core.Vertx;
-import okhttp3.OkHttpClient;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.tika.config.TikaConfig;
-import org.apache.tika.detect.Detector;
-import org.apache.tika.io.TikaInputStream;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.metadata.TikaCoreProperties;
-
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -40,6 +14,36 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.tika.config.TikaConfig;
+import org.apache.tika.detect.Detector;
+import org.apache.tika.io.TikaInputStream;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.metadata.TikaCoreProperties;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.gentics.mesh.core.rest.common.FieldContainer;
+import com.gentics.mesh.core.rest.node.field.BinaryField;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
+import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
+import com.gentics.mesh.plugin.forms.config.FileUploadOptions;
+import com.gentics.mesh.plugin.forms.config.FormsConfig;
+import com.gentics.mesh.plugin.forms.context.FormDataCreateContext;
+import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
+import com.gentics.mesh.plugin.forms.model.schema.BinaryValidation;
+import com.gentics.mesh.plugin.forms.model.schema.FormUiSchema;
+import com.gentics.mesh.plugin.forms.model.schema.Validation;
+import com.gentics.mesh.plugin.forms.util.RxUtil;
+
+import io.reactivex.Maybe;
+import io.reactivex.Single;
+import io.vertx.core.MultiMap;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.FileUpload;
+import io.vertx.reactivex.core.Vertx;
+import okhttp3.OkHttpClient;
 
 /**
  * Element for file uploads
@@ -101,7 +105,6 @@ public class BinaryElement extends FormElement {
 	@Override
 	public Maybe<ValidationError> validate(FormDataCreateContext ctx, Vertx rxVertx, OkHttpClient httpClient, FormUiSchema uiSchema) {
 		var fileUploads = ctx.getFileUploads();
-		var gridOptions = getFormGridOptionsFromUiSchema(uiSchema).orElse(null);
 		var fileUpload = getFileUpload(fileUploads);
 		var translations = ctx.getTranslations();
 
@@ -122,9 +125,9 @@ public class BinaryElement extends FormElement {
 			}
 		}
 
-		var maxFileSize = getMaxFileSize(gridOptions);
-
-		if (maxFileSize > 0 && fileUpload.size() > maxFileSize * 1024 * 1024) {
+		int maxFileSize = Optional.ofNullable(validation).map(Validation::getBinary)
+				.map(BinaryValidation::getMaxFilesize).orElse(0);
+		if (maxFileSize > 0 && fileUpload.size() > (maxFileSize * 1024 * 1024)) {
 			fileUploads.remove(fileUpload);
 			return Maybe.just(new ValidationError()
 				.setName(getName())
@@ -132,14 +135,18 @@ public class BinaryElement extends FormElement {
 				.setMessage(I18nHelper.get(translations, "form_validation_error_file_size", fileUpload.fileName(), Long.toString(maxFileSize))));
 		}
 
-		Collection<String> allowedTypes = getAllowedFiletypes(gridOptions);
-		if (allowedTypes == null) {
-			allowedTypes = getDefaultAllowedConfiguration();
-		}
-		if (allowedTypes != null && !allowedTypes.isEmpty()) {
-			Collection<String> localAllowedTypes = allowedTypes;
-			return fileHasAllowedContentType(fileUpload, allowedTypes, rxVertx).flatMapMaybe(allowedContentType -> {
-				if (!allowedContentType && !fileHasAllowedName(fileUpload, localAllowedTypes)) {
+		// we only need to validate, if either allowed filetypes or allowed filenames are set
+		boolean validate = Optional.ofNullable(validation).map(Validation::getBinary).map(binaryValidation -> {
+			return CollectionUtils.isNotEmpty(binaryValidation.getAllowedFileTypes())
+					|| CollectionUtils.isNotEmpty(binaryValidation.getAllowedFileNames());
+		}).orElse(false);
+
+		if (validate) {
+			boolean useMagicByteCheck = Optional.ofNullable(getConfiguration()).map(FormsConfig::getFileUpload)
+					.map(FileUploadOptions::isUseMagicByteCheck).orElse(false);
+
+			return fileHasAllowedContentType(fileUpload, useMagicByteCheck, rxVertx).flatMapMaybe(allowedContentType -> {
+				if (!allowedContentType && !fileHasAllowedName(fileUpload)) {
 					fileUploads.remove(fileUpload);
 					return Maybe.just(new ValidationError()
 						.setName(getName())
@@ -155,8 +162,9 @@ public class BinaryElement extends FormElement {
 					.setTitle(I18nHelper.get(translations, "form_validation_error_file_type_title"))
 					.setMessage(I18nHelper.get(translations, "form_validation_error_file_type", fileUpload.fileName())));
 			});
-		}
+		} else {
 		return RxUtil.emptyMaybe();
+	}
 	}
 
 	@Override
@@ -169,35 +177,49 @@ public class BinaryElement extends FormElement {
 	}
 
 	@Override
+	@JsonIgnore
+	public void setConfiguration(FormsConfig configuration) {
+		super.setConfiguration(configuration);
+
+		// set the binary validation
+		validation = Optional.ofNullable(validation).orElseGet(() -> new Validation());
+		validation.setBinary(Optional.ofNullable(validation.getBinary()).orElseGet(() -> new BinaryValidation()));
+		BinaryValidation binaryValidation = validation.getBinary();
+
+		// get the allowed types either from the binary validation or the default from the configuration
+		Set<String> allowedTypes = Optional.ofNullable(binaryValidation.getAllowedTypes())
+				.orElseGet(() -> getDefaultAllowedConfiguration());
+
+		if (CollectionUtils.isNotEmpty(allowedTypes)) {
+			// transform the allowed types in the set of allowed filetype regexes
+			Set<String> fileTypes = new HashSet<>();
+			Optional.ofNullable(getAllowedTypesConfiguration()).ifPresent(fileTypesMap -> {
+				allowedTypes.stream().flatMap(type -> fileTypesMap.getOrDefault(type, Collections.emptySet()).stream())
+						.forEach(fileTypes::add);
+			});
+
+			// add the already set filetypes from the binary validation
+			Optional.ofNullable(binaryValidation.getAllowedFileTypes()).ifPresent(fileTypes::addAll);
+			// and set the merged set back to binary validation
+			binaryValidation.setAllowedFileTypes(fileTypes);
+
+			// transform the allowed types in the set of allowed filename regexes
+			Set<String> fileNames = new HashSet<>();
+			Optional.ofNullable(getAllowedNamesConfiguration()).ifPresent(fileNamesMap -> {
+				allowedTypes.stream().flatMap(type -> fileNamesMap.getOrDefault(type, Collections.emptySet()).stream())
+						.forEach(fileNames::add);
+			});
+
+			// add the already set filenames from the binary validation
+			Optional.ofNullable(binaryValidation.getAllowedFileNames()).ifPresent(fileNames::addAll);
+			// and set the merged set back to binary validation
+			binaryValidation.setAllowedFileNames(fileNames);
+	}
+	}
+
+	@Override
 	protected FormElement clone(boolean deep) {
 		return new BinaryElement(this, deep);
-	}
-
-	/**
-	 * Get max file size from grid options
-	 *
-	 * @param gridOptions
-	 *            grid options
-	 * @return max file size
-	 */
-	protected long getMaxFileSize(UischemaFormgridOptions gridOptions) {
-		return Optional.ofNullable(gridOptions)
-			.map(UischemaFormgridOptions::getMaxFileSize)
-			.map(Number::longValue)
-			.orElse(0L);
-	}
-
-	/**
-	 * Get allowed file types from grid options or default
-	 *
-	 * @param gridOptions
-	 *            grid options
-	 * @return allowed file types collection
-	 */
-	protected Collection<String> getAllowedFiletypes(UischemaFormgridOptions gridOptions) {
-		return Optional.ofNullable(gridOptions)
-			.map(UischemaFormgridOptions::getAllowedFiletypes)
-			.orElse(null);
 	}
 
 	/**
@@ -227,16 +249,11 @@ public class BinaryElement extends FormElement {
 	 *            allowed type definitions for the field
 	 * @return true if the file has allowed content-type
 	 */
-	protected Single<Boolean> fileHasAllowedContentType(FileUpload fileUpload, Collection<String> allowedTypes, Vertx rxVertx) {
-		Map<String, Set<String>> typesMap = getAllowedTypesConfiguration();
-		Set<String> allowedContentTypes = new HashSet<>();
-		for (String type : allowedTypes) {
-			if (typesMap.get(type) != null) {
-				allowedContentTypes.addAll(typesMap.get(type));
-			}
-		}
+	protected Single<Boolean> fileHasAllowedContentType(FileUpload fileUpload, boolean useMagicByteCheck, Vertx rxVertx) {
+		Set<String> allowedContentTypes = Optional.ofNullable(validation).map(Validation::getBinary)
+				.map(BinaryValidation::getAllowedFileTypes).orElse(Collections.emptySet());
 
-		Single<String> mimeTypeSingle = getConfiguration().getFileUpload().isUseMagicByteCheck()
+		Single<String> mimeTypeSingle = useMagicByteCheck
 			? determineMimeType(fileUpload.uploadedFileName(), fileUpload.fileName(), rxVertx)
 			: Single.just(fileUpload.contentType());
 
@@ -281,14 +298,10 @@ public class BinaryElement extends FormElement {
 	 *            allowed type definitions for the field
 	 * @return true if the file has allowed name
 	 */
-	protected boolean fileHasAllowedName(FileUpload fileUpload, Collection<String> allowedTypes) {
-		Map<String, Set<String>> namesMap = getAllowedNamesConfiguration();
-		Set<String> allowedNames = new HashSet<>();
-		for (String type : allowedTypes) {
-			if (namesMap.get(type) != null) {
-				allowedNames.addAll(namesMap.get(type));
-			}
-		}
+	protected boolean fileHasAllowedName(FileUpload fileUpload) {
+		Set<String> allowedNames = Optional.ofNullable(validation).map(Validation::getBinary)
+				.map(BinaryValidation::getAllowedFileNames).orElse(Collections.emptySet());
+
 		return allowedNames.stream().filter(pattern -> fileUpload.fileName().matches(pattern)).findFirst().isPresent();
 	}
 
@@ -298,19 +311,9 @@ public class BinaryElement extends FormElement {
 	 * @return map of configured allowed file types
 	 */
 	protected Map<String, Set<String>> getAllowedTypesConfiguration() {
-		FormsConfig config = getConfiguration();
-		if (config== null) {
-			return Collections.emptyMap();
+		return Optional.ofNullable(getConfiguration()).map(FormsConfig::getFileUpload)
+				.map(FileUploadOptions::getAllowedFileTypes).orElse(Collections.emptyMap());
 		}
-		FileUploadOptions fileUploadOptions = config.getFileUpload();
-		if (fileUploadOptions == null) {
-			return Collections.emptyMap();
-		}
-		if (fileUploadOptions.getAllowedFileTypes() == null) {
-			return Collections.emptyMap();
-		}
-		return fileUploadOptions.getAllowedFileTypes();
-	}
 
 	/**
 	 * Get configured allowed file names or empty map
@@ -318,37 +321,16 @@ public class BinaryElement extends FormElement {
 	 * @return map of configured allowed file names
 	 */
 	protected Map<String, Set<String>> getAllowedNamesConfiguration() {
-		FormsConfig formsOptions = getConfiguration();
-		if (formsOptions == null) {
-			return Collections.emptyMap();
+		return Optional.ofNullable(getConfiguration()).map(FormsConfig::getFileUpload)
+				.map(FileUploadOptions::getAllowedFileNames).orElse(Collections.emptyMap());
 		}
-		FileUploadOptions fileUploadOptions = formsOptions.getFileUpload();
-		if (fileUploadOptions == null) {
-			return Collections.emptyMap();
-		}
-		if (fileUploadOptions.getAllowedFileNames() == null) {
-			return Collections.emptyMap();
-		}
-		return fileUploadOptions.getAllowedFileNames();
-	}
 
 	/**
 	 * Get configured default allowed categories or empty set
 	 * @return set of default allowed
 	 */
 	protected Set<String> getDefaultAllowedConfiguration() {
-		FormsConfig formsOptions = getConfiguration();
-		if (formsOptions == null) {
-			return Collections.emptySet();
+		return Optional.ofNullable(getConfiguration()).map(FormsConfig::getFileUpload)
+				.map(FileUploadOptions::getDefaultAllowed).orElse(Collections.emptySet());
 		}
-		FileUploadOptions fileUploadOptions = formsOptions.getFileUpload();
-		if (fileUploadOptions == null) {
-			return Collections.emptySet();
 		}
-		Set<String> defaultAllowed = fileUploadOptions.getDefaultAllowed();
-		if (defaultAllowed == null) {
-			defaultAllowed = Collections.emptySet();
-		}
-		return defaultAllowed;
-	}
-}

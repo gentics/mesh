@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -114,5 +115,28 @@ public class MiscUtil {
 		} else {
 			return string;
 		}
+	}
+
+	/**
+	 * Merge nested settings
+	 * @param map original map (will be modified)
+	 * @param other other settings (will be merged into map)
+	 * @return modified map
+	 */
+	@SuppressWarnings("unchecked")
+	public static Map<String, Object> merge(Map<String, Object> map, Map<String, Object> other) {
+		for (Map.Entry<String, Object> e : other.entrySet()) {
+			if (e.getValue() == null) {
+				map.put(e.getKey(), null);
+			} else {
+				map.merge(e.getKey(), e.getValue(), (oldVal, newVal) -> {
+					if (oldVal instanceof Map && newVal instanceof Map) {
+						return merge((Map<String, Object>) oldVal, (Map<String, Object>) newVal);
+					}
+					return newVal;
+				});
+			}
+		}
+		return map;
 	}
 }

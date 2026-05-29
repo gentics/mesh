@@ -7,6 +7,7 @@ import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.common.MeshPluginException;
 import com.gentics.mesh.plugin.common.util.ParameterUtil;
 import com.gentics.mesh.plugin.forms.model.Form;
+import com.gentics.mesh.plugin.forms.model.FormtypeConfigsModel;
 import com.gentics.mesh.plugin.forms.model.schema.FormData;
 import com.gentics.mesh.plugin.forms.model.schema.FormDataProperty;
 import com.gentics.mesh.plugin.forms.service.FormService;
@@ -49,17 +50,20 @@ public class FormDataCreateContext {
 
 	/**
 	 * Get a Single that emits the instance or an error if validation on any of the parameters fails
+	 * @param formtypeConfigs formtype configs
 	 * @param pluginContext plugin context
 	 * @param handleCookies true to handle cookies
+	 * @param publish whether to publish or not
+	 * @param translationsService translation service
 	 * @return single
 	 */
-	public static Single<FormDataCreateContext> getCreate(PluginContext pluginContext, boolean handleCookies, boolean publish, TranslationsService translationsService) {
+	public static Single<FormDataCreateContext> getCreate(FormtypeConfigsModel formtypeConfigs, PluginContext pluginContext, boolean handleCookies, boolean publish, TranslationsService translationsService) {
 		return ParameterUtil.getUuidFromPath(pluginContext, "formUuid")
 			.flatMap(formUuid -> ParameterUtil.getFirstLanguage(pluginContext, "")
 				.flatMap(lang -> StringUtils.isBlank(lang)
 					? Single.error(new MeshPluginException("lang query parameter is required", HttpResponseStatus.BAD_REQUEST.code()))
 					: Single.just(lang))
-				.flatMap(lang -> translationsService.getTranslations(pluginContext.projectName(), formUuid, lang)
+				.flatMap(lang -> translationsService.getTranslations(formtypeConfigs, pluginContext.projectName(), formUuid, lang)
 					.map(translations -> new FormDataCreateContext(pluginContext, handleCookies, publish, formUuid, lang, translations))));
 	}
 

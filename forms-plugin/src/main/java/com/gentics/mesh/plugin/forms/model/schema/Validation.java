@@ -40,6 +40,8 @@ public class Validation {
 	private Integer maxLength;
 	private String regex;
 
+	private BinaryValidation binary;
+
 	/**
 	 * The minimum value for the element.
 	 *
@@ -142,6 +144,24 @@ public class Validation {
 	public Validation setRegex(String regex) {
 		this.regex = regex;
 
+		return this;
+	}
+
+	/**
+	 * Get the binary validation options
+	 * @return binary validation
+	 */
+	public BinaryValidation getBinary() {
+		return binary;
+	}
+
+	/**
+	 * Set the binary validation options
+	 * @param binary validation options
+	 * @return fluent API
+	 */
+	public Validation setBinary(BinaryValidation binary) {
+		this.binary = binary;
 		return this;
 	}
 

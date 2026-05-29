@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.annotation.Nullable;
@@ -15,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -29,6 +31,7 @@ import com.gentics.mesh.parameter.client.PublishParametersImpl;
 import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.dagger.UserClient;
 import com.gentics.mesh.plugin.common.service.MeshPluginService;
+import com.gentics.mesh.plugin.common.util.MiscUtil;
 import com.gentics.mesh.plugin.forms.FormsPlugin;
 import com.gentics.mesh.plugin.forms.SchemaInitializer;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
@@ -65,6 +68,7 @@ public class StatusService {
 	private final MeshPluginService meshPluginService;
 	private final Lazy<PurgeService> lazyPurgeService;
 	private final ObjectMapper mapper;
+	private final FormsConfig staticPluginConfig;
 
 	private final String pluginRootNodeQuery;
 	private final Vertx rxVertx;
@@ -77,7 +81,7 @@ public class StatusService {
 			MeshPluginService meshPluginService,
 			Lazy<PurgeService> lazyPurgeService,
 			io.vertx.core.Vertx vertx,
-			FormsConfig config,
+			FormsConfig staticPluginConfig,
 			ObjectMapper mapper) {
 		this.adminClient = adminClient;
 		this.userClient = userClient;
@@ -85,6 +89,7 @@ public class StatusService {
 		this.meshPluginService = meshPluginService;
 		this.lazyPurgeService = lazyPurgeService;
 		this.mapper = mapper;
+		this.staticPluginConfig = staticPluginConfig;
 		this.rxVertx = Vertx.newInstance(vertx);
 
 		try {
@@ -379,4 +384,29 @@ public class StatusService {
 				.filter(branch -> branch.getLatest() != null && branch.getLatest())
 				.map(branch -> branch.getPathPrefix()).first("");
 	}
+
+	/**
+	 * Get the effective configuration for the given form type
+	 * @param formtypeConfigs formtype configs
+	 * @param formType form type
+	 * @return config
+	 */
+	public FormsConfig getEffectiveConfiguration(FormtypeConfigsModel formtypeConfigs, String formType) {
+		return Optional.ofNullable(formtypeConfigs).map(FormtypeConfigsModel::getConfigs).map(m -> m.get(formType))
+				.map(overwrite -> {
+					try {
+						@SuppressWarnings("unchecked")
+						Map<String, Object> staticPluginConfigMap = mapper.convertValue(staticPluginConfig, Map.class);
+						@SuppressWarnings("unchecked")
+						Map<String, Object> overwriteMap = mapper.treeToValue(overwrite, Map.class);
+						Map<String, Object> merged = MiscUtil.merge(staticPluginConfigMap, overwriteMap);
+
+						return mapper.convertValue(merged, FormsConfig.class);
+
+					} catch (JsonProcessingException | IllegalArgumentException e) {
+						log.error("Error while merging configuration", e);
+						return (FormsConfig) null;
+					}
+				}).orElse(staticPluginConfig);
 	}
+}

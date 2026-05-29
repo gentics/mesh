@@ -18,6 +18,7 @@ import com.gentics.mesh.parameter.client.GenericParametersImpl;
 import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.dagger.UserClient;
 import com.gentics.mesh.plugin.forms.model.Form;
+import com.gentics.mesh.plugin.forms.model.FormtypeConfigsModel;
 import com.gentics.mesh.plugin.forms.model.TranslationLanguageModel;
 import com.gentics.mesh.plugin.forms.model.TranslationsModel;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -83,16 +84,17 @@ public class TranslationsService {
 	 * is found, the formType is used to look up the matching type translations;
 	 * if no type entry exists, default translations are returned.</p>
 	 *
+	 * @param formtypeConfigs formtype configs
 	 * @param projectName project name
 	 * @param formUuid    UUID of the form node
 	 * @param lang        language code (e.g. "de", "en")
 	 * @return single map of translation key → translated string
 	 */
-	public Single<Map<String, String>> getTranslations(String projectName, String formUuid, String lang) {
+	public Single<Map<String, String>> getTranslations(FormtypeConfigsModel formtypeConfigs, String projectName, String formUuid, String lang) {
 		return formService.loadFormAsAdmin(projectName, formUuid)
 			.flatMap(formJson -> {
 				try {
-					Form form = formService.toForm(formJson.encode(), formUuid, null);
+					Form form = formService.toForm(formtypeConfigs, formJson.encode(), formUuid, null);
 					String formType = form.getType();
 					return getTranslations(projectName).map(model -> translationsForType(model, formType, lang));
 				} catch (Exception e) {

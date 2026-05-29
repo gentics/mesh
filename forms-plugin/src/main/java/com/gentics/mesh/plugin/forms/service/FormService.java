@@ -32,6 +32,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -65,6 +66,7 @@ import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.dagger.UserClient;
 import com.gentics.mesh.plugin.common.service.RenderService;
+import com.gentics.mesh.plugin.common.util.MiscUtil;
 import com.gentics.mesh.plugin.forms.FormsError;
 import com.gentics.mesh.plugin.forms.FormsPlugin;
 import com.gentics.mesh.plugin.forms.SchemaInitializer;
@@ -77,6 +79,7 @@ import com.gentics.mesh.plugin.forms.model.CaptchaConfigModel;
 import com.gentics.mesh.plugin.forms.model.DefaultValue;
 import com.gentics.mesh.plugin.forms.model.Form;
 import com.gentics.mesh.plugin.forms.model.FormElement;
+import com.gentics.mesh.plugin.forms.model.FormtypeConfigsModel;
 import com.gentics.mesh.plugin.forms.model.ValidationError;
 import com.gentics.mesh.plugin.forms.model.ValueListItem;
 import com.gentics.mesh.plugin.forms.model.schema.FormData;
@@ -208,8 +211,6 @@ public class FormService {
 
 	private final RenderService renderService;
 
-	private final FormsConfig configuration;
-
 	private final StatusService statusService;
 
 	private final String formsGraphQlQuery;
@@ -232,7 +233,6 @@ public class FormService {
 		this.schemaService = schemaService;
 		this.pagingService = pagingService;
 		this.renderService = renderService;
-		this.configuration = configuration;
 		this.statusService = statusService;
 
 		try {
@@ -250,13 +250,16 @@ public class FormService {
 	 *     configuration.
 	 * </p>
 	 *
+	 * @param formtypeConfigs formtype configs
 	 * @param formData The received form data
 	 * @return The respective error, when the form validation failed.
 	 */
-	private Optional<ValidationError> checkForm(JsonObject formData) {
+	private Optional<ValidationError> checkForm(FormtypeConfigsModel formtypeConfigs, JsonObject formData) {
 		try {
 			// first try to deserialize the form
-			Form form = toForm(formData.encode(), formData.getString("uuid"), null);
+			Form form = toForm(formtypeConfigs, formData.encode(), formData.getString("uuid"), null);
+
+			FormsConfig configuration = statusService.getEffectiveConfiguration(formtypeConfigs, form.getType());
 
 			if (!configuration.isValidateElements()) {
 				// no validation, so return empty optional
@@ -372,16 +375,17 @@ public class FormService {
 
 	/**
 	 * Get the elements JSON for the form
+	 * @param formtypeConfigs formtype configs
 	 * @param projectName project name
 	 * @param uuid uuid
 	 * @param lang optional languages
 	 * @return single JsonArray containing the elements
 	 */
-	public Single<JsonObject> getElements(String projectName, String uuid, String...lang) {
+	public Single<JsonObject> getElements(FormtypeConfigsModel formtypeConfigs, String projectName, String uuid, String...lang) {
 		return statusService.languageFallback(projectName, lang)
 				.flatMap(fallback -> loadAsAdmin(projectName, uuid, true, fallback).flatMap(formNode -> {
 					try {
-						Form form = toForm(formNode.getFields().getStringField("json").getString(),
+						Form form = toForm(formtypeConfigs, formNode.getFields().getStringField("json").getString(),
 								formNode.getUuid(), formNode.getLanguage());
 						JsonArray elements = new JsonArray(form.getSchema().getProperties().values().stream()
 								.map(e -> new JsonObject(e.toJson()))
@@ -507,13 +511,14 @@ public class FormService {
 
 	/**
 	 * Insert or update the form
+	 * @param formtypeConfigs formtype configs
 	 * @param projectName project name
 	 * @param uuid form uuid
 	 * @param formData form data
 	 * @return single node response
 	 */
-	public Single<NodeResponse> upsert(String projectName, String uuid, JsonObject formData) {
-		Optional<ValidationError> error = checkForm(formData);
+	public Single<NodeResponse> upsert(FormtypeConfigsModel formtypeConfigs, String projectName, String uuid, JsonObject formData) {
+		Optional<ValidationError> error = checkForm(formtypeConfigs, formData);
 
 		if (error.isPresent()) {
 			return Single.error(
@@ -550,12 +555,12 @@ public class FormService {
 										log.info("Found schema {}. Schema has uuid {}", SchemaService.getSchemaName(uuid),
 												optSchema.get().getUuid());
 										// update schema
-										return updateSchema(projectName, formNode, optSchema.get())
+										return updateSchema(formtypeConfigs, projectName, formNode, optSchema.get())
 												.map(response -> formNode);
 									} else {
 										log.info("Did not find schema {}, creating one.", SchemaService.getSchemaName(uuid));
 										// create schema
-										return createAndAssignSchema(projectName, formNode).map(schemaResponse -> formNode);
+										return createAndAssignSchema(formtypeConfigs, projectName, formNode).map(schemaResponse -> formNode);
 									}
 								});
 					}).flatMap(updatedForm -> {
@@ -734,6 +739,7 @@ public class FormService {
 	 * the schema {@code formGridOptions.defaultValue} entries. When a node is supplied, field
 	 * values are read from that submission node instead.</p>
 	 *
+	 * @param formtypeConfigs formtype configs
 	 * @param projectName   Mesh project name
 	 * @param uuid          UUID of the form node
 	 * @param formID        client-supplied form instance identifier; must not be blank
@@ -742,7 +748,7 @@ public class FormService {
 	 * @param jwtClaims     decoded JWT payload claims from the request; used to resolve {@code userReference} defaults
 	 * @return Single emitting the assembled {@link Form}
 	 */
-	public Single<Form> loadFormForFormGen(String projectName, String uuid, String formID, String language,
+	public Single<Form> loadFormForFormGen(FormtypeConfigsModel formtypeConfigs, String projectName, String uuid, String formID, String language,
 			NodeResponse formDataNode, Map<String, Object> jwtClaims) {
 		if (StringUtils.isBlank(formID)) {
 			return Single.error(new FormsError("Request body must contain non-empty 'formID'",
@@ -755,11 +761,11 @@ public class FormService {
 					HttpResponseStatus.CONFLICT.code()));
 		}
 
-		return statusService.getFormtypeConfigs(projectName, adminClient)
-			.flatMap(formTypeConfigs -> loadFormAsAdmin(projectName, uuid)
+		return loadFormAsAdmin(projectName, uuid)
 				.flatMap(jsonObj -> Single.fromCallable(() -> {
-					Form form = toForm(jsonObj.encode(), uuid, null);
-					JsonNode formTypeConfig = formTypeConfigs.getConfigs().get(form.getType());
+					Form form = toForm(formtypeConfigs, jsonObj.encode(), uuid, null);
+					// TODO add flows to FormsConfig
+					JsonNode formTypeConfig = formtypeConfigs.getConfigs().get(form.getType());
 					if (formTypeConfig != null) {
 						form.setProperty("flows", formTypeConfig.get("flows"));
 					}
@@ -772,7 +778,8 @@ public class FormService {
 						if (sep > 0) {
 							String provider = captchaId.substring(0, sep);
 							String mode = captchaId.substring(sep + 1);
-							String sitekey = resolveCaptchaSiteKey(provider);
+							FormsConfig configuration = statusService.getEffectiveConfiguration(formtypeConfigs, form.getType());
+							String sitekey = resolveCaptchaSiteKey(configuration, provider);
 							if(sitekey == null){
 								throw new FormsError("Invalid captchaId:" + captchaId, HttpResponseStatus.BAD_REQUEST.code());
 							}
@@ -781,10 +788,10 @@ public class FormService {
 						}
 					}
 					return form;
-				})));
+				}));
 	}
 
-	private String resolveCaptchaSiteKey(String provider) {
+	private String resolveCaptchaSiteKey(FormsConfig configuration, String provider) {
 		switch (provider) {
 			case "recaptcha":       return configuration.getReCaptcha() != null ? configuration.getReCaptcha().getSiteKey() : null;
 			case "friendlycaptcha": return configuration.getFriendlyCaptcha() != null ? configuration.getFriendlyCaptcha().getSiteKey() : null;
@@ -1093,112 +1100,17 @@ public class FormService {
 		return result;
 	}
 
-
-	/**
-	 * Mark completed and active formpages
-	 *
-	 * @param form
-	 *            form
-	 * @param completed
-	 *            names of completed formpages
-	 */
-	public void markFormpages(JsonObject form, String currentPage, Set<String> completed) {
-		JsonArray elements = form.getJsonArray("elements");
-		if (elements != null) {
-			boolean activePageFound = false;
-			boolean forceActivePage = false;
-			int count = 0;
-		/*
-	{{#if ../form.isMultipage}}
-    <ol class="gtx-form-progress" role="progressbar" aria-valuetext="{{ ../form.currentPage.description }}"
-        aria-valuemin="1" aria-valuenow="{{ ../form.currentPage.index }}" aria-valuemax="{{ ../form.pageCount }}">
-    {{#each ../form.elements}}
-        {{#equals type "formpage" }}
-            <li class="gtx-form-progress__step {{ class }}" id="step_{{ name }}">
-                <a class="c-form-progress__step-link" href="#!" data-formpageid="{{ name }}">{{{ description }}}</a>
-                <div class="c-form-progress__step-description">{{ info }}</div>
-            </li>
-        {{/equals}}
-    {{/each}}
-    </ol>
-{{/if}}
-		 */
-			JsonObject activePage = null;
-
-			for (int i = 0; i < elements.size(); i++) {
-				JsonObject element = elements.getJsonObject(i);
-				if (!"formpage".equals(element.getString("type"))) {
-					continue;
-				}
-
-				count++;
-
-				String name = element.getString("name");
-
-				if (completed.contains(name)) {
-					element.put("class", "is-completed");
-					element.put("completed", true);
-
-					if (forceActivePage) {
-						element.put("class", "is-active");
-						element.put("active", true);
-						activePage = new JsonObject()
-							.put("index", count)
-							.put("name", name)
-							.put("description", element.getString("description"));
-					} else {
-						element.put("active", false);
-					}
-				} else if (forceActivePage || activePage == null) {
-					element.put("class", "is-active");
-					element.put("active", true);
-					activePage = new JsonObject()
-						.put("index", count)
-						.put("name", name)
-						.put("description", element.getString("description"));
-				} else {
-					element.put("active", false);
-				}
-
-				// When FORCE_NEXT is the multipage render mode and the current page is the one that was submitted,
-				// the next one should be active, event if it is already completed.
-				forceActivePage = configuration.getMultipageRenderMode() == MultipageRenderMode.FORCE_NEXT && name.equals(currentPage);
-			}
-
-			form.put("currentPage", activePage)
-				.put("pageCount", count);
-		}
-	}
-
-	/**
-	 * Check whether the form is "multipage" (i.e. contains at least one element of type "formpage")
-	 * @param form form
-	 * @return true if the form is "multipage"
-	 */
-	public boolean isMultipage(JsonObject form) {
-		//TODO 8.5
-		JsonArray elements = form.getJsonArray("elements");
-		if (elements != null) {
-			for (int i = 0; i < elements.size(); i++) {
-				JsonObject element = elements.getJsonObject(i);
-				if (Objects.equals("formpage", element.getString("type"))) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
 	/**
 	 * Transform the form node into a form object
 	 *
+	 * @param formtypeConfigs formtype configs
 	 * @param formNode
 	 *            form node
 	 * @return single form
 	 */
-	public Single<Form> toForm(NodeResponse formNode) {
+	public Single<Form> toForm(FormtypeConfigsModel formtypeConfigs, NodeResponse formNode) {
 		try {
-			return Single.just(toForm(formNode.getFields().getStringField("json").toString(), formNode.getUuid(), formNode.getLanguage()));
+			return Single.just(toForm(formtypeConfigs, formNode.getFields().getStringField("json").toString(), formNode.getUuid(), formNode.getLanguage()));
 		} catch (IOException | FormsError e) {
 			return Single.error(e);
 		}
@@ -1206,13 +1118,14 @@ public class FormService {
 
 	/**
 	 * Transfrom the string with the JSON representation of a form to a {@link Form} object.
+	 * @param formtypeConfigs formtype configs
 	 * @param formData The JSON representation of a <code>Form</code>
 	 * @param formUuid The UUID of the given form
 	 * @param language form language
 	 * @return The deserialized <code>Form</code> object
 	 * @throws IOException When the object mapper cannot parse the string
 	 */
-	public Form toForm(String formData, String formUuid, String language) throws IOException, FormsError {
+	public Form toForm(FormtypeConfigsModel formtypeConfigs, String formData, String formUuid, String language) throws IOException, FormsError {
 		Form form = objectMapper.readValue(formData, Form.class);
 
 		form.setUuid(formUuid);
@@ -1223,6 +1136,9 @@ public class FormService {
 			throw new FormsError("Form JSON must contain 'schema.properties'",
 				HttpResponseStatus.BAD_REQUEST.code());
 		}
+
+		FormsConfig configuration = statusService.getEffectiveConfiguration(formtypeConfigs, form.getType());
+
 		// Set name (map key) and configuration on each element once after deserialization
 		form.getSchema().getProperties().forEach((key, element) -> {
 			element.setName(key);
@@ -1246,17 +1162,18 @@ public class FormService {
 	/**
 	 * Transform the form data stored in the form node (in attribute "json") into a schema
 	 *
+	 * @param formtypeConfigs formtype configs
 	 * @param formNode
 	 *            form node
 	 * @param schema
 	 *            schema
 	 * @return schema filled with data
 	 */
-	private <T extends SchemaModel> Single<T> getSchema(NodeResponse formNode, T schema) {
+	private <T extends SchemaModel> Single<T> getSchema(FormtypeConfigsModel formtypeConfigs, NodeResponse formNode, T schema) {
 		schema.setName(getSchemaName(formNode.getUuid()));
 		schema.setContainer(false);
 		try {
-			Form form = toForm(formNode.getFields().getStringField("json").getString(), formNode.getUuid(),
+			Form form = toForm(formtypeConfigs, formNode.getFields().getStringField("json").getString(), formNode.getUuid(),
 				formNode.getLanguage());
 			form.addFieldSchemas(schema);
 		} catch (IOException | FormsError e) {
@@ -1280,8 +1197,8 @@ public class FormService {
 		return SchemaService.SCHEMA_NAME.equals(node.getSchema().getName());
 	}
 
-	private Single<SchemaResponse> createAndAssignSchema(String projectName, NodeResponse formNode) {
-		return getSchema(formNode, new SchemaCreateRequest())
+	private Single<SchemaResponse> createAndAssignSchema(FormtypeConfigsModel formtypeConfigs, String projectName, NodeResponse formNode) {
+		return getSchema(formtypeConfigs, formNode, new SchemaCreateRequest())
 			.map(schema -> {
 				log.info("Creating schema {}", schema.getName());
 				return schema;
@@ -1290,8 +1207,8 @@ public class FormService {
 			.flatMap(createdSchema -> userClient.assignSchemaToProject(projectName, createdSchema.getUuid()).toSingle());
 	}
 
-	private Single<GenericMessageResponse> updateSchema(String projectName, NodeResponse formNode, SchemaResponse schema) {
-		return getSchema(formNode, new SchemaUpdateRequest())
+	private Single<GenericMessageResponse> updateSchema(FormtypeConfigsModel formtypeConfigs, String projectName, NodeResponse formNode, SchemaResponse schema) {
+		return getSchema(formtypeConfigs, formNode, new SchemaUpdateRequest())
 			.map(updateRequest -> {
 				log.info("Updating schema {} with uuid {}", schema.getName(), schema.getUuid());
 				return updateRequest;
@@ -1303,15 +1220,16 @@ public class FormService {
 	/**
 	 * Load the results for the specified poll form.
 	 *
+	 * @param formtypeConfigs formtype configs
 	 * @param pc The plugin context for the request
 	 * @param formUuid The UUID of the form node
 	 * @return A {@code Single} containing the results in a JSON array
 	 */
-	public Single<JsonObject> loadPollResults(PluginContext pc, String formUuid) {
+	public Single<JsonObject> loadPollResults(FormtypeConfigsModel formtypeConfigs, PluginContext pc, String formUuid) {
 		var projectName = pc.projectName();
 
 		return loadAsAdmin(projectName, formUuid, true)
-			.flatMap(this::toForm)
+			.flatMap(node -> toForm(formtypeConfigs, node))
 			.flatMap(form -> {
 				if (!form.isSubmitOnce()) {
 					return Single.error(new FormsError("Specified form is not a poll", HttpResponseStatus.BAD_REQUEST.code()));
@@ -1421,40 +1339,6 @@ public class FormService {
 		}
 
 		return null;
-	}
-
-	/**
-	 * Render the given template with the given context.
-	 *
-	 * @param rc The current routing context
-	 * @param templateContext The forms template context
-	 * @param templateName The name of the template to be rendered (may contain path segments)
-	 * @return A {@code Single} containing the rendered template
-	 */
-	private Single<Buffer> renderTemplate(RoutingContext rc, String templateContext, String templateName) {
-		String basePath = configuration.getTemplatesPath();
-		// Observables cannot handle null values, so we filter those first using Java streams.
-		List<String> validContexts = Stream.of(
-				rc.queryParam(PARAM_TEMPLATE_CONTEXT).stream().filter(StringUtils::isNotBlank).findFirst().orElse(null),
-				templateContext)
-			.filter(StringUtils::isNotBlank)
-			.collect(Collectors.toList());
-
-		return Observable.fromIterable(validContexts)
-			.map(ctx -> String.format("%s/%s/%s.hbs", basePath, ctx, templateName))
-			.flatMap(path -> fileSystem.rxExists(path)
-				.flatMapObservable(exists -> {
-					if (exists) {
-						return Observable.just(path);
-					}
-
-					log.debug("Template <{}> not found", path);
-
-					return Observable.empty();
-				}))
-			.first(String.format("%s/%s.hbs", basePath, templateName))
-			.doOnSuccess(template -> log.debug("Using template <{}>", template))
-			.flatMap(template -> renderService.rxRender(rc.data(), StringUtils.removeEnd(template, ".hbs")));
 	}
 
 	/**
