@@ -7,6 +7,7 @@ import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.context.FormDataCreateContext;
 
 import io.reactivex.Completable;
@@ -23,8 +24,10 @@ public class CaptchaService {
 	/**
 	 * Validate the captcha token for the given request context.
 	 * Skipped when no captchaId is set, no matching provider exists, or this is an update (formDataNode already present).
+	 * @param configuration configuration
+	 * @param ctx context
 	 */
-	public Completable validate(FormDataCreateContext ctx) {
+	public Completable validate(FormsConfig configuration, FormDataCreateContext ctx) {
 		String captchaId = ctx.getForm().getCaptchaId();
 		if (StringUtils.isBlank(captchaId)) {
 			return Completable.complete();
@@ -36,7 +39,7 @@ public class CaptchaService {
 		return providers.stream()
 				.filter(p -> p.supports(provider))
 				.findFirst()
-				.map(p -> p.validate(ctx))
+				.map(p -> p.validate(configuration, ctx))
 				.orElse(Completable.complete());
 	}
 }

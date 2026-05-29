@@ -34,12 +34,10 @@ public class ReCaptchaProvider implements CaptchaProvider {
 
 	public static final String VERIFICATION_URL = "https://www.google.com/recaptcha/api/siteverify";
 
-	private final FormsConfig configuration;
 	private final OkHttpClientService okHttpClientService;
 
 	@Inject
-	public ReCaptchaProvider(FormsConfig configuration, OkHttpClientService okHttpClientService) {
-		this.configuration = configuration;
+	public ReCaptchaProvider(OkHttpClientService okHttpClientService) {
 		this.okHttpClientService = okHttpClientService;
 	}
 
@@ -49,10 +47,10 @@ public class ReCaptchaProvider implements CaptchaProvider {
 	}
 
 	@Override
-	public Completable validate(FormDataCreateContext ctx) {
+	public Completable validate(FormsConfig configuration, FormDataCreateContext ctx) {
 		String responseTokenKey = configuration.getReCaptcha().getResponseTokenKey();
 		String responseToken = ctx.getContext().request().getHeader(responseTokenKey);
-		return isValid(responseToken, okHttpClientService.getClient());
+		return isValid(configuration, responseToken, okHttpClientService.getClient());
 	}
 
 	/**
@@ -60,7 +58,7 @@ public class ReCaptchaProvider implements CaptchaProvider {
 	 * Completes normally if valid; errors with {@link CaptchaValidationException} if invalid,
 	 * or {@link IllegalStateException} for configuration or network errors.
 	 */
-	public Completable isValid(String responseToken, OkHttpClient httpClient) {
+	public Completable isValid(FormsConfig configuration, String responseToken, OkHttpClient httpClient) {
 		log.debug("Trying to validate reCAPTCHA response: {}", responseToken);
 
 		if (StringUtils.isBlank(responseToken)) {

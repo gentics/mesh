@@ -1106,7 +1106,7 @@ public class FormDataService {
 
 		FormsConfig configuration = statusService.getEffectiveConfiguration(formtypeConfigs, form.getType());
 
-		return captchaService.validate(ctx).andThen(validatePostedData(configuration, ctx).flatMap(errors1 -> {
+		return captchaService.validate(configuration, ctx).andThen(validatePostedData(configuration, ctx).flatMap(errors1 -> {
 			// check whether we have any validation errors, that prevent storing of the data
 			Optional<ValidationError> errorPreventingDataStorage = errors1.values().stream()
 					.filter(ValidationError::isPreventStoring).findAny();
