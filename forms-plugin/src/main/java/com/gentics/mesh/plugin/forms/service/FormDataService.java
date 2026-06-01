@@ -15,6 +15,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -25,7 +26,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -55,6 +59,7 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.parameter.client.DeleteParametersImpl;
@@ -92,7 +97,6 @@ import com.github.jknack.handlebars.Context;
 import com.github.jknack.handlebars.Handlebars;
 
 import io.reactivex.Completable;
-import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.MultiMap;
@@ -136,6 +140,7 @@ public class FormDataService {
 	private static final String FIELD_DOWNLOAD_BINARY = "download";
 	private static final String FIELD_DOWNLOAD_ERROR = "error";
 	private static final String MESSAGE_DOWNLOAD_CHECK_PREFIX = "plugins.forms.download.";
+	private static final String MULTIFILE_ID_REGEX = "^(?<name>(.)+)\\[(?<id>(\\d)+)\\]$";
 
 	/** DateTime formatter creating dates of the form "YYYY-MM-DD_HHmmss". */
 	private static final DateTimeFormatter DATETIME_FORMATTER = new DateTimeFormatterBuilder()
@@ -1266,9 +1271,12 @@ public class FormDataService {
 				: Stream.empty())
 			.collect(Collectors.toSet());
 
+		Pattern multiIdRegex = Pattern.compile(MULTIFILE_ID_REGEX);
+
 		Function<String, Optional<BinaryElement>> binaryElementLookup = id1 -> validUploadElements.stream().filter(e -> {
 			if (e.isList()) {
-				return id1.startsWith(e.getName() + "[") && id1.endsWith("]");
+				Matcher idMatcher = multiIdRegex.matcher(id1);
+				return idMatcher.matches() && e.getName().equals(idMatcher.group("name"));
 			} else {
 				return e.getName().equals(id1);
 			}
@@ -1289,9 +1297,12 @@ public class FormDataService {
 			.sorted((a,b) -> {
 				String aid = getId(a);
 				String bid = getId(b);
-				if (aid.endsWith("]") && bid.endsWith("]")) {
-					aid = aid.substring(aid.indexOf("[") + 1, aid.indexOf("]"));
-					bid = bid.substring(bid.indexOf("[") + 1, bid.indexOf("]"));
+
+				Matcher amultip = multiIdRegex.matcher(aid);
+				Matcher bmultip = multiIdRegex.matcher(bid);
+				if (amultip.matches() && bmultip.matches()) {
+					aid = amultip.group("id");
+					bid = bmultip.group("id");
 					try {
 						return Integer.parseInt(aid) - Integer.parseInt(bid);
 					} catch (NumberFormatException e1) {
@@ -1301,38 +1312,66 @@ public class FormDataService {
 				return 0;
 			}).collect(Collectors.toList());
 
+		// Early return
 		if (sortedFileUploads.isEmpty()) {
 			return Single.just(formDataNode);
 		}
 
-		return Flowable.fromIterable(sortedFileUploads)
-			// The upload can be blocking in some implementations of the rest client. Therefore we queue
-			// it as a worker job just in case.
-			.flatMapSingle(fileUpload -> rxVertx.rxExecuteBlocking(() -> {
-				String fieldName = BinaryElement.extractFieldId(fileUpload.name());
-				if (fieldName == null) {
-					fieldName = fileUpload.name();
-				}
-				String id = fieldName;
-				long size = fileUpload.size();
-				InputStream ins = new FileInputStream(fileUpload.uploadedFileName());
-				BinaryElement element = binaryElementLookup.apply(id).get();
-				if (element.isList()) {
+		// Reusable binary element getter
+		Function<FileUpload, BinaryElement> binaryGetter = fileUpload -> {
+			String fieldName = getId(fileUpload);
+			return binaryElementLookup.apply(fieldName).get();
+		};
+
+		// Reusable list item uploader
+		AtomicReference<String> aId = new AtomicReference<>();
+		Function<FileUpload, Single<NodeResponse>> listItemUploader = fileUpload -> {
+			String fieldName = getId(fileUpload);
+			Matcher matcher = Pattern.compile(MULTIFILE_ID_REGEX).matcher(fieldName);
+			String id = matcher.matches() ? matcher.group("name") : fieldName;
+			aId.set(id);
+			String fieldName1 = fieldName;
+			return adminClient.findSchemas(projectName).toSingle()
+				.flatMap(schemas -> schemas.getData().stream().filter(schema -> schema.getName().equals("binary_content")).findAny()
+						.map(schema -> Single.just(schema))
+						.orElseGet(() -> adminClient.findSchemas().toSingle()
+								.flatMap(allSchemas -> adminClient.assignSchemaToProject(projectName, allSchemas.getData().stream()
+										.filter(schema -> schema.getName().equals("binary_content"))
+										.findAny().orElseThrow(() -> new IllegalStateException("Could not find mandatory `binary_content` schema")).getUuid()).toSingle())))
+				.flatMap(binaryContentSchema -> {
 					NodeCreateRequest itemCreate = new NodeCreateRequest();
 					itemCreate.setParentNode(formDataNode.getParentNode());
 					itemCreate.setLanguage(formDataNode.getLanguage());
 					itemCreate.setSchemaName("binary_content");
-					itemCreate.getFields().put("name", new StringFieldImpl().setString(id));
+					itemCreate.getFields().put("name", new StringFieldImpl().setString(fieldName1));
+					long size = fileUpload.size();
+					InputStream ins = new FileInputStream(fileUpload.uploadedFileName());
 					return adminClient.createNode(projectName, itemCreate).toSingle()
 						.flatMap(itemNode -> adminClient.updateNodeBinaryField(projectName, itemNode.getUuid(), formDataNode.getLanguage(), "draft",
 							"binary",
 							ins, size, fileUpload.fileName(), fileUpload.contentType())
-						.toSingle()).flatMap(updatedItem -> {
+						.toSingle());
+				});					
+		};
+
+		// Separate the cases for 1 and more elements
+		if (sortedFileUploads.size() == 1) {
+			FileUpload fileUpload = sortedFileUploads.get(0);
+			return rxVertx.rxExecuteBlocking(() -> {
+				BinaryElement element = binaryGetter.apply(fileUpload);
+				String id = getId(fileUpload);
+				if (element.isList()) {
+					return listItemUploader.apply(fileUpload).flatMap(updatedItem -> {
 							NodeUpdateRequest update = formDataNode.toRequest();
+							if (update.getFields().getNodeFieldList(id) == null) {
+								update.getFields().put(id, new NodeFieldListImpl());
+							}
 							update.getFields().getNodeFieldList(id).add(updatedItem);
 							return adminClient.updateNode(projectName, formDataNode.getUuid(), update).toSingle();
-						});
+						});					
 				} else {
+					long size = fileUpload.size();
+					InputStream ins = new FileInputStream(fileUpload.uploadedFileName());
 					// Always use the draft version because updating the binary field will increase the version of the node,
 					// which can lead to problems when multiple files are uploaded.
 					return adminClient.updateNodeBinaryField(projectName, formDataNode.getUuid(), formDataNode.getLanguage(), "draft",
@@ -1340,8 +1379,33 @@ public class FormDataService {
 							ins, size, fileUpload.fileName(), fileUpload.contentType())
 						.toSingle();
 				}
-			}).flatMapSingle(single -> single), false, 1)
-			.lastOrError();
+			}).flatMapSingle(single -> single);
+		} else {
+			return Single.zip(sortedFileUploads.stream().map(fileUpload -> rxVertx.rxExecuteBlocking(() -> {
+				String fieldName = getId(fileUpload);
+				BinaryElement element = binaryElementLookup.apply(fieldName).get();
+				if (element.isList()) {
+					return listItemUploader.apply(fileUpload);					
+				} else {
+					long size = fileUpload.size();
+					InputStream ins = new FileInputStream(fileUpload.uploadedFileName());
+					// Always use the draft version because updating the binary field will increase the version of the node,
+					// which can lead to problems when multiple files are uploaded.
+					return adminClient.updateNodeBinaryField(projectName, formDataNode.getUuid(), formDataNode.getLanguage(), "draft",
+							fieldName,
+							ins, size, fileUpload.fileName(), fileUpload.contentType())
+						.toSingle();
+				}
+			}).flatMapSingle(single -> single)).collect(Collectors.toList()), uploaded -> {
+				String id = aId.get();
+				NodeUpdateRequest update = formDataNode.toRequest();
+				if (update.getFields().getNodeFieldList(id) == null) {
+					update.getFields().put(id, new NodeFieldListImpl());
+				}
+				Arrays.stream(uploaded).map(NodeResponse.class::cast).forEach(updatedItem -> update.getFields().getNodeFieldList(id).add(updatedItem));
+				return adminClient.updateNode(projectName, formDataNode.getUuid(), update).toSingle();
+			}).flatMap(single -> single);
+		}
 	}
 
 	/**

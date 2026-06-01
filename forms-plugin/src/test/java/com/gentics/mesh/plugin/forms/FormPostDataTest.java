@@ -19,6 +19,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -473,7 +474,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 
 		assertThat(response.code())
 			.as("Authenticated response code")
-			.isEqualTo(HttpResponseStatus.OK.code());
+			.isEqualTo(HttpResponseStatus.BAD_REQUEST.code());
 	}
 
 	/**
@@ -977,19 +978,24 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
 
 		NodeResponse dataNode = assertSingleDataNode(uuid, node -> {/* Nothing more to assert on data node */});
-		MeshBinaryResponse download = call(() -> server.client().downloadBinaryField(PROJECT_NAME, dataNode.getUuid(), dataNode.getLanguage(), "file1" + (moreFiles.length > 0 ? "_0" : "")));
-		assertThat(download.getFilename()).as("Filename").isEqualTo(formFile);
-
-		Buffer buffer = RxUtil.readEntireData(download.getFlowable()).blockingGet();
-		assertThat(buffer.toString()).as("File contents").isEqualTo(fromFile(formFile));
-
-		for (int i = 0; i < moreFiles.length; i++) {
-			int ii = i+1;
-			download = call(() -> server.client().downloadBinaryField(PROJECT_NAME, dataNode.getUuid(), dataNode.getLanguage(), "file1_" + (ii)));
-			assertThat(download.getFilename()).as("Filename").isEqualTo(moreFiles[i]);
+		MeshBinaryResponse download;
+		Buffer buffer;
+		if (moreFiles.length < 1) {
+			download = call(() -> server.client().downloadBinaryField(PROJECT_NAME, dataNode.getUuid(), dataNode.getLanguage(), "file1" + (moreFiles.length > 0 ? "_0" : "")));
+			assertThat(download.getFilename()).as("Filename").isEqualTo(formFile);
 
 			buffer = RxUtil.readEntireData(download.getFlowable()).blockingGet();
-			assertThat(buffer.toString()).as("File contents").isEqualTo(fromFile(moreFiles[i]));
+			assertThat(buffer.toString()).as("File contents").isEqualTo(fromFile(formFile));
+		} else {
+			List<String> allFiles = Stream.of(Stream.of(formFile), Arrays.stream(moreFiles)).flatMap(Function.identity()).collect(Collectors.toList());
+			for (int i = 0; i < allFiles.size(); i++) {
+				String itemUuid = dataNode.getFields().getNodeFieldList("file1").getItems().get(i).getUuid();
+				download = call(() -> server.client().downloadBinaryField(PROJECT_NAME, itemUuid, dataNode.getLanguage(), "binary"));
+				assertThat(download.getFilename()).as("Filename").isEqualTo(allFiles.get(i));
+
+				buffer = RxUtil.readEntireData(download.getFlowable()).blockingGet();
+				assertThat(buffer.toString()).as("File contents").isEqualTo(fromFile(allFiles.get(i)));
+			}
 		}
 
 		return Pair.of(uuid, dataNode.getUuid());
