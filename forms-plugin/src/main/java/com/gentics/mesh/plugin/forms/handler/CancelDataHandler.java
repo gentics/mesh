@@ -11,8 +11,10 @@ import com.gentics.mesh.plugin.common.MeshPluginException;
 import com.gentics.mesh.plugin.common.util.ParameterUtil;
 import com.gentics.mesh.plugin.forms.FormsError;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
+import com.gentics.mesh.rest.client.impl.EmptyResponse;
 
 import io.reactivex.Completable;
+import io.reactivex.Single;
 
 @Singleton
 public class CancelDataHandler extends AbstractFormsHandler {
@@ -26,23 +28,26 @@ public class CancelDataHandler extends AbstractFormsHandler {
 	@Override
 	public Completable handle(PluginContext pluginContext) {
 		String formDataUuid = ParameterUtil.getQueryParam(pluginContext, "formDataUuid");
-		if (StringUtils.isEmpty(formDataUuid)) {
-			return Completable.error(new MeshPluginException("formDataUuid query parameter is required", 400));
-		}
 		return ParameterUtil.getUuidFromPath(pluginContext, "formUuid")
 			// Already published data is not deletable
-			.flatMap(formUuid -> formDataService.load(pluginContext.projectName(), formUuid, formDataUuid, false)
-					.flatMap(data -> formDataService.delete(pluginContext.projectName(), formUuid, data.getUuid())))
-			.doOnEvent((response, t) -> {
-				if (t != null) {
-					if (t instanceof FormsError formsError) {
-						pluginContext.response().setStatusCode(formsError.getStatusCode()).end(t.getLocalizedMessage());
+				.flatMap(formUuid -> {
+					if (StringUtils.isEmpty(formDataUuid)) {
+						return Single.just(EmptyResponse.getInstance());
 					} else {
-						pluginContext.response().setStatusCode(500).end(t.getLocalizedMessage());
+						return formDataService.load(pluginContext.projectName(), formUuid, formDataUuid, false).flatMap(
+								data -> formDataService.delete(pluginContext.projectName(), formUuid, data.getUuid()));
 					}
-				} else {
-					pluginContext.response().end();
-				}
-			}).ignoreElement();
+				}).doOnEvent((response, t) -> {
+					if (t != null) {
+						if (t instanceof FormsError formsError) {
+							pluginContext.response().setStatusCode(formsError.getStatusCode())
+									.end(t.getLocalizedMessage());
+						} else {
+							pluginContext.response().setStatusCode(500).end(t.getLocalizedMessage());
+						}
+					} else {
+						pluginContext.response().end();
+					}
+				}).ignoreElement();
 	}
 }

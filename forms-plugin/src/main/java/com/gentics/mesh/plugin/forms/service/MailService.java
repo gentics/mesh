@@ -28,6 +28,7 @@ import com.gentics.mesh.plugin.forms.model.AdminMailElement;
 import com.gentics.mesh.plugin.forms.model.BinaryElement;
 import com.gentics.mesh.plugin.forms.model.Form;
 import com.gentics.mesh.plugin.forms.model.FormElement;
+import com.gentics.mesh.plugin.forms.model.FormtypeConfigsModel;
 import com.gentics.mesh.plugin.forms.model.UsermailElement;
 import com.gentics.mesh.plugin.forms.util.RxUtil;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -51,9 +52,8 @@ public class MailService {
 
 	private final Vertx vertx;
 
-	private final FormsConfig configuration;
-
 	private final RenderService renderService;
+	private final StatusService statusService;
 
 	private final PluginEnvironment env;
 
@@ -63,24 +63,27 @@ public class MailService {
 			Vertx vertx,
 			FormsConfig configuration,
 			PluginEnvironment env,
-			RenderService renderService) {
+			RenderService renderService, StatusService statusService) {
 		this.adminClient = adminClient;
 		this.vertx = vertx;
 		this.env = env;
-		this.configuration = configuration;
 		this.renderService = renderService;
+		this.statusService = statusService;
 	}
 
 	/**
 	 * Send admin and user mails for a submitted form. The language for label resolution is extracted
 	 * from the {@code lang} query parameter of the given context.
 	 *
+	 * @param formtypeConfigs form type configs
 	 * @param projectName  Mesh project name
 	 * @param form         the submitted form
 	 * @param formDataNode the saved form data node
 	 * @param context      plugin context
 	 */
-	public void sendMails(String projectName, Form form, NodeResponse formDataNode, PluginContext context) {
+	public void sendMails(FormtypeConfigsModel formtypeConfigs, String projectName, Form form, NodeResponse formDataNode, PluginContext context) {
+		FormsConfig configuration = statusService.getEffectiveConfiguration(formtypeConfigs, form.getType());
+
 		ParameterUtil.getFirstLanguage(context, env.options().getDefaultLanguage()).subscribe(language -> {
 			boolean attachFileUploads = configuration.getMailOptions().isAttachFileUploads();
 			// Check for admin mails in AdminMailElements.
@@ -109,7 +112,7 @@ public class MailService {
 					subject = StringUtils.defaultIfBlank(subject, PLACEHOLDER_FORMNAME)
 						.replace(PLACEHOLDER_FORMNAME, form.getName());
 
-					sendMail(projectName, form, formDataNode, context, subject, template, emails, attachFileUploads, language);
+					sendMail(configuration, projectName, form, formDataNode, context, subject, template, emails, attachFileUploads, language);
 				} else {
 					log.error(
 							"Could not send admin mail for form {}, because no template configuration was found (template must be either configured in config.yml as \"adminMailTemplate\" or set in the form as \"mailtemp\").",
@@ -140,7 +143,7 @@ public class MailService {
 				subject = StringUtils.defaultIfBlank(subject, PLACEHOLDER_FORMNAME)
 					.replace(PLACEHOLDER_FORMNAME, form.getName());
 
-				sendMail(projectName, form, formDataNode, context, subject, template, Collections.singletonList(userEmail), attachFileUploads, language);
+				sendMail(configuration, projectName, form, formDataNode, context, subject, template, Collections.singletonList(userEmail), attachFileUploads, language);
 			});
 		}, error -> log.error("Error extracting language for mail sending", error));
 	}
@@ -149,6 +152,7 @@ public class MailService {
 	 * Send a mail asynchronously. Option labels in the rendered template are resolved using
 	 * the given language.
 	 *
+	 * @param configuration configuration
 	 * @param projectName  the Mesh project name
 	 * @param form         the form
 	 * @param formDataNode the form data node
@@ -159,7 +163,7 @@ public class MailService {
 	 * @param attachFiles  whether to attach binary form fields as file attachments
 	 * @param language     BCP-47 language tag for label resolution, may be {@code null}
 	 */
-	private void sendMail(String projectName, Form form, NodeResponse formDataNode, PluginContext context, String subject, TemplateWrapper template, List<String> to,
+	private void sendMail(FormsConfig configuration, String projectName, Form form, NodeResponse formDataNode, PluginContext context, String subject, TemplateWrapper template, List<String> to,
 			boolean attachFiles, String language) {
 		String from = configuration.getFromAddress();
 		if (StringUtils.isBlank(from)) {

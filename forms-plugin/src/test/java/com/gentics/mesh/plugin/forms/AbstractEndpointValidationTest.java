@@ -1,24 +1,24 @@
 package com.gentics.mesh.plugin.forms;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
-
-import java.io.IOException;
-import java.util.Map;
-import java.util.function.Supplier;
-
-import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.Before;
-import org.junit.runners.Parameterized.Parameter;
-
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.util.UUIDUtil;
-
+import io.netty.handler.codec.http.HttpResponseStatus;
 import okhttp3.HttpUrl;
 import okhttp3.MultipartBody;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.runners.Parameterized.Parameter;
+
+import java.io.IOException;
+import java.util.Map;
+import java.util.function.Supplier;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 /**
  * Abstract base class for validation tests
@@ -71,6 +71,12 @@ public abstract class AbstractEndpointValidationTest extends AbstractFormsPlugin
 		assertThat(activate(PROJECT_NAME)).as("Activation status").isTrue();
 
 		try {
+			updateTranslations();
+		} catch (IOException e) {
+			fail("Could not set translations: %s".formatted(e.getMessage()), e);
+		}
+
+		try {
 			formUuid = createForm("inputfield.json");
 
 			Request postRequest = new Request.Builder()
@@ -91,11 +97,18 @@ public abstract class AbstractEndpointValidationTest extends AbstractFormsPlugin
 	public String description;
 
 	/**
-	 * Assert that the response has the given code
-	 * @param response response to check
-	 * @param expectedResponseCode expected response code
+	 * Post the translations from translations.json to the forms plugin.
 	 */
-	protected void assertResponse(Response response, int expectedResponseCode) {
-		assertThat(response.code()).as("Response code").isEqualTo(expectedResponseCode);
+	protected void updateTranslations() throws IOException {
+		Request postRequest = new Request.Builder()
+			.url(HttpUrl.get(projectUrl("/translations")).newBuilder().build())
+			.headers(auth(true))
+			.header("Referer", "ref")
+			.post(requestBodyFromFile("translations.json"))
+			.build();
+
+		Response response = client().newCall(postRequest).execute();
+
+		assertResponse(response, HttpResponseStatus.OK.code());
 	}
 }

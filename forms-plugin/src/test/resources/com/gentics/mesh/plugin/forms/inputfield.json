@@ -7,37 +7,55 @@
     "version": "2.0.0",
     "properties": {
       "input1": {
-			"type": "string",
-			"name": "input1",
-			"placeholderName": "",
-			"label": "Text",
-			"mandatory": true,
-			"info": "",
-			"tooltip": "",
-			"value": "",
-			"minVal": "",
-			"maxVal": "",
-			"maxCharCount": "",
-			"elements": []
-		}, "number": {
-			"type": "string",
-			"name": "number",
-			"placeholderName": "",
-			"label": "Number",
-			"mandatory": false,
-			"validation": {
-				"minValue": 10,
-				"maxValue": 20,
-				"regex": "^[\\d]+"
-			},
-			"info": "",
-			"tooltip": "",
-			"value": "",
-			"minVal": "",
-			"maxVal": "",
-			"maxCharCount": "",
-			"elements": []
-		}
+		"type": "string",
+		"name": "input1",
+		"placeholderName": "",
+		"label": "Text",
+		"mandatory": true,
+		"info": "",
+		"tooltip": "",
+		"value": "",
+		"minVal": "",
+		"maxVal": "",
+		"maxCharCount": "",
+		"elements": []
+	  },
+      "number": {
+		"type": "string",
+		"name": "number",
+		"placeholderName": "",
+		"label": "Number",
+		"mandatory": false,
+		"validation": {
+		  "minValue": 10,
+		  "maxValue": 20,
+		  "regex": "^[\\d]+"
+		},
+		"info": "",
+		"tooltip": "",
+		"value": "",
+		"minVal": "",
+		"maxVal": "",
+		"maxCharCount": "",
+		"elements": []
+	  },
+      "pattern": {
+        "type": "string",
+        "name": "pattern",
+        "placeholderName": "",
+        "label": "Pattern",
+        "mandatory": false,
+        "validation": {
+          "regex": "^foo.bar.doo$"
+        },
+        "info": "",
+        "tooltip": "",
+        "value": "",
+        "minVal": "",
+        "maxVal": "",
+        "maxCharCount": "",
+        "elements": []
+      }
     }
   },
   "uiSchema": {

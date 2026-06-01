@@ -7,9 +7,13 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.plugin.PluginContext;
+import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.util.ParameterUtil;
 import com.gentics.mesh.plugin.forms.handler.AbstractFormsHandler;
+import com.gentics.mesh.plugin.forms.model.FormtypeConfigsModel;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
+import com.gentics.mesh.plugin.forms.service.StatusService;
+import com.gentics.mesh.rest.client.MeshRestClient;
 import com.google.common.net.HttpHeaders;
 
 import io.reactivex.Completable;
@@ -20,10 +24,15 @@ import io.vertx.reactivex.core.http.HttpServerResponse;
 public class LoadFilesZipHandler extends AbstractFormsHandler {
 
 	private final FormDataService formDataService;
+	private final StatusService statusService;
+	private final MeshRestClient adminClient;
 
 	@Inject
-	public LoadFilesZipHandler(FormDataService formDataService) {
+	public LoadFilesZipHandler(FormDataService formDataService, StatusService statusService,
+			@AdminClient MeshRestClient adminClient) {
 		this.formDataService = formDataService;
+		this.statusService = statusService;
+		this.adminClient = adminClient;
 	}
 
 	@Override
@@ -31,9 +40,10 @@ public class LoadFilesZipHandler extends AbstractFormsHandler {
 		String projectName = context.project().getString("name");
 		Single<String> uuidSingle = ParameterUtil.getUuidFromPath(context, "formUuid");
 		Single<String[]> languagesSingle = ParameterUtil.getLanguages(context);
+		Single<FormtypeConfigsModel> formtypeConfigsSingle = statusService.getFormtypeConfigs(projectName, adminClient);
 
-		return Single.zip(uuidSingle, languagesSingle, (uuid, languages) -> formDataService
-				.zipBinaries(projectName, uuid, languages).flatMapCompletable(formAndFile -> {
+		return Single.zip(uuidSingle, languagesSingle, formtypeConfigsSingle, (uuid, languages, formtypeConfigs) -> formDataService
+				.zipBinaries(formtypeConfigs, projectName, uuid, languages).flatMapCompletable(formAndFile -> {
 					context.response().putHeader(HttpHeaders.CONTENT_DISPOSITION,
 							getContentDisposition(uuid, formAndFile.getLeft().getName(), "zip"));
 					return new HttpServerResponse(context.response())

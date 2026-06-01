@@ -1,23 +1,21 @@
 package com.gentics.mesh.plugin.forms;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.vertx.core.json.JsonObject;
+import okhttp3.HttpUrl;
+import okhttp3.MediaType;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
-
-import com.gentics.mesh.core.rest.node.NodeResponse;
-
-import io.vertx.core.json.JsonObject;
-import okhttp3.HttpUrl;
-import okhttp3.MediaType;
-import okhttp3.MultipartBody;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Test cases for validating form data without saving it.
@@ -30,7 +28,7 @@ public class ValidationEndpointTest extends AbstractEndpointValidationTest {
 	 */
 	@Test
 	public void testValidateNewDataWithoutErrors() throws IOException {
-		Response response = client().newCall(request(null, requestBody("11"))).execute();
+		Response response = client().newCall(request(null, requestBody("number", "11"))).execute();
 
 		assertValidationResponse(response, Collections.emptyMap());
 		assertThat(getFormDataNodes(formUuid)).as("Form Data Nodes").hasSize(1);
@@ -43,9 +41,9 @@ public class ValidationEndpointTest extends AbstractEndpointValidationTest {
 	 */
 	@Test
 	public void testValidateNewDataWithErrors() throws IOException {
-		Response response = client().newCall(request(null, requestBody("25"))).execute();
+		Response response = client().newCall(request(null, requestBody("number", "25"))).execute();
 
-		assertValidationResponse(response, Map.of("number", "Der Wert 25 ist ungültig."));
+		assertValidationResponse(response, Map.of("number", "The value 25 is too large."));
 		assertThat(getFormDataNodes(formUuid)).as("Form Data Nodes").hasSize(1);
 	}
 
@@ -56,9 +54,9 @@ public class ValidationEndpointTest extends AbstractEndpointValidationTest {
 	 */
 	@Test
 	public void testValidateNewDataWithRegexErrors() throws IOException {
-		Response response = client().newCall(request(null, requestBody("OOOO"))).execute();
+		Response response = client().newCall(request(null, requestBody("pattern", "invalidvalue"))).execute();
 
-		assertValidationResponse(response, Map.of("number", "Does not fit regex"));
+		assertValidationResponse(response, Map.of("pattern", "The value invalidvalue does not match the expected pattern."));
 		assertThat(getFormDataNodes(formUuid)).as("Form Data Nodes").hasSize(1);
 	}
 
@@ -71,7 +69,7 @@ public class ValidationEndpointTest extends AbstractEndpointValidationTest {
 	public void testValidateExistingDataWithoutErrors() throws IOException {
 		List<NodeResponse> dataNodesBeforeValidation = getFormDataNodes(formUuid);
 
-		Response response = client().newCall(request(formDataUuid, requestBody("11"))).execute();
+		Response response = client().newCall(request(formDataUuid, requestBody("number", "11"))).execute();
 
 		assertValidationResponse(response, Collections.emptyMap());
 		assertThat(getFormDataNodes(formUuid))
@@ -89,9 +87,9 @@ public class ValidationEndpointTest extends AbstractEndpointValidationTest {
 	public void testValidateExistingDataWithErrors() throws IOException {
 		List<NodeResponse> dataNodesBeforeValidation = getFormDataNodes(formUuid);
 
-		Response response = client().newCall(request(formDataUuid, requestBody("3"))).execute();
+		Response response = client().newCall(request(formDataUuid, requestBody("number", "3"))).execute();
 
-		assertValidationResponse(response, Map.of("number", "Too small"));
+		assertValidationResponse(response, Map.of("number", "The value 3 is too small."));
 		assertThat(getFormDataNodes(formUuid))
 			.as("Form Data Nodes")
 			.extracting(NodeResponse::getUuid)
@@ -113,15 +111,15 @@ public class ValidationEndpointTest extends AbstractEndpointValidationTest {
 			.build();
 	}
 
-	private RequestBody requestBody(String value) {
+	private RequestBody requestBody(String name, String value) {
 		return RequestBody.create(AbstractFormsPluginIntegrationTest.makeFormdataMultipart(formUuid, formDataUuid,
-				Map.of("input1", "bla", "number", value)), MediaType.get("application/json"));
+				Map.of("input1", "bla", name, value)), MediaType.get("application/json"));
 	}
 
 	private void assertValidationResponse(Response response, Map<String, String> expectedValidationErrors) throws IOException {
-		assertResponse(response, 200);
+		assertResponse(response, HttpResponseStatus.OK.code());
 
-		JsonObject json = new JsonObject(response.body().string());
+		var json = new JsonObject(response.body().string());
 
 		assertThat(json.getBoolean("hasValidationErrors"))
 			.as("hasValidationErrors")
@@ -129,7 +127,17 @@ public class ValidationEndpointTest extends AbstractEndpointValidationTest {
 
 		System.out.println(json.encodePrettily());
 
+		var invalidProperties = json.getJsonObject("properties");
+
+		assertThat(invalidProperties)
+			.as("Invalid Properties")
+			.isNotNull()
+			.isNotEmpty();
+
 		for (var entry: expectedValidationErrors.entrySet()) {
+			assertThat(invalidProperties.getJsonObject(entry.getKey()).getString("validationMessage"))
+					.as("Invalid Property %s".formatted(entry.getKey()))
+					.isEqualTo(entry.getValue());
 		}
 	}
 }

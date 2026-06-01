@@ -1,39 +1,5 @@
 package com.gentics.mesh.plugin.forms;
 
-import static com.gentics.mesh.test.ClientHelper.call;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringReader;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Rule;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -64,7 +30,6 @@ import com.gentics.mesh.util.UUIDUtil;
 import com.google.common.net.HttpHeaders;
 import com.icegreen.greenmail.junit.GreenMailRule;
 import com.icegreen.greenmail.util.ServerSetupTest;
-
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Completable;
 import io.reactivex.Single;
@@ -76,6 +41,39 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Rule;
+
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static com.gentics.mesh.test.ClientHelper.call;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Integration tests for the FormsPlugin
@@ -723,4 +721,14 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 	protected FormtypeConfigsModel buildModel(String json) throws IOException {
 		return JsonUtil.readValue(json, FormtypeConfigsModel.class);
 	}
+
+	/**
+	 * Assert that the response has the given code
+	 * @param response response to check
+	 * @param expectedResponseCode expected response code
+	 */
+	protected void assertResponse(Response response, int expectedResponseCode) {
+		assertThat(response.code()).as("Response code").isEqualTo(expectedResponseCode);
+	}
+
 }

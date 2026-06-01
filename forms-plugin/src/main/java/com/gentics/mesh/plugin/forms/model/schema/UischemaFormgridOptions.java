@@ -1,10 +1,13 @@
 package com.gentics.mesh.plugin.forms.model.schema;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class UischemaFormgridOptions {
@@ -54,13 +57,7 @@ public class UischemaFormgridOptions {
 	@JsonProperty("overlayOptions")
 	private Map<String, Object> overlayOptions;
 
-	/** Not in JSON schema, used by BinaryElement for file size validation. */
-	@JsonProperty("maxFileSize")
-	private Number maxFileSize;
-
-	/** Not in JSON schema, used by BinaryElement for file type validation. */
-	@JsonProperty("allowedFiletypes")
-	private List<String> allowedFiletypes;
+	private Map<String, Object> properties = new LinkedHashMap<>();
 
 	public String getType() {
 		return type;
@@ -182,19 +179,13 @@ public class UischemaFormgridOptions {
 		this.overlayOptions = overlayOptions;
 	}
 
-	public Number getMaxFileSize() {
-		return maxFileSize;
+	@JsonAnyGetter
+	public Map<String, Object> getAny() {
+		return properties;
 	}
 
-	public void setMaxFileSize(Number maxFileSize) {
-		this.maxFileSize = maxFileSize;
-	}
-
-	public List<String> getAllowedFiletypes() {
-		return allowedFiletypes;
-	}
-
-	public void setAllowedFiletypes(List<String> allowedFiletypes) {
-		this.allowedFiletypes = allowedFiletypes;
+	@JsonAnySetter
+	public void setProperty(String key, Object value) {
+		properties.put(key, value);
 	}
 }

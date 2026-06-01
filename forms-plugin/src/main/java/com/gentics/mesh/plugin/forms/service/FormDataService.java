@@ -83,6 +83,7 @@ import com.gentics.mesh.plugin.forms.export.Exporter;
 import com.gentics.mesh.plugin.forms.model.BinaryElement;
 import com.gentics.mesh.plugin.forms.model.Form;
 import com.gentics.mesh.plugin.forms.model.FormElement;
+import com.gentics.mesh.plugin.forms.model.FormtypeConfigsModel;
 import com.gentics.mesh.plugin.forms.model.ValidationError;
 import com.gentics.mesh.plugin.forms.model.schema.FormData;
 import com.gentics.mesh.plugin.forms.util.FormParameterUtil;
@@ -158,8 +159,6 @@ public class FormDataService {
 
 	private final Vertx rxVertx;
 
-	private final FormsConfig configuration;
-
 	private final ObjectMapper objectMapper;
 
 	private final FormService formService;
@@ -183,7 +182,6 @@ public class FormDataService {
 			@AdminClient MeshRestClient adminClient,
 			@UserClient @Nullable MeshRestClient userClient,
 			io.vertx.core.Vertx vertx,
-			FormsConfig configuration,
 			ObjectMapper objectMapper,
 			FormService formService,
 			PagingService pagingService,
@@ -196,7 +194,6 @@ public class FormDataService {
 		this.adminClient = adminClient;
 		this.userClient = userClient;
 		this.rxVertx = new Vertx(vertx);
-		this.configuration = configuration;
 		this.objectMapper = objectMapper;
 		this.formService = formService;
 		this.pagingService = pagingService;
@@ -277,69 +274,73 @@ public class FormDataService {
 	/**
 	 * Save data posted by a user for the form
 	 *
+	 * @param formtypeConfigs formtype configs
 	 * @param ctx Request context
 	 * @return single of the post data response
 	 */
-	public Single<FormData> create(FormDataCreateContext ctx) {
+	public Single<FormData> create(FormtypeConfigsModel formtypeConfigs, FormDataCreateContext ctx) {
 		return formService.loadAsAdmin(ctx.getProjectName(), ctx.getFormUuid(), true, "en")
 			.doOnSuccess(ctx::setFormNode)
-			.flatMap(formService::toForm)
+			.flatMap(node -> formService.toForm(formtypeConfigs, node))
 			.doOnSuccess(ctx::setForm)
-			.flatMap(form -> savePostedData(ctx));
+			.flatMap(form -> savePostedData(formtypeConfigs, ctx));
 	}
 
 	/**
 	 * Update already posted data
 	 *
+	 * @param formtypeConfigs formtype configs
 	 * @param ctx Request context
 	 * @return single of the post data response
 	 */
-	public Single<FormData> update(FormDataUpdateContext ctx) {
+	public Single<FormData> update(FormtypeConfigsModel formtypeConfigs, FormDataUpdateContext ctx) {
 		return Single.zip(
 				// always load English version of form
 				formService.loadAsAdmin(ctx.getProjectName(), ctx.getFormUuid(), true, "en"),
 				load(ctx.getProjectName(), ctx.getFormUuid(), ctx.getFormDataUuid()),
-				(formNode, formDataNode) -> formService.toForm(formNode)
+				(formNode, formDataNode) -> formService.toForm(formtypeConfigs, formNode)
 						.flatMap(form -> {
 							ctx.setFormNode(formNode);
 							ctx.setFormDataNode(formDataNode);
 							ctx.setForm(form);
-							return savePostedData(ctx);
+							return savePostedData(formtypeConfigs, ctx);
 						}))
 				.flatMap(x -> x);
 	}
 
 	/**
 	 * Validate data posted by a user for the form without saving it.
-	 *
+	 * 
+	 * @param formtypeConfigs formtype configs
 	 * @param ctx Request context
 	 * @return single of form data validation state
 	 */
-	public Single<FormData> validate(FormDataCreateContext ctx) {
+	public Single<FormData> validate(FormtypeConfigsModel formtypeConfigs, FormDataCreateContext ctx) {
 		return formService.loadAsAdminWithLanguageFallback(ctx.getProjectName(), ctx.getFormUuid(), true, "en")
 			.doOnSuccess(ctx::setFormNode)
-			.flatMap(formService::toForm)
+			.flatMap(node -> formService.toForm(formtypeConfigs, node))
 			.doOnSuccess(ctx::setForm)
-			.flatMap(form -> validatePostedData(ctx.getPostedData(), ctx))
+			.flatMap(form -> validatePostedData(statusService.getEffectiveConfiguration(formtypeConfigs, form.getType()), ctx))
 			.map(errors -> toValidationResponse(ctx, errors));
 	}
 
 	/**
 	 * Validate data posted by a user for an existing form data node without saving it.
 	 *
+	 * @param formtypeConfigs formtype configs
 	 * @param ctx Request context
 	 * @return single of form data validation state
 	 */
-	public Single<FormData> validate(FormDataUpdateContext ctx) {
+	public Single<FormData> validate(FormtypeConfigsModel formtypeConfigs, FormDataUpdateContext ctx) {
 		return Single.zip(
 			formService.loadAsAdminWithLanguageFallback(ctx.getProjectName(), ctx.getFormUuid(), true, "en"),
 				load(ctx.getProjectName(), ctx.getFormUuid(), ctx.getFormDataUuid()),
-				(formNode, formDataNode) -> formService.toForm(formNode)
+				(formNode, formDataNode) -> formService.toForm(formtypeConfigs, formNode)
 					.flatMap(form -> {
 						ctx.setFormNode(formNode);
 						ctx.setFormDataNode(formDataNode);
 						ctx.setForm(form);
-						return validatePostedData(ctx.getPostedData(), ctx).map(errors -> toValidationResponse(ctx, errors));
+						return validatePostedData(statusService.getEffectiveConfiguration(formtypeConfigs, form.getType()), ctx).map(errors -> toValidationResponse(ctx, errors));
 					}))
 			.flatMap(x -> x);
 	}
@@ -397,52 +398,59 @@ public class FormDataService {
 	 * the background.
 	 * </p>
 	 *
+	 * @param formtypeConfigs formtype configs
 	 * @param projectName The project name.
 	 * @param formUuid The UUID of the form to export data for.
 	 * @param context The current request context.
 	 * @param lang The requested languages.
 	 * @return The created export node.
 	 */
-	public Single<NodeResponse> requestExport(String projectName, String formUuid, PluginContext context, String... lang)  {
-		String options = FormParameterUtil.getExportOptions(context, configuration);
+	public Single<NodeResponse> requestExport(FormtypeConfigsModel formtypeConfigs, String projectName, String formUuid, PluginContext context, String... lang)  {
 
 		return formService.getFormFolderUuid(projectName, formUuid, lang, FormService.DOWNLOADS_FOLDER_NAME)
-			.flatMap(folderUuid -> formService.loadForm(projectName, formUuid) //TODO 8.5 language ?
-				.flatMap(form -> createDownloadNode(projectName, folderUuid, "export", "form-export", form.getString("name"), options)))
-			.flatMap(exportNode -> {
-				MessageConsumer<Object> consumer = rxVertx.eventBus()
-					.consumer(MESSAGE_DOWNLOAD_CHECK_PREFIX + exportNode.getUuid(), msg -> msg.reply(true));
+				.flatMap(folderUuid -> formService.loadForm(projectName, formUuid) // TODO 8.5 language ?
+						.flatMap(form -> {
+							FormsConfig configuration = statusService.getEffectiveConfiguration(formtypeConfigs, form.getString("type"));
+							String options = FormParameterUtil.getExportOptions(context, configuration);
 
-				Single<ExportData> export = export(projectName, formUuid, context, lang);
+							return createDownloadNode(projectName, folderUuid, "export", "form-export",
+									form.getString("name"), options);
+						}))
+				.flatMap(exportNode -> {
+					MessageConsumer<Object> consumer = rxVertx.eventBus()
+							.consumer(MESSAGE_DOWNLOAD_CHECK_PREFIX + exportNode.getUuid(), msg -> msg.reply(true));
 
-				if (configuration.isTesting()) {
-					export = export.delay(TEST_DELAY_MS, TimeUnit.MILLISECONDS);
-				}
+					Single<ExportData> export = export(formtypeConfigs, projectName, formUuid, context, lang);
 
-				export.subscribe(exportData -> saveDownloadData(projectName, exportNode, exportData.getExportFile(),
-						exportData.getFormat().fileExtension, exportData.getFormat().mimeType)
-						.doFinally(consumer::rxUnregister).subscribe(), error -> {
-							setDownloadError(projectName, exportNode, error.getLocalizedMessage())
-									.doFinally(consumer::rxUnregister).subscribe();
-						});
+					if (statusService.getEffectiveConfiguration(formtypeConfigs, "").isTesting()) {
+						export = export.delay(TEST_DELAY_MS, TimeUnit.MILLISECONDS);
+					}
 
-				return Single.just(exportNode);
-			});
+					export.subscribe(exportData -> saveDownloadData(projectName, exportNode, exportData.getExportFile(),
+							exportData.getFormat().fileExtension, exportData.getFormat().mimeType)
+							.doFinally(consumer::rxUnregister).subscribe(), error -> {
+								setDownloadError(projectName, exportNode, error.getLocalizedMessage())
+										.doFinally(consumer::rxUnregister).subscribe();
+							});
+
+					return Single.just(exportNode);
+				});
 	}
 
 	/**
 	 * Request a download for all submitted binaries of the fiven form.
 	 *
+	 * @param formtypeConfigs formtype configs
 	 * @param projectName The project name.
 	 * @param formUuid The form to download binaries for.
 	 * @param languages The requested languages.
 	 * @return The created download node for the binary download.
 	 */
-	public Single<NodeResponse> requestZipBinaries(String projectName, String formUuid, String ...languages) {
+	public Single<NodeResponse> requestZipBinaries(FormtypeConfigsModel formtypeConfigs, String projectName, String formUuid, String ...languages) {
 		return formService.getFormFolderUuid(projectName, formUuid, languages, FormService.DOWNLOADS_FOLDER_NAME)
 			.flatMap(folderUuid -> statusService.languageFallback(projectName, languages)
 				.flatMap(langFallback -> formService.load(projectName, formUuid, langFallback))
-				.flatMap(formService::toForm)
+				.flatMap(node -> formService.toForm(formtypeConfigs, node))
 				.flatMap(form -> createDownloadNode(projectName, folderUuid, "binaries", "binaries", form.getName(), "")
 					.flatMap(downloadNode -> {
 						MessageConsumer<Object> consumer = rxVertx.eventBus()
@@ -450,7 +458,7 @@ public class FormDataService {
 
 						Single<Pair<Form, File>> binaries = zipBinaries(projectName, form);
 
-						if (configuration.isTesting()) {
+						if (statusService.getEffectiveConfiguration(formtypeConfigs, "").isTesting()) {
 							binaries = binaries.delay(TEST_DELAY_MS, TimeUnit.MILLISECONDS);
 						}
 
@@ -719,13 +727,14 @@ public class FormDataService {
 	 * <p>
 	 * The export format is determined via query parameters in the request, and the default format is CSV.
 	 *
+	 * @param formtypeConfigs formtype configs
 	 * @param projectName project name
 	 * @param formUuid The UUID of the form to export
 	 * @param context The current routing context
 	 * @param lang optional languages
 	 * @return single export data
 	 */
-	public Single<ExportData> export(String projectName, String formUuid, PluginContext context, String... lang) {
+	public Single<ExportData> export(FormtypeConfigsModel formtypeConfigs, String projectName, String formUuid, PluginContext context, String... lang) {
 		// Export only published data nodes by default.
 		boolean publishedOnly = Optional.ofNullable(context.queryParams().get(PARAM_PUBLISHED_ONLY))
 			.map(Boolean::parseBoolean)
@@ -733,9 +742,14 @@ public class FormDataService {
 
 		return statusService.languageFallback(projectName, lang)
 			.flatMap(langFallback -> formService.load(projectName, formUuid, langFallback))
-			.flatMap(formService::toForm)
+			.flatMap(node -> formService.toForm(formtypeConfigs, node))
 			.flatMap(form -> {
-				Exporter exporter = Exporter.create(configuration, userClient, context, new File(System.getProperty("java.io.tmpdir")), formUuid, SchemaService.getSchemaName(formUuid), configuration.getExportOptions(), getDownloadBaseUrl(form, projectName));
+				FormsConfig configuration = statusService.getEffectiveConfiguration(formtypeConfigs,
+						form.getType());
+				Exporter exporter = Exporter.create(configuration, userClient, context,
+						new File(System.getProperty("java.io.tmpdir")), formUuid,
+						SchemaService.getSchemaName(formUuid), configuration.getExportOptions(),
+						getDownloadBaseUrl(form, projectName));
 
 				return exporter
 					.setFieldLabels(form.getReportableFields())
@@ -748,15 +762,16 @@ public class FormDataService {
 	 * a zip file containing its uploaded binaries.
 	 *
 	 * @see #zipBinaries(String, Form)
+	 * @param formtypeConfigs formtype configs
 	 * @param projectName The project name.
 	 * @param uuid The UUID of the form to zip the binaries for.
 	 * @param languages The requested languages.
 	 * @return A {@code Pair} containing the form and the created zip file.
 	 */
-	public Single<Pair<Form, File>> zipBinaries(String projectName, String uuid, String ...languages) {
+	public Single<Pair<Form, File>> zipBinaries(FormtypeConfigsModel formtypeConfigs, String projectName, String uuid, String ...languages) {
 		return statusService.languageFallback(projectName, languages)
 			.flatMap(langFallback -> formService.load(projectName, uuid, langFallback))
-			.flatMap(formService::toForm)
+			.flatMap(node -> formService.toForm(formtypeConfigs, node))
 			.flatMap(form -> zipBinaries(projectName, form));
 	}
 
@@ -960,6 +975,7 @@ public class FormDataService {
 	/**
 	 * Searches the data nodes of the specified form and sends the results to the meshClient.
 	 *
+	 * @param formtypeConfigs formtype configs
 	 * @param projectName project name
 	 * @param formUuid the UUID of the form node
 	 * @param query search query
@@ -967,12 +983,14 @@ public class FormDataService {
 	 * @param publishedOnly whether to include only published form data nodes
 	 * @return single search response
 	 */
-	public Single<JsonObject> find(String projectName, String formUuid, String query, JsonObject pagingParams, boolean publishedOnly) {
+	public Single<JsonObject> find(FormtypeConfigsModel formtypeConfigs, String projectName, String formUuid, String query, JsonObject pagingParams, boolean publishedOnly) {
 		return statusService.languageFallback(projectName)
 			.flatMap(langFallback -> formService.load(projectName, formUuid, langFallback))
-			.flatMap(formService::toForm)
+			.flatMap(node -> formService.toForm(formtypeConfigs, node))
 			.flatMap(form -> {
-				GraphQLRequest graphQlRequest = getDataGraphQlRequest(form, query, pagingParams, configuration.isForceNoES());
+				FormsConfig configuration = statusService.getEffectiveConfiguration(formtypeConfigs, form.getType());
+
+				GraphQLRequest graphQlRequest = getDataGraphQlRequest(configuration, form, query, pagingParams, configuration.isForceNoES());
 				VersioningParameters params = new VersioningParametersImpl();
 
 				if (publishedOnly) {
@@ -1002,13 +1020,14 @@ public class FormDataService {
 	 * Create a GraphQL request to load form data nodes for the specified form. Loads the specified form and creates a
 	 * GraphQLRequest with a query to find the form data nodes (and the page) indicated by the HTTP query string.
 	 *
+	 * @param configuration configuration
 	 * @param form The form to load form data for
 	 * @param query The Elasticsearch query to use
 	 * @param pagingParams Paging parameters for the GraphQL query
 	 * @return a GraphQLRequest
 	 * @throws IOException if loading the ElasticSearch or GraphQL query fails
 	 */
-	private GraphQLRequest getDataGraphQlRequest(Form form, String query, JsonObject pagingParams, boolean forceNoES) throws IOException {
+	private GraphQLRequest getDataGraphQlRequest(FormsConfig configuration, Form form, String query, JsonObject pagingParams, boolean forceNoES) throws IOException {
 		JsonObject graphQLParams = new JsonObject(pagingParams.toBuffer());
 		Map<String, String> context = new HashMap<>();
 
@@ -1085,14 +1104,17 @@ public class FormDataService {
 	/**
 	 * Validate and save the data to mesh. publish form, if completed. Redirect to success url or referer
 	 *
+	 * @param formtypeConfigs formtype configs
 	 * @param ctx
 	 * @return single redirect URL
 	 */
-	private Single<FormData> savePostedData(FormDataCreateContext ctx) {
+	private Single<FormData> savePostedData(FormtypeConfigsModel formtypeConfigs, FormDataCreateContext ctx) {
 		Form form = ctx.getForm();
 		MultiMap postedData = ctx.getPostedData();
 
-		return captchaService.validate(ctx).andThen(validatePostedData(postedData, ctx).flatMap(errors1 -> {
+		FormsConfig configuration = statusService.getEffectiveConfiguration(formtypeConfigs, form.getType());
+
+		return captchaService.validate(configuration, ctx).andThen(validatePostedData(configuration, ctx).flatMap(errors1 -> {
 			// check whether we have any validation errors, that prevent storing of the data
 			Optional<ValidationError> errorPreventingDataStorage = errors1.values().stream()
 					.filter(ValidationError::isPreventStoring).findAny();
@@ -1123,7 +1145,7 @@ public class FormDataService {
 						NodeResponse savedFileUploads = savedFileUploadsPlusErrors.getKey();
 						Map<String, ValidationError> errors = savedFileUploadsPlusErrors.getValue();
 						if (ctx.isPublish() && errors.isEmpty() && form.isCompleted(savedFileUploads)) {
-							return publishFormData(ctx, savedFileUploads, errors);
+							return publishFormData(formtypeConfigs, ctx, savedFileUploads, errors);
 						} else {
 							// set the data cookie
 							if (ctx.handleCookies()) {
@@ -1151,14 +1173,16 @@ public class FormDataService {
 	/**
 	 * Validate posted form data with the same rules used before saving.
 	 *
+	 * @param configuration configuration
 	 * @param ctx Request context with the loaded form
+	 *
 	 * @return single of validation errors keyed by form element name
 	 */
-	private Single<Map<String, ValidationError>> validatePostedData(MultiMap postedData, FormDataCreateContext ctx) {
+	private Single<Map<String, ValidationError>> validatePostedData(FormsConfig configuration, FormDataCreateContext ctx) {
 		Form form = ctx.getForm();
 		return Single.zip(
-				Single.just(form.preventInjection(postedData, configuration.getSecurityOptions())),
-				form.validate(postedData, ctx.getFileUploads(), ctx.getFormDataNode(), rxVertx, okHttpClientService.getClient()),
+				Single.just(form.preventInjection(ctx, configuration.getSecurityOptions())),
+				form.validate(ctx, rxVertx, okHttpClientService.getClient()),
 				(a, b) -> {
 					HashMap<String, ValidationError> errors = new HashMap<>();
 					errors.putAll(a);
@@ -1412,19 +1436,20 @@ public class FormDataService {
 	 * Publish the form data. This will also send mails to the configured users, remove the data cookie and create a
 	 * response.
 	 *
+	 * @param formtypeConfigs formtype configs
 	 * @param ctx Request context
 	 * @param savedFileUploads saved file uploads from {@link #saveFileUploads(String,Form, NodeResponse, MultiMap, Set)}
 	 * @param errors
 	 * @return single
 	 */
-	private Single<FormData> publishFormData(FormDataCreateContext ctx, NodeResponse savedFileUploads, Map<String, ValidationError> errors) {
+	private Single<FormData> publishFormData(FormtypeConfigsModel formtypeConfigs, FormDataCreateContext ctx, NodeResponse savedFileUploads, Map<String, ValidationError> errors) {
 		return adminClient.publishNode(ctx.getProjectName(), savedFileUploads.getUuid()).toSingle().flatMap(publishStatus -> {
 			PluginContext meshContext = ctx.getContext();
 			Form form = ctx.getForm();
 			MultiMap postedData = ctx.getPostedData();
 
 			// send mails to admin and user
-			mailService.sendMails(ctx.getProjectName(), ctx.getForm(), savedFileUploads, meshContext);
+			mailService.sendMails(formtypeConfigs, ctx.getProjectName(), ctx.getForm(), savedFileUploads, meshContext);
 
 			// perform actions
 			return Single.zip(

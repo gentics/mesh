@@ -32,12 +32,10 @@ public class FriendlyCaptchaProvider implements CaptchaProvider {
 
 	protected static final List<String> FAST_FAILER_SOLUTIONS = Arrays.asList(".FETCHING", ".UNSTARTED", ".UNFINISHED");
 
-	private final FormsConfig configuration;
 	private final OkHttpClientService okHttpClientService;
 
 	@Inject
-	public FriendlyCaptchaProvider(FormsConfig configuration, OkHttpClientService okHttpClientService) {
-		this.configuration = configuration;
+	public FriendlyCaptchaProvider(OkHttpClientService okHttpClientService) {
 		this.okHttpClientService = okHttpClientService;
 	}
 
@@ -47,10 +45,10 @@ public class FriendlyCaptchaProvider implements CaptchaProvider {
 	}
 
 	@Override
-	public Completable validate(FormDataCreateContext ctx) {
+	public Completable validate(FormsConfig configuration, FormDataCreateContext ctx) {
 		String solutionKey = configuration.getFriendlyCaptcha().getSolutionKey();
 		String solution = ctx.getContext().request().getHeader(solutionKey);
-		return isValid(solution, okHttpClientService.getClient());
+		return isValid(configuration, solution, okHttpClientService.getClient());
 	}
 
 	/**
@@ -58,7 +56,7 @@ public class FriendlyCaptchaProvider implements CaptchaProvider {
 	 * Completes normally if valid; errors with {@link CaptchaValidationException} if invalid,
 	 * or {@link IllegalStateException} if the API returns a non-200 status.
 	 */
-	public Completable isValid(String captchaSolution, OkHttpClient httpClient) {
+	public Completable isValid(FormsConfig configuration, String captchaSolution, OkHttpClient httpClient) {
 		log.debug("Trying to validate captchaResponse: {}", captchaSolution);
 
 		if (StringUtils.isBlank(captchaSolution)) {
