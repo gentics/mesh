@@ -1,10 +1,13 @@
 package com.gentics.mesh.plugin.forms.model.schema;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class UischemaFormgridOptions {
@@ -53,6 +56,8 @@ public class UischemaFormgridOptions {
 
 	@JsonProperty("overlayOptions")
 	private Map<String, Object> overlayOptions;
+
+	private Map<String, Object> properties = new LinkedHashMap<>();
 
 	public String getType() {
 		return type;
@@ -172,5 +177,15 @@ public class UischemaFormgridOptions {
 
 	public void setOverlayOptions(Map<String, Object> overlayOptions) {
 		this.overlayOptions = overlayOptions;
+	}
+
+	@JsonAnyGetter
+	public Map<String, Object> getAny() {
+		return properties;
+	}
+
+	@JsonAnySetter
+	public void setProperty(String key, Object value) {
+		properties.put(key, value);
 	}
 }
