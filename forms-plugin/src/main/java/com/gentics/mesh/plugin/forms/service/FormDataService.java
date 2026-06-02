@@ -1105,6 +1105,8 @@ public class FormDataService {
 						return nodeList.getItems().stream().map(nodeItem -> userClient.deleteNode(projectName, nodeItem.getUuid(), deleteParams).toSingle()).collect(Collectors.toList());
 					}
 				} catch (Exception e) {
+					// TODO FIXME Mesh Currently there is no way to determine a field's type from the node response, other that load the corresponding form schema.
+					// Here we try deserializing the node list, which may spit random deserialization errors.
 					log.debug("Deserialization error", e);
 				}
 				return Collections.<Single<EmptyResponse>>emptyList();
@@ -1371,6 +1373,7 @@ public class FormDataService {
 			Matcher matcher = Pattern.compile(MULTIFILE_ID_REGEX).matcher(fieldName);
 			String id = matcher.matches() ? matcher.group("name") : fieldName;
 			String fieldName1 = fieldName;
+			// First ensure that `binary_content` is assigned to the project
 			return adminClient.findSchemas(projectName).toSingle()
 				.flatMap(schemas -> schemas.getData().stream().filter(schema -> schema.getName().equals("binary_content")).findAny()
 						.map(schema -> Single.just(schema))
@@ -1386,7 +1389,9 @@ public class FormDataService {
 					itemCreate.getFields().put("name", new StringFieldImpl().setString(fieldName1));
 					long size = fileUpload.size();
 					InputStream ins = new FileInputStream(fileUpload.uploadedFileName());
+					// Then create a binary node
 					return adminClient.createNode(projectName, itemCreate).toSingle()
+						// and fill it
 						.flatMap(itemNode -> adminClient.updateNodeBinaryField(projectName, itemNode.getUuid(), formDataNode.getLanguage(), "draft",
 							"binary",
 							ins, size, fileUpload.fileName(), fileUpload.contentType())
@@ -1395,6 +1400,24 @@ public class FormDataService {
 							return Pair.of(id, itemNode1);
 						}));
 				});					
+		};
+
+		// Reusable plain file uploader
+		Function<FileUpload, Single<NodeResponse>> plainUploader = fileUpload -> {
+			long size = fileUpload.size();
+			InputStream ins;
+			try {
+				ins = new FileInputStream(fileUpload.uploadedFileName());
+			} catch (FileNotFoundException e1) {
+				throw new IllegalStateException(e1);
+			}
+			String fieldName = getId(fileUpload);
+			// Always use the draft version because updating the binary field will increase the version of the node,
+			// which can lead to problems when multiple files are uploaded.
+			return adminClient.updateNodeBinaryField(projectName, formDataNode.getUuid(), formDataNode.getLanguage(), "draft",
+					fieldName,
+					ins, size, fileUpload.fileName(), fileUpload.contentType())
+				.toSingle();
 		};
 
 		// Separate the cases for 1 and more elements
@@ -1413,14 +1436,7 @@ public class FormDataService {
 							return adminClient.updateNode(projectName, formDataNode.getUuid(), update).toSingle();
 						});					
 				} else {
-					long size = fileUpload.size();
-					InputStream ins = new FileInputStream(fileUpload.uploadedFileName());
-					// Always use the draft version because updating the binary field will increase the version of the node,
-					// which can lead to problems when multiple files are uploaded.
-					return adminClient.updateNodeBinaryField(projectName, formDataNode.getUuid(), formDataNode.getLanguage(), "draft",
-							id,
-							ins, size, fileUpload.fileName(), fileUpload.contentType())
-						.toSingle();
+					return plainUploader.apply(fileUpload);
 				}
 			}).flatMapSingle(single -> single);
 		} else {
@@ -1430,23 +1446,18 @@ public class FormDataService {
 				if (element.isList()) {
 					return listItemUploader.apply(fileUpload);					
 				} else {
-					long size = fileUpload.size();
-					InputStream ins = new FileInputStream(fileUpload.uploadedFileName());
-					// Always use the draft version because updating the binary field will increase the version of the node,
-					// which can lead to problems when multiple files are uploaded.
-					return adminClient.updateNodeBinaryField(projectName, formDataNode.getUuid(), formDataNode.getLanguage(), "draft",
-							fieldName,
-							ins, size, fileUpload.fileName(), fileUpload.contentType())
-						.toSingle()
-						.map(response -> Pair.of(null, response));
+					return plainUploader.apply(fileUpload).map(nr -> Pair.of(null, nr));
 				}
 			}).flatMapSingle(single -> single)).collect(Collectors.toList()), uploaded -> {
 				Supplier<NodeResponse> fallback = () -> ((Pair<String, NodeResponse>) uploaded[0]).getRight();
 				if (uploaded.length < 1) {
+					// Shortcut for no data. Should not happen.
 					return Single.error(new FormsError("No upload has been processed!", 500));
 				} else if (uploaded.length < 2 && uploaded[0] instanceof Pair && ((Pair)uploaded[0]).getKey() == null) {
+					// Shortcut for 1 plain upload
 					return Single.just(fallback.get());
 				} else {
+					// Mess of uploads
 					Map<String, List<NodeResponse>> binariesPerField = Arrays.stream(uploaded)
 							.map(u -> (Pair<String, NodeResponse>)u)
 							.filter(pair -> StringUtils.isNotBlank(pair.getKey()))
@@ -1458,8 +1469,10 @@ public class FormDataService {
 							update.getFields().put(id, new NodeFieldListImpl());
 						}
 						idFields.getValue().forEach(updatedItem -> update.getFields().getNodeFieldList(id).add(updatedItem));
+						// TODO FIXME Mesh behaves weird when updating list fields by adding its items one by one, so we need first to collect everything, then update the field
 						return adminClient.updateNode(projectName, formDataNode.getUuid(), update).toSingle();
 					}).collect(Collectors.toList());
+					// Again the shortcut, as Single does not know what to do if there is nothing to zip
 					if (updated.size() < 1) {
 						return Single.just(fallback.get());
 					} else {
