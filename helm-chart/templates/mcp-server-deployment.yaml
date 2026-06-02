@@ -1,0 +1,117 @@
+{{- if .Values.mcpServer.enabled -}}
+{{- $http := eq .Values.mcpServer.transport.mode "http" -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "mesh.mcpServer.fullname" . }}
+  labels:
+    {{- include "mesh.mcpServer.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.mcpServer.replicaCount }}
+  strategy:
+    type: {{ if $http }}RollingUpdate{{ else }}Recreate{{ end }}
+  selector:
+    matchLabels:
+      {{- include "mesh.mcpServer.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "mesh.mcpServer.selectorLabels" . | nindent 8 }}
+        {{- with .Values.mcpServer.podLabels }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/mcp-server-configmap.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/mcp-server-secret.yaml") . | sha256sum }}
+        {{- with .Values.mcpServer.podAnnotations }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.mcpServer.image.pullSecret }}
+      imagePullSecrets:
+        - name: {{ . }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.mcpServer.podSecurityContext | nindent 8 }}
+      containers:
+        - name: mcp-server
+          image: {{ include "mesh.mcpServer.image" . | quote }}
+          imagePullPolicy: {{ .Values.mcpServer.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.mcpServer.securityContext | nindent 12 }}
+          {{- if not $http }}
+          stdin: true
+          stdinOnce: false
+          tty: false
+          {{- end }}
+          {{- if $http }}
+          ports:
+            - name: mcp-http
+              containerPort: {{ .Values.mcpServer.transport.http.port }}
+              protocol: TCP
+          {{- end }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "mesh.mcpServer.fullname" . }}
+            - secretRef:
+                name: {{ include "mesh.mcpServer.meshSecretName" . }}
+            {{- if and $http (not .Values.mcpServer.transport.auth.disabled) }}
+            - secretRef:
+                name: {{ include "mesh.mcpServer.authSecretName" . }}
+            {{- end }}
+          {{- with .Values.mcpServer.extraEnv }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.mcpServer.resources | nindent 12 }}
+          {{- if .Values.mcpServer.livenessProbe.enabled }}
+          livenessProbe:
+            {{- if $http }}
+            httpGet:
+              path: /healthz
+              port: mcp-http
+            {{- else }}
+            exec:
+              command: ["/bin/sh", "-c", "pgrep -f 'java.*app.jar' >/dev/null"]
+            {{- end }}
+            initialDelaySeconds: {{ .Values.mcpServer.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.mcpServer.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.mcpServer.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.mcpServer.livenessProbe.failureThreshold }}
+          {{- end }}
+          {{- if .Values.mcpServer.readinessProbe.enabled }}
+          readinessProbe:
+            {{- if $http }}
+            httpGet:
+              path: /readyz
+              port: mcp-http
+            {{- else }}
+            exec:
+              command: ["/bin/sh", "-c", "pgrep -f 'java.*app.jar' >/dev/null"]
+            {{- end }}
+            initialDelaySeconds: {{ .Values.mcpServer.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.mcpServer.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.mcpServer.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.mcpServer.readinessProbe.failureThreshold }}
+          {{- end }}
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 64Mi
+      {{- with .Values.mcpServer.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.mcpServer.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.mcpServer.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

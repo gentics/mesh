@@ -108,3 +108,63 @@ Create the name of the service account to use
 {{- $inputVal := index . 1 -}}
 {{- include "hasKeyWithValue" (list $extraEnv "name" $inputVal) -}}
 {{- end -}}
+
+{{/* ── MCP-Server helpers ─────────────────────────────────────────── */}}
+
+{{/* Full name for MCP server resources: <release>-mcp-server */}}
+{{- define "mesh.mcpServer.fullname" -}}
+{{- printf "%s-mcp-server" (include "mesh.fullname" .) | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/* Common labels for MCP-server resources */}}
+{{- define "mesh.mcpServer.labels" -}}
+helm.sh/chart: {{ include "mesh.chart" . }}
+{{ include "mesh.mcpServer.selectorLabels" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+app.kubernetes.io/component: mcp-server
+app.kubernetes.io/part-of: {{ include "mesh.name" . }}
+{{- end -}}
+
+{{- define "mesh.mcpServer.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "mesh.name" . }}-mcp-server
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end -}}
+
+{{/* Image reference (repo:tag), tag falls back to Chart.AppVersion */}}
+{{- define "mesh.mcpServer.image" -}}
+{{- $tag := default .Chart.AppVersion .Values.mcpServer.image.tag -}}
+{{- printf "%s:%s" .Values.mcpServer.image.repository $tag -}}
+{{- end -}}
+
+{{/* Bearer-token secret name: existingSecret or chart-generated */}}
+{{- define "mesh.mcpServer.authSecretName" -}}
+{{- if .Values.mcpServer.transport.auth.existingSecret -}}
+{{- .Values.mcpServer.transport.auth.existingSecret -}}
+{{- else -}}
+{{- printf "%s-auth" (include "mesh.mcpServer.fullname" .) -}}
+{{- end -}}
+{{- end -}}
+
+{{/* Mesh-credentials secret name for the MCP-server */}}
+{{- define "mesh.mcpServer.meshSecretName" -}}
+{{- if .Values.mcpServer.mesh.existingSecret -}}
+{{- .Values.mcpServer.mesh.existingSecret -}}
+{{- else -}}
+{{- printf "%s-mesh" (include "mesh.mcpServer.fullname" .) -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Default mesh URL: derived from the Mesh service of this release.
+Operators can override via mcpServer.mesh.baseUrl.
+*/}}
+{{- define "mesh.mcpServer.meshBaseUrl" -}}
+{{- if .Values.mcpServer.mesh.baseUrl -}}
+{{- .Values.mcpServer.mesh.baseUrl -}}
+{{- else -}}
+{{- printf "http://%s:%v" (include "mesh.fullname" .) .Values.service.mesh.port -}}
+{{- end -}}
+{{- end -}}

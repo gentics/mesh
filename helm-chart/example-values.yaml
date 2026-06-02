@@ -101,3 +101,53 @@ credentials:
 
 cluster:
   enabled: true
+
+# ── MCP-Server (optional) ────────────────────────────────────────────────────
+# Aktiviert die Model-Context-Protocol-Schnittstelle als zusätzlichen Pod.
+# Standardmäßig deaktiviert; hier zum Anschalten als HTTP-Service mit Ingress.
+mcpServer:
+  enabled: true
+
+  image:
+    repository: repo.gentics.com/mesh/mcp-server
+    # tag: 3.3.0          # default: Chart.AppVersion
+    pullPolicy: IfNotPresent
+    pullSecret: docker-gentics-com
+
+  transport:
+    mode: http
+    auth:
+      # Generate once: openssl rand -base64 32
+      token: "REPLACE-ME-WITH-OPENSSL-RAND-BASE64-32"
+      # Oder existierendes Secret mit Key MCP_AUTH_TOKEN nutzen:
+      # existingSecret: mcp-auth
+    cors:
+      origins:
+        - https://chat.example.com
+
+  mesh:
+    # baseUrl wird default aus dem Mesh-Service desselben Release abgeleitet
+    # baseUrl: "http://gentics-mesh:80"
+    username: "admin"
+    password: "YOURPW"            # in Prod via existingSecret
+    # existingSecret: mesh-admin-credentials
+    allowedProjects: "demo,corporate"
+    allowedLanguages: "de,en"
+    readOnly: true
+
+  protection:
+    rateLimit:
+      globalPerSecond: 50
+      perTokenPerSecond: 20
+    maxConcurrent: 10
+    circuitBreaker:
+      enabled: true
+
+  ingress:
+    enabled: true
+    annotations:
+      nginx.ingress.kubernetes.io/proxy-body-size: 1m
+    hosts:
+      - host: mesh-mcp.apps-crc.testing
+        paths:
+          - "/"
