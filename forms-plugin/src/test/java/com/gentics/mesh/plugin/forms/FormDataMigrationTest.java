@@ -12,7 +12,9 @@ import org.apache.commons.lang3.RandomUtils;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
 import com.gentics.mesh.plugin.test.common.util.PluginTestUtil;
@@ -55,7 +57,7 @@ public class FormDataMigrationTest extends AbstractFormsPluginIntegrationTest {
 
 		// post some data
 		for (int i = 0; i < NUM_DATA; i++) {
-			boolean empty = RandomUtils.nextInt(0, 2) == 0;
+			boolean empty = RandomUtils.secure().randomInt(0, 2) == 0;
 			submit(formUuid, true, empty, "input1", "en", empty ? "" : "data %d".formatted(i));
 		}
 
@@ -73,6 +75,13 @@ public class FormDataMigrationTest extends AbstractFormsPluginIntegrationTest {
 		dataNodes = getFormDataNodes(formUuid);
 		assertThat(dataNodes).as("Form data nodes").isEmpty();
 
+		// clear the "isMigrated" flag in the form plugin root node
+		NodeResponse pluginRootNode = getPluginRootNode();
+		NodeUpdateRequest update = pluginRootNode.toRequest();
+		update.getFields().put("isMigrated", FieldUtil.createBooleanField(false));
+		update.setPublish(true);
+		call(() -> server.client().updateNode(PROJECT_NAME, pluginRootNode.getUuid(), update));
+
 		// deploy forms plugin
 		server.getMesh().deployPlugin(FormsTestPlugin.class, "forms").blockingAwait();
 		PluginTestUtil.waitForPluginRegistration(server, 5_000, "forms");
@@ -81,6 +90,44 @@ public class FormDataMigrationTest extends AbstractFormsPluginIntegrationTest {
 		dataNodes = getFormDataNodes(formUuid);
 		assertThat(dataNodes).as("Form data nodes").isNotEmpty();
 		Set<String> migratedDataNodeUuids = dataNodes.stream().map(NodeResponse::getUuid).collect(Collectors.toSet());
-		assertThat(migratedDataNodeUuids).as("UUIDs of migrated form data nodes").containsOnlyElementsOf(formDataNodeUuids);
+		assertThat(migratedDataNodeUuids).as("UUIDs of migrated form data nodes"). hasSameElementsAs(formDataNodeUuids);
+
+		// plugin should still be considered active
+		assertThat(getStatus(PROJECT_NAME)).as("Forms Plugin is active").isTrue();
 	}
+
+	/**
+	 * Test that deployment of the plugin does not perform the migration, when the isMigrated flag is set
+	 * @throws IOException
+	 * @throws InterruptedException
+	 */
+	@Test
+	public void testNonMigration() throws IOException, InterruptedException {
+		// create a form
+		String formUuid = createForm("inputfield.json");
+
+		// submit data
+		submit(formUuid, true, false, "input1", "data");
+
+		// undeploy forms plugin
+		server.getMesh().<MeshComponent>internal().pluginManager().undeploy("forms").blockingAwait();
+
+		// move data nodes
+		List<NodeResponse> dataNodes = getFormDataNodes(formUuid);
+		assertThat(dataNodes).as("Form data nodes").isNotEmpty().hasSize(1);
+		dataNodes.stream().forEach(dataNode -> {
+			call(() -> server.client().moveNode(PROJECT_NAME, dataNode.getUuid(), formUuid));
+		});
+		// assert that all nodes have been moved away
+		dataNodes = getFormDataNodes(formUuid);
+		assertThat(dataNodes).as("Form data nodes").isEmpty();
+
+		// deploy forms plugin
+		server.getMesh().deployPlugin(FormsTestPlugin.class, "forms").blockingAwait();
+		PluginTestUtil.waitForPluginRegistration(server, 5_000, "forms");
+
+		// assert that data nodes have not been moved to correct place during deployment
+		dataNodes = getFormDataNodes(formUuid);
+		assertThat(dataNodes).as("Form data nodes").isEmpty();
+}
 }

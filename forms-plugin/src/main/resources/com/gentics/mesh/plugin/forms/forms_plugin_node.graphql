@@ -7,6 +7,11 @@
           uuid
           isPublished
           language
+          fields {
+            ... on forms_plugin {
+              isMigrated
+            }
+          }
         }
       }
     }
