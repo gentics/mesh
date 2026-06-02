@@ -1278,20 +1278,18 @@ mcp_tool_duration_ms_total{tool="mesh_get_node"} 91240</code></pre>
 
     <h3>Container-Image</h3>
     <p>
-      Image-Name: <code>repo.gentics.com/mesh/mcp-server</code>. Tag entspricht
-      der Mesh-Version (vom mesh-enterprise-Parent-POM geerbt). Image wird durch
-      die mesh-enterprise-Jenkins-Pipeline gebaut und gepusht.
+      Image liegt unter
+      <a href="https://repo.gentics.com/" target="_blank" rel="noopener"><code>repo.gentics.com/mesh/mcp-server</code></a>.
+      Tag entspricht der Mesh-Version (vom mesh-enterprise-Parent-POM geerbt).
+      Image wird durch die mesh-enterprise-Jenkins-Pipeline gebaut und gepusht.
     </p>
-<pre><span class="code-label">shell</span><code class="language-bash"># Lokaler Smoke-Build (Standalone, ohne Reactor):
-VERSION=$(mvn -q help:evaluate -Dexpression=project.version -DforceStdout)
-docker build --build-arg VERSION="$VERSION" -t mesh-mcp-server:dev .
-
+<pre><span class="code-label">shell</span><code class="language-bash"># &lt;MESH_VERSION&gt; durch die gewünschte Mesh-Version ersetzen, z.B. 3.3.0
 docker run -i --rm \
   -e MESH_BASE_URL=http://mesh:8080 \
   -e MESH_USERNAME=admin \
   -e MESH_PASSWORD=admin \
   -e MESH_ALLOWED_PROJECTS=demo \
-  mesh-mcp-server:dev</code></pre>
+  repo.gentics.com/mesh/mcp-server:&lt;MESH_VERSION&gt;</code></pre>
 
     <h3>Helm (über Mesh-Chart)</h3>
     <p>
