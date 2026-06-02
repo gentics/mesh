@@ -1,0 +1,1 @@
+Forms: The check of the forms requiring migration, as a part of plugin's startup process, has been optimized to eliminate database and API resources overhead.

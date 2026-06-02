@@ -1,0 +1,22 @@
+query Forms($perPage: Long = 2147483647, $page: Long = 1, $rootNodeUuid: String, $lang: [String]) {
+  node (uuid: $rootNodeUuid) {
+    children (perPage: $perPage, page: $page, lang: $lang, filter: {schema: {is: form}}) {
+      elements {
+        uuid
+        datanodes: children(lang: $lang, filter: {
+          not: {
+            schema: {
+              is: form_folder
+            }
+        }
+      }) {
+          totalCount
+        }
+      }
+      totalCount
+      currentPage
+      pageCount
+      perPage
+    }
+  }
+}

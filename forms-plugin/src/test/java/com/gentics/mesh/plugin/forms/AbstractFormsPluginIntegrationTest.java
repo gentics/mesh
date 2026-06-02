@@ -47,6 +47,7 @@ import com.gentics.mesh.plugin.forms.test.ResponseWithCookies;
 import com.gentics.mesh.plugin.test.common.AbstractPluginLocalIntegrationTest;
 import com.gentics.mesh.plugin.test.common.HibernateMeshLocalServer;
 import com.gentics.mesh.plugin.test.common.util.PluginTestUtil;
+import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.gentics.mesh.test.local.MeshLocalServer;
 import com.gentics.mesh.util.URIUtils;
 import com.gentics.mesh.util.UUIDUtil;
@@ -627,5 +628,14 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 	 */
 	protected NodeResponse getFormDataNode(String formDataUuid) {
 		return call(() -> server.client().findNodeByUuid(PROJECT_NAME, formDataUuid));
+	}
+
+	/**
+	 * Get the plugin root node
+	 * @return plugin root node
+	 */
+	protected NodeResponse getPluginRootNode() {
+		MeshWebrootResponse webrootResponse = call(() -> server.client().webroot(PROJECT_NAME, "/Forms Plugin"));
+		return webrootResponse.getNodeResponse();
 	}
 }
