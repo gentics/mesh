@@ -26,8 +26,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -1287,6 +1287,7 @@ public class FormDataService {
 	 * @param sortedFileUploads validated file uploads
 	 * @return single of the form data node
 	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private Single<NodeResponse> saveFileUploads(String projectName, Form form, NodeResponse formDataNode, MultiMap postedData, Set<FileUpload> fileUploads) {
 		Set<BinaryElement> validUploadElements = form.getElementsInsideProperties()
 			.filter(FormElement::isActive)
@@ -1348,12 +1349,10 @@ public class FormDataService {
 		};
 
 		// Reusable list item uploader
-		AtomicReference<String> aId = new AtomicReference<>();
-		Function<FileUpload, Single<NodeResponse>> listItemUploader = fileUpload -> {
+		Function<FileUpload, Single<Pair<String, NodeResponse>>> listItemUploader = fileUpload -> {
 			String fieldName = getId(fileUpload);
 			Matcher matcher = Pattern.compile(MULTIFILE_ID_REGEX).matcher(fieldName);
 			String id = matcher.matches() ? matcher.group("name") : fieldName;
-			aId.set(id);
 			String fieldName1 = fieldName;
 			return adminClient.findSchemas(projectName).toSingle()
 				.flatMap(schemas -> schemas.getData().stream().filter(schema -> schema.getName().equals("binary_content")).findAny()
@@ -1374,7 +1373,10 @@ public class FormDataService {
 						.flatMap(itemNode -> adminClient.updateNodeBinaryField(projectName, itemNode.getUuid(), formDataNode.getLanguage(), "draft",
 							"binary",
 							ins, size, fileUpload.fileName(), fileUpload.contentType())
-						.toSingle());
+						.toSingle()
+						.map(itemNode1 -> {
+							return Pair.of(id, itemNode1);
+						}));
 				});					
 		};
 
@@ -1390,7 +1392,7 @@ public class FormDataService {
 							if (update.getFields().getNodeFieldList(id) == null) {
 								update.getFields().put(id, new NodeFieldListImpl());
 							}
-							update.getFields().getNodeFieldList(id).add(updatedItem);
+							update.getFields().getNodeFieldList(id).add(updatedItem.getValue());
 							return adminClient.updateNode(projectName, formDataNode.getUuid(), update).toSingle();
 						});					
 				} else {
@@ -1405,7 +1407,7 @@ public class FormDataService {
 				}
 			}).flatMapSingle(single -> single);
 		} else {
-			return Single.zip(sortedFileUploads.stream().map(fileUpload -> rxVertx.rxExecuteBlocking(() -> {
+			return (Single) Single.zip(sortedFileUploads.stream().map(fileUpload -> rxVertx.rxExecuteBlocking(() -> {
 				String fieldName = getId(fileUpload);
 				BinaryElement element = binaryElementLookup.apply(fieldName).get();
 				if (element.isList()) {
@@ -1418,16 +1420,35 @@ public class FormDataService {
 					return adminClient.updateNodeBinaryField(projectName, formDataNode.getUuid(), formDataNode.getLanguage(), "draft",
 							fieldName,
 							ins, size, fileUpload.fileName(), fileUpload.contentType())
-						.toSingle();
+						.toSingle()
+						.map(response -> Pair.of(null, response));
 				}
 			}).flatMapSingle(single -> single)).collect(Collectors.toList()), uploaded -> {
-				String id = aId.get();
-				NodeUpdateRequest update = formDataNode.toRequest();
-				if (update.getFields().getNodeFieldList(id) == null) {
-					update.getFields().put(id, new NodeFieldListImpl());
+				Supplier<NodeResponse> fallback = () -> ((Pair<String, NodeResponse>) uploaded[0]).getRight();
+				if (uploaded.length < 1) {
+					return Single.error(new FormsError("No upload has been processed!", 500));
+				} else if (uploaded.length < 2 && uploaded[0] instanceof Pair && ((Pair)uploaded[0]).getKey() == null) {
+					return Single.just(fallback.get());
+				} else {
+					Map<String, List<NodeResponse>> binariesPerField = Arrays.stream(uploaded)
+							.map(u -> (Pair<String, NodeResponse>)u)
+							.filter(pair -> StringUtils.isNotBlank(pair.getKey()))
+							.collect(Collectors.groupingBy(Pair::getKey, Collectors.mapping(Pair::getValue, Collectors.toList())));
+					List<Single<NodeResponse>> updated = binariesPerField.entrySet().stream().map(idFields -> {
+						String id = idFields.getKey();
+						NodeUpdateRequest update = formDataNode.toRequest();
+						if (update.getFields().getNodeFieldList(id) == null) {
+							update.getFields().put(id, new NodeFieldListImpl());
+						}
+						idFields.getValue().forEach(updatedItem -> update.getFields().getNodeFieldList(id).add(updatedItem));
+						return adminClient.updateNode(projectName, formDataNode.getUuid(), update).toSingle();
+					}).collect(Collectors.toList());
+					if (updated.size() < 1) {
+						return Single.just(fallback.get());
+					} else {
+						return Single.zip(updated, updated1 -> fallback.get());
+					}
 				}
-				Arrays.stream(uploaded).map(NodeResponse.class::cast).forEach(updatedItem -> update.getFields().getNodeFieldList(id).add(updatedItem));
-				return adminClient.updateNode(projectName, formDataNode.getUuid(), update).toSingle();
 			}).flatMap(single -> single);
 		}
 	}

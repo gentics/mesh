@@ -225,7 +225,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		JsonObject body = new JsonObject(response.body().string());
 		assertThat(body.getBoolean("hasValidationErrors")).isEqualTo(true);
 		assertThat(body.getJsonObject("properties").getJsonObject("number").getString("value")).isEqualTo("100500");
-		assertThat(body.getJsonObject("properties").getJsonObject("number").getString("validationMessage")).isEqualTo("Der eingegebene Wert 100500 ist keine gültige Zahl.");
+		assertThat(body.getJsonObject("properties").getJsonObject("number").getString("validationMessage")).isEqualTo("form_validation_error_max_value");
 	}
 
 	private Pair<String, String> runCaseForValue(String value) throws GenericRestException, IOException {
@@ -790,7 +790,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 	private void assertError(JsonObject properties, String field, String value, String messageKey) {
 		assertThat(properties.getJsonObject(field).getString(messageKey))
 			.as("Error for field \"%s\"".formatted(field))
-			.isEqualTo("Der Wert \"%s\" is nicht erlaubt für das Feld \"%s\"".formatted(value, field));
+			.isEqualTo("form_validation_error_invalid_value");
 	}
 
 	/**

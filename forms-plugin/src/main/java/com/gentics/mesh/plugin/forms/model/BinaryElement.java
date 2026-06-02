@@ -38,7 +38,6 @@ import com.gentics.mesh.plugin.forms.context.FormDataCreateContext;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
 import com.gentics.mesh.plugin.forms.model.schema.BinaryValidation;
 import com.gentics.mesh.plugin.forms.model.schema.FormUiSchema;
-import com.gentics.mesh.plugin.forms.model.schema.UischemaFormgridOptions;
 import com.gentics.mesh.plugin.forms.model.schema.Validation;
 import com.gentics.mesh.plugin.forms.util.RxUtil;
 
@@ -125,8 +124,6 @@ public class BinaryElement extends FormElement {
 		var fileUploads = ctx.getFileUploads();
 		var translations = ctx.getTranslations();
 
-		UischemaFormgridOptions gridOptions = getFormGridOptionsFromUiSchema(uiSchema).orElse(null);
-
 		Set<FileUpload> myUploads = getFileUploads(fileUploads);
 		if (myUploads.isEmpty()) {
 			if (isMandatory()) {
@@ -170,11 +167,12 @@ public class BinaryElement extends FormElement {
 			return Single.zip(myUploads.stream().map(fileUpload -> fileHasAllowedContentType(fileUpload, useMagicByteCheck, rxVertx).map(allowedContentType -> {
 				if (!allowedContentType && !fileHasAllowedName(fileUpload)) {
 					fileUploads.remove(fileUpload);
-					return fileUpload;
+					return Optional.of(fileUpload);
 				} else {
-					return null;
+					return Optional.empty();
 				}
-			})).filter(Objects::nonNull).collect(Collectors.toList()), uploads -> {
+			})).collect(Collectors.toList()), uploads -> {
+				uploads = Arrays.stream(uploads).map(Optional.class::cast).filter(Optional::isPresent).toArray();
 				if (uploads.length > 0) {
 					return Maybe.just(new ValidationError()
 						.setName(getName())
