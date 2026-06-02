@@ -17,11 +17,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import javax.mail.Address;
@@ -45,6 +43,7 @@ import org.mockito.ArgumentCaptor;
 
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.plugin.forms.model.response.FormOnlineResponse;
 import com.gentics.mesh.plugin.forms.model.schema.FormData;
@@ -379,6 +378,140 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 			assertThat(buffer.toString())
 				.as(String.format("File contents", i))
 				.isEqualTo(fromFile(formDefinition));
+		}
+	}
+
+	/**
+	 * Test posting the form where several single- and multi-upload elements mix
+	 */
+	@Test
+	public void testPostDataMessedUp() throws IOException {
+		String formDefinition = "messed_up_but_valid.json";
+		String formUuid = createForm(formDefinition);
+
+		// Make update post containing all fields including two files.
+		MultipartBody requestBody = new MultipartBody.Builder()
+			.setType(MultipartBody.FORM)
+			.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(formUuid, null, Map.of("input1", "test")))
+			.addFormDataPart("file1", formDefinition, requestBodyFromFile(formDefinition))
+			.addFormDataPart("file2", formDefinition, requestBodyFromFile(formDefinition))
+			.addFormDataPart("filesssss[0]", "multipage.0.json", requestBodyFromFile("multipage.json"))
+			.addFormDataPart("filesssss[1]", "multipage.1.json", requestBodyFromFile("multipage.json"))
+			.addFormDataPart("sssss[0]", "multipage.html", requestBodyFromFile("multipage.html"))
+			.build();
+
+		Request postRequest = new Request.Builder()
+			.url(projectUrl("/form/" + formUuid + "/submit?lang=" + language))
+			.post(requestBody)
+			.build();
+		Response response = client().newCall(postRequest).execute();
+
+		// Result must be successful and there must still be exactly one data node.
+		assertThat(response.isSuccessful())
+			.as(String.format("Response success %d (%s)", response.code(), response.message()))
+			.isTrue();
+
+		NodeResponse dataNode = assertSingleDataNode(formUuid, node -> {/* Nothing more to assert */});
+
+		String lang = dataNode.getLanguage();
+
+		// Assert that the correct files have been uploaded.
+		for (int i = 1; i <= 2; i++) {
+			String fieldName = String.format("file%d", i);
+			MeshBinaryResponse file = call(() -> server.client().downloadBinaryField(PROJECT_NAME, dataNode.getUuid(), lang, fieldName));
+
+			assertThat(file.getFilename())
+				.as(String.format("Filename %d", i))
+				.isEqualTo(formDefinition);
+
+			Buffer buffer = RxUtil.readEntireData(file.getFlowable()).blockingGet();
+
+			assertThat(buffer.toString())
+				.as(String.format("File contents", i))
+				.isEqualTo(fromFile(formDefinition));
+		}
+		MeshBinaryResponse download;
+		Buffer buffer;
+		for (int i = 0; i < 2; i++) {
+			String itemUuid = dataNode.getFields().getNodeFieldList("filesssss").getItems().get(i).getUuid();
+			download = call(() -> server.client().downloadBinaryField(PROJECT_NAME, itemUuid, dataNode.getLanguage(), "binary"));
+			assertThat(download.getFilename()).as("Filename").isEqualTo("multipage." + i + ".json");
+
+			buffer = RxUtil.readEntireData(download.getFlowable()).blockingGet();
+			assertThat(buffer.toString()).as("File contents").isEqualTo(fromFile("multipage.json"));
+		}
+		for (int i = 0; i < 1; i++) {
+			String itemUuid = dataNode.getFields().getNodeFieldList("sssss").getItems().get(i).getUuid();
+			download = call(() -> server.client().downloadBinaryField(PROJECT_NAME, itemUuid, dataNode.getLanguage(), "binary"));
+			assertThat(download.getFilename()).as("Filename").isEqualTo("multipage.html");
+
+			buffer = RxUtil.readEntireData(download.getFlowable()).blockingGet();
+			assertThat(buffer.toString()).as("File contents").isEqualTo(fromFile("multipage.html"));
+		}
+	}
+
+
+	/**
+	 * Test canceling form where several single- and multi-upload elements mix
+	 */
+	@Test
+	public void testCleanTheMess() throws IOException {
+		String formDefinition = "messed_up_but_valid.json";
+		String formUuid = createForm(formDefinition);
+
+		// Make update post containing all fields including two files.
+		MultipartBody requestBody = new MultipartBody.Builder()
+			.setType(MultipartBody.FORM)
+			.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(formUuid, null, Map.of("input1", "test")))
+			.addFormDataPart("file1", formDefinition, requestBodyFromFile(formDefinition))
+			.addFormDataPart("file2", formDefinition, requestBodyFromFile(formDefinition))
+			.addFormDataPart("filesssss[0]", "multipage.0.json", requestBodyFromFile("multipage.json"))
+			.addFormDataPart("filesssss[1]", "multipage.1.json", requestBodyFromFile("multipage.json"))
+			.addFormDataPart("sssss[0]", "multipage.html", requestBodyFromFile("multipage.html"))
+			.build();
+
+		Request postRequest = new Request.Builder()
+			.url(projectUrl("/form/" + formUuid + "/save?lang=" + language))
+			.post(requestBody)
+			.build();
+		Response response = client().newCall(postRequest).execute();
+
+		// Result must be successful and there must still be exactly one data node.
+		assertThat(response.isSuccessful())
+			.as(String.format("Response success %d (%s)", response.code(), response.message()))
+			.isTrue();
+
+		NodeResponse dataNode = assertSingleDataNode(formUuid, node -> {/* Nothing more to assert */});
+		NodeFieldList filesssss = dataNode.getFields().getNodeFieldList("filesssss");
+		NodeFieldList sssss = dataNode.getFields().getNodeFieldList("sssss");
+		assertThat(filesssss).as("Multifile upload `filesssss`").isNotNull();
+		assertThat(sssss).as("Multifile upload `filesssss`").isNotNull();
+
+		requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
+				.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest
+						.makeFormdataMultipart(formUuid, dataNode.getUuid(), Map.of()))
+				.build();
+		okio.Buffer buffer = new okio.Buffer();
+		requestBody.writeTo(buffer);
+		System.out.println(buffer.readUtf8());
+
+		postRequest = new Request.Builder()
+				.headers(auth(true))
+				.url(projectUrl(String.format("/form/%s/cancel?formDataUuid=%s", formUuid, dataNode.getUuid()))).header("Referer", "ref")
+				.post(requestBody).build();
+		response = client().newCall(postRequest).execute();
+		assertThat(response.isSuccessful())
+				.as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+		assertThat(response.code()).as("Response code").isGreaterThanOrEqualTo(200).isLessThan(300);
+		assertThat(getFormDataNodes(formUuid, language)).as("Form data").isEmpty();
+
+		for (int i = 0; i < 2; i++) {
+			String itemUuid = dataNode.getFields().getNodeFieldList("filesssss").getItems().get(i).getUuid();
+			call(() -> server.client().downloadBinaryField(PROJECT_NAME, itemUuid, dataNode.getLanguage(), "binary"), HttpResponseStatus.NOT_FOUND);
+		}
+		for (int i = 0; i < 1; i++) {
+			String itemUuid = dataNode.getFields().getNodeFieldList("sssss").getItems().get(i).getUuid();
+			call(() -> server.client().downloadBinaryField(PROJECT_NAME, itemUuid, dataNode.getLanguage(), "binary"), HttpResponseStatus.NOT_FOUND);
 		}
 	}
 
@@ -977,11 +1110,16 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 	}
 
 	private Pair<String, String> doPostFile(String formFile, String... moreFiles) throws IOException {
+		return doPostFile(false, formFile, moreFiles);
+	}
+
+	private Pair<String, String> doPostFile(boolean forceMulti, String formFile, String... moreFiles) throws IOException {
 		String uuid = createForm(formFile);
+		boolean multi = forceMulti | moreFiles.length > 0;
 
 		MultipartBody.Builder requestBody = new MultipartBody.Builder()
 			.setType(MultipartBody.FORM)
-			.addFormDataPart("file1" + (moreFiles.length > 0 ? "[0]" : ""), formFile, requestBodyFromFile(formFile));
+			.addFormDataPart("file1" + (multi ? "[0]" : ""), formFile, requestBodyFromFile(formFile));
 
 		for (int i = 0; i < moreFiles.length; i++) {
 			requestBody.addFormDataPart("file1[" + (i+1) + "]", moreFiles[i], requestBodyFromFile(moreFiles[i]));
@@ -994,8 +1132,8 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		NodeResponse dataNode = assertSingleDataNode(uuid, node -> {/* Nothing more to assert on data node */});
 		MeshBinaryResponse download;
 		Buffer buffer;
-		if (moreFiles.length < 1) {
-			download = call(() -> server.client().downloadBinaryField(PROJECT_NAME, dataNode.getUuid(), dataNode.getLanguage(), "file1" + (moreFiles.length > 0 ? "_0" : "")));
+		if (!multi) {
+			download = call(() -> server.client().downloadBinaryField(PROJECT_NAME, dataNode.getUuid(), dataNode.getLanguage(), "file1" + (multi ? "_0" : "")));
 			assertThat(download.getFilename()).as("Filename").isEqualTo(formFile);
 
 			buffer = RxUtil.readEntireData(download.getFlowable()).blockingGet();
@@ -1011,7 +1149,6 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 				assertThat(buffer.toString()).as("File contents").isEqualTo(fromFile(allFiles.get(i)));
 			}
 		}
-
 		return Pair.of(uuid, dataNode.getUuid());
 	}
 

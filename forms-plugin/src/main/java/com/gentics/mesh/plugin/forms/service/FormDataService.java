@@ -1099,13 +1099,16 @@ public class FormDataService {
 			DeleteParametersImpl deleteParams = new DeleteParametersImpl();
 			deleteParams.setRecursive(true);
 			List<Single<EmptyResponse>> listBinaryNodes = formDataNode.getFields().keySet().stream().map(key -> {
-				NodeFieldList nodeList = formDataNode.getFields().getNodeFieldList(key);
-				if (nodeList != null && !nodeList.getItems().isEmpty()) {
-					return nodeList.getItems().stream().map(nodeItem -> userClient.deleteNode(projectName, nodeItem.getUuid(), deleteParams).toSingle()).collect(Collectors.toList());
-				} else {
-					return null;
+				try {
+					NodeFieldList nodeList = formDataNode.getFields().getNodeFieldList(key);
+					if (nodeList != null && !nodeList.getItems().isEmpty()) {
+						return nodeList.getItems().stream().map(nodeItem -> userClient.deleteNode(projectName, nodeItem.getUuid(), deleteParams).toSingle()).collect(Collectors.toList());
+					}
+				} catch (Exception e) {
+					log.debug("Deserialization error", e);
 				}
-			}).filter(Objects::nonNull).flatMap(list -> list.stream()).collect(Collectors.toList());
+				return Collections.<Single<EmptyResponse>>emptyList();
+			}).flatMap(list -> list.stream()).collect(Collectors.toList());
 
 			return userClient.deleteNode(projectName, formDataUuid, deleteParams).toSingle()
 					.flatMap(formDeleted -> listBinaryNodes.size() < 1
