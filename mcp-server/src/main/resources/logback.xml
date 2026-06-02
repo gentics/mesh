@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Logback configuration for Gentics Mesh MCP Server (Java).
+  All output goes to STDERR so that STDOUT remains clean for MCP/JSON-RPC.
+  Log level is controlled by the LOG_LEVEL environment variable.
+-->
+<configuration>
+
+  <appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
+    <!-- Write to stderr, never stdout (stdout is reserved for MCP protocol) -->
+    <target>System.err</target>
+    <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+      <pattern>{"ts":"%d{yyyy-MM-dd'T'HH:mm:ss.SSS'Z',UTC}","level":"%-5level","logger":"%logger{30}","message":"%message"}%n</pattern>
+    </encoder>
+  </appender>
+
+  <!-- Suppress noisy framework logs in production -->
+  <logger name="io.modelcontextprotocol" level="WARN"/>
+  <logger name="reactor"                 level="WARN"/>
+
+  <root level="${LOG_LEVEL:-INFO}">
+    <appender-ref ref="STDERR"/>
+  </root>
+
+</configuration>

@@ -1,0 +1,10 @@
+target/
+.idea/
+*.iml
+.DS_Store
+.env
+.env.*
+!.env.example
+docs.html
+README.md
+helm/

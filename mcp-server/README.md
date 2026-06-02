@@ -1,0 +1,163 @@
+# Gentics Mesh MCP Server
+
+> Model-Context-Protocol-Adapter für [Gentics Mesh CMS](https://www.gentics.com/mesh/).
+> Java 21, stdio + HTTP-Transport, identische Tool-Surface über beide Transports.
+>
+> **Submodul von `mesh-enterprise`** (Pfad im Reactor: `mcp-server/`).
+> Versionierung, Helm-Chart, Container-Registry und Release-Kadenz folgen dem
+> `mesh-enterprise`-Parent.
+
+📖 **[Developer Documentation](./docs.html)** – ausführliche HTML-Doku im Gentics-CI mit Tool-API, Transport-Vergleich, Config-Referenz und Integration-Cookbook. Im Browser öffnen: `open docs.html`.
+
+| Transport | Wofür                                                                            |
+|-----------|----------------------------------------------------------------------------------|
+| `stdio`   | Lokale Child-Prozess-Clients: **Claude Desktop**, Cursor, Continue, Zed          |
+| `http`    | Remote-Clients: **OpenAI Agents SDK**, LangChain, n8n, Open WebUI, eigene LLM-Stacks |
+
+Die Tool-Surface ist in beiden Modi identisch (gemeinsamer `ToolDispatcher`).
+
+## Voraussetzungen
+
+| Anforderung   | Version                                                              |
+|---------------|----------------------------------------------------------------------|
+| Java          | ≥ 21                                                                 |
+| Maven         | ≥ 3.9                                                                |
+| Gentics Mesh  | Version aus `mesh-enterprise`-Parent (`mesh-rest-client` geerbt)     |
+
+## Build im Reactor von mesh-enterprise
+
+```bash
+# Vom mesh-enterprise-Repo-Root:
+mvn -B -ntp -pl mcp-server -am verify
+
+# Resultat:
+#   mcp-server/target/mesh-mcp-server.jar   (geshadete Fat-JAR)
+```
+
+`finalName` ist bewusst `mesh-mcp-server` ohne Versions-Suffix – der Image-Tag
+trägt die Version über das `VERSION`-Build-Arg im Dockerfile.
+
+## Lokal starten
+
+```bash
+cp .env.example .env
+# Pflichtfelder editieren: MESH_BASE_URL, MESH_USERNAME, MESH_PASSWORD, MESH_ALLOWED_PROJECTS
+export $(grep -v '^#' .env | xargs)
+
+# stdio (default)
+java -jar target/mesh-mcp-server.jar
+
+# HTTP
+MCP_TRANSPORT=http MCP_AUTH_TOKEN=secret-please-rotate \
+  java -jar target/mesh-mcp-server.jar
+```
+
+## Transport-Modi im Detail
+
+### stdio
+
+Der Server liest JSON-RPC von stdin, schreibt nach stdout. Genau ein Client pro Prozess. Wird vom Client (z.B. Claude Desktop) als Child-Prozess gestartet. Keine Auth nötig – das Spawning impliziert Vertrauen.
+
+### HTTP
+
+Endpoint: `POST http://<host>:<port>/mcp` mit JSON-RPC 2.0 im Body.
+Auth: `Authorization: Bearer <MCP_AUTH_TOKEN>`.
+Zusätzlich: `GET /healthz`, `GET /readyz`, `GET /metrics`.
+
+| ENV                   | Default     | Beschreibung                                                  |
+|-----------------------|-------------|---------------------------------------------------------------|
+| `MCP_TRANSPORT`       | `stdio`     | `stdio` oder `http`                                           |
+| `MCP_HTTP_HOST`       | `0.0.0.0`   | Bind-Host                                                     |
+| `MCP_HTTP_PORT`       | `3001`      | Bind-Port                                                     |
+| `MCP_AUTH_TOKEN`      | –           | Pflicht im HTTP-Modus (außer Auth ist explizit deaktiviert)   |
+| `MCP_AUTH_DISABLED`   | `false`     | `true` nur wenn ein Reverse-Proxy die Auth übernimmt          |
+| `MCP_CORS_ORIGINS`    | –           | Kommagetrennte Origin-Allowlist; `*` erlaubt alles            |
+
+CLI-Flags `--http` / `--stdio` überschreiben `MCP_TRANSPORT`.
+
+> **Hinweis zu Streamable HTTP:** Aktuell Request/Response über `POST /mcp` (für alle Tool-Calls völlig ausreichend). Server-initiierte SSE-Streams für Progress-Events sind als Folge-Iteration geplant.
+
+## Deployment
+
+Das eigene Helm-Chart ist mit dem Umzug nach `mesh-enterprise` entfallen –
+der MCP-Server wird **als Sub-Chart vom Mesh-Helm-Chart** mitdeployt. Die
+relevanten Werte (Transport-Modus, Auth-Token-Secret, Ingress) sind dort unter
+einem `mcpServer:`-Key dokumentiert. Container-Image:
+
+```
+repo.gentics.com/mesh/mcp-server:<mesh-version>
+```
+
+Lokaler Container-Build (für Smoke-Tests):
+
+```bash
+VERSION=$(mvn -q help:evaluate -Dexpression=project.version -DforceStdout)
+docker build --build-arg VERSION="$VERSION" -t mesh-mcp-server:dev .
+```
+
+## Verfügbare Tools
+
+| Tool                  | Beschreibung                                             |
+|-----------------------|----------------------------------------------------------|
+| `mesh_list_projects`  | Alle erlaubten Projekte                                  |
+| `mesh_list_schemas`   | Schemas eines Projekts                                   |
+| `mesh_get_node`       | Einzelner Node per UUID                                  |
+| `mesh_search_nodes`   | Volltextsuche (benötigt Elasticsearch)                   |
+| `mesh_get_webroot`    | Node per URL-Pfad                                        |
+| `mesh_run_graphql`    | Read-only GraphQL-Query                                  |
+
+Vollständige Schemas und Beispiel-Responses: siehe `docs.html`.
+
+## Client-Cookbook (Auszug)
+
+Siehe `docs.html` für die vollständigen Snippets (Claude Desktop, Cursor/Continue/Zed, OpenAI Responses API, LangChain MCP-Adapters, n8n, Open WebUI, vLLM/TGI).
+
+```bash
+# Quick curl gegen die HTTP-Variante:
+TOKEN=secret-please-rotate
+curl -s http://localhost:3001/mcp \
+  -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | jq
+```
+
+## Architektur
+
+```
+Main.java
+  └── MeshConfig.load()          ← Env-Validierung inkl. Transport-Felder
+  └── MeshClient                 ← Mesh-Operationen
+        ├── MeshRestClient
+        ├── MeshGraphqlClient
+        └── MeshMapper
+  └── ToolDispatcher             ← transport-agnostisch (6 Tools)
+        ├── ListProjectsUseCase
+        ├── ListSchemasUseCase
+        ├── GetNodeUseCase
+        ├── SearchNodesUseCase
+        ├── GetWebrootUseCase
+        └── RunGraphqlUseCase
+  └── McpServerRunner (stdio)    ← MCP-SDK + Stdio
+  └── HttpMcpServer  (http)      ← JDK HttpServer + JSON-RPC + Auth + CORS + Metrics
+        ├── BearerTokenValidator (constant-time)
+        └── Metrics              (Prometheus-Textformat)
+```
+
+## Tests
+
+```bash
+mvn -B -ntp -pl mcp-server test
+```
+
+Drei dedizierte Tests decken die HTTP-Schicht ab:
+`BearerTokenValidatorTest`, `MetricsTest`, `HttpMcpServerDispatchTest`.
+
+## CI
+
+`Jenkinsfile` definiert die Modul-Pipeline (Build, Test, Docker, Push nach
+`repo.gentics.com`). Eingebunden über die Jenkins-Multibranch-Konfiguration
+von `mesh-enterprise`.
+
+## Lizenz
+
+Wird über `mesh-enterprise` geregelt – keine eigene `LICENSE`-Datei nötig.
