@@ -386,9 +386,9 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 				MediaType.parse("application/json; charset=utf-8"));
 
 		Request loadRequest = new Request.Builder()
-				.url(projectUrl("/form/" + uuid + "/load?lang=en"))
+				.url(projectUrl("/forms/" + uuid + "/data"))
 				.headers(auth(permission))
-				.post(requestBody)
+				.get()
 				.build();
 		Response response = client().newCall(loadRequest).execute();
 		if (permission) {

@@ -554,7 +554,7 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 				.isTrue();
 		} else*/ {
 			assertThat(response.isSuccessful())
-				.as(String.format("Response success %d (%s)", response.code(), response.message()))
+				.as(String.format("Response success %d (%s).", response.code(), response.message()))
 				.isTrue();
 
 			if (json) {
