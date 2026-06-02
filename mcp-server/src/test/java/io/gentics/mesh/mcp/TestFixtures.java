@@ -16,49 +16,32 @@ public final class TestFixtures {
 
     /** Creates a standard read-only config with the {@code demo} project allowed. */
     public static MeshConfig readOnlyConfig() {
-        return baseConfig(true, 6);
+        return baseConfig(true, 6, List.of());
     }
 
     /** Like {@link #readOnlyConfig()} but with write operations permitted. */
     public static MeshConfig writeEnabledConfig() {
-        return baseConfig(false, 6);
+        return baseConfig(false, 6, List.of());
     }
 
     /** Config with a specific schema allowlist. */
     public static MeshConfig configWithSchemaAllowlist(String... schemas) {
-        return new MeshConfig(
-                "http://localhost:8080",
-                "admin",
-                "admin",
-                List.of("demo"),
-                List.of(schemas),
-                List.of("de", "en"),
-                true,
-                6,
-                5_000L,
-                10_000L,
-                "info",
-                "stdio",
-                "0.0.0.0",
-                3001,
-                null,
-                true,
-                List.of()
-        );
+        return baseConfig(true, 6, List.of(schemas));
     }
 
     /** Config with a shallow GraphQL depth limit (for testing depth guard). */
     public static MeshConfig shallowDepthConfig(int maxDepth) {
-        return baseConfig(true, maxDepth);
+        return baseConfig(true, maxDepth, List.of());
     }
 
-    private static MeshConfig baseConfig(boolean readOnly, int graphqlMaxDepth) {
+    private static MeshConfig baseConfig(boolean readOnly, int graphqlMaxDepth,
+                                         List<String> schemaAllowlist) {
         return new MeshConfig(
                 "http://localhost:8080",
                 "admin",
                 "admin",
                 List.of("demo"),
-                List.of(),
+                schemaAllowlist,
                 List.of("de", "en"),
                 readOnly,
                 graphqlMaxDepth,
@@ -70,7 +53,16 @@ public final class TestFixtures {
                 3001,
                 null,
                 true,
-                List.of()
+                List.of(),
+                // ── Protection layer (test defaults: liberal so unrelated tests don't hit limits)
+                10_000,    // mcpRateLimitPerSecond
+                10_000,    // mcpRateLimitPerTokenPerSecond
+                1_000,     // mcpMeshMaxConcurrent
+                false,     // mcpCircuitBreakerEnabled – off by default in tests
+                50,        // mcpCircuitBreakerFailureRatePct
+                20,        // mcpCircuitBreakerWindowSize
+                30_000L,   // mcpCircuitBreakerOpenDurationMs
+                4_000      // mcpGraphqlMaxQueryLength
         );
     }
 }

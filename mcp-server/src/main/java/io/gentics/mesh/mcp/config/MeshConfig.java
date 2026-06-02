@@ -40,6 +40,14 @@ import java.util.Set;
  *   <tr><td>MCP_AUTH_TOKEN</td><td>conditional</td><td>–</td><td>Required in HTTP mode unless explicitly disabled via MCP_AUTH_DISABLED=true</td></tr>
  *   <tr><td>MCP_AUTH_DISABLED</td><td>no</td><td>false</td><td>Set to {@code true} only when an external proxy/ingress handles authentication</td></tr>
  *   <tr><td>MCP_CORS_ORIGINS</td><td>no</td><td>(none)</td><td>Comma-separated allowlist of CORS origins; {@code *} permits all</td></tr>
+ *   <tr><td>MCP_RATE_LIMIT_PER_SECOND</td><td>no</td><td>50</td><td>Global token-bucket refill (weighted permits/s)</td></tr>
+ *   <tr><td>MCP_RATE_LIMIT_PER_TOKEN_PER_SECOND</td><td>no</td><td>20</td><td>Per-Bearer-token refill (weighted permits/s)</td></tr>
+ *   <tr><td>MCP_MESH_MAX_CONCURRENT</td><td>no</td><td>10</td><td>Bulkhead permits — max simultaneous in-flight Mesh calls</td></tr>
+ *   <tr><td>MCP_CIRCUIT_BREAKER_ENABLED</td><td>no</td><td>true</td><td>When {@code false}, never opens the breaker (rate-limit / bulkhead still apply)</td></tr>
+ *   <tr><td>MCP_CIRCUIT_BREAKER_FAILURE_RATE_PERCENT</td><td>no</td><td>50</td><td>Open breaker when failure rate over window ≥ this %</td></tr>
+ *   <tr><td>MCP_CIRCUIT_BREAKER_WINDOW_SIZE</td><td>no</td><td>20</td><td>Sliding-window size (number of calls) for failure-rate calc</td></tr>
+ *   <tr><td>MCP_CIRCUIT_BREAKER_OPEN_DURATION_MS</td><td>no</td><td>30000</td><td>How long the breaker stays open before half-open probe</td></tr>
+ *   <tr><td>MCP_GRAPHQL_MAX_QUERY_LENGTH</td><td>no</td><td>4000</td><td>Reject GraphQL queries longer than this many characters</td></tr>
  * </table>
  *
  * @param meshBaseUrl           Base URL of the Gentics Mesh instance (required)
@@ -59,6 +67,14 @@ import java.util.Set;
  * @param mcpAuthToken          Bearer token for HTTP transport ({@code null} when auth disabled)
  * @param mcpAuthDisabled       When {@code true}, HTTP requests are accepted without authentication
  * @param mcpCorsOrigins        Allowed CORS origins; empty list disables CORS headers
+ * @param mcpRateLimitPerSecond            Global weighted permits/s (token bucket)
+ * @param mcpRateLimitPerTokenPerSecond    Per-Bearer-token weighted permits/s
+ * @param mcpMeshMaxConcurrent             Bulkhead permits — max simultaneous Mesh calls
+ * @param mcpCircuitBreakerEnabled         Whether the circuit breaker is active
+ * @param mcpCircuitBreakerFailureRatePct  Failure rate (%) at which the breaker opens
+ * @param mcpCircuitBreakerWindowSize      Sliding-window size for failure-rate calc
+ * @param mcpCircuitBreakerOpenDurationMs  How long the breaker stays open
+ * @param mcpGraphqlMaxQueryLength         Max characters allowed in a GraphQL query body
  *
  * @see io.gentics.mesh.mcp.security.PolicyService
  * @since 0.1.0
@@ -80,7 +96,15 @@ public record MeshConfig(
         int mcpHttpPort,
         String mcpAuthToken,
         boolean mcpAuthDisabled,
-        List<String> mcpCorsOrigins
+        List<String> mcpCorsOrigins,
+        int mcpRateLimitPerSecond,
+        int mcpRateLimitPerTokenPerSecond,
+        int mcpMeshMaxConcurrent,
+        boolean mcpCircuitBreakerEnabled,
+        int mcpCircuitBreakerFailureRatePct,
+        int mcpCircuitBreakerWindowSize,
+        long mcpCircuitBreakerOpenDurationMs,
+        int mcpGraphqlMaxQueryLength
 ) {
 
     // ── Defaults ────────────────────────────────────────────────────────────
@@ -94,6 +118,14 @@ public record MeshConfig(
     private static final Set<String>  VALID_TRANSPORTS = Set.of("stdio", "http");
     private static final String       DEFAULT_HTTP_HOST = "0.0.0.0";
     private static final int          DEFAULT_HTTP_PORT = 3001;
+    private static final int          DEFAULT_RATE_LIMIT_GLOBAL  = 50;
+    private static final int          DEFAULT_RATE_LIMIT_TOKEN   = 20;
+    private static final int          DEFAULT_MAX_CONCURRENT     = 10;
+    private static final boolean      DEFAULT_BREAKER_ENABLED    = true;
+    private static final int          DEFAULT_BREAKER_FAIL_PCT   = 50;
+    private static final int          DEFAULT_BREAKER_WINDOW     = 20;
+    private static final long         DEFAULT_BREAKER_OPEN_MS    = 30_000L;
+    private static final int          DEFAULT_GRAPHQL_MAX_LENGTH = 4_000;
 
     /**
      * Load and validate configuration from environment variables.
@@ -201,6 +233,27 @@ public record MeshConfig(
                 ? splitCsv(corsEnv)
                 : List.of();
 
+        // ── Protection layer configuration ─────────────────────────────────
+        int rateLimitGlobal = parsePositiveInt("MCP_RATE_LIMIT_PER_SECOND",
+                System.getenv("MCP_RATE_LIMIT_PER_SECOND"), DEFAULT_RATE_LIMIT_GLOBAL, errors);
+        int rateLimitToken  = parsePositiveInt("MCP_RATE_LIMIT_PER_TOKEN_PER_SECOND",
+                System.getenv("MCP_RATE_LIMIT_PER_TOKEN_PER_SECOND"), DEFAULT_RATE_LIMIT_TOKEN, errors);
+        int maxConcurrent   = parsePositiveInt("MCP_MESH_MAX_CONCURRENT",
+                System.getenv("MCP_MESH_MAX_CONCURRENT"), DEFAULT_MAX_CONCURRENT, errors);
+
+        String breakerEnabledEnv = System.getenv("MCP_CIRCUIT_BREAKER_ENABLED");
+        boolean breakerEnabled = breakerEnabledEnv == null || !"false".equalsIgnoreCase(breakerEnabledEnv);
+
+        int breakerFailPct = parseRangedInt("MCP_CIRCUIT_BREAKER_FAILURE_RATE_PERCENT",
+                System.getenv("MCP_CIRCUIT_BREAKER_FAILURE_RATE_PERCENT"),
+                DEFAULT_BREAKER_FAIL_PCT, 1, 100, errors);
+        int breakerWindow = parsePositiveInt("MCP_CIRCUIT_BREAKER_WINDOW_SIZE",
+                System.getenv("MCP_CIRCUIT_BREAKER_WINDOW_SIZE"), DEFAULT_BREAKER_WINDOW, errors);
+        long breakerOpenMs = parsePositiveLong("MCP_CIRCUIT_BREAKER_OPEN_DURATION_MS",
+                System.getenv("MCP_CIRCUIT_BREAKER_OPEN_DURATION_MS"), DEFAULT_BREAKER_OPEN_MS, errors);
+        int graphqlMaxLength = parsePositiveInt("MCP_GRAPHQL_MAX_QUERY_LENGTH",
+                System.getenv("MCP_GRAPHQL_MAX_QUERY_LENGTH"), DEFAULT_GRAPHQL_MAX_LENGTH, errors);
+
         if (!errors.isEmpty()) {
             throw new AppError(ErrorCode.VALIDATION_ERROR,
                     "Konfigurationsfehler: " + errors.toString().trim());
@@ -223,8 +276,56 @@ public record MeshConfig(
                 httpPort,
                 token,
                 disabled,
-                corsOrigins
+                corsOrigins,
+                rateLimitGlobal,
+                rateLimitToken,
+                maxConcurrent,
+                breakerEnabled,
+                breakerFailPct,
+                breakerWindow,
+                breakerOpenMs,
+                graphqlMaxLength
         );
+    }
+
+    private static int parsePositiveInt(String key, String raw, int def, StringBuilder errors) {
+        if (raw == null || raw.isBlank()) return def;
+        try {
+            int v = Integer.parseInt(raw.strip());
+            if (v < 1) { errors.append(key).append(" muss >= 1 sein. "); return def; }
+            return v;
+        } catch (NumberFormatException e) {
+            errors.append(key).append(" muss eine Ganzzahl sein. ");
+            return def;
+        }
+    }
+
+    private static long parsePositiveLong(String key, String raw, long def, StringBuilder errors) {
+        if (raw == null || raw.isBlank()) return def;
+        try {
+            long v = Long.parseLong(raw.strip());
+            if (v < 1) { errors.append(key).append(" muss >= 1 sein. "); return def; }
+            return v;
+        } catch (NumberFormatException e) {
+            errors.append(key).append(" muss eine Ganzzahl sein. ");
+            return def;
+        }
+    }
+
+    private static int parseRangedInt(String key, String raw, int def, int min, int max, StringBuilder errors) {
+        if (raw == null || raw.isBlank()) return def;
+        try {
+            int v = Integer.parseInt(raw.strip());
+            if (v < min || v > max) {
+                errors.append(key).append(" muss zwischen ").append(min)
+                        .append(" und ").append(max).append(" liegen. ");
+                return def;
+            }
+            return v;
+        } catch (NumberFormatException e) {
+            errors.append(key).append(" muss eine Ganzzahl sein. ");
+            return def;
+        }
     }
 
     // ── Private helpers ──────────────────────────────────────────────────────

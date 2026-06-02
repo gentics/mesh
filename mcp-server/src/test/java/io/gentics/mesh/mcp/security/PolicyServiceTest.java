@@ -44,7 +44,8 @@ class PolicyServiceTest {
                 "http://localhost:8080", "u", "p",
                 List.of("alpha", "beta"),
                 List.of(), List.of("de"), true, 6, 5000L, 10000L, "info",
-                "stdio", "0.0.0.0", 3001, null, true, List.of());
+                "stdio", "0.0.0.0", 3001, null, true, List.of(),
+                10_000, 10_000, 1_000, false, 50, 20, 30_000L, 4_000);
         assertDoesNotThrow(() -> PolicyService.assertProjectAllowed("alpha", config));
         assertDoesNotThrow(() -> PolicyService.assertProjectAllowed("beta", config));
     }

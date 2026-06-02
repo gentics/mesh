@@ -36,6 +36,22 @@ der Mesh-Version – ein eigenes Semver für den MCP-Server wird nicht mehr gef�
 - `Jenkinsfile` (declarative pipeline): Maven Build + Tests,
   Docker-Build mit VERSION aus POM, Push nach `repo.gentics.com` auf
   `main`/`release/*`/Tags.
+- **Mesh-Schutz-Layer** (`MeshCallGuard`) — protect Mesh from being killed
+  by runaway LLM tool-call loops:
+  - Token-Bucket-Rate-Limit pro Bearer-Token + global, mit Tool-Gewichtung
+    (`mesh_run_graphql` kostet 5 Permits, `mesh_list_projects` nur 1).
+  - Bulkhead: maximal `MCP_MESH_MAX_CONCURRENT` parallele in-flight Mesh-Calls.
+  - Circuit Breaker: bei zu vielen Mesh-Fehlern öffnet der Breaker und gibt
+    für die Cooldown-Dauer sofort 503 zurück, statt Mesh weiter zu belasten.
+    Client-side Faults (Validation, Forbidden, NotFound) zählen nicht.
+  - Per-Request-Cap: `MCP_GRAPHQL_MAX_QUERY_LENGTH` lehnt pathologisch lange
+    GraphQL-Queries ab, bevor Mesh sie sieht.
+  - Neue Error-Codes: `RATE_LIMITED` (HTTP 429), `BUSY` (429), `CIRCUIT_OPEN`
+    (503) — mit `Retry-After`-Header.
+  - Neue Prometheus-Metriken: `mcp_rate_limit_rejected_total`,
+    `mcp_concurrency_rejected_total`, `mcp_circuit_breaker_rejected_total`,
+    `mcp_circuit_breaker_state`.
+- Resilience4j (Rate-Limiter, Bulkhead, Circuit-Breaker) als Dependencies.
 
 ## [0.2.0] – 2026-06-02
 

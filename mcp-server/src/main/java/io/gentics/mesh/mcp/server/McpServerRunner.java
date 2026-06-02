@@ -36,10 +36,6 @@ public class McpServerRunner {
     private final ToolDispatcher dispatcher;
     private final String serverVersion;
 
-    public McpServerRunner(MeshConfig config, MeshClient client, String serverVersion) {
-        this(new ToolDispatcher(config, client), serverVersion);
-    }
-
     public McpServerRunner(ToolDispatcher dispatcher, String serverVersion) {
         this.dispatcher    = dispatcher;
         this.serverVersion = serverVersion;

@@ -18,6 +18,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -151,12 +153,14 @@ public final class HttpMcpServer {
                 return;
             }
 
-            if (!authValidator.isAuthorized(ex.getRequestHeaders().getFirst("Authorization"))) {
+            String authHeader = ex.getRequestHeaders().getFirst("Authorization");
+            if (!authValidator.isAuthorized(authHeader)) {
                 metrics.incrementHttpAuthFailed();
                 ex.getResponseHeaders().add("WWW-Authenticate", "Bearer realm=\"mcp\"");
                 respondText(ex, 401, "Unauthorized");
                 return;
             }
+            String tokenKey = config.mcpAuthDisabled() ? "no-auth" : tokenKeyFromHeader(authHeader);
 
             JsonNode request;
             try (InputStream is = ex.getRequestBody()) {
@@ -170,12 +174,15 @@ public final class HttpMcpServer {
                 return;
             }
 
-            JsonNode response = dispatchJsonRpc(request);
-            if (response == null) {
+            JsonRpcResponse response = dispatchJsonRpc(request, tokenKey);
+            if (response.envelope() == null) {
                 // Notification – no response per JSON-RPC 2.0 spec.
                 respondNoBody(ex, 204);
             } else {
-                respondJson(ex, 200, response);
+                if (response.retryAfterSeconds() != null) {
+                    ex.getResponseHeaders().add("Retry-After", String.valueOf(response.retryAfterSeconds()));
+                }
+                respondJson(ex, response.httpStatus(), response.envelope());
             }
         } catch (Exception unexpected) {
             log.error("Unhandled error in /mcp handler", unexpected);
@@ -187,8 +194,20 @@ public final class HttpMcpServer {
         }
     }
 
-    /** Dispatches a JSON-RPC request and returns the response (or {@code null} for notifications). */
+    /** Carrier for a JSON-RPC envelope plus HTTP-level signalling. */
+    public record JsonRpcResponse(JsonNode envelope, int httpStatus, Integer retryAfterSeconds) {
+        static JsonRpcResponse ok(JsonNode env) { return new JsonRpcResponse(env, 200, null); }
+        static JsonRpcResponse status(JsonNode env, int code, int retry) { return new JsonRpcResponse(env, code, retry); }
+        static JsonRpcResponse notification() { return new JsonRpcResponse(null, 204, null); }
+    }
+
+    /** Test/back-compat helper – returns only the envelope, treats all errors as 200. */
     JsonNode dispatchJsonRpc(JsonNode request) {
+        return dispatchJsonRpc(request, "stdio").envelope();
+    }
+
+    /** Dispatches a JSON-RPC request and returns the envelope + HTTP status hints. */
+    JsonRpcResponse dispatchJsonRpc(JsonNode request, String tokenKey) {
         JsonNode idNode = request.get("id");
         String method = request.path("method").asText("");
         JsonNode params = request.get("params");
@@ -197,21 +216,18 @@ public final class HttpMcpServer {
 
         try {
             return switch (method) {
-                case "initialize" -> jsonRpcResult(idNode, buildInitializeResult(params));
-                case "notifications/initialized", "initialized" -> {
-                    // accepted, no response (notification)
-                    yield null;
-                }
-                case "ping" -> jsonRpcResult(idNode, MAPPER.createObjectNode());
-                case "tools/list" -> jsonRpcResult(idNode, buildToolsList());
-                case "tools/call" -> dispatchToolsCall(idNode, params);
+                case "initialize" -> JsonRpcResponse.ok(jsonRpcResult(idNode, buildInitializeResult(params)));
+                case "notifications/initialized", "initialized" -> JsonRpcResponse.notification();
+                case "ping" -> JsonRpcResponse.ok(jsonRpcResult(idNode, MAPPER.createObjectNode()));
+                case "tools/list" -> JsonRpcResponse.ok(jsonRpcResult(idNode, buildToolsList()));
+                case "tools/call" -> dispatchToolsCall(idNode, params, tokenKey);
                 default -> isNotification
-                        ? null
-                        : jsonRpcError(idNode, -32601, "Method not found: " + method);
+                        ? JsonRpcResponse.notification()
+                        : JsonRpcResponse.ok(jsonRpcError(idNode, -32601, "Method not found: " + method));
             };
         } catch (Exception e) {
-            if (isNotification) return null;
-            return jsonRpcError(idNode, -32603, "Internal error: " + e.getMessage());
+            if (isNotification) return JsonRpcResponse.notification();
+            return JsonRpcResponse.ok(jsonRpcError(idNode, -32603, "Internal error: " + e.getMessage()));
         }
     }
 
@@ -244,13 +260,13 @@ public final class HttpMcpServer {
         return result;
     }
 
-    private JsonNode dispatchToolsCall(JsonNode idNode, JsonNode params) {
+    private JsonRpcResponse dispatchToolsCall(JsonNode idNode, JsonNode params, String tokenKey) {
         if (params == null) {
-            return jsonRpcError(idNode, -32602, "Missing params");
+            return JsonRpcResponse.ok(jsonRpcError(idNode, -32602, "Missing params"));
         }
         String name = params.path("name").asText("");
         if (name.isBlank()) {
-            return jsonRpcError(idNode, -32602, "Missing tool name");
+            return JsonRpcResponse.ok(jsonRpcError(idNode, -32602, "Missing tool name"));
         }
         Map<String, Object> args;
         JsonNode argsNode = params.get("arguments");
@@ -259,19 +275,22 @@ public final class HttpMcpServer {
         } else if (argsNode.isObject()) {
             args = MAPPER.convertValue(argsNode, Map.class);
         } else {
-            return jsonRpcError(idNode, -32602, "tools/call 'arguments' must be an object");
+            return JsonRpcResponse.ok(jsonRpcError(idNode, -32602, "tools/call 'arguments' must be an object"));
         }
 
         long start = System.currentTimeMillis();
         boolean error = false;
+        ErrorCode errorCode = null;
         String resultJson;
         try {
-            resultJson = dispatcher.dispatch(name, args);
+            resultJson = dispatcher.dispatch(name, args, tokenKey);
         } catch (AppError e) {
             error = true;
+            errorCode = e.getCode();
             resultJson = e.toMcpJson();
         } catch (Exception e) {
             error = true;
+            errorCode = ErrorCode.INTERNAL_ERROR;
             resultJson = new AppError(ErrorCode.INTERNAL_ERROR, e.getMessage()).toMcpJson();
         } finally {
             metrics.recordToolCall(name, System.currentTimeMillis() - start, error);
@@ -283,7 +302,39 @@ public final class HttpMcpServer {
         textBlock.put("type", "text");
         textBlock.put("text", resultJson);
         result.put("isError", error);
-        return jsonRpcResult(idNode, result);
+
+        JsonNode envelope = jsonRpcResult(idNode, result);
+        return toHttpStatus(envelope, errorCode);
+    }
+
+    /**
+     * Maps protection-layer errors to proper HTTP status + Retry-After hints.
+     * Everything else stays at HTTP 200 with isError in the JSON-RPC envelope.
+     */
+    private JsonRpcResponse toHttpStatus(JsonNode envelope, ErrorCode code) {
+        if (code == null) return JsonRpcResponse.ok(envelope);
+        return switch (code) {
+            case RATE_LIMITED, BUSY -> JsonRpcResponse.status(envelope, 429, 1);
+            case CIRCUIT_OPEN       -> JsonRpcResponse.status(envelope, 503,
+                    Math.max(1, (int) Math.ceil(config.mcpCircuitBreakerOpenDurationMs() / 1000.0)));
+            default                 -> JsonRpcResponse.ok(envelope);
+        };
+    }
+
+    /**
+     * Computes a stable key derived from the Authorization header. SHA-256
+     * keeps the bearer token out of memory in plaintext (the limiter map
+     * keys would otherwise leak it via heap dumps).
+     */
+    private static String tokenKeyFromHeader(String authHeader) {
+        if (authHeader == null) return "anon";
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] digest = md.digest(authHeader.getBytes(StandardCharsets.UTF_8));
+            return HexFormat.of().formatHex(digest);
+        } catch (Exception e) {
+            return "anon";
+        }
     }
 
     // ── operational endpoints ───────────────────────────────────────────────

@@ -25,9 +25,9 @@ import java.util.Map;
  * and the HTTP transport ({@link HttpMcpServer}) delegate to it, so the
  * tool surface stays identical across transports.
  *
- * <p>Validation, policy checks and Mesh I/O happen inside the use-case classes
- * called from {@link #dispatch(String, Map)}. This class is intentionally
- * thin: it only routes arguments and surfaces failures as {@link AppError}.
+ * <p>Every dispatch is funneled through {@link MeshCallGuard}, which applies
+ * rate-limiting, bulkhead and circuit-breaker semantics before the Mesh call
+ * is actually made.
  *
  * @since 0.2.0
  */
@@ -44,16 +44,18 @@ public final class ToolDispatcher {
     private final SearchNodesUseCase  searchNodes;
     private final GetWebrootUseCase   getWebroot;
     private final RunGraphqlUseCase   runGraphql;
+    private final MeshCallGuard       guard;
 
     private final List<ToolSpec> tools;
 
-    public ToolDispatcher(MeshConfig config, MeshClient client) {
+    public ToolDispatcher(MeshConfig config, MeshClient client, MeshCallGuard guard) {
         this.listProjects = new ListProjectsUseCase(client, config);
         this.listSchemas  = new ListSchemasUseCase(client, config);
         this.getNode      = new GetNodeUseCase(client, config);
         this.searchNodes  = new SearchNodesUseCase(client, config);
         this.getWebroot   = new GetWebrootUseCase(client, config);
         this.runGraphql   = new RunGraphqlUseCase(client, config);
+        this.guard        = guard;
         this.tools        = buildToolSpecs();
     }
 
@@ -63,16 +65,32 @@ public final class ToolDispatcher {
     }
 
     /**
-     * Invokes the named tool with the given arguments.
-     *
-     * @param name MCP tool name (e.g. {@code "mesh_get_node"})
-     * @param args raw argument map as parsed from JSON-RPC params
-     * @return JSON string with the tool's result payload
-     * @throws AppError when validation fails, the tool is unknown,
-     *                  or the upstream Mesh request fails
+     * Convenience: dispatch without a token key (e.g. stdio).
      */
     public String dispatch(String name, Map<String, Object> args) {
-        if (args == null) args = Map.of();
+        return dispatch(name, args, "stdio");
+    }
+
+    /**
+     * Invokes the named tool with the given arguments through the protection
+     * guard (rate-limit + bulkhead + circuit breaker).
+     *
+     * @param name     MCP tool name (e.g. {@code "mesh_get_node"})
+     * @param args     raw argument map as parsed from JSON-RPC params
+     * @param tokenKey stable per-client key (SHA-256 hash of Bearer token,
+     *                 {@code "stdio"} for the stdio transport, or
+     *                 {@code "no-auth"} when auth is disabled)
+     * @return JSON string with the tool's result payload
+     * @throws AppError when validation fails, the tool is unknown,
+     *                  any protection layer rejects, or the upstream Mesh
+     *                  request fails
+     */
+    public String dispatch(String name, Map<String, Object> args, String tokenKey) {
+        final Map<String, Object> finalArgs = (args == null) ? Map.of() : args;
+        return guard.execute(name, tokenKey, () -> dispatchInternal(name, finalArgs));
+    }
+
+    private String dispatchInternal(String name, Map<String, Object> args) {
         return switch (name) {
             case "mesh_list_projects" -> listProjects.execute();
             case "mesh_list_schemas"  -> listSchemas.execute(require(args, "project"));
@@ -189,7 +207,7 @@ public final class ToolDispatcher {
         }
     }
 
-    // ── argument helpers (mirror the previous private helpers in McpServerRunner) ──
+    // ── argument helpers ───────────────────────────────────────────────────
 
     private static String require(Map<String, Object> args, String key) {
         Object val = args.get(key);

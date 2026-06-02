@@ -7,6 +7,7 @@ import io.gentics.mesh.mcp.server.AuthValidator;
 import io.gentics.mesh.mcp.server.BearerTokenValidator;
 import io.gentics.mesh.mcp.server.HttpMcpServer;
 import io.gentics.mesh.mcp.server.McpServerRunner;
+import io.gentics.mesh.mcp.server.MeshCallGuard;
 import io.gentics.mesh.mcp.server.Metrics;
 import io.gentics.mesh.mcp.server.ToolDispatcher;
 import io.gentics.mesh.mcp.showcase.ShowcaseServer;
@@ -84,15 +85,18 @@ public class Main {
                 else                 transport = config.mcpTransport();
 
                 String serverVersion = resolveServerVersion();
+                // Protection layer & metrics: identical for both transports.
+                Metrics metrics = new Metrics();
+                MeshCallGuard guard = new MeshCallGuard(config, metrics);
+                ToolDispatcher dispatcher = new ToolDispatcher(config, client, guard);
+
                 if ("http".equals(transport)) {
-                    ToolDispatcher dispatcher = new ToolDispatcher(config, client);
-                    Metrics metrics = new Metrics();
                     AuthValidator authValidator = config.mcpAuthDisabled()
                             ? AuthValidator.ALLOW_ALL
                             : new BearerTokenValidator(config.mcpAuthToken());
                     new HttpMcpServer(config, dispatcher, authValidator, metrics, serverVersion).start();
                 } else {
-                    new McpServerRunner(config, client, serverVersion).run();
+                    new McpServerRunner(dispatcher, serverVersion).run();
                 }
             }
 

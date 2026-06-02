@@ -24,10 +24,11 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!--
-      MCP-spezifische Property. Falls eines Tages ins mesh-bom aufgenommen,
-      hier streichen und <version> an der mcp-Dependency entfernen.
+      MCP-spezifische Properties. Falls eines Tages ins mesh-bom aufgenommen,
+      hier streichen und <version> an den jeweiligen Dependencies entfernen.
     -->
     <mcp.version>0.9.0</mcp.version>
+    <resilience4j.version>2.2.0</resilience4j.version>
   </properties>
 
   <!--
@@ -53,6 +54,23 @@
       <groupId>io.modelcontextprotocol.sdk</groupId>
       <artifactId>mcp</artifactId>
       <version>${mcp.version}</version>
+    </dependency>
+
+    <!-- ── Resilience4j (Rate-Limit / Bulkhead / Circuit Breaker) ── -->
+    <dependency>
+      <groupId>io.github.resilience4j</groupId>
+      <artifactId>resilience4j-ratelimiter</artifactId>
+      <version>${resilience4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.github.resilience4j</groupId>
+      <artifactId>resilience4j-bulkhead</artifactId>
+      <version>${resilience4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.github.resilience4j</groupId>
+      <artifactId>resilience4j-circuitbreaker</artifactId>
+      <version>${resilience4j.version}</version>
     </dependency>
 
     <!-- ── Gentics Mesh REST Client ───────────────────── -->

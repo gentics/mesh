@@ -112,7 +112,16 @@ public class MeshGraphqlClient {
                     "Nur query-Operationen werden akzeptiert.");
         }
 
-        // 2. Depth guard
+        // 2. Length guard (catches pathologically long queries before depth analysis)
+        int maxLen = config.mcpGraphqlMaxQueryLength();
+        if (gqlQuery != null && gqlQuery.length() > maxLen) {
+            throw new AppError(ErrorCode.VALIDATION_ERROR,
+                    "GraphQL-Query-Länge " + gqlQuery.length() + " überschreitet das " +
+                    "konfigurierte Maximum von " + maxLen + " Zeichen " +
+                    "(MCP_GRAPHQL_MAX_QUERY_LENGTH). Query kürzen oder Limit erhöhen.");
+        }
+
+        // 3. Depth guard
         int depth = measureDepth(gqlQuery);
         if (depth > config.meshGraphqlMaxDepth()) {
             throw new AppError(ErrorCode.VALIDATION_ERROR,

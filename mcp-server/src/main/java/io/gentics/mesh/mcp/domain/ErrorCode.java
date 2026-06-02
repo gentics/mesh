@@ -38,6 +38,18 @@ package io.gentics.mesh.mcp.domain;
  *     <td>{@link #INTERNAL_ERROR}</td><td>500</td>
  *     <td>Unexpected exception (bug)</td>
  *   </tr>
+ *   <tr>
+ *     <td>{@link #RATE_LIMITED}</td><td>429</td>
+ *     <td>Token-bucket rate limit exceeded (global or per Bearer token)</td>
+ *   </tr>
+ *   <tr>
+ *     <td>{@link #BUSY}</td><td>429</td>
+ *     <td>Bulkhead full – too many simultaneous in-flight Mesh requests</td>
+ *   </tr>
+ *   <tr>
+ *     <td>{@link #CIRCUIT_OPEN}</td><td>503</td>
+ *     <td>Circuit breaker open – Mesh is failing; requests fail-fast for cooldown</td>
+ *   </tr>
  * </table>
  *
  * @see AppError
@@ -83,5 +95,26 @@ public enum ErrorCode {
      * Thrown for unexpected exceptions that indicate a bug in the server.
      * Always logged with a full stack trace.
      */
-    INTERNAL_ERROR
+    INTERNAL_ERROR,
+
+    /**
+     * Token-bucket rate limit exceeded — either the global limiter or the
+     * per-Bearer-token limiter denied the request. Maps to HTTP 429 with a
+     * {@code Retry-After} header.
+     */
+    RATE_LIMITED,
+
+    /**
+     * Bulkhead permits exhausted: too many concurrent in-flight Mesh requests.
+     * Distinct from {@link #RATE_LIMITED} because it indicates *concurrency*
+     * pressure rather than *rate* pressure. Maps to HTTP 429.
+     */
+    BUSY,
+
+    /**
+     * Circuit breaker is in {@code OPEN} state — Mesh is failing or slow, and
+     * the breaker fails fast for a cooldown period to give Mesh time to
+     * recover. Maps to HTTP 503 with a {@code Retry-After} header.
+     */
+    CIRCUIT_OPEN
 }

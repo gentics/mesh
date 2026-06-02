@@ -18,9 +18,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Unit tests for the JSON-RPC dispatcher logic in {@link HttpMcpServer}.
  *
- * <p>These tests bypass the HTTP socket and exercise
- * {@link HttpMcpServer#dispatchJsonRpc(JsonNode)} directly, which keeps them
- * fast and free of network flakiness.
+ * <p>These tests bypass the HTTP socket and exercise the dispatcher directly,
+ * which keeps them fast and free of network flakiness.
  */
 @ExtendWith(MockitoExtension.class)
 class HttpMcpServerDispatchTest {
@@ -32,8 +31,10 @@ class HttpMcpServerDispatchTest {
 
     private HttpMcpServer server() {
         MeshConfig cfg = TestFixtures.readOnlyConfig();
-        ToolDispatcher dispatcher = new ToolDispatcher(cfg, mockClient);
-        return new HttpMcpServer(cfg, dispatcher, AuthValidator.ALLOW_ALL, new Metrics(), "0.2.0-test");
+        Metrics metrics = new Metrics();
+        MeshCallGuard guard = new MeshCallGuard(cfg, metrics);
+        ToolDispatcher dispatcher = new ToolDispatcher(cfg, mockClient, guard);
+        return new HttpMcpServer(cfg, dispatcher, AuthValidator.ALLOW_ALL, metrics, "0.2.0-test");
     }
 
     @Test
@@ -59,7 +60,6 @@ class HttpMcpServerDispatchTest {
         JsonNode arr = resp.get("result").get("tools");
         assertTrue(arr.isArray());
         assertEquals(6, arr.size());
-        // Spot-check first entry has the expected schema-related keys.
         JsonNode first = arr.get(0);
         assertTrue(first.has("name"));
         assertTrue(first.has("description"));
@@ -85,10 +85,12 @@ class HttpMcpServerDispatchTest {
     void toolsCall_unknownTool_returnsIsErrorTrue() throws Exception {
         JsonNode req = MAPPER.readTree(
                 "{\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"tools/call\",\"params\":{\"name\":\"does_not_exist\",\"arguments\":{}}}");
-        JsonNode resp = server().dispatchJsonRpc(req);
-        assertNotNull(resp);
-        JsonNode result = resp.get("result");
+        HttpMcpServer.JsonRpcResponse resp = server().dispatchJsonRpc(req, "test-token");
+        assertNotNull(resp.envelope());
+        JsonNode result = resp.envelope().get("result");
         assertNotNull(result);
-        assertTrue(result.get("isError").asBoolean(), "unknown tool must surface as isError=true in tool result");
+        assertTrue(result.get("isError").asBoolean(), "unknown tool must surface as isError=true");
+        // Unknown tool is a VALIDATION_ERROR → stays at HTTP 200 with isError in envelope.
+        assertEquals(200, resp.httpStatus());
     }
 }

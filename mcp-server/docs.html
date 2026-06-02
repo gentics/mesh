@@ -513,6 +513,7 @@
         <a href="#architecture">Architecture</a>
         <a href="#config">Config</a>
         <a href="#tools">Tools</a>
+        <a href="#protection">Protection</a>
         <a href="#transports">Transports</a>
         <a href="#auth">Auth</a>
         <a href="#ops">Ops</a>
@@ -788,6 +789,25 @@
       </table>
     </div>
 
+    <h3>Mesh-Schutz (siehe <a href="#protection">Protection</a>)</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Variable</th><th>Default</th><th>Beschreibung</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>MCP_RATE_LIMIT_PER_SECOND</code></td><td><code>50</code></td><td>Globale gewichtete Permits/s</td></tr>
+          <tr><td><code>MCP_RATE_LIMIT_PER_TOKEN_PER_SECOND</code></td><td><code>20</code></td><td>Per-Bearer-Token Permits/s (stdio exempt)</td></tr>
+          <tr><td><code>MCP_MESH_MAX_CONCURRENT</code></td><td><code>10</code></td><td>Bulkhead-Permits (parallele Mesh-Calls)</td></tr>
+          <tr><td><code>MCP_CIRCUIT_BREAKER_ENABLED</code></td><td><code>true</code></td><td>Breaker an/aus</td></tr>
+          <tr><td><code>MCP_CIRCUIT_BREAKER_FAILURE_RATE_PERCENT</code></td><td><code>50</code></td><td>Öffnungs-Schwelle</td></tr>
+          <tr><td><code>MCP_CIRCUIT_BREAKER_WINDOW_SIZE</code></td><td><code>20</code></td><td>Sliding-Window-Größe</td></tr>
+          <tr><td><code>MCP_CIRCUIT_BREAKER_OPEN_DURATION_MS</code></td><td><code>30000</code></td><td>Cooldown-Dauer</td></tr>
+          <tr><td><code>MCP_GRAPHQL_MAX_QUERY_LENGTH</code></td><td><code>4000</code></td><td>Max. Zeichen in einer GraphQL-Query</td></tr>
+        </tbody>
+      </table>
+    </div>
+
     <div class="callout callout-warn">
       <strong>Hinweis:</strong> Wer im HTTP-Modus startet, ohne <code>MCP_AUTH_TOKEN</code> oder
       <code>MCP_AUTH_DISABLED=true</code> zu setzen, bekommt einen Konfigurationsfehler beim Start.
@@ -920,6 +940,98 @@
 }</code></pre>
       </details>
     </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     PROTECTION LAYERS
+════════════════════════════════════════════════════ -->
+<section id="protection" class="section-inner">
+  <div class="container">
+    <div class="section-intro">
+      <span class="section-label">Mesh Protection</span>
+      <h2 class="section-headline">Rate-Limit · Bulkhead · Circuit Breaker.</h2>
+      <p class="section-body">
+        Damit ein LLM mit einer Retry-Schleife oder ein generell sehr fragefreudiger
+        Agent Mesh nicht in die Knie zwingt, sitzt der <code>MeshCallGuard</code>
+        zwischen jedem Tool-Call und der Mesh-Anbindung. Drei unabhängige Layer,
+        alle Fail-Fast.
+      </p>
+    </div>
+
+    <div class="grid-3">
+      <div class="card">
+        <h3>1 · Token-Bucket Rate-Limit</h3>
+        <p>Pro Bearer-Token <em>und</em> global. Token-Cost spiegelt grobe
+        Mesh-Last wider:
+        <code>list_projects=1</code>, <code>list_schemas=1</code>,
+        <code>get_node=2</code>, <code>get_webroot=2</code>,
+        <code>search_nodes=3</code>, <code>run_graphql=5</code>.
+        Stdio-Modus ist vom Per-Token-Limit ausgenommen (es gibt nur einen Client).</p>
+        <p>Default: 20/s pro Token, 50/s global. Bei Überschreitung:
+        <code>RATE_LIMITED</code> → HTTP 429 + <code>Retry-After: 1</code>.</p>
+      </div>
+      <div class="card">
+        <h3>2 · Bulkhead (Concurrency Cap)</h3>
+        <p>Begrenzt <em>parallele</em> in-flight Mesh-Calls. Wichtig, weil ein
+        einzelnes <code>mesh_run_graphql</code> 5 Sekunden binden kann –
+        das ist kein Rate-, sondern ein Concurrency-Problem.</p>
+        <p>Default: 10 gleichzeitige Calls. Bei Überschreitung:
+        <code>BUSY</code> → HTTP 429 + <code>Retry-After: 1</code>.</p>
+      </div>
+      <div class="card">
+        <h3>3 · Circuit Breaker</h3>
+        <p>Wenn Mesh anfängt zu erroren, hört der Server auf, Last zu produzieren —
+        statt blind nachzulegen. Sliding-Window über die letzten N Calls;
+        Client-Faults (Validation, Forbidden, NotFound) zählen <em>nicht</em>,
+        nur echte Mesh-Probleme.</p>
+        <p>Default: 50 % Failure-Rate über 20-Call-Fenster → öffnet für 30 s.
+        Bei offenem Breaker: <code>CIRCUIT_OPEN</code> → HTTP 503 +
+        <code>Retry-After: 30</code>.</p>
+      </div>
+    </div>
+
+    <h3>Tuning-Tabelle</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Variable</th><th>Default</th><th>Wann erhöhen / senken</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>MCP_RATE_LIMIT_PER_SECOND</code></td><td><code>50</code></td><td>Erhöhen, wenn viele Tokens echte Last erzeugen sollen.</td></tr>
+          <tr><td><code>MCP_RATE_LIMIT_PER_TOKEN_PER_SECOND</code></td><td><code>20</code></td><td>Senken, um einzelne Agents stärker zu drosseln.</td></tr>
+          <tr><td><code>MCP_MESH_MAX_CONCURRENT</code></td><td><code>10</code></td><td>Spiegelt die Mesh-Capacity. Faustregel: 1–2× CPU-Kerne von Mesh.</td></tr>
+          <tr><td><code>MCP_CIRCUIT_BREAKER_ENABLED</code></td><td><code>true</code></td><td>In Lasttests evtl. <code>false</code>, sonst immer an.</td></tr>
+          <tr><td><code>MCP_CIRCUIT_BREAKER_FAILURE_RATE_PERCENT</code></td><td><code>50</code></td><td>Niedriger = empfindlicher Breaker.</td></tr>
+          <tr><td><code>MCP_CIRCUIT_BREAKER_WINDOW_SIZE</code></td><td><code>20</code></td><td>Größer = stabiler, träger.</td></tr>
+          <tr><td><code>MCP_CIRCUIT_BREAKER_OPEN_DURATION_MS</code></td><td><code>30000</code></td><td>So lang braucht Mesh zum Atmen.</td></tr>
+          <tr><td><code>MCP_GRAPHQL_MAX_QUERY_LENGTH</code></td><td><code>4000</code></td><td>Erhöhen für Power-User-Queries; Senken, wenn LLMs zu lange Queries bauen.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Erwartetes Client-Verhalten</h3>
+    <p>
+      Bei <code>HTTP 429</code> oder <code>503</code> sollte ein guter Client den
+      <code>Retry-After</code>-Header lesen und exponentiell zurückwarten.
+      LLM-Frameworks (OpenAI Agents SDK, LangChain) machen das ootb;
+      eigene Integrationen müssen es selbst implementieren.
+    </p>
+    <p>
+      Innerhalb der MCP-Antwort kommt zusätzlich der JSON-RPC-Envelope mit
+      <code>result.isError = true</code> und einem strukturierten Error-Body –
+      so kann das LLM den Grund sprachlich verarbeiten ("Tool ist gerade
+      ausgelastet, frag in einer Minute nochmal").
+    </p>
+
+    <h3>Metriken</h3>
+<pre><span class="code-label">prom</span><code class="language-text">mcp_rate_limit_rejected_total{scope="token",tool="mesh_run_graphql"} 42
+mcp_rate_limit_rejected_total{scope="global",tool="mesh_search_nodes"} 5
+mcp_concurrency_rejected_total{tool="mesh_get_node"} 11
+mcp_circuit_breaker_rejected_total 8
+mcp_circuit_breaker_state{state="CLOSED"} 1
+mcp_circuit_breaker_state{state="OPEN"} 0
+mcp_circuit_breaker_state{state="HALF_OPEN"} 0</code></pre>
   </div>
 </section>
 
@@ -1125,6 +1237,18 @@ mcp_tool_duration_ms_total{tool="mesh_get_node"} 91240</code></pre>
       <div class="err-code">INTERNAL_ERROR</div>
       <div class="err-http">HTTP 500</div>
       <div class="err-desc">Unerwartete Exception im Server. Sollte in Logs auftauchen und einen Bug-Report wert sein.</div>
+
+      <div class="err-code">RATE_LIMITED</div>
+      <div class="err-http">HTTP 429</div>
+      <div class="err-desc">Token-Bucket leer (global oder pro Bearer-Token). Antwort enthält <code>Retry-After</code>.</div>
+
+      <div class="err-code">BUSY</div>
+      <div class="err-http">HTTP 429</div>
+      <div class="err-desc">Bulkhead voll – zu viele parallele Mesh-Calls. Antwort enthält <code>Retry-After</code>.</div>
+
+      <div class="err-code">CIRCUIT_OPEN</div>
+      <div class="err-http">HTTP 503</div>
+      <div class="err-desc">Mesh ist gerade unhealthy; Breaker fängt Last ab. Antwort enthält <code>Retry-After</code> = Cooldown-Restzeit.</div>
     </div>
 
     <h3>JSON-Format eines Fehlers</h3>

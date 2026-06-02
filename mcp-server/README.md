@@ -77,6 +77,28 @@ CLI-Flags `--http` / `--stdio` überschreiben `MCP_TRANSPORT`.
 
 > **Hinweis zu Streamable HTTP:** Aktuell Request/Response über `POST /mcp` (für alle Tool-Calls völlig ausreichend). Server-initiierte SSE-Streams für Progress-Events sind als Folge-Iteration geplant.
 
+## Mesh-Schutz (Rate-Limit / Bulkhead / Circuit Breaker)
+
+Damit ein LLM mit einer Retry-Schleife Mesh nicht überlasten kann, schützt
+`MeshCallGuard` jeden Tool-Call in drei Schichten:
+
+| Layer | Was | Default | Bei Überschreitung |
+|---|---|---|---|
+| Rate-Limit (Token-Bucket) | Pro Bearer-Token + global, gewichtet pro Tool (graphql=5, search=3, get=2, list=1) | 20/s pro Token, 50/s global | `RATE_LIMITED` → HTTP 429 + `Retry-After` |
+| Bulkhead | Max gleichzeitige in-flight Mesh-Calls | 10 | `BUSY` → HTTP 429 + `Retry-After` |
+| Circuit Breaker | Öffnet bei ≥ 50 % Fehlerquote über 20-Call-Fenster | 30 s Cooldown | `CIRCUIT_OPEN` → HTTP 503 + `Retry-After` |
+
+Zusätzlich kappen Per-Request-Caps Einzel-Calls: `MESH_GRAPHQL_MAX_DEPTH=6`,
+`MCP_GRAPHQL_MAX_QUERY_LENGTH=4000`, `mesh_search_nodes.limit` max 20.
+
+Verhalten: **Fail-Fast** — kein Warten, kein Pufferspeicher. Clients sehen 429/503
+mit `Retry-After` und müssen exponentiell zurückwarten. Client-side Faults
+(VALIDATION_ERROR, FORBIDDEN, NOT_FOUND) zählen nicht gegen den Circuit Breaker.
+Prometheus-Metriken (`mcp_rate_limit_rejected_total`, `mcp_concurrency_rejected_total`,
+`mcp_circuit_breaker_state`) machen Limit-Treffer sichtbar.
+
+Vollständige Tuning-Tabelle: siehe `.env.example` und `docs.html`.
+
 ## Deployment
 
 Das eigene Helm-Chart ist mit dem Umzug nach `mesh-enterprise` entfallen –
