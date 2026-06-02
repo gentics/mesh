@@ -1,6 +1,5 @@
 package com.gentics.mesh.plugin.forms;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -10,6 +9,7 @@ import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.service.MeshPluginService;
@@ -76,6 +76,6 @@ public class SchemaInitializer {
 	 * @return
 	 */
 	private Completable initRootNode(String projectName) {
-		return meshPluginService.ensureFolders(projectName, PLUGIN_SCHEMA_NAME, PATH_FORMS_PLUGIN_ROOT, true).ignoreElement();
+		return meshPluginService.ensureFolders(projectName, PLUGIN_SCHEMA_NAME, PATH_FORMS_PLUGIN_ROOT, true, Optional.of(fields -> fields.put("isMigrated", new BooleanFieldImpl().setValue(true)))).ignoreElement();
 	}
 }

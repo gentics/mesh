@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -214,7 +215,6 @@ public class MeshPluginService {
 		return ensureSchemas(prefix, schemaNames, Optional.empty());
 	}
 
-
 	/**
 	 * Returns a function that will make sure the specified schemas exist and
 	 * are assigned to the project.
@@ -319,6 +319,7 @@ public class MeshPluginService {
 		return project -> ensureFolders(project, folderSchemaName, path, false).ignoreElement();
 	}
 
+
 	/**
 	 * Makes sure that there is a node with the provided path.
 	 *
@@ -331,6 +332,21 @@ public class MeshPluginService {
 	 * 		in the path
 	 */
 	public Single<NodeResponse> ensureFolders(String project, String folderSchemaName, String path, boolean publish) {
+		return ensureFolders(project, folderSchemaName, path, publish, Optional.empty());
+	}
+
+	/**
+	 * Makes sure that there is a node with the provided path.
+	 *
+	 * @param project The project name
+	 * @param folderSchemaName The name of the folder schema to use for
+	 * 		creating missing folders
+	 * @param path The path to check
+	 * @param publish If true, the created folders are also published
+	 * @return A <code>Single</code> with the node response for the last folder
+	 * 		in the path
+	 */
+	public Single<NodeResponse> ensureFolders(String project, String folderSchemaName, String path, boolean publish, Optional<Consumer<FieldMap>> maybeFieldInitializer) {
 		// TODO create and assign minimal folder schema if needed.
 		return adminClient.findSchemas().toSingle()
 			.doOnSubscribe(ignored -> log.info("Checking {} \"{}\" for \"{}\"", folderSchemaName, path, project))
@@ -339,7 +355,7 @@ public class MeshPluginService {
 			.singleOrError()
 			.doOnError(e -> log.error("Could not find folder schema \"" + folderSchemaName + "\"", e))
 			.zipWith(prefixPath(project, path), Pair::of)
-			.flatMap(pair -> ensureFoldersRec(project, pair.getLeft(), pair.getRight(), publish));
+			.flatMap(pair -> ensureFoldersRec(project, pair.getLeft(), pair.getRight(), publish, maybeFieldInitializer));
 	}
 
 	/**
@@ -528,13 +544,13 @@ public class MeshPluginService {
 	 * @return A <code>Single</code> with the node response for the last folder
 	 * 		in the path
 	 */
-	private Single<NodeResponse> ensureFoldersRec(String project, SchemaResponse folderSchema, String path, boolean publish) {
+	private Single<NodeResponse> ensureFoldersRec(String project, SchemaResponse folderSchema, String path, boolean publish, Optional<Consumer<FieldMap>> maybeFieldInitializer) {
 		return RxUtil.webrootMaybe(adminClient, project, path)
 			.to(RxUtil.defaultSingle(() -> {
 				String[] split = splitLastSegment(path);
 
-				return ensureFoldersRec(project, folderSchema, split[0], publish)
-					.flatMap(parent -> createFolder(project, folderSchema, parent.getUuid(), split[1]))
+				return ensureFoldersRec(project, folderSchema, split[0], publish, maybeFieldInitializer)
+					.flatMap(parent -> createFolder(project, folderSchema, parent.getUuid(), split[1], maybeFieldInitializer))
 					.flatMap(node -> publish
 						? adminClient.publishNode(project, node.getUuid()).toCompletable().andThen(Single.just(node))
 						: Single.just(node));
@@ -624,7 +640,7 @@ public class MeshPluginService {
 	 * @param folderName The name of the folder to create
 	 * @return A <code>Single</code> with the created folders <code>NodeResponse</code>
 	 */
-	private Single<NodeResponse> createFolder(String projectName, SchemaResponse folderSchema, String parentUuid, String folderName) {
+	private Single<NodeResponse> createFolder(String projectName, SchemaResponse folderSchema, String parentUuid, String folderName, Optional<Consumer<FieldMap>> maybeFieldInitializer) {
 		NodeCreateRequest createRequest = new NodeCreateRequest()
 			.setLanguage("en")
 			.setParentNodeUuid(parentUuid)
@@ -640,6 +656,8 @@ public class MeshPluginService {
 		if (!StringUtils.isBlank(folderSchema.getDisplayField())) {
 			fields.put(folderSchema.getDisplayField(), new StringFieldImpl().setString(folderName));
 		}
+
+		maybeFieldInitializer.ifPresent(fi -> fi.accept(fields));
 
 		if (log.isTraceEnabled()) {
 			log.trace("Creating {} \"{}\" in parent {}", folderSchema.getName(), folderName, parentUuid);
