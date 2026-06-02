@@ -1,5 +1,26 @@
 package com.gentics.mesh.plugin.forms.model;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.annotation.Nonnull;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.jsoup.Jsoup;
+
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -18,31 +39,13 @@ import com.gentics.mesh.plugin.forms.model.schema.FormData;
 import com.gentics.mesh.plugin.forms.model.schema.FormSchema;
 import com.gentics.mesh.plugin.forms.model.schema.FormUiSchema;
 import com.gentics.mesh.util.StreamUtil;
+
 import io.reactivex.Single;
 import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.Vertx;
 import okhttp3.OkHttpClient;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
-import org.jsoup.Jsoup;
-
-import javax.annotation.Nonnull;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.regex.Pattern;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Form
@@ -519,8 +522,7 @@ public class Form implements RestModel {
 	 * 		with unsafe values. Note that only elements which where not already
 	 * 		sanitized are contained in this map.
 	 */
-	public Map<String, ValidationError> preventInjection(FormDataCreateContext ctx, SecurityOptions options) {
-		var postedData = ctx.getPostedData();
+	public Map<String, ValidationError> preventInjection(MultiMap postedData, FormDataCreateContext ctx, SecurityOptions options) {
 		InjectionPreventionMode mode = options.getInjectionPreventionMode();
 		Map<Pattern, String> rules = options.getCompiledSanitationRules();
 
