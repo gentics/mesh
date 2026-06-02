@@ -5,9 +5,10 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.plugin.PluginContext;
-import com.gentics.mesh.plugin.common.MeshPluginException;
 import com.gentics.mesh.plugin.common.util.ParameterUtil;
 import com.gentics.mesh.plugin.forms.FormsError;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
@@ -18,6 +19,8 @@ import io.reactivex.Single;
 
 @Singleton
 public class CancelDataHandler extends AbstractFormsHandler {
+	private static final Logger log = LoggerFactory.getLogger(CancelDataHandler.class);
+
 	private final FormDataService formDataService;
 
 	@Inject
@@ -40,10 +43,12 @@ public class CancelDataHandler extends AbstractFormsHandler {
 				}).doOnEvent((response, t) -> {
 					if (t != null) {
 						if (t instanceof FormsError formsError) {
+							log.debug("Error canceling form data", t);
 							pluginContext.response().setStatusCode(formsError.getStatusCode())
-									.end(t.getLocalizedMessage());
+									.end(t.getMessage());
 						} else {
-							pluginContext.response().setStatusCode(500).end(t.getLocalizedMessage());
+							log.error("Error canceling form data", t);
+							pluginContext.response().setStatusCode(500).end(t.getMessage());
 						}
 					} else {
 						pluginContext.response().end();

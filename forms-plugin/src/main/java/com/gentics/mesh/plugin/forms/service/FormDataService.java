@@ -59,6 +59,7 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.parameter.VersioningParameters;
@@ -1097,7 +1098,19 @@ public class FormDataService {
 			// loadFormDataByUuid() already checks if formDataUuid is a subnode of formUuid and if formUuid is actually a form.
 			DeleteParametersImpl deleteParams = new DeleteParametersImpl();
 			deleteParams.setRecursive(true);
-			return userClient.deleteNode(projectName, formDataUuid, deleteParams).toSingle();
+			List<Single<EmptyResponse>> listBinaryNodes = formDataNode.getFields().keySet().stream().map(key -> {
+				NodeFieldList nodeList = formDataNode.getFields().getNodeFieldList(key);
+				if (nodeList != null && !nodeList.getItems().isEmpty()) {
+					return nodeList.getItems().stream().map(nodeItem -> userClient.deleteNode(projectName, nodeItem.getUuid(), deleteParams).toSingle()).collect(Collectors.toList());
+				} else {
+					return null;
+				}
+			}).filter(Objects::nonNull).flatMap(list -> list.stream()).collect(Collectors.toList());
+
+			return userClient.deleteNode(projectName, formDataUuid, deleteParams).toSingle()
+					.flatMap(formDeleted -> listBinaryNodes.size() < 1
+							? Single.just(formDeleted)
+							: Single.zip(listBinaryNodes, deletedItems -> formDeleted));
 		});
 	}
 
