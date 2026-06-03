@@ -400,11 +400,11 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 			.addFormDataPart("sssss[0]", "multipage.html", requestBodyFromFile("multipage.html"))
 			.build();
 
-		Request postRequest = new Request.Builder()
+		Request request = new Request.Builder()
 			.url(projectUrl("/form/" + formUuid + "/submit?lang=" + language))
 			.post(requestBody)
 			.build();
-		Response response = client().newCall(postRequest).execute();
+		Response response = client().newCall(request).execute();
 
 		// Result must be successful and there must still be exactly one data node.
 		assertThat(response.isSuccessful())
@@ -433,21 +433,42 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		MeshBinaryResponse download;
 		Buffer buffer;
 		for (int i = 0; i < 2; i++) {
+			// Fetch through Mesh
 			String itemUuid = dataNode.getFields().getNodeFieldList("filesssss").getItems().get(i).getUuid();
 			download = call(() -> server.client().downloadBinaryField(PROJECT_NAME, itemUuid, dataNode.getLanguage(), "binary"));
 			assertThat(download.getFilename()).as("Filename").isEqualTo("multipage." + i + ".json");
 
 			buffer = RxUtil.readEntireData(download.getFlowable()).blockingGet();
 			assertThat(buffer.toString()).as("File contents").isEqualTo(fromFile("multipage.json"));
+
+			// Fetch through Forms Plugin
+			request = new Request.Builder()
+					.url(projectUrl("/forms/" + formUuid + "/data/" + dataNode.getUuid() + "/binary/filesssss/multi/" + i + "?lang=" + language))
+					.headers(auth(true))
+					.get()
+					.build();
+			response = client().newCall(request).execute();
+			assertThat(response.body().string()).as("File contents").isEqualTo(fromFile("multipage.json"));
 		}
 		for (int i = 0; i < 1; i++) {
+			// Fetch through Mesh
 			String itemUuid = dataNode.getFields().getNodeFieldList("sssss").getItems().get(i).getUuid();
 			download = call(() -> server.client().downloadBinaryField(PROJECT_NAME, itemUuid, dataNode.getLanguage(), "binary"));
 			assertThat(download.getFilename()).as("Filename").isEqualTo("multipage.html");
 
 			buffer = RxUtil.readEntireData(download.getFlowable()).blockingGet();
 			assertThat(buffer.toString()).as("File contents").isEqualTo(fromFile("multipage.html"));
+
+			// Fetch through Forms Plugin
+			request = new Request.Builder()
+					.url(projectUrl("/forms/" + formUuid + "/data/" + dataNode.getUuid() + "/binary/sssss/multi/" + i + "?lang=" + language))
+					.headers(auth(true))
+					.get()
+					.build();
+			response = client().newCall(request).execute();
+			assertThat(response.body().string()).as("File contents").isEqualTo(fromFile("multipage.html"));
 		}
+		
 	}
 
 
