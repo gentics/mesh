@@ -1077,6 +1077,30 @@ public class FormDataService {
 	}
 
 	/**
+	 * Gets the multi-binary field item for the specified form data node and sends it to the meshClient.
+	 *
+	 * @param formUuid the UUID of the form node
+	 * @param formDataUuid the UUID of the data node
+	 * @param binaryFieldName the name of the binary field in the form data node
+	 * @param index index of a multi-field binary
+	 */
+	public Single<MeshResponse<MeshBinaryResponse>> loadMultiBinaryItem(String projectName, String formUuid, String formDataUuid, String binaryFieldName, int index) {
+		// Binaries can be loaded for already published form data as well, so call the variant of load() which allows loading published form data.
+		return load(projectName, formUuid, formDataUuid, true).flatMap(formDataNode -> {
+			try {
+				NodeFieldList nodeList = formDataNode.getFields().getNodeFieldList(binaryFieldName);
+				String binaryUuid = nodeList.getItems().get(index).getUuid();
+				return userClient.downloadBinaryField(projectName, binaryUuid, formDataNode.getLanguage(), "binary").getResponse();
+			} catch (Exception e) {
+				// TODO FIXME Mesh Currently there is no way to determine a field's type from the node response, other that load the corresponding form schema.
+				// Here we try deserializing the node list, which may spit random deserialization errors.
+				log.error("Deserialization error", e);
+			}
+			return Single.error(new FormsError("Error retrieving binary [%d] of a field %s for the form data %s".formatted(index, binaryFieldName, formDataUuid), 400));
+		});
+	}
+
+	/**
 	 * Deletes the form data with the specified formDataUuid.
 	 *
 	 * @param projectName project name
