@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -37,6 +38,7 @@ import com.google.common.net.HttpHeaders;
 import io.vertx.core.json.JsonObject;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
+import okhttp3.MultipartBody.Builder;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -691,6 +693,83 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 				}
 			}
 			assertThat(foundFiles).as("Files found in ZIP").containsOnlyElementsOf(expectedNames);
+		} else {
+			assertForbidden(zipDownloadResponse);
+		}
+	}
+
+	/**
+	 * Test loading binaries as zip
+	 * @throws IOException
+	 */
+	@Test
+	public void testLoadMultiBinariesAsZip() throws IOException {
+		String uuid = createForm("multifilefield.json");
+
+		List<String> filesToPost = Arrays.asList("list1.json", "list2.json", "list3.json");
+		Builder builder = new MultipartBody.Builder().setType(MultipartBody.FORM);
+		List<String> expectedNames = IntStream.range(0, filesToPost.size()).mapToObj(index -> {
+			String fileName = filesToPost.get(index);
+			try {
+				builder.addFormDataPart("file1[" + index + "]", fileName, requestBodyFromFile(fileName));
+			} catch (IOException e) {
+				throw new IllegalStateException(e);
+			}
+			return "/file1/" + index + "/" + fileName;
+		}).collect(Collectors.toList());
+		String dataUuid;
+		try {
+			RequestBody requestBody = builder.build();
+			Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=en")).header("Referer", "ref").post(requestBody).build();
+			Response response = client().newCall(postRequest).execute();
+			assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+			dataUuid = new JsonObject(response.body().string()).getString(FIELD_RS_DATA_UUID);
+		} catch (IOException e) {
+			throw new IllegalStateException(e);
+		}
+		expectedNames = expectedNames.stream().map(name -> dataUuid + "/<node-uuid>" +  name).collect(Collectors.toList());
+
+		if (!online) {
+			setFormOffline(uuid, "en", true, true);
+		}
+
+		Request zipDownloadRequest = new Request.Builder()
+				.url(projectUrl("/forms/" + uuid + "/binaries"))
+				.headers(auth(permission))
+				.get()
+				.build();
+		Response zipDownloadResponse = client().newCall(zipDownloadRequest).execute();
+
+		if (permission) {
+			assertThat(zipDownloadResponse.isSuccessful()).as(String.format("Response success %d (%s)", zipDownloadResponse.code(), zipDownloadResponse.message())).isTrue();
+
+			assertThat(zipDownloadResponse.header(HttpHeaders.CONTENT_DISPOSITION)).as("Content-Disposition").startsWith("attachment; filename=forms-files_Form with Filefield_").endsWith(".zip");
+			assertThat(zipDownloadResponse.header(HttpHeaders.CONTENT_TYPE)).as("Content-Type").isEqualTo("application/zip");
+
+			Set<String> foundFiles = new HashSet<>();
+			try (ZipInputStream zipIn = new ZipInputStream(zipDownloadResponse.body().byteStream())) {
+				ZipEntry entry = null;
+				while ((entry = zipIn.getNextEntry()) != null) {
+					String name = entry.getName();
+					foundFiles.add(name);
+					StringWriter fileContents = new StringWriter();
+					IOUtils.copy(zipIn, fileContents, "UTF-8");
+					assertThat(fileContents.toString()).as(String.format("Contents of file %s", name)).isEqualTo(fromFile(name.contains("/") ? name.substring(name.lastIndexOf("/") + 1) : name));
+				}
+			}
+			assertThat(foundFiles).as("Files found in ZIP").usingElementComparator((a, b) -> {
+				if (StringUtils.isNotBlank(a) && StringUtils.isNotBlank(b)) {
+					String[] apath = a.split("/");
+					String[] bpath = b.split("/");
+					if (apath.length == 5 && bpath.length == 5) {
+						return apath[0].compareTo(bpath[0])
+							+ apath[2].compareTo(bpath[2])
+							+ apath[3].compareTo(bpath[3])
+							+ apath[4].compareTo(bpath[4]);
+					}
+				}
+				return -1;
+			}).containsExactlyInAnyOrderElementsOf(expectedNames);
 		} else {
 			assertForbidden(zipDownloadResponse);
 		}
