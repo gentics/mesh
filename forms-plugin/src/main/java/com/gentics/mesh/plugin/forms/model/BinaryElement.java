@@ -32,6 +32,7 @@ import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
+import com.gentics.mesh.plugin.forms.SchemaInitializer;
 import com.gentics.mesh.plugin.forms.config.FileUploadOptions;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.context.FormDataCreateContext;
@@ -102,7 +103,7 @@ public class BinaryElement extends FormElement {
 	@Override
 	public void addFieldSchema(FieldSchemaContainer container) {
 		if (isList()) {
-			container.addField(new ListFieldSchemaImpl().setListType("node").setAllowedSchemas("binary_content").setName(getName()).setLabel(getName()));
+			container.addField(new ListFieldSchemaImpl().setListType("node").setAllowedSchemas(SchemaInitializer.MULTIBINARY_ITEM_SCHEMA_NAME).setName(getName()).setLabel(getName()));
 		} else {
 			container.addField(new BinaryFieldSchemaImpl().setName(getName()).setLabel(getName()));
 		}

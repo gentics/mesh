@@ -921,13 +921,15 @@ public class FormService {
 		FormDataProperty prop = new FormDataProperty();
 
 		if (element instanceof BinaryElement) {
-			BinaryField binaryField = node.getFields().getBinaryField(element.getName());
-			if (binaryField != null) {
-				Map<String, Object> binaryValue = new LinkedHashMap<>();
-				binaryValue.put("fileName", binaryField.getFileName());
-				binaryValue.put("size", binaryField.getFileSize());
-				binaryValue.put("value", node.getUuid() + ":" + element.getName());
-				prop.setValue(binaryValue);
+			if (!element.isList()) {
+				BinaryField binaryField = node.getFields().getBinaryField(element.getName());
+				if (binaryField != null) {
+					Map<String, Object> binaryValue = new LinkedHashMap<>();
+					binaryValue.put("fileName", binaryField.getFileName());
+					binaryValue.put("size", binaryField.getFileSize());
+					binaryValue.put("value", node.getUuid() + ":" + element.getName());
+					prop.setValue(binaryValue);
+				}
 			}
 			return prop;
 		}

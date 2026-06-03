@@ -785,8 +785,13 @@ public class FormDataService {
 	public Single<Pair<Form, File>> zipBinaries(String projectName, Form form) {
 		Set<String> fileElementNames = form.getElementsInsideProperties().filter(elem -> elem instanceof BinaryElement).map(FormElement::getName)
 			.filter(Objects::nonNull).collect(Collectors.toSet());
-		Set<String> fileFieldNames = form.getElementsInsideProperties().filter(elem -> elem instanceof BinaryElement).map(FormElement::getGraphQLName)
-			.filter(Objects::nonNull).collect(Collectors.toSet());
+		Set<String> fileFieldNames = form.getElementsInsideProperties().filter(elem -> elem instanceof BinaryElement).map(elem -> {
+			if (elem.isList()) {
+				return elem.getName() + " {uuid,path}";
+			} else {
+				return elem.getGraphQLName();
+			}
+		}).filter(Objects::nonNull).collect(Collectors.toSet());
 
 		Single<List<Downloadable>> singleDownloadables = null;
 		if (fileElementNames.isEmpty()) {
@@ -868,13 +873,17 @@ public class FormDataService {
 			String uuid = element.getString("uuid");
 			JsonObject fields = element.getJsonObject("fields");
 			for (String name : fileElementNames) {
-				JsonObject fieldValue = fields.getJsonObject(name);
-				if (fieldValue != null) {
+				Object value = fields.getValue(name);
+				if (value instanceof JsonObject) {
 					downloadables.add(new Downloadable(uuid, name));
+				} else if (value instanceof JsonArray listValue) {
+					for (int j = 0; j < listValue.size(); j++) {
+						JsonObject itemObject = listValue.getJsonObject(j);
+						downloadables.add(new Downloadable(itemObject.getString("uuid"), "binary", Optional.of("%s/%s/%s/%d".formatted(uuid, itemObject.getString("uuid"), name, j))));
+					}
 				}
 			}
 		}
-
 		return Single.just(downloadables);
 	}
 
@@ -901,7 +910,7 @@ public class FormDataService {
 
 		return Observable.fromIterable(downloadables).flatMap(d -> {
 			return adminClient.downloadBinaryField(projectName, d.uuid, "en", d.fieldName).toObservable().doAfterNext(MeshBinaryResponse::close).flatMap(download -> {
-				addZipEntryWithUniqueFolderStructure(out, download.getFilename(), d.uuid, d.fieldName);
+				addZipEntryWithUniqueFolderStructure(out, download.getFilename(), d.uuid, d.fieldName, d.maybeFolderName);
 				try (InputStream ins = download.getStream()) {
 					IOUtils.copy(ins, out);
 				}
@@ -924,12 +933,15 @@ public class FormDataService {
 	 * @param fieldName form field name, nullable
 	 * @throws IOException
 	 */
-	protected void addZipEntryWithUniqueFolderStructure(ZipOutputStream out, String filename, String formDataUuid, String fieldName) throws IOException {
+	protected void addZipEntryWithUniqueFolderStructure(ZipOutputStream out, String filename, String formDataUuid, String fieldName, Optional<String> maybeFolderName) throws IOException {
 		boolean tryAgain = false;
 		do {
 			tryAgain = false;
 			StringBuilder folderName = new StringBuilder();
-			if (org.apache.commons.lang.StringUtils.isNotBlank(formDataUuid) && org.apache.commons.lang.StringUtils.isNotBlank(fieldName)) {
+			if (maybeFolderName.isPresent()) {
+				folderName.append(maybeFolderName.get());
+				folderName.append("/");
+			} else if (org.apache.commons.lang.StringUtils.isNotBlank(formDataUuid) && org.apache.commons.lang.StringUtils.isNotBlank(fieldName)) {
 				folderName.append(formDataUuid);
 				folderName.append("/");
 				folderName.append(fieldName);
@@ -1370,36 +1382,31 @@ public class FormDataService {
 		// Reusable list item uploader
 		Function<FileUpload, Single<Pair<String, NodeResponse>>> listItemUploader = fileUpload -> {
 			String fieldName = getId(fileUpload);
-			Matcher matcher = Pattern.compile(MULTIFILE_ID_REGEX).matcher(fieldName);
+			Matcher matcher = multiIdRegex.matcher(fieldName);
 			String id = matcher.matches() ? matcher.group("name") : fieldName;
-			String fieldName1 = fieldName;
-			// First ensure that `binary_content` is assigned to the project
-			return adminClient.findSchemas(projectName).toSingle()
-				.flatMap(schemas -> schemas.getData().stream().filter(schema -> schema.getName().equals("binary_content")).findAny()
-						.map(schema -> Single.just(schema))
-						.orElseGet(() -> adminClient.findSchemas().toSingle()
-								.flatMap(allSchemas -> adminClient.assignSchemaToProject(projectName, allSchemas.getData().stream()
-										.filter(schema -> schema.getName().equals("binary_content"))
-										.findAny().orElseThrow(() -> new IllegalStateException("Could not find mandatory `binary_content` schema")).getUuid()).toSingle())))
-				.flatMap(binaryContentSchema -> {
-					NodeCreateRequest itemCreate = new NodeCreateRequest();
-					itemCreate.setParentNode(formDataNode.getParentNode());
-					itemCreate.setLanguage(formDataNode.getLanguage());
-					itemCreate.setSchemaName("binary_content");
-					itemCreate.getFields().put("name", new StringFieldImpl().setString(fieldName1));
-					long size = fileUpload.size();
-					InputStream ins = new FileInputStream(fileUpload.uploadedFileName());
-					// Then create a binary node
-					return adminClient.createNode(projectName, itemCreate).toSingle()
-						// and fill it
-						.flatMap(itemNode -> adminClient.updateNodeBinaryField(projectName, itemNode.getUuid(), formDataNode.getLanguage(), "draft",
-							"binary",
-							ins, size, fileUpload.fileName(), fileUpload.contentType())
-						.toSingle()
-						.map(itemNode1 -> {
-							return Pair.of(id, itemNode1);
-						}));
-				});					
+			NodeCreateRequest itemCreate = new NodeCreateRequest();
+			itemCreate.setParentNode(formDataNode.getParentNode());
+			itemCreate.setLanguage(formDataNode.getLanguage());
+			itemCreate.setSchemaName(SchemaInitializer.MULTIBINARY_ITEM_SCHEMA_NAME);
+			itemCreate.getFields().put("name", new StringFieldImpl().setString(fieldName));
+			try {
+				long size = fileUpload.size();
+				InputStream ins = new FileInputStream(fileUpload.uploadedFileName());
+				// Create a binary node
+				return adminClient.createNode(projectName, itemCreate).toSingle()
+					// and fill it
+					.flatMap(itemNode -> adminClient.updateNodeBinaryField(projectName, itemNode.getUuid(), formDataNode.getLanguage(), "draft",
+						"binary",
+						ins, size, fileUpload.fileName(), fileUpload.contentType())
+					.toSingle()
+					.map(itemNode1 -> {
+						return Pair.of(id, itemNode1);
+					}));
+			} catch (FileNotFoundException e1) {
+				String message = "Could not upload a binary for the form data %s field %s".formatted(formDataNode.getUuid(), fieldName);
+				log.error(message, e1);
+				return Single.error(new FormsError(message, e1, 400));
+			}				
 		};
 
 		// Reusable plain file uploader
@@ -1449,13 +1456,12 @@ public class FormDataService {
 					return plainUploader.apply(fileUpload).map(nr -> Pair.of(null, nr));
 				}
 			}).flatMapSingle(single -> single)).collect(Collectors.toList()), uploaded -> {
-				Supplier<NodeResponse> fallback = () -> ((Pair<String, NodeResponse>) uploaded[0]).getRight();
 				if (uploaded.length < 1) {
 					// Shortcut for no data. Should not happen.
 					return Single.error(new FormsError("No upload has been processed!", 500));
 				} else if (uploaded.length < 2 && uploaded[0] instanceof Pair && ((Pair)uploaded[0]).getKey() == null) {
 					// Shortcut for 1 plain upload
-					return Single.just(fallback.get());
+					return Single.just(formDataNode);
 				} else {
 					// Mess of uploads
 					Map<String, List<NodeResponse>> binariesPerField = Arrays.stream(uploaded)
@@ -1474,9 +1480,9 @@ public class FormDataService {
 					}).collect(Collectors.toList());
 					// Again the shortcut, as Single does not know what to do if there is nothing to zip
 					if (updated.size() < 1) {
-						return Single.just(fallback.get());
+						return Single.just(formDataNode);
 					} else {
-						return Single.zip(updated, updated1 -> fallback.get());
+						return Single.zip(updated, updated1 -> formDataNode);
 					}
 				}
 			}).flatMap(single -> single);
@@ -1666,10 +1672,16 @@ public class FormDataService {
 	protected static class Downloadable {
 		String uuid;
 		String fieldName;
+		Optional<String> maybeFolderName;
 
 		public Downloadable(String uuid, String fieldName) {
+			this(uuid, fieldName, Optional.empty());
+		}
+
+		public Downloadable(String uuid, String fieldName, Optional<String> maybeFolderName) {
 			this.uuid = uuid;
 			this.fieldName = fieldName;
+			this.maybeFolderName = maybeFolderName;
 		}
 	}
 }

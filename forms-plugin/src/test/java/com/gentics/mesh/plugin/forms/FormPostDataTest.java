@@ -455,7 +455,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 	 * Test canceling form where several single- and multi-upload elements mix
 	 */
 	@Test
-	public void testCleanTheMess() throws IOException {
+	public void testCancelMessedUpFileForm() throws IOException {
 		String formDefinition = "messed_up_but_valid.json";
 		String formUuid = createForm(formDefinition);
 
