@@ -101,7 +101,7 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 		projectRouter.route("/forms/:formUuid/data/:formDataUuid").method(DELETE).handler(fromComponent(FormsPluginComponent::deleteFormDataHandler));
 
 		projectRouter.route("/forms/:formUuid/data/:formDataUuid/binary/:binaryFieldName").method(GET).blockingHandler(fromComponent(FormsPluginComponent::loadFormDataBinaryHandler));
-		projectRouter.route("/forms/:formUuid/data/:formDataUuid/binary/:binaryFieldName/multi/:index").method(GET).blockingHandler(fromComponent(FormsPluginComponent::loadFormDataMultiBinaryItemHandler));
+		projectRouter.route("/forms/:formUuid/data/:formDataUuid/binary/:binaryFieldName/:index").method(GET).blockingHandler(fromComponent(FormsPluginComponent::loadFormDataMultiBinaryItemHandler));
 
 		projectRouter.route("/forms/:formUuid/export").method(GET).handler(fromComponent(FormsPluginComponent::exportHandler));
 		projectRouter.route("/forms/:formUuid/export").method(POST).handler(fromComponent(FormsPluginComponent::requestExportHandler));

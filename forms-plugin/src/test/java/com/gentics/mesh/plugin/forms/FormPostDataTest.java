@@ -443,7 +443,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 
 			// Fetch through Forms Plugin
 			request = new Request.Builder()
-					.url(projectUrl("/forms/" + formUuid + "/data/" + dataNode.getUuid() + "/binary/filesssss/multi/" + i + "?lang=" + language))
+					.url(projectUrl("/forms/" + formUuid + "/data/" + dataNode.getUuid() + "/binary/filesssss/" + i + "?lang=" + language))
 					.headers(auth(true))
 					.get()
 					.build();
@@ -461,7 +461,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 
 			// Fetch through Forms Plugin
 			request = new Request.Builder()
-					.url(projectUrl("/forms/" + formUuid + "/data/" + dataNode.getUuid() + "/binary/sssss/multi/" + i + "?lang=" + language))
+					.url(projectUrl("/forms/" + formUuid + "/data/" + dataNode.getUuid() + "/binary/sssss/" + i + "?lang=" + language))
 					.headers(auth(true))
 					.get()
 					.build();
