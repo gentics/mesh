@@ -28,6 +28,7 @@ import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.plugin.forms.config.FileUploadOptions;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.context.FormDataCreateContext;
@@ -51,7 +52,7 @@ import okhttp3.OkHttpClient;
 @Reportable
 @FormElementType("binary")
 public class BinaryElement extends FormElement {
-	private static final Pattern BINARY_KEY_PATTERN = Pattern.compile("^properties\\.([^.]+)\\.value");
+	private static final Pattern BINARY_KEY_PATTERN = Pattern.compile("^\\$\\.properties\\[\"([^.]+)\"\\]\\.value");
 
 	/**
 	 * Extracts the element ID from a FormGen binary part key.
@@ -214,7 +215,17 @@ public class BinaryElement extends FormElement {
 			Optional.ofNullable(binaryValidation.getAllowedFileNames()).ifPresent(fileNames::addAll);
 			// and set the merged set back to binary validation
 			binaryValidation.setAllowedFileNames(fileNames);
+		}
 	}
+
+	@Override
+	public String transformPostedValue(Object value) {
+		return JsonUtil.toJson(value);
+	}
+
+	@Override
+	public Object transformToExternal(String value) {
+		return JsonUtil.readValue(value, Map.class);
 	}
 
 	@Override
@@ -236,7 +247,7 @@ public class BinaryElement extends FormElement {
 	protected FileUpload getFileUpload(Set<FileUpload> fileUploads) {
 		return fileUploads.stream().filter(fu -> {
 			String id = extractFieldId(fu.name());
-			return getName().equals(id != null ? id : fu.name());
+			return getName().equals(id);
 		}).findFirst().orElse(null);
 	}
 

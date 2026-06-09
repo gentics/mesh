@@ -853,7 +853,12 @@ public class FormService {
 				var prop = propertyBuilder.apply(key, element);
 
 				if (postedData.contains(key)) {
-					prop.setValue(postedData.get(key));
+					if (element.isList()) {
+						prop.setValues(postedData.getAll(key).stream().map(v -> element.transformToExternal(v))
+								.collect(Collectors.toList()));
+					} else {
+						prop.setValue(element.transformToExternal(postedData.get(key)));
+					}
 				}
 
 				if (errors.containsKey(key)) {

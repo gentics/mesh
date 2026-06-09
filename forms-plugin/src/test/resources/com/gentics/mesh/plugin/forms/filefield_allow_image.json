@@ -12,10 +12,12 @@
 				"mandatory": false,
 				"info": "",
 				"tooltip": "",
-				
-				"allowed_filetypes": ["html"],
-				"max_filesize": "10",
-				"elements": []
+				"validation": {
+					"binary": {
+						"allowedTypes": ["html"],
+						"maxFilesize": 10
+					}
+				}
 			}
 		}
 	},
@@ -45,9 +47,6 @@
 	            "de": "Datei 1",
 	            "en": "File 1"
 	          },
-			  "formGridOptions": {
-				"allowedFiletypes": ["html"]
-			  },
 	          "uiSchemaPage": 0
 	        }
 	      ]

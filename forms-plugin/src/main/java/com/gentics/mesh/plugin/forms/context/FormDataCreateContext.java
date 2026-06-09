@@ -7,6 +7,7 @@ import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.common.MeshPluginException;
 import com.gentics.mesh.plugin.common.util.ParameterUtil;
 import com.gentics.mesh.plugin.forms.model.Form;
+import com.gentics.mesh.plugin.forms.model.FormElement;
 import com.gentics.mesh.plugin.forms.model.FormtypeConfigsModel;
 import com.gentics.mesh.plugin.forms.model.schema.FormData;
 import com.gentics.mesh.plugin.forms.model.schema.FormDataProperty;
@@ -26,6 +27,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -128,21 +130,27 @@ public class FormDataCreateContext {
 					if (formData.getProperties() != null) {
 						for (Map.Entry<String, FormDataProperty> entry : formData.getProperties().entrySet()) {
 							String key = entry.getKey();
-							FormDataProperty prop = entry.getValue();
-							List<Object> values = prop.getValues();
-							if (values != null && !values.isEmpty()) {
-								for (Object v : values) {
-									String sv = extractStringValue(v);
+							Optional<FormElement> optElement = getForm().getElementsInsideProperties().filter(FormElement::isActive)
+									.filter(e -> Strings.CI.equals(e.getKey(), key)).findFirst();
+
+							optElement.ifPresent(element -> {
+								FormDataProperty prop = entry.getValue();
+								List<Object> values = prop.getValues();
+								if (values != null && !values.isEmpty()) {
+									for (Object v : values) {
+										String sv = element.transformPostedValue(v);
+										if (sv != null) {
+											result.add(key, sv);
+										}
+									}
+								} else {
+									String sv = element.transformPostedValue(prop.getValue());
 									if (sv != null) {
 										result.add(key, sv);
 									}
 								}
-							} else {
-								String sv = extractStringValue(prop.getValue());
-								if (sv != null) {
-									result.add(key, sv);
-								}
-							}
+							});
+
 						}
 					}
 					parsedPostedData = result;
@@ -153,24 +161,6 @@ public class FormDataCreateContext {
 			}
 		}
 		return FormService.adminMailLabelToValue(getForm(), parsedPostedData, language);
-	}
-
-	/**
-	 * Extracts a storable string from a property value.
-	 * Returns the string directly, or — if the value is a possible-value object ({@code {identifier, displayName}}) —
-	 * returns its {@code identifier}. Returns {@code null} for binary metadata objects and other non-string types.
-	 */
-	private static String extractStringValue(Object v) {
-		if (v instanceof String) {
-			return (String) v;
-		}
-		if (v instanceof Map) {
-			Object id = ((Map<?, ?>) v).get("identifier");
-			if (id instanceof String) {
-				return (String) id;
-			}
-		}
-		return null;
 	}
 
 	public String getReferer() {

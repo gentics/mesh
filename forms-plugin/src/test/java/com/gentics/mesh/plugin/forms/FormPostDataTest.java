@@ -30,6 +30,7 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.After;
 import org.junit.Before;
@@ -223,7 +224,9 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		JsonObject body = new JsonObject(response.body().string());
 		assertThat(body.getBoolean("hasValidationErrors")).isEqualTo(true);
 		assertThat(body.getJsonObject("properties").getJsonObject("number").getString("value")).isEqualTo("100500");
-		assertThat(body.getJsonObject("properties").getJsonObject("number").getString("validationMessage")).isEqualTo("Der eingegebene Wert 100500 ist keine gültige Zahl.");
+
+		String expectedMessage = Strings.CI.equals(language, "en") ? "The value 100500 is too large." : "Il valore 100500 è troppo grande.";
+		assertThat(body.getJsonObject("properties").getJsonObject("number").getString("validationMessage")).isEqualTo(expectedMessage);
 	}
 
 	private Pair<String, String> runCaseForValue(String value) throws GenericRestException, IOException {
@@ -344,8 +347,8 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		requestBody = new MultipartBody.Builder()
 			.setType(MultipartBody.FORM)
 			.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(formUuid, null, Map.of("input1", "test")))
-			.addFormDataPart("file1", formDefinition, requestBodyFromFile(formDefinition))
-			.addFormDataPart("file2", formDefinition, requestBodyFromFile(formDefinition))
+			.addFormDataPart(fileUploadKey("file1"), formDefinition, requestBodyFromFile(formDefinition))
+			.addFormDataPart(fileUploadKey("file2"), formDefinition, requestBodyFromFile(formDefinition))
 			.build();
 
 		postRequest = new Request.Builder()
@@ -474,7 +477,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		// try uploading an image (not allowed)
 		RequestBody requestBody = new MultipartBody.Builder()
 			.setType(MultipartBody.FORM)
-			.addFormDataPart("file1", "fake-filename-actually-zip.json", requestBodyFromFile("file-uploads/test.zip"))
+			.addFormDataPart(fileUploadKey("file1"), "fake-filename-actually-zip.json", requestBodyFromFile("file-uploads/test.zip"))
 			.build();
 
 		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=" + language)).header("Referer", "ref").post(requestBody).build();
@@ -488,7 +491,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		// try again with real json file (allowed)
 		requestBody = new MultipartBody.Builder()
 			.setType(MultipartBody.FORM)
-			.addFormDataPart("file1", "test.json", requestBodyFromFile("file-uploads/test.json"))
+			.addFormDataPart(fileUploadKey("file1"), "test.json", requestBodyFromFile("file-uploads/test.json"))
 			.build();
 		postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?formDataUuid=" + dataNode.getUuid() + "&lang=" + language)).header("Referer", "ref").post(requestBody).build();
 		response = client().newCall(postRequest).execute();
@@ -513,7 +516,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		// try uploading a json file (not allowed)
 		RequestBody requestBody = new MultipartBody.Builder()
 			.setType(MultipartBody.FORM)
-			.addFormDataPart("file1", "filefield_allow_image.json", requestBodyFromFile("filefield_allow_image.json"))
+			.addFormDataPart(fileUploadKey("file1"), "filefield_allow_image.json", requestBodyFromFile("filefield_allow_image.json"))
 			.build();
 
 		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=" + language)).header("Referer", "ref").post(requestBody).build();
@@ -527,7 +530,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		// try again with text file (allowed)
 		requestBody = new MultipartBody.Builder()
 				.setType(MultipartBody.FORM)
-				.addFormDataPart("file1", "test.txt", RequestBody.create(MediaType.parse("text/html"), fromFile("file-uploads/test.txt")))
+				.addFormDataPart(fileUploadKey("file1"), "test.txt", RequestBody.create(MediaType.parse("text/html"), fromFile("file-uploads/test.txt")))
 				.build();
 		postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?formDataUuid=" + dataNode.getUuid() + "&lang=" + language)).header("Referer", "ref").post(requestBody).build();
 		response = client().newCall(postRequest).execute();
@@ -552,7 +555,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		// try uploading a json file (not allowed)
 		RequestBody requestBody = new MultipartBody.Builder()
 			.setType(MultipartBody.FORM)
-			.addFormDataPart("file1", "admin_mail_element_mail.html", RequestBody.create(MediaType.parse("text/html"), fromFile("admin_mail_element_mail.html")))
+			.addFormDataPart(fileUploadKey("file1"), "admin_mail_element_mail.html", RequestBody.create(MediaType.parse("text/html"), fromFile("admin_mail_element_mail.html")))
 			.build();
 
 		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=" + language)).header("Referer", "ref").post(requestBody).build();
@@ -567,7 +570,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		requestBody = new MultipartBody.Builder()
 				.setType(MultipartBody.FORM)
 				.addFormDataPart("formDataUuid", dataNode.getUuid())
-				.addFormDataPart("file1", "filefield_allow_by_default.json", RequestBody.create(MediaType.parse("application/json"), fromFile("filefield_allow_by_default.json")))
+				.addFormDataPart(fileUploadKey("file1"), "filefield_allow_by_default.json", RequestBody.create(MediaType.parse("application/json"), fromFile("filefield_allow_by_default.json")))
 				.build();
 		postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=" + language + "&formDataUuid=" + dataNode.getUuid())).header("Referer", "ref").post(requestBody).build();
 		response = client().newCall(postRequest).execute();
@@ -757,9 +760,11 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 	 * @param value The invalid value for the field.
 	 */
 	private void assertError(JsonObject properties, String field, String value, String messageKey) {
+		String expectedMessage = Strings.CI.equals(language, "en") ? "The value \"%s\" is not allowed for \"%s\"."
+				: "Il valore \"%s\" non è consentito per \"%s\".";
 		assertThat(properties.getJsonObject(field).getString(messageKey))
 			.as("Error for field \"%s\"".formatted(field))
-			.isEqualTo("Der Wert \"%s\" is nicht erlaubt für das Feld \"%s\"".formatted(value, field));
+			.isEqualTo(expectedMessage.formatted(value, field));
 	}
 
 	/**
@@ -950,7 +955,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 
 		RequestBody requestBody = new MultipartBody.Builder()
 			.setType(MultipartBody.FORM)
-			.addFormDataPart("file1", formFile, requestBodyFromFile(formFile))
+			.addFormDataPart(fileUploadKey("file1"), formFile, requestBodyFromFile(formFile))
 			.build();
 
 		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang="+language)).header("Referer", "ref").post(requestBody).build();
@@ -1254,7 +1259,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 			formData.getProperties().put(field, new FormDataProperty().setValue(value));
 		}
 		body.addFormDataPart("formdata", JsonUtil.toJson(formData));
-		body.addFormDataPart("conditional_file", formDefinition, requestBodyFromFile(formDefinition));
+		body.addFormDataPart(fileUploadKey("conditional_file"), formDefinition, requestBodyFromFile(formDefinition));
 
 		Request.Builder requestBuilder = new Request.Builder()
 			.url(projectUrl(String.format("/form/%s/submit?lang=%s", uuid, language)))
@@ -1338,7 +1343,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 			formData.getProperties().put(field, new FormDataProperty().setValue(value));
 		}
 		body.addFormDataPart("formdata", JsonUtil.toJson(formData));
-		body.addFormDataPart("conditional_file", formDefinition, requestBodyFromFile(formDefinition));
+		body.addFormDataPart(fileUploadKey("conditional_file"), formDefinition, requestBodyFromFile(formDefinition));
 
 		Request.Builder requestBuilder = new Request.Builder()
 			.url(projectUrl("/form/" + uuid + "/submit?lang=" + language))
@@ -1470,6 +1475,41 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		}
 
 		assertThat(response.header("Location")).as("Location Header").isEqualTo(expectedLocation);
+	}
+
+	@Test
+	public void testValidateBinary() throws IOException {
+		String formUuid = createForm("filefield.json");
+
+		String formdata = AbstractFormsPluginIntegrationTest.makeFormdataMultipart(formUuid, null,
+				Map.of("file1", Map.of("fileName", "bla.png", "size", 100000, "type", "image/png", "value",
+						"mesh(not uploaded yet): 0fd5c224-5394-47d2-86db-f4b7f77ecf35")));
+
+		RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
+				.addFormDataPart("formdata", formdata).build();
+
+		okio.Buffer buffer = new okio.Buffer();
+		requestBody.writeTo(buffer);
+
+		Request postRequest = new Request.Builder()
+				.url(projectUrl(String.format("/form/%s/validate?lang=%s", formUuid, "de"))).header("Referer", "ref")
+				.post(requestBody).build();
+		Response response = client().newCall(postRequest).execute();
+		assertThat(response.isSuccessful())
+				.as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+		assertThat(response.code()).as("Response code").isGreaterThanOrEqualTo(200).isLessThan(300);
+
+		// we expect no validation errors
+		JsonObject body = new JsonObject(response.body().string());
+		assertThat(body.getBoolean("hasValidationErrors")).as("Has validation errors").isEqualTo(false);
+
+		// we expect the sent value back
+		assertThat(body.getJsonObject("properties")).as("Properties").isNotNull();
+		assertThat(body.getJsonObject("properties").getJsonObject("file1")).as("File1 property").isNotNull();
+		assertThat(body.getJsonObject("properties").getJsonObject("file1").getJsonObject("value")).as("File1 value")
+				.isNotNull().contains(Map.entry("fileName", "bla.png"), Map.entry("size", 100000),
+						Map.entry("type", "image/png"),
+						Map.entry("value", "mesh(not uploaded yet): 0fd5c224-5394-47d2-86db-f4b7f77ecf35"));
 	}
 
 	/**

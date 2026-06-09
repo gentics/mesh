@@ -1,7 +1,7 @@
 package com.gentics.mesh.plugin.forms;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.io.IOException;
 import java.util.Map;
@@ -64,6 +64,12 @@ public class AbstractFormPostDataTest extends AbstractFormsPluginIntegrationTest
 
 		// activate plugin
 		assertThat(activate(PROJECT_NAME)).as("Activation status").isTrue();
+
+		try {
+			updateTranslations();
+		} catch (IOException e) {
+			fail("Could not set translations: %s".formatted(e.getMessage()), e);
+		}
 	}
 
 	public void tearDown() throws IOException {
