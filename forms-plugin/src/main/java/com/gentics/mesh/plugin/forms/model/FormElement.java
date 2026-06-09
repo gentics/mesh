@@ -341,10 +341,6 @@ public abstract class FormElement implements RestModel {
 			}
 		}
 
-		if (validation != null) {
-			return validation.validate(ctx, getName(), values);
-		}
-
 		// Apart from user defined validation rules, some elements might have restrictions on the values that can
 		// be submitted (e.g. value list elements, like select boxes, only accepting values from their defined options).
 		var invalidValue = values.stream().filter(this::isInvalidValue).findAny();
@@ -354,6 +350,10 @@ public abstract class FormElement implements RestModel {
 				.setName(getName())
 				.setTitle(I18nHelper.get(translations, "form_validation_error_invalid_value_title"))
 				.setMessage(I18nHelper.get(translations, "form_validation_error_invalid_value", getName(), invalidValue.get())));
+		}
+
+		if (validation != null) {
+			return validation.validate(ctx, getName(), values);
 		}
 
 		return RxUtil.emptyMaybe();

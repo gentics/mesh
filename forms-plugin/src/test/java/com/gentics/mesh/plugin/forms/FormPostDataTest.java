@@ -1,34 +1,29 @@
 package com.gentics.mesh.plugin.forms;
 
-import static com.gentics.mesh.test.ClientHelper.call;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.slf4j.Logger.ROOT_LOGGER_NAME;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.mail.Address;
-import javax.mail.BodyPart;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
-
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.Appender;
+import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.plugin.forms.model.response.FormOnlineResponse;
+import com.gentics.mesh.plugin.forms.model.schema.FormData;
+import com.gentics.mesh.plugin.forms.model.schema.FormDataProperty;
+import com.gentics.mesh.plugin.forms.service.FormDataService;
+import com.gentics.mesh.plugin.forms.test.ResponseWithCookies;
+import com.gentics.mesh.plugin.forms.util.RxUtil;
+import com.gentics.mesh.rest.client.MeshBinaryResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonObject;
+import okhttp3.Cookie;
+import okhttp3.HttpUrl;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.tuple.Pair;
@@ -42,31 +37,32 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.mockito.ArgumentCaptor;
 
-import com.gentics.mesh.core.rest.error.GenericRestException;
-import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.plugin.forms.model.response.FormOnlineResponse;
-import com.gentics.mesh.plugin.forms.model.schema.FormData;
-import com.gentics.mesh.plugin.forms.model.schema.FormDataProperty;
-import com.gentics.mesh.plugin.forms.service.FormDataService;
-import com.gentics.mesh.plugin.forms.test.ResponseWithCookies;
-import com.gentics.mesh.plugin.forms.util.RxUtil;
-import com.gentics.mesh.rest.client.MeshBinaryResponse;
+import javax.mail.Address;
+import javax.mail.BodyPart;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.Appender;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.json.JsonObject;
-import okhttp3.Cookie;
-import okhttp3.HttpUrl;
-import okhttp3.MediaType;
-import okhttp3.MultipartBody;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.slf4j.Logger.ROOT_LOGGER_NAME;
 
 /**
  * Test cases for posting data to a form for multiple languages.
@@ -704,6 +700,52 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		assertThat(content)
 			.as("Mail content")
 			.isEqualTo(fromFile("admin_mail_element_mail_multiple.html"));
+	}
+
+	/**
+	 * Test if boolean elements which stored value is defined as "value" in the properties.
+	 */
+	@Test
+	public void testBooleanWithValueValid() throws IOException, MessagingException {
+		String uuid = createForm("boolean.json");
+		ResponseWithCookies rs = submit(uuid, true, true, false, true, language,
+			"checkbox1", "X");
+
+		var rsBody = new JsonObject(rs.response.body().string());
+
+		assertThat(rsBody.getBoolean("hasValidationErrors"))
+			.as("Field errors on submit")
+			.isFalse();
+	}
+
+	/**
+	 * Test if boolean elements which stored value is defined as "value" in the properties.
+	 */
+	@Test
+	public void testBooleanWithValueInvalid() throws IOException, MessagingException {
+		String uuid = createForm("boolean.json");
+		ResponseWithCookies rs = submit(uuid, true, true, false, true, language,
+			"checkbox1", "Y");
+
+		var rsBody = new JsonObject(rs.response.body().string());
+
+		assertThat(rsBody.getBoolean("hasValidationErrors"))
+			.as("Field errors on submit")
+			.isTrue();
+
+		var properties = rsBody.getJsonObject("properties");
+
+		assertError(properties, "checkbox1", "Y", "validationMessage");
+
+		var formDataUuid = rsBody.getString("formDataID");
+		var formDataNode = getFormDataNode(formDataUuid);
+
+		var fields = new JsonObject(formDataNode.getFields().toJson());
+
+
+		properties = new JsonObject(fields.getString("errors"));
+
+		assertError(properties, "checkbox1", "Y", "message");
 	}
 
 	/**
