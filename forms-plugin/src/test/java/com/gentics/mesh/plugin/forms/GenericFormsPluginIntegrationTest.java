@@ -87,7 +87,11 @@ public class GenericFormsPluginIntegrationTest extends AbstractFormsPluginIntegr
 		Optional<SchemaResponse> optionalSchema = loadSchema(SchemaService.getSchemaName(uuid));
 		assertThat(optionalSchema).as("Schema").isPresent();
 		assertThat(optionalSchema.get().getFields()).as("Schema Fields").usingFieldByFieldElementComparator()
-				.containsExactly(new StringFieldSchemaImpl().setName("input1").setLabel("input1"), new StringFieldSchemaImpl().setName("number").setLabel("number"), new StringFieldSchemaImpl().setName("errors").setLabel("Errors"));
+				.containsExactly(
+						new StringFieldSchemaImpl().setName("input1").setLabel("input1"),
+						new StringFieldSchemaImpl().setName("number").setLabel("number"),
+						new StringFieldSchemaImpl().setName("pattern").setLabel("pattern"),
+						new StringFieldSchemaImpl().setName("errors").setLabel("Errors"));
 
 		Request updateRequest = new Request.Builder()
 				.url(projectUrl("/forms/" + uuid))
