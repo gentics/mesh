@@ -159,8 +159,9 @@ public class FormDataCreateContext {
 					parsedPostedData = MultiMap.caseInsensitiveMultiMap();
 				}
 			}
+			parsedPostedData = FormService.adminMailLabelToValue(getForm(), parsedPostedData, language);
 		}
-		return FormService.adminMailLabelToValue(getForm(), parsedPostedData, language);
+		return parsedPostedData;
 	}
 
 	public String getReferer() {
