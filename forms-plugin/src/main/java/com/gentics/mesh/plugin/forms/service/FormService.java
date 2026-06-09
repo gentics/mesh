@@ -25,10 +25,13 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.plugin.forms.model.BooleanElement;
+import com.gentics.mesh.plugin.forms.model.schema.UischemaFormgridOptions;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.formula.functions.T;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -850,6 +853,16 @@ public class FormService {
 		Map<String, FormDataProperty> properties = new LinkedHashMap<>();
 		if (form.getSchema() != null && form.getSchema().getProperties() != null) {
 			form.getSchema().getProperties().forEach((key, element) -> {
+				// FormGen handles BooleanElements as having either true or false as value, but the actually submitted
+				// value must be the one defined as "storedValue" in the elements form grid options. We set the
+				// element's value here so that storedValue is available for the property builder.
+				if (element instanceof BooleanElement booleanElement) {
+					form.getUiSchema().findFormGridOptions(element.getName())
+						.map(UischemaFormgridOptions::getAny)
+						.map(props -> props.get("storedValue"))
+						.ifPresent(storedValue -> booleanElement.setValue(storedValue.toString()));
+				}
+
 				var prop = propertyBuilder.apply(key, element);
 
 				if (postedData.contains(key)) {
@@ -901,7 +914,17 @@ public class FormService {
 			if (defaultValue.isList()) {
 				prop.setValues((List<Object>) defaultValue.resolve(language, jwtClaims));
 			} else {
-				prop.setValue(defaultValue.resolve(language, jwtClaims));
+				var resolvedValue = defaultValue.resolve(language, jwtClaims);
+
+				// The default value for boolean elements is stored as true/false, but the rendered checkboxes must set
+				// the value defined as "storedValue". Before calling buildDefaultProperty() for a BooleanElement,
+				// initFormData() is responsible for setting the BooleanElements value to the "storedValue" defined
+				// in the elements form grid options.
+				if (element instanceof BooleanElement booleanElement && Boolean.TRUE.equals(resolvedValue) && booleanElement.getValue() != null) {
+					prop.setValue(booleanElement.getValue());
+				} else {
+					prop.setValue(resolvedValue);
+				}
 			}
 		}
 		return prop;
