@@ -857,7 +857,8 @@ public class FormService {
 				// value must be the one defined as "storedValue" in the elements form grid options. We set the
 				// element's value here so that storedValue is available for the property builder.
 				if (element instanceof BooleanElement booleanElement) {
-					form.getUiSchema().findFormGridOptions(element.getName())
+					Optional.ofNullable(form.getUiSchema())
+						.flatMap(uiSchema -> uiSchema.findFormGridOptions(element.getName()))
 						.map(UischemaFormgridOptions::getAny)
 						.map(props -> props.get("storedValue"))
 						.ifPresent(storedValue -> booleanElement.setValue(storedValue.toString()));
