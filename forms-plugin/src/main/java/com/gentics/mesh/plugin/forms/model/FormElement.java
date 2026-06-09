@@ -20,6 +20,7 @@ import com.gentics.mesh.plugin.forms.model.schema.FormUiSchema;
 import com.gentics.mesh.plugin.forms.model.schema.UischemaFormgridOptions;
 import com.gentics.mesh.plugin.forms.model.schema.Validation;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
+import com.gentics.mesh.plugin.forms.util.FormUtil;
 import com.gentics.mesh.plugin.forms.util.RxUtil;
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
@@ -582,7 +583,25 @@ public abstract class FormElement implements RestModel {
 		return Completable.complete();
 	}
 
+	/**
+	 * Transform the posted value to a string representation
+	 * @param value posted value
+	 * @return string representation
+	 */
+	@JsonIgnore
+	public String transformPostedValue(Object value) {
+		return FormUtil.extractStringValue(value);
+	}
 
+	/**
+	 * Transform the string representation back to the external value
+	 * @param value string representation
+	 * @return external value
+	 */
+	@JsonIgnore
+	public Object transformToExternal(String value) {
+		return value;
+	}
 
 	/**
 	 * Create a shallow clone of this form element.

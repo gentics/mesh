@@ -1,5 +1,7 @@
 package com.gentics.mesh.plugin.forms.util;
 
+import java.util.Map;
+
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
@@ -54,6 +56,24 @@ public class FormUtil {
 		DocumentContext ctx = JsonPath.parse(response.toJson(),
 				Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS));
 		return ctx.read(jsonPath);
+	}
+
+	/**
+	 * Extracts a storable string from a property value.
+	 * Returns the string directly, or — if the value is a possible-value object ({@code {identifier, displayName}}) —
+	 * returns its {@code identifier}. Returns {@code null} for binary metadata objects and other non-string types.
+	 */
+	public static String extractStringValue(Object v) {
+		if (v instanceof String) {
+			return (String) v;
+		}
+		if (v instanceof Map) {
+			Object id = ((Map<?, ?>) v).get("identifier");
+			if (id instanceof String) {
+				return (String) id;
+			}
+		}
+		return null;
 	}
 
 	/**

@@ -43,6 +43,10 @@
       "form_validation_error_file_size": "The file {0} exceeds the maximum allowed filesize of {1} MB.",
       "form_validation_error_file_type_title": "Invalid file type",
       "form_validation_error_file_type": "The file {0} is of invalid type."
+    },
+    "it": {
+      "form_validation_error_max_value": "Il valore {0} è troppo grande.",
+      "form_validation_error_invalid_value": "Il valore \"{1}\" non è consentito per \"{0}\"."
     }
   },
   "types": {

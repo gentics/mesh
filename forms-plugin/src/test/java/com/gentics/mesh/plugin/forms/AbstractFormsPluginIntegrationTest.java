@@ -36,6 +36,7 @@ import io.reactivex.Completable;
 import io.reactivex.Single;
 import okhttp3.Cookie;
 import okhttp3.Headers;
+import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
@@ -55,6 +56,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -363,6 +367,15 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 	}
 
 	/**
+	 * Get the key to be used for binary uploads for the given field
+	 * @param fieldName field name
+	 * @return encoded key
+	 */
+	protected String fileUploadKey(String fieldName) {
+		return URLEncoder.encode("$.properties[\"%s\"].value".formatted(fieldName), StandardCharsets.UTF_8);
+	}
+
+	/**
 	 * Try to load schema with given name and assigned to {@link #PROJECT_NAME}.
 	 * @param name schema name
 	 * @return optional schema response
@@ -560,7 +573,7 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 				.isTrue();
 		} else*/ {
 			assertThat(response.isSuccessful())
-				.as(String.format("Response success %d (%s)", response.code(), response.message()))
+				.as(String.format("Response success %d (%s).", response.code(), response.message()))
 				.isTrue();
 
 			if (json) {
@@ -722,11 +735,11 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 		return webrootResponse.getNodeResponse();
 	}
 
-	public static String makeFormdataMultipart(String formID, String formDataUuid, Map<String, String> params) {
+	public static String makeFormdataMultipart(String formID, String formDataUuid, Map<String, Object> params) {
 		return JsonUtil.toJson(makeFormdata(formID, formDataUuid, params));
 	}
 
-	public static FormData makeFormdata(String formID, String formDataUuid, Map<String, String> params) {
+	public static FormData makeFormdata(String formID, String formDataUuid, Map<String, Object> params) {
 		return new FormData()
 				.setFormID(formID)
 				.setFormDataID(formDataUuid)
@@ -746,4 +759,19 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 		assertThat(response.code()).as("Response code").isEqualTo(expectedResponseCode);
 	}
 
+	/**
+	 * Post the translations from translations.json to the forms plugin.
+	 */
+	protected void updateTranslations() throws IOException {
+		Request postRequest = new Request.Builder()
+			.url(HttpUrl.get(projectUrl("/translations")).newBuilder().build())
+			.headers(auth(true))
+			.header("Referer", "ref")
+			.post(requestBodyFromFile("translations.json"))
+			.build();
+
+		Response response = client().newCall(postRequest).execute();
+
+		assertResponse(response, HttpResponseStatus.OK.code());
+}
 }

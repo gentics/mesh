@@ -1369,16 +1369,16 @@ public class FormDataService {
 
 		fileUploads = fileUploads.stream().filter(fileUpload -> {
 			String id = BinaryElement.extractFieldId(fileUpload.name());
-			return validUploadElements.contains(id != null ? id : fileUpload.name());
+			return validUploadElements.contains(id);
 		}).collect(Collectors.toSet());
 
 		// Only one binary upload per element is allowed � keep the first encountered per ID
 		fileUploads = fileUploads.stream()
 			.collect(Collectors.toMap(
 				fu -> {
-					// Extract the field ID to use as a unique key, fallback to name if extraction fails
+					// Extract the field ID to use as a unique key
 					String id = BinaryElement.extractFieldId(fu.name());
-					return id != null ? id : fu.name();
+					return id;
 				},
 				fu -> fu, // Store the FileUpload object itself as the value
 				(a, b) -> a // Merge function: In case of duplicate keys (same field ID), keep the first 'a'
