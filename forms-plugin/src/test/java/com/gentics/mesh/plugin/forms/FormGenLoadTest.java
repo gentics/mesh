@@ -331,7 +331,7 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 
 	@Test
 	public void testLoadFormGenCaptchaConfig() throws IOException {
-		String uuid = createForm("formgen_load.json");
+		String uuid = createForm("formgen_load_captcha.json");
 
 		Response response = doLoadRequest(uuid, FORM_ID, "en");
 		String responseBody = response.body() != null ? response.body().string() : "";

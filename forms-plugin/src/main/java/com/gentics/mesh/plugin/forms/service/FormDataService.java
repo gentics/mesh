@@ -1354,11 +1354,12 @@ public class FormDataService {
 		Pattern multiIdRegex = Pattern.compile(MULTIFILE_ID_REGEX);
 
 		Function<String, Optional<BinaryElement>> binaryElementLookup = id1 -> validUploadElements.stream().filter(e -> {
-			if (e.isList()) {
+			boolean found = e.getName().equals(id1);
+			if (!found && e.isList()) {
 				Matcher idMatcher = multiIdRegex.matcher(id1);
 				return idMatcher.matches() && e.getName().equals(idMatcher.group("name"));
 			} else {
-				return e.getName().equals(id1);
+				return found;
 			}
 		}).findAny();
 		fileUploads = fileUploads.stream().filter(fileUpload -> {
@@ -1369,14 +1370,14 @@ public class FormDataService {
 		// Only one binary upload per element is allowed — keep the first encountered per ID
 		List<FileUpload> sortedFileUploads = fileUploads.stream()
 			.collect(Collectors.toMap(
-				this::getId,
+				FileUpload::name,
 				fu -> fu, // Store the FileUpload object itself as the value
 				(a, b) -> a // Merge function: In case of duplicate keys (same field ID), keep the first 'a'
 			))
 			.values().stream()
 			.sorted((a,b) -> {
-				String aid = getId(a);
-				String bid = getId(b);
+				String aid = a.name();
+				String bid = b.name();
 
 				Matcher amultip = multiIdRegex.matcher(aid);
 				Matcher bmultip = multiIdRegex.matcher(bid);

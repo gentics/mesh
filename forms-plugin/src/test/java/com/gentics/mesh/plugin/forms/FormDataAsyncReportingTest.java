@@ -127,7 +127,7 @@ public class FormDataAsyncReportingTest extends AbstractFormsPluginIntegrationTe
 				try {
 					RequestBody requestBody = new MultipartBody.Builder()
 						.setType(MultipartBody.FORM)
-						.addFormDataPart("file1", fileName, requestBodyFromFile(fileName))
+						.addFormDataPart(fileUploadKey("file1"), fileName, requestBodyFromFile(fileName))
 						.build();
 					Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=en")).header("Referer", "ref").post(requestBody).build();
 					Response response = client().newCall(postRequest).execute();

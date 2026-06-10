@@ -96,19 +96,4 @@ public abstract class AbstractEndpointValidationTest extends AbstractFormsPlugin
 	@Parameter(0)
 	public String description;
 
-	/**
-	 * Post the translations from translations.json to the forms plugin.
-	 */
-	protected void updateTranslations() throws IOException {
-		Request postRequest = new Request.Builder()
-			.url(HttpUrl.get(projectUrl("/translations")).newBuilder().build())
-			.headers(auth(true))
-			.header("Referer", "ref")
-			.post(requestBodyFromFile("translations.json"))
-			.build();
-
-		Response response = client().newCall(postRequest).execute();
-
-		assertResponse(response, HttpResponseStatus.OK.code());
-	}
 }

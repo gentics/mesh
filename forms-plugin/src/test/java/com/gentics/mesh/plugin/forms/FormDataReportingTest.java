@@ -388,9 +388,9 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 				MediaType.parse("application/json; charset=utf-8"));
 
 		Request loadRequest = new Request.Builder()
-				.url(projectUrl("/form/" + uuid + "/load?lang=en"))
+				.url(projectUrl("/forms/" + uuid + "/data"))
 				.headers(auth(permission))
-				.post(requestBody)
+				.get()
 				.build();
 		Response response = client().newCall(loadRequest).execute();
 		if (permission) {
@@ -491,7 +491,7 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 		String uuid = createForm(filename);
 		RequestBody requestBody = new MultipartBody.Builder()
 			.setType(MultipartBody.FORM)
-			.addFormDataPart(fieldName, filename, requestBodyFromFile(filename))
+			.addFormDataPart(fileUploadKey(fieldName), filename, requestBodyFromFile(filename))
 			.build();
 		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=en")).post(requestBody).build();
 		Response postResponse = client().newCall(postRequest).execute();
@@ -523,7 +523,7 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 
 		RequestBody requestBody = new MultipartBody.Builder()
 				.setType(MultipartBody.FORM)
-				.addFormDataPart("file1", "filefield.json", requestBodyFromFile("filefield.json"))
+				.addFormDataPart(fileUploadKey("file1"), "filefield.json", requestBodyFromFile("filefield.json"))
 				.build();
 
 		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=en")).post(requestBody).build();
@@ -564,7 +564,7 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 
 		RequestBody requestBody = new MultipartBody.Builder()
 				.setType(MultipartBody.FORM)
-				.addFormDataPart("file1", "filefield.json", requestBodyFromFile("filefield.json"))
+				.addFormDataPart(fileUploadKey("file1"), "filefield.json", requestBodyFromFile("filefield.json"))
 				.build();
 
 		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=en")).post(requestBody).build();
@@ -653,7 +653,7 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 			try {
 				RequestBody requestBody = new MultipartBody.Builder()
 						.setType(MultipartBody.FORM)
-						.addFormDataPart("file1", fileName, requestBodyFromFile(fileName))
+						.addFormDataPart(fileUploadKey("file1"), fileName, requestBodyFromFile(fileName))
 						.build();
 				Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=en")).header("Referer", "ref").post(requestBody).build();
 				Response response = client().newCall(postRequest).execute();
@@ -788,7 +788,7 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 			try {
 				RequestBody requestBody = new MultipartBody.Builder()
 						.setType(MultipartBody.FORM)
-						.addFormDataPart("file1", fileName, requestBodyFromFile(fileName))
+						.addFormDataPart(fileUploadKey("file1"), fileName, requestBodyFromFile(fileName))
 						.build();
 				Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=de")).header("Referer", "ref").post(requestBody).build();
 				Response response = client().newCall(postRequest).execute();
@@ -846,7 +846,7 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 			try {
 				RequestBody requestBody = new MultipartBody.Builder()
 						.setType(MultipartBody.FORM)
-						.addFormDataPart("file1", fileName, requestBodyFromFile(fileName))
+						.addFormDataPart(fileUploadKey("file1"), fileName, requestBodyFromFile(fileName))
 						.build();
 				Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=en")).header("Referer", "ref").post(requestBody).build();
 				Response response = client().newCall(postRequest).execute();

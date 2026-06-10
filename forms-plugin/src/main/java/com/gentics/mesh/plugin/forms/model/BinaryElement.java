@@ -31,8 +31,12 @@ import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
+
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.plugin.forms.SchemaInitializer;
+
+import com.gentics.mesh.json.JsonUtil;
+
 import com.gentics.mesh.plugin.forms.config.FileUploadOptions;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.context.FormDataCreateContext;
@@ -56,7 +60,7 @@ import okhttp3.OkHttpClient;
 @Reportable
 @FormElementType("binary")
 public class BinaryElement extends FormElement {
-	private static final Pattern BINARY_KEY_PATTERN = Pattern.compile("^properties\\.([^.]+)\\.value");
+	private static final Pattern BINARY_KEY_PATTERN = Pattern.compile("^\\$\\.properties\\[\"([^.]+)\"\\]\\.value");
 	private static final Pattern MULTIBINARY_PATTERN = Pattern.compile("^([^.]+)\\[[d]+\\]");
 
 	/**
@@ -246,7 +250,17 @@ public class BinaryElement extends FormElement {
 			Optional.ofNullable(binaryValidation.getAllowedFileNames()).ifPresent(fileNames::addAll);
 			// and set the merged set back to binary validation
 			binaryValidation.setAllowedFileNames(fileNames);
+		}
 	}
+
+	@Override
+	public String transformPostedValue(Object value) {
+		return JsonUtil.toJson(value);
+	}
+
+	@Override
+	public Object transformToExternal(String value) {
+		return JsonUtil.readValue(value, Map.class);
 	}
 
 	@Override

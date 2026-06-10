@@ -14,11 +14,10 @@
 				"tooltip": "",
 				"validation": {
 					"binary": {
-						"allowedTypes": ["html"]
+						"allowedTypes": ["html"],
+						"maxFilesize": 10
 					}
-				},
-				"max_filesize": "10",
-				"elements": []
+				}
 			}
 		}
 	},

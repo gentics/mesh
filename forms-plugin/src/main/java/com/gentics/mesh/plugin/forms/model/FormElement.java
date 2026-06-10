@@ -20,6 +20,7 @@ import com.gentics.mesh.plugin.forms.model.schema.FormUiSchema;
 import com.gentics.mesh.plugin.forms.model.schema.UischemaFormgridOptions;
 import com.gentics.mesh.plugin.forms.model.schema.Validation;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
+import com.gentics.mesh.plugin.forms.util.FormUtil;
 import com.gentics.mesh.plugin.forms.util.RxUtil;
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
@@ -340,10 +341,6 @@ public abstract class FormElement implements RestModel {
 			}
 		}
 
-		if (validation != null) {
-			return validation.validate(ctx, getName(), values);
-		}
-
 		// Apart from user defined validation rules, some elements might have restrictions on the values that can
 		// be submitted (e.g. value list elements, like select boxes, only accepting values from their defined options).
 		var invalidValue = values.stream().filter(this::isInvalidValue).findAny();
@@ -353,6 +350,10 @@ public abstract class FormElement implements RestModel {
 				.setName(getName())
 				.setTitle(I18nHelper.get(translations, "form_validation_error_invalid_value_title"))
 				.setMessage(I18nHelper.get(translations, "form_validation_error_invalid_value", getName(), invalidValue.get())));
+		}
+
+		if (validation != null) {
+			return validation.validate(ctx, getName(), values);
 		}
 
 		return RxUtil.emptyMaybe();
@@ -582,7 +583,25 @@ public abstract class FormElement implements RestModel {
 		return Completable.complete();
 	}
 
+	/**
+	 * Transform the posted value to a string representation
+	 * @param value posted value
+	 * @return string representation
+	 */
+	@JsonIgnore
+	public String transformPostedValue(Object value) {
+		return FormUtil.extractStringValue(value);
+	}
 
+	/**
+	 * Transform the string representation back to the external value
+	 * @param value string representation
+	 * @return external value
+	 */
+	@JsonIgnore
+	public Object transformToExternal(String value) {
+		return value;
+	}
 
 	/**
 	 * Create a shallow clone of this form element.
