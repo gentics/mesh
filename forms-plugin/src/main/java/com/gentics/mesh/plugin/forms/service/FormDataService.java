@@ -1143,7 +1143,7 @@ public class FormDataService {
 							if (ctx.handleCookies()) {
 								Cookie cookie = Cookie.cookie(COOKIE_NAME_DATA, form.getDataCookie(savedFileUploads.getUuid()));
 								cookie.setPath(getPath(ctx.getReferer()));
-								cookie.setHttpOnly(true);
+								cookie.setHttpOnly(false);
 								ctx.getContext().response().addCookie(cookie);
 							}
 
@@ -1358,7 +1358,7 @@ public class FormDataService {
 							meshContext.response().removeCookie(COOKIE_NAME_DATA);
 							Cookie cookie = Cookie.cookie(COOKIE_NAME_DATA, "");
 							cookie.setPath(getPath(ctx.getReferer()));
-							cookie.setHttpOnly(true);
+							cookie.setHttpOnly(false);
 							cookie.setMaxAge(0);
 							meshContext.response().addCookie(cookie);
 
@@ -1420,7 +1420,7 @@ public class FormDataService {
 			// The cookie is needed when rendering the form in a page, as well as when data is submitted to the
 			// /api/forms/forms/ID/data endpoint, so we set the path to /.
 			.setPath("/")
-			.setHttpOnly(true)
+			.setHttpOnly(false)
 			.setMaxAge(Integer.MAX_VALUE);
 
 		pc.response().addCookie(cookie);
