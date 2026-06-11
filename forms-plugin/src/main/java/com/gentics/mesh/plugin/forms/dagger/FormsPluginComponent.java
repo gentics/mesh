@@ -11,10 +11,11 @@ import com.gentics.mesh.plugin.common.dagger.StorageDir;
 import com.gentics.mesh.plugin.common.dagger.UserClient;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
-import com.gentics.mesh.plugin.forms.handler.DeleteFormDataHandler;
 import com.gentics.mesh.plugin.forms.handler.CancelDataHandler;
+import com.gentics.mesh.plugin.forms.handler.DeleteFormDataHandler;
 import com.gentics.mesh.plugin.forms.handler.FindFormDataHandler;
 import com.gentics.mesh.plugin.forms.handler.LoadFormDataBinaryHandler;
+import com.gentics.mesh.plugin.forms.handler.LoadFormDataMultiBinaryItemHandler;
 import com.gentics.mesh.plugin.forms.handler.PurgeStaleDataHandler;
 import com.gentics.mesh.plugin.forms.handler.SaveDataHandler;
 import com.gentics.mesh.plugin.forms.handler.SubmitDataHandler;
@@ -119,6 +120,7 @@ public interface FormsPluginComponent {
 	FindFormDataHandler findFormDataHandler();
 
 	LoadFormDataBinaryHandler loadFormDataBinaryHandler();
+	LoadFormDataMultiBinaryItemHandler loadFormDataMultiBinaryItemHandler();
 
 	DeleteFormDataHandler deleteFormDataHandler();
 

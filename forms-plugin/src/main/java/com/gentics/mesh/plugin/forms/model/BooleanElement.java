@@ -2,6 +2,12 @@ package com.gentics.mesh.plugin.forms.model;
 
 import java.util.Optional;
 
+import com.gentics.mesh.plugin.forms.context.FormDataCreateContext;
+import com.gentics.mesh.plugin.forms.model.schema.FormUiSchema;
+import com.gentics.mesh.plugin.forms.model.schema.UischemaFormgridOptions;
+import io.reactivex.Maybe;
+import io.vertx.reactivex.core.Vertx;
+import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -63,6 +69,21 @@ public class BooleanElement extends FormElement {
 	@Override
 	protected FormElement clone(boolean deep) {
 		return new BooleanElement(this, deep);
+	}
+
+	@Override
+	public Maybe<ValidationError> validate(FormDataCreateContext ctx, Vertx rxVertx, OkHttpClient httpClient, FormUiSchema uischema) {
+		// When the value of the element is not directly set, check if the "storedValue" property is set in the
+		// UI schemas formgrid options.
+		if (this.value == null) {
+			this.value = getFormGridOptionsFromUiSchema(uischema)
+				.map(UischemaFormgridOptions::getAny)
+				.map(props -> props.get("storedValue"))
+				.map(Object::toString)
+				.orElse(null);
+		}
+
+		return super.validate(ctx, rxVertx, httpClient, uischema);
 	}
 
 	@Override

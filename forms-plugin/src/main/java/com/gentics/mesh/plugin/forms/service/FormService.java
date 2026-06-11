@@ -35,7 +35,6 @@ import org.apache.poi.ss.formula.functions.T;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -69,12 +68,10 @@ import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.dagger.UserClient;
 import com.gentics.mesh.plugin.common.service.RenderService;
-import com.gentics.mesh.plugin.common.util.MiscUtil;
 import com.gentics.mesh.plugin.forms.FormsError;
 import com.gentics.mesh.plugin.forms.FormsPlugin;
 import com.gentics.mesh.plugin.forms.SchemaInitializer;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
-import com.gentics.mesh.plugin.forms.config.MultipageRenderMode;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
 import com.gentics.mesh.plugin.forms.model.AdminMailElement;
 import com.gentics.mesh.plugin.forms.model.BinaryElement;
@@ -100,10 +97,8 @@ import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.functions.BiConsumer;
 import io.vertx.core.MultiMap;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.RoutingContext;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.file.FileSystem;
 
@@ -857,7 +852,8 @@ public class FormService {
 				// value must be the one defined as "storedValue" in the elements form grid options. We set the
 				// element's value here so that storedValue is available for the property builder.
 				if (element instanceof BooleanElement booleanElement) {
-					form.getUiSchema().findFormGridOptions(element.getName())
+					Optional.ofNullable(form.getUiSchema())
+						.flatMap(uiSchema -> uiSchema.findFormGridOptions(element.getName()))
 						.map(UischemaFormgridOptions::getAny)
 						.map(props -> props.get("storedValue"))
 						.ifPresent(storedValue -> booleanElement.setValue(storedValue.toString()));
@@ -954,13 +950,15 @@ public class FormService {
 		FormDataProperty prop = new FormDataProperty();
 
 		if (element instanceof BinaryElement) {
-			BinaryField binaryField = node.getFields().getBinaryField(element.getName());
-			if (binaryField != null) {
-				Map<String, Object> binaryValue = new LinkedHashMap<>();
-				binaryValue.put("fileName", binaryField.getFileName());
-				binaryValue.put("size", binaryField.getFileSize());
-				binaryValue.put("value", node.getUuid() + ":" + element.getName());
-				prop.setValue(binaryValue);
+			if (!element.isList()) {
+				BinaryField binaryField = node.getFields().getBinaryField(element.getName());
+				if (binaryField != null) {
+					Map<String, Object> binaryValue = new LinkedHashMap<>();
+					binaryValue.put("fileName", binaryField.getFileName());
+					binaryValue.put("size", binaryField.getFileSize());
+					binaryValue.put("value", node.getUuid() + ":" + element.getName());
+					prop.setValue(binaryValue);
+				}
 			}
 			return prop;
 		}
@@ -1199,7 +1197,7 @@ public class FormService {
 	 */
 	private <T extends SchemaModel> Single<T> getSchema(FormtypeConfigsModel formtypeConfigs, NodeResponse formNode, T schema) {
 		schema.setName(getSchemaName(formNode.getUuid()));
-		schema.setContainer(false);
+		schema.setContainer(true);
 		try {
 			Form form = toForm(formtypeConfigs, formNode.getFields().getStringField("json").getString(), formNode.getUuid(),
 				formNode.getLanguage());

@@ -15,6 +15,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,6 +28,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -56,7 +59,10 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
+import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.parameter.client.DeleteParametersImpl;
 import com.gentics.mesh.parameter.client.NodeParametersImpl;
@@ -95,7 +101,6 @@ import com.github.jknack.handlebars.Context;
 import com.github.jknack.handlebars.Handlebars;
 
 import io.reactivex.Completable;
-import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.MultiMap;
@@ -139,6 +144,7 @@ public class FormDataService {
 	private static final String FIELD_DOWNLOAD_BINARY = "download";
 	private static final String FIELD_DOWNLOAD_ERROR = "error";
 	private static final String MESSAGE_DOWNLOAD_CHECK_PREFIX = "plugins.forms.download.";
+	private static final String MULTIFILE_ID_REGEX = "^(?<name>(.)+)\\[(?<id>(\\d)+)\\]$";
 
 	/** DateTime formatter creating dates of the form "YYYY-MM-DD_HHmmss". */
 	private static final DateTimeFormatter DATETIME_FORMATTER = new DateTimeFormatterBuilder()
@@ -397,7 +403,7 @@ public class FormDataService {
 			.doOnSuccess(ctx::setFormNode)
 			.flatMap(node -> formService.toForm(formtypeConfigs, node))
 			.doOnSuccess(ctx::setForm)
-			.flatMap(form -> validatePostedData(statusService.getEffectiveConfiguration(formtypeConfigs, form.getType()), ctx))
+			.flatMap(form -> validatePostedData(ctx.getPostedData(), statusService.getEffectiveConfiguration(formtypeConfigs, form.getType()), ctx))
 			.map(errors -> toValidationResponse(ctx, errors));
 	}
 
@@ -417,7 +423,7 @@ public class FormDataService {
 						ctx.setFormNode(formNode);
 						ctx.setFormDataNode(formDataNode);
 						ctx.setForm(form);
-						return validatePostedData(statusService.getEffectiveConfiguration(formtypeConfigs, form.getType()), ctx).map(errors -> toValidationResponse(ctx, errors));
+						return validatePostedData(ctx.getPostedData(), statusService.getEffectiveConfiguration(formtypeConfigs, form.getType()), ctx).map(errors -> toValidationResponse(ctx, errors));
 					}))
 			.flatMap(x -> x);
 	}
@@ -436,8 +442,9 @@ public class FormDataService {
 	public Single<NodeResponse> load(String projectName, String formUuid, String formDataUuid) {
 		return load(projectName, formUuid, formDataUuid, false);
 	}
+
 	/**
-	 * Load the form data by uuid
+	 * Load the form data by uuid with the admin client
 	 *
 	 * @param projectName project name
 	 * @param formUuid form uuid
@@ -861,8 +868,13 @@ public class FormDataService {
 	public Single<Pair<Form, File>> zipBinaries(String projectName, Form form) {
 		Set<String> fileElementNames = form.getElementsInsideProperties().filter(elem -> elem instanceof BinaryElement).map(FormElement::getName)
 			.filter(Objects::nonNull).collect(Collectors.toSet());
-		Set<String> fileFieldNames = form.getElementsInsideProperties().filter(elem -> elem instanceof BinaryElement).map(FormElement::getGraphQLName)
-			.filter(Objects::nonNull).collect(Collectors.toSet());
+		Set<String> fileFieldNames = form.getElementsInsideProperties().filter(elem -> elem instanceof BinaryElement).map(elem -> {
+			if (elem.isList()) {
+				return elem.getName() + " {uuid,path}";
+			} else {
+				return elem.getGraphQLName();
+			}
+		}).filter(Objects::nonNull).collect(Collectors.toSet());
 
 		Single<List<Downloadable>> singleDownloadables = null;
 		if (fileElementNames.isEmpty()) {
@@ -944,13 +956,17 @@ public class FormDataService {
 			String uuid = element.getString("uuid");
 			JsonObject fields = element.getJsonObject("fields");
 			for (String name : fileElementNames) {
-				JsonObject fieldValue = fields.getJsonObject(name);
-				if (fieldValue != null) {
+				Object value = fields.getValue(name);
+				if (value instanceof JsonObject) {
 					downloadables.add(new Downloadable(uuid, name));
+				} else if (value instanceof JsonArray listValue) {
+					for (int j = 0; j < listValue.size(); j++) {
+						JsonObject itemObject = listValue.getJsonObject(j);
+						downloadables.add(new Downloadable(itemObject.getString("uuid"), "binary", Optional.of("%s/%s/%s/%d".formatted(uuid, itemObject.getString("uuid"), name, j))));
 				}
 			}
 		}
-
+		}
 		return Single.just(downloadables);
 	}
 
@@ -977,7 +993,7 @@ public class FormDataService {
 
 		return Observable.fromIterable(downloadables).flatMap(d -> {
 			return adminClient.downloadBinaryField(projectName, d.uuid, "en", d.fieldName).toObservable().doAfterNext(MeshBinaryResponse::close).flatMap(download -> {
-				addZipEntryWithUniqueFolderStructure(out, download.getFilename(), d.uuid, d.fieldName);
+				addZipEntryWithUniqueFolderStructure(out, download.getFilename(), d.uuid, d.fieldName, d.maybeFolderName);
 				try (InputStream ins = download.getStream()) {
 					IOUtils.copy(ins, out);
 				}
@@ -1000,12 +1016,15 @@ public class FormDataService {
 	 * @param fieldName form field name, nullable
 	 * @throws IOException
 	 */
-	protected void addZipEntryWithUniqueFolderStructure(ZipOutputStream out, String filename, String formDataUuid, String fieldName) throws IOException {
+	protected void addZipEntryWithUniqueFolderStructure(ZipOutputStream out, String filename, String formDataUuid, String fieldName, Optional<String> maybeFolderName) throws IOException {
 		boolean tryAgain = false;
 		do {
 			tryAgain = false;
 			StringBuilder folderName = new StringBuilder();
-			if (org.apache.commons.lang.StringUtils.isNotBlank(formDataUuid) && org.apache.commons.lang.StringUtils.isNotBlank(fieldName)) {
+			if (maybeFolderName.isPresent()) {
+				folderName.append(maybeFolderName.get());
+				folderName.append("/");
+			} else if (org.apache.commons.lang.StringUtils.isNotBlank(formDataUuid) && org.apache.commons.lang.StringUtils.isNotBlank(fieldName)) {
 				folderName.append(formDataUuid);
 				folderName.append("/");
 				folderName.append(fieldName);
@@ -1162,6 +1181,30 @@ public class FormDataService {
 	}
 
 	/**
+	 * Gets the multi-binary field item for the specified form data node and sends it to the meshClient.
+	 *
+	 * @param formUuid the UUID of the form node
+	 * @param formDataUuid the UUID of the data node
+	 * @param binaryFieldName the name of the binary field in the form data node
+	 * @param index index of a multi-field binary
+	 */
+	public Single<MeshResponse<MeshBinaryResponse>> loadMultiBinaryItem(String projectName, String formUuid, String formDataUuid, String binaryFieldName, int index) {
+		// Binaries can be loaded for already published form data as well, so call the variant of load() which allows loading published form data.
+		return load(projectName, formUuid, formDataUuid, true).flatMap(formDataNode -> {
+			try {
+				NodeFieldList nodeList = formDataNode.getFields().getNodeFieldList(binaryFieldName);
+				String binaryUuid = nodeList.getItems().get(index).getUuid();
+				return userClient.downloadBinaryField(projectName, binaryUuid, formDataNode.getLanguage(), "binary").getResponse();
+			} catch (Exception e) {
+				// TODO FIXME Mesh Currently there is no way to determine a field's type from the node response, other that load the corresponding form schema.
+				// Here we try deserializing the node list, which may spit random deserialization errors.
+				log.error("Deserialization error", e);
+			}
+			return Single.error(new FormsError("Error retrieving binary [%d] of a field %s for the form data %s".formatted(index, binaryFieldName, formDataUuid), 400));
+		});
+	}
+
+	/**
 	 * Deletes the form data with the specified formDataUuid.
 	 *
 	 * @param projectName project name
@@ -1179,6 +1222,36 @@ public class FormDataService {
 	}
 
 	/**
+	 * Perform "cancel" for the given form data node. This will load the form data node (with the admin client), but only allow draft nodes.
+	 * If the node is already published, a 404 error will be thrown.
+	 * The the node is deleted with the admin client (recursively)
+	 * @param projectName project name
+	 * @param formUuid form UUID
+	 * @param formDataUuid form data UUID
+	 * @return empty response
+	 */
+	public Single<EmptyResponse> cancel(String projectName, String formUuid, String formDataUuid) {
+		return load(projectName, formUuid, formDataUuid, false).flatMap(formDataNode -> {
+			DeleteParametersImpl deleteParams = new DeleteParametersImpl();
+			deleteParams.setRecursive(true);
+			return adminClient.deleteNode(projectName, formDataUuid, deleteParams).toSingle();
+		});
+	}
+
+	/**
+	 * Remove the data cookie
+	 * @param ctx context
+	 */
+	public void removeDataCookie(PluginContext ctx) {
+		ctx.response().removeCookie(COOKIE_NAME_DATA);
+		Cookie cookie = Cookie.cookie(COOKIE_NAME_DATA, "");
+		cookie.setPath(getPath(ctx.request().getHeader("Referer")));
+		cookie.setHttpOnly(false);
+		cookie.setMaxAge(0);
+		ctx.response().addCookie(cookie);
+	}
+
+	/**
 	 * Validate and save the data to mesh. publish form, if completed. Redirect to success url or referer
 	 *
 	 * @param formtypeConfigs formtype configs
@@ -1191,7 +1264,7 @@ public class FormDataService {
 
 		FormsConfig configuration = statusService.getEffectiveConfiguration(formtypeConfigs, form.getType());
 
-		return captchaService.validate(configuration, ctx).andThen(validatePostedData(configuration, ctx).flatMap(errors1 -> {
+		return captchaService.validate(configuration, ctx).andThen(validatePostedData(postedData, configuration, ctx).flatMap(errors1 -> {
 			// check whether we have any validation errors, that prevent storing of the data
 			Optional<ValidationError> errorPreventingDataStorage = errors1.values().stream()
 					.filter(ValidationError::isPreventStoring).findAny();
@@ -1228,7 +1301,7 @@ public class FormDataService {
 							if (ctx.handleCookies()) {
 								Cookie cookie = Cookie.cookie(COOKIE_NAME_DATA, form.getDataCookie(savedFileUploads.getUuid()));
 								cookie.setPath(getPath(ctx.getReferer()));
-								cookie.setHttpOnly(true);
+								cookie.setHttpOnly(false);
 								ctx.getContext().response().addCookie(cookie);
 							}
 
@@ -1249,16 +1322,17 @@ public class FormDataService {
 
 	/**
 	 * Validate posted form data with the same rules used before saving.
+	 * @param postedData 
 	 *
 	 * @param configuration configuration
 	 * @param ctx Request context with the loaded form
 	 *
 	 * @return single of validation errors keyed by form element name
 	 */
-	private Single<Map<String, ValidationError>> validatePostedData(FormsConfig configuration, FormDataCreateContext ctx) {
+	private Single<Map<String, ValidationError>> validatePostedData(MultiMap postedData, FormsConfig configuration, FormDataCreateContext ctx) {
 		Form form = ctx.getForm();
 		return Single.zip(
-				Single.just(form.preventInjection(ctx, configuration.getSecurityOptions())),
+				Single.just(form.preventInjection(postedData, ctx, configuration.getSecurityOptions())),
 				form.validate(ctx, rxVertx, okHttpClientService.getClient()),
 				(a, b) -> {
 					HashMap<String, ValidationError> errors = new HashMap<>();
@@ -1349,6 +1423,11 @@ public class FormDataService {
 		}
 	}
 
+	private String getId(FileUpload fu) {
+		String id = BinaryElement.extractFieldId(fu.name());
+		return id != null ? id : fu.name();
+	}
+
 	/**
 	 * Save fileuploads to mesh
 	 *
@@ -1356,60 +1435,179 @@ public class FormDataService {
 	 * @param form saved form
 	 * @param formDataNode form data node
 	 * @param postedData posted form data
-	 * @param fileUploads validated file uploads
+	 * @param sortedFileUploads validated file uploads
 	 * @return single of the form data node
 	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private Single<NodeResponse> saveFileUploads(String projectName, Form form, NodeResponse formDataNode, MultiMap postedData, Set<FileUpload> fileUploads) {
-		Set<String> validUploadElements = form.getElementsInsideProperties()
+		Set<BinaryElement> validUploadElements = form.getElementsInsideProperties()
 			.filter(FormElement::isActive)
 			.flatMap(elem -> elem instanceof BinaryElement 
-				? Stream.of(elem.getName())
+				? Stream.of((BinaryElement) elem)
 				: Stream.empty())
 			.collect(Collectors.toSet());
 
+		Pattern multiIdRegex = Pattern.compile(MULTIFILE_ID_REGEX);
+
+		Function<String, Optional<BinaryElement>> binaryElementLookup = id1 -> validUploadElements.stream().filter(e -> {
+			boolean found = e.getName().equals(id1);
+			if (!found && e.isList()) {
+				Matcher idMatcher = multiIdRegex.matcher(id1);
+				return idMatcher.matches() && e.getName().equals(idMatcher.group("name"));
+			} else {
+				return found;
+			}
+		}).findAny();
 		fileUploads = fileUploads.stream().filter(fileUpload -> {
-			String id = BinaryElement.extractFieldId(fileUpload.name());
-			return validUploadElements.contains(id);
+			String id1 = getId(fileUpload);
+			return binaryElementLookup.apply(id1).isPresent();
 		}).collect(Collectors.toSet());
 
 		// Only one binary upload per element is allowed � keep the first encountered per ID
-		fileUploads = fileUploads.stream()
+		List<FileUpload> sortedFileUploads = fileUploads.stream()
 			.collect(Collectors.toMap(
-				fu -> {
-					// Extract the field ID to use as a unique key
-					String id = BinaryElement.extractFieldId(fu.name());
-					return id;
-				},
+				FileUpload::name,
 				fu -> fu, // Store the FileUpload object itself as the value
 				(a, b) -> a // Merge function: In case of duplicate keys (same field ID), keep the first 'a'
 			))
 			.values().stream()
-			.collect(Collectors.toSet());
+			.sorted((a,b) -> {
+				String aid = a.name();
+				String bid = b.name();
 
-		if (fileUploads.isEmpty()) {
+				Matcher amultip = multiIdRegex.matcher(aid);
+				Matcher bmultip = multiIdRegex.matcher(bid);
+				if (amultip.matches() && bmultip.matches()) {
+					aid = amultip.group("id");
+					bid = bmultip.group("id");
+					try {
+						return Integer.parseInt(aid) - Integer.parseInt(bid);
+					} catch (NumberFormatException e1) {
+						log.warn("Could not parse upload index", e1);
+					}
+				}
+				return 0;
+			}).collect(Collectors.toList());
+
+		// Early return
+		if (sortedFileUploads.isEmpty()) {
 			return Single.just(formDataNode);
 		}
 
-		return Flowable.fromIterable(fileUploads)
-			// The upload can be blocking in some implementations of the rest client. Therefore we queue
-			// it as a worker job just in case.
-			.flatMapSingle(fileUpload -> rxVertx.rxExecuteBlocking(() -> {
+		// Reusable binary element getter
+		Function<FileUpload, BinaryElement> binaryGetter = fileUpload -> {
+			String fieldName = getId(fileUpload);
+			return binaryElementLookup.apply(fieldName).get();
+		};
+
+		// Reusable list item uploader
+		Function<FileUpload, Single<Pair<String, NodeResponse>>> listItemUploader = fileUpload -> {
+			String fieldName = getId(fileUpload);
+			Matcher matcher = multiIdRegex.matcher(fieldName);
+			String id = matcher.matches() ? matcher.group("name") : fieldName;
+			NodeCreateRequest itemCreate = new NodeCreateRequest();
+			itemCreate.setParentNode(new NodeReference().setProjectName(projectName).setUuid(formDataNode.getUuid()));
+			itemCreate.setLanguage(formDataNode.getLanguage());
+			itemCreate.setSchemaName(SchemaInitializer.MULTIBINARY_ITEM_SCHEMA_NAME);
+			itemCreate.getFields().put("name", new StringFieldImpl().setString(fieldName));
+			try {
 				long size = fileUpload.size();
 				InputStream ins = new FileInputStream(fileUpload.uploadedFileName());
+				// Create a binary node
+				return adminClient.createNode(projectName, itemCreate).toSingle()
+					// and fill it
+					.flatMap(itemNode -> adminClient.updateNodeBinaryField(projectName, itemNode.getUuid(), formDataNode.getLanguage(), "draft",
+						"binary",
+						ins, size, fileUpload.fileName(), fileUpload.contentType())
+					.toSingle()
+					.map(itemNode1 -> {
+						return Pair.of(id, itemNode1);
+					}));
+			} catch (FileNotFoundException e1) {
+				String message = "Could not upload a binary for the form data %s field %s".formatted(formDataNode.getUuid(), fieldName);
+				log.error(message, e1);
+				return Single.error(new FormsError(message, e1, 400));
+			}				
+		};
 
-				String fieldName = BinaryElement.extractFieldId(fileUpload.name());
-				if (fieldName == null) {
-					fieldName = fileUpload.name();
+		// Reusable plain file uploader
+		Function<FileUpload, Single<NodeResponse>> plainUploader = fileUpload -> {
+			long size = fileUpload.size();
+			InputStream ins;
+			try {
+				ins = new FileInputStream(fileUpload.uploadedFileName());
+			} catch (FileNotFoundException e1) {
+				throw new IllegalStateException(e1);
 				}
-
+			String fieldName = getId(fileUpload);
 				// Always use the draft version because updating the binary field will increase the version of the node,
 				// which can lead to problems when multiple files are uploaded.
 				return adminClient.updateNodeBinaryField(projectName, formDataNode.getUuid(), formDataNode.getLanguage(), "draft",
 						fieldName,
 						ins, size, fileUpload.fileName(), fileUpload.contentType())
 					.toSingle();
-			}).flatMapSingle(single -> single), false, 1)
-			.lastOrError();
+		};
+
+		// Separate the cases for 1 and more elements
+		if (sortedFileUploads.size() == 1) {
+			FileUpload fileUpload = sortedFileUploads.get(0);
+			return rxVertx.rxExecuteBlocking(() -> {
+				BinaryElement element = binaryGetter.apply(fileUpload);
+				String id = getId(fileUpload);
+				if (element.isList()) {
+					return listItemUploader.apply(fileUpload).flatMap(updatedItem -> {
+							NodeUpdateRequest update = formDataNode.toRequest();
+							if (update.getFields().getNodeFieldList(id) == null) {
+								update.getFields().put(id, new NodeFieldListImpl());
+	}
+							update.getFields().getNodeFieldList(id).add(updatedItem.getValue());
+							return adminClient.updateNode(projectName, formDataNode.getUuid(), update).toSingle();
+						});					
+				} else {
+					return plainUploader.apply(fileUpload);
+				}
+			}).flatMapSingle(single -> single);
+		} else {
+			return (Single) Single.zip(sortedFileUploads.stream().map(fileUpload -> rxVertx.rxExecuteBlocking(() -> {
+				String fieldName = getId(fileUpload);
+				BinaryElement element = binaryElementLookup.apply(fieldName).get();
+				if (element.isList()) {
+					return listItemUploader.apply(fileUpload);					
+				} else {
+					return plainUploader.apply(fileUpload).map(nr -> Pair.of(null, nr));
+				}
+			}).flatMapSingle(single -> single)).collect(Collectors.toList()), uploaded -> {
+				if (uploaded.length < 1) {
+					// Shortcut for no data. Should not happen.
+					return Single.error(new FormsError("No upload has been processed!", 500));
+				} else if (uploaded.length < 2 && uploaded[0] instanceof Pair && ((Pair)uploaded[0]).getKey() == null) {
+					// Shortcut for 1 plain upload
+					return Single.just(formDataNode);
+				} else {
+					// Mess of uploads
+					Map<String, List<NodeResponse>> binariesPerField = Arrays.stream(uploaded)
+							.map(u -> (Pair<String, NodeResponse>)u)
+							.filter(pair -> StringUtils.isNotBlank(pair.getKey()))
+							.collect(Collectors.groupingBy(Pair::getKey, Collectors.mapping(Pair::getValue, Collectors.toList())));
+					List<Single<NodeResponse>> updated = binariesPerField.entrySet().stream().map(idFields -> {
+						String id = idFields.getKey();
+						NodeUpdateRequest update = formDataNode.toRequest();
+						if (update.getFields().getNodeFieldList(id) == null) {
+							update.getFields().put(id, new NodeFieldListImpl());
+						}
+						idFields.getValue().forEach(updatedItem -> update.getFields().getNodeFieldList(id).add(updatedItem));
+						// TODO FIXME Mesh behaves weird when updating list fields by adding its items one by one, so we need first to collect everything, then update the field
+						return adminClient.updateNode(projectName, formDataNode.getUuid(), update).toSingle();
+					}).collect(Collectors.toList());
+					// Again the shortcut, as Single does not know what to do if there is nothing to zip
+					if (updated.size() < 1) {
+						return Single.just(formDataNode);
+					} else {
+						return Single.zip(updated, updated1 -> formDataNode);
+					}
+				}
+			}).flatMap(single -> single);
+		}
 	}
 
 	/**
@@ -1440,12 +1638,7 @@ public class FormDataService {
 
 						// remove the data cookie
 						if (ctx.handleCookies()) {
-							meshContext.response().removeCookie(COOKIE_NAME_DATA);
-							Cookie cookie = Cookie.cookie(COOKIE_NAME_DATA, "");
-							cookie.setPath(getPath(ctx.getReferer()));
-							cookie.setHttpOnly(true);
-							cookie.setMaxAge(0);
-							meshContext.response().addCookie(cookie);
+							removeDataCookie(meshContext);
 
 							if (isPoll) {
 								addPollCookie(ctx);
@@ -1505,7 +1698,7 @@ public class FormDataService {
 			// The cookie is needed when rendering the form in a page, as well as when data is submitted to the
 			// /api/forms/forms/ID/data endpoint, so we set the path to /.
 			.setPath("/")
-			.setHttpOnly(true)
+			.setHttpOnly(false)
 			.setMaxAge(Integer.MAX_VALUE);
 
 		pc.response().addCookie(cookie);
@@ -1595,10 +1788,16 @@ public class FormDataService {
 	protected static class Downloadable {
 		String uuid;
 		String fieldName;
+		Optional<String> maybeFolderName;
 
 		public Downloadable(String uuid, String fieldName) {
+			this(uuid, fieldName, Optional.empty());
+		}
+
+		public Downloadable(String uuid, String fieldName, Optional<String> maybeFolderName) {
 			this.uuid = uuid;
 			this.fieldName = fieldName;
+			this.maybeFolderName = maybeFolderName;
 		}
 	}
 }

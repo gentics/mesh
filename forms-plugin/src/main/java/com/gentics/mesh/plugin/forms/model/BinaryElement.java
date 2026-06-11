@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -26,9 +28,15 @@ import org.apache.tika.metadata.TikaCoreProperties;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
+import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
+
+import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
+import com.gentics.mesh.plugin.forms.SchemaInitializer;
+
 import com.gentics.mesh.json.JsonUtil;
+
 import com.gentics.mesh.plugin.forms.config.FileUploadOptions;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.context.FormDataCreateContext;
@@ -53,6 +61,7 @@ import okhttp3.OkHttpClient;
 @FormElementType("binary")
 public class BinaryElement extends FormElement {
 	private static final Pattern BINARY_KEY_PATTERN = Pattern.compile("^\\$\\.properties\\[\"([^.]+)\"\\]\\.value");
+	private static final Pattern MULTIBINARY_PATTERN = Pattern.compile("^([^.]+)\\[[d]+\\]");
 
 	/**
 	 * Extracts the element ID from a FormGen binary part key.
@@ -82,15 +91,26 @@ public class BinaryElement extends FormElement {
 
 	@Override
 	public void addFormData(JsonObject object, FieldContainer container, Function<FormElement, String> key) {
-		BinaryField field = container.getFields().getBinaryField(getName());
-		if (field != null) {
-			object.put(key.apply(this), field.getFileName());
+		if (isList()) {
+			NodeFieldList field = container.getFields().getNodeFieldList(getName());
+			if (field != null) {
+				object.put(key.apply(this), field.getItems().stream().map(item -> item != null ? ("\"" + item.getPath() + "\"") : null).collect(Collectors.joining(",", "[", "]")));
+			}
+		} else {
+			BinaryField field = container.getFields().getBinaryField(getName());
+			if (field != null) {
+				object.put(key.apply(this), field.getFileName());
+			}
 		}
 	}
 
 	@Override
 	public void addFieldSchema(FieldSchemaContainer container) {
-		container.addField(new BinaryFieldSchemaImpl().setName(getName()).setLabel(getName()));
+		if (isList()) {
+			container.addField(new ListFieldSchemaImpl().setListType("node").setAllowedSchemas(SchemaInitializer.MULTIBINARY_ITEM_SCHEMA_NAME).setName(getName()).setLabel(getName()));
+		} else {
+			container.addField(new BinaryFieldSchemaImpl().setName(getName()).setLabel(getName()));
+		}
 	}
 
 	@Override
@@ -103,13 +123,14 @@ public class BinaryElement extends FormElement {
 		return null;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Maybe<ValidationError> validate(FormDataCreateContext ctx, Vertx rxVertx, OkHttpClient httpClient, FormUiSchema uiSchema) {
 		var fileUploads = ctx.getFileUploads();
-		var fileUpload = getFileUpload(fileUploads);
 		var translations = ctx.getTranslations();
 
-		if (fileUpload == null) {
+		Set<FileUpload> myUploads = getFileUploads(fileUploads);
+		if (myUploads.isEmpty()) {
 			if (isMandatory()) {
 				if (ctx.getFormDataNode() != null) {
 					BinaryField field = ctx.getFormDataNode().getFields().getBinaryField(getName());
@@ -128,12 +149,14 @@ public class BinaryElement extends FormElement {
 
 		int maxFileSize = Optional.ofNullable(validation).map(Validation::getBinary)
 				.map(BinaryValidation::getMaxFilesize).orElse(0);
-		if (maxFileSize > 0 && fileUpload.size() > (maxFileSize * 1024 * 1024)) {
-			fileUploads.remove(fileUpload);
-			return Maybe.just(new ValidationError()
-				.setName(getName())
-				.setTitle(I18nHelper.get(translations, "form_validation_error_file_size_title"))
-				.setMessage(I18nHelper.get(translations, "form_validation_error_file_size", fileUpload.fileName(), Long.toString(maxFileSize))));
+		for (FileUpload fileUpload : myUploads) {
+			if (maxFileSize > 0 && fileUpload.size() > (maxFileSize * 1024 * 1024)) {
+				fileUploads.remove(fileUpload);
+				return Maybe.just(new ValidationError()
+					.setName(getName())
+					.setTitle(I18nHelper.get(translations, "form_validation_error_file_size_title"))
+					.setMessage(I18nHelper.get(translations, "form_validation_error_file_size", fileUpload.fileName(), Long.toString(maxFileSize))));
+			}
 		}
 
 		// we only need to validate, if either allowed filetypes or allowed filenames are set
@@ -146,26 +169,38 @@ public class BinaryElement extends FormElement {
 			boolean useMagicByteCheck = Optional.ofNullable(getConfiguration()).map(FormsConfig::getFileUpload)
 					.map(FileUploadOptions::isUseMagicByteCheck).orElse(false);
 
-			return fileHasAllowedContentType(fileUpload, useMagicByteCheck, rxVertx).flatMapMaybe(allowedContentType -> {
+			return Single.zip(myUploads.stream().map(fileUpload -> fileHasAllowedContentType(fileUpload, useMagicByteCheck, rxVertx).map(allowedContentType -> {
 				if (!allowedContentType && !fileHasAllowedName(fileUpload)) {
 					fileUploads.remove(fileUpload);
+					return Optional.of(fileUpload);
+				} else {
+					return Optional.empty();
+				}
+			})).collect(Collectors.toList()), uploads -> {
+				uploads = Arrays.stream(uploads).map(Optional.class::cast).filter(Optional::isPresent).toArray();
+				if (uploads.length > 0) {
 					return Maybe.just(new ValidationError()
 						.setName(getName())
 						.setTitle(I18nHelper.get(translations, "form_validation_error_file_type_title"))
-						.setMessage(I18nHelper.get(translations, "form_validation_error_file_type", fileUpload.fileName())));
+						.setMessage(I18nHelper.get(translations, "form_validation_error_file_type", 
+								Arrays.stream(uploads).map(FileUpload.class::cast).map(FileUpload::fileName)
+								.collect(Collectors.joining(", ")))));
 				} else {
 					return RxUtil.emptyMaybe();
 				}
-			}).onErrorResumeNext(e -> {
-				log.error("Could not check file type of uploaded file " + fileUpload.fileName() + " (" + fileUpload.contentType() + ")", e);
+			}).flatMapMaybe(maybe -> (Maybe<ValidationError>) maybe).onErrorResumeNext(e -> {
+				log.error("Could not check file type of uploaded file " 
+						+ myUploads.stream().map(fileUpload -> fileUpload.fileName() + " (" + fileUpload.contentType() + ")").collect(Collectors.joining(", ")), e);
 				return Maybe.just(new ValidationError()
 					.setName(getName())
 					.setTitle(I18nHelper.get(translations, "form_validation_error_file_type_title"))
-					.setMessage(I18nHelper.get(translations, "form_validation_error_file_type", fileUpload.fileName())));
+					.setMessage(I18nHelper.get(translations, "form_validation_error_file_type", 
+							myUploads.stream().map(FileUpload.class::cast).map(FileUpload::fileName)
+							.collect(Collectors.joining(", ")))));
 			});
 		} else {
-		return RxUtil.emptyMaybe();
-	}
+			return RxUtil.emptyMaybe();
+		}
 	}
 
 	@Override
@@ -174,7 +209,11 @@ public class BinaryElement extends FormElement {
 
 	@Override
 	public String getGraphQLName() {
-		return String.format("%s { fileName }", getName());
+		if (isList()) {
+			return String.format("%s (version: draft) { fields { ... on form_binary_item { binary { fileName } } } }", getName());
+		} else {
+			return String.format("%s { fileName }", getName());
+		}
 	}
 
 	@Override
@@ -244,11 +283,18 @@ public class BinaryElement extends FormElement {
 	 * @param fileUploads all file uploads from the current request
 	 * @return the matching upload, or null if none found
 	 */
-	protected FileUpload getFileUpload(Set<FileUpload> fileUploads) {
+	protected Set<FileUpload> getFileUploads(Set<FileUpload> fileUploads) {
 		return fileUploads.stream().filter(fu -> {
 			String id = extractFieldId(fu.name());
-			return getName().equals(id);
-		}).findFirst().orElse(null);
+			if (StringUtils.isBlank(id)) {
+				id = fu.name();
+			}
+			if (isList()) {
+				return MULTIBINARY_PATTERN.matcher(id).matches();
+			} else {
+				return getName().equals(id);
+			}
+		}).collect(Collectors.toSet());
 	}
 
 	/**

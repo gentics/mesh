@@ -37,8 +37,9 @@ public class SchemaInitializer {
 	public static final String DOWNLOAD_SCHEMA_NAME = "form_download";
 	public static final String FOLDER_SCHEMA_NAME = "form_folder";
 	public static final String PLUGIN_SCHEMA_NAME = "forms_plugin";
+	public static final String MULTIBINARY_ITEM_SCHEMA_NAME = "form_binary_item";
 
-	public static final List<String> PLUGIN_SCHEMAS = List.of(SCHEMA_NAME, DOWNLOAD_SCHEMA_NAME, PLUGIN_SCHEMA_NAME, FOLDER_SCHEMA_NAME);
+	public static final List<String> PLUGIN_SCHEMAS = List.of(SCHEMA_NAME, DOWNLOAD_SCHEMA_NAME, PLUGIN_SCHEMA_NAME, FOLDER_SCHEMA_NAME, MULTIBINARY_ITEM_SCHEMA_NAME);
 
 	@Inject
 	public SchemaInitializer(@AdminClient MeshRestClient adminClient, MeshPluginService meshPluginService) {
