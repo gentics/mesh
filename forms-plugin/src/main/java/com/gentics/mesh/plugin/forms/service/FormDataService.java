@@ -351,8 +351,9 @@ public class FormDataService {
 	public Single<NodeResponse> load(String projectName, String formUuid, String formDataUuid) {
 		return load(projectName, formUuid, formDataUuid, false);
 	}
+
 	/**
-	 * Load the form data by uuid
+	 * Load the form data by uuid with the admin client
 	 *
 	 * @param projectName project name
 	 * @param formUuid form uuid
@@ -1090,6 +1091,23 @@ public class FormDataService {
 			DeleteParametersImpl deleteParams = new DeleteParametersImpl();
 			deleteParams.setRecursive(true);
 			return userClient.deleteNode(projectName, formDataUuid, deleteParams).toSingle();
+		});
+	}
+
+	/**
+	 * Perform "cancel" for the given form data node. This will load the form data node (with the admin client), but only allow draft nodes.
+	 * If the node is already published, a 404 error will be thrown.
+	 * The the node is deleted with the admin client (recursively)
+	 * @param projectName project name
+	 * @param formUuid form UUID
+	 * @param formDataUuid form data UUID
+	 * @return empty response
+	 */
+	public Single<EmptyResponse> cancel(String projectName, String formUuid, String formDataUuid) {
+		return load(projectName, formUuid, formDataUuid, false).flatMap(formDataNode -> {
+			DeleteParametersImpl deleteParams = new DeleteParametersImpl();
+			deleteParams.setRecursive(true);
+			return adminClient.deleteNode(projectName, formDataUuid, deleteParams).toSingle();
 		});
 	}
 

@@ -134,7 +134,6 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		String uuid = createForm(inputFieldForm);
 
 		Request postRequest = new Request.Builder()
-				.headers(auth(true))
 				.url(projectUrl(String.format("/form/%s/cancel", uuid))).header("Referer", "ref")
 				.post(RequestBody.EMPTY).build();
 		Response response = client().newCall(postRequest).execute();
@@ -161,7 +160,6 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		System.out.println(buffer.readUtf8());
 
 		Request postRequest = new Request.Builder()
-				.headers(auth(true))
 				.url(projectUrl(String.format("/form/%s/cancel?formDataUuid=%s", formDataPair.getKey(), formDataPair.getValue()))).header("Referer", "ref")
 				.post(requestBody).build();
 		Response response = client().newCall(postRequest).execute();
@@ -189,7 +187,6 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		System.out.println(buffer.readUtf8());
 
 		Request postRequest = new Request.Builder()
-				.headers(auth(true))
 				.url(projectUrl(String.format("/form/%s/cancel?formDataUuid=%s", formDataPair.getKey(), formDataPair.getValue()))).header("Referer", "ref")
 				.post(requestBody).build();
 		Response response = client().newCall(postRequest).execute();

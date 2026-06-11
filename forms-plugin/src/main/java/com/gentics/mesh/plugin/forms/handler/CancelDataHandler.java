@@ -7,7 +7,6 @@ import javax.inject.Singleton;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.plugin.PluginContext;
-import com.gentics.mesh.plugin.common.MeshPluginException;
 import com.gentics.mesh.plugin.common.util.ParameterUtil;
 import com.gentics.mesh.plugin.forms.FormsError;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
@@ -34,8 +33,7 @@ public class CancelDataHandler extends AbstractFormsHandler {
 					if (StringUtils.isEmpty(formDataUuid)) {
 						return Single.just(EmptyResponse.getInstance());
 					} else {
-						return formDataService.load(pluginContext.projectName(), formUuid, formDataUuid, false).flatMap(
-								data -> formDataService.delete(pluginContext.projectName(), formUuid, data.getUuid()));
+						return formDataService.cancel(pluginContext.projectName(), formUuid, formDataUuid);
 					}
 				}).doOnEvent((response, t) -> {
 					if (t != null) {
