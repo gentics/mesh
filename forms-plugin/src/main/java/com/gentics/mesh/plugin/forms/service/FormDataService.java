@@ -61,6 +61,7 @@ import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.parameter.client.DeleteParametersImpl;
 import com.gentics.mesh.parameter.client.NodeParametersImpl;
@@ -1133,24 +1134,7 @@ public class FormDataService {
 			// loadFormDataByUuid() already checks if formDataUuid is a subnode of formUuid and if formUuid is actually a form.
 			DeleteParametersImpl deleteParams = new DeleteParametersImpl();
 			deleteParams.setRecursive(true);
-			List<Single<EmptyResponse>> listBinaryNodes = formDataNode.getFields().keySet().stream().map(key -> {
-				try {
-					NodeFieldList nodeList = formDataNode.getFields().getNodeFieldList(key);
-					if (nodeList != null && !nodeList.getItems().isEmpty()) {
-						return nodeList.getItems().stream().map(nodeItem -> userClient.deleteNode(projectName, nodeItem.getUuid(), deleteParams).toSingle()).collect(Collectors.toList());
-					}
-				} catch (Exception e) {
-					// TODO FIXME Mesh Currently there is no way to determine a field's type from the node response, other that load the corresponding form schema.
-					// Here we try deserializing the node list, which may spit random deserialization errors.
-					log.debug("Deserialization error", e);
-				}
-				return Collections.<Single<EmptyResponse>>emptyList();
-			}).flatMap(list -> list.stream()).collect(Collectors.toList());
-
-			return userClient.deleteNode(projectName, formDataUuid, deleteParams).toSingle()
-					.flatMap(formDeleted -> listBinaryNodes.size() < 1
-							? Single.just(formDeleted)
-							: Single.zip(listBinaryNodes, deletedItems -> formDeleted));
+			return userClient.deleteNode(projectName, formDataUuid, deleteParams).toSingle();
 		});
 	}
 
@@ -1409,7 +1393,7 @@ public class FormDataService {
 			Matcher matcher = multiIdRegex.matcher(fieldName);
 			String id = matcher.matches() ? matcher.group("name") : fieldName;
 			NodeCreateRequest itemCreate = new NodeCreateRequest();
-			itemCreate.setParentNode(formDataNode.getParentNode());
+			itemCreate.setParentNode(new NodeReference().setProjectName(projectName).setUuid(formDataNode.getUuid()));
 			itemCreate.setLanguage(formDataNode.getLanguage());
 			itemCreate.setSchemaName(SchemaInitializer.MULTIBINARY_ITEM_SCHEMA_NAME);
 			itemCreate.getFields().put("name", new StringFieldImpl().setString(fieldName));

@@ -1197,7 +1197,7 @@ public class FormService {
 	 */
 	private <T extends SchemaModel> Single<T> getSchema(FormtypeConfigsModel formtypeConfigs, NodeResponse formNode, T schema) {
 		schema.setName(getSchemaName(formNode.getUuid()));
-		schema.setContainer(false);
+		schema.setContainer(true);
 		try {
 			Form form = toForm(formtypeConfigs, formNode.getFields().getStringField("json").getString(), formNode.getUuid(),
 				formNode.getLanguage());
