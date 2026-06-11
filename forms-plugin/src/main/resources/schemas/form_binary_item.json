@@ -1,7 +1,7 @@
 {
 	"name": "form_binary_item",
 	"displayField": "name",
-	"segmentField": "name",
+	"segmentField": "",
 	"container": false,
 	"fields": [
 		{
