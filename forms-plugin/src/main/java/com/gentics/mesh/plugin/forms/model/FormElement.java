@@ -500,6 +500,21 @@ public abstract class FormElement implements RestModel {
 	}
 
 	/**
+	 * Correctly install a GraphQL filter
+	 * 
+	 * @param query filter query
+	 * @return
+	 */
+	@JsonIgnore
+	public String installFilter(String query) {
+		if (isList()) {
+			return getGraphQLName() + ": {anyMatch: {like: \"%" + query + "%\"}}";
+		} else {
+			return getGraphQLName() + ": {like: \"%" + query + "%\"}";
+		}
+	}
+
+	/**
 	 * Check whether the specific class is annotated with {@link Reportable}
 	 * @return true for reportable element implementations
 	 */

@@ -216,6 +216,18 @@ public class BinaryElement extends FormElement {
 		}
 	}
 
+	@JsonIgnore
+	@Override
+	public String installFilter(String query) {
+		if (isList()) {
+			return "";
+			// SUP-19994
+			//return getName() + ": { anyMatch: { fields: { form_binary_item: { binary: { fileName: { like: \"%" + query + "%\" } } } } } }";
+		} else {
+			return getName() + ": { fileName: {like: \"%" + query + "%\"} }";
+		}
+	}
+
 	@Override
 	@JsonIgnore
 	public void setConfiguration(FormsConfig configuration) {
