@@ -11,6 +11,7 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.plugin.forms.test.ResponseWithCookies;
+import com.gentics.mesh.util.UUIDUtil;
 
 import okhttp3.MediaType;
 import okhttp3.Request;
@@ -163,6 +164,16 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 				.isEqualTo("Wichtige Notiz");
 		// age was not submitted → value field absent (NON_NULL serialization)
 		assertThat(properties.get("age").has("value")).as("age value absent when not submitted").isFalse();
+	}
+
+	@Test
+	public void testLoadFormGenWithInvalidFormDataUuid() throws IOException {
+		String formUuid = createForm("formgen_load.json");
+
+		String formDataUuid = UUIDUtil.randomUUID();
+		Response response = doLoadRequest(formUuid, FORM_ID, "en", formDataUuid);
+		String responseBody = response.body() != null ? response.body().string() : "";
+		assertSuccessfulJsonResponse(response, responseBody);
 	}
 
 	@Test

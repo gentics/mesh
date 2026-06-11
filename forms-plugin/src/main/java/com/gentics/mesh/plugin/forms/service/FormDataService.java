@@ -1112,6 +1112,19 @@ public class FormDataService {
 	}
 
 	/**
+	 * Remove the data cookie
+	 * @param ctx context
+	 */
+	public void removeDataCookie(PluginContext ctx) {
+		ctx.response().removeCookie(COOKIE_NAME_DATA);
+		Cookie cookie = Cookie.cookie(COOKIE_NAME_DATA, "");
+		cookie.setPath(getPath(ctx.request().getHeader("Referer")));
+		cookie.setHttpOnly(false);
+		cookie.setMaxAge(0);
+		ctx.response().addCookie(cookie);
+	}
+
+	/**
 	 * Validate and save the data to mesh. publish form, if completed. Redirect to success url or referer
 	 *
 	 * @param formtypeConfigs formtype configs
@@ -1373,12 +1386,7 @@ public class FormDataService {
 
 						// remove the data cookie
 						if (ctx.handleCookies()) {
-							meshContext.response().removeCookie(COOKIE_NAME_DATA);
-							Cookie cookie = Cookie.cookie(COOKIE_NAME_DATA, "");
-							cookie.setPath(getPath(ctx.getReferer()));
-							cookie.setHttpOnly(false);
-							cookie.setMaxAge(0);
-							meshContext.response().addCookie(cookie);
+							removeDataCookie(meshContext);
 
 							if (isPoll) {
 								addPollCookie(ctx);
