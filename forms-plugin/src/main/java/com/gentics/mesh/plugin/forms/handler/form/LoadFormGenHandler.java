@@ -69,11 +69,18 @@ public class LoadFormGenHandler extends AbstractFormsHandler {
 							if ("dump".equals(lang)) {
 								return Single.error(new MeshPluginException("lang query parameter is required", 400));
 							}
+							// try to load the form data node, but ignore if that fails (e.g. when the form data node does not exist)
 							Single<Optional<NodeResponse>> formDataNodeSingle = formDataUuid != null
-									? formDataService.load(projectName, uuid, formDataUuid, true).map(Optional::of)
+									? formDataService.load(projectName, uuid, formDataUuid, true).map(Optional::of).onErrorResumeNext(e -> Single.just(Optional.empty()))
 									: Single.just(Optional.empty());
-							return formDataNodeSingle.flatMap(opt ->
-									formService.loadFormForFormGen(formtypeConfigs, projectName, uuid, formID, lang, opt.orElse(null), jwtClaims));
+					return formDataNodeSingle.flatMap(opt -> {
+						// when the form data node does not exist (or none was requested), clear the data cookie
+						if (opt.isEmpty()) {
+							formDataService.removeDataCookie(context);
+						}
+						return formService.loadFormForFormGen(formtypeConfigs, projectName, uuid, formID, lang,
+								opt.orElse(null), jwtClaims);
+					});
 						}))
 				.flatMap(x -> x)
 				.map(form -> {

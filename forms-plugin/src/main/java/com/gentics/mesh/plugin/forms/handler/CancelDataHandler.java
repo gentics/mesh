@@ -37,8 +37,10 @@ public class CancelDataHandler extends AbstractFormsHandler {
 					if (StringUtils.isEmpty(formDataUuid)) {
 						return Single.just(EmptyResponse.getInstance());
 					} else {
-						return formDataService.load(pluginContext.projectName(), formUuid, formDataUuid, false).flatMap(
-								data -> formDataService.delete(pluginContext.projectName(), formUuid, data.getUuid()));
+						return formDataService.cancel(pluginContext.projectName(), formUuid, formDataUuid).map(response -> {
+							formDataService.removeDataCookie(pluginContext);
+							return response;
+						});
 					}
 				}).doOnEvent((response, t) -> {
 					if (t != null) {
