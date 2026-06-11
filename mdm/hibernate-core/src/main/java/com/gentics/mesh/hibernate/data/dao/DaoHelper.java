@@ -1576,7 +1576,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 		Optional<String> maybeFieldName = Optional.ofNullable(actualFieldName).map(fieldName -> (StringUtils.isBlank(fieldName) || fieldName.contains(" ")) ? fieldName : databaseConnector.renderNonContentColumn(fieldName + fieldSuffix));
 		// Check both table alias / field name for existence 
 		StringBuilder sb = new StringBuilder();
-		if (!actualFieldName.contains("(")) {
+		if (StringUtils.isNotBlank(actualFieldName) && !actualFieldName.contains("(")) {
 			sb.append(ownerAlias);
 		}
 		if (maybeOwner.filter(owner -> !owner.endsWith("FIELD")).isPresent()) {
@@ -1587,7 +1587,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 				sb.append(declaredOwnerAlias);
 			}
 		}
-		maybeFieldName.ifPresent(fn -> {
+		maybeFieldName.filter(StringUtils::isNotBlank).ifPresent(fn -> {
 			if (sb.length() > 0) {
 				sb.append(".");
 			}			
