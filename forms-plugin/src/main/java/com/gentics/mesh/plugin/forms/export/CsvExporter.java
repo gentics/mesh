@@ -254,6 +254,19 @@ public class CsvExporter extends Exporter {
 					baseUrl,
 					data.getString("uuid"),
 					fieldName));
+			} else if (value instanceof JsonArray listValue) {
+				List<String> fileNames = new ArrayList<>();
+				List<String> urls = new ArrayList<>();
+
+				for (int j = 0; j < listValue.size(); j++) {
+					JsonObject itemObject = listValue.getJsonObject(j);
+
+					urls.add("%s/%s/binary/%s/%d".formatted(baseUrl, data.getString("uuid"), fieldName, j));
+					fileNames.add(itemObject.getJsonObject("fields", JsonObject.of())
+							.getJsonObject("binary", JsonObject.of()).getString("fileName"));
+				}
+				ret.add(urls.toString());
+				value = fileNames.toString();
 			} else if (value == null && binaryFields.contains(fieldName)) {
 				ret.add("");
 			}
