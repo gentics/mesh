@@ -210,7 +210,7 @@ public class BinaryElement extends FormElement {
 	@Override
 	public String getGraphQLName() {
 		if (isList()) {
-			return String.format("%s (version: draft) { fields { ... on form_binary_item { binary { fileName } } } }", getName());
+			return String.format("%s (version: draft) { uuid fields { ... on form_binary_item { binary { fileName } } } }", getName());
 		} else {
 			return String.format("%s { fileName }", getName());
 		}
