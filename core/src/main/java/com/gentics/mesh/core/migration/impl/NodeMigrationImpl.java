@@ -246,7 +246,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 						return Completable.error(new MigrationAbortedException("Not all containers of the current batch were migrated."));
 					}
 				}
-			} while (batchSize > 0 && currentBatch > 0 && currentBatch >= batchSize);
+			} while (batchSize > 0 && currentBatch > 0);
 
 			// TODO prepare errors. They should be easy to understand and to grasp
 			Completable result = Completable.complete();
