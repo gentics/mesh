@@ -1061,11 +1061,11 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 	}
 
 	/**
-	 * Test posting to a form containing a recaptcha field (which is not filled)
+	 * Test posting to a form requiring, but not containing a recaptcha field
 	 * @throws IOException
 	 */
 	@Test
-	public void testRecaptchaNotFilled() throws IOException {
+	public void testRecaptchaNotPresent() throws IOException {
 		// create the form
 		String uuid = createForm("recaptcha.json", true, true);
 
@@ -1078,6 +1078,41 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 
 		// we expect no calls to the recaptcha verification server
 		assertThat(webServer.getRequestCount()).as("Requests to recaptcha").isEqualTo(0);
+
+		// we expect to be redirected back to the form
+		assertRedirect(pair.getLeft());
+		// data node must not be present
+		assertThat(getFormDataNodes(uuid)).as("Form Data Nodes").isEmpty();
+
+		// form-data cookie must not exist
+		assertThat(pair.getRight()).as("Cookie").isNotPresent();
+	}
+
+	/**
+	 * Test posting to a form containing a recaptcha field (which is not filled)
+	 * @throws IOException
+	 * @throws InterruptedException 
+	 */
+	@Test
+	public void testRecaptchaNotFilled() throws IOException, InterruptedException {
+		// create the form
+		String uuid = createForm("recaptcha.json", true, true);
+
+		// let the recaptcha verification server answer with success: false
+		webServer.enqueue(new MockResponse().setBody("{\"success\": false}"));
+
+		// post only the input field
+		RequestBody requestBody = new MultipartBody.Builder()
+				.setType(MultipartBody.FORM)
+				.addFormDataPart("input1", "someValue")
+				.addFormDataPart("recaptcha1", "1")// This value is sent by the rendered empty form ReCaptcha element
+				.build();
+		Pair<Response, Optional<Cookie>> pair = postToForm(uuid, requestBody);
+
+		// recaptcha verification server must have answered one request
+		assertThat(webServer.getRequestCount()).as("Requests to recaptcha").isEqualTo(1);
+		RecordedRequest request = webServer.takeRequest(1, TimeUnit.SECONDS);
+		assertThat(request.getBody().toString()).as("Request body").isEqualTo("[text=secret=your-secret-key&response=1]");
 
 		// we expect to be redirected back to the form
 		assertRedirect(pair.getLeft());
