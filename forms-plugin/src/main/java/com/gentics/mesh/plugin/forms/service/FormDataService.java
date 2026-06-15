@@ -868,13 +868,7 @@ public class FormDataService {
 	public Single<Pair<Form, File>> zipBinaries(String projectName, Form form) {
 		Set<String> fileElementNames = form.getElementsInsideProperties().filter(elem -> elem instanceof BinaryElement).map(FormElement::getName)
 			.filter(Objects::nonNull).collect(Collectors.toSet());
-		Set<String> fileFieldNames = form.getElementsInsideProperties().filter(elem -> elem instanceof BinaryElement).map(elem -> {
-			if (elem.isList()) {
-				return elem.getName() + " {uuid,path}";
-			} else {
-				return elem.getGraphQLName();
-			}
-		}).filter(Objects::nonNull).collect(Collectors.toSet());
+		Set<String> fileFieldNames = form.getElementsInsideProperties().filter(elem -> elem instanceof BinaryElement).map(FormElement::getGraphQLName).filter(Objects::nonNull).collect(Collectors.toSet());
 
 		Single<List<Downloadable>> singleDownloadables = null;
 		if (fileElementNames.isEmpty()) {
@@ -1146,13 +1140,9 @@ public class FormDataService {
 				context.put("sorting", StringUtils.EMPTY);
 			}
 			if (forceNoES && StringUtils.isNotBlank(query)) {
-				String filter = form.getSchema().getProperties().values().stream().map(element -> {
-					if (element.isList()) {
-						return element.getGraphQLName() + ": {anyMatch: {like: \"%" + query + "%\"}}";
-					} else {
-						return element.getGraphQLName() + ": {like: \"%" + query + "%\"}";
-					}
-				}).collect(Collectors.joining(" ", " fields: {" + SchemaService.getSchemaName(form.getUuid()) + ":{or: { ", " }}} "));
+				String filter = form.getSchema().getProperties().values().stream()
+						.map(element -> element.installFilter(query))
+						.collect(Collectors.joining(" ", " fields: {" + SchemaService.getSchemaName(form.getUuid()) + ":{or: { ", " }}} "));
 				context.put("fieldFilter", filter);
 			} else {
 				context.put("fieldFilter", StringUtils.EMPTY);

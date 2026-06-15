@@ -210,9 +210,21 @@ public class BinaryElement extends FormElement {
 	@Override
 	public String getGraphQLName() {
 		if (isList()) {
-			return String.format("%s (version: draft) { fields { ... on form_binary_item { binary { fileName } } } }", getName());
+			return String.format("%s (version: draft) { uuid fields { ... on form_binary_item { binary { fileName } } } }", getName());
 		} else {
 			return String.format("%s { fileName }", getName());
+		}
+	}
+
+	@JsonIgnore
+	@Override
+	public String installFilter(String query) {
+		if (isList()) {
+			return "";
+			// SUP-19994
+			//return getName() + ": { anyMatch: { fields: { form_binary_item: { binary: { fileName: { like: \"%" + query + "%\" } } } } } }";
+		} else {
+			return getName() + ": { fileName: {like: \"%" + query + "%\"} }";
 		}
 	}
 

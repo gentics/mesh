@@ -510,6 +510,8 @@ The following translations must be available for validation error messages (set 
 | `form_validation_error_file_size`                     | Filename, filesize        | Error message for file size violation.          |
 | `form_validation_error_file_type_title`               | -                         | Title for file type error message.              |
 | `form_validation_error_file_type`                     | Filename                  | Error message for file type violation.          |
+| `form_validation_error_email_title`                   | -                         | Title for invalid email error message.          |
+| `form_validation_error_email_type`                    | Email                     | Error message for invalid email.                |
 
 # Friendly Captcha
 

@@ -514,6 +514,67 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 	}
 
 	/**
+	 * Test export with multivalue binary data
+	 * @throws IOException
+	 */
+	@Test
+	public void testExportMultiBinaries() throws IOException {
+		if (!online || !permission) {
+			// Permission and online status is covered by other tests. Here we
+			// are only interested if the binary fields are exported correctly.
+
+			return;
+		}
+
+		String uuid = createForm("multifilefield.json");
+		String fieldName = "file1";
+		String expectedBaseUrl = String.format("/api/v2/%s/plugins/forms/forms", PROJECT_NAME);
+
+		List<String> filesToPost = Arrays.asList("list1.json", "list2.json", "list3.json");
+		Builder builder = new MultipartBody.Builder().setType(MultipartBody.FORM);
+		List<String> expectedNames = IntStream.range(0, filesToPost.size()).mapToObj(index -> {
+			String fileName = filesToPost.get(index);
+			try {
+				builder.addFormDataPart("file1[" + index + "]", fileName, requestBodyFromFile(fileName));
+			} catch (IOException e) {
+				throw new IllegalStateException(e);
+			}
+			return "/file1/" + index + "/" + fileName;
+		}).collect(Collectors.toList());
+		String dataUuid;
+		try {
+			RequestBody requestBody = builder.build();
+			Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=en")).header("Referer", "ref").post(requestBody).build();
+			Response response = client().newCall(postRequest).execute();
+			assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+			dataUuid = new JsonObject(response.body().string()).getString(FIELD_RS_DATA_UUID);
+		} catch (IOException e) {
+			throw new IllegalStateException(e);
+		}
+		expectedNames = expectedNames.stream().map(name -> dataUuid + "/<node-uuid>" +  name).collect(Collectors.toList());
+
+		Request exportRequest = new Request.Builder()
+				.url(projectUrl("/forms/" + uuid + "/export"))
+				.headers(auth(permission))
+				.get()
+				.build();
+		Response exportResponse = client().newCall(exportRequest).execute();
+		Set<String> actual = getExportRecords(exportResponse.body().string());
+
+		List<String> fileUrls = new ArrayList<>();
+		for (int i = 0; i < filesToPost.size(); i++) {
+			fileUrls.add("%s/%s/data/%s/binary/%s/%d".formatted(expectedBaseUrl, uuid, dataUuid, fieldName, i));
+		}
+		String exportLine = "\"%s\",\"%s\"".formatted(fileUrls.toString(), filesToPost.toString());
+
+		List<String> expected = Arrays.asList(
+				String.format("%1$s|||Datei,%1$s|||Datei (filename)", fieldName),
+				exportLine);
+
+		assertThat(actual).hasSameElementsAs(expected);
+	}
+
+	/**
 	 * Test loading binary data
 	 * @throws IOException
 	 */

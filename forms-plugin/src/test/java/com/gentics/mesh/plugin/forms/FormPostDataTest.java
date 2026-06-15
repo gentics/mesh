@@ -29,60 +29,6 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
-import static com.gentics.mesh.test.ClientHelper.call;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.slf4j.Logger.ROOT_LOGGER_NAME;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.mail.Address;
-import javax.mail.BodyPart;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
-
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.Appender;
-import com.gentics.mesh.core.rest.error.GenericRestException;
-import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.plugin.forms.model.response.FormOnlineResponse;
-import com.gentics.mesh.plugin.forms.model.schema.FormData;
-import com.gentics.mesh.plugin.forms.model.schema.FormDataProperty;
-import com.gentics.mesh.plugin.forms.service.FormDataService;
-import com.gentics.mesh.plugin.forms.test.ResponseWithCookies;
-import com.gentics.mesh.plugin.forms.util.RxUtil;
-import com.gentics.mesh.rest.client.MeshBinaryResponse;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.json.JsonObject;
-import okhttp3.Cookie;
-import okhttp3.HttpUrl;
-import okhttp3.MediaType;
-import okhttp3.MultipartBody;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.tuple.Pair;
@@ -108,43 +54,20 @@ import com.gentics.mesh.plugin.forms.test.ResponseWithCookies;
 import com.gentics.mesh.plugin.forms.util.RxUtil;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 
-import com.gentics.mesh.core.rest.error.GenericRestException;
-import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.plugin.forms.model.response.FormOnlineResponse;
-import com.gentics.mesh.plugin.forms.model.schema.FormData;
-import com.gentics.mesh.plugin.forms.model.schema.FormDataProperty;
-import com.gentics.mesh.plugin.forms.service.FormDataService;
-import com.gentics.mesh.plugin.forms.test.ResponseWithCookies;
-import com.gentics.mesh.plugin.forms.util.RxUtil;
-import com.gentics.mesh.rest.client.MeshBinaryResponse;
-
-import javax.mail.Address;
-import javax.mail.BodyPart;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static com.gentics.mesh.test.ClientHelper.call;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.slf4j.Logger.ROOT_LOGGER_NAME;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.Appender;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonObject;
+import okhttp3.Cookie;
+import okhttp3.HttpUrl;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 /**
  * Test cases for posting data to a form for multiple languages.
@@ -545,6 +468,55 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 			assertThat(response.body().string()).as("File contents").isEqualTo(fromFile("multipage.html"));
 		}
 		
+	}
+
+	/**
+	 * Test requesting data of a form where several single- and multi-upload elements mix
+	 */
+	@Test
+	public void testReportMessedUpFileForm() throws IOException {
+		String formDefinition = "messed_up_but_valid.json";
+		String formUuid = createForm(formDefinition);
+
+		// Make update post containing all fields including two files.
+		MultipartBody requestBody = new MultipartBody.Builder()
+			.setType(MultipartBody.FORM)
+			.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(formUuid, null, Map.of("input1", "test")))
+			.addFormDataPart("file1", formDefinition, requestBodyFromFile(formDefinition))
+			.addFormDataPart("file2", formDefinition, requestBodyFromFile(formDefinition))
+			.addFormDataPart("filesssss[0]", "multipage.0.json", requestBodyFromFile("multipage.json"))
+			.addFormDataPart("filesssss[1]", "multipage.1.json", requestBodyFromFile("multipage.json"))
+			.addFormDataPart("sssss[0]", "multipage.html", requestBodyFromFile("multipage.html"))
+			.build();
+
+		Request request = new Request.Builder()
+			.url(projectUrl("/form/" + formUuid + "/save?lang=" + language))
+			.post(requestBody)
+			.build();
+		Response response = client().newCall(request).execute();
+
+		// Result must be successful and there must still be exactly one data node.
+		assertThat(response.isSuccessful())
+			.as(String.format("Response success %d (%s)", response.code(), response.message()))
+			.isTrue();
+
+		NodeResponse dataNode = assertSingleDataNode(formUuid, node -> {/* Nothing more to assert */});
+
+		request = new Request.Builder()
+			.url(projectUrl("/forms/" + formUuid + "/data?q=i&publishedOnly=false"))
+			.headers(auth(true))
+			.get()
+			.build();
+		response = client().newCall(request).execute();
+
+		// Result must be successful and there must still be exactly one data node.
+		assertThat(response.isSuccessful())
+			.as(String.format("Response success %d (%s)", response.code(), response.message()))
+			.isTrue();
+
+		JsonObject data = new JsonObject(response.body().string());
+		assertThat(data.getJsonArray("entries")).as("Entries").isNotNull().hasSize(1);
+		assertThat(data.getJsonArray("entries").getJsonObject(0).getString("uuid")).isEqualTo(dataNode.getUuid());
 	}
 
 
