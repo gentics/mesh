@@ -55,6 +55,10 @@
         "maxVal": "",
         "maxCharCount": "",
         "elements": []
+      },
+      "usermail1": {
+        "type": "usermail",
+        "name": "usermail1"
       }
     }
   },

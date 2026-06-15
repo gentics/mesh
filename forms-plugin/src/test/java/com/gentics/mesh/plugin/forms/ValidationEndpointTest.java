@@ -96,6 +96,13 @@ public class ValidationEndpointTest extends AbstractEndpointValidationTest {
 			.containsExactlyElementsOf(dataNodesBeforeValidation.stream().map(NodeResponse::getUuid).toList());
 	}
 
+	@Test
+	public void testInvalidEmailAddress() throws IOException {
+		Response response = client().newCall(request(null, requestBody("usermail1", "invalid_email_address"))).execute();
+
+		assertValidationResponse(response, Map.of("usermail1", "The email address invalid_email_address is invalid."));
+	}
+
 	private Request request(String formDataUuid, RequestBody requestBody) {
 		HttpUrl.Builder url = HttpUrl.get(projectUrl("/form/%s/validate?lang=en".formatted(formUuid))).newBuilder();
 

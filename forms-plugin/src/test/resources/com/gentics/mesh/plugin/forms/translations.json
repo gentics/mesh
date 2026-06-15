@@ -20,7 +20,9 @@
       "form_validation_error_file_size_title": "Dateigröße überschritten",
       "form_validation_error_file_size": "Die Datei {0} überschreitet die maximal erlaubte Dateigröße von {1} MB.",
       "form_validation_error_file_type_title": "Ungültiger Dateityp",
-      "form_validation_error_file_type": "Die Datei {0} hat einen ungültigen Dateityp."
+      "form_validation_error_file_type": "Die Datei {0} hat einen ungültigen Dateityp.",
+      "form_validation_error_email_title": "Ungültige Email-Adresse",
+      "form_validation_error_email": "Die Email-Adresse {0} ist ungültig."
     },
     "en": {
       "form_validation_error_missing_mandatory_field_title": "Missing mandatory field",
@@ -42,7 +44,9 @@
       "form_validation_error_file_size_title": "Upload filesize exceeded",
       "form_validation_error_file_size": "The file {0} exceeds the maximum allowed filesize of {1} MB.",
       "form_validation_error_file_type_title": "Invalid file type",
-      "form_validation_error_file_type": "The file {0} is of invalid type."
+      "form_validation_error_file_type": "The file {0} is of invalid type.",
+      "form_validation_error_email_title": "Invalid email address",
+      "form_validation_error_email": "The email address {0} is invalid."
     },
     "it": {
       "form_validation_error_max_value": "Il valore {0} è troppo grande.",
@@ -71,7 +75,9 @@
         "form_validation_error_file_size_title": "Dateigröße überschritten",
         "form_validation_error_file_size": "Die Datei {0} überschreitet die maximal erlaubte Dateigröße von {1} MB.",
         "form_validation_error_file_type_title": "Ungültiger Dateityp",
-        "form_validation_error_file_type": "Die Datei {0} hat einen ungültigen Dateityp."
+        "form_validation_error_file_type": "Die Datei {0} hat einen ungültigen Dateityp.",
+        "form_validation_error_email_title": "Ungültige Email-Adresse",
+        "form_validation_error_email": "Die Email-Adresse {0} ist ungültig."
       },
       "en": {
         "form_validation_error_missing_mandatory_field_title": "Missing mandatory field",
@@ -93,7 +99,9 @@
         "form_validation_error_file_size_title": "Upload filesize exceeded",
         "form_validation_error_file_size": "The file {0} exceeds the maximum allowed filesize of {1} MB.",
         "form_validation_error_file_type_title": "Invalid file type",
-        "form_validation_error_file_type": "The file {0} is of invalid type."
+        "form_validation_error_file_type": "The file {0} is of invalid type.",
+        "form_validation_error_email_title": "Invalid email address",
+        "form_validation_error_email": "The email address {0} is invalid."
       }
     }
   }
