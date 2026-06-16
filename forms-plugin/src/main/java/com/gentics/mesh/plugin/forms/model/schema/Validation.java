@@ -38,7 +38,7 @@ public class Validation {
 	private Integer maxValue;
 	private Integer minLength;
 	private Integer maxLength;
-	private String regex;
+	private RegexValidation regexValidation;
 
 	private BinaryValidation binary;
 
@@ -127,22 +127,22 @@ public class Validation {
 	}
 
 	/**
-	 * The regex pattern for the element value.
+	 * The regex validation for the element value.
 	 *
-	 * @return The regex pattern for the element value.
+	 * @return The regex validation for the element value.
 	 */
-	public String getRegex() {
-		return regex;
+	public RegexValidation getRegexValidation() {
+		return regexValidation;
 	}
 
 	/**
-	 * Set the regex pattern for the element value.
+	 * Set the regex validation for the element value.
 	 *
-	 * @param regex The regex pattern for the element value.
+	 * @param regexValidation The regex validation for the element value.
 	 * @return Fluent API
 	 */
-	public Validation setRegex(String regex) {
-		this.regex = regex;
+	public Validation setRegexValidation(RegexValidation regexValidation) {
+		this.regexValidation = regexValidation;
 
 		return this;
 	}
@@ -223,11 +223,10 @@ public class Validation {
 				"max_length"
 			));
 
-		if (regex != null)
-			constraints.add(new ValidationConstraint(
-				value -> value == null || !value.matches(regex),
-				"pattern"
-			));
+		Optional.ofNullable(regexValidation)
+			.map(RegexValidation::getRegex)
+			.map(regex -> new ValidationConstraint(value -> value == null || !value.matches(regexValidation.getRegex()), "pattern"))
+			.ifPresent(constraints::add);
 
 		return constraints;
 	}
