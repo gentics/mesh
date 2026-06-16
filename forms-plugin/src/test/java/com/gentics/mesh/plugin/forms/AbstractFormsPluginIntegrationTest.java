@@ -30,6 +30,8 @@ import com.gentics.mesh.util.UUIDUtil;
 import com.google.common.net.HttpHeaders;
 import com.icegreen.greenmail.junit.GreenMailRule;
 import com.icegreen.greenmail.util.ServerSetupTest;
+import com.rometools.utils.Strings;
+
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Completable;
 import io.reactivex.Single;
@@ -56,6 +58,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
+import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -361,12 +364,51 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 	}
 
 	/**
+	 * Get the file data for the given file
+	 * @param name file name
+	 * @return file data as map
+	 * @throws IOException
+	 */
+	protected Map<String, Object> getFileData(String name) throws IOException {
+		String mimeType;
+		try (InputStream in = getClass().getResourceAsStream(name)) {
+			mimeType = URLConnection.guessContentTypeFromStream(in);
+		}
+
+		if (Strings.isBlank(mimeType)) {
+			mimeType = URLConnection.guessContentTypeFromName(name);
+		}
+
+		long size = 0;
+		try (InputStream is = getClass().getResourceAsStream(name)) {
+			byte[] buffer = new byte[8192];
+			int bytesRead;
+			while ((bytesRead = is.read(buffer)) != -1) {
+				size += bytesRead;
+			}
+		}
+
+		return Map.of("fileName", name, "size", size, "type", mimeType, "value",
+				"mesh(not uploaded yet): " + UUIDUtil.randomUUID());
+	}
+
+	/**
 	 * Get the key to be used for binary uploads for the given field
 	 * @param fieldName field name
 	 * @return encoded key
 	 */
 	protected String fileUploadKey(String fieldName) {
 		return URLEncoder.encode("$.properties[\"%s\"].value".formatted(fieldName), StandardCharsets.UTF_8);
+	}
+
+	/**
+	 * Get the key to be used for binary uploads with the given index
+	 * @param fieldName field name
+	 * @param index index
+	 * @return encoded key
+	 */
+	protected String fileUploadKey(String fieldName, int index) {
+		return URLEncoder.encode("$.properties[\"%s\"].values[%d]".formatted(fieldName, index), StandardCharsets.UTF_8);
 	}
 
 	/**
@@ -728,7 +770,16 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 		return new FormData()
 				.setFormID(formID)
 				.setFormDataID(formDataUuid)
-				.setProperties(params.entrySet().stream().map(e -> Pair.of(e.getKey(), new FormDataProperty().setValue(e.getValue()))).collect(Collectors.toMap(Pair::getKey, Pair::getValue)));
+				.setProperties(params.entrySet().stream().map(e -> {
+					FormDataProperty formDataProperty = new FormDataProperty();
+					Object value = e.getValue();
+					if (value instanceof List<?> listValue) {
+						formDataProperty.setValues((List<Object>)listValue);
+					} else {
+						formDataProperty.setValue(value);
+					}
+					return Pair.of(e.getKey(), formDataProperty);
+				}).collect(Collectors.toMap(Pair::getKey, Pair::getValue)));
 	}
 
 	protected FormtypeConfigsModel buildModel(String json) throws IOException {

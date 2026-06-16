@@ -15,7 +15,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,11 +25,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -38,10 +36,12 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,12 +56,17 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
+import com.gentics.mesh.core.rest.node.field.NodeField;
+import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.parameter.client.DeleteParametersImpl;
 import com.gentics.mesh.parameter.client.NodeParametersImpl;
@@ -86,6 +91,7 @@ import com.gentics.mesh.plugin.forms.model.Form;
 import com.gentics.mesh.plugin.forms.model.FormElement;
 import com.gentics.mesh.plugin.forms.model.FormtypeConfigsModel;
 import com.gentics.mesh.plugin.forms.model.ValidationError;
+import com.gentics.mesh.plugin.forms.model.schema.BinaryData;
 import com.gentics.mesh.plugin.forms.model.schema.FormData;
 import com.gentics.mesh.plugin.forms.util.FormParameterUtil;
 import com.gentics.mesh.plugin.forms.util.FormUtil;
@@ -99,6 +105,7 @@ import com.github.jknack.handlebars.Context;
 import com.github.jknack.handlebars.Handlebars;
 
 import io.reactivex.Completable;
+import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.MultiMap;
@@ -1331,11 +1338,6 @@ public class FormDataService {
 		}
 	}
 
-	private String getId(FileUpload fu) {
-		String id = BinaryElement.extractFieldId(fu.name());
-		return id != null ? id : fu.name();
-	}
-
 	/**
 	 * Save fileuploads to mesh
 	 *
@@ -1346,73 +1348,15 @@ public class FormDataService {
 	 * @param sortedFileUploads validated file uploads
 	 * @return single of the form data node
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private Single<NodeResponse> saveFileUploads(String projectName, Form form, NodeResponse formDataNode, MultiMap postedData, Set<FileUpload> fileUploads) {
-		Set<BinaryElement> validUploadElements = form.getElementsInsideProperties()
-			.filter(FormElement::isActive)
-			.flatMap(elem -> elem instanceof BinaryElement 
-				? Stream.of((BinaryElement) elem)
-				: Stream.empty())
-			.collect(Collectors.toSet());
-
-		Pattern multiIdRegex = Pattern.compile(MULTIFILE_ID_REGEX);
-
-		Function<String, Optional<BinaryElement>> binaryElementLookup = id1 -> validUploadElements.stream().filter(e -> {
-			boolean found = e.getName().equals(id1);
-			if (!found && e.isList()) {
-				Matcher idMatcher = multiIdRegex.matcher(id1);
-				return idMatcher.matches() && e.getName().equals(idMatcher.group("name"));
-			} else {
-				return found;
-			}
-		}).findAny();
-		fileUploads = fileUploads.stream().filter(fileUpload -> {
-			String id1 = getId(fileUpload);
-			return binaryElementLookup.apply(id1).isPresent();
-		}).collect(Collectors.toSet());
-
-		// Only one binary upload per element is allowed — keep the first encountered per ID
-		List<FileUpload> sortedFileUploads = fileUploads.stream()
-			.collect(Collectors.toMap(
-				FileUpload::name,
-				fu -> fu, // Store the FileUpload object itself as the value
-				(a, b) -> a // Merge function: In case of duplicate keys (same field ID), keep the first 'a'
-			))
-			.values().stream()
-			.sorted((a,b) -> {
-				String aid = a.name();
-				String bid = b.name();
-
-				Matcher amultip = multiIdRegex.matcher(aid);
-				Matcher bmultip = multiIdRegex.matcher(bid);
-				if (amultip.matches() && bmultip.matches()) {
-					aid = amultip.group("id");
-					bid = bmultip.group("id");
-					try {
-						return Integer.parseInt(aid) - Integer.parseInt(bid);
-					} catch (NumberFormatException e1) {
-						log.warn("Could not parse upload index", e1);
-					}
-				}
-				return 0;
-			}).collect(Collectors.toList());
-
-		// Early return
-		if (sortedFileUploads.isEmpty()) {
-			return Single.just(formDataNode);
-		}
-
-		// Reusable binary element getter
-		Function<FileUpload, BinaryElement> binaryGetter = fileUpload -> {
-			String fieldName = getId(fileUpload);
-			return binaryElementLookup.apply(fieldName).get();
+		Function<String, BinaryData> binaryDataExtractor = value -> {
+			return JsonUtil.readValue(value, BinaryData.class);
 		};
 
 		// Reusable list item uploader
-		Function<FileUpload, Single<Pair<String, NodeResponse>>> listItemUploader = fileUpload -> {
-			String fieldName = getId(fileUpload);
-			Matcher matcher = multiIdRegex.matcher(fieldName);
-			String id = matcher.matches() ? matcher.group("name") : fieldName;
+		BiFunction<Triple<String, Integer, BinaryData>, FileUpload, Single<Triple<String, Integer, BinaryData>>> listItemUploader = (key, fileUpload) -> {
+			String fieldName = key.getLeft();
+
 			NodeCreateRequest itemCreate = new NodeCreateRequest();
 			itemCreate.setParentNode(new NodeReference().setProjectName(projectName).setUuid(formDataNode.getUuid()));
 			itemCreate.setLanguage(formDataNode.getLanguage());
@@ -1429,93 +1373,149 @@ public class FormDataService {
 						ins, size, fileUpload.fileName(), fileUpload.contentType())
 					.toSingle()
 					.map(itemNode1 -> {
-						return Pair.of(id, itemNode1);
+						key.getRight().setValue("mesh: %s".formatted(itemNode1.getUuid()));
+						return key;
 					}));
 			} catch (FileNotFoundException e1) {
 				String message = "Could not upload a binary for the form data %s field %s".formatted(formDataNode.getUuid(), fieldName);
 				log.error(message, e1);
 				return Single.error(new FormsError(message, e1, 400));
-			}				
-		};
-
-		// Reusable plain file uploader
-		Function<FileUpload, Single<NodeResponse>> plainUploader = fileUpload -> {
-			long size = fileUpload.size();
-			InputStream ins;
-			try {
-				ins = new FileInputStream(fileUpload.uploadedFileName());
-			} catch (FileNotFoundException e1) {
-				throw new IllegalStateException(e1);
 			}
-			String fieldName = getId(fileUpload);
-			// Always use the draft version because updating the binary field will increase the version of the node,
-			// which can lead to problems when multiple files are uploaded.
-			return adminClient.updateNodeBinaryField(projectName, formDataNode.getUuid(), formDataNode.getLanguage(), "draft",
-					fieldName,
-					ins, size, fileUpload.fileName(), fileUpload.contentType())
-				.toSingle();
 		};
 
-		// Separate the cases for 1 and more elements
-		if (sortedFileUploads.size() == 1) {
-			FileUpload fileUpload = sortedFileUploads.get(0);
-			return rxVertx.rxExecuteBlocking(() -> {
-				BinaryElement element = binaryGetter.apply(fileUpload);
-				String id = getId(fileUpload);
-				if (element.isList()) {
-					return listItemUploader.apply(fileUpload).flatMap(updatedItem -> {
-							NodeUpdateRequest update = formDataNode.toRequest();
-							if (update.getFields().getNodeFieldList(id) == null) {
-								update.getFields().put(id, new NodeFieldListImpl());
-							}
-							update.getFields().getNodeFieldList(id).add(updatedItem.getValue());
-							return adminClient.updateNode(projectName, formDataNode.getUuid(), update).toSingle();
-						});					
+		// first organize file uploads
+		Map<Pair<String, Integer>, FileUpload> uploadsPerField = new HashMap<>();
+		for (FileUpload fileUpload : fileUploads) {
+			BinaryElement.extractFieldId(fileUpload.name()).ifPresent(id -> {
+				uploadsPerField.put(id, fileUpload);
+			});
+		}
+
+		// collect the binary elements, for which upload information will be handled (if present)
+		Map<String, BinaryElement> validUploadElements = form.getElementsInsideProperties()
+			.filter(FormElement::isActive)
+			.filter(elem -> elem instanceof BinaryElement)
+			.map(elem -> BinaryElement.class.cast(elem))
+			.collect(Collectors.toMap(BinaryElement::getKey, Function.identity()));
+
+		return Flowable.fromIterable(validUploadElements.values())
+			.filter(elem -> postedData.contains(elem.getKey()))
+			.flatMap(elem -> {
+				String key = elem.getKey();
+				if (elem.isList()) {
+					AtomicInteger indexCounter = new AtomicInteger();
+					return Flowable.fromIterable(postedData.getAll(elem.getKey()))
+						.map(v -> Triple.of(key, indexCounter.getAndIncrement(), binaryDataExtractor.apply(v)));
 				} else {
-					return plainUploader.apply(fileUpload);
+					return Flowable.just(postedData.get(elem.getKey()))
+						.map(v -> Triple.of(key, 0, binaryDataExtractor.apply(v)));
 				}
-			}).flatMapSingle(single -> single);
-		} else {
-			return (Single) Single.zip(sortedFileUploads.stream().map(fileUpload -> rxVertx.rxExecuteBlocking(() -> {
-				String fieldName = getId(fileUpload);
-				BinaryElement element = binaryElementLookup.apply(fieldName).get();
-				if (element.isList()) {
-					return listItemUploader.apply(fileUpload);					
+			})
+			.map(triple -> {
+				// is there a file upload?
+				Pair<String, Integer> uploadKey = Pair.of(triple.getLeft(), triple.getMiddle());
+				if (uploadsPerField.containsKey(uploadKey)) {
+					return listItemUploader.apply(triple, uploadsPerField.get(uploadKey));
 				} else {
-					return plainUploader.apply(fileUpload).map(nr -> Pair.of(null, nr));
+					return Single.just(triple);
 				}
-			}).flatMapSingle(single -> single)).collect(Collectors.toList()), uploaded -> {
-				if (uploaded.length < 1) {
-					// Shortcut for no data. Should not happen.
-					return Single.error(new FormsError("No upload has been processed!", 500));
-				} else if (uploaded.length < 2 && uploaded[0] instanceof Pair && ((Pair)uploaded[0]).getKey() == null) {
-					// Shortcut for 1 plain upload
-					return Single.just(formDataNode);
-				} else {
-					// Mess of uploads
-					Map<String, List<NodeResponse>> binariesPerField = Arrays.stream(uploaded)
-							.map(u -> (Pair<String, NodeResponse>)u)
-							.filter(pair -> StringUtils.isNotBlank(pair.getKey()))
-							.collect(Collectors.groupingBy(Pair::getKey, Collectors.mapping(Pair::getValue, Collectors.toList())));
-					List<Single<NodeResponse>> updated = binariesPerField.entrySet().stream().map(idFields -> {
-						String id = idFields.getKey();
-						NodeUpdateRequest update = formDataNode.toRequest();
-						if (update.getFields().getNodeFieldList(id) == null) {
-							update.getFields().put(id, new NodeFieldListImpl());
-						}
-						idFields.getValue().forEach(updatedItem -> update.getFields().getNodeFieldList(id).add(updatedItem));
-						// TODO FIXME Mesh behaves weird when updating list fields by adding its items one by one, so we need first to collect everything, then update the field
-						return adminClient.updateNode(projectName, formDataNode.getUuid(), update).toSingle();
-					}).collect(Collectors.toList());
-					// Again the shortcut, as Single does not know what to do if there is nothing to zip
-					if (updated.size() < 1) {
-						return Single.just(formDataNode);
-					} else {
-						return Single.zip(updated, updated1 -> formDataNode);
+			})
+			.concatMapSingle(single -> single)
+			.toList()
+			.flatMap(binaryList -> {
+				// make sure the binary list is sorted
+				binaryList.sort((a, b) -> {
+					int cmp = Strings.CI.compare(a.getLeft(), b.getLeft());
+					if (cmp != 0) {
+						return cmp;
+					}
+
+					return Integer.compare(a.getMiddle(), b.getMiddle());
+				});
+				// reorganize the list into lists per field (in correct order)
+				Map<String, List<BinaryData>> binaryDataPerField = new HashMap<>();
+				for (Triple<String, Integer, BinaryData> triple : binaryList) {
+					String fieldId = triple.getLeft();
+					List<BinaryData> fieldList = binaryDataPerField.computeIfAbsent(fieldId, key -> new ArrayList<>());
+					if (triple.getRight().getMeshUuid().isPresent()) {
+						fieldList.add(triple.getRight());
 					}
 				}
-			}).flatMap(single -> single);
-		}
+
+				// collect mesh uuids of binary items, that need to be removed
+				Set<String> toRemove = new HashSet<>();
+
+				// prepare the update request
+				NodeUpdateRequest update = formDataNode.toRequest();
+
+				// write back info to postedData
+				for (Map.Entry<String, List<BinaryData>> entry : binaryDataPerField.entrySet()) {
+					String fieldId = entry.getKey();
+					BinaryElement element = validUploadElements.get(fieldId);
+
+					if (element != null) {
+						List<BinaryData> binaryData = entry.getValue();
+						if (element.isList()) {
+							List<String> values = binaryData.stream().map(JsonUtil::toJson).collect(Collectors.toList());
+							postedData.set(fieldId, values);
+
+							List<String> newMeshUuids = binaryData.stream().map(BinaryData::getMeshUuid)
+									.filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList());
+
+							NodeFieldList nodeFieldList = update.getFields().getNodeFieldList(fieldId);
+							if (nodeFieldList == null) {
+								nodeFieldList = new NodeFieldListImpl();
+								update.getFields().put(fieldId, nodeFieldList);
+							}
+
+							List<String> oldMeshUuids = nodeFieldList.getItems().stream().map(NodeFieldListItem::getUuid)
+									.collect(Collectors.toList());
+
+							// everything, which was in oldMeshUuids, but is not in newMeshUuids must be removed
+							toRemove.addAll(CollectionUtils.subtract(oldMeshUuids, newMeshUuids));
+
+							nodeFieldList.setItems(newMeshUuids.stream().map(NodeFieldListItemImpl::new).collect(Collectors.toList()));
+							update.getFields().put(fieldId, nodeFieldList);
+
+						} else {
+							NodeField nodeField = update.getFields().getNodeField(fieldId);
+							if (nodeField == null) {
+								nodeField = new NodeFieldImpl();
+								update.getFields().put(fieldId, nodeField);
+							}
+
+							if (binaryData.isEmpty()) {
+								// remove the node field, if set
+								if (StringUtils.isNotBlank(nodeField.getUuid())) {
+									// old binary item will be removed
+									toRemove.add(nodeField.getUuid());
+									update.getFields().put(fieldId, null);
+								}
+							} else {
+								String newMeshUuid = binaryData.get(0).getMeshUuid().get();
+								postedData.set(fieldId, JsonUtil.toJson(binaryData.get(0)));
+
+								// check whether the referenced uuid is different
+								if (StringUtils.isNotBlank(nodeField.getUuid())) {
+									String oldMeshUuid = nodeField.getUuid();
+
+									if (!Strings.CI.equals(oldMeshUuid, newMeshUuid)) {
+										toRemove.add(oldMeshUuid);
+									}
+								}
+								update.getFields().put(fieldId, new NodeFieldImpl().setUuid(newMeshUuid));
+							}
+						}
+					}
+				}
+
+				Completable postSave = Completable.concat(
+						toRemove.stream().map(uuid -> adminClient.deleteNode(projectName, uuid).toCompletable())
+								.collect(Collectors.toList()));
+
+					return adminClient.updateNode(projectName, formDataNode.getUuid(), update).toSingle()
+							.flatMap(response -> postSave.toSingle(() -> response));
+				});
 	}
 
 	/**

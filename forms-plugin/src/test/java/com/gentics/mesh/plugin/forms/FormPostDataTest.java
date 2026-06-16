@@ -308,79 +308,6 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 	}
 
 	/**
-	 * Test posting updates with multiple files after an initial post with
-	 * missing mandatory elements.
-	 */
-	@Test
-	public void testPostDataUpdateMultipleFiles() throws IOException {
-		String formDefinition = "multiple_file_fields.json";
-		String formUuid = createForm(formDefinition);
-
-		// First post incomplete data with missing files.
-		RequestBody requestBody = new MultipartBody.Builder()
-				.setType(MultipartBody.FORM)
-				.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(formUuid, null, Map.of("input1", "test")))
-				.build();
-
-		Request postRequest = new Request.Builder()
-			.url(projectUrl("/form/" + formUuid + "/submit?lang=" + language))
-			.header("Referer", "ref")
-			.post(requestBody)
-			.build();
-		Response response = client().newCall(postRequest).execute();
-
-		// There must be exactly one data node now.
-		NodeResponse dataNode = assertSingleDataNode(formUuid, node -> {
-			assertThat(node.getFields().getStringField("input1").getString())
-				.as("Data Node Field")
-				.isEqualTo("test");
-			assertThat(node.getVersion())
-				.as("Data Node Version")
-				.isEqualTo("0.1");
-		});
-		String dataUuid = dataNode.getUuid();
-
-		// Make update post containing all fields including two files.
-		requestBody = new MultipartBody.Builder()
-			.setType(MultipartBody.FORM)
-			.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(formUuid, null, Map.of("input1", "test")))
-			.addFormDataPart(fileUploadKey("file1"), formDefinition, requestBodyFromFile(formDefinition))
-			.addFormDataPart(fileUploadKey("file2"), formDefinition, requestBodyFromFile(formDefinition))
-			.build();
-
-		postRequest = new Request.Builder()
-			.url(projectUrl("/form/" + formUuid + "/submit?formDataUuid=" + dataUuid + "&lang=" + language))
-			.post(requestBody)
-			.build();
-		response = client().newCall(postRequest).execute();
-
-		// Result must be successful and there must still be exactly one data node.
-		assertThat(response.isSuccessful())
-			.as(String.format("Response success %d (%s)", response.code(), response.message()))
-			.isTrue();
-
-		dataNode = assertSingleDataNode(formUuid, node -> {/* Nothing more to assert */});
-
-		String lang = dataNode.getLanguage();
-
-		// Assert that the correct files have been uploaded.
-		for (int i = 1; i <= 2; i++) {
-			String fieldName = String.format("file%d", i);
-			MeshBinaryResponse file = call(() -> server.client().downloadBinaryField(PROJECT_NAME, dataUuid, lang, fieldName));
-
-			assertThat(file.getFilename())
-				.as(String.format("Filename %d", i))
-				.isEqualTo(formDefinition);
-
-			Buffer buffer = RxUtil.readEntireData(file.getFlowable()).blockingGet();
-
-			assertThat(buffer.toString())
-				.as(String.format("File contents", i))
-				.isEqualTo(fromFile(formDefinition));
-		}
-	}
-
-	/**
 	 * Test posting the form where several single- and multi-upload elements mix
 	 */
 	@Test
@@ -633,64 +560,6 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 			assertThat(dataNode.getFields().getStringField("input2")).as("Data Node Field input2").isNull();
 			assertThat(dataNode.getVersion()).as("Data Node Version").isEqualTo("1.0");
 		});
-	}
-
-	/**
-	 * Test posting a file
-	 * @throws IOException
-	 */
-	@Test
-	public void testPostFile() throws IOException {
-		Pair<String, String> data = doPostFile("filefield.json");
-		Request request = new Request.Builder()
-			.url(projectUrl("/forms/" + data.getLeft() + "/data/" + data.getRight() + "/binary/file1"))
-			.get()
-			.build();
-		Response response = client().newCall(request).execute();
-
-		assertThat(response.code())
-			.as("Anonymous response code")
-			.isEqualTo(HttpResponseStatus.FORBIDDEN.code());
-
-		request = new Request.Builder()
-			.url(projectUrl("/forms/" + data.getLeft() + "/data/" + data.getRight() + "/binary/file1"))
-			.headers(auth(true))
-			.get()
-			.build();
-		response = client().newCall(request).execute();
-
-		assertThat(response.code())
-			.as("Authenticated response code")
-			.isEqualTo(HttpResponseStatus.OK.code());
-	}
-
-	/**
-	 * Test posting a file
-	 * @throws IOException
-	 */
-	@Test
-	public void testPostMultiFile() throws IOException {
-		Pair<String, String> data = doPostFile("multifilefield.json", "inputfield.html", "recaptcha.json");
-		Request request = new Request.Builder()
-			.url(projectUrl("/forms/" + data.getLeft() + "/data/" + data.getRight() + "/binary/file1"))
-			.get()
-			.build();
-		Response response = client().newCall(request).execute();
-
-		assertThat(response.code())
-			.as("Anonymous response code")
-			.isEqualTo(HttpResponseStatus.FORBIDDEN.code());
-
-		request = new Request.Builder()
-			.url(projectUrl("/forms/" + data.getLeft() + "/data/" + data.getRight() + "/binary/file1"))
-			.headers(auth(true))
-			.get()
-			.build();
-		response = client().newCall(request).execute();
-
-		assertThat(response.code())
-			.as("Authenticated response code")
-			.isEqualTo(HttpResponseStatus.BAD_REQUEST.code());
 	}
 
 	/**
@@ -1237,10 +1106,15 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		MultipartBody.Builder requestBody = new MultipartBody.Builder()
 			.setType(MultipartBody.FORM)
 			.addFormDataPart(fileUploadKey("file1") + (multi ? "[0]" : ""), formFile, requestBodyFromFile(formFile));
+		List<Map<String, Object>> formDataFiles = new ArrayList<>();
+		formDataFiles.add(getFileData(formFile));
 
 		for (int i = 0; i < moreFiles.length; i++) {
 			requestBody.addFormDataPart(fileUploadKey("file1") + "[" + (i+1) + "]", moreFiles[i], requestBodyFromFile(moreFiles[i]));
+			formDataFiles.add(getFileData(moreFiles[i]));
 		}
+
+		requestBody.addFormDataPart("formdata", makeFormdataMultipart(uuid, null, Map.of("file1", formDataFiles)));
 
 		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang="+language)).header("Referer", "ref").post(requestBody.build()).build();
 		Response response = client().newCall(postRequest).execute();

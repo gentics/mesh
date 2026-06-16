@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * This context holds everything that the form data create handlers need.
@@ -135,18 +136,17 @@ public class FormDataCreateContext {
 
 							optElement.ifPresent(element -> {
 								FormDataProperty prop = entry.getValue();
-								List<Object> values = prop.getValues();
-								if (values != null && !values.isEmpty()) {
-									for (Object v : values) {
-										String sv = element.transformPostedValue(v);
-										if (sv != null) {
-											result.add(key, sv);
-										}
+								if (element.isList()) {
+									List<Object> values = prop.getValues();
+									if (values != null) {
+										List<String> transformed = values.stream().map(element::transformPostedValue).filter(v -> v != null)
+												.collect(Collectors.toList());
+										result.set(key, transformed);
 									}
 								} else {
 									String sv = element.transformPostedValue(prop.getValue());
 									if (sv != null) {
-										result.add(key, sv);
+										result.set(key, sv);
 									}
 								}
 							});
