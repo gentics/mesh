@@ -93,6 +93,7 @@ import com.gentics.mesh.plugin.forms.model.FormtypeConfigsModel;
 import com.gentics.mesh.plugin.forms.model.ValidationError;
 import com.gentics.mesh.plugin.forms.model.schema.BinaryData;
 import com.gentics.mesh.plugin.forms.model.schema.FormData;
+import com.gentics.mesh.plugin.forms.model.schema.PostedData;
 import com.gentics.mesh.plugin.forms.util.FormParameterUtil;
 import com.gentics.mesh.plugin.forms.util.FormUtil;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
@@ -108,7 +109,6 @@ import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
-import io.vertx.core.MultiMap;
 import io.vertx.core.http.Cookie;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -876,8 +876,8 @@ public class FormDataService {
 			JsonObject fields = element.getJsonObject("fields");
 			for (String name : fileElementNames) {
 				Object value = fields.getValue(name);
-				if (value instanceof JsonObject) {
-					downloadables.add(new Downloadable(uuid, name));
+				if (value instanceof JsonObject itemObject) {
+					downloadables.add(new Downloadable(itemObject.getString("uuid"), "binary"));
 				} else if (value instanceof JsonArray listValue) {
 					for (int j = 0; j < listValue.size(); j++) {
 						JsonObject itemObject = listValue.getJsonObject(j);
@@ -1091,7 +1091,9 @@ public class FormDataService {
 	public Single<MeshResponse<MeshBinaryResponse>> loadBinary(String projectName, String formUuid, String formDataUuid, String binaryFieldName) {
 		// Binaries can be loaded for already published form data as well, so call the variant of load() which allows loading published form data.
 		return load(projectName, formUuid, formDataUuid, true).flatMap(formDataNode -> {
-			return userClient.downloadBinaryField(projectName, formDataUuid, formDataNode.getLanguage(), binaryFieldName).getResponse();
+			NodeField nodeField = formDataNode.getFields().getNodeField(binaryFieldName);
+			String binaryUuid = nodeField.getUuid();
+			return userClient.downloadBinaryField(projectName, binaryUuid, formDataNode.getLanguage(), "binary").getResponse();
 		});
 	}
 
@@ -1175,7 +1177,7 @@ public class FormDataService {
 	 */
 	private Single<FormData> savePostedData(FormtypeConfigsModel formtypeConfigs, FormDataCreateContext ctx) {
 		Form form = ctx.getForm();
-		MultiMap postedData = ctx.getPostedData();
+		PostedData postedData = ctx.getPostedData();
 
 		FormsConfig configuration = statusService.getEffectiveConfiguration(formtypeConfigs, form.getType());
 
@@ -1244,7 +1246,7 @@ public class FormDataService {
 	 *
 	 * @return single of validation errors keyed by form element name
 	 */
-	private Single<Map<String, ValidationError>> validatePostedData(MultiMap postedData, FormsConfig configuration, FormDataCreateContext ctx) {
+	private Single<Map<String, ValidationError>> validatePostedData(PostedData postedData, FormsConfig configuration, FormDataCreateContext ctx) {
 		Form form = ctx.getForm();
 		return Single.zip(
 				Single.just(form.preventInjection(postedData, ctx, configuration.getSecurityOptions())),
@@ -1302,7 +1304,7 @@ public class FormDataService {
 
 	//TODO 8.5 kein formpage mehr
 	private Single<NodeResponse> saveFormData(String projectName, NodeResponse formNode, String dataFolderUuid, NodeResponse formDataNode, Form form,
-		MultiMap postedData, Map<String, ValidationError> errors) {
+			PostedData postedData, Map<String, ValidationError> errors) {
 		FieldContainer container = null;
 		NodeCreateRequest createRequest = null;
 		NodeUpdateRequest updateRequest = null;
@@ -1348,7 +1350,7 @@ public class FormDataService {
 	 * @param sortedFileUploads validated file uploads
 	 * @return single of the form data node
 	 */
-	private Single<NodeResponse> saveFileUploads(String projectName, Form form, NodeResponse formDataNode, MultiMap postedData, Set<FileUpload> fileUploads) {
+	private Single<NodeResponse> saveFileUploads(String projectName, Form form, NodeResponse formDataNode, PostedData postedData, Set<FileUpload> fileUploads) {
 		Function<String, BinaryData> binaryDataExtractor = value -> {
 			return JsonUtil.readValue(value, BinaryData.class);
 		};
@@ -1404,10 +1406,10 @@ public class FormDataService {
 				String key = elem.getKey();
 				if (elem.isList()) {
 					AtomicInteger indexCounter = new AtomicInteger();
-					return Flowable.fromIterable(postedData.getAll(elem.getKey()))
+					return Flowable.fromIterable(postedData.getAllStrings(elem.getKey()))
 						.map(v -> Triple.of(key, indexCounter.getAndIncrement(), binaryDataExtractor.apply(v)));
 				} else {
-					return Flowable.just(postedData.get(elem.getKey()))
+					return Flowable.just(postedData.getString(elem.getKey()))
 						.map(v -> Triple.of(key, 0, binaryDataExtractor.apply(v)));
 				}
 			})
@@ -1524,7 +1526,7 @@ public class FormDataService {
 	 *
 	 * @param formtypeConfigs formtype configs
 	 * @param ctx Request context
-	 * @param savedFileUploads saved file uploads from {@link #saveFileUploads(String,Form, NodeResponse, MultiMap, Set)}
+	 * @param savedFileUploads saved file uploads from {@link #saveFileUploads(String,Form, NodeResponse, PostedData, Set)}
 	 * @param errors
 	 * @return single
 	 */
@@ -1532,7 +1534,7 @@ public class FormDataService {
 		return adminClient.publishNode(ctx.getProjectName(), savedFileUploads.getUuid()).toSingle().flatMap(publishStatus -> {
 			PluginContext meshContext = ctx.getContext();
 			Form form = ctx.getForm();
-			MultiMap postedData = ctx.getPostedData();
+			PostedData postedData = ctx.getPostedData();
 
 			// send mails to admin and user
 			mailService.sendMails(formtypeConfigs, ctx.getProjectName(), ctx.getForm(), savedFileUploads, meshContext);

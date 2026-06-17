@@ -1,5 +1,17 @@
 package com.gentics.mesh.plugin.forms.context;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.http.HttpConstants;
@@ -10,26 +22,14 @@ import com.gentics.mesh.plugin.forms.model.Form;
 import com.gentics.mesh.plugin.forms.model.FormElement;
 import com.gentics.mesh.plugin.forms.model.FormtypeConfigsModel;
 import com.gentics.mesh.plugin.forms.model.schema.FormData;
-import com.gentics.mesh.plugin.forms.model.schema.FormDataProperty;
+import com.gentics.mesh.plugin.forms.model.schema.PostedData;
 import com.gentics.mesh.plugin.forms.service.FormService;
 import com.gentics.mesh.plugin.forms.service.TranslationsService;
+
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Single;
-import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.ext.web.FileUpload;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Strings;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * This context holds everything that the form data create handlers need.
@@ -49,7 +49,7 @@ public class FormDataCreateContext {
 	private final String formUuid;
 	private final String language; // Language of the request sent from the frontend
 	private final Map<String, String> translations;
-	private MultiMap parsedPostedData;
+	private PostedData parsedPostedData;
 
 	/**
 	 * Get a Single that emits the instance or an error if validation on any of the parameters fails
@@ -91,7 +91,7 @@ public class FormDataCreateContext {
 	}
 
 	/**
-	 * Returns the form field data as a flat {@link MultiMap} (field ID → value), with
+	 * Returns the form field data as a flat {@link Map} (field ID → value), with
 	 * {@link com.gentics.mesh.plugin.forms.model.AdminMailElement} identifiers already reverse-mapped
 	 * to real email addresses.
 	 *
@@ -110,9 +110,9 @@ public class FormDataCreateContext {
 	 *       are handled separately via file uploads.</li>
 	 * </ul>
 	 *
-	 * @return MultiMap of field ID → string value(s); empty map if {@code formdata} is absent or unparseable
+	 * @return Map of field ID → string value(s); empty map if {@code formdata} is absent or unparseable
 	 */
-	public MultiMap getPostedData() {
+	public PostedData getPostedData() {
 		if (parsedPostedData == null) {
 			String formdataJson = null;
 			String contentType = context.request().getHeader(HttpHeaders.CONTENT_TYPE);
@@ -123,40 +123,19 @@ public class FormDataCreateContext {
 			}
 
 			if (formdataJson == null || formdataJson.isBlank()) {
-				parsedPostedData = MultiMap.caseInsensitiveMultiMap();
+				parsedPostedData = new PostedData(getForm());
 			} else {
 				try {
 					FormData formData = OBJECT_MAPPER.readValue(formdataJson, FormData.class);
-					MultiMap result = MultiMap.caseInsensitiveMultiMap();
-					if (formData.getProperties() != null) {
-						for (Map.Entry<String, FormDataProperty> entry : formData.getProperties().entrySet()) {
-							String key = entry.getKey();
-							Optional<FormElement> optElement = getForm().getElementsInsideProperties().filter(FormElement::isActive)
-									.filter(e -> Strings.CI.equals(e.getKey(), key)).findFirst();
+					parsedPostedData = Optional.ofNullable(formData.getProperties()).map(props -> new PostedData(getForm(), props)).orElseGet(() -> new PostedData(getForm()));
 
-							optElement.ifPresent(element -> {
-								FormDataProperty prop = entry.getValue();
-								if (element.isList()) {
-									List<Object> values = prop.getValues();
-									if (values != null) {
-										List<String> transformed = values.stream().map(element::transformPostedValue).filter(v -> v != null)
-												.collect(Collectors.toList());
-										result.set(key, transformed);
-									}
-								} else {
-									String sv = element.transformPostedValue(prop.getValue());
-									if (sv != null) {
-										result.set(key, sv);
-									}
-								}
-							});
+					Set<String> elementKeys = getForm().getElementsInsideProperties().filter(FormElement::isActive).map(FormElement::getKey).collect(Collectors.toSet());
 
-						}
-					}
-					parsedPostedData = result;
+					parsedPostedData.keySet().retainAll(elementKeys);
+
 				} catch (Exception e) {
 					log.warn("Could not parse formdata JSON", e);
-					parsedPostedData = MultiMap.caseInsensitiveMultiMap();
+					parsedPostedData = new PostedData(getForm());
 				}
 			}
 			parsedPostedData = FormService.adminMailLabelToValue(getForm(), parsedPostedData, language);

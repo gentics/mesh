@@ -1,5 +1,20 @@
 package com.gentics.mesh.plugin.forms.model;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nonnull;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -17,32 +32,20 @@ import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.context.FormDataCreateContext;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
 import com.gentics.mesh.plugin.forms.model.schema.FormUiSchema;
+import com.gentics.mesh.plugin.forms.model.schema.PostedData;
 import com.gentics.mesh.plugin.forms.model.schema.UiSchemaPageElement;
 import com.gentics.mesh.plugin.forms.model.schema.UischemaFormgridOptions;
 import com.gentics.mesh.plugin.forms.model.schema.Validation;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
 import com.gentics.mesh.plugin.forms.util.FormUtil;
 import com.gentics.mesh.plugin.forms.util.RxUtil;
+
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
-import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.Vertx;
 import okhttp3.OkHttpClient;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Abstract form element
@@ -340,7 +343,7 @@ public abstract class FormElement implements RestModel {
 	 * @param postedData posted data
 	 * @param errors true if validation errors were detected
 	 */
-	public void addField(FieldContainer container, MultiMap postedData, boolean errors) {
+	public void addField(FieldContainer container, PostedData postedData, boolean errors) {
 
 		if (isList()) {
 			List<String> values = getMultiFormData(postedData);
@@ -363,8 +366,8 @@ public abstract class FormElement implements RestModel {
 	 * @param postedData posted data
 	 * @return single value (may be null)
 	 */
-	public String getSingleFormData(MultiMap postedData) {
-		return postedData.get(getName());
+	public String getSingleFormData(PostedData postedData) {
+		return postedData.getString(getName());
 	}
 
 	/**
@@ -372,11 +375,11 @@ public abstract class FormElement implements RestModel {
 	 * @param postedData posted data
 	 * @return value list (may be null)
 	 */
-	public List<String> getMultiFormData(MultiMap postedData) {
+	public List<String> getMultiFormData(PostedData postedData) {
 		// multivalue data may be posed as e.g. element42 or element42[]
 		for (String alternative : Arrays.asList(getName(), String.format("%s[]", getName()))) {
 			if (postedData.contains(alternative)) {
-				return postedData.getAll(alternative);
+				return postedData.getAllStrings(alternative);
 			}
 		}
 		return null;
@@ -571,7 +574,7 @@ public abstract class FormElement implements RestModel {
 	 * @param postedData
 	 */
 	@JsonIgnore
-	public Completable performSubmit(Form form, MultiMap postedData, Vertx rxVertx, OkHttpClient httpClient) {
+	public Completable performSubmit(Form form, PostedData postedData, Vertx rxVertx, OkHttpClient httpClient) {
 		return Completable.complete();
 	}
 

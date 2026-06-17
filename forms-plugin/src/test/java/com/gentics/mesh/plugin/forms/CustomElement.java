@@ -2,8 +2,7 @@ package com.gentics.mesh.plugin.forms;
 
 import com.gentics.mesh.plugin.forms.model.FormElement;
 import com.gentics.mesh.plugin.forms.model.Reportable;
-
-import io.vertx.core.MultiMap;
+import com.gentics.mesh.plugin.forms.model.schema.PostedData;
 
 /**
  * Custom element
@@ -19,7 +18,7 @@ public class CustomElement extends FormElement {
 	}
 
 	@Override
-	public String getSingleFormData(MultiMap postedData) {
+	public String getSingleFormData(PostedData postedData) {
 		String value = String.format("custom %s", super.getSingleFormData(postedData));
 		return value;
 	}

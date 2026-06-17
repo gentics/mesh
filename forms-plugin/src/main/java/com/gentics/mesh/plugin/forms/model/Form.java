@@ -38,10 +38,10 @@ import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
 import com.gentics.mesh.plugin.forms.model.schema.FormData;
 import com.gentics.mesh.plugin.forms.model.schema.FormSchema;
 import com.gentics.mesh.plugin.forms.model.schema.FormUiSchema;
+import com.gentics.mesh.plugin.forms.model.schema.PostedData;
 import com.gentics.mesh.util.StreamUtil;
 
 import io.reactivex.Single;
-import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.Vertx;
@@ -481,7 +481,7 @@ public class Form implements RestModel {
 	 * @param postedData posted data
 	 * @param errors true, if validation errors were detected
 	 */
-	public void addFields(FieldContainer container, MultiMap postedData, boolean errors) {
+	public void addFields(FieldContainer container, PostedData postedData, boolean errors) {
 		getElementsInsideProperties().filter(FormElement::isActive).forEach(elem -> {
 			elem.addField(container, postedData, errors);
 		});
@@ -522,7 +522,7 @@ public class Form implements RestModel {
 	 * 		with unsafe values. Note that only elements which where not already
 	 * 		sanitized are contained in this map.
 	 */
-	public Map<String, ValidationError> preventInjection(MultiMap postedData, FormDataCreateContext ctx, SecurityOptions options) {
+	public Map<String, ValidationError> preventInjection(PostedData postedData, FormDataCreateContext ctx, SecurityOptions options) {
 		InjectionPreventionMode mode = options.getInjectionPreventionMode();
 		Map<Pattern, String> rules = options.getCompiledSanitationRules();
 
@@ -540,7 +540,7 @@ public class Form implements RestModel {
 		Map<String, String> translations = ctx.getTranslations();
 
 		return postedData.names().stream()
-			.filter(name -> postedData.getAll(name).stream().map(s -> s == null ? "" : s).anyMatch(blacklistFilter))
+			.filter(name -> postedData.getAllStrings(name).stream().map(s -> s == null ? "" : s).anyMatch(blacklistFilter))
 			.map(invalidName -> Pair.of(
 				invalidName,
 				new ValidationError()
@@ -597,7 +597,7 @@ public class Form implements RestModel {
 	 * @param rules The sanitation rules. A mapping from regex pattern to
 	 * 		replacement values.
 	 */
-	private void sanitizeValues(MultiMap postedData, InjectionPreventionMode mode, Map<Pattern, String> rules) {
+	private void sanitizeValues(PostedData postedData, InjectionPreventionMode mode, Map<Pattern, String> rules) {
 		Function<String, String> markupRemover = mode == InjectionPreventionMode.SANITIZE_MARKUP
 			? str -> Jsoup.parse(str).text()
 			: Function.identity();
@@ -608,7 +608,7 @@ public class Form implements RestModel {
 			.reduce(markupRemover, Function::andThen);
 
 		for (String name : postedData.names()) {
-			List<String> sanitizedValues = postedData.getAll(name).stream()
+			List<String> sanitizedValues = postedData.getAllStrings(name).stream()
 				.map(s -> s == null ? "" : s)
 				.map(sanitizer)
 				.collect(Collectors.toList());
@@ -862,7 +862,7 @@ public class Form implements RestModel {
 	 * Extract the name of the last submitted page if available.
 	 * @param postedData The posted form data
 	 */
-	public void updateFormPage(MultiMap postedData) {
+	public void updateFormPage(PostedData postedData) {
 		getElementsInsideProperties()
 			.filter(elt -> elt.isActive() && elt instanceof FormpageElement && "1".equals(elt.getSingleFormData(postedData)))
 			.map(FormElement::getName)

@@ -43,12 +43,12 @@ import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
 import com.gentics.mesh.plugin.forms.model.schema.BinaryData;
 import com.gentics.mesh.plugin.forms.model.schema.BinaryValidation;
 import com.gentics.mesh.plugin.forms.model.schema.FormUiSchema;
+import com.gentics.mesh.plugin.forms.model.schema.PostedData;
 import com.gentics.mesh.plugin.forms.model.schema.Validation;
 import com.gentics.mesh.plugin.forms.util.RxUtil;
 
 import io.reactivex.Maybe;
 import io.reactivex.Single;
-import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.reactivex.core.Vertx;
@@ -102,9 +102,8 @@ public class BinaryElement extends FormElement {
 			}
 		} else {
 			NodeField field = container.getFields().getNodeField(getName());
-			Optional.ofNullable(field).map(NodeField::getValue);
 			if (field != null) {
-				// TODO
+				object.put(key.apply(this), field.getPath());
 			}
 		}
 	}
@@ -117,16 +116,6 @@ public class BinaryElement extends FormElement {
 			container.addField(new NodeFieldSchemaImpl().setAllowedSchemas(SchemaInitializer.MULTIBINARY_ITEM_SCHEMA_NAME).setName(getName()).setLabel(getName()));
 		}
 	}
-
-//	@Override
-//	public String getSingleFormData(MultiMap postedData) {
-//		return null;
-//	}
-//
-//	@Override
-//	public List<String> getMultiFormData(MultiMap postedData) {
-//		return null;
-//	}
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -209,29 +198,11 @@ public class BinaryElement extends FormElement {
 	}
 
 	@Override
-	public void addField(FieldContainer container, MultiMap postedData, boolean errors) {
-		if (isList()) {
-			// TODO
-		} else {
-			// TODO
-//			String value = getSingleFormData(postedData);
-//			if (StringUtils.isNotBlank(value)) {
-//				Map<?, ?> valueMap = JsonUtil.readValue(value, Map.class);
-//				if (valueMap.isEmpty()) {
-//					container.getFields().put(getName(), new BinaryFieldImpl());
-//				}
-//			}
-//			System.out.println(value);
-		}
+	public void addField(FieldContainer container, PostedData postedData, boolean errors) {
 	}
 
 	@Override
 	public String getGraphQLName() {
-//		if (isList()) {
-//			return String.format("%s (version: draft) { uuid fields { ... on form_binary_item { binary { fileName } } } }", getName());
-//		} else {
-//			return String.format("%s { fileName }", getName());
-//		}
 		return String.format("%s (version: draft) { uuid fields { ... on form_binary_item { binary { fileName } } } }", getName());
 	}
 

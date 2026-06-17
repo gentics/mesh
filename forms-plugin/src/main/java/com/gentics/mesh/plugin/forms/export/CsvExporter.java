@@ -246,8 +246,9 @@ public class CsvExporter extends Exporter {
 			Object value = record.getValue(fieldName, "");
 
 			// special handling for binary fields
-			if (value instanceof JsonObject) {
-				value = ((JsonObject) value).getString("fileName", fieldName);
+			if (value instanceof JsonObject itemObject) {
+				value = itemObject.getJsonObject("fields", JsonObject.of())
+					.getJsonObject("binary", JsonObject.of()).getString("fileName");
 
 				ret.add(String.format(
 					"%s/%s/binary/%s",

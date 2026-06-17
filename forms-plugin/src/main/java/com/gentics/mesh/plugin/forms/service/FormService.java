@@ -25,13 +25,10 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.plugin.forms.model.BooleanElement;
-import com.gentics.mesh.plugin.forms.model.schema.UischemaFormgridOptions;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.ss.formula.functions.T;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,6 +72,7 @@ import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
 import com.gentics.mesh.plugin.forms.model.AdminMailElement;
 import com.gentics.mesh.plugin.forms.model.BinaryElement;
+import com.gentics.mesh.plugin.forms.model.BooleanElement;
 import com.gentics.mesh.plugin.forms.model.CaptchaConfigModel;
 import com.gentics.mesh.plugin.forms.model.DefaultValue;
 import com.gentics.mesh.plugin.forms.model.Form;
@@ -85,6 +83,8 @@ import com.gentics.mesh.plugin.forms.model.ValueListItem;
 import com.gentics.mesh.plugin.forms.model.schema.FormData;
 import com.gentics.mesh.plugin.forms.model.schema.FormDataProperty;
 import com.gentics.mesh.plugin.forms.model.schema.PossibleValue;
+import com.gentics.mesh.plugin.forms.model.schema.PostedData;
+import com.gentics.mesh.plugin.forms.model.schema.UischemaFormgridOptions;
 import com.gentics.mesh.plugin.forms.util.FormUtil;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.impl.EmptyResponse;
@@ -96,7 +96,6 @@ import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.functions.BiConsumer;
-import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.Vertx;
@@ -768,8 +767,8 @@ public class FormService {
 						form.setProperty("flows", formTypeConfig.get("flows"));
 					}
 					form.setData(formDataNode != null
-							? buildFormDataFromNode(MultiMap.caseInsensitiveMultiMap(), form, formID, Collections.emptyMap(), language, formDataNode)
-							: buildDefaultFormData(MultiMap.caseInsensitiveMultiMap(), form, formID, Collections.emptyMap(), language, jwtClaims));
+							? buildFormDataFromNode(new PostedData(form), form, formID, Collections.emptyMap(), language, formDataNode)
+							: buildDefaultFormData(new PostedData(form), form, formID, Collections.emptyMap(), language, jwtClaims));
 					String captchaId = form.getCaptchaId();
 					if (StringUtils.isNotBlank(captchaId)) {
 						int sep = captchaId.indexOf('_');
@@ -809,7 +808,7 @@ public class FormService {
 	 *
 	 * @return populated {@link FormData}
 	 */
-	public static FormData buildDefaultFormData(MultiMap postedData, Form form, String formID, Map<String, ValidationError> errors, String language, Map<String, Object> jwtClaims) {
+	public static FormData buildDefaultFormData(PostedData postedData, Form form, String formID, Map<String, ValidationError> errors, String language, Map<String, Object> jwtClaims) {
 		return initFormData(postedData, form, formID, errors, (key, element) -> buildDefaultProperty(element, language, jwtClaims));
 	}
 
@@ -823,7 +822,7 @@ public class FormService {
 	 * @param node     the Mesh submission node whose fields supply the property values
 	 * @return populated {@link FormData} reflecting the stored submission
 	 */
-	public static FormData buildFormDataFromNode(MultiMap postedData, Form form, String formID, Map<String, ValidationError> errors, String language, NodeResponse node) {
+	public static FormData buildFormDataFromNode(PostedData postedData, Form form, String formID, Map<String, ValidationError> errors, String language, NodeResponse node) {
 		return initFormData(postedData, form, formID, errors, (key, element) -> buildPropertyFromNode(element, language, node));
 	}
 
@@ -839,13 +838,13 @@ public class FormService {
 	 *
 	 * @return fully assembled {@link FormData}
 	 */
-	private static FormData initFormData(MultiMap postedData, Form form, String formID, Map<String, ValidationError> errors,
+	private static FormData initFormData(PostedData postedData, Form form, String formID, Map<String, ValidationError> errors,
 	                                     BiFunction<String, FormElement, FormDataProperty> propertyBuilder) {
 		FormData data = new FormData();
 		data.setFormID(formID);
 		data.setVersion(form.getSchema() != null ? form.getSchema().getVersion() : null);
 		data.setHasValidationErrors(MapUtils.isNotEmpty(errors));
-		Map<String, FormDataProperty> properties = new LinkedHashMap<>();
+		PostedData properties = new PostedData(form);
 		if (form.getSchema() != null && form.getSchema().getProperties() != null) {
 			form.getSchema().getProperties().forEach((key, element) -> {
 				// FormGen handles BooleanElements as having either true or false as value, but the actually submitted
@@ -863,10 +862,10 @@ public class FormService {
 
 				if (postedData.contains(key)) {
 					if (element.isList()) {
-						prop.setValues(postedData.getAll(key).stream().map(v -> element.transformToExternal(v)).filter(v -> v != null)
+						prop.setValues(postedData.getAllStrings(key).stream().map(v -> element.transformToExternal(v)).filter(v -> v != null)
 								.collect(Collectors.toList()));
 					} else {
-						prop.setValue(element.transformToExternal(postedData.get(key)));
+						prop.setValue(element.transformToExternal(postedData.getString(key)));
 					}
 				}
 
@@ -1093,20 +1092,19 @@ public class FormService {
 	 * @param form       the loaded form definition
 	 * @param postedData raw posted data as received from FormGen
 	 * @param language   language code used for display name resolution
-	 * @return a new {@link MultiMap} with AdminMailElement values replaced by real identifiers; all other entries are unchanged
+	 * @return a new {@link PostedData} with AdminMailElement values replaced by real identifiers; all other entries are unchanged
 	 */
-	public static MultiMap adminMailLabelToValue(Form form, MultiMap postedData, String language) {
+	public static PostedData adminMailLabelToValue(Form form, PostedData postedData, String language) {
 		if (form == null || form.getSchema() == null || form.getSchema().getProperties() == null || postedData.isEmpty()) {
 			return postedData;
 		}
-		MultiMap result = MultiMap.caseInsensitiveMultiMap();
-		postedData.entries().forEach(e -> result.add(e.getKey(), e.getValue()));
+		PostedData result = new PostedData(postedData);
 
 		form.getSchema().getProperties().forEach((key, element) -> {
 			if (!(element instanceof AdminMailElement)) {
 				return;
 			}
-			List<String> submittedDisplayNames = postedData.getAll(key);
+			List<String> submittedDisplayNames = postedData.getAllStrings(key);
 			if (submittedDisplayNames == null || submittedDisplayNames.isEmpty()) {
 				return;
 			}
@@ -1120,7 +1118,7 @@ public class FormService {
 					.filter(item -> submittedDisplayName.equals(resolveOptionLabel(item, language)))
 					.findFirst()
 					.map(ValueListItem::getValue)
-					.ifPresent(realId -> result.add(key, realId))
+					.ifPresent(realId -> result.addString(key, realId))
 			);
 		});
 		return result;
