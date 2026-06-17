@@ -603,7 +603,8 @@ public abstract class FormElement implements RestModel {
 	 */
 	@JsonIgnore
 	public String getLabel(String language, FormUiSchema uiSchema) {
-		return uiSchema.findElement(key).map(UiSchemaPageElement::getLabel).map(map -> map.get(language)).orElse(name);
+		return Optional.ofNullable(uiSchema).flatMap(schema -> schema.findElement(key))
+				.map(UiSchemaPageElement::getLabel).map(map -> map.get(language)).orElse(name);
 	}
 
 	/**
