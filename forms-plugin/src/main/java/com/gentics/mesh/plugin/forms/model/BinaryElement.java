@@ -214,7 +214,8 @@ public class BinaryElement extends FormElement {
 			// SUP-19994
 			//return getName() + ": { anyMatch: { fields: { form_binary_item: { binary: { fileName: { like: \"%" + query + "%\" } } } } } }";
 		} else {
-			return getName() + ": { fileName: {like: \"%" + query + "%\"} }";
+			return "";
+			// return getName() + ": { node: { fields: { form_binary_item: { binary: { fileName: {like: \"%" + query + "%\"} } } } } }";
 		}
 	}
 

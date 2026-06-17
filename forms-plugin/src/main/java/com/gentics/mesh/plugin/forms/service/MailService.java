@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -14,8 +16,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.BinaryField;
+import com.gentics.mesh.core.rest.node.field.NodeField;
+import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
 import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.common.TemplateWrapper;
 import com.gentics.mesh.plugin.common.dagger.AdminClient;
@@ -27,7 +31,6 @@ import com.gentics.mesh.plugin.forms.config.MailOptions;
 import com.gentics.mesh.plugin.forms.model.AdminMailElement;
 import com.gentics.mesh.plugin.forms.model.BinaryElement;
 import com.gentics.mesh.plugin.forms.model.Form;
-import com.gentics.mesh.plugin.forms.model.FormElement;
 import com.gentics.mesh.plugin.forms.model.FormtypeConfigsModel;
 import com.gentics.mesh.plugin.forms.model.UsermailElement;
 import com.gentics.mesh.plugin.forms.util.RxUtil;
@@ -235,16 +238,27 @@ public class MailService {
 	 * @return single message
 	 */
 	private Single<MailMessage> addAttachments(String projectName, Form form, NodeResponse formDataNode, MailMessage message) {
-		List<String> fileFieldNames = form.getElementsInsideProperties()
+		List<String> fileItemUuids = form.getElementsInsideProperties()
 			.filter(element -> element instanceof BinaryElement)
-			.map(FormElement::getName)
-			.filter(name -> {
-				BinaryField field = formDataNode.getFields().getBinaryField(name);
-				return (field != null && field.hasValues());
+			.flatMap(element -> {
+				if (element.isList()) {
+					NodeFieldList nodeFieldList = formDataNode.getFields().getNodeFieldList(element.getName());
+					if (nodeFieldList != null) {
+						List<NodeFieldListItem> items = Optional.ofNullable(nodeFieldList.getItems()).orElse(List.of());
+						return items.stream().map(NodeFieldListItem::getUuid);
+					}
+				} else {
+					NodeField nodeField = formDataNode.getFields().getNodeField(element.getName());
+					if (nodeField != null) {
+						return Stream.of(nodeField.getUuid());
+					}
+				}
+				return Stream.empty();
 			})
+			.filter(uuid -> uuid != null)
 			.collect(Collectors.toList());
 
-		if (fileFieldNames.isEmpty()) {
+		if (fileItemUuids.isEmpty()) {
 			return Single.just(message);
 		}
 
@@ -252,8 +266,8 @@ public class MailService {
 		message.setAttachment(new ArrayList<>());
 
 		// download all binary data and add as attachments
-		return Observable.fromIterable(fileFieldNames).flatMapSingle(name -> {
-			return adminClient.downloadBinaryField(projectName, formDataNode.getUuid(), formDataNode.getLanguage(), name).toSingle();
+		return Observable.fromIterable(fileItemUuids).flatMapSingle(uuid -> {
+			return adminClient.downloadBinaryField(projectName, uuid, formDataNode.getLanguage(), "binary").toSingle();
 		}).flatMapSingle(download -> RxUtil.readEntireData(download.getFlowable())
 		.map(buffer -> {
 			message.getAttachment()

@@ -315,15 +315,22 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		String formDefinition = "messed_up_but_valid.json";
 		String formUuid = createForm(formDefinition);
 
+		Map<String, Object> formDataMap = Map.of(
+				"input1", "test",
+				"file1", getFileData(formDefinition),
+				"file2", getFileData(formDefinition),
+				"filesssss", Arrays.asList(getFileData("multipage.json"), getFileData("multipage.json")),
+				"sssss", Arrays.asList(getFileData("multipage.html")));
+
 		// Make update post containing all fields including two files.
 		MultipartBody requestBody = new MultipartBody.Builder()
 			.setType(MultipartBody.FORM)
-			.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(formUuid, null, Map.of("input1", "test")))
-			.addFormDataPart("file1", formDefinition, requestBodyFromFile(formDefinition))
-			.addFormDataPart("file2", formDefinition, requestBodyFromFile(formDefinition))
-			.addFormDataPart("filesssss[0]", "multipage.0.json", requestBodyFromFile("multipage.json"))
-			.addFormDataPart("filesssss[1]", "multipage.1.json", requestBodyFromFile("multipage.json"))
-			.addFormDataPart("sssss[0]", "multipage.html", requestBodyFromFile("multipage.html"))
+			.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(formUuid, null, formDataMap))
+			.addFormDataPart(fileUploadKey("file1"), formDefinition, requestBodyFromFile(formDefinition))
+			.addFormDataPart(fileUploadKey("file2"), formDefinition, requestBodyFromFile(formDefinition))
+			.addFormDataPart(fileUploadKey("filesssss", 0), "multipage.0.json", requestBodyFromFile("multipage.json"))
+			.addFormDataPart(fileUploadKey("filesssss", 1), "multipage.1.json", requestBodyFromFile("multipage.json"))
+			.addFormDataPart(fileUploadKey("sssss", 0), "multipage.html", requestBodyFromFile("multipage.html"))
 			.build();
 
 		Request request = new Request.Builder()
@@ -344,7 +351,8 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		// Assert that the correct files have been uploaded.
 		for (int i = 1; i <= 2; i++) {
 			String fieldName = String.format("file%d", i);
-			MeshBinaryResponse file = call(() -> server.client().downloadBinaryField(PROJECT_NAME, dataNode.getUuid(), lang, fieldName));
+			String itemUuid = dataNode.getFields().getNodeField(fieldName).getUuid();
+			MeshBinaryResponse file = call(() -> server.client().downloadBinaryField(PROJECT_NAME, itemUuid, lang, "binary"));
 
 			assertThat(file.getFilename())
 				.as(String.format("Filename %d", i))
@@ -405,15 +413,22 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		String formDefinition = "messed_up_but_valid.json";
 		String formUuid = createForm(formDefinition);
 
+		Map<String, Object> formDataMap = Map.of(
+				"input1", "test",
+				"file1", getFileData(formDefinition),
+				"file2", getFileData(formDefinition),
+				"filesssss", Arrays.asList(getFileData("multipage.json"), getFileData("multipage.json")),
+				"sssss", Arrays.asList(getFileData("multipage.html")));
+
 		// Make update post containing all fields including two files.
 		MultipartBody requestBody = new MultipartBody.Builder()
 			.setType(MultipartBody.FORM)
-			.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(formUuid, null, Map.of("input1", "test")))
-			.addFormDataPart("file1", formDefinition, requestBodyFromFile(formDefinition))
-			.addFormDataPart("file2", formDefinition, requestBodyFromFile(formDefinition))
-			.addFormDataPart("filesssss[0]", "multipage.0.json", requestBodyFromFile("multipage.json"))
-			.addFormDataPart("filesssss[1]", "multipage.1.json", requestBodyFromFile("multipage.json"))
-			.addFormDataPart("sssss[0]", "multipage.html", requestBodyFromFile("multipage.html"))
+			.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(formUuid, null, formDataMap))
+			.addFormDataPart(fileUploadKey("file1"), formDefinition, requestBodyFromFile(formDefinition))
+			.addFormDataPart(fileUploadKey("file2"), formDefinition, requestBodyFromFile(formDefinition))
+			.addFormDataPart(fileUploadKey("filesssss", 0), "multipage.0.json", requestBodyFromFile("multipage.json"))
+			.addFormDataPart(fileUploadKey("filesssss", 1), "multipage.1.json", requestBodyFromFile("multipage.json"))
+			.addFormDataPart(fileUploadKey("sssss", 0), "multipage.html", requestBodyFromFile("multipage.html"))
 			.build();
 
 		Request request = new Request.Builder()
@@ -430,7 +445,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		NodeResponse dataNode = assertSingleDataNode(formUuid, node -> {/* Nothing more to assert */});
 
 		request = new Request.Builder()
-			.url(projectUrl("/forms/" + formUuid + "/data?q=i&publishedOnly=false"))
+			.url(projectUrl("/forms/" + formUuid + "/data?q=e&publishedOnly=false"))
 			.headers(auth(true))
 			.get()
 			.build();
@@ -455,15 +470,22 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		String formDefinition = "messed_up_but_valid.json";
 		String formUuid = createForm(formDefinition);
 
+		Map<String, Object> formDataMap = Map.of(
+				"input1", "test",
+				"file1", getFileData(formDefinition),
+				"file2", getFileData(formDefinition),
+				"filesssss", Arrays.asList(getFileData("multipage.json"), getFileData("multipage.json")),
+				"sssss", Arrays.asList(getFileData("multipage.html")));
+
 		// Make update post containing all fields including two files.
 		MultipartBody requestBody = new MultipartBody.Builder()
 			.setType(MultipartBody.FORM)
-			.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(formUuid, null, Map.of("input1", "test")))
-			.addFormDataPart("file1", formDefinition, requestBodyFromFile(formDefinition))
-			.addFormDataPart("file2", formDefinition, requestBodyFromFile(formDefinition))
-			.addFormDataPart("filesssss[0]", "multipage.0.json", requestBodyFromFile("multipage.json"))
-			.addFormDataPart("filesssss[1]", "multipage.1.json", requestBodyFromFile("multipage.json"))
-			.addFormDataPart("sssss[0]", "multipage.html", requestBodyFromFile("multipage.html"))
+			.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(formUuid, null, formDataMap))
+			.addFormDataPart(fileUploadKey("file1"), formDefinition, requestBodyFromFile(formDefinition))
+			.addFormDataPart(fileUploadKey("file2"), formDefinition, requestBodyFromFile(formDefinition))
+			.addFormDataPart(fileUploadKey("filesssss", 0), "multipage.0.json", requestBodyFromFile("multipage.json"))
+			.addFormDataPart(fileUploadKey("filesssss", 1), "multipage.1.json", requestBodyFromFile("multipage.json"))
+			.addFormDataPart(fileUploadKey("sssss", 0), "multipage.html", requestBodyFromFile("multipage.html"))
 			.build();
 
 		Request postRequest = new Request.Builder()
@@ -1114,7 +1136,10 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 			formDataFiles.add(getFileData(moreFiles[i]));
 		}
 
-		requestBody.addFormDataPart("formdata", makeFormdataMultipart(uuid, null, Map.of("file1", formDataFiles)));
+		// decide what to send
+		Object file1Data = multi ? formDataFiles : formDataFiles.get(0);
+
+		requestBody.addFormDataPart("formdata", makeFormdataMultipart(uuid, null, Map.of("file1", file1Data)));
 
 		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang="+language)).header("Referer", "ref").post(requestBody.build()).build();
 		Response response = client().newCall(postRequest).execute();
@@ -1124,7 +1149,8 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		MeshBinaryResponse download;
 		Buffer buffer;
 		if (!multi) {
-			download = call(() -> server.client().downloadBinaryField(PROJECT_NAME, dataNode.getUuid(), dataNode.getLanguage(), "file1"));
+			String itemUuid = dataNode.getFields().getNodeField("file1").getUuid();
+			download = call(() -> server.client().downloadBinaryField(PROJECT_NAME, itemUuid, dataNode.getLanguage(), "binary"));
 			assertThat(download.getFilename()).as("Filename").isEqualTo(formFile);
 
 			buffer = RxUtil.readEntireData(download.getFlowable()).blockingGet();
