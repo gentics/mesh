@@ -877,7 +877,7 @@ public class FormDataService {
 			for (String name : fileElementNames) {
 				Object value = fields.getValue(name);
 				if (value instanceof JsonObject itemObject) {
-					downloadables.add(new Downloadable(itemObject.getString("uuid"), "binary"));
+					downloadables.add(new Downloadable(itemObject.getString("uuid"), "binary", Optional.of("%s/%s".formatted(uuid, name))));
 				} else if (value instanceof JsonArray listValue) {
 					for (int j = 0; j < listValue.size(); j++) {
 						JsonObject itemObject = listValue.getJsonObject(j);
