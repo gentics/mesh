@@ -135,7 +135,7 @@ public class MailService {
 				if (!template.isValid()) {
 					log.error(
 							"Could not send user mail for element {} in form {}, because no template configuration was found (template must be either configured in config.yml as \"userMailTemplate\" or set in the element as \"mailtemplate\").",
-							element.getLabelOrName(), form.getName());
+							element.getLabel(language, form.getUiSchema()), form.getName());
 					return;
 				}
 				String subject = StringUtils.defaultIfBlank(element.getSubject(), configuration.getUserMailSubject());

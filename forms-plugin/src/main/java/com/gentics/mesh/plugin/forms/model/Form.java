@@ -633,7 +633,7 @@ public class Form implements RestModel {
 	public Optional<ValidationError> validateForm() {
 		return getElementsInsideProperties()
 			.filter(FormElement::isActive)
-			.map(FormElement::validateForm)
+			.map(element -> element.validateForm(language, uiSchema))
 			.filter(Optional::isPresent)
 			.map(Optional::get)
 			.findAny();
@@ -689,7 +689,7 @@ public class Form implements RestModel {
 					results.put(name, new JsonObject());
 				}
 
-				elem.addPollData(results.getJsonObject(name), formData);
+				elem.addPollData(results.getJsonObject(name), formData, language, uiSchema);
 			}
 		});
 
@@ -843,7 +843,7 @@ public class Form implements RestModel {
 	public Map<String, String> getReportableFields() {
 		return getElementsInsideProperties()
 			.filter(FormElement::isReportable)
-			.collect(Collectors.toMap(FormElement::getName, FormElement::getLabelOrName));
+			.collect(Collectors.toMap(FormElement::getName, element -> element.getLabel(language, uiSchema)));
 	}
 
 	/**

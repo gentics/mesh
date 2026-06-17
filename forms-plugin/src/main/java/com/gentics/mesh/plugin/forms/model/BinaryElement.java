@@ -141,7 +141,7 @@ public class BinaryElement extends FormElement {
 				return Maybe.just(new ValidationError()
 					.setName(getName())
 					.setTitle(I18nHelper.get(translations, "form_validation_error_missing_mandatory_field_title"))
-					.setMessage(I18nHelper.get(translations, "form_validation_error_missing_mandatory_field", getLabel())));
+					.setMessage(I18nHelper.get(translations, "form_validation_error_missing_mandatory_field", getLabel(ctx.getLanguage(), uiSchema))));
 			} else {
 				return RxUtil.emptyMaybe();
 			}

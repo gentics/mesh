@@ -103,6 +103,17 @@ public class ValidationEndpointTest extends AbstractEndpointValidationTest {
 		assertValidationResponse(response, Map.of("usermail1", "The email address invalid_email_address is invalid."));
 	}
 
+	@Test
+	public void testEmptyMandatoryField() throws IOException {
+		Response response = client().newCall(request(null,
+				RequestBody.create(
+						AbstractFormsPluginIntegrationTest.makeFormdataMultipart(formUuid, null, Map.of("input1", "")),
+						MediaType.get("application/json"))))
+				.execute();
+
+		assertValidationResponse(response, Map.of("input1", "The field Input 1 is mandatory."));
+	}
+
 	private Request request(String formDataUuid, RequestBody requestBody) {
 		HttpUrl.Builder url = HttpUrl.get(projectUrl("/form/%s/validate?lang=en".formatted(formUuid))).newBuilder();
 

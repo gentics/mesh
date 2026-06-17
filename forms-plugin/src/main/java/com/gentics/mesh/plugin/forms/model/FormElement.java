@@ -17,6 +17,7 @@ import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.context.FormDataCreateContext;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
 import com.gentics.mesh.plugin.forms.model.schema.FormUiSchema;
+import com.gentics.mesh.plugin.forms.model.schema.UiSchemaPageElement;
 import com.gentics.mesh.plugin.forms.model.schema.UischemaFormgridOptions;
 import com.gentics.mesh.plugin.forms.model.schema.Validation;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
@@ -51,8 +52,6 @@ public abstract class FormElement implements RestModel {
 	protected final Logger log = LoggerFactory.getLogger(getClass());
 
 	protected String name;
-
-	protected String label;
 
 	protected String type;
 
@@ -94,7 +93,6 @@ public abstract class FormElement implements RestModel {
 	 */
 	protected FormElement(FormElement other, boolean deep) {
 		this.name = other.name;
-		this.label = other.label;
 		this.type = other.type;
 		this.active = other.active;
 		this.mandatory = other.mandatory;
@@ -124,22 +122,6 @@ public abstract class FormElement implements RestModel {
 	}
 
 	/**
-	 * Element label
-	 * @return label
-	 */
-	public String getLabel() {
-		return label;
-	}
-
-	/**
-	 * Set the element label
-	 * @param label label
-	 */
-	public void setLabel(String label) {
-		this.label = label;
-	}
-
-	/**
 	 * Element type
 	 * @return type
 	 */
@@ -153,15 +135,6 @@ public abstract class FormElement implements RestModel {
 	 */
 	public void setType(String type) {
 		this.type = type;
-	}
-
-	/**
-	 * If the label is not blank, return the label, otherwise return the name (which must not be null)
-	 * @return label (if not null) or name
-	 */
-	@JsonIgnore
-	public String getLabelOrName() {
-		return StringUtils.isNotBlank(label) ? label : name;
 	}
 
 	/**
@@ -299,10 +272,12 @@ public abstract class FormElement implements RestModel {
 	 * <p>
 	 *     The default validation for form elements will always succeed, so no error is returned.
 	 * </p>
+	 * @param language language
+	 * @param uiSchema ui schema of the form
 	 *
 	 * @return The default validation will always return {@link Optional#empty()}.
 	 */
-	public Optional<ValidationError> validateForm() {
+	public Optional<ValidationError> validateForm(String language, FormUiSchema uiSchema) {
 		return Optional.empty();
 	}
 
@@ -335,7 +310,7 @@ public abstract class FormElement implements RestModel {
 				var error = new ValidationError()
 					.setName(getName())
 					.setTitle(I18nHelper.get(translations, "form_validation_error_missing_mandatory_field_title"))
-					.setMessage(I18nHelper.get(translations, "form_validation_error_missing_mandatory_field", getLabel()));
+					.setMessage(I18nHelper.get(translations, "form_validation_error_missing_mandatory_field", getLabel(ctx.getLanguage(), uischema)));
 
 				return Maybe.just(error);
 			}
@@ -420,14 +395,16 @@ public abstract class FormElement implements RestModel {
 	 *
 	 * @param results The {@code JsonObject} to gather results into
 	 * @param formData The form data node to get values from
+	 * @param language language
+	 * @param uiSchema ui schema
 	 */
-	public void addPollData(JsonObject results, FieldContainer formData) {
+	public void addPollData(JsonObject results, FieldContainer formData, String language, FormUiSchema uiSchema) {
 		if (!results.containsKey("type")) {
 			results.put("type", getType());
 		}
 
 		if (!results.containsKey("label")) {
-			results.put("label", getLabel());
+			results.put("label", getLabel(language, uiSchema));
 		}
 
 		if (!results.containsKey("element")) {
@@ -616,6 +593,17 @@ public abstract class FormElement implements RestModel {
 	@JsonIgnore
 	public Object transformToExternal(String value) {
 		return value;
+	}
+
+	/**
+	 * Get the label of the given element. If the label could not be determined, fall back to the name
+	 * @param language language
+	 * @param uiSchema ui schema
+	 * @return label (or name)
+	 */
+	@JsonIgnore
+	public String getLabel(String language, FormUiSchema uiSchema) {
+		return uiSchema.findElement(key).map(UiSchemaPageElement::getLabel).map(map -> map.get(language)).orElse(name);
 	}
 
 	/**
