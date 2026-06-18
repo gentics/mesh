@@ -84,6 +84,33 @@ public class PostedData extends LinkedHashMap<String, FormDataProperty> {
 	}
 
 	/**
+	 * Get single value of the element with given name
+	 * @param name element name
+	 * @return single value (may be null)
+	 */
+	public Object getValue(String name) {
+		Optional<FormElement> optElement = getElement(name);
+		Optional<FormDataProperty> optProperty = Optional.ofNullable(get(name));
+
+		if (optElement.isPresent() && optProperty.isPresent()) {
+			FormElement element = optElement.get();
+			FormDataProperty property = optProperty.get();
+
+			if (element.isList()) {
+				List<Object> values = property.getValues();
+				if (CollectionUtils.isEmpty(values)) {
+					return null;
+				}
+				return values.stream().findFirst().orElse(null);
+			} else {
+				return property.getValue();
+			}
+		}
+
+		return null;
+	}
+
+	/**
 	 * Get all values of the element with given name as strings
 	 * @param name element name
 	 * @return string values (may be empty, but not null)
@@ -106,6 +133,37 @@ public class PostedData extends LinkedHashMap<String, FormDataProperty> {
 				Object value = property.getValue();
 				if (value != null) {
 					return List.of(element.transformPostedValue(value));
+				} else {
+					return List.of();
+				}
+			}
+		}
+		return List.of();
+	}
+
+	/**
+	 * Get all values of the element with given name as strings
+	 * @param name element name
+	 * @return string values (may be empty, but not null)
+	 */
+	public List<Object> getAllValues(String name) {
+		Optional<FormElement> optElement = getElement(name);
+		Optional<FormDataProperty> optProperty = Optional.ofNullable(get(name));
+
+		if (optElement.isPresent() && optProperty.isPresent()) {
+			FormElement element = optElement.get();
+			FormDataProperty property = optProperty.get();
+
+			if (element.isList()) {
+				List<Object> values = property.getValues();
+				if (CollectionUtils.isEmpty(values)) {
+					return List.of();
+				}
+				return values;
+			} else {
+				Object value = property.getValue();
+				if (value != null) {
+					return List.of(value);
 				} else {
 					return List.of();
 				}

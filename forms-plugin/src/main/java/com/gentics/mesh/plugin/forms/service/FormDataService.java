@@ -1351,8 +1351,8 @@ public class FormDataService {
 	 * @return single of the form data node
 	 */
 	private Single<NodeResponse> saveFileUploads(String projectName, Form form, NodeResponse formDataNode, PostedData postedData, Set<FileUpload> fileUploads) {
-		Function<String, BinaryData> binaryDataExtractor = value -> {
-			return JsonUtil.readValue(value, BinaryData.class);
+		Function<Object, BinaryData> binaryDataExtractor = value -> {
+			return JsonUtil.getMapper().convertValue(value, BinaryData.class);
 		};
 
 		// Reusable list item uploader
@@ -1393,6 +1393,8 @@ public class FormDataService {
 			});
 		}
 
+		log.debug("Found %d file uploads".formatted(uploadsPerField.size()));
+
 		// collect the binary elements, for which upload information will be handled (if present)
 		Map<String, BinaryElement> validUploadElements = form.getElementsInsideProperties()
 			.filter(FormElement::isActive)
@@ -1400,25 +1402,36 @@ public class FormDataService {
 			.map(elem -> BinaryElement.class.cast(elem))
 			.collect(Collectors.toMap(BinaryElement::getKey, Function.identity()));
 
+		log.debug("Form contains %d valid binary elements".formatted(validUploadElements.size()));
+
 		return Flowable.fromIterable(validUploadElements.values())
 			.filter(elem -> postedData.contains(elem.getKey()))
 			.flatMap(elem -> {
 				String key = elem.getKey();
 				if (elem.isList()) {
 					AtomicInteger indexCounter = new AtomicInteger();
-					return Flowable.fromIterable(postedData.getAllStrings(elem.getKey()))
+					return Flowable.fromIterable(postedData.getAllValues(elem.getKey()))
 						.map(v -> Triple.of(key, indexCounter.getAndIncrement(), binaryDataExtractor.apply(v)));
 				} else {
-					return Flowable.just(postedData.getString(elem.getKey()))
-						.map(v -> Triple.of(key, 0, binaryDataExtractor.apply(v)));
+					Object value = postedData.getValue(elem.getKey());
+
+					if (value != null) {
+						return Flowable.just(value).map(v -> Triple.of(key, 0, binaryDataExtractor.apply(v)));
+					} else {
+						return Flowable.empty();
+					}
 				}
 			})
 			.map(triple -> {
+				log.debug("Handle %s.%d: %s".formatted(triple.getLeft(), triple.getMiddle(), JsonUtil.toJson(triple.getRight())));
+
 				// is there a file upload?
 				Pair<String, Integer> uploadKey = Pair.of(triple.getLeft(), triple.getMiddle());
 				if (uploadsPerField.containsKey(uploadKey)) {
+					log.debug("Will do file upload");
 					return listItemUploader.apply(triple, uploadsPerField.get(uploadKey));
 				} else {
+					log.debug("File already uploaded");
 					return Single.just(triple);
 				}
 			})
@@ -1477,6 +1490,7 @@ public class FormDataService {
 							toRemove.addAll(CollectionUtils.subtract(oldMeshUuids, newMeshUuids));
 
 							nodeFieldList.setItems(newMeshUuids.stream().map(NodeFieldListItemImpl::new).collect(Collectors.toList()));
+							log.debug("Set mesh UUIDS %s to field %s".formatted(newMeshUuids, fieldId));
 							update.getFields().put(fieldId, nodeFieldList);
 
 						} else {
@@ -1491,6 +1505,7 @@ public class FormDataService {
 								if (StringUtils.isNotBlank(nodeField.getUuid())) {
 									// old binary item will be removed
 									toRemove.add(nodeField.getUuid());
+									log.debug("Remove mesh UUID from field %s".formatted(fieldId));
 									update.getFields().put(fieldId, null);
 								}
 							} else {
@@ -1505,6 +1520,7 @@ public class FormDataService {
 										toRemove.add(oldMeshUuid);
 									}
 								}
+								log.debug("Set mesh UUID %s to field %s".formatted(newMeshUuid, fieldId));
 								update.getFields().put(fieldId, new NodeFieldImpl().setUuid(newMeshUuid));
 							}
 						}

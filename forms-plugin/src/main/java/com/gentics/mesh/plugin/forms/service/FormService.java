@@ -862,10 +862,9 @@ public class FormService {
 
 				if (postedData.contains(key)) {
 					if (element.isList()) {
-						prop.setValues(postedData.getAllStrings(key).stream().map(v -> element.transformToExternal(v)).filter(v -> v != null)
-								.collect(Collectors.toList()));
+						prop.setValues(postedData.get(key).getValues());
 					} else {
-						prop.setValue(element.transformToExternal(postedData.getString(key)));
+						prop.setValue(postedData.get(key).getValue());
 					}
 				}
 

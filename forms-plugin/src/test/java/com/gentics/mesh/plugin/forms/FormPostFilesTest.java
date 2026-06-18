@@ -35,6 +35,10 @@ public class FormPostFilesTest extends AbstractFormPostDataTest {
 
 	public final static String MULTI_FILE_FORM = "multifilefield.json";
 
+	public final static String MULTIPLE_FILE_FIELDS_FORM = "multiple_file_fields.json";
+
+	public final static String MULTIPLE_MULTIFILE_FIELDS_FORM = "multiple_multifile_fields.json";
+
 	public final static String DATEFIELD_FORM = "datefield.json";
 
 	public final static String INPUTFIELD_FORM = "inputfield.json";
@@ -48,6 +52,22 @@ public class FormPostFilesTest extends AbstractFormPostDataTest {
 		String formUuid = createForm(SINGLE_FILE_FORM);
 
 		FormData responseData = postSingleFile(formUuid, null, MULTI_FILE_FORM);
+		assertSingleFile(formUuid, responseData, MULTI_FILE_FORM);
+	}
+
+	@Test
+	public void testSaveSingleFileWithInput() throws IOException {
+		String formUuid = createForm(MULTIPLE_FILE_FIELDS_FORM);
+
+		String postedFile = MULTI_FILE_FORM;
+		String inputText = "This is the text content";
+
+		MultipartBody.Builder requestBody = new MultipartBody.Builder()
+				.setType(MultipartBody.FORM)
+				.addFormDataPart(fileUploadKey(FIELD_NAME), postedFile, requestBodyFromFile(postedFile))
+				.addFormDataPart("formdata", makeFormdataMultipart(formUuid, null, Map.of("input1", inputText, FIELD_NAME, getFileData(postedFile))));
+
+		FormData responseData = save(formUuid, null, requestBody.build());
 		assertSingleFile(formUuid, responseData, MULTI_FILE_FORM);
 	}
 
@@ -143,6 +163,18 @@ public class FormPostFilesTest extends AbstractFormPostDataTest {
 				.hasFieldOrPropertyWithValue("values", List.of());
 	}
 
+	@Test
+	public void testValidateWithoutSingleFile() throws IOException {
+		String formUuid = createForm(MULTIPLE_FILE_FIELDS_FORM);
+
+		FormData toValidate = new FormData();
+		toValidate.setFormID(formUuid);
+		toValidate.getProperties().put("input1", new FormDataProperty());
+		toValidate.getProperties().put("file1", new FormDataProperty());
+
+		FormData responseData = validate(formUuid, null, toValidate);
+	}
+
 	protected String extractMeshUuid(String value) {
 		Matcher m = MESH_UUID_PATTERM.matcher(value);
 		if (m.matches()) {
@@ -159,16 +191,7 @@ public class FormPostFilesTest extends AbstractFormPostDataTest {
 				.addFormDataPart(fileUploadKey(FIELD_NAME), postedFile, requestBodyFromFile(postedFile))
 				.addFormDataPart("formdata", makeFormdataMultipart(formUuid, null, Map.of(FIELD_NAME, getFileData(postedFile))));
 
-		String url = "/form/%s/save?lang=en".formatted(formUuid);
-		if (formDataUuid != null) {
-			url = url + "&formDataUuid=%s".formatted(formDataUuid);
-		}
-
-		Request postRequest = new Request.Builder().url(projectUrl(url)).header("Referer", "ref").post(requestBody.build()).build();
-		Response response = client().newCall(postRequest).execute();
-		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
-
-		return JsonUtil.readValue(response.body().string(), FormData.class);
+		return save(formUuid, formDataUuid, requestBody.build());
 	}
 
 	@SafeVarargs
@@ -190,12 +213,16 @@ public class FormPostFilesTest extends AbstractFormPostDataTest {
 		}
 		requestBody.addFormDataPart("formdata", makeFormdataMultipart(formUuid, formDataUuid, Map.of(FIELD_NAME, formDataFiles)));
 
+		return save(formUuid, formDataUuid, requestBody.build());
+	}
+
+	protected FormData save(String formUuid, String formDataUuid, MultipartBody requestBody) throws IOException {
 		String url = "/form/%s/save?lang=en".formatted(formUuid);
 		if (formDataUuid != null) {
 			url = url + "&formDataUuid=%s".formatted(formDataUuid);
 		}
 
-		Request postRequest = new Request.Builder().url(projectUrl(url)).header("Referer", "ref").post(requestBody.build()).build();
+		Request postRequest = new Request.Builder().url(projectUrl(url)).header("Referer", "ref").post(requestBody).build();
 		Response response = client().newCall(postRequest).execute();
 		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
 
