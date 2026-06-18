@@ -14,7 +14,7 @@ import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.service.MeshPluginService;
 import com.gentics.mesh.rest.client.MeshRestClient;
-import com.github.jknack.handlebars.internal.lang3.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import io.reactivex.Completable;
 
