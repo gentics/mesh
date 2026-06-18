@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +22,7 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.plugin.forms.model.schema.BinaryData;
 import com.gentics.mesh.plugin.forms.model.schema.FormData;
 import com.gentics.mesh.plugin.forms.model.schema.FormDataProperty;
 
@@ -51,7 +54,7 @@ public class FormPostFilesTest extends AbstractFormPostDataTest {
 	public void testSaveSingleFile() throws IOException {
 		String formUuid = createForm(SINGLE_FILE_FORM);
 
-		FormData responseData = postSingleFile(formUuid, null, MULTI_FILE_FORM);
+		FormData responseData = postSingleFile(TestMethod.save, formUuid, null, MULTI_FILE_FORM);
 		assertSingleFile(formUuid, responseData, MULTI_FILE_FORM);
 	}
 
@@ -67,7 +70,7 @@ public class FormPostFilesTest extends AbstractFormPostDataTest {
 				.addFormDataPart(fileUploadKey(FIELD_NAME), postedFile, requestBodyFromFile(postedFile))
 				.addFormDataPart("formdata", makeFormdataMultipart(formUuid, null, Map.of("input1", inputText, FIELD_NAME, getFileData(postedFile))));
 
-		FormData responseData = save(formUuid, null, requestBody.build());
+		FormData responseData = post(TestMethod.save, formUuid, null, requestBody.build());
 		assertSingleFile(formUuid, responseData, MULTI_FILE_FORM);
 	}
 
@@ -76,10 +79,10 @@ public class FormPostFilesTest extends AbstractFormPostDataTest {
 		String formUuid = createForm(SINGLE_FILE_FORM);
 
 		// post a file
-		FormData responseData = postSingleFile(formUuid, null, SINGLE_FILE_FORM);
+		FormData responseData = postSingleFile(TestMethod.save, formUuid, null, SINGLE_FILE_FORM);
 
 		// post another file
-		responseData = postSingleFile(formUuid, responseData.getFormDataID(), MULTI_FILE_FORM);
+		responseData = postSingleFile(TestMethod.save, formUuid, responseData.getFormDataID(), MULTI_FILE_FORM);
 		assertSingleFile(formUuid, responseData, MULTI_FILE_FORM);
 	}
 
@@ -88,11 +91,11 @@ public class FormPostFilesTest extends AbstractFormPostDataTest {
 		String formUuid = createForm(SINGLE_FILE_FORM);
 
 		// post a file
-		FormData responseData = postSingleFile(formUuid, null, SINGLE_FILE_FORM);
+		FormData responseData = postSingleFile(TestMethod.save, formUuid, null, SINGLE_FILE_FORM);
 
 		// save and remove the file
 		responseData.getProperties().put(FIELD_NAME, new FormDataProperty().setValue(Map.of()));
-		responseData = save(formUuid, responseData.getFormDataID(), responseData);
+		responseData = post(TestMethod.save, formUuid, responseData.getFormDataID(), responseData);
 		assertNoFile(formUuid, responseData);
 	}
 
@@ -101,7 +104,7 @@ public class FormPostFilesTest extends AbstractFormPostDataTest {
 		String formUuid = createForm(MULTI_FILE_FORM);
 
 		// post multiple files
-		FormData responseData = postMultipleFiles(formUuid, null, Pair.of(SINGLE_FILE_FORM, null), Pair.of(MULTI_FILE_FORM, null));
+		FormData responseData = postMultipleFiles(TestMethod.save, formUuid, null, Pair.of(SINGLE_FILE_FORM, null), Pair.of(MULTI_FILE_FORM, null));
 		assertMultipleFiles(formUuid, responseData, SINGLE_FILE_FORM, MULTI_FILE_FORM);
 	}
 
@@ -110,12 +113,12 @@ public class FormPostFilesTest extends AbstractFormPostDataTest {
 		String formUuid = createForm(MULTI_FILE_FORM);
 
 		// post multiple files
-		FormData responseData = postMultipleFiles(formUuid, null, Pair.of(SINGLE_FILE_FORM, null), Pair.of(MULTI_FILE_FORM, null));
+		FormData responseData = postMultipleFiles(TestMethod.save, formUuid, null, Pair.of(SINGLE_FILE_FORM, null), Pair.of(MULTI_FILE_FORM, null));
 
 		List<Object> values = responseData.getProperties().get(FIELD_NAME).getValues();
 
 		// save and add a file
-		responseData = postMultipleFiles(formUuid, responseData.getFormDataID(), Pair.of(SINGLE_FILE_FORM, values.get(0)),
+		responseData = postMultipleFiles(TestMethod.save, formUuid, responseData.getFormDataID(), Pair.of(SINGLE_FILE_FORM, values.get(0)),
 				Pair.of(MULTI_FILE_FORM, values.get(1)), Pair.of(DATEFIELD_FORM, null));
 
 		assertMultipleFiles(formUuid, responseData, SINGLE_FILE_FORM, MULTI_FILE_FORM, DATEFIELD_FORM);
@@ -126,12 +129,12 @@ public class FormPostFilesTest extends AbstractFormPostDataTest {
 		String formUuid = createForm(MULTI_FILE_FORM);
 
 		// post multiple files
-		FormData responseData = postMultipleFiles(formUuid, null, Pair.of(SINGLE_FILE_FORM, null), Pair.of(MULTI_FILE_FORM, null), Pair.of(DATEFIELD_FORM, null));
+		FormData responseData = postMultipleFiles(TestMethod.save, formUuid, null, Pair.of(SINGLE_FILE_FORM, null), Pair.of(MULTI_FILE_FORM, null), Pair.of(DATEFIELD_FORM, null));
 
 		List<Object> values = responseData.getProperties().get(FIELD_NAME).getValues();
 
 		// save and remove a file
-		responseData = postMultipleFiles(formUuid, responseData.getFormDataID(), Pair.of(MULTI_FILE_FORM, values.get(1)), Pair.of(DATEFIELD_FORM, values.get(2)));
+		responseData = postMultipleFiles(TestMethod.save, formUuid, responseData.getFormDataID(), Pair.of(MULTI_FILE_FORM, values.get(1)), Pair.of(DATEFIELD_FORM, values.get(2)));
 		assertMultipleFiles(formUuid, responseData, MULTI_FILE_FORM, DATEFIELD_FORM);
 	}
 
@@ -140,12 +143,12 @@ public class FormPostFilesTest extends AbstractFormPostDataTest {
 		String formUuid = createForm(MULTI_FILE_FORM);
 
 		// post multiple files
-		FormData responseData = postMultipleFiles(formUuid, null, Pair.of(SINGLE_FILE_FORM, null), Pair.of(MULTI_FILE_FORM, null), Pair.of(DATEFIELD_FORM, null));
+		FormData responseData = postMultipleFiles(TestMethod.save, formUuid, null, Pair.of(SINGLE_FILE_FORM, null), Pair.of(MULTI_FILE_FORM, null), Pair.of(DATEFIELD_FORM, null));
 
 		List<Object> values = responseData.getProperties().get(FIELD_NAME).getValues();
 
 		// save, add and remove a file
-		responseData = postMultipleFiles(formUuid, responseData.getFormDataID(), Pair.of(SINGLE_FILE_FORM, values.get(0)), Pair.of(DATEFIELD_FORM, values.get(2)), Pair.of(INPUTFIELD_FORM, null));
+		responseData = postMultipleFiles(TestMethod.save, formUuid, responseData.getFormDataID(), Pair.of(SINGLE_FILE_FORM, values.get(0)), Pair.of(DATEFIELD_FORM, values.get(2)), Pair.of(INPUTFIELD_FORM, null));
 		assertMultipleFiles(formUuid, responseData, SINGLE_FILE_FORM, DATEFIELD_FORM, INPUTFIELD_FORM);
 	}
 
@@ -172,7 +175,37 @@ public class FormPostFilesTest extends AbstractFormPostDataTest {
 		toValidate.getProperties().put("input1", new FormDataProperty());
 		toValidate.getProperties().put("file1", new FormDataProperty());
 
-		FormData responseData = validate(formUuid, null, toValidate);
+		validate(formUuid, null, toValidate);
+	}
+
+	@Test
+	public void testDownloadSavedBinaryLikeFormGen() throws IOException {
+		String formUuid = createForm(SINGLE_FILE_FORM);
+
+		FormData responseData = postSingleFile(TestMethod.save, formUuid, null, MULTI_FILE_FORM);
+		assertSingleFile(formUuid, responseData, MULTI_FILE_FORM);
+
+		String meshBinaryUuid = JsonUtil.getMapper().convertValue(responseData.getProperties().get(FIELD_NAME).getValue(), BinaryData.class)
+				.getValue();
+
+		Response response = downloadBinaryLikeFormGen(formUuid, meshBinaryUuid);
+		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+		assertThat(response.body().string()).as("File contents").isEqualTo(fromFile(MULTI_FILE_FORM));
+	}
+
+	@Test
+	public void testDownloadSubmittedBinaryLikeFormGen() throws IOException {
+		String formUuid = createForm(SINGLE_FILE_FORM);
+
+		FormData responseData = postSingleFile(TestMethod.save, formUuid, null, MULTI_FILE_FORM);
+		assertSingleFile(formUuid, responseData, MULTI_FILE_FORM);
+
+		String meshBinaryUuid = JsonUtil.getMapper().convertValue(responseData.getProperties().get(FIELD_NAME).getValue(), BinaryData.class)
+				.getValue();
+
+		post(TestMethod.submit, formUuid, responseData.getFormDataID(), responseData);
+		Response response = downloadBinaryLikeFormGen(formUuid, meshBinaryUuid);
+		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isFalse();
 	}
 
 	protected String extractMeshUuid(String value) {
@@ -185,17 +218,17 @@ public class FormPostFilesTest extends AbstractFormPostDataTest {
 		}
 	}
 
-	protected FormData postSingleFile(String formUuid, String formDataUuid, String postedFile) throws IOException {
+	protected FormData postSingleFile(TestMethod method, String formUuid, String formDataUuid, String postedFile) throws IOException {
 		MultipartBody.Builder requestBody = new MultipartBody.Builder()
 				.setType(MultipartBody.FORM)
 				.addFormDataPart(fileUploadKey(FIELD_NAME), postedFile, requestBodyFromFile(postedFile))
 				.addFormDataPart("formdata", makeFormdataMultipart(formUuid, null, Map.of(FIELD_NAME, getFileData(postedFile))));
 
-		return save(formUuid, formDataUuid, requestBody.build());
+		return post(method, formUuid, formDataUuid, requestBody.build());
 	}
 
 	@SafeVarargs
-	protected final FormData postMultipleFiles(String formUuid, String formDataUuid, Pair<String, Object>...postedFiles) throws IOException {
+	protected final FormData postMultipleFiles(TestMethod method, String formUuid, String formDataUuid, Pair<String, Object>...postedFiles) throws IOException {
 		MultipartBody.Builder requestBody = new MultipartBody.Builder()
 				.setType(MultipartBody.FORM);
 
@@ -213,11 +246,11 @@ public class FormPostFilesTest extends AbstractFormPostDataTest {
 		}
 		requestBody.addFormDataPart("formdata", makeFormdataMultipart(formUuid, formDataUuid, Map.of(FIELD_NAME, formDataFiles)));
 
-		return save(formUuid, formDataUuid, requestBody.build());
+		return post(method, formUuid, formDataUuid, requestBody.build());
 	}
 
-	protected FormData save(String formUuid, String formDataUuid, MultipartBody requestBody) throws IOException {
-		String url = "/form/%s/save?lang=en".formatted(formUuid);
+	protected FormData post(TestMethod method, String formUuid, String formDataUuid, MultipartBody requestBody) throws IOException {
+		String url = "/form/%s/%s?lang=en".formatted(formUuid, method.name());
 		if (formDataUuid != null) {
 			url = url + "&formDataUuid=%s".formatted(formDataUuid);
 		}
@@ -246,12 +279,12 @@ public class FormPostFilesTest extends AbstractFormPostDataTest {
 		return JsonUtil.readValue(response.body().string(), FormData.class);
 	}
 
-	protected FormData save(String formUuid, String formDataUuid, FormData savedFormData) throws IOException {
+	protected FormData post(TestMethod method, String formUuid, String formDataUuid, FormData savedFormData) throws IOException {
 		MultipartBody.Builder requestBody = new MultipartBody.Builder()
 				.setType(MultipartBody.FORM)
 				.addFormDataPart("formdata", JsonUtil.toJson(savedFormData));
 
-		String url = "/form/%s/save?lang=en".formatted(formUuid);
+		String url = "/form/%s/%s?lang=en".formatted(formUuid, method.name());
 		if (formDataUuid != null) {
 			url = url + "&formDataUuid=%s".formatted(formDataUuid);
 		}
@@ -261,6 +294,13 @@ public class FormPostFilesTest extends AbstractFormPostDataTest {
 		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
 
 		return JsonUtil.readValue(response.body().string(), FormData.class);
+	}
+
+	protected Response downloadBinaryLikeFormGen(String formUuid, String meshBinaryUuid) throws IOException {
+		String url = "/form/%s/binary/%s".formatted(formUuid,
+				URLEncoder.encode(meshBinaryUuid, StandardCharsets.UTF_8));
+		Request request = new Request.Builder().url(projectUrl(url)).get().build();
+		return client().newCall(request).execute();
 	}
 
 	protected void assertSingleFile(String formUuid, FormData responseData, String expectedFile) {
@@ -341,5 +381,9 @@ public class FormPostFilesTest extends AbstractFormPostDataTest {
 
 			assertThat(childrenMap).as("Binary Nodes").containsExactlyInAnyOrderEntriesOf(binaryMap);
 		}
+	}
+
+	protected static enum TestMethod {
+		save, submit;
 	}
 }

@@ -69,6 +69,7 @@ import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.parameter.client.DeleteParametersImpl;
+import com.gentics.mesh.parameter.client.ImageManipulationParametersImpl;
 import com.gentics.mesh.parameter.client.NodeParametersImpl;
 import com.gentics.mesh.parameter.client.VersioningParametersImpl;
 import com.gentics.mesh.plugin.PluginContext;
@@ -105,6 +106,7 @@ import com.gentics.mesh.util.UUIDUtil;
 import com.github.jknack.handlebars.Context;
 import com.github.jknack.handlebars.Handlebars;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
@@ -1122,6 +1124,57 @@ public class FormDataService {
 	}
 
 	/**
+	 * Load the binary for formgen. Will return 404 when the form does not exist, the binary does not exist or does not belong to the form or does belong to
+	 * an already published form data node-
+	 * @param projectName project name
+	 * @param formUuid form UUID
+	 * @param binaryUuid binary UUID
+	 * @param width width
+	 * @param height height
+	 * @return single response
+	 */
+	public Single<MeshResponse<MeshBinaryResponse>> loadBinaryForFormGen(String projectName, String formUuid, String binaryUuid, String width, String height) {
+		// load the form with uuid as admin
+		Single<NodeResponse> formNodeSingle = formService.loadAsAdmin(projectName, formUuid, true);
+
+		// load the binary with uuid as admin, check whether it is a binary item node and map to the parents
+		Single<NodeResponse> binaryNodeSingle = adminClient.findNodeByUuid(projectName, binaryUuid, new NodeParametersImpl()).toSingle().flatMap(nodeResponse -> {
+			// check whether the node is a binary item
+			if (isBinaryItemNode(nodeResponse)) {
+				return Single.just(nodeResponse);
+			} else {
+				String message = String.format("Node with uuid \"%s\" is not a binary item node.", binaryUuid);
+				return Single.error(new FormsError(message, HttpResponseStatus.NOT_FOUND.code()));
+			}
+		}).flatMap(nodeResponse -> {
+			String formDataUuid = nodeResponse.getParentNode().getUuid();
+			// check whether the immediate parent (which is the form data node) is published
+			return load(projectName, formUuid, formDataUuid, false).map(ignored -> nodeResponse);
+		});
+
+		// with both the formnode and binarynode, check for consistency and return binary download
+		io.reactivex.functions.BiFunction<NodeResponse, NodeResponse, Single<MeshResponse<MeshBinaryResponse>>> zipper = (formNode, binaryNode) -> {
+			// check whether the form node is included in the breadcrumb
+			boolean formNodeIsParent = Optional.ofNullable(binaryNode.getBreadcrumb())
+					.flatMap(breadcrumb -> breadcrumb.stream()
+							.filter(ref -> Strings.CI.equals(ref.getUuid(), formNode.getUuid())).findFirst())
+					.isPresent();
+
+			if (formNodeIsParent) {
+				// download the binary data
+				return adminClient.downloadBinaryField(projectName, binaryNode.getUuid(), formNode.getLanguage(),
+						"binary", new ImageManipulationParametersImpl().setWidth(width).setHeight(height))
+						.getResponse();
+			} else {
+				String message = "Node with uuid \"%s\" does not belong to form \"%s\"".formatted(binaryNode.getUuid(), formNode.getUuid());
+				return Single.error(new FormsError(message, HttpResponseStatus.NOT_FOUND.code()));
+			}
+		};
+
+		return Single.zip(formNodeSingle, binaryNodeSingle, zipper).flatMap(single -> single);
+	}
+
+	/**
 	 * Deletes the form data with the specified formDataUuid.
 	 *
 	 * @param projectName project name
@@ -1686,6 +1739,17 @@ public class FormDataService {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Check whether the node is a form node (uses the form schema)
+	 *
+	 * @param node
+	 *            node to check
+	 * @return true for form nodes
+	 */
+	private boolean isBinaryItemNode(NodeResponse node) {
+		return SchemaInitializer.MULTIBINARY_ITEM_SCHEMA_NAME.equals(node.getSchema().getName());
 	}
 
 	/**

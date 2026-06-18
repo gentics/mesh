@@ -168,7 +168,7 @@ public final class ParameterUtil {
 	 * @param pathParamName path parameter name
 	 * @return exception
 	 */
-	protected static MeshPluginException illegalPathParameter(String pathParamName) {
+	public static MeshPluginException illegalPathParameter(String pathParamName) {
 		return new MeshPluginException("Illegal path parameter for %s".formatted(pathParamName), 400);
 	}
 }
