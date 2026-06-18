@@ -1,6 +1,6 @@
 package com.gentics.mesh.plugin.forms.model;
 
-import com.github.jknack.handlebars.internal.lang3.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Model of a validation error
