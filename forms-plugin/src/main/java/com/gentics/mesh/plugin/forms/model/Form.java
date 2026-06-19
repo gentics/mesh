@@ -102,6 +102,9 @@ public class Form implements RestModel {
 
 	private Map<String, Object> properties = new LinkedHashMap<>();
 
+	@JsonIgnore
+	protected FormsConfig configuration;
+
 	public Form() {
 	}
 
@@ -939,6 +942,24 @@ public class Form implements RestModel {
 					json.remove("name"); // TODO f-gpu-2257: ist es wirklich notwendig das zu entfernen?
 					return json;
 				}));
+	}
+
+	/**
+	 * Set the configuration
+	 * @param configuration configuration
+	 */
+	@JsonIgnore
+	public void setConfiguration(FormsConfig configuration) {
+		this.configuration = configuration;
+	}
+
+	/**
+	 * Get the configuration
+	 * @return configuration
+	 */
+	@JsonIgnore
+	public FormsConfig getConfiguration() {
+		return configuration;
 	}
 
 	@Override

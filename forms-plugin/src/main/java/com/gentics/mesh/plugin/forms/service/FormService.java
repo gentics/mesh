@@ -1161,6 +1161,7 @@ public class FormService {
 		}
 
 		FormsConfig configuration = statusService.getEffectiveConfiguration(formtypeConfigs, form.getType());
+		form.setConfiguration(configuration);
 
 		// Set name (map key) and configuration on each element once after deserialization
 		form.getSchema().getProperties().forEach((key, element) -> {

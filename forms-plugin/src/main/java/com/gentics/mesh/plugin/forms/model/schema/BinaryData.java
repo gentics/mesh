@@ -5,6 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -74,5 +75,14 @@ public class BinaryData {
 				return Optional.empty();
 			}
 		}
+	}
+
+	/**
+	 * Check whether the binary is an image (the type starts with "image/")
+	 * @return true for images
+	 */
+	@JsonIgnore
+	public boolean isImage() {
+		return Strings.CI.startsWith(type, "image/");
 	}
 }

@@ -58,6 +58,9 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
+import com.gentics.mesh.core.rest.node.field.image.ImageManipulationRequest;
+import com.gentics.mesh.core.rest.node.field.image.ImageVariantRequest;
+import com.gentics.mesh.core.rest.node.field.image.ImageVariantsResponse;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
@@ -67,6 +70,7 @@ import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.parameter.client.DeleteParametersImpl;
 import com.gentics.mesh.parameter.client.ImageManipulationParametersImpl;
@@ -82,6 +86,7 @@ import com.gentics.mesh.plugin.common.util.ParameterUtil;
 import com.gentics.mesh.plugin.forms.FormsError;
 import com.gentics.mesh.plugin.forms.FormsPlugin;
 import com.gentics.mesh.plugin.forms.SchemaInitializer;
+import com.gentics.mesh.plugin.forms.config.FileUploadOptions;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.context.FormDataCreateContext;
 import com.gentics.mesh.plugin.forms.context.FormDataUpdateContext;
@@ -151,7 +156,6 @@ public class FormDataService {
 	private static final String FIELD_DOWNLOAD_BINARY = "download";
 	private static final String FIELD_DOWNLOAD_ERROR = "error";
 	private static final String MESSAGE_DOWNLOAD_CHECK_PREFIX = "plugins.forms.download.";
-	private static final String MULTIFILE_ID_REGEX = "^(?<name>(.)+)\\[(?<id>(\\d)+)\\]$";
 
 	/** DateTime formatter creating dates of the form "YYYY-MM-DD_HHmmss". */
 	private static final DateTimeFormatter DATETIME_FORMATTER = new DateTimeFormatterBuilder()
@@ -1161,10 +1165,19 @@ public class FormDataService {
 					.isPresent();
 
 			if (formNodeIsParent) {
-				// download the binary data
-				return adminClient.downloadBinaryField(projectName, binaryNode.getUuid(), formNode.getLanguage(),
-						"binary", new ImageManipulationParametersImpl().setWidth(width).setHeight(height))
-						.getResponse();
+				return statusService.getFormtypeConfigs(projectName, adminClient)
+					.flatMap(config -> formService.toForm(config, formNode))
+					.map(form -> getThumbnailInfo(form.getConfiguration()))
+					.flatMap(thumbnails -> {
+						ImageManipulationParameters thumbnailParams = null;
+						if (thumbnails.getLeft()) {
+							thumbnailParams = new ImageManipulationParametersImpl().setWidth(width).setHeight(height);
+						}
+						// download the binary data
+						return adminClient.downloadBinaryField(projectName, binaryNode.getUuid(), formNode.getLanguage(),
+								"binary", thumbnailParams)
+								.getResponse();
+					});
 			} else {
 				String message = "Node with uuid \"%s\" does not belong to form \"%s\"".formatted(binaryNode.getUuid(), formNode.getUuid());
 				return Single.error(new FormsError(message, HttpResponseStatus.NOT_FOUND.code()));
@@ -1260,7 +1273,7 @@ public class FormDataService {
 						dataFolderUuidSingle, 
 						(errors, dataFolderUuid) -> saveFormData(projectName, formNode, dataFolderUuid, ctx.getFormDataNode(), form, postedData, errors).map(formData -> Pair.of(formData, errors)))
 					.flatMap(single -> single)
-					.flatMap(savedFormDataNodePlusErrors -> saveFileUploads(ctx.getProjectName(), form, savedFormDataNodePlusErrors.getKey(), postedData, ctx.getFileUploads()).map(uploads -> Pair.of(uploads, savedFormDataNodePlusErrors.getValue())))
+					.flatMap(savedFormDataNodePlusErrors -> saveFileUploads(configuration, ctx.getProjectName(), form, savedFormDataNodePlusErrors.getKey(), postedData, ctx.getFileUploads()).map(uploads -> Pair.of(uploads, savedFormDataNodePlusErrors.getValue())))
 					.flatMap(savedFileUploadsPlusErrors -> {
 						NodeResponse savedFileUploads = savedFileUploadsPlusErrors.getKey();
 						Map<String, ValidationError> errors = savedFileUploadsPlusErrors.getValue();
@@ -1396,6 +1409,7 @@ public class FormDataService {
 	/**
 	 * Save fileuploads to mesh
 	 *
+	 * @param configuration effective configuration
 	 * @param projectName project name
 	 * @param form saved form
 	 * @param formDataNode form data node
@@ -1403,10 +1417,12 @@ public class FormDataService {
 	 * @param sortedFileUploads validated file uploads
 	 * @return single of the form data node
 	 */
-	private Single<NodeResponse> saveFileUploads(String projectName, Form form, NodeResponse formDataNode, PostedData postedData, Set<FileUpload> fileUploads) {
+	private Single<NodeResponse> saveFileUploads(FormsConfig configuration, String projectName, Form form, NodeResponse formDataNode, PostedData postedData, Set<FileUpload> fileUploads) {
 		Function<Object, BinaryData> binaryDataExtractor = value -> {
 			return JsonUtil.getMapper().convertValue(value, BinaryData.class);
 		};
+
+		Triple<Boolean, Integer, Integer> thumbnails = getThumbnailInfo(configuration);
 
 		// Reusable list item uploader
 		BiFunction<Triple<String, Integer, BinaryData>, FileUpload, Single<Triple<String, Integer, BinaryData>>> listItemUploader = (key, fileUpload) -> {
@@ -1427,6 +1443,22 @@ public class FormDataService {
 						"binary",
 						ins, size, fileUpload.fileName(), fileUpload.contentType())
 					.toSingle()
+					.flatMap(itemNode1 -> {
+						if (thumbnails.getLeft() && key.getRight().isImage()) {
+							// create the requested image variant. If the request fails, we log it but continue with the upload
+							ImageManipulationRequest request = new ImageManipulationRequest();
+							request.setDeleteOther(false);
+							request.setVariants(List.of(new ImageVariantRequest().setWidth(thumbnails.getMiddle()).setHeight(thumbnails.getRight())));
+							return adminClient.upsertNodeBinaryFieldImageVariants(projectName,
+									itemNode1.getUuid(), "binary", request).toSingle()
+									.onErrorResumeNext(e -> {
+										log.warn("Creating the thumbnail for uploaded image %s failed".formatted(fileUpload.fileName()), e);
+										return Single.just(new ImageVariantsResponse());
+									}).map(ignored -> itemNode1);
+						} else {
+							return Single.just(itemNode1);
+						}
+					})
 					.map(itemNode1 -> {
 						key.getRight().setValue("mesh: %s".formatted(itemNode1.getUuid()));
 						return key;
@@ -1772,6 +1804,32 @@ public class FormDataService {
 				.findAny()
 				.or(() -> Optional.ofNullable(System.getProperty(configName, stringify.apply(defaultValue))))
 				.orElseGet(() -> stringify.apply(defaultValue)));
+	}
+
+	/**
+	 * Get the thumbnail info as triple (flag, width, height)
+	 * @param configuration configuration
+	 * @return thumbnail info
+	 */
+	private static Triple<Boolean, Integer, Integer> getThumbnailInfo(FormsConfig configuration) {
+		AtomicBoolean createThumbnails = new AtomicBoolean(FileUploadOptions.DEFAULT_CREATE_THUMBNAILS);
+		AtomicInteger thumbnailsWidth = new AtomicInteger(FileUploadOptions.DEFAULT_THUMBNAIL_WIDTH);
+		AtomicInteger thumbnailsHeight = new AtomicInteger(FileUploadOptions.DEFAULT_THUMBNAIL_HEIGHT);
+		Optional.ofNullable(configuration.getFileUpload()).ifPresent(fileUploadOptions -> {
+			createThumbnails.set(fileUploadOptions.isCreateThumbnails());
+			thumbnailsWidth.set(fileUploadOptions.getThumbnailWidth());
+			thumbnailsHeight.set(fileUploadOptions.getThumbnailHeight());
+		});
+
+		// make sure the config is consistent
+		if (createThumbnails.get() && (thumbnailsWidth.get() <= 0 || thumbnailsHeight.get() <= 0)) {
+			log.warn(
+					"Creating thumbnails is activated, but width (%d) and height (%d) are not both positive numbers. Thumbnails will not be created or returned"
+							.formatted(thumbnailsWidth.get(), thumbnailsHeight.get()));
+			createThumbnails.set(false);
+		}
+
+		return Triple.of(createThumbnails.get(), thumbnailsWidth.get(), thumbnailsHeight.get());
 	}
 
 	/** Wrapper class for downloadable binaries. */
