@@ -9,9 +9,11 @@ import org.codehaus.jettison.json.JSONObject;
 
 import com.gentics.mesh.core.rest.auth.LoginRequest;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.common.NameOrUUIDsRequest;
 import com.gentics.mesh.core.rest.search.EntityMetrics;
 import com.gentics.mesh.core.rest.search.SearchStatusResponse;
 import com.gentics.mesh.core.rest.search.TypeMetrics;
+import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.json.JsonObject;
 
@@ -91,4 +93,7 @@ public class MiscExamples extends AbstractExamples {
 		return new JsonObject();
 	}
 
+	public NameOrUUIDsRequest createNameOrUuidsRequest() {
+		return (NameOrUUIDsRequest) new NameOrUUIDsRequest().add("mesh_content").add(UUIDUtil.randomUUID()).add(UUIDUtil.randomUUID());
+	}
 }

@@ -1713,14 +1713,6 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 		return contentStorage.findOneMicronode(version, containerUUID);
 	}
 
-	public Stream<HibNodeFieldContainerImpl> getFieldsContainers(HibSchemaVersion version) {
-		return contentStorage.findMany(version).stream();
-	}
-
-	public Stream<HibMicronodeContainerImpl> getFieldsContainers(HibMicroschemaVersion version) {
-		return contentStorage.findManyMicronodes(version).stream();
-	}
-
 	public Stream<HibNodeFieldContainerEdgeImpl> streamEdgesOfWebrootField(String urlFieldValue, String branchUuid, ContainerType type) {
 		EntityManager em = currentTransaction.getEntityManager();
 		return em.createNamedQuery("contentEdge.findAllByBranchTypeAndUrlField", HibNodeFieldContainerEdgeImpl.class)

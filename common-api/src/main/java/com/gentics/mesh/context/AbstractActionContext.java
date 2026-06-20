@@ -11,6 +11,7 @@ import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.HttpQueryUtils;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,12 +41,15 @@ public abstract class AbstractActionContext implements ActionContext {
 	}
 
 	/**
-	 * Convert the response body to a POJO.
+	 * Convert the nullable response body to a POJO.
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> T fromJson(Class<?> classOfT) throws GenericRestException {
+	public <T> T fromJson(Class<?> classOfT, boolean nullable) throws GenericRestException {
 		try {
 			String body = getBodyAsString();
+			if (StringUtils.isBlank(body) && nullable) {
+				return null;
+			}
 			return (T) JsonUtil.getMapper().readValue(body, classOfT);
 		} catch (Exception e) {
 			throw new GenericRestException(BAD_REQUEST, "error_parse_request_json_error", e);

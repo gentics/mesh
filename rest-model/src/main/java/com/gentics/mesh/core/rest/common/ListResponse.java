@@ -1,8 +1,5 @@
 package com.gentics.mesh.core.rest.common;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 
@@ -11,11 +8,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
  *
  * @param <T>
  */
-public class ListResponse<T> implements RestModel {
-
-	@JsonProperty(required = true)
-	@JsonPropertyDescription("Array which contains the found elements.")
-	private List<T> data = new ArrayList<>();
+public class ListResponse<T> extends ListRequest<T> {
 
 	@JsonPropertyDescription("Paging information of the list result.")
 	@JsonProperty(value = "_metainfo", required = true)
@@ -42,23 +35,4 @@ public class ListResponse<T> implements RestModel {
 	public void setMetainfo(PagingMetaInfo metainfo) {
 		this.metainfo = metainfo;
 	}
-
-	/**
-	 * Return the list data.
-	 * 
-	 * @return List data
-	 */
-	public List<T> getData() {
-		return data;
-	}
-
-	/**
-	 * Add the given element to the list.
-	 * 
-	 * @param e
-	 */
-	public void add(T e) {
-		data.add(e);
-	}
-
 }

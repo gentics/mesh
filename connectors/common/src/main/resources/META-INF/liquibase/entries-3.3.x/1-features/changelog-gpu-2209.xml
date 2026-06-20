@@ -1,0 +1,13 @@
+<databaseChangeLog
+		xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+		xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+		xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd">
+	<changeSet id="1774965032927-1"	author="s.plyhun@gentics.com">
+		<validCheckSum>ANY</validCheckSum>
+		<addColumn tableName="mesh_job">
+			<column name="query" type="VARCHAR(255)" />
+		</addColumn>
+	</changeSet>
+</databaseChangeLog>

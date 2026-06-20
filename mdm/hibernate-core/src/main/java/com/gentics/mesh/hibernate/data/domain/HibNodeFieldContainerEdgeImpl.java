@@ -231,6 +231,12 @@ import jakarta.persistence.QueryHint;
 				name = "contentEdge.countContentByNode",
 				query = "select count(distinct e.contentUuid) from nodefieldcontainer e where e.node = :node"),
 		@NamedQuery(
+				name = "contentEdge.countContentByVersion",
+				query = "select count(distinct e.contentUuid) from nodefieldcontainer e where e.version = :version"),
+		@NamedQuery(
+				name = "contentEdge.countContent",
+				query = "select e.version.dbUuid, count(e.contentUuid) from nodefieldcontainer e group by e.version"),
+		@NamedQuery(
 				name = "contentEdge.findUsedLanguages",
 				query = "select distinct edge.languageTag from nodefieldcontainer edge " +
 						"where edge.element in " +

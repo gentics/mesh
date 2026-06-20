@@ -30,6 +30,7 @@ import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
 import com.gentics.mesh.core.rest.branch.info.BranchInfoMicroschemaList;
 import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaList;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.common.NameOrUUIDsRequest;
 import com.gentics.mesh.core.rest.common.ObjectPermissionGrantRequest;
 import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
 import com.gentics.mesh.core.rest.common.ObjectPermissionRevokeRequest;
@@ -1962,6 +1963,16 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 		Util.requireUuid(uuid, "uuid");
 		Objects.requireNonNull(request, "objectPermissionRequest must not be null");
 		return prepareRequest(DELETE, "/schemas/" + uuid + "/rolePermissions", ObjectPermissionResponse.class, request);
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> purgeSchemaVersions(NameOrUUIDsRequest request) {
+		return prepareRequest(POST, "/utilities/purgeSchemaVersions", GenericMessageResponse.class, request, true);
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> purgeMicroschemaVersions(NameOrUUIDsRequest request) {
+		return prepareRequest(POST, "/utilities/purgeMicroschemaVersions", GenericMessageResponse.class, request, true);
 	}
 
 	@Override

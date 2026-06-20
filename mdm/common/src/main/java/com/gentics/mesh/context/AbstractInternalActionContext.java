@@ -48,12 +48,13 @@ public abstract class AbstractInternalActionContext extends AbstractActionContex
 		this.bodyModel = model;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public <T> T fromJson(Class<?> classOfT) throws GenericRestException {
+	public <T> T fromJson(Class<?> classOfT, boolean nullable) throws GenericRestException {
 		if (bodyModel != null) {
 			return (T) bodyModel;
 		}
-		return super.fromJson(classOfT);
+		return super.fromJson(classOfT, nullable);
 	}
 
 	@Override

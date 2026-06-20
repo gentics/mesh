@@ -20,24 +20,27 @@ public class JobWarning implements RestModel {
 		return type;
 	}
 
-	public void setType(String type) {
+	public JobWarning setType(String type) {
 		this.type = type;
+		return this;
 	}
 
 	public String getMessage() {
 		return message;
 	}
 
-	public void setMessage(String message) {
+	public JobWarning setMessage(String message) {
 		this.message = message;
+		return this;
 	}
 
 	public Map<String, String> getProperties() {
 		return properties;
 	}
 
-	public void setProperties(Map<String, String> properties) {
+	public JobWarning setProperties(Map<String, String> properties) {
 		this.properties = properties;
+		return this;
 	}
 
 }

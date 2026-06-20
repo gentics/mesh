@@ -50,6 +50,7 @@ import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
 import com.gentics.mesh.core.rest.branch.info.BranchInfoMicroschemaList;
 import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaList;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.common.NameOrUUIDsRequest;
 import com.gentics.mesh.core.rest.common.ObjectPermissionGrantRequest;
 import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
 import com.gentics.mesh.core.rest.common.ObjectPermissionRevokeRequest;
@@ -513,6 +514,22 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	public MeshRequest<GenericMessageResponse> purgeProject(String uuid, ParameterProvider... parameters) {
 		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
 		projectCrudHandler.handlePurge(ac, uuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> purgeSchemaVersions(NameOrUUIDsRequest request) {
+		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
+		ac.setBody(request);
+		utilityHandler.handleSchemaVersionPurge(ac);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> purgeMicroschemaVersions(NameOrUUIDsRequest request) {
+		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
+		ac.setBody(request);
+		utilityHandler.handleMicroschemaVersionPurge(ac);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 

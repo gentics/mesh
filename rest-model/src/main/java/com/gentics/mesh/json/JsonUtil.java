@@ -5,6 +5,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 
 import java.io.IOException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -195,7 +196,6 @@ public final class JsonUtil {
 			throw new GenericRestException(INTERNAL_SERVER_ERROR, "error_internal", e);
 		}
 	}
-
 	/**
 	 * Transform the given JSON content back into a POJO.
 	 * 
@@ -208,6 +208,24 @@ public final class JsonUtil {
 	 *             Exception which contains information about the JSON error line, column
 	 */
 	public static <T> T readValue(String content, Class<T> valueType) throws GenericRestException {
+		return readValue(content, valueType, false);
+	}
+
+	/**
+	 * Transform the given nullable JSON content back into a POJO.
+	 * 
+	 * @param content
+	 *            JSON string
+	 * @param valueType
+	 *            Class of the POJO
+	 * @return POJO instance
+	 * @throws GenericRestException
+	 *             Exception which contains information about the JSON error line, column
+	 */
+	public static <T> T readValue(String content, Class<T> valueType, boolean nullable) throws GenericRestException {
+		if (StringUtils.isBlank(content) && nullable) {
+			return null;
+		}
 		try {
 			return defaultMapper.readValue(content, valueType);
 		} catch (JsonMappingException e) {

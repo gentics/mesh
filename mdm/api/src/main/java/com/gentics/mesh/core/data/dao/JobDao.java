@@ -3,7 +3,6 @@ package com.gentics.mesh.core.data.dao;
 import java.time.ZonedDateTime;
 import java.util.function.Predicate;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.job.HibJob;
@@ -12,6 +11,7 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.rest.common.NameOrUUIDsRequest;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -134,6 +134,22 @@ public interface JobDao extends DaoGlobal<HibJob>, DaoTransformable<HibJob, JobR
 	 * @return
 	 */
 	HibJob enqueueVersionPurge(HibUser user, HibProject project);
+
+	/**
+	 * Enqueue a schema version purge job.
+	 * @param user creating user
+	 * @param request optional request with limits
+	 * @return
+	 */
+	HibJob enqueueSchemaVersionPurge(HibUser user, NameOrUUIDsRequest request);
+
+	/**
+	 * Enqueue a microschema version purge job.
+	 * @param user creating user
+	 * @param request optional request with limits.
+	 * @return
+	 */
+	HibJob enqueueMicroschemaVersionPurge(HibUser user, NameOrUUIDsRequest request);
 
 	/**
 	 * Enqueue a consistency check job.
