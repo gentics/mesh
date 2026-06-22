@@ -45,8 +45,8 @@ public class BooleanElement extends FormElement {
 	}
 
 	@Override
-	public void addPollData(JsonObject results, FieldContainer formData) {
-		super.addPollData(results, formData);
+	public void addPollData(JsonObject results, FieldContainer formData, String language, FormUiSchema uiSchema) {
+		super.addPollData(results, formData, language, uiSchema);
 
 		JsonObject values = results.getJsonObject(FormDataService.POLL_VALUES_NAME);
 

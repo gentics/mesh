@@ -14,6 +14,7 @@ import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.handler.CancelDataHandler;
 import com.gentics.mesh.plugin.forms.handler.DeleteFormDataHandler;
 import com.gentics.mesh.plugin.forms.handler.FindFormDataHandler;
+import com.gentics.mesh.plugin.forms.handler.LoadBinaryHandler;
 import com.gentics.mesh.plugin.forms.handler.LoadFormDataBinaryHandler;
 import com.gentics.mesh.plugin.forms.handler.LoadFormDataMultiBinaryItemHandler;
 import com.gentics.mesh.plugin.forms.handler.PurgeStaleDataHandler;
@@ -106,6 +107,8 @@ public interface FormsPluginComponent {
 	SubmitDataHandler submitDataHandler();
 
 	CancelDataHandler cancelFormDataHandler();
+
+	LoadBinaryHandler loadBinaryHandler();
 
 	ValidationHandler validationHandler();
 

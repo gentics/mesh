@@ -7,7 +7,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -19,6 +18,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.detect.Detector;
 import org.apache.tika.io.TikaInputStream;
@@ -28,27 +29,26 @@ import org.apache.tika.metadata.TikaCoreProperties;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
+import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
-import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
-
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
-import com.gentics.mesh.plugin.forms.SchemaInitializer;
-
+import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
-
+import com.gentics.mesh.plugin.forms.SchemaInitializer;
 import com.gentics.mesh.plugin.forms.config.FileUploadOptions;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.context.FormDataCreateContext;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
+import com.gentics.mesh.plugin.forms.model.schema.BinaryData;
 import com.gentics.mesh.plugin.forms.model.schema.BinaryValidation;
 import com.gentics.mesh.plugin.forms.model.schema.FormUiSchema;
+import com.gentics.mesh.plugin.forms.model.schema.PostedData;
 import com.gentics.mesh.plugin.forms.model.schema.Validation;
 import com.gentics.mesh.plugin.forms.util.RxUtil;
 
 import io.reactivex.Maybe;
 import io.reactivex.Single;
-import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.reactivex.core.Vertx;
@@ -60,27 +60,31 @@ import okhttp3.OkHttpClient;
 @Reportable
 @FormElementType("binary")
 public class BinaryElement extends FormElement {
-	private static final Pattern BINARY_KEY_PATTERN = Pattern.compile("^\\$\\.properties\\[\"([^.]+)\"\\]\\.value");
-	private static final Pattern MULTIBINARY_PATTERN = Pattern.compile("^([^.]+)\\[[d]+\\]");
+	private static final Pattern BINARY_KEY_PATTERN = Pattern.compile("^\\$\\.properties\\[\"([^.]+)\"\\]\\.value$");
+	private static final Pattern BINARY_KEY_MULTI_PATTERN = Pattern.compile("^\\$\\.properties\\[\"([^.]+)\"\\]\\.values\\[([\\d]+)\\]$");
 
 	/**
-	 * Extracts the element ID from a FormGen binary part key.
-	 * Handles both URI-encoded and plain keys, matching:
-	 * {@code properties.{ID}.value}.
-	 *
-	 * @return the element ID, or null if the name does not match the pattern
+	 * Extract the element ID and index from a FormGen binary part key.
+	 * @param binaryPartKey key to handle
+	 * @return pair of the element ID and index (which is 0 for single value elements) as optional
 	 */
-	public static String extractFieldId(String binaryPartKey) {
+	public static Optional<Pair<String, Integer>> extractFieldId(String binaryPartKey) {
 		try {
 			String decoded = URLDecoder.decode(binaryPartKey, StandardCharsets.UTF_8);
 			Matcher m = BINARY_KEY_PATTERN.matcher(decoded);
-			if (m.find()) {
-				return m.group(1);
+			if (m.matches()) {
+				return Optional.of(Pair.of(m.group(1), 0));
+			} else {
+				m = BINARY_KEY_MULTI_PATTERN.matcher(decoded);
+				if (m.matches()) {
+					return Optional.of(Pair.of(m.group(1), Integer.parseInt(m.group(2))));
+				}
 			}
 		} catch (Exception ignored) {
 		}
-		return null;
+		return Optional.empty();
 	}
+
 	public BinaryElement() {
 	}
 
@@ -97,9 +101,9 @@ public class BinaryElement extends FormElement {
 				object.put(key.apply(this), field.getItems().stream().map(item -> item != null ? ("\"" + item.getPath() + "\"") : null).collect(Collectors.joining(",", "[", "]")));
 			}
 		} else {
-			BinaryField field = container.getFields().getBinaryField(getName());
+			NodeField field = container.getFields().getNodeField(getName());
 			if (field != null) {
-				object.put(key.apply(this), field.getFileName());
+				object.put(key.apply(this), field.getPath());
 			}
 		}
 	}
@@ -109,18 +113,8 @@ public class BinaryElement extends FormElement {
 		if (isList()) {
 			container.addField(new ListFieldSchemaImpl().setListType("node").setAllowedSchemas(SchemaInitializer.MULTIBINARY_ITEM_SCHEMA_NAME).setName(getName()).setLabel(getName()));
 		} else {
-			container.addField(new BinaryFieldSchemaImpl().setName(getName()).setLabel(getName()));
+			container.addField(new NodeFieldSchemaImpl().setAllowedSchemas(SchemaInitializer.MULTIBINARY_ITEM_SCHEMA_NAME).setName(getName()).setLabel(getName()));
 		}
-	}
-
-	@Override
-	public String getSingleFormData(MultiMap postedData) {
-		return null;
-	}
-
-	@Override
-	public List<String> getMultiFormData(MultiMap postedData) {
-		return null;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -141,7 +135,7 @@ public class BinaryElement extends FormElement {
 				return Maybe.just(new ValidationError()
 					.setName(getName())
 					.setTitle(I18nHelper.get(translations, "form_validation_error_missing_mandatory_field_title"))
-					.setMessage(I18nHelper.get(translations, "form_validation_error_missing_mandatory_field", getLabel())));
+					.setMessage(I18nHelper.get(translations, "form_validation_error_missing_mandatory_field", getLabel(ctx.getLanguage(), uiSchema))));
 			} else {
 				return RxUtil.emptyMaybe();
 			}
@@ -204,16 +198,12 @@ public class BinaryElement extends FormElement {
 	}
 
 	@Override
-	public void addField(FieldContainer container, MultiMap postedData, boolean errors) {
+	public void addField(FieldContainer container, PostedData postedData, boolean errors) {
 	}
 
 	@Override
 	public String getGraphQLName() {
-		if (isList()) {
-			return String.format("%s (version: draft) { uuid fields { ... on form_binary_item { binary { fileName } } } }", getName());
-		} else {
-			return String.format("%s { fileName }", getName());
-		}
+		return String.format("%s (version: draft) { uuid fields { ... on form_binary_item { binary { fileName } } } }", getName());
 	}
 
 	@JsonIgnore
@@ -224,7 +214,8 @@ public class BinaryElement extends FormElement {
 			// SUP-19994
 			//return getName() + ": { anyMatch: { fields: { form_binary_item: { binary: { fileName: { like: \"%" + query + "%\" } } } } } }";
 		} else {
-			return getName() + ": { fileName: {like: \"%" + query + "%\"} }";
+			return "";
+			// return getName() + ": { node: { fields: { form_binary_item: { binary: { fileName: {like: \"%" + query + "%\"} } } } } }";
 		}
 	}
 
@@ -271,12 +262,15 @@ public class BinaryElement extends FormElement {
 
 	@Override
 	public String transformPostedValue(Object value) {
+		if (value == null) {
+			return null;
+		}
 		return JsonUtil.toJson(value);
 	}
 
 	@Override
 	public Object transformToExternal(String value) {
-		return JsonUtil.readValue(value, Map.class);
+		return JsonUtil.readValue(value, BinaryData.class);
 	}
 
 	@Override
@@ -297,15 +291,7 @@ public class BinaryElement extends FormElement {
 	 */
 	protected Set<FileUpload> getFileUploads(Set<FileUpload> fileUploads) {
 		return fileUploads.stream().filter(fu -> {
-			String id = extractFieldId(fu.name());
-			if (StringUtils.isBlank(id)) {
-				id = fu.name();
-			}
-			if (isList()) {
-				return MULTIBINARY_PATTERN.matcher(id).matches();
-			} else {
-				return getName().equals(id);
-			}
+			return extractFieldId(fu.name()).map(id -> Strings.CI.equals(getName(), id.getLeft())).orElse(false);
 		}).collect(Collectors.toSet());
 	}
 

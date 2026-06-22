@@ -9,8 +9,8 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
+import com.gentics.mesh.plugin.forms.model.schema.PostedData;
 
-import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -46,7 +46,7 @@ public class FormpageElement extends FormElement {
 	}
 
 	@Override
-	public void addField(FieldContainer container, MultiMap postedData, boolean errors) {
+	public void addField(FieldContainer container, PostedData postedData, boolean errors) {
 		String value = getSingleFormData(postedData);
 		if ("1".equals(value)) {
 			container.getFields().put(getName(), new BooleanFieldImpl().setValue(!errors));
@@ -62,7 +62,7 @@ public class FormpageElement extends FormElement {
 	}
 
 	@Override
-	public List<String> getMultiFormData(MultiMap postedData) {
+	public List<String> getMultiFormData(PostedData postedData) {
 		return null;
 	}
 

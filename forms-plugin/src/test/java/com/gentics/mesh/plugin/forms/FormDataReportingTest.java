@@ -491,6 +491,7 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 		String uuid = createForm(filename);
 		RequestBody requestBody = new MultipartBody.Builder()
 			.setType(MultipartBody.FORM)
+			.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("file1", getFileData(filename))))
 			.addFormDataPart(fileUploadKey(fieldName), filename, requestBodyFromFile(filename))
 			.build();
 		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=en")).post(requestBody).build();
@@ -535,12 +536,18 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 		List<String> expectedNames = IntStream.range(0, filesToPost.size()).mapToObj(index -> {
 			String fileName = filesToPost.get(index);
 			try {
-				builder.addFormDataPart("file1[" + index + "]", fileName, requestBodyFromFile(fileName));
+				builder.addFormDataPart(fileUploadKey("file1", index), fileName, requestBodyFromFile(fileName));
 			} catch (IOException e) {
 				throw new IllegalStateException(e);
 			}
 			return "/file1/" + index + "/" + fileName;
 		}).collect(Collectors.toList());
+		List<Map<String, Object>> formData = new ArrayList<>();
+		for (String name : filesToPost) {
+			formData.add(getFileData(name));
+		}
+
+		builder.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("file1", formData)));
 		String dataUuid;
 		try {
 			RequestBody requestBody = builder.build();
@@ -584,6 +591,7 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 
 		RequestBody requestBody = new MultipartBody.Builder()
 				.setType(MultipartBody.FORM)
+				.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("file1", getFileData("filefield.json"))))
 				.addFormDataPart(fileUploadKey("file1"), "filefield.json", requestBodyFromFile("filefield.json"))
 				.build();
 
@@ -625,6 +633,7 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 
 		RequestBody requestBody = new MultipartBody.Builder()
 				.setType(MultipartBody.FORM)
+				.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("file1", getFileData("filefield.json"))))
 				.addFormDataPart(fileUploadKey("file1"), "filefield.json", requestBodyFromFile("filefield.json"))
 				.build();
 
@@ -714,6 +723,7 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 			try {
 				RequestBody requestBody = new MultipartBody.Builder()
 						.setType(MultipartBody.FORM)
+						.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("file1", getFileData(fileName))))
 						.addFormDataPart(fileUploadKey("file1"), fileName, requestBodyFromFile(fileName))
 						.build();
 				Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=en")).header("Referer", "ref").post(requestBody).build();
@@ -772,12 +782,19 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 		List<String> expectedNames = IntStream.range(0, filesToPost.size()).mapToObj(index -> {
 			String fileName = filesToPost.get(index);
 			try {
-				builder.addFormDataPart("file1[" + index + "]", fileName, requestBodyFromFile(fileName));
+				builder.addFormDataPart(fileUploadKey("file1", index), fileName, requestBodyFromFile(fileName));
 			} catch (IOException e) {
 				throw new IllegalStateException(e);
 			}
 			return "/file1/" + index + "/" + fileName;
 		}).collect(Collectors.toList());
+		List<Map<String, Object>> formData = new ArrayList<>();
+		for (String name : filesToPost) {
+			formData.add(getFileData(name));
+		}
+
+		builder.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("file1", formData)));
+
 		String dataUuid;
 		try {
 			RequestBody requestBody = builder.build();
@@ -849,6 +866,7 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 			try {
 				RequestBody requestBody = new MultipartBody.Builder()
 						.setType(MultipartBody.FORM)
+						.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("file1", getFileData(fileName))))
 						.addFormDataPart(fileUploadKey("file1"), fileName, requestBodyFromFile(fileName))
 						.build();
 				Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=de")).header("Referer", "ref").post(requestBody).build();
@@ -907,6 +925,7 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 			try {
 				RequestBody requestBody = new MultipartBody.Builder()
 						.setType(MultipartBody.FORM)
+						.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("file1", getFileData(fileName))))
 						.addFormDataPart(fileUploadKey("file1"), fileName, requestBodyFromFile(fileName))
 						.build();
 				Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=en")).header("Referer", "ref").post(requestBody).build();

@@ -3,6 +3,7 @@ package com.gentics.mesh.plugin.forms.model.schema;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.List;
 import java.util.Map;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -37,6 +38,9 @@ public class UiSchemaPageElement {
 
 	@JsonProperty("uiSchemaPage")
 	private Integer uiSchemaPage;
+
+	@JsonProperty("elements")
+	private List<UiSchemaPageElement> elements;
 
 	public String getType() {
 		return type;
@@ -116,5 +120,13 @@ public class UiSchemaPageElement {
 
 	public void setUiSchemaPage(Integer uiSchemaPage) {
 		this.uiSchemaPage = uiSchemaPage;
+	}
+
+	public List<UiSchemaPageElement> getElements() {
+		return elements;
+	}
+
+	public void setElements(List<UiSchemaPageElement> elements) {
+		this.elements = elements;
 	}
 }

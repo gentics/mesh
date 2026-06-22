@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * UI schema wrapper — contains the layout and presentation definitions for rendering a form.
@@ -100,6 +101,26 @@ public class FormUiSchema {
 	 * @return the formGridOptions, or empty if not found
 	 */
 	public Optional<UischemaFormgridOptions> findFormGridOptions(String elementKey) {
+		return find(elementKey, UiSchemaPageElement::getFormGridOptions);
+	}
+
+	/**
+	 * Find the element with given key
+	 * @param elementKey element key
+	 * @return optional element or empty if not found
+	 */
+	public Optional<UiSchemaPageElement> findElement(String elementKey) {
+		return find(elementKey, Function.identity());
+	}
+
+	/**
+	 * Find the element with given key and extract some information from it
+	 * @param <T> type of the returned information
+	 * @param elementKey key of the form element
+	 * @param extractor extractor
+	 * @return extracted information or empty if not found
+	 */
+	protected <T> Optional<T> find(String elementKey, Function<UiSchemaPageElement, T> extractor) {
 		if (pages == null || elementKey == null) {
 			return Optional.empty();
 		}
@@ -110,7 +131,16 @@ public class FormUiSchema {
 			}
 			for (UiSchemaPageElement element : elements) {
 				if (elementKey.equals(element.getId())) {
-					return Optional.ofNullable(element.getFormGridOptions());
+					return Optional.ofNullable(extractor.apply(element));
+				}
+
+				List<UiSchemaPageElement> subElements = element.getElements();
+				if (subElements != null) {
+					for (UiSchemaPageElement subElement : subElements) {
+						if (elementKey.equals(subElement.getId())) {
+							return Optional.ofNullable(extractor.apply(subElement));
+						}
+					}
 				}
 			}
 		}

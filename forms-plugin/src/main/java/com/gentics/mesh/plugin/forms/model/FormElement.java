@@ -1,5 +1,20 @@
 package com.gentics.mesh.plugin.forms.model;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nonnull;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -17,31 +32,20 @@ import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.context.FormDataCreateContext;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
 import com.gentics.mesh.plugin.forms.model.schema.FormUiSchema;
+import com.gentics.mesh.plugin.forms.model.schema.PostedData;
+import com.gentics.mesh.plugin.forms.model.schema.UiSchemaPageElement;
 import com.gentics.mesh.plugin.forms.model.schema.UischemaFormgridOptions;
 import com.gentics.mesh.plugin.forms.model.schema.Validation;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
 import com.gentics.mesh.plugin.forms.util.FormUtil;
 import com.gentics.mesh.plugin.forms.util.RxUtil;
+
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
-import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.Vertx;
 import okhttp3.OkHttpClient;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Abstract form element
@@ -51,8 +55,6 @@ public abstract class FormElement implements RestModel {
 	protected final Logger log = LoggerFactory.getLogger(getClass());
 
 	protected String name;
-
-	protected String label;
 
 	protected String type;
 
@@ -94,7 +96,6 @@ public abstract class FormElement implements RestModel {
 	 */
 	protected FormElement(FormElement other, boolean deep) {
 		this.name = other.name;
-		this.label = other.label;
 		this.type = other.type;
 		this.active = other.active;
 		this.mandatory = other.mandatory;
@@ -124,22 +125,6 @@ public abstract class FormElement implements RestModel {
 	}
 
 	/**
-	 * Element label
-	 * @return label
-	 */
-	public String getLabel() {
-		return label;
-	}
-
-	/**
-	 * Set the element label
-	 * @param label label
-	 */
-	public void setLabel(String label) {
-		this.label = label;
-	}
-
-	/**
 	 * Element type
 	 * @return type
 	 */
@@ -153,15 +138,6 @@ public abstract class FormElement implements RestModel {
 	 */
 	public void setType(String type) {
 		this.type = type;
-	}
-
-	/**
-	 * If the label is not blank, return the label, otherwise return the name (which must not be null)
-	 * @return label (if not null) or name
-	 */
-	@JsonIgnore
-	public String getLabelOrName() {
-		return StringUtils.isNotBlank(label) ? label : name;
 	}
 
 	/**
@@ -299,10 +275,12 @@ public abstract class FormElement implements RestModel {
 	 * <p>
 	 *     The default validation for form elements will always succeed, so no error is returned.
 	 * </p>
+	 * @param language language
+	 * @param uiSchema ui schema of the form
 	 *
 	 * @return The default validation will always return {@link Optional#empty()}.
 	 */
-	public Optional<ValidationError> validateForm() {
+	public Optional<ValidationError> validateForm(String language, FormUiSchema uiSchema) {
 		return Optional.empty();
 	}
 
@@ -335,7 +313,7 @@ public abstract class FormElement implements RestModel {
 				var error = new ValidationError()
 					.setName(getName())
 					.setTitle(I18nHelper.get(translations, "form_validation_error_missing_mandatory_field_title"))
-					.setMessage(I18nHelper.get(translations, "form_validation_error_missing_mandatory_field", getLabel()));
+					.setMessage(I18nHelper.get(translations, "form_validation_error_missing_mandatory_field", getLabel(ctx.getLanguage(), uischema)));
 
 				return Maybe.just(error);
 			}
@@ -365,7 +343,7 @@ public abstract class FormElement implements RestModel {
 	 * @param postedData posted data
 	 * @param errors true if validation errors were detected
 	 */
-	public void addField(FieldContainer container, MultiMap postedData, boolean errors) {
+	public void addField(FieldContainer container, PostedData postedData, boolean errors) {
 
 		if (isList()) {
 			List<String> values = getMultiFormData(postedData);
@@ -388,8 +366,8 @@ public abstract class FormElement implements RestModel {
 	 * @param postedData posted data
 	 * @return single value (may be null)
 	 */
-	public String getSingleFormData(MultiMap postedData) {
-		return postedData.get(getName());
+	public String getSingleFormData(PostedData postedData) {
+		return postedData.getString(getName());
 	}
 
 	/**
@@ -397,11 +375,11 @@ public abstract class FormElement implements RestModel {
 	 * @param postedData posted data
 	 * @return value list (may be null)
 	 */
-	public List<String> getMultiFormData(MultiMap postedData) {
+	public List<String> getMultiFormData(PostedData postedData) {
 		// multivalue data may be posed as e.g. element42 or element42[]
 		for (String alternative : Arrays.asList(getName(), String.format("%s[]", getName()))) {
 			if (postedData.contains(alternative)) {
-				return postedData.getAll(alternative);
+				return postedData.getAllStrings(alternative);
 			}
 		}
 		return null;
@@ -420,14 +398,16 @@ public abstract class FormElement implements RestModel {
 	 *
 	 * @param results The {@code JsonObject} to gather results into
 	 * @param formData The form data node to get values from
+	 * @param language language
+	 * @param uiSchema ui schema
 	 */
-	public void addPollData(JsonObject results, FieldContainer formData) {
+	public void addPollData(JsonObject results, FieldContainer formData, String language, FormUiSchema uiSchema) {
 		if (!results.containsKey("type")) {
 			results.put("type", getType());
 		}
 
 		if (!results.containsKey("label")) {
-			results.put("label", getLabel());
+			results.put("label", getLabel(language, uiSchema));
 		}
 
 		if (!results.containsKey("element")) {
@@ -594,7 +574,7 @@ public abstract class FormElement implements RestModel {
 	 * @param postedData
 	 */
 	@JsonIgnore
-	public Completable performSubmit(Form form, MultiMap postedData, Vertx rxVertx, OkHttpClient httpClient) {
+	public Completable performSubmit(Form form, PostedData postedData, Vertx rxVertx, OkHttpClient httpClient) {
 		return Completable.complete();
 	}
 
@@ -616,6 +596,18 @@ public abstract class FormElement implements RestModel {
 	@JsonIgnore
 	public Object transformToExternal(String value) {
 		return value;
+	}
+
+	/**
+	 * Get the label of the given element. If the label could not be determined, fall back to the name
+	 * @param language language
+	 * @param uiSchema ui schema
+	 * @return label (or name)
+	 */
+	@JsonIgnore
+	public String getLabel(String language, FormUiSchema uiSchema) {
+		return Optional.ofNullable(uiSchema).flatMap(schema -> schema.findElement(key))
+				.map(UiSchemaPageElement::getLabel).map(map -> map.get(language)).orElse(name);
 	}
 
 	/**

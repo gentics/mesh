@@ -6,6 +6,7 @@ import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
+import com.gentics.mesh.plugin.forms.model.schema.FormUiSchema;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.collections.CollectionUtils;
@@ -87,7 +88,7 @@ public abstract class ValueListElement extends FormElement {
 	 * @return The respective error, when there are no options or one of them does not have a value or a label
 	 */
 	@Override
-	public Optional<ValidationError> validateForm() {
+	public Optional<ValidationError> validateForm(String language, FormUiSchema uiSchema) {
 		ValidationError error = new ValidationError()
 			.setName(getName())
 			.setTitle(I18nHelper.get(Locale.GERMAN, "error.validation.form.title"));
@@ -95,7 +96,7 @@ public abstract class ValueListElement extends FormElement {
 		List<ValueListItem> effectiveOptions = getEffectiveSelectOptions();
 
 		if (effectiveOptions == null || effectiveOptions.isEmpty()) {
-			error.setMessage(I18nHelper.get(Locale.GERMAN, "error.validation.form.missing_list_elements", getLabelOrName()));
+			error.setMessage(I18nHelper.get(Locale.GERMAN, "error.validation.form.missing_list_elements", getLabel(language, uiSchema)));
 
 			return Optional.of(error);
 		}
@@ -109,7 +110,7 @@ public abstract class ValueListElement extends FormElement {
 				? "error.validation.form.missing_value"
 				: "error.validation.form.missing_label";
 
-			error.setMessage(I18nHelper.get(Locale.GERMAN, key, getLabelOrName()));
+			error.setMessage(I18nHelper.get(Locale.GERMAN, key, getLabel(language, uiSchema)));
 
 			return Optional.of(error);
 		}
@@ -118,8 +119,8 @@ public abstract class ValueListElement extends FormElement {
 	}
 
 	@Override
-	public void addPollData(JsonObject results, FieldContainer formData) {
-		super.addPollData(results, formData);
+	public void addPollData(JsonObject results, FieldContainer formData, String language, FormUiSchema uiSchema) {
+		super.addPollData(results, formData, language, uiSchema);
 
 		results.put(
 			RC_VALUE_LABELS,

@@ -7,6 +7,21 @@ import java.util.Set;
  * File Upload Options
  */
 public class FileUploadOptions {
+	/**
+	 * Default for creating thumbnails
+	 */
+	public static final boolean DEFAULT_CREATE_THUMBNAILS = true;
+
+	/**
+	 * Default width for creating thumbnails
+	 */
+	public static final int DEFAULT_THUMBNAIL_WIDTH = 350;
+
+	/**
+	 * Default height for creating thumbnails
+	 */
+	public static final int DEFAULT_THUMBNAIL_HEIGHT = 200;
+
 	private Map<String, Set<String>> allowedFileTypes;
 
 	private Map<String, Set<String>> allowedFileNames;
@@ -14,6 +29,12 @@ public class FileUploadOptions {
 	private Set<String> defaultAllowed;
 
 	private boolean useMagicByteCheck;
+
+	private boolean createThumbnails = DEFAULT_CREATE_THUMBNAILS;
+
+	private int thumbnailWidth = DEFAULT_THUMBNAIL_WIDTH;
+
+	private int thumbnailHeight = DEFAULT_THUMBNAIL_HEIGHT;
 
 	/**
 	 * Get the allowed file types
@@ -78,6 +99,60 @@ public class FileUploadOptions {
 	public FileUploadOptions setUseMagicByteCheck(boolean useMagicByteCheck) {
 		this.useMagicByteCheck = useMagicByteCheck;
 
+		return this;
+	}
+
+	/**
+	 * Whether thumbnails for uploaded images should be created
+	 * @return true for creating thumbnails
+	 */
+	public boolean isCreateThumbnails() {
+		return createThumbnails;
+	}
+
+	/**
+	 * Set whether thumbnails should be created
+	 * @param createThumbnails flag
+	 * @return fluent API
+	 */
+	public FileUploadOptions setCreateThumbnails(boolean createThumbnails) {
+		this.createThumbnails = createThumbnails;
+		return this;
+	}
+
+	/**
+	 * Get the thumbnail width
+	 * @return width
+	 */
+	public int getThumbnailWidth() {
+		return thumbnailWidth;
+	}
+
+	/**
+	 * Set the thumbnail width
+	 * @param thumbnailWidth width
+	 * @return fluent API
+	 */
+	public FileUploadOptions setThumbnailWidth(int thumbnailWidth) {
+		this.thumbnailWidth = thumbnailWidth;
+		return this;
+	}
+
+	/**
+	 * Get the thumbnail height
+	 * @return height
+	 */
+	public int getThumbnailHeight() {
+		return thumbnailHeight;
+	}
+
+	/**
+	 * Set the thumbnail height
+	 * @param thumbnailHeight height
+	 * @return fluent API
+	 */
+	public FileUploadOptions setThumbnailHeight(int thumbnailHeight) {
+		this.thumbnailHeight = thumbnailHeight;
 		return this;
 	}
 }

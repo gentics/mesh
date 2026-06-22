@@ -46,7 +46,14 @@
         "label": "Pattern",
         "mandatory": false,
         "validation": {
-          "regex": "^foo.bar.doo$"
+          "regexValidation": {
+            "key": "regex_key",
+            "regex": "^foo.bar.doo$",
+            "errorMessage": {
+              "de": "Der Wert entspricht nicht dem erwarteten Muster.",
+              "en": "The value does not match the expected pattern."
+            }
+          }
         },
         "info": "",
         "tooltip": "",

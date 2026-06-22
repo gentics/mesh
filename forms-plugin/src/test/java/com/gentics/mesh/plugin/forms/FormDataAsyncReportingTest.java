@@ -7,6 +7,7 @@ import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -127,6 +128,7 @@ public class FormDataAsyncReportingTest extends AbstractFormsPluginIntegrationTe
 				try {
 					RequestBody requestBody = new MultipartBody.Builder()
 						.setType(MultipartBody.FORM)
+						.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("file1", getFileData(fileName))))
 						.addFormDataPart(fileUploadKey("file1"), fileName, requestBodyFromFile(fileName))
 						.build();
 					Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=en")).header("Referer", "ref").post(requestBody).build();
