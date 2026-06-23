@@ -284,4 +284,45 @@ public class PostedData extends LinkedHashMap<String, FormDataProperty> {
 		return form.getElementsInsideProperties().filter(FormElement::isActive)
 				.filter(element -> Strings.CI.equals(element.getName(), name)).findFirst();
 	}
+
+	/**
+	 * Get the data property for the given element.
+	 *
+	 * <p>
+	 *     The lookup uses the element's schema key first (the posted data is keyed by the schema
+	 *     property key, see {@code FormDataCreateContext.getPostedData()}) and falls back to the
+	 *     element's name to also cover forms where key and name differ.
+	 * </p>
+	 *
+	 * @param element form element
+	 * @return optional data property
+	 */
+	public Optional<FormDataProperty> getProperty(FormElement element) {
+		if (element == null) {
+			return Optional.empty();
+		}
+		FormDataProperty property = element.getKey() != null ? get(element.getKey()) : null;
+		if (property == null) {
+			property = get(element.getName());
+		}
+		return Optional.ofNullable(property);
+	}
+
+	/**
+	 * Check whether the given element was explicitly marked as not visible in the posted data.
+	 *
+	 * <p>
+	 *     Elements which are not visible (hidden, a field condition is not met, or the element is
+	 *     inside a container that is hidden by a condition) are marked by the frontend with
+	 *     {@code visible = false} and must not produce validation errors. A missing {@code visible}
+	 *     flag ({@code null}) is treated as visible, so clients which do not send the flag keep
+	 *     their previous validation behaviour.
+	 * </p>
+	 *
+	 * @param element form element
+	 * @return true if the element's data explicitly sets {@code visible} to {@code false}
+	 */
+	public boolean isExplicitlyHidden(FormElement element) {
+		return getProperty(element).map(FormDataProperty::getVisible).map(visible -> !visible).orElse(false);
+	}
 }
