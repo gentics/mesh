@@ -303,10 +303,7 @@ public class FormService {
 	 * @return single noderesponse
 	 */
 	public Single<NodeResponse> load(String projectName, String uuid, String...lang) {
-		NodeParameters nParams = new NodeParametersImpl();
-		if (lang.length > 0) {
-			nParams.setLanguages(lang);
-		}
+		NodeParameters nParams = new NodeParametersImpl().setLanguages("en");
 		return userClient.findNodeByUuid(projectName, uuid, nParams).toSingle().flatMap(nodeResponse -> {
 			if (isFormNode(nodeResponse)) {
 				return Single.just(nodeResponse);
@@ -326,10 +323,7 @@ public class FormService {
 	 * @return single noderesponse
 	 */
 	public Single<NodeResponse> loadFormAsAdmin(String projectName, String uuid, String...lang) {
-		NodeParameters nParams = new NodeParametersImpl();
-		if (lang.length > 0) {
-			nParams.setLanguages(lang);
-		}
+		NodeParameters nParams = new NodeParametersImpl().setLanguages("en");
 		return adminClient.findNodeByUuid(projectName, uuid, nParams).toSingle().flatMap(nodeResponse -> {
 			if (isFormNode(nodeResponse)) {
 				return Single.just(nodeResponse);
@@ -351,10 +345,7 @@ public class FormService {
 	 * @return single noderesponse
 	 */
 	public Single<NodeResponse> loadAsAdmin(String projectName, String uuid, boolean published, String...lang) {
-		NodeParameters nParams = new NodeParametersImpl();
-		if (lang.length > 0) {
-			nParams.setLanguages(lang);
-		}
+		NodeParameters nParams = new NodeParametersImpl().setLanguages("en");
 		VersioningParameters vParams = new VersioningParametersImpl().setVersion(published ? "published" : "draft");
 		return adminClient.findNodeByUuid(projectName, uuid, nParams, vParams).toSingle().flatMap(nodeResponse -> {
 			if (isFormNode(nodeResponse)) {
@@ -578,6 +569,14 @@ public class FormService {
 								.flatMap(r -> load(projectName, updatedForm.getUuid(), language));
 					}).flatMap(updatedForm -> {
 						return ensureFormFolders(projectName, updatedForm.getUuid(), language, DOWNLOADS_FOLDER_NAME, DATA_FOLDER_NAME)
+							.andThen(Single.just(updatedForm));
+					}).flatMap(updatedForm -> {
+						// check whether other language variants of the form exist and if yes, delete them
+						Set<String> languageVariants = new HashSet<>(updatedForm.getAvailableLanguages().keySet());
+						languageVariants.remove("en");
+						return Observable.fromIterable(languageVariants)
+							.concatMapSingle(lang -> userClient.deleteNode(projectName, updatedForm.getUuid(), lang).toSingle())
+							.ignoreElements()
 							.andThen(Single.just(updatedForm));
 					});
 		});
