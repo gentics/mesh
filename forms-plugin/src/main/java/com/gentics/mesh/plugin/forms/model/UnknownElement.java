@@ -18,7 +18,7 @@ public class UnknownElement extends FormElement {
 	}
 
 	@Override
-	public void addFieldSchema(FieldSchemaContainer container) {
+	public void addFieldSchema(FieldSchemaContainer container, List<String> fieldNames) {
 	}
 
 	@Override

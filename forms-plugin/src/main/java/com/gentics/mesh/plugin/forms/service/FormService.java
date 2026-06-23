@@ -28,12 +28,16 @@ import javax.inject.Singleton;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gentics.mesh.core.rest.branch.BranchResponse;
+import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaList;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.graphql.GraphQLError;
@@ -49,8 +53,14 @@ import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
+import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
@@ -103,6 +113,9 @@ import io.vertx.reactivex.core.file.FileSystem;
 
 @Singleton
 public class FormService {
+	public final static String OLD_BINARY_FIELD_SUFFIX = "_tomigrate";
+
+	public final static String OLD_BINARY_FIELD_PATTERN = "%s" + OLD_BINARY_FIELD_SUFFIX;
 
 	/**
 	 * Wrapper for paged form data for use as a state in {@link Flowable#generate(Callable, BiConsumer)}.
@@ -290,10 +303,7 @@ public class FormService {
 	 * @return single noderesponse
 	 */
 	public Single<NodeResponse> load(String projectName, String uuid, String...lang) {
-		NodeParameters nParams = new NodeParametersImpl();
-		if (lang.length > 0) {
-			nParams.setLanguages(lang);
-		}
+		NodeParameters nParams = new NodeParametersImpl().setLanguages("en");
 		return userClient.findNodeByUuid(projectName, uuid, nParams).toSingle().flatMap(nodeResponse -> {
 			if (isFormNode(nodeResponse)) {
 				return Single.just(nodeResponse);
@@ -313,10 +323,7 @@ public class FormService {
 	 * @return single noderesponse
 	 */
 	public Single<NodeResponse> loadFormAsAdmin(String projectName, String uuid, String...lang) {
-		NodeParameters nParams = new NodeParametersImpl();
-		if (lang.length > 0) {
-			nParams.setLanguages(lang);
-		}
+		NodeParameters nParams = new NodeParametersImpl().setLanguages("en");
 		return adminClient.findNodeByUuid(projectName, uuid, nParams).toSingle().flatMap(nodeResponse -> {
 			if (isFormNode(nodeResponse)) {
 				return Single.just(nodeResponse);
@@ -338,10 +345,7 @@ public class FormService {
 	 * @return single noderesponse
 	 */
 	public Single<NodeResponse> loadAsAdmin(String projectName, String uuid, boolean published, String...lang) {
-		NodeParameters nParams = new NodeParametersImpl();
-		if (lang.length > 0) {
-			nParams.setLanguages(lang);
-		}
+		NodeParameters nParams = new NodeParametersImpl().setLanguages("en");
 		VersioningParameters vParams = new VersioningParametersImpl().setVersion(published ? "published" : "draft");
 		return adminClient.findNodeByUuid(projectName, uuid, nParams, vParams).toSingle().flatMap(nodeResponse -> {
 			if (isFormNode(nodeResponse)) {
@@ -565,6 +569,14 @@ public class FormService {
 								.flatMap(r -> load(projectName, updatedForm.getUuid(), language));
 					}).flatMap(updatedForm -> {
 						return ensureFormFolders(projectName, updatedForm.getUuid(), language, DOWNLOADS_FOLDER_NAME, DATA_FOLDER_NAME)
+							.andThen(Single.just(updatedForm));
+					}).flatMap(updatedForm -> {
+						// check whether other language variants of the form exist and if yes, delete them
+						Set<String> languageVariants = new HashSet<>(updatedForm.getAvailableLanguages().keySet());
+						languageVariants.remove("en");
+						return Observable.fromIterable(languageVariants)
+							.concatMapSingle(lang -> userClient.deleteNode(projectName, updatedForm.getUuid(), lang).toSingle())
+							.ignoreElements()
 							.andThen(Single.just(updatedForm));
 					});
 		});
@@ -1193,13 +1205,13 @@ public class FormService {
 	 *            schema
 	 * @return schema filled with data
 	 */
-	private <T extends SchemaModel> Single<T> getSchema(FormtypeConfigsModel formtypeConfigs, NodeResponse formNode, T schema) {
+	private <T extends SchemaModel> Single<T> getSchema(FormtypeConfigsModel formtypeConfigs, NodeResponse formNode, T schema, List<String> fieldNames) {
 		schema.setName(getSchemaName(formNode.getUuid()));
 		schema.setContainer(true);
 		try {
 			Form form = toForm(formtypeConfigs, formNode.getFields().getStringField("json").getString(), formNode.getUuid(),
 				formNode.getLanguage());
-			form.addFieldSchemas(schema);
+			form.addFieldSchemas(schema, fieldNames);
 		} catch (IOException | FormsError e) {
 			return Single.error(new FormsError("Error while deserializing form JSON", e, HttpResponseStatus.BAD_REQUEST.code()));
 		}
@@ -1222,7 +1234,7 @@ public class FormService {
 	}
 
 	private Single<SchemaResponse> createAndAssignSchema(FormtypeConfigsModel formtypeConfigs, String projectName, NodeResponse formNode) {
-		return getSchema(formtypeConfigs, formNode, new SchemaCreateRequest())
+		return getSchema(formtypeConfigs, formNode, new SchemaCreateRequest(), List.of())
 			.map(schema -> {
 				log.info("Creating schema {}", schema.getName());
 				return schema;
@@ -1232,7 +1244,84 @@ public class FormService {
 	}
 
 	private Single<GenericMessageResponse> updateSchema(FormtypeConfigsModel formtypeConfigs, String projectName, NodeResponse formNode, SchemaResponse schema) {
-		return getSchema(formtypeConfigs, formNode, new SchemaUpdateRequest())
+		// check whether the current schema contains binary fields
+		List<String> binaryFields = schema.getFields().stream().filter(field -> field instanceof BinaryFieldSchema)
+				.map(FieldSchema::getName).filter(name -> !Strings.CS.endsWith(name, OLD_BINARY_FIELD_SUFFIX)).collect(Collectors.toList());
+
+		List<String> oldBinaryFields = binaryFields.stream().map(name -> OLD_BINARY_FIELD_PATTERN.formatted(name))
+				.collect(Collectors.toList());
+
+		if (CollectionUtils.isNotEmpty(binaryFields)) {
+			return schemaService.getSchemaFields(projectName, formNode.getUuid())
+				.flatMap(fieldNames -> getSchema(formtypeConfigs, formNode, new SchemaUpdateRequest(), fieldNames))
+				.flatMap(updateRequest -> {
+					// rename all binary fields by adding the suffix to the name.
+					// Do this by applying a diff, so that the schema migration is not yet triggered
+					List<SchemaChangeModel> renameChanges = binaryFields.stream().map(oldFieldName -> {
+						return new SchemaChangeModel(SchemaChangeOperation.UPDATEFIELD,
+								oldFieldName)
+								.setProperty(SchemaChangeModel.NAME_KEY, OLD_BINARY_FIELD_PATTERN.formatted(oldFieldName));
+					}).collect(Collectors.toList());
+
+					SchemaChangesListModel diff = new SchemaChangesListModel();
+					diff.getChanges().addAll(renameChanges);
+
+					return userClient.applyChangesToSchema(schema.getUuid(), diff).toSingle().map(ignored -> updateRequest);
+				})
+				.flatMap(updateRequest -> userClient.diffSchema(schema.getUuid(), updateRequest).toSingle())
+				.map(diff -> {
+					// remove the changes that would remove the old binary fields
+					diff.getChanges().removeIf(change -> {
+						Optional<String> optFieldName = Optional.ofNullable(change.getProperties())
+								.map(prop -> prop.get(SchemaChangeModel.FIELD_NAME_KEY)).map(Object::toString);
+
+						if (optFieldName.isPresent() && change.getOperation() == SchemaChangeOperation.REMOVEFIELD) {
+							return oldBinaryFields.contains(optFieldName.get());
+						} else {
+							return false;
+						}
+					});
+
+					// fix the change that set the field order to also include the old binary fields
+					diff.getChanges().stream()
+						.filter(change -> change.getOperation() == SchemaChangeOperation.UPDATESCHEMA)
+						.filter(change -> change.getProperty(SchemaChangeModel.FIELD_ORDER_KEY) instanceof List)
+						.findFirst()
+						.ifPresent(setOrderChange -> {
+							if (setOrderChange.getProperty(SchemaChangeModel.FIELD_ORDER_KEY) instanceof List<?> fieldOrder) {
+								List<String> newFieldOrder = fieldOrder.stream()
+									.filter(v -> v instanceof String)
+									.map(v -> String.class.cast(v))
+									.flatMap(fieldName -> {
+										if (binaryFields.contains(fieldName)) {
+											return Stream.of(fieldName, OLD_BINARY_FIELD_PATTERN.formatted(fieldName));
+										} else {
+											return Stream.of(fieldName);
+										}
+									}).collect(Collectors.toList());
+								setOrderChange.setProperty(SchemaChangeModel.FIELD_ORDER_KEY, newFieldOrder);
+							}
+						});
+
+					return diff;
+				}).flatMap(diff -> {
+					return userClient.applyChangesToSchema(schema.getUuid(), diff).toSingle();
+				}).flatMap(updateResponse -> {
+					return userClient.findSchemaByUuid(schema.getUuid()).toSingle();
+				}).flatMap(updatedSchema -> {
+					return adminClient.findBranches(projectName).toSingle()
+						.map(branches -> branches.getData().stream().filter(branch -> BooleanUtils.isTrue(branch.getLatest())).map(BranchResponse::getUuid).findFirst().orElse(""))
+						.flatMap(branchUuid -> {
+							BranchInfoSchemaList list = new BranchInfoSchemaList();
+							list.add(new SchemaReferenceImpl().setUuid(schema.getUuid()).setVersion(updatedSchema.getVersion()));
+							return userClient.assignBranchSchemaVersions(projectName, branchUuid, list).toSingle();
+						})
+						.map(resp -> new GenericMessageResponse());
+				});
+		}
+
+		return schemaService.getSchemaFields(projectName, formNode.getUuid())
+			.flatMap(fieldNames ->getSchema(formtypeConfigs, formNode, new SchemaUpdateRequest(), fieldNames))
 			.map(updateRequest -> {
 				log.info("Updating schema {} with uuid {}", schema.getName(), schema.getUuid());
 				return updateRequest;

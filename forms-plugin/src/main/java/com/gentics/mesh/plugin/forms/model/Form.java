@@ -473,9 +473,10 @@ public class Form implements RestModel {
 	/**
 	 * Transform all form elements into schema fields in the container
 	 * @param container container (will be modified)
+	 * @param fieldNames names of the currently existing fields (if doing an update)
 	 */
-	public void addFieldSchemas(FieldSchemaContainer container) {
-		getElementsInsideProperties().forEach(elem -> elem.addFieldSchema(container));
+	public void addFieldSchemas(FieldSchemaContainer container, List<String> fieldNames) {
+		getElementsInsideProperties().forEach(elem -> elem.addFieldSchema(container, fieldNames));
 	}
 
 	/**
@@ -812,13 +813,14 @@ public class Form implements RestModel {
 	 *
 	 * <strong>Note</strong> that elements without a name will <em>not</em> be
 	 * contained in the resulting set.
+	 * @param schemaFields schema fields
 	 *
 	 * @return A set of names of form elements containing submitted data.
 	 */
-	public List<String> getReportableElementNamesForGraphQL() {
+	public List<String> getReportableElementNamesForGraphQL(List<String> schemaFields) {
 		return getElementsInsideProperties()
 			.filter(FormElement::isReportable)
-			.map(FormElement::getGraphQLName)
+			.map(e -> e.getGraphQLName(schemaFields))
 			.filter(Objects::nonNull)
 			.collect(Collectors.toList());
 	}
