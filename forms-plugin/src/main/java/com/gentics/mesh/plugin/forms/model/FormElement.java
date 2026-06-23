@@ -256,8 +256,9 @@ public abstract class FormElement implements RestModel {
 	/**
 	 * Transform the element into a field schema and add it to the container
 	 * @param container container (will be modified)
+	 * @param fieldNames names of the currently existing fields (if doing an update)
 	 */
-	public void addFieldSchema(FieldSchemaContainer container) {
+	public void addFieldSchema(FieldSchemaContainer container, List<String> fieldNames) {
 		if (isList()) {
 			container.addField(new ListFieldSchemaImpl().setListType(FieldTypes.STRING.toString()).setName(name).setLabel(name));
 		} else {
@@ -472,10 +473,11 @@ public abstract class FormElement implements RestModel {
 	/**
 	 * Get field name part to be added to graphql queries
 	 * By default, this will just be the name, but some special fields (like binary) require more
+	 * @param schemaFields schema fields
 	 * @return graphql part
 	 */
 	@JsonIgnore
-	public String getGraphQLName() {
+	public String getGraphQLName(List<String> schemaFields) {
 		return getName();
 	}
 
@@ -488,9 +490,9 @@ public abstract class FormElement implements RestModel {
 	@JsonIgnore
 	public String installFilter(String query) {
 		if (isList()) {
-			return getGraphQLName() + ": {anyMatch: {like: \"%" + query + "%\"}}";
+			return getName() + ": {anyMatch: {like: \"%" + query + "%\"}}";
 		} else {
-			return getGraphQLName() + ": {like: \"%" + query + "%\"}";
+			return getName() + ": {like: \"%" + query + "%\"}";
 		}
 	}
 

@@ -12,7 +12,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -31,6 +30,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1206,13 +1206,13 @@ public class FormService {
 	 *            schema
 	 * @return schema filled with data
 	 */
-	private <T extends SchemaModel> Single<T> getSchema(FormtypeConfigsModel formtypeConfigs, NodeResponse formNode, T schema) {
+	private <T extends SchemaModel> Single<T> getSchema(FormtypeConfigsModel formtypeConfigs, NodeResponse formNode, T schema, List<String> fieldNames) {
 		schema.setName(getSchemaName(formNode.getUuid()));
 		schema.setContainer(true);
 		try {
 			Form form = toForm(formtypeConfigs, formNode.getFields().getStringField("json").getString(), formNode.getUuid(),
 				formNode.getLanguage());
-			form.addFieldSchemas(schema);
+			form.addFieldSchemas(schema, fieldNames);
 		} catch (IOException | FormsError e) {
 			return Single.error(new FormsError("Error while deserializing form JSON", e, HttpResponseStatus.BAD_REQUEST.code()));
 		}
@@ -1235,7 +1235,7 @@ public class FormService {
 	}
 
 	private Single<SchemaResponse> createAndAssignSchema(FormtypeConfigsModel formtypeConfigs, String projectName, NodeResponse formNode) {
-		return getSchema(formtypeConfigs, formNode, new SchemaCreateRequest())
+		return getSchema(formtypeConfigs, formNode, new SchemaCreateRequest(), List.of())
 			.map(schema -> {
 				log.info("Creating schema {}", schema.getName());
 				return schema;
@@ -1247,13 +1247,14 @@ public class FormService {
 	private Single<GenericMessageResponse> updateSchema(FormtypeConfigsModel formtypeConfigs, String projectName, NodeResponse formNode, SchemaResponse schema) {
 		// check whether the current schema contains binary fields
 		List<String> binaryFields = schema.getFields().stream().filter(field -> field instanceof BinaryFieldSchema)
-				.map(FieldSchema::getName).collect(Collectors.toList());
+				.map(FieldSchema::getName).filter(name -> !Strings.CS.endsWith(name, OLD_BINARY_FIELD_SUFFIX)).collect(Collectors.toList());
 
 		List<String> oldBinaryFields = binaryFields.stream().map(name -> OLD_BINARY_FIELD_PATTERN.formatted(name))
 				.collect(Collectors.toList());
 
 		if (CollectionUtils.isNotEmpty(binaryFields)) {
-			return getSchema(formtypeConfigs, formNode, new SchemaUpdateRequest())
+			return schemaService.getSchemaFields(projectName, formNode.getUuid())
+				.flatMap(fieldNames -> getSchema(formtypeConfigs, formNode, new SchemaUpdateRequest(), fieldNames))
 				.flatMap(updateRequest -> {
 					// rename all binary fields by adding the suffix to the name.
 					// Do this by applying a diff, so that the schema migration is not yet triggered
@@ -1320,7 +1321,8 @@ public class FormService {
 				});
 		}
 
-		return getSchema(formtypeConfigs, formNode, new SchemaUpdateRequest())
+		return schemaService.getSchemaFields(projectName, formNode.getUuid())
+			.flatMap(fieldNames ->getSchema(formtypeConfigs, formNode, new SchemaUpdateRequest(), fieldNames))
 			.map(updateRequest -> {
 				log.info("Updating schema {} with uuid {}", schema.getName(), schema.getUuid());
 				return updateRequest;

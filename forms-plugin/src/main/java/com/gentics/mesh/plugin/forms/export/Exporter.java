@@ -198,13 +198,14 @@ public abstract class Exporter {
 	 *
 	 * @param form The form to export
 	 * @param publishedOnly Whether to export only published (i.e. completed) forms or all form data
+	 * @param schemaFields list of schema fields
 	 * @return single export
 	 */
-	public Single<ExportData> export(Form form, boolean publishedOnly) {
+	public Single<ExportData> export(Form form, boolean publishedOnly, List<String> schemaFields) {
 		Map<String, String> renderCtx = new HashMap<>();
 
 		renderCtx.put("schemaName", schemaName);
-		renderCtx.put("fieldNames", String.join("\n", form.getReportableElementNamesForGraphQL()));
+		renderCtx.put("fieldNames", String.join("\n", form.getReportableElementNamesForGraphQL(schemaFields)));
 
 		binaryFields.clear();
 		fieldNames.clear();

@@ -1,0 +1,7 @@
+query ($schemaName: String) {
+    schema(name: $schemaName) {
+		fields {
+			name
+		}
+	}
+}
