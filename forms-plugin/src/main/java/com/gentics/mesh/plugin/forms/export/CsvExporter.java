@@ -23,6 +23,7 @@ import com.gentics.mesh.core.rest.graphql.GraphQLError;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.forms.config.ExportOptions;
+import com.gentics.mesh.plugin.forms.service.FormService;
 import com.gentics.mesh.plugin.forms.util.ReflectionUtils;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.google.common.base.Strings;
@@ -269,7 +270,19 @@ public class CsvExporter extends Exporter {
 				ret.add(urls.toString());
 				value = fileNames.toString();
 			} else if (value == null && binaryFields.contains(fieldName)) {
-				ret.add("");
+				// fallback to extracting old field name
+				String oldFieldName = FormService.OLD_BINARY_FIELD_PATTERN.formatted(fieldName);
+				value = record.getValue(oldFieldName, "");
+				if (value instanceof JsonObject itemObject) {
+					value = itemObject.getString("fileName");
+					ret.add(String.format(
+							"%s/%s/binary/%s",
+							baseUrl,
+							data.getString("uuid"),
+							fieldName));
+				} else {
+					ret.add("");
+				}
 			}
 
 			ret.add(value == null ? "" : this.normalizeValue(String.valueOf(value)));

@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -57,6 +58,7 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
+import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.image.ImageManipulationRequest;
@@ -189,6 +191,8 @@ public class FormDataService {
 
 	private final CaptchaService captchaService;
 
+	private final SchemaService schemaService;
+
 	private final File storageDir;
 
 	private final String loadFormDataToMigrateGraphQl;
@@ -207,6 +211,7 @@ public class FormDataService {
 			StatusService statusService,
 			OkHttpClientService okHttpClientService,
 			CaptchaService captchaService,
+			SchemaService schemaService,
 			PluginManifest manifest,
 			@StorageDir File storageDir) {
 		this.adminClient = adminClient;
@@ -219,6 +224,7 @@ public class FormDataService {
 		this.statusService = statusService;
 		this.okHttpClientService = okHttpClientService;
 		this.captchaService = captchaService;
+		this.schemaService = schemaService;
 		this.storageDir = storageDir;
 
 		try {
@@ -553,7 +559,7 @@ public class FormDataService {
 						MessageConsumer<Object> consumer = rxVertx.eventBus()
 							.consumer(MESSAGE_DOWNLOAD_CHECK_PREFIX + downloadNode.getUuid(), msg -> msg.reply(true));
 
-						Single<Pair<Form, File>> binaries = zipBinaries(projectName, form);
+						Single<Pair<Form, File>> binaries = schemaService.getSchemaFields(projectName, formUuid).flatMap(schemaFields -> zipBinaries(projectName, form, schemaFields));
 
 						if (statusService.getEffectiveConfiguration(formtypeConfigs, "").isTesting()) {
 							binaries = binaries.delay(TEST_DELAY_MS, TimeUnit.MILLISECONDS);
@@ -848,9 +854,11 @@ public class FormDataService {
 						SchemaService.getSchemaName(formUuid), configuration.getExportOptions(),
 						getDownloadBaseUrl(form, projectName));
 
+				return schemaService.getSchemaFields(projectName, formUuid).flatMap(fields -> {
 				return exporter
 					.setFieldLabels(form.getReportableFields())
-					.export(form, publishedOnly);
+							.export(form, publishedOnly, fields);
+			});
 			});
 	}
 
@@ -869,19 +877,21 @@ public class FormDataService {
 		return statusService.languageFallback(projectName, languages)
 			.flatMap(langFallback -> formService.load(projectName, uuid, langFallback))
 			.flatMap(node -> formService.toForm(formtypeConfigs, node))
-			.flatMap(form -> zipBinaries(projectName, form));
+			.flatMap(form -> schemaService.getSchemaFields(projectName, uuid).flatMap(schemaFields -> zipBinaries(projectName, form, schemaFields)));
 	}
 
 	/**
 	 * Create a zip file containing the uploaded binaries for the given form.
 	 * @param projectName The project name.
 	 * @param form The forms to zip binaries for.
+	 * @param schemaFields schema fields
 	 * @return A {@code Pair} containing the form and the created zip file.
 	 */
-	public Single<Pair<Form, File>> zipBinaries(String projectName, Form form) {
+	public Single<Pair<Form, File>> zipBinaries(String projectName, Form form, List<String> schemaFields) {
 		Set<String> fileElementNames = form.getElementsInsideProperties().filter(elem -> elem instanceof BinaryElement).map(FormElement::getName)
 			.filter(Objects::nonNull).collect(Collectors.toSet());
-		Set<String> fileFieldNames = form.getElementsInsideProperties().filter(elem -> elem instanceof BinaryElement).map(FormElement::getGraphQLName).filter(Objects::nonNull).collect(Collectors.toSet());
+		Set<String> fileFieldNames = form.getElementsInsideProperties().filter(elem -> elem instanceof BinaryElement)
+				.map(e -> e.getGraphQLName(schemaFields)).filter(Objects::nonNull).collect(Collectors.toSet());
 
 		Single<List<Downloadable>> singleDownloadables = null;
 		if (fileElementNames.isEmpty()) {
@@ -971,7 +981,14 @@ public class FormDataService {
 						JsonObject itemObject = listValue.getJsonObject(j);
 						downloadables.add(new Downloadable(itemObject.getString("uuid"), "binary", Optional.of("%s/%s/%s/%d".formatted(uuid, itemObject.getString("uuid"), name, j))));
 				}
-			}
+				} else {
+					// try fallback to old binary field
+					String oldFieldName = FormService.OLD_BINARY_FIELD_PATTERN.formatted(name);
+					value = fields.getValue(oldFieldName);
+					if (value instanceof JsonObject) {
+						downloadables.add(new Downloadable(uuid, oldFieldName, Optional.of("%s/%s".formatted(uuid, name))));
+					}
+				}
 		}
 		}
 		return Single.just(downloadables);
@@ -1090,10 +1107,13 @@ public class FormDataService {
 		return statusService.languageFallback(projectName)
 			.flatMap(langFallback -> formService.load(projectName, formUuid, langFallback))
 			.flatMap(node -> formService.toForm(formtypeConfigs, node))
-			.flatMap(form -> {
+			.flatMap(form -> schemaService.getSchemaFields(projectName, formUuid).map(fields -> Pair.of(form, fields)))
+			.flatMap(pair -> {
+				Form form = pair.getLeft();
+				List<String> fieldNames = pair.getRight();
 				FormsConfig configuration = statusService.getEffectiveConfiguration(formtypeConfigs, form.getType());
 
-				GraphQLRequest graphQlRequest = getDataGraphQlRequest(configuration, form, query, pagingParams, configuration.isForceNoES());
+				GraphQLRequest graphQlRequest = getDataGraphQlRequest(configuration, form, fieldNames, query, pagingParams, configuration.isForceNoES());
 				VersioningParameters params = new VersioningParametersImpl();
 
 				if (publishedOnly) {
@@ -1109,7 +1129,7 @@ public class FormDataService {
 
 						if (nodes != null) {
 							pagingService.addPagingInfoToResponse(clientResponse, nodes);
-							clientResponse.put("entries", nodes.getJsonArray("elements"));
+							clientResponse.put("entries", rewriteReportedEntries(form, fieldNames, nodes.getJsonArray("elements")));
 
 							return Single.just(clientResponse.put("elements", new JsonObject(form.elementMap())));
 						}
@@ -1120,17 +1140,62 @@ public class FormDataService {
 	}
 
 	/**
+	 * Rewrite the entries by moving the data from the old binary fields to the new ones
+	 * @param form form
+	 * @param fieldNames field names in the schema
+	 * @param entries entries to rewrite
+	 * @return rewritten entries
+	 */
+	protected JsonArray rewriteReportedEntries(Form form, List<String> fieldNames, JsonArray entries) {
+		List<String> binaryNamesWithOldVariants = form.getElementsInsideProperties()
+			.filter(FormElement::isActive)
+			.filter(elem -> elem instanceof BinaryElement)
+			.map(FormElement::getName)
+			.filter(name -> {
+				String oldFieldName = FormService.OLD_BINARY_FIELD_PATTERN.formatted(name);
+				return fieldNames.contains(oldFieldName);
+			})
+			.collect(Collectors.toList());
+
+		if (binaryNamesWithOldVariants.isEmpty()) {
+			return entries;
+		}
+
+		for (Object entry : entries) {
+			if (entry instanceof JsonObject entryObject) {
+				JsonObject fields = entryObject.getJsonObject("fields");
+				if (fields != null) {
+					for (String fieldName : binaryNamesWithOldVariants) {
+						String oldFieldName = FormService.OLD_BINARY_FIELD_PATTERN.formatted(fieldName);
+						JsonObject value = fields.getJsonObject(fieldName);
+						JsonObject oldValue = fields.getJsonObject(oldFieldName);
+						if (value == null && oldValue != null) {
+							String fileName = oldValue.getString("fileName");
+							value = JsonObject.of("fields", JsonObject.of("binary", JsonObject.of("fileName", fileName)));
+							fields.put(fieldName, value);
+						}
+						fields.remove(oldFieldName);
+					}
+				}
+			}
+		}
+
+		return entries;
+	}
+
+	/**
 	 * Create a GraphQL request to load form data nodes for the specified form. Loads the specified form and creates a
 	 * GraphQLRequest with a query to find the form data nodes (and the page) indicated by the HTTP query string.
 	 *
 	 * @param configuration configuration
 	 * @param form The form to load form data for
+	 * @param fieldNames field names of the schema
 	 * @param query The Elasticsearch query to use
 	 * @param pagingParams Paging parameters for the GraphQL query
 	 * @return a GraphQLRequest
 	 * @throws IOException if loading the ElasticSearch or GraphQL query fails
 	 */
-	private GraphQLRequest getDataGraphQlRequest(FormsConfig configuration, Form form, String query, JsonObject pagingParams, boolean forceNoES) throws IOException {
+	private GraphQLRequest getDataGraphQlRequest(FormsConfig configuration, Form form, List<String> fieldNames, String query, JsonObject pagingParams, boolean forceNoES) throws IOException {
 		JsonObject graphQLParams = new JsonObject(pagingParams.toBuffer());
 		Map<String, String> context = new HashMap<>();
 
@@ -1162,7 +1227,7 @@ public class FormDataService {
 			}			
 		}
 		context.put("schemaName", SchemaService.getSchemaName(form.getUuid()));
-		context.put("fieldNames", String.join("\n", form.getReportableElementNamesForGraphQL()));
+		context.put("fieldNames", String.join("\n", form.getReportableElementNamesForGraphQL(fieldNames)));
 
 		String graphQLQuery = new Handlebars().compileInline(rawGraphQLQuery).apply(Context.newContext(context));
 
@@ -1180,8 +1245,19 @@ public class FormDataService {
 		// Binaries can be loaded for already published form data as well, so call the variant of load() which allows loading published form data.
 		return load(projectName, formUuid, formDataUuid, true).flatMap(formDataNode -> {
 			NodeField nodeField = formDataNode.getFields().getNodeField(binaryFieldName);
+			if (nodeField != null) {
 			String binaryUuid = nodeField.getUuid();
 			return userClient.downloadBinaryField(projectName, binaryUuid, formDataNode.getLanguage(), "binary").getResponse();
+			} else {
+				// fallback to the old field name
+				String oldBinaryFieldName = FormService.OLD_BINARY_FIELD_PATTERN.formatted(binaryFieldName);
+				BinaryField oldBinaryField = formDataNode.getFields().getBinaryField(oldBinaryFieldName);
+				if (oldBinaryField != null) {
+					return userClient.downloadBinaryField(projectName, formDataUuid, formDataNode.getLanguage(), oldBinaryFieldName).getResponse();
+				} else {
+					return Single.error(new FormsError("Error while loading binary data of field %s for form data %s of form %s".formatted(binaryFieldName, formDataUuid, formUuid), 400));
+				}
+			}
 		});
 	}
 
@@ -1205,7 +1281,7 @@ public class FormDataService {
 				// Here we try deserializing the node list, which may spit random deserialization errors.
 				log.error("Deserialization error", e);
 			}
-			return Single.error(new FormsError("Error retrieving binary [%d] of a field %s for the form data %s".formatted(index, binaryFieldName, formDataUuid), 400));
+			return Single.error(new FormsError("Error retrieving binary [%d] of field %s for the form data %s".formatted(index, binaryFieldName, formDataUuid), 400));
 		});
 	}
 

@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -32,6 +33,7 @@ import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
+import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
@@ -45,6 +47,7 @@ import com.gentics.mesh.plugin.forms.model.schema.BinaryValidation;
 import com.gentics.mesh.plugin.forms.model.schema.FormUiSchema;
 import com.gentics.mesh.plugin.forms.model.schema.PostedData;
 import com.gentics.mesh.plugin.forms.model.schema.Validation;
+import com.gentics.mesh.plugin.forms.service.FormService;
 import com.gentics.mesh.plugin.forms.util.RxUtil;
 
 import io.reactivex.Maybe;
@@ -109,11 +112,17 @@ public class BinaryElement extends FormElement {
 	}
 
 	@Override
-	public void addFieldSchema(FieldSchemaContainer container) {
+	public void addFieldSchema(FieldSchemaContainer container, List<String> fieldNames) {
 		if (isList()) {
 			container.addField(new ListFieldSchemaImpl().setListType("node").setAllowedSchemas(SchemaInitializer.MULTIBINARY_ITEM_SCHEMA_NAME).setName(getName()).setLabel(getName()));
 		} else {
 			container.addField(new NodeFieldSchemaImpl().setAllowedSchemas(SchemaInitializer.MULTIBINARY_ITEM_SCHEMA_NAME).setName(getName()).setLabel(getName()));
+
+			// if the old field was contained in the schema, it must not be removed
+			String oldFieldName = FormService.OLD_BINARY_FIELD_PATTERN.formatted(getName());
+			if (fieldNames.contains(oldFieldName)) {
+				container.addField(new BinaryFieldSchemaImpl().setName(oldFieldName).setLabel(getName()));
+			}
 		}
 	}
 
@@ -202,8 +211,15 @@ public class BinaryElement extends FormElement {
 	}
 
 	@Override
-	public String getGraphQLName() {
-		return String.format("%s (version: draft) { uuid fields { ... on form_binary_item { binary { fileName } } } }", getName());
+	public String getGraphQLName(List<String> schemaFields) {
+		String graphQL = "%s (version: draft) { uuid fields { ... on form_binary_item { binary { fileName } } } }".formatted(getName());
+
+		String oldFieldName = FormService.OLD_BINARY_FIELD_PATTERN.formatted(getName());
+		if (CollectionUtils.isNotEmpty(schemaFields) && schemaFields.contains(oldFieldName)) {
+			graphQL += "\n%s { fileName }".formatted(oldFieldName);
+		}
+
+		return graphQL;
 	}
 
 	@JsonIgnore

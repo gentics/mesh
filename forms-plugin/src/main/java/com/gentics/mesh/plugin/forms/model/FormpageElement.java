@@ -41,7 +41,7 @@ public class FormpageElement extends FormElement {
 	}
 
 	@Override
-	public void addFieldSchema(FieldSchemaContainer container) {
+	public void addFieldSchema(FieldSchemaContainer container, List<String> fieldNames) {
 		container.addField(new BooleanFieldSchemaImpl().setName(getName()).setLabel(getName()));
 	}
 

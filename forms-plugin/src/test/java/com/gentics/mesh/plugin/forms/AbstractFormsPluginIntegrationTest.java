@@ -728,17 +728,28 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 	}
 
 	/**
-	 * Get the list of form data nodes for the given form
-	 * @param formUuid form UUID
-	 * @return list of form data nodes
+	 * Get the data folder for the form
+	 * @param formUuid form uuid
+	 * @return data folder
 	 */
-	protected List<NodeResponse> getFormDataNodes(String formUuid, String... langs) {
+	protected NodeResponse getDataFolder(String formUuid) {
 		NodeListResponse formNodeChildren = call(() -> server.client().findNodeChildren(PROJECT_NAME, formUuid));
 		Optional<NodeResponse> optDataFolder = formNodeChildren.getData().stream()
 				.filter(n -> StringUtils.equals(n.getDisplayName(), FormService.DATA_FOLDER_NAME)).findFirst();
 		assertThat(optDataFolder).as("Form Data Folder").isNotEmpty();
 
-		NodeListResponse formDataFolderChildren = call(() -> server.client().findNodeChildren(PROJECT_NAME, optDataFolder.get().getUuid(), new NodeParametersImpl().setLanguages(langs)));
+		return optDataFolder.get();
+	}
+
+	/**
+	 * Get the list of form data nodes for the given form
+	 * @param formUuid form UUID
+	 * @return list of form data nodes
+	 */
+	protected List<NodeResponse> getFormDataNodes(String formUuid, String... langs) {
+		NodeResponse dataFolder = getDataFolder(formUuid);
+
+		NodeListResponse formDataFolderChildren = call(() -> server.client().findNodeChildren(PROJECT_NAME, dataFolder.getUuid(), new NodeParametersImpl().setLanguages(langs)));
 		return formDataFolderChildren.getData().stream()
 				.filter(n -> StringUtils.equals(n.getSchema().getName(), "form_" + formUuid))
 				.collect(Collectors.toList());
