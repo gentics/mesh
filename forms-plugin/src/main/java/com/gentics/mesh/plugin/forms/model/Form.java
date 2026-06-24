@@ -503,6 +503,10 @@ public class Form implements RestModel {
 				StreamUtil.toIterable(
 					getElementsInsideProperties()
 						.filter(FormElement::isActive)
+						// elements that are not visible (hidden, unmet field condition, or inside a container
+						// hidden by a condition) are marked with visible=false by the frontend and must not
+						// produce validation errors
+						.filter(elem -> !ctx.getPostedData().isExplicitlyHidden(elem))
 						.map(elem -> elem.validate(ctx, rxVertx, httpClient, uiSchema)
 								.map(error -> Pair.of(elem.getName(), error))
 								.toSingle(Pair.of(null, null)))),

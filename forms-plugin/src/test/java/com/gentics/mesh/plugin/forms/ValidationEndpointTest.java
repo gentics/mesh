@@ -1,6 +1,9 @@
 package com.gentics.mesh.plugin.forms;
 
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.plugin.forms.model.schema.FormData;
+import com.gentics.mesh.plugin.forms.model.schema.FormDataProperty;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.json.JsonObject;
 import okhttp3.HttpUrl;
@@ -112,6 +115,44 @@ public class ValidationEndpointTest extends AbstractEndpointValidationTest {
 				.execute();
 
 		assertValidationResponse(response, Map.of("input1", "The field Input 1 is mandatory."));
+	}
+
+	/**
+	 * An empty mandatory field that is explicitly marked as not visible (visible=false) must not
+	 * produce a validation error, so a hidden/conditional field cannot block the form.
+	 */
+	@Test
+	public void testHiddenMandatoryFieldSkipsValidation() throws IOException {
+		Response response = client().newCall(request(null, bodyWithVisibility("input1", "", false))).execute();
+
+		assertResponse(response, HttpResponseStatus.OK.code());
+		var json = new JsonObject(response.body().string());
+		assertThat(json.getBoolean("hasValidationErrors")).as("hasValidationErrors").isFalse();
+		assertThat(json.getJsonObject("properties").getJsonObject("input1").getString("validationMessage"))
+			.as("validationMessage of hidden field").isNull();
+	}
+
+	/**
+	 * A visible field (visible=true or undefined) must still be validated. Only an explicit visible=false skips
+	 * validation - the mere presence of the flag must not disable it.
+	 */
+	@Test
+	public void testVisibleMandatoryFieldStillValidates() throws IOException {
+		Response response = client().newCall(request(null, bodyWithVisibility("input1", "", null))).execute();
+
+		assertValidationResponse(response, Map.of("input1", "The field Input 1 is mandatory."));
+	}
+
+	/**
+	 * Build a validate request body containing a single property with an explicit {@code visible} flag.
+	 * The shared {@link AbstractFormsPluginIntegrationTest#makeFormdataMultipart} helper only sets the
+	 * value, so the body is built directly to be able to set {@code visible}.
+	 */
+	private RequestBody bodyWithVisibility(String field, String value, Boolean visible) {
+		FormData data = new FormData()
+			.setFormID(formUuid)
+			.setProperties(Map.of(field, new FormDataProperty().setValue(value).setVisible(visible)));
+		return RequestBody.create(JsonUtil.toJson(data), MediaType.get("application/json"));
 	}
 
 	private Request request(String formDataUuid, RequestBody requestBody) {
