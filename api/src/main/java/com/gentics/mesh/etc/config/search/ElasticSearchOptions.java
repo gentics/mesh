@@ -67,7 +67,7 @@ public class ElasticSearchOptions implements Option {
 	public static final String MESH_ELASTICSEARCH_INDEX_CHECK_INTERVAL_ENV = "MESH_ELASTICSEARCH_INDEX_CHECK_INTERVAL";
 	public static final String MESH_ELASTICSEARCH_INDEX_MAPPING_CACHE_TIMEOUT_ENV = "MESH_ELASTICSEARCH_INDEX_MAPPING_CACHE_TIMEOUT";
 
-	@JsonProperty(required = false, defaultValue = "<pre>" + DEFAULT_URL + "</pre>")
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("Elasticsearch connection url to be used. Set this setting to null will disable the Elasticsearch support.")
 	@EnvironmentVariable(name = MESH_ELASTICSEARCH_URL_ENV, description = "Override the configured elasticsearch server url. The value can be set to null in order to disable the Elasticsearch support.")
 	private String url = DEFAULT_URL;
