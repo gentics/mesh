@@ -12,6 +12,9 @@ import org.pf4j.PluginWrapper;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.dagger.FormsPluginComponent;
+import com.gentics.mesh.plugin.forms.model.FormtypeConfigsModel;
+import com.gentics.mesh.plugin.forms.service.StatusService;
+import com.gentics.mesh.rest.client.MeshRestClient;
 
 import io.vertx.ext.web.Router;
 
@@ -42,6 +45,13 @@ public class FormsTestPlugin extends FormsPlugin {
 		projectRouter.route("/test/purge/:seconds").method(GET).handler(fromComponent(FormsPluginComponent::purgeStaleDataHandler));
 
 		return projectRouter;
+	}
+
+	/**
+	 * Call {@link StatusService#getFormtypeConfigs(String, MeshRestClient)} directly for testing.
+	 */
+	public FormtypeConfigsModel getFormtypeConfigs(String projectName, MeshRestClient client) {
+		return component(null).statusService().getFormtypeConfigs(projectName, client).blockingGet();
 	}
 
 	/**

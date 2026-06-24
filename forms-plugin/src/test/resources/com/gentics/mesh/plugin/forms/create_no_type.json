@@ -1,4 +1,8 @@
 {
 	"name": "Created form without specified type",
-	"elements": []
+	"schema": {
+		"key": "test-schema",
+	    "version": "1.0.0",
+	    "properties": {}
+	}
 }

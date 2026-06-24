@@ -4,7 +4,6 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -41,7 +40,6 @@ public class FormDataMigrationTest extends AbstractFormsPluginIntegrationTest {
 
 		// activate plugin
 		assertThat(activate(PROJECT_NAME)).as("Activation status").isTrue();
-		setLanguages(PROJECT_NAME, Arrays.asList("en"));
 	}
 
 	/**
@@ -60,7 +58,7 @@ public class FormDataMigrationTest extends AbstractFormsPluginIntegrationTest {
 		// post some data
 		for (int i = 0; i < NUM_DATA; i++) {
 			boolean empty = RandomUtils.secure().randomInt(0, 2) == 0;
-			submit(formUuid, true, empty, "input1", empty ? "" : "data %d".formatted(i));
+			submit(formUuid, true, empty, "input1", "en", empty ? "" : "data %d".formatted(i));
 		}
 
 		// undeploy forms plugin
@@ -131,5 +129,5 @@ public class FormDataMigrationTest extends AbstractFormsPluginIntegrationTest {
 		// assert that data nodes have not been moved to correct place during deployment
 		dataNodes = getFormDataNodes(formUuid);
 		assertThat(dataNodes).as("Form data nodes").isEmpty();
-	}
+}
 }

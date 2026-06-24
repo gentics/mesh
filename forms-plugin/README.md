@@ -474,17 +474,44 @@ This is an example configuration for a `conditionalcontainer` element to add to 
 
 # Server-side Validation
 
-Server-side validation will check whether mandatory fields have been filled by the user. Furthermore, entered values will be checked against the field's `validation`:
+Server-side validation will check whether the user has filled mandatory fields. Furthermore, entered values will be checked against the field's `validation`:
 
-| validation | Description |
-|------------|-------------|
-| `number` | Accepts integer numbers |
-| `telephone` | Accepts telephone numbers matching regex pattern ^[\s\d\+\/]*$ |
-| `socialsecurity` | Accepts austrian social security numbers matching regex pattern ^\s*(\d{4})(?\<date\>\d{6})\s*$ |
-| `date` | Accepts dates entered in format yyyy-MM-dd |
-| `time` | Accepts times entered in format HH:mm |
-| `email` | Accepts email addresses |
-| `datepicker` | Accepts dates entered in format dd.MM.yyyy |
+| validation   | Description                                                    |
+|--------------|----------------------------------------------------------------|
+| `min_value`  | Must be an integer and be greater than or equal to `min_value` |
+| `max_value`  | Must be an integer and be less than or euqal to `max_value`    |
+| `min_length` | Value strings must have at least length `min_length`           |
+| `max_length` | Value strings must have at most length `max_length`            |
+| `pattern`    | Value string must match the given regular expression           |
+
+## Error message translations
+
+The following translations must be available for validation error messages (set via the POST /translations endpoint):
+
+| Key                                                   | Params                    | Description                                     |
+|-------------------------------------------------------|---------------------------|-------------------------------------------------|
+| `form_validation_error_missing_mandatory_field_title` | -                         | Title for missing mandatory fields.             |
+| `form_validation_error_missing_mandatory_field`       | Field label               | Error message for missing mandatory fields.     |
+| `form_validation_error_invalid_value_title`           | -                         | Title for custom validation.                    |
+| `form_validation_error_invalid_value`                 | Field name, invalid value | Error message for custom validation violation.  |
+| `form_validation_error_unsafe_value_title`            | -                         | Title for unsafe value.                         |
+| `form_validation_error_unsafe_value`                  | Invalid field name        | Error message for unsafe value.                 |
+| `form_validation_error_min_value_title`               | -                         | Title for minimum value error message.          |
+| `form_validation_error_min_value`                     | Value                     | Error message for minimum value violation.      |
+| `form_validation_error_max_value_title`               | -                         | Title for maximum value error message.          |
+| `form_validation_error_max_value`                     | Value                     | Error message for maximum value violation.      |
+| `form_validation_error_min_length_title`              | -                         | Title for minimum length error message.         |
+| `form_validation_error_min_length`                    | Value                     | Error message for minimum length violation.     |
+| `form_validation_error_max_length_title`              | -                         | Title for maximum length error message.         |
+| `form_validation_error_max_length`                    | Value                     | Error message for maximum length violation.     |
+| `form_validation_error_pattern_title`                 | -                         | Title for pattern error message.                |
+| `form_validation_error_pattern`                       | Value                     | Error message for regular expression violation. |
+| `form_validation_error_file_size_title`               | -                         | Title for file size error message.              |
+| `form_validation_error_file_size`                     | Filename, filesize        | Error message for file size violation.          |
+| `form_validation_error_file_type_title`               | -                         | Title for file type error message.              |
+| `form_validation_error_file_type`                     | Filename                  | Error message for file type violation.          |
+| `form_validation_error_email_title`                   | -                         | Title for invalid email error message.          |
+| `form_validation_error_email_type`                    | Email                     | Error message for invalid email.                |
 
 # Friendly Captcha
 

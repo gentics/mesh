@@ -1,0 +1,53 @@
+{
+	"name": "Form with Textfield",
+	"cms_id": 1,
+	"schema": {
+		"key": "test-schema",
+	    "version": "1.0.0",
+	    "properties": {
+			"input1": {
+				"type": "string",
+				"name": "input1",
+				"placeholderName": "",
+				"label": "Text",
+				"mandatory": true,
+				"info": "",
+				"tooltip": "",
+				
+				"value": "",
+				"minVal": "",
+				"maxVal": "",
+				"maxCharCount": "",
+				"elements": []
+			},
+			"file1": {
+				"type": "binary",
+				"name": "file1",
+				"placeholderName": "",
+				"label": "File1",
+				"mandatory": true,
+				"info": "",
+				"tooltip": "",
+				"isList": true,
+				
+				"allowed_filetypes": [],
+				"max_filesize": "10",
+				"elements": []
+			},
+			"file2": {
+				"type": "binary",
+				"name": "file2",
+				"placeholderName": "",
+				"label": "File2",
+				"mandatory": true,
+				"info": "",
+				"tooltip": "",
+				"isList": true,
+				
+				"allowed_filetypes": [],
+				"max_filesize": "10",
+				"elements": []
+			}
+		}
+	}
+}

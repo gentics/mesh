@@ -2,34 +2,38 @@
 	"type": "GENERIC",
 	"name": "Form with Textfield",
 	"cms_id": 1,
-	"elements": [
-		{
-			"type": "input",
-			"name": "input1",
-			"placeholderName": "",
-			"label": "Text",
-			"mandatory": true,
-			"info": "",
-			"tooltip": "",
-			"validation": "",
-			"value": "",
-			"minVal": "",
-			"maxVal": "",
-			"maxCharCount": "",
-			"elements": [],
-			"properties": {
-				"textkey": "textvalue",
-				"intkey": 42,
-				"booleankey": true,
-				"arraykey": [
-					"one",
-					"two",
-					"three"
-				],
-				"objectkey": {
-					"key": "value"
+	"schema": {
+		"key": "test-schema",
+	    "version": "1.0.0",
+	    "properties": {
+			"input1": {
+				"type": "string",
+				"name": "input1",
+				"placeholderName": "",
+				"label": "Text",
+				"mandatory": true,
+				"info": "",
+				"tooltip": "",
+				
+				"value": "",
+				"minVal": "",
+				"maxVal": "",
+				"maxCharCount": "",
+				"elements": [],
+				"properties": {
+					"textkey": "textvalue",
+					"intkey": 42,
+					"booleankey": true,
+					"arraykey": [
+						"one",
+						"two",
+						"three"
+					],
+					"objectkey": {
+						"key": "value"
+					}
 				}
 			}
 		}
-	]
+	}
 }

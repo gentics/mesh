@@ -1,12 +1,16 @@
 {
 	"name": "Form with Custom Field",
 	"cms_id": 1,
-	"elements": [
-		{
-			"type": "custom",
-			"name": "custom1",
-			"label": "Text",
-			"elements": []
+	"schema": {
+		"key": "test-schema",
+	    "version": "1.0.0",
+	    "properties": {
+			"custom1": {
+				"type": "custom",
+				"name": "custom1",
+				"label": "Text",
+				"elements": []
+			}
 		}
-	]
+	}
 }

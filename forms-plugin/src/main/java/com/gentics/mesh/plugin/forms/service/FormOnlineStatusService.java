@@ -10,10 +10,8 @@ import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.parameter.client.GenericParametersImpl;
-import com.gentics.mesh.parameter.client.NodeParametersImpl;
 import com.gentics.mesh.parameter.client.VersioningParametersImpl;
 import com.gentics.mesh.plugin.common.dagger.UserClient;
-import com.gentics.mesh.plugin.forms.FormsError;
 import com.gentics.mesh.plugin.forms.model.response.FormOnlineResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
 
@@ -61,35 +59,23 @@ public class FormOnlineStatusService {
 	 * Get the online status of a form
 	 * @param projectName project name
 	 * @param uuid form uuid
-	 * @param language language
 	 * @return single response
 	 */
-	public Single<FormOnlineResponse> get(String projectName, String uuid, String language) {
-		return userClient
-				.findNodeByUuid(projectName, uuid, PUBLISHED_VERSION, GET_FIELDS,
-						new NodeParametersImpl().setLanguages(language))
-				.toSingle()
-				.flatMap(node -> {
-					// if the form node was returned without fields, that means that the language does not exist
-					if (node.getFields() == null) {
-						String message = String.format("Form with uuid \"%s\" does not have language \"%s\".", uuid, language);
-						return Single.error(new FormsError(message, 404));
-					} else {
-						return Single.just(new FormOnlineResponse().setOnline(isOnline(node)));
-					}
-				});
+	public Single<FormOnlineResponse> get(String projectName, String uuid) {
+		return userClient.findNodeByUuid(projectName, uuid, PUBLISHED_VERSION, GET_FIELDS).toSingle().flatMap(node -> {
+			return Single.just(new FormOnlineResponse().setOnline(isOnline(node)));
+		});
 	}
 
 	/**
 	 * Set the form online
 	 * @param projectName project name
 	 * @param uuid form uuid
-	 * @param language language
 	 * @return single response
 	 */
-	public Single<FormOnlineResponse> setOnline(String projectName, String uuid, String language) {
+	public Single<FormOnlineResponse> setOnline(String projectName, String uuid) {
 		// first check the current status
-		return get(projectName, uuid, language).flatMap(status -> {
+		return get(projectName, uuid).flatMap(status -> {
 			if (status.isOnline()) {
 				// if the form is already online, no need to change anything
 				return Single.just(status);
@@ -97,12 +83,12 @@ public class FormOnlineStatusService {
 				// update the "online" flag, republish the node and return with the new status
 				NodeUpdateRequest request = new NodeUpdateRequest();
 				request.getFields().put("online", new BooleanFieldImpl().setValue(true));
-				request.setLanguage(language);
+				request.setLanguage("en");
 				request.setVersion("draft");
 
 				return userClient.updateNode(projectName, uuid, request, DRAFT_VERSION, GET_FIELDS).toCompletable()
 						.andThen(userClient.publishNode(projectName, uuid).toCompletable())
-						.andThen(get(projectName, uuid, language));
+						.andThen(get(projectName, uuid));
 			}
 		});
 	}
@@ -111,12 +97,11 @@ public class FormOnlineStatusService {
 	 * Set the form offline
 	 * @param projectName project name
 	 * @param uuid form uuid
-	 * @param language language
 	 * @return single response
 	 */
-	public Single<FormOnlineResponse> setOffline(String projectName, String uuid, String language) {
+	public Single<FormOnlineResponse> setOffline(String projectName, String uuid) {
 		// first check the current status
-		return get(projectName, uuid, language).flatMap(status -> {
+		return get(projectName, uuid).flatMap(status -> {
 			if (!status.isOnline()) {
 				// if the form is already offline, no need to change anything
 				return Single.just(status);
@@ -124,12 +109,12 @@ public class FormOnlineStatusService {
 				// update the "online" flag, republish the node and return with the new status
 				NodeUpdateRequest request = new NodeUpdateRequest();
 				request.getFields().put("online", new BooleanFieldImpl().setValue(false));
-				request.setLanguage(language);
+				request.setLanguage("en");
 				request.setVersion("draft");
 
 				return userClient.updateNode(projectName, uuid, request, DRAFT_VERSION, GET_FIELDS).toCompletable()
 						.andThen(userClient.publishNode(projectName, uuid).toCompletable())
-						.andThen(get(projectName, uuid, language));
+						.andThen(get(projectName, uuid));
 			}
 		});
 	}

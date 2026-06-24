@@ -2,28 +2,31 @@ package com.gentics.mesh.plugin.forms;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.gentics.mesh.plugin.forms.service.FormDataService;
-import com.google.common.net.HttpHeaders;
-import io.vertx.core.json.JsonObject;
-import okhttp3.MultipartBody;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.junit.Before;
-import org.junit.Test;
-
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.junit.Before;
+import org.junit.Test;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.gentics.mesh.plugin.forms.service.FormDataService;
+import com.google.common.net.HttpHeaders;
+
+import io.vertx.core.json.JsonObject;
+import okhttp3.MultipartBody;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 /**
  * Test the asynchronous export and binary download endpoints.
@@ -35,7 +38,6 @@ public class FormDataAsyncReportingTest extends AbstractFormsPluginIntegrationTe
 		super.setup();
 		// activate plugin
 		assertThat(activate(PROJECT_NAME)).as("Activation status").isTrue();
-		assertThat(setLanguages(PROJECT_NAME, Arrays.asList("en", "de"))).as("Activated languages").containsOnly("en", "de");
 	}
 
 	/**
@@ -55,7 +57,7 @@ public class FormDataAsyncReportingTest extends AbstractFormsPluginIntegrationTe
 
 		records.add(StringUtils.join(headers, ","));
 
-		submit(uuid, "input1", "value1", "input2", "value2", "input3", "value3");
+		submit(uuid, "en", "input1", "value1", "input2", "value2", "input3", "value3");
 		records.add(String.join(",", Arrays.asList("value1", "value2", "value3")));
 
 		Request request = new Request.Builder()
@@ -126,12 +128,13 @@ public class FormDataAsyncReportingTest extends AbstractFormsPluginIntegrationTe
 				try {
 					RequestBody requestBody = new MultipartBody.Builder()
 						.setType(MultipartBody.FORM)
-						.addFormDataPart("file1", fileName, requestBodyFromFile(fileName))
+						.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("file1", getFileData(fileName))))
+						.addFormDataPart(fileUploadKey("file1"), fileName, requestBodyFromFile(fileName))
 						.build();
-					Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/jsondata")).header("Referer", "ref").post(requestBody).build();
+					Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=en")).header("Referer", "ref").post(requestBody).build();
 					Response response = client().newCall(postRequest).execute();
 					assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
-					return new JsonObject(response.body().string()).getValue("dataUuid") + "/file1/" + fileName;
+					return new JsonObject(response.body().string()).getValue("formDataID") + "/file1/" + fileName;
 				} catch (IOException e) {
 					throw new IllegalStateException(e);
 				}

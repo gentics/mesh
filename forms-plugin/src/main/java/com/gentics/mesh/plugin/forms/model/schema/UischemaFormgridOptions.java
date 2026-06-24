@@ -1,0 +1,191 @@
+package com.gentics.mesh.plugin.forms.model.schema;
+
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class UischemaFormgridOptions {
+
+	@JsonProperty("type")
+	private String type;
+
+	@JsonProperty("condition")
+	private Map<String, Object> condition;
+
+	@JsonProperty("numberOfColumns")
+	private Integer numberOfColumns;
+
+	@JsonProperty("numberOfLines")
+	private Integer numberOfLines;
+
+	@JsonProperty("inForm")
+	private Boolean inForm;
+
+	@JsonProperty("inSummary")
+	private Boolean inSummary;
+
+	@JsonProperty("image")
+	private Map<String, Object> image;
+
+	@JsonProperty("radio")
+	private Boolean radio;
+
+	@JsonProperty("fileExtensionsNotAllowed")
+	private List<String> fileExtensionsNotAllowed;
+
+	@JsonProperty("button")
+	private Boolean button;
+
+	@JsonProperty("buttonIsPrimary")
+	private Boolean buttonIsPrimary;
+
+	@JsonProperty("showFilter")
+	private Boolean showFilter;
+
+	@JsonProperty("showOnlyFirstLine")
+	private Boolean showOnlyFirstLine;
+
+	@JsonProperty("buttonDisplayStyle")
+	private String buttonDisplayStyle;
+
+	@JsonProperty("overlayOptions")
+	private Map<String, Object> overlayOptions;
+
+	private Map<String, Object> properties = new LinkedHashMap<>();
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public Map<String, Object> getCondition() {
+		return condition;
+	}
+
+	public void setCondition(Map<String, Object> condition) {
+		this.condition = condition;
+	}
+
+	public Integer getNumberOfColumns() {
+		return numberOfColumns;
+	}
+
+	public void setNumberOfColumns(Integer numberOfColumns) {
+		this.numberOfColumns = numberOfColumns;
+	}
+
+	public Integer getNumberOfLines() {
+		return numberOfLines;
+	}
+
+	public void setNumberOfLines(Integer numberOfLines) {
+		this.numberOfLines = numberOfLines;
+	}
+
+	public Boolean getInForm() {
+		return inForm;
+	}
+
+	public void setInForm(Boolean inForm) {
+		this.inForm = inForm;
+	}
+
+	public Boolean getInSummary() {
+		return inSummary;
+	}
+
+	public void setInSummary(Boolean inSummary) {
+		this.inSummary = inSummary;
+	}
+
+	public Map<String, Object> getImage() {
+		return image;
+	}
+
+	public void setImage(Map<String, Object> image) {
+		this.image = image;
+	}
+
+	public Boolean getRadio() {
+		return radio;
+	}
+
+	public void setRadio(Boolean radio) {
+		this.radio = radio;
+	}
+
+	public List<String> getFileExtensionsNotAllowed() {
+		return fileExtensionsNotAllowed;
+	}
+
+	public void setFileExtensionsNotAllowed(List<String> fileExtensionsNotAllowed) {
+		this.fileExtensionsNotAllowed = fileExtensionsNotAllowed;
+	}
+
+	public Boolean getButton() {
+		return button;
+	}
+
+	public void setButton(Boolean button) {
+		this.button = button;
+	}
+
+	public Boolean getButtonIsPrimary() {
+		return buttonIsPrimary;
+	}
+
+	public void setButtonIsPrimary(Boolean buttonIsPrimary) {
+		this.buttonIsPrimary = buttonIsPrimary;
+	}
+
+	public Boolean getShowFilter() {
+		return showFilter;
+	}
+
+	public void setShowFilter(Boolean showFilter) {
+		this.showFilter = showFilter;
+	}
+
+	public Boolean getShowOnlyFirstLine() {
+		return showOnlyFirstLine;
+	}
+
+	public void setShowOnlyFirstLine(Boolean showOnlyFirstLine) {
+		this.showOnlyFirstLine = showOnlyFirstLine;
+	}
+
+	public String getButtonDisplayStyle() {
+		return buttonDisplayStyle;
+	}
+
+	public void setButtonDisplayStyle(String buttonDisplayStyle) {
+		this.buttonDisplayStyle = buttonDisplayStyle;
+	}
+
+	public Map<String, Object> getOverlayOptions() {
+		return overlayOptions;
+	}
+
+	public void setOverlayOptions(Map<String, Object> overlayOptions) {
+		this.overlayOptions = overlayOptions;
+	}
+
+	@JsonAnyGetter
+	public Map<String, Object> getAny() {
+		return properties;
+	}
+
+	@JsonAnySetter
+	public void setProperty(String key, Object value) {
+		properties.put(key, value);
+	}
+}

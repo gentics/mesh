@@ -35,7 +35,7 @@ public class FormPostVoteTest extends AbstractFormsPluginIntegrationTest {
 	public void testSubmitVote() throws IOException {
 		String pollUuid = createForm(POLL_FORM);
 		String vote = "option1";
-		ResponseWithCookies rs = submit(pollUuid, true, true, POLL_FIELD, vote);
+		ResponseWithCookies rs = submit(pollUuid, true, true, "en",POLL_FIELD, vote);
 		Optional<Cookie> cookie = rs.getCookie(FormDataService.COOKIE_NAME_DATA);
 
 		assertThat(cookie)
@@ -63,7 +63,7 @@ public class FormPostVoteTest extends AbstractFormsPluginIntegrationTest {
 	public void testVotedCookie() throws IOException {
 		String vote = "option1";
 		String firstPollUuid = createForm(POLL_FORM);
-		ResponseWithCookies rs = submit(firstPollUuid, true, true, POLL_FIELD, vote);
+		ResponseWithCookies rs = submit(firstPollUuid, true, true, false, false, "en", POLL_FIELD, vote);
 		Optional<Cookie> cookie = rs.getCookie(FormDataService.COOKIE_NAME_VOTED);
 
 		for (Cookie c : rs.cookies) {
@@ -82,7 +82,7 @@ public class FormPostVoteTest extends AbstractFormsPluginIntegrationTest {
 
 		String votedCookie = String.format("%s=%s", FormDataService.COOKIE_NAME_VOTED, firstPollUuid);
 
-		rs = submit(secondPollUuid, true, true, true, votedCookie, POLL_FIELD, vote);
+		rs = submit(secondPollUuid, true, true, true, "en", votedCookie, POLL_FIELD, vote);
 		cookie = rs.getCookie(FormDataService.COOKIE_NAME_VOTED);
 
 		for (Cookie c : rs.cookies) {
@@ -98,7 +98,7 @@ public class FormPostVoteTest extends AbstractFormsPluginIntegrationTest {
 
 		// Submit data for the first poll again, and make sure the UUID in the cookie is not duplicated.
 		votedCookie = String.format("%s=%s:%s", FormDataService.COOKIE_NAME_VOTED, firstPollUuid, secondPollUuid);
-		rs = submit(firstPollUuid, true, true, true, votedCookie, POLL_FIELD, vote);
+		rs = submit(firstPollUuid, true, true, true, "en", votedCookie, POLL_FIELD, vote);
 		cookie = rs.getCookie(FormDataService.COOKIE_NAME_VOTED);
 
 		for (Cookie c : rs.cookies) {

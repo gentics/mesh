@@ -3,6 +3,7 @@ package com.gentics.mesh.plugin.forms.handler.form;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.http.HttpConstants;
 import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.common.util.ParameterUtil;
 import com.gentics.mesh.plugin.forms.handler.AbstractFormsHandler;
@@ -10,6 +11,7 @@ import com.gentics.mesh.plugin.forms.service.FormService;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
+import io.vertx.core.http.HttpHeaders;
 
 @Singleton
 public class LoadFormHandler extends AbstractFormsHandler {
@@ -25,14 +27,16 @@ public class LoadFormHandler extends AbstractFormsHandler {
 	public Completable handle(PluginContext context) {
 		String projectName = context.project().getString("name");
 		Single<String> uuidSingle = ParameterUtil.getUuidFromPath(context, "formUuid");
-		Single<String[]> languagesSingle = ParameterUtil.getLanguages(context);
 
-		return Single
-				.zip(uuidSingle, languagesSingle,
-						(uuid, languages) -> formService.loadForm(projectName, uuid, languages))
-				.flatMap(x -> x).doOnEvent((response, t) -> {
+		return uuidSingle
+				.flatMap(uuid -> formService.loadForm(projectName, uuid))
+				.doOnEvent((response, t) -> {
 					if (response != null) {
-						context.response().end(response.toString());
+						if (response.containsKey("uiSchema")) {
+							response.put("ui-schema", response.remove("uiSchema"));
+						}
+						context.response().putHeader(HttpHeaders.CONTENT_TYPE, HttpConstants.APPLICATION_JSON_UTF8)
+								.end(response.toString());
 					}
 				}).ignoreElement();
 	}

@@ -3,7 +3,6 @@ package com.gentics.mesh.plugin.forms;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.gentics.mesh.util.UUIDUtil;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,7 +11,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import com.gentics.mesh.plugin.forms.model.FormType;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,8 +22,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.parameter.client.NodeParametersImpl;
 import com.gentics.mesh.plugin.forms.service.SchemaService;
+import com.gentics.mesh.util.UUIDUtil;
 import com.jayway.jsonpath.JsonPath;
 
 import io.vertx.core.json.JsonObject;
@@ -77,8 +75,6 @@ public class FormCRUDTest extends AbstractFormsPluginIntegrationTest {
 			.as("Form fields")
 			.doesNotContain("type");
 
-		expectedJson.put("type", FormType.GENERIC.name());
-
 		assertCreatedForm(inputFilename, expectedJson);
 	}
 
@@ -91,7 +87,7 @@ public class FormCRUDTest extends AbstractFormsPluginIntegrationTest {
 		String uuid = createForm("create_de.json", permission, true);
 
 		if (permission) {
-			NodeResponse nodeResponse = server.client().findNodeByUuid(PROJECT_NAME, uuid, new NodeParametersImpl().setLanguages("de")).blockingGet();
+			NodeResponse nodeResponse = server.client().findNodeByUuid(PROJECT_NAME, uuid).blockingGet();
 
 			assertThat(nodeResponse.getProject().getName()).as("NodeResponse Project").isEqualTo(PROJECT_NAME);
 			assertThat(nodeResponse.getFields().getStringField("name").getString()).as("NodeResponse name").isEqualTo("Erstelltes Formular");
@@ -113,20 +109,12 @@ public class FormCRUDTest extends AbstractFormsPluginIntegrationTest {
 	 */
 	@Test
 	public void testListForms() throws IOException {
-		setLanguages(PROJECT_NAME, Arrays.asList("en", "de", "it"));
 
 		createForm("list1.json");
 		createForm("list2.json");
 		createForm("list3.json");
 
 		doTestListForms(new String[0], new String[] { "Form List 1", "Form List 2", "Form List 3" });
-		doTestListForms(new String[] { "en" }, new String[] { "Form List 1" });
-		doTestListForms(new String[] { "de" }, new String[] { "Form List 1", "Form List 2" });
-		doTestListForms(new String[] { "it" }, new String[] { "Form List 1", "Form List 3" });
-		doTestListForms(new String[] { "en", "de" }, new String[] { "Form List 1", "Form List 2" });
-		doTestListForms(new String[] { "en", "it" }, new String[] { "Form List 1", "Form List 3" });
-		doTestListForms(new String[] { "de", "it" }, new String[] { "Form List 1", "Form List 2", "Form List 3" });
-		doTestListForms(new String[] { "en", "de", "it" }, new String[] { "Form List 1", "Form List 2", "Form List 3" });
 	}
 
 	/**
@@ -245,7 +233,7 @@ public class FormCRUDTest extends AbstractFormsPluginIntegrationTest {
 
 		for (int i = 0; i < 20; i++) {
 			boolean empty = i % 2 == 0;
-			submit(uuid, true, empty, "input1", empty ? "" : "data %d".formatted(i));
+			submit(uuid, true, empty, "input1", "en", empty ? "" : "data %d".formatted(i));
 		}
 
 		Request deleteRequest = new Request.Builder()

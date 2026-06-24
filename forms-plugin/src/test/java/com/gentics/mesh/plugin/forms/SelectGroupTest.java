@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -59,7 +60,7 @@ public class SelectGroupTest extends AbstractFormsPluginIntegrationTest {
 	public void testSingle() throws IOException {
 		String key = getRandomKey(AVAILABLE_SINGLE_KEYS);
 
-		ResponseWithCookies response = submit(formUuid, "single", key);
+		ResponseWithCookies response = submit(formUuid, "en", "single", key);
 		assertThat(response.response.isSuccessful()).as("Response is success").isTrue();
 
 		NodeResponse dataNode = getSingleFormDataNode(formUuid);
@@ -67,10 +68,12 @@ public class SelectGroupTest extends AbstractFormsPluginIntegrationTest {
 	}
 
 	@Test
+	@Ignore("No additional elements allowed")
+	@Deprecated
 	public void testSingleWithAdditional() throws IOException  {
 		String additionalKey = "somethingelse";
 
-		ResponseWithCookies response = submit(formUuid, "single_with", "single_withadditional_field", "single_with_additional", additionalKey);
+		ResponseWithCookies response = submit(formUuid, "en", "single_with", "single_withadditional_field", "single_with_additional", additionalKey);
 		assertThat(response.response.isSuccessful()).as("Response is success").isTrue();
 
 		NodeResponse dataNode = getSingleFormDataNode(formUuid);
@@ -81,7 +84,7 @@ public class SelectGroupTest extends AbstractFormsPluginIntegrationTest {
 	public void testMulti() throws IOException {
 		List<String> keys = getRandomKeys(AVAILABLE_MULTI_KEYS, 2);
 
-		ResponseWithCookies response = submit(formUuid, "multi", keys.get(0), "multi", keys.get(1));
+		ResponseWithCookies response = submit(formUuid, "en", "multi", keys.get(0), "multi", keys.get(1));
 		assertThat(response.response.isSuccessful()).as("Response is success").isTrue();
 
 		NodeResponse dataNode = getSingleFormDataNode(formUuid);
@@ -89,11 +92,13 @@ public class SelectGroupTest extends AbstractFormsPluginIntegrationTest {
 	}
 
 	@Test
+	@Ignore("No additional elements allowed")
+	@Deprecated
 	public void testMultiWithAdditional() throws IOException  {
 		List<String> keys = getRandomKeys(AVAILABLE_MULTI_KEYS, 2);
 		String additionalKey = "somethingelse";
 
-		ResponseWithCookies response = submit(formUuid, "multi_with", keys.get(0), "multi_with", keys.get(1), "multi_with", additionalKey);
+		ResponseWithCookies response = submit(formUuid, "en", "multi_with", keys.get(0), "multi_with", keys.get(1), "multi_with", additionalKey);
 		assertThat(response.response.isSuccessful()).as("Response is success").isTrue();
 
 		NodeResponse dataNode = getSingleFormDataNode(formUuid);

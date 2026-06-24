@@ -26,9 +26,10 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -36,9 +37,12 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,38 +57,53 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
+import com.gentics.mesh.core.rest.node.field.NodeField;
+import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
+import com.gentics.mesh.core.rest.node.field.image.ImageManipulationRequest;
+import com.gentics.mesh.core.rest.node.field.image.ImageVariantRequest;
+import com.gentics.mesh.core.rest.node.field.image.ImageVariantsResponse;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
+import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.parameter.client.DeleteParametersImpl;
+import com.gentics.mesh.parameter.client.ImageManipulationParametersImpl;
+import com.gentics.mesh.parameter.client.NodeParametersImpl;
 import com.gentics.mesh.parameter.client.VersioningParametersImpl;
 import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.PluginManifest;
 import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.dagger.StorageDir;
 import com.gentics.mesh.plugin.common.dagger.UserClient;
-import com.gentics.mesh.plugin.common.service.RenderService;
+import com.gentics.mesh.plugin.common.util.AuthUtil;
 import com.gentics.mesh.plugin.common.util.GraphQlPagingFetcher;
 import com.gentics.mesh.plugin.common.util.ParameterUtil;
 import com.gentics.mesh.plugin.forms.FormsError;
 import com.gentics.mesh.plugin.forms.FormsPlugin;
 import com.gentics.mesh.plugin.forms.SchemaInitializer;
+import com.gentics.mesh.plugin.forms.config.FileUploadOptions;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.context.FormDataCreateContext;
 import com.gentics.mesh.plugin.forms.context.FormDataUpdateContext;
 import com.gentics.mesh.plugin.forms.export.ExportData;
 import com.gentics.mesh.plugin.forms.export.Exporter;
-import com.gentics.mesh.plugin.forms.model.FileElement;
+import com.gentics.mesh.plugin.forms.model.BinaryElement;
 import com.gentics.mesh.plugin.forms.model.Form;
 import com.gentics.mesh.plugin.forms.model.FormElement;
-import com.gentics.mesh.plugin.forms.model.FormType;
-import com.gentics.mesh.plugin.forms.model.FormpageElement;
-import com.gentics.mesh.plugin.forms.model.PostDataResponse;
+import com.gentics.mesh.plugin.forms.model.FormtypeConfigsModel;
 import com.gentics.mesh.plugin.forms.model.ValidationError;
+import com.gentics.mesh.plugin.forms.model.schema.BinaryData;
+import com.gentics.mesh.plugin.forms.model.schema.FormData;
+import com.gentics.mesh.plugin.forms.model.schema.PostedData;
 import com.gentics.mesh.plugin.forms.util.FormParameterUtil;
 import com.gentics.mesh.plugin.forms.util.FormUtil;
-import com.gentics.mesh.plugin.forms.util.RxUtil;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -94,17 +113,15 @@ import com.gentics.mesh.util.UUIDUtil;
 import com.github.jknack.handlebars.Context;
 import com.github.jknack.handlebars.Handlebars;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
-import io.vertx.core.MultiMap;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.Cookie;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.FileUpload;
-import io.vertx.ext.web.RoutingContext;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.eventbus.Message;
 import io.vertx.reactivex.core.eventbus.MessageConsumer;
@@ -158,8 +175,6 @@ public class FormDataService {
 
 	private final Vertx rxVertx;
 
-	private final FormsConfig configuration;
-
 	private final ObjectMapper objectMapper;
 
 	private final FormService formService;
@@ -168,11 +183,11 @@ public class FormDataService {
 
 	private final MailService mailService;
 
-	private final RenderService renderService;
-
 	private final StatusService statusService;
 
 	private final OkHttpClientService okHttpClientService;
+
+	private final CaptchaService captchaService;
 
 	private final File storageDir;
 
@@ -185,27 +200,25 @@ public class FormDataService {
 			@AdminClient MeshRestClient adminClient,
 			@UserClient @Nullable MeshRestClient userClient,
 			io.vertx.core.Vertx vertx,
-			FormsConfig configuration,
 			ObjectMapper objectMapper,
 			FormService formService,
 			PagingService pagingService,
 			MailService mailService,
-			RenderService renderService,
 			StatusService statusService,
 			OkHttpClientService okHttpClientService,
+			CaptchaService captchaService,
 			PluginManifest manifest,
 			@StorageDir File storageDir) {
 		this.adminClient = adminClient;
 		this.userClient = userClient;
 		this.rxVertx = new Vertx(vertx);
-		this.configuration = configuration;
 		this.objectMapper = objectMapper;
 		this.formService = formService;
 		this.pagingService = pagingService;
 		this.mailService = mailService;
-		this.renderService = renderService;
 		this.statusService = statusService;
 		this.okHttpClientService = okHttpClientService;
+		this.captchaService = captchaService;
 		this.storageDir = storageDir;
 
 		try {
@@ -241,7 +254,7 @@ public class FormDataService {
 					String[] lang = statusService.languageFallback(pluginRootNode);
 
 					return getFormsNeedingMigration(project, pluginRootNode, lang)
-							.flatMapCompletable(formUuid -> migrateFormDataNodes(project, formUuid));
+					.flatMapCompletable(formUuid -> migrateFormDataNodes(project, formUuid));
 				}).doOnComplete(() -> {
 					statusService.getRootNode(projectName, adminClient).flatMap(node -> {
 						NodeUpdateRequest update = node.toRequest();
@@ -251,8 +264,8 @@ public class FormDataService {
 					}).doOnSuccess(node -> {
 						log.info("Node migration completed");
 					}).subscribe();
-				});
-			}
+		});
+	}
 		});
 	}
 
@@ -330,13 +343,13 @@ public class FormDataService {
 				.setVariables(new JsonObject().put("uuid", formUuid).put("schema", schemaName).put("perPage", nodesPerPage));
 		VersioningParameters params = new VersioningParametersImpl().draft();
 
-		AtomicBoolean hasMore = new AtomicBoolean(false);
+					   AtomicBoolean hasMore = new AtomicBoolean(false);
 		AtomicReference<String> formDataFolderUuid = new AtomicReference<>();
-		return adminClient.graphql(projectName, request, params).toSingle()
-		   .flatMapObservable(response -> {
-				   List<String> uuids = FormUtil.getFromResponse(response, "$.data.node.children.elements[*].uuid");
-				   log.info("{} form data nodes found for migration of project {} / form {}", uuids.size(), projectName, formUuid);
-				   hasMore.set(uuids.size() >= nodesPerPage);
+					   return adminClient.graphql(projectName, request, params).toSingle()
+							   .flatMapObservable(response -> {
+									   List<String> uuids = FormUtil.getFromResponse(response, "$.data.node.children.elements[*].uuid");
+									   log.info("{} form data nodes found for migration of project {} / form {}", uuids.size(), projectName, formUuid);
+									   hasMore.set(uuids.size() >= nodesPerPage);
 				   Observable<String> observables = Observable.fromIterable(uuids);
 				   if (uuids.size() > 0 && formDataFolderUuid.get() == null) {
 					   return getFormDataFolderUuid(projectName, formUuid, lang).flatMapObservable(uuid -> {
@@ -347,9 +360,9 @@ public class FormDataService {
 					   return observables;
 				   }				   
 		   }).flatMap(dataUuid -> adminClient.moveNode(projectName, dataUuid, formDataFolderUuid.get()).toObservable()
-				   .doOnSubscribe(disp -> log.debug(String.format("Move misplaced form data node %s for form %s in project %s", dataUuid, formUuid, projectName))), 
-				   maxConcurrentMoveCalls)
-		   .flatMapCompletable(disp -> Completable.complete())
+											   .doOnSubscribe(disp -> log.debug(String.format("Move misplaced form data node %s for form %s in project %s", dataUuid, formUuid, projectName))), 
+									   maxConcurrentMoveCalls)
+							   .flatMapCompletable(disp -> Completable.complete())
 		   .repeatWhen(handler -> handler.takeWhile((o) -> hasMore.get()))
 		   .doOnSubscribe(disp -> log.debug(String.format("Checking misplaced form data nodes for form %s in project %s", formUuid, projectName)));
 	}
@@ -357,33 +370,73 @@ public class FormDataService {
 	/**
 	 * Save data posted by a user for the form
 	 *
+	 * @param formtypeConfigs formtype configs
 	 * @param ctx Request context
 	 * @return single of the post data response
 	 */
-	public Single<PostDataResponse> create(FormDataCreateContext ctx) {
-		return formService.loadAsAdminWithLanguageFallback(ctx.getProjectName(), ctx.getFormUuid(), true, ctx.getLanguages())
+	public Single<FormData> create(FormtypeConfigsModel formtypeConfigs, FormDataCreateContext ctx) {
+		return formService.loadAsAdmin(ctx.getProjectName(), ctx.getFormUuid(), true, "en")
 			.doOnSuccess(ctx::setFormNode)
-			.flatMap(formService::toForm)
+			.flatMap(node -> formService.toForm(formtypeConfigs, node))
 			.doOnSuccess(ctx::setForm)
-			.flatMap(form -> savePostedData(ctx));
+			.flatMap(form -> savePostedData(formtypeConfigs, ctx));
 	}
 
 	/**
 	 * Update already posted data
 	 *
+	 * @param formtypeConfigs formtype configs
 	 * @param ctx Request context
 	 * @return single of the post data response
 	 */
-	public Single<PostDataResponse> update(FormDataUpdateContext ctx) {
+	public Single<FormData> update(FormtypeConfigsModel formtypeConfigs, FormDataUpdateContext ctx) {
 		return Single.zip(
-			formService.loadAsAdminWithLanguageFallback(ctx.getProjectName(), ctx.getFormUuid(), true, ctx.getLanguages()),
+				// always load English version of form
+				formService.loadAsAdmin(ctx.getProjectName(), ctx.getFormUuid(), true, "en"),
 				load(ctx.getProjectName(), ctx.getFormUuid(), ctx.getFormDataUuid()),
-				(formNode, formDataNode) -> formService.toForm(formNode)
+				(formNode, formDataNode) -> formService.toForm(formtypeConfigs, formNode)
+						.flatMap(form -> {
+							ctx.setFormNode(formNode);
+							ctx.setFormDataNode(formDataNode);
+							ctx.setForm(form);
+							return savePostedData(formtypeConfigs, ctx);
+						}))
+				.flatMap(x -> x);
+	}
+
+	/**
+	 * Validate data posted by a user for the form without saving it.
+	 * 
+	 * @param formtypeConfigs formtype configs
+	 * @param ctx Request context
+	 * @return single of form data validation state
+	 */
+	public Single<FormData> validate(FormtypeConfigsModel formtypeConfigs, FormDataCreateContext ctx) {
+		return formService.loadAsAdminWithLanguageFallback(ctx.getProjectName(), ctx.getFormUuid(), true, "en")
+			.doOnSuccess(ctx::setFormNode)
+			.flatMap(node -> formService.toForm(formtypeConfigs, node))
+			.doOnSuccess(ctx::setForm)
+			.flatMap(form -> validatePostedData(ctx.getPostedData(), statusService.getEffectiveConfiguration(formtypeConfigs, form.getType()), ctx))
+			.map(errors -> toValidationResponse(ctx, errors));
+	}
+
+	/**
+	 * Validate data posted by a user for an existing form data node without saving it.
+	 *
+	 * @param formtypeConfigs formtype configs
+	 * @param ctx Request context
+	 * @return single of form data validation state
+	 */
+	public Single<FormData> validate(FormtypeConfigsModel formtypeConfigs, FormDataUpdateContext ctx) {
+		return Single.zip(
+			formService.loadAsAdminWithLanguageFallback(ctx.getProjectName(), ctx.getFormUuid(), true, "en"),
+				load(ctx.getProjectName(), ctx.getFormUuid(), ctx.getFormDataUuid()),
+				(formNode, formDataNode) -> formService.toForm(formtypeConfigs, formNode)
 					.flatMap(form -> {
 						ctx.setFormNode(formNode);
 						ctx.setFormDataNode(formDataNode);
 						ctx.setForm(form);
-						return savePostedData(ctx);
+						return validatePostedData(ctx.getPostedData(), statusService.getEffectiveConfiguration(formtypeConfigs, form.getType()), ctx).map(errors -> toValidationResponse(ctx, errors));
 					}))
 			.flatMap(x -> x);
 	}
@@ -402,8 +455,9 @@ public class FormDataService {
 	public Single<NodeResponse> load(String projectName, String formUuid, String formDataUuid) {
 		return load(projectName, formUuid, formDataUuid, false);
 	}
+
 	/**
-	 * Load the form data by uuid
+	 * Load the form data by uuid with the admin client
 	 *
 	 * @param projectName project name
 	 * @param formUuid form uuid
@@ -441,52 +495,59 @@ public class FormDataService {
 	 * the background.
 	 * </p>
 	 *
+	 * @param formtypeConfigs formtype configs
 	 * @param projectName The project name.
 	 * @param formUuid The UUID of the form to export data for.
 	 * @param context The current request context.
 	 * @param lang The requested languages.
 	 * @return The created export node.
 	 */
-	public Single<NodeResponse> requestExport(String projectName, String formUuid, PluginContext context, String... lang)  {
-		String options = FormParameterUtil.getExportOptions(context, configuration);
+	public Single<NodeResponse> requestExport(FormtypeConfigsModel formtypeConfigs, String projectName, String formUuid, PluginContext context, String... lang)  {
 
 		return formService.getFormFolderUuid(projectName, formUuid, lang, FormService.DOWNLOADS_FOLDER_NAME)
-			.flatMap(folderUuid -> formService.loadForm(projectName, formUuid, lang)
-				.flatMap(form -> createDownloadNode(projectName, folderUuid, "export", "form-export", form.getString("name"), options)))
-			.flatMap(exportNode -> {
-				MessageConsumer<Object> consumer = rxVertx.eventBus()
-					.consumer(MESSAGE_DOWNLOAD_CHECK_PREFIX + exportNode.getUuid(), msg -> msg.reply(true));
+				.flatMap(folderUuid -> formService.loadForm(projectName, formUuid) // TODO 8.5 language ?
+						.flatMap(form -> {
+							FormsConfig configuration = statusService.getEffectiveConfiguration(formtypeConfigs, form.getString("type"));
+							String options = FormParameterUtil.getExportOptions(context, configuration);
 
-				Single<ExportData> export = export(projectName, formUuid, context, lang);
+							return createDownloadNode(projectName, folderUuid, "export", "form-export",
+									form.getString("name"), options);
+						}))
+				.flatMap(exportNode -> {
+					MessageConsumer<Object> consumer = rxVertx.eventBus()
+							.consumer(MESSAGE_DOWNLOAD_CHECK_PREFIX + exportNode.getUuid(), msg -> msg.reply(true));
 
-				if (configuration.isTesting()) {
-					export = export.delay(TEST_DELAY_MS, TimeUnit.MILLISECONDS);
-				}
+					Single<ExportData> export = export(formtypeConfigs, projectName, formUuid, context, lang);
 
-				export.subscribe(exportData -> saveDownloadData(projectName, exportNode, exportData.getExportFile(),
-						exportData.getFormat().fileExtension, exportData.getFormat().mimeType)
-						.doFinally(consumer::rxUnregister).subscribe(), error -> {
-							setDownloadError(projectName, exportNode, error.getLocalizedMessage())
-									.doFinally(consumer::rxUnregister).subscribe();
-						});
+					if (statusService.getEffectiveConfiguration(formtypeConfigs, "").isTesting()) {
+						export = export.delay(TEST_DELAY_MS, TimeUnit.MILLISECONDS);
+					}
 
-				return Single.just(exportNode);
-			});
+					export.subscribe(exportData -> saveDownloadData(projectName, exportNode, exportData.getExportFile(),
+							exportData.getFormat().fileExtension, exportData.getFormat().mimeType)
+							.doFinally(consumer::rxUnregister).subscribe(), error -> {
+								setDownloadError(projectName, exportNode, error.getLocalizedMessage())
+										.doFinally(consumer::rxUnregister).subscribe();
+							});
+
+					return Single.just(exportNode);
+				});
 	}
 
 	/**
 	 * Request a download for all submitted binaries of the fiven form.
 	 *
+	 * @param formtypeConfigs formtype configs
 	 * @param projectName The project name.
 	 * @param formUuid The form to download binaries for.
 	 * @param languages The requested languages.
 	 * @return The created download node for the binary download.
 	 */
-	public Single<NodeResponse> requestZipBinaries(String projectName, String formUuid, String ...languages) {
+	public Single<NodeResponse> requestZipBinaries(FormtypeConfigsModel formtypeConfigs, String projectName, String formUuid, String ...languages) {
 		return formService.getFormFolderUuid(projectName, formUuid, languages, FormService.DOWNLOADS_FOLDER_NAME)
 			.flatMap(folderUuid -> statusService.languageFallback(projectName, languages)
 				.flatMap(langFallback -> formService.load(projectName, formUuid, langFallback))
-				.flatMap(formService::toForm)
+				.flatMap(node -> formService.toForm(formtypeConfigs, node))
 				.flatMap(form -> createDownloadNode(projectName, folderUuid, "binaries", "binaries", form.getName(), "")
 					.flatMap(downloadNode -> {
 						MessageConsumer<Object> consumer = rxVertx.eventBus()
@@ -494,7 +555,7 @@ public class FormDataService {
 
 						Single<Pair<Form, File>> binaries = zipBinaries(projectName, form);
 
-						if (configuration.isTesting()) {
+						if (statusService.getEffectiveConfiguration(formtypeConfigs, "").isTesting()) {
 							binaries = binaries.delay(TEST_DELAY_MS, TimeUnit.MILLISECONDS);
 						}
 
@@ -763,13 +824,14 @@ public class FormDataService {
 	 * <p>
 	 * The export format is determined via query parameters in the request, and the default format is CSV.
 	 *
+	 * @param formtypeConfigs formtype configs
 	 * @param projectName project name
 	 * @param formUuid The UUID of the form to export
 	 * @param context The current routing context
 	 * @param lang optional languages
 	 * @return single export data
 	 */
-	public Single<ExportData> export(String projectName, String formUuid, PluginContext context, String... lang) {
+	public Single<ExportData> export(FormtypeConfigsModel formtypeConfigs, String projectName, String formUuid, PluginContext context, String... lang) {
 		// Export only published data nodes by default.
 		boolean publishedOnly = Optional.ofNullable(context.queryParams().get(PARAM_PUBLISHED_ONLY))
 			.map(Boolean::parseBoolean)
@@ -777,9 +839,14 @@ public class FormDataService {
 
 		return statusService.languageFallback(projectName, lang)
 			.flatMap(langFallback -> formService.load(projectName, formUuid, langFallback))
-			.flatMap(formService::toForm)
+			.flatMap(node -> formService.toForm(formtypeConfigs, node))
 			.flatMap(form -> {
-				Exporter exporter = Exporter.create(configuration, userClient, context, new File(System.getProperty("java.io.tmpdir")), formUuid, SchemaService.getSchemaName(formUuid), configuration.getExportOptions(), getDownloadBaseUrl(form, projectName));
+				FormsConfig configuration = statusService.getEffectiveConfiguration(formtypeConfigs,
+						form.getType());
+				Exporter exporter = Exporter.create(configuration, userClient, context,
+						new File(System.getProperty("java.io.tmpdir")), formUuid,
+						SchemaService.getSchemaName(formUuid), configuration.getExportOptions(),
+						getDownloadBaseUrl(form, projectName));
 
 				return exporter
 					.setFieldLabels(form.getReportableFields())
@@ -792,15 +859,16 @@ public class FormDataService {
 	 * a zip file containing its uploaded binaries.
 	 *
 	 * @see #zipBinaries(String, Form)
+	 * @param formtypeConfigs formtype configs
 	 * @param projectName The project name.
 	 * @param uuid The UUID of the form to zip the binaries for.
 	 * @param languages The requested languages.
 	 * @return A {@code Pair} containing the form and the created zip file.
 	 */
-	public Single<Pair<Form, File>> zipBinaries(String projectName, String uuid, String ...languages) {
+	public Single<Pair<Form, File>> zipBinaries(FormtypeConfigsModel formtypeConfigs, String projectName, String uuid, String ...languages) {
 		return statusService.languageFallback(projectName, languages)
 			.flatMap(langFallback -> formService.load(projectName, uuid, langFallback))
-			.flatMap(formService::toForm)
+			.flatMap(node -> formService.toForm(formtypeConfigs, node))
 			.flatMap(form -> zipBinaries(projectName, form));
 	}
 
@@ -811,10 +879,9 @@ public class FormDataService {
 	 * @return A {@code Pair} containing the form and the created zip file.
 	 */
 	public Single<Pair<Form, File>> zipBinaries(String projectName, Form form) {
-		Set<String> fileElementNames = form.flattened().filter(elem -> elem instanceof FileElement).map(FormElement::getName)
+		Set<String> fileElementNames = form.getElementsInsideProperties().filter(elem -> elem instanceof BinaryElement).map(FormElement::getName)
 			.filter(Objects::nonNull).collect(Collectors.toSet());
-		Set<String> fileFieldNames = form.flattened().filter(elem -> elem instanceof FileElement).map(FormElement::getGraphQLName)
-			.filter(Objects::nonNull).collect(Collectors.toSet());
+		Set<String> fileFieldNames = form.getElementsInsideProperties().filter(elem -> elem instanceof BinaryElement).map(FormElement::getGraphQLName).filter(Objects::nonNull).collect(Collectors.toSet());
 
 		Single<List<Downloadable>> singleDownloadables = null;
 		if (fileElementNames.isEmpty()) {
@@ -896,13 +963,17 @@ public class FormDataService {
 			String uuid = element.getString("uuid");
 			JsonObject fields = element.getJsonObject("fields");
 			for (String name : fileElementNames) {
-				JsonObject fieldValue = fields.getJsonObject(name);
-				if (fieldValue != null) {
-					downloadables.add(new Downloadable(uuid, name));
+				Object value = fields.getValue(name);
+				if (value instanceof JsonObject itemObject) {
+					downloadables.add(new Downloadable(itemObject.getString("uuid"), "binary", Optional.of("%s/%s".formatted(uuid, name))));
+				} else if (value instanceof JsonArray listValue) {
+					for (int j = 0; j < listValue.size(); j++) {
+						JsonObject itemObject = listValue.getJsonObject(j);
+						downloadables.add(new Downloadable(itemObject.getString("uuid"), "binary", Optional.of("%s/%s/%s/%d".formatted(uuid, itemObject.getString("uuid"), name, j))));
 				}
 			}
 		}
-
+		}
 		return Single.just(downloadables);
 	}
 
@@ -929,7 +1000,7 @@ public class FormDataService {
 
 		return Observable.fromIterable(downloadables).flatMap(d -> {
 			return adminClient.downloadBinaryField(projectName, d.uuid, "en", d.fieldName).toObservable().doAfterNext(MeshBinaryResponse::close).flatMap(download -> {
-				addZipEntryWithUniqueFolderStructure(out, download.getFilename(), d.uuid, d.fieldName);
+				addZipEntryWithUniqueFolderStructure(out, download.getFilename(), d.uuid, d.fieldName, d.maybeFolderName);
 				try (InputStream ins = download.getStream()) {
 					IOUtils.copy(ins, out);
 				}
@@ -952,12 +1023,15 @@ public class FormDataService {
 	 * @param fieldName form field name, nullable
 	 * @throws IOException
 	 */
-	protected void addZipEntryWithUniqueFolderStructure(ZipOutputStream out, String filename, String formDataUuid, String fieldName) throws IOException {
+	protected void addZipEntryWithUniqueFolderStructure(ZipOutputStream out, String filename, String formDataUuid, String fieldName, Optional<String> maybeFolderName) throws IOException {
 		boolean tryAgain = false;
 		do {
 			tryAgain = false;
 			StringBuilder folderName = new StringBuilder();
-			if (org.apache.commons.lang.StringUtils.isNotBlank(formDataUuid) && org.apache.commons.lang.StringUtils.isNotBlank(fieldName)) {
+			if (maybeFolderName.isPresent()) {
+				folderName.append(maybeFolderName.get());
+				folderName.append("/");
+			} else if (org.apache.commons.lang.StringUtils.isNotBlank(formDataUuid) && org.apache.commons.lang.StringUtils.isNotBlank(fieldName)) {
 				folderName.append(formDataUuid);
 				folderName.append("/");
 				folderName.append(fieldName);
@@ -1004,6 +1078,7 @@ public class FormDataService {
 	/**
 	 * Searches the data nodes of the specified form and sends the results to the meshClient.
 	 *
+	 * @param formtypeConfigs formtype configs
 	 * @param projectName project name
 	 * @param formUuid the UUID of the form node
 	 * @param query search query
@@ -1011,12 +1086,14 @@ public class FormDataService {
 	 * @param publishedOnly whether to include only published form data nodes
 	 * @return single search response
 	 */
-	public Single<JsonObject> find(String projectName, String formUuid, String query, JsonObject pagingParams, boolean publishedOnly) {
+	public Single<JsonObject> find(FormtypeConfigsModel formtypeConfigs, String projectName, String formUuid, String query, JsonObject pagingParams, boolean publishedOnly) {
 		return statusService.languageFallback(projectName)
 			.flatMap(langFallback -> formService.load(projectName, formUuid, langFallback))
-			.flatMap(formService::toForm)
+			.flatMap(node -> formService.toForm(formtypeConfigs, node))
 			.flatMap(form -> {
-				GraphQLRequest graphQlRequest = getDataGraphQlRequest(form, query, pagingParams, configuration.isForceNoES());
+				FormsConfig configuration = statusService.getEffectiveConfiguration(formtypeConfigs, form.getType());
+
+				GraphQLRequest graphQlRequest = getDataGraphQlRequest(configuration, form, query, pagingParams, configuration.isForceNoES());
 				VersioningParameters params = new VersioningParametersImpl();
 
 				if (publishedOnly) {
@@ -1046,13 +1123,14 @@ public class FormDataService {
 	 * Create a GraphQL request to load form data nodes for the specified form. Loads the specified form and creates a
 	 * GraphQLRequest with a query to find the form data nodes (and the page) indicated by the HTTP query string.
 	 *
+	 * @param configuration configuration
 	 * @param form The form to load form data for
 	 * @param query The Elasticsearch query to use
 	 * @param pagingParams Paging parameters for the GraphQL query
 	 * @return a GraphQLRequest
 	 * @throws IOException if loading the ElasticSearch or GraphQL query fails
 	 */
-	private GraphQLRequest getDataGraphQlRequest(Form form, String query, JsonObject pagingParams, boolean forceNoES) throws IOException {
+	private GraphQLRequest getDataGraphQlRequest(FormsConfig configuration, Form form, String query, JsonObject pagingParams, boolean forceNoES) throws IOException {
 		JsonObject graphQLParams = new JsonObject(pagingParams.toBuffer());
 		Map<String, String> context = new HashMap<>();
 
@@ -1075,13 +1153,9 @@ public class FormDataService {
 				context.put("sorting", StringUtils.EMPTY);
 			}
 			if (forceNoES && StringUtils.isNotBlank(query)) {
-				String filter = form.getElements().stream().map(element -> {
-					if (element.isMultivalue()) {
-						return element.getGraphQLName() + ": {anyMatch: {like: \"%" + query + "%\"}}";
-					} else {
-						return element.getGraphQLName() + ": {like: \"%" + query + "%\"}";
-					}
-				}).collect(Collectors.joining(" ", " fields: {" + SchemaService.getSchemaName(form.getUuid()) + ":{or: { ", " }}} "));
+				String filter = form.getSchema().getProperties().values().stream()
+						.map(element -> element.installFilter(query))
+						.collect(Collectors.joining(" ", " fields: {" + SchemaService.getSchemaName(form.getUuid()) + ":{or: { ", " }}} "));
 				context.put("fieldFilter", filter);
 			} else {
 				context.put("fieldFilter", StringUtils.EMPTY);
@@ -1105,8 +1179,94 @@ public class FormDataService {
 	public Single<MeshResponse<MeshBinaryResponse>> loadBinary(String projectName, String formUuid, String formDataUuid, String binaryFieldName) {
 		// Binaries can be loaded for already published form data as well, so call the variant of load() which allows loading published form data.
 		return load(projectName, formUuid, formDataUuid, true).flatMap(formDataNode -> {
-			return userClient.downloadBinaryField(projectName, formDataUuid, formDataNode.getLanguage(), binaryFieldName).getResponse();
+			NodeField nodeField = formDataNode.getFields().getNodeField(binaryFieldName);
+			String binaryUuid = nodeField.getUuid();
+			return userClient.downloadBinaryField(projectName, binaryUuid, formDataNode.getLanguage(), "binary").getResponse();
 		});
+	}
+
+	/**
+	 * Gets the multi-binary field item for the specified form data node and sends it to the meshClient.
+	 *
+	 * @param formUuid the UUID of the form node
+	 * @param formDataUuid the UUID of the data node
+	 * @param binaryFieldName the name of the binary field in the form data node
+	 * @param index index of a multi-field binary
+	 */
+	public Single<MeshResponse<MeshBinaryResponse>> loadMultiBinaryItem(String projectName, String formUuid, String formDataUuid, String binaryFieldName, int index) {
+		// Binaries can be loaded for already published form data as well, so call the variant of load() which allows loading published form data.
+		return load(projectName, formUuid, formDataUuid, true).flatMap(formDataNode -> {
+			try {
+				NodeFieldList nodeList = formDataNode.getFields().getNodeFieldList(binaryFieldName);
+				String binaryUuid = nodeList.getItems().get(index).getUuid();
+				return userClient.downloadBinaryField(projectName, binaryUuid, formDataNode.getLanguage(), "binary").getResponse();
+			} catch (Exception e) {
+				// TODO FIXME Mesh Currently there is no way to determine a field's type from the node response, other that load the corresponding form schema.
+				// Here we try deserializing the node list, which may spit random deserialization errors.
+				log.error("Deserialization error", e);
+			}
+			return Single.error(new FormsError("Error retrieving binary [%d] of a field %s for the form data %s".formatted(index, binaryFieldName, formDataUuid), 400));
+		});
+	}
+
+	/**
+	 * Load the binary for formgen. Will return 404 when the form does not exist, the binary does not exist or does not belong to the form or does belong to
+	 * an already published form data node-
+	 * @param projectName project name
+	 * @param formUuid form UUID
+	 * @param binaryUuid binary UUID
+	 * @param width width
+	 * @param height height
+	 * @return single response
+	 */
+	public Single<MeshResponse<MeshBinaryResponse>> loadBinaryForFormGen(String projectName, String formUuid, String binaryUuid, String width, String height) {
+		// load the form with uuid as admin
+		Single<NodeResponse> formNodeSingle = formService.loadAsAdmin(projectName, formUuid, true);
+
+		// load the binary with uuid as admin, check whether it is a binary item node and map to the parents
+		Single<NodeResponse> binaryNodeSingle = adminClient.findNodeByUuid(projectName, binaryUuid, new NodeParametersImpl()).toSingle().flatMap(nodeResponse -> {
+			// check whether the node is a binary item
+			if (isBinaryItemNode(nodeResponse)) {
+				return Single.just(nodeResponse);
+			} else {
+				String message = String.format("Node with uuid \"%s\" is not a binary item node.", binaryUuid);
+				return Single.error(new FormsError(message, HttpResponseStatus.NOT_FOUND.code()));
+			}
+		}).flatMap(nodeResponse -> {
+			String formDataUuid = nodeResponse.getParentNode().getUuid();
+			// check whether the immediate parent (which is the form data node) is published
+			return load(projectName, formUuid, formDataUuid, false).map(ignored -> nodeResponse);
+		});
+
+		// with both the formnode and binarynode, check for consistency and return binary download
+		io.reactivex.functions.BiFunction<NodeResponse, NodeResponse, Single<MeshResponse<MeshBinaryResponse>>> zipper = (formNode, binaryNode) -> {
+			// check whether the form node is included in the breadcrumb
+			boolean formNodeIsParent = Optional.ofNullable(binaryNode.getBreadcrumb())
+					.flatMap(breadcrumb -> breadcrumb.stream()
+							.filter(ref -> Strings.CI.equals(ref.getUuid(), formNode.getUuid())).findFirst())
+					.isPresent();
+
+			if (formNodeIsParent) {
+				return statusService.getFormtypeConfigs(projectName, adminClient)
+					.flatMap(config -> formService.toForm(config, formNode))
+					.map(form -> getThumbnailInfo(form.getConfiguration()))
+					.flatMap(thumbnails -> {
+						ImageManipulationParameters thumbnailParams = null;
+						if (thumbnails.getLeft()) {
+							thumbnailParams = new ImageManipulationParametersImpl().setWidth(width).setHeight(height);
+						}
+						// download the binary data
+						return adminClient.downloadBinaryField(projectName, binaryNode.getUuid(), formNode.getLanguage(),
+								"binary", thumbnailParams)
+								.getResponse();
+					});
+			} else {
+				String message = "Node with uuid \"%s\" does not belong to form \"%s\"".formatted(binaryNode.getUuid(), formNode.getUuid());
+				return Single.error(new FormsError(message, HttpResponseStatus.NOT_FOUND.code()));
+			}
+		};
+
+		return Single.zip(formNodeSingle, binaryNodeSingle, zipper).flatMap(single -> single);
 	}
 
 	/**
@@ -1127,157 +1287,143 @@ public class FormDataService {
 	}
 
 	/**
-	 * Render the form with data
-	 *
+	 * Perform "cancel" for the given form data node. This will load the form data node (with the admin client), but only allow draft nodes.
+	 * If the node is already published, a 404 error will be thrown.
+	 * The the node is deleted with the admin client (recursively)
 	 * @param projectName project name
 	 * @param formUuid form UUID
-	 * @param formDataInfo form data UUID and optional form page element name (separated by comma)
-	 * @param rc routing context
-	 * @param lang optional languages
-	 * @return single buffer of rendered form
+	 * @param formDataUuid form data UUID
+	 * @return empty response
 	 */
-	public Single<Buffer> render(String projectName, String formUuid, String formDataInfo, RoutingContext rc, String... lang) {
-		String formDataUuid;
-		String currentPage;
+	public Single<EmptyResponse> cancel(String projectName, String formUuid, String formDataUuid) {
+		return load(projectName, formUuid, formDataUuid, false).flatMap(formDataNode -> {
+			DeleteParametersImpl deleteParams = new DeleteParametersImpl();
+			deleteParams.setRecursive(true);
+			return adminClient.deleteNode(projectName, formDataUuid, deleteParams).toSingle();
+		});
+	}
 
-		if (StringUtils.isNotEmpty(formDataInfo)) {
-			String[] parts = formDataInfo.split("-");
-
-			formDataUuid = parts[0];
-			currentPage = parts.length > 1 ? parts[1] : null;
-		} else {
-			formDataUuid = formDataInfo;
-			currentPage = null;
-		}
-
-		return statusService.getPathPrefixOfDefaultBranch(projectName)
-			.flatMap(pathPrefix -> Single.zip(
-				statusService.languageFallback(projectName, lang)
-					.flatMap(langFallback -> formService.loadAsAdmin(projectName, formUuid, true, langFallback)),
-				load(projectName, formUuid, formDataUuid),
-				(formNode, formDataNode) -> {
-					Form form = formService.toForm(formNode.getFields().getStringField("json").getString(), formNode.getUuid(), formNode.getLanguage())
-						.removeInactiveElements();
-					JsonObject formJson = form.prepareRenderContext(pathPrefix, configuration);
-
-					return RxUtil.fromNullable(formDataNode)
-						.flatMapSingleElement(fdn -> {
-							// only fill in data, if form is not published
-							if (!isFormDataPublished(fdn)) {
-								JsonObject formDataJson = form.getFormDataJson(fdn);
-								formJson.put("dataid", formDataUuid);
-								mergeData(formJson, formDataJson);
-							}
-
-							Set<String> result;
-
-							if (form.isCompleted(fdn)) {
-								result = Collections.emptySet();
-							} else {
-								// get completed formpages
-								result = form.flattened().filter(elem -> elem instanceof FormpageElement)
-									.filter(elem -> elem.isCompleted(fdn))
-									.map(FormElement::getName)
-									.collect(Collectors.toSet());
-							}
-
-							return Single.just(result);
-						})
-						.toSingle(Collections.emptySet())
-						.flatMap(completed -> {
-							formService.markFormpages(formJson, currentPage, completed);
-
-							rc.put("form", formJson);
-
-							return renderService.rxRender(rc.data(), "form");
-						});
-				}))
-			.flatMap(s -> s);
+	/**
+	 * Remove the data cookie
+	 * @param ctx context
+	 */
+	public void removeDataCookie(PluginContext ctx) {
+		ctx.response().removeCookie(COOKIE_NAME_DATA);
+		Cookie cookie = Cookie.cookie(COOKIE_NAME_DATA, "");
+		cookie.setPath(getPath(ctx.request().getHeader("Referer")));
+		cookie.setHttpOnly(false);
+		cookie.setMaxAge(0);
+		ctx.response().addCookie(cookie);
 	}
 
 	/**
 	 * Validate and save the data to mesh. publish form, if completed. Redirect to success url or referer
 	 *
+	 * @param formtypeConfigs formtype configs
 	 * @param ctx
 	 * @return single redirect URL
 	 */
-	private Single<PostDataResponse> savePostedData(FormDataCreateContext ctx) {
+	private Single<FormData> savePostedData(FormtypeConfigsModel formtypeConfigs, FormDataCreateContext ctx) {
 		Form form = ctx.getForm();
-		MultiMap postedData = ctx.getPostedData();
-		Single<Map<String, ValidationError>> errorSingle = Single.zip(
-				Single.just(form.preventInjection(postedData, configuration.getSecurityOptions())), 
-				form.validate(postedData, ctx.getFileUploads(), ctx.getFormDataNode(), rxVertx, okHttpClientService.getClient()), 
-				(a,b) -> {
-					HashMap<String, ValidationError> errors = new HashMap<>();
-					errors.putAll(a);
-					errors.putAll(b);
-					return errors;
-				});
+		PostedData postedData = ctx.getPostedData();
 
-		return errorSingle.flatMap(errors1 -> {
+		FormsConfig configuration = statusService.getEffectiveConfiguration(formtypeConfigs, form.getType());
+
+		return captchaService.validate(configuration, ctx).andThen(validatePostedData(postedData, configuration, ctx).flatMap(errors1 -> {
 			// check whether we have any validation errors, that prevent storing of the data
 			Optional<ValidationError> errorPreventingDataStorage = errors1.values().stream()
 					.filter(ValidationError::isPreventStoring).findAny();
 
 			if (errorPreventingDataStorage.isPresent()) {
-				// log a warning
 				log.warn("Storing of POSTed data to form {} prevented by field {}. Validation error: {}", form.getUuid(),
 						errorPreventingDataStorage.get().getName(), errorPreventingDataStorage.get().getMessage());
 
-				// just return the errors in the response, but don't save anything
-				PostDataResponse response = new PostDataResponse();
-				response.setErrors(errors1);
-				response.setFinished(false);
+				FormData formData = toValidationResponse(ctx, errors1);
 				if (ctx.getReferer() != null) {
-					response.setRedirectUrl(ctx.getReferer());
+					formData.setRedirectUrl(ctx.getReferer());
 				} else {
-					response.setRedirectUrl("");
+					formData.setRedirectUrl("");
 				}
-
-				return Single.just(response);
+				return Single.just(formData);
 			} else {
 				String projectName = ctx.getProjectName();
 				NodeResponse formNode = ctx.getFormNode();
 
-				Single<String> dataFolderUuidSingle = ParameterUtil.getLanguages(ctx.getContext())
-						.flatMap(languages -> getFormDataFolderUuid(projectName, formNode.getUuid(), languages));
+				Single<String> dataFolderUuidSingle = getFormDataFolderUuid(projectName, formNode.getUuid(), "en");
 
 				return Single.just(errors1).zipWith(
 						dataFolderUuidSingle, 
 						(errors, dataFolderUuid) -> saveFormData(projectName, formNode, dataFolderUuid, ctx.getFormDataNode(), form, postedData, errors).map(formData -> Pair.of(formData, errors)))
 					.flatMap(single -> single)
-					.flatMap(savedFormDataNodePlusErrors -> saveFileUploads(ctx.getProjectName(), form, savedFormDataNodePlusErrors.getKey(), postedData, ctx.getFileUploads()).map(uploads -> Pair.of(uploads, savedFormDataNodePlusErrors.getValue())))
+					.flatMap(savedFormDataNodePlusErrors -> saveFileUploads(configuration, ctx.getProjectName(), form, savedFormDataNodePlusErrors.getKey(), postedData, ctx.getFileUploads()).map(uploads -> Pair.of(uploads, savedFormDataNodePlusErrors.getValue())))
 					.flatMap(savedFileUploadsPlusErrors -> {
 						NodeResponse savedFileUploads = savedFileUploadsPlusErrors.getKey();
 						Map<String, ValidationError> errors = savedFileUploadsPlusErrors.getValue();
 						if (ctx.isPublish() && errors.isEmpty() && form.isCompleted(savedFileUploads)) {
-							return publishFormData(ctx, savedFileUploads, errors);
+							return publishFormData(formtypeConfigs, ctx, savedFileUploads, errors);
 						} else {
 							// set the data cookie
 							if (ctx.handleCookies()) {
 								Cookie cookie = Cookie.cookie(COOKIE_NAME_DATA, form.getDataCookie(savedFileUploads.getUuid()));
 								cookie.setPath(getPath(ctx.getReferer()));
-								cookie.setHttpOnly(true);
+								cookie.setHttpOnly(false);
 								ctx.getContext().response().addCookie(cookie);
 							}
 
-							PostDataResponse response = new PostDataResponse();
-							response.setDataUuid(savedFileUploads.getUuid());
-							response.setCreated(savedFileUploads.getCreated());
-							response.setErrors(errors);
-							// TODO Set this to false?
-							response.setFinished(true);
+							ctx.setFormDataNode(savedFileUploads); // updated formdata node
+							var response = toValidationResponse(ctx, errors);
+							response.setFormDataID(savedFileUploads.getUuid());
 							if (ctx.getReferer() != null) {
 								response.setRedirectUrl(ctx.getReferer());
 							} else {
 								response.setRedirectUrl("");
 							}
-
 							return Single.just(response);
 						}
 					});
 			}
-		});
+		}));
+	}
+
+	/**
+	 * Validate posted form data with the same rules used before saving.
+	 * @param postedData 
+	 *
+	 * @param configuration configuration
+	 * @param ctx Request context with the loaded form
+	 *
+	 * @return single of validation errors keyed by form element name
+	 */
+	private Single<Map<String, ValidationError>> validatePostedData(PostedData postedData, FormsConfig configuration, FormDataCreateContext ctx) {
+		Form form = ctx.getForm();
+		return Single.zip(
+				Single.just(form.preventInjection(postedData, ctx, configuration.getSecurityOptions())),
+				form.validate(ctx, rxVertx, okHttpClientService.getClient()),
+				(a, b) -> {
+					HashMap<String, ValidationError> errors = new HashMap<>();
+					errors.putAll(a);
+					errors.putAll(b);
+					return errors;
+				});
+	}
+
+	/**
+	 * Create a form data response containing the validation state.
+	 *
+	 * @param errors validation errors keyed by form element name
+	 * @return form data response
+	 */
+	private FormData toValidationResponse(FormDataCreateContext ctx, Map<String, ValidationError> errors) {
+		var form = ctx.getForm();
+		var pluginContext = ctx.getContext();
+		var lang = ParameterUtil.getQueryParam(pluginContext, "lang");
+		var formDataNode = ctx.getFormDataNode();
+		var response = formDataNode == null
+			? FormService.buildDefaultFormData(ctx.getPostedData(), form, form.getUuid(), errors, lang, AuthUtil.decodeToken(pluginContext).getMap())
+			: FormService.buildFormDataFromNode(ctx.getPostedData(), form, form.getUuid(), errors, lang, formDataNode);
+
+		response.setHasValidationErrors(!errors.isEmpty());
+		return response;
 	}
 
 	/**
@@ -1303,8 +1449,10 @@ public class FormDataService {
 	 * @param errors map containing validation errors
 	 * @return single of the node response
 	 */
+
+	//TODO 8.5 kein formpage mehr
 	private Single<NodeResponse> saveFormData(String projectName, NodeResponse formNode, String dataFolderUuid, NodeResponse formDataNode, Form form,
-		MultiMap postedData, Map<String, ValidationError> errors) {
+			PostedData postedData, Map<String, ValidationError> errors) {
 		FieldContainer container = null;
 		NodeCreateRequest createRequest = null;
 		NodeUpdateRequest updateRequest = null;
@@ -1312,17 +1460,16 @@ public class FormDataService {
 		if (formDataNode == null) {
 			createRequest = new NodeCreateRequest().setSchemaName(SchemaService.getSchemaName(formNode.getUuid()))
 				.setParentNodeUuid(dataFolderUuid)
-				.setLanguage("en");
+				.setLanguage(form.getLanguage());
 			container = createRequest;
 		} else {
 			updateRequest = new NodeUpdateRequest();
 			updateRequest.setVersion(formDataNode.getVersion());
-			updateRequest.setLanguage("en");
+			updateRequest.setLanguage(form.getLanguage());
 			container = updateRequest;
 		}
 
 		form.addFields(container, postedData, !errors.isEmpty());
-		form.updateFormPage(postedData);
 
 		if (!errors.isEmpty()) {
 			try {
@@ -1335,96 +1482,265 @@ public class FormDataService {
 		}
 
 		if (formDataNode == null) {
-			return adminClient.createNode(projectName, createRequest).toSingle();
+			return adminClient.createNode(projectName, createRequest, new NodeParametersImpl().setLanguages(form.getLanguage())).toSingle();
 		} else {
-			return adminClient.updateNode(projectName, formDataNode.getUuid(), updateRequest).toSingle();
+			return adminClient.updateNode(projectName, formDataNode.getUuid(), updateRequest, new NodeParametersImpl().setLanguages(form.getLanguage())).toSingle();
 		}
 	}
 
 	/**
 	 * Save fileuploads to mesh
 	 *
+	 * @param configuration effective configuration
 	 * @param projectName project name
 	 * @param form saved form
 	 * @param formDataNode form data node
 	 * @param postedData posted form data
-	 * @param fileUploads validated file uploads
+	 * @param sortedFileUploads validated file uploads
 	 * @return single of the form data node
 	 */
-	private Single<NodeResponse> saveFileUploads(String projectName, Form form, NodeResponse formDataNode, MultiMap postedData, Set<FileUpload> fileUploads) {
-		Set<String> validUploadElements = form.flattened()
-			.filter(FormElement::isActive)
-			.flatMap(elem -> elem instanceof FileElement && !elem.skipElement(postedData)
-				? Stream.of(elem.getName())
-				: Stream.empty())
-			.collect(Collectors.toSet());
+	private Single<NodeResponse> saveFileUploads(FormsConfig configuration, String projectName, Form form, NodeResponse formDataNode, PostedData postedData, Set<FileUpload> fileUploads) {
+		Function<Object, BinaryData> binaryDataExtractor = value -> {
+			return JsonUtil.getMapper().convertValue(value, BinaryData.class);
+		};
 
-		fileUploads = fileUploads.stream().filter(fileUpload -> validUploadElements.contains(fileUpload.name())).collect(Collectors.toSet());
+		Triple<Boolean, Integer, Integer> thumbnails = getThumbnailInfo(configuration);
 
-		if (fileUploads.isEmpty()) {
-			return Single.just(formDataNode);
-		}
+		// Reusable list item uploader
+		BiFunction<Triple<String, Integer, BinaryData>, FileUpload, Single<Triple<String, Integer, BinaryData>>> listItemUploader = (key, fileUpload) -> {
+			String fieldName = key.getLeft();
 
-		return Flowable.fromIterable(fileUploads)
-			// The upload can be blocking in some implementations of the rest client. Therefore we queue
-			// it as a worker job just in case.
-			.flatMapSingle(fileUpload -> rxVertx.rxExecuteBlocking(() -> {
+			NodeCreateRequest itemCreate = new NodeCreateRequest();
+			itemCreate.setParentNode(new NodeReference().setProjectName(projectName).setUuid(formDataNode.getUuid()));
+			itemCreate.setLanguage(formDataNode.getLanguage());
+			itemCreate.setSchemaName(SchemaInitializer.MULTIBINARY_ITEM_SCHEMA_NAME);
+			itemCreate.getFields().put("name", new StringFieldImpl().setString(fieldName));
+			try {
 				long size = fileUpload.size();
 				InputStream ins = new FileInputStream(fileUpload.uploadedFileName());
-
-				// Always use the draft version because updating the binary field will increase the version of the node,
-				// which can lead to problems when multiple files are uploaded.
-				return adminClient.updateNodeBinaryField(projectName, formDataNode.getUuid(), formDataNode.getLanguage(), "draft",
-						fileUpload.name(),
+				// Create a binary node
+				return adminClient.createNode(projectName, itemCreate).toSingle()
+					// and fill it
+					.flatMap(itemNode -> adminClient.updateNodeBinaryField(projectName, itemNode.getUuid(), formDataNode.getLanguage(), "draft",
+						"binary",
 						ins, size, fileUpload.fileName(), fileUpload.contentType())
-					.toSingle();
-			}).flatMapSingle(single -> single), false, 1)
-			.lastOrError();
+					.toSingle()
+					.flatMap(itemNode1 -> {
+						if (thumbnails.getLeft() && key.getRight().isImage()) {
+							// create the requested image variant. If the request fails, we log it but continue with the upload
+							ImageManipulationRequest request = new ImageManipulationRequest();
+							request.setDeleteOther(false);
+							request.setVariants(List.of(new ImageVariantRequest().setWidth(thumbnails.getMiddle()).setHeight(thumbnails.getRight())));
+							return adminClient.upsertNodeBinaryFieldImageVariants(projectName,
+									itemNode1.getUuid(), "binary", request).toSingle()
+									.onErrorResumeNext(e -> {
+										log.warn("Creating the thumbnail for uploaded image %s failed".formatted(fileUpload.fileName()), e);
+										return Single.just(new ImageVariantsResponse());
+									}).map(ignored -> itemNode1);
+						} else {
+							return Single.just(itemNode1);
+						}
+					})
+					.map(itemNode1 -> {
+						key.getRight().setValue("mesh: %s".formatted(itemNode1.getUuid()));
+						return key;
+					}));
+			} catch (FileNotFoundException e1) {
+				String message = "Could not upload a binary for the form data %s field %s".formatted(formDataNode.getUuid(), fieldName);
+				log.error(message, e1);
+				return Single.error(new FormsError(message, e1, 400));
+			}				
+		};
+
+		// first organize file uploads
+		Map<Pair<String, Integer>, FileUpload> uploadsPerField = new HashMap<>();
+		for (FileUpload fileUpload : fileUploads) {
+			BinaryElement.extractFieldId(fileUpload.name()).ifPresent(id -> {
+				uploadsPerField.put(id, fileUpload);
+			});
+		}
+
+		log.debug("Found %d file uploads".formatted(uploadsPerField.size()));
+
+		// collect the binary elements, for which upload information will be handled (if present)
+		Map<String, BinaryElement> validUploadElements = form.getElementsInsideProperties()
+			.filter(FormElement::isActive)
+			.filter(elem -> elem instanceof BinaryElement)
+			.map(elem -> BinaryElement.class.cast(elem))
+			.collect(Collectors.toMap(BinaryElement::getKey, Function.identity()));
+
+		log.debug("Form contains %d valid binary elements".formatted(validUploadElements.size()));
+
+		return Flowable.fromIterable(validUploadElements.values())
+			.filter(elem -> postedData.contains(elem.getKey()))
+			.flatMap(elem -> {
+				String key = elem.getKey();
+				if (elem.isList()) {
+					AtomicInteger indexCounter = new AtomicInteger();
+					return Flowable.fromIterable(postedData.getAllValues(elem.getKey()))
+						.map(v -> Triple.of(key, indexCounter.getAndIncrement(), binaryDataExtractor.apply(v)));
+				} else {
+					Object value = postedData.getValue(elem.getKey());
+
+					if (value != null) {
+						return Flowable.just(value).map(v -> Triple.of(key, 0, binaryDataExtractor.apply(v)));
+					} else {
+						return Flowable.empty();
+					}
+				}
+			})
+			.map(triple -> {
+				log.debug("Handle %s.%d: %s".formatted(triple.getLeft(), triple.getMiddle(), JsonUtil.toJson(triple.getRight())));
+
+				// is there a file upload?
+				Pair<String, Integer> uploadKey = Pair.of(triple.getLeft(), triple.getMiddle());
+				if (uploadsPerField.containsKey(uploadKey)) {
+					log.debug("Will do file upload");
+					return listItemUploader.apply(triple, uploadsPerField.get(uploadKey));
+				} else {
+					log.debug("File already uploaded");
+					return Single.just(triple);
+				}
+			})
+			.concatMapSingle(single -> single)
+			.toList()
+			.flatMap(binaryList -> {
+				// make sure the binary list is sorted
+				binaryList.sort((a, b) -> {
+					int cmp = Strings.CI.compare(a.getLeft(), b.getLeft());
+					if (cmp != 0) {
+						return cmp;
+					}
+
+					return Integer.compare(a.getMiddle(), b.getMiddle());
+				});
+				// reorganize the list into lists per field (in correct order)
+				Map<String, List<BinaryData>> binaryDataPerField = new HashMap<>();
+				for (Triple<String, Integer, BinaryData> triple : binaryList) {
+					String fieldId = triple.getLeft();
+					List<BinaryData> fieldList = binaryDataPerField.computeIfAbsent(fieldId, key -> new ArrayList<>());
+					if (triple.getRight().getMeshUuid().isPresent()) {
+						fieldList.add(triple.getRight());
+					}
+				}
+
+				// collect mesh uuids of binary items, that need to be removed
+				Set<String> toRemove = new HashSet<>();
+
+				// prepare the update request
+				NodeUpdateRequest update = formDataNode.toRequest();
+
+				// write back info to postedData
+				for (Map.Entry<String, List<BinaryData>> entry : binaryDataPerField.entrySet()) {
+					String fieldId = entry.getKey();
+					BinaryElement element = validUploadElements.get(fieldId);
+
+					if (element != null) {
+						List<BinaryData> binaryData = entry.getValue();
+						if (element.isList()) {
+							List<String> values = binaryData.stream().map(JsonUtil::toJson).collect(Collectors.toList());
+							postedData.set(fieldId, values);
+
+							List<String> newMeshUuids = binaryData.stream().map(BinaryData::getMeshUuid)
+									.filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList());
+
+							NodeFieldList nodeFieldList = update.getFields().getNodeFieldList(fieldId);
+							if (nodeFieldList == null) {
+								nodeFieldList = new NodeFieldListImpl();
+								update.getFields().put(fieldId, nodeFieldList);
+							}
+
+							List<String> oldMeshUuids = nodeFieldList.getItems().stream().map(NodeFieldListItem::getUuid)
+									.collect(Collectors.toList());
+
+							// everything, which was in oldMeshUuids, but is not in newMeshUuids must be removed
+							toRemove.addAll(CollectionUtils.subtract(oldMeshUuids, newMeshUuids));
+
+							nodeFieldList.setItems(newMeshUuids.stream().map(NodeFieldListItemImpl::new).collect(Collectors.toList()));
+							log.debug("Set mesh UUIDS %s to field %s".formatted(newMeshUuids, fieldId));
+							update.getFields().put(fieldId, nodeFieldList);
+
+						} else {
+							NodeField nodeField = update.getFields().getNodeField(fieldId);
+							if (nodeField == null) {
+								nodeField = new NodeFieldImpl();
+								update.getFields().put(fieldId, nodeField);
+							}
+
+							if (binaryData.isEmpty()) {
+								// remove the node field, if set
+								if (StringUtils.isNotBlank(nodeField.getUuid())) {
+									// old binary item will be removed
+									toRemove.add(nodeField.getUuid());
+									log.debug("Remove mesh UUID from field %s".formatted(fieldId));
+									update.getFields().put(fieldId, null);
+								}
+							} else {
+								String newMeshUuid = binaryData.get(0).getMeshUuid().get();
+								postedData.set(fieldId, JsonUtil.toJson(binaryData.get(0)));
+
+								// check whether the referenced uuid is different
+								if (StringUtils.isNotBlank(nodeField.getUuid())) {
+									String oldMeshUuid = nodeField.getUuid();
+
+									if (!Strings.CI.equals(oldMeshUuid, newMeshUuid)) {
+										toRemove.add(oldMeshUuid);
+									}
+								}
+								log.debug("Set mesh UUID %s to field %s".formatted(newMeshUuid, fieldId));
+								update.getFields().put(fieldId, new NodeFieldImpl().setUuid(newMeshUuid));
+							}
+						}
+					}
+				}
+
+				Completable postSave = Completable.concat(
+						toRemove.stream().map(uuid -> adminClient.deleteNode(projectName, uuid).toCompletable())
+								.collect(Collectors.toList()));
+
+					return adminClient.updateNode(projectName, formDataNode.getUuid(), update).toSingle()
+							.flatMap(response -> postSave.toSingle(() -> response));
+				});
 	}
 
 	/**
 	 * Publish the form data. This will also send mails to the configured users, remove the data cookie and create a
 	 * response.
 	 *
+	 * @param formtypeConfigs formtype configs
 	 * @param ctx Request context
-	 * @param savedFileUploads saved file uploads from {@link #saveFileUploads(String,Form, NodeResponse, MultiMap, Set)}
+	 * @param savedFileUploads saved file uploads from {@link #saveFileUploads(String,Form, NodeResponse, PostedData, Set)}
 	 * @param errors
 	 * @return single
 	 */
-	private Single<PostDataResponse> publishFormData(FormDataCreateContext ctx, NodeResponse savedFileUploads, Map<String, ValidationError> errors) {
+	private Single<FormData> publishFormData(FormtypeConfigsModel formtypeConfigs, FormDataCreateContext ctx, NodeResponse savedFileUploads, Map<String, ValidationError> errors) {
 		return adminClient.publishNode(ctx.getProjectName(), savedFileUploads.getUuid()).toSingle().flatMap(publishStatus -> {
 			PluginContext meshContext = ctx.getContext();
 			Form form = ctx.getForm();
-			MultiMap postedData = ctx.getPostedData();
+			PostedData postedData = ctx.getPostedData();
 
 			// send mails to admin and user
-			mailService.sendMails(ctx.getProjectName(), ctx.getForm(), savedFileUploads, meshContext);
+			mailService.sendMails(formtypeConfigs, ctx.getProjectName(), ctx.getForm(), savedFileUploads, meshContext);
 
 			// perform actions
 			return Single.zip(
-					StreamUtil.toIterable(ctx.getForm().flattened().map(e -> e.performSubmit(ctx.getForm(), postedData, rxVertx, okHttpClientService.getClient()).toSingleDefault(1))), 
+					StreamUtil.toIterable(ctx.getForm().getElementsInsideProperties().map(e -> e.performSubmit(ctx.getForm(), postedData, rxVertx, okHttpClientService.getClient()).toSingleDefault(1))), 
 					allSubmitted -> {
-						boolean isPoll = ctx.getForm().getType() == FormType.POLL;
+						// TODO: this is actually wrong, we must not check the form type
+						boolean isPoll = Strings.CI.equals(ctx.getForm().getType(), "poll");
 
 						// remove the data cookie
 						if (ctx.handleCookies()) {
-							meshContext.response().removeCookie(COOKIE_NAME_DATA);
-							Cookie cookie = Cookie.cookie(COOKIE_NAME_DATA, "");
-							cookie.setPath(getPath(ctx.getReferer()));
-							cookie.setHttpOnly(true);
-							cookie.setMaxAge(0);
-							meshContext.response().addCookie(cookie);
+							removeDataCookie(meshContext);
 
 							if (isPoll) {
 								addPollCookie(ctx);
 							}
 						}
 
-						PostDataResponse response = new PostDataResponse();
-						response.setDataUuid(savedFileUploads.getUuid());
-						response.setCreated(savedFileUploads.getCreated());
-						response.setErrors(errors);
-						response.setFinished(true);
+						FormData response = new FormData();
+						response.setFormDataID(savedFileUploads.getUuid());
+						response.setHasValidationErrors(!errors.isEmpty());
 						if (form.getSuccessurl() != null) {
 							response.setRedirectUrl(form.getSuccessurl());
 						} else if (isPoll) {
@@ -1432,12 +1748,10 @@ public class FormDataService {
 						} else {
 							response.setRedirectUrl("");
 						}
-
 						return response;
 					});			
 		});
 	}
-
 	/**
 	 * Add or update the {@link #COOKIE_NAME_VOTED forms-voted} cookie to include the UUID of the form for which data
 	 * was saved.
@@ -1477,7 +1791,7 @@ public class FormDataService {
 			// The cookie is needed when rendering the form in a page, as well as when data is submitted to the
 			// /api/forms/forms/ID/data endpoint, so we set the path to /.
 			.setPath("/")
-			.setHttpOnly(true)
+			.setHttpOnly(false)
 			.setMaxAge(Integer.MAX_VALUE);
 
 		pc.response().addCookie(cookie);
@@ -1526,21 +1840,6 @@ public class FormDataService {
 	}
 
 	/**
-	 * Merge the form data into the form
-	 *
-	 * @param form form
-	 * @param formData form data
-	 */
-	private void mergeData(JsonObject form, JsonObject formData) {
-		for (String elementName : formData.fieldNames()) {
-			JsonObject element = formService.findElement(form, elementName);
-			if (element != null) {
-				element.put("data", formData.getJsonObject(elementName));
-			}
-		}
-	}
-
-	/**
 	 * Check whether the form data node is published
 	 *
 	 * @param formDataNode form data node
@@ -1554,6 +1853,17 @@ public class FormDataService {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Check whether the node is a form node (uses the form schema)
+	 *
+	 * @param node
+	 *            node to check
+	 * @return true for form nodes
+	 */
+	private boolean isBinaryItemNode(NodeResponse node) {
+		return SchemaInitializer.MULTIBINARY_ITEM_SCHEMA_NAME.equals(node.getSchema().getName());
 	}
 
 	/**
@@ -1578,14 +1888,46 @@ public class FormDataService {
 				.orElseGet(() -> stringify.apply(defaultValue)));
 	}
 
+	/**
+	 * Get the thumbnail info as triple (flag, width, height)
+	 * @param configuration configuration
+	 * @return thumbnail info
+	 */
+	private static Triple<Boolean, Integer, Integer> getThumbnailInfo(FormsConfig configuration) {
+		AtomicBoolean createThumbnails = new AtomicBoolean(FileUploadOptions.DEFAULT_CREATE_THUMBNAILS);
+		AtomicInteger thumbnailsWidth = new AtomicInteger(FileUploadOptions.DEFAULT_THUMBNAIL_WIDTH);
+		AtomicInteger thumbnailsHeight = new AtomicInteger(FileUploadOptions.DEFAULT_THUMBNAIL_HEIGHT);
+		Optional.ofNullable(configuration.getFileUpload()).ifPresent(fileUploadOptions -> {
+			createThumbnails.set(fileUploadOptions.isCreateThumbnails());
+			thumbnailsWidth.set(fileUploadOptions.getThumbnailWidth());
+			thumbnailsHeight.set(fileUploadOptions.getThumbnailHeight());
+		});
+
+		// make sure the config is consistent
+		if (createThumbnails.get() && (thumbnailsWidth.get() <= 0 || thumbnailsHeight.get() <= 0)) {
+			log.warn(
+					"Creating thumbnails is activated, but width (%d) and height (%d) are not both positive numbers. Thumbnails will not be created or returned"
+							.formatted(thumbnailsWidth.get(), thumbnailsHeight.get()));
+			createThumbnails.set(false);
+		}
+
+		return Triple.of(createThumbnails.get(), thumbnailsWidth.get(), thumbnailsHeight.get());
+	}
+
 	/** Wrapper class for downloadable binaries. */
 	protected static class Downloadable {
 		String uuid;
 		String fieldName;
+		Optional<String> maybeFolderName;
 
 		public Downloadable(String uuid, String fieldName) {
+			this(uuid, fieldName, Optional.empty());
+		}
+
+		public Downloadable(String uuid, String fieldName, Optional<String> maybeFolderName) {
 			this.uuid = uuid;
 			this.fieldName = fieldName;
+			this.maybeFolderName = maybeFolderName;
 		}
 	}
 }

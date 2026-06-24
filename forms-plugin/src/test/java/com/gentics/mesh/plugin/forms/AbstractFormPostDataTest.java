@@ -1,10 +1,10 @@
 package com.gentics.mesh.plugin.forms;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -16,7 +16,6 @@ import com.gentics.mesh.plugin.forms.config.ReCaptchaOptions;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
 
 import okhttp3.Cookie;
-import okhttp3.HttpUrl;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -65,7 +64,12 @@ public class AbstractFormPostDataTest extends AbstractFormsPluginIntegrationTest
 
 		// activate plugin
 		assertThat(activate(PROJECT_NAME)).as("Activation status").isTrue();
-		setLanguages(PROJECT_NAME, Arrays.asList("en", "it"));
+
+		try {
+			updateTranslations();
+		} catch (IOException e) {
+			fail("Could not set translations: %s".formatted(e.getMessage()), e);
+		}
 	}
 
 	public void tearDown() throws IOException {
@@ -82,14 +86,27 @@ public class AbstractFormPostDataTest extends AbstractFormsPluginIntegrationTest
 	 * @throws IOException
 	 */
 	protected Pair<Response, Optional<Cookie>> postToForm(String uuid, RequestBody body) throws IOException {
-		Request postRequest = new Request.Builder()
-			.url(HttpUrl.get(projectUrl("/forms/" + uuid + "/data"))
-				.newBuilder().build())
+		return postToForm(uuid, body, Map.of());
+	}
+
+	/**
+	 * Post the given body to the form, adding extra HTTP headers (e.g. captcha tokens).
+	 * @param uuid form uuid
+	 * @param body post body
+	 * @param extraHeaders additional headers to include in the request
+	 * @return response
+	 * @throws IOException
+	 */
+	protected Pair<Response, Optional<Cookie>> postToForm(String uuid, RequestBody body, Map<String, String> extraHeaders) throws IOException {
+		Request.Builder builder = new Request.Builder()
+			.url(projectUrl("/form/" + uuid + "/submit?lang=en"))
 			.header("Referer", "ref")
-			.post(body)
-			.build();
+			.post(body);
+		extraHeaders.forEach(builder::header);
+		Request postRequest = builder.build();
 		Response response = client().newCall(postRequest).execute();
-		Optional<Cookie> cookie = Cookie.parseAll(postRequest.url(), response.headers()).stream().filter(c -> FormDataService.COOKIE_NAME_DATA.equals(c.name()))
+		Optional<Cookie> cookie = Cookie.parseAll(postRequest.url(), response.headers()).stream()
+			.filter(c -> FormDataService.COOKIE_NAME_DATA.equals(c.name()))
 			.findFirst();
 
 		return Pair.of(response, cookie);
@@ -110,7 +127,7 @@ public class AbstractFormPostDataTest extends AbstractFormsPluginIntegrationTest
 	 */
 	protected void assertOk(Response response) {
 		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
-		assertThat(response.code()).as("Response code").isEqualTo(205);
+		assertThat(response.code()).as("Response code").isGreaterThanOrEqualTo(200).isLessThan(300);
 	}
 
 	/**

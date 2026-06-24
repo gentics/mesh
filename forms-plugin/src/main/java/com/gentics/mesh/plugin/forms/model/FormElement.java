@@ -1,8 +1,24 @@
 package com.gentics.mesh.plugin.forms.model;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nonnull;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -13,33 +29,23 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
+import com.gentics.mesh.plugin.forms.context.FormDataCreateContext;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
+import com.gentics.mesh.plugin.forms.model.schema.FormUiSchema;
+import com.gentics.mesh.plugin.forms.model.schema.PostedData;
+import com.gentics.mesh.plugin.forms.model.schema.UiSchemaPageElement;
+import com.gentics.mesh.plugin.forms.model.schema.UischemaFormgridOptions;
+import com.gentics.mesh.plugin.forms.model.schema.Validation;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
+import com.gentics.mesh.plugin.forms.util.FormUtil;
 import com.gentics.mesh.plugin.forms.util.RxUtil;
+
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
-import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.FileUpload;
 import io.vertx.reactivex.core.Vertx;
 import okhttp3.OkHttpClient;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Abstract form element
@@ -50,25 +56,34 @@ public abstract class FormElement implements RestModel {
 
 	protected String name;
 
-	protected String label;
-
 	protected String type;
 
 	protected boolean active = true;
 
 	protected boolean mandatory;
 
-	protected String validation;
+	@JsonProperty("isList")
+	protected boolean isList;
 
-	protected List<FormElement> elements = new ArrayList<>();
+	protected Validation validation;
+
+	@JsonIgnore
+	protected List<FormElement> elements = new ArrayList<>(); // TODO 8.5
 
 	protected Map<String, Object> properties = new LinkedHashMap<>();
 
 	@JsonIgnore
-	protected FormElement container;
+	protected FormElement container; // TODO delete 8.5
 
 	@JsonIgnore
 	protected FormsConfig configuration;
+
+	@JsonIgnore
+	protected String key;
+
+	// This will be integrated inside "data" for frontend, and will be removed inside "schema"
+	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+	protected SchemaFormGridOptions formGridOptions;
 
 	public FormElement() {
 	}
@@ -81,15 +96,16 @@ public abstract class FormElement implements RestModel {
 	 */
 	protected FormElement(FormElement other, boolean deep) {
 		this.name = other.name;
-		this.label = other.label;
 		this.type = other.type;
 		this.active = other.active;
 		this.mandatory = other.mandatory;
+		this.isList = other.isList;
 		this.validation = other.validation;
 		this.elements = cloneField(other.elements, deep);
 		this.properties = cloneField(other.properties, deep);
 		this.container = other.container;
 		this.configuration = other.configuration;
+		this.formGridOptions = other.formGridOptions;
 	}
 
 	/**
@@ -109,22 +125,6 @@ public abstract class FormElement implements RestModel {
 	}
 
 	/**
-	 * Element label
-	 * @return label
-	 */
-	public String getLabel() {
-		return label;
-	}
-
-	/**
-	 * Set the element label
-	 * @param label label
-	 */
-	public void setLabel(String label) {
-		this.label = label;
-	}
-
-	/**
 	 * Element type
 	 * @return type
 	 */
@@ -138,15 +138,6 @@ public abstract class FormElement implements RestModel {
 	 */
 	public void setType(String type) {
 		this.type = type;
-	}
-
-	/**
-	 * If the label is not blank, return the label, otherwise return the name (which must not be null)
-	 * @return label (if not null) or name
-	 */
-	@JsonIgnore
-	public String getLabelOrName() {
-		return StringUtils.isNotBlank(label) ? label : name;
 	}
 
 	/**
@@ -182,10 +173,27 @@ public abstract class FormElement implements RestModel {
 	}
 
 	/**
+	 * If the value of this element is multivalue/a list
+	 * @return isList flag
+	 */
+	@JsonProperty("isList")
+	public boolean isList() {
+		return isList;
+	}
+
+	/**
+	 * Set the isList flag
+	 * @param isList isList flag
+	 */
+	public void setIsList(boolean isList) {
+		this.isList = isList;
+	}
+
+	/**
 	 * Validation type
 	 * @return validation
 	 */
-	public String getValidation() {
+	public Validation getValidation() {
 		return validation;
 	}
 
@@ -193,7 +201,7 @@ public abstract class FormElement implements RestModel {
 	 * Set validation type
 	 * @param validation validation
 	 */
-	public void setValidation(String validation) {
+	public void setValidation(Validation validation) {
 		this.validation = validation;
 	}
 
@@ -246,46 +254,15 @@ public abstract class FormElement implements RestModel {
 	}
 
 	/**
-	 * Multivalue flag
-	 * @return true for multivalue
-	 */
-	public boolean isMultivalue() {
-		return false;
-	}
-
-	/**
 	 * Transform the element into a field schema and add it to the container
 	 * @param container container (will be modified)
 	 */
 	public void addFieldSchema(FieldSchemaContainer container) {
-		if (isMultivalue()) {
+		if (isList()) {
 			container.addField(new ListFieldSchemaImpl().setListType(FieldTypes.STRING.toString()).setName(name).setLabel(name));
 		} else {
 			container.addField(new StringFieldSchemaImpl().setName(name).setLabel(name));
 		}
-	}
-
-	/**
-	 * Check whether any data were posted for this element
-	 * @param postedData posted data
-	 * @param fileUploads fileuploads
-	 * @return true if data were posted
-	 */
-	public boolean isPosted(MultiMap postedData, Set<FileUpload> fileUploads) {
-		// if the element has a container, it is supposed to be posted, when the container was posted
-		if (container != null) {
-			return container.isPosted(postedData, fileUploads);
-		}
-
-		if (getName() == null) {
-			return false;
-		}
-		for (String alternative : Arrays.asList(getName(), String.format("%s[]", getName()))) {
-			if (postedData.contains(alternative)) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 	/**
@@ -298,61 +275,63 @@ public abstract class FormElement implements RestModel {
 	 * <p>
 	 *     The default validation for form elements will always succeed, so no error is returned.
 	 * </p>
+	 * @param language language
+	 * @param uiSchema ui schema of the form
 	 *
 	 * @return The default validation will always return {@link Optional#empty()}.
 	 */
-	public Optional<ValidationError> validateForm() {
+	public Optional<ValidationError> validateForm(String language, FormUiSchema uiSchema) {
 		return Optional.empty();
 	}
 
 	/**
 	 * Validate the posted data
-	 * @param postedData posted data
-	 * @param fileUploads fileuploads
-	 * @param formDataNode form data node (may be null)
+	 * @param ctx Form data context
 	 * @param rxVertx Vert.x instance for the utility tasks
 	 * @param httpClient a HTTP client for possible external validation calls
 	 * @return validation error or null if posted data is valid
 	 */
-	public Maybe<ValidationError> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx, OkHttpClient httpClient) {
-		if (skipElement(postedData)) {
-			return RxUtil.emptyMaybe();
-		}
-
+	public Maybe<ValidationError> validate(FormDataCreateContext ctx, Vertx rxVertx, OkHttpClient httpClient, FormUiSchema uischema) {
 		List<String> values = new ArrayList<>();
-		if (isMultivalue()) {
-			List<String> data = getMultiFormData(postedData);
+		if (isList()) {
+			List<String> data = getMultiFormData(ctx.getPostedData());
 			if (data != null) {
 				values.addAll(data);
 			}
 		} else {
-			String data = getSingleFormData(postedData);
+			String data = getSingleFormData(ctx.getPostedData());
 			if (StringUtils.isNotBlank(data)) {
 				values.add(data);
 			}
 		}
 
+		Map<String, String> translations = ctx.getTranslations();
+
 		// check mandatory fields, that are not filled
 		if (mandatory) {
 			if (values.stream().noneMatch(v -> v != null && !"".equals(v))) {
-				return Maybe.just(new ValidationError().setName(getName()).setTitle(I18nHelper.get(Locale.GERMAN, "error.mandatory_field_not_filled.title"))
-						.setMessage(I18nHelper.get(Locale.GERMAN, "error.mandatory_field_not_filled", getLabel())));
+				var error = new ValidationError()
+					.setName(getName())
+					.setTitle(I18nHelper.get(translations, "form_validation_error_missing_mandatory_field_title"))
+					.setMessage(I18nHelper.get(translations, "form_validation_error_missing_mandatory_field", getLabel(ctx.getLanguage(), uischema)));
+
+				return Maybe.just(error);
 			}
 		}
 
-		Validator validator = Validator.get(getValidation());
-		if (validator != null) {
-			return validator.validate(getName(), values);
-		}
-// Apart from user defined validation rules, some elements might have restrictions on the values that can
+		// Apart from user defined validation rules, some elements might have restrictions on the values that can
 		// be submitted (e.g. value list elements, like select boxes, only accepting values from their defined options).
 		var invalidValue = values.stream().filter(this::isInvalidValue).findAny();
 
 		if (invalidValue.isPresent()) {
 			return Maybe.just(new ValidationError()
 				.setName(getName())
-				.setTitle(I18nHelper.get(Locale.GERMAN, "error.invalid_value.title"))
-				.setMessage(I18nHelper.get(Locale.GERMAN, "error.invalid_value", getName(), invalidValue.get())));
+				.setTitle(I18nHelper.get(translations, "form_validation_error_invalid_value_title"))
+				.setMessage(I18nHelper.get(translations, "form_validation_error_invalid_value", getName(), invalidValue.get())));
+		}
+
+		if (validation != null) {
+			return validation.validate(ctx, getName(), values);
 		}
 
 		return RxUtil.emptyMaybe();
@@ -364,12 +343,9 @@ public abstract class FormElement implements RestModel {
 	 * @param postedData posted data
 	 * @param errors true if validation errors were detected
 	 */
-	public void addField(FieldContainer container, MultiMap postedData, boolean errors) {
-		if (skipElement(postedData)) {
-			return;
-		}
+	public void addField(FieldContainer container, PostedData postedData, boolean errors) {
 
-		if (isMultivalue()) {
+		if (isList()) {
 			List<String> values = getMultiFormData(postedData);
 
 			if (values != null) {
@@ -390,8 +366,8 @@ public abstract class FormElement implements RestModel {
 	 * @param postedData posted data
 	 * @return single value (may be null)
 	 */
-	public String getSingleFormData(MultiMap postedData) {
-		return postedData.get(getName());
+	public String getSingleFormData(PostedData postedData) {
+		return postedData.getString(getName());
 	}
 
 	/**
@@ -399,11 +375,11 @@ public abstract class FormElement implements RestModel {
 	 * @param postedData posted data
 	 * @return value list (may be null)
 	 */
-	public List<String> getMultiFormData(MultiMap postedData) {
+	public List<String> getMultiFormData(PostedData postedData) {
 		// multivalue data may be posed as e.g. element42 or element42[]
 		for (String alternative : Arrays.asList(getName(), String.format("%s[]", getName()))) {
 			if (postedData.contains(alternative)) {
-				return postedData.getAll(alternative);
+				return postedData.getAllStrings(alternative);
 			}
 		}
 		return null;
@@ -422,14 +398,16 @@ public abstract class FormElement implements RestModel {
 	 *
 	 * @param results The {@code JsonObject} to gather results into
 	 * @param formData The form data node to get values from
+	 * @param language language
+	 * @param uiSchema ui schema
 	 */
-	public void addPollData(JsonObject results, FieldContainer formData) {
+	public void addPollData(JsonObject results, FieldContainer formData, String language, FormUiSchema uiSchema) {
 		if (!results.containsKey("type")) {
 			results.put("type", getType());
 		}
 
 		if (!results.containsKey("label")) {
-			results.put("label", getLabel());
+			results.put("label", getLabel(language, uiSchema));
 		}
 
 		if (!results.containsKey("element")) {
@@ -450,7 +428,7 @@ public abstract class FormElement implements RestModel {
 	 * @param key key function
 	 */
 	public void addFormData(JsonObject object, FieldContainer container, Function<FormElement, String> key) {
-		if (isMultivalue()) {
+		if (isList()) {
 			StringFieldListImpl field = container.getFields().getStringFieldList(getName());
 			if (field != null) {
 				object.put(key.apply(this), new JsonArray(field.getItems()));
@@ -471,14 +449,6 @@ public abstract class FormElement implements RestModel {
 	public boolean isCompleted(NodeResponse formDataNode) {
 		// generally, all elements are completed
 		return true;
-	}
-
-	/**
-	 * Get flattened stream of all elements (including nested elements)
-	 * @return flattened element stream
-	 */
-	public Stream<FormElement> flattened() {
-		return Stream.concat(Stream.of(this), elements.stream().flatMap(FormElement::flattened));
 	}
 
 	/**
@@ -510,6 +480,21 @@ public abstract class FormElement implements RestModel {
 	}
 
 	/**
+	 * Correctly install a GraphQL filter
+	 * 
+	 * @param query filter query
+	 * @return
+	 */
+	@JsonIgnore
+	public String installFilter(String query) {
+		if (isList()) {
+			return getGraphQLName() + ": {anyMatch: {like: \"%" + query + "%\"}}";
+		} else {
+			return getGraphQLName() + ": {like: \"%" + query + "%\"}";
+		}
+	}
+
+	/**
 	 * Check whether the specific class is annotated with {@link Reportable}
 	 * @return true for reportable element implementations
 	 */
@@ -534,6 +519,33 @@ public abstract class FormElement implements RestModel {
 	@JsonIgnore
 	public FormsConfig getConfiguration() {
 		return configuration;
+	}
+
+	public void setKey(String key) {
+		this.key = key;
+	}
+
+	public String getKey() {
+		return key;
+	}
+
+	@JsonIgnore
+	public SchemaFormGridOptions getFormGridOptions() {
+		if (formGridOptions == null) {
+			formGridOptions = new SchemaFormGridOptions();
+		}
+		return formGridOptions;
+	}
+
+	public void setFormGridOptions(SchemaFormGridOptions formGridOptions) {
+		this.formGridOptions = formGridOptions;
+	}
+
+	public Optional<UischemaFormgridOptions> getFormGridOptionsFromUiSchema(FormUiSchema uiSchema) {
+		if (uiSchema == null || key == null) {
+			return Optional.empty();
+		}
+		return uiSchema.findFormGridOptions(key);
 	}
 
 	/**
@@ -562,73 +574,40 @@ public abstract class FormElement implements RestModel {
 	 * @param postedData
 	 */
 	@JsonIgnore
-	public Completable performSubmit(Form form, MultiMap postedData, Vertx rxVertx, OkHttpClient httpClient) {
+	public Completable performSubmit(Form form, PostedData postedData, Vertx rxVertx, OkHttpClient httpClient) {
 		return Completable.complete();
 	}
 
 	/**
-	 * Test whether this element should be skipped for validation and saving
-	 * form data via {@link #addField(FieldContainer, MultiMap, boolean)}.
-	 *
-	 * <p>
-	 *     Currently the only reason to skip an element is if it is a descendant
-	 *     of a {@link ConditionalContainerElement}, and the specified checked
-	 *     field is not set accordingly.
-	 * </p>
-	 *
-	 * @param postedData The posted form data.
-	 * @return {@code true} if the element should be skipped during validation
-	 * 		and saving data, and {@code false} otherwise.
+	 * Transform the posted value to a string representation
+	 * @param value posted value
+	 * @return string representation
 	 */
-	public boolean skipElement(MultiMap postedData) {
-		FormElement parent = container;
-
-		while (parent != null) {
-			if (parent instanceof ConditionalContainerElement) {
-				if (((ConditionalContainerElement) parent).skipElements(postedData)) {
-					// The conditional container could be nested. If we found
-					// a container that says skip, we can return here, otherwise
-					// we need to go further upwards.
-					return true;
-				}
-			}
-
-			parent = parent.container;
-		}
-
-		return false;
+	@JsonIgnore
+	public String transformPostedValue(Object value) {
+		return FormUtil.extractStringValue(value);
 	}
 
 	/**
-	 * Test whether this element should be skipped for email rendering.
-	 *
-	 * <p>
-	 *     Currently the only reason to skip an element is if it is a descendant
-	 *     of a {@link ConditionalContainerElement}, and the specified checked
-	 *     field is not set accordingly.
-	 * </p>
-	 *
-	 * @param formData The saved form data.
-	 * @return {@code true} if the element should be skipped during validation
-	 * 		and saving data, and {@code false} otherwise.
+	 * Transform the string representation back to the external value
+	 * @param value string representation
+	 * @return external value
 	 */
-	public boolean skipElement(NodeResponse formData) {
-		FormElement parent = container;
+	@JsonIgnore
+	public Object transformToExternal(String value) {
+		return value;
+	}
 
-		while (parent != null) {
-			if (parent instanceof ConditionalContainerElement) {
-				if (((ConditionalContainerElement) parent).skipElements(formData)) {
-					// The conditional container could be nested. If we found
-					// a container that says skip, we can return here, otherwise
-					// we need to go further upwards.
-					return true;
-				}
-			}
-
-			parent = parent.container;
-		}
-
-		return false;
+	/**
+	 * Get the label of the given element. If the label could not be determined, fall back to the name
+	 * @param language language
+	 * @param uiSchema ui schema
+	 * @return label (or name)
+	 */
+	@JsonIgnore
+	public String getLabel(String language, FormUiSchema uiSchema) {
+		return Optional.ofNullable(uiSchema).flatMap(schema -> schema.findElement(key))
+				.map(UiSchemaPageElement::getLabel).map(map -> map.get(language)).orElse(name);
 	}
 
 	/**
@@ -713,7 +692,7 @@ public abstract class FormElement implements RestModel {
 	 * Check whether the given value is valid for this element.
 	 *
 	 * <p>
-	 *     Unlike the checks in {@link #validate(MultiMap, Set, NodeResponse, Vertx, OkHttpClient)}, this
+	 *     Unlike the checks in {@link #validate(FormDataCreateContext, Vertx, OkHttpClient, FormUiSchema)}, this
 	 *     checks implicit restrictions for fields, like for example that only available options for a value
 	 *     list element can be submitted.
 	 * </p>

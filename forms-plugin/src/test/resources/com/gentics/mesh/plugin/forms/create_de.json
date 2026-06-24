@@ -2,5 +2,9 @@
 	"name": "Erstelltes Formular",
 	"type": "POLL",
 	"language": "de",
-	"elements": []
+	"schema": {
+		"key": "test-schema",
+	    "version": "1.0.0",
+	    "properties": {}
+	}
 }

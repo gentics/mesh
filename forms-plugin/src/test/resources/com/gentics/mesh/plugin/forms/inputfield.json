@@ -1,21 +1,105 @@
 {
-	"name": "Form with Textfield",
-	"cms_id": 1,
-	"elements": [
-		{
-			"type": "input",
-			"name": "input1",
-			"placeholderName": "",
-			"label": "Text",
-			"mandatory": true,
-			"info": "",
-			"tooltip": "",
-			"validation": "",
-			"value": "",
-			"minVal": "",
-			"maxVal": "",
-			"maxCharCount": "",
-			"elements": []
-		}
-	]
+  "name": "Test",
+  "language": "en",
+  "type": "GENERIC",
+  "schema": {
+    "key": "test-schema",
+    "version": "2.0.0",
+    "properties": {
+      "input1": {
+		"type": "string",
+		"name": "input1",
+		"placeholderName": "",
+		"label": "Text",
+		"mandatory": true,
+		"info": "",
+		"tooltip": "",
+		"value": "",
+		"minVal": "",
+		"maxVal": "",
+		"maxCharCount": "",
+		"elements": []
+	  },
+      "number": {
+		"type": "string",
+		"name": "number",
+		"placeholderName": "",
+		"label": "Number",
+		"mandatory": false,
+		"validation": {
+		  "minValue": 10,
+		  "maxValue": 20,
+		  "regex": "^[\\d]+"
+		},
+		"info": "",
+		"tooltip": "",
+		"value": "",
+		"minVal": "",
+		"maxVal": "",
+		"maxCharCount": "",
+		"elements": []
+	  },
+      "pattern": {
+        "type": "string",
+        "name": "pattern",
+        "placeholderName": "",
+        "label": "Pattern",
+        "mandatory": false,
+        "validation": {
+          "regexValidation": {
+            "key": "regex_key",
+            "regex": "^foo.bar.doo$",
+            "errorMessage": {
+              "de": "Der Wert entspricht nicht dem erwarteten Muster.",
+              "en": "The value does not match the expected pattern."
+            }
+          }
+        },
+        "info": "",
+        "tooltip": "",
+        "value": "",
+        "minVal": "",
+        "maxVal": "",
+        "maxCharCount": "",
+        "elements": []
+      },
+      "usermail1": {
+        "type": "usermail",
+        "name": "usermail1"
+      }
+    }
+  },
+  "uiSchema": {
+    "key": "test-ui",
+    "version": "1.0.0",
+    "formname": {
+      "de": "Testformular",
+      "en": "Test Form"
+    },
+    "formdescription": {
+      "de": "Beispielbeschreibung",
+      "en": "Example description"
+    },
+    "formwidth": "9",
+    "pages": [
+      {
+        "pagename": {
+          "de": "Seite 1",
+          "en": "Page 1"
+        },
+        "elements": [
+          {
+            "type": "control",
+            "id": "input1",
+            "label": {
+              "de": "1. Eintrag",
+              "en": "Input 1"
+            },
+            "uiSchemaPage": 0
+          }
+        ]
+      }
+    ]
+  },
+  "data": {}
 }

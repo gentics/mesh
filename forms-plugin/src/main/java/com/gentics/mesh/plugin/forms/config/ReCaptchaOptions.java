@@ -1,17 +1,16 @@
 package com.gentics.mesh.plugin.forms.config;
 
-import com.gentics.mesh.plugin.forms.model.ReCaptchaElement;
-
 /**
  * reCAPTCHA options
  */
 public class ReCaptchaOptions {
+
+	private final String DEFAULT_VERIFICATION_URL = "https://www.google.com/recaptcha/api/siteverify";
+	private final String DEFAULT_RESPONSE_TOKEN_KEY = "x-recaptcha-token";
 	private String siteKey;
-
 	private String secretKey;
-
-	private String verificationUrl = ReCaptchaElement.VERIFICATION_URL;
-
+	private String responseTokenKey = DEFAULT_RESPONSE_TOKEN_KEY;
+	private String verificationUrl = DEFAULT_VERIFICATION_URL;
 	/**
 	 * Site Key
 	 * @return site key
@@ -50,5 +49,13 @@ public class ReCaptchaOptions {
 
 	public void setVerificationUrl(String verificationUrl) {
 		this.verificationUrl = verificationUrl;
+	}
+
+	public String getResponseTokenKey() {
+		return responseTokenKey;
+	}
+
+	public void setResponseTokenKey(String solutionKey) {
+		this.responseTokenKey = solutionKey;
 	}
 }

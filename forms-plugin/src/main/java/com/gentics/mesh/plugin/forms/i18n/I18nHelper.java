@@ -2,6 +2,7 @@ package com.gentics.mesh.plugin.forms.i18n;
 
 import java.text.MessageFormat;
 import java.util.Locale;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import org.slf4j.Logger;
@@ -42,5 +43,27 @@ public class I18nHelper {
 			i18nMessage = key;
 		}
 		return i18nMessage;
+	}
+
+	/**
+	 * Return the i18n string from the given translation and i18n string parameters.
+	 *
+	 * @param translations
+	 *            Map containing the translations for the current requests language
+	 * @param key
+	 *            I18n String key
+	 * @param parameters
+	 *            I18n String parameters
+	 *
+	 * @return Translated i18n message or just i18n key if the translation could not be obtained
+	 */
+	public static String get(Map<String, String> translations, String key, String... parameters) {
+		try {
+			return new MessageFormat(translations.get(key)).format(parameters);
+		} catch (Exception e) {
+			log.error("Could not format i18n message for key {" + key + "}", e);
+
+			return key;
+		}
 	}
 }

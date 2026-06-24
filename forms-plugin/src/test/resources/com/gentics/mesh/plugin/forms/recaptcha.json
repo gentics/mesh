@@ -1,24 +1,24 @@
 {
 	"name": "Form with Textfield",
-	"elements": [
-		{
-			"type": "input",
-			"name": "input1",
-			"placeholderName": "",
-			"label": "Text",
-			"mandatory": true,
-			"info": "",
-			"tooltip": "",
-			"validation": "",
-			"value": "",
-			"minVal": "",
-			"maxVal": "",
-			"maxCharCount": "",
-			"elements": []
-		},
-		{
-			"type": "recaptcha",
-			"name": "recaptcha1"
+	"captchaId": "recaptcha_invisible",
+	"schema": {
+		"key": "test-schema",
+		"version": "1.0.0",
+		"properties": {
+			"input1": {
+				"type": "string",
+				"name": "input1",
+				"placeholderName": "",
+				"label": "Text",
+				"mandatory": true,
+				"info": "",
+				"tooltip": "",
+				"value": "",
+				"minVal": "",
+				"maxVal": "",
+				"maxCharCount": "",
+				"elements": []
+			}
 		}
-	]
+	}
 }

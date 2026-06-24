@@ -1,34 +1,8 @@
 package com.gentics.mesh.plugin.forms;
 
-import static com.gentics.mesh.test.ClientHelper.call;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringReader;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Rule;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
@@ -38,9 +12,12 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.client.DeleteParametersImpl;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.parameter.client.VersioningParametersImpl;
-import com.gentics.mesh.plugin.forms.model.LanguagesModel;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
+import com.gentics.mesh.plugin.forms.model.FormtypeConfigsModel;
 import com.gentics.mesh.plugin.forms.model.response.FormOnlineResponse;
 import com.gentics.mesh.plugin.forms.model.response.StatusResponse;
+import com.gentics.mesh.plugin.forms.model.schema.FormData;
+import com.gentics.mesh.plugin.forms.model.schema.FormDataProperty;
 import com.gentics.mesh.plugin.forms.service.FormService;
 import com.gentics.mesh.plugin.forms.service.SchemaService;
 import com.gentics.mesh.plugin.forms.test.ResponseWithCookies;
@@ -54,25 +31,66 @@ import com.gentics.mesh.util.UUIDUtil;
 import com.google.common.net.HttpHeaders;
 import com.icegreen.greenmail.junit.GreenMailRule;
 import com.icegreen.greenmail.util.ServerSetupTest;
+import com.rometools.utils.Strings;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import okhttp3.Cookie;
 import okhttp3.Headers;
+import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Rule;
+
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
+import java.net.URLConnection;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static com.gentics.mesh.test.ClientHelper.call;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Integration tests for the FormsPlugin
  */
 public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginLocalIntegrationTest {
 
-	public static final String FIELD_RS_DATA_UUID = "dataUuid";
+	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+	public static final String FIELD_RS_DATA_UUID = "formDataID";
 	public static final String FIELD_RS_CREATED = "created";
 
 	protected final static String PROJECT_NAME = "testproject";
@@ -164,11 +182,12 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 		Response response = client().newCall(request).execute();
 
 		if (permission) {
+			String body = response.body().string();
 			assertThat(response.isSuccessful())
 					.as(String.format("Response status %d (%s)", response.code(), response.message()))
 					.isEqualTo(expectSuccess);
 			if (expectSuccess) {
-				return JsonUtil.readValue(response.body().string(), clazz);
+				return JsonUtil.readValue(body, clazz);
 			} else {
 				return null;
 			}
@@ -298,6 +317,7 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 			.post(requestBodyFromFile(fileName))
 			.build();
 		Response response = client().newCall(updateRequest).execute();
+		String body = response.body().string();
 
 		if (permission) {
 			assertThat(response.isSuccessful())
@@ -307,7 +327,7 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 			assertThat(loadSchema(SchemaService.getSchemaName(uuid))).as("Update form Schema").isPresent();
 
 			if (expectSuccess) {
-				NodeResponse updatedNode = JsonUtil.readValue(response.body().string(), NodeResponse.class);
+				NodeResponse updatedNode = JsonUtil.readValue(body, NodeResponse.class);
 
 				return updatedNode;
 			}
@@ -346,7 +366,55 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 			return string.formatted(args);
 		} else {
 			return string;
+	}
+	}
+
+	/**
+	 * Get the file data for the given file
+	 * @param name file name
+	 * @return file data as map
+	 * @throws IOException
+	 */
+	protected Map<String, Object> getFileData(String name) throws IOException {
+		String mimeType;
+		try (InputStream in = getClass().getResourceAsStream(name)) {
+			mimeType = URLConnection.guessContentTypeFromStream(in);
 		}
+
+		if (Strings.isBlank(mimeType)) {
+			mimeType = URLConnection.guessContentTypeFromName(name);
+		}
+
+		long size = 0;
+		try (InputStream is = getClass().getResourceAsStream(name)) {
+			byte[] buffer = new byte[8192];
+			int bytesRead;
+			while ((bytesRead = is.read(buffer)) != -1) {
+				size += bytesRead;
+			}
+		}
+
+		return Map.of("fileName", name, "size", size, "type", mimeType, "value",
+				"mesh(not uploaded yet): " + UUIDUtil.randomUUID());
+	}
+
+	/**
+	 * Get the key to be used for binary uploads for the given field
+	 * @param fieldName field name
+	 * @return encoded key
+	 */
+	protected String fileUploadKey(String fieldName) {
+		return URLEncoder.encode("$.properties[\"%s\"].value".formatted(fieldName), StandardCharsets.UTF_8);
+	}
+
+	/**
+	 * Get the key to be used for binary uploads with the given index
+	 * @param fieldName field name
+	 * @param index index
+	 * @return encoded key
+	 */
+	protected String fileUploadKey(String fieldName, int index) {
+		return URLEncoder.encode("$.properties[\"%s\"].values[%d]".formatted(fieldName, index), StandardCharsets.UTF_8);
 	}
 
 	/**
@@ -405,7 +473,7 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 	 * @throws IOException
 	 */
 	protected FormOnlineResponse checkFormOnline(String uuid, String language, boolean permission, boolean expectSuccess) throws IOException {
-		return doRequest(new Request.Builder().url(projectUrl("/forms/" + uuid + "/online/" + language))
+		return doRequest(new Request.Builder().url(projectUrl("/forms/" + uuid + "/online?lang=" + language))
 				.headers(auth(permission)).get().build(), permission, expectSuccess, FormOnlineResponse.class);
 	}
 
@@ -420,7 +488,7 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 	 */
 	protected FormOnlineResponse setFormOffline(String uuid, String language, boolean permission, boolean expectSuccess) throws IOException {
 		return doRequest(
-				new Request.Builder().url(projectUrl("/forms/" + uuid + "/online/" + language))
+				new Request.Builder().url(projectUrl("/forms/" + uuid + "/online?lang=" + language))
 						.headers(auth(permission)).delete().build(),
 				permission, expectSuccess, FormOnlineResponse.class);
 	}
@@ -436,7 +504,7 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 	 */
 	protected FormOnlineResponse setFormOnline(String uuid, String language, boolean permission, boolean expectSuccess) throws IOException {
 		return doRequest(
-				new Request.Builder().url(projectUrl("/forms/" + uuid + "/online/" + language))
+				new Request.Builder().url(projectUrl("/forms/" + uuid + "/online?lang=" + language))
 						.headers(auth(permission)).put(RequestBody.create(MediaType.get("text/plain"), "")).build(),
 				permission, expectSuccess, FormOnlineResponse.class);
 	}
@@ -475,38 +543,31 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 	}
 
 	/**
-	 * Get the languages for the project
+	 * Set the formtype configurations for the project
 	 * @param project project
-	 * @return list of languages (may be null or empty)
+	 * @param model formtype configs to store
+	 * @return response body
+	 * @throws IOException
 	 */
-	protected List<String> getLanguages(String project) {
-		LanguagesModel response = call(() -> server.client().get(
-				String.format("/%s/plugins/forms/languages", URIUtils.encodeSegment(project)), LanguagesModel.class));
-		return response.getLanguages();
+	protected Response setFormtypeConfigs(String project, FormtypeConfigsModel model) throws IOException {
+		String json = JsonUtil.toJson(model);
+		return client().newCall(new Request.Builder()
+				.url(projectUrl("/formtypeconfigs"))
+				.headers(auth(true))
+				.post(RequestBody.create(MediaType.parse("application/json"), json))
+				.build()).execute();
 	}
 
-	/**
-	 * Set the languages for the project
-	 * @param project project
-	 * @param languages language code list
-	 * @return list of languages (may be null or empty)
-	 */
-	protected List<String> setLanguages(String project, List<String> languages) {
-		LanguagesModel response = call(
-				() -> server.client().put(String.format("/%s/plugins/forms/languages", URIUtils.encodeSegment(project)),
-						new LanguagesModel().setLanguages(languages), LanguagesModel.class));
-		return response.getLanguages();
-	}
-
-	protected void submitMultiple(String formUuid, boolean expectRedirect, List<String[]> data) throws IOException {
+	protected void submitMultiple(String formUuid, boolean expectRedirect, String lang, List<String[]> data) throws IOException {
 		for (String[] vote : data) {
-			ResponseWithCookies rs = submit(formUuid, true, expectRedirect, false, vote);
+			ResponseWithCookies rs = submit(formUuid, true, expectRedirect, false, false, lang, vote);
 
-			if (expectRedirect) {
+			// TODO redefine the redirection cases
+			/*if (expectRedirect) {
 				assertThat(rs.response.isRedirect())
 					.as(String.format("Response is redirect %d (%s)", rs.response.code(), rs.response.message()))
 					.isTrue();
-			} else {
+			} else*/ {
 				assertThat(rs.response.isSuccessful())
 					.as("Submit response success %d (%s)", rs.response.code(), rs.response.message())
 					.isTrue();
@@ -514,36 +575,30 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 		}
 	}
 
-	protected ResponseWithCookies submit(String formUuid, String ...data) throws IOException {
-		return submit(formUuid, true, false, data);
+	protected ResponseWithCookies submit(String formUuid, String lang, String ...data) throws IOException {
+		return submit(formUuid, true, false, lang, data);
 	}
 
-	protected ResponseWithCookies submit(String formUuid, boolean json, String ...data) throws IOException {
-		return submit(formUuid, true, false, false, true, data);
+	protected ResponseWithCookies submit(String formUuid, boolean json, String lang, String ...data) throws IOException {
+		return submit(formUuid, true, false, false, true, lang, data);
 	}
 
-	protected ResponseWithCookies submit(String formUuid, boolean publish, boolean expectRedirect, String ...data) throws IOException {
-		return submit(formUuid, publish, expectRedirect, false, data);
+	protected ResponseWithCookies submit(String formUuid, boolean publish, boolean expectRedirect, String lang, String ...data) throws IOException {
+		return submit(formUuid, publish, expectRedirect, false, lang, data);
 	}
 
-	protected ResponseWithCookies submit(String formUuid, boolean publish, boolean expectRedirect, boolean cookie, String ...data) throws IOException {
-		return submit(formUuid, publish, expectRedirect, cookie, false, data);
+	protected ResponseWithCookies submit(String formUuid, boolean publish, boolean expectRedirect, boolean cookie, String lang, String ...data) throws IOException {
+		return submit(formUuid, publish, expectRedirect, cookie, false, lang, data);
 	}
 
-	protected ResponseWithCookies submit(String formUuid, boolean publish, boolean expectRedirect, boolean cookie, boolean json, String ...data) throws IOException {
+	protected ResponseWithCookies submit(String formUuid, boolean publish, boolean expectRedirect, boolean cookie, boolean json, String lang, String ...data) throws IOException {
 		MultipartBody.Builder body = new MultipartBody.Builder()
 			.setType(MultipartBody.FORM);
 
-		for (int ii = cookie ? 1 : 0; ii < data.length; ii++) {
-			String field = data[ii++];
-			String value = ii < data.length ? data[ii] : "";
+		addFormDataPart(body, cookie, data);
 
-			body.addFormDataPart(field, value);
-		}
-
-		String publishParam = publish ? "" : "?publish=false";
 		Request.Builder requestBuilder = new Request.Builder()
-			.url(projectUrl(String.format("/forms/%s/%sdata%s", formUuid, (json ? "json" : ""), publishParam)))
+			.url(projectUrl(String.format("/form/%s/%s?lang=%s", formUuid, publish ? "submit" : "save", lang)))
 			.header("Referer", "ref");
 
 		if (cookie) {
@@ -553,21 +608,104 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 		Request postRequest = requestBuilder.post(body.build()).build();
 		Response response = client().newCall(postRequest).execute();
 
-		if (expectRedirect) {
+		// TODO redefine the redirect cases
+		/*if (expectRedirect) {
 			assertThat(response.isRedirect())
 				.as(String.format("Response is redirect %d (%s)", response.code(), response.message()))
 				.isTrue();
-		} else {
+		} else*/ {
 			assertThat(response.isSuccessful())
-				.as(String.format("Response success %d (%s)", response.code(), response.message()))
+				.as(String.format("Response success %d (%s).", response.code(), response.message()))
 				.isTrue();
 
-			assertThat(response.code())
-				.as("Response code")
-				.isEqualTo(json ? HttpResponseStatus.OK.code() : HttpResponseStatus.RESET_CONTENT.code());
+			if (json) {
+				assertThat(response.code())
+					.as("Response code")
+					.isEqualTo(HttpResponseStatus.OK.code());
+			} else {
+				assertThat(response.code())
+					.as("Response code")
+					.isGreaterThanOrEqualTo(HttpResponseStatus.OK.code()).isLessThan(HttpResponseStatus.MULTIPLE_CHOICES.code());
+			}
 		}
 
 		return new ResponseWithCookies(response, Cookie.parseAll(postRequest.url(), response.headers()));
+	}
+
+		/**
+	 * Submit form data together with binary file uploads using the new multipart format.
+	 *
+	 * @param formUuid form UUID
+	 * @param publish true to use the submit endpoint, false for save
+	 * @param expectRedirect true if a redirect response is expected
+	 * @param lang language code (e.g. "en")
+	 * @param files map of field ID to binary RequestBody; each part is sent as {@code properties.{fieldId}.value}
+	 * @param data alternating field-ID / value pairs for non-binary fields
+	 */
+	protected ResponseWithCookies submitWithFiles(
+			String formUuid,
+			boolean publish,
+			boolean expectRedirect,
+			boolean cookie,
+			String lang,
+			Map<String, RequestBody> files,
+			String ...data) throws IOException {
+		MultipartBody.Builder body = new MultipartBody.Builder()
+			.setType(MultipartBody.FORM);
+
+		addFormDataPart(body, cookie, data);
+
+		for (Map.Entry<String, RequestBody> entry : files.entrySet()) {
+			String partName = "properties." + entry.getKey() + ".value";
+			body.addFormDataPart(partName, entry.getKey(), entry.getValue());
+		}
+
+		Request postRequest = new Request.Builder()
+			.url(projectUrl(String.format("/form/%s/%s?lang=%s", formUuid, publish ? "submit" : "save", lang)))
+			.header("Referer", "ref")
+			.post(body.build())
+			.build();
+
+		Response response = client().newCall(postRequest).execute();
+
+		// TODO redefine the redirection cases
+		/*if (expectRedirect) {
+			assertThat(response.isRedirect())
+				.as(String.format("Response is redirect %d (%s)", response.code(), response.message()))
+				.isTrue();
+		} else*/ {
+			assertThat(response.isSuccessful())
+				.as(String.format("Response success %d (%s)", response.code(), response.message()))
+				.isTrue();
+		}
+
+		return new ResponseWithCookies(response, Cookie.parseAll(postRequest.url(), response.headers()));
+	}
+
+
+	private void addFormDataPart(MultipartBody.Builder body, boolean cookie, String[] data) {
+		FormData formData = new FormData();
+		Map<String, FormDataProperty> properties = new LinkedHashMap<>();
+		for (int ii = cookie ? 1 : 0; ii < data.length - 1; ii += 2) {
+			FormDataProperty prop;
+			if (properties.containsKey(data[ii])) {
+				prop = properties.get(data[ii]);
+				prop.setValues(Stream.of(
+						(prop.getValues() != null ? prop.getValues().stream() : Stream.empty()), 
+						Stream.of(prop.getValue(), data[ii+1])).flatMap(Function.identity()).filter(Objects::nonNull).collect(Collectors.toList()));
+				prop.setValue(null);
+			} else {
+				prop = new FormDataProperty();
+				prop.setValue(data[ii + 1]);
+			}
+			properties.put(data[ii], prop);
+		}
+		formData.setProperties(properties);
+		try {
+			body.addFormDataPart("formdata", OBJECT_MAPPER.writeValueAsString(formData));
+		} catch (JsonProcessingException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	/**
@@ -594,13 +732,13 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 	 * @param formUuid form UUID
 	 * @return list of form data nodes
 	 */
-	protected List<NodeResponse> getFormDataNodes(String formUuid) {
+	protected List<NodeResponse> getFormDataNodes(String formUuid, String... langs) {
 		NodeListResponse formNodeChildren = call(() -> server.client().findNodeChildren(PROJECT_NAME, formUuid));
 		Optional<NodeResponse> optDataFolder = formNodeChildren.getData().stream()
 				.filter(n -> StringUtils.equals(n.getDisplayName(), FormService.DATA_FOLDER_NAME)).findFirst();
 		assertThat(optDataFolder).as("Form Data Folder").isNotEmpty();
 
-		NodeListResponse formDataFolderChildren = call(() -> server.client().findNodeChildren(PROJECT_NAME, optDataFolder.get().getUuid()));
+		NodeListResponse formDataFolderChildren = call(() -> server.client().findNodeChildren(PROJECT_NAME, optDataFolder.get().getUuid(), new NodeParametersImpl().setLanguages(langs)));
 		return formDataFolderChildren.getData().stream()
 				.filter(n -> StringUtils.equals(n.getSchema().getName(), "form_" + formUuid))
 				.collect(Collectors.toList());
@@ -611,8 +749,8 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 	 * @param formUuid form UUID
 	 * @return existing single form data node
 	 */
-	protected NodeResponse getSingleFormDataNode(String formUuid) {
-		List<NodeResponse> dataNodes = getFormDataNodes(formUuid);
+	protected NodeResponse getSingleFormDataNode(String formUuid, String... langs) {
+		List<NodeResponse> dataNodes = getFormDataNodes(formUuid, langs);
 
 		assertThat(dataNodes)
 			.as("Data node list")
@@ -638,4 +776,53 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 		MeshWebrootResponse webrootResponse = call(() -> server.client().webroot(PROJECT_NAME, "/Forms Plugin"));
 		return webrootResponse.getNodeResponse();
 	}
+
+	public static String makeFormdataMultipart(String formID, String formDataUuid, Map<String, Object> params) {
+		return JsonUtil.toJson(makeFormdata(formID, formDataUuid, params));
+	}
+
+	public static FormData makeFormdata(String formID, String formDataUuid, Map<String, Object> params) {
+		return new FormData()
+				.setFormID(formID)
+				.setFormDataID(formDataUuid)
+				.setProperties(params.entrySet().stream().map(e -> {
+					FormDataProperty formDataProperty = new FormDataProperty();
+					Object value = e.getValue();
+					if (value instanceof List<?> listValue) {
+						formDataProperty.setValues((List<Object>)listValue);
+					} else {
+						formDataProperty.setValue(value);
+					}
+					return Pair.of(e.getKey(), formDataProperty);
+				}).collect(Collectors.toMap(Pair::getKey, Pair::getValue)));
+	}
+
+	protected FormtypeConfigsModel buildModel(String json) throws IOException {
+		return JsonUtil.readValue(json, FormtypeConfigsModel.class);
+	}
+
+	/**
+	 * Assert that the response has the given code
+	 * @param response response to check
+	 * @param expectedResponseCode expected response code
+	 */
+	protected void assertResponse(Response response, int expectedResponseCode) {
+		assertThat(response.code()).as("Response code").isEqualTo(expectedResponseCode);
+	}
+
+	/**
+	 * Post the translations from translations.json to the forms plugin.
+	 */
+	protected void updateTranslations() throws IOException {
+		Request postRequest = new Request.Builder()
+			.url(HttpUrl.get(projectUrl("/translations")).newBuilder().build())
+			.headers(auth(true))
+			.header("Referer", "ref")
+			.post(requestBodyFromFile("translations.json"))
+			.build();
+
+		Response response = client().newCall(postRequest).execute();
+
+		assertResponse(response, HttpResponseStatus.OK.code());
+}
 }

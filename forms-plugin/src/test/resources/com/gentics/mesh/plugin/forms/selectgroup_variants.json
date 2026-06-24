@@ -1,85 +1,91 @@
 {
     "name": "Form with selectgroup variants",
-    "elements": [
-        {
-            "type": "selectgroup",
-            "select_type": "singleselect",
-            "additional_element": false,
-            "name": "single",
-            "options": [
-                {
-                    "key": "single_key_1",
-                    "value": "Single Value 1"
-                },
-                {
-                    "key": "single_key_2",
-                    "value": "Single Value 2"
-                },
-                {
-                    "key": "single_key_3",
-                    "value": "Single Value 3"
-                }
-            ]
-        },
-        {
-            "type": "selectgroup",
-            "select_type": "multiselect",
-            "additional_element": false,
-            "name": "multi",
-            "options": [
-                {
-                    "key": "multi_key_1",
-                    "value": "Multi Value 1"
-                },
-                {
-                    "key": "multi_key_2",
-                    "value": "Multi Value 2"
-                },
-                {
-                    "key": "multi_key_3",
-                    "value": "Multi Value 3"
-                }
-            ]
-        },
-        {
-            "type": "selectgroup",
-            "select_type": "singleselect",
-            "additional_element": true,
-            "name": "single_with",
-            "options": [
-                {
-                    "key": "single_key_1",
-                    "value": "Single Value 1"
-                },
-                {
-                    "key": "single_key_2",
-                    "value": "Single Value 2"
-                },
-                {
-                    "key": "single_key_3",
-                    "value": "Single Value 3"
-                }
-            ]
-        },
-        {
-            "type": "selectgroup",
-            "select_type": "multiselect",
-            "additional_element": true,
-            "name": "multi_with",
-            "options": [
-                {
-                    "key": "multi_key_1",
-                    "value": "Multi Value 1"
-                },
-                {
-                    "key": "multi_key_2",
-                    "value": "Multi Value 2"
-                },
-                {
-                    "key": "multi_key_3",
-                    "value": "Multi Value 3"
-                }
-            ]
+    "schema": {
+        "key": "test-schema",
+        "version": "1.0.0",
+        "properties": {
+            "single": {
+                "type": "catalog",
+                "select_type": "singleselect",
+                "additional_element": false,
+                "name": "single",
+                "selectOptions": [
+                    {
+                        "label": { "en": "Single Value 1", "de": "1. Einzehwahl" },
+                        "value": "single_key_1"
+                    },
+                    {
+                        "label": { "en": "Single Value 2", "de": "2. Einzelwahl" },
+                        "value": "single_key_2"
+                    },
+                    {
+                        "label": { "en": "Single Value 3", "de": "3. Einzelwahl" },
+                        "value": "single_key_3"
+                    }
+                ]
+            },
+            "multi": {
+                "type": "catalog",
+                "select_type": "multiselect",
+                "additional_element": false,
+                "name": "multi",
+				"isList": true,
+                "selectOptions": [
+					{
+                       "label": { "en": "Multi Value 1", "de": "1. Mehrfachwahl" },
+                       "value": "multi_key_1"
+                   },
+                   {
+                       "label": { "en": "Multi Value 2", "de": "2. Mehrfachwahl" },
+                       "value": "multi_key_2"
+                   },
+                   {
+                       "label": { "en": "Multi Value 3", "de": "3. Mehrfachwahl" },
+                       "value": "multi_key_3"
+                   }
+                ]
+            },
+            "single_with": {
+                "type": "catalog",
+                "select_type": "singleselect",
+                "additional_element": true,
+                "name": "single_with",
+                "selectOptions": [
+					{
+                        "label": { "en": "Single Value 1", "de": "1. Einzehwahl" },
+                        "value": "single_key_1"
+                    },
+                    {
+                        "label": { "en": "Single Value 2", "de": "2. Einzelwahl" },
+                        "value": "single_key_2"
+                    },
+                    {
+                        "label": { "en": "Single Value 3", "de": "3. Einzelwahl" },
+                        "value": "single_key_3"
+                    }
+                ]
+            },
+            "multi_with": {
+                "type": "catalog",
+                "select_type": "multiselect",
+                "additional_element": true,
+                "name": "multi_with",
+				"isList": true,
+                "selectOptions": [
+					{
+                       "label": { "en": "Multi Value 1", "de": "1. Mehrfachwahl" },
+                       "value": "multi_key_1"
+                   },
+                   {
+                       "label": { "en": "Multi Value 2", "de": "2. Mehrfachwahl" },
+                       "value": "multi_key_2"
+                   },
+                   {
+                       "label": { "en": "Multi Value 3", "de": "3. Mehrfachwahl" },
+                       "value": "multi_key_3"
+                   }
+                ]
+            }
         }
-    ]
+    }
 }

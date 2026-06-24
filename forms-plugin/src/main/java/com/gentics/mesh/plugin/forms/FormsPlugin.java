@@ -64,43 +64,45 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 		projectRouter.route("/active").method(PUT).handler(fromComponent(FormsPluginComponent::activateHandler));
 		projectRouter.route("/active").method(DELETE).handler(fromComponent(FormsPluginComponent::deactivateHandler));
 
-		// routes for getting/setting supported languages
-		projectRouter.route("/languages").method(GET).handler(fromComponent(FormsPluginComponent::getLanguagesHandler));
-		projectRouter.route("/languages").method(PUT).handler(fromComponent(FormsPluginComponent::setLanguagesHandler));
+		// route for setting formtype configurations
+		projectRouter.route("/formtypeconfigs").method(POST).handler(fromComponent(FormsPluginComponent::setFormtypeConfigsHandler));
+
+		// routes for translations
+		projectRouter.route("/translations/:formUuid/:lang").method(GET).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::getTranslationsHandler));
+		projectRouter.route("/translations").method(POST).handler(fromComponent(FormsPluginComponent::setTranslationsHandler));
 
 		// TODO cors
 		projectRouter.route("/forms").method(GET).handler(fromComponent(FormsPluginComponent::listFormsHandler));
 
 		projectRouter.route("/forms/:formUuid").method(GET).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::loadFormHandler));
-		projectRouter.route("/forms/:formUuid").method(GET).produces("text/html").handler(fromComponent(FormsPluginComponent::renderFormHandler));
 		projectRouter.route("/forms/:formUuid").method(POST).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::upsertFormHandler));
 		projectRouter.route("/forms/:formUuid").method(DELETE).handler(fromComponent(FormsPluginComponent::deleteFormHandler));
 
 		// routes for handling the online status of forms
-		projectRouter.route("/forms/:formUuid/online/:lang").method(GET).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::getFormOnlineStatusHandler));
-		projectRouter.route("/forms/:formUuid/online/:lang").method(PUT).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::setFormOnlineHandler));
-		projectRouter.route("/forms/:formUuid/online/:lang").method(DELETE).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::setFormOfflineHandler));
+		projectRouter.route("/forms/:formUuid/online").method(GET).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::getFormOnlineStatusHandler));
+		projectRouter.route("/forms/:formUuid/online").method(PUT).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::setFormOnlineHandler));
+		projectRouter.route("/forms/:formUuid/online").method(DELETE).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::setFormOfflineHandler));
 
-		// routes for rendering previews of forms
-		projectRouter.route("/forms/:formUuid/preview").method(POST).produces("text/html").handler(fromComponent(FormsPluginComponent::renderFormPreviewHandler));
-		projectRouter.route("/forms/:formUuid/preview").method(POST).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::renderFormPreviewAsJsonHandler));
+		// load form for formgen
+		projectRouter.route("/form/:formUuid/load").method(POST).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::loadFormGenHandler));
+
+		projectRouter.route("/form/:formUuid/results").method(GET).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::loadPollResultsHandler));
 
 		projectRouter.route("/forms/:formUuid/elements").method(GET).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::loadFormElementsHandler));
 
 		projectRouter.route("/forms/:formUuid/schema").method(GET).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::loadFormSchemaHandler));
 
-		projectRouter.route("/forms/:formUuid/data").method(POST).handler(fromComponent(FormsPluginComponent::postDataHandler));
-		projectRouter.route("/forms/:formUuid/jsondata").method(POST).handler(fromComponent(FormsPluginComponent::postJsonDataHandler));
+		projectRouter.route("/form/:formUuid/validate").method(POST).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::validationHandler));
+		projectRouter.route("/form/:formUuid/save").method(POST).handler(fromComponent(FormsPluginComponent::saveDataHandler));
+		projectRouter.route("/form/:formUuid/submit").method(POST).handler(fromComponent(FormsPluginComponent::submitDataHandler));
 		projectRouter.route("/forms/:formUuid/data").method(GET).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::findFormDataHandler));
-
-		projectRouter.route("/forms/:formUuid/data/:formDataUuid").method(GET).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::loadFormDataHandler));
-		projectRouter.route("/forms/:formUuid/data/:formDataUuid").method(GET).produces("text/html").handler(fromComponent(FormsPluginComponent::renderFormDataHandler));
-		projectRouter.route("/forms/:formUuid/data/:formDataUuid").method(POST).handler(fromComponent(FormsPluginComponent::updatePostedDataHandler));
-		projectRouter.route("/forms/:formUuid/jsondata/:formDataUuid").method(POST).handler(fromComponent(FormsPluginComponent::updatePostedJsonDataHandler));
+		projectRouter.route("/form/:formUuid/cancel").method(POST).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::cancelFormDataHandler));
+		projectRouter.route("/form/:formUuid/binary/:meshBinaryUuid").method(GET).handler(fromComponent(FormsPluginComponent::loadBinaryHandler));
 
 		projectRouter.route("/forms/:formUuid/data/:formDataUuid").method(DELETE).handler(fromComponent(FormsPluginComponent::deleteFormDataHandler));
 
 		projectRouter.route("/forms/:formUuid/data/:formDataUuid/binary/:binaryFieldName").method(GET).blockingHandler(fromComponent(FormsPluginComponent::loadFormDataBinaryHandler));
+		projectRouter.route("/forms/:formUuid/data/:formDataUuid/binary/:binaryFieldName/:index").method(GET).blockingHandler(fromComponent(FormsPluginComponent::loadFormDataMultiBinaryItemHandler));
 
 		projectRouter.route("/forms/:formUuid/export").method(GET).handler(fromComponent(FormsPluginComponent::exportHandler));
 		projectRouter.route("/forms/:formUuid/export").method(POST).handler(fromComponent(FormsPluginComponent::requestExportHandler));
@@ -140,7 +142,7 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 
 	}
 
-	private FormsPluginComponent component(MeshRestClient userClient) {
+	protected FormsPluginComponent component(MeshRestClient userClient) {
 		return DaggerFormsPluginComponent.builder()
 			.adminClient(adminClient())
 			.userClient(userClient)
@@ -148,6 +150,7 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 			.vertx(vertx())
 			.storageDir(getStorageDir())
 			.manifest(getManifest())
+			.env(environment())
 			.build();
 	}
 

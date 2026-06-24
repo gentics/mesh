@@ -153,12 +153,22 @@ public final class ParameterUtil {
 	}
 
 	/**
+	 * Get the query parameter with the given name.
+	 * @param context The plugin context for the request.
+	 * @param name The name of the query parameter.
+	 * @return The value of the query parameter or null if the parameter is not present.
+	 */
+	public static String getQueryParam(PluginContext context, String name) {
+		return context.queryParams().get(name);
+	}
+
+	/**
 	 * Create an instance of {@link MeshPluginException} with error code 400 (Bad Request) for
 	 * illegal path parameter with given name
 	 * @param pathParamName path parameter name
 	 * @return exception
 	 */
-	protected static MeshPluginException illegalPathParameter(String pathParamName) {
+	public static MeshPluginException illegalPathParameter(String pathParamName) {
 		return new MeshPluginException("Illegal path parameter for %s".formatted(pathParamName), 400);
 	}
 }

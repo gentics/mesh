@@ -1,17 +1,6 @@
 package com.gentics.mesh.plugin.forms;
 
-import io.vertx.core.json.JsonObject;
-import okhttp3.MultipartBody;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-import org.apache.commons.lang3.StringUtils;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,15 +8,28 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
+import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.Tuple;
+
+import io.vertx.core.json.JsonObject;
+import okhttp3.MultipartBody;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 /**
  * Test cases for getting reporting data with special export options.
@@ -59,7 +61,6 @@ public class FormDataExportOptionsTest extends AbstractFormsPluginIntegrationTes
 		super.setup();
 		// activate plugin
 		assertThat(activate(PROJECT_NAME)).as("Activation status").isTrue();
-		assertThat(setLanguages(PROJECT_NAME, Arrays.asList("en", "de"))).as("Activated languages").containsOnly("en", "de");
 
 		FormsTestPlugin.instance.configuration.getExportOptions()
 			.setIncludeUuid(includeUuid)
@@ -99,11 +100,9 @@ public class FormDataExportOptionsTest extends AbstractFormsPluginIntegrationTes
 		for (Tuple<String, String> value : testList) {
 			RequestBody requestBody = new MultipartBody.Builder()
 				.setType(MultipartBody.FORM)
-				.addFormDataPart("input1", value.v1())
-				.addFormDataPart("input2", value.v1())
-				.addFormDataPart("input3", value.v1())
+				.addFormDataPart("formdata", makeFormdataMultipart(uuid, null, Map.of("input1", value.v1(), "input2", value.v1(), "input3", value.v1())))
 				.build();
-			Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/jsondata")).post(requestBody).build();
+			Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=en")).post(requestBody).build();
 			Response response = client().newCall(postRequest).execute();
 			// add the line to the set of expected records
 			List<String> values = prepareValues(response, value.v2(), value.v2(), value.v2());
@@ -129,7 +128,32 @@ public class FormDataExportOptionsTest extends AbstractFormsPluginIntegrationTes
 			}
 		}
 
-		assertThat(actualRecords).as("Exported data").containsOnlyElementsOf(records);
+		assertThat(actualRecords).as("Exported data").usingElementComparator((a, b) -> {
+			if (a != null && b != null) {
+				String[] aparts = a.split(",");
+				String[] bparts = b.split(",");
+				if (aparts.length == bparts.length) {
+					for (int i = 0; i < aparts.length; i++) {
+						int c = Strings.CS.compare(aparts[i], bparts[i]);
+						if (c != 0) {
+							if ("TIMESTAMP".equals(aparts[i])) {
+								if (DateUtils.fromISO8601(bparts[i], false) != null) {
+									continue;
+								}
+							}
+							if ("TIMESTAMP".equals(bparts[i])) {
+								if (DateUtils.fromISO8601(aparts[i], false) != null) {
+									continue;
+								}
+							}
+							return c;
+						}
+					}
+					return 0;
+				}
+			}
+			return Strings.CS.compare(a, b);
+		}).containsOnlyElementsOf(records);
 	}
 
 	/**
@@ -153,7 +177,7 @@ public class FormDataExportOptionsTest extends AbstractFormsPluginIntegrationTes
 		}
 
 		if (includeCreationTimestamp) {
-			record.add(responseData.getString(FIELD_RS_CREATED));
+			record.add("TIMESTAMP");
 		}
 
 		record.addAll(Arrays.asList(values));

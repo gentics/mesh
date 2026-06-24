@@ -1,5 +1,9 @@
 {
 	"name": "Form List 3",
 	"language": "it",
-	"elements": []
+	"key": "test-schema",
+    "version": "1.0.0",
+    "schema": {
+		"properties": {}
+	}
 }

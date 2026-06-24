@@ -6,12 +6,11 @@ import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
+import com.gentics.mesh.plugin.forms.model.schema.FormUiSchema;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-
-import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -23,22 +22,42 @@ import java.util.Set;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
+
 /**
  * Base for elements which offer a predefined selection of possible values like radio buttons or dropdown fields.
  */
-public class ValueListElement extends FormElement {
+public abstract class ValueListElement extends FormElement {
 
 	public static final String RC_VALUE_LABELS = "valueLabels";
 
-	/** Collect a stream of {@link ValueListItem} into a linked hash map preserving the order of the items. */
-	public static final Collector<ValueListItem, ?, Map<String, String>> OPTIONS_MAP_COLLECTOR = Collectors.toMap(
-		item -> StringUtils.defaultIfBlank(item.getKey(), ""),
-		item -> StringUtils.defaultIfBlank(item.getValue(), ""),
-		(u, v) -> u,
-		LinkedHashMap::new);
+	/**
+	 * Returns a collector that maps each {@link ValueListItem} to its value (identifier) and the label
+	 * for the given language. If the requested language is not available, falls back to the first
+	 * available label. The resulting map preserves insertion order.
+	 *
+	 * @param languagelanguage tag (e.g. {@code "de"}, {@code "en"}), may be {@code null}
+	 * @return collector producing a {@code LinkedHashMap<value, label>}
+	 */
+	public static Collector<ValueListItem, ?, Map<String, String>> optionsMapCollector(String language) {
+		return Collectors.toMap(
+			item -> StringUtils.defaultIfBlank(item.getValue(), ""),
+			item -> {
+				Map<String, String> lbl = item.getLabel();
+				if (lbl == null || lbl.isEmpty()) {
+					return "";
+				}
+				String direct = lbl.get(language);
+				if (direct != null) {
+					return direct;
+				}
+				return StringUtils.defaultIfBlank(lbl.values().iterator().next(), "");
+			},
+			(u, v) -> u,
+			LinkedHashMap::new);
+	}
 
 	@JsonProperty
-	protected List<ValueListItem> options = new ArrayList<>();
+	protected List<ValueListItem> selectOptions = new ArrayList<>();
 
 	@JsonIgnore
 	protected Set<String> validValues = new HashSet<>();
@@ -49,56 +68,18 @@ public class ValueListElement extends FormElement {
 	protected ValueListElement(ValueListElement other, boolean deep) {
 		super(other, deep);
 
-		this.options = cloneField(other.options, deep);
+		this.selectOptions = cloneField(other.selectOptions, deep);
 		updateValidValues();
 	}
 
-	/**
-	 * Get the options of this value list element.
-	 * @return The options of this value list element
-	 */
-	@Nonnull
-	public List<ValueListItem> getOptions() {
-		if (options == null) {
-			options = new ArrayList<>();
-			updateValidValues();
-		}
-
-		return options;
+	@JsonIgnore
+	public List<ValueListItem> getSelectOptions() {
+		return selectOptions;
 	}
 
-	/**
-	 * Set the options for this value list element.
-	 * @param options The options for this value list element
-	 */
-	public void setOptions(List<ValueListItem> options) {
-		this.options = Optional.ofNullable(options).orElse(new ArrayList<>());
-		updateValidValues();
-	}
-
-	@JsonProperty
-	@Deprecated
-	public List<LegacyValueListItem> getListelements() {
-		return getOptions().stream()
-			.map(i -> new LegacyValueListItem().setValue(i.getKey()).setLabel(i.getValue()))
-			.collect(Collectors.toList());
-	}
-
-	@JsonProperty
-	@Deprecated
-	public void setListelements(List<LegacyValueListItem> listelements) {
-		if (listelements == null) {
-			this.options = new ArrayList<>();
-			updateValidValues();
-
-			return;
-		}
-
-		this.options = listelements.stream()
-			.map(i -> new ValueListItem().setKey(i.getValue()).setValue(i.getLabel()))
-			.collect(Collectors.toList());
-
-		updateValidValues();
+	@JsonProperty("selectOptions")
+	public void setSelectOptions(List<ValueListItem> selectOptions) {
+		this.selectOptions = Optional.ofNullable(selectOptions).orElse(new ArrayList<>());
 	}
 
 	/**
@@ -107,19 +88,21 @@ public class ValueListElement extends FormElement {
 	 * @return The respective error, when there are no options or one of them does not have a value or a label
 	 */
 	@Override
-	public Optional<ValidationError> validateForm() {
+	public Optional<ValidationError> validateForm(String language, FormUiSchema uiSchema) {
 		ValidationError error = new ValidationError()
 			.setName(getName())
 			.setTitle(I18nHelper.get(Locale.GERMAN, "error.validation.form.title"));
 
-		if (options == null || options.isEmpty()) {
-			error.setMessage(I18nHelper.get(Locale.GERMAN, "error.validation.form.missing_list_elements", getLabelOrName()));
+		List<ValueListItem> effectiveOptions = getEffectiveSelectOptions();
+
+		if (effectiveOptions == null || effectiveOptions.isEmpty()) {
+			error.setMessage(I18nHelper.get(Locale.GERMAN, "error.validation.form.missing_list_elements", getLabel(language, uiSchema)));
 
 			return Optional.of(error);
 		}
 
-		Optional<ValueListItem> invalid = options.stream()
-			.filter(e -> StringUtils.isEmpty(e.getKey()) || StringUtils.isEmpty(e.getValue()))
+		Optional<ValueListItem> invalid = effectiveOptions.stream()
+			.filter(e -> StringUtils.isEmpty(e.getValue()) || (e.getLabel() == null || e.getLabel().isEmpty()))
 			.findAny();
 
 		if (invalid.isPresent()) {
@@ -127,7 +110,7 @@ public class ValueListElement extends FormElement {
 				? "error.validation.form.missing_value"
 				: "error.validation.form.missing_label";
 
-			error.setMessage(I18nHelper.get(Locale.GERMAN, key, getLabelOrName()));
+			error.setMessage(I18nHelper.get(Locale.GERMAN, key, getLabel(language, uiSchema)));
 
 			return Optional.of(error);
 		}
@@ -136,25 +119,25 @@ public class ValueListElement extends FormElement {
 	}
 
 	@Override
-	public void addPollData(JsonObject results, FieldContainer formData) {
-		super.addPollData(results, formData);
+	public void addPollData(JsonObject results, FieldContainer formData, String language, FormUiSchema uiSchema) {
+		super.addPollData(results, formData, language, uiSchema);
 
 		results.put(
 			RC_VALUE_LABELS,
-			getOptions().stream().sequential().collect(OPTIONS_MAP_COLLECTOR));
+			getSelectOptions().stream().sequential().collect(optionsMapCollector(null)));
 
 		JsonObject values = results.getJsonObject(FormDataService.POLL_VALUES_NAME);
 
 		if (values.isEmpty()) {
 			// Prepare the values, to enforce element order, as they are defined
 			// in the form.
-			getOptions().forEach(e -> values.put(e.getKey(), 0));
+			getSelectOptions().forEach(e -> values.put(e.getValue(), 0));
 		}
 
 		String fieldName = getName();
 		FieldMap fields = formData.getFields();
 
-		if (isMultivalue()) {
+		if (isList()) {
 			Optional<List<String>> allValues = Optional.ofNullable(fields)
 				.map(f -> f.getStringFieldList(fieldName))
 				.map(l -> l.getItems());
@@ -174,9 +157,7 @@ public class ValueListElement extends FormElement {
 	}
 
 	@Override
-	protected FormElement clone(boolean deep) {
-		return new ValueListElement(this, deep);
-	}
+	protected abstract FormElement clone(boolean deep);
 
 	/**
 	 * Increment the integer field with the name {@code value} in the given
@@ -199,11 +180,21 @@ public class ValueListElement extends FormElement {
 	@Override
 	protected boolean isInvalidValue(String value) {
 		// This is also checked in validateForm(), but just to be sure.
-		if (CollectionUtils.isEmpty(options)) {
+		if (CollectionUtils.isEmpty(getEffectiveSelectOptions())) {
 			return true;
+		}
+		if (validValues.isEmpty()) {
+			updateValidValues();
 		}
 
 		return !validValues.contains(value);
+	}
+
+	@JsonIgnore
+	protected List<ValueListItem> getEffectiveSelectOptions() {
+		return (selectOptions != null && !selectOptions.isEmpty())
+				? selectOptions
+				: getFormGridOptions().getSelectOptions();
 	}
 
 	/**
@@ -211,6 +202,6 @@ public class ValueListElement extends FormElement {
 	 */
 	private void updateValidValues() {
 		validValues.clear();
-		validValues.addAll(options.stream().map(ValueListItem::getKey).collect(Collectors.toSet()));
+		validValues.addAll(getEffectiveSelectOptions().stream().map(ValueListItem::getValue).collect(Collectors.toSet()));
 	}
 }

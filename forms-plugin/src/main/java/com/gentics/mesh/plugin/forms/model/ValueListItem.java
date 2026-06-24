@@ -1,5 +1,7 @@
 package com.gentics.mesh.plugin.forms.model;
 
+import java.util.Map;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -8,20 +10,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class ValueListItem {
 
 	@JsonProperty
-	private String key;
-
-	@JsonProperty
 	private String value;
 
-	public String getKey() {
-		return key;
-	}
-
-	public ValueListItem setKey(String key) {
-		this.key = key;
-
-		return this;
-	}
+	@JsonProperty
+	private Map<String, String> label;
 
 	public String getValue() {
 		return value;
@@ -29,7 +21,15 @@ public class ValueListItem {
 
 	public ValueListItem setValue(String value) {
 		this.value = value;
+		return this;
+	}
 
+	public Map<String, String> getLabel() {
+		return label;
+	}
+
+	public ValueListItem setLabel(Map<String, String> label) {
+		this.label = label;
 		return this;
 	}
 }

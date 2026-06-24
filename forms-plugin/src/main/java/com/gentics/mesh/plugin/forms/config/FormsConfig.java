@@ -42,8 +42,6 @@ public class FormsConfig extends LicenseConfiguration {
 
 	private String templatesPath = "plugins/forms/templates";
 
-	private Map<String, String> elements;
-
 	private Map<String, Object> custom = new HashMap<>();
 
 	@JsonProperty("mail")
@@ -197,14 +195,6 @@ public class FormsConfig extends LicenseConfiguration {
 	@JsonProperty("mail")
 	public void setMailOptions(MailOptions mailOptions) {
 		this.mailOptions = mailOptions;
-	}
-
-	public Map<String, String> getElements() {
-		return elements;
-	}
-
-	public void setElements(Map<String, String> elements) {
-		this.elements = elements;
 	}
 
 	public boolean isValidateElements() {

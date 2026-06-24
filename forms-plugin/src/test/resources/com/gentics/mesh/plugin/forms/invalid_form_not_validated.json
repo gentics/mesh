@@ -1,10 +1,14 @@
 {
 	"name": "Invalid form with non-validated custom element without list elements",
-	"elements": [
-		{
-			"type": "not-validated",
-			"name": "notvalidated1",
-			"label": "Not validated"
+	"schema": {
+		"key": "test-schema",
+	    "version": "1.0.0",
+	    "properties": {
+			"notvalidated1": {
+				"type": "not-validated",
+				"name": "notvalidated1",
+				"label": "Not validated"
+			}
 		}
-	]
+	}
 }

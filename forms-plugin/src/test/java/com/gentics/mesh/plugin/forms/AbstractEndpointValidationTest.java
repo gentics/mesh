@@ -1,39 +1,40 @@
 package com.gentics.mesh.plugin.forms;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
-
-import java.io.IOException;
-import java.util.function.Supplier;
-
-import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.Before;
-import org.junit.runners.Parameterized.Parameter;
-
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.util.UUIDUtil;
-
+import io.netty.handler.codec.http.HttpResponseStatus;
 import okhttp3.HttpUrl;
 import okhttp3.MultipartBody;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.runners.Parameterized.Parameter;
+
+import java.io.IOException;
+import java.util.Map;
+import java.util.function.Supplier;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 /**
  * Abstract base class for validation tests
  */
 public abstract class AbstractEndpointValidationTest extends AbstractFormsPluginIntegrationTest {
-	/**
-	 * Dummy request body
-	 */
-	protected final static RequestBody DUMMY_REQUEST_BODY = new MultipartBody.Builder()
-			.setType(MultipartBody.FORM)
-			.addFormDataPart("input1", "bla")
-			.build();
 
 	protected static String formUuid;
 
 	protected static String formDataUuid;
+	/**
+	 * Dummy request body
+	 */
+	protected final static RequestBody DUMMY_REQUEST_BODY = new MultipartBody.Builder()
+		.setType(MultipartBody.FORM)
+		.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(formUuid, formDataUuid, Map.of("input1", "bla")))
+		.build();
 
 	/**
 	 * Supplier for a real form uuid
@@ -70,14 +71,20 @@ public abstract class AbstractEndpointValidationTest extends AbstractFormsPlugin
 		assertThat(activate(PROJECT_NAME)).as("Activation status").isTrue();
 
 		try {
+			updateTranslations();
+		} catch (IOException e) {
+			fail("Could not set translations: %s".formatted(e.getMessage()), e);
+		}
+
+		try {
 			formUuid = createForm("inputfield.json");
 
 			Request postRequest = new Request.Builder()
-					.url(HttpUrl.get(projectUrl("/forms/%s/data".formatted(formUuid))).newBuilder().build())
+					.url(HttpUrl.get(projectUrl("/form/%s/save?lang=en".formatted(formUuid))).newBuilder().build())
 					.header("Referer", "ref").post(DUMMY_REQUEST_BODY).build();
 
 			Response response = client().newCall(postRequest).execute();
-			assertResponse(response, 205);
+			assertResponse(response, 200);
 
 			formDataUuid = getSingleFormDataNode(formUuid).getUuid();
 
@@ -89,15 +96,4 @@ public abstract class AbstractEndpointValidationTest extends AbstractFormsPlugin
 	@Parameter(0)
 	public String description;
 
-	/**
-	 * Assert that the response has the given code
-	 * @param response response to check
-	 * @param expectedResponseCode expected response code
-	 */
-	protected void assertResponse(Response response, int expectedResponseCode) {
-		boolean expectSuccess = expectedResponseCode < 400;
-		assertThat(response.isSuccessful())
-				.as(String.format("Response status %d (%s)", response.code(), response.message())).isEqualTo(expectSuccess);
-		assertThat(response.code()).as("Response code").isEqualTo(expectedResponseCode);
-	}
 }

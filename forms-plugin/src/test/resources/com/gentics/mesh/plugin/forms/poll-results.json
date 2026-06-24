@@ -1,106 +1,108 @@
 {
 	"name": "Full poll",
 	"type": "POLL",
-	"elements": [
-		{
-			"type": "sectionheadline",
-			"name": "section_headline",
-			"active": true,
-			"elements": [],
-			"text": "The section headline"
-		},
-		{
-			"type": "text",
-			"name": "description_text",
-			"active": true,
-			"elements": [],
-			"text": "Some description"
-		},
-
-		{
-			"type": "checkbox",
-			"name": "checkbox1",
-			"label": "Checkbox element",
-			"customScalarProperty": "Custom Checkbox Property",
-			"customPropertyMap": {
-				"key": "Value"
-			}
-		},
-		{
-			"type": "selectgroup",
-			"name": "radiobuttons1",
-			"select_type": "radiobuttons",
-			"label": "Radio buttons element",
-			"properties": {
-				"customProperty": "Custom Radio Buttons Property"
+	"schema": {
+		"key": "test-schema",
+	    "version": "1.0.0",
+	    "properties": {
+			"section_headline": {
+				"type": "sectionheadline",
+				"name": "section_headline",
+				"active": true,
+				"elements": [],
+				"text": "The section headline"
 			},
-			"options": [
-				{
-					"value": "Option which is never selected at the beginning",
-					"key": "r_X"
-				},
-				{
-					"value": "Radio button option 1",
-					"key": "r_1"
-				},
-				{
-					"value": "Radio button option 2",
-					"key": "r_2"
-				},
-				{
-					"value": "Radio button option 3",
-					"key": "r_3"
+			"description_text": {
+				"type": "text",
+				"name": "description_text",
+				"active": true,
+				"elements": [],
+				"text": "Some description"
+			},
+			"checkbox1": {
+				"type": "boolean",
+				"name": "checkbox1",
+				"label": "Checkbox element",
+				"customScalarProperty": "Custom Checkbox Property",
+				"customPropertyMap": {
+					"key": "Value"
 				}
-			]
-		},
-		{
-			"type": "selectgroup",
-			"name": "singleselect1",
-			"select_type": "singleselect",
-			"label": "Single-select element",
-			"options": [
-				{
-					"value": "Single-select option 1",
-					"key": "s_1"
+			},
+			"radiobuttons1": {
+				"type": "catalog",
+				"name": "radiobuttons1",
+				"select_type": "radiobuttons",
+				"label": "Radio button elements",
+				"properties": {
+					"customProperty": "Custom Radio Buttons Property"
 				},
-
-				{
-					"value": "Option which is never selected in the middle",
-					"key": "s_X"
-				},
-				{
-					"value": "Single-select option 2",
-					"key": "s_2"
-				},
-				{
-					"value": "Single-select option 3",
-					"key": "s_3"
-				}
-			]
-		},
-		{
-			"type": "selectgroup",
-			"name": "multiselect1",
-			"select_type": "multiselect",
-			"label": "Multi-select element",
-			"options": [
-				{
-					"value": "Multi-select option 1",
-					"key": "m_1"
-				},
-				{
-					"value": "Multi-select option 2",
-					"key": "m_2"
-				},
-				{
-					"value": "Multi-select option 3",
-					"key": "m_3"
-				},
-				{
-					"value": "Option which is never selected at the end",
-					"key": "m_X"
-				}
-			]
+				"selectOptions": [
+					{
+						"value": "r_X",
+						"label": { "en": "Option which is never selected at the beginning", "de": "Nie ursprunglich gewählte Option" }
+					},
+					{
+						"value": "r_1",
+						"label": { "en": "Radio button option 1", "de": "1. Radiotaste" }
+					},
+					{
+						"value": "r_2",
+						"label": { "en": "Radio button option 2", "de": "2. Radiotaste" }
+					},
+					{
+						"value": "r_3",
+						"label": { "en": "Radio button option 3", "de": "3. Radiotaste" }
+					}
+				]
+			},
+			"singleselect1": {
+				"type": "catalog",
+				"name": "singleselect1",
+				"select_type": "singleselect",
+				"label": "Single select element",
+				"selectOptions": [
+					{
+						"value": "s_1",
+						"label": { "en": "Single-select option 1", "de": "1. Einzelwahl" }
+					},
+					{
+						"value": "s_X",
+						"label": { "en": "Option which is never selected in the middle", "de": "Nie gewaehlte Mitteloption" }
+					},
+					{
+						"value": "s_2",
+						"label": { "en": "Single-select option 2", "de": "2. Einzelwahl" }
+					},
+					{
+						"value": "s_3",
+						"label": { "en": "Single-select option 3", "de": "3. Einzelwahl" }
+					}
+				]
+			},
+			"multiselect1": {
+				"type": "catalog",
+				"name": "multiselect1",
+				"select_type": "multiselect",
+				"label": "Multi select element",
+				"selectOptions": [
+					{
+						"value": "m_1",
+						"label": { "en": "Multi-select option 1", "de": "1. Mehrfachwahl" }
+					},
+					{
+						"value": "m_2",
+						"label": { "en": "Multi-select option 2", "de": "2. Mehrfachwahl" }
+					},
+					{
+						"value": "m_3",
+						"label": { "en": "Multi-select option 3", "de": "3. Mehrfachwahl" }
+					},
+					{
+						"value": "m_X",
+						"label": { "en": "Option which is never selected at the end", "de": "Nie gewaehlte Endoption" }
+					}
+				]
+			}
 		}
-	]
+	}
 }

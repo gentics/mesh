@@ -9,17 +9,18 @@ import com.gentics.mesh.plugin.PluginManifest;
 import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.dagger.StorageDir;
 import com.gentics.mesh.plugin.common.dagger.UserClient;
+import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
+import com.gentics.mesh.plugin.forms.handler.CancelDataHandler;
 import com.gentics.mesh.plugin.forms.handler.DeleteFormDataHandler;
 import com.gentics.mesh.plugin.forms.handler.FindFormDataHandler;
+import com.gentics.mesh.plugin.forms.handler.LoadBinaryHandler;
 import com.gentics.mesh.plugin.forms.handler.LoadFormDataBinaryHandler;
-import com.gentics.mesh.plugin.forms.handler.LoadFormDataHandler;
-import com.gentics.mesh.plugin.forms.handler.PostDataHandler;
-import com.gentics.mesh.plugin.forms.handler.PostJsonDataHandler;
+import com.gentics.mesh.plugin.forms.handler.LoadFormDataMultiBinaryItemHandler;
 import com.gentics.mesh.plugin.forms.handler.PurgeStaleDataHandler;
-import com.gentics.mesh.plugin.forms.handler.RenderFormDataHandler;
-import com.gentics.mesh.plugin.forms.handler.UpdatePostedDataHandler;
-import com.gentics.mesh.plugin.forms.handler.UpdatePostedJsonDataHandler;
+import com.gentics.mesh.plugin.forms.handler.SaveDataHandler;
+import com.gentics.mesh.plugin.forms.handler.SubmitDataHandler;
+import com.gentics.mesh.plugin.forms.handler.ValidationHandler;
 import com.gentics.mesh.plugin.forms.handler.downloads.CheckDownloadHandler;
 import com.gentics.mesh.plugin.forms.handler.downloads.DownloadHandler;
 import com.gentics.mesh.plugin.forms.handler.downloads.ExportHandler;
@@ -30,19 +31,21 @@ import com.gentics.mesh.plugin.forms.handler.form.DeleteFormHandler;
 import com.gentics.mesh.plugin.forms.handler.form.GetFormOnlineStatusHandler;
 import com.gentics.mesh.plugin.forms.handler.form.ListFormsHandler;
 import com.gentics.mesh.plugin.forms.handler.form.LoadFormElementsHandler;
+import com.gentics.mesh.plugin.forms.handler.form.LoadFormGenHandler;
 import com.gentics.mesh.plugin.forms.handler.form.LoadFormHandler;
 import com.gentics.mesh.plugin.forms.handler.form.LoadFormSchemaHandler;
-import com.gentics.mesh.plugin.forms.handler.form.RenderFormHandler;
-import com.gentics.mesh.plugin.forms.handler.form.RenderFormPreviewAsJsonHandler;
-import com.gentics.mesh.plugin.forms.handler.form.RenderFormPreviewHandler;
+import com.gentics.mesh.plugin.forms.handler.form.LoadPollResultsHandler;
 import com.gentics.mesh.plugin.forms.handler.form.SetFormOfflineHandler;
 import com.gentics.mesh.plugin.forms.handler.form.SetFormOnlineHandler;
 import com.gentics.mesh.plugin.forms.handler.form.UpsertFormHandler;
+import com.gentics.mesh.plugin.forms.handler.formtypeconfig.SetFormtypeConfigsHandler;
 import com.gentics.mesh.plugin.forms.handler.status.ActivateHandler;
 import com.gentics.mesh.plugin.forms.handler.status.CheckStatusHandler;
 import com.gentics.mesh.plugin.forms.handler.status.DeactivateHandler;
 import com.gentics.mesh.plugin.forms.handler.status.GetLanguagesHandler;
 import com.gentics.mesh.plugin.forms.handler.status.SetLanguagesHandler;
+import com.gentics.mesh.plugin.forms.handler.translation.GetTranslationsHandler;
+import com.gentics.mesh.plugin.forms.handler.translation.SetTranslationsHandler;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
 import com.gentics.mesh.plugin.forms.service.PurgeService;
 import com.gentics.mesh.plugin.forms.service.StatusService;
@@ -71,9 +74,19 @@ public interface FormsPluginComponent {
 
 	SetLanguagesHandler setLanguagesHandler();
 
+	SetFormtypeConfigsHandler setFormtypeConfigsHandler();
+
+	GetTranslationsHandler getTranslationsHandler();
+
+	SetTranslationsHandler setTranslationsHandler();
+
 	UpsertFormHandler upsertFormHandler();
 
 	ListFormsHandler listFormsHandler();
+
+	LoadFormGenHandler loadFormGenHandler();
+
+	LoadPollResultsHandler loadPollResultsHandler();
 
 	LoadFormHandler loadFormHandler();
 
@@ -89,19 +102,15 @@ public interface FormsPluginComponent {
 
 	LoadFormSchemaHandler loadFormSchemaHandler();
 
-	RenderFormHandler renderFormHandler();
+	SaveDataHandler saveDataHandler();
 
-	RenderFormPreviewHandler renderFormPreviewHandler();
+	SubmitDataHandler submitDataHandler();
 
-	RenderFormPreviewAsJsonHandler renderFormPreviewAsJsonHandler();
+	CancelDataHandler cancelFormDataHandler();
 
-	PostDataHandler postDataHandler();
+	LoadBinaryHandler loadBinaryHandler();
 
-	PostJsonDataHandler postJsonDataHandler();
-
-	UpdatePostedDataHandler updatePostedDataHandler();
-
-	UpdatePostedJsonDataHandler updatePostedJsonDataHandler();
+	ValidationHandler validationHandler();
 
 	ExportHandler exportHandler();
 
@@ -111,15 +120,12 @@ public interface FormsPluginComponent {
 
 	DownloadHandler downloadHandler();
 
-	LoadFormDataHandler loadFormDataHandler();
-
 	FindFormDataHandler findFormDataHandler();
 
 	LoadFormDataBinaryHandler loadFormDataBinaryHandler();
+	LoadFormDataMultiBinaryItemHandler loadFormDataMultiBinaryItemHandler();
 
 	DeleteFormDataHandler deleteFormDataHandler();
-
-	RenderFormDataHandler renderFormDataHandler();
 
 	LoadFilesZipHandler loadFilesZipHandler();
 
@@ -147,6 +153,9 @@ public interface FormsPluginComponent {
 
 		@BindsInstance
 		Builder manifest(PluginManifest manifest);
+
+		@BindsInstance
+		Builder env(PluginEnvironment env);
 
 		FormsPluginComponent build();
 	}

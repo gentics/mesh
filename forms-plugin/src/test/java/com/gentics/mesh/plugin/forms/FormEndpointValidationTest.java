@@ -3,6 +3,7 @@ package com.gentics.mesh.plugin.forms;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.function.Supplier;
 
 import org.junit.Test;
@@ -25,9 +26,9 @@ public class FormEndpointValidationTest extends AbstractEndpointValidationTest {
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
 		Collection<Object[]> data = new ArrayList<>();
-		data.add(new Object[] {"Bogus UUID", BOGUS_UUID, 400, 400, 400, 400});
-		data.add(new Object[] {"Unknown UUID", RANDOM_UUID, 404, 200, 204, 200});
-		data.add(new Object[] {"Foreign UUID", FOREIGN_UUID, 404, 400, 404, 200});
+		data.add(new Object[] {"Bogus UUID", BOGUS_UUID, 400, 400, 400, 400, 404});
+		data.add(new Object[] {"Unknown UUID", RANDOM_UUID, 404, 200, 204, 200, 404});
+		data.add(new Object[] {"Foreign UUID", FOREIGN_UUID, 404, 400, 404, 200, 404});
 		return data;
 	}
 
@@ -62,6 +63,12 @@ public class FormEndpointValidationTest extends AbstractEndpointValidationTest {
 	public int expectedResponseCodeCheckDownloadStatus;
 
 	/**
+	 * Expected form render response code 
+	 */
+	@Parameter(6)
+	public int expectedResponseCodeRender;
+
+	/**
 	 * Test loading a form
 	 * @throws IOException
 	 */
@@ -85,7 +92,7 @@ public class FormEndpointValidationTest extends AbstractEndpointValidationTest {
 			.get()
 			.build();
 		Response response = client().newCall(request).execute();
-		assertResponse(response, expectedResponseCodeLoad);
+		assertResponse(response, expectedResponseCodeRender);
 	}
 
 	/**
@@ -120,7 +127,7 @@ public class FormEndpointValidationTest extends AbstractEndpointValidationTest {
 	 */
 	@Test
 	public void testOnlineStatus() throws IOException {
-		Request request = request("/online/en")
+		Request request = request("/online?lang=en")
 			.get()
 			.build();
 		Response response = client().newCall(request).execute();
@@ -133,7 +140,7 @@ public class FormEndpointValidationTest extends AbstractEndpointValidationTest {
 	 */
 	@Test
 	public void testSetOnline() throws IOException {
-		Request request = request("/online/en")
+		Request request = request("/online?lang=en")
 			.put(RequestBody.create(MediaType.get("text/plain"), ""))
 			.build();
 		Response response = client().newCall(request).execute();
@@ -146,7 +153,7 @@ public class FormEndpointValidationTest extends AbstractEndpointValidationTest {
 	 */
 	@Test
 	public void testSetOffline() throws IOException {
-		Request request = request("/online/en")
+		Request request = request("/online?lang=en")
 			.delete()
 			.build();
 		Response response = client().newCall(request).execute();
@@ -184,8 +191,8 @@ public class FormEndpointValidationTest extends AbstractEndpointValidationTest {
 	 * @throws IOException
 	 */
 	@Test
-	public void testPostData() throws IOException {
-		Request request = request("/data")
+	public void testSubmitData() throws IOException {
+		Request request = request("/submit")
 			.post(DUMMY_REQUEST_BODY)
 			.build();
 		Response response = client().newCall(request).execute();
@@ -193,12 +200,12 @@ public class FormEndpointValidationTest extends AbstractEndpointValidationTest {
 	}
 
 	/**
-	 * Test POSTing data to a form as JSON
+	 * Test POSTing data to a form without publishing (save)
 	 * @throws IOException
 	 */
 	@Test
-	public void testPostDataAsJson() throws IOException {
-		Request request = request("/jsondata")
+	public void testSaveData() throws IOException {
+		Request request = request("/save")
 			.post(DUMMY_REQUEST_BODY)
 			.build();
 		Response response = client().newCall(request).execute();
@@ -311,7 +318,7 @@ public class FormEndpointValidationTest extends AbstractEndpointValidationTest {
 	 */
 	protected Request.Builder request(String subPath) {
 		return new Request.Builder()
-				.url(HttpUrl.get(projectUrl("/forms/%s%s".formatted(uuidSupplier.get(), subPath))).newBuilder().build())
+				.url(HttpUrl.get(projectUrl("/form%s/%s%s?lang=en".formatted((List.of("/submit", "/save", "/load", "/validate").contains(subPath) ? "" : "s"), uuidSupplier.get(), subPath))).newBuilder().build())
 				.header("Referer", "ref").headers(auth(true));
 	}
 }

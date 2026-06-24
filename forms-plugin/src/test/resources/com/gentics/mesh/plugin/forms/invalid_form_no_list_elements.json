@@ -1,10 +1,14 @@
 {
 	"name": "Invalid form with selectgroup element without list elements",
-	"elements": [
-		{
-			"type": "selectgroup",
-			"name": "selectgroup1",
-			"label": "Select Group"
+	"schema": {
+		"key": "test-schema",
+	    "version": "1.0.0",
+	    "properties": {
+			"selectgroup1": {
+				"type": "catalog",
+				"name": "selectgroup1",
+				"label": "Select Group"
+			}
 		}
-	]
+	}
 }

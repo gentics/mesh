@@ -34,26 +34,9 @@ public class FormElementDeserializer<T extends FormElement> extends JsonDeserial
 			Class<? extends FormElement> clazz = null;
 			String type = node.get("type").textValue();
 
-			if (configuration.getElements() != null && configuration.getElements().containsKey(type)) {
-				String className = configuration.getElements().get(type);
-				try {
-					Class<?> customClazz = Class.forName(className);
-					if (FormElement.class.isAssignableFrom(customClazz)) {
-						clazz = (Class<T>) customClazz;
-					} else {
-						throw new IOException(String.format("Cannot deserialize element of type %s, mapped class %s does not extend %s", type, className,
-								FormElement.class.getName()));
-					}
-				} catch (ClassNotFoundException e) {
-					throw new IOException(String.format("Cannot deserialize element of type %s into mapped class %s", type, className));
-				}
-			} else {
-				ElementType elementType = ElementType.get(type);
-				if (elementType != null) {
-					clazz = elementType.getImplementationClass();
-				} else {
-					clazz = UnknownElement.class;
-				}
+			clazz = ElementTypeRegistry.get(type);
+			if (clazz == null) {
+				clazz = UnknownElement.class;
 			}
 
 			T element = (T) mapper.convertValue(node, clazz);
