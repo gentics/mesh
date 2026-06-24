@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.core.rest.common.FieldContainer;
+import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
@@ -114,8 +114,11 @@ public interface HibSchemaChange<T extends FieldSchemaContainer> extends HibBase
 
 	/**
 	 * Apply the current change on the field container to create a new field.
+	 * @param oldSchema old schema
+	 * @param oldFields old fields
+	 * @return map of fields to be changed
 	 */
-	Map<String, Field> createFields(FieldSchemaContainer oldSchema, FieldContainer oldContent);
+	Map<String, Field> createFields(FieldSchemaContainer oldSchema, FieldMap oldFields);
 
 	/**
 	 * Set a REST specific property.

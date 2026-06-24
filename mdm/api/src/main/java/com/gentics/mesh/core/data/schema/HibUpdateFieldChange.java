@@ -7,7 +7,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import java.util.Collections;
 import java.util.Map;
 
-import com.gentics.mesh.core.rest.common.FieldContainer;
+import org.apache.commons.lang3.Strings;
+
+import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
@@ -68,20 +70,22 @@ public interface HibUpdateFieldChange extends HibSchemaFieldChange {
 	}
 
 	@Override
-	default Map<String, Field> createFields(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
+	default Map<String, Field> createFields(FieldSchemaContainer oldSchema, FieldMap oldFields) {
 		String oldFieldName = getFieldName();
 		String newFieldName = getRestProperty(SchemaChangeModel.NAME_KEY);
-		if (oldFieldName != null && newFieldName != null) {
+		if (oldFieldName != null && newFieldName != null && !Strings.CS.equals(oldFieldName, newFieldName)) {
 			// field name changed
 			FieldSchema fieldSchema = oldSchema.getField(oldFieldName);
-			Field field = oldContent.getFields().getField(oldFieldName, fieldSchema);
+			Field field = oldFields.getField(oldFieldName, fieldSchema);
+			// remove the field with old name from
+			oldFields.remove(oldFieldName);
 			return Collections.singletonMap(newFieldName, field);
 		}
 
 		if (oldFieldName != null) {
 			// no field renaming, we can clone the old field as is
 			FieldSchema fieldSchema = oldSchema.getField(oldFieldName);
-			Field field = oldContent.getFields().getField(oldFieldName, fieldSchema);
+			Field field = oldFields.getField(oldFieldName, fieldSchema);
 			return Collections.singletonMap(oldFieldName, field);
 		}
 
