@@ -1,11 +1,11 @@
 [options="header",cols="10%,70%"]
 |======
 
-| Variable (and its YAML field, if exists)
-| Description
+| Variable
+| Description _(and its YAML config field, if exists)_
 
 {{#each entries}}
-| *{{this.name}}*  {{#if this.field}}({{this.field}}){{/if}}
-| {{this.description}}
+| *{{this.name}}*
+| {{this.description}}  {{#if this.field}}_({{this.field}})_{{/if}}
 {{/each}}
 |======

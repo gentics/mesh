@@ -268,10 +268,14 @@ public class TableGenerator extends AbstractRenderingGenerator {
 			} else {
 				try {
 					Field field = clazz.getDeclaredField(key);
-					field.setAccessible(true);
-					defaultValue = Objects.toString(field.get(clazz.newInstance()), null);
-					if (StringUtils.isNotBlank(defaultValue)) {
-						attr.put("default", defaultValue);
+					if (field.getType().isAnnotationPresent(GenerateDocumentation.class)) {
+						flattenSchema(field.getType(), list, key, new JsonObject(JsonUtil.getJsonSchema(field.getType())));
+					} else {
+						field.setAccessible(true);
+						defaultValue = Objects.toString(field.get(clazz.newInstance()), null);
+						if (StringUtils.isNotBlank(defaultValue)) {
+							attr.put("default", defaultValue);
+						}
 					}
 				} catch (Throwable e) {
 				}

@@ -3,9 +3,12 @@ package com.gentics.mesh.generator;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.TreeMap;
+import java.util.function.Function;
 
 import org.apache.commons.lang3.StringUtils;
 import org.reflections.Reflections;
@@ -46,13 +49,12 @@ public class EnvHelpGenerator extends AbstractRenderingGenerator {
 	public void run() throws IOException {
 		System.out.println("Writing files to  {" + outputFolder.getAbsolutePath() + "}");
 
-		Map<String, Map<String, String>> list = new HashMap<>();
+		Map<String, Map<String, String>> list = new TreeMap<>(new MeshFirstComparator());
 		boolean notEmpty = false;
 		Reflections reflections = new Reflections("com.gentics.mesh.etc.config");
 		for (Class<?> clazz : reflections.getTypesAnnotatedWith(GenerateDocumentation.class)) {
 			notEmpty |= processClass(clazz, list, Optional.empty());
 		}
-
 		if (!notEmpty) {
 			throw new RuntimeException("Generator was unable to find any annotated fields");
 		}
@@ -77,7 +79,7 @@ public class EnvHelpGenerator extends AbstractRenderingGenerator {
 				EnvironmentVariable envInfo = field.getAnnotation(EnvironmentVariable.class);
 				String name = envInfo.name();
 				String description = envInfo.description();
-				Map<String, String> map = list.getOrDefault(maybePrefix, new HashMap<>());
+				Map<String, String> map = list.getOrDefault(name, new HashMap<>());
 				map.put("name", name);
 				map.put("description", description);
 				if (!envInfo.isNoField()) {
@@ -96,5 +98,24 @@ public class EnvHelpGenerator extends AbstractRenderingGenerator {
 			notEmpty |= processClass(superclass, list, maybePrefix);
 		}
 		return notEmpty;
+	}
+
+	class MeshFirstComparator implements Comparator<String> {
+
+		@Override
+		public int compare(String o1, String o2) {
+			if (o1 != null && o2 != null) {
+				boolean o1IsMesh = o1.startsWith("MESH_");
+				boolean o2IsMesh = o2.startsWith("MESH_");
+				if (o1IsMesh && !o2IsMesh) {
+					return -1;
+				}
+				if (o2IsMesh && !o1IsMesh) {
+					return 1;
+				}
+				return o1.compareTo(o2);
+			}
+			return Comparator.comparing((String s) -> s).compare(o1, o2);
+		}		
 	}
 }
