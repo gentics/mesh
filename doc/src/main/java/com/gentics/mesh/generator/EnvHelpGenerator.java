@@ -3,14 +3,15 @@ package com.gentics.mesh.generator;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+import org.apache.commons.lang3.StringUtils;
 import org.reflections.Reflections;
-import org.reflections.scanners.FieldAnnotationsScanner;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.gentics.mesh.doc.GenerateDocumentation;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 
 /**
@@ -45,23 +46,14 @@ public class EnvHelpGenerator extends AbstractRenderingGenerator {
 	public void run() throws IOException {
 		System.out.println("Writing files to  {" + outputFolder.getAbsolutePath() + "}");
 
-		List<Map<String, String>> list = new ArrayList<>();
-		boolean isEmpty = true;
-		Reflections reflections = new Reflections("com.gentics.mesh.etc.config", new FieldAnnotationsScanner());
-		for (Field field : reflections.getFieldsAnnotatedWith(EnvironmentVariable.class)) {
-			if (field.isAnnotationPresent(EnvironmentVariable.class)) {
-				EnvironmentVariable envInfo = field.getAnnotation(EnvironmentVariable.class);
-				String name = envInfo.name();
-				String description = envInfo.description();
-				Map<String, String> map = new HashMap<>();
-				map.put("name", name);
-				map.put("description", description);
-				list.add(map);
-				isEmpty = false;
-			}
+		Map<String, Map<String, String>> list = new HashMap<>();
+		boolean notEmpty = false;
+		Reflections reflections = new Reflections("com.gentics.mesh.etc.config");
+		for (Class<?> clazz : reflections.getTypesAnnotatedWith(GenerateDocumentation.class)) {
+			notEmpty |= processClass(clazz, list, Optional.empty());
 		}
 
-		if (isEmpty) {
+		if (!notEmpty) {
 			throw new RuntimeException("Generator was unable to find any annotated fields");
 		}
 
@@ -71,4 +63,38 @@ public class EnvHelpGenerator extends AbstractRenderingGenerator {
 		writeFile("mesh-env.adoc-include", table);
 	}
 
+	protected boolean processClass(Class<?> clazz, Map<String, Map<String, String>> list, Optional<String> maybePrefix) {
+		boolean notEmpty = false;
+		for (Field field: clazz.getDeclaredFields()) {
+			String fieldName = field.getName();
+            {
+            	JsonProperty jsonAnnotation = field.getAnnotation(JsonProperty.class);
+                if (jsonAnnotation != null && StringUtils.isNotBlank(jsonAnnotation.value())) {
+                	fieldName = jsonAnnotation.value();
+                }
+            }
+            if (field.isAnnotationPresent(EnvironmentVariable.class)) {
+				EnvironmentVariable envInfo = field.getAnnotation(EnvironmentVariable.class);
+				String name = envInfo.name();
+				String description = envInfo.description();
+				Map<String, String> map = list.getOrDefault(maybePrefix, new HashMap<>());
+				map.put("name", name);
+				map.put("description", description);
+				if (!envInfo.isNoField()) {
+					if (!map.getOrDefault("field", StringUtils.EMPTY).contains(".")) {
+						map.put("field", maybePrefix.map(p -> p + ".").orElse(StringUtils.EMPTY) + fieldName);
+					}
+				}
+                list.putIfAbsent(name, map);
+				notEmpty |= true;
+			} else if (field.getType().isAnnotationPresent(GenerateDocumentation.class)) {
+				notEmpty |= processClass(field.getType(), list, Optional.of(fieldName + maybePrefix.map(p -> p + ".").orElse(StringUtils.EMPTY)));
+			}
+		}
+		Class<?> superclass = clazz.getSuperclass();
+		if (superclass != null && superclass != Object.class) {
+			notEmpty |= processClass(superclass, list, maybePrefix);
+		}
+		return notEmpty;
+	}
 }

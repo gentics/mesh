@@ -41,7 +41,9 @@ When both `memoryLimit` and `gcTimeLimit` are set to positive integers (which is
 spent for garbage collections (in the last 10 seconds). If both amounts exceed the configured limits (in percent), the instance will be considered unhealthy and both the liveness probe
 and the readiness probe will fail. The instance will be unhealthy until used memory and the time spent for garbage collections drop below the configured limits.
 
-TIP: Setting at least one of the values of `memoryLimit` and `gcTimeLimit` to 0 will disable the monitoring of Java Heap Memory and Garbage Collections.
+One can also use `MESH_MONITORING_MEMORY_LIMIT` and `MESH_MONITORING_GC_LIMIT` environment variables, respectively.
+
+TIP: Setting at least one of the values of `memoryLimit` and `gcTimeLimit` to 0 will disable the monitoring of Java Heap Memory and Garbage Collections. 
 
 == Endpoints
 
