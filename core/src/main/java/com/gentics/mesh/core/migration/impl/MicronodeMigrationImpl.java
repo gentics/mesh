@@ -369,6 +369,6 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 		}
 		// transform to rest and migrate
 		MicronodeResponse restModel = oldMicronode.transformToRestSync(ac, 0);
-		migrate(ac, newMicronode, restModel, fromVersion);
+		migrate(ac, newMicronode, restModel.getFields(), fromVersion);
 	}
 }

@@ -52,8 +52,8 @@ import com.gentics.mesh.core.endpoint.node.BinaryUploadHandlerImpl;
 import com.gentics.mesh.core.migration.AbstractMigrationHandler;
 import com.gentics.mesh.core.migration.MigrationAbortedException;
 import com.gentics.mesh.core.migration.NodeMigration;
-import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.event.node.SchemaMigrationCause;
+import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.distributed.MasterInfoProvider;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -380,7 +380,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 
 		ac.getVersioningParameters().setVersion(container.getVersion().getFullVersion());
 		ac.getGenericParameters().setFields("fields");
-		FieldContainer fieldContainer = () -> contentDao.getFieldMap(container, ac, container.getSchemaContainerVersion().getSchema(), 0, Collections.singletonList(languageTag));
+		FieldMap oldFields = contentDao.getFieldMap(container, ac, container.getSchemaContainerVersion().getSchema(), 0, Collections.singletonList(languageTag));
 
 		// Create field container
 		HibNodeFieldContainer migrated = contentDao.createEmptyFieldContainer(toVersion, node, container.getEditor(), languageTag, branch);
@@ -398,7 +398,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 		}
 
 		// apply changes
-		migrate(ac, migrated, fieldContainer, fromVersion);
+		migrate(ac, migrated, oldFields, fromVersion);
 
 		// Ensure the search index is updated accordingly
 		sqb.add(contentDao.onUpdated(migrated, branchUuid, DRAFT));
@@ -436,7 +436,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 		ac.getVersioningParameters().setVersion("published");
 		ac.getGenericParameters().setFields("fields");
 
-		FieldContainer fieldContainer = () -> contentDao.getFieldMap(content, ac, content.getSchemaContainerVersion().getSchema(), 0, Collections.singletonList(languageTag));
+		FieldMap fields = contentDao.getFieldMap(content, ac, content.getSchemaContainerVersion().getSchema(), 0, Collections.singletonList(languageTag));
 
 		HibNodeFieldContainer migrated = contentDao.createEmptyFieldContainer(toVersion, node, content.getEditor(), languageTag, branch);
 		cloneUntouchedFields(content, migrated, touchedFields);
@@ -444,7 +444,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 		contentDao.setVersion(migrated, content.getVersion().nextPublished());
 		nodeDao.setPublished(node, ac, migrated, branchUuid);
 
-		migrate(ac, migrated, fieldContainer, fromVersion);
+		migrate(ac, migrated, fields, fromVersion);
 		sqb.add(contentDao.onUpdated(migrated, branchUuid, PUBLISHED));
 		return migrated.getVersion();
 	}
