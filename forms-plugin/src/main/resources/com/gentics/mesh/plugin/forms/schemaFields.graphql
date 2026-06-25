@@ -1,5 +1,6 @@
 query ($schemaName: String) {
-    schema(name: $schemaName) {
+	schema(name: $schemaName) {
+		uuid
 		fields {
 			name
 		}
