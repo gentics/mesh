@@ -77,7 +77,7 @@
         },
 		{
             "type": "control",
-            "id": "input2",
+            "id": "input3",
             "label": {
               "de": "3. Eintrag",
               "en": "Third Field"

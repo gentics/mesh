@@ -44,7 +44,7 @@ public class UpsertFormHandler extends AbstractFormsHandler {
 
 		return Single
 				.zip(uuidSingle, formtypeConfigsSingle,
-						(uuid, formtypeConfigs) -> formService.upsert(formtypeConfigs, projectName, uuid, formData))
+						(uuid, formtypeConfigs) -> formService.upsert(formtypeConfigs, projectName, uuid, formData, "en"))
 				.flatMap(x -> x).doOnEvent((response, t) -> {
 					if (response != null) {
 						context.response().putHeader(HttpHeaders.CONTENT_TYPE, HttpConstants.APPLICATION_JSON_UTF8)

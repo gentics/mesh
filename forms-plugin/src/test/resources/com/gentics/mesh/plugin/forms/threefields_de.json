@@ -3,8 +3,8 @@
 	"language": "de",
 	"schema": {
 		"key": "test-schema",
-	    "version": "1.0.0",
-	    "properties": {
+		"version": "1.0.0",
+		"properties": {
 			"input1": {
 				"type": "string",
 				"name": "input1",
@@ -13,7 +13,6 @@
 				"mandatory": true,
 				"info": "",
 				"tooltip": "",
-				
 				"value": "",
 				"minVal": "",
 				"maxVal": "",
@@ -27,7 +26,6 @@
 				"mandatory": true,
 				"info": "",
 				"tooltip": "",
-				
 				"value": "",
 				"minVal": "",
 				"maxVal": "",
@@ -42,7 +40,6 @@
 				"mandatory": true,
 				"info": "",
 				"tooltip": "",
-				
 				"value": "",
 				"minVal": "",
 				"maxVal": "",
@@ -57,7 +54,6 @@
 				"mandatory": true,
 				"info": "",
 				"tooltip": "",
-				
 				"value": "",
 				"minVal": "",
 				"maxVal": "",
@@ -65,5 +61,46 @@
 				"elements": []
 			}
 		}
+	},
+	"uiSchema": {
+		"key": "test-ui",
+		"version": "1.0.0",
+		"formname": {
+			"de": "Testformular",
+			"en": "Test Form"
+		},
+		"formdescription": {
+			"de": "Beispielbeschreibung",
+			"en": "Example description"
+		},
+		"formwidth": "9",
+		"pages": [
+			{
+				"pagename": {
+					"de": "Seite 1",
+					"en": "Page 1"
+				},
+				"elements": [
+					{
+						"type": "control",
+						"id": "input1",
+						"label": {
+							"de": "Erstes Feld",
+							"en": "First Field"
+						},
+						"uiSchemaPage": 0
+					},
+					{
+						"type": "control",
+						"id": "input3",
+						"label": {
+							"de": "Drittes Feld",
+							"en": "Second Field"
+						},
+						"uiSchemaPage": 0
+					}
+				]
+			}
+		]
 	}
 }

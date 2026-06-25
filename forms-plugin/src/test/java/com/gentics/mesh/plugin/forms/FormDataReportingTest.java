@@ -183,10 +183,10 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 			setFormOffline(uuid, "en", true, true);
 		}
 
-		StringBuilder exportUrl = new StringBuilder(projectUrl("/forms/" + uuid + "/export"));
+		StringBuilder exportUrl = new StringBuilder(projectUrl("/forms/" + uuid + "/export?lang=en"));
 
 		if (includeDraft) {
-			exportUrl.append("?publishedOnly=false");
+			exportUrl.append("&publishedOnly=false");
 		}
 
 		Request exportRequest = new Request.Builder()
@@ -289,7 +289,7 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 					.setType(MultipartBody.FORM)
 					.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("input1", value1, "input2", value2, "input3", value3, "input4", value4)))
 					.build();
-			Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=en")).post(requestBody).build();
+			Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=de")).post(requestBody).build();
 			client().newCall(postRequest).execute();
 
 			// add the line to the set of expected records
@@ -301,7 +301,7 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 		}
 
 		Request exportRequest = new Request.Builder()
-				.url(projectUrl("/forms/" + uuid + "/export?headerDelimiter=" + URLEncoder.encode(customDelimiter, "UTF-8")))
+				.url(projectUrl("/forms/" + uuid + "/export?lang=de&headerDelimiter=" + URLEncoder.encode(customDelimiter, "UTF-8")))
 				.headers(auth(permission))
 				.get()
 				.build();
@@ -497,7 +497,7 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=en")).post(requestBody).build();
 		Response postResponse = client().newCall(postRequest).execute();
 		Request exportRequest = new Request.Builder()
-			.url(projectUrl("/forms/" + uuid + "/export"))
+			.url(projectUrl("/forms/" + uuid + "/export?lang=de"))
 			.headers(auth(permission))
 			.get()
 			.build();
@@ -561,7 +561,7 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 		expectedNames = expectedNames.stream().map(name -> dataUuid + "/<node-uuid>" +  name).collect(Collectors.toList());
 
 		Request exportRequest = new Request.Builder()
-				.url(projectUrl("/forms/" + uuid + "/export"))
+				.url(projectUrl("/forms/" + uuid + "/export?lang=de"))
 				.headers(auth(permission))
 				.get()
 				.build();

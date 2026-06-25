@@ -381,9 +381,9 @@ public class FormDataService {
 	 * @return single of the post data response
 	 */
 	public Single<FormData> create(FormtypeConfigsModel formtypeConfigs, FormDataCreateContext ctx) {
-		return formService.loadAsAdmin(ctx.getProjectName(), ctx.getFormUuid(), true, "en")
+		return formService.loadAsAdmin(ctx.getProjectName(), ctx.getFormUuid(), true)
 			.doOnSuccess(ctx::setFormNode)
-			.flatMap(node -> formService.toForm(formtypeConfigs, node))
+			.flatMap(node -> formService.toForm(formtypeConfigs, node, ctx.getLanguage()))
 			.doOnSuccess(ctx::setForm)
 			.flatMap(form -> savePostedData(formtypeConfigs, ctx));
 	}
@@ -398,9 +398,9 @@ public class FormDataService {
 	public Single<FormData> update(FormtypeConfigsModel formtypeConfigs, FormDataUpdateContext ctx) {
 		return Single.zip(
 				// always load English version of form
-				formService.loadAsAdmin(ctx.getProjectName(), ctx.getFormUuid(), true, "en"),
+				formService.loadAsAdmin(ctx.getProjectName(), ctx.getFormUuid(), true),
 				load(ctx.getProjectName(), ctx.getFormUuid(), ctx.getFormDataUuid()),
-				(formNode, formDataNode) -> formService.toForm(formtypeConfigs, formNode)
+				(formNode, formDataNode) -> formService.toForm(formtypeConfigs, formNode, ctx.getLanguage())
 						.flatMap(form -> {
 							ctx.setFormNode(formNode);
 							ctx.setFormDataNode(formDataNode);
@@ -418,9 +418,9 @@ public class FormDataService {
 	 * @return single of form data validation state
 	 */
 	public Single<FormData> validate(FormtypeConfigsModel formtypeConfigs, FormDataCreateContext ctx) {
-		return formService.loadAsAdminWithLanguageFallback(ctx.getProjectName(), ctx.getFormUuid(), true, "en")
+		return formService.loadAsAdmin(ctx.getProjectName(), ctx.getFormUuid(), true)
 			.doOnSuccess(ctx::setFormNode)
-			.flatMap(node -> formService.toForm(formtypeConfigs, node))
+			.flatMap(node -> formService.toForm(formtypeConfigs, node, ctx.getLanguage()))
 			.doOnSuccess(ctx::setForm)
 			.flatMap(form -> validatePostedData(ctx.getPostedData(), statusService.getEffectiveConfiguration(formtypeConfigs, form.getType()), ctx))
 			.map(errors -> toValidationResponse(ctx, errors));
@@ -435,9 +435,9 @@ public class FormDataService {
 	 */
 	public Single<FormData> validate(FormtypeConfigsModel formtypeConfigs, FormDataUpdateContext ctx) {
 		return Single.zip(
-			formService.loadAsAdminWithLanguageFallback(ctx.getProjectName(), ctx.getFormUuid(), true, "en"),
+			formService.loadAsAdmin(ctx.getProjectName(), ctx.getFormUuid(), true),
 				load(ctx.getProjectName(), ctx.getFormUuid(), ctx.getFormDataUuid()),
-				(formNode, formDataNode) -> formService.toForm(formtypeConfigs, formNode)
+				(formNode, formDataNode) -> formService.toForm(formtypeConfigs, formNode, ctx.getLanguage())
 					.flatMap(form -> {
 						ctx.setFormNode(formNode);
 						ctx.setFormDataNode(formDataNode);
@@ -552,8 +552,8 @@ public class FormDataService {
 	public Single<NodeResponse> requestZipBinaries(FormtypeConfigsModel formtypeConfigs, String projectName, String formUuid, String ...languages) {
 		return formService.getFormFolderUuid(projectName, formUuid, languages, FormService.DOWNLOADS_FOLDER_NAME)
 			.flatMap(folderUuid -> statusService.languageFallback(projectName, languages)
-				.flatMap(langFallback -> formService.load(projectName, formUuid, langFallback))
-				.flatMap(node -> formService.toForm(formtypeConfigs, node))
+				.flatMap(langFallback -> formService.load(projectName, formUuid)
+				.flatMap(node -> formService.toForm(formtypeConfigs, node, langFallback)))
 				.flatMap(form -> createDownloadNode(projectName, folderUuid, "binaries", "binaries", form.getName(), "")
 					.flatMap(downloadNode -> {
 						MessageConsumer<Object> consumer = rxVertx.eventBus()
@@ -844,8 +844,8 @@ public class FormDataService {
 			.orElse(true);
 
 		return statusService.languageFallback(projectName, lang)
-			.flatMap(langFallback -> formService.load(projectName, formUuid, langFallback))
-			.flatMap(node -> formService.toForm(formtypeConfigs, node))
+			.flatMap(langFallback -> formService.load(projectName, formUuid)
+			.flatMap(node -> formService.toForm(formtypeConfigs, node, langFallback)))
 			.flatMap(form -> {
 				FormsConfig configuration = statusService.getEffectiveConfiguration(formtypeConfigs,
 						form.getType());
@@ -875,8 +875,8 @@ public class FormDataService {
 	 */
 	public Single<Pair<Form, File>> zipBinaries(FormtypeConfigsModel formtypeConfigs, String projectName, String uuid, String ...languages) {
 		return statusService.languageFallback(projectName, languages)
-			.flatMap(langFallback -> formService.load(projectName, uuid, langFallback))
-			.flatMap(node -> formService.toForm(formtypeConfigs, node))
+			.flatMap(langFallback -> formService.load(projectName, uuid)
+			.flatMap(node -> formService.toForm(formtypeConfigs, node, langFallback)))
 			.flatMap(form -> schemaService.getSchemaFields(projectName, uuid).flatMap(schemaFields -> zipBinaries(projectName, form, schemaFields)));
 	}
 
@@ -1105,8 +1105,8 @@ public class FormDataService {
 	 */
 	public Single<JsonObject> find(FormtypeConfigsModel formtypeConfigs, String projectName, String formUuid, String query, JsonObject pagingParams, boolean publishedOnly) {
 		return statusService.languageFallback(projectName)
-			.flatMap(langFallback -> formService.load(projectName, formUuid, langFallback))
-			.flatMap(node -> formService.toForm(formtypeConfigs, node))
+			.flatMap(langFallback -> formService.load(projectName, formUuid)
+			.flatMap(node -> formService.toForm(formtypeConfigs, node, langFallback)))
 			.flatMap(form -> schemaService.getSchemaFields(projectName, formUuid).map(fields -> Pair.of(form, fields)))
 			.flatMap(pair -> {
 				Form form = pair.getLeft();
@@ -1536,12 +1536,12 @@ public class FormDataService {
 		if (formDataNode == null) {
 			createRequest = new NodeCreateRequest().setSchemaName(SchemaService.getSchemaName(formNode.getUuid()))
 				.setParentNodeUuid(dataFolderUuid)
-				.setLanguage(form.getLanguage());
+				.setLanguage("en");
 			container = createRequest;
 		} else {
 			updateRequest = new NodeUpdateRequest();
 			updateRequest.setVersion(formDataNode.getVersion());
-			updateRequest.setLanguage(form.getLanguage());
+			updateRequest.setLanguage("en");
 			container = updateRequest;
 		}
 
@@ -1558,9 +1558,9 @@ public class FormDataService {
 		}
 
 		if (formDataNode == null) {
-			return adminClient.createNode(projectName, createRequest, new NodeParametersImpl().setLanguages(form.getLanguage())).toSingle();
+			return adminClient.createNode(projectName, createRequest, new NodeParametersImpl().setLanguages("en")).toSingle();
 		} else {
-			return adminClient.updateNode(projectName, formDataNode.getUuid(), updateRequest, new NodeParametersImpl().setLanguages(form.getLanguage())).toSingle();
+			return adminClient.updateNode(projectName, formDataNode.getUuid(), updateRequest, new NodeParametersImpl().setLanguages("en")).toSingle();
 		}
 	}
 

@@ -262,12 +262,13 @@ public class FormService {
 	 *
 	 * @param formtypeConfigs formtype configs
 	 * @param formData The received form data
+	 * @param language language
 	 * @return The respective error, when the form validation failed.
 	 */
-	private Optional<ValidationError> checkForm(FormtypeConfigsModel formtypeConfigs, JsonObject formData) {
+	private Optional<ValidationError> checkForm(FormtypeConfigsModel formtypeConfigs, JsonObject formData, String language) {
 		try {
 			// first try to deserialize the form
-			Form form = toForm(formtypeConfigs, formData.encode(), formData.getString("uuid"), null);
+			Form form = toForm(formtypeConfigs, formData.encode(), formData.getString("uuid"), language);
 
 			FormsConfig configuration = statusService.getEffectiveConfiguration(formtypeConfigs, form.getType());
 
@@ -299,10 +300,9 @@ public class FormService {
 	 *
 	 * @param projectName project name
 	 * @param uuid uuid
-	 * @param lang optional languages
 	 * @return single noderesponse
 	 */
-	public Single<NodeResponse> load(String projectName, String uuid, String...lang) {
+	public Single<NodeResponse> load(String projectName, String uuid) {
 		NodeParameters nParams = new NodeParametersImpl().setLanguages("en");
 		return userClient.findNodeByUuid(projectName, uuid, nParams).toSingle().flatMap(nodeResponse -> {
 			if (isFormNode(nodeResponse)) {
@@ -319,10 +319,9 @@ public class FormService {
 	 *
 	 * @param projectName project name
 	 * @param uuid uuid
-	 * @param lang optional languages
 	 * @return single noderesponse
 	 */
-	public Single<NodeResponse> loadFormAsAdmin(String projectName, String uuid, String...lang) {
+	public Single<NodeResponse> loadFormAsAdmin(String projectName, String uuid) {
 		NodeParameters nParams = new NodeParametersImpl().setLanguages("en");
 		return adminClient.findNodeByUuid(projectName, uuid, nParams).toSingle().flatMap(nodeResponse -> {
 			if (isFormNode(nodeResponse)) {
@@ -341,10 +340,9 @@ public class FormService {
 	 * @param uuid
 	 *            uuid
 	 * @param published true to load published node, false for draft
-	 * @param lang optional languages
 	 * @return single noderesponse
 	 */
-	public Single<NodeResponse> loadAsAdmin(String projectName, String uuid, boolean published, String...lang) {
+	public Single<NodeResponse> loadAsAdmin(String projectName, String uuid, boolean published) {
 		NodeParameters nParams = new NodeParametersImpl().setLanguages("en");
 		VersioningParameters vParams = new VersioningParametersImpl().setVersion(published ? "published" : "draft");
 		return adminClient.findNodeByUuid(projectName, uuid, nParams, vParams).toSingle().flatMap(nodeResponse -> {
@@ -362,17 +360,17 @@ public class FormService {
 		});
 	}
 
-	/**
-	 * Load the form node by uuid as admin user with the form plugin language fallback
-	 * @param projectName project name
-	 * @param uuid form uuid
-	 * @param published true to load published node, false for draft
-	 * @param requestedLangs requested languages
-	 * @return single noderesponse
-	 */
-	public Single<NodeResponse> loadAsAdminWithLanguageFallback(String projectName, String uuid, boolean published, String...requestedLangs) {
-		return statusService.languageFallback(projectName, requestedLangs).flatMap(langs -> loadAsAdmin(projectName, uuid, published, langs));
-	}
+//	/**
+//	 * Load the form node by uuid as admin user with the form plugin language fallback
+//	 * @param projectName project name
+//	 * @param uuid form uuid
+//	 * @param published true to load published node, false for draft
+//	 * @param requestedLangs requested languages
+//	 * @return single noderesponse
+//	 */
+//	public Single<NodeResponse> loadAsAdminWithLanguageFallback(String projectName, String uuid, boolean published, String...requestedLangs) {
+//		return statusService.languageFallback(projectName, requestedLangs).flatMap(langs -> loadAsAdmin(projectName, uuid, published, langs));
+//	}
 
 	/**
 	 * Get the elements JSON for the form
@@ -384,10 +382,10 @@ public class FormService {
 	 */
 	public Single<JsonObject> getElements(FormtypeConfigsModel formtypeConfigs, String projectName, String uuid, String...lang) {
 		return statusService.languageFallback(projectName, lang)
-				.flatMap(fallback -> loadAsAdmin(projectName, uuid, true, fallback).flatMap(formNode -> {
+				.flatMap(fallback -> loadAsAdmin(projectName, uuid, true).flatMap(formNode -> {
 					try {
 						Form form = toForm(formtypeConfigs, formNode.getFields().getStringField("json").getString(),
-								formNode.getUuid(), formNode.getLanguage());
+								formNode.getUuid(), fallback);
 						JsonArray elements = new JsonArray(form.getSchema().getProperties().values().stream()
 								.map(e -> new JsonObject(e.toJson()))
 								.collect(Collectors.toList()));
@@ -518,8 +516,8 @@ public class FormService {
 	 * @param formData form data
 	 * @return single node response
 	 */
-	public Single<NodeResponse> upsert(FormtypeConfigsModel formtypeConfigs, String projectName, String uuid, JsonObject formData) {
-		Optional<ValidationError> error = checkForm(formtypeConfigs, formData);
+	public Single<NodeResponse> upsert(FormtypeConfigsModel formtypeConfigs, String projectName, String uuid, JsonObject formData, String language) {
+		Optional<ValidationError> error = checkForm(formtypeConfigs, formData, language);
 
 		if (error.isPresent()) {
 			return Single.error(
@@ -527,7 +525,6 @@ public class FormService {
 		}
 
 		return statusService.getRootNode(projectName, userClient).flatMap(rootNode -> {
-			String language = formData.getString("language", "en");
 			NodeUpsertRequest request = new NodeUpsertRequest()
 					.setSchemaName(SchemaInitializer.SCHEMA_NAME)
 					.setParentNodeUuid(rootNode.getUuid())
@@ -566,9 +563,9 @@ public class FormService {
 								});
 					}).flatMap(updatedForm -> {
 						return userClient.publishNode(projectName, updatedForm.getUuid()).toSingle()
-								.flatMap(r -> load(projectName, updatedForm.getUuid(), language));
+								.flatMap(r -> load(projectName, updatedForm.getUuid()));
 					}).flatMap(updatedForm -> {
-						return ensureFormFolders(projectName, updatedForm.getUuid(), language, DOWNLOADS_FOLDER_NAME, DATA_FOLDER_NAME)
+						return ensureFormFolders(projectName, updatedForm.getUuid(), "en", DOWNLOADS_FOLDER_NAME, DATA_FOLDER_NAME)
 							.andThen(Single.just(updatedForm));
 					}).flatMap(updatedForm -> {
 						// check whether other language variants of the form exist and if yes, delete them
@@ -609,7 +606,7 @@ public class FormService {
 			.setQuery(query)
 			.setVariables(new JsonObject().put("formUuid", formUuid).put("lang", Arrays.asList(lang)));
 
-		return loadAsAdminWithLanguageFallback(projectName, formUuid, false, lang).flatMap(form -> {
+		return loadAsAdmin(projectName, formUuid, false).flatMap(form -> {
 			return adminClient.graphql(projectName, request).toSingle()
 					.map(rs -> Optional.ofNullable(rs.getData())
 							.map(data -> data.getJsonObject("node"))
@@ -725,17 +722,20 @@ public class FormService {
 	 * @return
 	 */
 	public Single<JsonObject> loadForm(String projectName, String uuid) {
-		return load(projectName, uuid, "en").map(formNode -> {
+		return load(projectName, uuid).map(formNode -> {
 			// TODO if the node has no fields, no specified language was found
 			return new JsonObject(formNode.getFields().getStringField("json").getString());
 		});
 	}
-	
+
 	/**
-	 * load form as admin in langugae de
+	 * load form as admin and return it as JsonObject
+	 * @param projectName project name
+	 * @param uuid form UUID
+	 * @return single JsonObject
 	 */
-	public Single<JsonObject> loadFormAsAdmin(String projectName, String uuid) {
-		return loadFormAsAdmin(projectName, uuid, "en").map(formNode -> {
+	public Single<JsonObject> loadFormAsAdminToJson(String projectName, String uuid) {
+		return loadFormAsAdmin(projectName, uuid).map(formNode -> {
 			return new JsonObject(formNode.getFields().getStringField("json").getString());
 		});
 	}
@@ -770,9 +770,9 @@ public class FormService {
 					HttpResponseStatus.CONFLICT.code()));
 		}
 
-		return loadFormAsAdmin(projectName, uuid)
+		return loadFormAsAdminToJson(projectName, uuid)
 				.flatMap(jsonObj -> Single.fromCallable(() -> {
-					Form form = toForm(formtypeConfigs, jsonObj.encode(), uuid, null);
+					Form form = toForm(formtypeConfigs, jsonObj.encode(), uuid, language);
 					// TODO add flows to FormsConfig
 					JsonNode formTypeConfig = formtypeConfigs.getConfigs().get(form.getType());
 					if (formTypeConfig != null) {
@@ -1141,11 +1141,12 @@ public class FormService {
 	 * @param formtypeConfigs formtype configs
 	 * @param formNode
 	 *            form node
+	 * @param language optional form language
 	 * @return single form
 	 */
-	public Single<Form> toForm(FormtypeConfigsModel formtypeConfigs, NodeResponse formNode) {
+	public Single<Form> toForm(FormtypeConfigsModel formtypeConfigs, NodeResponse formNode, String...language) {
 		try {
-			return Single.just(toForm(formtypeConfigs, formNode.getFields().getStringField("json").toString(), formNode.getUuid(), formNode.getLanguage()));
+			return Single.just(toForm(formtypeConfigs, formNode.getFields().getStringField("json").toString(), formNode.getUuid(), language));
 		} catch (IOException | FormsError e) {
 			return Single.error(e);
 		}
@@ -1160,12 +1161,12 @@ public class FormService {
 	 * @return The deserialized <code>Form</code> object
 	 * @throws IOException When the object mapper cannot parse the string
 	 */
-	public Form toForm(FormtypeConfigsModel formtypeConfigs, String formData, String formUuid, String language) throws IOException, FormsError {
+	public Form toForm(FormtypeConfigsModel formtypeConfigs, String formData, String formUuid, String...language) throws IOException, FormsError {
 		Form form = objectMapper.readValue(formData, Form.class);
 
 		form.setUuid(formUuid);
-		if (language != null) {
-			form.setLanguage(language);
+		if (language.length > 0) {
+			form.setLanguage(language[0]);
 		}
 		if (form.getSchema() == null || form.getSchema().getProperties() == null) {
 			throw new FormsError("Form JSON must contain 'schema.properties'",
@@ -1209,8 +1210,7 @@ public class FormService {
 		schema.setName(getSchemaName(formNode.getUuid()));
 		schema.setContainer(true);
 		try {
-			Form form = toForm(formtypeConfigs, formNode.getFields().getStringField("json").getString(), formNode.getUuid(),
-				formNode.getLanguage());
+			Form form = toForm(formtypeConfigs, formNode.getFields().getStringField("json").getString(), formNode.getUuid());
 			form.addFieldSchemas(schema, fieldNames);
 		} catch (IOException | FormsError e) {
 			return Single.error(new FormsError("Error while deserializing form JSON", e, HttpResponseStatus.BAD_REQUEST.code()));
@@ -1336,13 +1336,14 @@ public class FormService {
 	 * @param formtypeConfigs formtype configs
 	 * @param pc The plugin context for the request
 	 * @param formUuid The UUID of the form node
+	 * @param language optional languages
 	 * @return A {@code Single} containing the results in a JSON array
 	 */
-	public Single<JsonObject> loadPollResults(FormtypeConfigsModel formtypeConfigs, PluginContext pc, String formUuid) {
+	public Single<JsonObject> loadPollResults(FormtypeConfigsModel formtypeConfigs, PluginContext pc, String formUuid, String...language) {
 		var projectName = pc.projectName();
 
 		return loadAsAdmin(projectName, formUuid, true)
-			.flatMap(node -> toForm(formtypeConfigs, node))
+			.flatMap(node -> toForm(formtypeConfigs, node, language))
 			.flatMap(form -> {
 				if (!form.isSubmitOnce()) {
 					return Single.error(new FormsError("Specified form is not a poll", HttpResponseStatus.BAD_REQUEST.code()));

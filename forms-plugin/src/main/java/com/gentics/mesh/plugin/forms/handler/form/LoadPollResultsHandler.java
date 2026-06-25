@@ -36,8 +36,9 @@ public class LoadPollResultsHandler extends AbstractFormsHandler {
 		String projectName = context.project().getString("name");
 		Single<String> singleformUuid = ParameterUtil.getUuidFromPath(context, "formUuid");
 		Single<FormtypeConfigsModel> formtypeConfigsSingle = statusService.getFormtypeConfigs(projectName, adminClient);
+		Single<String[]> languagesSingle = ParameterUtil.getLanguages(context).flatMap(langs -> statusService.languageFallback(projectName, langs));
 
-		return Single.zip(singleformUuid, formtypeConfigsSingle, (formUuid, formtypeConfigs) -> formService.loadPollResults(formtypeConfigs, context, formUuid))
+		return Single.zip(singleformUuid, formtypeConfigsSingle, languagesSingle, (formUuid, formtypeConfigs, languages) -> formService.loadPollResults(formtypeConfigs, context, formUuid, languages))
 			.flatMap(x -> x)
 			.doOnSuccess(results -> context.response().end(results.encodePrettily()))
 			.ignoreElement();

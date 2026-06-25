@@ -91,10 +91,10 @@ public class TranslationsService {
 	 * @return single map of translation key → translated string
 	 */
 	public Single<Map<String, String>> getTranslations(FormtypeConfigsModel formtypeConfigs, String projectName, String formUuid, String lang) {
-		return formService.loadFormAsAdmin(projectName, formUuid)
+		return formService.loadFormAsAdminToJson(projectName, formUuid)
 			.flatMap(formJson -> {
 				try {
-					Form form = formService.toForm(formtypeConfigs, formJson.encode(), formUuid, null);
+					Form form = formService.toForm(formtypeConfigs, formJson.encode(), formUuid, lang);
 					String formType = form.getType();
 					return getTranslations(projectName).map(model -> translationsForType(model, formType, lang));
 				} catch (Exception e) {
