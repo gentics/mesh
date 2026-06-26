@@ -232,7 +232,7 @@ public final class HibernateUtil {
 			.getSessionMetadataIntegrator()
 			.getSessionFactoryImplementor()
 			.getCache()
-			.evictCollectionData(entity.getClass().getCanonicalName() + maybeDistinctField.map(f -> "." + f).orElse(StringUtils.EMPTY), entity);
+			.evictCollectionData(entity.getClass().getCanonicalName() + maybeDistinctField.map(f -> "." + f).orElse(StringUtils.EMPTY), entity.getId());
 	}
 
 	/**
