@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -39,6 +40,7 @@ import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.dagger.annotations.ElementTypeKey;
 import com.gentics.mesh.database.HibernateTx;
+import com.gentics.mesh.hibernate.util.HibernateUtil;
 import com.gentics.mesh.parameter.PagingParameters;
 
 import jakarta.persistence.CascadeType;
@@ -168,7 +170,7 @@ public class HibBranchImpl extends AbstractHibUserTrackedElement<BranchResponse>
 		HibernateTx tx = HibernateTx.get();
 		HibBranchSchemaVersionEdgeImpl sve = new HibBranchSchemaVersionEdgeImpl(tx, this, version);
 		tx.entityManager().persist(sve);
-		schemaVersions.add(sve);
+		HibernateUtil.evict(tx, this, Optional.of("schemaVersions"));
 		return sve;
 	}
 
@@ -176,7 +178,7 @@ public class HibBranchImpl extends AbstractHibUserTrackedElement<BranchResponse>
 		HibernateTx tx = HibernateTx.get();
 		HibBranchMicroschemaVersionEdgeImpl mve = new HibBranchMicroschemaVersionEdgeImpl(tx, this, version);
 		tx.entityManager().persist(mve);
-		microschemaVersions.add(mve);
+		HibernateUtil.evict(tx, this, Optional.of("microschemaVersions"));
 		return mve;
 	}
 

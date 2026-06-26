@@ -21,7 +21,7 @@ public class PluginRouterImpl implements PluginRouter {
 
 	public static final String PLUGINS_MOUNTPOINT = "/plugins";
 
-	private static final Logger log = LoggerFactory.getLogger(APIRouterImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(PluginRouterImpl.class);
 
 	private Map<String, Router> pluginRouters = new HashMap<>();
 
