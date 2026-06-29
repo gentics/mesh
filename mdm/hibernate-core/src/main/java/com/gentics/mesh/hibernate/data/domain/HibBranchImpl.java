@@ -1,10 +1,10 @@
 package com.gentics.mesh.hibernate.data.domain;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -40,7 +40,7 @@ import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.dagger.annotations.ElementTypeKey;
 import com.gentics.mesh.database.HibernateTx;
-import com.gentics.mesh.hibernate.util.HibernateUtil;
+import com.gentics.mesh.hibernate.util.TriFunction;
 import com.gentics.mesh.parameter.PagingParameters;
 
 import jakarta.persistence.CascadeType;
@@ -88,10 +88,10 @@ public class HibBranchImpl extends AbstractHibUserTrackedElement<BranchResponse>
 	private HibBranch previousBranch;
 
 	@OneToMany(mappedBy = "branch", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<HibBranchSchemaVersionEdgeImpl> schemaVersions = new HashSet<>();
+	private List<HibBranchSchemaVersionEdgeImpl> schemaVersions = new ArrayList<>();
 
 	@OneToMany(mappedBy = "branch", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<HibBranchMicroschemaVersionEdgeImpl> microschemaVersions = new HashSet<>();
+	private List<HibBranchMicroschemaVersionEdgeImpl> microschemaVersions = new ArrayList<>();
 
 	@ManyToMany(targetEntity = HibTagImpl.class, fetch = FetchType.LAZY)
 	private Set<HibTag> tags = new HashSet<>();
@@ -166,26 +166,42 @@ public class HibBranchImpl extends AbstractHibUserTrackedElement<BranchResponse>
 		return this;
 	}
 
+	/**
+	 * Add/ensure existing the schema version to this branch.
+	 * 
+	 * @param version
+	 * @return
+	 */
 	public HibBranchSchemaVersionEdgeImpl addSchemaVersion(HibSchemaVersionImpl version) {
-		HibernateTx tx = HibernateTx.get();
-		HibBranchSchemaVersionEdgeImpl sve = new HibBranchSchemaVersionEdgeImpl(tx, this, version);
-		tx.entityManager().persist(sve);
-		HibernateUtil.evict(tx, this, Optional.of("schemaVersions"));
-		return sve;
+		return addVersion(version, HibBranchSchemaVersionEdgeImpl.class, schemaVersions, HibBranchSchemaVersionEdgeImpl::new);
 	}
 
+	/**
+	 * Add/ensure existing the microschema version to this branch.
+	 * 
+	 * @param version
+	 * @return
+	 */
 	public HibBranchMicroschemaVersionEdgeImpl addMicroschemaVersion(HibMicroschemaVersionImpl version) {
-		HibernateTx tx = HibernateTx.get();
-		HibBranchMicroschemaVersionEdgeImpl mve = new HibBranchMicroschemaVersionEdgeImpl(tx, this, version);
-		tx.entityManager().persist(mve);
-		HibernateUtil.evict(tx, this, Optional.of("microschemaVersions"));
-		return mve;
+		return addVersion(version, HibBranchMicroschemaVersionEdgeImpl.class, microschemaVersions, HibBranchMicroschemaVersionEdgeImpl::new);
 	}
 
+	/**
+	 * Remove/ensure removed the schema version from this branch.
+	 * 
+	 * @param version
+	 * @return
+	 */
 	public boolean removeSchemaVersion(HibSchemaVersion version) {
 		return removeVersion(version, schemaVersions);
 	}
 
+	/**
+	 * Remove/ensure removed the microschema version from this branch.
+	 * 
+	 * @param version
+	 * @return
+	 */
 	public boolean removeMicroschemaVersion(HibMicroschemaVersion version) {
 		return removeVersion(version, microschemaVersions);
 	}
@@ -364,7 +380,7 @@ public class HibBranchImpl extends AbstractHibUserTrackedElement<BranchResponse>
 			SC extends HibFieldSchemaElement<R, RM, RE, SC, SCV>, 
 			SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>, 
 			I extends AbstractHibFieldSchemaVersion<R, RM, RE, SC, SCV>
-	> boolean removeVersion(SCV version, Set<? extends AbstractHibBranchSchemaVersion<I>> versions) {
+	> boolean removeVersion(SCV version, Collection<? extends AbstractHibBranchSchemaVersion<I>> versions) {
 		HibernateTx tx = HibernateTx.get();
 
 		// Collect versions to delete
@@ -378,5 +394,30 @@ public class HibBranchImpl extends AbstractHibUserTrackedElement<BranchResponse>
 					tx.delete(edge);
 				});
 		return !toRemove.isEmpty();
+	}
+
+	private final <
+			R extends FieldSchemaContainer, 
+			RM extends FieldSchemaContainerVersion, 
+			RE extends NameUuidReference<RE>, 
+			SC extends HibFieldSchemaElement<R, RM, RE, SC, SCV>, 
+			SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>, 
+			I extends AbstractHibFieldSchemaVersion<R, RM, RE, SC, SCV>,
+			E extends AbstractHibBranchSchemaVersion<I>
+	> E addVersion(I version, Class<E> edgeClass, Collection<E> versions, TriFunction<HibernateTx, HibBranchImpl, I, E> edgeSupplier) {
+		HibernateTx tx = HibernateTx.get();
+
+		return tx.entityManager()
+			.createQuery("select e from %s e where e.branch = :branch and e.version = :version".formatted(edgeClass.getAnnotation(Entity.class).name()), edgeClass)
+			.setMaxResults(1)
+			.setParameter("branch", this)
+			.setParameter("version", version)
+			.getResultList().stream().findAny()
+			.orElseGet(() -> {
+				E edge = edgeSupplier.apply(tx, this, version);
+				tx.entityManager().persist(edge);
+				versions.add(edge);
+				return edge;
+			});
 	}
 }

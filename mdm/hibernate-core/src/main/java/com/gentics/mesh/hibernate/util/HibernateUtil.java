@@ -15,7 +15,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.StringUtils;
 import org.hibernate.boot.SchemaAutoTooling;
 import org.hibernate.boot.model.naming.PhysicalNamingStrategy;
 import org.hibernate.boot.spi.SessionFactoryOptions;
@@ -45,7 +44,6 @@ import com.gentics.mesh.etc.config.hibernate.HibernateStorageOptions;
 import com.gentics.mesh.hibernate.MeshTablePrefixStrategy;
 import com.gentics.mesh.hibernate.data.dao.NodeDaoImpl;
 import com.gentics.mesh.hibernate.data.domain.HibBinaryFieldEdgeImpl;
-import com.gentics.mesh.hibernate.data.domain.HibDatabaseElement;
 import com.gentics.mesh.hibernate.data.domain.HibMicronodeContainerImpl;
 import com.gentics.mesh.hibernate.data.domain.HibNodeFieldContainerImpl;
 import com.gentics.mesh.util.UUIDUtil;
@@ -216,23 +214,6 @@ public final class HibernateUtil {
 		CriteriaQuery<B> all = cq.select(rootEntry);
 		TypedQuery<B> allQuery = em.createQuery(all);
 		return allQuery.getResultStream();
-	}
-
-	/**
-	 * Perform a cache eviction (aka reset) for either the given entity, or its distinct field, if provided.
-	 * 
-	 * @param <B>
-	 * @param tx
-	 * @param entity
-	 * @param maybeDistinctField
-	 */
-	public static <B extends HibDatabaseElement> void evict(HibernateTx tx, B entity, Optional<String> maybeDistinctField) {
-		tx.data()
-			.getDatabaseConnector()
-			.getSessionMetadataIntegrator()
-			.getSessionFactoryImplementor()
-			.getCache()
-			.evictCollectionData(entity.getClass().getCanonicalName() + maybeDistinctField.map(f -> "." + f).orElse(StringUtils.EMPTY), entity.getId());
 	}
 
 	/**
