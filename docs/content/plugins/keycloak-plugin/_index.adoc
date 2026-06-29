@@ -1,5 +1,6 @@
 ---
 title: Mesh Keycloak Plugin
+layout: "single"
 ---
 
 === Description

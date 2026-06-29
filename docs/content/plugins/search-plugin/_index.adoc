@@ -1,5 +1,6 @@
 ---
 title: Mesh Search Plugin
+layout: "single"
 ---
 
 === Description

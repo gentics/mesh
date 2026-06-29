@@ -1,5 +1,6 @@
 ---
 title: Mesh Mustread Plugin
+layout: "single"
 ---
 
 === Description

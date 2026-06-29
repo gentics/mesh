@@ -1,5 +1,6 @@
 ---
 title: Mesh Like Plugin
+layout: "single"
 ---
 
 === Description

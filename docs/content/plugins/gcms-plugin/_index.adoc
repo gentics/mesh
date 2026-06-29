@@ -1,5 +1,6 @@
 ---
 title: Mesh GCMS Plugin
+layout: "single"
 ---
 
 === Setup

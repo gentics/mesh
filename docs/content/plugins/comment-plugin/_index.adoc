@@ -1,5 +1,6 @@
 ---
 title: Mesh Comment Plugin
+layout: "single"
 ---
 
 === Description
