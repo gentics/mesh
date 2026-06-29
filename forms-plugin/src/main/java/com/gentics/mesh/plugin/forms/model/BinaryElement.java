@@ -180,7 +180,7 @@ public class BinaryElement extends FormElement {
 					return Optional.empty();
 				}
 			})).collect(Collectors.toList()), uploads -> {
-				uploads = Arrays.stream(uploads).map(Optional.class::cast).filter(Optional::isPresent).toArray();
+				uploads = Arrays.stream(uploads).map(Optional.class::cast).filter(Optional::isPresent).map(Optional::get).toArray();
 				if (uploads.length > 0) {
 					return Maybe.just(new ValidationError()
 						.setName(getName())

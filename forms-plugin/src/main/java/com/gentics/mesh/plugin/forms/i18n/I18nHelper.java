@@ -59,7 +59,7 @@ public class I18nHelper {
 	 */
 	public static String get(Map<String, String> translations, String key, String... parameters) {
 		try {
-			return new MessageFormat(translations.get(key)).format(parameters);
+			return new MessageFormat(translations.getOrDefault(key, key)).format(parameters);
 		} catch (Exception e) {
 			log.error("Could not format i18n message for key {" + key + "}", e);
 
