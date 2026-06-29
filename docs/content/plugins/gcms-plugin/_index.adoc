@@ -1,3 +1,28 @@
 ---
 title: Mesh GCMS Plugin
 ---
+
+=== Setup
+
+1. Copy the jar file into the plugin directory of your mesh installation.
+2. Obtain public key of the GCMS Installation by calling `GET http(s)://[hostname]/CNPortletapp/rest/admin/publicKey` and store as file `/plugins/gcms/public-key.jwk`
+
+=== Configuration
+
+./plugins/gcms/config.yaml
+[source]
+----
+---
+publicKeyPath: "public-key.jwk"
+issuer: "Gentics CMS"
+----
+
+.Configuration options
+|===
+|Name |Description |Default
+|publicKeyPath
+|Path to the JWK file containing the public key
+|public-key.jwk
+|issuer
+|Expected value of the _iss_ claim (issuer claim)
+|Gentics CMS
