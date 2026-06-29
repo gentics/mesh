@@ -1,10 +1,6 @@
 ---
 title: "Mesh Commercial Plugins"
-layout: "single"
+layout: "section-overview"
 cascade:
-  product: "CMP"
+  product: "Gentics CMP"
 ---
-
-= Mesh Commercial Plugins
-
-Welcome to the *Mesh Commercial Plugins Guides*

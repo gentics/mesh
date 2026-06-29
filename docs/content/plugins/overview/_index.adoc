@@ -1,4 +1,0 @@
----
-title: "Overview"
-layout: "section-overview"
----
