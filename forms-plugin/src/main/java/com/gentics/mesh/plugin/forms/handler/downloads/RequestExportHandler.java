@@ -37,13 +37,12 @@ public class RequestExportHandler extends AbstractFormsHandler {
 	public Completable handle(PluginContext context) {
 		String projectName = context.project().getString("name");
 		Single<String> formUuidSingle = ParameterUtil.getUuidFromPath(context, "formUuid");
-		Single<String[]> languagesSingle = ParameterUtil.getLanguages(context);
+		Single<String> languagesSingle = ParameterUtil.getFirstLanguage(context, "");
 		Single<FormtypeConfigsModel> formtypeConfigsSingle = statusService.getFormtypeConfigs(projectName, adminClient);
 
 		return Single
 				.zip(formUuidSingle, languagesSingle, formtypeConfigsSingle,
-						(formUuid, languages, formtypeConfigs) -> formDataService.requestExport(formtypeConfigs, projectName, formUuid, context,
-								languages))
+						(formUuid, language, formtypeConfigs) -> formDataService.requestExport(formtypeConfigs, projectName, formUuid, context, language))
 				.flatMap(x -> x).doOnEvent(HandlerUtil.nodeUuidHandler(context, "downloadUuid", false)).ignoreElement();
 	}
 }

@@ -609,7 +609,18 @@ public abstract class FormElement implements RestModel {
 	@JsonIgnore
 	public String getLabel(String language, FormUiSchema uiSchema) {
 		return Optional.ofNullable(uiSchema).flatMap(schema -> schema.findElement(key))
-				.map(UiSchemaPageElement::getLabel).map(map -> map.get(language)).orElse(name);
+			.map(UiSchemaPageElement::getLabel)
+			.flatMap(map -> {
+				if (map.isEmpty()) {
+					return Optional.empty();
+				}
+
+				return map.keySet().stream().findFirst()
+					// Try to get the requested translation, if not available the first found translation.
+					.map(fallbackLang -> map.getOrDefault(language, map.get(fallbackLang)));
+			})
+			// If no translations were found, fall back to the element name.
+			.orElse(name);
 	}
 
 	/**

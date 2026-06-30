@@ -25,6 +25,7 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.plugin.common.util.ParameterUtil;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
@@ -1041,7 +1042,7 @@ public class FormService {
 	 * resolved display name instead of the raw stored value, so that email addresses are never exposed
 	 * to FormGen.</p>
 	 *
-	 * @param storedValue the raw option value stored in the Mesh node (e.g. an email address)
+	 * @param identifier  the identifier for the desired possible value
 	 * @param options     available select options; may be {@code null}
 	 * @param language    language code for display name resolution
 	 * @param element     the form element owning the options; used to apply AdminMailElement masking
@@ -1133,6 +1134,28 @@ public class FormService {
 			);
 		});
 		return result;
+	}
+
+	/**
+	 * Transform the form node into a form object explicitly setting the language.
+	 *
+	 * @param formtypeConfigs formtype configs
+	 * @param formNode form node
+	 * @param language language to set
+	 * @return single form
+	 */
+	public Single<Form> toForm(FormtypeConfigsModel formtypeConfigs, NodeResponse formNode, String language) {
+		var form = toForm(formtypeConfigs, formNode);
+
+		if (StringUtils.isBlank(language)) {
+			return form;
+		}
+
+		return form.map(f -> {
+			f.setLanguage(language);
+
+			return f;
+		});
 	}
 
 	/**
@@ -1336,14 +1359,14 @@ public class FormService {
 	 * @param formtypeConfigs formtype configs
 	 * @param pc The plugin context for the request
 	 * @param formUuid The UUID of the form node
-	 * @param language optional languages
+	 * @param language Language to load results in
 	 * @return A {@code Single} containing the results in a JSON array
 	 */
-	public Single<JsonObject> loadPollResults(FormtypeConfigsModel formtypeConfigs, PluginContext pc, String formUuid, String...language) {
+	public Single<JsonObject> loadPollResults(FormtypeConfigsModel formtypeConfigs, PluginContext pc, String formUuid, String language) {
 		var projectName = pc.projectName();
 
 		return loadAsAdmin(projectName, formUuid, true)
-			.flatMap(node -> toForm(formtypeConfigs, node, language))
+			.flatMap(formNode -> toForm(formtypeConfigs, formNode, language))
 			.flatMap(form -> {
 				if (!form.isSubmitOnce()) {
 					return Single.error(new FormsError("Specified form is not a poll", HttpResponseStatus.BAD_REQUEST.code()));
@@ -1374,7 +1397,7 @@ public class FormService {
 							.map(entry -> ((JsonObject) entry.getValue()).put("name", entry.getKey()))
 							.collect(Collector.of(JsonArray::new, JsonArray::add, JsonArray::addAll))))
 					.map(results -> new JsonObject().put("results", results).put("templateContext", form.getTemplateContext()));
-			});
+				});
 	}
 
 	/**

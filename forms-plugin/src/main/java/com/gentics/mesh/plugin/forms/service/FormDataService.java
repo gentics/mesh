@@ -30,7 +30,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -114,7 +113,6 @@ import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.UUIDUtil;
 import com.github.jknack.handlebars.Context;
 import com.github.jknack.handlebars.Handlebars;
-
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
@@ -127,6 +125,7 @@ import io.vertx.ext.web.FileUpload;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.eventbus.Message;
 import io.vertx.reactivex.core.eventbus.MessageConsumer;
+import org.apache.commons.lang3.ArrayUtils;
 
 @Singleton
 public class FormDataService {
@@ -276,7 +275,7 @@ public class FormDataService {
 	}
 
 	/**
-	 * 
+	 *
 	 * Get the uuid of forms, which have data nodes needing to be migrated as observable
 	 * @param project project
 	 * @param pluginRootNode plugin root node
@@ -364,7 +363,7 @@ public class FormDataService {
 					   });
 				   } else {
 					   return observables;
-				   }				   
+				   }
 		   }).flatMap(dataUuid -> adminClient.moveNode(projectName, dataUuid, formDataFolderUuid.get()).toObservable()
 											   .doOnSubscribe(disp -> log.debug(String.format("Move misplaced form data node %s for form %s in project %s", dataUuid, formUuid, projectName))), 
 									   maxConcurrentMoveCalls)
@@ -511,7 +510,7 @@ public class FormDataService {
 	public Single<NodeResponse> requestExport(FormtypeConfigsModel formtypeConfigs, String projectName, String formUuid, PluginContext context, String... lang)  {
 
 		return formService.getFormFolderUuid(projectName, formUuid, lang, FormService.DOWNLOADS_FOLDER_NAME)
-				.flatMap(folderUuid -> formService.loadForm(projectName, formUuid) // TODO 8.5 language ?
+				.flatMap(folderUuid -> formService.loadForm(projectName, formUuid)
 						.flatMap(form -> {
 							FormsConfig configuration = statusService.getEffectiveConfiguration(formtypeConfigs, form.getString("type"));
 							String options = FormParameterUtil.getExportOptions(context, configuration);
@@ -843,9 +842,8 @@ public class FormDataService {
 			.map(Boolean::parseBoolean)
 			.orElse(true);
 
-		return statusService.languageFallback(projectName, lang)
-			.flatMap(langFallback -> formService.load(projectName, formUuid)
-			.flatMap(node -> formService.toForm(formtypeConfigs, node, langFallback)))
+		return formService.load(projectName, formUuid)
+			.flatMap(node -> formService.toForm(formtypeConfigs, node, ArrayUtils.isEmpty(lang) ? null : lang[0]))
 			.flatMap(form -> {
 				FormsConfig configuration = statusService.getEffectiveConfiguration(formtypeConfigs,
 						form.getType());
@@ -1572,7 +1570,7 @@ public class FormDataService {
 	 * @param form saved form
 	 * @param formDataNode form data node
 	 * @param postedData posted form data
-	 * @param sortedFileUploads validated file uploads
+	 * @param fileUploads validated file uploads
 	 * @return single of the form data node
 	 */
 	private Single<NodeResponse> saveFileUploads(FormsConfig configuration, String projectName, Form form, NodeResponse formDataNode, PostedData postedData, Set<FileUpload> fileUploads) {
@@ -1625,7 +1623,7 @@ public class FormDataService {
 				String message = "Could not upload a binary for the form data %s field %s".formatted(formDataNode.getUuid(), fieldName);
 				log.error(message, e1);
 				return Single.error(new FormsError(message, e1, 400));
-			}				
+			}
 		};
 
 		// first organize file uploads
@@ -1785,8 +1783,8 @@ public class FormDataService {
 	 *
 	 * @param formtypeConfigs formtype configs
 	 * @param ctx Request context
-	 * @param savedFileUploads saved file uploads from {@link #saveFileUploads(String,Form, NodeResponse, PostedData, Set)}
-	 * @param errors
+	 * @param savedFileUploads saved file uploads from {@link #saveFileUploads(FormsConfig, String, Form, NodeResponse, PostedData, Set)} )}
+	 * @param errors The validation errors
 	 * @return single
 	 */
 	private Single<FormData> publishFormData(FormtypeConfigsModel formtypeConfigs, FormDataCreateContext ctx, NodeResponse savedFileUploads, Map<String, ValidationError> errors) {
