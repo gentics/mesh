@@ -73,6 +73,9 @@ public class FormUtil {
 				return (String) id;
 			}
 		}
+		if (v instanceof Number) {
+			return v.toString();
+		}
 		return null;
 	}
 
