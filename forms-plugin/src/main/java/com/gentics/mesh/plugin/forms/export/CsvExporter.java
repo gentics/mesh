@@ -247,42 +247,46 @@ public class CsvExporter extends Exporter {
 			Object value = record.getValue(fieldName, "");
 
 			// special handling for binary fields
-			if (value instanceof JsonObject itemObject) {
-				value = itemObject.getJsonObject("fields", JsonObject.of())
-					.getJsonObject("binary", JsonObject.of()).getString("fileName");
-
-				ret.add(String.format(
-					"%s/%s/binary/%s",
-					baseUrl,
-					data.getString("uuid"),
-					fieldName));
-			} else if (value instanceof JsonArray listValue) {
-				List<String> fileNames = new ArrayList<>();
-				List<String> urls = new ArrayList<>();
-
-				for (int j = 0; j < listValue.size(); j++) {
-					JsonObject itemObject = listValue.getJsonObject(j);
-
-					urls.add("%s/%s/binary/%s/%d".formatted(baseUrl, data.getString("uuid"), fieldName, j));
-					fileNames.add(itemObject.getJsonObject("fields", JsonObject.of())
-							.getJsonObject("binary", JsonObject.of()).getString("fileName"));
-				}
-				ret.add(urls.toString());
-				value = fileNames.toString();
-			} else if (value == null && binaryFields.contains(fieldName)) {
-				// fallback to extracting old field name
-				String oldFieldName = FormService.OLD_BINARY_FIELD_PATTERN.formatted(fieldName);
-				value = record.getValue(oldFieldName, "");
+			if (binaryFields.contains(fieldName)) {
 				if (value instanceof JsonObject itemObject) {
-					value = itemObject.getString("fileName");
+					value = itemObject.getJsonObject("fields", JsonObject.of())
+							.getJsonObject("binary", JsonObject.of()).getString("fileName");
+
 					ret.add(String.format(
 							"%s/%s/binary/%s",
 							baseUrl,
 							data.getString("uuid"),
 							fieldName));
-				} else {
-					ret.add("");
+				} else if (value instanceof JsonArray listValue) {
+					List<String> fileNames = new ArrayList<>();
+					List<String> urls = new ArrayList<>();
+
+					for (int j = 0; j < listValue.size(); j++) {
+						JsonObject itemObject = listValue.getJsonObject(j);
+
+						urls.add("%s/%s/binary/%s/%d".formatted(baseUrl, data.getString("uuid"), fieldName, j));
+						fileNames.add(itemObject.getJsonObject("fields", JsonObject.of())
+								.getJsonObject("binary", JsonObject.of()).getString("fileName"));
+					}
+					ret.add(urls.toString());
+					value = fileNames.toString();
+				} else if (value == null) {
+					// fallback to extracting old field name
+					String oldFieldName = FormService.OLD_BINARY_FIELD_PATTERN.formatted(fieldName);
+					value = record.getValue(oldFieldName, "");
+					if (value instanceof JsonObject itemObject) {
+						value = itemObject.getString("fileName");
+						ret.add(String.format(
+								"%s/%s/binary/%s",
+								baseUrl,
+								data.getString("uuid"),
+								fieldName));
+					} else {
+						ret.add("");
+					}
 				}
+			} else if (value instanceof JsonArray listValue) {
+				value = listValue.getList();
 			}
 
 			ret.add(value == null ? "" : this.normalizeValue(String.valueOf(value)));

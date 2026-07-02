@@ -22,6 +22,7 @@ import java.util.zip.ZipInputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -1012,6 +1013,54 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 			assertThat(zipDownloadResponse.isSuccessful()).as(String.format("Response success %d (%s)", zipDownloadResponse.code(), zipDownloadResponse.message())).isTrue();
 		} else {
 			assertForbidden(zipDownloadResponse);
+		}
+	}
+
+	@Test
+	public void testExportMultivalueCatalog() throws IOException {
+		String uuid = createForm("catalog.json");
+
+		String postUrl = projectUrl("/form/" + uuid + "/submit?lang=en");
+
+		Set<String> records = new HashSet<>();
+		records.add("catalog_element|||Auswahl");
+
+		for (List<String> values : List.of(List.of("eins", "zwei"), List.of("eins"), List.of("zwei"))) {
+			RequestBody requestBody = new MultipartBody.Builder()
+					.setType(MultipartBody.FORM)
+					.addFormDataPart("formdata", makeFormdataMultipart(uuid, null, Map.of("catalog_element", values)))
+					.build();
+			Request postRequest = new Request.Builder().url(postUrl).post(requestBody).build();
+			client().newCall(postRequest).execute();
+
+			String lineValue = values.toString();
+			if (Strings.CS.contains(lineValue, ",")) {
+				lineValue = "\"%s\"".formatted(lineValue);
+			}
+			records.add(lineValue);
+		}
+
+		if (!online) {
+			setFormOffline(uuid, "en", true, true);
+		}
+
+		StringBuilder exportUrl = new StringBuilder(projectUrl("/forms/" + uuid + "/export?lang=en"));
+
+		Request exportRequest = new Request.Builder()
+				.url(exportUrl.toString())
+				.headers(auth(permission))
+				.get()
+				.build();
+		Response exportResponse = client().newCall(exportRequest).execute();
+
+		if (permission) {
+			assertThat(exportResponse.isSuccessful()).as(String.format("Response success %d (%s)", exportResponse.code(), exportResponse.message())).isTrue();
+
+			Set<String> actualRecords = getExportRecords(exportResponse.body().string());
+
+			assertThat(actualRecords).as("Exported data").containsOnlyElementsOf(records);
+		} else {
+			assertForbidden(exportResponse);
 		}
 	}
 }
