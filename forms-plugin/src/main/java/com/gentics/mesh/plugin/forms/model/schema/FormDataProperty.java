@@ -39,6 +39,9 @@ public class FormDataProperty {
 	@JsonProperty("possibleValues")
 	private List<PossibleValue> possibleValues;
 
+	@JsonProperty("customOption")
+	private Boolean customOption;
+
 	protected Map<String, Object> properties = new LinkedHashMap<>();
 
 	public Object getValue() {
@@ -92,6 +95,15 @@ public class FormDataProperty {
 
 	public FormDataProperty setPossibleValues(List<PossibleValue> possibleValues) {
 		this.possibleValues = possibleValues;
+		return this;
+	}
+
+	public Boolean getCustomOption() {
+		return customOption;
+	}
+
+	public FormDataProperty setCustomOption(Boolean customOption) {
+		this.customOption = customOption;
 		return this;
 	}
 

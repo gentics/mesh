@@ -85,6 +85,7 @@ import com.gentics.mesh.plugin.forms.model.AdminMailElement;
 import com.gentics.mesh.plugin.forms.model.BinaryElement;
 import com.gentics.mesh.plugin.forms.model.BooleanElement;
 import com.gentics.mesh.plugin.forms.model.CaptchaConfigModel;
+import com.gentics.mesh.plugin.forms.model.CatalogElement;
 import com.gentics.mesh.plugin.forms.model.DefaultValue;
 import com.gentics.mesh.plugin.forms.model.Form;
 import com.gentics.mesh.plugin.forms.model.FormElement;
@@ -906,6 +907,9 @@ public class FormService {
 	 */
 	private static FormDataProperty buildDefaultProperty(FormElement element, String language, Map<String, Object> jwtClaims) {
 		FormDataProperty prop = new FormDataProperty();
+		if (element instanceof CatalogElement catalog && catalog.isCustomOption()) {
+			prop.setCustomOption(true);
+		}
 		DefaultValue defaultValue = element.getFormGridOptions().getDefaultValue();
 		List<ValueListItem> selectOptions = resolveSelectOptions(element);
 
@@ -960,6 +964,11 @@ public class FormService {
 	private static FormDataProperty buildPropertyFromNode(FormElement element, String language, NodeResponse node) {
 		FormDataProperty prop = new FormDataProperty();
 
+		boolean allowsCustom = element instanceof CatalogElement catalog && catalog.isCustomOption();
+		if (allowsCustom) {
+			prop.setCustomOption(true);
+		}
+
 		if (element instanceof BinaryElement) {
 			if (!element.isList()) {
 				BinaryField binaryField = node.getFields().getBinaryField(element.getName());
@@ -981,14 +990,14 @@ public class FormService {
 				StringFieldListImpl listField = node.getFields().getStringFieldList(element.getName());
 				if (listField != null) {
 					prop.setValues(listField.getItems().stream()
-							.map(item -> (Object) findPossibleValue(String.valueOf(item), selectOptions, language, element))
+							.map(item -> (Object) resolvePossibleOrCustomValue(String.valueOf(item), selectOptions, language, element, allowsCustom))
 							.filter(Objects::nonNull)
 							.collect(Collectors.toList()));
 				}
 			} else {
 				StringFieldImpl strField = node.getFields().getStringField(element.getName());
 				if (strField != null) {
-					prop.setValue(findPossibleValue(strField.getString(), selectOptions, language, element));
+					prop.setValue(resolvePossibleOrCustomValue(strField.getString(), selectOptions, language, element, allowsCustom));
 				}
 			}
 			prop.setPossibleValues(buildPossibleValues(selectOptions, language, element));
@@ -1031,6 +1040,31 @@ public class FormService {
 					return new PossibleValue(identifier, displayName);
 				})
 				.collect(Collectors.toList());
+	}
+
+	/**
+	 * Resolves a stored value to a {@link PossibleValue}. When the value matches one of the predefined
+	 * {@code options}, the matching option is returned. When it does not match but the element allows
+	 * custom values ({@code allowsCustom}), a {@link PossibleValue} carrying the raw value as both
+	 * identifier and display name is returned, so free-text values entered by the user survive a reload.
+	 *
+	 * @param storedValue  the value stored on the submission node
+	 * @param options      available select options; may be {@code null}
+	 * @param language     language code for display name resolution
+	 * @param element      the form element owning the options
+	 * @param allowsCustom whether the element accepts custom values
+	 * @return the resolved {@link PossibleValue}, or {@code null} when no match and no custom value applies
+	 */
+	private static PossibleValue resolvePossibleOrCustomValue(String storedValue, List<ValueListItem> options,
+			String language, FormElement element, boolean allowsCustom) {
+		PossibleValue match = findPossibleValue(storedValue, options, language, element);
+		if (match != null) {
+			return match;
+		}
+		if (allowsCustom && StringUtils.isNotBlank(storedValue)) {
+			return new PossibleValue(storedValue, storedValue);
+		}
+		return null;
 	}
 
 	/**

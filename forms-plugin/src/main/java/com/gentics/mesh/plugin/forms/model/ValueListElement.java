@@ -96,6 +96,11 @@ public abstract class ValueListElement extends FormElement {
 		List<ValueListItem> effectiveOptions = getEffectiveSelectOptions();
 
 		if (effectiveOptions == null || effectiveOptions.isEmpty()) {
+			// A catalog which allows custom values is valid even without predefined options.
+			if (allowsCustomValues()) {
+				return Optional.empty();
+			}
+
 			error.setMessage(I18nHelper.get(Locale.GERMAN, "error.validation.form.missing_list_elements", getLabel(language, uiSchema)));
 
 			return Optional.of(error);
@@ -179,6 +184,11 @@ public abstract class ValueListElement extends FormElement {
 
 	@Override
 	protected boolean isInvalidValue(String value) {
+		// When custom values are allowed, any non-blank value entered by the user is accepted,
+		// regardless of the predefined options.
+		if (allowsCustomValues()) {
+			return StringUtils.isBlank(value);
+		}
 		// This is also checked in validateForm(), but just to be sure.
 		if (CollectionUtils.isEmpty(getEffectiveSelectOptions())) {
 			return true;
@@ -188,6 +198,18 @@ public abstract class ValueListElement extends FormElement {
 		}
 
 		return !validValues.contains(value);
+	}
+
+	/**
+	 * Whether this element accepts free-text values that are not part of the predefined options.
+	 * When {@code true}, {@link #isInvalidValue(String)} accepts any non-blank value and
+	 * {@link #validateForm(String, FormUiSchema)} tolerates an empty option list.
+	 *
+	 * @return {@code false} by default; subclasses may override
+	 */
+	@JsonIgnore
+	protected boolean allowsCustomValues() {
+		return false;
 	}
 
 	@JsonIgnore

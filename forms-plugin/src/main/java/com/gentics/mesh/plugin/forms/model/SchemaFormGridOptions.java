@@ -16,6 +16,8 @@ public class SchemaFormGridOptions {
 
 	private DefaultValue defaultValue;
 
+	private Boolean customOption;
+
 	public List<ValueListItem> getSelectOptions() {
 		return selectOptions;
 	}
@@ -31,6 +33,15 @@ public class SchemaFormGridOptions {
 
 	public SchemaFormGridOptions setDefaultValue(DefaultValue defaultValue) {
 		this.defaultValue = defaultValue;
+		return this;
+	}
+
+	public Boolean getCustomOption() {
+		return customOption;
+	}
+
+	public SchemaFormGridOptions setCustomOption(Boolean customOption) {
+		this.customOption = customOption;
 		return this;
 	}
 }
