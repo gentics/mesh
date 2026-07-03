@@ -206,6 +206,7 @@ public class FormDeserializationTest {
 		JsonNode originalSchema = original.deepCopy();
 		((ObjectNode) originalSchema.get("schema").get("properties").get("topic")).remove("formGridOptions");
 		((ObjectNode) reserialized.get("schema").get("properties").get("topic")).remove("selectOptions");
+		((ObjectNode) reserialized.get("schema").get("properties").get("topic")).remove("customOption");
 
 		// uiSchema and data are pure pass-through — full tree must match
 		assertThat(reserialized.get("schema")).as("schema").isEqualTo(originalSchema.get("schema"));

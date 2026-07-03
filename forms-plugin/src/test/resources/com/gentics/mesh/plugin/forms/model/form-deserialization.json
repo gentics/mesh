@@ -38,6 +38,7 @@
         "isList": false,
         "formGridOptions": {
           "defaultValue": "general",
+		  "customOption":false,
           "selectOptions": [
             {
               "value": "general",
