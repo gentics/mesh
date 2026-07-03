@@ -5,9 +5,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -83,15 +83,14 @@ public interface HibMicronodeFieldList extends HibMicroschemaListableField, HibR
 			return a;
 		}));
 
-		// Nulls are banned
-		list.getItems().stream().filter(Objects::isNull).findAny().ifPresent(item -> {
+		// Running each item in a separate observable to utilize parallel run 
+		Iterator<MicronodeField> it = list.getItems().stream().map(item -> {
 			if (item == null) {
 				throw error(BAD_REQUEST, "field_list_error_null_not_allowed", getFieldKey());
 			}
-		});
-
-		// Running each item in a separate observable to utilize parallel run 
-		return Observable.fromIterable(list.getItems()).flatMap(item -> {
+			return item;
+		}).iterator();
+		return Observable.fromIterable(() -> it).flatMap(item -> {
 			// Resolve the microschema reference from the rest model
 			MicroschemaReference microschemaReference = item.getMicroschema();
 			if (microschemaReference == null) {
