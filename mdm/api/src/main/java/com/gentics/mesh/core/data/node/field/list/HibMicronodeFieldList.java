@@ -5,9 +5,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -69,6 +69,11 @@ public interface HibMicronodeFieldList extends HibMicroschemaListableField, HibR
 	 * @return
 	 */
 	default Single<Boolean> update(InternalActionContext ac, MicronodeFieldList list) {
+		// Early return on no data
+		if (getList().size() < 1 && list.getItems().size() < 1) {
+			return Single.just(false);
+		}
+
 		// Transform the list of micronodes into a hashmap. This way we can lookup micronode fields faster
 		Map<String, HibMicronode> existing = getList().stream().collect(Collectors.toMap(field -> {
 			return field.getMicronode().getUuid();
@@ -78,75 +83,69 @@ public interface HibMicronodeFieldList extends HibMicroschemaListableField, HibR
 			return a;
 		}));
 
-		return Observable.<Boolean>create(subscriber -> {
+		// Nulls are banned
+		list.getItems().stream().filter(Objects::isNull).findAny().ifPresent(item -> {
+			if (item == null) {
+				throw error(BAD_REQUEST, "field_list_error_null_not_allowed", getFieldKey());
+			}
+		});
 
-			Iterator<MicronodeField> it = list.getItems().stream().map(item -> {
-				if (item == null) {
-					throw error(BAD_REQUEST, "field_list_error_null_not_allowed", getFieldKey());
-				}
-				return item;
-			}).iterator();
-			Observable.fromIterable(() -> it).flatMap(item -> {
+		// Running each item in a separate observable to utilize parallel run 
+		return Observable.fromIterable(list.getItems()).flatMap(item -> {
+			// Resolve the microschema reference from the rest model
+			MicroschemaReference microschemaReference = item.getMicroschema();
+			if (microschemaReference == null) {
+				// TODO i18n
+				return Observable.error(error(INTERNAL_SERVER_ERROR, "Found micronode without microschema reference"));
+			}
 
-				// Resolve the microschema reference from the rest model
-				MicroschemaReference microschemaReference = item.getMicroschema();
-				if (microschemaReference == null) {
-					// TODO i18n
-					return Observable.error(error(INTERNAL_SERVER_ERROR, "Found micronode without microschema reference"));
+			Tx tx = Tx.get();
+			MicroschemaDao microschemaDao = tx.microschemaDao();
+			HibMicroschemaVersion container = microschemaDao.fromReference(tx.getProject(ac), microschemaReference, tx.getBranch(ac));
+			return Observable.just(container);
+			// TODO add onError in order to return nice exceptions if the schema / version could not be found
+		}, (node, microschemaContainerVersion) -> {
+			// Load the micronode for the current field
+			HibMicronode micronode = existing.get(node.getUuid());
+			// Create a new micronode if none could be found
+			if (micronode == null) {
+				micronode = createMicronodeAt(Optional.empty(), microschemaContainerVersion);
+			} else {
+				// Avoid microschema container changes for micronode updates
+				if (!equalsIgnoreCase(micronode.getSchemaContainerVersion().getUuid(), microschemaContainerVersion.getUuid())) {
+					HibMicroschemaVersion usedContainerVersion = micronode.getSchemaContainerVersion();
+					String usedSchema = "name:" + usedContainerVersion.getName() + " uuid:" + usedContainerVersion.getSchemaContainer().getUuid()
+						+ " version:" + usedContainerVersion.getVersion();
+					String referencedSchema = "name:" + microschemaContainerVersion.getName() + " uuid:"
+						+ microschemaContainerVersion.getSchemaContainer().getUuid() + " version:" + microschemaContainerVersion.getVersion();
+					throw error(BAD_REQUEST, "node_error_micronode_list_update_schema_conflict", micronode.getUuid(), usedSchema,
+						referencedSchema);
 				}
+			}
 
-				Tx tx = Tx.get();
-				MicroschemaDao microschemaDao = tx.microschemaDao();
-				HibMicroschemaVersion container = microschemaDao.fromReference(tx.getProject(ac), microschemaReference, tx.getBranch(ac));
-				return Observable.just(container);
-				// TODO add onError in order to return nice exceptions if the schema / version could not be found
-			}, (node, microschemaContainerVersion) -> {
-				// Load the micronode for the current field
-				HibMicronode micronode = existing.get(node.getUuid());
-				// Create a new micronode if none could be found
-				if (micronode == null) {
-					micronode = createMicronodeAt(Optional.empty(), microschemaContainerVersion);
-				} else {
-					// Avoid microschema container changes for micronode updates
-					if (!equalsIgnoreCase(micronode.getSchemaContainerVersion().getUuid(), microschemaContainerVersion.getUuid())) {
-						HibMicroschemaVersion usedContainerVersion = micronode.getSchemaContainerVersion();
-						String usedSchema = "name:" + usedContainerVersion.getName() + " uuid:" + usedContainerVersion.getSchemaContainer().getUuid()
-							+ " version:" + usedContainerVersion.getVersion();
-						String referencedSchema = "name:" + microschemaContainerVersion.getName() + " uuid:"
-							+ microschemaContainerVersion.getSchemaContainer().getUuid() + " version:" + microschemaContainerVersion.getVersion();
-						throw error(BAD_REQUEST, "node_error_micronode_list_update_schema_conflict", micronode.getUuid(), usedSchema,
-							referencedSchema);
-					}
-				}
-
-				// Update the micronode since it could be found
-				try {
-					micronode.updateFieldsFromRest(ac, node.getFields());
-				} catch (GenericRestException e) {
-					throw e;
-				} catch (Exception e) {
-					throw error(INTERNAL_SERVER_ERROR, "error_internal", e);
-				}
-				return micronode;
-			}).toList().subscribe(micronodeList -> {
-
-				// Clear the list and add new items
-				removeAll();
-				int counter = 0;
-				for (HibMicronode micronode : micronodeList) {
-					existing.remove(micronode.getUuid());
-					insertReferenced(counter++, micronode);
-				}
-				// Delete remaining items in order to prevent dangling micronodes
-				existing.values().stream().forEach(micronode -> {
-					deleteReferenced(micronode);
-				});
-				subscriber.onNext(true);
-				subscriber.onComplete();
-			}, e -> {
-				subscriber.onError(e);
+			// Update the micronode since it could be found
+			try {
+				micronode.updateFieldsFromRest(ac, node.getFields());
+			} catch (GenericRestException e) {
+				throw e;
+			} catch (Exception e) {
+				throw error(INTERNAL_SERVER_ERROR, "error_internal", e);
+			}
+			return micronode;
+		}).toList().map(micronodeList -> {
+			// Clear the list and add new items
+			removeAll();
+			int counter = 0;
+			for (HibMicronode micronode : micronodeList) {
+				existing.remove(micronode.getUuid());
+				insertReferenced(counter++, micronode);
+			}
+			// Delete remaining items in order to prevent dangling micronodes
+			existing.values().stream().forEach(micronode -> {
+				deleteReferenced(micronode);
 			});
-		}).singleOrError();
+			return true;
+		});
 	}
 
 	@Override
