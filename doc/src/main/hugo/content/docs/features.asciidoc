@@ -1767,8 +1767,8 @@ NOTE: Reading published nodes requires the user to be assigned to a role which g
 === Listing versions
 
 Versions of a node can be listed via the ```{apiLatest}/:projectName/nodes/:uuid/versions``` endpoint.
-
-```
+[source, json]
+----
 "versions" : {
     "de" : [ {
       "creator" : {
@@ -1781,11 +1781,9 @@ Versions of a node can be listed via the ```{apiLatest}/:projectName/nodes/:uuid
       "draft" : true,
       "published" : true,
       "branchRoot" : false
-    }
-    …
-  } ]
+    } ]
 }
-```
+----
 
 A version can be used as a `draft` version. This version can also be referenced as a `published` version when published. The `branchRoot` flag indicates whether the version is being referenced as root version in a branch. All these three different kind of versions are not purgeable. Versions which have been made in between can be purged.
 

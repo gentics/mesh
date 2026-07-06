@@ -56,32 +56,28 @@ public class HibernateCacheConfig extends CacheConfig {
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Set the maximum size of field container cache. A value of null will disable the cache. "
 			+ "A value ended with K/M/G will mean an absolute value in [kil|mega|giga]bytes correspondingly. "
-			+ "A value ended with % will mean a percent of maximum memory Mesh is allowed to use. "
-			+ "Default: " + DEFAULT_FIELD_CONTAINER_CACHE_SIZE)
+			+ "A value ended with % will mean a percent of maximum memory Mesh is allowed to use.")
 	@EnvironmentVariable(name = MESH_FIELD_CONTAINER_CACHE_SIZE, description = "Override the field container cache size.")
 	private String fieldContainerCacheSize = DEFAULT_FIELD_CONTAINER_CACHE_SIZE;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Set the maximum size of the list field cache. A value of null will disable the cache. "
 			+ "A value ended with K/M/G will mean an absolute value in [kil|mega|giga]bytes correspondingly. "
-			+ "A value ended with % will mean a percent of maximum memory Mesh is allowed to use. "
-			+ "Default: " + DEFAULT_MESH_LIST_FIELD_CACHE_SIZE)
+			+ "A value ended with % will mean a percent of maximum memory Mesh is allowed to use.")
 	@EnvironmentVariable(name = MESH_LIST_FIELD_CACHE_SIZE, description = "Override the  list field cache size.")
 	private String listFieldCacheSize = DEFAULT_MESH_LIST_FIELD_CACHE_SIZE;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Set the minimum required amount of free heap memory for the eviction policy of the hibernate cache when using clustering. "
 			+ "A value ended with K/M/G will mean an absolute value in [kil|mega|giga]bytes correspondingly. "
-			+ "A value ended with % will mean a percent of mininum free memory. "
-			+ "Default: " + DEFAULT_MESH_CLUSTERED_HIBERNATE_CACHE_HEAP_FREE)
+			+ "A value ended with % will mean a percent of mininum free memory.")
 	@EnvironmentVariable(name = MESH_CLUSTERED_HIBERNATE_CACHE_HEAP_FREE, description = "Override the minimum required free heap memory for the eviction policy of the hibernate cache when using clustering.")
 	private String clusteredHibernateCacheHeapFree = DEFAULT_MESH_CLUSTERED_HIBERNATE_CACHE_HEAP_FREE;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Set the maximum size of the hibernate cache. A value of null will disable the cache. "
 			+ "A value ended with K/M/G will mean an absolute value in [kil|mega|giga]bytes correspondingly. "
-			+ "A value ended with % will mean a percent of maximum memory Mesh is allowed to use. "
-			+ "Default: " + DEFAULT_MESH_NON_CLUSTERED_HIBERNATE_CACHE_SIZE)
+			+ "A value ended with % will mean a percent of maximum memory Mesh is allowed to use.")
 	@EnvironmentVariable(name = MESH_NON_CLUSTERED_HIBERNATE_CACHE_SIZE, description = "Override the field container cache size.")
 	private String nonClusteredHibernateCacheSize = DEFAULT_MESH_NON_CLUSTERED_HIBERNATE_CACHE_SIZE;
 

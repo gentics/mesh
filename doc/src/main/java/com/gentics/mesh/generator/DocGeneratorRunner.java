@@ -1,12 +1,6 @@
 package com.gentics.mesh.generator;
 
-import com.gentics.mesh.etc.config.env.EnvironmentVariable;
-import com.gentics.mesh.generator.TableGenerator;
-import com.github.jknack.handlebars.Handlebars;
-import com.github.jknack.handlebars.Template;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.reflections.Reflections;
+import static org.reflections.scanners.Scanners.FieldsAnnotated;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,7 +13,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import static org.reflections.scanners.Scanners.FieldsAnnotated;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.reflections.Reflections;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.gentics.mesh.etc.config.env.EnvironmentVariable;
+import com.github.jknack.handlebars.Handlebars;
+import com.github.jknack.handlebars.Template;
 
 /**
  * Class responsible for invoking all documentation generators.
@@ -63,10 +65,20 @@ public class DocGeneratorRunner {
             for (Field field : reflections.get(FieldsAnnotated.of(EnvironmentVariable.class).as(Field.class))) {
                 EnvironmentVariable envInfo = field.getAnnotation(EnvironmentVariable.class);
                 String name = envInfo.name();
+                String fieldName = field.getName();
+                {
+                	JsonProperty jsonAnnotation = field.getAnnotation(JsonProperty.class);
+	                if (jsonAnnotation != null && StringUtils.isNotBlank(jsonAnnotation.value())) {
+	                	fieldName = jsonAnnotation.value();
+	                }
+                }
                 String description = envInfo.description();
                 Map<String, String> map = new HashMap<>();
                 map.put("name", name);
                 map.put("description", description);
+                if (!envInfo.isNoField()) {
+                	map.put("field", field.getDeclaringClass().getSimpleName() + "." + fieldName);
+                }
                 list.add(map);
             }
 
