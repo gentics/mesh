@@ -14,11 +14,11 @@ import com.gentics.mesh.database.HibernateTx;
 /**
  * Test for checking consistency of "nodefieldcontainer"
  */
-public class NodeFieldContainerCheck extends AbstractContentReferencingCheck {
+public class NodeFieldContainerCheck extends AbstractRepairableContentReferencingCheck {
 	@Override
 	public ConsistencyCheckResult invoke(Database db, Tx tx, boolean attemptRepair) {
 		ConsistencyCheckResult result = new ConsistencyCheckResult();
-		checkInvalidRecordReferences(tx, result);
+		checkInvalidRecordReferences(tx, result, attemptRepair);
 		return result;
 
 	}
@@ -32,8 +32,9 @@ public class NodeFieldContainerCheck extends AbstractContentReferencingCheck {
 	 * Check for invalid record references
 	 * @param tx transaction
 	 * @param result check result
+	 * @param attemptRepair 
 	 */
-	protected void checkInvalidRecordReferences(Tx tx, ConsistencyCheckResult result) {
+	protected void checkInvalidRecordReferences(Tx tx, ConsistencyCheckResult result, boolean attemptRepair) {
 		HibernateTx hibernateTx = (HibernateTx) tx;
 		EntityManager em = hibernateTx.entityManager();
 		SchemaDao schemaDao = tx.schemaDao();
@@ -45,7 +46,11 @@ public class NodeFieldContainerCheck extends AbstractContentReferencingCheck {
 		for (HibSchema schema : schemas) {
 			Iterable<? extends HibSchemaVersion> versions = schemaDao.findAllVersions(schema);
 			for (HibSchemaVersion version : versions) {
-				checkCount(em, result, version.getUuid(), "contentuuid", "version_dbuuid");
+				if (attemptRepair) {
+					repair(em, result, version, "contentuuid", "version_dbuuid");
+				} else {
+					checkCount(em, result, version.getUuid(), "contentuuid", "version_dbuuid");
+				}
 			}
 		}
 	}
