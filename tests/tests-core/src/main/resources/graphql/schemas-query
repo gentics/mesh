@@ -1,0 +1,31 @@
+{
+	schemas (filter: {name: {oneOf: ["content", "whatever"]}}, sort: {name: ASCENDING}) {
+		# [$.data.schemas.totalCount=1]
+		totalCount
+		elements {
+			# [$.data.schemas.elements[0].name=content]
+			name
+			# [$.data.schemas.elements[0].uuid=<is-uuid>]
+			uuid
+			# [$.data.schemas.elements[0].version=<is-not-null>]
+			version
+			# [$.data.schemas.elements[0].description=<is-not-null>]
+			description
+			# [$.data.schemas.elements[0].isNoIndex=<is-null>]
+			isNoIndex
+			# [$.data.schemas.elements[0].isEmpty=false]
+			isEmpty
+			# [$.data.schemas.elements[0].isAutoPurge=<is-null>]
+			isAutoPurge
+			# [$.data.schemas.elements[0].fields=<is-not-null>]
+			fields {
+				name
+				label
+				required
+				type
+				noIndex
+			}
+		}
+	}
+}
+# [$.errors=<is-undefined>]

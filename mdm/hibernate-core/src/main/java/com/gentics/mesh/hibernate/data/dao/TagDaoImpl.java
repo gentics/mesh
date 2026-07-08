@@ -337,4 +337,21 @@ public class TagDaoImpl extends AbstractHibDaoGlobal<HibTag, TagResponse, HibTag
 		}
 		return element;
 	}
+
+	@Override
+	public String mapGraphQlFilterFieldName(String gqlName) {
+		switch (gqlName) {
+		case "tagFamily": return "tagFamily_dbUuid";
+		}
+		return super.mapGraphQlFilterFieldName(gqlName);
+	}
+
+	@Override
+	public String mapGraphQlSortingFieldName(String gqlName) {
+		switch (gqlName) {
+		case "tagFamily": return "TAGFAMILY.tagFamily_dbUuid";
+		case "TAGFAMILY.tagFamily_dbUuid": return mapGraphQlSortingFieldName("tagFamily");
+		}
+		return super.mapGraphQlSortingFieldName(gqlName);
+	}
 }
