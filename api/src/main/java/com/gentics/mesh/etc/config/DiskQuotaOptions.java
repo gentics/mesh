@@ -25,12 +25,12 @@ public class DiskQuotaOptions implements Option {
 	public final static String MESH_STORAGE_DISK_QUOTA_READ_ONLY_THRESHOLD_ENV = "MESH_STORAGE_DISK_QUOTA_READ_ONLY_THRESHOLD";
 
 	@JsonProperty(defaultValue = DEFAULT_CHECK_INTERVAL + " ms")
-	@JsonPropertyDescription("Check interval in ms. Setting this to 0 will disable the disk quota check. Default: " + DEFAULT_CHECK_INTERVAL)
+	@JsonPropertyDescription("Check interval in ms. Setting this to 0 will disable the disk quota check.")
 	@EnvironmentVariable(name = MESH_STORAGE_DISK_QUOTA_CHECK_INTERVAL_ENV, description = "Overwrite the disk quota check interval.")
 	private int checkInterval = DEFAULT_CHECK_INTERVAL;
 
 	@JsonProperty(defaultValue = DEFAULT_WARN_THRESHOLD)
-	@JsonPropertyDescription("Threshold for the disk quota warn level. This can be set either as percentage (e.g. 15%) or as absolute disk space (e.g. 10G). If less than the defined disk space is available, warnings will be logged. Default: " + DEFAULT_WARN_THRESHOLD)
+	@JsonPropertyDescription("Threshold for the disk quota warn level. This can be set either as percentage (e.g. 15%) or as absolute disk space (e.g. 10G). If less than the defined disk space is available, warnings will be logged.")
 	@EnvironmentVariable(name = MESH_STORAGE_DISK_QUOTA_WARN_THRESHOLD_ENV, description = "Overwrite the disk quota warn threshold.")
 	private String warnThreshold = DEFAULT_WARN_THRESHOLD;
 
@@ -38,7 +38,7 @@ public class DiskQuotaOptions implements Option {
 	private long warnThresholdAbsolute = -1;
 
 	@JsonProperty(defaultValue = DEFAULT_READ_ONLY_THRESHOLD)
-	@JsonPropertyDescription("Threshold for the disk quota ready only level. This can be set either as percentage (e.g. 10%) or as absolute disk space (e.g. 5G). If less than the defined disk space is available, Mesh will automatically be set to readonly. Default: " + DEFAULT_READ_ONLY_THRESHOLD)
+	@JsonPropertyDescription("Threshold for the disk quota ready only level. This can be set either as percentage (e.g. 10%) or as absolute disk space (e.g. 5G). If less than the defined disk space is available, Mesh will automatically be set to readonly.")
 	@EnvironmentVariable(name = MESH_STORAGE_DISK_QUOTA_READ_ONLY_THRESHOLD_ENV, description = "Overwrite the disk quota ready only threshold.")
 	private String readOnlyThreshold = DEFAULT_READ_ONLY_THRESHOLD;
 

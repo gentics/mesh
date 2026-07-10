@@ -20,15 +20,13 @@ public class ContentConfig implements Option {
 	public static final int DEFAULT_BATCH_SIZE = 5000;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Flag which controls the global setting for the auto purge mechanism. The setting can be overriden by the schema 'autoPurge' flag. Default: "
-		+ DEFAULT_AUTO_PURGE)
+	@JsonPropertyDescription("Flag which controls the global setting for the auto purge mechanism. The setting can be overriden by the schema 'autoPurge' flag.")
 	@EnvironmentVariable(name = MESH_CONTENT_AUTO_PURGE_ENV, description = "Override the content versioning flag")
 	private boolean autoPurge = DEFAULT_AUTO_PURGE;
 
 	@JsonProperty(defaultValue = DEFAULT_BATCH_SIZE + " items")
 	@JsonPropertyDescription("The size of a batch for operations over large amount of entities. Setting this to any number lower than 1 will disable batch chunking")
-	@EnvironmentVariable(name = MESH_CONTENT_BATCH_SIZE_ENV, description = "Override the batch page size. Default: "
-		+ DEFAULT_BATCH_SIZE)
+	@EnvironmentVariable(name = MESH_CONTENT_BATCH_SIZE_ENV, description = "Override the batch page size.")
 	private int batchSize = DEFAULT_BATCH_SIZE;
 
 	public ContentConfig() {

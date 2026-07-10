@@ -1,0 +1,1 @@
+Core: An edge case, causing micronode list update to keep the failing thread running, with a possibility to DDoS, has been eliminated.

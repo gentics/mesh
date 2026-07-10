@@ -26,7 +26,7 @@ import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.util.IndexOptionHelper;
 
 @RunWith(Parameterized.class)
-@MeshTestSetting(testSize = FULL, startServer = true, optionChanger = MeshCoreOptionChanger.BATCH_MIGRATION)
+@MeshTestSetting(testSize = FULL, startServer = true, optionChanger = MeshCoreOptionChanger.SHORT_CONTENT_BATCH)
 public class BatchedNodeMigrationSearchTest extends NodeMigrationSearchTest {
 
 	public BatchedNodeMigrationSearchTest(ElasticsearchTestMode elasticsearch) throws Exception {

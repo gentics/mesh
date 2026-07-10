@@ -22,18 +22,17 @@ public class GraphQLOptions implements Option {
 	public static final String MESH_GRAPHQL_SCHEMA_CACHE_SIZE_ENV = "MESH_GRAPHQL_SCHEMA_CACHE_SIZE";
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Threshold for logging slow graphql queries. Default: " + DEFAULT_SLOW_THRESHOLD + "ms")
+	@JsonPropertyDescription("Threshold for logging slow graphql queries, in milliseconds.")
 	@EnvironmentVariable(name = MESH_GRAPHQL_SLOW_THRESHOLD_ENV, description = "Override the configured slow graphQl query threshold.")
 	private Long slowThreshold = DEFAULT_SLOW_THRESHOLD;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Threshold for waiting for asynchronous graphql queries. Default: "
-			+ DEFAULT_ASYNC_WAIT_TIMEOUT + "ms")
+	@JsonPropertyDescription("Threshold for waiting for asynchronous graphql queries, in milliseconds.")
 	@EnvironmentVariable(name = MESH_GRAPHQL_ASYNC_WAIT_TIMEOUT_ENV, description = "Override the configured graphQl async wait timeout.")
 	private Long asyncWaitTimeout = DEFAULT_ASYNC_WAIT_TIMEOUT;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Cache size for graphQl Schema instances. Setting this to 0 will disable the cache. Default: " + DEFAULT_SCHEMA_CACHE_SIZE)
+	@JsonPropertyDescription("Cache size for graphQl Schema instances. Setting this to 0 will disable the cache.")
 	@EnvironmentVariable(name = MESH_GRAPHQL_SCHEMA_CACHE_SIZE_ENV, description = "Override the configured graphQl schema cache size.")
 	private long schemaCacheSize = DEFAULT_SCHEMA_CACHE_SIZE;
 

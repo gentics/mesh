@@ -1,0 +1,2 @@
+Elasticsearch: Fixed a possible NullPointerException when the search.mappingMode was set to STRICT and
+no custom mapping was configured for at least one field in a schema.

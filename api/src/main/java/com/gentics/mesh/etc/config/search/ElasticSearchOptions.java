@@ -95,101 +95,92 @@ public class ElasticSearchOptions implements Option {
 	private String caPath;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Flag which controls whether hostname verification should be enabled. Default: " + DEFAULT_HOSTNAME_VERIFICATION)
+	@JsonPropertyDescription("Flag which controls whether hostname verification should be enabled.")
 	@EnvironmentVariable(name = MESH_ELASTICSEARCH_HOSTNAME_VERIFICATION_ENV, description = "Override the configured hostname verification flag.")
 	private boolean hostnameVerification = DEFAULT_HOSTNAME_VERIFICATION;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Timeout for Elasticsearch operations. Default: " + DEFAULT_TIMEOUT + "ms")
+	@JsonPropertyDescription("Timeout for Elasticsearch operations.")
 	@EnvironmentVariable(name = MESH_ELASTICSEARCH_TIMEOUT_ENV, description = "Override the configured elasticsearch server timeout.")
 	private Long timeout = DEFAULT_TIMEOUT;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Search server prefix for this installation. Choosing different prefixes for each Gentics Mesh instance will allow you to use a single Elasticsearch cluster for multiple Gentics Mesh instances. Default: "
-		+ DEFAULT_PREFIX)
+	@JsonPropertyDescription("Search server prefix for this installation. Choosing different prefixes for each Gentics Mesh instance will allow you to use a single Elasticsearch cluster for multiple Gentics Mesh instances.")
 	@EnvironmentVariable(name = MESH_ELASTICSEARCH_PREFIX_ENV, description = "Override the configured elasticsearch prefix.")
 	private String prefix = DEFAULT_PREFIX;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Upper limit for the size of bulk requests. Default: " + DEFAULT_BULK_LIMIT)
-	@EnvironmentVariable(name = MESH_ELASTICSEARCH_BULK_LIMIT_ENV, description = "Override the batch bulk limit. Default: " + DEFAULT_BULK_LIMIT)
+	@JsonPropertyDescription("Upper limit for the size of bulk requests.")
+	@EnvironmentVariable(name = MESH_ELASTICSEARCH_BULK_LIMIT_ENV, description = "Override the batch bulk limit.")
 	private int bulkLimit = DEFAULT_BULK_LIMIT;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Upper limit for the total encoded string length of the bulk requests. Default: " + DEFAULT_BULK_LENGTH_LIMIT)
-	@EnvironmentVariable(name = MESH_ELASTICSEARCH_BULK_LENGTH_LIMIT_ENV, description = "Override the batch bulk length limit. Default: "
-		+ DEFAULT_BULK_LENGTH_LIMIT)
+	@JsonPropertyDescription("Upper limit for the total encoded string length of the bulk requests.")
+	@EnvironmentVariable(name = MESH_ELASTICSEARCH_BULK_LENGTH_LIMIT_ENV, description = "Override the batch bulk length limit.")
 	private long bulkLengthLimit = DEFAULT_BULK_LENGTH_LIMIT;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Upper limit for mesh events that are to be mapped to elastic search requests. Default: "
-		+ DEFAULT_EVENT_BUFFER_SIZE)
+	@JsonPropertyDescription("Upper limit for mesh events that are to be mapped to elastic search requests.")
 	@EnvironmentVariable(name = MESH_ELASTICSEARCH_EVENT_BUFFER_SIZE_ENV, description = "Override the configured event buffer size.")
 	private int eventBufferSize = DEFAULT_EVENT_BUFFER_SIZE;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("The maximum amount of time in milliseconds between two bulkable requests before they are sent. Default: "
-		+ DEFAULT_BULK_DEBOUNCE_TIME)
+	@JsonPropertyDescription("The maximum amount of time in milliseconds between two bulkable requests before they are sent.")
 	@EnvironmentVariable(name = MESH_ELASTICSEARCH_BULK_DEBOUNCE_TIME_ENV, description = "Override the bulk debounce time.")
 	private int bulkDebounceTime = DEFAULT_BULK_DEBOUNCE_TIME;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("The maximum amount of time in milliseconds between two successful requests before the idle event is emitted. Default: "
-		+ DEFAULT_IDLE_DEBOUNCE_TIME)
+	@JsonPropertyDescription("The maximum amount of time in milliseconds between two successful requests before the idle event is emitted.")
 	@EnvironmentVariable(name = MESH_ELASTICSEARCH_IDLE_DEBOUNCE_TIME_ENV, description = "Override the idle debounce time.")
 	private int idleDebounceTime = DEFAULT_IDLE_DEBOUNCE_TIME;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("The time in milliseconds between retries of elastic search requests in case of a failure. Default: "
-		+ DEFAULT_RETRY_INTERVAL)
+	@JsonPropertyDescription("The time in milliseconds between retries of elastic search requests in case of a failure.")
 	@EnvironmentVariable(name = MESH_ELASTICSEARCH_RETRY_INTERVAL_ENV, description = "Override the retry interval.")
 	private int retryInterval = DEFAULT_RETRY_INTERVAL;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("The amount of retries on a single request before the request is discarded. Default: "
-		+ DEFAULT_RETRY_LIMIT)
+	@JsonPropertyDescription("The amount of retries on a single request before the request is discarded.")
 	@EnvironmentVariable(name = MESH_ELASTICSEARCH_RETRY_LIMIT_ENV, description = "Override the retry limit.")
 	private int retryLimit = DEFAULT_RETRY_LIMIT;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("If true, search endpoints wait for elasticsearch to be idle before sending a response. Default: "
-		+ DEFAULT_WAIT_FOR_IDLE)
+	@JsonPropertyDescription("If true, search endpoints wait for elasticsearch to be idle before sending a response.")
 	@EnvironmentVariable(name = MESH_ELASTICSEARCH_WAIT_FOR_IDLE_ENV, description = "Override the search idle wait flag.")
 	private boolean waitForIdle = DEFAULT_WAIT_FOR_IDLE;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("If true, the content and metadata of binary fields will be included in the search index. Default: "
-		+ DEFAULT_INCLUDE_BINARY_FIELDS)
+	@JsonPropertyDescription("If true, the content and metadata of binary fields will be included in the search index.")
 	@EnvironmentVariable(name = MESH_ELASTICSEARCH_INCLUDE_BINARY_FIELDS_ENV, description = "Override the search include binary fields flag.")
 	private boolean includeBinaryFields = DEFAULT_INCLUDE_BINARY_FIELDS;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("This setting controls the mapping mode of fields for Elasticsearch. When set to STRICT only fields which have a custom mapping will be added to Elasticsearch. Mode DYNAMIC will automatically use the Gentics Mesh default mappings which can be supplemented with custom mappings. Default: DYNAMIC")
+	@JsonPropertyDescription("This setting controls the mapping mode of fields for Elasticsearch. When set to STRICT only fields which have a custom mapping will be added to Elasticsearch. Mode DYNAMIC will automatically use the Gentics Mesh default mappings which can be supplemented with custom mappings.")
 	@EnvironmentVariable(name = MESH_ELASTICSEARCH_MAPPING_MODE_ENV, description = "Override the search mapping mode. ")
 	private MappingMode mappingMode = DEFAULT_MAPPING_MODE;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("This setting controls the compliance mode for Elasticsearch. Currently supported modes are ES_6, ES_7 and ES_8. Default: ES_6")
+	@JsonPropertyDescription("This setting controls the compliance mode for Elasticsearch. Currently supported modes are ES_6, ES_7 and ES_8.")
 	@EnvironmentVariable(name = MESH_ELASTICSEARCH_COMPLIANCE_MODE_ENV, description = "Override the search compliance mode.")
 	private ComplianceMode complianceMode = DEFAULT_COMPLIANCE_MODE;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Configure the index sync batch size. Default: " + DEFAULT_SYNC_BATCH_SIZE)
+	@JsonPropertyDescription("Configure the index sync batch size.")
 	@EnvironmentVariable(name = MESH_ELASTICSEARCH_SYNC_BATCH_SIZE_ENV, description = "Override the search sync batch size")
 	private int syncBatchSize = DEFAULT_SYNC_BATCH_SIZE;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Configure the batch size while fetching the index versions. Default: " + DEFAULT_SYNC_FETCH_BATCH_SIZE)
-	@EnvironmentVariable(name = MESH_ELASTICSEARCH_SYNC_FETCH_BATCH_SIZE_ENV, description = "Override the sync fetch batch size. Default: " + DEFAULT_SYNC_FETCH_BATCH_SIZE)
+	@JsonPropertyDescription("Configure the batch size while fetching the index versions.")
+	@EnvironmentVariable(name = MESH_ELASTICSEARCH_SYNC_FETCH_BATCH_SIZE_ENV, description = "Override the sync fetch batch size.")
 	private int syncFetchBatchSize = DEFAULT_SYNC_FETCH_BATCH_SIZE;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Set the interval of index checks in ms. Default: " + DEFAULT_INDEX_CHECK_INTERVAL)
+	@JsonPropertyDescription("Set the interval of index checks in ms.")
 	@EnvironmentVariable(name = MESH_ELASTICSEARCH_INDEX_CHECK_INTERVAL_ENV, description = "Override the interval for index checks")
 	private long indexCheckInterval = DEFAULT_INDEX_CHECK_INTERVAL;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Set the timeout for the cache of index mappings in ms. Default: " + DEFAULT_INDEX_MAPPING_CACHE_TIMEOUT)
+	@JsonPropertyDescription("Set the timeout for the cache of index mappings in ms.")
 	@EnvironmentVariable(name = MESH_ELASTICSEARCH_INDEX_MAPPING_CACHE_TIMEOUT_ENV, description = "Override the timeout for the cache if index mappings")
 	private long indexMappingCacheTimeout = DEFAULT_INDEX_MAPPING_CACHE_TIMEOUT;
 
