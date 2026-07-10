@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
@@ -110,18 +111,21 @@ public class TableGenerator extends AbstractRenderingGenerator {
 			boolean isRequired = false;
 			Object defaultValue = null;
 			try {
+				field.setAccessible(true);
 				defaultValue = field.get(instance);
 			} catch (IllegalArgumentException e) {
-
 			}
 			for (Annotation annotation : field.getAnnotations()) {
-				if (annotation instanceof JsonProperty) {
-					JsonProperty propAnn = (JsonProperty) annotation;
+				if (annotation instanceof JsonProperty propAnn) {
 					String name = propAnn.value();
 					if (!StringUtils.isEmpty(name)) {
 						fieldName = name;
 					}
 					isRequired = propAnn.required();
+					String propDefault = propAnn.defaultValue();
+					if (StringUtils.isNotBlank(propDefault)) {
+						defaultValue = propDefault;
+					}
 				}
 				if (annotation instanceof JsonPropertyDescription) {
 					JsonPropertyDescription descAnn = (JsonPropertyDescription) annotation;
@@ -139,8 +143,8 @@ public class TableGenerator extends AbstractRenderingGenerator {
 				entries.put("key", fieldName);
 				entries.put("description", description);
 				entries.put("type", type.toLowerCase());
-				entries.put("defaultValue", String.valueOf(defaultValue));
-				entries.put("required", String.valueOf(isRequired));
+				entries.put("default", String.valueOf(defaultValue));
+				entries.put("required", Boolean.toString(isRequired));
 				rows.add(entries);
 			}
 		}
@@ -158,6 +162,11 @@ public class TableGenerator extends AbstractRenderingGenerator {
 	 * @param template
 	 * @return Rendered table
 	 * @throws IOException
+	 * @throws SecurityException 
+	 * @throws NoSuchFieldException 
+	 * @throws InstantiationException 
+	 * @throws IllegalAccessException 
+	 * @throws IllegalArgumentException 
 	 */
 	public String renderModelTableViaSchema(Class<?> clazz, String template) throws IOException {
 		String name = clazz.getSimpleName();
@@ -221,6 +230,11 @@ public class TableGenerator extends AbstractRenderingGenerator {
 	 *            Current key of the element being flattened
 	 * @param obj
 	 *            Current object being flattened
+	 * @throws SecurityException 
+	 * @throws NoSuchFieldException 
+	 * @throws InstantiationException 
+	 * @throws IllegalAccessException 
+	 * @throws IllegalArgumentException 
 	 */
 	private void flattenSchema(Class<?> clazz, List<Map<String, String>> list, String key, JsonObject obj) {
 		// Check whether the current object already describes a property
@@ -231,13 +245,40 @@ public class TableGenerator extends AbstractRenderingGenerator {
 			String type = obj.getString("type");
 			String description = obj.getString("description");
 			Boolean required = obj.getBoolean("required");
+			String defaultValue = obj.getString("defaultValue");
 			Map<String, String> attr = new HashMap<>();
 			attr.put("type", type);
 			attr.put("description", description);
 			attr.put("key", key);
-			String requiredStr = "false";
-			if (required != null) {
-				requiredStr = String.valueOf(required);
+			String requiredStr = "no";
+			if (required == null) {
+				// The JSON properties are either absent or not parsed
+				try {
+					Field field = clazz.getDeclaredField(key);
+					JsonProperty jsonProperty = field.getAnnotation(JsonProperty.class);
+					required = jsonProperty.required();
+					defaultValue = jsonProperty.defaultValue();
+				} catch (Throwable e) {
+					required = false;
+				}
+			}
+			requiredStr = required ? "yes" : "no";
+			if (StringUtils.isNotBlank(defaultValue)) {
+				attr.put("default", defaultValue);
+			} else {
+				try {
+					Field field = clazz.getDeclaredField(key);
+					if (field.getType().isAnnotationPresent(GenerateDocumentation.class)) {
+						flattenSchema(field.getType(), list, key, new JsonObject(JsonUtil.getJsonSchema(field.getType())));
+					} else {
+						field.setAccessible(true);
+						defaultValue = Objects.toString(field.get(clazz.newInstance()), null);
+						if (StringUtils.isNotBlank(defaultValue)) {
+							attr.put("default", defaultValue);
+						}
+					}
+				} catch (Throwable e) {
+				}
 			}
 			attr.put("required", requiredStr);
 			list.add(attr);

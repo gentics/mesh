@@ -122,8 +122,7 @@ public abstract class MeshOptions implements Option {
 	private String pluginDirectory = "plugins";
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Timeout in seconds which is used for the plugin startup,initialization,de-initialization and stop processes. Default: "
-		+ DEFAULT_PLUGIN_TIMEOUT + " seconds.")
+	@JsonPropertyDescription("Timeout in seconds which is used for the plugin startup,initialization,de-initialization and stop processes.")
 	@EnvironmentVariable(name = MESH_PLUGIN_TIMEOUT_ENV, description = "Override the configured plugin timeout.")
 	private int pluginTimeout = DEFAULT_PLUGIN_TIMEOUT;
 
@@ -148,7 +147,7 @@ public abstract class MeshOptions implements Option {
 	private int migrationMaxBatchSize = 50;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Interval in ms for the automatic migration job trigger. Setting this to a non-positive value will disable automatic job triggering. Default: " + DEFAULT_MIGRATION_TRIGGER_INTERVAL + " ms.")
+	@JsonPropertyDescription("Interval in ms for the automatic migration job trigger. Setting this to a non-positive value will disable automatic job triggering.")
 	@EnvironmentVariable(name = MESH_MIGRATION_TRIGGER_INTERVAL, description = "Override the migration trigger interval")
 	private long migrationTriggerInterval = DEFAULT_MIGRATION_TRIGGER_INTERVAL;
 
@@ -179,7 +178,7 @@ public abstract class MeshOptions implements Option {
 	private String initialAdminPassword = PasswordUtil.humanPassword();
 
 	@JsonIgnore
-	@EnvironmentVariable(name = MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET_ENV, description = "Control whether a forced password reset should be triggered when creating the initial admin user. Default: true")
+	@EnvironmentVariable(name = MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET_ENV, description = "Control whether a forced password reset should be triggered when creating the initial admin user.")
 	private boolean forceInitialAdminPasswordReset = true;
 
 	@JsonIgnore

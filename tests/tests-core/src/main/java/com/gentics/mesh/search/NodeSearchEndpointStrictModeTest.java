@@ -31,7 +31,7 @@ public class NodeSearchEndpointStrictModeTest extends AbstractNodeSearchEndpoint
 
 	@Test
 	public void testSearchStringFieldRaw() throws Exception {
-		addCustomMapping();
+		addCustomMapping(true);
 		recreateIndices();
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.teaser", "Concorde_english_name"),
@@ -39,12 +39,27 @@ public class NodeSearchEndpointStrictModeTest extends AbstractNodeSearchEndpoint
 		assertEquals("Check hits for 'supersonic' before update", 1, response.getData().size());
 	}
 
-	private void addCustomMapping() {
+
+	@Test
+	public void testSetupStrictNoMapping() throws Exception {
+		addCustomMapping(false);
+		recreateIndices();
+
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.teaser", "Concorde_english_name"),
+			new PagingParametersImpl().setPage(1).setPerPage(2L), new VersioningParametersImpl().draft()));
+		assertEquals("Check hits for 'supersonic' before update", 0, response.getData().size());
+	}
+
+	private void addCustomMapping(boolean valid) {
 		String schemaUuid = tx(() -> content().getSchemaContainer().getUuid());
 		SchemaUpdateRequest request = tx(() -> JsonUtil.readValue(content().getSchemaContainer().getLatestVersion().getJson(),
 			SchemaUpdateRequest.class));
-		JsonObject keywordMapping = new JsonObject().put("index", true).put("type", "keyword");
-		request.getField("teaser").setElasticsearch(keywordMapping);
+		if (valid) {
+			JsonObject keywordMapping = new JsonObject().put("index", true).put("type", "keyword");
+			request.getField("teaser").setElasticsearch(keywordMapping);
+		} else {
+			request.getField("teaser").setElasticsearch(new JsonObject().put("_meshLanguageOverride", new JsonObject()));
+		}
 
 		grantAdmin();
 		waitForJob(() -> {

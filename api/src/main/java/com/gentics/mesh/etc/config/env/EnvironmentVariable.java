@@ -32,4 +32,10 @@ public @interface EnvironmentVariable {
 	 * @return
 	 */
 	boolean isSensitive() default false;
+
+	/**
+	 * Whether this variable should not document its YAML field
+	 * @return
+	 */
+	boolean isNoField() default false;
 }

@@ -38,50 +38,47 @@ public class ImageManipulatorOptions implements Option {
 	public static final ImageManipulationMode DEFAULT_IMAGE_MANIPULATION_MODE = ImageManipulationMode.ON_DEMAND;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Configure the image manipulation mode. Default: ON_DEMAND.")
+	@JsonPropertyDescription("Configure the image manipulation mode.")
 	@EnvironmentVariable(name = MESH_IMAGE_MANIPULATION_MODE_ENV, description = "Override the image manipulation mode.")
 	private ImageManipulationMode mode = DEFAULT_IMAGE_MANIPULATION_MODE;	
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Configure the path for image cache directory. Default: data/binaryImageCache")
+	@JsonPropertyDescription("Configure the path for image cache directory.")
 	@EnvironmentVariable(name = MESH_IMAGE_CACHE_DIRECTORY_ENV, description = "Override the path for image cache directory.")
 	private String imageCacheDirectory = DEFAULT_IMAGE_CACHE_DIRECTORY;
 
 	@JsonProperty(defaultValue = DEFAULT_IMAGE_CACHE_CLEAN_INTERVAL)
-	@JsonPropertyDescription("Image cache clean interval in ISO 8601 duration format. Setting this to PT0S will disable the image cache cleanup. Default: " + DEFAULT_IMAGE_CACHE_CLEAN_INTERVAL)
+	@JsonPropertyDescription("Image cache clean interval in ISO 8601 duration format. Setting this to PT0S will disable the image cache cleanup.")
 	@EnvironmentVariable(name = MESH_IMAGE_CACHE_CLEAN_INTERVAL_ENV, description = "Overwrite the image cache clean interval.")
 	private String imageCacheCleanInterval = DEFAULT_IMAGE_CACHE_CLEAN_INTERVAL;
 
 	@JsonProperty(defaultValue = DEFAULT_IMAGE_CACHE_MAX_IDLE)
-	@JsonPropertyDescription("Image cache maximum idle time in ISO 8601 duration format. Default: " + DEFAULT_IMAGE_CACHE_MAX_IDLE)
+	@JsonPropertyDescription("Image cache maximum idle time in ISO 8601 duration format.")
 	@EnvironmentVariable(name = MESH_IMAGE_CACHE_CLEAN_INTERVAL_ENV, description = "Overwrite the image cache max idle time.")
 	private String imageCacheMaxIdle = DEFAULT_IMAGE_CACHE_MAX_IDLE;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Whether the Image cache files should be touched when accessed. Default: " + DEFAULT_IMAGE_CACHE_TOUCH)
+	@JsonPropertyDescription("Whether the Image cache files should be touched when accessed.")
 	@EnvironmentVariable(name = MESH_IMAGE_CACHE_TOUCH_ENV, description = "Overwrite the image cache touch behaviour.")
 	private boolean imageCacheTouch = DEFAULT_IMAGE_CACHE_TOUCH;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Configure the maximum allowed image resize width. Resizing is a memory intensive operation and thus this limit can help avoid memory issues. Default: "
-		+ DEFAULT_MAX_WIDTH)
+	@JsonPropertyDescription("Configure the maximum allowed image resize width. Resizing is a memory intensive operation and thus this limit can help avoid memory issues.")
 	@EnvironmentVariable(name = MESH_IMAGE_MAX_WIDTH_ENV, description = "Override the max width for image resize operations.")
 	private Integer maxWidth = DEFAULT_MAX_WIDTH;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Configure the maximum allowed image resize height. Resizing is a memory intensive operation and thus this limit can help avoid memory issues. Default: "
-		+ DEFAULT_MAX_HEIGHT)
+	@JsonPropertyDescription("Configure the maximum allowed image resize height. Resizing is a memory intensive operation and thus this limit can help avoid memory issues.")
 	@EnvironmentVariable(name = MESH_IMAGE_MAX_HEIGHT_ENV, description = "Override the max height for image resize operations.")
 	private Integer maxHeight = DEFAULT_MAX_HEIGHT;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Configure the quality of the output of JPEG images. Must be a value between inclusive 0 and inclusive 1. Default: "
-		+ DEFAULT_JPEG_QUALITY)
+	@JsonPropertyDescription("Configure the quality of the output of JPEG images. Must be a value between inclusive 0 and inclusive 1.")
 	@EnvironmentVariable(name = MESH_IMAGE_JPEG_QUALITY_ENV, description = "Override the JPEG quality for image resize operations.")
 	private Float jpegQuality = DEFAULT_JPEG_QUALITY;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Configure the filter that is used when resizing images. Default: LANCZOS")
+	@JsonPropertyDescription("Configure the filter that is used when resizing images.")
 	@EnvironmentVariable(name = MESH_IMAGE_RESAMPLE_FILTER_ENV, description = "Override the sample filter for image resize operations.")
 	private ResampleFilter resampleFilter = DEFAULT_RESAMPLE_FILTER;
 
