@@ -8,17 +8,17 @@
 
 
 | filename
-| false
+| no
 | string
 | Expected filename for the s3 binary field.
 
 | language
-| true
+| yes
 | string
 | ISO 639-1 language tag of the node which provides the image which should be transformed.
 
 | version
-| true
+| yes
 | string
 | Version number which must be provided in order to handle and detect concurrent changes to the node content.
 

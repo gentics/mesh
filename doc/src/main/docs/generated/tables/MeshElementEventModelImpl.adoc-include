@@ -8,22 +8,22 @@
 
 
 | cause
-| true
+| yes
 | object
 | Some events will be caused by another action. This object contains information about the cause of the event.
 
 | name
-| true
+| yes
 | string
 | Name of the referenced element.
 
 | origin
-| true
+| yes
 | string
 | Name of the mesh node from which the event originates.
 
 | uuid
-| true
+| yes
 | string
 | Uuid of the referenced element.
 

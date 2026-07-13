@@ -8,7 +8,7 @@
 
 
 | branch
-| string 
+| string
 | false
 | Specifies the branch to be used for loading data. The latest project branch will be used if this parameter is omitted.
 

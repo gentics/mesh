@@ -8,12 +8,12 @@
 
 
 | role.name
-| false
+| no
 | string
 | Name of the referenced element
 
 | role.uuid
-| true
+| yes
 | string
 | Uuid of the referenced element
 

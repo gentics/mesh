@@ -8,42 +8,42 @@
 
 
 | admin
-| false
+| no
 | boolean
 | Flag which indicates whether the user is an admin.
 
 | emailAddress
-| false
+| no
 | string
 | New email address of the user
 
 | firstname
-| false
+| no
 | string
 | New firstname of the user
 
 | forcedPasswordChange
-| false
+| no
 | boolean
 | When true, the user needs to change their password on the next login.
 
 | lastname
-| false
+| no
 | string
 | New lastname of the user
 
 | nodeReference
-| false
+| no
 | object
 | New node reference of the user. This can also explicitly set to null in order to remove the assigned node from the user
 
 | password
-| false
+| no
 | string
 | New password of the user
 
 | username
-| false
+| no
 | string
 | New username of the user
 

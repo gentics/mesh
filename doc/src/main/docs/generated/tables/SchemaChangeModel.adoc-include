@@ -8,12 +8,12 @@
 
 
 | operation
-| false
+| no
 | string
 | Type of operation for this change
 
 | uuid
-| false
+| no
 | string
 | Uuid of the change entry
 

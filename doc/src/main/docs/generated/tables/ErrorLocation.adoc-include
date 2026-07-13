@@ -8,13 +8,13 @@
 
 
 | column
-| true
+| yes
 | integer
-| Error column number.
+| Error column number.  Default: *0*.
 
 | line
-| true
+| yes
 | integer
-| Error line number.
+| Error line number.  Default: *0*.
 
 |======

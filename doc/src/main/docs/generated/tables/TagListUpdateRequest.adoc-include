@@ -8,8 +8,8 @@
 
 
 | tags
-| true
+| yes
 | array
-| List of tags which should be assigned to the node. Tags which are not included will be removed from the node.
+| List of tags which should be assigned to the node. Tags which are not included will be removed from the node.  Default: *[]*.
 
 |======

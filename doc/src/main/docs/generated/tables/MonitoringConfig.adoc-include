@@ -8,33 +8,33 @@
 
 
 | enabled
-| false
+| no
 | boolean
-| Enable or disable the monitoring system. Default is: true
+| Enable or disable the monitoring system.  Default: *true*.
 
 | gcTimeLimit
-| false
+| no
 | integer
-| Limit time used for garbage collections percent, which will cause Mesh to become unhealthy. Defaults to 50%
+| Limit time used for garbage collections percent, which will cause Mesh to become unhealthy.  Default: *50*.
 
 | host
-| false
+| no
 | string
-| Configure the Gentics Mesh monitoring HTTP server host to bind to. Default is: 127.0.0.1
+| Configure the Gentics Mesh monitoring HTTP server host to bind to.  Default: *127.0.0.1*.
 
 | jvmMetricsEnabled
-| false
+| no
 | boolean
-| Enable or disable the measuring of JVM metrics. Default is: true
+| Enable or disable the measuring of JVM metrics.  Default: *true*.
 
 | memoryLimit
-| false
+| no
 | integer
-| Limit of used memory in percent, which will cause Mesh to become unhealthy. Defaults to 95%
+| Limit of used memory in percent, which will cause Mesh to become unhealthy.  Default: *95*.
 
 | port
-| false
+| no
 | integer
-| Configure the Gentics Mesh monitoring HTTP server port. Default is: 8081
+| Configure the Gentics Mesh monitoring HTTP server port.  Default: *8081*.
 
 |======

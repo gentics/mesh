@@ -10,32 +10,32 @@
 | storageOptions.nativeQueryFiltering
 | false
 | nativequeryfiltering
-| Enables the native database level filtering for queries. Default: ON_DEMAND
+| Enables the native database level filtering for queries.  Default: *ON_DEMAND*.
 
 | storageOptions.retryLimit
 | false
 | int
-| Transaction retry count.
+| Transaction retry count.  Default: *10*.
 
 | storageOptions.retryDelayMillis
 | false
 | int
-| Transaction wait interval between retries, in milliseconds.
+| Transaction wait interval between retries, in milliseconds.  Default: *2000*.
 
 | storageOptions.driverClass
 | false
 | string
-| Optional JDBC driver class name. Use this to override the default database connector provided driver class.
+| Optional JDBC driver class name. Use this to override the default database connector provided driver class.  Default: *null*.
 
 | storageOptions.dialectClass
 | false
 | string
-| Optional Hibernate dialect class name. User this to override the default database connector provided dialect class.
+| Optional Hibernate dialect class name. User this to override the default database connector provided dialect class.  Default: *null*.
 
 | storageOptions.databaseAddress
 | false
 | string
-| Database address in HOST&lt;:PORT&gt; format.
+| Database address in HOST&lt;:PORT&gt; format.  Default: *null*.
 
 | storageOptions.connectionUrlExtraParams
 | false
@@ -45,7 +45,7 @@
 | storageOptions.databaseName
 | false
 | string
-| Database name.
+| Database name.  Default: *mesh*.
 
 | storageOptions.databaseConnectorClasspath
 | false
@@ -55,131 +55,131 @@
 | storageOptions.connectionUsername
 | false
 | string
-| JDBC connection username.
+| JDBC connection username.  Default: *admin*.
 
 | storageOptions.connectionPassword
 | false
 | string
-| JDBC connection password.
+| JDBC connection password.  Default: *admin*.
 
 | storageOptions.showSql
 | false
 | boolean
-| Are actual SQL queries logged?
+| Are actual SQL queries logged?  Default: *false*.
 
 | storageOptions.formatSql
 | false
 | boolean
-| Are actual SQL queries formatted during logging?
+| Are actual SQL queries formatted during logging?  Default: *false*.
 
 | hikariOptions.autocommit
 | false
 | boolean
-| Connection auto-commit behavior.
+| This property controls the default auto-commit behavior of connections returned from the pool. It is a boolean value.  Default: *false*.
 
 | hikariOptions.connectionTimeout
 | false
 | integer
-| Connection timeout.
+| This property controls the maximum number of milliseconds that a client (that&#x27;s you) will wait for a connection from the pool. If this time is exceeded without a connection becoming available, a SQLException will be thrown. Lowest acceptable connection timeout is 250 ms.  Default: *10000*.
 
 | hikariOptions.idleTimeout
 | false
 | integer
-| Idle timeout.
+| This property controls the maximum amount of time that a connection is allowed to sit idle in the pool. This setting only applies when minimumIdle is defined to be less than maximumPoolSize. Idle connections will not be retired once the pool reaches minimumIdle connections. Whether a connection is retired as idle or not is subject to a maximum variation of +30 seconds, and average variation of +15 seconds. A connection will never be retired as idle before this timeout. A value of 0 means that idle connections are never removed from the pool. The minimum allowed value is 10000ms (10 seconds).  Default: *600000*.
 
 | hikariOptions.maxLifetime
 | false
 | integer
-| Max lifetime.
+| This property controls the maximum lifetime of a connection in the pool. An in-use connection will never be retired, only when it is closed will it then be removed. On a connection-by-connection basis, minor negative attenuation is applied to avoid mass-extinction in the pool. We strongly recommend setting this value, and it should be several seconds shorter than any database or infrastructure imposed connection time limit. A value of 0 indicates no maximum lifetime (infinite lifetime), subject of course to the idleTimeout setting. The minimum allowed value is 30000ms (30 seconds).  Default: *1800000*.
 
 | hikariOptions.minimumIdleConnection
 | false
 | integer
-| Minimum idle connections in the pool.
+| This property controls the minimum number of idle connections that HikariCP tries to maintain in the pool. If the idle connections dip below this value and total connections in the pool are less than maximumPoolSize, HikariCP will make a best effort to add additional connections quickly and efficiently. However, for maximum performance and responsiveness to spike demands, we recommend not setting this value and instead allowing HikariCP to act as a fixed size connection pool.  Default: *20*.
 
 | hikariOptions.maxPoolSize
 | false
 | integer
-| Maximum pool size.
+| This property controls the maximum size that the pool is allowed to reach, including both idle and in-use connections. Basically this value will determine the maximum number of actual connections to the database backend. A reasonable value for this is best determined by your execution environment. When the pool reaches this size, and no idle connections are available, calls to getConnection() will block for up to connectionTimeout milliseconds before timing out.  Default: *20*.
 
 | hikariOptions.poolName
 | false
 | string
-| Name of the connection pool.
+| This property represents a user-defined name for the connection pool and appears mainly in logging and JMX management consoles to identify pools and pool configurations.  Default: *MeshHikariCP*.
 
 | hikariOptions.registerMBeans
 | false
 | boolean
-| Register JMX Management Beans.
+| This property controls whether or not JMX Management Beans (\&quot;MBeans\&quot;) are registered or not.  Default: *false*.
 
 | hikariOptions.transactionIsolationLevel
 | false
 | integer
-| Transaction isolation level.
+| This property controls the default transaction isolation level of connections returned from the pool. If this property is not specified, the default transaction isolation level defined by the JDBC driver is used. Only use this property if you have specific isolation requirements that are common for all queries. The value of this property is the constant name from the Connection class such as TRANSACTION_READ_COMMITTED, TRANSACTION_REPEATABLE_READ. Setting it to null defaults to isolation level defined in the JDBC driver.  Default: *null*.
 
 | hikariOptions.leakDetectionThreshold
 | false
 | integer
-| Leak detection threshold.
+| This property controls the amount of time that a connection can be out of the pool before a message is logged indicating a possible connection leak. A value of 0 means leak detection is disabled. Lowest acceptable value for enabling leak detection is 2000 (2 seconds).  Default: *0*.
 
 | storageOptions.synchronizeWrites
 | false
 | boolean
-| Flag which controls whether writes to the database should be synchronized. Setting this flag improves the stability of massive database updates, by the cost of overall performance. Default: false
+| Flag which controls whether writes to the database should be synchronized. Setting this flag improves the stability of massive database updates, by the cost of overall performance.  Default: *false*.
 
 | storageOptions.synchronizeWritesTimeout
 | false
 | long
-| Set the timeout in milliseconds for the sync write lock. Default: 60000
+| Set the timeout in milliseconds for the sync write lock.  Default: *60000*.
 
 | storageOptions.secondLevelCacheEnabled
 | false
 | boolean
-| Enable Hibernate second-level cache
+| Enable Hibernate second-level cache  Default: *true*.
 
 | storageOptions.generateStatistics
 | false
 | boolean
-| Enable generation of hibernate statistics
+| Enable generation of hibernate statistics  Default: *false*.
 
 | storageOptions.queryTimeout
 | false
 | long
-| Global query timeout limit in milliseconds. A timeout value of zero means there is no query timeout.
+| Global query timeout limit in milliseconds. A timeout value of zero means there is no query timeout.  Default: *0*.
 
 | storageOptions.slowSqlThreshold
 | false
 | long
-| Define a threshold in milliseconds, upon which a SQL query is considered slow and produces a log warning.
+| Define a threshold in milliseconds, upon which a SQL query is considered slow and produces a log warning.  Default: *60000*.
 
 | storageOptions.jdbcBatchSize
 | false
 | long
-| Hibernate JDBC Batch Size. Recommended values are between 5 and 30
+| Hibernate JDBC Batch Size. Recommended values are between 5 and 30  Default: *5*.
 
 | storageOptions.sqlParametersLimit
 | false
 | string
-| SQL parameter number limit.
+| SQL parameter number limit.  Default: *definedByDatabase*.
 
 | storageOptions.staleTxCheckInterval
 | false
 | long
-| Interval in ms for periodic check for stale transactions. Defaults to 10000 ms.
+| Interval in ms for periodic check for stale transactions. Defaults to 10000 ms.  Default: *10000*.
 
 | cacheConfig
 | true
 | hibernatecacheconfig
-| Cache options.
+| Cache options.  Default: *com.gentics.mesh.etc.config.hibernate.HibernateCacheConfig@5b275174*.
 
 | licenseKeyPath
 | false
 | string
-| Path to the license key file
+| Path to the license key file  Default: *license.key*.
 
 | licenseKey
 | false
 | string
-| The license key
+| The license key  Default: *null*.
 
 |======
