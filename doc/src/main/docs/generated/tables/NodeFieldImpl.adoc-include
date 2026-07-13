@@ -8,17 +8,17 @@
 
 
 | languagePaths
-| true
+| yes
 | object
 | Set of language paths that the node provides.
 
 | path
-| true
+| yes
 | string
 | Path to the referenced node.
 
 | uuid
-| true
+| yes
 | string
 | Uuid of the referenced node.
 

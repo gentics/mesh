@@ -8,7 +8,7 @@
 
 
 | availableLanguages
-| false
+| no
 | object
 | Map of publish status entries per language
 

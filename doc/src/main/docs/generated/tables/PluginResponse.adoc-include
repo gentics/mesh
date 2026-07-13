@@ -8,22 +8,22 @@
 
 
 | id
-| true
+| yes
 | string
 | Id of the plugin.
 
 | manifest
-| true
+| yes
 | object
 | Manifest of the plugin
 
 | name
-| true
+| yes
 | string
 | Name of the plugin.
 
 | status
-| true
+| yes
 | string
 | Status of the plugin
 

@@ -8,28 +8,28 @@
 
 
 | clusterName
-| false
+| no
 | string
 | Name of the cluster. Only instances with a common cluster name will form a cluster.
 
 | coordinatorRegex
-| false
+| no
 | string
 | The coordinator regex can be used to control which nodes in the cluster are eligible to be elected in a coordinator master election. When left empty all database master nodes are eligible.
 
 | enabled
-| false
+| no
 | boolean
-| Flag to enable or disable the cluster mode.
+| Flag to enable or disable the cluster mode.  Default: *false*.
 
 | networkHost
-| false
+| no
 | string
 | IP or host which is used to announce and reach the instance in the cluster. Gentics Mesh will try to determine the IP automatically but you may use this setting to override this automatic IP handling.
 
 | vertxPort
-| false
+| no
 | integer
-| Port used by Vert.x for the eventbus server. Default: 4848
+| Port used by Vert.x for the eventbus server.  Default: *4848*.
 
 |======

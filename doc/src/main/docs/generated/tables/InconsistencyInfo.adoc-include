@@ -8,27 +8,27 @@
 
 
 | description
-| true
+| yes
 | string
 | Description of the inconsistency.
 
 | elementUuid
-| true
+| yes
 | string
 | Uuid of the element which is related to the inconsistency.
 
 | repairAction
-| true
+| yes
 | string
-| Repair action which will attept to fix the inconsistency. The action will only be invoked when using invoking the rapair endpoint.
+| Repair action which will attept to fix the inconsistency. The action will only be invoked when using invoking the rapair endpoint.  Default: *NONE*.
 
 | repaired
-| true
+| yes
 | boolean
-| Status of the inconsistency. This will indicate whether the inconsistency could be resolved via the repair action.
+| Status of the inconsistency. This will indicate whether the inconsistency could be resolved via the repair action.  Default: *false*.
 
 | severity
-| true
+| yes
 | string
 | Level of severity of the inconsistency.
 

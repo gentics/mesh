@@ -8,8 +8,8 @@
 
 
 | recursive
-| boolean  (default: false) 
+| boolean
 | false
-| Specifiy whether deletion should also be applied recursively
+| Specifiy whether deletion should also be applied recursively Default: false. 
 
 |======

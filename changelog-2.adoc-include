@@ -56,6 +56,25 @@ icon:plus[] Some dependencies have been updated:
 * Hibernate: 7.1.8.Final
 
 
+[[v3.1.18]]
+== 3.1.18 (13.07.2026)
+
+icon:check[] Core: An extra check on the nodes, eligible for the migration, is performed to avoid early finish of the migration process, caused by inconsistent node data.
+
+icon:check[] Core: An inconsistency case of a content edge pointing to the missing content record now has a repair mechanism.
+
+icon:check[] Schema Migrations, which renamed multiple fields and additionally created new fields using the old names but different field types always failed.
+This has been fixed.
+
+
+icon:check[] Core: The performance of updating (micro)schemas has been improved. 
+
+icon:check[] Core: An edge case, causing micronode list update to keep the failing thread running, with a possibility to DDoS, has been eliminated.
+
+icon:check[] Elasticsearch: Fixed a possible NullPointerException when the search.mappingMode was set to STRICT and
+no custom mapping was configured for at least one field in a schema.
+
+
 [[v3.1.17]]
 == 3.1.17 (12.06.2026)
 

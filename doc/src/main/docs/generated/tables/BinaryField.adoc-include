@@ -8,17 +8,17 @@
 
 
 | focalPoint.x
-| false
+| no
 | number
 | The horizontal position of the focal point. The value is a factor of the image width. The value 0.5 is the center of the image.
 
 | focalPoint.y
-| false
+| no
 | number
 | The vertical position of the focal point. The value is a factor of the image height. The value 0.5 is the center of the image.
 
 | metadata.location
-| false
+| no
 | object
 | Geolocation information.
 

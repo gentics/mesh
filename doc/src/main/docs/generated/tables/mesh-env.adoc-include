@@ -2,499 +2,493 @@
 |======
 
 | Variable
-| Description
+| Description _(and its YAML config field, if exists)_
 
-
-| *MESH_DB_SYNC_WRITES*
-| Override the database sync writes flag.
-
-| *MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET*
-| Control whether a forced password reset should be triggered when creating the initial admin user. Default: true
-
-| *MESH_VERTX_EVENT_BUS_CHECK_INTERVAL*
-| Override the Vert.x eventBus check interval in ms.
-
-| *MESH_VERTX_EVENT_BUS_ERROR_THRESHOLD*
-| Override the Vert.x eventBus error threshold in ms.
-
-| *MESH_DEBUGINFO_LOG_PATTERN*
-| Override the log pattern
-
-| *MESH_CLUSTER_INIT*
-| Enable or disable the initial cluster database setup. This is useful for testing.
-
-| *MESH_PLUGIN_TIMEOUT*
-| Override the configured plugin timeout.
-
-| *MESH_LANGUAGES_FILE_PATH*
-| Override the path to the optional languages file
-
-| *MESH_S3_CORS_ALLOWED_METHODS*
-| Override the configured AWS S3 CORS allowed methods.
-
-| *MESH_GRAPHQL_SCHEMA_CACHE_SIZE*
-| Override the configured graphQl schema cache size.
-
-| *MESH_HIBERNATE_GENERATE_STATISTICS*
-| Set whether hibernate should generate statistics.
-
-| *MESH_HIBERNATE_SHOW_SQL*
-| Set whether the driver-specific SQL queries should be logged.
-
-| *MESH_S3_CORS_ALLOWED_ORIGINS*
-| Override the configured AWS S3 CORS allowed origins.
-
-| *MESH_START_IN_READ_ONLY*
-| Override the read only mode flag.
-
-| *MESH_ELASTICSEARCH_RETRY_LIMIT*
-| Override the retry limit.
-
-| *MESH_S3_BINARY_ENDPOINT*
-| Override the configured AWS S3 custom endpoint.
-
-| *MESH_ELASTICSEARCH_COMPLIANCE_MODE*
-| Override the search compliance mode.
-
-| *MESH_JDBC_DRIVER_CLASS*
-| Override the default JDBC driver class.
-
-| *MESH_HTTPS_PORT*
-| Override the configured server https port.
-
-| *MESH_ELASTICSEARCH_PREFIX*
-| Override the configured elasticsearch prefix.
-
-| *MESH_BINARY_METADATA_WHITELIST*
-| Override the metadata whitelist
-
-| *MESH_DEBUGINFO_LOG_FOLDER*
-| Override the path to the debug info log folder
-
-| *MESH_IMAGE_MANIPULATION_MODE*
-| Override the image manipulation mode.
-
-| *MESH_S3_BINARY_CACHE_BUCKET*
-| Override the configured AWS S3 bucket.
-
-| *MESH_ELASTICSEARCH_SYNC_FETCH_BATCH_SIZE*
-| Override the sync fetch batch size. Default: 10000
-
-| *HIKARI_CP_POOL_NAME*
-| This property represents a user-defined name for the connection pool and appears mainly in logging and JMX management consoles to identify pools and pool configurations.
-
-| *MESH_S3_BINARY_SECRET_ACCESS_KEY*
-| Override the configured AWS S3 secret access key.
-
-| *MESH_HTTP_VERTICLE_AMOUNT*
-| Override the http verticle amount.
-
-| *MESH_BINARY_CHECK_INTERVAL*
-| Override the binary check interval
-
-| *MESH_JDBC_RETRY_LIMIT*
-| Override the default transaction retry count.
-
-| *HIKARI_CP_REGISTER_MBEANS*
-| This property controls whether or not JMX Management Beans (&quot;MBeans&quot;) are registered or not.
-
-| *MESH_CLUSTER_ENABLED*
-| Override cluster enabled flag.
-
-| *MESH_DATABASE_ADDRESS*
-| Override the database address.
-
-| *MESH_JDBC_CONNECTION_USERNAME*
-| Set the JDBC connection username.
-
-| *MESH_BINARY_DOCUMENT_PARSER*
-| Override the document parser enabled flag.
-
-| *HIKARI_CP_MAX_POOL_SIZE*
-| This property controls the maximum size that the pool is allowed to reach, including both idle and in-use connections. Basically this value will determine the maximum number of actual connections to the database backend. A reasonable value for this is best determined by your execution environment. When the pool reaches this size, and no idle connections are available, calls to getConnection() will block for up to connectionTimeout milliseconds before timing out.
-
-| *MESH_DB_CONNECTOR_CLASSPATH*
-| Set the Mesh Database Connector classpath.
-
-| *MESH_ELASTICSEARCH_HOSTNAME_VERIFICATION*
-| Override the configured hostname verification flag.
-
-| *MESH_IMAGE_MAX_HEIGHT*
-| Override the max height for image resize operations.
-
-| *HIKARI_CP_MIN_IDLE_CONNECTION*
-| This property controls the minimum number of idle connections that HikariCP tries to maintain in the pool. If the idle connections dip below this value and total connections in the pool are less than maximumPoolSize, HikariCP will make a best effort to add additional connections quickly and efficiently. However, for maximum performance and responsiveness to spike demands, we recommend not setting this value and instead allowing HikariCP to act as a fixed size connection pool.
-
-| *MESH_ELASTICSEARCH_EVENT_BUFFER_SIZE*
-| Override the configured event buffer size.
-
-| *MESH_ELASTICSEARCH_CERT_PATH*
-| Override the configured trusted server certificate.
-
-| *MESH_FIELD_CONTAINER_CACHE_SIZE*
-| Override the field container cache size.
-
-| *MESH_AUTH_TOKEN_EXP*
-| Override the configured JWT expiration time.
-
-| *MESH_S3_BINARY_PARSER_LIMIT*
-| Override the configured parser limit.
-
-| *MESH_HTTP_SSL_CERT_PATH*
-| Override the configured SSL enable flag.
-
-| *MESH_MONITORING_HTTP_HOST*
-| Override the configured monitoring http server host which is used to bind to.
-
-| *MESH_BINARY_UPLOAD_LIMIT*
-| Override the configured binary byte upload limit.
-
-| *MESH_JDBC_CONNECTION_PASSWORD*
-| Set the JDBC connection password.
-
-| *MESH_VERTX_ORDERED_BLOCKING_HANDLERS*
-| Override the configured Vert.x blocking handlers ordering setting.
-
-| *MESH_STORAGE_DISK_QUOTA_READ_ONLY_THRESHOLD*
-| Overwrite the disk quota ready only threshold.
-
-| *MESH_CLUSTER_VERTX_PORT*
-| Override the vert.x eventbus server port.
-
-| *MESH_S3_BINARY_METADATA_WHITELIST*
-| Override the metadata whitelist
-
-| *MESH_MIGRATION_TRIGGER_INTERVAL*
-| Override the migration trigger interval
-
-| *MESH_CLUSTER_NAME*
-| Override the cluster name.
-
-| *MESH_ELASTICSEARCH_BULK_DEBOUNCE_TIME*
-| Override the bulk debounce time.
-
-| *MESH_DEBUGINFO_LOG_FILE_SIZE*
-| Override the log file size
 
 | *MESH_AUTH_ANONYMOUS_ENABLED*
-| Override the configured anonymous enabled flag.
-
-| *MESH_DB_SQL_PARAMETERS_LIMIT*
-| Limit the number of SQL parameters in selected lookup queries. Can be either &#x60;definedByDatabase&#x60; or &#x60;unlimited&#x60; or a custom number (greater than zero). Default is: definedByDatabase
-
-| *MESH_HIBERNATE_QUERY_TIMEOUT*
-| Query timeout for hibernate. Default: 0
-
-| *MESH_UPDATECHECK*
-| Override the configured updatecheck flag.
-
-| *MESH_S3_BINARY_BUCKET*
-| Override the configured AWS S3 bucket.
-
-| *MESH_HTTP_CORS_ORIGIN_PATTERN*
-| Override the configured CORS allowed origin pattern.
-
-| *MESH_HIBERNATE_FORMAT_SQL*
-| Set whether the driver-specific SQL queries should be formatted while logged.
-
-| *MESH_CONTENT_AUTO_PURGE*
-| Override the content versioning flag
-
-| *MESH_GRAPHQL_SLOW_THRESHOLD*
-| Override the configured slow graphQl query threshold.
-
-| *MESH_CACHE_PATH_SIZE*
-| Override the path cache size.
-
-| *MESH_HTTP_CORS_ALLOW_CREDENTIALS*
-| Override the configured CORS allowed credentials flag.
-
-| *MESH_MONITORING_GC_LIMIT*
-| Override the garbage collection limit in percent.
-
-| *MESH_HIBERNATE_SLOW_SQL_THRESHOLD*
-| Slow SQL query threshold in milliseconds. Default: 60000
-
-| *MESH_S3_BINARY_EXPIRATION_TIME_DOWNLOAD*
-| Override the configured AWS S3 download time.
-
-| *MESH_ELASTICSEARCH_MAPPING_MODE*
-| Override the search mapping mode. 
-
-| *MESH_ELASTICSEARCH_INCLUDE_BINARY_FIELDS*
-| Override the search include binary fields flag.
-
-| *MESH_MAX_MIGRATION_BATCH_SIZE*
-| Override the maximum migration batch size
-
-| *MESH_IMAGE_CACHE_TOUCH*
-| Overwrite the image cache touch behaviour.
-
-| *MESH_CLUSTER_COORDINATOR_REGEX*
-| Override the cluster coordinator regex.
-
-| *MESH_HTTP_SSL_CLIENT_AUTH_MODE*
-| Override the configured client certificate handling mode.
-
-| *MESH_S3_CORS_ALLOWED_HEADERS*
-| Override the configured AWS S3 CORS allowed headers.
-
-| *MESH_HTTP_SSL_TRUSTED_CERTS*
-| Override the configured trusted SSL certificates.
-
-| *MESH_AUTH_PUBLIC_KEYS_PATH*
-| Override the configured public keys file path.
-
-| *MESH_IMAGE_CACHE_CLEAN_INTERVAL*
-| Overwrite the image cache clean interval.
-
-| *MESH_S3_BINARY_ACCESS_KEY_ID*
-| Override the configured AWS S3 access key id.
-
-| *MESH_DEFAULT_LANG*
-| Override the configured default language.
-
-| *HIKARI_CP_IDLE_TIMEOUT*
-| This property controls the maximum amount of time that a connection is allowed to sit idle in the pool. This setting only applies when minimumIdle is defined to be less than maximumPoolSize. Idle connections will not be retired once the pool reaches minimumIdle connections. Whether a connection is retired as idle or not is subject to a maximum variation of +30 seconds, and average variation of +15 seconds. A connection will never be retired as idle before this timeout. A value of 0 means that idle connections are never removed from the pool. The minimum allowed value is 10000ms (10 seconds).
-
-| *MESH_ELASTICSEARCH_IDLE_DEBOUNCE_TIME*
-| Override the idle debounce time.
-
-| *MESH_JDBC_DATABASE_NAME*
-| Override the default database name.
-
-| *MESH_STORAGE_DISK_QUOTA_CHECK_INTERVAL*
-| Overwrite the disk quota check interval.
-
-| *MESH_ELASTICSEARCH_WAIT_FOR_IDLE*
-| Override the search idle wait flag.
-
-| *MESH_IMAGE_JPEG_QUALITY*
-| Override the JPEG quality for image resize operations.
-
-| *MESH_ELASTICSEARCH_USERNAME*
-| Override the configured Elasticsearch connection username.
-
-| *MESH_MONITORING_ENABLED*
-| Override the configured monitoring enabled flag.
-
-| *MESH_IMAGE_CACHE_CLEAN_INTERVAL*
-| Overwrite the image cache max idle time.
-
-| *MESH_HTTP_CORS_ENABLE*
-| Override the configured CORS enable flag.
-
-| *MESH_DEBUGINFO_LOG_ENABLED*
-| Enables the debug info log
-
-| *LICENSEKEY*
-| The license key
-
-| *MESH_S3_BINARY_EXPIRATION_TIME_UPLOAD*
-| Override the configured AWS S3 upload time.
-
-| *MESH_MONITORING_HTTP_PORT*
-| Override the configured monitoring server http port.
-
-| *MESH_NON_CLUSTERED_HIBERNATE_CACHE_SIZE*
-| Override the field container cache size.
-
-| *MESH_ELASTICSEARCH_TIMEOUT*
-| Override the configured elasticsearch server timeout.
-
-| *MESH_HTTP_SERVER_TOKENS*
-| Override the http server tokens flag.
-
-| *MESH_VERTX_EVENT_BUS_WARN_THRESHOLD*
-| Override the Vert.x eventBus warn threshold in ms.
-
-| *MESH_CLUSTERED_HIBERNATE_CACHE_HEAP_FREE*
-| Override the minimum required free heap memory for the eviction policy of the hibernate cache when using clustering.
-
-| *MESH_ELASTICSEARCH_INDEX_CHECK_INTERVAL*
-| Override the interval for index checks
-
-| *MESH_HTTP_MINIFY_JSON*
-| Override the minify JSON flag.
-
-| *MESH_HTTP_USE_ALPN*
-| Override the configured ALPN usage flag.
-
-| *MESH_LIST_FIELD_CACHE_SIZE*
-| Override the  list field cache size.
-
-| *MESH_CONTENT_BATCH_SIZE*
-| Override the batch page size. Default: 5000
-
-| *MESH_PLUGIN_DIR*
-| Override the configured plugin directory.
-
-| *MESH_ELASTICSEARCH_BULK_LENGTH_LIMIT*
-| Override the batch bulk length limit. Default: 5000000
-
-| *MESH_MONITORING_MEMORY_LIMIT*
-| Override the memory limit in percent.
-
-| *HIKARI_CP_AUTOCOMMIT*
-| This property controls the default auto-commit behavior of connections returned from the pool. It is a boolean value.
-
-| *MESH_AUTH_KEYSTORE_PASS*
-| Override the configured keystore password.
-
-| *MESH_S3_BINARY_ENABLED_KEY*
-| Override cluster enabled flag.
-
-| *MESH_ELASTICSEARCH_INDEX_MAPPING_CACHE_TIMEOUT*
-| Override the timeout for the cache if index mappings
-
-| *MESH_PLUGIN_USE_HTTP2*
-| Override the HTTP/2 usage flag for plugins.
-
-| *LICENSEKEY_PATH*
-| Override the default licence key file path.
-
-| *MESH_HIBERNATE_NATIVE_QUERY_FILTERING*
-| Override the configured native query filtering.
-
-| *MESH_HIBERNATE_SECOND_LEVEL_CACHE_ENABLED*
-| Set whether second-level cache should be enabled.
-
-| *MESH_TEMP_DIR*
-| Override the configured temp directory.
-
-| *MESH_IMAGE_RESAMPLE_FILTER*
-| Override the sample filter for image resize operations.
-
-| *MESH_AUTH_KEYSTORE_PATH*
-| Override the configured keystore path.
-
-| *MESH_BINARY_DOCUMENT_PARSER_LIMIT*
-| Override the configured parser limit.
-
-| *MESH_ELASTICSEARCH_BULK_LIMIT*
-| Override the batch bulk limit. Default: 100
-
-| *MESH_JDBC_DIALECT_CLASS*
-| Override the default JDBC dialect class.
-
-| *MESH_STALE_TX_CHECK_INTERVAL*
-| Overwrite the interval (in ms) for periodic check for stale transactions.
-
-| *MESH_BINARY_DIR*
-| Override the configured binary data directory.
-
-| *MESH_HTTP_SSL_KEY_PATH*
-| Override the configured SSL enable flag.
-
-| *MESH_CLUSTER_NETWORK_HOST*
-| Override the cluster network host.
-
-| *MESH_ELASTICSEARCH_CA_PATH*
-| Override the configured common authority certificate path.
-
-| *MESH_IMAGE_MAX_WIDTH*
-| Override the max width for image resize operations.
-
-| *MESH_ELASTICSEARCH_SYNC_BATCH_SIZE*
-| Override the search sync batch size
-
-| *MESH_LIVE_PATH*
-| Path to the mesh live file.
-
-| *MESH_HTTP_ENABLE*
-| Override the configured http server flag.
-
-| *MESH_HTTP_PORT*
-| Override the configured server http port.
-
-| *MESH_HTTP_SSL_ENABLE*
-| Override the configured https server flag.
-
-| *MESH_MONITORING_JVM_METRICS_ENABLED*
-| Override the configured JVM metrics enabled flag.
-
-| *HIKARI_CP_MAX_LIFETIME*
-| This property controls the maximum lifetime of a connection in the pool. An in-use connection will never be retired, only when it is closed will it then be removed. On a connection-by-connection basis, minor negative attenuation is applied to avoid mass-extinction in the pool. We strongly recommend setting this value, and it should be several seconds shorter than any database or infrastructure imposed connection time limit. A value of 0 indicates no maximum lifetime (infinite lifetime), subject of course to the idleTimeout setting. The minimum allowed value is 30000ms (30 seconds).
-
-| *MESH_MAX_PURGE_BATCH_SIZE*
-| Override the maximum purge batch size.
-
-| *MESH_LOCK_PATH*
-| Path to the mesh lock file.
-
-| *HIKARI_CP_CONNECTION_TIMEOUT*
-| This property controls the maximum number of milliseconds that a client (that&#x27;s you) will wait for a connection from the pool. If this time is exceeded without a connection becoming available, a SQLException will be thrown. Lowest acceptable connection timeout is 250 ms.
-
-| *MESH_TX_RETRY_DELAY_SECONDS*
-| Override the default transaction retry delay interval.
-
-| *MESH_S3_BINARY_CACHE_REGION*
-| Override the configured AWS S3 region.
-
-| *MESH_STORAGE_DISK_QUOTA_WARN_THRESHOLD*
-| Overwrite the disk quota warn threshold.
-
-| *MESH_HTTP_HOST*
-| Override the configured http server host which is used to bind to.
-
-| *MESH_JDBC_CONNECTION_URL_EXTRA_PARAMS*
-| Add the default JDBC connection URL extra params.
-
-| *MESH_ELASTICSEARCH_PASSWORD*
-| Override the configured Elasticsearch connection password.
-
-| *MESH_ELASTICSEARCH_RETRY_INTERVAL*
-| Override the retry interval.
-
-| *MESH_VERTX_WORKER_POOL_SIZE*
-| Override the configured Vert.x worker pool size.
-
-| *MESH_ELASTICSEARCH_URL*
-| Override the configured elasticsearch server url. The value can be set to null in order to disable the Elasticsearch support.
-
-| *MESH_S3_BINARY_LINK_RESOLVER*
-| Override the configured AWS S3 link resolver.
-
-| *HIKARI_CP_LEAK_DETECTION_THRESHOLD*
-| This property controls the amount of time that a connection can be out of the pool before a message is logged indicating a possible connection leak. A value of 0 means leak detection is disabled. Lowest acceptable value for enabling leak detection is 2000 (2 seconds).
-
-| *HIKARI_CP_TRANSACTION_ISOLATION_LEVEL*
-| This property controls the default transaction isolation level of connections returned from the pool. If this property is not specified, the default transaction isolation level defined by the JDBC driver is used. Only use this property if you have specific isolation requirements that are common for all queries. The value of this property is the constant name from the Connection class such as TRANSACTION_READ_COMMITTED, TRANSACTION_REPEATABLE_READ. Setting it to null defaults to isolation level defined in the JDBC driver.
-
-| *MESH_INITIAL_ADMIN_PASSWORD*
-| Password which will be used during initial admin user creation.
-
-| *MESH_GRAPHQL_ASYNC_WAIT_TIMEOUT*
-| Override the configured graphQl async wait timeout.
+| Override the configured anonymous enabled flag.  _(authenticationOptions.enableAnonymousAccess)_
 
 | *MESH_AUTH_JWT_ALGO*
-| Override the configured algorithm which is used to sign the JWT.
+| Override the configured algorithm which is used to sign the JWT.  _(authenticationOptions.algorithm)_
 
-| *MESH_IMAGE_CACHE_DIRECTORY*
-| Override the path for image cache directory.
+| *MESH_AUTH_KEYSTORE_PASS*
+| Override the configured keystore password.  _(authenticationOptions.keystorePassword)_
 
-| *MESH_HTTP_SERVER_MAX_FORM_ATTRIBUTE_SIZE*
-| Override the max form attribute size
+| *MESH_AUTH_KEYSTORE_PATH*
+| Override the configured keystore path.  _(authenticationOptions.keystorePath)_
 
-| *MESH_VERTX_EVENT_POOL_SIZE*
-| Override the configured Vert.x event pool size.
+| *MESH_AUTH_PUBLIC_KEYS_PATH*
+| Override the configured public keys file path.  _(authenticationOptions.publicKeysPath)_
 
-| *MESH_HIBERNATE_JDBC_BATCH_SIZE*
-| Set batch size. Recommended values are between 5 and 30
+| *MESH_AUTH_TOKEN_EXP*
+| Override the configured JWT expiration time.  _(authenticationOptions.tokenExpirationTime)_
 
-| *MESH_S3_BINARY_REGION*
-| Override the configured AWS S3 region.
+| *MESH_BINARY_CHECK_INTERVAL*
+| Override the binary check interval  _(uploadOptions.checkInterval)_
 
-| *MESH_S3_BINARY_CACHE_EXPIRATION_TIME_DOWNLOAD*
-| Override the configured AWS S3 download time.
+| *MESH_BINARY_DIR*
+| Override the configured binary data directory.  _(uploadOptions.directory)_
+
+| *MESH_BINARY_DOCUMENT_PARSER*
+| Override the document parser enabled flag.  _(uploadOptions.parser)_
+
+| *MESH_BINARY_DOCUMENT_PARSER_LIMIT*
+| Override the configured parser limit.  _(uploadOptions.parserLimit)_
+
+| *MESH_BINARY_METADATA_WHITELIST*
+| Override the metadata whitelist  _(uploadOptions.metadataWhitelist)_
+
+| *MESH_BINARY_UPLOAD_LIMIT*
+| Override the configured binary byte upload limit.  _(uploadOptions.byteLimit)_
 
 | *MESH_BINARY_UPLOAD_TEMP_DIR*
-| Override the configured upload temporary directory.
+| Override the configured upload temporary directory.  _(uploadOptions.tempDirectory)_
+
+| *MESH_CACHE_PATH_SIZE*
+| Override the path cache size.  _(cacheConfig.pathCacheSize)_
+
+| *MESH_CLUSTERED_HIBERNATE_CACHE_HEAP_FREE*
+| Override the minimum required free heap memory for the eviction policy of the hibernate cache when using clustering.  _(clusteredHibernateCacheHeapFree)_
+
+| *MESH_CLUSTER_COORDINATOR_REGEX*
+| Override the cluster coordinator regex.  _(clusterOptions.coordinatorRegex)_
+
+| *MESH_CLUSTER_ENABLED*
+| Override cluster enabled flag.  _(clusterOptions.enabled)_
+
+| *MESH_CLUSTER_INIT*
+| Enable or disable the initial cluster database setup. This is useful for testing.  _(isInitCluster)_
+
+| *MESH_CLUSTER_NAME*
+| Override the cluster name.  _(clusterOptions.clusterName)_
+
+| *MESH_CLUSTER_NETWORK_HOST*
+| Override the cluster network host.  _(clusterOptions.networkHost)_
+
+| *MESH_CLUSTER_VERTX_PORT*
+| Override the vert.x eventbus server port.  _(clusterOptions.vertxPort)_
+
+| *MESH_CONTENT_AUTO_PURGE*
+| Override the content versioning flag  _(contentOptions.autoPurge)_
+
+| *MESH_CONTENT_BATCH_SIZE*
+| Override the batch page size.  _(contentOptions.batchSize)_
+
+| *MESH_DATABASE_ADDRESS*
+| Override the database address.  _(storageOptions.databaseAddress)_
+
+| *MESH_DB_CONNECTOR_CLASSPATH*
+| Set the Mesh Database Connector classpath.  _(storageOptions.databaseConnectorClasspath)_
+
+| *MESH_DB_SQL_PARAMETERS_LIMIT*
+| Limit the number of SQL parameters in selected lookup queries. Can be either &#x60;definedByDatabase&#x60; or &#x60;unlimited&#x60; or a custom number (greater than zero).  _(storageOptions.sqlParametersLimit)_
+
+| *MESH_DB_SYNC_WRITES*
+| Override the database sync writes flag.  _(storageOptions.synchronizeWrites)_
 
 | *MESH_DB_SYNC_WRITES_TIMEOUT*
-| Override the database sync write timeout.
+| Override the database sync write timeout.  _(storageOptions.synchronizeWritesTimeout)_
+
+| *MESH_DEBUGINFO_LOG_ENABLED*
+| Enables the debug info log  _(debugInfoOptions.logEnabled)_
+
+| *MESH_DEBUGINFO_LOG_FILE_SIZE*
+| Override the log file size  _(debugInfoOptions.logFileSize)_
+
+| *MESH_DEBUGINFO_LOG_FOLDER*
+| Override the path to the debug info log folder  _(debugInfoOptions.logFolder)_
+
+| *MESH_DEBUGINFO_LOG_PATTERN*
+| Override the log pattern  _(debugInfoOptions.logPattern)_
+
+| *MESH_DEFAULT_LANG*
+| Override the configured default language.  _(defaultLanguage)_
+
+| *MESH_ELASTICSEARCH_BULK_DEBOUNCE_TIME*
+| Override the bulk debounce time.  _(searchOptions.bulkDebounceTime)_
+
+| *MESH_ELASTICSEARCH_BULK_LENGTH_LIMIT*
+| Override the batch bulk length limit.  _(searchOptions.bulkLengthLimit)_
+
+| *MESH_ELASTICSEARCH_BULK_LIMIT*
+| Override the batch bulk limit.  _(searchOptions.bulkLimit)_
+
+| *MESH_ELASTICSEARCH_CA_PATH*
+| Override the configured common authority certificate path.  _(searchOptions.caPath)_
+
+| *MESH_ELASTICSEARCH_CERT_PATH*
+| Override the configured trusted server certificate.  _(searchOptions.certPath)_
+
+| *MESH_ELASTICSEARCH_COMPLIANCE_MODE*
+| Override the search compliance mode.  _(searchOptions.complianceMode)_
+
+| *MESH_ELASTICSEARCH_EVENT_BUFFER_SIZE*
+| Override the configured event buffer size.  _(searchOptions.eventBufferSize)_
+
+| *MESH_ELASTICSEARCH_HOSTNAME_VERIFICATION*
+| Override the configured hostname verification flag.  _(searchOptions.hostnameVerification)_
+
+| *MESH_ELASTICSEARCH_IDLE_DEBOUNCE_TIME*
+| Override the idle debounce time.  _(searchOptions.idleDebounceTime)_
+
+| *MESH_ELASTICSEARCH_INCLUDE_BINARY_FIELDS*
+| Override the search include binary fields flag.  _(searchOptions.includeBinaryFields)_
+
+| *MESH_ELASTICSEARCH_INDEX_CHECK_INTERVAL*
+| Override the interval for index checks  _(searchOptions.indexCheckInterval)_
+
+| *MESH_ELASTICSEARCH_INDEX_MAPPING_CACHE_TIMEOUT*
+| Override the timeout for the cache if index mappings  _(searchOptions.indexMappingCacheTimeout)_
+
+| *MESH_ELASTICSEARCH_MAPPING_MODE*
+| Override the search mapping mode.   _(searchOptions.mappingMode)_
+
+| *MESH_ELASTICSEARCH_PASSWORD*
+| Override the configured Elasticsearch connection password.  _(searchOptions.password)_
+
+| *MESH_ELASTICSEARCH_PREFIX*
+| Override the configured elasticsearch prefix.  _(searchOptions.prefix)_
+
+| *MESH_ELASTICSEARCH_RETRY_INTERVAL*
+| Override the retry interval.  _(searchOptions.retryInterval)_
+
+| *MESH_ELASTICSEARCH_RETRY_LIMIT*
+| Override the retry limit.  _(searchOptions.retryLimit)_
+
+| *MESH_ELASTICSEARCH_SYNC_BATCH_SIZE*
+| Override the search sync batch size  _(searchOptions.syncBatchSize)_
+
+| *MESH_ELASTICSEARCH_TIMEOUT*
+| Override the configured elasticsearch server timeout.  _(searchOptions.timeout)_
+
+| *MESH_ELASTICSEARCH_URL*
+| Override the configured elasticsearch server url. The value can be set to null in order to disable the Elasticsearch support.  _(searchOptions.url)_
+
+| *MESH_ELASTICSEARCH_USERNAME*
+| Override the configured Elasticsearch connection username.  _(searchOptions.username)_
+
+| *MESH_ELASTICSEARCH_WAIT_FOR_IDLE*
+| Override the search idle wait flag.  _(searchOptions.waitForIdle)_
+
+| *MESH_FIELD_CONTAINER_CACHE_SIZE*
+| Override the field container cache size.  _(fieldContainerCacheSize)_
+
+| *MESH_GRAPHQL_ASYNC_WAIT_TIMEOUT*
+| Override the configured graphQl async wait timeout.  _(graphQLOptions.asyncWaitTimeout)_
+
+| *MESH_GRAPHQL_SCHEMA_CACHE_SIZE*
+| Override the configured graphQl schema cache size.  _(graphQLOptions.schemaCacheSize)_
+
+| *MESH_GRAPHQL_SLOW_THRESHOLD*
+| Override the configured slow graphQl query threshold.  _(graphQLOptions.slowThreshold)_
+
+| *MESH_HIBERNATE_FORMAT_SQL*
+| Set whether the driver-specific SQL queries should be formatted while logged.  _(storageOptions.formatSql)_
+
+| *MESH_HIBERNATE_GENERATE_STATISTICS*
+| Set whether hibernate should generate statistics.  _(storageOptions.generateStatistics)_
+
+| *MESH_HIBERNATE_JDBC_BATCH_SIZE*
+| Set batch size. Recommended values are between 5 and 30  _(storageOptions.jdbcBatchSize)_
+
+| *MESH_HIBERNATE_NATIVE_QUERY_FILTERING*
+| Override the configured native query filtering.  _(storageOptions.nativeQueryFiltering)_
+
+| *MESH_HIBERNATE_QUERY_TIMEOUT*
+| Query timeout for hibernate.  _(storageOptions.queryTimeout)_
+
+| *MESH_HIBERNATE_SECOND_LEVEL_CACHE_ENABLED*
+| Set whether second-level cache should be enabled.  _(storageOptions.secondLevelCacheEnabled)_
+
+| *MESH_HIBERNATE_SHOW_SQL*
+| Set whether the driver-specific SQL queries should be logged.  _(storageOptions.showSql)_
+
+| *MESH_HIBERNATE_SLOW_SQL_THRESHOLD*
+| Slow SQL query threshold in milliseconds.  _(storageOptions.slowSqlThreshold)_
+
+| *MESH_HTTPS_PORT*
+| Override the configured server https port.  _(httpServerOptions.sslPort)_
+
+| *MESH_HTTP_CORS_ALLOW_CREDENTIALS*
+| Override the configured CORS allowed credentials flag.  _(httpServerOptions.corsAllowCredentials)_
+
+| *MESH_HTTP_CORS_ENABLE*
+| Override the configured CORS enable flag.  _(httpServerOptions.enableCors)_
+
+| *MESH_HTTP_CORS_ORIGIN_PATTERN*
+| Override the configured CORS allowed origin pattern.  _(httpServerOptions.corsAllowedOriginPattern)_
+
+| *MESH_HTTP_ENABLE*
+| Override the configured http server flag.  _(httpServerOptions.http)_
+
+| *MESH_HTTP_HOST*
+| Override the configured http server host which is used to bind to.  _(httpServerOptions.host)_
+
+| *MESH_HTTP_MINIFY_JSON*
+| Override the minify JSON flag.  _(httpServerOptions.minifyJson)_
+
+| *MESH_HTTP_PORT*
+| Override the configured server http port.  _(httpServerOptions.port)_
+
+| *MESH_HTTP_SERVER_MAX_FORM_ATTRIBUTE_SIZE*
+| Override the max form attribute size  _(httpServerOptions.maxFormAttributeSize)_
+
+| *MESH_HTTP_SERVER_TOKENS*
+| Override the http server tokens flag.  _(httpServerOptions.serverTokens)_
+
+| *MESH_HTTP_SSL_CERT_PATH*
+| Override the configured SSL enable flag.  _(httpServerOptions.certPath)_
+
+| *MESH_HTTP_SSL_CLIENT_AUTH_MODE*
+| Override the configured client certificate handling mode.  _(httpServerOptions.clientAuthMode)_
+
+| *MESH_HTTP_SSL_ENABLE*
+| Override the configured https server flag.  _(httpServerOptions.ssl)_
+
+| *MESH_HTTP_SSL_KEY_PATH*
+| Override the configured SSL enable flag.  _(httpServerOptions.keyPath)_
+
+| *MESH_HTTP_SSL_TRUSTED_CERTS*
+| Override the configured trusted SSL certificates.  _(httpServerOptions.trustedCertPaths)_
+
+| *MESH_HTTP_USE_ALPN*
+| Override the configured ALPN usage flag.  _(httpServerOptions.useAlpn)_
+
+| *MESH_HTTP_VERTICLE_AMOUNT*
+| Override the http verticle amount.  _(httpServerOptions.verticleAmount)_
+
+| *MESH_IMAGE_CACHE_CLEAN_INTERVAL*
+| Overwrite the image cache max idle time.  _(imageOptions.imageCacheCleanInterval)_
+
+| *MESH_IMAGE_CACHE_DIRECTORY*
+| Override the path for image cache directory.  _(imageOptions.imageCacheDirectory)_
+
+| *MESH_IMAGE_CACHE_TOUCH*
+| Overwrite the image cache touch behaviour.  _(imageOptions.imageCacheTouch)_
+
+| *MESH_IMAGE_JPEG_QUALITY*
+| Override the JPEG quality for image resize operations.  _(imageOptions.jpegQuality)_
+
+| *MESH_IMAGE_MANIPULATION_MODE*
+| Override the image manipulation mode.  _(imageOptions.mode)_
+
+| *MESH_IMAGE_MAX_HEIGHT*
+| Override the max height for image resize operations.  _(imageOptions.maxHeight)_
+
+| *MESH_IMAGE_MAX_WIDTH*
+| Override the max width for image resize operations.  _(imageOptions.maxWidth)_
+
+| *MESH_IMAGE_RESAMPLE_FILTER*
+| Override the sample filter for image resize operations.  _(imageOptions.resampleFilter)_
+
+| *MESH_INITIAL_ADMIN_PASSWORD*
+| Password which will be used during initial admin user creation.  _(initialAdminPassword)_
+
+| *MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET*
+| Control whether a forced password reset should be triggered when creating the initial admin user.  _(forceInitialAdminPasswordReset)_
+
+| *MESH_JDBC_CONNECTION_PASSWORD*
+| Set the JDBC connection password.  _(storageOptions.connectionPassword)_
+
+| *MESH_JDBC_CONNECTION_URL_EXTRA_PARAMS*
+| Add the default JDBC connection URL extra params.  _(storageOptions.connectionUrlExtraParams)_
+
+| *MESH_JDBC_CONNECTION_USERNAME*
+| Set the JDBC connection username.  _(storageOptions.connectionUsername)_
+
+| *MESH_JDBC_DATABASE_NAME*
+| Override the default database name.  _(storageOptions.databaseName)_
+
+| *MESH_JDBC_DIALECT_CLASS*
+| Override the default JDBC dialect class.  _(storageOptions.dialectClass)_
+
+| *MESH_JDBC_DRIVER_CLASS*
+| Override the default JDBC driver class.  _(storageOptions.driverClass)_
+
+| *MESH_JDBC_RETRY_LIMIT*
+| Override the default transaction retry count.  _(storageOptions.retryLimit)_
+
+| *MESH_LANGUAGES_FILE_PATH*
+| Override the path to the optional languages file  _(languagesFilePath)_
+
+| *MESH_LIST_FIELD_CACHE_SIZE*
+| Override the  list field cache size.  _(listFieldCacheSize)_
+
+| *MESH_LIVE_PATH*
+| Path to the mesh live file.  _(livePath)_
+
+| *MESH_LOCK_PATH*
+| Path to the mesh lock file.  _(lockPath)_
+
+| *MESH_MAX_MIGRATION_BATCH_SIZE*
+| Override the maximum migration batch size  _(migrationMaxBatchSize)_
+
+| *MESH_MAX_PURGE_BATCH_SIZE*
+| Override the maximum purge batch size.  _(versionPurgeMaxBatchSize)_
+
+| *MESH_MIGRATION_TRIGGER_INTERVAL*
+| Override the migration trigger interval  _(migrationTriggerInterval)_
+
+| *MESH_MONITORING_ENABLED*
+| Override the configured monitoring enabled flag.  _(monitoringOptions.enabled)_
+
+| *MESH_MONITORING_GC_LIMIT*
+| Override the garbage collection limit in percent.  _(monitoringOptions.gcTimeLimit)_
+
+| *MESH_MONITORING_HTTP_HOST*
+| Override the configured monitoring http server host which is used to bind to.  _(monitoringOptions.host)_
+
+| *MESH_MONITORING_HTTP_PORT*
+| Override the configured monitoring server http port.  _(monitoringOptions.port)_
+
+| *MESH_MONITORING_JVM_METRICS_ENABLED*
+| Override the configured JVM metrics enabled flag.  _(monitoringOptions.jvmMetricsEnabled)_
+
+| *MESH_MONITORING_MEMORY_LIMIT*
+| Override the memory limit in percent.  _(monitoringOptions.memoryLimit)_
 
 | *MESH_NODE_NAME*
-| Override the configured node name.
+| Override the configured node name.  _(nodeName)_
+
+| *MESH_NON_CLUSTERED_HIBERNATE_CACHE_SIZE*
+| Override the field container cache size.  _(nonClusteredHibernateCacheSize)_
+
+| *MESH_PLUGIN_DIR*
+| Override the configured plugin directory.  _(pluginDirectory)_
+
+| *MESH_PLUGIN_TIMEOUT*
+| Override the configured plugin timeout.  _(pluginTimeout)_
+
+| *MESH_PLUGIN_USE_HTTP2*
+| Override the HTTP/2 usage flag for plugins.  _(pluginUseHttp2)_
+
+| *MESH_S3_BINARY_ACCESS_KEY_ID*
+| Override the configured AWS S3 access key id.  _(s3options.accessKeyId)_
+
+| *MESH_S3_BINARY_BUCKET*
+| Override the configured AWS S3 bucket.  _(s3options.bucket)_
+
+| *MESH_S3_BINARY_CACHE_BUCKET*
+| Override the configured AWS S3 bucket.  _(s3cacheOptions.bucket)_
+
+| *MESH_S3_BINARY_CACHE_EXPIRATION_TIME_DOWNLOAD*
+| Override the configured AWS S3 download time.  _(s3cacheOptions.expirationTimeDownload)_
+
+| *MESH_S3_BINARY_CACHE_REGION*
+| Override the configured AWS S3 region.  _(s3cacheOptions.region)_
+
+| *MESH_S3_BINARY_ENABLED_KEY*
+| Override cluster enabled flag.  _(s3options.enabled)_
+
+| *MESH_S3_BINARY_ENDPOINT*
+| Override the configured AWS S3 custom endpoint.  _(s3options.endpoint)_
+
+| *MESH_S3_BINARY_EXPIRATION_TIME_DOWNLOAD*
+| Override the configured AWS S3 download time.  _(s3options.expirationTimeDownload)_
+
+| *MESH_S3_BINARY_EXPIRATION_TIME_UPLOAD*
+| Override the configured AWS S3 upload time.  _(s3options.expirationTimeUpload)_
+
+| *MESH_S3_BINARY_LINK_RESOLVER*
+| Override the configured AWS S3 link resolver.  _(s3options.linkResolver)_
+
+| *MESH_S3_BINARY_METADATA_WHITELIST*
+| Override the metadata whitelist  _(s3options.metadataWhitelist)_
+
+| *MESH_S3_BINARY_PARSER_LIMIT*
+| Override the configured parser limit.  _(s3options.parserLimit)_
+
+| *MESH_S3_BINARY_REGION*
+| Override the configured AWS S3 region.  _(s3options.region)_
+
+| *MESH_S3_BINARY_SECRET_ACCESS_KEY*
+| Override the configured AWS S3 secret access key.  _(s3options.secretAccessKey)_
+
+| *MESH_S3_CORS_ALLOWED_HEADERS*
+| Override the configured AWS S3 CORS allowed headers.  _(s3options.corsAllowedHeaders)_
+
+| *MESH_S3_CORS_ALLOWED_METHODS*
+| Override the configured AWS S3 CORS allowed methods.  _(s3options.corsAllowedMethods)_
+
+| *MESH_S3_CORS_ALLOWED_ORIGINS*
+| Override the configured AWS S3 CORS allowed origins.  _(s3options.corsAllowedOrigins)_
+
+| *MESH_STALE_TX_CHECK_INTERVAL*
+| Overwrite the interval (in ms) for periodic check for stale transactions.  _(storageOptions.staleTxCheckInterval)_
+
+| *MESH_START_IN_READ_ONLY*
+| Override the read only mode flag.  _(startInReadOnly)_
+
+| *MESH_STORAGE_DISK_QUOTA_CHECK_INTERVAL*
+| Overwrite the disk quota check interval.  _(checkInterval)_
+
+| *MESH_STORAGE_DISK_QUOTA_READ_ONLY_THRESHOLD*
+| Overwrite the disk quota ready only threshold.  _(readOnlyThreshold)_
+
+| *MESH_STORAGE_DISK_QUOTA_WARN_THRESHOLD*
+| Overwrite the disk quota warn threshold.  _(warnThreshold)_
+
+| *MESH_TEMP_DIR*
+| Override the configured temp directory.  _(tempDirectory)_
+
+| *MESH_TX_RETRY_DELAY_SECONDS*
+| Override the default transaction retry delay interval.  _(storageOptions.retryDelayMillis)_
+
+| *MESH_UPDATECHECK*
+| Override the configured updatecheck flag.  _(updateCheck)_
+
+| *MESH_VERTX_EVENT_BUS_CHECK_INTERVAL*
+| Override the Vert.x eventBus check interval in ms.  _(eventBus.checkInterval)_
+
+| *MESH_VERTX_EVENT_BUS_ERROR_THRESHOLD*
+| Override the Vert.x eventBus error threshold in ms.  _(eventBus.errorThreshold)_
+
+| *MESH_VERTX_EVENT_BUS_WARN_THRESHOLD*
+| Override the Vert.x eventBus warn threshold in ms.  _(eventBus.warnThreshold)_
+
+| *MESH_VERTX_EVENT_POOL_SIZE*
+| Override the configured Vert.x event pool size.  _(vertxOptions.eventPoolSize)_
+
+| *MESH_VERTX_ORDERED_BLOCKING_HANDLERS*
+| Override the configured Vert.x blocking handlers ordering setting.  _(vertxOptions.orderedBlockingHandlers)_
+
+| *MESH_VERTX_WORKER_POOL_SIZE*
+| Override the configured Vert.x worker pool size.  _(vertxOptions.workerPoolSize)_
+
+| *HIKARI_CP_AUTOCOMMIT*
+| Override the HikariCP connection auto-commit behavior.  _(hikariOptions.autocommit)_
+
+| *HIKARI_CP_CONNECTION_TIMEOUT*
+| Override the HikariCP connection timeout.  _(hikariOptions.connectionTimeout)_
+
+| *HIKARI_CP_IDLE_TIMEOUT*
+| Override the HikariCP idle timeout.  _(hikariOptions.idleTimeout)_
+
+| *HIKARI_CP_LEAK_DETECTION_THRESHOLD*
+| Override the HikariCP leak detection threshold.  _(hikariOptions.leakDetectionThreshold)_
+
+| *HIKARI_CP_MAX_LIFETIME*
+| Override the HikariCP max lifetime.  _(hikariOptions.maxLifetime)_
+
+| *HIKARI_CP_MAX_POOL_SIZE*
+| Override the HikariCP maximum pool size.  _(hikariOptions.maxPoolSize)_
+
+| *HIKARI_CP_MIN_IDLE_CONNECTION*
+| Override the HikariCP minimum idle connections in the pool.  _(hikariOptions.minimumIdleConnection)_
+
+| *HIKARI_CP_POOL_NAME*
+| Override the HikariCP name of the connection pool.  _(hikariOptions.poolName)_
+
+| *HIKARI_CP_REGISTER_MBEANS*
+| Override the HikariCP Register JMX Management Beans.  _(hikariOptions.registerMBeans)_
+
+| *HIKARI_CP_TRANSACTION_ISOLATION_LEVEL*
+| Override the HikariCP transaction isolation level.  _(hikariOptions.transactionIsolationLevel)_
+
+| *LICENSEKEY*
+| The license key  _(licenseKey)_
+
+| *LICENSEKEY_PATH*
+| Override the default licence key file path.  _(licenseKeyPath)_
 
 |======

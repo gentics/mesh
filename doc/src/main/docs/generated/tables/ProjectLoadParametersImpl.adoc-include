@@ -8,7 +8,7 @@
 
 
 | langs
-| boolean 
+| boolean
 | false
 | Load the project&#x27;s assigned languages.
 

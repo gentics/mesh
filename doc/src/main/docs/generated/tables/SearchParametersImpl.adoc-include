@@ -8,7 +8,7 @@
 
 
 | wait
-| boolean 
+| boolean
 | false
 | Specify whether search should wait for the search to be idle before responding.
 

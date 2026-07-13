@@ -8,17 +8,17 @@
 
 
 | internalMessage
-| true
+| yes
 | string
 | Internal developer friendly message
 
 | message
-| true
+| yes
 | string
 | Enduser friendly translated message. Translation depends on the &#x27;Accept-Language&#x27; header value
 
 | properties
-| false
+| no
 | object
 | Map of i18n properties which were used to construct the provided message
 

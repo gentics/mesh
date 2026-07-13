@@ -8,42 +8,42 @@
 
 
 | assignLanguage
-| false
+| no
 | boolean
-| Assign a requested language to the project, if none was so far.
+| Assign a requested language to the project, if none was so far.  Default: *true*.
 
 | fields
-| false
+| no
 | object
-| Dynamic map with fields of the node content.
+| Dynamic map with fields of the node content.  Default: *{}*.
 
 | grant
-| false
+| no
 | object
 | Permissions to be granted to roles on the updated node.
 
 | language
-| false
+| no
 | string
 | ISO 639-1 language tag of the node content.
 
 | manipulation
-| false
+| no
 | object
 | Image manipulation changes request.
 
 | publish
-| false
+| no
 | boolean
-| Whether the publish the node after updating.
+| Whether the publish the node after updating.  Default: *false*.
 
 | tags
-| false
+| no
 | array
 | List of tags that should be used to tag the node.
 
 | version
-| false
+| no
 | string
 | Version number which can be provided in order to handle and detect concurrent changes to the node content.
 

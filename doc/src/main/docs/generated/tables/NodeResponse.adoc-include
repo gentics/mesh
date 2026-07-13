@@ -8,137 +8,137 @@
 
 
 | availableLanguages
-| true
+| yes
 | object
 | Map of languages for which content is available and their publish status.
 
 | breadcrumb
-| true
+| yes
 | array
 | List of nodes which construct the breadcrumb. Note that the start node will not be included in the list.
 
 | childrenInfo
-| false
+| no
 | object
 | Object which contains information about child elements.
 
 | container
-| true
+| yes
 | boolean
 | Flag which indicates whether the node is a container and can contain nested elements.
 
 | created
-| true
+| yes
 | string
 | ISO8601 formatted created date string.
 
 | creator
-| true
+| yes
 | object
 | User reference of the creator of the element.
 
 | displayField
-| false
+| no
 | string
 | Display field name of the node. May not be retured if the node schema has no display field.
 
 | displayName
-| false
+| no
 | string
 | Display field value of the node. May not be retured if the node schema has no display field.
 
 | edited
-| true
+| yes
 | string
 | ISO8601 formatted edited date string.
 
 | editor
-| false
+| no
 | object
 | User reference of the editor of the element.
 
 | fields
-| true
+| yes
 | object
 | Dynamic map with fields of the node language specific content.
 
 | language
-| false
+| no
 | string
 | ISO 639-1 language tag of the node content.
 
 | languagePaths
-| false
+| no
 | object
 | Map of webroot paths per language. This property will only be populated if the resolveLinks query parameter has been set accordingly.
 
 | parentNode
-| false
+| no
 | object
 | Reference to the parent node. Note that the root node of the project has no parent node.
 
 | path
-| false
+| no
 | string
 | Webroot path to the node content. Will only be provided if the resolveLinks query parameter has been set accordingly.
 
 | permissions.create
-| true
+| yes
 | boolean
 | Flag which indicates whether the create permission is granted.
 
 | permissions.delete
-| true
+| yes
 | boolean
 | Flag which indicates whether the delete permission is granted.
 
 | permissions.publish
-| false
+| no
 | boolean
 | Flag which indicates whether the publish permission is granted.
 
 | permissions.read
-| true
+| yes
 | boolean
 | Flag which indicates whether the read permission is granted.
 
 | permissions.readPublished
-| false
+| no
 | boolean
 | Flag which indicates whether the read published permission is granted.
 
 | permissions.update
-| true
+| yes
 | boolean
 | Flag which indicates whether the update permission is granted.
 
 | project
-| true
+| yes
 | object
 | Reference to the project of the node.
 
 | rolePerms
-| false
+| no
 | object
 | Permission information for provided role. This property will only be populated if a role query parameter has been specified.
 
 | schema
-| true
+| yes
 | object
 | Reference to the schema of the node.
 
 | tags
-| true
+| yes
 | array
 | List of tags that were used to tag the node.
 
 | uuid
-| true
+| yes
 | string
 | Uuid of the element
 
 | version
-| true
+| yes
 | string
 | Version of the node content.
 

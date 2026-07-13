@@ -8,39 +8,39 @@
 
 
 | crop
-| string 
+| string
 | false
 | Set the crop mode. Possible modes: 
 rect : The rect mode will work in combination with the rect parameter and crop the specified area.
 fp : The fp mode will utilize the specified or pre-selected focal point and crop the image according to the position of the focus point and the specified image size.
 
 | fpx
-| number 
+| number
 | false
 | Set the focal point x factor between 0  and 1 where 0.5 is the middle of the image.  You can use this parameter in combination with the crop&#x3D;fp parameter in order to crop and resize the image in relation to the given point.
 
 | fpy
-| number 
+| number
 | false
 | Set the focal point y factor between 0  and 1 where 0.5 is the middle of the image. You can use this parameter in combination with the crop&#x3D;fp parameter in order to crop and resize the image in relation to the given point.
 
 | fpz
-| number 
+| number
 | false
 | Set the focal point zoom factor. The value must be greater than one.
 
 | h
-| number 
+| number
 | false
 | Set image target height. The width will automatically be calculated if the height was omitted.
 
 | rect
-| string 
+| string
 | false
 | Set image crop area.
 
 | resize
-| string 
+| string
 | false
 | Set the resize mode. Possible modes: 
 force : The force mode will resize the image to the specified dimensions. This can lead to a distorted image when the aspect ratio of the source image does not match the destination aspect ratio
@@ -48,7 +48,7 @@ smart : The smart mode will resize the image proportionally so that the resultin
 prop : The prop mode will resize the image proportionally so that the resulting destination format fits inside the provided dimensions. No distortion of the image will occur.
 
 | w
-| number 
+| number
 | false
 | Set image target width. The height will automatically be calculated if the width was omitted.
 
