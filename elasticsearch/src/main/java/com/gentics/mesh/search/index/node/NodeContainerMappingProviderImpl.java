@@ -182,7 +182,7 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
 		JsonObject customIndexOptions = getLanguageOverride(fieldSchema.getElasticsearch(), language);
-		if (isStrictMode && customIndexOptions == null) {
+		if (isStrictMode() && customIndexOptions == null) {
 			log.warn("The ES settings have been set for `" + fieldSchema.getName() + "` with _meshLanguageOverride only. Skipping STRICT setup.");
 			return Optional.empty();
 		}
