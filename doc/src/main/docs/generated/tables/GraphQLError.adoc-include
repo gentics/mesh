@@ -8,32 +8,32 @@
 
 
 | elementId
-| false
+| no
 | string
 | Mesh element id which is related to the error.
 
 | elementType
-| false
+| no
 | string
 | Mesh element type which is related to the error.
 
 | locations
-| false
+| no
 | array
 | List of locations which are related to the error.
 
 | message
-| true
+| yes
 | string
 | The error message.
 
 | path
-| true
+| yes
 | string
 | Path of the error.
 
 | type
-| true
+| yes
 | string
 | Type of the error.
 

@@ -8,32 +8,32 @@
 
 
 | branch
-| true
+| yes
 | object
 | Branch for which the tagging operation was executed.
 
 | cause
-| true
+| yes
 | object
 | Some events will be caused by another action. This object contains information about the cause of the event.
 
 | node
-| true
+| yes
 | object
 | Reference to the node that was tagged.
 
 | origin
-| true
+| yes
 | string
 | Name of the mesh node from which the event originates.
 
 | project
-| true
+| yes
 | object
 | Reference to the project involved.
 
 | tag
-| true
+| yes
 | object
 | Reference of the tag.
 

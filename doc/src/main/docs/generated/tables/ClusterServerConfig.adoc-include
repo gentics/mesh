@@ -8,12 +8,12 @@
 
 
 | name
-| true
+| yes
 | string
 | Name of the server.
 
 | role
-| false
+| no
 | string
 | Role of the server which can be MASTER or REPLICA.
 

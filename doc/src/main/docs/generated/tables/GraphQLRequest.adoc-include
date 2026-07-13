@@ -8,17 +8,17 @@
 
 
 | operationName
-| false
+| no
 | string
 | GraphQL operation name.
 
 | query
-| true
+| yes
 | string
 | The actual GraphQL query.
 
 | variables
-| false
+| no
 | object
 | JSON object which contains the variables.
 

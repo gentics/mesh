@@ -8,17 +8,17 @@
 
 
 | action
-| true
+| yes
 | string
 | Action of the cause. A event can for example be cause by a delete action.
 
 | type
-| false
+| no
 | string
 | Type of the element that is referenced by the cause.
 
 | uuid
-| false
+| no
 | string
 | Uuid of the element that is referenced by the cause.
 

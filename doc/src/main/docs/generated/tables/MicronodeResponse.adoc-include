@@ -8,17 +8,17 @@
 
 
 | fields
-| true
+| yes
 | object
-| Fields that are stored in the micronode.
+| Fields that are stored in the micronode.  Default: *{}*.
 
 | microschema
-| true
+| yes
 | object
 | Reference to the microschema of the micronode.
 
 | uuid
-| true
+| yes
 | string
 | Uuid of the element
 

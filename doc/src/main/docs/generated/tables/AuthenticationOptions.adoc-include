@@ -8,33 +8,33 @@
 
 
 | algorithm
-| true
+| yes
 | string
-| Algorithm which is used to verify and sign JWT.
+| Algorithm which is used to verify and sign JWT.  Default: *HS256*.
 
 | enableAnonymousAccess
-| false
+| no
 | boolean
-| Flag which indicates whether anonymous access should be enabled.
+| Flag which indicates whether anonymous access should be enabled.  Default: *true*.
 
 | keystorePassword
-| true
+| yes
 | string
 | The Java keystore password for the keystore file.
 
 | keystorePath
-| true
+| yes
 | string
-| Path to the java keystore file which will be used to store cryptographic keys.
+| Path to the java keystore file which will be used to store cryptographic keys.  Default: *config/keystore.jceks*.
 
 | publicKeysPath
-| false
+| no
 | string
-| Path to the public keys file which contains a list of additional JWK formatted public keys which will be used to verify JWTs.
+| Path to the public keys file which contains a list of additional JWK formatted public keys which will be used to verify JWTs.  Default: *config/public-keys.json*.
 
 | tokenExpirationTime
-| true
+| yes
 | integer
-| Time in minutes which an issued token stays valid.
+| Time in minutes which an issued token stays valid.  Default: *3600*.
 
 |======

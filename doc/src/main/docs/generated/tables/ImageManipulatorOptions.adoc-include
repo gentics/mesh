@@ -8,48 +8,48 @@
 
 
 | imageCacheCleanInterval
-| false
+| no
 | string
-| Image cache clean interval in ISO 8601 duration format. Setting this to PT0S will disable the image cache cleanup. Default: PT0S
+| Image cache clean interval in ISO 8601 duration format. Setting this to PT0S will disable the image cache cleanup.  Default: *PT0S*.
 
 | imageCacheDirectory
-| false
+| no
 | string
-| Configure the path for image cache directory. Default: data/binaryImageCache
+| Configure the path for image cache directory.  Default: *data/binaryImageCache*.
 
 | imageCacheMaxIdle
-| false
+| no
 | string
-| Image cache maximum idle time in ISO 8601 duration format. Default: PT1M
+| Image cache maximum idle time in ISO 8601 duration format.  Default: *PT1M*.
 
 | imageCacheTouch
-| false
+| no
 | boolean
-| Whether the Image cache files should be touched when accessed. Default: false
+| Whether the Image cache files should be touched when accessed.  Default: *false*.
 
 | jpegQuality
-| false
+| no
 | number
-| Configure the quality of the output of JPEG images. Must be a value between inclusive 0 and inclusive 1. Default: 0.95
+| Configure the quality of the output of JPEG images. Must be a value between inclusive 0 and inclusive 1.  Default: *0.95*.
 
 | maxHeight
-| false
+| no
 | integer
-| Configure the maximum allowed image resize height. Resizing is a memory intensive operation and thus this limit can help avoid memory issues. Default: 2048
+| Configure the maximum allowed image resize height. Resizing is a memory intensive operation and thus this limit can help avoid memory issues.  Default: *2048*.
 
 | maxWidth
-| false
+| no
 | integer
-| Configure the maximum allowed image resize width. Resizing is a memory intensive operation and thus this limit can help avoid memory issues. Default: 2048
+| Configure the maximum allowed image resize width. Resizing is a memory intensive operation and thus this limit can help avoid memory issues.  Default: *2048*.
 
 | mode
-| false
+| no
 | string
-| Configure the image manipulation mode. Default: ON_DEMAND.
+| Configure the image manipulation mode.  Default: *ON_DEMAND*.
 
 | resampleFilter
-| false
+| no
 | string
-| Configure the filter that is used when resizing images. Default: LANCZOS
+| Configure the filter that is used when resizing images.  Default: *LANCZOS*.
 
 |======

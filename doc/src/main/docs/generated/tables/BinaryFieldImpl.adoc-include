@@ -8,62 +8,62 @@
 
 
 | binaryUuid
-| true
+| yes
 | string
 | Uuid of the binary data. Two fields which share the same binary data will also share the same Uuid.
 
 | checkStatus
-| true
+| yes
 | string
-| Status of the external binary check (one of ACCEPTED, DENIED or POSTPONED). The binary field is only accessible when the status is ACCEPTED.
+| Status of the external binary check (one of ACCEPTED, DENIED or POSTPONED). The binary field is only accessible when the status is ACCEPTED.  Default: *POSTPONED*.
 
 | dominantColor
-| false
+| no
 | string
 | The dominant color of the image. This information can be used to set the background color of the container div for an image achieve an pinterest styled gallery.
 
 | fileName
-| true
+| yes
 | string
 | File name of the binary data. This information can also be use to locate the node via the webroot API. The segment field must be set accordingly.
 
 | fileSize
-| true
+| yes
 | integer
-| Size of the file in bytes.
+| Size of the file in bytes.  Default: *0*.
 
 | focalPoint
-| false
+| no
 | object
 | The focal point of the image. The point can be used in combination with the focal point cropping in order to keep the focused area in the center of the cropped image.
 
 | height
-| false
+| no
 | integer
 | Height of the image.
 
 | metadata
-| false
+| no
 | object
 | Metadata of the upload. This object may contain exif data of images or meta data from PDF files.
 
 | mimeType
-| true
+| yes
 | string
 | Determined mimetype of the file.
 
 | plainText
-| false
+| no
 | string
 | Plain text content of the upload. This can be the text content of a word or PDF document.
 
 | sha512sum
-| true
+| yes
 | string
 | SHA 512 checksum of the file.
 
 | width
-| false
+| no
 | integer
 | Width of the image.
 

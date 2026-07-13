@@ -8,32 +8,32 @@
 
 
 | create
-| true
+| yes
 | boolean
 | Flag which indicates whether the create permission is granted.
 
 | delete
-| true
+| yes
 | boolean
 | Flag which indicates whether the delete permission is granted.
 
 | publish
-| false
+| no
 | boolean
 | Flag which indicates whether the publish permission is granted.
 
 | read
-| true
+| yes
 | boolean
 | Flag which indicates whether the read permission is granted.
 
 | readPublished
-| false
+| no
 | boolean
 | Flag which indicates whether the read published permission is granted.
 
 | update
-| true
+| yes
 | boolean
 | Flag which indicates whether the update permission is granted.
 

@@ -8,13 +8,13 @@
 
 
 | includeAll
-| boolean 
+| boolean
 | false
 | If set to true all nodes will be included in the response. By default only container nodes are included in a navigation response.
 
 | maxDepth
-| number  (default: 10) 
+| number
 | false
-| Specifies the maximum depth for the requested navigation tree structure.
+| Specifies the maximum depth for the requested navigation tree structure. Default: 10. 
 
 |======

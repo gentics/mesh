@@ -8,17 +8,17 @@
 
 
 | bucket
-| false
+| no
 | string
 | AWS S3 bucket where transformed/resized images will be uploaded to and downloaded from.
 
 | expirationTimeDownload
-| false
+| no
 | integer
-| After this time in milliseconds the AWS S3 URL used for download of a transformed image will expire.
+| After this time in milliseconds the AWS S3 URL used for download of a transformed image will expire.  Default: *360000*.
 
 | region
-| false
+| no
 | string
 | AWS S3 region for transformed / resized images
 

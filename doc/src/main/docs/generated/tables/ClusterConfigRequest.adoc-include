@@ -8,8 +8,8 @@
 
 
 | servers
-| false
+| no
 | array
-| List of server configurations.
+| List of server configurations.  Default: *[]*.
 
 |======

@@ -8,13 +8,13 @@
 
 
 | _metainfo
-| true
+| yes
 | object
 | Paging information of the list result.
 
 | data
-| true
+| yes
 | array
-| Array which contains the found elements.
+| Array which contains the found elements.  Default: *[]*.
 
 |======

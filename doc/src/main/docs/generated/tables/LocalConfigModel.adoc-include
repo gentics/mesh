@@ -8,8 +8,8 @@
 
 
 | readOnly
-| false
+| no
 | boolean
-| If true, mutating requests to this instance are not allowed.
+| If true, mutating requests to this instance are not allowed.  Default: *false*.
 
 |======

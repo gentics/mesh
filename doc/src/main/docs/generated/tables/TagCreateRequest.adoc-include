@@ -8,7 +8,7 @@
 
 
 | name
-| true
+| yes
 | string
 | Name of the tag which will be created.
 
