@@ -10,7 +10,7 @@
 | permissions
 | yes
 | object
-| Set of permissions which should be applied.  Default: *com.gentics.mesh.core.rest.common.PermissionInfo@3ab6678b*.
+| Set of permissions which should be applied.  Default: *com.gentics.mesh.core.rest.common.PermissionInfo@29a98d9f*.
 
 | recursive
 | no

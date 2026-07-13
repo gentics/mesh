@@ -158,6 +158,9 @@
 | *MESH_ELASTICSEARCH_SYNC_BATCH_SIZE*
 | Override the search sync batch size  _(searchOptions.syncBatchSize)_
 
+| *MESH_ELASTICSEARCH_SYNC_FETCH_BATCH_SIZE*
+| Override the sync fetch batch size.  _(searchOptions.syncFetchBatchSize)_
+
 | *MESH_ELASTICSEARCH_TIMEOUT*
 | Override the configured elasticsearch server timeout.  _(searchOptions.timeout)_
 

@@ -98,9 +98,9 @@
 | Configure the index sync batch size.  Default: *50000*.
 
 | syncFetchBatchSize
-| false
+| no
 | integer
-| Configure the batch size while fetching the index versions. Default: 10000
+| Configure the batch size while fetching the index versions.  Default: *10000*.
 
 | timeout
 | no
