@@ -457,11 +457,20 @@ public class FormService {
 	}
 
 	/**
-	 * List all form UUIDs for the given project
+	 * Observe all form UUIDs for the given project
 	 * @param projectName project name
 	 * @return observable emitting the form UUIDs
 	 */
 	public Observable<String> listUuids(String projectName) {
+		return getUuids(projectName).flatMapObservable(Observable::fromIterable);
+	}
+
+	/**
+	 * Get a list of all form UUIDs for the given project
+	 * @param projectName project name
+	 * @return observable emitting the form UUIDs
+	 */
+	public Single<List<String>> getUuids(String projectName) {
 		return statusService.languageFallback(projectName)
 			.flatMap(lang -> statusService.getRootNode(projectName, adminClient).flatMap(rootNode -> {
 				JsonObject variables = new JsonObject().put("rootNodeUuid", rootNode.getUuid()).put("lang",
@@ -469,9 +478,8 @@ public class FormService {
 
 				return adminClient.graphql(projectName,
 						new GraphQLRequest().setQuery(formsGraphQlQuery).setVariables(variables)).toSingle();
-			})).flatMapObservable(graphQlResponse -> {
-				List<String> uuids = FormUtil.getFromResponse(graphQlResponse, "$.data.node.children.elements[*].uuid");
-				return Observable.fromIterable(uuids);
+			})).map(graphQlResponse -> {
+				return FormUtil.<List<String>>getFromResponse(graphQlResponse, "$.data.node.children.elements[*].uuid");
 			}).doOnSubscribe(disp -> {
 				log.debug(String.format("List Form uuids for project %s", projectName));
 			});
@@ -516,7 +524,8 @@ public class FormService {
 				}
 			}
 
-			return userClient.upsertNode(projectName, uuid, request, languageParameter)
+			return adminClient.findSchemaByUuid(rootNode.getSchema().getUuid()).toSingle()
+				.flatMap(rootSchema -> userClient.upsertNode(projectName, uuid, request, languageParameter)
 					.toSingle() /* .flatMap(formNode -> loadAsAdminWithLanguageFallback(projectName, formNode.getUuid(), false)) */
 					.flatMap(formNode -> {
 						return schemaService.loadSchemaByName(SchemaService.getSchemaName(uuid), false)
@@ -525,12 +534,12 @@ public class FormService {
 										log.info("Found schema {}. Schema has uuid {}", SchemaService.getSchemaName(uuid),
 												optSchema.get().getUuid());
 										// update schema
-										return updateSchema(projectName, formNode, optSchema.get())
+										return updateSchema(projectName, formNode, optSchema.get(), rootSchema.getNoIndex())
 												.map(response -> formNode);
 									} else {
 										log.info("Did not find schema {}, creating one.", SchemaService.getSchemaName(uuid));
 										// create schema
-										return createAndAssignSchema(projectName, formNode).map(schemaResponse -> formNode);
+										return createAndAssignSchema(projectName, formNode, rootSchema.getNoIndex()).map(schemaResponse -> formNode);
 									}
 								});
 					}).flatMap(updatedForm -> {
@@ -539,7 +548,7 @@ public class FormService {
 					}).flatMap(updatedForm -> {
 						return ensureFormFolders(projectName, updatedForm.getUuid(), language, DOWNLOADS_FOLDER_NAME, DATA_FOLDER_NAME)
 							.andThen(Single.just(updatedForm));
-					});
+					}));
 		});
 	}
 
@@ -954,8 +963,9 @@ public class FormService {
 	 *            form uuid
 	 * @return schema name
 	 */
+	@Deprecated
 	public String getSchemaName(String formUuid) {
-		return String.format("%s_%s", SchemaService.SCHEMA_NAME, formUuid);
+		return SchemaService.getSchemaName(formUuid);
 	}
 
 	/**
@@ -994,8 +1004,8 @@ public class FormService {
 		return SchemaService.SCHEMA_NAME.equals(node.getSchema().getName());
 	}
 
-	private Single<SchemaResponse> createAndAssignSchema(String projectName, NodeResponse formNode) {
-		return getSchema(formNode, new SchemaCreateRequest())
+	private Single<SchemaResponse> createAndAssignSchema(String projectName, NodeResponse formNode, boolean noIndex) {
+		return getSchema(formNode, new SchemaCreateRequest().setNoIndex(noIndex))
 			.map(schema -> {
 				log.info("Creating schema {}", schema.getName());
 				return schema;
@@ -1004,8 +1014,8 @@ public class FormService {
 			.flatMap(createdSchema -> userClient.assignSchemaToProject(projectName, createdSchema.getUuid()).toSingle());
 	}
 
-	private Single<GenericMessageResponse> updateSchema(String projectName, NodeResponse formNode, SchemaResponse schema) {
-		return getSchema(formNode, new SchemaUpdateRequest())
+	private Single<GenericMessageResponse> updateSchema(String projectName, NodeResponse formNode, SchemaResponse schema, boolean noIndex) {
+		return getSchema(formNode, new SchemaUpdateRequest().setNoIndex(noIndex))
 			.map(updateRequest -> {
 				log.info("Updating schema {} with uuid {}", schema.getName(), schema.getUuid());
 				return updateRequest;

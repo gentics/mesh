@@ -574,7 +574,7 @@ public class MeshPluginService {
 	 */
 	private Single<SchemaCreateOrUpdateResponse> updateSchema(String schemaName, SchemaResponse schema) {
 		SchemaUpdateRequest request = JsonUtil.readValue(
-			MiscUtil.loadResource(schemaBaseDir + schemaName + ".json"),
+			MiscUtil.loadResourceString(schemaBaseDir + schemaName + ".json"),
 			SchemaUpdateRequest.class);
 
 		if (request.getContainer() == null) {
@@ -615,7 +615,7 @@ public class MeshPluginService {
 	 */
 	private Single<SchemaCreateOrUpdateResponse> createSchema(String prefix, String schemaName) {
 		SchemaCreateRequest request = JsonUtil.readValue(
-			MiscUtil.loadResource(schemaBaseDir + schemaName + ".json"),
+			MiscUtil.loadResourceString(schemaBaseDir + schemaName + ".json"),
 			SchemaCreateRequest.class);
 
 		request.setName(prefix + schemaName);

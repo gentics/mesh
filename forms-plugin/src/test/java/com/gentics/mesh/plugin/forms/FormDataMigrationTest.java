@@ -95,7 +95,7 @@ public class FormDataMigrationTest extends AbstractFormsPluginIntegrationTest {
 		assertThat(migratedDataNodeUuids).as("UUIDs of migrated form data nodes"). hasSameElementsAs(formDataNodeUuids);
 
 		// plugin should still be considered active
-		assertThat(getStatus(PROJECT_NAME)).as("Forms Plugin is active").isTrue();
+		assertThat(getStatus(PROJECT_NAME).isActive()).as("Forms Plugin is active").isTrue();
 	}
 
 	/**
