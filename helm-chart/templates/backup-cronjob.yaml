@@ -61,18 +61,14 @@ spec:
               configMap:
                 name: {{ include "mesh.fullname" . }}-config
             - name: shared
-            {{- if .Values.persistence.enabled }}
               persistentVolumeClaim:
                 {{- if .Values.persistence.shared.existingClaim }}
                 claimName: {{ .Values.persistence.shared.existingClaim }}
                 {{- else }}
                 claimName: {{ include "mesh.fullname" . }}-shared
                 {{- end }}
-            {{- else }}
-              emptyDir: {}
-            {{- end }}
             - name: snapshots
-            {{- if .Values.persistence.enabled }}
+            {{- if eq .Values.backup.enabled true }}
               persistentVolumeClaim:
                 {{- if .Values.persistence.backup.snapshots.existingClaim }}
                 claimName: {{ .Values.persistence.backup.snapshots.existingClaim }}
