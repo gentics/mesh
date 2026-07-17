@@ -33,8 +33,6 @@ public interface CrudEndpointTestCases {
 	// Read
 	void testReadByUUID() throws Exception;
 
-	void testUpdateWithBogusUuid() throws GenericRestException, Exception;
-
 	void testReadByUuidWithRolePerms();
 
 	void testReadByUUIDWithMissingPermission() throws Exception;

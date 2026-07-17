@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.core.endpoint.admin.AdminEndpoint;
+import com.gentics.mesh.core.endpoint.admin.AdminEndpointImpl;
 import com.gentics.mesh.core.endpoint.admin.HealthEndpoint;
 import com.gentics.mesh.core.endpoint.admin.RestInfoEndpoint;
 import com.gentics.mesh.core.endpoint.auth.AuthenticationEndpoint;
@@ -156,7 +157,7 @@ public abstract class AbstractEndpointGenerator<T> extends AbstractGenerator {
 		initEndpoint(microschemaEndpoint);
 		addEndpoints(coreBasePath, consumer, microschemaEndpoint, false);
 
-		AdminEndpoint adminEndpoint = Mockito.spy(new AdminEndpoint());
+		AdminEndpoint adminEndpoint = Mockito.spy(new AdminEndpointImpl());
 		initEndpoint(adminEndpoint);
 		addEndpoints(coreBasePath, consumer, adminEndpoint, false);
 
