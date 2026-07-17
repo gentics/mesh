@@ -1,0 +1,1 @@
+REST API: Along with existing RAML API definition, it is now possible to generate an OpenAPI (aka Swagger) specification for the Mesh REST API. For that, an endpoint `/openapi.yaml` has been provided.

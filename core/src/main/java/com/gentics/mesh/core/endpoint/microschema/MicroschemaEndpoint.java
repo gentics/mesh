@@ -171,8 +171,8 @@ public class MicroschemaEndpoint extends RolePermissionHandlingEndpoint {
 		endpoint.exampleRequest(microschemaExamples.getGeolocationMicroschemaUpdateRequest());
 		// endpoint.exampleResponse(OK, microschemaExamples.getGeolocationMicroschemaResponse(), "Updated microschema.");
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Migration message.");
-		endpoint.description("Update the microschema with the given uuid.");
-		endpoint.events(MICROSCHEMA_UPDATED, MICROSCHEMA_MIGRATION_START, MICROSCHEMA_MIGRATION_FINISHED);
+		endpoint.description("Update or create the microschema with the given uuid.");
+		endpoint.events(MICROSCHEMA_UPDATED, MICROSCHEMA_CREATED, MICROSCHEMA_MIGRATION_START, MICROSCHEMA_MIGRATION_FINISHED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("microschemaUuid");

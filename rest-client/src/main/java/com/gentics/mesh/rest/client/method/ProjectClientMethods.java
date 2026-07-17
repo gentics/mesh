@@ -51,7 +51,7 @@ public interface ProjectClientMethods {
 	 * @param languageUuid
 	 * @return
 	 */
-	MeshRequest<ProjectResponse> assignLanguageToProject(String projectUuid, String languageUuid);
+	MeshRequest<ProjectResponse> assignLanguageToProject(String projectUuid, String languageUuid, ParameterProvider... parameters);
 
 	/**
 	 * Unassign the given language from the project.
@@ -60,7 +60,7 @@ public interface ProjectClientMethods {
 	 * @param languageUuid
 	 * @return
 	 */
-	MeshRequest<ProjectResponse> unassignLanguageFromProject(String projectUuid, String languageUuid);
+	MeshRequest<ProjectResponse> unassignLanguageFromProject(String projectUuid, String languageUuid, ParameterProvider... parameters);
 
 	/**
 	 * Create a new project.
@@ -88,7 +88,7 @@ public interface ProjectClientMethods {
 	 * @param request
 	 * @return
 	 */
-	MeshRequest<ProjectResponse> updateProject(String uuid, ProjectUpdateRequest request);
+	MeshRequest<ProjectResponse> updateProject(String uuid, ProjectUpdateRequest request, ParameterProvider... parameters);
 
 	/**
 	 * Delete the project.

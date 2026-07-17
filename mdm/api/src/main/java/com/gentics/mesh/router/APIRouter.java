@@ -5,14 +5,7 @@ import io.vertx.ext.web.Router;
 /**
  * Central router for /api/v1 routes
  */
-public interface APIRouter {
-
-	/**
-	 * Internal vert.x router for the API router.
-	 * 
-	 * @return
-	 */
-	Router getRouter();
+public interface APIRouter extends InternalRouter {
 
 	/**
 	 * Return the router to which all projects will be mounted.

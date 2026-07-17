@@ -101,7 +101,7 @@ public interface RoleClientMethods {
 	 * @param restRole
 	 * @return
 	 */
-	MeshRequest<RoleResponse> updateRole(String uuid, RoleUpdateRequest restRole);
+	MeshRequest<RoleResponse> updateRole(String uuid, RoleUpdateRequest restRole, ParameterProvider... parameters);
 
 	/**
 	 * Get the role permissions on the role
@@ -110,7 +110,7 @@ public interface RoleClientMethods {
 	 *            Uuid of the role
 	 * @return request
 	 */
-	MeshRequest<ObjectPermissionResponse> getRoleRolePermissions(String uuid);
+	MeshRequest<ObjectPermissionResponse> getRoleRolePermissions(String uuid, ParameterProvider... parameters);
 
 	/**
 	 * Grant permissions on the role to roles

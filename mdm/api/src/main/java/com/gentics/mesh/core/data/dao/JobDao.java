@@ -103,7 +103,6 @@ public interface JobDao extends DaoGlobal<HibJob>, DaoTransformable<HibJob, JobR
 	 * Delete the job.
 	 * 
 	 * @param job
-	 * @param bac
 	 */
 	void delete(HibJob job);
 

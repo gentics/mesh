@@ -123,4 +123,22 @@ public class HibernateMeshOptions extends MeshOptions {
 	public boolean hasDatabaseLevelCache() {
 		return true;
 	}
+
+	@Override
+	@JsonIgnore
+	public Version getDefaultOpenAPIVersion() {
+		return Version.V30;
+	}
+
+	@Override
+	@JsonIgnore
+	public Format getDefaultOpenAPIFormat() {
+		return Format.YAML;
+	}
+
+	@Override
+	@JsonIgnore
+	public String getNoApiInfoPlugins() {
+		return null;
+	}
 }

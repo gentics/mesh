@@ -105,7 +105,6 @@ import com.gentics.mesh.core.rest.user.UserResetTokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.core.rest.validation.SchemaValidationResponse;
-import com.gentics.mesh.parameter.BackupParameters;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.ParameterProvider;
@@ -281,12 +280,12 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<TagResponse> updateTag(String projectName, String tagFamilyUuid, String uuid, TagUpdateRequest tagUpdateRequest) {
+	public MeshRequest<TagResponse> updateTag(String projectName, String tagFamilyUuid, String uuid, TagUpdateRequest tagUpdateRequest, ParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(tagUpdateRequest, "tagUpdateRequest must not be null");
 		Util.requireUuid(tagFamilyUuid, "tagFamilyUuid");
 		Util.requireUuid(uuid, "uuid");
-		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/tagFamilies/" + tagFamilyUuid + "/tags/" + uuid, TagResponse.class,
+		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/tagFamilies/" + tagFamilyUuid + "/tags/" + uuid + getQuery(getConfig(), parameters), TagResponse.class,
 			tagUpdateRequest);
 	}
 
@@ -420,13 +419,13 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<ProjectResponse> assignLanguageToProject(String projectUuid, String languageUuid) {
-		return assignLanguageToProjectByUuid(projectUuid, languageUuid);
+	public MeshRequest<ProjectResponse> assignLanguageToProject(String projectUuid, String languageUuid, ParameterProvider... parameters) {
+		return assignLanguageToProjectByUuid(projectUuid, languageUuid, parameters);
 	}
 
 	@Override
-	public MeshRequest<ProjectResponse> unassignLanguageFromProject(String projectUuid, String languageUuid) {
-		return unassignLanguageFromProjectByUuid(projectUuid, languageUuid);
+	public MeshRequest<ProjectResponse> unassignLanguageFromProject(String projectUuid, String languageUuid, ParameterProvider... parameters) {
+		return unassignLanguageFromProjectByUuid(projectUuid, languageUuid, parameters);
 	}
 
 	@Override
@@ -443,10 +442,10 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<ProjectResponse> updateProject(String uuid, ProjectUpdateRequest projectUpdateRequest) {
+	public MeshRequest<ProjectResponse> updateProject(String uuid, ProjectUpdateRequest projectUpdateRequest, ParameterProvider... parameters) {
 		Util.requireUuid(uuid, "uuid");
 		Objects.requireNonNull(projectUpdateRequest, "projectUpdateRequest must not be null");
-		return prepareRequest(POST, "/projects/" + uuid, ProjectResponse.class, projectUpdateRequest);
+		return prepareRequest(POST, "/projects/" + uuid + getQuery(getConfig(), parameters), ProjectResponse.class, projectUpdateRequest);
 	}
 
 	@Override
@@ -529,11 +528,11 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<TagFamilyResponse> updateTagFamily(String projectName, String tagFamilyUuid, TagFamilyUpdateRequest tagFamilyUpdateRequest) {
+	public MeshRequest<TagFamilyResponse> updateTagFamily(String projectName, String tagFamilyUuid, TagFamilyUpdateRequest tagFamilyUpdateRequest, ParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Util.requireUuid(tagFamilyUuid, "tagFamilyUuid");
 		Objects.requireNonNull(tagFamilyUpdateRequest, "tagFamilyUpdateRequest must not be null");
-		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/tagFamilies/" + tagFamilyUuid, TagFamilyResponse.class,
+		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/tagFamilies/" + tagFamilyUuid + getQuery(getConfig(), parameters), TagFamilyResponse.class,
 			tagFamilyUpdateRequest);
 	}
 
@@ -571,10 +570,10 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<GroupResponse> updateGroup(String uuid, GroupUpdateRequest groupUpdateRequest) {
+	public MeshRequest<GroupResponse> updateGroup(String uuid, GroupUpdateRequest groupUpdateRequest, ParameterProvider... parameters) {
 		Util.requireUuid(uuid, "uuid");
 		Objects.requireNonNull(groupUpdateRequest, "groupUpdateRequest must not be null");
-		return prepareRequest(POST, "/groups/" + uuid, GroupResponse.class, groupUpdateRequest);
+		return prepareRequest(POST, "/groups/" + uuid + getQuery(getConfig(), parameters), GroupResponse.class, groupUpdateRequest);
 	}
 
 	@Override
@@ -807,10 +806,10 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<RoleResponse> updateRole(String uuid, RoleUpdateRequest restRole) {
+	public MeshRequest<RoleResponse> updateRole(String uuid, RoleUpdateRequest restRole, ParameterProvider... parameters) {
 		Util.requireUuid(uuid, "uuid");
 		Objects.requireNonNull(restRole, "restRole must not be null");
-		return prepareRequest(POST, "/roles/" + uuid, RoleResponse.class, restRole);
+		return prepareRequest(POST, "/roles/" + uuid + getQuery(getConfig(), parameters), RoleResponse.class, restRole);
 	}
 
 	@Override
@@ -984,9 +983,9 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<ObjectNode> searchUsersRaw(String json) {
+	public MeshRequest<ObjectNode> searchUsersRaw(String json, ParameterProvider... parameters) {
 		Objects.requireNonNull(json, "json must not be null");
-		return handleRequest(POST, "/rawSearch/users", ObjectNode.class, json);
+		return handleRequest(POST, "/rawSearch/users" + getQuery(getConfig(), parameters), ObjectNode.class, json);
 	}
 
 	@Override
@@ -996,9 +995,9 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<ObjectNode> searchGroupsRaw(String json) {
+	public MeshRequest<ObjectNode> searchGroupsRaw(String json, ParameterProvider... parameters) {
 		Objects.requireNonNull(json, "json must not be null");
-		return handleRequest(POST, "/rawSearch/groups", ObjectNode.class, json);
+		return handleRequest(POST, "/rawSearch/groups" + getQuery(getConfig(), parameters), ObjectNode.class, json);
 	}
 
 	@Override
@@ -1008,9 +1007,9 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<ObjectNode> searchRolesRaw(String json) {
+	public MeshRequest<ObjectNode> searchRolesRaw(String json, ParameterProvider... parameters) {
 		Objects.requireNonNull(json, "json must not be null");
-		return handleRequest(POST, "/rawSearch/roles", ObjectNode.class, json);
+		return handleRequest(POST, "/rawSearch/roles" + getQuery(getConfig(), parameters), ObjectNode.class, json);
 	}
 
 	@Override
@@ -1020,9 +1019,9 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<ObjectNode> searchMicroschemasRaw(String json) {
+	public MeshRequest<ObjectNode> searchMicroschemasRaw(String json, ParameterProvider... parameters) {
 		Objects.requireNonNull(json, "json must not be null");
-		return handleRequest(POST, "/rawSearch/microschemas", ObjectNode.class, json);
+		return handleRequest(POST, "/rawSearch/microschemas" + getQuery(getConfig(), parameters), ObjectNode.class, json);
 	}
 
 	@Override
@@ -1032,9 +1031,9 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<ObjectNode> searchProjectsRaw(String json) {
+	public MeshRequest<ObjectNode> searchProjectsRaw(String json, ParameterProvider... parameters) {
 		Objects.requireNonNull(json, "json must not be null");
-		return handleRequest(POST, "/rawSearch/projects", ObjectNode.class, json);
+		return handleRequest(POST, "/rawSearch/projects" + getQuery(getConfig(), parameters), ObjectNode.class, json);
 	}
 
 	@Override
@@ -1044,9 +1043,9 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<ObjectNode> searchTagsRaw(String json) {
+	public MeshRequest<ObjectNode> searchTagsRaw(String json, ParameterProvider... parameters) {
 		Objects.requireNonNull(json, "json must not be null");
-		return handleRequest(POST, "/rawSearch/tags", ObjectNode.class, json);
+		return handleRequest(POST, "/rawSearch/tags" + getQuery(getConfig(), parameters), ObjectNode.class, json);
 	}
 
 	@Override
@@ -1057,10 +1056,10 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<ObjectNode> searchTagsRaw(String projectName, String json) {
+	public MeshRequest<ObjectNode> searchTagsRaw(String projectName, String json, ParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(json, "json must not be null");
-		return handleRequest(POST, "/" + encodeSegment(projectName) + "/rawSearch/tags", ObjectNode.class, json);
+		return handleRequest(POST, "/" + encodeSegment(projectName) + "/rawSearch/tags" + getQuery(getConfig(), parameters), ObjectNode.class, json);
 	}
 
 	@Override
@@ -1070,9 +1069,9 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<ObjectNode> searchSchemasRaw(String json) {
+	public MeshRequest<ObjectNode> searchSchemasRaw(String json, ParameterProvider... parameters) {
 		Objects.requireNonNull(json, "json must not be null");
-		return handleRequest(POST, "/rawSearch/schemas", ObjectNode.class, json);
+		return handleRequest(POST, "/rawSearch/schemas" + getQuery(getConfig(), parameters), ObjectNode.class, json);
 	}
 
 	@Override
@@ -1082,9 +1081,9 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<ObjectNode> searchTagFamiliesRaw(String json) {
+	public MeshRequest<ObjectNode> searchTagFamiliesRaw(String json, ParameterProvider... parameters) {
 		Objects.requireNonNull(json, "json must not be null");
-		return handleRequest(POST, "/rawSearch/tagFamilies", ObjectNode.class, json);
+		return handleRequest(POST, "/rawSearch/tagFamilies" + getQuery(getConfig(), parameters), ObjectNode.class, json);
 	}
 
 	@Override
@@ -1096,10 +1095,10 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<ObjectNode> searchTagFamiliesRaw(String projectName, String json) {
+	public MeshRequest<ObjectNode> searchTagFamiliesRaw(String projectName, String json, ParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(json, "json must not be null");
-		return handleRequest(POST, "/" + encodeSegment(projectName) + "/rawSearch/tagFamilies", ObjectNode.class, json);
+		return handleRequest(POST, "/" + encodeSegment(projectName) + "/rawSearch/tagFamilies" + getQuery(getConfig(), parameters), ObjectNode.class, json);
 	}
 
 	@Override
@@ -1115,31 +1114,6 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	@Override
 	public MeshRequest<SearchStatusResponse> searchStatus() {
 		return prepareRequest(GET, "/search/status", SearchStatusResponse.class);
-	}
-
-	@Override
-	public MeshRequest<GenericMessageResponse> invokeBackup() {
-		return prepareRequest(POST, "/admin/graphdb/backup", GenericMessageResponse.class);
-	}
-
-	@Override
-	public MeshRequest<GenericMessageResponse> invokeBackup(BackupParameters parameters) {
-		return prepareRequest(POST, "/admin/graphdb/backup" + getQuery(getConfig(), parameters), GenericMessageResponse.class);
-	}
-
-	@Override
-	public MeshRequest<GenericMessageResponse> invokeExport() {
-		return prepareRequest(POST, "/admin/graphdb/export", GenericMessageResponse.class);
-	}
-
-	@Override
-	public MeshRequest<GenericMessageResponse> invokeImport() {
-		return prepareRequest(POST, "/admin/graphdb/import", GenericMessageResponse.class);
-	}
-
-	@Override
-	public MeshRequest<GenericMessageResponse> invokeRestore() {
-		return prepareRequest(POST, "/admin/graphdb/restore", GenericMessageResponse.class);
 	}
 
 	@Override
@@ -1223,18 +1197,13 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	@Override
 	public MeshRequest<MeshBinaryResponse> downloadBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey, long from,
 		long to, ParameterProvider... parameters) {
-		Objects.requireNonNull(projectName, "projectName must not be null");
-		Util.requireUuid(nodeUuid, "nodeUuid");
-		Objects.requireNonNull(fieldKey, "fieldKey must not be null");
 		Util.requireNonNegative(from, "from");
 		Util.requireNonNegative(to, "to");
 		if (to < from) {
 			throw new InvalidParameterException(String.format("Parameter to must be equal or greater then from. Given values: %d-%d", from, to));
 		}
 
-		String path = "/" + encodeSegment(projectName) + "/nodes/" + nodeUuid + "/binary/" + encodeSegment(fieldKey) + getQuery(getConfig(), parameters);
-
-		MeshRequest<MeshBinaryResponse> request = prepareRequest(GET, path, MeshBinaryResponse.class);
+		MeshRequest<MeshBinaryResponse> request = downloadBinaryField(projectName, nodeUuid, languageTag, fieldKey, parameters);
 		request.setHeader("Range", String.format("bytes=%d-%d", from, to));
 		return request;
 	}
@@ -1402,11 +1371,11 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<BranchResponse> updateBranch(String projectName, String branchUuid, BranchUpdateRequest request) {
+	public MeshRequest<BranchResponse> updateBranch(String projectName, String branchUuid, BranchUpdateRequest request, ParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Util.requireUuid(branchUuid, "branchUuid");
 
-		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/branches/" + branchUuid, BranchResponse.class, request);
+		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/branches/" + branchUuid + getQuery(getConfig(), parameters), BranchResponse.class, request);
 	}
 
 	@Override
@@ -1422,11 +1391,18 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<BranchInfoSchemaList> getBranchSchemaVersions(String projectName, String branchUuid) {
+	public MeshRequest<String> getOpenAPI() {
+		MeshRequest<String> request = prepareRequest(GET, "/openapi.yaml" + getQuery(getConfig()), String.class);
+		request.setHeader("Accept", "*/*");
+		return request;
+	}
+
+	@Override
+	public MeshRequest<BranchInfoSchemaList> getBranchSchemaVersions(String projectName, String branchUuid, ParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Util.requireUuid(branchUuid, "branchUuid");
 
-		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/branches/" + branchUuid + "/schemas", BranchInfoSchemaList.class);
+		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/branches/" + branchUuid + "/schemas" + getQuery(getConfig(), parameters), BranchInfoSchemaList.class);
 	}
 
 	@Override
@@ -1449,11 +1425,11 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<BranchInfoMicroschemaList> getBranchMicroschemaVersions(String projectName, String branchUuid) {
+	public MeshRequest<BranchInfoMicroschemaList> getBranchMicroschemaVersions(String projectName, String branchUuid, ParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Util.requireUuid(branchUuid, "branchUuid");
 
-		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/branches/" + branchUuid + "/microschemas",
+		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/branches/" + branchUuid + "/microschemas" + getQuery(getConfig(), parameters),
 			BranchInfoMicroschemaList.class);
 	}
 
@@ -1921,9 +1897,9 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<ObjectPermissionResponse> getRoleRolePermissions(String uuid) {
+	public MeshRequest<ObjectPermissionResponse> getRoleRolePermissions(String uuid, ParameterProvider... parameters) {
 		Util.requireUuid(uuid, "uuid");
-		return prepareRequest(GET, "/roles/" + uuid + "/rolePermissions", ObjectPermissionResponse.class);
+		return prepareRequest(GET, "/roles/" + uuid + "/rolePermissions" + getQuery(getConfig(), parameters), ObjectPermissionResponse.class);
 	}
 
 	@Override

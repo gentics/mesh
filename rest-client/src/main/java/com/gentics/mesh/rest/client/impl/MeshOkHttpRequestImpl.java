@@ -27,7 +27,6 @@ import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 import com.gentics.mesh.rest.client.MeshWebrootFieldResponse;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
 
-import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -53,12 +52,10 @@ import okio.Okio;
  * @see MeshRequest
  * @param <T>
  */
-public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
+public class MeshOkHttpRequestImpl<T> extends AbstractMeshOkHttpRequest<T> {
 
 	private final MeshRestClient meshClient;
-	private final OkHttpClient client;
 	private final MeshRestClientConfig config;
-	private final Class<? extends T> resultClass;
 
 	private final String method;
 	private final String url;
@@ -67,10 +64,9 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 
 	private MeshOkHttpRequestImpl(MeshRestClient meshClient, OkHttpClient client, MeshRestClientConfig config, Class<? extends T> resultClass, String method, String url, Map<String, String> headers,
 		RequestBody requestBody) {
+		super(client, resultClass);
 		this.meshClient = meshClient;
-		this.client = client;
 		this.config = config;
-		this.resultClass = resultClass;
 		this.method = method;
 		this.url = url;
 		this.headers = headers;
@@ -200,7 +196,8 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 		this.headers.putAll(headers);
 	}
 
-	private Request createRequest() {
+	@Override
+	protected Request createRequest() {
 		Request.Builder builder = new Request.Builder()
 			.url(url)
 			.headers(Headers.of(headers));
@@ -265,20 +262,6 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 		return response.retryWhen(retryOnNetworkErrors(retries, delay));
 	}
 
-	@Override
-	public Single<T> toSingle() {
-		return getOkResponse().map(this::mapResponse);
-	}
-
-	@Override
-	public Completable toCompletable() {
-		return getOkResponse()
-			.doOnSuccess(this::throwOnError)
-			.doOnSuccess(response -> Optional.ofNullable(response)
-				.ifPresent(Response::close))
-			.ignoreElement();
-	}
-
 	@SuppressWarnings("unchecked")
 	private T mapResponse(Response response) throws IOException, MeshRestClientMessageException {
 		throwOnError(response);
@@ -309,7 +292,7 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 			return (T) new OkHttpWebrootResponse(response);
 		} else if (resultClass.isAssignableFrom(MeshWebrootFieldResponse.class)) {
 			return (T) new OkHttpWebrootFieldResponse(response, config.isMinifyJson());
-		} else if (contentType != null && contentType.startsWith("application/json")) {
+		} else if (contentType != null && contentType.startsWith("application/json") && !resultClass.isAssignableFrom(String.class)) {
 			return JsonUtil.readValue(response.body().string(), resultClass);
 		} else if (resultClass.isAssignableFrom(String.class)) {
 			return (T) response.body().string();

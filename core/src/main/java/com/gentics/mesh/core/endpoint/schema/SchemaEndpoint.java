@@ -137,13 +137,14 @@ public class SchemaEndpoint extends RolePermissionHandlingEndpoint {
 		endpoint.path("/:schemaUuid");
 		endpoint.addUriParameter("schemaUuid", "Uuid of the schema.", SCHEMA_VEHICLE_UUID);
 		endpoint.method(POST);
-		endpoint.description("Update the schema.");
+		endpoint.description("Update or create the schema.");
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
+		
 		endpoint.addQueryParameters(SchemaUpdateParametersImpl.class);
 		endpoint.exampleRequest(schemaExamples.getSchemaUpdateRequest());
-		endpoint.exampleResponse(OK, schemaExamples.getSchemaResponse(), "Updated schema.");
-		endpoint.events(SCHEMA_UPDATED, SCHEMA_MIGRATION_START, SCHEMA_MIGRATION_FINISHED);
+		endpoint.exampleResponse(OK, schemaExamples.getSchemaResponse(), "Updated or new schema.");
+		endpoint.events(SCHEMA_CREATED, SCHEMA_UPDATED, SCHEMA_MIGRATION_START, SCHEMA_MIGRATION_FINISHED);
 		endpoint.blockingHandler(rc -> {
 			// Update operations should always be executed sequentially - never in parallel
 			synchronized (schemaLock.mutex()) {

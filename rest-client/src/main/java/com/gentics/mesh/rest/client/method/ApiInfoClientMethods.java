@@ -24,4 +24,11 @@ public interface ApiInfoClientMethods {
 	 * @return
 	 */
 	MeshRequest<String> getRAML();
+
+	/**
+	 * Generate an OpenAPI specification
+	 * 
+	 * @return
+	 */
+	MeshRequest<String> getOpenAPI();
 }

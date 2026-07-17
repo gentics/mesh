@@ -8,12 +8,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 /**
  * Interface for node query parameters.
  */
-public interface NodeParameters extends ParameterProvider {
-
-	/**
-	 * Query parameter key: {@value #LANGUAGES_QUERY_PARAM_KEY}
-	 */
-	public static final String LANGUAGES_QUERY_PARAM_KEY = "lang";
+public interface NodeParameters extends LanguageParameters {
 
 	/**
 	 * Query parameter key: {@value #EXPANDFIELDS_QUERY_PARAM_KEY}
@@ -36,23 +31,10 @@ public interface NodeParameters extends ParameterProvider {
 	 * @param languageTags
 	 * @return Fluent API
 	 */
+	@Override
 	default NodeParameters setLanguages(String... languageTags) {
-		setParameter(LANGUAGES_QUERY_PARAM_KEY, convertToStr(languageTags));
+		LanguageParameters.super.setLanguages(languageTags);
 		return this;
-	}
-
-	/**
-	 * Return the <code>{@value #LANGUAGES_QUERY_PARAM_KEY}</code> request parameter values.
-	 * 
-	 * @return
-	 */
-	default String[] getLanguages() {
-		String value = getParameter(LANGUAGES_QUERY_PARAM_KEY);
-		String[] languages = null;
-		if (value != null) {
-			languages = value.split(",");
-		}
-		return languages;
 	}
 
 	/**

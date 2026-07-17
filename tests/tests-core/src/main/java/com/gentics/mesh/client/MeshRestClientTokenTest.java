@@ -4,14 +4,19 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ElasticsearchTestMode.NONE;
 import static com.gentics.mesh.test.TestSize.PROJECT;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 import com.gentics.mesh.test.MeshOptionChanger;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestDataProvider;
@@ -67,13 +72,34 @@ public class MeshRestClientTokenTest extends AbstractMeshTest {
 	public void testLogin() throws Exception {
 		client().setLogin(username, password).login().blockingGet();
 
-		// now get "me" for 10 seconds (once every second). This will fail, when the token expires
-		Flowable.intervalRange(0, 10, 0, 1, TimeUnit.SECONDS).flatMapSingle(v -> {
-			return client().me().toSingle();
-		}).doOnNext(response -> {
-			// assert that we still are the correct user
-			assertThat(response).hasName(username);
-		}).blockingSubscribe();
+		AtomicLong startAt = new AtomicLong(System.currentTimeMillis());
+		try {
+			// now get "me" for 10 seconds (once every second). This will fail in 5 (TOKEN_EXPIRATION_TIME_SECONDS), when the token expires
+			Flowable.intervalRange(0, 10, 0, 1, TimeUnit.SECONDS).flatMapSingle(v -> {
+				return client().me().toSingle();
+			}).doOnError(t -> {
+				// assert the expired token
+				assertThat((System.currentTimeMillis() - startAt.get())).as("Token expiration time").isGreaterThan(TOKEN_EXPIRATION_TIME_SECONDS * 1000);
+				Consumer<MeshRestClientMessageException> assertException = tt -> {
+					assertThat(tt.getStatusCode()).as("REST client error status").isEqualTo(401);
+				};
+				if (t instanceof MeshRestClientMessageException tt) {
+					assertException.accept(tt);
+				} else if (t.getCause() instanceof MeshRestClientMessageException tt) {
+					assertException.accept(tt);
+				} else {
+					fail(t);
+				}
+			}).doOnNext(response -> {
+				// assert that we still are the correct user
+				assertThat(response).hasName(username);
+				// assert the inexpired token
+				assertThat((System.currentTimeMillis() - startAt.get())).as("Token expiration time").isLessThanOrEqualTo(TOKEN_EXPIRATION_TIME_SECONDS * 1000);
+			}).blockingSubscribe();
+		} catch (Exception e) {
+			e.printStackTrace();
+			// already asserted
+		}
 	}
 
 	/**
