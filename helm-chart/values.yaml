@@ -119,8 +119,6 @@ extraEnv:
 # All settings in mesh.yml are configurable with env vars (See: extraEnv)
 
 persistence:
-  enabled: true
-
   # Volume for shared data (uploads, keystore)
   # This volume should be a network volume (NFS) and will be shared across all instances
   shared:

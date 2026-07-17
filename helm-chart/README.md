@@ -44,6 +44,9 @@ By default various features are enabled / settings:
 * PV for image cache
 
 ## Changelog
+### 3.0.2
+* A `.Values.persistence.enabled` key has been removed as unsound.
+
 ### 3.0.1
 * Initial Release of Mesh Helm Chart for Mesh 3.x
 
