@@ -43,6 +43,12 @@ import io.vertx.ext.web.RoutingContext;
 
 public class SearchPlugin extends AbstractPlugin implements CommercialRestPlugin {
 
+	private static final String MSG_CACHE_CLEARED = "Cache cleared";
+
+	private static final String MSG_CACHING_DISABLED = "Caching disabled";
+
+	private static final String MSG_CACHING_ENABLED = "Caching enabled";
+
 	private static final Logger log = LoggerFactory.getLogger(SearchPlugin.class);
 
 	private SearchConfiguration config;
@@ -193,18 +199,21 @@ public class SearchPlugin extends AbstractPlugin implements CommercialRestPlugin
 			.withDescription("Clear the cache")
 			.withMethod(HttpMethod.POST)
 			.withHandler(cachingHandler(null))
+			.withExampleResponse(io.netty.handler.codec.http.HttpResponseStatus.OK, MSG_CACHE_CLEARED, MSG_CACHE_CLEARED)
 			.build();
 
 		InternalEndpointBuilder.wrap(globalRouter).withPath("/cache/enable")
 			.withDescription("Enable caching")
 			.withMethod(HttpMethod.POST)
 			.withHandler(cachingHandler(true))
+			.withExampleResponse(io.netty.handler.codec.http.HttpResponseStatus.OK, MSG_CACHING_ENABLED, MSG_CACHING_ENABLED)
 			.build();
 
 		InternalEndpointBuilder.wrap(globalRouter).withPath("/cache/disable")
 			.withDescription("Disable caching")
 			.withMethod(HttpMethod.POST)
 			.withHandler(cachingHandler(false))
+			.withExampleResponse(io.netty.handler.codec.http.HttpResponseStatus.OK, MSG_CACHING_DISABLED, MSG_CACHING_DISABLED)
 			.build();
 	}
 
@@ -250,10 +259,10 @@ public class SearchPlugin extends AbstractPlugin implements CommercialRestPlugin
 			String msg;
 
 			if (enabled == null) {
-				msg = "Cache cleared";
+				msg = MSG_CACHE_CLEARED;
 			} else {
 				config.setCaching(enabled);
-				msg = "Caching " + (enabled ? "enabled" : "disabled");
+				msg = enabled ? MSG_CACHING_ENABLED : MSG_CACHING_DISABLED;
 			}
 			log.info(msg);
 

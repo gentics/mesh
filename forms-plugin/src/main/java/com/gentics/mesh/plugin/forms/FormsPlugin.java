@@ -8,6 +8,7 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 
+import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.time.Instant;
 import java.util.Arrays;
@@ -19,6 +20,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.pf4j.PluginWrapper;
+import org.raml.model.ParamType;
 import org.raml.model.parameter.QueryParameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +47,8 @@ import com.gentics.mesh.plugin.forms.model.TranslationsModel;
 import com.gentics.mesh.plugin.forms.model.response.FormOnlineResponse;
 import com.gentics.mesh.plugin.forms.model.response.StatusResponse;
 import com.gentics.mesh.plugin.forms.model.schema.FormData;
+import com.gentics.mesh.plugin.forms.model.schema.FormSchema;
+import com.gentics.mesh.plugin.forms.model.schema.FormUiSchema;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
 import com.gentics.mesh.plugin.forms.service.PurgeService;
 import com.gentics.mesh.plugin.forms.service.StatusService;
@@ -118,13 +122,16 @@ public class FormsPlugin extends AbstractPlugin implements CommercialRestPlugin 
 
 		// routes for translations
 		InternalEndpointBuilder.wrap(projectRouter)
+			.withDescription("Get translations of a given form and language")
 			.withPath("/translations/:formUuid/:lang").withMethod(GET)
 			.withUriParameter("lang", "Language", "en")
 			.withUriParameter("formUuid", "Form UUID", UUIDUtil.randomUUID())
 			.withHandler(fromComponent(FormsPluginComponent::getTranslationsHandler))
 			.produces(APPLICATION_JSON)
+			.withExampleResponse(HttpResponseStatus.OK, Map.of("greeting", "Hello"), MULTIPART_FORM_DATA)
 			.build();
 		InternalEndpointBuilder.wrap(projectRouter)
+			.withDescription("Set the translations")
 			.withPath("/translations").withMethod(POST)
 			.consumes(APPLICATION_JSON)
 			.withExampleRequest(new TranslationsModel())
@@ -151,17 +158,35 @@ public class FormsPlugin extends AbstractPlugin implements CommercialRestPlugin 
 			.withHandler(fromComponent(FormsPluginComponent::setLanguagesHandler))
 			.build();
 
-		// TODO cors
+		Form exampleForm = new Form();
+		exampleForm.setSchema(new FormSchema());
+		exampleForm.setUiSchema(new FormUiSchema());
+
 		QueryParameter sortOrder = new QueryParameter();
 		sortOrder.setDescription("Sort order");
 		sortOrder.setExample(SortOrder.ASCENDING.getValue());
 		sortOrder.setEnumeration(Arrays.stream(SortOrder.values()).map(SortOrder::getValue).collect(Collectors.toList()));
+
+		QueryParameter page = new QueryParameter();
+		page.setType(ParamType.INTEGER);
+		page.setDescription("Page number, optional");
+		page.setRequired(false);
+		page.setMinimum(BigDecimal.ZERO);
+		page.setExample("1");
+
+		QueryParameter perPage = new QueryParameter();
+		perPage.setType(ParamType.INTEGER);
+		perPage.setDescription("Page size, optional");
+		perPage.setRequired(false);
+		perPage.setMinimum(BigDecimal.ONE);
+		perPage.setExample("10");
+
 		InternalEndpointBuilder.wrap(projectRouter)
 			.withDescription("Get all forms")
 			.withPath("/forms").withMethod(GET)
 			.produces(APPLICATION_JSON)
-			.withQueryParameter("page", "Page number, optional", "1")
-			.withQueryParameter("perPage", "Page size, optional", "10")
+			.withQueryParameter("page", page)
+			.withQueryParameter("perPage", perPage)
 			.withQueryParameter("sortBy", "Soring field, optional", "name")
 			.withQueryParameter("sortOrder", sortOrder)
 			.withExampleResponse(HttpResponseStatus.OK, new JsonObject().put("forms", new JsonArray().add(new JsonObject().put("uuid", UUIDUtil.randomUUID()).put("name", "form_12345678").put("cms_id", "87654321"))), "Forms")
@@ -228,7 +253,7 @@ public class FormsPlugin extends AbstractPlugin implements CommercialRestPlugin 
 			.withQueryParameter("formDataUuid", "Form data ID", UUIDUtil.randomUUID())
 			.withQueryParameter("lang", "Language", "en")
 			.withUriParameter("formUuid", "Form UUID", UUIDUtil.randomUUID())
-			.withExampleResponse(HttpResponseStatus.OK, new Form(), "The form")
+			.withExampleResponse(HttpResponseStatus.OK, exampleForm, "The form")
 			.produces(APPLICATION_JSON)
 			.withHandler(fromComponent(FormsPluginComponent::loadFormGenHandler))
 			.build();
@@ -239,7 +264,7 @@ public class FormsPlugin extends AbstractPlugin implements CommercialRestPlugin 
 			.withQueryParameter("lang", "Language", "en")
 			.produces(APPLICATION_JSON)
 			.withExampleResponse(HttpResponseStatus.OK, 
-					new JsonObject().put("results", new JsonArray().add(new JsonObject().put("name", "John Doe").put("score", "42"))).put("templateContext", new Form().getTemplateContext()),
+					new JsonObject().put("results", new JsonArray().add(new JsonObject().put("name", "John Doe").put("score", "42"))).put("templateContext", exampleForm.getTemplateContext()),
 					"Rendered JSON form")
 			.withHandler(fromComponent(FormsPluginComponent::loadPollResultsHandler))
 			.build();
@@ -324,6 +349,7 @@ public class FormsPlugin extends AbstractPlugin implements CommercialRestPlugin 
 			.build();
 
 		InternalEndpointBuilder.wrap(projectRouter)
+			.withDescription("Load form binary with optional resize")
 			.withPath("/form/:formUuid/binary/:meshBinaryUuid").withMethod(GET)
 			.withUriParameter("formUuid", "Form UUID", UUIDUtil.randomUUID())
 			.withUriParameter("meshBinaryUuid", "BinaryUUID UUID", UUIDUtil.randomUUID())
