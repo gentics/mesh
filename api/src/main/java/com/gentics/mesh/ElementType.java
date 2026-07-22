@@ -33,7 +33,9 @@ public enum ElementType {
 
 	BRANCH,
 
-	NODE;
+	NODE,
+
+	APITOKEN;
 
 	/**
 	 * Parse the string value into the Mesh element type, if possible.

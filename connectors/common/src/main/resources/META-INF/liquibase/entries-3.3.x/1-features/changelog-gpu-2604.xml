@@ -1,0 +1,38 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.6.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd">
+
+    <property name="smalltext.type" value="NVARCHAR(255)" dbms="mssql"/>
+    <property name="smalltext.type" value="VARCHAR(255)" dbms="oracle,postgresql,mariadb,mysql,hsqldb"/>
+
+    <property name="uuid.type" value="UUID" dbms="oracle,mssql,postgresql"/>
+    <property name="uuid.type" value="binary(16)" dbms="mariadb,mysql,hsqldb"/>
+
+    <property name="timestamp.type" value="TIMESTAMP" dbms="oracle,postgresql,hsqldb,mssql"/>
+    <property name="timestamp.type" value="datetime(6)" dbms="mariadb,mysql"/>
+
+    <changeSet id="gpu-2604-1" author="n.pomaroli@gentics.com">
+        <createTable tableName="mesh_apitoken">
+            <column name="dbuuid" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mesh_apitoken_pkey"/>
+            </column>
+            <column name="dbversion" type="BIGINT"/>
+            <column name="name" type="${smalltext.type}"/>
+            <column name="user_dbuuid" type="${uuid.type}"/>
+            <column name="tokenid" type="${smalltext.type}"/>
+            <column name="issued" type="${timestamp.type}"/>
+            <column name="lastused" type="${timestamp.type}"/>
+            <column name="expires" type="${timestamp.type}"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="gpu-2604-2" author="n.pomaroli@gentics.com">
+        <createIndex indexName="idx_mesh_apitoken_user_dbuuid_tokenid" tableName="mesh_apitoken">
+            <column name="user_dbuuid"/>
+            <column name="tokenid"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

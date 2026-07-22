@@ -52,5 +52,6 @@
 		<class>com.gentics.mesh.hibernate.data.domain.HibUserImpl</class>
 		<class>com.gentics.mesh.hibernate.data.domain.HibVersionPurgeJobImpl</class>
 		<class>com.gentics.mesh.hibernate.data.domain.MeshVersionEntityImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibAPITokenDataImpl</class>
 	</persistence-unit>
 </persistence>

@@ -70,6 +70,7 @@ public class HibDaoCollectionImpl implements DaoCollection {
 	private final S3BinaryDaoImpl s3BinaryDao;
 	private final JobDaoImpl jobDao;
 	private final ImageVariantDaoImpl imageVariantDao;
+	private final APITokenDaoImpl apiTokenDao;
 
 	@Inject
 	public HibDaoCollectionImpl(
@@ -107,7 +108,8 @@ public class HibDaoCollectionImpl implements DaoCollection {
 			BinaryDaoImpl binaryDao,
 			S3BinaryDaoImpl s3BinaryDao,
 			JobDaoImpl jobDao,
-			ImageVariantDaoImpl imageVariantDao
+			ImageVariantDaoImpl imageVariantDao,
+			APITokenDaoImpl apiTokenDao
 	) {
 
 		this.userDao = userDao;
@@ -145,6 +147,7 @@ public class HibDaoCollectionImpl implements DaoCollection {
 		this.s3BinaryDao = s3BinaryDao;
 		this.jobDao = jobDao;
 		this.imageVariantDao = imageVariantDao;
+		this.apiTokenDao = apiTokenDao;
 	}
 
 	@Override
@@ -270,6 +273,11 @@ public class HibDaoCollectionImpl implements DaoCollection {
 	@Override
 	public ImageVariantDaoImpl imageVariantDao() {
 		return imageVariantDao;
+	}
+
+	@Override
+	public APITokenDaoImpl apiTokenDao() {
+		return apiTokenDao;
 	}
 
 	public Optional<AbstractHibDao<?>> maybeFindDao(Class<?> cls) {

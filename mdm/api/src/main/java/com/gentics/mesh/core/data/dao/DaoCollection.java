@@ -68,6 +68,8 @@ public interface DaoCollection {
 
 	ContentDao contentDao();
 
+	APITokenDao apiTokenDao();
+
 	/**
 	 * Try looking for a DAO that corresponds to the {@link ElementType}. Not every type is supported though.
 	 * 

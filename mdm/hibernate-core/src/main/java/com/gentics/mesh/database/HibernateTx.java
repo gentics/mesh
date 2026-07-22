@@ -10,6 +10,7 @@ import org.hibernate.internal.SessionImpl;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.hibernate.ContentInterceptor;
+import com.gentics.mesh.hibernate.data.dao.APITokenDaoImpl;
 import com.gentics.mesh.hibernate.data.dao.BinaryDaoImpl;
 import com.gentics.mesh.hibernate.data.dao.BranchDaoImpl;
 import com.gentics.mesh.hibernate.data.dao.ContentDaoImpl;
@@ -142,6 +143,9 @@ public interface HibernateTx extends CommonTx {
 
 	@Override
 	S3BinaryDaoImpl s3binaryDao();
+
+	@Override
+	APITokenDaoImpl apiTokenDao();
 
 	/**
 	 * Add the given action to be executed before the transaction is closed.

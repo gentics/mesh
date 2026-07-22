@@ -52,6 +52,7 @@ import com.gentics.mesh.contentoperation.ContentCachedStorage;
 import com.gentics.mesh.contentoperation.ContentStorage;
 import com.gentics.mesh.contentoperation.ContentStorageImpl;
 import com.gentics.mesh.core.data.binary.Binaries;
+import com.gentics.mesh.core.data.dao.APITokenDao;
 import com.gentics.mesh.core.data.dao.ChangelogDao;
 import com.gentics.mesh.core.data.dao.DaoCollection;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
@@ -97,6 +98,7 @@ import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.hibernate.HibernateRootResolver;
 import com.gentics.mesh.hibernate.data.binary.impl.HibBinariesImpl;
+import com.gentics.mesh.hibernate.data.dao.APITokenDaoImpl;
 import com.gentics.mesh.hibernate.data.dao.BinaryDaoImpl;
 import com.gentics.mesh.hibernate.data.dao.BranchDaoImpl;
 import com.gentics.mesh.hibernate.data.dao.ChangelogDaoImpl;
@@ -291,6 +293,9 @@ public abstract class HibernateModule {
 
 	@Binds
 	abstract S3Binaries bindS3Binaries(S3HibBinariesImpl e);
+
+	@Binds
+	abstract APITokenDao bindAPITokenDao(APITokenDaoImpl e);
 
 	@Provides
 	public static HibernateMeshOptions hibernateMeshOptions(MeshOptions meshOptions) {

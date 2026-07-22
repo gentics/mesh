@@ -13,6 +13,7 @@ import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
+import com.gentics.mesh.core.data.user.HibAPITokenData;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.hibernate.data.dao.DaoHelper;
 import com.gentics.mesh.hibernate.data.dao.DaoHelperFactory;
@@ -20,6 +21,7 @@ import com.gentics.mesh.hibernate.data.dao.RootDaoHelper;
 import com.gentics.mesh.hibernate.data.dao.RootDaoHelperFactory;
 import com.gentics.mesh.hibernate.data.dao.helpers.CrossTableJoin;
 import com.gentics.mesh.hibernate.data.dao.helpers.FieldJoin;
+import com.gentics.mesh.hibernate.data.domain.HibAPITokenDataImpl;
 import com.gentics.mesh.hibernate.data.domain.HibBranchImpl;
 import com.gentics.mesh.hibernate.data.domain.HibGroupImpl;
 import com.gentics.mesh.hibernate.data.domain.HibJobImpl;
@@ -114,6 +116,11 @@ public class DaoHelperModule {
 	@Provides
 	DaoHelper<HibTagFamily, HibTagFamilyImpl> tagFamily(DaoHelperFactory factory) {
 		return factory.create(HibTagFamilyImpl.class);
+	}
+
+	@Provides
+	DaoHelper<HibAPITokenData, HibAPITokenDataImpl> apiToken(DaoHelperFactory factory) {
+		return factory.create(HibAPITokenDataImpl.class);
 	}
 
 	@Provides

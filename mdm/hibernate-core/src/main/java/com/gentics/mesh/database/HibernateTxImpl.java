@@ -35,6 +35,7 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.s3binary.S3Binaries;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.dagger.tx.TransactionScope;
+import com.gentics.mesh.hibernate.data.dao.APITokenDaoImpl;
 import com.gentics.mesh.hibernate.data.dao.BinaryDaoImpl;
 import com.gentics.mesh.hibernate.data.dao.BranchDaoImpl;
 import com.gentics.mesh.hibernate.data.dao.ContentDaoImpl;
@@ -360,6 +361,11 @@ public class HibernateTxImpl implements HibernateTx {
 	@Override
 	public ImageVariantDaoImpl imageVariantDao() {
 		return daoCollection.imageVariantDao();
+	}
+
+	@Override
+	public APITokenDaoImpl apiTokenDao() {
+		return daoCollection.apiTokenDao();
 	}
 
 	@Override
