@@ -30,7 +30,7 @@
 		<jackson.version>2.21.4</jackson.version>
 		<jackson-databind.version>2.21.4</jackson-databind.version>
 		<jackson-annotations.version>2.21</jackson-annotations.version>
-		<netty.version>4.2.15.Final</netty.version>
+		<netty.version>4.2.16.Final</netty.version>
 		<tika.version>3.2.2</tika.version>
 		<aws.sdk.version>2.16.83</aws.sdk.version>
 		<snakeyaml.version>2.2</snakeyaml.version>
@@ -47,11 +47,17 @@
 		<handlebars.version>4.5.2</handlebars.version>
 		<hsqldb.version>2.7.3</hsqldb.version>
 		<micrometer.version>1.15.5</micrometer.version>
+		<vertx-common.version>0.0.3-SNAPSHOT</vertx-common.version>
 	</properties>
 
 	<!-- IMPORTANT: Always keep dependencies in-sync with mesh-plugin-parent pom in order to avoid duplicate libraries in shaded plugin jars -->
 	<dependencyManagement>
 		<dependencies>
+			<dependency>
+				<groupId>com.gentics.vertx</groupId>
+				<artifactId>vertx-common</artifactId>
+				<version>${vertx-common.version}</version>
+			</dependency>
 			<!-- Logging -->
 			<dependency>
 				<groupId>org.slf4j</groupId>
