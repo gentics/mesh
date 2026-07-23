@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.JsonSchema;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.JsonFieldSchema;
@@ -19,6 +20,7 @@ import io.vertx.core.json.JsonArray;
 public class JsonFieldSchemaImpl extends AbstractFieldSchema implements JsonFieldSchema {
 
 	@JsonProperty("allow")
+	@JsonPropertyDescription("List of allowed JSON schemas, the data of this field must match.")
 	private JsonSchema[] allowedSchemas;
 
 	@Override
