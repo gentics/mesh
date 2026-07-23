@@ -185,11 +185,7 @@ spec:
       {{- end }}
 
       - name: data
-      {{- if .Values.persistence.enabled }}
         persistentVolumeClaim:
-      {{- else }}
-        emptyDir: {}
-      {{- end }}
 
       {{- if eq .Values.backup.enabled true }}
       - name: snapshots
@@ -202,17 +198,12 @@ spec:
       {{- end }}
 
       - name: shared
-      {{- if .Values.persistence.enabled }}
         persistentVolumeClaim:
           {{- if .Values.persistence.shared.existingClaim }}
           claimName: {{ .Values.persistence.shared.existingClaim }}
           {{- else }}
           claimName: {{ include "mesh.fullname" . }}-shared
           {{- end }}
-      {{- else }}
-        emptyDir: {}
-      {{- end }}
-
       {{- if .Values.ssl.enabled }}
       - name: ssl-secret
         secret:
