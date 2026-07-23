@@ -55,13 +55,13 @@ public class JsonFieldSchemaImpl extends AbstractFieldSchema implements JsonFiel
 				setAllowedSchemas(allowedSchemas);
 			} else if (allowedValues instanceof String[]) {
 				String[] values = (String[]) allowedValues;
-				setAllowedSchemas(Arrays.stream(values).map(JsonSchema::new).toArray(size -> new JsonSchema[size]));
+				setAllowedSchemas(Arrays.stream(values).map(JsonSchema::from).toArray(size -> new JsonSchema[size]));
 			} else if (allowedValues instanceof Collection) {
-				setAllowedSchemas(((Collection<?>) allowedValues).stream().map(Object::toString).map(JsonSchema::new).toArray(size -> new JsonSchema[size]));
+				setAllowedSchemas(((Collection<?>) allowedValues).stream().map(Object::toString).map(JsonSchema::from).toArray(size -> new JsonSchema[size]));
 			} else if (allowedValues instanceof Object[]) {
-				setAllowedSchemas(Arrays.stream(((Object[]) allowedValues)).map(Object::toString).map(JsonSchema::new).toArray(size -> new JsonSchema[size]));
+				setAllowedSchemas(Arrays.stream(((Object[]) allowedValues)).map(Object::toString).map(JsonSchema::from).toArray(size -> new JsonSchema[size]));
 			} else if (allowedValues instanceof JsonArray) {
-				setAllowedSchemas(((JsonArray) allowedValues).stream().map(Object::toString).map(JsonSchema::new).toArray(size -> new JsonSchema[size]));
+				setAllowedSchemas(((JsonArray) allowedValues).stream().map(Object::toString).map(JsonSchema::from).toArray(size -> new JsonSchema[size]));
 			}  else {
 				throw new IllegalStateException("Unsupported allowed value type: " + allowedValues.getClass().getCanonicalName());
 			}

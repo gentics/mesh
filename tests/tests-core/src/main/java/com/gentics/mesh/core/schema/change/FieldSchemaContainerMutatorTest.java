@@ -22,6 +22,7 @@ import com.gentics.mesh.core.data.schema.HibUpdateFieldChange;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerMutator;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.JsonObjectSchema;
 import com.gentics.mesh.core.rest.JsonSchema;
 import com.gentics.mesh.core.rest.JsonSchemaType;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
@@ -169,7 +170,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 				schemaModel.addField(nodeField);
 
 				JsonFieldSchema jsonField = new JsonFieldSchemaImpl();
-				jsonField.setAllowedSchemas(new JsonSchema().setProperties(Map.of("blub", new JsonSchemaType())).setRequired(new String[] {"blub"}));
+				jsonField.setAllowedSchemas(new JsonObjectSchema().setProperties(Map.of("blub", new JsonSchemaType())).setRequired(new String[] {"blub"}));
 				jsonField.setName("jsonField");
 				jsonField.setRequired(true);
 				schemaModel.addField(jsonField);
@@ -223,7 +224,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 			binaryFieldUpdate.setNextChange(nodeFieldUpdate);
 
 			HibUpdateFieldChange jsonFieldUpdate = (HibUpdateFieldChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.UPDATEFIELD);
-			jsonFieldUpdate.setRestProperty(ALLOW_KEY, new String[] { JsonUtil.toJson(new JsonSchema().setProperties(Map.of("content", new JsonSchemaType())).setRequired(new String[] {"content"})) });
+			jsonFieldUpdate.setRestProperty(ALLOW_KEY, new String[] { JsonUtil.toJson(new JsonObjectSchema().setProperties(Map.of("content", new JsonSchemaType())).setRequired(new String[] {"content"})) });
 			jsonFieldUpdate.setFieldName("jsonField");
 			jsonFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			jsonFieldUpdate.setIndexOptions(IndexOptionHelper.getRawFieldOption());
@@ -304,7 +305,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 			// JSON
 			JsonFieldSchema jsonFieldSchema = updatedSchema.getField("jsonField", JsonFieldSchemaImpl.class);
 			assertNotNull(jsonFieldSchema);
-			assertArrayEquals(new JsonSchema[] { new JsonSchema().setProperties(Map.of("content", new JsonSchemaType())).setRequired(new String[] {"content"}) }, jsonFieldSchema.getAllowedSchemas());
+			assertArrayEquals(new JsonSchema[] { new JsonObjectSchema().setProperties(Map.of("content", new JsonSchemaType())).setRequired(new String[] {"content"}) }, jsonFieldSchema.getAllowedSchemas());
 			assertFalse("The required flag should now be set to false.", jsonFieldSchema.isRequired());
 			assertTrue("The index option did not contain the raw field. {" + jsonFieldSchema.getElasticsearch().encodePrettily() + "}",
 					jsonFieldSchema.getElasticsearch().containsKey("raw"));

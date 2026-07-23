@@ -32,7 +32,7 @@ public class JsonFieldEndpointTest extends AbstractMeshTest {
 		SchemaModel schema = tx(() -> schemaContainer("content").getLatestVersion().getSchema());
 		SchemaUpdateRequest request = JsonUtil.readValue(schema.toJson(), SchemaUpdateRequest.class);
 		request.addField(new JsonFieldSchemaImpl()
-				.setAllowedSchemas(new JsonSchema("{\"type\":\"object\",\"properties\":{\"firstName\":{\"type\":\"string\"},\"lastName\":{\"type\":\"string\"}},\"required\":[\"firstName\",\"lastName\"]}"))
+				.setAllowedSchemas(JsonSchema.from("{\"type\":\"object\",\"properties\":{\"firstName\":{\"type\":\"string\"},\"lastName\":{\"type\":\"string\"}},\"required\":[\"firstName\",\"lastName\"]}"))
 				.setName("extraJson"));
 
 		waitForJobs(() -> {
@@ -51,7 +51,7 @@ public class JsonFieldEndpointTest extends AbstractMeshTest {
 		// 3. Update the schema again with empty allowed value
 		request.removeField("extraJson");
 		request.addField(new JsonFieldSchemaImpl()
-				.setAllowedSchemas(new JsonSchema("{\"type\":\"object\",\"properties\":{\"content\":{\"type\":\"string\"},\"extra\":{\"type\":\"string\"}},\"required\":[\"content\"]}"))
+				.setAllowedSchemas(JsonSchema.from("{\"type\":\"object\",\"properties\":{\"content\":{\"type\":\"string\"},\"extra\":{\"type\":\"string\"}},\"required\":[\"content\"]}"))
 				.setName("extraJson"));
 
 		waitForJobs(() -> {

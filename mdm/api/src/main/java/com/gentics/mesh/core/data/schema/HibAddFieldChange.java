@@ -172,7 +172,7 @@ public interface HibAddFieldChange extends HibSchemaFieldChange {
 		switch (FieldTypes.valueByName(getType())) {
 			case JSON:
 				JsonFieldSchema jsonField = new JsonFieldSchemaImpl();
-				jsonField.setAllowedSchemas(getAllowProp() != null ? Arrays.stream(getAllowProp()).map(JsonSchema::new).toArray(size -> new JsonSchema[size]) : null);
+				jsonField.setAllowedSchemas(getAllowProp() != null ? Arrays.stream(getAllowProp()).map(JsonSchema::from).toArray(size -> new JsonSchema[size]) : null);
 				field = jsonField;
 				break;
 			case HTML:

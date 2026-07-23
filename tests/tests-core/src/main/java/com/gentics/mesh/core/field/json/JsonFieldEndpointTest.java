@@ -59,7 +59,7 @@ public class JsonFieldEndpointTest extends AbstractFieldEndpointTest {
 			JsonFieldSchema restrictedJsonFieldSchema = new JsonFieldSchemaImpl();
 			restrictedJsonFieldSchema.setName("restrictedjsonField");
 			restrictedJsonFieldSchema.setLabel("Some label");
-			restrictedJsonFieldSchema.setAllowedSchemas(new JsonSchema("{\"type\":\"object\",\"properties\":{\"firstName\":{\"type\":\"string\"},\"lastName\":{\"type\":\"string\"}},\"required\":[\"firstName\",\"lastName\"]}"));
+			restrictedJsonFieldSchema.setAllowedSchemas(JsonSchema.from("{\"type\":\"object\",\"properties\":{\"firstName\":{\"type\":\"string\"},\"lastName\":{\"type\":\"string\"}},\"required\":[\"firstName\",\"lastName\"]}"));
 
 			prepareTypedSchema(schemaContainer("folder"), List.of(jsonFieldSchema, restrictedJsonFieldSchema), Optional.empty());
 			tx.success();
