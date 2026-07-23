@@ -14,8 +14,8 @@ public class UserAPITokenResponse implements RestModel {
 	private String token;
 
 	@JsonProperty(required = true)
-	@JsonPropertyDescription("Date of the last time the API token was issued.")
-	private String previousIssueDate;
+	@JsonPropertyDescription("Data of the created API token.")
+	private UserAPITokenDataModel data;
 
 	public UserAPITokenResponse() {
 	}
@@ -41,24 +41,20 @@ public class UserAPITokenResponse implements RestModel {
 	}
 
 	/**
-	 * Returns the date the API token was last issued.
-	 * 
-	 * @return
+	 * Return the API token data
+	 * @return data
 	 */
-	public String getPreviousIssueDate() {
-		return previousIssueDate;
+	public UserAPITokenDataModel getData() {
+		return data;
 	}
 
 	/**
-	 * Set the issue date.
-	 * 
-	 * @param previousIssueDate
-	 * @return Fluent API
+	 * Set the API token data
+	 * @param data token data
+	 * @return fluent API
 	 */
-
-	public UserAPITokenResponse setPreviousIssueDate(String previousIssueDate) {
-		this.previousIssueDate = previousIssueDate;
+	public UserAPITokenResponse setData(UserAPITokenDataModel data) {
+		this.data = data;
 		return this;
 	}
-
 }

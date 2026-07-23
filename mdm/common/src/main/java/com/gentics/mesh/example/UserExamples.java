@@ -6,13 +6,18 @@ import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.example.ExampleUuids.GROUP_EDITORS_UUID;
 import static com.gentics.mesh.example.ExampleUuids.NODE_DELOREAN_UUID;
+import static com.gentics.mesh.example.ExampleUuids.TOKEN;
 import static com.gentics.mesh.example.ExampleUuids.TOKEN_UUID;
 import static com.gentics.mesh.example.ExampleUuids.USER_EDITOR_UUID;
 import static com.gentics.mesh.example.ExampleUuids.USER_WEBCLIENT_UUID;
 
+import java.time.Instant;
+
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.user.ExpandableNode;
 import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.core.rest.user.UserAPITokenCreateRequest;
+import com.gentics.mesh.core.rest.user.UserAPITokenDataModel;
 import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
@@ -20,6 +25,7 @@ import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResetTokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
+import com.gentics.mesh.util.DateUtils;
 
 public class UserExamples extends AbstractExamples {
 
@@ -118,8 +124,26 @@ public class UserExamples extends AbstractExamples {
 		return new UserResetTokenResponse().setToken("FDrbBDWRY3aS").setCreated(createNewTimestamp());
 	}
 
-	public UserAPITokenResponse getAPIKeyResponse() {
-		return new UserAPITokenResponse().setToken(TOKEN_UUID);
+	public UserAPITokenDataModel getAPITokenData(String name) {
+		UserAPITokenDataModel dataModel = new UserAPITokenDataModel()
+				.setExpires(DateUtils.toISO8601(Instant.parse("2026-12-24T18:00:00.00Z").toEpochMilli()))
+				.setIssued(DateUtils.toISO8601(Instant.parse("2026-12-01T08:30:00.00Z").toEpochMilli()))
+				.setLastUsed(DateUtils.toISO8601(Instant.parse("2026-12-06T15:38:46.00Z").toEpochMilli()))
+				.setName(name)
+				.setValid(true);
+		dataModel.setUuid(TOKEN_UUID);
+		return dataModel;
 	}
 
+	public UserAPITokenResponse getAPIKeyResponse(String name) {
+		return new UserAPITokenResponse()
+				.setToken(TOKEN)
+				.setData(getAPITokenData(name));
+	}
+
+	public UserAPITokenCreateRequest getAPITokenCreateRequest(String name) {
+		return new UserAPITokenCreateRequest()
+				.setName(name)
+				.setExpires(DateUtils.toISO8601(Instant.parse("2026-12-24T18:00:00.00Z").toEpochMilli()));
+	}
 }

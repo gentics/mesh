@@ -16,7 +16,7 @@ public interface APITokenDao extends Dao<HibAPITokenData>, DaoTransformable<HibA
 	 * @param user user (owner)
 	 * @param name name
 	 * @param tokenId token ID
-	 * @param expires optional expiry timestamp
+	 * @param expires optional expiration timestamp
 	 * @return created instance
 	 */
 	HibAPITokenData create(HibUser user, String name, String tokenId, Long expires);
@@ -36,6 +36,14 @@ public interface APITokenDao extends Dao<HibAPITokenData>, DaoTransformable<HibA
 	 * @return instance or null
 	 */
 	HibAPITokenData findByTokenId(HibUser user, String tokenId);
+
+	/**
+	 * Find an API Token for a user by name
+	 * @param user user
+	 * @param name token name
+	 * @return instance or null
+	 */
+	HibAPITokenData findByName(HibUser user, String name);
 
 	/**
 	 * Find all API Tokens for a user

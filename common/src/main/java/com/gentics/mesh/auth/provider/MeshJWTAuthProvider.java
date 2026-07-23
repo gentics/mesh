@@ -230,7 +230,7 @@ public class MeshJWTAuthProvider implements AuthenticationProvider, JWTAuth {
 	 * @param user
 	 * @param tokenCode
 	 *            Code which will be part of the JWT. This code is used to verify that the JWT is still valid
-	 * @param expireDuration
+	 * @param expireDuration expire duration in seconds
 	 * @return Generated API key
 	 */
 	public String generateAPIToken(HibUser user, String tokenCode, Integer expireDuration) {
@@ -240,7 +240,7 @@ public class MeshJWTAuthProvider implements AuthenticationProvider, JWTAuth {
 			.put(API_KEY_TOKEN_CODE_FIELD_NAME, tokenCode);
 		JWTOptions jwtOptions = new JWTOptions().setAlgorithm(options.getAlgorithm());
 		if (expireDuration != null) {
-			jwtOptions.setExpiresInMinutes(expireDuration);
+			jwtOptions.setExpiresInSeconds(expireDuration);
 		}
 		return jwtProvider.generateToken(tokenData, jwtOptions);
 	}

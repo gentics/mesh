@@ -1,5 +1,6 @@
 package com.gentics.mesh.hibernate.data.dao;
 
+import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.firstOrNull;
 
 import java.util.Objects;
@@ -26,8 +27,7 @@ import com.gentics.mesh.database.CurrentTransaction;
 import com.gentics.mesh.hibernate.data.domain.HibAPITokenDataImpl;
 import com.gentics.mesh.parameter.PagingParameters;
 
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Root;
+import jakarta.persistence.TypedQuery;
 
 /**
  * Implementation of {@link APITokenDao}
@@ -47,12 +47,23 @@ public class APITokenDaoImpl implements APITokenDao {
 	@Override
 	public UserAPITokenDataModel transformToRestSync(HibAPITokenData element, InternalActionContext ac, int level,
 			String... languageTags) {
-		// TODO Auto-generated method stub
-		return null;
+		UserAPITokenDataModel model = new UserAPITokenDataModel();
+		model.setUuid(element.getUuid());
+		model.setName(element.getName());
+		model.setIssued(element.getIssuedDate());
+		model.setLastUsed(element.getLastUsedDate());
+		model.setExpires(element.getExpiresDate());
+		model.setValid(element.isValid());
+		return model;
 	}
 
 	@Override
 	public HibAPITokenData create(HibUser user, String name, String tokenId, Long expires) {
+		HibAPITokenData conflicting = findByName(user, name);
+		if (conflicting != null) {
+			throw conflict(conflicting.getUuid(), name, "apitoken_conflicting_name");
+		}
+
 		return currentTransaction.getTx().create(null, HibAPITokenDataImpl.class, tokenData -> {
 			tokenData.setUser(user);
 			tokenData.setName(name);
@@ -70,14 +81,21 @@ public class APITokenDaoImpl implements APITokenDao {
 
 	@Override
 	public HibAPITokenData findByTokenId(HibUser user, String tokenId) {
-		CriteriaQuery<HibAPITokenDataImpl> query = daoHelper.cb().createQuery(daoHelper.getDomainClass());
+		TypedQuery<HibAPITokenData> query = daoHelper.em()
+				.createQuery("FROM apitoken t WHERE t.user = :user AND t.tokenId = :tokenId", HibAPITokenData.class);
+		query.setParameter("user", user);
+		query.setParameter("tokenId", tokenId);
+		query.setHint(HibernateHints.HINT_CACHEABLE, true);
+		return firstOrNull(query);
+	}
 
-		Root<HibAPITokenDataImpl> root = query.from(daoHelper.getDomainClass());
-
-		query.where(daoHelper.cb().equal(root.get("tokenId"), tokenId));
-		return Optional.ofNullable(firstOrNull(
-				daoHelper.em().createQuery(query).setHint(HibernateHints.HINT_CACHEABLE, true).setMaxResults(1)))
-				.filter(t -> Objects.equals(t.getUser(), user)).orElse(null);
+	@Override
+	public HibAPITokenData findByName(HibUser user, String name) {
+		TypedQuery<HibAPITokenData> query = daoHelper.em().createQuery("FROM apitoken t WHERE t.user = :user AND t.name = :name", HibAPITokenData.class);
+		query.setParameter("user", user);
+		query.setParameter("name", name);
+		query.setHint(HibernateHints.HINT_CACHEABLE, true);
+		return firstOrNull(query);
 	}
 
 	@Override

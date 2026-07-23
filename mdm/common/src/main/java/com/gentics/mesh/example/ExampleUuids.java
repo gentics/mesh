@@ -97,6 +97,8 @@ public final class ExampleUuids {
 
 	public static final String TOKEN_UUID = "30fa3e4ae00c4ad6ba3e4ae00cfad6cc";
 
+	public static final String TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1XiJ9.eyJ1c2VyVXVpZCI6IjAxZjE4NjdlMjY4YTE4NmQ5NjU1YTRjMWM3NWJmNDFiIiwiaWF0IjoxNzg0NzkyMDUzLCJleHAiOjE3ODQ3OTU2NTN9.ONB6tUc-BbHs8JzbAQz6_rmFvYNLeAIQDwIbmf0vk78";
+
 	// Plugins
 
 	public static final String PLUGIN_1_ID = "hello-world";

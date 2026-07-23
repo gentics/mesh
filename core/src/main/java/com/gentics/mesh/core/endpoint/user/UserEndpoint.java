@@ -78,8 +78,10 @@ public class UserEndpoint extends RolePermissionHandlingEndpoint {
 			"Return API token which can be used to authenticate the user. Store the key somewhere save since you won't be able to retrieve it later on. This invalidates all tokens previously issued for this user. Requires UPDATE permission on the user.");
 		endpoint.method(POST);
 		endpoint.setMutating(true);
+		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(OK, userExamples.getAPIKeyResponse(), "The User API token response.");
+		endpoint.exampleRequest(userExamples.getAPITokenCreateRequest("New API Token"));
+		endpoint.exampleResponse(OK, userExamples.getAPIKeyResponse("New API Token"), "The User API token response.");
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("userUuid");

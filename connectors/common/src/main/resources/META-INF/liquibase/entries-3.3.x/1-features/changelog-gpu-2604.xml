@@ -30,9 +30,14 @@
         </createTable>
     </changeSet>
     <changeSet id="gpu-2604-2" author="n.pomaroli@gentics.com">
-        <createIndex indexName="idx_mesh_apitoken_user_dbuuid_tokenid" tableName="mesh_apitoken">
+        <createIndex tableName="mesh_apitoken" indexName="idx_mesh_apitoken_user_dbuuid_tokenid">
             <column name="user_dbuuid"/>
             <column name="tokenid"/>
         </createIndex>
+        <createIndex tableName="mesh_apitoken" indexName="idx_mesh_apitoken_user_dbuuid_name" unique="true">
+            <column name="user_dbuuid"/>
+			<column name="name" />
+		</createIndex>
+        <addForeignKeyConstraint baseTableName="mesh_apitoken" baseColumnNames="user_dbuuid" constraintName="fk_mesh_apitoken_user_dbuuid" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="dbuuid" referencedTableName="mesh_user" validate="true"/>
     </changeSet>
 </databaseChangeLog>

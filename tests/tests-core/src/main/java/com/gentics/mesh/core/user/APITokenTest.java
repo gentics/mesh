@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -16,6 +17,7 @@ import com.gentics.mesh.core.data.dao.APITokenDao;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.user.HibAPITokenData;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.rest.error.NameConflictException;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
@@ -46,6 +48,36 @@ public class APITokenTest extends AbstractMeshTest {
 			.hasFieldOrPropertyWithValue("expiresTimestamp", null)
 			.hasFieldOrPropertyWithValue("lastUsed", null)
 			.hasFieldOrPropertyWithValue("valid", true);
+	}
+
+	/**
+	 * Test creating a token with duplicate name
+	 */
+	@Test(expected = NameConflictException.class)
+	public void testCreateDuplicateName() {
+		String name = "Conflicting Name";
+		tx(tx -> {
+			tx.apiTokenDao().create(user(), name, TokenUtil.randomToken(), null);
+		});
+
+		tx(tx -> {
+			tx.apiTokenDao().create(user(), name, TokenUtil.randomToken(), null);
+		});
+	}
+
+	/**
+	 * Test creating a token with duplicate name for another user
+	 */
+	@Test
+	public void testCreateDuplicateNameOtherUser() {
+		String name = "Conflicting Name";
+		tx(tx -> {
+			tx.apiTokenDao().create(user(), name, TokenUtil.randomToken(), null);
+		});
+
+		tx(tx -> {
+			tx.apiTokenDao().create(users().get("admin"), name, TokenUtil.randomToken(), null);
+		});
 	}
 
 	/**
@@ -109,13 +141,7 @@ public class APITokenTest extends AbstractMeshTest {
 
 		tx(tx -> {
 			APITokenDao apiTokenDao = tx.apiTokenDao();
-			Map<String, HibUser> users = new HashMap<>(users());
-			users.remove(user().getUsername());
-			assertThat(users).as("Map of other users")
-				.isNotEmpty()
-				.doesNotContainValue(user());
-
-			for (HibUser user : users.values()) {
+			for (HibUser user : otherUsers()) {
 				assertThat(apiTokenDao.findByUuid(user, tokenData.getUuid())).as("Token fetched for other user").isNull();
 			}
 		});
@@ -142,14 +168,36 @@ public class APITokenTest extends AbstractMeshTest {
 
 		tx(tx -> {
 			APITokenDao apiTokenDao = tx.apiTokenDao();
-			Map<String, HibUser> users = new HashMap<>(users());
-			users.remove(user().getUsername());
-			assertThat(users).as("Map of other users")
-				.isNotEmpty()
-				.doesNotContainValue(user());
-
-			for (HibUser user : users.values()) {
+			for (HibUser user : otherUsers()) {
 				assertThat(apiTokenDao.findByTokenId(user, tokenId)).as("Token fetched for other user").isNull();
+			}
+		});
+	}
+
+	/**
+	 * Test loading by name
+	 */
+	@Test
+	public void testLoadByName() {
+		String tokenId = TokenUtil.randomToken();
+		String name = "Test Token";
+		HibAPITokenData tokenData = tx(tx -> {
+			APITokenDao apiTokenDao = tx.apiTokenDao();
+			return apiTokenDao.create(user(), name, tokenId, null);
+		});
+
+		HibAPITokenData reloadedTokenData = tx(tx -> {
+			APITokenDao apiTokenDao = tx.apiTokenDao();
+			return apiTokenDao.findByName(user(), name);
+		});
+		assertThat(reloadedTokenData).as("Reloaded API Token")
+			.isNotNull()
+			.isEqualTo(tokenData);
+
+		tx(tx -> {
+			APITokenDao apiTokenDao = tx.apiTokenDao();
+			for (HibUser user : otherUsers()) {
+				assertThat(apiTokenDao.findByName(user, name)).as("Token fetched for other user").isNull();
 			}
 		});
 	}
@@ -179,5 +227,18 @@ public class APITokenTest extends AbstractMeshTest {
 		});
 
 		assertThat(list).as("List of API Tokens").hasSameElementsAs(tokens);
+	}
+
+	/**
+	 * Get the collection of other users
+	 * @return collection of users
+	 */
+	protected Collection<HibUser> otherUsers() {
+		Map<String, HibUser> users = new HashMap<>(users());
+		users.remove(user().getUsername());
+		assertThat(users).as("Map of other users")
+			.isNotEmpty()
+			.doesNotContainValue(user());
+		return users.values();
 	}
 }
