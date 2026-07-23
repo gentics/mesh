@@ -53,4 +53,10 @@ public interface APITokenDao extends Dao<HibAPITokenData>, DaoTransformable<HibA
 	 * @return page of API Token instances
 	 */
 	Page<? extends HibAPITokenData> findAll(InternalActionContext ac, HibUser user, PagingParameters pagingInfo);
+
+	/**
+	 * Delete the token
+	 * @param token token
+	 */
+	void delete(HibAPITokenData token);
 }

@@ -32,7 +32,6 @@ import com.gentics.mesh.core.data.user.HibAPITokenData;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.user.UserAPITokenCreateRequest;
 import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
@@ -186,23 +185,27 @@ public class UserCrudHandler extends AbstractCrudHandler<HibUser, UserResponse> 
 	/**
 	 * Delete the stored API key token code in order to invalidate the API key.
 	 * 
-	 * @param ac
-	 * @param userUuid
+	 * @param ac action context
+	 * @param userUuid user uuid
+	 * @param tokenUuid token uuid
 	 */
-	public void handleDeleteAPIToken(InternalActionContext ac, String userUuid) {
+	public void handleDeleteAPIToken(InternalActionContext ac, String userUuid, String tokenUuid) {
 		validateParameter(userUuid, "The userUuid must not be empty");
+		validateParameter(tokenUuid, "The tokenUuid must not be empty");
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				// 1. Load the user that should be used
-				HibUser user = tx.userDao().loadObjectByUuid(ac, userUuid, UPDATE_PERM);
+				UserDao userDao = tx.userDao();
+				APITokenDao apiTokenDao = tx.apiTokenDao();
 
-				// 2. Generate the API key for the user
-				GenericMessageResponse message = db.tx(() -> {
-					user.resetAPIToken();
-					return message(ac, "api_key_invalidated");
-				});
-				return message;
+				HibUser user = userDao.loadObjectByUuid(ac, userUuid, UPDATE_PERM);
+				HibAPITokenData tokenData = apiTokenDao.findByUuid(user, tokenUuid);
+				if (tokenData == null) {
+					throw error(NOT_FOUND, "object_not_found_for_uuid", tokenUuid);
+				}
+				apiTokenDao.delete(tokenData);
+
+				return message(ac, "apitoken_deleted");
 			}, model -> ac.send(model, CREATED));
 		}
 	}

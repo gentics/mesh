@@ -103,4 +103,9 @@ public class APITokenDaoImpl implements APITokenDao {
 		FilterOperation<?> userFilter = Comparison.eq(new FieldOperand<>(ElementType.APITOKEN, "user_dbUuid"), new LiteralOperand<>(user.getUuid(), false), StringUtils.EMPTY);
 		return daoHelper.findAll(ac, Optional.empty(), pagingInfo, Optional.of(userFilter));
 	}
+
+	@Override
+	public void delete(HibAPITokenData token) {
+		currentTransaction.getTx().delete(token);
+	}
 }

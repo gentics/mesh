@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.rest.MeshEvent.USER_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.USER_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.USER_UPDATED;
 import static com.gentics.mesh.example.ExampleUuids.USER_EDITOR_UUID;
+import static com.gentics.mesh.example.ExampleUuids.TOKEN_UUID;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
@@ -90,9 +91,10 @@ public class UserEndpoint extends RolePermissionHandlingEndpoint {
 		}, isOrderedBlockingHandlers());
 
 		InternalEndpointRoute deleteEndpoint = createRoute();
-		deleteEndpoint.path("/:userUuid/token");
-		deleteEndpoint.setRAMLPath("/{userUuid}/token");
+		deleteEndpoint.path("/:userUuid/token/:tokenUuid");
+		deleteEndpoint.setRAMLPath("/{userUuid}/token/{tokenUuid}");
 		deleteEndpoint.addUriParameter("userUuid", "Uuid of the user.", USER_EDITOR_UUID);
+		deleteEndpoint.addUriParameter("tokenUuid", "Uuid of the token.", TOKEN_UUID);
 		deleteEndpoint.description("Invalidate the issued API token.");
 		deleteEndpoint.method(DELETE);
 		deleteEndpoint.setMutating(true);
@@ -100,8 +102,9 @@ public class UserEndpoint extends RolePermissionHandlingEndpoint {
 		deleteEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Message confirming the invalidation of the API token. Requires DELETE permission on the user.");
 		deleteEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
-			String uuid = ac.getParameter("userUuid");
-			crudHandler.handleDeleteAPIToken(ac, uuid);
+			String userUuid = ac.getParameter("userUuid");
+			String tokenUuid = ac.getParameter("tokenUuid");
+			crudHandler.handleDeleteAPIToken(ac, userUuid, tokenUuid);
 		}, isOrderedBlockingHandlers());
 	}
 

@@ -121,6 +121,28 @@ public class APITokenTest extends AbstractMeshTest {
 	}
 
 	/**
+	 * Test deleting a token
+	 */
+	@Test
+	public void testDelete() {
+		HibAPITokenData tokenData = tx(tx -> {
+			APITokenDao apiTokenDao = tx.apiTokenDao();
+			return apiTokenDao.create(user(), "Expired Token", TokenUtil.randomToken(), null);
+		});
+
+		tx(tx -> {
+			APITokenDao apiTokenDao = tx.apiTokenDao();
+			apiTokenDao.delete(tokenData);
+		});
+
+		HibAPITokenData reloadedTokenData = tx(tx -> {
+			APITokenDao apiTokenDao = tx.apiTokenDao();
+			return apiTokenDao.findByUuid(user(), tokenData.getUuid());
+		});
+		assertThat(reloadedTokenData).as("Deleted token").isNull();
+	}
+
+	/**
 	 * Test loading by uuid
 	 */
 	@Test
