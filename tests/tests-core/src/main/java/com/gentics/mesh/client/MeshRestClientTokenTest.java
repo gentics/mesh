@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.gentics.mesh.core.rest.user.UserAPITokenCreateRequest;
 import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.test.MeshOptionChanger;
@@ -48,7 +49,7 @@ public class MeshRestClientTokenTest extends AbstractMeshTest {
 	@Before
 	public void setUp() throws Exception {
 		String userUuid = TestDataProvider.getInstance().getUserInfo().getUserUuid();
-		testUserApiToken = testContext.getHttpClient().issueAPIToken(userUuid).blockingGet().getToken();
+		testUserApiToken = testContext.getHttpClient().issueAPIToken(userUuid, new UserAPITokenCreateRequest().setName("Test Token")).blockingGet().getToken();
 
 		UserInfo userInfo = TestDataProvider.getInstance().getUserInfo();
 		username = tx(tx -> {

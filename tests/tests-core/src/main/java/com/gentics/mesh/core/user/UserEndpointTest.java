@@ -65,6 +65,7 @@ import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.core.rest.user.UserAPITokenCreateRequest;
 import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
@@ -297,12 +298,12 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testAPIToken() {
 		String uuid = tx(() -> user().getUuid());
-		MeshResponse<UserAPITokenResponse> completeResponse = client().issueAPIToken(uuid).getResponse().blockingGet();
+		MeshResponse<UserAPITokenResponse> completeResponse = client().issueAPIToken(uuid, new UserAPITokenCreateRequest().setName("Test Token")).getResponse().blockingGet();
 		assertThat(completeResponse.getHeader("Cache-Control")).hasValue("private");
 
 		UserAPITokenResponse response = completeResponse.getBody();
-//		assertNull("The key was previously not issued.", response.getPreviousIssueDate());
 		assertThat(response.getToken()).isNotEmpty();
+		assertThat(response.getData()).isNotNull();
 
 		assertNotNull(tx(tx -> { return tx.userDao().findByUuid(uuid).getAPIKeyTokenCode(); }));
 		client().setLogin(null, null);
@@ -313,21 +314,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		MeshResponse<UserResponse> userResponse = userRequest.getResponse().blockingGet();
 		assertThat(userResponse.getCookies()).as("Requests using the api key should not yield a new cookie").isEmpty();
 
-		// Now invalidate the api key by generating a new one
-		String oldKey = response.getToken();
-		response = call(() -> client().issueAPIToken(uuid));
-		assertNotEquals("Each key should be unique.", oldKey, response.getToken());
-//		assertNotNull("The key was already requested once. Thus the date should be set.", response.getPreviousIssueDate());
-
-		// And continue invoking requests
-		call(() -> client().findUserByUuid(uuid), UNAUTHORIZED, "error_not_authorized");
-
-		// Now set the active key and verify that the request works
-		client().setAPIKey(response.getToken());
-
-		call(() -> client().findUserByUuid(uuid));
-
-		call(() -> client().invalidateAPIToken(uuid));
+		// new invalidate the token
+		call(() -> client().invalidateAPIToken(uuid, response.getData().getUuid()));
 		assertNull(tx(tx -> { return tx.userDao().findByUuid(uuid).getAPIKeyTokenCode(); }));
 		assertNull(tx(tx -> { return tx.userDao().findByUuid(uuid).getAPITokenIssueTimestamp(); }));
 		call(() -> client().findUserByUuid(uuid), UNAUTHORIZED, "error_not_authorized");
@@ -342,7 +330,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		});
 
 		call(() -> client().findUserByUuid(userUuid()));
-		call(() -> client().issueAPIToken(userUuid()), FORBIDDEN, "error_missing_perm", userUuid(), UPDATE_PERM.getRestPerm().getName());
+		call(() -> client().issueAPIToken(userUuid(), new UserAPITokenCreateRequest().setName("Forbidden Token")), FORBIDDEN, "error_missing_perm", userUuid(), UPDATE_PERM.getRestPerm().getName());
 	}
 
 	@Test
@@ -350,7 +338,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		String uuid = userUuid();
 		call(() -> client().findUserByUuid(uuid));
-		call(() -> client().issueAPIToken(uuid));
+		UserAPITokenResponse tokenResponse = call(() -> client().issueAPIToken(uuid, new UserAPITokenCreateRequest().setName("Test Token")));
 
 		tx((tx) -> {
 			RoleDao roleDao = tx.roleDao();
@@ -359,7 +347,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			tx.success();
 		});
 
-		call(() -> client().invalidateAPIToken(uuid), FORBIDDEN, "error_missing_perm", uuid, UPDATE_PERM.getRestPerm().getName());
+		call(() -> client().invalidateAPIToken(uuid, tokenResponse.getData().getUuid()), FORBIDDEN, "error_missing_perm", uuid, UPDATE_PERM.getRestPerm().getName());
 	}
 
 	@Test

@@ -97,6 +97,8 @@ import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagListUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
+import com.gentics.mesh.core.rest.user.UserAPITokenCreateRequest;
+import com.gentics.mesh.core.rest.user.UserAPITokenListResponse;
 import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
@@ -621,15 +623,23 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<UserAPITokenResponse> issueAPIToken(String userUuid) {
+	public MeshRequest<UserAPITokenResponse> issueAPIToken(String userUuid, UserAPITokenCreateRequest userAPITokenCreateRequest) {
 		Util.requireUuid(userUuid, "userUuid");
-		return prepareRequest(POST, "/users/" + userUuid + "/token", UserAPITokenResponse.class);
+		Objects.requireNonNull(userAPITokenCreateRequest, "userAPITokenCreateRequest must not be null");
+		return prepareRequest(POST, "/users/" + userUuid + "/token", UserAPITokenResponse.class, userAPITokenCreateRequest);
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> invalidateAPIToken(String userUuid) {
+	public MeshRequest<GenericMessageResponse> invalidateAPIToken(String userUuid, String tokenUuid) {
 		Util.requireUuid(userUuid, "userUuid");
-		return prepareRequest(DELETE, "/users/" + userUuid + "/token", GenericMessageResponse.class);
+		Util.requireUuid(tokenUuid, "tokenUuid");
+		return prepareRequest(DELETE, "/users/" + userUuid + "/token/" + tokenUuid, GenericMessageResponse.class);
+	}
+
+	@Override
+	public MeshRequest<UserAPITokenListResponse> findAPITokens(String userUuid, ParameterProvider... parameters) {
+		Util.requireUuid(userUuid, "userUuid");
+		return prepareRequest(GET, "/users/" + userUuid + "/token" + getQuery(getConfig(), parameters), UserAPITokenListResponse.class);
 	}
 
 	@Override
