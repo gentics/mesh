@@ -72,7 +72,6 @@ import com.gentics.mesh.json.serializer.FieldListSerializer;
 import com.gentics.mesh.json.serializer.JsonArraySerializer;
 import com.gentics.mesh.json.serializer.JsonContentSerializer;
 import com.gentics.mesh.json.serializer.JsonObjectSerializer;
-import com.gentics.mesh.json.serializer.JsonSchemaSerializer;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
