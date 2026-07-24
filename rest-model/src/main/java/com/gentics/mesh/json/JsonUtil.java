@@ -141,7 +141,6 @@ public final class JsonUtil {
 		module.addSerializer(JsonObject.class, new JsonObjectSerializer());
 		module.addSerializer(JsonArray.class, new JsonArraySerializer());
 		module.addSerializer(JsonContent.class, new JsonContentSerializer());
-		module.addSerializer(com.gentics.mesh.core.rest.JsonSchema.class, new JsonSchemaSerializer());
 
 		module.addSerializer(FieldMapImpl.class, new JsonSerializer<FieldMapImpl>() {
 			@Override
