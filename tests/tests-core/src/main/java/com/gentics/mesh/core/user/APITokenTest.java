@@ -14,7 +14,6 @@ import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.dao.APITokenDao;
-import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.user.HibAPITokenData;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.error.NameConflictException;
@@ -243,12 +242,13 @@ public class APITokenTest extends AbstractMeshTest {
 			});
 		}
 
-		Page<? extends HibAPITokenData> list = tx(tx -> {
+		Set<HibAPITokenData> existing = new HashSet<>();
+		existing.addAll(tx(tx -> {
 			InternalActionContext ac = mockActionContext();
 			return tx.apiTokenDao().findAll(ac, user(), new PagingParametersImpl(1, 1000L));
-		});
+		}).getWrappedList());
 
-		assertThat(list).as("List of API Tokens").hasSameElementsAs(tokens);
+		assertThat(existing).as("List of API Tokens").hasSameElementsAs(tokens);
 	}
 
 	/**
