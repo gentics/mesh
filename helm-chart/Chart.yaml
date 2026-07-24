@@ -4,4 +4,11 @@ description: Gentics Mesh
 type: application
 version: 0.0.0
 appVersion: 0.0.0
-icon: https://www.gentics.com/static/infoportal/files/images/g_logo_small.png
+
+# Minimum supported Kubernetes version ("-0" suffix: accept pre-release-style cluster versions)
+kubeVersion: ">=1.23.0-0"
+
+dependencies:
+  - name: gentics-common
+    version: 0.1.0
+    repository: "https://repo.gentics.com/repository/helm/"

@@ -24,10 +24,7 @@ spec:
         {{- toYaml . | nindent 8}}
       {{- end }}
     spec:
-    {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-    {{- end }}
+    {{- include "mesh.imagePullSecrets" . | nindent 6 }}
       serviceAccountName: {{ include "mesh.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
@@ -35,7 +32,7 @@ spec:
       initContainers:
       {{- if and (.Values.restore.enabled) (eq (.Values.replicaCount | int) 1) }}
         - name: restore-from-snapshot
-          image: "{{ .Values.tools.image.repository }}:{{ .Values.tools.image.tag }}"
+          image: "{{ include "mesh.toolsImage" . }}"
           imagePullPolicy: {{ .Values.tools.image.pullPolicy }}
           command: ["/bin/sh"]
           args:
@@ -61,7 +58,7 @@ spec:
         securityContext:
         {{- toYaml .Values.securityContext | nindent 12 }}
         {{- end }}
-        image: "{{ .Values.image.repository }}:{{ default .Chart.AppVersion .Values.image.tag }}"
+        image: "{{ include "mesh.image" . }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         env:
 {{- include "mesh.envVars" . | nindent 8 }}
@@ -142,7 +139,8 @@ spec:
             name: shared
             subPath: binaryImageCache
           {{- end }}
-          {{- if or .Values.license.key .Values.license.secret }}
+          {{- $globalLicense := ((.Values.global | default dict).license) | default dict -}}
+          {{- if or .Values.license.key .Values.license.secret $globalLicense.key }}
           - name: shared
             mountPath: {{ .Values.license.path }}
             subPath: license
@@ -160,10 +158,12 @@ spec:
           {{- if .Values.extraVolumeMounts }}
           {{- tpl (toYaml .Values.extraVolumeMounts) $ | nindent 10 }}
           {{- end }}
-          {{- if and .Values.customCert .Values.customCert.secretName }}
+          {{- with .Values.customCert }}
+          {{- if .secretName }}
           - name: cert-secret
             mountPath: "/certificates"
             readOnly: true
+          {{- end }}
           {{- end }}
 
       volumes:
@@ -184,9 +184,6 @@ spec:
       {{ end }}
       {{- end }}
 
-      - name: data
-        persistentVolumeClaim:
-
       {{- if eq .Values.backup.enabled true }}
       - name: snapshots
         persistentVolumeClaim:
@@ -204,16 +201,19 @@ spec:
           {{- else }}
           claimName: {{ include "mesh.fullname" . }}-shared
           {{- end }}
+
       {{- if .Values.ssl.enabled }}
       - name: ssl-secret
         secret:
           secretName: {{ .Values.ssl.existingSecret }}
       {{- end }}
 
-      {{- if and .Values.customCert .Values.customCert.secretName }}
+      {{- with .Values.customCert }}
+      {{- if .secretName }}
       - name: cert-secret
         secret:
-          secretName: {{ .Values.customCert.secretName }}
+          secretName: {{ .secretName }}
+      {{- end }}
       {{- end }}
 
       {{- if .Values.extraVolumes }}

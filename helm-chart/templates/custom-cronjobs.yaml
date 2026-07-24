@@ -24,10 +24,12 @@ spec:
           {{- if $job.image.pullSecret }}
           imagePullSecrets:
           - name: {{ $job.image.pullSecret }}
+          {{- else }}
+          {{- include "mesh.imagePullSecrets" $ | nindent 10 }}
           {{- end }}
 
           containers:
-          - image: "{{ $job.image.repository }}:{{ $job.image.tag }}"
+          - image: "{{ include "gentics-common.image" (dict "root" $ "image" $job.image) }}"
             imagePullPolicy: {{ $job.image.imagePullPolicy }}
             name: {{ $job.name }}
             securityContext:

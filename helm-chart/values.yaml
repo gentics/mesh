@@ -7,8 +7,12 @@
 replicaCount: 1
 
 image:
-  repository: docker.gentics.com/gentics/mesh-enterprise-hsqldb
-  # tag: 3.0.0
+  ## Registry and repository are combined to "registry/repository:tag".
+  ## global.imageRegistry (umbrella mirror override) takes precedence over registry.
+  ## Leave registry empty if your repository already contains the registry host.
+  registry: docker.gentics.com
+  repository: gentics/mesh-enterprise-mariadb
+  tag: 3.2.5
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
@@ -20,6 +24,15 @@ license:
   # secret:
   path: "/license"
   filename: "license.key"
+
+database:
+  # host: ""
+  # port: 0
+  # name: ""
+  # username: ""
+  # password: ""
+  # extraParams: ""
+
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -119,6 +132,13 @@ extraEnv:
 # All settings in mesh.yml are configurable with env vars (See: extraEnv)
 
 persistence:
+  enabled: true
+
+  ## Whether Mesh volumes (shared, snapshots) survive "helm uninstall".
+  ## Unset: follows global.persistence.keepOnUninstall, defaulting to true (keep).
+  ## Leave commented so the global umbrella switch stays effective.
+  # keepOnUninstall: true
+
   # Volume for shared data (uploads, keystore)
   # This volume should be a network volume (NFS) and will be shared across all instances
   shared:
@@ -168,13 +188,6 @@ persistence:
 #   periodSeconds: 5
 #   failureThreshold: 5
 
-database:
-  # host: ""
-  # port: 0
-  # name: ""
-  # username: ""
-  # password: ""
-  # extraParams: ""
 
 vertxOptions:
   workerPoolSize: 20
@@ -219,10 +232,11 @@ cluster:
 # Tools settings, which are used for backup/restore and in the NOTES for generation of an api key
 tools:
   image:
-    repository: docker.gentics.com/gentics/mesh/mesh-tools
+    registry: docker.gentics.com
+    repository: gentics/mesh/mesh-tools
     tag: 1.0.2
     pullPolicy: IfNotPresent
-    pullSecret: docker-gentics-com
+    pullSecret: ""
 
 # Restore settings. The restore operation is invoked when the initial cluster is being setup.
 # The restore will utilize the backup snapshot to populate the keystore and uploads folders.
@@ -268,10 +282,53 @@ backup:
       memory: 1Gi
       cpu: 250m
 
-# Configure credentials
-credentials:
-  initialAdminPassword: ""
-  forcePasswordReset: false
+## Generate a Gentics Mesh API key and store it in the "<release>-mesh-secret"
+## Secret (key "apikey") — the CMP portals read this secret by default.
+## The (empty) Secret is ALWAYS rendered by this chart; when generateApiKey is
+## true, a Job waits for Mesh, logs in with the admin credentials
+## (login -> auth/me -> POST /users/{uuid}/token) and patches the token into it.
+## Create-once: an existing key is never regenerated, because Mesh invalidates
+## the previous token when a new one is issued. Disabling the flag on a later
+## upgrade removes only the job — the stored key stays intact.
+## Force regeneration: kubectl delete secret <release>-mesh-secret, re-run with
+## the flag enabled (helm upgrade / Argo sync).
+generateApiKey: false
+
+## Configuration for the API-key job (only used when generateApiKey is true).
+apiKeyJob:
+  ## Mesh user whose API token is generated. The password is taken from the
+  ## initialAdminPassword secret (or its existingSecret).
+  ## NOTE: issuing the token invalidates any previously issued API token of
+  ## this user.
+  username: admin
+  image:
+    registry: docker.io
+    repository: curlimages/curl
+    tag: "8.11.1"
+    pullPolicy: IfNotPresent
+  ## Completed jobs are cleaned up automatically after this many seconds.
+  ttlSecondsAfterFinished: 3600
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 200m
+      memory: 64Mi
+
+# Initial admin credentials
+initialAdminPassword:
+  ## Explicit password. Leave empty to auto-generate a random 24-char password on install.
+  ## The generated password is persisted in the Secret and reused on upgrades.
+  password: ""
+
+  ## Reference an existing Secret instead of creating one.
+  ## When set, password above is ignored and no Secret is created by the chart.
+  # existingSecret: ""
+  # existingSecretKey: password
+
+  ## Force the admin user to reset the password on first login.
+  forceReset: false
 
 config:
   publicKeys: ""
@@ -342,4 +399,161 @@ customjobs:
   #  #  - mountPath: /runme.sh
   #  #    name: config
   #  #    subPath: runme.sh
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Gentics Mesh MCP Server (sub-component)
+#
+# Provides a Model Context Protocol interface for LLM clients
+# (Claude Desktop, OpenAI Agents, LangChain, n8n, Open WebUI, …).
+# Six read-only tools, runs as a separate Deployment pod next to Mesh.
+#
+# Disabled by default — enable via `mcpServer.enabled=true`.
+# Source: mesh-enterprise/mcp-server/
+# ─────────────────────────────────────────────────────────────────────────────
+mcpServer:
+  enabled: false
+
+  image:
+    ## Registry and repository are combined to "registry/repository:tag".
+    ## global.imageRegistry (umbrella mirror override) takes precedence over registry.
+    registry: repo.gentics.com
+    repository: mesh/mcp-server
+    # tag: ""   # default: Chart.AppVersion
+    pullPolicy: IfNotPresent
+    ## Pull secret for the MCP-server image (overrides global.imagePullSecrets).
+    # pullSecret: docker-gentics-com
+
+  replicaCount: 1
+
+  ## PodDisruptionBudget — only applied when replicaCount > 1.
+  podDisruptionBudget:
+    ## Minimum number/percentage of pods that must stay available during
+    ## voluntary disruptions (node drains, cluster upgrades).
+    minAvailable: "50%"
+    ## Alternative to minAvailable — if set, it is used INSTEAD of minAvailable
+    ## (Kubernetes allows only one of the two).
+    # maxUnavailable: 1
+
+  # Transport mode.
+  #   "stdio" – only reachable via `kubectl exec -i` or a sidecar (no Service).
+  #   "http"  – creates Service + optional Ingress, JSON-RPC via POST /mcp.
+  transport:
+    mode: http
+    http:
+      port: 3001
+      host: "0.0.0.0"
+    auth:
+      # If true: the server accepts requests without auth (only acceptable behind a reverse proxy).
+      disabled: false
+      # Inline token (testing only). Empty: a token is generated once at install
+      # and reused across upgrades (see NOTES for the retrieval command).
+      token: ""
+      # Existing Secret with key MCP_AUTH_TOKEN.
+      # Recommended for GitOps/Argo CD (see README "Deploying with Argo CD").
+      existingSecret: ""
+    cors:
+      # Comma-separated CORS origin allowlist; "*" allows all.
+      origins: []
+
+  # Mesh connection.
+  # Default (password and existingSecret empty): automatically uses this release's
+  # Mesh admin secret ("<release>-mesh-admin" or initialAdminPassword.existingSecret)
+  # with user "admin" — works without any further configuration.
+  mesh:
+    # Default: in-cluster service DNS of the Mesh component of this release.
+    # When empty, derived from `mesh.fullname` + service.mesh.port.
+    baseUrl: ""
+    username: "admin"
+    password: ""   # for testing only; otherwise use existingSecret or the default (admin secret)
+    # Existing Secret containing the Mesh password (key: existingSecretKey).
+    existingSecret: ""
+    # Key inside existingSecret (default: MESH_PASSWORD).
+    # existingSecretKey: "MESH_PASSWORD"
+    allowedProjects: "demo"
+    allowedSchemas: ""           # leer = alle erlaubt
+    allowedLanguages: "de,en"
+    readOnly: true
+    graphqlMaxDepth: 6
+    graphqlTimeoutMs: 5000
+
+  # Protection layers: prevent an LLM from flooding Mesh with requests.
+  protection:
+    rateLimit:
+      globalPerSecond: 50
+      perTokenPerSecond: 20
+    maxConcurrent: 10
+    circuitBreaker:
+      enabled: true
+      failureRatePercent: 50
+      windowSize: 20
+      openDurationMs: 30000
+    graphqlMaxQueryLength: 4000
+
+  logLevel: "info"
+
+  # Additional environment variables passed through directly.
+  extraEnv: []
+
+  service:
+    type: ClusterIP
+    annotations: {}
+    # When transport.mode = "stdio", no Service is created.
+
+  ingress:
+    enabled: false
+    annotations: {}
+    # ingressClassName: nginx
+    hosts:
+      - host: mesh-mcp.local
+        paths:
+          - "/"
+    tls: []
+    #  - secretName: mcp-tls
+    #    hosts:
+    #      - mesh-mcp.local
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 768Mi
+
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 10001
+    runAsGroup: 10001
+    fsGroup: 10001
+    seccompProfile:
+      type: RuntimeDefault
+
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  podAnnotations: {}
+  podLabels: {}
+
+
+  startupProbe:
+    periodSeconds: 5
+    timeoutSeconds: 5
+    failureThreshold: 30
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 20
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readinessProbe:
+    initialDelaySeconds: 15
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
 
