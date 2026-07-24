@@ -6,9 +6,11 @@ import java.util.Optional;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
+import com.gentics.mesh.ElementType;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.user.HibAPITokenData;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.dagger.annotations.ElementTypeKey;
 import com.gentics.mesh.util.ETag;
 
 import jakarta.persistence.Entity;
@@ -19,6 +21,7 @@ import jakarta.persistence.ManyToOne;
  */
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "HibEntityCache")
 @Entity(name = "apitoken")
+@ElementTypeKey(ElementType.APITOKEN)
 public class HibAPITokenDataImpl extends AbstractHibDatabaseElement implements HibAPITokenData {
 	private String name;
 

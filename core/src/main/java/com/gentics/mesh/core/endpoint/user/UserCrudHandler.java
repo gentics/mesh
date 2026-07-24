@@ -27,6 +27,8 @@ import com.gentics.mesh.core.action.UserDAOActions;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.dao.APITokenDao;
 import com.gentics.mesh.core.data.dao.UserDao;
+import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.PageTransformer;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.user.HibAPITokenData;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -39,8 +41,10 @@ import com.gentics.mesh.core.rest.user.UserResetTokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
+import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.TokenUtil;
+import com.gentics.mesh.util.ValidationUtil;
 
 /**
  * Handler which contains methods for user related requests.
@@ -54,11 +58,16 @@ public class UserCrudHandler extends AbstractCrudHandler<HibUser, UserResponse> 
 
 	private MeshJWTAuthProvider authProvider;
 
+	private final PageTransformer pageTransformer;
+
 	@Inject
-	public UserCrudHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, MeshJWTAuthProvider authProvider, WriteLock writeLock, UserDAOActions userActions) {
+	public UserCrudHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils,
+			MeshJWTAuthProvider authProvider, WriteLock writeLock, UserDAOActions userActions,
+			PageTransformer pageTransformer) {
 		super(db, utils, writeLock, userActions);
 		this.boot = boot;
 		this.authProvider = authProvider;
+		this.pageTransformer = pageTransformer;
 	}
 
 	/**
@@ -210,4 +219,24 @@ public class UserCrudHandler extends AbstractCrudHandler<HibUser, UserResponse> 
 		}
 	}
 
+	/**
+	 * List the API Tokens of the user
+	 * @param ac action context
+	 * @param userUuid user uuid
+	 */
+	public void handleListAPITokens(InternalActionContext ac, String userUuid) {
+		validateParameter(userUuid, "The userUuid must not be empty");
+		PagingParameters pagingInfo = ac.getPagingParameters();
+		ValidationUtil.validate(pagingInfo);
+
+		utils.syncTx(ac, tx -> {
+			UserDao userDao = tx.userDao();
+			APITokenDao apiTokenDao = tx.apiTokenDao();
+
+			HibUser user = userDao.loadObjectByUuid(ac, userUuid, UPDATE_PERM);
+			Page<? extends HibAPITokenData> page = apiTokenDao.findAll(ac, user, pagingInfo);
+
+			return pageTransformer.transformToRestSync(page, ac, 0);
+		}, model -> ac.send(model, OK));
+	}
 }

@@ -23,23 +23,30 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.user.HibAPITokenData;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.user.UserAPITokenDataModel;
+import com.gentics.mesh.data.dao.util.CommonDaoHelper;
 import com.gentics.mesh.database.CurrentTransaction;
 import com.gentics.mesh.hibernate.data.domain.HibAPITokenDataImpl;
+import com.gentics.mesh.hibernate.data.permission.HibPermissionRoots;
+import com.gentics.mesh.hibernate.event.EventFactory;
 import com.gentics.mesh.parameter.PagingParameters;
 
+import dagger.Lazy;
+import io.vertx.core.Vertx;
 import jakarta.persistence.TypedQuery;
 
 /**
  * Implementation of {@link APITokenDao}
  */
 @Singleton
-public class APITokenDaoImpl implements APITokenDao {
+public class APITokenDaoImpl extends AbstractHibDao<HibAPITokenData> implements APITokenDao {
 	protected final CurrentTransaction currentTransaction;
 
 	protected final DaoHelper<HibAPITokenData, HibAPITokenDataImpl> daoHelper;
 
 	@Inject
-	public APITokenDaoImpl(CurrentTransaction currentTransaction, DaoHelper<HibAPITokenData, HibAPITokenDataImpl> daoHelper) {
+	public APITokenDaoImpl(CurrentTransaction currentTransaction, DaoHelper<HibAPITokenData, HibAPITokenDataImpl> daoHelper, HibPermissionRoots permissionRoots, CommonDaoHelper commonDaoHelper, 
+			EventFactory eventFactory, Lazy<Vertx> vertx) {
+		super(permissionRoots, commonDaoHelper, currentTransaction, eventFactory, vertx);
 		this.currentTransaction = currentTransaction;
 		this.daoHelper = daoHelper;
 	}
@@ -107,5 +114,10 @@ public class APITokenDaoImpl implements APITokenDao {
 	@Override
 	public void delete(HibAPITokenData token) {
 		currentTransaction.getTx().delete(token);
+	}
+
+	@Override
+	public String[] getHibernateEntityName(Object... arg) {
+		return new String[] {currentTransaction.getTx().data().getDatabaseConnector().maybeGetDatabaseEntityName(HibAPITokenDataImpl.class).get()};
 	}
 }

@@ -121,6 +121,9 @@ public interface DaoCollection {
 		case USER:
 			dao = userDao();
 			break;
+		case APITOKEN:
+			dao = apiTokenDao();
+			break;
 		default:
 			break;
 		}

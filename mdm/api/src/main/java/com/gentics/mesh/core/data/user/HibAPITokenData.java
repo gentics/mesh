@@ -2,16 +2,30 @@ package com.gentics.mesh.core.data.user;
 
 import java.util.Optional;
 
+import com.gentics.mesh.ElementType;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.TypeInfo;
+import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibNamedElement;
-import com.gentics.mesh.core.data.HibTransformableElement;
 import com.gentics.mesh.core.rest.user.UserAPITokenDataModel;
 import com.gentics.mesh.util.DateUtils;
 
 /**
  * Domain model for API Token Data
  */
-public interface HibAPITokenData extends HibTransformableElement<UserAPITokenDataModel>, HibNamedElement {
+public interface HibAPITokenData extends HibCoreElement<UserAPITokenDataModel>, HibNamedElement {
+	TypeInfo TYPE_INFO = new TypeInfo(ElementType.APITOKEN, null, null, null);
+
+	@Override
+	default TypeInfo getTypeInfo() {
+		return TYPE_INFO;
+	}
+
+	@Override
+	default String getSubETag(InternalActionContext ac) {
+		return null;
+	}
+
 	/**
 	 * Return the user to which the token belongs
 	 * @return user

@@ -99,13 +99,29 @@ public class UserEndpoint extends RolePermissionHandlingEndpoint {
 		deleteEndpoint.method(DELETE);
 		deleteEndpoint.setMutating(true);
 		deleteEndpoint.produces(APPLICATION_JSON);
-		deleteEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Message confirming the invalidation of the API token. Requires DELETE permission on the user.");
+		deleteEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Message confirming the invalidation of the API token. Requires UPDATE permission on the user.");
 		deleteEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String userUuid = ac.getParameter("userUuid");
 			String tokenUuid = ac.getParameter("tokenUuid");
 			crudHandler.handleDeleteAPIToken(ac, userUuid, tokenUuid);
 		}, isOrderedBlockingHandlers());
+
+		InternalEndpointRoute listEndpoint = createRoute();
+		listEndpoint.path("/:userUuid/token");
+		listEndpoint.setRAMLPath("/{userUuid}/token");
+		listEndpoint.addUriParameter("userUuid", "Uuid of the user.", USER_EDITOR_UUID);
+		listEndpoint.description(
+			"List tokens of the user. Requires UPDATE permission on the user.");
+		listEndpoint.method(GET);
+		listEndpoint.setMutating(false);
+		listEndpoint.produces(APPLICATION_JSON);
+		listEndpoint.exampleResponse(OK, null); // FIXME
+		listEndpoint.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String userUuid = ac.getParameter("userUuid");
+			crudHandler.handleListAPITokens(ac, userUuid);
+		}, false);
 	}
 
 	private void addReadPermissionHandler() {

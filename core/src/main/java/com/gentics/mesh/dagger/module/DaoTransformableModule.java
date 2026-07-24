@@ -5,6 +5,7 @@ import java.util.Map;
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.annotation.Getter;
 import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.dao.APITokenDao;
 import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.DaoTransformable;
 import com.gentics.mesh.core.data.dao.GroupDao;
@@ -100,4 +101,9 @@ public abstract class DaoTransformableModule {
 	@IntoMap
 	@ElementTypeKey(ElementType.LANGUAGE)
 	abstract DaoTransformable<? extends HibCoreElement<? extends RestModel>, ? extends RestModel> language(LanguageDao dao);
+
+	@Binds
+	@IntoMap
+	@ElementTypeKey(ElementType.APITOKEN)
+	abstract DaoTransformable<? extends HibCoreElement<? extends RestModel>, ? extends RestModel> apiToken(APITokenDao dao);
 }
