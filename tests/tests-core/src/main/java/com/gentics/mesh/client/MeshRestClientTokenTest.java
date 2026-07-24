@@ -5,6 +5,8 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ElasticsearchTestMode.NONE;
 import static com.gentics.mesh.test.TestSize.PROJECT;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
@@ -17,6 +19,7 @@ import com.gentics.mesh.test.MeshOptionChanger;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.util.DateUtils;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Flowable;
@@ -98,6 +101,27 @@ public class MeshRestClientTokenTest extends AbstractMeshTest {
 			// assert that we still use the API Token
 			assertThat(client().getAPIKey()).as("API Token").isEqualTo(testUserApiToken);
 		}).blockingSubscribe();
+	}
+
+	/**
+	 * Test using an expired API Token
+	 * @throws Exception
+	 */
+	@Test
+	public void testExpiredApiToken() throws Exception {
+		String uuid = tx(() -> user().getUuid());
+
+		// create a token, which will expire in one second
+		String expires = DateUtils.toISO8601(Instant.now().plus(1, ChronoUnit.SECONDS).toEpochMilli());
+		client().setLogin(username, password).login().blockingGet();
+		String expiredToken = call(() -> client().issueAPIToken(uuid,
+				new UserAPITokenCreateRequest().setName("Expired token").setExpires(expires))).getToken();
+
+		// wait two seconds
+		Thread.sleep(2_000);
+
+		client().setLogin(null, null).setAPIKey(expiredToken);
+		call(() -> client().me(), HttpResponseStatus.UNAUTHORIZED);
 	}
 
 	/**
