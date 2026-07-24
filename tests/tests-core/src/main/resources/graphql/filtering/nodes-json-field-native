@@ -1,0 +1,90 @@
+{
+	jsonContainsMouse: nodes(filter: {
+		schema: {is: folder}
+		fields: {
+			folder: {
+				json: {like: "%Mouse%"}
+			}
+		}
+	}) {
+		# [$.data.jsonContainsMouse.elements.length()=1]
+		elements {
+			...output
+		}
+	}
+	notJsonContainsMouse: nodes(filter: {
+		schema: {is: folder}
+		not: {
+			fields: {
+				folder: {
+					json: {like: "%Mouse%"}
+				}
+			}
+		}
+	}) {
+		# [$.data.notJsonContainsMouse.elements.length()=8]
+		elements {
+			...output
+		}
+	}
+
+	jsonIsNotNull: nodes(filter: {
+		schema: {is: folder}
+		fields: {
+			folder: {
+				json: {isNull: false}
+			}
+		}
+	}) {
+		# [$.data.jsonIsNotNull.elements.length()=1]
+		elements {
+			...output
+		}
+	}
+	notJsonIsNotNull: nodes(filter: {
+		schema: {is: folder}
+		not: {
+			fields: {
+				folder: {
+					json: {isNull: false}
+				}
+			}
+		}
+	}) {
+		# [$.data.notJsonIsNotNull.elements.length()=8]
+		elements {
+			...output
+		}
+	}
+	jsonIsNull: nodes(filter: {
+		schema: {is: folder}
+		fields: {
+			folder: {
+				json: {isNull: true}
+			}
+		}
+	}) {
+		# [$.data.jsonIsNull.elements.length()=8]
+		elements {
+			...output
+		}
+	}
+	notJsonIsNull: nodes(filter: {
+		schema: {is: folder}
+		fields: {
+			folder: {
+				json: {isNull: true}
+			}
+		}
+	}) {
+		# [$.data.notJsonIsNull.elements.length()=8]
+		elements {
+			...output
+		}
+	}
+}
+# [$.errors=<is-undefined>]
+
+fragment output on Node {
+	uuid
+}

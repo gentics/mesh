@@ -64,6 +64,15 @@
 				nodeList { uuid }
 				booleanList
 				numberList
+				jsonList {
+					# [$.data.node.fields.jsonList[0]=<is-not-null>]
+					text
+				}
+
+				json {
+					# [$.data.node.fields.json.json.firstName=Mickey]
+					json
+				}
 
 				# [$.data.node.fields.boolean=true]
 				boolean
@@ -113,6 +122,10 @@
 							# [$.data.node.fields.micronodeList[1].nodeList[0].language=en]
 							# [$.data.node.fields.micronodeList[1].nodeList[1].language=en]
 							language
+						}
+						json {
+							# [$.data.node.fields.micronodeList[1].json.json.firstName=Donald]
+                            json
 						}
 					}
 				}

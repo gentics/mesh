@@ -4,8 +4,11 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.io.IOException;
+import java.util.Comparator;
 
 import org.codehaus.jettison.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -25,6 +28,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleAbstractTypeResolver;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.AbstractRestException;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.EventCauseInfo;
@@ -32,11 +36,13 @@ import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
+import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.core.rest.node.field.ListableField;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.JsonFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.node.field.list.FieldList;
@@ -54,7 +60,9 @@ import com.gentics.mesh.json.deserializer.FieldDeserializer;
 import com.gentics.mesh.json.deserializer.FieldMapDeserializer;
 import com.gentics.mesh.json.deserializer.FieldSchemaDeserializer;
 import com.gentics.mesh.json.deserializer.JsonArrayDeserializer;
+import com.gentics.mesh.json.deserializer.JsonContentDeserializer;
 import com.gentics.mesh.json.deserializer.JsonObjectDeserializer;
+import com.gentics.mesh.json.deserializer.JsonSchemaDeserializer;
 import com.gentics.mesh.json.deserializer.NodeFieldListItemDeserializer;
 import com.gentics.mesh.json.deserializer.PermissionChangedEventModelDeserializer;
 import com.gentics.mesh.json.deserializer.RestExceptionDeserializer;
@@ -62,17 +70,40 @@ import com.gentics.mesh.json.deserializer.UserNodeReferenceDeserializer;
 import com.gentics.mesh.json.serializer.BasicFieldSerializer;
 import com.gentics.mesh.json.serializer.FieldListSerializer;
 import com.gentics.mesh.json.serializer.JsonArraySerializer;
+import com.gentics.mesh.json.serializer.JsonContentSerializer;
 import com.gentics.mesh.json.serializer.JsonObjectSerializer;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.vertx.json.schema.Draft;
+import io.vertx.json.schema.JsonSchemaOptions;
+import io.vertx.reactivex.json.schema.JsonSchema;
+import io.vertx.reactivex.json.schema.Validator;
 
 /**
  * Main JSON Util which is used to register all custom JSON specific handlers and deserializers.
  */
 public final class JsonUtil {
+
+	/**
+	 * JSON object comparator
+	 */
+	public static Comparator<JsonContent> COMPARATOR = (a,b) -> {
+		if (a == null && b == null) {
+			return 0;
+		}
+		if (a == null) {
+			return -1;
+		}
+		if (b == null) {
+			return 1;
+		}
+		if (a.equals(b)) {
+			return 0;
+		} else {
+			return a.toString().compareTo(b.toString());
+		}
+	};
 
 	protected static ObjectMapper defaultMapper;
 	protected static JsonSchemaGenerator schemaGen;
@@ -104,9 +135,11 @@ public final class JsonUtil {
 		module.addSerializer(StringFieldImpl.class, new BasicFieldSerializer<StringFieldImpl>());
 		module.addSerializer(DateFieldImpl.class, new BasicFieldSerializer<DateFieldImpl>());
 		module.addSerializer(BooleanFieldImpl.class, new BasicFieldSerializer<BooleanFieldImpl>());
+		module.addSerializer(JsonFieldImpl.class, new BasicFieldSerializer<JsonFieldImpl>());
 		module.addSerializer(FieldList.class, new FieldListSerializer());
 		module.addSerializer(JsonObject.class, new JsonObjectSerializer());
 		module.addSerializer(JsonArray.class, new JsonArraySerializer());
+		module.addSerializer(JsonContent.class, new JsonContentSerializer());
 
 		module.addSerializer(FieldMapImpl.class, new JsonSerializer<FieldMapImpl>() {
 			@Override
@@ -123,6 +156,8 @@ public final class JsonUtil {
 		module.addDeserializer(FieldSchema.class, new FieldSchemaDeserializer<FieldSchema>());
 		module.addDeserializer(EventCauseInfo.class, new EventCauseInfoDeserializer());
 		module.addDeserializer(PermissionChangedEventModel.class, new PermissionChangedEventModelDeserializer());
+		module.addDeserializer(JsonContent.class, new JsonContentDeserializer());
+		module.addDeserializer(com.gentics.mesh.core.rest.JsonSchema.class, new JsonSchemaDeserializer());
 
 		defaultMapper.registerModule(module);
 		defaultMapper.registerModule(new SimpleModule("interfaceMapping") {
@@ -251,6 +286,35 @@ public final class JsonUtil {
 		} catch (Exception e) {
 			throw new GenericRestException(INTERNAL_SERVER_ERROR, "error_internal", e);
 		}
+	}
+
+	/**
+	 * Create new schema validator against the given input schema.
+	 * 
+	 * @param schema
+	 * @return
+	 */
+	public static Validator newJsonSchemaValidator(JsonSchema schema) {
+		return Validator.create(schema, new JsonSchemaOptions().setBaseUri("https://gentics.com/mesh").setDraft(Draft.DRAFT202012));
+	}
+
+	/**
+	 * Compare two {@link RestModel} implementor instances.
+	 * 
+	 * @param <A>
+	 * @param <B>
+	 * @param a
+	 * @param b
+	 * @return
+	 */
+	public static <A extends RestModel, B extends RestModel> boolean equals(A a, B b) {
+		if (a == null && b == null) {
+			return true;
+		}
+		if (a != null && b != null) {
+			return new JsonObject(toJson(a)).equals(new JsonObject(toJson(b)));
+		}
+		return false;
 	}
 
 	/**

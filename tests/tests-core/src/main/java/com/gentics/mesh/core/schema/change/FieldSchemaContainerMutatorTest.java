@@ -10,6 +10,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
+import java.util.Map;
+
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.schema.HibFieldTypeChange;
@@ -19,10 +22,14 @@ import com.gentics.mesh.core.data.schema.HibUpdateFieldChange;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerMutator;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.JsonObjectSchema;
+import com.gentics.mesh.core.rest.JsonSchema;
+import com.gentics.mesh.core.rest.JsonSchemaType;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
 import com.gentics.mesh.core.rest.schema.DateFieldSchema;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
+import com.gentics.mesh.core.rest.schema.JsonFieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
@@ -35,6 +42,7 @@ import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.JsonFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
@@ -45,6 +53,7 @@ import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.util.IndexOptionHelper;
+import com.hazelcast.jet.json.JsonUtil;
 
 /**
  * Test for common mutator operations on a field containers.
@@ -134,7 +143,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testAUpdateFields() throws MeshSchemaException {
+	public void testAUpdateFields() throws MeshSchemaException, IOException {
 		try (Tx tx = tx()) {
 			CommonTx ctx = tx.unwrap();
 
@@ -159,6 +168,12 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 				nodeField.setName("nodeField");
 				nodeField.setRequired(true);
 				schemaModel.addField(nodeField);
+
+				JsonFieldSchema jsonField = new JsonFieldSchemaImpl();
+				jsonField.setAllowedSchemas(new JsonObjectSchema().setProperties(Map.of("blub", new JsonSchemaType())).setRequired(new String[] {"blub"}));
+				jsonField.setName("jsonField");
+				jsonField.setRequired(true);
+				schemaModel.addField(jsonField);
 
 				MicronodeFieldSchema micronodeField = new MicronodeFieldSchemaImpl();
 				micronodeField.setAllowedMicroSchemas("blub");
@@ -208,12 +223,19 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 			nodeFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			binaryFieldUpdate.setNextChange(nodeFieldUpdate);
 
+			HibUpdateFieldChange jsonFieldUpdate = (HibUpdateFieldChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.UPDATEFIELD);
+			jsonFieldUpdate.setRestProperty(ALLOW_KEY, new String[] { JsonUtil.toJson(new JsonObjectSchema().setProperties(Map.of("content", new JsonSchemaType())).setRequired(new String[] {"content"})) });
+			jsonFieldUpdate.setFieldName("jsonField");
+			jsonFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
+			jsonFieldUpdate.setIndexOptions(IndexOptionHelper.getRawFieldOption());
+			nodeFieldUpdate.setNextChange(jsonFieldUpdate);
+
 			HibUpdateFieldChange stringFieldUpdate = (HibUpdateFieldChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.UPDATEFIELD);
 			stringFieldUpdate.setRestProperty(ALLOW_KEY, new String[] { "valueA", "valueB" });
 			stringFieldUpdate.setFieldName("stringField");
 			stringFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			stringFieldUpdate.setIndexOptions(IndexOptionHelper.getRawFieldOption());
-			nodeFieldUpdate.setNextChange(stringFieldUpdate);
+			jsonFieldUpdate.setNextChange(stringFieldUpdate);
 
 			HibUpdateFieldChange htmlFieldUpdate = (HibUpdateFieldChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.UPDATEFIELD);
 			htmlFieldUpdate.setFieldName("htmlField");
@@ -279,6 +301,14 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 			assertFalse("The required flag should now be set to false.", stringFieldSchema.isRequired());
 			assertTrue("The index option did not contain the raw field. {" + stringFieldSchema.getElasticsearch().encodePrettily() + "}",
 					stringFieldSchema.getElasticsearch().containsKey("raw"));
+
+			// JSON
+			JsonFieldSchema jsonFieldSchema = updatedSchema.getField("jsonField", JsonFieldSchemaImpl.class);
+			assertNotNull(jsonFieldSchema);
+			assertArrayEquals(new JsonSchema[] { new JsonObjectSchema().setProperties(Map.of("content", new JsonSchemaType())).setRequired(new String[] {"content"}) }, jsonFieldSchema.getAllowedSchemas());
+			assertFalse("The required flag should now be set to false.", jsonFieldSchema.isRequired());
+			assertTrue("The index option did not contain the raw field. {" + jsonFieldSchema.getElasticsearch().encodePrettily() + "}",
+					jsonFieldSchema.getElasticsearch().containsKey("raw"));
 
 			// Html
 			HtmlFieldSchema htmlFieldSchema = updatedSchema.getField("htmlField", HtmlFieldSchemaImpl.class);

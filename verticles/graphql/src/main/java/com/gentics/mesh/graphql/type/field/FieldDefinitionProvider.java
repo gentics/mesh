@@ -14,7 +14,6 @@ import static graphql.scalars.java.JavaPrimitives.GraphQLLong;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -35,7 +34,6 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.dataloader.BatchLoaderWithContext;
@@ -54,11 +52,13 @@ import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.node.field.HibBooleanField;
 import com.gentics.mesh.core.data.node.field.HibDateField;
 import com.gentics.mesh.core.data.node.field.HibHtmlField;
+import com.gentics.mesh.core.data.node.field.HibJsonField;
 import com.gentics.mesh.core.data.node.field.HibNumberField;
 import com.gentics.mesh.core.data.node.field.HibStringField;
 import com.gentics.mesh.core.data.node.field.list.HibBooleanFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibDateFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibHtmlFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibJsonFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibNodeFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibNumberFieldList;
@@ -71,6 +71,8 @@ import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.link.WebRootLinkReplacerImpl;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.rest.common.FieldTypes;
+import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
@@ -83,11 +85,12 @@ import com.gentics.mesh.graphql.dataloader.NodeDataLoader.Context;
 import com.gentics.mesh.graphql.filter.NodeFilter;
 import com.gentics.mesh.graphql.type.AbstractTypeProvider;
 import com.gentics.mesh.graphql.type.NodeTypeProvider;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.LinkType;
-import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.util.DateUtils;
 import com.google.common.base.Functions;
 
+import graphql.scalars.ExtendedScalars;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
@@ -96,11 +99,13 @@ import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeReference;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Promise;
+import io.vertx.core.json.JsonObject;
 
 @Singleton
 public class FieldDefinitionProvider extends AbstractTypeProvider {
 
 	public static final String BINARY_FIELD_TYPE_NAME = "BinaryField";
+	public static final String JSON_FIELD_TYPE_NAME = "JsonField";
 	public static final String S3_BINARY_FIELD_TYPE_NAME = "S3BinaryField";
 
 	/**
@@ -112,6 +117,11 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	 * Key for the data loader for boolean list field values
 	 */
 	public static final String BOOLEAN_LIST_VALUES_DATA_LOADER_KEY = "booleanListLoader";
+
+	/**
+	 * Key for the data loader for JSON object list field values
+	 */
+	public static final String JSON_LIST_VALUES_DATA_LOADER_KEY = "jsonListLoader";
 
 	/**
 	 * Key for the data loader for date list field values
@@ -205,6 +215,14 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	public BatchLoaderWithContext<String, List<Boolean>> BOOLEAN_LIST_VALUE_LOADER = (keys, environment) -> {
 		ContentDao contentDao = Tx.get().contentDao();
 		return listValueDataLoader(keys, contentDao::getBooleanListFieldValues, Functions.identity());
+	};
+
+	/**
+	 * DataLoader implementation for values of JSON object lists
+	 */
+	public BatchLoaderWithContext<String, List<JsonContent>> JSON_LIST_VALUE_LOADER = (keys, environment) -> {
+		ContentDao contentDao = Tx.get().contentDao();
+		return listValueDataLoader(keys, contentDao::getJsonListFieldValues, Functions.identity());
 	};
 
 	/**
@@ -320,6 +338,21 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 
 			return promise.future().toCompletionStage();
 		};
+	}
+
+	public GraphQLObjectType createJsonFieldType() {
+		Builder type = newObject().name(JSON_FIELD_TYPE_NAME).description("JSON object field");
+
+		type.field(newFieldDefinition().name("text").description("Value as JSON string").type(GraphQLString).dataFetcher(fetcher -> {
+			JsonContent json = fetcher.getSource();
+			return json == null ? null : JsonUtil.toJson(json, options.getHttpServerOptions().isMinifyJson());
+		}));
+		type.field(newFieldDefinition().name("json").description("Value as JSON object").type(ExtendedScalars.Json).dataFetcher(fetcher -> {
+			JsonContent json = fetcher.getSource();
+			return json == null ? null : json;
+		}));
+
+		return type.build();
 	}
 
 	public GraphQLObjectType createBinaryFieldType() {
@@ -582,6 +615,17 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		}).build();
 	}
 
+	public GraphQLFieldDefinition createJsonDef(FieldSchema schema) {
+		return newFieldDefinition().name(schema.getName()).description(schema.getLabel()).type(new GraphQLTypeReference(JSON_FIELD_TYPE_NAME)).dataFetcher(env -> {
+			HibFieldContainer container = env.getSource();
+			HibJsonField jsonField = container.getJson(schema.getName());
+			if (jsonField != null) {
+				return jsonField.getJson();
+			}
+			return null;
+		}).build();
+	}
+
 	public GraphQLFieldDefinition createNumberDef(FieldSchema schema) {
 		return newFieldDefinition().name(schema.getName()).description(schema.getLabel()).type(GraphQLBigDecimal).dataFetcher(env -> {
 			HibFieldContainer container = env.getSource();
@@ -672,14 +716,17 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		NodeFilter nodeFilter = NodeFilter.filter(context);
 
 		// Add link resolving arg to html and string lists
-		switch (schema.getListType()) {
-		case "html":
-		case "string":
+		switch (FieldTypes.valueByName(schema.getListType())) {
+		case HTML:
+		case STRING:
+		case JSON:
 			fieldType.argument(createLinkTypeArg());
 			break;
-		case "node":
+		case NODE:
 			fieldType.argument(createNodeVersionArg());
 			fieldType.argument(nodeFilter.createFilterArgument());
+			break;
+		default:
 			break;
 		}
 
@@ -689,8 +736,8 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 			HibFieldContainer container = env.getSource();
 			GraphQLContext gc = env.getContext();
 
-			switch (schema.getListType()) {
-			case "boolean":
+			switch (FieldTypes.valueByName(schema.getListType())) {
+			case BOOLEAN:
 				HibBooleanFieldList booleanList = container.getBooleanList(schema.getName());
 				if (booleanList == null) {
 					return null;
@@ -703,7 +750,20 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				} else {
 					return booleanList.getList().stream().map(item -> item.getBoolean()).collect(Collectors.toList());
 				}
-			case "html":
+			case JSON:
+				HibJsonFieldList jsonList = container.getJsonList(schema.getName());
+				if (jsonList == null) {
+					return null;
+				}
+
+				String jsonListUuid = jsonList.getUuid();
+				if (contentDao.supportsPrefetchingListFieldValues() && !StringUtils.isEmpty(jsonListUuid)) {
+					DataLoader<String, List<JsonObject>> jsonListValueLoader = env.getDataLoader(FieldDefinitionProvider.JSON_LIST_VALUES_DATA_LOADER_KEY);
+					return jsonListValueLoader.load(jsonListUuid);
+				} else {
+					return jsonList.getList();
+				}
+			case HTML:
 				HibHtmlFieldList htmlList = container.getHTMLList(schema.getName());
 				if (htmlList == null) {
 					return null;
@@ -732,7 +792,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 								Arrays.asList(container.getLanguageTag()));
 					}).collect(Collectors.toList());
 				}
-			case "string":
+			case STRING:
 				HibStringFieldList stringList = container.getStringList(schema.getName());
 				if (stringList == null) {
 					return null;
@@ -761,7 +821,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 								Arrays.asList(container.getLanguageTag()));
 					}).collect(Collectors.toList());
 				}
-			case "number":
+			case NUMBER:
 				HibNumberFieldList numberList = container.getNumberList(schema.getName());
 				if (numberList == null) {
 					return null;
@@ -774,7 +834,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				} else {
 					return numberList.getList().stream().map(item -> item.getNumber()).collect(Collectors.toList());
 				}
-			case "date":
+			case DATE:
 				HibDateFieldList dateList = container.getDateList(schema.getName());
 				if (dateList == null) {
 					return null;
@@ -787,7 +847,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				} else {
 					return dateList.getList().stream().map(item -> DateUtils.toISO8601(item.getDate(), 0)).collect(Collectors.toList());
 				}
-			case "node":
+			case NODE:
 				HibNodeFieldList nodeList = container.getNodeList(schema.getName());
 				if (nodeList == null) {
 					return null;
@@ -837,7 +897,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 						.filter(content1 -> gc.hasReadPerm(content1, nodeType))
 						.collect(Collectors.toList());
 				}
-			case "micronode":
+			case MICRONODE:
 				HibMicronodeFieldList micronodeList = container.getMicronodeList(schema.getName());
 				if (micronodeList == null) {
 					return null;
@@ -858,21 +918,21 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	}
 
 	private GraphQLType getElementTypeOfList(ListFieldSchema schema) {
-		switch (schema.getListType()) {
-		case "boolean":
+		switch (FieldTypes.valueByName(schema.getListType())) {
+		case BOOLEAN:
 			return GraphQLBoolean;
-		case "html":
+		case DATE:
+		case HTML:
+		case STRING:
 			return GraphQLString;
-		case "string":
-			return GraphQLString;
-		case "number":
+		case NUMBER:
 			return GraphQLBigDecimal;
-		case "date":
-			return GraphQLString;
-		case "node":
+		case NODE:
 			return new GraphQLTypeReference(NODE_TYPE_NAME);
-		case "micronode":
+		case MICRONODE:
 			return new GraphQLTypeReference(MICRONODE_TYPE_NAME);
+		case JSON:
+			return new GraphQLTypeReference(JSON_FIELD_TYPE_NAME);
 		default:
 			return null;
 		}

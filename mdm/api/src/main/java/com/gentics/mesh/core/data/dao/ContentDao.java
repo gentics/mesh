@@ -37,6 +37,7 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.Errors;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
+import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -1101,6 +1102,13 @@ public interface ContentDao {
 	 * @return true when prefetching list field values is supported, false if not
 	 */
 	boolean supportsPrefetchingListFieldValues();
+
+	/**
+	 * Get the JSON object list field values for the given list UUIDs
+	 * @param listUuids list UUIDs
+	 * @return map of list UUIDs to lists of JSON values
+	 */
+	Map<String, List<JsonContent>> getJsonListFieldValues(List<String> listUuids);
 
 	/**
 	 * Get the boolean list field values for the given list UUIDs

@@ -1,6 +1,6 @@
 {
   "name": "@gentics/mesh-js",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "description": "Monorepo for all JS Libraries related to Gentics Mesh",
   "license": "Apache-2.0",
   "private": true,

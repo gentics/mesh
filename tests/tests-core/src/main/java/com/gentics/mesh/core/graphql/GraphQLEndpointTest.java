@@ -39,6 +39,7 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.list.HibBooleanFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibDateFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibHtmlFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibJsonFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibNodeFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibNumberFieldList;
@@ -60,6 +61,7 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.HtmlField;
+import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
@@ -70,6 +72,7 @@ import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
 import com.gentics.mesh.core.rest.schema.DateFieldSchema;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
+import com.gentics.mesh.core.rest.schema.JsonFieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
@@ -80,6 +83,7 @@ import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.JsonFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
@@ -220,10 +224,12 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 				Arrays.asList("filtering/nodes-datelist-field-native", true, false, "draft"),
 				Arrays.asList("filtering/nodes-htmllist-field-native", true, false, "draft"),
 				Arrays.asList("filtering/nodes-node-field-native", true, false, "draft"),
+				Arrays.asList("filtering/nodes-json-field-native", true, false, "draft"),
 				Arrays.asList("filtering/nodes-micronode-field-native", true, false, "draft"),
 				Arrays.asList("filtering/nodes-binary-field-native", true, false, "draft"),
 				Arrays.asList("filtering/nodes-s3binary-field-native", true, false, "draft"),
 				Arrays.asList("filtering/nodes-nodelist-field-native", true, false, "draft"),
+				Arrays.asList("filtering/nodes-jsonlist-field-native", true, false, "draft"),
 				Arrays.asList("filtering/nodes-micronodelist-field-native", true, false, "draft"),
 				Arrays.asList("filtering/nodes-paged", true, false, "draft")
 			);
@@ -258,6 +264,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 				microschemaRequest.addField(FieldUtil.createStringFieldSchema("text"));
 				microschemaRequest.addField(FieldUtil.createNodeFieldSchema("nodeRef").setAllowedSchemas("content"));
 				microschemaRequest.addField(FieldUtil.createListFieldSchema("nodeList", "node"));
+				microschemaRequest.addField(FieldUtil.createJsonFieldSchema("json"));
 				MicroschemaResponse microschemaResponse = call(() -> client.createMicroschema(microschemaRequest));
 				microschemaUuid = microschemaResponse.getUuid();
 				call(() -> client.assignMicroschemaToProject(PROJECT_NAME, microschemaResponse.getUuid()));
@@ -340,6 +347,10 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 				stringLinkFieldSchema.setName("stringLink");
 				schema.addField(stringLinkFieldSchema);
 
+				JsonFieldSchema jsonFieldSchema = new JsonFieldSchemaImpl();
+				jsonFieldSchema.setName("json");
+				schema.addField(jsonFieldSchema);
+
 				BooleanFieldSchema booleanFieldSchema = new BooleanFieldSchemaImpl();
 				booleanFieldSchema.setName("boolean");
 				schema.addField(booleanFieldSchema);
@@ -363,6 +374,11 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 				htmlListSchema.setListType("html");
 				htmlListSchema.setName("htmlList");
 				schema.addField(htmlListSchema);
+
+				ListFieldSchema jsonListSchema = new ListFieldSchemaImpl();
+				jsonListSchema.setListType("json");
+				jsonListSchema.setName("jsonList");
+				schema.addField(jsonListSchema);
 
 				ListFieldSchema booleanListSchema = new ListFieldSchemaImpl();
 				booleanListSchema.setListType("boolean");
@@ -419,6 +435,14 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 				// stringLink
 				container.createString("stringLink").setString("Link: {{mesh.link(\"" + CONTENT_UUID + "\", \"en\")}}");
 
+				// json
+				container.createJson("json").setJson(JsonContent.fromObject(new JsonObject("""
+						{
+								"firstName": "Mickey",
+								"lastName": "Mouse"
+						}
+				""")));
+
 				// boolean
 				container.createBoolean("boolean").setBoolean(true);
 
@@ -438,6 +462,21 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 				stringList.createString("B");
 				stringList.createString("C");
 				stringList.createString("D Link: {{mesh.link(\"" + CONTENT_UUID + "\", \"en\")}}");
+
+				// jsonList
+				HibJsonFieldList jsonList = container.createJsonList("jsonList");
+				jsonList.createJson(JsonContent.fromObject(new JsonObject("""
+						{
+								"firstName": "Minnie",
+								"lastName": "Mouse"
+						}
+				""")));
+				jsonList.createJson(JsonContent.fromObject(new JsonObject("""
+						{
+								"firstName": "Daisy",
+								"lastName": "Duck"
+						}
+				""")));
 
 				// htmlList
 				HibHtmlFieldList htmlList = container.createHTMLList("htmlList");
@@ -481,6 +520,13 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 					HibMicronode secondMicronode = micronodeList.createMicronode(microschemaDao.findByUuid(microschemaUuid).getLatestVersion());
 					secondMicronode.createString("text").setString("Joe");
 					secondMicronode.createNode("nodeRef", content());
+					secondMicronode.createJson("json").setJson(JsonContent.fromObject(new JsonObject("""
+							{
+									"firstName":"Donald", 
+									"lastName": "Duck"
+							}
+					""")));
+
 					HibNodeFieldList micrnodeNodeList = secondMicronode.createNodeList("nodeList");
 					micrnodeNodeList.createNode(0, node2);
 					micrnodeNodeList.createNode(1, node3);
@@ -505,6 +551,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 					secondMicronode = micronodeList.createMicronode(microschemaDao.findByUuid(microschemaUuid).getLatestVersion());
 					secondMicronode.createString("text").setString("Jane");
 					secondMicronode.createNode("nodeRef", content());
+
 					micrnodeNodeList = secondMicronode.createNodeList("nodeList");
 					micrnodeNodeList.createNode(0, node2);
 					micrnodeNodeList.createNode(1, node3);

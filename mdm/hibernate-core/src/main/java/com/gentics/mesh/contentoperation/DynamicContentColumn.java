@@ -8,6 +8,7 @@ import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.core.rest.common.FieldTypes;
+import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.hibernate.data.node.field.impl.HibNumberFieldImpl;
@@ -52,6 +53,8 @@ public class DynamicContentColumn implements ContentColumn, Serializable {
 	@Override
 	public Class<?> getJavaClass() {
 		switch (fieldType) {
+			case JSON:
+				return JsonContent.class;
 			case STRING:
 			case HTML:
 				return String.class;
@@ -95,6 +98,13 @@ public class DynamicContentColumn implements ContentColumn, Serializable {
 			} else {
 				return ContentColumn.super.transformToPersistedValue(value);
 			}
+// if JSON were BLOB, not String
+//		} else if (fieldType == FieldTypes.JSON) {
+//			if (value instanceof String) {
+//				return value.toString().getBytes(StandardCharsets.UTF_8);
+//			} else {
+//				return null;
+//			}
 		} else {
 			return ContentColumn.super.transformToPersistedValue(value);
 		}

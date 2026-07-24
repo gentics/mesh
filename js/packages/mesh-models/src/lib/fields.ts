@@ -13,6 +13,7 @@ export enum FieldType {
     NODE = 'node',
     NUMBER = 'number',
     STRING = 'string',
+    JSON = 'json',
 }
 
 export interface SchemaField {
