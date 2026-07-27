@@ -27,6 +27,7 @@ public class JsonSchema extends JsonSchemaType {
 
 	public JsonSchema(JsonObject object) {
         String type = (object == null || object.getString("type") == null) ? "object" : object.getString("type");
+        setType(type);
         switch (type) {
         case "object":
                 setProperties((object == null || object.getJsonObject("properties") == null) 
