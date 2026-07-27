@@ -70,12 +70,8 @@ public class HibUserImpl extends AbstractHibUserTrackedElement<UserResponse> imp
 	private String passwordHash;
 	
 	private String resetToken;
-	
+
 	private Long resetTokenIssueTimestamp;
-	
-	private String apiTokenId;
-	
-	private Long apiTokenIssueTimestamp;
 
 	private boolean forcedPasswordChange;
 
@@ -201,42 +197,14 @@ public class HibUserImpl extends AbstractHibUserTrackedElement<UserResponse> imp
 	}
 
 	@Override
-	public String getAPIKeyTokenCode() {
-		return apiTokenId;
-	}
-
-	@Override
-	public Long getAPITokenIssueTimestamp() {
-		return apiTokenIssueTimestamp;
-	}
-
-	@Override
-	public void resetAPIToken() {
-		apiTokenId = null;
-		apiTokenIssueTimestamp = null;
-	}
-
-	@Override
 	public HibUser setResetToken(String token) {
 		resetToken = token;
 		return this;
 	}
 
 	@Override
-	public HibUser setAPITokenId(String code) {
-		apiTokenId = code;
-		return this;
-	}
-
-	@Override
 	public HibUser setResetTokenIssueTimestamp(Long timestamp) {
 		resetTokenIssueTimestamp = timestamp;
-		return this;
-	}
-
-	@Override
-	public HibUser setAPITokenIssueTimestamp() {
-		apiTokenIssueTimestamp = System.currentTimeMillis();
 		return this;
 	}
 

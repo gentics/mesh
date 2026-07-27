@@ -22,6 +22,7 @@ import com.gentics.mesh.test.MeshCoreOptionChanger;
 import com.gentics.mesh.test.MeshOptionChanger;
 import com.gentics.mesh.test.MeshOptionChanger.NoOptionChanger;
 import com.gentics.mesh.test.MeshTestContextProvider;
+import com.gentics.mesh.test.MeshTestInitializer;
 import com.gentics.mesh.test.MeshTestServer;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.ResetTestDb;
@@ -370,5 +371,9 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 		public AWSTestMode awsContainer() {
 			return AWSTestMode.NONE;
 		}
+
+		public java.lang.Class<? extends MeshTestInitializer> initializer() {
+			return MeshTestInitializer.NoOptionInitializer.class;
+		};
 	};
 }

@@ -325,8 +325,6 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// new invalidate the token
 		call(() -> client().invalidateAPIToken(uuid, response.getData().getUuid()));
-		assertNull(tx(tx -> { return tx.userDao().findByUuid(uuid).getAPIKeyTokenCode(); }));
-		assertNull(tx(tx -> { return tx.userDao().findByUuid(uuid).getAPITokenIssueTimestamp(); }));
 		call(() -> client().findUserByUuid(uuid), UNAUTHORIZED, "error_not_authorized");
 	}
 

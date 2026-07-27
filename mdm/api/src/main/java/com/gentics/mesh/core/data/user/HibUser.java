@@ -19,7 +19,6 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.handler.VersionUtils;
-import com.gentics.mesh.util.DateUtils;
 
 import io.vertx.ext.auth.User;
 
@@ -204,31 +203,12 @@ public interface HibUser extends HibCoreElement<UserResponse>, HibReferenceableE
 	void setAdmin(boolean flag);
 
 	/**
-	 * Return the currently stored API token id.
-	 *
-	 * @return API token id or null if no token has yet been generated.
-	 */
-	String getAPIKeyTokenCode();
-
-	/**
-	 * Return the timestamp when the api key token code was last issued.
-	 *
-	 * @return
-	 */
-	Long getAPITokenIssueTimestamp();
-
-	/**
 	 * Return an iterable of roles which belong to this user. Internally this will fetch all groups of the user and collect the assigned roles.
 	 *
 	 * @return
 	 */
 	// TODO we want to use this to the user dao
 	// Iterable<? extends Role> getRoles();
-
-	/**
-	 * Reset the API token id and issue timestamp and thus invalidating the token.
-	 */
-	void resetAPIToken();
 
 	/**
 	 * Set the reset token for the user.
@@ -239,40 +219,12 @@ public interface HibUser extends HibCoreElement<UserResponse>, HibReferenceableE
 	HibUser setResetToken(String token);
 
 	/**
-	 * Set the user API token id.
-	 *
-	 * @param code
-	 * @return Fluent API
-	 */
-	HibUser setAPITokenId(String code);
-
-	/**
 	 * Set the token code issue timestamp. This is used to influence the token expire moment.
 	 *
 	 * @param timestamp
 	 * @return Fluent API
 	 */
 	HibUser setResetTokenIssueTimestamp(Long timestamp);
-
-	/**
-	 * Set the API token issue timestamp to the current time.
-	 *
-	 * @return Fluent API
-	 */
-	HibUser setAPITokenIssueTimestamp();
-
-	/**
-	 * Return the API token issue date.
-	 *
-	 * @return ISO8601 formatted date or null if the date has not yet been set
-	 */
-	default String getAPITokenIssueDate() {
-		Long timestamp = getAPITokenIssueTimestamp();
-		if (timestamp == null) {
-			return null;
-		}
-		return DateUtils.toISO8601(timestamp, System.currentTimeMillis());
-	}
 
 	/**
 	 * Return the currently stored reset token.
