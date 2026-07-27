@@ -17,25 +17,33 @@ import io.vertx.core.json.JsonObject;
  */
 public class JsonSchema extends JsonSchemaType {
 
-	private String[] required = new String[0];
-	private Map<String, JsonSchemaType> properties = new HashMap<>();
-
+	private String[] required;
+	private Map<String, JsonSchemaType> properties;
+	private JsonSchemaType items;
 	
 	public JsonSchema() {
 		super();
 	}
 
 	public JsonSchema(JsonObject object) {
-		super((object == null || object.getString("type") == null) ? "object" : object.getString("type"));
-		setRequired((object == null || object.getJsonArray("required") == null) 
-				? new String[0] 
-				: object.getJsonArray("required").stream().map(Object::toString).toArray(size -> new String[size]));
-		setProperties((object == null || object.getJsonObject("properties") == null) 
-				? new HashMap<>() 
-				: object.getJsonObject("properties").getMap().entrySet().stream()
-						.map(e -> Pair.of(e.getKey(), JsonUtil.readValue(JsonUtil.toJson(e.getValue()), JsonSchemaType.class)))
-						.collect(Collectors.toMap(Pair::getKey, Pair::getValue)));
+        String type = (object == null || object.getString("type") == null) ? "object" : object.getString("type");
+        switch (type) {
+        case "object":
+                setProperties((object == null || object.getJsonObject("properties") == null) 
+                                ? new HashMap<>() 
+                                : object.getJsonObject("properties").getMap().entrySet().stream()
+                                                .map(e -> Pair.of(e.getKey(), JsonUtil.readValue(JsonUtil.toJson(e.getValue()), JsonSchemaType.class)))
+                                                .collect(Collectors.toMap(Pair::getKey, Pair::getValue)));
+                setRequired((object == null || object.getJsonArray("required") == null) 
+                                ? new String[0] 
+                                : object.getJsonArray("required").stream().map(Object::toString).toArray(size -> new String[size]));
+        case "array":
+                setItems((object != null && object.getJsonObject("items") != null)
+                                ? JsonUtil.readValue(JsonUtil.toJson(object.getJsonObject("items")), JsonSchemaType.class)
+                                : null);
+        }
 	}
+
 	public JsonSchema(String json) {
 		this(json == null ? null : new JsonObject(json));
 	}
@@ -76,6 +84,15 @@ public class JsonSchema extends JsonSchemaType {
 
 	public JsonSchema setProperties(Map<String, JsonSchemaType> properties) {
 		this.properties = properties;
+		return this;
+	}
+
+	public JsonSchemaType getItems() {
+		return items;
+	}
+
+	public JsonSchema setItems(JsonSchemaType items) {
+		this.items = items;
 		return this;
 	}
 }
