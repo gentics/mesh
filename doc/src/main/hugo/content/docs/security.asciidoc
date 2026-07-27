@@ -8,10 +8,9 @@ This section will cover information about Gentics Mesh security related topics.
 
 == API Tokens
 
-API tokens can be generated via the `{apiLatest}/users/:uuid/token`.
+API tokens can be generated via the `POST {apiLatest}/users/:userUuid/token` endpoint.
 These tokens should not be publicly exposed since they they are equivalent to user credentials.
-Tokens can be reset via the `{apiLatest}/users/:uuid/reset_token` endpoint.
-This will invalidate any previously generated API token.
+Tokens can be removed via the `DELETE {apiLatest}/users/:userUuid/token/:tokenUuid` endpoint.
 
 == Server Tokens
 

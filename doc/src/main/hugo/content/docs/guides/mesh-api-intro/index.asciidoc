@@ -81,7 +81,7 @@ curl -X POST \
 
 Gentics Mesh uses JWT to handle authentication. The token we just got is valid for one hour.
 
-TIP: It is also possible to get link:{{< relref "authentication.asciidoc" >}}#_api_token[API tokens] which will never expire. Long running tasks such as importers should use such tokens.
+TIP: It is also possible to get link:{{< relref "authentication.asciidoc" >}}#_api_token[API tokens] which may be created to never expire. Long running tasks such as importers should use such tokens.
 
 TIP: Authentication is not mandatory. It is also possible to use most of the Gentics Mesh API using the link:{{< relref "authentication.asciidoc" >}}#_anonymous_access[anonymous access] feature. This is especially useful if you want to use a SPA directly with Gentics Mesh.
 

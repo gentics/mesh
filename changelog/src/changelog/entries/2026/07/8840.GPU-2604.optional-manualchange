@@ -1,0 +1,4 @@
+Auth: The management of API Tokens for users has been enhanced to support multiple tokens per user.
+New tokens must now be created with a `name` and optionally can have an `expires` date.
+See the "Mesh Restful API documentation":https://www.gentics.com/mesh/docs/api/#users__userUuid__token_post
+for details.
