@@ -17,7 +17,8 @@ public interface RestResponse extends RestModel {
 	 * 
 	 * @param uuid
 	 *            Uuid to be set
+	 * @return fluent self
 	 */
-	void setUuid(String uuid);
+	RestResponse setUuid(String uuid);
 
 }

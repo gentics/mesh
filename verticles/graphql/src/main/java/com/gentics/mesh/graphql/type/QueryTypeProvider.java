@@ -73,9 +73,13 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.filter.GroupFilter;
 import com.gentics.mesh.graphql.filter.MicronodeFilter;
+import com.gentics.mesh.graphql.filter.MicroschemaFilter;
 import com.gentics.mesh.graphql.filter.NodeFilter;
 import com.gentics.mesh.graphql.filter.NodeReferenceFilter;
 import com.gentics.mesh.graphql.filter.RoleFilter;
+import com.gentics.mesh.graphql.filter.SchemaFilter;
+import com.gentics.mesh.graphql.filter.TagFamilyFilter;
+import com.gentics.mesh.graphql.filter.TagFilter;
 import com.gentics.mesh.graphql.filter.UserFilter;
 import com.gentics.mesh.graphql.type.field.FieldDefinitionProvider;
 import com.gentics.mesh.graphql.type.field.MicronodeFieldTypeProvider;
@@ -83,8 +87,10 @@ import com.gentics.mesh.handler.Versioned;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.search.index.group.GroupSearchHandler;
+import com.gentics.mesh.search.index.microschema.MicroschemaSearchHandler;
 import com.gentics.mesh.search.index.project.ProjectSearchHandler;
 import com.gentics.mesh.search.index.role.RoleSearchHandler;
+import com.gentics.mesh.search.index.schema.SchemaSearchHandler;
 import com.gentics.mesh.search.index.tag.TagSearchHandler;
 import com.gentics.mesh.search.index.tagfamily.TagFamilySearchHandler;
 import com.gentics.mesh.search.index.user.UserSearchHandler;
@@ -161,6 +167,10 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 
 	protected final TagSearchHandler tagSearchHandler;
 
+	protected final SchemaSearchHandler schemaSearchHandler;
+
+	protected final MicroschemaSearchHandler microschemaSearchHandler;
+
 	protected final PluginTypeProvider pluginProvider;
 
 	protected final PluginApiTypeProvider pluginApiProvider;
@@ -181,6 +191,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			MicroschemaTypeProvider microschemaTypeProvider, UserSearchHandler userSearchHandler,
 			RoleSearchHandler roleSearchHandler, GroupSearchHandler groupSearchHandler,
 			ProjectSearchHandler projectSearchHandler, TagFamilySearchHandler tagFamilySearchHandler,
+			SchemaSearchHandler schemaSearchHandler, MicroschemaSearchHandler microschemaSearchHandler,
 			TagSearchHandler tagSearchHandler, PluginTypeProvider pluginProvider,
 			PluginApiTypeProvider pluginApiProvider, DAOActionsCollection actions, GraphQLSchemaCache cache) {
 		super(options);
@@ -207,6 +218,8 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		this.groupSearchHandler = groupSearchHandler;
 		this.projectSearchHandler = projectSearchHandler;
 		this.tagFamilySearchHandler = tagFamilySearchHandler;
+		this.schemaSearchHandler = schemaSearchHandler;
+		this.microschemaSearchHandler = microschemaSearchHandler;
 		this.tagSearchHandler = tagSearchHandler;
 		this.pluginProvider = pluginProvider;
 		this.pluginApiProvider = pluginApiProvider;
@@ -479,7 +492,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		root.field(newElementField("tag", "Load first tag by name or uuid.", actions.tagActions(), TAG_TYPE_NAME));
 
 		// .tags
-		root.field(newPagingSearchField("tags", "Load page of tags.", actions.tagActions(), TAG_PAGE_TYPE_NAME, tagSearchHandler, null));
+		root.field(newPagingSearchField("tags", "Load page of tags.", actions.tagActions(), TAG_PAGE_TYPE_NAME, tagSearchHandler, TagFilter.filter()));
 
 		// .tagFamily
 		root.field(newElementField("tagFamily", "Load tagFamily by name or uuid.", actions.tagFamilyActions(), TAG_FAMILY_TYPE_NAME));
@@ -487,7 +500,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		// .tagFamilies
 		// TODO fix me. The root of the project should be used and not the global one
 		root.field(newPagingSearchField("tagFamilies", "Load page of tagFamilies.", actions.tagFamilyActions(), TAG_FAMILY_PAGE_TYPE_NAME,
-			tagFamilySearchHandler, null));
+			tagFamilySearchHandler, TagFamilyFilter.filter()));
 
 		// .branch
 		root.field(newFieldDefinition().name("branch").description("Load the branch that is active for this GraphQL query.")
@@ -497,14 +510,16 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		root.field(newElementField("schema", "Load schema by name or uuid.", actions.schemaActions(), SCHEMA_TYPE_NAME));
 
 		// .schemas
-		root.field(newPagingField("schemas", "Load page of schemas.", actions.schemaActions(), SCHEMA_PAGE_TYPE_NAME));
+		root.field(newPagingSearchField("schemas", "Load page of schemas.", actions.schemaActions(), SCHEMA_PAGE_TYPE_NAME, schemaSearchHandler,
+			SchemaFilter.filter(context)));
 
 		// .microschema
 		root.field(
 			newElementField("microschema", "Load microschema by name or uuid.", actions.microschemaActions(), MICROSCHEMA_TYPE_NAME));
 
 		// .microschemas
-		root.field(newPagingField("microschemas", "Load page of microschemas.", actions.microschemaActions(), MICROSCHEMA_PAGE_TYPE_NAME));
+		root.field(newPagingSearchField("microschemas", "Load page of microschemas.", actions.microschemaActions(), MICROSCHEMA_PAGE_TYPE_NAME, microschemaSearchHandler,
+			MicroschemaFilter.filter(context)));
 
 		// .role
 		root.field(newElementField("role", "Load role by name or uuid.", actions.roleActions(), ROLE_TYPE_NAME));

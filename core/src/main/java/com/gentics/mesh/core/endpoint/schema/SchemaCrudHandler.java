@@ -123,7 +123,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 
 				// No changes -> done
 				if (model.getChanges().isEmpty()) {
-					return message(ac, "schema_update_no_difference_detected", schemaName);
+					return message(ac, "schema_update_no_difference_detected");
 				}
 
 				SchemaUpdateParameters updateParams = ac.getSchemaUpdateParameters();

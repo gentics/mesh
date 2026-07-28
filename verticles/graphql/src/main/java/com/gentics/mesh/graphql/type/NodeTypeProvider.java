@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Stack;
 import java.util.concurrent.CompletableFuture;
@@ -38,6 +39,8 @@ import javax.inject.Singleton;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.dataloader.DataLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -103,6 +106,8 @@ import graphql.schema.GraphQLUnionType;
  */
 @Singleton
 public class NodeTypeProvider extends AbstractTypeProvider {
+
+	private static final Logger log = LoggerFactory.getLogger(NodeTypeProvider.class);
 
 	public static final String SCHEMAS = "schemasCache";
 
@@ -835,6 +840,10 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		for (HibSchema container : schemas) {
 			HibSchemaVersion version = container.getLatestVersion();
 			SchemaModel schema = version.getSchema();
+			if (schema.getFields() == null || schema.getFields().size() < 1) {
+				log.debug("Schema {} has no fields and being removed from the node type provider", schema.getName());
+				continue;
+			}
 			GraphQLObjectType.Builder root = newObject();
 			// TODO remove this workaround
 			root.name(schema.getName().replaceAll("-", "_"));
@@ -891,67 +900,69 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		return context.getOrStore(SCHEMAS + project.getName(), () -> schemaDao.findAll(project)).stream().map(container -> {
 			HibSchemaVersion version = container.getLatestVersion();
 			SchemaModel schema = version.getSchema();
+			if (schema.getFields() == null || schema.getFields().isEmpty()) {
+				log.debug("Schema {} has no fields and being removed from the node type provider", schema.getName());
+				return null;
+			}
 			GraphQLObjectType.Builder root = newObject();
 			root.withInterface(GraphQLTypeReference.typeRef(NODE_TYPE_NAME));
 			root.name(schema.getName());
 			root.description(schema.getDescription());
 
-			if (!schema.getFields().isEmpty()) {
-				GraphQLFieldDefinition.Builder fieldsField = GraphQLFieldDefinition.newFieldDefinition();
-				GraphQLObjectType.Builder fieldsType = newObject();
-				fieldsType.name(nodeTypeName(schema.getName()));
-				fieldsField.dataFetcher(env -> {
-					NodeContent content = env.getSource();
-					return content.getContainer();
-				});
+			GraphQLFieldDefinition.Builder fieldsField = GraphQLFieldDefinition.newFieldDefinition();
+			GraphQLObjectType.Builder fieldsType = newObject();
+			fieldsType.name(nodeTypeName(schema.getName()));
+			fieldsField.dataFetcher(env -> {
+				NodeContent content = env.getSource();
+				return content.getContainer();
+			});
 
-				// TODO add link resolving argument / code
-				for (FieldSchema fieldSchema : schema.getFields()) {
-					FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
-					switch (type) {
-					case STRING:
-						fieldsType.field(fields.createStringDef(fieldSchema));
-						break;
-					case HTML:
-						fieldsType.field(fields.createHtmlDef(fieldSchema));
-						break;
-					case NUMBER:
-						fieldsType.field(fields.createNumberDef(fieldSchema));
-						break;
-					case DATE:
-						fieldsType.field(fields.createDateDef(fieldSchema));
-						break;
-					case BOOLEAN:
-						fieldsType.field(fields.createBooleanDef(fieldSchema));
-						break;
-					case NODE:
-						fieldsType.field(fields.createNodeDef(fieldSchema));
-						break;
-					case BINARY:
-						fieldsType.field(fields.createBinaryDef(fieldSchema));
-						break;
-					case S3BINARY:
-						root.field(fields.createS3BinaryDef(fieldSchema));
-						break;
-					case LIST:
-						ListFieldSchema listFieldSchema = ((ListFieldSchema) fieldSchema);
-						fields.createListDef(context, listFieldSchema, project).ifPresent(fieldsType::field);
-						break;
-					case MICRONODE:
-						fields.createMicronodeDef(context, fieldSchema, project).ifPresent(fieldsType::field);
-						break;
-					}
+			// TODO add link resolving argument / code
+			for (FieldSchema fieldSchema : schema.getFields()) {
+				FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
+				switch (type) {
+				case STRING:
+					fieldsType.field(fields.createStringDef(fieldSchema));
+					break;
+				case HTML:
+					fieldsType.field(fields.createHtmlDef(fieldSchema));
+					break;
+				case NUMBER:
+					fieldsType.field(fields.createNumberDef(fieldSchema));
+					break;
+				case DATE:
+					fieldsType.field(fields.createDateDef(fieldSchema));
+					break;
+				case BOOLEAN:
+					fieldsType.field(fields.createBooleanDef(fieldSchema));
+					break;
+				case NODE:
+					fieldsType.field(fields.createNodeDef(fieldSchema));
+					break;
+				case BINARY:
+					fieldsType.field(fields.createBinaryDef(fieldSchema));
+					break;
+				case S3BINARY:
+					root.field(fields.createS3BinaryDef(fieldSchema));
+					break;
+				case LIST:
+					ListFieldSchema listFieldSchema = ((ListFieldSchema) fieldSchema);
+					fields.createListDef(context, listFieldSchema, project).ifPresent(fieldsType::field);
+					break;
+				case MICRONODE:
+					fields.createMicronodeDef(context, fieldSchema, project).ifPresent(fieldsType::field);
+					break;
 				}
-				fieldsField.name("fields").type(fieldsType);
-				root.field(fieldsField);
 			}
+			fieldsField.name("fields").type(fieldsType);
+			root.field(fieldsField);
 			List<GraphQLFieldDefinition> nodeFields = createNodeInterfaceFields(context).forVersion(context);
 			if (CollectionUtils.isNotEmpty(nodeFields)) {
 				root.fields(nodeFields);
 			}
 			interfaceTypeProvider.addCommonFields(root, true);
 			return root.build();
-		}).collect(Collectors.toList());
+		}).filter(Objects::nonNull).collect(Collectors.toList());
 	}
 
 	public static String nodeTypeName(String schemaName) {

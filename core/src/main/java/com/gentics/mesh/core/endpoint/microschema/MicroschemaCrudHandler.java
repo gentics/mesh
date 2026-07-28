@@ -100,7 +100,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<HibMicroschema, 
 				String name = microschema.getName();
 
 				if (model.getChanges().isEmpty()) {
-					return message(ac, "schema_update_no_difference_detected", name);
+					return message(ac, "schema_update_no_difference_detected");
 				}
 				HibUser user = ac.getUser();
 				SchemaUpdateParameters updateParams = ac.getSchemaUpdateParameters();

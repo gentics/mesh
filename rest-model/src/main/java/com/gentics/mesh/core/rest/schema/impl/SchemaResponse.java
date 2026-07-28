@@ -79,7 +79,7 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 
 	@Override
 	public SchemaResponse setNoIndex(Boolean noIndex) {
-		this.noIndex = noIndex;
+		this.noIndex = noIndex == Boolean.TRUE;
 		return this;
 	}
 
@@ -221,4 +221,9 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 		return getName() + " fields: {" + fields + "}";
 	}
 
+	@Override
+	public SchemaResponse setUuid(String uuid) {
+		super.setUuid(uuid);
+		return this;
+	}
 }

@@ -6,7 +6,6 @@ import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -16,6 +15,8 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.core.data.HibNamedElement;
@@ -27,7 +28,6 @@ import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -41,8 +41,6 @@ import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLOutputType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Singleton
 public class SchemaTypeProvider extends AbstractTypeProvider {
@@ -100,6 +98,12 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 			return model != null ? model.getAutoPurge() : null;
 		}));
 
+		// .isNoIndex
+		schemaType.field(newFieldDefinition().name("isNoIndex").type(GraphQLBoolean).dataFetcher((env) -> {
+			SchemaVersionModel model = loadModelWithFallback(env);
+			return model != null ? model.getNoIndex() : null;
+		}));
+
 		// .displayField
 		schemaType.field(newFieldDefinition().name("displayField").type(GraphQLString).dataFetcher((env) -> {
 			SchemaVersionModel model = loadModelWithFallback(env);
@@ -110,6 +114,18 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 		schemaType.field(newFieldDefinition().name("segmentField").type(GraphQLString).dataFetcher((env) -> {
 			SchemaVersionModel model = loadModelWithFallback(env);
 			return model != null ? model.getSegmentField() : null;
+		}));
+
+		// .version
+		schemaType.field(newFieldDefinition().name("version").type(GraphQLString).dataFetcher((env) -> {
+			SchemaVersionModel model = loadModelWithFallback(env);
+			return model != null ? model.getVersion() : null;
+		}));
+
+		// .description
+		schemaType.field(newFieldDefinition().name("description").type(GraphQLString).dataFetcher((env) -> {
+			SchemaVersionModel model = loadModelWithFallback(env);
+			return model != null ? model.getDescription() : null;
 		}));
 
 		// .nodes
@@ -144,6 +160,9 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 
 		// .required
 		fieldListBuilder.field(newFieldDefinition().name("required").type(GraphQLBoolean).description("Whether this field is required"));
+
+		// .noIndex
+		fieldListBuilder.field(newFieldDefinition().name("noIndex").type(GraphQLBoolean).description("Whether this field disallows indexing over it"));
 
 		// .type
 		fieldListBuilder.field(newFieldDefinition().name("type").type(GraphQLString).description("The type of the field"));
