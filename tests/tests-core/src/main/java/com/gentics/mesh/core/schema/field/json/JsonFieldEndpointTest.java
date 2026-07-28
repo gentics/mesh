@@ -12,6 +12,7 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.field.json.JsonFieldTestHelper;
 import com.gentics.mesh.core.rest.JsonSchema;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.JsonFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
@@ -19,11 +20,14 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+
 @MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true)
 public class JsonFieldEndpointTest extends AbstractMeshTest {
 
 	@Test
-	public void testResetAllowField() {
+	public void testResetAllow() {
 		grantAdmin();
 		final String schemaUuid = tx(() -> schemaContainer("content").getUuid());
 		final String nodeUuid = tx(() -> contentUuid());
@@ -60,7 +64,67 @@ public class JsonFieldEndpointTest extends AbstractMeshTest {
 
 		// 4. Update the node again
 		call(() -> client().updateNode(projectName(), nodeUuid, nodeUpdateRequest));
-
 	}
 
+	@Test
+	public void testAllowArray() {
+		grantAdmin();
+		final String schemaUuid = tx(() -> schemaContainer("content").getUuid());
+		final String nodeUuid = tx(() -> contentUuid());
+
+		// 1. Update schema and set allowed property
+		SchemaModel schema = tx(() -> schemaContainer("content").getLatestVersion().getSchema());
+		SchemaUpdateRequest request = JsonUtil.readValue(schema.toJson(), SchemaUpdateRequest.class);
+		request.addField(new JsonFieldSchemaImpl()
+				.setAllowedSchemas(new JsonSchema("{\"type\":\"array\",\"items\":{\"type\":\"string\"}}"))
+				.setName("extraJson"));
+
+		waitForJobs(() -> {
+			call(() -> client().updateSchema(schemaUuid, request));
+		}, COMPLETED, 1);
+
+		// 2. Update the node slug and expect failure due to now allowed string
+		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
+		nodeUpdateRequest.setVersion("draft");
+		nodeUpdateRequest.setLanguage("en");
+		nodeUpdateRequest.getFields().put("extraJson", FieldUtil.createJsonField(JsonFieldTestHelper.make("someValue")));
+		call(() -> client().updateNode(projectName(), nodeUuid, nodeUpdateRequest), BAD_REQUEST, "node_error_invalid_json_field_value",
+			"extraJson",
+			JsonUtil.toJson(JsonFieldTestHelper.make("someValue")));
+
+		// 3. Update the node again wit the correct data
+		nodeUpdateRequest.getFields().put("extraJson", FieldUtil.createJsonField(JsonContent.fromArray(new JsonArray().add("whatever").add("wherever"))));
+		call(() -> client().updateNode(projectName(), nodeUuid, nodeUpdateRequest));
+	}
+
+	@Test
+	public void testAllowObject() {
+		grantAdmin();
+		final String schemaUuid = tx(() -> schemaContainer("content").getUuid());
+		final String nodeUuid = tx(() -> contentUuid());
+
+		// 1. Update schema and set allowed property
+		SchemaModel schema = tx(() -> schemaContainer("content").getLatestVersion().getSchema());
+		SchemaUpdateRequest request = JsonUtil.readValue(schema.toJson(), SchemaUpdateRequest.class);
+		request.addField(new JsonFieldSchemaImpl()
+				.setAllowedSchemas(new JsonSchema("{\"type\":\"object\",\"properties\":{\"firstName\":{\"type\":\"string\"},\"lastName\":{\"type\":\"string\"}},\"required\":[\"firstName\",\"lastName\"]}"))
+				.setName("extraJson"));
+
+		waitForJobs(() -> {
+			call(() -> client().updateSchema(schemaUuid, request));
+		}, COMPLETED, 1);
+
+		// 2. Update the node slug and expect failure due to now allowed string
+		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
+		nodeUpdateRequest.setVersion("draft");
+		nodeUpdateRequest.setLanguage("en");
+		nodeUpdateRequest.getFields().put("extraJson", FieldUtil.createJsonField(JsonFieldTestHelper.make("someValue")));
+		call(() -> client().updateNode(projectName(), nodeUuid, nodeUpdateRequest), BAD_REQUEST, "node_error_invalid_json_field_value",
+			"extraJson",
+			JsonUtil.toJson(JsonFieldTestHelper.make("someValue")));
+
+		// 3. Update the node again wit the correct data
+		nodeUpdateRequest.getFields().put("extraJson", FieldUtil.createJsonField(JsonContent.fromObject(new JsonObject().put("firstName", "Mickey").put("lastName", "Mouse"))));
+		call(() -> client().updateNode(projectName(), nodeUuid, nodeUpdateRequest));
+	}
 }
