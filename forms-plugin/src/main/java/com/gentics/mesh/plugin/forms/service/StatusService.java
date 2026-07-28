@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -21,6 +23,7 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.client.GenericParametersImpl;
@@ -62,7 +65,7 @@ public class StatusService {
 
 	private final SchemaInitializer schemaInitializer;
 	private final MeshPluginService meshPluginService;
-	private final Lazy<PurgeService> lazyPurgeService;
+	private final Lazy<FormService> lazyFormService;
 
 	private final String pluginRootNodeQuery;
 	private final Vertx rxVertx;
@@ -73,14 +76,14 @@ public class StatusService {
 			@UserClient @Nullable MeshRestClient userClient,
 			SchemaInitializer schemaInitializer,
 			MeshPluginService meshPluginService,
-			Lazy<PurgeService> lazyPurgeService,
+			Lazy<FormService> lazyFormService,
 			io.vertx.core.Vertx vertx,
 			FormsConfig config) {
 		this.adminClient = adminClient;
 		this.userClient = userClient;
 		this.schemaInitializer = schemaInitializer;
 		this.meshPluginService = meshPluginService;
-		this.lazyPurgeService = lazyPurgeService;
+		this.lazyFormService = lazyFormService;
 		this.rxVertx = Vertx.newInstance(vertx);
 
 		try {
@@ -123,11 +126,13 @@ public class StatusService {
 	 * @return single activation response
 	 */
 	private Single<StatusResponse> check(MeshRestClient client, String projectName) {
-		return client.graphqlQuery(projectName, pluginRootNodeQuery).toSingle().map(response -> {
+		return noIndexStatus(projectName).onErrorReturnItem(false).flatMap(noIndex -> client.graphqlQuery(projectName, pluginRootNodeQuery).toSingle().map(response -> {
 			List<Boolean> published = FormUtil.getFromResponse(response, "$.data.schema.nodes.elements[*].languages[*].isPublished");
 
-			return new StatusResponse().setActive(published.stream().filter(b -> b == Boolean.TRUE).findFirst().isPresent());
-		});
+			return new StatusResponse()
+					.setNoIndex(noIndex)
+					.setActive(published.stream().filter(b -> b == Boolean.TRUE).findFirst().isPresent());
+		}));
 	}
 
 	/**
@@ -164,6 +169,54 @@ public class StatusService {
 	}
 
 	/**
+	 * Ensure that the `noIndex` value of all the plugin schemas corresponds to the given value. Update the schema if required.
+	 * 
+	 * @param projectName
+	 * @param noIndex
+	 * @return
+	 */
+	public Completable ensureNoIndex(String projectName, Boolean noIndex) {
+		return getRootNode(projectName, adminClient)
+			.flatMap(node -> adminClient.findSchemaByUuid(node.getSchema().getUuid()).toSingle())
+			.flatMapCompletable(schema -> {
+				if (Objects.equals(schema.getNoIndex(), noIndex)) {
+					log.info("noIndex status matches");
+					return Completable.complete();
+				} else {
+					log.info("Updating noIndex for project [{}]", projectName);
+					return lazyFormService.get().getUuids(projectName).flatMapCompletable(uuids -> {
+						Completable finalStep = adminClient.updateSchema(schema.getUuid(), schema.toUpdateRequest().setNoIndex(noIndex)).toSingle()
+								.flatMapCompletable(unused -> {
+									log.info("Updating noIndex for project [{}]", projectName);
+									return Completable.complete();
+								});
+						if (uuids.size() < 1) {
+							return finalStep;
+						} else {
+							return adminClient.findSchemas(projectName).toSingle()
+								.flatMapCompletable(response -> {
+									List<SchemaResponse> schemas = response.getData().stream()
+											.filter(schema1 -> uuids.stream()
+													.map(uuid -> SchemaService.getSchemaName(uuid))
+													.anyMatch(name -> schema1.getName().equals(name)))
+											.collect(Collectors.toList());
+									if (schemas.size() < 1) {
+										log.info("No forms misusing noIndex for project [{}] found", projectName);
+										return Completable.complete();
+									} else {
+										return Observable.fromIterable(schemas).concatMapCompletable(schema1 -> {
+											log.info("Updating noIndex for the form [{}]", schema1.getName());
+											return adminClient.updateSchema(schema1.getUuid(), schema1.toUpdateRequest().setNoIndex(noIndex)).toCompletable();
+										}).andThen(finalStep);
+									}
+								});
+						}
+					});
+				}
+			});
+	}
+
+	/**
 	 * Initialize the project.
 	 *
 	 * @param projectName
@@ -171,7 +224,19 @@ public class StatusService {
 	 */
 	protected Completable initializeProject(String projectName, Optional<SchemaListResponse> maybeExistingSchemas) {
 		return schemaInitializer.initialize(projectName, maybeExistingSchemas);
-			}
+	}
+
+	/**
+	 * Get a forms `noIndex` status of the given project by checking all of its schemas for the value of this flag.
+	 * 
+	 * @param projectName
+	 * @return
+	 */
+	public Single<Boolean> noIndexStatus(String projectName) {
+		return getRootNode(projectName, adminClient)
+				.flatMap(node -> adminClient.findSchemaByUuid(node.getSchema().getUuid()).toSingle())
+				.map(schema -> schema.getNoIndex() == Boolean.TRUE);
+	}
 
 	/**
 	 * Publish the form generator root node
