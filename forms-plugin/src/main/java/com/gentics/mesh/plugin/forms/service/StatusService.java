@@ -40,7 +40,6 @@ import com.gentics.mesh.plugin.forms.model.response.StatusResponse;
 import com.gentics.mesh.plugin.forms.util.FormUtil;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
-import com.gentics.mesh.util.StreamUtil;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
@@ -205,10 +204,10 @@ public class StatusService {
 										log.info("No forms misusing noIndex for project [{}] found", projectName);
 										return Completable.complete();
 									} else {
-										return Completable.merge(StreamUtil.toIterable(schemas.stream().map(schema1 -> {
-											log.info("Updating noIndex for the form [{}]", schema.getName());
+										return Observable.fromIterable(schemas).concatMapCompletable(schema1 -> {
+											log.info("Updating noIndex for the form [{}]", schema1.getName());
 											return adminClient.updateSchema(schema1.getUuid(), schema1.toUpdateRequest().setNoIndex(noIndex)).toCompletable();
-										}))).andThen(finalStep);
+										}).andThen(finalStep);
 									}
 								});
 						}
