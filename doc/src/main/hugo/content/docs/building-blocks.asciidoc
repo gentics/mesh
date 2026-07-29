@@ -290,8 +290,55 @@ The ```required``` property indicates if the field is mandatory or not.
 ===== JSON
 The ```json``` field type stores JSON data.
 The ```required``` property indicates if the field is mandatory or not.
-The optional ```allow``` property acts as a whitelist for allowed field schemas.
+The optional ```allow``` property acts as a whitelist for allowed field schemas. As the simplest example, the following JSON schemas depict the person data, and a simple array of strings:
 
+[source,json]
+----
+{
+    "type" : "object",
+    "properties" : {
+        "firstName" : {
+            "type" : "string"
+        },
+        "lastName" : {
+            "type" : "string"
+        }
+    },
+    "required" : [
+        "firstName",
+        "lastName"
+    ]
+
+}
+----
+
+[source,json]
+----
+{
+    "type" : "array",
+    "items" : {
+        "type" : "string"
+    }
+}
+----
+
+So the following contents will pass the corresponding schema filters:
+
+[source,json]
+----
+{
+    "firstName" : "John",
+    "lastName" : "Doe"
+}
+----
+[source,json]
+----
+[
+    "a string",
+    "another string"
+]
+----
+For looking up into the full possibilities of JSON schemas filtering one may inspect the link:https://json-schema.org/[official JSON Schema guide].
 
 ===== Micronode
 A ```micronode``` field type stores a single micronode. A micronode is similar to a node. Typically they do not exist on their own but are tied to their (parent) node, e.g. a caption to be used in a image node. For a detailed description see our definition of <<micronode>>.
