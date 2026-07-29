@@ -112,7 +112,7 @@ public class JsonContent {
 	}
 
 	/**
-	 * Utility method for creating a JsonObject from the JSON object/array string representation. May return null.
+	 * Utility method for creating a JsonObject from the JSON object/array string representation. May return null, if the input cannot be parsed as JSON.
 	 * 
 	 * @param jsonString
 	 * @return 
@@ -120,9 +120,15 @@ public class JsonContent {
 	public static JsonContent fromString(String jsonString) {
 		if (StringUtils.isNotBlank(jsonString)) {
 			if (jsonString.trim().startsWith("[")) {
-				return new JsonContent(JsonUtil.toJson(JsonUtil.readValue(jsonString, JsonArray.class), true));
+				JsonArray array = JsonUtil.readValue(jsonString, JsonArray.class, true);
+				if (array != null) {
+					return fromArray(array);
+				}
 			} else {
-				return new JsonContent(JsonUtil.toJson(JsonUtil.readValue(jsonString, JsonObject.class), true));
+				JsonObject object = JsonUtil.readValue(jsonString, JsonObject.class, true);
+				if (object != null) {
+					return fromObject(object);
+				}
 			}
 		}
 		return null;

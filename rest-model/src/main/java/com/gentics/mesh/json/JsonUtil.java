@@ -230,7 +230,7 @@ public final class JsonUtil {
 	}
 
 	/**
-	 * Transform the given JSON content back into a POJO.
+	 * Transform the given JSON content back into a POJO, throwing an exception on parse errors.
 	 * 
 	 * @param content
 	 *            JSON string
@@ -241,10 +241,29 @@ public final class JsonUtil {
 	 *             Exception which contains information about the JSON error line, column
 	 */
 	public static <T> T readValue(String content, Class<T> valueType) throws GenericRestException {
+		return readValue(content, valueType, false);
+	}
+
+	/**
+	 * Transform the given JSON content back into a POJO.
+	 * 
+	 * @param content
+	 *            JSON string
+	 * @param valueType
+	 *            Class of the POJO
+	 * @param nullOnError if true, return null on parse exceptions 
+	 * @return POJO instance
+	 * @throws GenericRestException
+	 *             Exception which contains information about the JSON error line, column
+	 */
+	public static <T> T readValue(String content, Class<T> valueType, boolean nullOnError) throws GenericRestException {
 		try {
 			return defaultMapper.readValue(content, valueType);
 		} catch (JsonMappingException e) {
 			log.error("Could not deserialize json {" + content + "} into {" + valueType.getName() + "}", e);
+			if (nullOnError) {
+				return null;
+			}
 			String line = "unknown";
 			String column = "unknown";
 			if (e.getLocation() != null) {
@@ -257,6 +276,9 @@ public final class JsonUtil {
 			}
 			throw new GenericRestException(BAD_REQUEST, "error_json_structure_invalid", line, column, field, e.getOriginalMessage());
 		} catch (JsonParseException e) {
+			if (nullOnError) {
+				return null;
+			}
 			String msg = e.getOriginalMessage();
 			String line = "unknown";
 			String column = "unknown";
@@ -266,6 +288,9 @@ public final class JsonUtil {
 			}
 			throw new GenericRestException(BAD_REQUEST, "error_json_malformed", line, column, msg);
 		} catch (Exception e) {
+			if (nullOnError) {
+				return null;
+			}
 			throw new GenericRestException(BAD_REQUEST, "error_json_parse", e);
 		}
 	}
