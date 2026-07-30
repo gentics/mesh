@@ -8,23 +8,23 @@
 
 
 | eventBus
-| false
+| no
 | object
 | EventBus options
 
 | eventPoolSize
-| false
+| no
 | integer
-| Configure event pool size. Default is 2 * CPU Cores
+| Configure event pool size.  Default: *2*.
 
 | orderedBlockingHandlers
-| false
+| no
 | boolean
-| Configure, whether blocking handlers for mutating requests should be ordered. Default is true
+| Configure, whether blocking handlers for mutating requests should be ordered.  Default: *true*.
 
 | workerPoolSize
-| false
+| no
 | integer
-| Configure worker pool size. Default is: 20
+| Configure worker pool size.  Default: *20*.
 
 |======

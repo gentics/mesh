@@ -16,6 +16,9 @@ import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
@@ -23,6 +26,7 @@ import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.search.Compliance;
 import com.gentics.mesh.core.data.search.request.BulkRequest;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.DeleteDocumentRequest;
@@ -34,8 +38,6 @@ import com.gentics.mesh.core.rest.event.EventCauseInfo;
 import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.entity.MeshEntities;
 import com.gentics.mesh.search.verticle.eventhandler.EventCauseHelper;
@@ -43,8 +45,6 @@ import com.gentics.mesh.search.verticle.eventhandler.EventHandler;
 import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
 
 import io.reactivex.Flowable;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 /**
  * Handler for node content events which will be processed into {@link SearchRequest} for Elasticsearch synchronization.
@@ -56,13 +56,13 @@ public class NodeContentEventHandler implements EventHandler {
 
 	private final MeshHelper helper;
 	private final MeshEntities entities;
-	private final ComplianceMode complianceMode;
+	private final Compliance compliance;
 
 	@Inject
-	public NodeContentEventHandler(MeshHelper helper, MeshEntities entities, MeshOptions options) {
+	public NodeContentEventHandler(MeshHelper helper, MeshEntities entities, Compliance compliance) {
 		this.helper = helper;
 		this.entities = entities;
-		this.complianceMode = options.getSearchOptions().getComplianceMode();
+		this.compliance = compliance;
 	}
 
 	@Override
@@ -121,13 +121,13 @@ public class NodeContentEventHandler implements EventHandler {
 		}).map(doc -> helper.createDocumentRequest(
 			getIndexName(message, getSchemaVersionUuid(message).runInNewTx()),
 			ContentDao.composeDocumentId(message.getUuid(), message.getLanguageTag()),
-			doc, complianceMode));
+			doc, compliance));
 	}
 
 	private DeleteDocumentRequest deleteNodes(NodeMeshEventModel message, String schemaVersionUuid) {
 		return helper.deleteDocumentRequest(
 			getIndexName(message, schemaVersionUuid), ContentDao.composeDocumentId(message.getUuid(), message.getLanguageTag()),
-			complianceMode);
+			compliance);
 	}
 
 	private String getIndexName(NodeMeshEventModel message, String schemaVersionUuid) {

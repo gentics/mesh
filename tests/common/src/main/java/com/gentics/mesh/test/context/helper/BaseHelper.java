@@ -7,6 +7,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.PersistingUserDao;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.search.Compliance;
 import com.gentics.mesh.core.data.storage.LocalBinaryStorage;
 import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -147,6 +148,10 @@ public interface BaseHelper {
 
 	default SearchProvider searchProvider() {
 		return meshDagger().searchProvider();
+	}
+
+	default Compliance compliance() {
+		return meshDagger().compliance();
 	}
 
 	default void sleep(long timeMs) {

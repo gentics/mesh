@@ -8,57 +8,57 @@
 
 
 | dominantColor
-| false
+| no
 | string
 | The dominant color of the image. This information can be used to set the background color of the container div for an image achieve an pinterest styled gallery.
 
 | fileName
-| false
+| no
 | string
 | File name of the s3 binary data. This information can also be use to locate the node via the webroot API. The segment field must be set accordingly.
 
 | fileSize
-| false
+| no
 | integer
 | Size of the file in bytes.
 
 | focalPoint
-| false
+| no
 | object
 | The focal point of the image. The point can be used in combination with the focal point cropping in order to keep the focused area in the center of the cropped image.
 
 | height
-| false
+| no
 | integer
 | Height of the image.
 
 | metadata
-| false
+| no
 | object
 | Metadata of the upload. This object may contain exif data of images or meta data from PDF files.
 
 | mimeType
-| false
+| no
 | string
 | Determined mimetype of the file.
 
 | plainText
-| false
+| no
 | string
 | Plain text content of the upload. This can be the text content of a word or PDF document.
 
 | s3ObjectKey
-| false
+| no
 | string
 | S3 object key. Serves as reference to AWS.
 
 | s3binaryUuid
-| true
+| yes
 | string
 | Uuid of the s3 binary data. Two fields which share the same s3 binary data will also share the same Uuid.
 
 | width
-| false
+| no
 | integer
 | Width of the image.
 

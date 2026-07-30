@@ -8,22 +8,22 @@
 
 
 | host
-| false
+| no
 | string
 | Hostname of the coordination master instance.
 
 | name
-| false
+| no
 | string
 | Cluster node name of the coordination master.
 
 | port
-| false
+| no
 | integer
-| HTTP port of the coordination master Gentics Mesh API.
+| HTTP port of the coordination master Gentics Mesh API.  Default: *0*.
 
 | uuid
-| false
+| no
 | string
 | UUID of the coordination master instance.
 

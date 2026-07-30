@@ -8,12 +8,12 @@
 
 
 | previousIssueDate
-| true
+| yes
 | string
 | Date of the last time the API token was issued.
 
 | token
-| true
+| yes
 | string
 | Issued client API token.
 

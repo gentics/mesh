@@ -6,7 +6,7 @@
 
 	<groupId>com.gentics.mesh</groupId>
 	<artifactId>mesh</artifactId>
-	<version>3.1.13-SNAPSHOT</version>
+	<version>3.2.13-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
 	<name>Gentics Mesh</name>
@@ -17,9 +17,10 @@
 		<mesh.build.version>${project.version}</mesh.build.version>
 		<mesh.build.timestamp>${maven.build.timestamp}</mesh.build.timestamp>
 
-		<vertx.version>4.5.18</vertx.version>
+		<vertx.version>5.0.12</vertx.version>
 		<dagger.version>2.56.2</dagger.version>
-		<hibernate.version>6.6.11.Final</hibernate.version>
+		<hibernate.version>7.1.8.Final</hibernate.version>
+		<auto-factory.version>1.0-beta8</auto-factory.version>
 		<compiler.plugin.version>3.11.0</compiler.plugin.version>
 
 		<!-- Tests -->
@@ -57,7 +58,7 @@
 	<parent>
 		<groupId>com.gentics</groupId>
 		<artifactId>maven-parent</artifactId>
-		<version>5.1.0</version>
+		<version>5.1.1</version>
 	</parent>
 	<organization>
 		<name>Gentics Software</name>
@@ -118,22 +119,31 @@
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>${compiler.plugin.version}</version>
 					<configuration>
-						<forceJavacCompilerUse>true</forceJavacCompilerUse>
+						<!--forceJavacCompilerUse>true</forceJavacCompilerUse -->
 						<verbose>false</verbose>
 						<release>17</release>
 						<compilerArgs>
 							<!-- See https://github.com/google/dagger/releases/tag/dagger-2.48-->
 							<arg>-Adagger.ignoreProvisionKeyWildcards=DISABLED</arg>
 						</compilerArgs>
+						<annotationProcessorPaths>
+							<path>
+								<groupId>com.google.dagger</groupId>
+								<artifactId>dagger-compiler</artifactId>
+								<version>${dagger.version}</version>
+							</path>
+							<path>
+								<groupId>com.google.auto.factory</groupId>
+								<artifactId>auto-factory</artifactId>
+								<version>${auto-factory.version}</version>
+							</path>
+							<path>
+								<groupId>org.hibernate</groupId>
+								<artifactId>hibernate-jpamodelgen</artifactId>
+								<version>${hibernate.version}</version>
+							</path>
+						</annotationProcessorPaths>
 					</configuration>
-					<dependencies>
-						<dependency>
-							<groupId>com.google.dagger</groupId>
-							<artifactId>dagger-compiler</artifactId>
-							<version>${dagger.version}</version>
-							<optional>true</optional>
-						</dependency>
-					</dependencies>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>

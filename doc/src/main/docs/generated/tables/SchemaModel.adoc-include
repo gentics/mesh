@@ -8,17 +8,17 @@
 
 
 | fields.items.label
-| false
+| no
 | string
 | Label of the field.
 
 | fields.items.name
-| true
+| yes
 | string
 | Name of the field.
 
 | fields.items.type
-| true
+| yes
 | string
 | Type of the field.
 

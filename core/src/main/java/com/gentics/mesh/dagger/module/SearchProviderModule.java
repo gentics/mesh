@@ -10,6 +10,7 @@ import javax.inject.Singleton;
 import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.okhttp.ElasticsearchOkClient;
 import com.gentics.elasticsearch.client.okhttp.ElasticsearchOkClient.Builder;
+import com.gentics.mesh.core.data.search.Compliance;
 import com.gentics.mesh.dagger.SearchProviderType;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
@@ -17,7 +18,10 @@ import com.gentics.mesh.search.DevNullSearchProvider;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.TrackingSearchProviderImpl;
+import com.gentics.mesh.search.impl.DefaultElasticsearchComplianceImpl;
 import com.gentics.mesh.search.impl.ElasticSearchProvider;
+import com.gentics.mesh.search.impl.Elasticsearch6ComplianceImpl;
+import com.gentics.mesh.search.impl.Elasticsearch7ComplianceImpl;
 
 import dagger.Lazy;
 import dagger.Module;
@@ -65,6 +69,19 @@ public class SearchProviderModule {
 		case ELASTICSEARCH:
 		default:
 			return elasticsearchProvider.get();
+		}
+	}
+
+	@Provides
+	@Singleton
+	public static Compliance compliance(MeshOptions options) {
+		switch (options.getSearchOptions().getComplianceMode()) {
+		case ES_6:
+			return new Elasticsearch6ComplianceImpl();
+		case ES_7:
+			return new Elasticsearch7ComplianceImpl();
+		default:
+			return new DefaultElasticsearchComplianceImpl(options.getSearchOptions().getComplianceMode());
 		}
 	}
 

@@ -7,6 +7,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Transactional;
@@ -14,9 +17,6 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity;
 import com.gentics.mesh.core.rest.admin.consistency.RepairAction;
 import com.gentics.mesh.util.UUIDUtil;
-
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 public class UploadsConsistencyCheck implements ConsistencyCheck {
 
@@ -59,7 +59,6 @@ public class UploadsConsistencyCheck implements ConsistencyCheck {
 							try {
 								Files.createDirectories(tmpSegmentsPath);
 								Files.move(path, tmpSegmentsPath.resolve(path.getFileName()));
-								Path parent = path.getParent().toAbsolutePath();
 								repaired = true;
 							} catch (IOException e) {
 								log.error("Could not move file " + path, e);

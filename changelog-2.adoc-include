@@ -6,6 +6,110 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v3.2.12]]
+== 3.2.12 (13.07.2026)
+
+[[v3.2.11]]
+== 3.2.11 (03.07.2026)
+
+icon:check[] Schema Migrations, which renamed multiple fields and additionally created new fields using the old names but different field types always failed.
+This has been fixed.
+
+
+[[v3.2.10]]
+== 3.2.10 (12.06.2026)
+
+[[v3.2.9]]
+== 3.2.9 (12.05.2026)
+
+[[v3.2.8]]
+== 3.2.8 (24.04.2026)
+
+[[v3.2.7]]
+== 3.2.7 (21.04.2026)
+
+[[v3.2.6]]
+== 3.2.6 (13.04.2026)
+
+[[v3.2.5]]
+== 3.2.5 (17.03.2026)
+
+[[v3.2.4]]
+== 3.2.4 (25.02.2026)
+
+[[v3.2.3]]
+== 3.2.3 (11.02.2026)
+
+[[v3.2.2]]
+== 3.2.2 (06.02.2026)
+
+[[v3.2.1]]
+== 3.2.1 (12.01.2026)
+
+[[v3.2.0]]
+== 3.2.0 (16.12.2025)
+
+icon:plus[] Search: An index search integration with Elasticsearch has been refactored to use the stateless `search_after` approach. The old, `scroll` API based implementation has been removed.
+
+icon:plus[] Search: Support for Elasticsearch 9 has been added.
+
+icon:plus[] Core: The `Vert.x` async IO / routing framework has been updated to the version `5.0.5`.
+
+icon:plus[] Some dependencies have been updated:
+* Hibernate: 7.1.8.Final
+
+
+[[v3.1.18]]
+== 3.1.18 (13.07.2026)
+
+icon:check[] Core: An extra check on the nodes, eligible for the migration, is performed to avoid early finish of the migration process, caused by inconsistent node data.
+
+icon:check[] Core: An inconsistency case of a content edge pointing to the missing content record now has a repair mechanism.
+
+icon:check[] Schema Migrations, which renamed multiple fields and additionally created new fields using the old names but different field types always failed.
+This has been fixed.
+
+
+icon:check[] Core: The performance of updating (micro)schemas has been improved. 
+
+icon:check[] Core: An edge case, causing micronode list update to keep the failing thread running, with a possibility to DDoS, has been eliminated.
+
+icon:check[] Elasticsearch: Fixed a possible NullPointerException when the search.mappingMode was set to STRICT and
+no custom mapping was configured for at least one field in a schema.
+
+
+[[v3.1.17]]
+== 3.1.17 (12.06.2026)
+
+icon:check[] Core: A crash on requesting node children recursively through GraphQL + native filtering has been fixed.
+
+[[v3.1.16]]
+== 3.1.16 (12.05.2026)
+
+icon:check[] Core: An edge case of constructing a database request with too many parameters has been fixed.
+
+icon:check[] Core: When enabling the hibernate second level caches, the used cache instance were configured without limits, which
+effectively could lead to OOM errors.
+New configuration settings have been introduced to configure the limits for those caches in clustered and non-clustered instances:
+* `cache.clusteredHibernateCacheHeapFree` defines the required amount of free heap space in clustered instances (defaults to `10%`)
+* `cache.nonClusteredHibernateCacheSize` defines the maximum cache size in non-clustered instances (defaults to `50_000`)
+
+
+icon:check[] Core: When the initialization of an instance failed (e.g. due to unavailability of the database),
+the process could fail to terminate. This has been fixed.
+
+
+[[v3.1.15]]
+== 3.1.15 (24.04.2026)
+
+icon:check[] Core: A crash during fetching micronode data, referenced through multiple lists, has been fixed.
+
+[[v3.1.14]]
+== 3.1.14 (21.04.2026)
+
+[[v3.1.13]]
+== 3.1.13 (13.04.2026)
+
 [[v3.1.12]]
 == 3.1.12 (17.03.2026)
 

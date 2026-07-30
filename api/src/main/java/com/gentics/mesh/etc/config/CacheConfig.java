@@ -18,8 +18,7 @@ public class CacheConfig implements Option {
 	private static final long DEFAULT_PATH_CACHE_SIZE = 20_000;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Set the maximum size of the path cache. A value of 0 will disable the cache. Default: "
-		+ DEFAULT_PATH_CACHE_SIZE)
+	@JsonPropertyDescription("Set the maximum size of the path cache. A value of 0 will disable the cache.")
 	@EnvironmentVariable(name = MESH_CACHE_PATH_SIZE_ENV, description = "Override the path cache size.")
 	private long pathCacheSize = DEFAULT_PATH_CACHE_SIZE;
 

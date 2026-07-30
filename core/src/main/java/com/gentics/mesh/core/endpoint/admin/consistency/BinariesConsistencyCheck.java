@@ -2,14 +2,14 @@ package com.gentics.mesh.core.endpoint.admin.consistency;
 
 import java.io.File;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.core.data.storage.BinaryStorage;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Transactional;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity;
-
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 public class BinariesConsistencyCheck implements ConsistencyCheck {
 

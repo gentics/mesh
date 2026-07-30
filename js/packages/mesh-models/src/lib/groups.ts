@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 import { BasicListOptions, Entity, ListResponse, PartialEntityLoadOptions, RolePermissionsOptions } from './common';
 import { RoleReference } from './roles';
 

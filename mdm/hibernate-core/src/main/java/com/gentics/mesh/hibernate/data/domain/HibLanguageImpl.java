@@ -18,7 +18,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
  * @author plyhun
  *
  */
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "HibEntityCache")
 @Entity(name = "language")
 @ElementTypeKey(ElementType.LANGUAGE)
 public class HibLanguageImpl extends AbstractHibUserTrackedElement<LanguageResponse> implements HibLanguage, Serializable {

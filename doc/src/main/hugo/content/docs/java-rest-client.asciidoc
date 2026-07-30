@@ -62,7 +62,7 @@ Builder builder = MeshRestClientConfig.newConfig();
 builder.addTrustedCA("certs/server.pem");
 builder.setClientCert("certs/alice.pem");
 builder.setClientKey("certs/alice.key");
-builder.setHost("demo.getmesh.io");
+builder.setHost("myhost");
 builder.setPort(443);
 builder.setSsl(true);
 builder.setHostnameVerification(false);

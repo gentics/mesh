@@ -15,7 +15,6 @@ export enum FieldType {
     STRING = 'string',
 }
 
-
 export interface SchemaField {
     /**
      * Additional search index configuration. This can be used to setup custom analyzers

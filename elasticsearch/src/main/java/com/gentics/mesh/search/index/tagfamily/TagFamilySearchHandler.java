@@ -4,6 +4,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.action.TagFamilyDAOActions;
+import com.gentics.mesh.core.data.search.Compliance;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
@@ -19,8 +20,9 @@ import com.gentics.mesh.util.SearchWaitUtil;
 public class TagFamilySearchHandler extends AbstractSearchHandler<HibTagFamily, TagFamilyResponse> {
 
 	@Inject
-	public TagFamilySearchHandler(Database db, SearchProvider searchProvider, TagFamilyIndexHandlerImpl indexHandler, MeshOptions options, TagFamilyDAOActions actions, SearchWaitUtil waitUtil) {
-		super(db, searchProvider, options, indexHandler, actions, waitUtil);
+	public TagFamilySearchHandler(Database db, SearchProvider searchProvider, TagFamilyIndexHandlerImpl indexHandler, MeshOptions options,
+			Compliance compliance, TagFamilyDAOActions actions, SearchWaitUtil waitUtil) {
+		super(db, searchProvider, options, compliance, indexHandler, actions, waitUtil);
 	}
 
 }

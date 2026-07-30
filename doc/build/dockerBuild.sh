@@ -35,6 +35,7 @@ cp -Rf $ROOT/src/main/docs/generated/search $CONTENTROOT/content/docs/search
 cp -Rf $ROOT/src/main/docs/generated/models $CONTENTROOT/content/docs/examples/models
 cp -Rf $ROOT/src/main/docs/generated/tables $CONTENTROOT/content/docs/examples/tables
 cp -Rf $ROOT/../CHANGELOG.adoc $CONTENTROOT/content/docs/changelog.asciidoc
+cp -Rf $ROOT/../changelog-2.adoc-include $CONTENTROOT/content/docs/changelog-2.adoc-include  
 cp -Rf $ROOT/../LTS-CHANGELOG.adoc $CONTENTROOT/content/docs/lts-changelog.asciidoc
 
 docker run -v $CONTENTROOT:/site -v $HTMLROOT:/site/docs --user 1000:1000 --rm gentics/hugo-asciidoctor /site/scripts/build.sh

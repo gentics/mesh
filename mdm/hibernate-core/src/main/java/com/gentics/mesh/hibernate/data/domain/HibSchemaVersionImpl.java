@@ -32,7 +32,7 @@ import com.gentics.mesh.dagger.annotations.ElementTypeKey;
  * @author plyhun
  *
  */
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "HibEntityCache")
 @Entity(name = HibSchemaVersionImpl.TABLE_NAME)
 @ElementTypeKey(ElementType.SCHEMAVERSION)
 @NamedQueries({

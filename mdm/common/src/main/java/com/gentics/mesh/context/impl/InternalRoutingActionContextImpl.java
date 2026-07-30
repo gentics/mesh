@@ -28,6 +28,7 @@ import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.Session;
+import io.vertx.ext.web.impl.UserContextInternal;
 
 /**
  * Vert.x specific routing context based action context implementation.
@@ -120,8 +121,9 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 		if (rc.request().isSSL()) {
 			protocol = "https://";
 		}
-		String hostAndPort = rc.request().host();
-		rc.response().putHeader(HttpHeaders.LOCATION, protocol + hostAndPort + basePath);
+		String host = rc.request().authority().host();
+		int port = rc.request().authority().port();
+		rc.response().putHeader(HttpHeaders.LOCATION, protocol + host + ":" + port + basePath);
 	}
 
 	@Override
@@ -178,7 +180,7 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 			session.destroy();
 		}
 		rc.response().addCookie(Cookie.cookie(SharedKeys.TOKEN_COOKIE_KEY, "deleted").setMaxAge(0).setPath("/"));
-		rc.clearUser();
+		rc.userContext().clear();
 	}
 
 	@Override
@@ -210,7 +212,7 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 
 	@Override
 	public void setUser(MeshAuthUser user) {
-		rc.setUser(user);
+		((UserContextInternal) rc.userContext()).setUser(user);
 	}
 
 	@Override

@@ -8,7 +8,7 @@
 
 
 | before
-| string 
+| string
 | false
 | Limit the purge operation to versions which are older than the given date.
 

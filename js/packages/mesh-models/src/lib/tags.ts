@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 import { Entity, ListResponse, PagingOptions, PartialEntityLoadOptions, RolePermissionsOptions, SortingOptions } from './common';
 
 export interface EditableTagProperties {

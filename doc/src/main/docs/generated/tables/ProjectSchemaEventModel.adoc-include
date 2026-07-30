@@ -8,22 +8,22 @@
 
 
 | cause
-| true
+| yes
 | object
 | Some events will be caused by another action. This object contains information about the cause of the event.
 
 | origin
-| true
+| yes
 | string
 | Name of the mesh node from which the event originates.
 
 | project
-| true
+| yes
 | object
 | Reference to the project.
 
 | schema
-| true
+| yes
 | object
 | Reference to the schema.
 

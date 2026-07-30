@@ -64,7 +64,7 @@ public final class Util {
 	 */
 	public static <T> T requireType(Class<T> clazz, Object obj) {
 		if (clazz.isAssignableFrom(obj.getClass())) {
-			return (T) obj;
+			return clazz.cast(obj);
 		} else {
 			throw new RuntimeException(String.format("Unexpected type. Required {%s}, but got {%s}", clazz.getSimpleName(), obj.getClass().getSimpleName()));
 		}
@@ -99,6 +99,7 @@ public final class Util {
 	 * @param <T>
 	 * @return
 	 */
+	@SafeVarargs
 	public static <T> Stream<T> concat(Stream<T>... streams) {
 		return Stream.of(streams).flatMap(Function.identity());
 	}

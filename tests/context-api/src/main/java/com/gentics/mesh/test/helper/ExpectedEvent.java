@@ -33,7 +33,7 @@ public class ExpectedEvent implements AutoCloseable {
 		consumer = vertx.eventBus().consumer(address);
 		consumer.handler(msg -> latch.countDown());
 		// The completion handler will be invoked once the consumer has been registered
-		consumer.completionHandler(res -> {
+		consumer.completion().andThen(res -> {
 			if (res.failed()) {
 				throw new RuntimeException("Could not listen to event", res.cause());
 			}

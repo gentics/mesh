@@ -8,8 +8,8 @@
 
 {{#each entries}}
 | {{this.name}}
-| {{this.type}} {{#if this.default}} (default: {{this.default}}) {{/if}}
+| {{this.type}}
 | {{this.required}}
-| {{this.description}}
+| {{this.description}}{{#if this.default}} Default: {{this.default}}. {{/if}}
 {{/each}}
 |======

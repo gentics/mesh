@@ -201,25 +201,20 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 
 	@Override
 	public Single<ImageInfo> readImageInfo(String path) {
-		Maybe<ImageInfo> result = vertx.rxExecuteBlocking(bh -> {
+		Maybe<ImageInfo> result = vertx.rxExecuteBlocking(() -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Reading image information from stream");
 			}
-			try {
-				File file = new File(path);
-				if (!file.exists()) {
-					log.error("The image file {" + file.getAbsolutePath() + "} could not be found.");
-					bh.fail(error(BAD_REQUEST, "image_error_reading_failed"));
-					return;
-				}
-				BufferedImage image = readFromFile(file);
-				if (image == null) {
-					bh.fail(error(BAD_REQUEST, "image_error_reading_failed"));
-				} else {
-					bh.complete(toImageInfo(image));
-				}
-			} catch (Exception e) {
-				bh.fail(e);
+			File file = new File(path);
+			if (!file.exists()) {
+				log.error("The image file {" + file.getAbsolutePath() + "} could not be found.");
+				throw error(BAD_REQUEST, "image_error_reading_failed");
+			}
+			BufferedImage image = readFromFile(file);
+			if (image == null) {
+				throw error(BAD_REQUEST, "image_error_reading_failed");
+			} else {
+				return toImageInfo(image);
 			}
 		}, false);
 		return result.toSingle();

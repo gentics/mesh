@@ -8,38 +8,38 @@
 
 
 | byteLimit
-| false
+| no
 | integer
-| The upload size limit in bytes. Default: 262144000 (250 MB)
+| The upload size limit in bytes.  Default: *262144000 (250 MB)*.
 
 | checkInterval
-| false
+| no
 | integer
-| Interval in milliseconds for performing binary check requests for binary fields where a check service URL is defined. For values less than one the check is disabled. (default: 60000).
+| Interval in milliseconds for performing binary check requests for binary fields where a check service URL is defined. For values less than one the check is disabled.  Default: *60000*.
 
 | directory
-| false
+| no
 | string
-| Path binary data storage directory. Fileuploads will be placed here.
+| Path binary data storage directory. Fileuploads will be placed here.  Default: *data/binaryFiles*.
 
 | metadataWhitelist
-| false
+| no
 | array
 | If set, the parser will only extract metadata with the keys specified in the list.
 
 | parser
-| false
+| no
 | boolean
-| If true, the document parser will process uploads and extract metadata and contents. Default: true
+| If true, the document parser will process uploads and extract metadata and contents.  Default: *true*.
 
 | parserLimit
-| false
+| no
 | integer
-| The parser limit for uploaded documents (pdf, doc, docx). Default: 40000
+| The parser limit for uploaded documents (pdf, doc, docx).  Default: *40000*.
 
 | tempDirectory
-| false
+| no
 | string
-| Path to the file upload temporary directory. Inbound file uploads will be placed here before they are processed.
+| Path to the file upload temporary directory. Inbound file uploads will be placed here before they are processed.  Default: *data/tmp/file-uploads*.
 
 |======

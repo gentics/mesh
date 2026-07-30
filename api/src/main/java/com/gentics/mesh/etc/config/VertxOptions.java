@@ -27,17 +27,17 @@ public class VertxOptions implements Option {
 	public static final String MESH_VERTX_ORDERED_BLOCKING_HANDLERS_ENV = "MESH_VERTX_ORDERED_BLOCKING_HANDLERS";
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Configure worker pool size. Default is: " + DEFAULT_WORKER_POOL_SIZE)
+	@JsonPropertyDescription("Configure worker pool size.")
 	@EnvironmentVariable(name = MESH_VERTX_WORKER_POOL_SIZE_ENV, description = "Override the configured Vert.x worker pool size.")
 	private int workerPoolSize = DEFAULT_WORKER_POOL_SIZE;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Configure event pool size. Default is 2 * CPU Cores")
+	@JsonPropertyDescription("Configure event pool size.")
 	@EnvironmentVariable(name = MESH_VERTX_EVENT_POOL_SIZE_ENV, description = "Override the configured Vert.x event pool size.")
 	private int eventPoolSize = DEFAULT_EVENT_POOL_SIZE;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Configure, whether blocking handlers for mutating requests should be ordered. Default is " + DEFAULT_ORDERED_BLOCKING_HANDLERS)
+	@JsonPropertyDescription("Configure, whether blocking handlers for mutating requests should be ordered.")
 	@EnvironmentVariable(name = MESH_VERTX_ORDERED_BLOCKING_HANDLERS_ENV, description = "Override the configured Vert.x blocking handlers ordering setting.")
 	private boolean orderedBlockingHandlers = true;
 

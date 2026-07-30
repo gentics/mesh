@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data.impl;
 
 import java.util.Objects;
 
-import io.vertx.ext.auth.authorization.Authorization;
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.core.data.dao.UserDao;
@@ -13,12 +12,9 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Database;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.auth.User;
 
 /**
@@ -93,27 +89,12 @@ public class MeshAuthUserImpl implements MeshAuthUser {
 	}
 
 	@Override
-	public void setAuthProvider(AuthProvider authProvider) {
-		throw new NotImplementedException();
-	}
-
-	@Override
 	public User merge(User user) {
 		throw new NotImplementedException();
 	}
 
 	@Override
 	public JsonObject attributes() {
-		throw new NotImplementedException();
-	}
-
-	@Override
-	public User isAuthorized(Authorization authorization, Handler<AsyncResult<Boolean>> handler) {
-		throw new NotImplementedException("Please use the MeshAuthUserImpl method instead.");
-	}
-
-	@Override
-	public User clearCache() {
 		throw new NotImplementedException();
 	}
 

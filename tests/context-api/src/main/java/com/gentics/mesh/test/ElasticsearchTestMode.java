@@ -10,37 +10,48 @@ public enum ElasticsearchTestMode {
 	/**
 	 * Run with no ES support and set url to null
 	 */
-	NONE,
+	NONE(0),
 
 	/**
 	 * Run with a fake tracking ES provider
 	 */
-	TRACKING,
+	TRACKING(1),
 
 	/**
 	 * Run using an ES docker container
 	 */
-	CONTAINER_ES6,
+	CONTAINER_ES6(6),
 
 	/**
 	 * Run using an ES 7 docker container
 	 */
-	CONTAINER_ES7,
+	CONTAINER_ES7(7),
 
 	/**
 	 * Run using an ES 8 docker container
 	 */
-	CONTAINER_ES8,
+	CONTAINER_ES8(8),
+
+	/**
+	 * Run using an ES 9 docker container
+	 */
+	CONTAINER_ES9(9),
 
 	/**
 	 * Run using a toxified ES docker container
 	 */
-	CONTAINER_ES6_TOXIC,
+	CONTAINER_ES6_TOXIC(-6),
 
 	/**
 	 * Run using an ES docker container which is unreachable (listening on port 1)
 	 */
-	UNREACHABLE;
+	UNREACHABLE(2);
+
+	private final int order;
+
+	private ElasticsearchTestMode(int order) {
+		this.order = order;
+	}
 
 	public SearchProviderType toSearchProviderType() {
 		switch (this) {
@@ -51,5 +62,14 @@ public enum ElasticsearchTestMode {
 			default:
 				return SearchProviderType.ELASTICSEARCH;
 		}
+	}
+
+	/**
+	 * Get the ES version order.
+	 * 
+	 * @return
+	 */
+	public int getOrder() {
+		return order;
 	}
 }

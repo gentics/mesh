@@ -8,8 +8,8 @@
 
 
 | consistencyCheck
-| boolean  (default: false) 
+| boolean
 | false
-| Specify whether the consistency check should be run before running the backup.
+| Specify whether the consistency check should be run before running the backup. Default: false. 
 
 |======

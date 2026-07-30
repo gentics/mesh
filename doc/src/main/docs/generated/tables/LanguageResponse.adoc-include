@@ -8,7 +8,7 @@
 
 
 | uuid
-| true
+| yes
 | string
 | Uuid of the element
 

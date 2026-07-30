@@ -97,7 +97,6 @@ public final class Mocks {
 		if (body != null) {
 			try {
 				String bodyAsString = JsonUtil.getMapper().writeValueAsString(body);
-				when(rc.getBodyAsString()).thenReturn(bodyAsString);
 				RequestBody requestBody = mock(RequestBody.class);
 				when(requestBody.asString()).thenReturn(bodyAsString);
 				when(rc.body()).thenReturn(requestBody);

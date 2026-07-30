@@ -58,6 +58,7 @@ import com.gentics.mesh.search.TrackingSearchProviderImpl;
 import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
 
 import dagger.Lazy;
+import io.micrometer.core.instrument.MeterRegistry;
 import io.reactivex.Completable;
 import io.vertx.core.Vertx;
 import io.vertx.core.metrics.MetricsOptions;
@@ -103,13 +104,13 @@ public class HibernateBootstrapInitializerImpl extends AbstractBootstrapInitiali
 	public HibernateBootstrapInitializerImpl(ServerSchemaStorageImpl schemaStorage, HibernateDatabase db,
 			SearchProvider searchProvider, BCryptPasswordEncoder encoder, DistributedEventManager eventManager,
 			Lazy<IndexHandlerRegistryImpl> indexHandlerRegistry, Lazy<CoreVerticleLoader> loader,
-			HighLevelChangelogSystem highlevelChangelogSystem, CacheRegistry cacheRegistry,
+			HighLevelChangelogSystem highlevelChangelogSystem, CacheRegistry cacheRegistry, MeterRegistry meterRegistry,
 			MeshPluginManager pluginManager, MeshOptions options, RouterStorageRegistryImpl routerStorageRegistry,
 			MetricsOptions metricsOptions, LocalConfigApiImpl localConfigApi, BCryptPasswordEncoder passwordEncoder,
 			MasterElector coordinatorMasterElector, LivenessManager liveness, EventBusLivenessManager eventbusLiveness,
 			EventBusStore eventBusStore, ContentCachedStorage contentCachedStorage, HibPermissionRoots permRoots, RootResolver rootResolver, ChangelogDao changelogDao) {
 		super(schemaStorage, db, searchProvider, passwordEncoder, eventManager, indexHandlerRegistry, loader,
-				highlevelChangelogSystem, cacheRegistry, pluginManager, options, routerStorageRegistry, metricsOptions,
+				highlevelChangelogSystem, cacheRegistry, meterRegistry, pluginManager, options, routerStorageRegistry, metricsOptions,
 				localConfigApi, passwordEncoder, coordinatorMasterElector, liveness, eventbusLiveness, eventBusStore);
 		this.contentCachedStorage = contentCachedStorage;
 		this.db = db;
@@ -133,8 +134,9 @@ public class HibernateBootstrapInitializerImpl extends AbstractBootstrapInitiali
 					// check for the curren thread (which is expected to be an eventloop thread)
 					cleanupLeftoverTx();
 					// also execute blocking, which will check in one of the worker threads
-					vertx.executeBlocking(prom -> {
+					vertx.executeBlocking(() -> {
 						cleanupLeftoverTx();
+						return null;
 					}, false);
 				});
 			}

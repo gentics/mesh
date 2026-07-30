@@ -1,6 +1,8 @@
 package com.gentics.mesh.hibernate.data.domain;
 
 import javax.annotation.Nonnull;
+
+import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MappedSuperclass;
 
@@ -17,7 +19,7 @@ import com.gentics.mesh.database.HibernateTx;
 @MappedSuperclass
 public abstract class AbstractHibBranchSchemaVersion<SCV extends AbstractHibFieldSchemaVersion<?, ?, ?, ?, ?>> extends AbstractHibBaseElement {
 
-	@ManyToOne(optional = false)
+	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	private HibBranchImpl branch;
 
 	@ManyToOne(optional = false)

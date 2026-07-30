@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 import {
     BasicListOptions,
     BranchedEntityOptions,
@@ -58,7 +57,7 @@ export interface NodeLoadOptions extends RolePermissionsOptions, MultiLangugeEnt
     PartialEntityLoadOptions<NodeResponse>, BranchedEntityOptions, VersionedEntityOptions, ResolvableLinksOptions { }
 
 export interface NodeListOptions extends BasicListOptions, RolePermissionsOptions, MultiLangugeEntityOptions,
-    PartialEntityLoadOptions<NodeResponse>, BranchedEntityOptions, VersionedEntityOptions, ResolvableLinksOptions  { }
+    PartialEntityLoadOptions<NodeResponse>, BranchedEntityOptions, VersionedEntityOptions, ResolvableLinksOptions { }
 
 export type NodeListResponse = ListResponse<NodeResponse>;
 

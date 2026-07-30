@@ -28,6 +28,9 @@ RUN adduser -D -u 1000 -G root -h /mesh mesh && \
     apk update && apk add rsync curl iputils busybox-extras tar nano && rm -rf /var/cache/apk/*
 ADD --chown=1000:0 ./live.sh /mesh/live.sh
 ADD --chown=1000:0 ./target/mesh-server*jar /mesh/mesh.jar
+ADD --chown=1000:0 ./entrypoint.sh /mesh/
+
+RUN chmod u+x,g+x /mesh/entrypoint.sh
 
 USER mesh
 WORKDIR /mesh
@@ -37,5 +40,5 @@ VOLUME /plugins
 VOLUME /keystore
 VOLUME /config
 
-CMD [ "java", "-Djna.tmpdir=/tmp/.jna", "-Duser.dir=/mesh", "--add-opens", "java.base/java.util=ALL-UNNAMED", "-jar" , "mesh.jar"]
+ENTRYPOINT ["/mesh/entrypoint.sh"]
 HEALTHCHECK --start-period=60s --interval=10s --retries=2 CMD ["sh", "live.sh"]

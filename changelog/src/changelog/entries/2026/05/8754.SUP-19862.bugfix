@@ -1,0 +1,2 @@
+Core: When the initialization of an instance failed (e.g. due to unavailability of the database),
+the process could fail to terminate. This has been fixed.

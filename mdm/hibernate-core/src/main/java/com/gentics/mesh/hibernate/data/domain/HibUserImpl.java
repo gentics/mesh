@@ -39,7 +39,7 @@ import com.gentics.mesh.hibernate.util.HibernateUtil;
  * @author plyhun
  *
  */
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "HibEntityCache")
 @NamedQueries({
 	@NamedQuery(
 			name = "user.findgroupsforusers",

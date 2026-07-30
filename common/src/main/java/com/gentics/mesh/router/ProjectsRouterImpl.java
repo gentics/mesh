@@ -45,7 +45,7 @@ public class ProjectsRouterImpl implements ProjectsRouter {
 		this.apiRouter = apiRouter;
 		this.router = Router.router(vertx);
 		this.projectRouter = new ProjectRouterImpl(vertx, apiRouter.getRoot().getStorage());
-		apiRouter.getRouter().mountSubRouter("/", router);
+		apiRouter.getRouter().route("/*").subRouter(router);
 	}
 
 	@Override
@@ -83,8 +83,8 @@ public class ProjectsRouterImpl implements ProjectsRouter {
 			// Note: the end slash in the subrouter mount point is important, otherwise the subrouter for e.g. /project
 			// (for a project named "project") would also match for the route /projects, which will cause problems,
 			// if the project "project" is deleted
-			router.mountSubRouter("/" + encodedName + "/", projectRouter);
-			projectRouter.mountSubRouter("/", this.projectRouter.getRouter());
+			router.route("/" + encodedName + "/*").subRouter(projectRouter);
+			projectRouter.route("/*").subRouter(this.projectRouter.getRouter());
 			// mountSubRoutersForProjectRouter(projectRouter, encodedName);
 		}
 		return projectRouter;

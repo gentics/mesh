@@ -8,23 +8,23 @@
 
 
 | logEnabled
-| false
+| no
 | boolean
-| Enables the debug info log.
+| Enables the debug info log.  Default: *true*.
 
 | logFileSize
-| false
+| no
 | string
-| The maximum file size of a single log file.
+| The maximum file size of a single log file.  Default: *5MB*.
 
 | logFolder
-| false
+| no
 | string
-| The path of the folder where the debug info log is stored.
+| The path of the folder where the debug info log is stored.  Default: *debuginfo*.
 
 | logPattern
-| false
+| no
 | string
-| The pattern used for each log line. For the detailed pattern format description please refer to the link:https://logback.qos.ch/manual/layouts.html#conversionWord[Logback documentation]. Default value is: %d{HH:mm:ss.SSS} [%meshName] %-5level [%thread] [%file:%line] - %msg%n
+| The pattern used for each log line. For the detailed pattern format description please refer to the link:https://logback.qos.ch/manual/layouts.html#conversionWord[Logback documentation].  Default: *%d{HH:mm:ss.SSS} [%meshName] %-5level [%thread] [%file:%line] - %msg%n*.
 
 |======

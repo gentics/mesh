@@ -33,6 +33,7 @@ import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicSearchCrudTestcases;
 
 import io.vertx.core.DeploymentOptions;
+import io.vertx.core.ThreadingModel;
 
 @RunWith(Parameterized.class)
 @MeshTestSetting(testSize = FULL, startServer = true)
@@ -45,7 +46,7 @@ public class SchemaSearchEndpointTest extends AbstractMultiESTest implements Bas
 	@Before
 	public void setupWorkerVerticle() throws Exception {
 		DeploymentOptions options = new DeploymentOptions();
-		options.setWorker(true);
+		options.setThreadingModel(ThreadingModel.WORKER);
 		vertx().deployVerticle(meshDagger().jobWorkerVerticle(), options);
 	}
 

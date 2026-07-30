@@ -24,6 +24,7 @@ import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.search.Compliance;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.db.Database;
@@ -49,9 +50,9 @@ public class GroupIndexHandlerImpl extends AbstractIndexHandler<HibGroup> implem
 	protected final GroupMappingProvider mappingProvider;
 
 	@Inject
-	public GroupIndexHandlerImpl(SearchProvider searchProvider, Database db, MeshHelper helper, MeshOptions options,
+	public GroupIndexHandlerImpl(SearchProvider searchProvider, Database db, MeshHelper helper, MeshOptions options, Compliance compliance,
 		SyncMetersFactory syncMetersFactory, BucketManager bucketManager, GroupTransformer transformer, GroupMappingProvider mappingProvider) {
-		super(searchProvider, db, helper, options, syncMetersFactory, bucketManager);
+		super(searchProvider, db, helper, options, syncMetersFactory, bucketManager, compliance);
 		this.transformer = transformer;
 		this.mappingProvider = mappingProvider;
 	}

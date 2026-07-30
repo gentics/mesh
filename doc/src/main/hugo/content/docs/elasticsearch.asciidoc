@@ -72,7 +72,7 @@ TIP: You can add Elasticsearch support at any point and invoke ```POST {apiLates
 
 == Compatibility
 
-We currently run and test against Elasticsearch version 6.8.1 and 7.4.0. Other versions have not yet been tested.
+We currently run and test against Elasticsearch version 6.8.1 and 9.0.0. Other versions have not yet been tested.
 
 The `search.complianceMode` setting or `MESH_ELASTICSEARCH_COMPLIANCE_MODE` environment variable can be used to control the compliance levels that influence Elasticsearch compatibility.
 
@@ -81,12 +81,13 @@ Levels:
 * `ES_6` - Support Elasticsearch 6.x (*Default*)
 * `ES_7` - Support Elasticsearch 7.x
 * `ES_8` - Support Elasticsearch 8.x
+* `ES_9` - Support Elasticsearch 9.x
 
 === Required settings
 
 Settings for Elasticsearch versions, which are needed so Gentics Mesh works correctly.
 
-==== Elasticsearch 8.x
+==== Elasticsearch 8+ setup
 
 The `action.destructive_requires_name` setting must be set to `false` otherwise Gentics Mesh cannot delete certain indices.
 

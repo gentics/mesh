@@ -4,14 +4,17 @@ import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.rest.plugin.PluginStatus.FAILED;
 import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.ClientHelper.expectException;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.PROJECT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -32,6 +35,7 @@ import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.category.PluginTests;
 import com.gentics.mesh.test.helper.ExpectedEvent;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonObject;
 import okhttp3.HttpUrl;
@@ -82,6 +86,25 @@ public class PluginManagerTest extends AbstractPluginTest {
 		assertEquals("world", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/" + NAME + "/hello"));
 		assertEquals("world-project", httpGetNow(CURRENT_API_BASE_PATH + "/test0/plugins/" + NAME + "/hello"));
 		assertEquals("world-project", httpGetNow(CURRENT_API_BASE_PATH + "/test1/plugins/" + NAME + "/hello"));
+	}
+
+	/**
+	 * Test that deployment from the filesystem does not work, if resolved path is outside of plugin base dir
+	 * @throws Exception
+	 */
+	public void testInvalidFilesystemDeployment() throws Exception {
+		String name = "basic.jar";
+		setPluginBaseDir("incorrect");
+		copy(BASIC_PATH, name);
+		Path incorrectPluginPath = new File(pluginDir(), name).toPath();
+
+		setPluginBaseDir("correct");
+		try {
+			pluginManager().deploy(incorrectPluginPath).blockingGet();
+			fail("Deployment of plugin from %s should have failed".formatted(incorrectPluginPath.toRealPath()));
+		} catch (GenericRestException e) {
+			expectException(e, HttpResponseStatus.BAD_REQUEST, "admin_plugin_error_plugin_deployment_failed", "basic.jar");
+		}
 	}
 
 	@Test

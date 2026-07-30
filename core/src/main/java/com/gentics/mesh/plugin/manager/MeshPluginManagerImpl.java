@@ -244,8 +244,17 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 
 		// 1. Initial checks
 		String name = path.getFileName().toString();
+
 		if (Files.notExists(path)) {
 			return rxError(BAD_REQUEST, "admin_plugin_error_plugin_deployment_failed", name);
+		}
+
+		try {
+			if (!path.toRealPath().startsWith(getPluginsRoot().toRealPath())) {
+				return rxError(BAD_REQUEST, "admin_plugin_error_plugin_deployment_failed", name);
+			}
+		} catch (IOException e) {
+			return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_loading_failed", name);
 		}
 
 		// 2. Load plugin into p4fj

@@ -51,6 +51,7 @@ public abstract class AbstractMultiESTest implements TestHttpMethods, TestGraphH
 			{ ElasticsearchTestMode.CONTAINER_ES6 },
 			{ ElasticsearchTestMode.CONTAINER_ES7 },
 			{ ElasticsearchTestMode.CONTAINER_ES8 },
+			{ ElasticsearchTestMode.CONTAINER_ES9 },
 		});
 	}
 

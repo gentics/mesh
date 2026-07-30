@@ -21,6 +21,7 @@ import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.dao.TagFamilyDao;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.search.Compliance;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.data.tag.HibTag;
@@ -28,8 +29,6 @@ import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
-import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.search.index.node.NodeContainerTransformer;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.entity.MeshEntities;
@@ -47,13 +46,13 @@ public class ProjectUpdateEventHandler implements EventHandler {
 
 	private final MeshHelper helper;
 	private final MeshEntities entities;
-	private final ComplianceMode complianceMode;
+	private final Compliance compliance;
 
 	@Inject
-	public ProjectUpdateEventHandler(MeshHelper helper, MeshEntities entities, MeshOptions options) {
+	public ProjectUpdateEventHandler(MeshHelper helper, MeshEntities entities, Compliance compliance) {
 		this.helper = helper;
 		this.entities = entities;
-		this.complianceMode = options.getSearchOptions().getComplianceMode();
+		this.compliance = compliance;
 	}
 
 	@Override
@@ -85,7 +84,7 @@ public class ProjectUpdateEventHandler implements EventHandler {
 													container.getLanguageTag()),
 											((NodeContainerTransformer) entities.nodeContent.getTransformer())
 													.toDocument(container, project, branch, type, null),
-											complianceMode)))));
+											compliance)))));
 				}).collect(toFlowable())).runInNewTx());
 	}
 
@@ -109,12 +108,12 @@ public class ProjectUpdateEventHandler implements EventHandler {
 		TagDao tagDao = Tx.get().tagDao();
 		return tagDao.findAll(family).stream()
 				.map(tag -> helper.createDocumentRequest(HibTag.composeIndexName(project.getUuid()), tag.getUuid(),
-						entities.tag.transform(tag, null), complianceMode));
+						entities.tag.transform(tag, null), compliance));
 	}
 
 	private CreateDocumentRequest createTagFamilyRequest(HibProject project, HibTagFamily family) {
 		return helper.createDocumentRequest(HibTagFamily.composeIndexName(project.getUuid()), family.getUuid(),
-				entities.tagFamily.transform(family, null), complianceMode);
+				entities.tagFamily.transform(family, null), compliance);
 	}
 
 	@Override

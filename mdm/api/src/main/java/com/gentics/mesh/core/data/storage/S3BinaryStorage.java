@@ -4,10 +4,11 @@ import java.io.File;
 
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3RestResponse;
+
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
-import io.vertx.reactivex.core.buffer.Buffer;
+import io.vertx.core.buffer.Buffer;
 
 /**
  * A S3 binary storage provides means to store and retrieve binary data.

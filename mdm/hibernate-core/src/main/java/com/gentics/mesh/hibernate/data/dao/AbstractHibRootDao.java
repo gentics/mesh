@@ -2,6 +2,8 @@ package com.gentics.mesh.hibernate.data.dao;
 
 import java.util.Collection;
 import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -72,9 +74,10 @@ public abstract class AbstractHibRootDao<
 
 	@Override
 	public Stream<Pair<String, L>> findByUuids(R root, Collection<String> uuids) {
-		return SplittingUtils.splitAndMergeInList(uuids, HibernateUtil.inQueriesLimitForSplitting(1), slice -> {
+		Set<UUID> uuids1 = uuids.stream().map(UUIDUtil::toJavaUuid).collect(Collectors.toSet());
+		return SplittingUtils.splitAndMergeInList(uuids1, HibernateUtil.inQueriesLimitForSplitting(1), slice -> {
 			return em().createQuery("select l from " + getPersistenceClass(root).getAnnotation(Entity.class).name() + " l where l.dbUuid in :uuids", getPersistenceClass(root))
-				.setParameter("uuids", slice.stream().map(UUIDUtil::toJavaUuid).collect(Collectors.toSet()))
+				.setParameter("uuids", slice)
 				.getResultStream()
 				.filter(item -> doesItemBelongToRoot(item, root))
 				.map(l -> Pair.of(l.getUuid(), (L) l))

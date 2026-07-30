@@ -8,22 +8,22 @@
 
 
 | httpRequestMethod
-| true
+| yes
 | string
 | httpRequestMethod
 
 | presignedUrl
-| true
+| yes
 | string
 | presignedUrl
 
 | signedHeaders
-| true
+| yes
 | object
 | signedHeaders
 
 | version
-| false
+| no
 | string
 | version
 

@@ -13,7 +13,7 @@ import com.gentics.mesh.core.rest.schema.impl.*;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang3.BooleanUtils;
 
-import com.gentics.mesh.core.rest.common.FieldContainer;
+import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.BinaryExtractOptions;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
@@ -248,7 +248,7 @@ public interface HibAddFieldChange extends HibSchemaFieldChange {
 	}
 
 	@Override
-	default Map<String, Field> createFields(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
+	default Map<String, Field> createFields(FieldSchemaContainer oldSchema, FieldMap oldFields) {
 		return Collections.singletonMap(getFieldName(), null);
 	}
 }

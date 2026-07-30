@@ -204,6 +204,9 @@
               "focalPointZoom" : {
                 "type" : "number"
               },
+              "cacheKey" : {
+                "type" : "string"
+              },
               "size" : {
                 "type" : "object",
                 "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:Point",
@@ -218,9 +221,6 @@
                     "type" : "number"
                   }
                 }
-              },
-              "cacheKey" : {
-                "type" : "string"
               }
             }
           }

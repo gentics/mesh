@@ -8,118 +8,168 @@
 
 
 | connectionPassword
-| false
+| no
 | string
-| JDBC connection password.
+| JDBC connection password.  Default: *admin*.
 
 | connectionUrlExtraParams
-| false
+| no
 | string
 | JDBC connection URL extra parameters.
 
 | connectionUsername
-| false
+| no
 | string
-| JDBC connection username.
+| JDBC connection username.  Default: *admin*.
 
 | databaseAddress
-| false
+| no
 | string
 | Database address in HOST&lt;:PORT&gt; format.
 
 | databaseConnectorClasspath
-| false
+| no
 | string
 | Mesh Database Connector classpath. This can be a path to either a connector JAR file, or a folder structure containing all the necessary JARs. Symlinks are supported.
 
 | databaseName
-| false
+| no
 | string
-| Database name.
+| Database name.  Default: *mesh*.
 
 | dialectClass
-| false
+| no
 | string
 | Optional Hibernate dialect class name. User this to override the default database connector provided dialect class.
 
 | driverClass
-| false
+| no
 | string
 | Optional JDBC driver class name. Use this to override the default database connector provided driver class.
 
 | formatSql
-| false
+| no
 | boolean
-| Are actual SQL queries formatted during logging?
+| Are actual SQL queries formatted during logging?  Default: *false*.
 
 | generateStatistics
-| false
+| no
 | boolean
-| Enable generation of hibernate statistics
+| Enable generation of hibernate statistics  Default: *false*.
 
 | hikariOptions
-| true
+| yes
 | object
 | HikariCP (connection pool) options.
 
-| jdbcBatchSize
-| false
+| hikariOptions.autocommit
+| no
+| boolean
+| This property controls the default auto-commit behavior of connections returned from the pool. It is a boolean value.
+
+| hikariOptions.connectionTimeout
+| no
 | integer
-| Hibernate JDBC Batch Size. Recommended values are between 5 and 30
+| This property controls the maximum number of milliseconds that a client (that&#x27;s you) will wait for a connection from the pool. If this time is exceeded without a connection becoming available, a SQLException will be thrown. Lowest acceptable connection timeout is 250 ms.
+
+| hikariOptions.idleTimeout
+| no
+| integer
+| This property controls the maximum amount of time that a connection is allowed to sit idle in the pool. This setting only applies when minimumIdle is defined to be less than maximumPoolSize. Idle connections will not be retired once the pool reaches minimumIdle connections. Whether a connection is retired as idle or not is subject to a maximum variation of +30 seconds, and average variation of +15 seconds. A connection will never be retired as idle before this timeout. A value of 0 means that idle connections are never removed from the pool. The minimum allowed value is 10000ms (10 seconds).
+
+| hikariOptions.leakDetectionThreshold
+| no
+| integer
+| This property controls the amount of time that a connection can be out of the pool before a message is logged indicating a possible connection leak. A value of 0 means leak detection is disabled. Lowest acceptable value for enabling leak detection is 2000 (2 seconds).
+
+| hikariOptions.maxLifetime
+| no
+| integer
+| This property controls the maximum lifetime of a connection in the pool. An in-use connection will never be retired, only when it is closed will it then be removed. On a connection-by-connection basis, minor negative attenuation is applied to avoid mass-extinction in the pool. We strongly recommend setting this value, and it should be several seconds shorter than any database or infrastructure imposed connection time limit. A value of 0 indicates no maximum lifetime (infinite lifetime), subject of course to the idleTimeout setting. The minimum allowed value is 30000ms (30 seconds).
+
+| hikariOptions.maxPoolSize
+| no
+| integer
+| This property controls the maximum size that the pool is allowed to reach, including both idle and in-use connections. Basically this value will determine the maximum number of actual connections to the database backend. A reasonable value for this is best determined by your execution environment. When the pool reaches this size, and no idle connections are available, calls to getConnection() will block for up to connectionTimeout milliseconds before timing out.
+
+| hikariOptions.minimumIdleConnection
+| no
+| integer
+| This property controls the minimum number of idle connections that HikariCP tries to maintain in the pool. If the idle connections dip below this value and total connections in the pool are less than maximumPoolSize, HikariCP will make a best effort to add additional connections quickly and efficiently. However, for maximum performance and responsiveness to spike demands, we recommend not setting this value and instead allowing HikariCP to act as a fixed size connection pool.
+
+| hikariOptions.poolName
+| no
+| string
+| This property represents a user-defined name for the connection pool and appears mainly in logging and JMX management consoles to identify pools and pool configurations.
+
+| hikariOptions.registerMBeans
+| no
+| boolean
+| This property controls whether or not JMX Management Beans (\&quot;MBeans\&quot;) are registered or not.
+
+| hikariOptions.transactionIsolationLevel
+| no
+| integer
+| This property controls the default transaction isolation level of connections returned from the pool. If this property is not specified, the default transaction isolation level defined by the JDBC driver is used. Only use this property if you have specific isolation requirements that are common for all queries. The value of this property is the constant name from the Connection class such as TRANSACTION_READ_COMMITTED, TRANSACTION_REPEATABLE_READ. Setting it to null defaults to isolation level defined in the JDBC driver.
+
+| jdbcBatchSize
+| no
+| integer
+| Hibernate JDBC Batch Size. Recommended values are between 5 and 30  Default: *5*.
 
 | nativeQueryFiltering
-| false
+| no
 | string
-| Enables the native database level filtering for queries. Default: ON_DEMAND
+| Enables the native database level filtering for queries.  Default: *ON_DEMAND*.
 
 | queryTimeout
-| false
+| no
 | integer
-| Global query timeout limit in milliseconds. A timeout value of zero means there is no query timeout.
+| Global query timeout limit in milliseconds. A timeout value of zero means there is no query timeout.  Default: *0*.
 
 | retryDelayMillis
-| false
+| no
 | integer
-| Transaction wait interval between retries, in milliseconds.
+| Transaction wait interval between retries, in milliseconds.  Default: *2000*.
 
 | retryLimit
-| false
+| no
 | integer
-| Transaction retry count.
+| Transaction retry count.  Default: *10*.
 
 | secondLevelCacheEnabled
-| false
+| no
 | boolean
-| Enable Hibernate second-level cache
+| Enable Hibernate second-level cache  Default: *true*.
 
 | showSql
-| false
+| no
 | boolean
-| Are actual SQL queries logged?
+| Are actual SQL queries logged?  Default: *false*.
 
 | slowSqlThreshold
-| false
+| no
 | integer
-| Define a threshold in milliseconds, upon which a SQL query is considered slow and produces a log warning.
+| Define a threshold in milliseconds, upon which a SQL query is considered slow and produces a log warning.  Default: *60000*.
 
 | sqlParametersLimit
-| false
+| no
 | string
-| SQL parameter number limit.
+| SQL parameter number limit.  Default: *definedByDatabase*.
 
 | staleTxCheckInterval
-| false
+| no
 | integer
-| Interval in ms for periodic check for stale transactions. Defaults to 10000 ms.
+| Interval in ms for periodic check for stale transactions. Defaults to 10000 ms.  Default: *10000*.
 
 | synchronizeWrites
-| false
+| no
 | boolean
-| Flag which controls whether writes to the database should be synchronized. Setting this flag improves the stability of massive database updates, by the cost of overall performance. Default: false
+| Flag which controls whether writes to the database should be synchronized. Setting this flag improves the stability of massive database updates, by the cost of overall performance.  Default: *false*.
 
 | synchronizeWritesTimeout
-| false
+| no
 | integer
-| Set the timeout in milliseconds for the sync write lock. Default: 60000
+| Set the timeout in milliseconds for the sync write lock.  Default: *60000*.
 
 |======

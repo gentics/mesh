@@ -8,6 +8,8 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.NotImplementedException;
+
 import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.context.InternalActionContext;
@@ -19,11 +21,11 @@ import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.parameter.UserParameters;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
+import io.vertx.core.Future;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.impl.AuthenticationHandlerImpl;
+import io.vertx.ext.web.impl.UserContextInternal;
 
 /**
  * The user token authentication handler grants access to routes by validating the provides token query parameter value.
@@ -44,9 +46,10 @@ public class UserTokenAuthHandler extends AuthenticationHandlerImpl<MeshJWTAuthP
 		this.db = db;
 	}
 
+
 	@Override
-	public void authenticate(RoutingContext routingContext, Handler<AsyncResult<User>> handler) {
-		// Not needed
+	public Future<User> authenticate(RoutingContext context) {
+		throw new NotImplementedException();
 	}
 
 	@Override
@@ -82,7 +85,7 @@ public class UserTokenAuthHandler extends AuthenticationHandlerImpl<MeshJWTAuthP
 			if (lastEditor == null) {
 				throw error(UNAUTHORIZED, "user_error_provided_token_invalid");
 			}
-			rc.setUser(lastEditor);
+			((UserContextInternal) rc.userContext()).setUser(lastEditor);
 
 			// Token found and validated. Lets continue
 			rc.next();
@@ -92,5 +95,4 @@ public class UserTokenAuthHandler extends AuthenticationHandlerImpl<MeshJWTAuthP
 			rc.next();
 		}
 	}
-
 }

@@ -1,14 +1,20 @@
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
+import { inject, Injectable } from '@angular/core';
 import { GenericErrorResponse } from '@gentics/mesh-models';
-import { MeshClientDriver, MeshRestClientRequestData, MeshRestClientResponse, MeshRestClientRequestError } from '@gentics/mesh-rest-client';
+import {
+    MeshClientDriver,
+    MeshRestClientAbortError,
+    MeshRestClientRequestData,
+    MeshRestClientRequestError,
+    MeshRestClientResponse,
+} from '@gentics/mesh-rest-client';
 import { Subscription, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
+@Injectable()
 export class AngularMeshClientDriver implements MeshClientDriver {
 
-    constructor(
-        private http: HttpClient,
-    ) {}
+    private http = inject(HttpClient);
 
     performJsonRequest(
         request: MeshRestClientRequestData,
@@ -21,11 +27,12 @@ export class AngularMeshClientDriver implements MeshClientDriver {
             observe: 'response',
             responseType: 'text',
         }).pipe(
-            map(res => {
+            map((res) => {
                 if (res.ok) {
-                    return JSON.parse(res.body);
+                    return JSON.parse(res.body || '');
                 }
 
+                // eslint-disable-next-line @typescript-eslint/only-throw-error
                 throw new HttpErrorResponse({
                     headers: new HttpHeaders(request.headers),
                     status: res.status,
@@ -34,14 +41,14 @@ export class AngularMeshClientDriver implements MeshClientDriver {
                     url: request.url,
                 });
             }),
-            catchError(err => {
+            catchError((err) => {
                 if (!(err instanceof HttpErrorResponse)) {
-                    return throwError(err);
+                    return throwError(() => err);
                 }
 
-                let raw: string;
-                let parsed: GenericErrorResponse;
-                let bodyError: Error;
+                let raw = '';
+                let parsed: GenericErrorResponse | undefined;
+                let bodyError: unknown;
 
                 try {
                     raw = err.error;
@@ -54,28 +61,29 @@ export class AngularMeshClientDriver implements MeshClientDriver {
                     bodyError = err;
                 }
 
-                return throwError(new MeshRestClientRequestError(
+                return throwError(() => new MeshRestClientRequestError(
                     `Request "${request.method} ${request.url}" responded with error code ${err.status}: "${err.statusText}"`,
                     request,
                     err.status,
                     raw,
                     parsed,
-                    bodyError,
+                    bodyError as Error,
                 ));
             }),
         );
 
-        let promiseSub: Subscription;
+        let promiseSub: Subscription | null = null;
         let canceled = false;
 
         return {
             // rx: () => obs,
             send: () => {
                 if (canceled) {
-                    return Promise.reject(/* Abort Error? */);
+                    return Promise.reject(new MeshRestClientAbortError(request));
                 }
+
                 return new Promise((resolve, reject) => {
-                    let tmpValue;
+                    let tmpValue: any;
                     let hasValue = false;
                     let isMultiValue = false;
 
@@ -94,7 +102,10 @@ export class AngularMeshClientDriver implements MeshClientDriver {
                         complete: () => {
                             resolve(tmpValue);
                         },
-                        error: (err) => reject(err),
+                        error: (err) => {
+                            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+                            reject(err);
+                        },
                     });
                 });
             },

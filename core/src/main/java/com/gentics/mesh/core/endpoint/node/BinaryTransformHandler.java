@@ -63,10 +63,10 @@ import dagger.Lazy;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.file.FileProps;
 import io.vertx.core.file.OpenOptions;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.reactivex.core.Vertx;
-import io.vertx.reactivex.core.file.FileProps;
 import io.vertx.reactivex.core.file.FileSystem;
 
 /**

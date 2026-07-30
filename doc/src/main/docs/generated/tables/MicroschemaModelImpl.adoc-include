@@ -8,32 +8,32 @@
 
 
 | description
-| false
+| no
 | string
 | Description of the microschema
 
 | elasticsearch
-| false
+| no
 | object
 | Additional elasticsearch index configuration. This can be used to setup custom analyzers and filters.
 
 | fields
-| true
+| yes
 | array
-| List of microschema fields
+| List of microschema fields  Default: *[]*.
 
 | name
-| true
+| yes
 | string
 | Name of the microschema
 
 | noIndex
-| false
+| no
 | boolean
 | &#x27;Exclude from indexing&#x27; flag.
 
 | version
-| false
+| no
 | string
 | Version of the microschema
 

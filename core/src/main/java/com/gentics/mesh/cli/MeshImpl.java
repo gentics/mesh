@@ -1,7 +1,7 @@
 package com.gentics.mesh.cli;
 
-import static com.gentics.mesh.MeshEnv.MESH_CONF_FILENAME;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
+import static com.gentics.mesh.MeshEnv.MESH_CONF_FILENAME;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,6 +25,7 @@ import com.gentics.mesh.crypto.KeyStoreHelper;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.util.RxUtil;
 import com.gentics.mesh.util.VersionUtil;
 
 import io.reactivex.Completable;
@@ -35,7 +36,6 @@ import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.RequestOptions;
-import io.vertx.core.impl.launcher.commands.VersionCommand;
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -56,6 +56,13 @@ public class MeshImpl implements Mesh {
 	private MeshComponent meshInternal;
 
 	boolean shutdown = false;
+
+	/**
+	 * Flag that is set, once the instance has been successfully initialized.
+	 * The only purpose of the flag is to omit logging of errors during shutdown due to
+	 * incomplete prior initialization.
+	 */
+	boolean initialized = false;
 
 	public MeshImpl(MeshOptions options, MeshComponent.Builder builder) {
 		this.builder = builder;
@@ -122,6 +129,7 @@ public class MeshImpl implements Mesh {
 		setMeshInternal(meshInternal);
 		try {
 			meshInternal.boot().init(this, forceIndexSync, options, verticleLoader);
+			initialized = true;
 		} catch (Throwable e1) {
 			log.error("FATAL: error on Mesh init", e1);
 			shutdown();
@@ -193,9 +201,9 @@ public class MeshImpl implements Mesh {
 		RequestOptions requestOptions = new RequestOptions();
 		requestOptions.setMethod(HttpMethod.GET);
 		requestOptions.setSsl(true);
-		requestOptions.setHost("getmesh.io/api/updatecheck?v=" + Mesh.getPlainVersion());
+		requestOptions.setHost("www.gentics.com/mesh/api/updatecheck?v=" + Mesh.getPlainVersion());
 		getVertx().createHttpClient(new HttpClientOptions().setSsl(true).setTrustAll(false))
-				.request(HttpMethod.GET, 443, "getmesh.io", "/api/updatecheck?v=" + Mesh.getPlainVersion(), ar -> {
+				.request(HttpMethod.GET, 443, "www.gentics.com", "/mesh/api/updatecheck?v=" + Mesh.getPlainVersion()).andThen(ar -> {
 					if (ar.succeeded()) {
 						HttpClientRequest req = ar.result();
 
@@ -206,7 +214,7 @@ public class MeshImpl implements Mesh {
 							headers.set("X-Hostname", hostname);
 						}
 
-						req.send(ar2 -> {
+						req.send().andThen(ar2 -> {
 							if (ar2.succeeded()) {
 								HttpClientResponse response = ar2.result();
 								int code = response.statusCode();
@@ -328,7 +336,7 @@ public class MeshImpl implements Mesh {
 	 * @return
 	 */
 	private String getVertxVersion() {
-		return VersionCommand.getVersion();
+		return RxUtil.getVertxVersion();
 	}
 
 	private static String infoLine(String text) {
@@ -364,7 +372,9 @@ public class MeshImpl implements Mesh {
 			log.info("Setting shutdown status");
 			setStatus(MeshStatus.SHUTTING_DOWN);
 		} catch (Throwable t) {
-			log.error("Error while setting shutdown status", t);
+			if (initialized) {
+				log.error("Error while setting shutdown status", t);
+			}
 		}
 
 		// plugins
@@ -372,7 +382,9 @@ public class MeshImpl implements Mesh {
 			log.info("Undeploying plugins");
 			meshInternal.pluginManager().stop().blockingAwait(getOptions().getPluginTimeout(), TimeUnit.SECONDS);
 		} catch (Throwable t) {
-			log.error("One of the plugins could not be undeployed in the allotted time.", t);
+			if (initialized) {
+				log.error("One of the plugins could not be undeployed in the allotted time.", t);
+			}
 		}
 
 		// search
@@ -380,7 +392,9 @@ public class MeshImpl implements Mesh {
 			log.info("Stopping search provider");
 			meshInternal.searchProvider().stop();
 		} catch (Throwable t) {
-			log.error("The search provider did encounter an error while stopping", t);
+			if (initialized) {
+				log.error("The search provider did encounter an error while stopping", t);
+			}
 		}
 
 		// vert.x
@@ -391,26 +405,38 @@ public class MeshImpl implements Mesh {
 				rxVertx.rxClose().blockingAwait();
 			}
 		} catch (Throwable t) {
-			log.error("Error while stopping Vert.x", t);
+			if (initialized) {
+				log.error("Error while stopping Vert.x", t);
+			}
 		}
 
 		// image manipulator
-		log.info("Stopping image manipulator");
-		meshInternal.imageManipulator().shutdown();
+		try {
+			log.info("Stopping image manipulator");
+			meshInternal.imageManipulator().shutdown();
+		} catch (Throwable t) {
+			if (initialized) {
+				log.error("Error while stopping image manipulator", t);
+			}
+		}
 
 		// database
 		try {
 			log.info("Stopping and closing database provider");
 			meshInternal.database().stop();
 		} catch (Throwable t) {
-			log.error("Error while stopping database", t);
+			if (initialized) {
+				log.error("Error while stopping database", t);
+			}
 		}
 
 		try {
 			log.info("Shutting database provider down");
 			meshInternal.database().shutdown();
 		} catch (Throwable t) {
-			log.error("Error while stopping database", t);
+			if (initialized) {
+				log.error("Error while stopping database", t);
+			}
 		}
 
 		// boot
@@ -421,7 +447,9 @@ public class MeshImpl implements Mesh {
 				boot.clearReferences();
 			}
 		} catch (Throwable t) {
-			log.error("Error while clearing refs", t);
+			if (initialized) {
+				log.error("Error while clearing refs", t);
+			}
 		}
 
 		// liveness manager
@@ -435,7 +463,9 @@ public class MeshImpl implements Mesh {
 		try {
 			latch.countDown();
 		} catch (Exception e) {
-			log.debug("Error while releasing latch. Maybe it was already released.", e);
+			if (initialized) {
+				log.debug("Error while releasing latch. Maybe it was already released.", e);
+			}
 		}
 
 		shutdown = true;

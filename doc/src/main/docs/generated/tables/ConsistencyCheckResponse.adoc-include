@@ -8,22 +8,22 @@
 
 
 | inconsistencies
-| true
+| yes
 | array
-| List of found inconsistencies.
+| List of found inconsistencies.  Default: *[]*.
 
 | outputTruncated
-| true
+| yes
 | boolean
-| Flag which indicates whether the output was truncated because more than 250 have been found.
+| Flag which indicates whether the output was truncated because more than 250 have been found.  Default: *false*.
 
 | repairCount
-| true
+| yes
 | object
-| Counter for repair operations
+| Counter for repair operations  Default: *{}*.
 
 | result
-| true
+| yes
 | string
 | Result of the consistency check.
 

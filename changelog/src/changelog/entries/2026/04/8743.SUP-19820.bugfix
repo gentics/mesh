@@ -1,0 +1,1 @@
+Core: An edge case of constructing a database request with too many parameters has been fixed.

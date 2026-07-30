@@ -134,6 +134,7 @@ search:
   mappingMode: "DYNAMIC"
   complianceMode: "ES_6"
   syncBatchSize: 50000
+  syncFetchBatchSize: 10000
   indexCheckInterval: 60000
   indexMappingCacheTimeout: 3600000
 upload:
@@ -168,6 +169,8 @@ cache:
   pathCacheSize: 20000
   fieldContainerCacheSize: "50_000"
   listFieldCacheSize: "50_000"
+  clusteredHibernateCacheHeapFree: "10%"
+  nonClusteredHibernateCacheSize: "50_000"
 debugInfo:
   logFolder: "debuginfo"
   logFileSize: "5MB"

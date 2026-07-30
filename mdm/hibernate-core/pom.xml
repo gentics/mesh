@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh-mdm</artifactId>
-		<version>3.1.13-SNAPSHOT</version>
+		<version>3.2.13-SNAPSHOT</version>
 	</parent>
 	<artifactId>mesh-mdm-hibernate-core</artifactId>
 	<packaging>jar</packaging>
@@ -50,11 +50,6 @@
 		<dependency>
 			<groupId>com.google.dagger</groupId>
 			<artifactId>dagger</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.google.dagger</groupId>
-			<artifactId>dagger-compiler</artifactId>
-			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>

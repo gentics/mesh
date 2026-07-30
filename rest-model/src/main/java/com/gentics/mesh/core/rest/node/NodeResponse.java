@@ -406,6 +406,21 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	}
 
 	/**
+	 * Helper method which convert the response into an upsert request.
+	 * 
+	 * @return
+	 */
+	@JsonIgnore
+	public NodeUpsertRequest toUpsert() {
+		NodeUpsertRequest request = new NodeUpsertRequest();
+		request.setParentNode(getParentNode());
+		request.setLanguage(getLanguage());
+		request.setFields(getFields());
+		request.setSchema(getSchema());
+		return request;
+	}
+
+	/**
 	 * Compares the given object with the node. The uuid, language and version will be utilized to compare two node responses.
 	 */
 	public boolean equals(Object o) {

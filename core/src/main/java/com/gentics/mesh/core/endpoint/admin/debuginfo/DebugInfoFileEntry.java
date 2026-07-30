@@ -75,7 +75,6 @@ public class DebugInfoFileEntry implements DebugInfoEntry {
 	@Override
 	public Flowable<Buffer> getData() {
 		return fs.rxOpen(source, new OpenOptions().setRead(true).setCreateNew(false).setDeleteOnClose(deleteFileAfterRead))
-			.flatMapPublisher(AsyncFile::toFlowable)
-			.map(io.vertx.reactivex.core.buffer.Buffer::getDelegate);
+			.flatMapPublisher(AsyncFile::toFlowable);
 	}
 }

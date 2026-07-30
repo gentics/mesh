@@ -40,7 +40,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.hibernate.jpa.AvailableHints;
+import org.hibernate.jpa.HibernateHints;
 import org.hibernate.jpa.SpecHints;
 import org.hibernate.query.NativeQuery;
 import org.hibernate.query.Query;
@@ -462,13 +462,14 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 			List<String> languageTags, ContainerType type, PagingParameters paging,
 			Optional<FilterOperation<?>> maybeNativeFiltering) {
 		InternalPermission perm = type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM;
-		Map<HibNode, List<HibNode>> nodeChildrenMap = Optional
-				.of(maybeNativeFiltering.isPresent() || PersistingRootDao.shouldSort(paging)).filter(b -> b)
-				.map(unused -> findAllStream(Tx.get().getProject(ac), ac, perm, paging, Optional.ofNullable(type),
-						maybeNativeFiltering, Optional.ofNullable(nodes), Optional.empty(), Optional.empty(),
-						Optional.ofNullable(languageTags), Optional.of(UUIDUtil.toJavaUuid(branchUuid)), true, true)
-						.collect(Collectors.groupingBy(p -> p.getParentEdge().getNodeParent(),
-								Collectors.mapping(p -> p.getNode(), Collectors.toList()))))
+
+		Map<HibNode, List<HibNode>> nodeChildrenMap = Optional.of(maybeNativeFiltering.isPresent() || PersistingRootDao.shouldSort(paging)).filter(b -> b)
+				.map(unused -> {
+					int limit = maybeNativeFiltering.map(nf -> nf.toSql().split(" :").length).orElse(1) + paging.getSort().size() + languageTags.size();
+					return SplittingUtils.splitAndMergeInMap(nodes, inQueriesLimitForSplitting(limit), uuids -> findAllStream(Tx.get().getProject(ac), ac, perm, paging, 
+							Optional.ofNullable(type), maybeNativeFiltering, Optional.ofNullable(new HashSet<>(uuids)), Optional.empty(), Optional.empty(), Optional.ofNullable(languageTags), Optional.of(UUIDUtil.toJavaUuid(branchUuid)), true, true)
+					.collect(Collectors.groupingBy(p -> p.getParentEdge().getNodeParent(), Collectors.mapping(p -> p.getNode(), Collectors.toList()))));
+				})
 				.orElseGet(() -> {
 					Map<HibNode, List<HibNode>> children = getChildren(nodes, branchUuid);
 
@@ -1332,8 +1333,11 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 		}
 
 		HibBranch branch = Tx.get().getBranch(ac, node.getProject());
-		return em().createNamedQuery("nodeBranchParents.findBreadcrumbs", HibNodeImpl.class).setParameter("node", node)
-				.setParameter("branch", branch).setHint(AvailableHints.HINT_CACHEABLE, true).getResultList().stream();
+		return em().createNamedQuery("nodeBranchParents.findBreadcrumbs", HibNodeImpl.class)
+				.setParameter("node", node)
+				.setParameter("branch", branch)
+				.setHint(HibernateHints.HINT_CACHEABLE, true)
+				.getResultList().stream();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -1345,11 +1349,13 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 
 		UUID branchUuid = UUIDUtil.toJavaUuid(Tx.get().getBranch(ac).getUuid());
 		Set<Object> nodesUuids = nodes.stream().map(HibNode::getId).collect(Collectors.toSet());
-		Map<HibNode, List<HibNode>> map = SplittingUtils.splitAndMergeInMapOfLists(nodesUuids,
-				inQueriesLimitForSplitting(1), (uuids) -> {
-					List<Object[]> list = em().createNamedQuery("nodeBranchParents.findAncestors")
-							.setParameter("nodeUuids", uuids).setParameter("branchUuid", branchUuid)
-							.setHint(AvailableHints.HINT_CACHEABLE, true).getResultList();
+
+		Map<HibNode, List<HibNode>> map = SplittingUtils.splitAndMergeInMapOfLists(nodesUuids, inQueriesLimitForSplitting(1), (uuids) -> {
+			List<Object[]> list = em().createNamedQuery("nodeBranchParents.findAncestors")
+					.setParameter("nodeUuids", uuids)
+					.setParameter("branchUuid", branchUuid)
+					.setHint(HibernateHints.HINT_CACHEABLE, true)
+					.getResultList();
 
 					return list.stream().map(r -> Pair.of((HibNode) r[0], (HibNode) r[1])).collect(Collectors
 							.groupingBy(Pair::getKey, Collectors.mapping(Pair::getValue, Collectors.toList())));
@@ -1417,10 +1423,11 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 	 */
 	public List<? extends HibNode> loadNodesWithEdges(Collection<UUID> nodeUuids) {
 		EntityGraph<?> entityGraph = em().getEntityGraph("node.content");
-		return SplittingUtils.splitAndMergeInList(nodeUuids, HibernateUtil.inQueriesLimitForSplitting(1),
-				slice -> em().createNamedQuery("node.findNodesByUuids", HibNodeImpl.class)
-						.setParameter("nodeUuids", slice).setHint("jakarta.persistence.fetchgraph", entityGraph)
-						.getResultList());
+
+		return SplittingUtils.splitAndMergeInList(nodeUuids, HibernateUtil.inQueriesLimitForSplitting(1), slice -> em().createNamedQuery("node.findNodesByUuids", HibNodeImpl.class)
+				.setParameter("nodeUuids", slice)
+				.setHint(SpecHints.HINT_SPEC_FETCH_GRAPH, entityGraph)
+				.getResultList());
 	}
 
 	/**
@@ -1431,8 +1438,11 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 	 */
 	public List<? extends HibNode> loadNodesWithEdgesAndTags(List<UUID> nodeUuids) {
 		EntityGraph<?> entityGraph = em().getEntityGraph("node.contentAndTags");
-		return em().createNamedQuery("node.findNodesByUuids", HibNodeImpl.class).setParameter("nodeUuids", nodeUuids)
-				.setHint("jakarta.persistence.fetchgraph", entityGraph).getResultList();
+
+		return em().createNamedQuery("node.findNodesByUuids", HibNodeImpl.class)
+				.setParameter("nodeUuids", nodeUuids)
+				.setHint(SpecHints.HINT_SPEC_FETCH_GRAPH, entityGraph)
+				.getResultList();
 	}
 
 	/**
@@ -1483,16 +1493,15 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 								.setParameter("languageTags", languageTags).getResultList();
 					});
 		} else {
-			edges = SplittingUtils.splitAndMergeInList(nodes,
-					HibernateUtil.inQueriesLimitForSplitting(3 + roles.size() + languageTags.size()), (params) -> {
-						return em()
-								.createNamedQuery("contentEdge.findByNodeTypeBranchAndLanguage",
-										HibNodeFieldContainerEdgeImpl.class)
-								.setParameter("nodes", params).setParameter("type", type)
+			edges = SplittingUtils.splitAndMergeInList(nodes, HibernateUtil.inQueriesLimitForSplitting(3 + languageTags.size()),
+					(nodeSplit) -> SplittingUtils.splitAndMergeInList(roles, HibernateUtil.inQueriesLimitForSplitting(3 + nodeSplit.size() + languageTags.size()), 
+							roleSplit -> em().createNamedQuery("contentEdge.findByNodeTypeBranchAndLanguage", HibNodeFieldContainerEdgeImpl.class)
+								.setParameter("nodes", nodeSplit)
+								.setParameter("type", type)
 								.setParameter("branchUuid", UUIDUtil.toJavaUuid(branchUuid))
-								.setParameter("languageTags", languageTags).setParameter("roles", roles)
-								.getResultList();
-					});
+								.setParameter("languageTags", languageTags)
+								.setParameter("roles", roleSplit)
+								.getResultList()));
 		}
 
 		List<HibNodeFieldContainerImpl> schemaContent = contentStorage.findMany(edges);
@@ -1708,7 +1717,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 
 		SplittingUtils.splitAndConsume(nodeUuids, inQueriesLimitForSplitting(0), split -> {
 			em().createQuery("select edge from nodefieldcontainer edge where edge.node.dbUuid in :uuids",
-					HibNodeFieldContainerEdgeImpl.class).setParameter("uuids", nodeUuids).getResultList();
+					HibNodeFieldContainerEdgeImpl.class).setParameter("uuids", split).getResultList();
 		});
 	}
 }

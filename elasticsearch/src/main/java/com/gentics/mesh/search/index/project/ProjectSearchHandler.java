@@ -5,6 +5,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.core.action.ProjectDAOActions;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.search.Compliance;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -20,8 +21,8 @@ public class ProjectSearchHandler extends AbstractSearchHandler<HibProject, Proj
 
 	@Inject
 	public ProjectSearchHandler(Database db, SearchProvider searchProvider, ProjectIndexHandlerImpl indexHandler, MeshOptions options,
-		ProjectDAOActions actions, SearchWaitUtil waitUtil) {
-		super(db, searchProvider, options, indexHandler, actions, waitUtil);
+			Compliance compliance, ProjectDAOActions actions, SearchWaitUtil waitUtil) {
+		super(db, searchProvider, options, compliance, indexHandler, actions, waitUtil);
 	}
 
 }

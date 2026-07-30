@@ -73,7 +73,7 @@ public class HibernateStorageOptions implements Option {
 	public static final String MESH_HIBERNATE_NATIVE_QUERY_FILTERING = "MESH_HIBERNATE_NATIVE_QUERY_FILTERING";
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Enables the native database level filtering for queries. Default: ON_DEMAND")
+	@JsonPropertyDescription("Enables the native database level filtering for queries.")
 	@EnvironmentVariable(name = MESH_HIBERNATE_NATIVE_QUERY_FILTERING, description = "Override the configured native query filtering.")
 	private NativeQueryFiltering nativeQueryFiltering = DEFAULT_NATIVE_QUERY_FILTERING;
 
@@ -142,12 +142,12 @@ public class HibernateStorageOptions implements Option {
 	private HikariCPOptions hikariOptions = new HikariCPOptions();
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Flag which controls whether writes to the database should be synchronized. Setting this flag improves the stability of massive database updates, by the cost of overall performance. Default: " + DEFAULT_SYNC_WRITES)
+	@JsonPropertyDescription("Flag which controls whether writes to the database should be synchronized. Setting this flag improves the stability of massive database updates, by the cost of overall performance.")
 	@EnvironmentVariable(name = MESH_DB_SYNC_WRITES_ENV, description = "Override the database sync writes flag.")
 	private boolean synchronizeWrites = DEFAULT_SYNC_WRITES;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Set the timeout in milliseconds for the sync write lock. Default: " + DEFAULT_SYNC_WRITES_TIMEOUT)
+	@JsonPropertyDescription("Set the timeout in milliseconds for the sync write lock.")
 	@EnvironmentVariable(name = MESH_DB_SYNC_WRITES_TIMEOUT_ENV, description = "Override the database sync write timeout.")
 	private long synchronizeWritesTimeout = DEFAULT_SYNC_WRITES_TIMEOUT;
 
@@ -163,12 +163,12 @@ public class HibernateStorageOptions implements Option {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Global query timeout limit in milliseconds. A timeout value of zero means there is no query timeout.")
-	@EnvironmentVariable(name = MESH_HIBERNATE_QUERY_TIMEOUT, description = "Query timeout for hibernate. Default: " + DEFAULT_QUERY_TIMEOUT)
+	@EnvironmentVariable(name = MESH_HIBERNATE_QUERY_TIMEOUT, description = "Query timeout for hibernate.")
 	private long queryTimeout = DEFAULT_QUERY_TIMEOUT;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Define a threshold in milliseconds, upon which a SQL query is considered slow and produces a log warning.")
-	@EnvironmentVariable(name = MESH_HIBERNATE_SLOW_SQL_THRESHOLD, description = "Slow SQL query threshold in milliseconds. Default: " + DEFAULT_SLOW_SQL_THRESHOLD)
+	@EnvironmentVariable(name = MESH_HIBERNATE_SLOW_SQL_THRESHOLD, description = "Slow SQL query threshold in milliseconds.")
 	private long slowSqlThreshold = DEFAULT_SLOW_SQL_THRESHOLD;
 
 	@JsonProperty(required = false)
@@ -179,7 +179,7 @@ public class HibernateStorageOptions implements Option {
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("SQL parameter number limit.")
 	@EnvironmentVariable(name = MESH_DB_SQL_PARAMETERS_LIMIT_ENV, description = "Limit the number of SQL parameters in selected lookup queries. Can be either `" 
-							+ SQL_PARAMETERS_LIMIT_OPTION_DB_DEFINED + "` or `" + SQL_PARAMETERS_LIMIT_OPTION_UNLIMITED + "` or a custom number (greater than zero). Default is: " + DEFAULT_SQL_PARAMETERS_LIMIT)
+							+ SQL_PARAMETERS_LIMIT_OPTION_DB_DEFINED + "` or `" + SQL_PARAMETERS_LIMIT_OPTION_UNLIMITED + "` or a custom number (greater than zero).")
 	private String sqlParametersLimit = DEFAULT_SQL_PARAMETERS_LIMIT;
 
 	@JsonProperty(required = false)

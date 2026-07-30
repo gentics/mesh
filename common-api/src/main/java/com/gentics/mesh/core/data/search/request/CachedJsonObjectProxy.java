@@ -8,7 +8,6 @@ import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import io.vertx.codegen.annotations.Fluent;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -392,7 +391,6 @@ public class CachedJsonObjectProxy {
 	/**
 	 * @see JsonObject#clear()
 	 */
-	@Fluent
 	public JsonObject clear() {
 		return proxyTarget.clear();
 	}

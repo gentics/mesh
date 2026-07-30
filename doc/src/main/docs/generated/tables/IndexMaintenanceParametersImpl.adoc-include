@@ -8,7 +8,7 @@
 
 
 | index
-| string 
+| string
 | false
 | Index pattern to handle
 

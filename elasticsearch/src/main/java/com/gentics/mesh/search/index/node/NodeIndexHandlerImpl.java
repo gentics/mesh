@@ -49,6 +49,7 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.search.Compliance;
 import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
@@ -99,9 +100,9 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	protected final NodeContainerMappingProviderImpl mappingProvider;
 
 	@Inject
-	public NodeIndexHandlerImpl(SearchProvider searchProvider, Database db, MeshHelper helper, MeshOptions options,
+	public NodeIndexHandlerImpl(SearchProvider searchProvider, Database db, MeshHelper helper, MeshOptions options, Compliance compliance,
 		SyncMetersFactory syncMetersFactory, BucketManager bucketManager, NodeContainerTransformer transformer, NodeContainerMappingProviderImpl mappingProvider) {
-		super(searchProvider, db, helper, options, syncMetersFactory, bucketManager);
+		super(searchProvider, db, helper, options, syncMetersFactory, bucketManager, compliance);
 		this.transformer = transformer;
 		this.mappingProvider = mappingProvider;
 	}
@@ -396,9 +397,11 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 
 	/**
 	 * We need to override the default method since the UUID alone is not enough to id a document in the node index. We also need to append the language.
+	 * @return 
 	 */
 	@Override
-	protected void processHits(JsonArray hits, Map<String, String> versions) {
+	protected JsonArray processHits(JsonArray hits, Map<String, String> versions) {
+		JsonArray lastHitSort = null;
 		for (int i = 0; i < hits.size(); i++) {
 			JsonObject hit = hits.getJsonObject(i);
 			JsonObject source = hit.getJsonObject("_source");
@@ -406,7 +409,9 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 			String uuidAndLang = hit.getString("_id");
 			String version = source.getString("version");
 			versions.put(uuidAndLang, version);
+			lastHitSort = hit.getJsonArray("sort");
 		}
+		return lastHitSort;
 	}
 
 	private Flowable<SearchRequest> diffAndSync(HibProject project, HibBranch branch, HibSchemaVersion version, ContainerType type, Optional<Pattern> indexPattern) {
@@ -474,16 +479,16 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 
 					Stream<CreateDocumentRequest> toInsert = needInsertionInES.stream().map(uuid -> {
 						JsonObject doc = getTransformer().toDocument(sourceNodes.get(uuid), project, branch, type, dhc);
-						return helper.createDocumentRequest(indexName, uuid, doc, complianceMode, meters.getInsertMeter()::synced);
+						return helper.createDocumentRequest(indexName, uuid, doc, compliance, meters.getInsertMeter()::synced);
 					});
 
 					Stream<CreateDocumentRequest> toUpdate = needUpdateInEs.stream().map(uuid -> {
 						JsonObject doc = getTransformer().toDocument(sourceNodes.get(uuid), project, branch, type, dhc);
-						return helper.createDocumentRequest(indexName, uuid, doc, complianceMode, meters.getUpdateMeter()::synced);
+						return helper.createDocumentRequest(indexName, uuid, doc, compliance, meters.getUpdateMeter()::synced);
 					});
 
 					Stream<DeleteDocumentRequest> toDelete = needRemovalInES.stream().map(uuid -> {
-						return helper.deleteDocumentRequest(indexName, uuid, complianceMode, meters.getDeleteMeter()::synced);
+						return helper.deleteDocumentRequest(indexName, uuid, compliance, meters.getDeleteMeter()::synced);
 					});
 
 					return Streams.concat(toInsert, toUpdate, toDelete);

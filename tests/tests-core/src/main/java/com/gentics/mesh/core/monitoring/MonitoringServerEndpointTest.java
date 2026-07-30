@@ -24,8 +24,7 @@ import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-
-import io.vertx.core.impl.launcher.commands.VersionCommand;
+import com.gentics.mesh.util.RxUtil;
 
 @MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class MonitoringServerEndpointTest extends AbstractMeshTest {
@@ -108,7 +107,7 @@ public class MonitoringServerEndpointTest extends AbstractMeshTest {
 		assertEquals(Mesh.getPlainVersion(), info.getMeshVersion());
 		assertEquals(db().getVendorName(), info.getDatabaseVendor());
 		assertEquals("dev-null", info.getSearchVendor());
-		assertEquals(VersionCommand.getVersion(), info.getVertxVersion());
+		assertEquals(RxUtil.getVertxVersion(), info.getVertxVersion());
 		assertEquals(options().getNodeName(), info.getMeshNodeName());
 		assertEquals("1.0", info.getSearchVersion());
 		assertEquals(db().getDatabaseRevision(), info.getDatabaseRevision());

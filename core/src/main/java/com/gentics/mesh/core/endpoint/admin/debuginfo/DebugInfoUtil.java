@@ -6,11 +6,11 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
 
 /**
@@ -48,7 +48,6 @@ public class DebugInfoUtil {
 	 */
 	public Flowable<Buffer> readFileOrEmpty(String path) {
 		return vertx.fileSystem().rxReadFile(path)
-			.map(io.vertx.reactivex.core.buffer.Buffer::getDelegate)
 			.toFlowable()
 			.onErrorResumeNext(err -> {
 				if (log.isDebugEnabled()) {

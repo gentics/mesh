@@ -11,7 +11,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>3.1.13-SNAPSHOT</version>
+		<version>3.2.13-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -64,11 +64,6 @@
 		<dependency>
 			<groupId>com.google.dagger</groupId>
 			<artifactId>dagger</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.google.dagger</groupId>
-			<artifactId>dagger-compiler</artifactId>
-			<optional>true</optional>
 		</dependency>
 	</dependencies>
 
@@ -149,6 +144,7 @@
 									<excludes>
 										<exclude>com/hazelcast/hibernate/PhoneHomeInfo.class</exclude>
 										<exclude>com/hazelcast/hibernate/PhoneHomeInfo$QueryStringBuilder.class</exclude>
+										<exclude>com/hazelcast/hibernate/local/FreeHeapBasedCacheEvictor.class</exclude>
 									</excludes>
 								</filter>
 								<filter>
@@ -176,25 +172,6 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<forceJavacCompilerUse>true</forceJavacCompilerUse>
-					<compilerArgs>
-						<!-- See https://github.com/google/dagger/releases/tag/dagger-2.48-->
-						<arg>-Adagger.ignoreProvisionKeyWildcards=DISABLED</arg>
-					</compilerArgs>
-				</configuration>
-				<dependencies>
-					<dependency>
-						<groupId>com.google.dagger</groupId>
-						<artifactId>dagger-compiler</artifactId>
-						<version>2.24</version>
-						<optional>true</optional>
-					</dependency>
-				</dependencies>
 			</plugin>
 			<plugin>
 				<groupId>com.gentics</groupId>

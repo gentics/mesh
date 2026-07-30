@@ -4,6 +4,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.action.UserDAOActions;
+import com.gentics.mesh.core.data.search.Compliance;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.user.UserResponse;
@@ -19,8 +20,9 @@ import com.gentics.mesh.util.SearchWaitUtil;
 public class UserSearchHandler extends AbstractSearchHandler<HibUser, UserResponse> {
 
 	@Inject
-	public UserSearchHandler(Database db, SearchProvider searchProvider, MeshOptions options, UserIndexHandlerImpl indexHandler, UserDAOActions actions, SearchWaitUtil waitUtil) {
-		super(db, searchProvider, options, indexHandler, actions, waitUtil);
+	public UserSearchHandler(Database db, SearchProvider searchProvider, MeshOptions options, 
+			Compliance compliance, UserIndexHandlerImpl indexHandler, UserDAOActions actions, SearchWaitUtil waitUtil) {
+		super(db, searchProvider, options, compliance, indexHandler, actions, waitUtil);
 	}
 
 }

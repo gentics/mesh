@@ -100,12 +100,12 @@ export interface MeshRestClientConfig {
 
 export interface MeshRestClientInterceptorData {
     method: RequestMethod;
-    protocol?: 'http' | 'https';
-    host: string;
-    port?: number;
+    protocol: 'http' | 'https' | null;
+    host: string | null;
+    port: number | null;
     path: string;
-    params: Record<string, string>;
-    headers: Record<string, string>;
+    params?: Record<string, string>;
+    headers?: Record<string, string>;
 }
 
 export interface MeshRestClientRequestData {

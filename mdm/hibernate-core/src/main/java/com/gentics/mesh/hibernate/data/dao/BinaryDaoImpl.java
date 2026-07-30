@@ -10,6 +10,8 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.hibernate.jpa.SpecHints;
+
 import com.gentics.mesh.contentoperation.ContentFieldKey;
 import com.gentics.mesh.contentoperation.ContentKey;
 import com.gentics.mesh.contentoperation.ContentStorage;
@@ -182,7 +184,7 @@ public class BinaryDaoImpl extends AbstractImageDataHibDao<HibBinary> implements
 		EntityGraph<?> entityGraph = em().getEntityGraph("binaryfieldref.metadataProperties");
 		List<HibBinaryFieldEdgeImpl> fields = SplittingUtils.splitAndMergeInList(refUuids, HibernateUtil.inQueriesLimitForSplitting(1), slice -> em().createNamedQuery("binaryfieldref.findByUuids", HibBinaryFieldEdgeImpl.class)
 			.setParameter("uuids", slice)
-			.setHint("jakarta.persistence.fetchgraph", entityGraph)
+			.setHint(SpecHints.HINT_SPEC_FETCH_GRAPH, entityGraph)
 			.getResultList());
 
 		// collect the binary uuids

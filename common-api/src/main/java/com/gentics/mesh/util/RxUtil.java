@@ -1,6 +1,12 @@
 package com.gentics.mesh.util;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Scanner;
 import java.util.function.Function;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.reactivex.Completable;
 import io.reactivex.CompletableSource;
@@ -11,10 +17,9 @@ import io.reactivex.Single;
 import io.reactivex.SingleSource;
 import io.reactivex.functions.Action;
 import io.reactivex.functions.BiFunction;
+import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.AsyncFile;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Utility for RXJava methods.
@@ -30,7 +35,8 @@ public final class RxUtil {
 	}
 
 	/**
-	 * Helper function to combine a single with a mapping function that returns a completable.
+	 * Helper function to combine a single with a mapping function that returns a
+	 * completable.
 	 * 
 	 * @param <T>
 	 * @param source
@@ -38,7 +44,8 @@ public final class RxUtil {
 	 * @return
 	 */
 	public static <T> Completable andThenCompletable(Single<T> source, Function<T, Completable> mappingFunction) {
-		return Observable.merge(source.toObservable().map(v -> mappingFunction.apply(v).toObservable())).ignoreElements();
+		return Observable.merge(source.toObservable().map(v -> mappingFunction.apply(v).toObservable()))
+				.ignoreElements();
 	}
 
 	/**
@@ -72,33 +79,31 @@ public final class RxUtil {
 	}
 
 	/**
-	 * Transform the async file into a flowable which returns the content. This method will also take care of closing the async file.
+	 * Transform the async file into a flowable which returns the content. This
+	 * method will also take care of closing the async file.
 	 * 
 	 * @param file
 	 * @return
 	 */
 	public static Flowable<Buffer> toBufferFlow(io.vertx.reactivex.core.file.AsyncFile file) {
-		return file.toFlowable()
-			.map(io.vertx.reactivex.core.buffer.Buffer::getDelegate)
-			.doOnTerminate(file::close)
-			.doOnCancel(file::close);
+		return file.toFlowable().doOnTerminate(file::close).doOnCancel(file::close);
 	}
 
 	/**
-	 * Flips a completable. Emits an error when the source has completed, and completes when the source emits an error.
+	 * Flips a completable. Emits an error when the source has completed, and
+	 * completes when the source emits an error.
 	 * 
 	 * @param source
 	 * @return
 	 */
 	public static CompletableSource flip(Completable source) {
-		return source.toObservable().materialize()
-			.map(notificiation -> {
-				if (notificiation.isOnError()) {
-					return notificiation;
-				} else {
-					throw new RuntimeException("Completable has succeeded");
-				}
-			}).ignoreElements();
+		return source.toObservable().materialize().map(notificiation -> {
+			if (notificiation.isOnError()) {
+				return notificiation;
+			} else {
+				throw new RuntimeException("Completable has succeeded");
+			}
+		}).ignoreElements();
 	}
 
 	/**
@@ -109,9 +114,8 @@ public final class RxUtil {
 	 * @param zipper
 	 * @return
 	 */
-	public static <T1, T2, R> Single<R> flatZip(
-		SingleSource<? extends T1> source1, SingleSource<? extends T2> source2,
-		BiFunction<? super T1, ? super T2, SingleSource<? extends R>> zipper) {
+	public static <T1, T2, R> Single<R> flatZip(SingleSource<? extends T1> source1, SingleSource<? extends T2> source2,
+			BiFunction<? super T1, ? super T2, SingleSource<? extends R>> zipper) {
 		return Single.zip(source1, source2, zipper).flatMap(x -> x);
 	}
 
@@ -127,6 +131,24 @@ public final class RxUtil {
 			return Maybe.empty();
 		} else {
 			return Maybe.just(item);
+		}
+	}
+
+	/**
+	 * Reads the version from the {@code vertx-version.txt} file.
+	 *
+	 * @return the version
+	 */
+	public static String getVertxVersion() {
+		try (InputStream is = Vertx.class.getClassLoader().getResourceAsStream("META-INF/vertx/vertx-version.txt")) {
+			if (is == null) {
+				throw new IllegalStateException("Cannot find vertx-version.txt on classpath");
+			}
+			try (Scanner scanner = new Scanner(is, "UTF-8").useDelimiter("\\A")) {
+				return scanner.hasNext() ? scanner.next().trim() : "";
+			}
+		} catch (IOException e) {
+			throw new IllegalStateException(e.getMessage());
 		}
 	}
 }

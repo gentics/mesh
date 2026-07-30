@@ -8,17 +8,17 @@
 
 
 | firstName
-| false
+| no
 | string
 | Firstname of the user
 
 | lastName
-| false
+| no
 | string
 | Lastname of the user
 
 | uuid
-| true
+| yes
 | string
 | Uuid of the user
 

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 import { Entity, ListResponse, PagingOptions, RolePermissionsOptions, SortingOptions } from './common';
 import { NodeReference } from './nodes';
 import { SchemaReference } from './schemas';

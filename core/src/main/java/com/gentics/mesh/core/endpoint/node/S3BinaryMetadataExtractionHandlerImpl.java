@@ -56,7 +56,7 @@ import com.gentics.mesh.util.NodeUtil;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.Future;
-import io.vertx.core.http.impl.MimeMapping;
+import io.vertx.core.http.MimeMapping;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.reactivex.core.Vertx;
 
@@ -134,7 +134,7 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 					if (nonNull(fileBuffer) && fileBuffer.getBytes().length > 0) {
 						return db.singleTx(tx -> s3binaries.findByS3ObjectKey(objectKey.get())
 								.runInExistingTx(tx).getFileName()).flatMap(fileName -> {
-									String mimeTypeForFilename = MimeMapping.getMimeTypeForFilename(fileName);
+									String mimeTypeForFilename = MimeMapping.mimeTypeForFilename(fileName);
 									File tmpFile = new File(System.getProperty("java.io.tmpdir"), fileName);
 									vertx.fileSystem().writeFileBlocking(tmpFile.getAbsolutePath(), fileBuffer);
 									byte[] fileData = fileBuffer.getBytes();

@@ -31,7 +31,6 @@ export interface InconsistencyInfo {
     severity: string;
 }
 
-
 export interface MeshSearchStatusResponse {
     /**
      * Flag which indicates whether Elasticsearch is available and search queries can be

@@ -65,17 +65,17 @@ public class HttpServerConfig implements Option {
 	public static final int DEFAULT_VERTICLE_AMOUNT = 2 * Runtime.getRuntime().availableProcessors();
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Configure the Gentics Mesh HTTP server port. Default is: " + DEFAULT_HTTP_PORT)
+	@JsonPropertyDescription("Configure the Gentics Mesh HTTP server port.")
 	@EnvironmentVariable(name = MESH_HTTP_PORT_ENV, description = "Override the configured server http port.")
 	private int port = DEFAULT_HTTP_PORT;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Configure the Gentics Mesh HTTPS server port. Default is: " + DEFAULT_HTTPS_PORT)
+	@JsonPropertyDescription("Configure the Gentics Mesh HTTPS server port.")
 	@EnvironmentVariable(name = MESH_HTTPS_PORT_ENV, description = "Override the configured server https port.")
 	private int sslPort = DEFAULT_HTTPS_PORT;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Configure the Gentics Mesh HTTP server host to bind to. Default is: " + DEFAULT_HTTP_HOST)
+	@JsonPropertyDescription("Configure the Gentics Mesh HTTP server host to bind to.")
 	@EnvironmentVariable(name = MESH_HTTP_HOST_ENV, description = "Override the configured http server host which is used to bind to.")
 	private String host = DEFAULT_HTTP_HOST;
 
@@ -100,12 +100,12 @@ public class HttpServerConfig implements Option {
 	private Boolean enableCors = false;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Flag which indicates whether http server should be enabled. Default: true")
+	@JsonPropertyDescription("Flag which indicates whether http server should be enabled.")
 	@EnvironmentVariable(name = MESH_HTTP_HTTP_ENABLE_ENV, description = "Override the configured http server flag.")
 	private boolean http = true;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Flag which indicates whether https server should be enabled. Default: false")
+	@JsonPropertyDescription("Flag which indicates whether https server should be enabled.")
 	@EnvironmentVariable(name = MESH_HTTP_SSL_ENABLE_ENV, description = "Override the configured https server flag.")
 	private boolean ssl = false;
 
@@ -115,12 +115,12 @@ public class HttpServerConfig implements Option {
 	private String certPath = DEFAULT_CERT_PATH;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Path to the SSL private key. Default: " + DEFAULT_KEY_PATH)
+	@JsonPropertyDescription("Path to the SSL private key.")
 	@EnvironmentVariable(name = MESH_HTTP_SSL_KEY_PATH_ENV, description = "Override the configured SSL enable flag.")
 	private String keyPath = DEFAULT_KEY_PATH;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Configure the client certificate handling mode. Options: none, request, required. Default: none")
+	@JsonPropertyDescription("Configure the client certificate handling mode. Options: none, request, required.")
 	@EnvironmentVariable(name = MESH_HTTP_SSL_CLIENT_AUTH_MODE_ENV, description = "Override the configured client certificate handling mode.")
 	private ClientAuth clientAuthMode = DEFAULT_CLIENT_AUTH_MODE;
 
@@ -129,13 +129,13 @@ public class HttpServerConfig implements Option {
 	@EnvironmentVariable(name = MESH_HTTP_SSL_TRUSTED_CERTS_ENV, description = "Override the configured trusted SSL certificates.")
 	private List<String> trustedCertPaths = new ArrayList<>();
 
-	@JsonProperty(required = false)
-	@JsonPropertyDescription("Amount of rest API verticles to be deployed. Default is 2 * CPU Cores")
+	@JsonProperty(required = false, defaultValue = "2 * CPU Cores")
+	@JsonPropertyDescription("Amount of rest API verticles to be deployed.")
 	@EnvironmentVariable(name = "MESH_HTTP_VERTICLE_AMOUNT", description = "Override the http verticle amount.")
 	private int verticleAmount = DEFAULT_VERTICLE_AMOUNT;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Minify JSON responses to save the payload space. Default is true")
+	@JsonPropertyDescription("Minify JSON responses to save the payload space.")
 	@EnvironmentVariable(name = MESH_HTTP_MINIFY_JSON_ENV, description = "Override the minify JSON flag.")
 	private boolean minifyJson = DEFAULT_MINIFY_JSON;
 
@@ -145,7 +145,7 @@ public class HttpServerConfig implements Option {
 	private int maxFormAttributeSize = DEFAULT_MAX_FORM_ATTRIBUTE_SIZE;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Set the http server tokens flag which controls whether the server should expose version information via headers, REST endpoints and GraphQL. Default is true")
+	@JsonPropertyDescription("Set the http server tokens flag which controls whether the server should expose version information via headers, REST endpoints and GraphQL.")
 	@EnvironmentVariable(name = MESH_HTTP_SERVER_TOKENS_ENV, description = "Override the http server tokens flag.")
 	private boolean serverTokens = DEFAULT_SERVER_TOKENS;
 

@@ -8,13 +8,13 @@
 
 
 | x
-| false
+| no
 | number
-| The horizontal position of the focal point. The value is a factor of the image width. The value 0.5 is the center of the image.
+| The horizontal position of the focal point. The value is a factor of the image width. The value 0.5 is the center of the image.  Default: *0.0*.
 
 | y
-| false
+| no
 | number
-| The vertical position of the focal point. The value is a factor of the image height. The value 0.5 is the center of the image.
+| The vertical position of the focal point. The value is a factor of the image height. The value 0.5 is the center of the image.  Default: *0.0*.
 
 |======

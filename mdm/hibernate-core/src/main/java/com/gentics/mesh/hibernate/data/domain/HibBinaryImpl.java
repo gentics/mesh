@@ -23,7 +23,7 @@ import com.gentics.mesh.core.data.binary.HibImageVariant;
  * @author plyhun
  *
  */
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "HibEntityCache")
 @Entity(name = "binary")
 @NamedQueries({
 	@NamedQuery(

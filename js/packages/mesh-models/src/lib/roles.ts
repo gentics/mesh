@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 import { BasicListOptions, Entity, ListResponse, PartialEntityLoadOptions, PermissionInfo, RolePermissionsOptions } from './common';
 import { GroupReference } from './groups';
 
@@ -13,7 +12,7 @@ export interface RoleLoadOptions extends PartialEntityLoadOptions<RoleResponse> 
 
 export interface RoleListOptions extends BasicListOptions, RolePermissionsOptions { }
 
-export type RoleListResponse = ListResponse<RoleResponse>
+export type RoleListResponse = ListResponse<RoleResponse>;
 
 export interface RolePermissionRequest {
     permissions: Partial<PermissionInfo>;

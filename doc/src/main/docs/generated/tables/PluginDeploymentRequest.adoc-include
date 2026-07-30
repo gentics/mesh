@@ -8,7 +8,7 @@
 
 
 | path
-| true
+| yes
 | string
 | Deployment path of the plugin which is relative to the plugin directory.
 

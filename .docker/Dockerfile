@@ -31,4 +31,4 @@ COPY --chown=mesh:root --from=build-env /builder/mesh-connector.jar /mesh/databa
 
 ENV MESH_DB_CONNECTOR_CLASSPATH /mesh/database
 
-CMD [ "java", "-Djna.tmpdir=/tmp/.jna", "-Duser.dir=/mesh", "--add-opens", "java.base/java.util=ALL-UNNAMED", "-jar" , "mesh.jar"]
+ENTRYPOINT ["/mesh/entrypoint.sh"]

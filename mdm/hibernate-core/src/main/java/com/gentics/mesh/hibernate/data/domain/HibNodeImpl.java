@@ -41,7 +41,7 @@ import com.gentics.mesh.util.UUIDUtil;
  * @author plyhun
  *
  */
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "HibEntityCache")
 @Entity(name = "node")
 @ElementTypeKey(ElementType.NODE)
 @NamedEntityGraphs({
@@ -234,7 +234,7 @@ public class HibNodeImpl extends AbstractHibBucketableElement implements HibNode
 	@ManyToOne(targetEntity = HibProjectImpl.class, fetch = FetchType.LAZY)
 	private HibProject project;
 
-	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "HibEntityCache")
 	@OneToMany(mappedBy = "node", targetEntity = HibNodeTag.class, cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<HibNodeTag> tags = new HashSet<>();
 
@@ -242,7 +242,7 @@ public class HibNodeImpl extends AbstractHibBucketableElement implements HibNode
 	private HibSchema schemaContainer;
 
 	@OneToMany(mappedBy = "node", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = false)
-	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "HibEntityCache")
 	private Set<HibNodeFieldContainerEdgeImpl> content = new HashSet<>();
 
 	public Set<HibNodeFieldContainerEdgeImpl> getContentEdges() {

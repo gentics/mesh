@@ -508,57 +508,56 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testDeletePublished() throws InvalidArgumentException {
 		HibProject project = project();
 
-		try (Tx tx = tx()) {
-			HibBranch initialBranch = reloadBranch(initialBranch());
-			HibSchemaVersion folderSchema = Tx.get().schemaDao().findByUuid(schemaContainer("folder").getUuid()).getLatestVersion();
+		HibSchemaVersion folderSchema = tx(tx -> {
+			return tx.schemaDao().findByUuid(schemaContainer("folder").getUuid()).getLatestVersion();
+		});
 
-			// 1. create folder and publish
-			String folderUuid = tx(tx2 -> {
-				NodeDao nodeDao = tx2.nodeDao();
-				RoleDao roleDao = tx2.roleDao();
-				HibNode folder = nodeDao.create(project.getBaseNode(), user(), folderSchema, project);
-				roleDao.grantPermissions(role(), folder, InternalPermission.READ_PERM, InternalPermission.READ_PUBLISHED_PERM);
-				tx.contentDao().createFieldContainer(folder, english(), initialBranch, user()).createString("name").setString("Folder");
-				BulkActionContext bac2 = tx2.<CommonTx>unwrap().data().getOrCreateBulkActionContext();
-				nodeDao.publish(folder, mockActionContext());
-				assertEquals(1, bac2.batch().size());
-				return folder.getUuid();
-			});
+		// 1. create folder and publish
+		String folderUuid = tx(tx2 -> {
+			NodeDao nodeDao = tx2.nodeDao();
+			RoleDao roleDao = tx2.roleDao();
+			HibNode folder = nodeDao.create(project.getBaseNode(), user(), folderSchema, project);
+			roleDao.grantPermissions(role(), folder, InternalPermission.READ_PERM, InternalPermission.READ_PUBLISHED_PERM);
+			tx2.contentDao().createFieldContainer(folder, english(), initialBranch(), user()).createString("name").setString("Folder");
+			BulkActionContext bac2 = tx2.<CommonTx>unwrap().data().getOrCreateBulkActionContext();
+			nodeDao.publish(folder, mockActionContext());
+			assertEquals(1, bac2.batch().size());
+			return folder.getUuid();
+		});
 
-			// 2. assert published and draft node
-			tx(tx2 -> {
-				NodeDao nodeDao = tx2.nodeDao();
+		// 2. assert published and draft node
+		tx(tx2 -> {
+			NodeDao nodeDao = tx2.nodeDao();
 
-				List<String> nodeUuids = new ArrayList<>();
-				nodeDao.findAll(project, mockActionContext("version=draft"), new PagingParametersImpl(1, 10000L, null, SortOrder.UNSORTED))
-					.forEach(node -> nodeUuids.add(node.getUuid()));
-				assertThat(nodeUuids).as("Draft nodes").contains(folderUuid);
-				nodeUuids.clear();
-				nodeDao.findAll(project, mockActionContext("version=published"), new PagingParametersImpl(1, 10000L, null, SortOrder.UNSORTED))
-					.forEach(node -> nodeUuids.add(node.getUuid()));
-				assertThat(nodeUuids).as("Published nodes").contains(folderUuid);
-			});
+			List<String> nodeUuids = new ArrayList<>();
+			nodeDao.findAll(project, mockActionContext("version=draft"), new PagingParametersImpl(1, 10000L, null, SortOrder.UNSORTED))
+				.forEach(node -> nodeUuids.add(node.getUuid()));
+			assertThat(nodeUuids).as("Draft nodes").contains(folderUuid);
+			nodeUuids.clear();
+			nodeDao.findAll(project, mockActionContext("version=published"), new PagingParametersImpl(1, 10000L, null, SortOrder.UNSORTED))
+				.forEach(node -> nodeUuids.add(node.getUuid()));
+			assertThat(nodeUuids).as("Published nodes").contains(folderUuid);
+		});
 
-			// 3. delete
-			InternalActionContext ac = mockActionContext("");
-			tx(tx2 -> {
-				tx2.nodeDao().deleteFromBranch(tx.nodeDao().findByUuid(project(), folderUuid), ac, initialBranch, false);
-			});
+		// 3. delete
+		InternalActionContext ac = mockActionContext("");
+		tx(tx2 -> {
+			tx2.nodeDao().deleteFromBranch(tx2.nodeDao().findByUuid(project(), folderUuid), ac, initialBranch(), false);
+		});
 
-			// 4. assert published and draft gone
-			tx(tx2 -> {
-				NodeDao nodeDao = tx2.nodeDao();
-				List<String> nodeUuids = new ArrayList<>();
-				nodeDao.findAll(project, mockActionContext("version=draft"), new PagingParametersImpl(1, 10000L, null, SortOrder.UNSORTED))
-					.forEach(node -> nodeUuids.add(node.getUuid()));
-				assertThat(nodeUuids).as("Draft nodes").doesNotContain(folderUuid);
+		// 4. assert published and draft gone
+		tx(tx2 -> {
+			NodeDao nodeDao = tx2.nodeDao();
+			List<String> nodeUuids = new ArrayList<>();
+			nodeDao.findAll(tx2.projectDao().findByUuid(project.getUuid()), mockActionContext("version=draft"), new PagingParametersImpl(1, 10000L, null, SortOrder.UNSORTED))
+				.forEach(node -> nodeUuids.add(node.getUuid()));
+			assertThat(nodeUuids).as("Draft nodes").doesNotContain(folderUuid);
 
-				nodeUuids.clear();
-				nodeDao.findAll(project, mockActionContext("version=published"), new PagingParametersImpl(1, 10000L, null, SortOrder.UNSORTED))
-					.forEach(node -> nodeUuids.add(node.getUuid()));
-				assertThat(nodeUuids).as("Published nodes").doesNotContain(folderUuid);
-			});
-		}
+			nodeUuids.clear();
+			nodeDao.findAll(project, mockActionContext("version=published"), new PagingParametersImpl(1, 10000L, null, SortOrder.UNSORTED))
+				.forEach(node -> nodeUuids.add(node.getUuid()));
+			assertThat(nodeUuids).as("Published nodes").doesNotContain(folderUuid);
+		});
 	}
 
 	@Test

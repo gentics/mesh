@@ -1,0 +1,1 @@
+Core: An extra check on the nodes, eligible for the migration, is performed to avoid early finish of the migration process, caused by inconsistent node data.

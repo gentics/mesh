@@ -47,7 +47,7 @@ public class ClusterOptions implements Option {
 	private String clusterName;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Port used by Vert.x for the eventbus server. Default: " + DEFAULT_VERTX_PORT)
+	@JsonPropertyDescription("Port used by Vert.x for the eventbus server.")
 	@EnvironmentVariable(name = MESH_CLUSTER_VERTX_PORT_ENV, description = "Override the vert.x eventbus server port.")
 	private Integer vertxPort = DEFAULT_VERTX_PORT;
 

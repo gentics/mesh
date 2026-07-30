@@ -48,9 +48,10 @@ public abstract class AbstractJobVerticle extends AbstractVerticle {
 	private void registerJobHandler() {
 		jobConsumer = vertx.eventBus().consumer(getJobAdress(), message -> {
 			// execute blocking, because the verticle itself is not a worker verticle (any more)
-			vertx.executeBlocking(prom -> {
+			vertx.executeBlocking(() -> {
 				invokeJobAction(message);
-			}, rh -> {
+				return null;
+			}).andThen(rh -> {
 				if (rh.failed()) {
 					log.error(messageToString(message));
 				}
@@ -110,7 +111,7 @@ public abstract class AbstractJobVerticle extends AbstractVerticle {
 	protected void executeLocked(Completable action, Message<Object> message) {
 		String lockName = getLockName();
 		try {
-			vertx.sharedData().getLockWithTimeout(lockName, 1000, rh -> {
+			vertx.sharedData().getLockWithTimeout(lockName, 1000).andThen(rh -> {
 				if (rh.failed()) {
 					Throwable cause = rh.cause();
 					log.error("Error while acquiring global lock {" + lockName + "}", cause);

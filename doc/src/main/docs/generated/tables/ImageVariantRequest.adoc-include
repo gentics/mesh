@@ -8,37 +8,37 @@
 
 
 | cropMode
-| false
+| no
 | string
 | The image crop mode.
 
 | focalPoint
-| false
+| no
 | object
 | The image focal point, containing factors of the image width/height. The value 0.5 is the center of the image.
 
 | focalZoom
-| false
+| no
 | number
 | The image focal point zoom factor.
 
 | height
-| false
+| no
 | string
 | Desired image height. Set to &#x27;auto&#x27; to compute automatically from the image width and ratio.
 
 | rect
-| false
+| no
 | object
 | Desired image crop parameters.
 
 | resizeMode
-| false
+| no
 | string
-| The image resize mode.
+| The image resize mode.  Default: *SMART*.
 
 | width
-| false
+| no
 | string
 | Desired image width. Set to &#x27;auto&#x27; to compute automatically from the image height and ratio.
 

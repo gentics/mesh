@@ -8,7 +8,7 @@
 
 
 | minify
-| boolean 
+| boolean
 | false
 | Flag, indicating the requirement of a minification of an input or output value, to save the payload resources. May override the globally set value.
 

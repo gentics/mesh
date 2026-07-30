@@ -33,7 +33,7 @@ import com.gentics.mesh.dagger.annotations.ElementTypeKey;
  * @author plyhun
  *
  */
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "HibEntityCache")
 @Entity(name = TABLE_NAME)
 @ElementTypeKey(ElementType.MICROSCHEMAVERSION)
 @NamedQueries({

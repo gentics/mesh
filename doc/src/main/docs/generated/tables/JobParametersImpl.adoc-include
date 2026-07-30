@@ -8,52 +8,52 @@
 
 
 | branchName
-| string 
+| string
 | false
 | Parameter for filtering jobs by the branch name. Multiple values can be given separated by commas.
 
 | branchUuid
-| string 
+| string
 | false
 | Parameter for filtering jobs by the branch uuid. Multiple values can be given separated by commas.
 
 | fromVersion
-| string 
+| string
 | false
 | Parameter for filtering jobs by the &#x27;from&#x27; version. Multiple values can be given separated by commas.
 
 | microschemaName
-| string 
+| string
 | false
 | Parameter for filtering jobs by the microschema name. Multiple values can be given separated by commas.
 
 | microschemaUuid
-| string 
+| string
 | false
 | Parameter for filtering jobs by the microschema uuid. Multiple values can be given separated by commas.
 
 | schemaName
-| string 
+| string
 | false
 | Parameter for filtering jobs by the schema name. Multiple values can be given separated by commas.
 
 | schemaUuid
-| string 
+| string
 | false
 | Parameter for filtering jobs by the schema uuid. Multiple values can be given separated by commas.
 
 | status
-| string 
+| string
 | false
 | Parameter for filtering jobs by their status. Multiple values can be given separated by commas.
 
 | toVersion
-| string 
+| string
 | false
 | Parameter for filtering jobs by the &#x27;to&#x27; version. Multiple values can be given separated by commas.
 
 | type
-| string 
+| string
 | false
 | Parameter for filtering jobs by their type. Multiple values can be given separated by commas.
 

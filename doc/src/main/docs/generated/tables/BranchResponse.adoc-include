@@ -8,97 +8,97 @@
 
 
 | created
-| true
+| yes
 | string
 | ISO8601 formatted created date string.
 
 | creator
-| true
+| yes
 | object
 | User reference of the creator of the element.
 
 | edited
-| true
+| yes
 | string
 | ISO8601 formatted edited date string.
 
 | editor
-| false
+| no
 | object
 | User reference of the editor of the element.
 
 | hostname
-| false
+| no
 | string
 | The hostname of the branch which will be used to generate links across multiple projects.
 
 | latest
-| true
+| yes
 | boolean
 | Flag which indicates whether this is the latest branch. Requests that do not specify a specific branch will be performed in the scope of the latest branch.
 
 | migrated
-| true
+| yes
 | boolean
 | Flag which indicates whether any active node migration for this branch is still running or whether all nodes have been migrated to this branch.
 
 | name
-| true
+| yes
 | string
 | Name of the branch.
 
 | pathPrefix
-| true
+| yes
 | string
 | Optional path prefix for webroot path and rendered links.
 
 | permissions.create
-| true
+| yes
 | boolean
 | Flag which indicates whether the create permission is granted.
 
 | permissions.delete
-| true
+| yes
 | boolean
 | Flag which indicates whether the delete permission is granted.
 
 | permissions.publish
-| false
+| no
 | boolean
 | Flag which indicates whether the publish permission is granted.
 
 | permissions.read
-| true
+| yes
 | boolean
 | Flag which indicates whether the read permission is granted.
 
 | permissions.readPublished
-| false
+| no
 | boolean
 | Flag which indicates whether the read published permission is granted.
 
 | permissions.update
-| true
+| yes
 | boolean
 | Flag which indicates whether the update permission is granted.
 
 | rolePerms
-| false
+| no
 | object
 | Permission information for provided role. This property will only be populated if a role query parameter has been specified.
 
 | ssl
-| false
+| no
 | boolean
 | SSL flag of the branch which will be used to generate links across multiple projects.
 
 | tags
-| true
+| yes
 | array
 | List of tags that were used to tag the branch.
 
 | uuid
-| true
+| yes
 | string
 | Uuid of the element
 

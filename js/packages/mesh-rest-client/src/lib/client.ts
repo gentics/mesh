@@ -32,15 +32,15 @@ export class MeshRestClient {
 
     constructor(
         public driver: MeshClientDriver,
-        public config?: MeshRestClientConfig,
+        public config: MeshRestClientConfig,
         public apiKey?: string,
     ) { }
 
     public prepareRequest(
         requestMethod: RequestMethod,
         path: string,
-        queryParams: Record<string, any>,
-        requestHeaders: Record<string, string>,
+        queryParams?: Record<string, any>,
+        requestHeaders?: Record<string, string>,
     ): MeshRestClientRequestData {
         let buildPath = '';
 
@@ -52,32 +52,41 @@ export class MeshRestClient {
         }
         buildPath += toRelativePath(path);
 
-        const data: MeshRestClientInterceptorData = this.config.connection.absolute ? {
-            method: requestMethod,
-            protocol: typeof this.config.connection.ssl === 'boolean'
-                ? (this.config.connection.ssl ? 'https' : 'http')
-                : null,
-            host: this.config.connection.host,
-            port: this.config.connection.port,
-            path: buildPath,
-            params: queryParams,
-            headers: requestHeaders,
-        } : {
-            method: requestMethod,
-            protocol: null,
-            host: null,
-            port: null,
-            path: buildPath,
-            params: queryParams,
-            headers: requestHeaders,
-        };
+        if (!queryParams) {
+            queryParams = {};
+        }
+        if (!requestHeaders) {
+            requestHeaders = {};
+        }
+
+        const data: MeshRestClientInterceptorData = this.config.connection.absolute
+            ? {
+                method: requestMethod,
+                protocol: typeof this.config.connection.ssl === 'boolean'
+                    ? (this.config.connection.ssl ? 'https' : 'http')
+                    : null,
+                host: this.config.connection.host,
+                port: this.config.connection.port ?? null,
+                path: buildPath,
+                params: queryParams,
+                headers: requestHeaders,
+            }
+            : {
+                method: requestMethod,
+                protocol: null,
+                host: null,
+                port: null,
+                path: buildPath,
+                params: queryParams,
+                headers: requestHeaders,
+            };
 
         const { method, protocol, host, port, path: finalPath, params, headers } = this.handleInterceptors(data);
 
         let url: string;
 
         if (this.config.connection.absolute) {
-            url = `${protocol ?? ''}://${host}`;
+            url = `${protocol ?? ''}://${host ?? ''}`;
             if (port) {
                 url += `:${port}`;
             }
@@ -89,8 +98,8 @@ export class MeshRestClient {
         return {
             method,
             url,
-            params,
-            headers,
+            params: params ?? {},
+            headers: headers ?? {},
         };
     }
 
@@ -105,6 +114,7 @@ export class MeshRestClient {
     protected executeJsonRequest<T>(
         method: RequestMethod,
         path: string,
+        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
         body?: null | any,
         queryParams?: Record<string, any>,
     ): MeshRestClientResponse<T> {

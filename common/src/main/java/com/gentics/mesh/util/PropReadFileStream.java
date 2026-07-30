@@ -3,10 +3,10 @@ package com.gentics.mesh.util;
 import static com.gentics.mesh.util.MimeTypeUtils.DEFAULT_BINARY_MIME_TYPE;
 
 import io.reactivex.Single;
-import io.vertx.core.file.AsyncFile;
 import io.vertx.core.file.FileProps;
 import io.vertx.core.file.OpenOptions;
 import io.vertx.reactivex.core.Vertx;
+import io.vertx.reactivex.core.file.AsyncFile;
 import io.vertx.reactivex.core.file.FileSystem;
 
 /**
@@ -58,7 +58,7 @@ public class PropReadFileStream {
 	 */
 	public static Single<PropReadFileStream> openFile(Vertx vertx, String path) {
 		FileSystem fs = vertx.fileSystem();
-		return Single.zip(fs.rxProps(path).map(props -> props.getDelegate()), fs.rxOpen(path, openOptions).map(file -> file.getDelegate()),
+		return Single.zip(fs.rxProps(path), fs.rxOpen(path, openOptions),
 				(props, file) -> {
 					return new PropReadFileStream(props, file, path);
 				});

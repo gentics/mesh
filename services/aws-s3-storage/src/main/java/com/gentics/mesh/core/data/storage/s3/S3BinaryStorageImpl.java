@@ -12,6 +12,9 @@ import java.util.concurrent.CompletionException;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
@@ -26,10 +29,8 @@ import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.reactivex.functions.Function;
-import io.vertx.core.http.impl.MimeMapping;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import io.vertx.reactivex.core.buffer.Buffer;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.MimeMapping;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -230,7 +231,7 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 	@Override
 	public Single<S3RestResponse> uploadFile(String bucket, String objectKey, File file, boolean isCache) {
 		return initIfRequiredAndExecute(unused -> {
-			String mimeTypeForFilename = MimeMapping.getMimeTypeForFilename(file.getName());
+			String mimeTypeForFilename = MimeMapping.mimeTypeForFilename(file.getName());
 	
 			PutObjectRequest objectRequest = PutObjectRequest.builder().bucket(bucket).key(objectKey)
 					.contentType(mimeTypeForFilename).build();

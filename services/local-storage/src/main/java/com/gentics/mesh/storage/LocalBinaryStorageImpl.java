@@ -135,7 +135,6 @@ public class LocalBinaryStorageImpl extends AbstractBinaryStorage implements Loc
 			File tempFolder = new File(options.getDirectory(), "temp");
 			return createParentPath(tempFolder.getAbsolutePath())
 				.andThen(fileSystem.rxOpen(path, new OpenOptions()).flatMapCompletable(file -> stream
-					.map(io.vertx.reactivex.core.buffer.Buffer::new)
 					.doOnNext(file::write)
 					.ignoreElements()
 					.andThen(file.rxFlush())
