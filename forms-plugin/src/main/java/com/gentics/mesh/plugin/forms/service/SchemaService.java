@@ -21,6 +21,7 @@ import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.dagger.UserClient;
 import com.gentics.mesh.plugin.forms.FormsError;
+import com.gentics.mesh.plugin.forms.SchemaInitializer;
 import com.gentics.mesh.plugin.forms.FormsPlugin;
 import com.gentics.mesh.plugin.forms.util.FormUtil;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -34,11 +35,12 @@ public class SchemaService {
 
 	private final MeshRestClient userClient;
 
+	@Deprecated
+	public static final String SCHEMA_NAME = SchemaInitializer.SCHEMA_NAME;
 	private final MeshRestClient adminClient;
 
-	public static final String SCHEMA_NAME = "form";
-
-	public static final String PLUGIN_SCHEMA_NAME = "forms_plugin";
+	@Deprecated
+	public static final String PLUGIN_SCHEMA_NAME = SchemaInitializer.PLUGIN_SCHEMA_NAME;
 
 	private final String schemaFieldsGraphQl;
 

@@ -71,6 +71,10 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 		projectRouter.route("/translations/:formUuid/:lang").method(GET).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::getTranslationsHandler));
 		projectRouter.route("/translations").method(POST).handler(fromComponent(FormsPluginComponent::setTranslationsHandler));
 
+		// routes for manipulating `noIndex` flag
+		projectRouter.route("/noindex").method(POST).handler(fromComponent(FormsPluginComponent::setNoIndexHandler));
+		projectRouter.route("/noindex").method(DELETE).handler(fromComponent(FormsPluginComponent::removeNoIndexHandler));
+
 		// TODO cors
 		projectRouter.route("/forms").method(GET).handler(fromComponent(FormsPluginComponent::listFormsHandler));
 

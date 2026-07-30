@@ -77,6 +77,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -116,6 +118,7 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 
 		server.getMesh().deployPlugin(FormsTestPlugin.class, "forms").blockingAwait();
 		PluginTestUtil.waitForPluginRegistration(server, 5_000, "forms");
+		Logger.getLogger(OkHttpClient.class.getName()).setLevel(Level.FINE);
 	}
 
 	/**
@@ -510,14 +513,25 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 	}
 
 	/**
-	 * Get the activation status for the project
+	 * Get the plugin status for the project
 	 * @param project project
-	 * @return true iff plugin is activated for project
+	 * @return status
 	 */
-	protected boolean getStatus(String project) {
-		StatusResponse response = call(() -> server.client()
+	protected StatusResponse getStatus(String project) {
+		return call(() -> server.client()
 				.get(String.format("/%s/plugins/forms/active", URIUtils.encodeSegment(project)), StatusResponse.class));
-		return response.isActive();
+	}
+
+	/**
+	 * Set the noIndex flag at the plugin for the project
+	 * @param project project
+	 * @return true if the flag is set
+	 */
+	protected boolean setNoIndex(String project, boolean noIndex) {
+		StatusResponse response = call(() -> noIndex
+				? server.client().post(String.format("/%s/plugins/forms/noindex", URIUtils.encodeSegment(project)), StatusResponse.class)
+				: server.client().delete(String.format("/%s/plugins/forms/noindex", URIUtils.encodeSegment(project)), StatusResponse.class));
+		return response.isNoIndex();
 	}
 
 	/**

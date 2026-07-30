@@ -43,7 +43,9 @@ import com.gentics.mesh.plugin.forms.handler.status.ActivateHandler;
 import com.gentics.mesh.plugin.forms.handler.status.CheckStatusHandler;
 import com.gentics.mesh.plugin.forms.handler.status.DeactivateHandler;
 import com.gentics.mesh.plugin.forms.handler.status.GetLanguagesHandler;
+import com.gentics.mesh.plugin.forms.handler.status.RemoveNoIndexHandler;
 import com.gentics.mesh.plugin.forms.handler.status.SetLanguagesHandler;
+import com.gentics.mesh.plugin.forms.handler.status.SetNoIndexHandler;
 import com.gentics.mesh.plugin.forms.handler.translation.GetTranslationsHandler;
 import com.gentics.mesh.plugin.forms.handler.translation.SetTranslationsHandler;
 import com.gentics.mesh.plugin.forms.service.BinaryDataMigrationService;
@@ -76,6 +78,10 @@ public interface FormsPluginComponent {
 	GetLanguagesHandler getLanguagesHandler();
 
 	SetLanguagesHandler setLanguagesHandler();
+
+	SetNoIndexHandler setNoIndexHandler();
+
+	RemoveNoIndexHandler removeNoIndexHandler();
 
 	SetFormtypeConfigsHandler setFormtypeConfigsHandler();
 

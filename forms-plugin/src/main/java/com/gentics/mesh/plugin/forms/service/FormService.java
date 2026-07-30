@@ -490,11 +490,20 @@ public class FormService {
 	}
 
 	/**
-	 * List all form UUIDs for the given project
+	 * Observe all form UUIDs for the given project
 	 * @param projectName project name
 	 * @return observable emitting the form UUIDs
 	 */
 	public Observable<String> listUuids(String projectName) {
+		return getUuids(projectName).flatMapObservable(Observable::fromIterable);
+	}
+
+	/**
+	 * Get a list of all form UUIDs for the given project
+	 * @param projectName project name
+	 * @return observable emitting the form UUIDs
+	 */
+	public Single<List<String>> getUuids(String projectName) {
 		return statusService.languageFallback(projectName)
 			.flatMap(lang -> statusService.getRootNode(projectName, adminClient).flatMap(rootNode -> {
 				JsonObject variables = new JsonObject().put("rootNodeUuid", rootNode.getUuid()).put("lang",
@@ -502,9 +511,8 @@ public class FormService {
 
 				return adminClient.graphql(projectName,
 						new GraphQLRequest().setQuery(formsGraphQlQuery).setVariables(variables)).toSingle();
-			})).flatMapObservable(graphQlResponse -> {
-				List<String> uuids = FormUtil.getFromResponse(graphQlResponse, "$.data.node.children.elements[*].uuid");
-				return Observable.fromIterable(uuids);
+			})).map(graphQlResponse -> {
+				return FormUtil.<List<String>>getFromResponse(graphQlResponse, "$.data.node.children.elements[*].uuid");
 			}).doOnSubscribe(disp -> {
 				log.debug(String.format("List Form uuids for project %s", projectName));
 			});
@@ -546,7 +554,8 @@ public class FormService {
 				}
 			}
 
-			return userClient.upsertNode(projectName, uuid, request)
+			return adminClient.findSchemaByUuid(rootNode.getSchema().getUuid()).toSingle()
+				.flatMap(rootSchema -> userClient.upsertNode(projectName, uuid, request)
 					.toSingle() /* .flatMap(formNode -> loadAsAdminWithLanguageFallback(projectName, formNode.getUuid(), false)) */
 					.flatMap(formNode -> {
 						return schemaService.loadSchemaByName(SchemaService.getSchemaName(uuid), false)
@@ -555,12 +564,12 @@ public class FormService {
 										log.info("Found schema {}. Schema has uuid {}", SchemaService.getSchemaName(uuid),
 												optSchema.get().getUuid());
 										// update schema
-										return updateSchema(formtypeConfigs, projectName, formNode, optSchema.get())
+										return updateSchema(formtypeConfigs, projectName, formNode, optSchema.get(), rootSchema.getNoIndex())
 												.map(response -> formNode);
 									} else {
 										log.info("Did not find schema {}, creating one.", SchemaService.getSchemaName(uuid));
 										// create schema
-										return createAndAssignSchema(formtypeConfigs, projectName, formNode).map(schemaResponse -> formNode);
+										return createAndAssignSchema(formtypeConfigs, projectName, formNode, rootSchema.getNoIndex()).map(schemaResponse -> formNode);
 									}
 								});
 					}).flatMap(updatedForm -> {
@@ -577,8 +586,8 @@ public class FormService {
 							.concatMapSingle(lang -> userClient.deleteNode(projectName, updatedForm.getUuid(), lang).toSingle())
 							.ignoreElements()
 							.andThen(Single.just(updatedForm));
-					});
-		});
+					}));
+				});
 	}
 
 	/**
@@ -898,7 +907,7 @@ public class FormService {
 	 *
 	 * <p>When {@code selectOptions} are present the default value is mapped to a {@link PossibleValue}
 	 * (list or scalar). Without options, the {@link DefaultValue} resolves itself via
-	 * {@link DefaultValue#resolve(String, Map)} — covering SCALAR, LIST, USER_REFERENCE, and TRANSLATION.</p>
+	 * {@link DefaultValue#resolve(String, Map)} - covering SCALAR, LIST, USER_REFERENCE, and TRANSLATION.</p>
 	 *
 	 * @param element   schema element to build the property for
 	 * @param language  language code for label and translation resolution
@@ -1249,8 +1258,9 @@ public class FormService {
 	 *            form uuid
 	 * @return schema name
 	 */
+	@Deprecated
 	public String getSchemaName(String formUuid) {
-		return String.format("%s_%s", SchemaService.SCHEMA_NAME, formUuid);
+		return SchemaService.getSchemaName(formUuid);
 	}
 
 	/**
@@ -1290,8 +1300,8 @@ public class FormService {
 		return SchemaService.SCHEMA_NAME.equals(node.getSchema().getName());
 	}
 
-	private Single<SchemaResponse> createAndAssignSchema(FormtypeConfigsModel formtypeConfigs, String projectName, NodeResponse formNode) {
-		return getSchema(formtypeConfigs, formNode, new SchemaCreateRequest(), List.of())
+	private Single<SchemaResponse> createAndAssignSchema(FormtypeConfigsModel formtypeConfigs, String projectName, NodeResponse formNode, boolean noIndex) {
+		return getSchema(formtypeConfigs, formNode, new SchemaCreateRequest().setNoIndex(noIndex), List.of())
 			.map(schema -> {
 				log.info("Creating schema {}", schema.getName());
 				return schema;
@@ -1300,7 +1310,7 @@ public class FormService {
 			.flatMap(createdSchema -> userClient.assignSchemaToProject(projectName, createdSchema.getUuid()).toSingle());
 	}
 
-	private Single<GenericMessageResponse> updateSchema(FormtypeConfigsModel formtypeConfigs, String projectName, NodeResponse formNode, SchemaResponse schema) {
+	private Single<GenericMessageResponse> updateSchema(FormtypeConfigsModel formtypeConfigs, String projectName, NodeResponse formNode, SchemaResponse schema, boolean noIndex) {
 		// check whether the current schema contains binary fields
 		List<String> binaryFields = schema.getFields().stream().filter(field -> field instanceof BinaryFieldSchema)
 				.map(FieldSchema::getName).filter(name -> !Strings.CS.endsWith(name, OLD_BINARY_FIELD_SUFFIX)).collect(Collectors.toList());
@@ -1310,7 +1320,7 @@ public class FormService {
 
 		if (CollectionUtils.isNotEmpty(binaryFields)) {
 			return schemaService.getSchemaFields(projectName, formNode.getUuid())
-				.flatMap(fieldNames -> getSchema(formtypeConfigs, formNode, new SchemaUpdateRequest(), fieldNames))
+				.flatMap(fieldNames -> getSchema(formtypeConfigs, formNode, new SchemaUpdateRequest().setNoIndex(noIndex), fieldNames))
 				.flatMap(updateRequest -> {
 					// rename all binary fields by adding the suffix to the name.
 					// Do this by applying a diff, so that the schema migration is not yet triggered
@@ -1378,7 +1388,7 @@ public class FormService {
 		}
 
 		return schemaService.getSchemaFields(projectName, formNode.getUuid())
-			.flatMap(fieldNames ->getSchema(formtypeConfigs, formNode, new SchemaUpdateRequest(), fieldNames))
+			.flatMap(fieldNames ->getSchema(formtypeConfigs, formNode, new SchemaUpdateRequest().setNoIndex(noIndex), fieldNames))
 			.map(updateRequest -> {
 				log.info("Updating schema {} with uuid {}", schema.getName(), schema.getUuid());
 				return updateRequest;
