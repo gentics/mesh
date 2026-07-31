@@ -121,7 +121,7 @@ public class MonitoringServerEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testWritableReturns503WhenReadOnlyMode() {
 		call(() -> client().updateLocalConfig(buildLocalConfigModel(true)));
-		call(() -> monClient().writable(), SERVICE_UNAVAILABLE, "error_internal");
+		call(() -> monClient().writable(), SERVICE_UNAVAILABLE, "error_service_unavailable");
 	}
 
 	private LocalConfigModel buildLocalConfigModel(boolean readOnly) {
