@@ -1,13 +1,12 @@
+ARG OTEL_JAVAAGENT_VERSION=v2.27.0
 ARG MESH_REGISTRY_HOST=docker.gentics.com
 ARG MESH_VERSION
-
-FROM maven:3.8-eclipse-temurin-17 AS build-env
-
 ARG MVN_USERNAME
 ARG MVN_PASSWORD
-
 ARG MESH_CONNECTOR
 ARG MESH_ARTIFACTS_REPO=maven-snapshots
+
+FROM maven:3.8-eclipse-temurin-17 AS build-env
 
 ENV GENTICS_REPO_USER $MVN_USERNAME
 ENV GENTICS_REPO_PASS $MVN_PASSWORD
@@ -22,7 +21,6 @@ RUN if [ -n "$MESH_CONNECTOR" ] ; \
         mvn dependency:get --batch-mode -Dartifact=${MESH_CONNECTOR} -Ddest=/builder/mesh-connector.jar -DoverWrite=true -Dtransitive=false -DremoteRepositories=gentics.nexus.snapshots::default::https://repo.gentics.com/repository/${MESH_ARTIFACTS_REPO}  ; \
     fi
 
-ARG OTEL_JAVAAGENT_VERSION=v2.27.0
 FROM ghcr.io/open-telemetry/opentelemetry-java-instrumentation-releases:${OTEL_JAVAAGENT_VERSION} AS otel-agent
 
 FROM $MESH_REGISTRY_HOST/gentics/mesh:$MESH_VERSION
