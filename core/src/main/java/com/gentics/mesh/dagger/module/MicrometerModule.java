@@ -22,6 +22,9 @@ import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.config.MeterFilter;
 import io.micrometer.prometheusmetrics.PrometheusConfig;
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.instrumentation.micrometer.v1_5.OpenTelemetryMeterRegistry;
+import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import io.vertx.core.metrics.MetricsOptions;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.Match;
@@ -35,6 +38,12 @@ import io.vertx.micrometer.VertxPrometheusOptions;
 @Module
 public class MicrometerModule {
 
+	@Provides
+	@Singleton
+	public static OpenTelemetry openTelemetry() {
+		return AutoConfiguredOpenTelemetrySdk.initialize().getOpenTelemetrySdk();
+	}
+
 	/**
 	 * Create the meter registry for the given mesh options. The registry will automatically be tagged to include information about the nodeName and cluster
 	 * name.
@@ -44,8 +53,8 @@ public class MicrometerModule {
 	 */
 	@Provides
 	@Singleton
-	public static MeterRegistry meterRegistry(MeshOptions options) {
-		PrometheusMeterRegistry registry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
+	public static MeterRegistry meterRegistry(MeshOptions options, OpenTelemetry openTelemetry) {
+		var registry = OpenTelemetryMeterRegistry.builder(openTelemetry).build();
 
 		List<Tag> tags = Stream.of(
 			createTag("nodeName", options.getNodeName()),
