@@ -1,4 +1,6 @@
-target/
+# Die vorgebaute Fat-JAR muss in den Build-Context, der Rest von target/ nicht.
+target/*
+!target/mesh-mcp-server.jar
 .idea/
 *.iml
 .DS_Store

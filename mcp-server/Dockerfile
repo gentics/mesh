@@ -1,15 +1,13 @@
-# syntax=docker/dockerfile:1.6
 # ─────────────────────────────────────────────────────────────────────────────
-# Gentics Mesh MCP Server – Multi-Stage Build
+# Gentics Mesh MCP Server – Runtime Image
 #
-# Stage 1 (build):   Maven + JDK 17 → Fat-JAR via maven-shade-plugin
-# Stage 2 (runtime): Slim JRE 17 → führt die JAR als non-root user aus
+# Die Fat-JAR wird NICHT mehr hier gebaut, sondern vom Maven-Reactor erzeugt
+# (Stage "Maven Build" in Jenkinsfile.split) und hier nur noch übernommen.
+# Voraussetzung: target/mesh-mcp-server.jar existiert bereits.
 #
-# Build (Standalone-Test ohne mesh-enterprise-Parent funktioniert nur, wenn
-# der Modul-POM auf <parent> verzichtet – im Reactor-Kontext baut Jenkins
-# die JAR vorher und reicht sie per `mvn install` weiter):
-#   docker build --build-arg VERSION=$(mvn -q help:evaluate \
-#     -Dexpression=project.version -DforceStdout) -t mesh-mcp-server:dev .
+# Build (lokal):
+#   mvn -pl mcp-server -am package -DskipTests
+#   docker build --build-arg VERSION=<version> -t mesh-mcp-server:dev mcp-server
 #
 # Run (stdio):
 #   docker run -i --rm \
@@ -19,31 +17,9 @@
 #     repo.gentics.com/mesh/mcp-server:<version>
 # ─────────────────────────────────────────────────────────────────────────────
 
+FROM eclipse-temurin:17-jre-alpine AS runtime
+
 ARG VERSION=dev
-
-# ── Stage 1: Build ──────────────────────────────────────────────────────────
-FROM maven:3.9-eclipse-temurin-17 AS build
-
-WORKDIR /workspace
-
-# Dependencies zuerst (besseres Layer-Caching)
-COPY pom.xml ./
-RUN --mount=type=cache,target=/root/.m2 \
-    mvn -B -q dependency:go-offline || true
-
-# Quellen kopieren und bauen
-COPY src ./src
-RUN --mount=type=cache,target=/root/.m2 \
-    mvn -B -q clean package -DskipTests
-
-# Sanity-Check: die geshadete Fat-JAR muss existieren
-RUN test -f target/mesh-mcp-server.jar
-
-
-# ── Stage 2: Runtime ────────────────────────────────────────────────────────
-FROM eclipse-temurin:17-jre-jammy AS runtime
-
-ARG VERSION
 
 # OCI Labels
 LABEL org.opencontainers.image.title="mesh-mcp-server" \
@@ -54,14 +30,14 @@ LABEL org.opencontainers.image.title="mesh-mcp-server" \
 # Non-root user
 ARG APP_UID=10001
 ARG APP_GID=10001
-RUN groupadd --system --gid ${APP_GID} app \
- && useradd  --system --uid ${APP_UID} --gid ${APP_GID} \
-             --home-dir /app --shell /sbin/nologin app
+RUN addgroup -S -g ${APP_GID} app \
+ && adduser  -S -u ${APP_UID} -G app \
+             -h /app -s /sbin/nologin app
 
 WORKDIR /app
 
-# JAR aus Build-Stage übernehmen
-COPY --from=build --chown=app:app /workspace/target/mesh-mcp-server.jar /app/app.jar
+# Vorgebaute Fat-JAR aus dem Maven-Build übernehmen
+COPY --chown=app:app target/mesh-mcp-server.jar /app/app.jar
 
 # JVM-Defaults – per K8s via JAVA_OPTS überschreibbar
 ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+ExitOnOutOfMemoryError" \
