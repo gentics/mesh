@@ -9,7 +9,35 @@ der Mesh-Version – ein eigenes Semver für den MCP-Server wird nicht mehr gef�
 
 ## [Unreleased]
 
+### Added
+- **API-Key-Authentifizierung gegen Mesh** (`MESH_API_KEY`) als Alternative zu
+  `MESH_USERNAME` + `MESH_PASSWORD`. Der Key (langlebiges JWT aus Mesh) wird per
+  `MeshRestClient.setAPIKey()` als Bearer-Header an jede Anfrage gehängt – kein
+  Login-Roundtrip, kein Passwort im Deployment. Sind beide Varianten gesetzt,
+  gewinnt der API-Key (mit Warnung im Log). Beide Wege werden beim Start gegen
+  Mesh verifiziert, damit falsche Credentials sofort auffallen.
+
 ### Changed
+- **Java-Baseline von 21 auf 17** gesenkt – identisch zum `mesh-enterprise`-Parent
+  (`<release>17</release>`). Der Modul-eigene `maven-compiler-plugin`-Block entfällt,
+  das Level kommt jetzt aus dem Parent. Der HTTP-Transport nutzt statt eines
+  Virtual-Thread-Executors einen beschränkten Plattform-Thread-Pool
+  (`max(16, MCP_MESH_MAX_CONCURRENT × 2)`), damit weiterhin `MeshCallGuard` und
+  nicht der Pool die Concurrency begrenzt. Docker-Images und Jenkins-JDK auf 17.
+
+### Fixed
+- **Rate-Limit war wirkungslos**: `RateLimiter.acquirePermission(int)` liefert in
+  Resilience4j 2.x ein `boolean` und wirft *kein* `RequestNotPermitted`. Der
+  Rückgabewert wurde ignoriert, die `catch`-Blöcke waren toter Code – weder das
+  globale noch das Per-Token-Limit hat je eine Anfrage abgelehnt. Bulkhead und
+  Circuit Breaker waren nicht betroffen.
+- Testabhängigkeiten (`junit-jupiter`, `mockito-junit-jupiter`) hatten keine
+  Version: `mesh-bom` verwaltet nur `mockito-core` (2.18.3). Das Modul war damit
+  nicht baubar. Jetzt explizit gepinnt (JUnit 5.10.2 / Mockito 5.7.0).
+- Use-Cases deklarierten `throws Exception`, was durch den `Supplier` in
+  `MeshCallGuard.execute()` nicht durchgereicht werden kann – der `ToolDispatcher`
+  hat deshalb nie kompiliert. Serialisierung läuft jetzt über `ToolResult.json()`
+  und wirft `AppError(INTERNAL_ERROR)`.
 - **Umzug nach `mesh-enterprise`** als Submodul unter `mcp-server/`.
   Versionierung übernimmt der Mesh-Enterprise-Parent-POM
   (`<parent>`/`${revision}`); eigene Semver entfällt.

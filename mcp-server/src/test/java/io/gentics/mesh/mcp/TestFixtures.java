@@ -38,6 +38,7 @@ public final class TestFixtures {
                                          List<String> schemaAllowlist) {
         return new MeshConfig(
                 "http://localhost:8080",
+                null,       // meshApiKey – tests use username/password auth
                 "admin",
                 "admin",
                 List.of("demo"),

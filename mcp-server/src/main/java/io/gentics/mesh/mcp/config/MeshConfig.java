@@ -25,8 +25,9 @@ import java.util.Set;
  * <table border="1" summary="Environment variables">
  *   <tr><th>Variable</th><th>Required</th><th>Default</th><th>Description</th></tr>
  *   <tr><td>MESH_BASE_URL</td><td>yes</td><td>–</td><td>Base URL of the Mesh instance</td></tr>
- *   <tr><td>MESH_USERNAME</td><td>yes</td><td>–</td><td>Service-account username</td></tr>
- *   <tr><td>MESH_PASSWORD</td><td>yes</td><td>–</td><td>Service-account password (never logged)</td></tr>
+ *   <tr><td>MESH_API_KEY</td><td>conditional</td><td>–</td><td>Mesh API key (long-lived JWT). Replaces username/password; takes precedence if both are set</td></tr>
+ *   <tr><td>MESH_USERNAME</td><td>conditional</td><td>–</td><td>Service-account username – required unless MESH_API_KEY is set</td></tr>
+ *   <tr><td>MESH_PASSWORD</td><td>conditional</td><td>–</td><td>Service-account password (never logged) – required unless MESH_API_KEY is set</td></tr>
  *   <tr><td>MESH_ALLOWED_PROJECTS</td><td>yes</td><td>–</td><td>Comma-separated project allowlist</td></tr>
  *   <tr><td>MESH_ALLOWED_SCHEMAS</td><td>no</td><td>(all)</td><td>Comma-separated schema allowlist</td></tr>
  *   <tr><td>MESH_ALLOWED_LANGUAGES</td><td>no</td><td>de,en</td><td>Comma-separated language codes</td></tr>
@@ -51,8 +52,10 @@ import java.util.Set;
  * </table>
  *
  * @param meshBaseUrl           Base URL of the Gentics Mesh instance (required)
- * @param meshUsername          Service-account username (required)
- * @param meshPassword          Service-account password – never logged (required)
+ * @param meshApiKey            Mesh API key (long-lived JWT); {@code null} when
+ *                              username/password authentication is used
+ * @param meshUsername          Service-account username ({@code null} when an API key is used)
+ * @param meshPassword          Service-account password – never logged ({@code null} when an API key is used)
  * @param meshAllowedProjects   Allowlisted project names (required, non-empty)
  * @param meshAllowedSchemas    Allowlisted schema names; empty list = all allowed
  * @param meshAllowedLanguages  Allowlisted ISO 639-1 language codes
@@ -81,6 +84,7 @@ import java.util.Set;
  */
 public record MeshConfig(
         String meshBaseUrl,
+        String meshApiKey,
         String meshUsername,
         String meshPassword,
         List<String> meshAllowedProjects,
@@ -141,9 +145,19 @@ public record MeshConfig(
         var errors = new StringBuilder();
 
         String baseUrl  = requireEnv("MESH_BASE_URL",         errors);
-        String username = requireEnv("MESH_USERNAME",         errors);
-        String password = requireEnv("MESH_PASSWORD",         errors);
         String projects = requireEnv("MESH_ALLOWED_PROJECTS", errors);
+
+        // ── Mesh authentication: API key OR username+password ──────────────
+        // An API key is a long-lived JWT issued by Mesh; it is sent as a Bearer
+        // header on every request and needs no login round-trip. When both are
+        // configured the API key wins (MeshClient logs which mode is active).
+        String apiKey   = optionalEnv("MESH_API_KEY");
+        String username = optionalEnv("MESH_USERNAME");
+        String password = optionalEnv("MESH_PASSWORD");
+        if (apiKey == null && (username == null || password == null)) {
+            errors.append("Mesh-Authentifizierung fehlt: entweder MESH_API_KEY setzen "
+                    + "oder MESH_USERNAME und MESH_PASSWORD. ");
+        }
 
         // Validate URL format
         if (baseUrl != null) {
@@ -261,6 +275,7 @@ public record MeshConfig(
 
         return new MeshConfig(
                 baseUrl,
+                apiKey,
                 username,
                 password,
                 splitCsv(projects),
@@ -334,6 +349,15 @@ public record MeshConfig(
      * Returns the trimmed value of the named environment variable, or
      * {@code null} after appending an error message to {@code errors}.
      */
+    /**
+     * Returns the trimmed value of the named environment variable, or
+     * {@code null} when it is unset or blank. No error is recorded.
+     */
+    private static String optionalEnv(String key) {
+        String val = System.getenv(key);
+        return (val == null || val.isBlank()) ? null : val.strip();
+    }
+
     private static String requireEnv(String key, StringBuilder errors) {
         String val = System.getenv(key);
         if (val == null || val.isBlank()) {

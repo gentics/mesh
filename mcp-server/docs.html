@@ -752,6 +752,15 @@
     </div>
 
     <h3>Mesh-Anbindung</h3>
+    <p class="section-body" style="margin-bottom: 16px;">
+      Für die Authentifizierung gegen Mesh gibt es zwei Wege: einen <strong>API-Key</strong>
+      (<code>MESH_API_KEY</code>, ein von Mesh ausgestelltes langlebiges JWT) oder
+      <strong>Username + Passwort</strong>. Der API-Key wird als Bearer-Header an jede Anfrage
+      gehängt – kein Login-Roundtrip beim Start, kein Passwort im Deployment –
+      und ist damit die empfohlene Variante für Produktion. Sind beide Varianten gesetzt,
+      gewinnt der API-Key. Beide Wege werden beim Start gegen Mesh verifiziert:
+      falsche Credentials brechen den Prozess ab, statt erst beim ersten Tool-Call zu scheitern.
+    </p>
     <div class="table-wrap">
       <table>
         <thead>
@@ -759,8 +768,9 @@
         </thead>
         <tbody>
           <tr><td><code>MESH_BASE_URL</code></td><td>ja</td><td>–</td><td>Basis-URL der Mesh-Instanz</td></tr>
-          <tr><td><code>MESH_USERNAME</code></td><td>ja</td><td>–</td><td>Service-Account-Username</td></tr>
-          <tr><td><code>MESH_PASSWORD</code></td><td>ja</td><td>–</td><td>Service-Account-Passwort (wird nie geloggt)</td></tr>
+          <tr><td><code>MESH_API_KEY</code></td><td>bedingt</td><td>–</td><td>Mesh-API-Key (langlebiges JWT). Ersetzt Username/Passwort; hat Vorrang, wenn beides gesetzt ist</td></tr>
+          <tr><td><code>MESH_USERNAME</code></td><td>bedingt</td><td>–</td><td>Service-Account-Username – Pflicht ohne <code>MESH_API_KEY</code></td></tr>
+          <tr><td><code>MESH_PASSWORD</code></td><td>bedingt</td><td>–</td><td>Service-Account-Passwort (wird nie geloggt) – Pflicht ohne <code>MESH_API_KEY</code></td></tr>
           <tr><td><code>MESH_ALLOWED_PROJECTS</code></td><td>ja</td><td>–</td><td>Kommagetrennte Projekt-Allowlist</td></tr>
           <tr><td><code>MESH_ALLOWED_SCHEMAS</code></td><td>nein</td><td>(alle)</td><td>Kommagetrennte Schema-Allowlist</td></tr>
           <tr><td><code>MESH_ALLOWED_LANGUAGES</code></td><td>nein</td><td><code>de,en</code></td><td>ISO 639-1 Sprachcodes</td></tr>

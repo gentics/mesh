@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
+import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.parameter.client.NodeParametersImpl;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -12,11 +13,17 @@ import com.gentics.mesh.rest.client.MeshRestClientConfig;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import io.gentics.mesh.mcp.config.MeshConfig;
 import io.gentics.mesh.mcp.domain.model.*;
+import io.reactivex.Single;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * High-level facade over the official Gentics Mesh REST client.
@@ -49,7 +56,11 @@ import java.util.Map;
  */
 public class MeshClient {
 
+    private static final Logger log = LoggerFactory.getLogger(MeshClient.class);
     private static final ObjectMapper MAPPER = new ObjectMapper();
+
+    /** Mesh's built-in fallback user – what {@code me()} reports when auth did not take. */
+    private static final String ANONYMOUS_USERNAME = "anonymous";
 
     private final MeshConfig       config;
     private final MeshRestClient   client;
@@ -57,28 +68,48 @@ public class MeshClient {
 
     /**
      * Creates a fully wired {@code MeshClient} using the official
-     * {@link MeshRestClient} and immediately logs in to obtain a JWT token.
+     * {@link MeshRestClient} and authenticates it against Mesh.
      *
-     * <p>{@link MeshRestClient#setLogin(String, String)} only stores the credentials –
-     * it does <em>not</em> call the login endpoint. {@link MeshRestClient#login()}
-     * must be invoked explicitly to acquire the bearer token; otherwise all
-     * subsequent API calls would be made as the anonymous (unauthenticated) user.
+     * <h2>Two authentication modes</h2>
+     * <ul>
+     *   <li><strong>API key</strong> ({@code MESH_API_KEY}) – a long-lived JWT
+     *       issued by Mesh. {@link MeshRestClient#setAPIKey(String)} attaches it
+     *       as a Bearer header to every request; there is no login endpoint and
+     *       no session to refresh.</li>
+     *   <li><strong>Username/password</strong> – {@link MeshRestClient#setLogin(String, String)}
+     *       only <em>stores</em> the credentials; {@link MeshRestClient#login()}
+     *       must be invoked explicitly to acquire the JWT, otherwise every
+     *       request goes out as the anonymous user.</li>
+     * </ul>
+     * When both are configured the API key wins.
+     *
+     * <p>Either way the result is verified via {@link #verifyAuthentication(String)}
+     * before the constructor returns, so a misconfigured server fails at startup
+     * rather than serving anonymous-user results on the first tool call.
      *
      * @param config validated server configuration
-     * @throws RuntimeException if the initial login to Mesh fails
+     * @throws RuntimeException if authentication against Mesh fails
      */
     public MeshClient(MeshConfig config) {
         this.config  = config;
         this.client  = buildRestClient(config);
-        // setLogin() only stores credentials; login() must be called explicitly to obtain
-        // the JWT token. Without this call every request goes out unauthenticated.
-        this.client.setLogin(config.meshUsername(), config.meshPassword());
-        try {
-            this.client.login().blockingGet();
-        } catch (Exception e) {
-            throw new RuntimeException(
-                    "Mesh-Login fehlgeschlagen – Credentials und MESH_BASE_URL prüfen: "
-                    + e.getMessage(), e);
+        if (config.meshApiKey() != null) {
+            if (config.meshUsername() != null) {
+                log.warn("MESH_API_KEY und MESH_USERNAME sind beide gesetzt – "
+                        + "der API-Key hat Vorrang, die Credentials werden ignoriert.");
+            }
+            this.client.setAPIKey(config.meshApiKey());
+            verifyAuthentication("Mesh-API-Key wurde abgelehnt – MESH_API_KEY und MESH_BASE_URL prüfen");
+        } else {
+            this.client.setLogin(config.meshUsername(), config.meshPassword());
+            try {
+                awaitSingle(this.client.login(), config.meshRestTimeoutMs());
+            } catch (Exception e) {
+                throw new RuntimeException(
+                        "Mesh-Login fehlgeschlagen – Credentials und MESH_BASE_URL prüfen: "
+                        + e.getMessage(), e);
+            }
+            verifyAuthentication("Mesh-Login fehlgeschlagen – Credentials und MESH_BASE_URL prüfen");
         }
         // GraphQL guardrails layer still delegates execution to this client
         this.graphql = new MeshGraphqlClient(config, client);
@@ -96,6 +127,66 @@ public class MeshClient {
         this.config  = config;
         this.client  = client;
         this.graphql = graphql;
+    }
+
+    /**
+     * Asks Mesh who we are and fails startup unless it answers with a real user.
+     *
+     * <p>{@code GET /api/v2/auth/me} never returns an HTTP error for bad
+     * credentials – Mesh simply answers as the built-in {@code anonymous} user.
+     * A 200 response therefore proves nothing on its own; the username is what
+     * distinguishes "authenticated" from "silently anonymous". This matters most
+     * for the API-key path, which has no login endpoint that could fail loudly.
+     *
+     * @param failureMessage operator-facing prefix for the thrown exception
+     * @throws RuntimeException if the request fails, times out, or Mesh answers
+     *                          as the anonymous user
+     */
+    private void verifyAuthentication(String failureMessage) {
+        UserResponse user;
+        try {
+            user = awaitSingle(client.me().toSingle(), config.meshRestTimeoutMs());
+        } catch (Exception e) {
+            throw new RuntimeException(failureMessage + ": " + e.getMessage(), e);
+        }
+        if (user == null || ANONYMOUS_USERNAME.equals(user.getUsername())) {
+            throw new RuntimeException(failureMessage
+                    + ": Mesh antwortet als anonymer Benutzer – die Zugangsdaten "
+                    + "wurden nicht akzeptiert.");
+        }
+        log.info("Mesh-Authentifizierung verifiziert – angemeldet als '{}'", user.getUsername());
+    }
+
+    /**
+     * Subscribes to the given {@link Single} and waits for its result.
+     *
+     * <p>Used instead of {@code blockingGet()} so the wait is bounded: a Mesh
+     * that accepts the connection but never answers would otherwise hang startup
+     * forever with no diagnostic.
+     *
+     * @param single    the request to run
+     * @param timeoutMs how long to wait for the result
+     * @return the emitted value
+     * @throws IllegalStateException on timeout or when the Single signalled an error
+     * @throws InterruptedException  if the waiting thread is interrupted
+     */
+    private static <T> T awaitSingle(Single<T> single, long timeoutMs) throws InterruptedException {
+        var done    = new CountDownLatch(1);
+        var value   = new AtomicReference<T>();
+        var failure = new AtomicReference<Throwable>();
+
+        single.subscribe(
+                v -> { value.set(v);   done.countDown(); },
+                e -> { failure.set(e); done.countDown(); });
+
+        if (!done.await(timeoutMs, TimeUnit.MILLISECONDS)) {
+            throw new IllegalStateException("Keine Antwort von Mesh innerhalb von " + timeoutMs + " ms");
+        }
+        Throwable error = failure.get();
+        if (error != null) {
+            throw new IllegalStateException(error.getMessage(), error);
+        }
+        return value.get();
     }
 
     // ── Projects ──────────────────────────────────────────────────────────

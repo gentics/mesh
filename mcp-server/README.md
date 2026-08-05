@@ -41,7 +41,8 @@ trägt die Version über das `VERSION`-Build-Arg im Dockerfile.
 
 ```bash
 cp .env.example .env
-# Pflichtfelder editieren: MESH_BASE_URL, MESH_USERNAME, MESH_PASSWORD, MESH_ALLOWED_PROJECTS
+# Pflichtfelder editieren: MESH_BASE_URL, MESH_ALLOWED_PROJECTS
+# und die Mesh-Authentifizierung: MESH_API_KEY *oder* MESH_USERNAME + MESH_PASSWORD
 export $(grep -v '^#' .env | xargs)
 
 # stdio (default)
@@ -51,6 +52,19 @@ java -jar target/mesh-mcp-server.jar
 MCP_TRANSPORT=http MCP_AUTH_TOKEN=secret-please-rotate \
   java -jar target/mesh-mcp-server.jar
 ```
+
+## Mesh-Authentifizierung
+
+Zwei Varianten, eine davon ist Pflicht:
+
+| Variante | ENV | Verhalten |
+|----------|-----|-----------|
+| **API-Key** (empfohlen für Prod) | `MESH_API_KEY` | Von Mesh ausgestelltes langlebiges JWT, wird als Bearer-Header an jede Anfrage gehängt. Kein Login-Roundtrip, kein Passwort im Deployment. |
+| Username/Passwort | `MESH_USERNAME` + `MESH_PASSWORD` | Login beim Start, Client hält das JWT der Session. |
+
+Sind beide gesetzt, gewinnt der API-Key (der Server loggt eine Warnung). Beide
+Varianten werden beim Start gegen Mesh verifiziert – falsche Credentials brechen
+den Start ab, statt erst beim ersten Tool-Call zu scheitern.
 
 ## Transport-Modi im Detail
 

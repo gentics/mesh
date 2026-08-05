@@ -41,7 +41,7 @@ class PolicyServiceTest {
     @Test
     void assertProjectAllowed_multipleProjects_bothAllowed() {
         MeshConfig config = new MeshConfig(
-                "http://localhost:8080", "u", "p",
+                "http://localhost:8080", null, "u", "p",
                 List.of("alpha", "beta"),
                 List.of(), List.of("de"), true, 6, 5000L, 10000L, "info",
                 "stdio", "0.0.0.0", 3001, null, true, List.of(),

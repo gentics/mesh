@@ -25,7 +25,7 @@ class MeshCallGuardTest {
     private static MeshConfig cfg(int globalRate, int tokenRate, int maxConcurrent,
                                   boolean breakerEnabled, int failurePct, int windowSize) {
         return new MeshConfig(
-                "http://localhost:8080", "u", "p",
+                "http://localhost:8080", null, "u", "p",
                 List.of("demo"), List.of(), List.of("de", "en"),
                 true, 6, 5_000L, 10_000L, "info",
                 "stdio", "0.0.0.0", 3001, null, true, List.of(),
