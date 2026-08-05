@@ -231,6 +231,28 @@ stage("Setup Build Environment") {
 				}
 			}
 
+			stage("Javascript Packages") {
+				if (env.BUILD_SKIPPED != "true") {
+					dir("js") {
+						// Install dependencies
+						sh 'npm ci --no-audit --no-fund'
+
+						// Set the version for the packages
+						sh "npm run nx -- release version ${version}"
+
+						// Build all JS packages
+						sh 'npm run nx -- run-many --targets build'
+
+						// Run the tests if enabled
+						if (Boolean.valueOf(params.runTests)) {
+							sh 'npm run nx -- run-many --targets test'
+						}
+					}
+				} else {
+					echo "Javascript Packages skipped.."
+				}
+			}
+
 			stage("Unstable Tests") {
 				if (env.BUILD_SKIPPED != "true" && Boolean.valueOf(params.runUnstableTests)) {
 					sshagent(["git"]) {
@@ -424,31 +446,16 @@ stage("Setup Build Environment") {
 						}
 					}
 
-					if (Boolean.valueOf(params.runDeploy) && !Boolean.valueOf(params.skipJsLibraries)) {
-						sh "echo @gentics:registry=https://repo.gentics.com/repository/npm-products/ > js/.npmrc"
-						sh "echo 'git-tag-version = false' >> js/.npmrc"
-						sh "echo 'allow-same-version = true' >> js/.npmrc"
-
+					if (Boolean.valueOf(params.runDeploy)) {
 						// Add private repository credentials and scopes
 						withCredentials([string(credentialsId: 'nexus-npm', variable: 'NPM_TOKEN')]) {
-							sh "echo //repo.gentics.com/repository/npm-products/:_auth=${env.NPM_TOKEN} >> js/.npmrc"
+							sh "echo //repo.gentics.com/repository/npm-products/:_auth=${env.NPM_TOKEN} >> ~/.npmrc"
 						}
 
 						dir(path: 'js') {
-							// Install dependencies
-							sh 'npm ci --no-audit --no-fund'
-
-							// Set the version for the packages
-							sh "npm run nx -- release version ${version}"
-
-							// Build all JS packages
-							sh 'npm run nx -- run-many --targets build'
-
 							// Publish the pacakges to artifactory
 							sh "npm run nx -- release publish"
 						}
-
-						sh "rm js/.npmrc"
 					}
 				} else {
 					echo "Deploy skipped.."
