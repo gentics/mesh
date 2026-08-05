@@ -18,9 +18,6 @@
   <description>Model-Context-Protocol-Adapter für Gentics Mesh CMS</description>
 
   <properties>
-    <java.version>21</java.version>
-    <maven.compiler.source>21</maven.compiler.source>
-    <maven.compiler.target>21</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!--
@@ -29,6 +26,16 @@
     -->
     <mcp.version>0.9.0</mcp.version>
     <resilience4j.version>2.2.0</resilience4j.version>
+
+    <!--
+      Test-Stack: mesh-bom verwaltet nur mockito-core (2.18.3, pre-Java-9) und
+      der Parent zieht junit:junit (JUnit 4) ein. JUnit 5 und ein Java-17-
+      taugliches Mockito müssen deshalb hier explizit gepinnt werden – die
+      Versionen stehen auch an den Dependencies, damit sie den BOM-Import
+      überstimmen.
+    -->
+    <junit.jupiter.version>5.10.2</junit.jupiter.version>
+    <mockito.version>5.7.0</mockito.version>
   </properties>
 
   <!--
@@ -89,6 +96,17 @@
       <artifactId>rxjava</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-core</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.gentics</groupId>
+      <artifactId>vertx-openapi</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+    </dependency>
+
     <!-- ── JSON (Jackson) ─────────────────────────────── -->
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
@@ -109,16 +127,19 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
+      <version>${junit.jupiter.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
+      <version>${mockito.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-junit-jupiter</artifactId>
+      <version>${mockito.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -132,15 +153,11 @@
     <finalName>${project.artifactId}</finalName>
 
     <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <source>${java.version}</source>
-          <target>${java.version}</target>
-          <release>${java.version}</release>
-        </configuration>
-      </plugin>
+      <!--
+        Kein eigener maven-compiler-plugin-Block: Source-/Target-Level kommt
+        aus dem pluginManagement des mesh-enterprise-Parents (<release>17</release>),
+        damit das Modul nicht aus der Reactor-Baseline ausschert.
+      -->
 
       <!-- Fat-JAR via shade-Plugin -->
       <plugin>

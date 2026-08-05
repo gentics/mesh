@@ -6,7 +6,7 @@
 // per `load 'mcp-server/Jenkinsfile'` oder über einen Multibranch-Job referenziert.
 //
 // Annahmen / TODOs für die finale Integration:
-//   * Tool-Names (`jdk21`, `maven3`) müssen mit den im Jenkins konfigurierten
+//   * Tool-Names (`jdk17`, `maven3`) müssen mit den im Jenkins konfigurierten
 //     Installationen übereinstimmen (Manage Jenkins → Tools).
 //   * `repo.gentics.com` Credential-ID `gentics-registry` muss existieren.
 //   * Branch-Pattern `release/*` und `main` ggf. an die mesh-enterprise-
@@ -21,7 +21,7 @@ pipeline {
     }
 
     tools {
-        jdk   'jdk21'
+        jdk   'jdk17'
         maven 'maven3'
     }
 

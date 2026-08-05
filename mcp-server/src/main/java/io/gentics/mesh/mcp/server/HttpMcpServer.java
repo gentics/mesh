@@ -23,7 +23,9 @@ import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * MCP server transport over HTTP.
@@ -73,6 +75,12 @@ public final class HttpMcpServer {
     /** Methods that go through auth + dispatcher. /healthz, /readyz, /metrics stay open. */
     private static final String MCP_PATH = "/mcp";
 
+    /** Floor for the request pool, so /healthz and /metrics stay answerable under load. */
+    private static final int MIN_HTTP_THREADS = 16;
+
+    /** Request threads per bulkhead permit – see {@link #newRequestExecutor()}. */
+    private static final int HTTP_THREAD_HEADROOM = 2;
+
     private final MeshConfig config;
     private final ToolDispatcher dispatcher;
     private final AuthValidator authValidator;
@@ -82,6 +90,7 @@ public final class HttpMcpServer {
     private final boolean corsWildcard;
 
     private HttpServer httpServer;
+    private ExecutorService executor;
 
     public HttpMcpServer(MeshConfig config,
                          ToolDispatcher dispatcher,
@@ -102,7 +111,8 @@ public final class HttpMcpServer {
      */
     public void start() throws IOException {
         httpServer = HttpServer.create(new InetSocketAddress(config.mcpHttpHost(), config.mcpHttpPort()), 0);
-        httpServer.setExecutor(Executors.newVirtualThreadPerTaskExecutor());
+        executor = newRequestExecutor();
+        httpServer.setExecutor(executor);
 
         httpServer.createContext(MCP_PATH, this::handleMcp);
         httpServer.createContext("/healthz", this::handleHealthz);
@@ -128,6 +138,35 @@ public final class HttpMcpServer {
             log.info("Stopping MCP HTTP transport…");
             httpServer.stop(2);
         }
+        if (executor != null) {
+            executor.shutdown();
+        }
+    }
+
+    /**
+     * Thread pool that serves HTTP requests.
+     *
+     * <p>Every tool call blocks its thread for the duration of the upstream
+     * Mesh request ({@code MeshClient} converts the RxJava {@code Single}s via
+     * {@code blockingGet()}), so the pool must stay comfortably larger than
+     * {@link MeshConfig#mcpMeshMaxConcurrent()}. Otherwise the pool — not the
+     * bulkhead — becomes the effective concurrency limit, and excess requests
+     * would pile up in the pool's queue instead of being rejected fast with
+     * {@link ErrorCode#BUSY}. Fail-fast is the whole point of
+     * {@link MeshCallGuard}, so the guard has to be the narrower gate.
+     *
+     * <p>The pool is bounded rather than a cached pool: an unbounded pool would
+     * spawn one platform thread per in-flight request, which is exactly the
+     * kind of unbounded resource growth the protection layer exists to prevent.
+     */
+    private ExecutorService newRequestExecutor() {
+        int size = Math.max(MIN_HTTP_THREADS, config.mcpMeshMaxConcurrent() * HTTP_THREAD_HEADROOM);
+        AtomicInteger counter = new AtomicInteger();
+        return Executors.newFixedThreadPool(size, r -> {
+            Thread t = new Thread(r, "mcp-http-" + counter.incrementAndGet());
+            t.setDaemon(true);
+            return t;
+        });
     }
 
     // ── /mcp ───────────────────────────────────────────────────────────────

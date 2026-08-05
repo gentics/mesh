@@ -2,8 +2,8 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # Gentics Mesh MCP Server – Multi-Stage Build
 #
-# Stage 1 (build):   Maven + JDK 21 → Fat-JAR via maven-shade-plugin
-# Stage 2 (runtime): Slim JRE 21 → führt die JAR als non-root user aus
+# Stage 1 (build):   Maven + JDK 17 → Fat-JAR via maven-shade-plugin
+# Stage 2 (runtime): Slim JRE 17 → führt die JAR als non-root user aus
 #
 # Build (Standalone-Test ohne mesh-enterprise-Parent funktioniert nur, wenn
 # der Modul-POM auf <parent> verzichtet – im Reactor-Kontext baut Jenkins
@@ -22,7 +22,7 @@
 ARG VERSION=dev
 
 # ── Stage 1: Build ──────────────────────────────────────────────────────────
-FROM maven:3.9-eclipse-temurin-21 AS build
+FROM maven:3.9-eclipse-temurin-17 AS build
 
 WORKDIR /workspace
 
@@ -41,7 +41,7 @@ RUN test -f target/mesh-mcp-server.jar
 
 
 # ── Stage 2: Runtime ────────────────────────────────────────────────────────
-FROM eclipse-temurin:21-jre-jammy AS runtime
+FROM eclipse-temurin:17-jre-jammy AS runtime
 
 ARG VERSION
 

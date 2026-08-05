@@ -1,7 +1,7 @@
 # Gentics Mesh MCP Server
 
 > Model-Context-Protocol-Adapter für [Gentics Mesh CMS](https://www.gentics.com/mesh/).
-> Java 21, stdio + HTTP-Transport, identische Tool-Surface über beide Transports.
+> Java 17, stdio + HTTP-Transport, identische Tool-Surface über beide Transports.
 >
 > **Submodul von `mesh-enterprise`** (Pfad im Reactor: `mcp-server/`).
 > Versionierung, Helm-Chart, Container-Registry und Release-Kadenz folgen dem
