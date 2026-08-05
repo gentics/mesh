@@ -37,7 +37,7 @@ export interface JobResponse {
     type: string;
     /** Uuid of the element */
     uuid: string;
-    /** List of warnings which were encoutered while executing the job. */
+    /** List of warnings which were encountered while executing the job. */
     warnings?: JobWarning[];
 }
 

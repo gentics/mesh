@@ -4,7 +4,7 @@ import {
     Entity,
     ExpandableNode,
     ListResponse,
-    MultiLangugeEntityOptions,
+    MultiLanguageEntityOptions,
     PartialEntityLoadOptions,
     PermissionInfo,
     ResolvableLinksOptions,
@@ -48,7 +48,7 @@ export interface UserCreateRequest extends EditableUserProperties {
 }
 
 export interface UserLoadOptions extends BranchedEntityOptions, RolePermissionsOptions,
-    MultiLangugeEntityOptions, VersionedEntityOptions, ResolvableLinksOptions, PartialEntityLoadOptions<UserResponse> {}
+    MultiLanguageEntityOptions, VersionedEntityOptions, ResolvableLinksOptions, PartialEntityLoadOptions<UserResponse> {}
 
 export interface UserListOptions extends BasicListOptions, RolePermissionsOptions { }
 

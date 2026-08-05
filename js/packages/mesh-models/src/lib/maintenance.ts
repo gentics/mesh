@@ -18,8 +18,8 @@ export interface InconsistencyInfo {
     /** Uuid of the element which is related to the inconsistency. */
     elementUuid: string;
     /**
-     * Repair action which will attept to fix the inconsistency. The action will only be
-     * invoked when using invoking the rapair endpoint.
+     * Repair action which will attempt to fix the inconsistency. The action will only be
+     * invoked when using invoking the repair endpoint.
      */
     repairAction: string;
     /**

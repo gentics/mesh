@@ -3,24 +3,6 @@
     "$schema": "../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/mesh-models/src",
     "projectType": "library",
-    "tags": [
-        "lib",
-        "models"
-    ],
-    "targets": {
-        "build": {
-            "executor": "@nx/rollup:rollup",
-            "options": {
-                "main": "packages/mesh-models/src/public-api.ts",
-                "outputPath": "dist/mesh-models",
-                "tsConfig": "packages/mesh-models/tsconfig.lib.json",
-                "project": "packages/mesh-models/package.json",
-                "generateExportsField": true,
-                "format": [
-                    "cjs",
-                    "esm"
-                ]
-            }
-        }
-    }
+    "tags": ["lib", "models"],
+    "targets": {}
 }

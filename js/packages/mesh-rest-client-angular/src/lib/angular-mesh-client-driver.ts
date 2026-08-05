@@ -29,7 +29,11 @@ export class AngularMeshClientDriver implements MeshClientDriver {
         }).pipe(
             map((res) => {
                 if (res.ok) {
-                    return JSON.parse(res.body || '');
+                    if (typeof res.body === 'string') {
+                        return JSON.parse(res.body || '');
+                    } else {
+                        return res.body;
+                    }
                 }
 
                 // eslint-disable-next-line @typescript-eslint/only-throw-error

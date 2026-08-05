@@ -8,6 +8,7 @@ module.exports = withNx(
     compiler: 'swc',
     format: ['cjs', 'esm'],
     assets: [{ input: '{projectRoot}', output: '.', glob: '*.md' }],
+    generateExportsField: true,
   },
   {
     // Provide additional rollup configuration here. See: https://rollupjs.org/configuration-options

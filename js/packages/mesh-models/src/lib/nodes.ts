@@ -2,7 +2,7 @@ import {
     BasicListOptions,
     BranchedEntityOptions,
     ListResponse,
-    MultiLangugeEntityOptions,
+    MultiLanguageEntityOptions,
     PartialEntityLoadOptions,
     ResolvableLinksOptions,
     RolePermissionsOptions,
@@ -32,7 +32,7 @@ export interface EditableNodeProperties {
 }
 
 export interface Node extends EditableNodeProperties, VersionedEntity {
-    /** The project root node. All futher nodes are children of this node. */
+    /** The project root node. All further nodes are children of this node. */
     parentNode: NodeReference;
     /**
      * Reference to the schema of the root node. Creating a project will also
@@ -43,7 +43,7 @@ export interface Node extends EditableNodeProperties, VersionedEntity {
 }
 
 export interface NodeCreateRequest extends EditableNodeProperties {
-    /** The project root node. All futher nodes are children of this node. */
+    /** The project root node. All further nodes are children of this node. */
     parentNode: NodeReference;
     /**
      * Reference to the schema of the root node. Creating a project will also
@@ -53,15 +53,15 @@ export interface NodeCreateRequest extends EditableNodeProperties {
     schema: SchemaReference;
 }
 
-export interface NodeLoadOptions extends RolePermissionsOptions, MultiLangugeEntityOptions,
+export interface NodeLoadOptions extends RolePermissionsOptions, MultiLanguageEntityOptions,
     PartialEntityLoadOptions<NodeResponse>, BranchedEntityOptions, VersionedEntityOptions, ResolvableLinksOptions { }
 
-export interface NodeListOptions extends BasicListOptions, RolePermissionsOptions, MultiLangugeEntityOptions,
+export interface NodeListOptions extends BasicListOptions, RolePermissionsOptions, MultiLanguageEntityOptions,
     PartialEntityLoadOptions<NodeResponse>, BranchedEntityOptions, VersionedEntityOptions, ResolvableLinksOptions { }
 
 export type NodeListResponse = ListResponse<NodeResponse>;
 
-/** The project root node. All futher nodes are children of this node. */
+/** The project root node. All further nodes are children of this node. */
 export interface NodeReference {
     /**
      * Optional display name of the node. A display field must be set in the schema in
@@ -105,12 +105,12 @@ export interface NodeResponse extends Node {
      */
     container: boolean;
     /**
-     * Display field name of the node. May not be retured if the node schema has no
+     * Display field name of the node. May not be returned if the node schema has no
      * display field.
      */
     displayField?: string;
     /**
-     * Display field value of the node. May not be retured if the node schema has no
+     * Display field value of the node. May not be returned if the node schema has no
      * display field.
      */
     displayName?: string;
@@ -141,7 +141,7 @@ export interface NodeUpdateRequest extends EditableNodeProperties {
 }
 
 export interface NodeDeleteOptions {
-    /** Specifiy whether deletion should also be applied recursively. */
+    /** Specify whether deletion should also be applied recursively. */
     recursive?: boolean;
 }
 
@@ -167,7 +167,7 @@ export interface VersionInfo {
 }
 
 export interface PublishOptions {
-    /** Specifiy whether the invoked action should be applied recursively. */
+    /** Specify whether the invoked action should be applied recursively. */
     recursive: boolean;
 }
 

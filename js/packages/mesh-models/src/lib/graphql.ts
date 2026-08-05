@@ -38,7 +38,7 @@ export interface GraphQLResponse {
      * and filters.
      */
     data?: any;
-    /** Array of errors which were encoutered when handling the query. */
+    /** Array of errors which were encountered when handling the query. */
     errors?: GraphQLError[];
 }
 

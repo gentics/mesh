@@ -34,7 +34,9 @@ export interface ListResponse<T> {
 
 export interface BasicListOptions extends BranchedEntityOptions, PagingOptions, SortingOptions { }
 
-export interface MultiLangugeEntityOptions {
+/** @deprecated Use {@link MultiLanguageEntityOptions} instead */
+export type MultiLangugeEntityOptions = MultiLanguageEntityOptions;
+export interface MultiLanguageEntityOptions {
     /**
      * ISO 639-1 language tag of the language which should be loaded.
      * Fallback handling can be applied by specifying multiple languages in a comma-separated list.

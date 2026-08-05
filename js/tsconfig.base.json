@@ -8,7 +8,7 @@
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
         "importHelpers": true,
-        "target": "es2015",
+        "target": "es2022",
         "module": "esnext",
         "lib": [
             "es2024",
@@ -27,7 +27,14 @@
             "@gentics/mesh-rest-client-angular": [
                 "packages/mesh-rest-client-angular/src/public-api"
             ]
-        }
+        },
+        "strict": false,
+        "noUncheckedSideEffectImports": false,
+        "types": [
+          "*"
+        ],
+        "esModuleInterop": false,
+        "ignoreDeprecations": "6.0"
     },
     "exclude": [
         "node_modules",

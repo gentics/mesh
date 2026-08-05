@@ -25,7 +25,7 @@ export interface ProjectCreateRequest extends EditableProjectProperties {
     hostname?: string;
     /**
      * SSL flag of the project which will be used to generate links across multiple
-     * projects. The flag will be stored along the intial branch of the project.
+     * projects. The flag will be stored along the initial branch of the project.
      */
     ssl?: boolean;
 }
@@ -45,7 +45,7 @@ export interface ProjectReference {
 }
 
 export interface ProjectResponse extends Project {
-    /** The project root node. All futher nodes are children of this node. */
+    /** The project root node. All further nodes are children of this node. */
     rootNode: NodeReference;
 }
 

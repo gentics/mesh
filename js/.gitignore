@@ -5,6 +5,7 @@ dist
 tmp
 /out-tsc
 /target
+.reports
 
 # dependencies
 node_modules
@@ -36,7 +37,6 @@ yarn-error.log
 testem.log
 /typings
 /.nx
-.npmrc
 
 # System Files
 .DS_Store

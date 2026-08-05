@@ -1,5 +1,5 @@
 import { GenericErrorResponse } from '@gentics/mesh-models';
-import { MeshRestClientRequestError } from '../errors';
+import { MeshRestClientAbortError, MeshRestClientRequestError } from '../errors';
 import { MeshClientDriver, MeshRestClientRequestData, MeshRestClientResponse } from '../models';
 
 async function parseErrorFromAPI<T>(request: MeshRestClientRequestData, res: Response): Promise<T> {
@@ -61,19 +61,26 @@ export class MeshFetchDriver implements MeshClientDriver {
         }
 
         const abortController = new AbortController();
+        let sentRequest: Promise<T> | null = null;
 
         function sendRequest() {
+            if (sentRequest != null) {
+                return sentRequest;
+            }
+
             const options: RequestInfo = {
                 ...fn(fullUrl) as any,
                 signal: abortController.signal,
             };
-            return fetch(options)
+            sentRequest = fetch(options)
                 .then((res) => handler(res));
+
+            return sentRequest;
         }
 
         return {
             cancel: () => {
-                abortController.abort();
+                abortController.abort(new MeshRestClientAbortError(request));
             },
             send: () => sendRequest(),
         };

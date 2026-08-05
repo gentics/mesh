@@ -5,14 +5,25 @@
         "declaration": true,
         "declarationMap": true,
         "inlineSources": true,
-        "types": []
+        "types": ["node"]
     },
+    "include": [
+      "src/**/*.ts"
+    ],
     "exclude": [
         "src/**/*.spec.ts",
-        "src/test-setup.ts",
-        "jest.config.ts",
         "src/**/*.test.ts",
-        "jest.config.cts"
+        "vite.config.ts",
+        "vite.config.mts",
+        "vitest.config.ts",
+        "vitest.config.mts"
     ],
-    "include": ["src/**/*.ts"]
+    "angularCompilerOptions": {
+      "extendedDiagnostics": {
+        "checks": {
+          "nullishCoalescingNotNullable": "suppress",
+          "optionalChainNotNullable": "suppress"
+        }
+      }
+    }
 }
