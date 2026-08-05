@@ -1,4 +1,3 @@
-ARG OTEL_JAVAAGENT_VERSION=v2.27.0
 ARG MESH_REGISTRY_HOST=docker.gentics.com
 ARG MESH_VERSION
 ARG MVN_USERNAME
@@ -21,15 +20,12 @@ RUN if [ -n "$MESH_CONNECTOR" ] ; \
         mvn dependency:get --batch-mode -Dartifact=${MESH_CONNECTOR} -Ddest=/builder/mesh-connector.jar -DoverWrite=true -Dtransitive=false -DremoteRepositories=gentics.nexus.snapshots::default::https://repo.gentics.com/repository/${MESH_ARTIFACTS_REPO}  ; \
     fi
 
-FROM ghcr.io/open-telemetry/opentelemetry-java-instrumentation-releases:${OTEL_JAVAAGENT_VERSION} AS otel-agent
-
 FROM $MESH_REGISTRY_HOST/gentics/mesh:$MESH_VERSION
 
 # Revoke the root permissions again
 USER mesh
 
 COPY --chown=mesh:root --from=build-env /builder/mesh-connector.jar /mesh/database/mesh-connector.jar
-COPY --chown=mesh:root --from=otel-agent /javaagent.jar /mesh/opentelemetry-javaagent.jar
 
 ENV MESH_DB_CONNECTOR_CLASSPATH /mesh/database
 
