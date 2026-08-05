@@ -115,40 +115,14 @@ Vollständige Tuning-Tabelle: siehe `.env.example` und `docs.html`.
 
 ## Deployment
 
-Der MCP-Server wird **mit dem Mesh-Helm-Chart** ausgeliefert (siehe
-`mesh-enterprise/helm-chart/`, Section `mcpServer:` in `values.yaml`).
-Default ist `mcpServer.enabled=false`. Container-Image:
+Das eigene Helm-Chart ist mit dem Umzug nach `mesh-enterprise` entfallen –
+der MCP-Server wird **als Sub-Chart vom Mesh-Helm-Chart** mitdeployt. Die
+relevanten Werte (Transport-Modus, Auth-Token-Secret, Ingress) sind dort unter
+einem `mcpServer:`-Key dokumentiert. Container-Image:
 
 ```
 repo.gentics.com/mesh/mcp-server:<mesh-version>
 ```
-
-Aktivierung im Mesh-Release:
-
-```yaml
-# values.yaml fürs Mesh-Chart
-mcpServer:
-  enabled: true
-  image:
-    repository: repo.gentics.com/mesh/mcp-server
-    pullSecret: docker-gentics-com
-  transport:
-    mode: http
-    auth:
-      token: "REPLACE-WITH-OPENSSL-RAND-BASE64-32"
-  mesh:
-    username: "admin"
-    password: "YOURPW"            # in Prod: existingSecret
-    allowedProjects: "demo"
-  ingress:
-    enabled: true
-    hosts:
-      - host: mesh-mcp.example.com
-        paths: ["/"]
-```
-
-Vollständige Werte: `mesh-enterprise/helm-chart/values.yaml` (Section
-`mcpServer:`) und `mesh-enterprise/helm-chart/example-values.yaml`.
 
 Lokaler Container-Build (für Smoke-Tests):
 

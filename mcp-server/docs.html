@@ -1304,50 +1304,23 @@ docker run -i --rm \
     <h3>Helm (über Mesh-Chart)</h3>
     <p>
       Werte für den MCP-Server liegen im Mesh-Chart unter dem
-      <code>mcpServer:</code>-Key (siehe <code>helm-chart/values.yaml</code>
-      im <code>mesh-enterprise</code>-Repo, Section "Gentics Mesh MCP Server").
-      Aktivierung:
+      <code>mcpServer:</code>-Key. Aktivierung:
     </p>
 <pre><span class="code-label">yaml · mesh-values.yaml</span><code class="language-yaml">mcpServer:
   enabled: true
-  image:
-    repository: repo.gentics.com/mesh/mcp-server
-    pullSecret: docker-gentics-com
   transport:
-    mode: http
+    mode: http               # oder "stdio"
+    http:
+      port: 3001
     auth:
-      token: "$(openssl rand -base64 32)"
-      # alternativ: existingSecret: mcp-auth   (Key: MCP_AUTH_TOKEN)
-    cors:
-      origins:
-        - https://chat.example.com
-  mesh:
-    username: "admin"
-    password: "YOURPW"          # in Prod via existingSecret
-    # existingSecret: mesh-admin-credentials
-    allowedProjects: "demo"
-    allowedLanguages: "de,en"
-    readOnly: true
-  protection:
-    rateLimit:
-      globalPerSecond: 50
-      perTokenPerSecond: 20
-    maxConcurrent: 10
-    circuitBreaker:
-      enabled: true
+      existingSecret: mcp-auth
+      key: MCP_AUTH_TOKEN
   ingress:
     enabled: true
-    hosts:
-      - host: mesh-mcp.example.com
-        paths: ["/"]</code></pre>
-
-    <p>
-      Der Chart erzeugt dann ein Deployment <code>&lt;release&gt;-mcp-server</code>,
-      einen Service (im HTTP-Modus), optional einen Ingress sowie zwei Secrets
-      (<code>&lt;release&gt;-mcp-server-mesh</code> mit Mesh-Credentials,
-      <code>&lt;release&gt;-mcp-server-auth</code> mit Bearer-Token). Beide Secrets
-      können über <code>existingSecret</code>-Verweise extern gepflegt werden.
-    </p>
+    host: mcp.example.com
+  allowedProjects: "demo"
+  allowedLanguages: "de,en"
+  readOnly: true</code></pre>
 
     <h3>Kubernetes – Probes</h3>
     <p>Stdio: Liveness über <code>pgrep</code>. HTTP: <code>httpGet</code> auf <code>/healthz</code> bzw. <code>/readyz</code>.</p>

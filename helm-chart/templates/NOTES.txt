@@ -29,33 +29,3 @@
 
    (you can find the generated admin password in the logs)
 {{- end }}
-
-{{- if .Values.mcpServer.enabled }}
-
-3. MCP Server ist aktiviert ({{ .Values.mcpServer.transport.mode }}-Modus).
-{{- if eq .Values.mcpServer.transport.mode "http" }}
-
-   Service: {{ include "mesh.mcpServer.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.mcpServer.transport.http.port }}/mcp
-
-   {{- if .Values.mcpServer.ingress.enabled }}
-   Ingress: {{ range .Values.mcpServer.ingress.hosts }}https://{{ .host }} {{ end }}
-   {{- end }}
-
-   Bearer-Token abrufen:
-   {{- if .Values.mcpServer.transport.auth.disabled }}
-     (Auth deaktiviert – Reverse-Proxy übernimmt!)
-   {{- else }}
-     kubectl get secret {{ include "mesh.mcpServer.authSecretName" . }} \
-       -n {{ .Release.Namespace }} -o jsonpath='{.data.MCP_AUTH_TOKEN}' | base64 -d ; echo
-   {{- end }}
-
-   Quick-Test:
-     kubectl port-forward svc/{{ include "mesh.mcpServer.fullname" . }} {{ .Values.mcpServer.transport.http.port }}:{{ .Values.mcpServer.transport.http.port }} &
-     curl -s http://localhost:{{ .Values.mcpServer.transport.http.port }}/mcp \
-       -H "Authorization: Bearer <TOKEN>" -H 'Content-Type: application/json' \
-       -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}'
-{{- else }}
-
-   stdio-Modus: kein Service, Zugriff via kubectl exec oder Sidecar.
-{{- end }}
-{{- end }}

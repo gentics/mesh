@@ -43,61 +43,6 @@ By default various features are enabled / settings:
 * Backup requires Gentics Mesh which includes Mesh CLI
 * PV for image cache
 
-## MCP Server (optional)
-
-Das Chart enthält den **Gentics Mesh MCP Server** als optionale Sub-Komponente
-für die Anbindung von LLM-Clients (Claude Desktop, OpenAI Agents, LangChain,
-n8n, Open WebUI, ...). Default ist `mcpServer.enabled=false`.
-
-Quick start (HTTP mit Ingress):
-
-```yaml
-mcpServer:
-  enabled: true
-  image:
-    repository: repo.gentics.com/mesh/mcp-server
-    pullSecret: docker-gentics-com
-  transport:
-    mode: http
-    auth:
-      token: "$(openssl rand -base64 32)"
-  mesh:
-    username: "admin"
-    password: "YOURPW"          # in Prod: existingSecret
-    allowedProjects: "demo"
-  ingress:
-    enabled: true
-    hosts:
-      - host: mesh-mcp.example.com
-        paths: ["/"]
-```
-
-Was beim `helm install` erzeugt wird (gegated auf `mcpServer.enabled`):
-
-* `<release>-mcp-server` Deployment + ConfigMap (alle MCP_*-ENVs)
-* `<release>-mcp-server-mesh` Secret mit `MESH_USERNAME`/`MESH_PASSWORD`
-  (oder `mcpServer.mesh.existingSecret` referenzieren)
-* Bei `transport.mode=http` zusätzlich Service + optional Ingress
-  und `<release>-mcp-server-auth` Secret mit `MCP_AUTH_TOKEN`
-  (oder `mcpServer.transport.auth.existingSecret` referenzieren)
-* Schutz-Layer (Rate-Limit / Bulkhead / Circuit Breaker) sind per Default an
-  und über `mcpServer.protection.*` justierbar.
-
-Vollständige Optionen siehe `values.yaml` (Section `mcpServer:`).
-Developer-Docs: `mcp-server/docs.html` im Modul-Verzeichnis.
-
-Quick-Test gegen den Cluster-Service:
-
-```bash
-TOKEN=$(kubectl get secret <release>-mcp-server-auth \
-  -o jsonpath='{.data.MCP_AUTH_TOKEN}' | base64 -d)
-kubectl port-forward svc/<release>-mcp-server 3001:3001 &
-curl -s http://localhost:3001/mcp \
-  -H "Authorization: Bearer $TOKEN" \
-  -H 'Content-Type: application/json' \
-  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | jq
-```
-
 ## Changelog
 ### 3.0.1
 * Initial Release of Mesh Helm Chart for Mesh 3.x
