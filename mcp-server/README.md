@@ -20,7 +20,7 @@ Die Tool-Surface ist in beiden Modi identisch (gemeinsamer `ToolDispatcher`).
 
 | Anforderung   | Version                                                              |
 |---------------|----------------------------------------------------------------------|
-| Java          | ≥ 21                                                                 |
+| Java          | ≥ 17 (Baseline des `mesh-enterprise`-Parents)                        |
 | Maven         | ≥ 3.9                                                                |
 | Gentics Mesh  | Version aus `mesh-enterprise`-Parent (`mesh-rest-client` geerbt)     |
 

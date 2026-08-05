@@ -82,12 +82,12 @@ public class SearchNodesUseCase {
      * @return JSON string containing a {@code results} array
      * @throws io.gentics.mesh.mcp.domain.AppError(FORBIDDEN)         if the project or language is not allowed
      * @throws io.gentics.mesh.mcp.domain.AppError(VALIDATION_ERROR)  if {@code limit} is out of range
-     * @throws Exception if the Mesh API call or JSON serialisation fails
+     * @throws io.gentics.mesh.mcp.domain.AppError if the Mesh API call or JSON serialisation fails
      */
     public String execute(String project, String query,
                           String schema, String language,
                           List<String> fields, int limit,
-                          boolean publishedOnly) throws Exception {
+                          boolean publishedOnly) {
 
         PolicyService.assertProjectAllowed(project, config);
         PolicyService.assertLanguageAllowed(language, config);
@@ -116,6 +116,6 @@ public class SearchNodesUseCase {
         }
 
         root.set("results", arr);
-        return MAPPER.writeValueAsString(root);
+        return ToolResult.json(root);
     }
 }

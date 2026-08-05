@@ -69,10 +69,10 @@ public class RunGraphqlUseCase {
      * @throws io.gentics.mesh.mcp.domain.AppError(FORBIDDEN)         if the project is not allowed or a mutation was attempted
      * @throws io.gentics.mesh.mcp.domain.AppError(VALIDATION_ERROR)  if the query exceeds the depth limit
      * @throws io.gentics.mesh.mcp.domain.AppError(TIMEOUT_ERROR)     if the GraphQL request times out
-     * @throws Exception if serialisation fails
+     * @throws io.gentics.mesh.mcp.domain.AppError(INTERNAL_ERROR) if serialisation fails
      */
     public String execute(String project, String query,
-                          Map<String, Object> variables) throws Exception {
+                          Map<String, Object> variables) {
         PolicyService.assertProjectAllowed(project, config);
 
         var raw = client.runGraphql(project, query, variables);
@@ -85,6 +85,6 @@ public class RunGraphqlUseCase {
         meta.put("timedOut",  false);
         result.set("meta", meta);
 
-        return MAPPER.writeValueAsString(result);
+        return ToolResult.json(result);
     }
 }

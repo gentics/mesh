@@ -64,9 +64,9 @@ public class ListSchemasUseCase {
      * @param project allowlisted project name
      * @return JSON string containing the {@code project} name and a {@code schemas} array
      * @throws io.gentics.mesh.mcp.domain.AppError(FORBIDDEN) if the project is not in the allowlist
-     * @throws Exception if the Mesh API call or JSON serialisation fails
+     * @throws io.gentics.mesh.mcp.domain.AppError if the Mesh API call or JSON serialisation fails
      */
-    public String execute(String project) throws Exception {
+    public String execute(String project) {
         PolicyService.assertProjectAllowed(project, config);
 
         var schemas = client.listSchemas(project);
@@ -94,6 +94,6 @@ public class ListSchemasUseCase {
         }
 
         root.set("schemas", schemasArr);
-        return MAPPER.writeValueAsString(root);
+        return ToolResult.json(root);
     }
 }

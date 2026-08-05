@@ -537,14 +537,14 @@
         <span class="hero-eyebrow"><span class="dot"></span>Developer Documentation · mesh-enterprise Submodul</span>
         <h1 class="hero-headline">Gentics Mesh MCP Server</h1>
         <p class="hero-subheadline">
-          Model-Context-Protocol-Adapter für Gentics Mesh CMS. Java 21, zwei Transports (stdio + HTTP),
+          Model-Context-Protocol-Adapter für Gentics Mesh CMS. Java 17, zwei Transports (stdio + HTTP),
           identische Tool-Surface in beiden Modi, ready für Claude Desktop, OpenAI Agents,
           LangChain, n8n, Open WebUI und private LLM-Stacks.
         </p>
         <div class="hero-facts">
           <div class="hero-fact">
             <div class="hero-fact-label">Runtime</div>
-            <div class="hero-fact-value">JDK 21 · Virtual Threads · Fat-JAR</div>
+            <div class="hero-fact-value">JDK 17 · Fat-JAR</div>
           </div>
           <div class="hero-fact">
             <div class="hero-fact-label">Transports</div>
@@ -1481,7 +1481,7 @@ curl -s http://localhost:3001/mcp \
 
     <h3>Voraussetzungen</h3>
     <ul style="padding-left: 20px; color: var(--text); font-size: .92rem; line-height: 1.8;">
-      <li>JDK 21 (Temurin empfohlen)</li>
+      <li>JDK 17 (Temurin empfohlen) – Baseline des <code>mesh-enterprise</code>-Parents</li>
       <li>Maven 3.9+</li>
       <li>Zugriff aufs Gentics-interne <code>mesh-enterprise</code>-Repo</li>
     </ul>

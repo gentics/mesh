@@ -55,9 +55,9 @@ public class ListProjectsUseCase {
      * them to a JSON string.
      *
      * @return JSON string containing a {@code projects} array
-     * @throws Exception if the Mesh API call fails or JSON serialisation fails
+     * @throws io.gentics.mesh.mcp.domain.AppError if the Mesh API call or JSON serialisation fails
      */
-    public String execute() throws Exception {
+    public String execute() {
         var projects  = client.listProjects();
         ObjectNode root  = MAPPER.createObjectNode();
         ArrayNode  array = MAPPER.createArrayNode();
@@ -70,6 +70,6 @@ public class ListProjectsUseCase {
         }
 
         root.set("projects", array);
-        return MAPPER.writeValueAsString(root);
+        return ToolResult.json(root);
     }
 }

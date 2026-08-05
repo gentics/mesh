@@ -8,7 +8,6 @@ import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.ratelimiter.RateLimiter;
 import io.github.resilience4j.ratelimiter.RateLimiterConfig;
-import io.github.resilience4j.ratelimiter.RequestNotPermitted;
 import io.gentics.mesh.mcp.config.MeshConfig;
 import io.gentics.mesh.mcp.domain.AppError;
 import io.gentics.mesh.mcp.domain.ErrorCode;
@@ -140,9 +139,9 @@ public final class MeshCallGuard {
                             .limitRefreshPeriod(Duration.ofSeconds(1))
                             .timeoutDuration(Duration.ZERO)
                             .build()));
-            try {
-                perToken.acquirePermission(weight);
-            } catch (RequestNotPermitted e) {
+            // acquirePermission() *returns* false when the bucket is empty – it does not
+            // throw. Ignoring the result would disable rate-limiting entirely.
+            if (!perToken.acquirePermission(weight)) {
                 metrics.recordRateLimitRejected("token", toolName);
                 throw new AppError(ErrorCode.RATE_LIMITED,
                         "Token rate-limit überschritten (Tool '" + toolName + "', Weight " + weight + ").");
@@ -150,9 +149,7 @@ public final class MeshCallGuard {
         }
 
         // 2) Global rate-limit
-        try {
-            globalLimiter.acquirePermission(weight);
-        } catch (RequestNotPermitted e) {
+        if (!globalLimiter.acquirePermission(weight)) {
             metrics.recordRateLimitRejected("global", toolName);
             throw new AppError(ErrorCode.RATE_LIMITED,
                     "Globales Rate-Limit überschritten (Tool '" + toolName + "', Weight " + weight + ").");

@@ -60,13 +60,13 @@ public class GetWebrootUseCase {
      * @return JSON string representing the resolved {@link io.gentics.mesh.mcp.domain.model.MeshNode}
      * @throws io.gentics.mesh.mcp.domain.AppError(FORBIDDEN)  if the project or language is not allowed
      * @throws io.gentics.mesh.mcp.domain.AppError(NOT_FOUND)  if no node exists at the path
-     * @throws Exception if serialisation fails
+     * @throws io.gentics.mesh.mcp.domain.AppError(INTERNAL_ERROR) if serialisation fails
      */
-    public String execute(String project, String path, String language) throws Exception {
+    public String execute(String project, String path, String language) {
         PolicyService.assertProjectAllowed(project, config);
         PolicyService.assertLanguageAllowed(language, config);
 
         var node = client.getWebroot(project, path, language);
-        return MAPPER.writeValueAsString(GetNodeUseCase.toJson(node));
+        return ToolResult.json(GetNodeUseCase.toJson(node));
     }
 }

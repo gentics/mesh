@@ -8,7 +8,6 @@ import io.gentics.mesh.mcp.TestFixtures;
 import io.gentics.mesh.mcp.config.MeshConfig;
 import io.gentics.mesh.mcp.domain.AppError;
 import io.gentics.mesh.mcp.domain.ErrorCode;
-import io.vertx.core.json.JsonObject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -166,8 +165,8 @@ class MeshGraphqlClientTest {
     @Test
     void query_validQuery_callsClientGraphqlWithProject() {
         MeshConfig config = TestFixtures.readOnlyConfig();
-        when(mockClient.graphql(eq("demo"), any(GraphQLRequest.class)))
-                .thenReturn(stubRequest(new GraphQLResponse()));
+        var stub = stubRequest(new GraphQLResponse());
+        when(mockClient.graphql(eq("demo"), any(GraphQLRequest.class))).thenReturn(stub);
 
         var gqlClient = new MeshGraphqlClient(config, mockClient);
         var result = gqlClient.query("demo", "{ node(uuid:\"x\") { uuid } }", Map.of());
@@ -179,24 +178,24 @@ class MeshGraphqlClientTest {
     @Test
     void query_withVariables_passesVariablesToRequest() {
         MeshConfig config = TestFixtures.readOnlyConfig();
-        when(mockClient.graphql(any(), any(GraphQLRequest.class)))
-                .thenReturn(stubRequest(new GraphQLResponse()));
+        var stub = stubRequest(new GraphQLResponse());
+        when(mockClient.graphql(any(), any(GraphQLRequest.class))).thenReturn(stub);
 
         var gqlClient = new MeshGraphqlClient(config, mockClient);
         gqlClient.query("demo", "{ nodes { uuid } }", Map.of("lang", "de"));
 
         verify(mockClient).graphql(
                 eq("demo"),
-                argThat(req -> req.getVariables() instanceof JsonObject jo
-                        && jo.containsKey("lang"))
+                argThat(req -> req.getVariables() != null
+                        && req.getVariables().containsKey("lang"))
         );
     }
 
     @Test
     void query_withEmptyVariables_omitsVariablesFromRequest() {
         MeshConfig config = TestFixtures.readOnlyConfig();
-        when(mockClient.graphql(any(), any(GraphQLRequest.class)))
-                .thenReturn(stubRequest(new GraphQLResponse()));
+        var stub = stubRequest(new GraphQLResponse());
+        when(mockClient.graphql(any(), any(GraphQLRequest.class))).thenReturn(stub);
 
         var gqlClient = new MeshGraphqlClient(config, mockClient);
         gqlClient.query("demo", "{ nodes { uuid } }", Map.of());
@@ -204,15 +203,15 @@ class MeshGraphqlClientTest {
         verify(mockClient).graphql(
                 eq("demo"),
                 argThat(req -> req.getVariables() == null
-                        || (req.getVariables() instanceof JsonObject jo && jo.isEmpty()))
+                        || req.getVariables().isEmpty())
         );
     }
 
     @Test
     void query_exactlyAtDepthLimit_doesNotThrow() {
         MeshConfig config = TestFixtures.shallowDepthConfig(2);
-        when(mockClient.graphql(any(), any(GraphQLRequest.class)))
-                .thenReturn(stubRequest(new GraphQLResponse()));
+        var stub = stubRequest(new GraphQLResponse());
+        when(mockClient.graphql(any(), any(GraphQLRequest.class))).thenReturn(stub);
 
         var gqlClient = new MeshGraphqlClient(config, mockClient);
         assertDoesNotThrow(() -> gqlClient.query("demo", "{ nodes { uuid } }", Map.of()),

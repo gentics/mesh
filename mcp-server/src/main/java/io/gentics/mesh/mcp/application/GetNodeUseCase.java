@@ -60,14 +60,14 @@ public class GetNodeUseCase {
      * @return JSON string representing the {@link MeshNode}
      * @throws io.gentics.mesh.mcp.domain.AppError(FORBIDDEN)  if the project or language is not allowed
      * @throws io.gentics.mesh.mcp.domain.AppError(NOT_FOUND)  if no node with the given UUID exists
-     * @throws Exception if serialisation fails
+     * @throws io.gentics.mesh.mcp.domain.AppError(INTERNAL_ERROR) if serialisation fails
      */
-    public String execute(String project, String uuid, String language) throws Exception {
+    public String execute(String project, String uuid, String language) {
         PolicyService.assertProjectAllowed(project, config);
         PolicyService.assertLanguageAllowed(language, config);
 
         MeshNode node = client.getNode(project, uuid, language);
-        return MAPPER.writeValueAsString(toJson(node));
+        return ToolResult.json(toJson(node));
     }
 
     /**
@@ -94,9 +94,8 @@ public class GetNodeUseCase {
      *
      * @param node the domain record to serialise
      * @return a Jackson {@link ObjectNode} ready for JSON rendering
-     * @throws Exception if Jackson fails (practically never happens for plain objects)
      */
-    static ObjectNode toJson(MeshNode node) throws Exception {
+    static ObjectNode toJson(MeshNode node) {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode root = mapper.createObjectNode();
         root.put("uuid",        node.uuid());
