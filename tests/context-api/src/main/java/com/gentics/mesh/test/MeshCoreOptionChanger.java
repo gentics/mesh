@@ -47,6 +47,8 @@ public enum MeshCoreOptionChanger implements MeshOptionChanger {
 		options.getUploadOptions().setCheckInterval(5_000);
 	}), SHORT_MIGRATION_BATCH(options -> {
 		options.setMigrationMaxBatchSize(2);
+	}), SMALL_EVENT_LOOP_POOL(options -> {
+		options.getVertxOptions().setEventPoolSize(1);
 	});
 
 	private final Consumer<MeshOptions> changer;
