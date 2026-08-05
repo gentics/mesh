@@ -57,11 +57,17 @@ spec:
                 name: {{ include "mesh.mcpServer.authSecretName" . }}
             {{- end }}
           env:
+            {{- if include "mesh.mcpServer.useApiKey" . }}
+            - name: MESH_API_KEY
+              valueFrom:
+                {{- include "mesh.mcpServer.meshApiKeyRef" . | nindent 16 }}
+            {{- else }}
             - name: MESH_USERNAME
               value: {{ .Values.mcpServer.mesh.username | default "admin" | quote }}
             - name: MESH_PASSWORD
               valueFrom:
                 {{- include "mesh.mcpServer.meshPasswordRef" . | nindent 16 }}
+            {{- end }}
             {{- with .Values.mcpServer.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}

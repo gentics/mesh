@@ -469,6 +469,27 @@ mcpServer:
     existingSecret: ""
     # Key inside existingSecret (default: MESH_PASSWORD).
     # existingSecretKey: "MESH_PASSWORD"
+
+    # ── API key authentication (alternative to username + password) ──────────
+    # As soon as an API key is in play — apiKeyFromSecret=true or a non-empty
+    # apikey — MESH_API_KEY is injected into the pod and MESH_USERNAME /
+    # MESH_PASSWORD are omitted entirely; the settings above are then unused.
+    #
+    # apiKeyFromSecret=false + no apikey  -> username + password are used (see above).
+    # apiKeyFromSecret=false + apikey set -> the chart creates the Secret secretName
+    #                                        with key secretKey from the apikey value
+    #                                        and uses it. secretName is MANDATORY here.
+    # apiKeyFromSecret=true  + apikey set -> error: the key can only come from one place.
+    # apiKeyFromSecret=true  + no apikey  -> secretName/secretKey are used as-is and are
+    #                                        NOT created. The default "<release>-mesh-secret"
+    #                                        is created by the CMP umbrella chart and filled
+    #                                        by the apikey job (key "apikey").
+    apiKeyFromSecret: false
+    #secretName: "mcp-mesh-secret"    ## default: <release>-mesh-secret if not specified
+    secretKey: "apikey"
+    #apikey: ""                    ## used if apiKeyFromSecret is false
+
+    
     allowedProjects: "demo"
     allowedSchemas: ""           # leer = alle erlaubt
     allowedLanguages: "de,en"
