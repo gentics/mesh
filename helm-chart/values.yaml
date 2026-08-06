@@ -416,8 +416,8 @@ mcpServer:
   image:
     ## Registry and repository are combined to "registry/repository:tag".
     ## global.imageRegistry (umbrella mirror override) takes precedence over registry.
-    registry: repo.gentics.com
-    repository: mesh/mcp-server
+    registry: docker.gentics.com
+    repository: gentics/mesh-enterprise/mcp-server
     # tag: ""   # default: Chart.AppVersion
     pullPolicy: IfNotPresent
     ## Pull secret for the MCP-server image (overrides global.imagePullSecrets).
