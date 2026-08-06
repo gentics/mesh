@@ -138,35 +138,39 @@ export class MeshRestClient {
     } as const;
 
     public users: MeshUserAPI = {
-        list: (params?) => this.executeJsonRequest(GET, '/users', null, params),
+        list: (params) => this.executeJsonRequest(GET, '/users', null, params),
         create: (body) => this.executeJsonRequest(POST, '/users', body),
-        get: (uuid, params?) => this.executeJsonRequest(GET, `/users/${uuid}`, null, params),
+        get: (uuid, params) => this.executeJsonRequest(GET, `/users/${uuid}`, null, params),
         update: (uuid, body) => this.executeJsonRequest(POST, `/users/${uuid}`, body),
         delete: (uuid) => this.executeJsonRequest(DELETE, `/users/${uuid}`),
 
-        createAPIToken: (uuid) => this.executeJsonRequest(POST, `/users/${uuid}/token`),
+        createResetToken: (uuid) => this.executeJsonRequest(POST, `/users/${uuid}/reset_token`),
+
+        createToken: (uuid, body) => this.executeJsonRequest(POST, `/users/${uuid}/token`, body),
+        listTokens: (uuid, params) => this.executeJsonRequest(GET, `/users/${uuid}/token`, null, params),
+        deleteToken: (uuid, tokenUuid) => this.executeJsonRequest(DELETE, `/users/${uuid}/token/${tokenUuid}`),
     } as const;
 
     public roles: MeshRoleAPI = {
-        list: (params?) => this.executeJsonRequest(GET, '/roles', null, params),
+        list: (params) => this.executeJsonRequest(GET, '/roles', null, params),
         create: (body) => this.executeJsonRequest(POST, '/roles', body),
-        get: (uuid, params?) => this.executeJsonRequest(GET, `/roles/${uuid}`, null, params),
+        get: (uuid, params) => this.executeJsonRequest(GET, `/roles/${uuid}`, null, params),
         update: (uuid, body) => this.executeJsonRequest(POST, `/roles/${uuid}`, body),
         delete: (uuid) => this.executeJsonRequest(DELETE, `/roles/${uuid}`),
     } as const;
 
     public groups: MeshGroupAPI = {
-        list: (params?) => this.executeJsonRequest(GET, '/groups', null, params),
+        list: (params) => this.executeJsonRequest(GET, '/groups', null, params),
         create: (body) => this.executeJsonRequest(POST, '/groups', body),
-        get: (uuid, params?) => this.executeJsonRequest(GET, `/groups/${uuid}`, null, params),
+        get: (uuid, params) => this.executeJsonRequest(GET, `/groups/${uuid}`, null, params),
         update: (uuid, body) => this.executeJsonRequest(POST, `/groups/${uuid}`, body),
         delete: (uuid) => this.executeJsonRequest(DELETE, `/groups/${uuid}`),
 
-        getRoles: (uuid, params?) => this.executeJsonRequest(GET, `/groups/${uuid}`, null, params),
+        getRoles: (uuid, params) => this.executeJsonRequest(GET, `/groups/${uuid}`, null, params),
         assignRole: (uuid, roleUuid) => this.executeJsonRequest(POST, `/groups/${uuid}/roles/${roleUuid}`),
         unassignRole: (uuid, roleUuid) => this.executeJsonRequest(DELETE, `/groups/${uuid}/roles/${roleUuid}`),
 
-        getUsers: (uuid, params?) => this.executeJsonRequest(GET, `/groups/${uuid}/users`, null, params),
+        getUsers: (uuid, params) => this.executeJsonRequest(GET, `/groups/${uuid}/users`, null, params),
         assignUser: (uuid, userUuid) => this.executeJsonRequest(POST, `/groups/${uuid}/users/${userUuid}`),
         unassignUser: (uuid, userUuid) => this.executeJsonRequest(DELETE, `/groups/${uuid}/users/${userUuid}`),
     } as const;
@@ -179,9 +183,9 @@ export class MeshRestClient {
     } as const;
 
     public projects: MeshProjectAPI = {
-        list: (params?) => this.executeJsonRequest(GET, '/projects', null, params),
+        list: (params) => this.executeJsonRequest(GET, '/projects', null, params),
         create: (body) => this.executeJsonRequest(POST, '/projects', body),
-        get: (project, params?) => this.executeJsonRequest(GET, `/projects/${project}`, null, params),
+        get: (project, params) => this.executeJsonRequest(GET, `/projects/${project}`, null, params),
         update: (project, body) => this.executeJsonRequest(POST, `/projects/${project}`, body),
         delete: (project) => this.executeJsonRequest(DELETE, `/projects/${project}`),
 
@@ -197,7 +201,7 @@ export class MeshRestClient {
     } as const;
 
     public schemas: MeshSchemaAPI = {
-        list: (params?) => this.executeJsonRequest(GET, '/schemas', null, params),
+        list: (params) => this.executeJsonRequest(GET, '/schemas', null, params),
         create: (body) => this.executeJsonRequest(POST, '/schemas', body),
         get: (uuid, params) => this.executeJsonRequest(GET, `/schemas/${uuid}`, null, params),
         update: (uuid, body) => this.executeJsonRequest(POST, `/schemas/${uuid}`, body),
@@ -207,9 +211,9 @@ export class MeshRestClient {
     } as const;
 
     public microschemas: MeshMicroschemaAPI = {
-        list: (params?) => this.executeJsonRequest(GET, '/microschemas', null, params),
+        list: (params) => this.executeJsonRequest(GET, '/microschemas', null, params),
         create: (body) => this.executeJsonRequest(POST, '/microschemas', body),
-        get: (uuid, params?) => this.executeJsonRequest(GET, `/microschemas/${uuid}`, null, params),
+        get: (uuid, params) => this.executeJsonRequest(GET, `/microschemas/${uuid}`, null, params),
         update: (uuid, body) => this.executeJsonRequest(POST, `/microschemas/${uuid}`, body),
         delete: (uuid) => this.executeJsonRequest(DELETE, `/microschemas/${uuid}`),
         diff: (uuid, body) => this.executeJsonRequest(POST, `/microschemas/${uuid}/diff`, body),
@@ -217,29 +221,29 @@ export class MeshRestClient {
     } as const;
 
     public nodes: MeshNodeAPI = {
-        list: (project, params?) => this.executeJsonRequest(GET, `/${project}/nodes`, null, params),
+        list: (project, params) => this.executeJsonRequest(GET, `/${project}/nodes`, null, params),
         create: (project, body) => this.executeJsonRequest(POST, `/${project}/nodes`, body),
-        get: (project, uuid, params?) => this.executeJsonRequest(GET, `/${project}/nodes/${uuid}`, null, params),
+        get: (project, uuid, params) => this.executeJsonRequest(GET, `/${project}/nodes/${uuid}`, null, params),
         update: (project, uuid, body) => this.executeJsonRequest(POST, `/${project}/nodes/${uuid}`, body),
-        delete: (project, uuid, params?) => this.executeJsonRequest(DELETE, `/${project}/nodes/${uuid}`, null, params),
+        delete: (project, uuid, params) => this.executeJsonRequest(DELETE, `/${project}/nodes/${uuid}`, null, params),
 
         deleteLanguage: (project, uuid, language) => this.executeJsonRequest(DELETE, `/${project}/nodes/${uuid}/languages/${language}`),
-        children: (project, uuid, params?) => this.executeJsonRequest(GET, `/${project}/nodes/${uuid}/children`, null, params),
+        children: (project, uuid, params) => this.executeJsonRequest(GET, `/${project}/nodes/${uuid}/children`, null, params),
         versions: (project, uuid) => this.executeJsonRequest(GET, `/${project}/nodes/${uuid}/versions`),
 
-        publishStatus: (project, uuid, language?) => {
+        publishStatus: (project, uuid, language) => {
             const path = language
                 ? `/${project}/nodes/${uuid}/languages/${language}/published`
                 : `/${project}/nodes/${uuid}/published`;
             return this.executeJsonRequest(GET, path);
         },
-        publish: (project, uuid, language?, params?) => {
+        publish: (project, uuid, language, params) => {
             const path = language
                 ? `/${project}/nodes/${uuid}/languages/${language}/published`
                 : `/${project}/nodes/${uuid}/published`;
             return this.executeJsonRequest(POST, path, null, params);
         },
-        unpublish: (project, uuid, language?) => {
+        unpublish: (project, uuid, language) => {
             const path = language
                 ? `/${project}/nodes/${uuid}/languages/${language}/published`
                 : `/${project}/nodes/${uuid}/published`;
@@ -261,21 +265,21 @@ export class MeshRestClient {
     } as const;
 
     public tagFamilies: MeshTagFamiliesAPI = {
-        list: (project, params?) => this.executeJsonRequest(GET, `/${project}/tagFamilies`, null, params),
+        list: (project, params) => this.executeJsonRequest(GET, `/${project}/tagFamilies`, null, params),
         create: (project, body) => this.executeJsonRequest(POST, `/${project}/tagFamilies`, body),
-        get: (project, uuid, params?) => this.executeJsonRequest(GET, `/${project}/tagFamilies/${uuid}`, null, params),
+        get: (project, uuid, params) => this.executeJsonRequest(GET, `/${project}/tagFamilies/${uuid}`, null, params),
         update: (project, uuid, body) => this.executeJsonRequest(POST, `/${project}/tagFamilies/${uuid}`, body),
         delete: (project, uuid) => this.executeJsonRequest(DELETE, `/${project}/tagFamilies/${uuid}`),
     } as const;
 
     public tags: MeshTagsAPI = {
-        list: (project, familyUuid, params?) => this.executeJsonRequest(GET, `/${project}/tagFamilies/${familyUuid}/tags`, null, params),
+        list: (project, familyUuid, params) => this.executeJsonRequest(GET, `/${project}/tagFamilies/${familyUuid}/tags`, null, params),
         create: (project, familyUuid, body) => this.executeJsonRequest(POST, `/${project}/tagFamilies/${familyUuid}/tags`, body),
-        get: (project, familyUuid, uuid, params?) => this.executeJsonRequest(GET, `/${project}/tagFamilies/${familyUuid}/tags/${uuid}`, null, params),
+        get: (project, familyUuid, uuid, params) => this.executeJsonRequest(GET, `/${project}/tagFamilies/${familyUuid}/tags/${uuid}`, null, params),
         update: (project, familyUuid, uuid, body) => this.executeJsonRequest(POST, `/${project}/tagFamilies/${familyUuid}/tags/${uuid}`, body),
         delete: (project, familyUuid, uuid) => this.executeJsonRequest(DELETE, `/${project}/tagFamilies/${familyUuid}/tags/${uuid}`),
 
-        nodes: (project, familyUuid, uuid, params?) => this.executeJsonRequest(GET, `/${project}/tagFamilies/${familyUuid}/tags/${uuid}/nodes`, null, params),
+        nodes: (project, familyUuid, uuid, params) => this.executeJsonRequest(GET, `/${project}/tagFamilies/${familyUuid}/tags/${uuid}/nodes`, null, params),
     } as const;
 
     public server: MeshServerAPI = {
