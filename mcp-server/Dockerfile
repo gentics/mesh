@@ -17,7 +17,11 @@
 #     repo.gentics.com/mesh/mcp-server:<version>
 # ─────────────────────────────────────────────────────────────────────────────
 
-FROM eclipse-temurin:17-jre-alpine AS runtime
+FROM eclipse-temurin:17-jre-alpine AS eclipse-temurin-upgraded
+
+RUN apk upgrade --no-cache
+
+FROM eclipse-temurin-upgraded
 
 ARG VERSION=dev
 
