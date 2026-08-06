@@ -235,7 +235,7 @@ stage("Setup Build Environment") {
 			}
 
 			stage("Javascript Packages") {
-				if (env.BUILD_SKIPPED != "true") {
+				if (env.BUILD_SKIPPED != "true" && !Boolean.valueOf(params.skipJsLibraries)) {
 					environment {
 						// Disable colors/special characters, if projects do properly check it
 						TERM="dumb"
@@ -471,7 +471,7 @@ stage("Setup Build Environment") {
 						}
 					}
 
-					if (Boolean.valueOf(params.runDeploy)) {
+					if (Boolean.valueOf(params.runDeploy) && !Boolean.valueOf(params.skipJsLibraries)) {
 						environment {
 							// Disable colors/special characters, if projects do properly check it
 							TERM="dumb"
