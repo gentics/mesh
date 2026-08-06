@@ -130,10 +130,8 @@ stage("Setup Build Environment") {
 							version = MavenHelper.transformSnapshotToReleaseVersion(version)
 							MavenHelper.setVersion(version)
 						}
-						//TODO only add pom.xml files
-						sh 'git add .'
-						sh "git commit -m 'Raise version'"
-						GitHelper.addTag(version, 'Release of version ' + version)
+						sh 'git add **/pom.xml'
+						// Committing the changes is done later in git-push, as the JS packages also need to update their versions
 					} else if (Boolean.valueOf(params.setBranchAsVersion)) {
 						version = branchName + "-SNAPSHOT"
 						echo "Building version " + version
@@ -497,9 +495,17 @@ stage("Setup Build Environment") {
 			stage("Git push") {
 				if (env.BUILD_SKIPPED != "true" && Boolean.valueOf(params.runDeploy)) {
 					sshagent(["git"]) {
+						// First we want to commit + tag the changes pom.xml and package.json files,
+						// where the verison has changed from x.y.z-SNAPSHOT to just x.y.z for a release.
+						GitHelper.addCommit('.', gitCommitTag + ' Release of version (' + version + ')')
+						GitHelper.addTag(version, 'Release of version ' + version)
+
+						// Then update all the pom.xml files again to add the -SNAPSHOT suffix again,
+						// and commit that as a new develop iteration.
 						def snapshotVersion = MavenHelper.getNextSnapShotVersion(version)
 						MavenHelper.setVersion(snapshotVersion)
 						GitHelper.addCommit('.', gitCommitTag + ' Prepare for the next development iteration (' + snapshotVersion + ')')
+
 						GitHelper.pushBranch(branchName)
 						GitHelper.pushTag(version)
 					}
