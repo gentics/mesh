@@ -236,6 +236,13 @@ stage("Setup Build Environment") {
 
 			stage("Javascript Packages") {
 				if (env.BUILD_SKIPPED != "true") {
+					environment {
+						// Disable colors/special characters, if projects do properly check it
+						TERM="dumb"
+						// Disable node based color libraries
+						FORCE_COLOR="0"
+					}
+
 					dir("js") {
 						// Install dependencies
 						sh 'npm ci --no-audit --no-fund'
@@ -465,6 +472,13 @@ stage("Setup Build Environment") {
 					}
 
 					if (Boolean.valueOf(params.runDeploy)) {
+						environment {
+							// Disable colors/special characters, if projects do properly check it
+							TERM="dumb"
+							// Disable node based color libraries
+							FORCE_COLOR="0"
+						}
+
 						// Add private repository credentials and scopes
 						withCredentials([string(credentialsId: 'nexus-npm', variable: 'NPM_TOKEN')]) {
 							sh "echo //repo.gentics.com/repository/npm-products/:_auth=${env.NPM_TOKEN} >> ~/.npmrc"
