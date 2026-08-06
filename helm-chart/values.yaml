@@ -12,7 +12,7 @@ image:
   ## Leave registry empty if your repository already contains the registry host.
   registry: docker.gentics.com
   repository: gentics/mesh-enterprise-mariadb
-  tag: 3.2.5
+  #tag: x.x.x #defaults to chart version
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
