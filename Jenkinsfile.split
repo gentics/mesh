@@ -239,6 +239,8 @@ stage("Setup Build Environment") {
 						TERM="dumb"
 						// Disable node based color libraries
 						FORCE_COLOR="0"
+						// Mark this as a CI build
+						CI="true"
 					}
 
 					dir("js") {
@@ -249,11 +251,11 @@ stage("Setup Build Environment") {
 						sh "npm run nx -- release version ${version}"
 
 						// Build all JS packages
-						sh 'npm run nx -- run-many --targets build'
+						sh 'npm run nx -- run-many --targets=build --configuration=ci'
 
 						// Run the tests if enabled
 						if (Boolean.valueOf(params.runTests)) {
-							sh 'npm run nx -- run-many --targets test'
+							sh 'npm run nx -- run-many --targets=test --configuration=ci'
 						}
 					}
 				} else {
