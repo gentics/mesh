@@ -64,12 +64,15 @@ final def testPart(partName, current, branches) {
 						if (Boolean.valueOf(params.testHsqlm)) {
 							noHsqldb = false
 						}
-						withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
+						withCredentials([
+							usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),
+							usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')
+						]) {
 							try {
 								// prior to starting the tests, start the docker containers with the db and the testdb-manager
 								sh 'docker login -u $repoUsername -p $repoPassword docker.gentics.com'
 								if (Boolean.valueOf(params.testMaria)) {
-								sh "mvn -pl :mesh-database-connector-mariadb docker:start -Dskip.mariadb.tests=${noMariadb} "
+									sh "mvn -pl :mesh-database-connector-mariadb docker:start -Dskip.mariadb.tests=${noMariadb} "
 								}
 								// run the tests
 								withEnv(["TESTCONTAINERS_RYUK_DISABLED=true", "MESH_CONSISTENCY_CHECKS=" + (Boolean.valueOf(params.consistencyChecks) ? "true" : "false"), "MAVEN_OPTS=-Xmx1g -XX:MaxMetaspaceSize=128m "]) {
@@ -78,9 +81,9 @@ final def testPart(partName, current, branches) {
 							} finally {
 								// finally stop the docker containers
 								if (Boolean.valueOf(params.testMaria)) {
-								sh "mvn -pl :mesh-database-connector-mariadb docker:stop -Dskip.mariadb.tests=${noMariadb} "
+									sh "mvn -pl :mesh-database-connector-mariadb docker:stop -Dskip.mariadb.tests=${noMariadb} "
+								}
 							}
-						}
 						}
 						stash name: "jacoco" + current, includes: "**/jacoco-partial.exec", allowEmpty: true
 					} finally {
@@ -94,7 +97,7 @@ final def testPart(partName, current, branches) {
 }
 
 stage("Setup Build Environment") {
-	node("mesh-root-worker-3.2") {
+	node("mesh-root-worker-3.3") {
 		githubBuildStarted()
 		try {
 			stage("Checkout") {
@@ -280,7 +283,10 @@ stage("Setup Build Environment") {
 						} else {
 							echo "MariaDB skipped.."
 						}
-                        withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'), usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
+                        withCredentials([
+							usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),
+							usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')
+						]) {
 							try {
 								// first we start the test db manager
 								sh 'docker login -u $repoUsername -p $repoPassword docker.gentics.com'
@@ -309,25 +315,37 @@ stage("Setup Build Environment") {
 							// echo "Setup of GPG"
 							// sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-public-key.asc"
 							// sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-secret-key.asc"
-							withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
+							withCredentials([
+								usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),
+								usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')
+							]) {
 								sh "mvn -B -DskipTests -Dskip.unit.tests -am -pl 'server,:mesh-database-connector-mariadb,:mesh-database-connector-hsqldb,bom,plugin-bom,plugin-parent' clean deploy"
 							}
 						} else if (Boolean.valueOf(params.runDeploy)) {
 							// echo "Setup of GPG"
 							// sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-public-key.asc"
 							// sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-secret-key.asc"
-							withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
+							withCredentials([
+								usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),
+								usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')
+							]) {
 								sh "mvn -U -B -DskipTests -Dgpg.skip=false clean deploy"
 							}
 						} else if (Boolean.valueOf(params.setBranchAsVersion)) {
-							withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
+							withCredentials([
+								usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername',
+								passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')
+							]) {
 								sh "mvn -U -B -DskipTests -Dgpg.skip=false -pl '!doc,!changelog' clean install"
 							}
 						} else {
-							withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
+							withCredentials([
+								usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),
+								usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')
+							]) {
 								sh "mvn -B -DskipTests clean package"
+							}
 						}
-					}
 					}
 				} else {
 					echo "Maven build skipped.."
