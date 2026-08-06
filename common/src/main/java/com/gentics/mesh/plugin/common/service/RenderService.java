@@ -50,7 +50,7 @@ public class RenderService {
 	private static final Pattern TRAILING_SLASHES = Pattern.compile("/*$");
 	private static final int MAX_CACHE_SIZE = 100;
 
-	private static final ValueResolver[] VALUE_RESOLVERS = ValueResolver.defaultValueResolvers().toArray(new ValueResolver[0]);
+	private static final ValueResolver[] VALUE_RESOLVERS = ValueResolver.defaultValueResolvers().toArray(ValueResolver[]::new);
 
 	private final Cache<String, Template> inlineTemplateCache;
 	private final HandlebarsTemplateEngine templateEngine;
