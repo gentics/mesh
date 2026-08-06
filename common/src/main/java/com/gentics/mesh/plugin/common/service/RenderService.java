@@ -23,7 +23,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.templ.handlebars.impl.HandlebarsTemplateEngineImpl;
+import io.vertx.ext.web.templ.handlebars.impl.MeshHandlebarsTemplateEngineImpl;
 import io.vertx.reactivex.ext.web.templ.handlebars.HandlebarsTemplateEngine;
 import io.vertx.reactivex.impl.AsyncResultSingle;
 
@@ -299,7 +299,7 @@ public class RenderService {
 			}
 
 			Context engineCtx = Context.newBuilder(templateCtx)
-				.resolver(((HandlebarsTemplateEngineImpl) templateEngine.getDelegate()).getResolvers())
+				.resolver(((MeshHandlebarsTemplateEngineImpl) templateEngine.getDelegate()).getResolvers())
 				.build();
 			Buffer result = Buffer.buffer(template.apply(engineCtx));
 

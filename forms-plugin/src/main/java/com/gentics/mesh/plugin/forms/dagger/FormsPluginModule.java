@@ -11,18 +11,19 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.dagger.StorageDir;
 import com.gentics.mesh.plugin.common.service.MeshPluginService;
+import com.gentics.mesh.plugin.common.service.RenderService;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.helper.FormHelper;
 import com.gentics.mesh.plugin.forms.model.FormElement;
 import com.gentics.mesh.plugin.forms.model.FormElementDeserializer;
 import com.gentics.mesh.plugin.forms.service.OkHttpClientService;
-import com.gentics.mesh.plugin.common.service.RenderService;
 import com.gentics.mesh.rest.client.MeshRestClient;
-
 import com.github.jknack.handlebars.Handlebars;
+
 import dagger.Module;
 import dagger.Provides;
 import io.vertx.core.Vertx;
+import io.vertx.ext.web.templ.handlebars.impl.MeshHandlebarsTemplateEngineImpl;
 import io.vertx.reactivex.ext.web.templ.handlebars.HandlebarsTemplateEngine;
 
 @Module
@@ -54,7 +55,7 @@ public class FormsPluginModule {
 	@Singleton
 	@Provides
 	public RenderService renderService(Vertx vertx, FormsConfig config) {
-		io.vertx.ext.web.templ.handlebars.HandlebarsTemplateEngine delegateEngine = io.vertx.ext.web.templ.handlebars.HandlebarsTemplateEngine.create(vertx);
+		io.vertx.ext.web.templ.handlebars.HandlebarsTemplateEngine delegateEngine = new MeshHandlebarsTemplateEngineImpl(vertx, HandlebarsTemplateEngine.DEFAULT_TEMPLATE_EXTENSION);
 
 		Handlebars handlebars = delegateEngine.unwrap();
 

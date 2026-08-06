@@ -15,21 +15,8 @@
  */
 
 // Gentics: Patched to get back the getter for resolvers, as in the current render the existing functionality is inapplicable. 
+// The original package name is kept to reach out the package protected default resolvers.
 package io.vertx.ext.web.templ.handlebars.impl;
-
-import com.github.jknack.handlebars.Context;
-import com.github.jknack.handlebars.Handlebars;
-import com.github.jknack.handlebars.Template;
-import com.github.jknack.handlebars.ValueResolver;
-import com.github.jknack.handlebars.io.TemplateLoader;
-import com.github.jknack.handlebars.io.TemplateSource;
-import io.netty.util.internal.PlatformDependent;
-import io.vertx.core.Future;
-import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.ext.web.common.template.CachingTemplateEngine;
-import io.vertx.ext.web.common.template.CachedTemplate;
-import io.vertx.ext.web.templ.handlebars.HandlebarsTemplateEngine;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -37,11 +24,26 @@ import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 
+import com.github.jknack.handlebars.Context;
+import com.github.jknack.handlebars.Handlebars;
+import com.github.jknack.handlebars.Template;
+import com.github.jknack.handlebars.ValueResolver;
+import com.github.jknack.handlebars.io.TemplateLoader;
+import com.github.jknack.handlebars.io.TemplateSource;
+
+import io.netty.util.internal.PlatformDependent;
+import io.vertx.core.Future;
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.ext.web.common.template.CachedTemplate;
+import io.vertx.ext.web.common.template.CachingTemplateEngine;
+import io.vertx.ext.web.templ.handlebars.HandlebarsTemplateEngine;
+
 /**
  * @author <a href="http://pmlopes@gmail.com">Paulo Lopes</a>
  * @author <a href="http://tfox.org">Tim Fox</a>
  */
-public class HandlebarsTemplateEngineImpl extends CachingTemplateEngine<Template> implements HandlebarsTemplateEngine {
+public class MeshHandlebarsTemplateEngineImpl extends CachingTemplateEngine<Template> implements HandlebarsTemplateEngine {
 
 	private static final List<ValueResolver> VALUE_RESOLVERS_LIST = ValueResolver.defaultValueResolvers();
 	private static final ValueResolver[] VALUE_RESOLVERS = VALUE_RESOLVERS_LIST.toArray(new ValueResolver[0]);
@@ -51,7 +53,7 @@ public class HandlebarsTemplateEngineImpl extends CachingTemplateEngine<Template
 
 	private ValueResolver[] resolvers;
 
-	public HandlebarsTemplateEngineImpl(Vertx vertx, String extension) {
+	public MeshHandlebarsTemplateEngineImpl(Vertx vertx, String extension) {
 		super(vertx, extension);
 		loader = new Loader(vertx);
 		// custom resolvers
