@@ -21,7 +21,6 @@ import io.reactivex.Single;
 import io.reactivex.observers.TestObserver;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.ext.web.templ.handlebars.impl.MeshHandlebarsTemplateEngineImpl;
 import io.vertx.reactivex.ext.web.templ.handlebars.HandlebarsTemplateEngine;
 
 /**
@@ -40,7 +39,7 @@ public class RenderServiceTest {
 		vertx = Vertx.vertx();
 		templateBasePath = new File(RenderServiceTest.class.getResource("/templates").toURI()).getPath();
 
-		io.vertx.ext.web.templ.handlebars.HandlebarsTemplateEngine delegateEngine = new MeshHandlebarsTemplateEngineImpl(vertx, HandlebarsTemplateEngine.DEFAULT_TEMPLATE_EXTENSION);
+		io.vertx.ext.web.templ.handlebars.HandlebarsTemplateEngine delegateEngine = io.vertx.ext.web.templ.handlebars.HandlebarsTemplateEngine.create(vertx);
 
 		renderService = new RenderService(templateBasePath, new HandlebarsTemplateEngine(delegateEngine));
 	}

@@ -10,7 +10,6 @@ import com.gentics.mesh.plugin.common.helper.DateHelper;
 import dagger.Module;
 import dagger.Provides;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.templ.handlebars.impl.MeshHandlebarsTemplateEngineImpl;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.ext.mail.MailClient;
 import io.vertx.reactivex.ext.web.common.template.TemplateEngine;
@@ -47,8 +46,7 @@ public class CommentPluginModule {
 	@Singleton
 	@Provides
 	static TemplateEngine provideTemplateEngine(Vertx vertx) {
-		io.vertx.ext.web.templ.handlebars.HandlebarsTemplateEngine delegateEngine = new MeshHandlebarsTemplateEngineImpl(vertx.getDelegate(), HandlebarsTemplateEngine.DEFAULT_TEMPLATE_EXTENSION);
-		HandlebarsTemplateEngine handlebarsTemplateEngine = new HandlebarsTemplateEngine(delegateEngine);
+		HandlebarsTemplateEngine handlebarsTemplateEngine = HandlebarsTemplateEngine.create(vertx);
 		handlebarsTemplateEngine.getDelegate().unwrap().registerHelper("date", new DateHelper());
 		return handlebarsTemplateEngine;
 	}

@@ -15,6 +15,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.jknack.handlebars.Context;
 import com.github.jknack.handlebars.Template;
+import com.github.jknack.handlebars.ValueResolver;
 import com.github.jknack.handlebars.cache.NullTemplateCache;
 
 import io.reactivex.Single;
@@ -23,7 +24,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.templ.handlebars.impl.MeshHandlebarsTemplateEngineImpl;
+import io.vertx.ext.web.templ.handlebars.impl.HandlebarsInternals;
 import io.vertx.reactivex.ext.web.templ.handlebars.HandlebarsTemplateEngine;
 import io.vertx.reactivex.impl.AsyncResultSingle;
 
@@ -49,9 +50,36 @@ public class RenderService {
 	private static final Pattern TRAILING_SLASHES = Pattern.compile("/*$");
 	private static final int MAX_CACHE_SIZE = 100;
 
+	private static final ValueResolver[] VALUE_RESOLVERS = ValueResolver.defaultValueResolvers().toArray(new ValueResolver[0]);
+
 	private final Cache<String, Template> inlineTemplateCache;
 	private final HandlebarsTemplateEngine templateEngine;
 	private final String templateBasePath;
+
+	private final ValueResolver[] resolvers;
+
+	/**
+	 * Overridable constructor.
+	 * 
+	 * @param templateEngine
+	 * @param templateBasePathSanitized
+	 */
+	protected RenderService(HandlebarsTemplateEngine templateEngine, String templateBasePathSanitized) {
+		this.templateEngine = templateEngine;
+		this.templateBasePath = templateBasePathSanitized;
+		// When Handlebars already uses a cache, there is no need to cache the templates here. This check assumes that
+		// TemplateCache implementations other than NullTemplateCache actually perform caching.
+		this.inlineTemplateCache = templateEngine.getDelegate().unwrap().getCache() instanceof NullTemplateCache
+			? Caffeine.newBuilder().maximumSize(MAX_CACHE_SIZE).build()
+			: null;
+		// custom resolvers
+		resolvers = new ValueResolver[VALUE_RESOLVERS.length + 2];
+		// custom resolvers for vertx json types
+		resolvers[0] = HandlebarsInternals.JSON_ARRAY_VALUE_RESOLVER;
+		resolvers[1] = HandlebarsInternals.JSON_OBJECT_VALUE_RESOLVER;
+		// default resolvers
+		System.arraycopy(VALUE_RESOLVERS, 0, resolvers, 2, VALUE_RESOLVERS.length);
+	}
 
 	/**
 	 * Injection constructor.
@@ -65,17 +93,8 @@ public class RenderService {
 	 */
 	@Inject
 	public RenderService(@StorageDir File storageDir, HandlebarsTemplateEngine templateEngine) {
-		String storageDirPath = storageDir.getAbsolutePath();
-
-		this.templateEngine = templateEngine;
-		this.templateBasePath = storageDirPath + "/templates/";
-		// When Handlebars already uses a cache, there is no need to cache the templates here. This check assumes that
-		// TemplateCache implementations other than NullTemplateCache actually perform caching.
-		this.inlineTemplateCache = templateEngine.getDelegate().unwrap().getCache() instanceof NullTemplateCache
-			? Caffeine.newBuilder().maximumSize(MAX_CACHE_SIZE).build()
-			: null;
-
-		log.debug("RenderService initialized with storageDirPath: {}, templateBasePath: {}", storageDirPath, templateBasePath);
+		this(templateEngine, storageDir.getAbsolutePath() + "/templates/");
+		log.debug("RenderService initialized with storageDirPath: {}, templateBasePath: {}", storageDir.getAbsolutePath(), templateBasePath);
 	}
 
 	/**
@@ -89,14 +108,7 @@ public class RenderService {
 	 * @param templateEngine The template engine instance to use
 	 */
 	public RenderService(String templateBasePath, HandlebarsTemplateEngine templateEngine) {
-		this.templateBasePath = TRAILING_SLASHES.matcher(templateBasePath).replaceFirst("/");
-		this.templateEngine = templateEngine;
-		// When Handlebars already uses a cache, there is no need to cache the templates here. This check assumes that
-		// TemplateCache implementations other than NullTemplateCache actually perform caching.
-		this.inlineTemplateCache = templateEngine.getDelegate().unwrap().getCache() instanceof NullTemplateCache
-			? Caffeine.newBuilder().maximumSize(MAX_CACHE_SIZE).build()
-			: null;
-
+		this(templateEngine, TRAILING_SLASHES.matcher(templateBasePath).replaceFirst("/"));
 		log.debug("RenderService initialized with templateBasePath: {}", templateBasePath);
 	}
 
@@ -299,7 +311,7 @@ public class RenderService {
 			}
 
 			Context engineCtx = Context.newBuilder(templateCtx)
-				.resolver(((MeshHandlebarsTemplateEngineImpl) templateEngine.getDelegate()).getResolvers())
+				.resolver(resolvers)
 				.build();
 			Buffer result = Buffer.buffer(template.apply(engineCtx));
 

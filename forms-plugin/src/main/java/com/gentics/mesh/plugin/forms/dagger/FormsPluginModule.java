@@ -23,7 +23,6 @@ import com.github.jknack.handlebars.Handlebars;
 import dagger.Module;
 import dagger.Provides;
 import io.vertx.core.Vertx;
-import io.vertx.ext.web.templ.handlebars.impl.MeshHandlebarsTemplateEngineImpl;
 import io.vertx.reactivex.ext.web.templ.handlebars.HandlebarsTemplateEngine;
 
 @Module
@@ -55,7 +54,7 @@ public class FormsPluginModule {
 	@Singleton
 	@Provides
 	public RenderService renderService(Vertx vertx, FormsConfig config) {
-		io.vertx.ext.web.templ.handlebars.HandlebarsTemplateEngine delegateEngine = new MeshHandlebarsTemplateEngineImpl(vertx, HandlebarsTemplateEngine.DEFAULT_TEMPLATE_EXTENSION);
+		io.vertx.ext.web.templ.handlebars.HandlebarsTemplateEngine delegateEngine = io.vertx.ext.web.templ.handlebars.HandlebarsTemplateEngine.create(vertx);
 
 		Handlebars handlebars = delegateEngine.unwrap();
 
