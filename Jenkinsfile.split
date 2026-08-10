@@ -247,8 +247,15 @@ stage("Setup Build Environment") {
 						// Install dependencies
 						sh 'npm ci --no-audit --no-fund'
 
-						// Set the version for the packages
-						sh "npm run nx -- release version ${version}"
+						if (
+							// If the version isn't semver, we can't set it, as NX just explodes
+							(version ==~ /[\d]+\.[\d]+\.[\d]+[a-zA-Z0-9-]*/)
+							// Or if we just do a testing deployment
+							|| !Boolean(params.runDeployTesting)
+						) {
+							// Set the version for the packages
+							sh "npm run nx -- release version ${version}"
+						}
 
 						// Build all JS packages
 						sh 'npm run nx -- run-many --targets=build --configuration=ci'
