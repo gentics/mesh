@@ -251,7 +251,7 @@ stage("Setup Build Environment") {
 							// If the version isn't semver, we can't set it, as NX just explodes
 							(version ==~ /[\d]+\.[\d]+\.[\d]+[a-zA-Z0-9-]*/)
 							// Or if we just do a testing deployment
-							|| !Boolean(params.runDeployTesting)
+							|| !Boolean.valueOf(params.runDeployTesting)
 						) {
 							// Set the version for the packages
 							sh "npm run nx -- release version ${version}"
