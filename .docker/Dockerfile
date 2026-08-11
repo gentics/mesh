@@ -28,7 +28,7 @@ RUN mvn dependency:get --batch-mode \
       -Ddest=/builder/opentelemetry-javaagent.jar \
       -DoverWrite=true -Dtransitive=false
 
-FROM $MESH_REGISTRY_HOST/gentics/mesh-enterprise:$MESH_VERSION
+FROM $MESH_REGISTRY_HOST/gentics/mesh:$MESH_VERSION
 
 # Revoke the root permissions again
 USER mesh
