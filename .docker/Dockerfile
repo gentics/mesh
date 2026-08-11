@@ -1,11 +1,10 @@
 ARG MESH_REGISTRY_HOST=docker.gentics.com
 ARG MESH_VERSION
-ARG OTEL_JAVAAGENT_VERSION=2.27.0
-
-FROM maven:3.8-eclipse-temurin-17 AS build-env
 
 ARG MVN_USERNAME
 ARG MVN_PASSWORD
+
+FROM maven:3.8-eclipse-temurin-17 AS build-env
 
 ARG MESH_CONNECTOR
 ARG MESH_ARTIFACTS_REPO=maven-snapshots
@@ -23,18 +22,12 @@ RUN if [ -n "$MESH_CONNECTOR" ] ; \
         mvn dependency:get --batch-mode -Dartifact=${MESH_CONNECTOR} -Ddest=/builder/mesh-connector.jar -DoverWrite=true -Dtransitive=false -DremoteRepositories=gentics.nexus.snapshots::default::https://repo.gentics.com/repository/${MESH_ARTIFACTS_REPO}  ; \
     fi
 
-RUN mvn dependency:get --batch-mode \
-      -Dartifact=io.opentelemetry.javaagent:opentelemetry-javaagent:${OTEL_JAVAAGENT_VERSION} \
-      -Ddest=/builder/opentelemetry-javaagent.jar \
-      -DoverWrite=true -Dtransitive=false
-
 FROM $MESH_REGISTRY_HOST/gentics/mesh:$MESH_VERSION
 
 # Revoke the root permissions again
 USER mesh
 
 COPY --chown=mesh:root --from=build-env /builder/mesh-connector.jar /mesh/database/mesh-connector.jar
-COPY --chown=mesh:root --from=build-env /builder/opentelemetry-javaagent.jar /mesh/opentelemetry-javaagent.jar
 
 ENV MESH_DB_CONNECTOR_CLASSPATH /mesh/database
 

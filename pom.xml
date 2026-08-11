@@ -23,6 +23,7 @@
 		<hibernate.version>7.4.4.Final</hibernate.version>
 		<auto-factory.version>1.0-beta8</auto-factory.version>
 		<compiler.plugin.version>3.11.0</compiler.plugin.version>
+		<otel.javaagent.version>2.27.0</otel.javaagent.version>
 
 		<!-- Tests -->
 		<surefire.version>3.0.0-M5</surefire.version>
