@@ -28,6 +28,7 @@ RUN adduser -D -u 1000 -G root -h /mesh mesh && \
     apk update && apk add rsync curl iputils busybox-extras tar nano && rm -rf /var/cache/apk/*
 ADD --chown=1000:0 ./live.sh /mesh/live.sh
 ADD --chown=1000:0 ./target/mesh-server*jar /mesh/mesh.jar
+ADD --chown=1000:0 ./target/opentelemetry-javaagent.jar /mesh/opentelemetry-javaagent.jar
 ADD --chown=1000:0 ./entrypoint.sh /mesh/
 
 RUN chmod u+x,g+x /mesh/entrypoint.sh
