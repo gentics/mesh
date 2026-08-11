@@ -45,7 +45,7 @@
             <customPrecondition className="com.gentics.mesh.liquibase.changelog.v3_3_0.MigrateUserAPITokens"/>
         </preConditions>
         <customChange class="com.gentics.mesh.liquibase.changelog.v3_3_0.MigrateUserAPITokens"></customChange>
-        <dropColumn tableName="mesh_user" columnName="apitoken" />
+        <dropColumn tableName="mesh_user" columnName="apitokenid" />
         <dropColumn tableName="mesh_user" columnName="apitokenissuetimestamp" />
     </changeSet>
 </databaseChangeLog>
