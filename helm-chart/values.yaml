@@ -443,7 +443,13 @@ mcpServer:
       port: 3001
       host: "0.0.0.0"
     auth:
-      # If true: the server accepts requests without auth (only acceptable behind a reverse proxy).
+      # false: the MCP server checks the bearer token below. Mesh calls then run
+      #        ANONYMOUSLY — that token is an MCP credential and is never forwarded.
+      # true:  the MCP server checks nothing, so the caller's
+      #        `Authorization: Bearer …` is passed through to Mesh per request and
+      #        Mesh applies that user's permissions (no header = anonymous). This is
+      #        the mode for per-user Mesh permissions, but it also means anyone who
+      #        reaches the port can call tools — put a reverse proxy in front.
       disabled: false
       # Inline token (testing only). Empty: a token is generated once at install
       # and reused across upgrades (see NOTES for the retrieval command).
@@ -456,40 +462,26 @@ mcpServer:
       origins: []
 
   # Mesh connection.
-  # Default (password and existingSecret empty): automatically uses this release's
-  # Mesh admin secret ("<release>-mesh-admin" or initialAdminPassword.existingSecret)
-  # with user "admin" — works without any further configuration.
+  #
+  # The chart configures NO Mesh credentials. Who the MCP server is towards Mesh
+  # follows from the transport:
+  #   transport.mode=http, auth.disabled=false -> Mesh sees anonymous requests.
+  #       The bearer token authenticates the client to the MCP server; it belongs
+  #       to MCP, not to Mesh, and is never forwarded. Mesh's `anonymous` role
+  #       needs read permission on every project in `allowedProjects`, otherwise
+  #       all tools return empty results.
+  #   transport.mode=http, auth.disabled=true  -> the caller's
+  #       `Authorization: Bearer …` is passed through to Mesh per request and Mesh
+  #       decides what that user may see. Without a header: anonymous.
+  #   transport.mode=stdio -> the server needs a fixed identity. Supply it via
+  #       `extraEnv` (MESH_API_KEY, or MESH_USERNAME + MESH_PASSWORD).
+  #
+  # Setting MESH_API_KEY / MESH_USERNAME / MESH_PASSWORD in http mode makes the
+  # server refuse to start — they would have no effect there.
   mesh:
     # Default: in-cluster service DNS of the Mesh component of this release.
     # When empty, derived from `mesh.fullname` + service.mesh.port.
     baseUrl: ""
-    username: "admin"
-    password: ""   # for testing only; otherwise use existingSecret or the default (admin secret)
-    # Existing Secret containing the Mesh password (key: existingSecretKey).
-    existingSecret: ""
-    # Key inside existingSecret (default: MESH_PASSWORD).
-    # existingSecretKey: "MESH_PASSWORD"
-
-    # ── API key authentication (alternative to username + password) ──────────
-    # As soon as an API key is in play — apiKeyFromSecret=true or a non-empty
-    # apikey — MESH_API_KEY is injected into the pod and MESH_USERNAME /
-    # MESH_PASSWORD are omitted entirely; the settings above are then unused.
-    #
-    # apiKeyFromSecret=false + no apikey  -> username + password are used (see above).
-    # apiKeyFromSecret=false + apikey set -> the chart creates the Secret secretName
-    #                                        with key secretKey from the apikey value
-    #                                        and uses it. secretName is MANDATORY here.
-    # apiKeyFromSecret=true  + apikey set -> error: the key can only come from one place.
-    # apiKeyFromSecret=true  + no apikey  -> secretName/secretKey are used as-is and are
-    #                                        NOT created. The default "<release>-mesh-secret"
-    #                                        is created by the CMP umbrella chart and filled
-    #                                        by the apikey job (key "apikey").
-    apiKeyFromSecret: false
-    #secretName: "mcp-mesh-secret"    ## default: <release>-mesh-secret if not specified
-    secretKey: "apikey"
-    #apikey: ""                    ## used if apiKeyFromSecret is false
-
-    
     allowedProjects: "demo"
     allowedSchemas: ""           # leer = alle erlaubt
     allowedLanguages: "de,en"

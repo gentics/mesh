@@ -56,21 +56,14 @@ spec:
             - secretRef:
                 name: {{ include "mesh.mcpServer.authSecretName" . }}
             {{- end }}
+          {{- /* No Mesh credentials here: in http mode the identity comes from the
+                 request (or is anonymous) and MESH_API_KEY / MESH_USERNAME /
+                 MESH_PASSWORD would make the server refuse to start. For stdio,
+                 supply them via mcpServer.extraEnv. */}}
+          {{- with .Values.mcpServer.extraEnv }}
           env:
-            {{- if include "mesh.mcpServer.useApiKey" . }}
-            - name: MESH_API_KEY
-              valueFrom:
-                {{- include "mesh.mcpServer.meshApiKeyRef" . | nindent 16 }}
-            {{- else }}
-            - name: MESH_USERNAME
-              value: {{ .Values.mcpServer.mesh.username | default "admin" | quote }}
-            - name: MESH_PASSWORD
-              valueFrom:
-                {{- include "mesh.mcpServer.meshPasswordRef" . | nindent 16 }}
-            {{- end }}
-            {{- with .Values.mcpServer.extraEnv }}
             {{- toYaml . | nindent 12 }}
-            {{- end }}
+          {{- end }}
           resources:
             {{- toYaml .Values.mcpServer.resources | nindent 12 }}
           startupProbe:

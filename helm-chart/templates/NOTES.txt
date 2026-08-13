@@ -34,9 +34,18 @@
    Bearer-Token abrufen:
    {{- if .Values.mcpServer.transport.auth.disabled }}
      (Auth deaktiviert – Reverse-Proxy übernimmt!)
+
+   Mesh-Identität: das `Authorization: Bearer …` des Aufrufers wird pro Request
+   an Mesh weitergereicht; Mesh wendet die Rechte dieses Users an. Requests ohne
+   Header laufen anonym.
    {{- else }}
      kubectl get secret {{ include "mesh.mcpServer.authSecretName" . }} \
        -n {{ .Release.Namespace }} -o jsonpath='{.data.MCP_AUTH_TOKEN}' | base64 -d ; echo
+
+   ACHTUNG – Mesh-Identität: dieses Token authentifiziert Clients gegenüber dem
+   MCP-Server und wird NICHT an Mesh weitergereicht. Mesh sieht anonyme Requests.
+   Die `anonymous`-Rolle in Mesh braucht Leserechte auf {{ .Values.mcpServer.mesh.allowedProjects | quote }},
+   sonst liefern alle Tools leere Ergebnisse.
    {{- end }}
 
    Quick-Test:
@@ -47,5 +56,9 @@
 {{- else }}
 
    stdio-Modus: kein Service, Zugriff via kubectl exec oder Sidecar.
+
+   Mesh-Identität: stdio braucht feste Zugangsdaten. Über mcpServer.extraEnv
+   setzen – entweder MESH_API_KEY oder MESH_USERNAME + MESH_PASSWORD.
+   Ohne diese startet der Server nicht.
 {{- end }}
 {{- end }}

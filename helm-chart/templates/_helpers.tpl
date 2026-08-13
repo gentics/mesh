@@ -260,79 +260,11 @@ Local mcpServer.image.pullSecret (string) overrides global.imagePullSecrets.
 {{- end -}}
 {{- end -}}
 
-{{/* Mesh-credentials secret name for the MCP-server */}}
-{{- define "mesh.mcpServer.meshSecretName" -}}
-{{- if .Values.mcpServer.mesh.existingSecret -}}
-{{- .Values.mcpServer.mesh.existingSecret -}}
-{{- else -}}
-{{- printf "%s-mesh" (include "mesh.mcpServer.fullname" .) -}}
-{{- end -}}
-{{- end -}}
-
 {{/*
-Secret key ref for the Mesh password used by the MCP server.
-Priority: mcpServer.mesh.existingSecret (key mcpServer.mesh.existingSecretKey,
-default "MESH_PASSWORD") -> explicit mcpServer.mesh.password (chart-managed secret)
--> the release's Mesh admin secret (initialAdminPassword logic, user "admin").
+No Mesh-credential helpers: the chart configures no Mesh identity for the MCP
+server. In http mode the identity comes from the request (or is anonymous); for
+stdio it is supplied through mcpServer.extraEnv. See values.yaml.
 */}}
-{{- define "mesh.mcpServer.meshPasswordRef" -}}
-{{- if .Values.mcpServer.mesh.existingSecret -}}
-secretKeyRef:
-  name: {{ .Values.mcpServer.mesh.existingSecret }}
-  key: {{ .Values.mcpServer.mesh.existingSecretKey | default "MESH_PASSWORD" }}
-{{- else if .Values.mcpServer.mesh.password -}}
-secretKeyRef:
-  name: {{ printf "%s-mesh" (include "mesh.mcpServer.fullname" .) }}
-  key: MESH_PASSWORD
-{{- else -}}
-{{- include "mesh.initialAdminPasswordRef" . -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Guard rails for the MCP server Mesh authentication (see values.yaml):
-  apiKeyFromSecret + apikey -> ambiguous, the key can only come from one place
-  apikey without secretName -> the chart would have to invent a Secret name
-*/}}
-{{- define "mesh.mcpServer.validateAuth" -}}
-{{- if and .Values.mcpServer.mesh.apiKeyFromSecret .Values.mcpServer.mesh.apikey -}}
-{{- fail "mcpServer.mesh: set either apiKeyFromSecret=true (key read from an existing Secret) or mesh.apikey (Secret created by the chart), not both." -}}
-{{- end -}}
-{{- if and .Values.mcpServer.mesh.apikey (not .Values.mcpServer.mesh.secretName) -}}
-{{- fail "mcpServer.mesh: secretName is required when mesh.apikey is set - it names the Secret the chart creates for the API key." -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Whether the MCP server authenticates against Mesh with an API key instead of
-username + password. Renders "true" (truthy) or "" (falsy).
-*/}}
-{{- define "mesh.mcpServer.useApiKey" -}}
-{{- include "mesh.mcpServer.validateAuth" . -}}
-{{- if or .Values.mcpServer.mesh.apiKeyFromSecret .Values.mcpServer.mesh.apikey -}}
-true
-{{- end -}}
-{{- end -}}
-
-{{/*
-Name/key of the Secret holding the Mesh API key. The same pair is used whether
-the chart creates the Secret (mesh.apikey set, secretName mandatory) or only
-references an existing one (apiKeyFromSecret, defaulting to the "<release>-mesh-secret"
-of the apikey job / CMP umbrella chart).
-*/}}
-{{- define "mesh.mcpServer.apiKeySecretName" -}}
-{{- .Values.mcpServer.mesh.secretName | default (printf "%s-mesh-secret" .Release.Name) -}}
-{{- end -}}
-
-{{- define "mesh.mcpServer.apiKeySecretKey" -}}
-{{- .Values.mcpServer.mesh.secretKey | default "apikey" -}}
-{{- end -}}
-
-{{- define "mesh.mcpServer.meshApiKeyRef" -}}
-secretKeyRef:
-  name: {{ include "mesh.mcpServer.apiKeySecretName" . }}
-  key: {{ include "mesh.mcpServer.apiKeySecretKey" . }}
-{{- end -}}
 
 {{/*
 Default mesh URL: derived from the Mesh service of this release.
