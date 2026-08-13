@@ -69,6 +69,8 @@ public class McpServerRunner {
 
     private McpSchema.CallToolResult dispatchSafely(String toolName, Map<String, Object> args) {
         try {
+            // stdio: the MeshClient already carries the configured identity, so the
+            // call adds none of its own (see ToolDispatcher#dispatch).
             String json = dispatcher.dispatch(toolName, args);
             return new McpSchema.CallToolResult(
                     List.of(new McpSchema.TextContent(json)), false);

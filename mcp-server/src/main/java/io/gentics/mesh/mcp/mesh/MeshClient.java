@@ -8,6 +8,7 @@ import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.parameter.client.NodeParametersImpl;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
+import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshRestClientConfig;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
@@ -62,6 +63,9 @@ public class MeshClient {
     /** Mesh's built-in fallback user – what {@code me()} reports when auth did not take. */
     private static final String ANONYMOUS_USERNAME = "anonymous";
 
+    /** Transport whose Mesh identity comes from configuration instead of per request. */
+    private static final String STDIO_TRANSPORT = "stdio";
+
     private final MeshConfig       config;
     private final MeshRestClient   client;
     private final MeshGraphqlClient graphql;
@@ -93,17 +97,31 @@ public class MeshClient {
     public MeshClient(MeshConfig config) {
         this.config  = config;
         this.client  = buildRestClient(config);
+        if (STDIO_TRANSPORT.equals(config.mcpTransport())) {
+            authenticateFromConfig();
+        } else {
+            verifyReachable();
+        }
+        // GraphQL guardrails layer still delegates execution to this client
+        this.graphql = new MeshGraphqlClient(config, client);
+    }
+
+    /**
+     * stdio: gives the shared client the single identity it will use for every
+     * call, from {@code MESH_API_KEY} or {@code MESH_USERNAME}/{@code MESH_PASSWORD}.
+     */
+    private void authenticateFromConfig() {
         if (config.meshApiKey() != null) {
             if (config.meshUsername() != null) {
                 log.warn("MESH_API_KEY und MESH_USERNAME sind beide gesetzt – "
                         + "der API-Key hat Vorrang, die Credentials werden ignoriert.");
             }
-            this.client.setAPIKey(config.meshApiKey());
+            client.setAPIKey(config.meshApiKey());
             verifyAuthentication("Mesh-API-Key wurde abgelehnt – MESH_API_KEY und MESH_BASE_URL prüfen");
         } else {
-            this.client.setLogin(config.meshUsername(), config.meshPassword());
+            client.setLogin(config.meshUsername(), config.meshPassword());
             try {
-                awaitSingle(this.client.login(), config.meshRestTimeoutMs());
+                awaitSingle(client.login(), config.meshRestTimeoutMs());
             } catch (Exception e) {
                 throw new RuntimeException(
                         "Mesh-Login fehlgeschlagen – Credentials und MESH_BASE_URL prüfen: "
@@ -111,8 +129,26 @@ public class MeshClient {
             }
             verifyAuthentication("Mesh-Login fehlgeschlagen – Credentials und MESH_BASE_URL prüfen");
         }
-        // GraphQL guardrails layer still delegates execution to this client
-        this.graphql = new MeshGraphqlClient(config, client);
+    }
+
+    /**
+     * HTTP: there is nothing to authenticate at startup – the Mesh identity
+     * arrives per request, or the call is anonymous. This only proves that
+     * {@code MESH_BASE_URL} points at something that answers, so a typo or an
+     * unreachable host is caught at startup rather than on the first tool call.
+     *
+     * <p>{@code me()} works unauthenticated (Mesh replies as the anonymous user),
+     * which makes it a usable ping without credentials.
+     */
+    private void verifyReachable() {
+        try {
+            awaitSingle(client.me().toSingle(), config.meshRestTimeoutMs());
+        } catch (Exception e) {
+            throw new RuntimeException(
+                    "Mesh ist nicht erreichbar – MESH_BASE_URL prüfen: " + e.getMessage(), e);
+        }
+        log.info("Mesh erreichbar unter {} – Requests laufen anonym bzw. mit dem "
+                + "Bearer-Token des Clients", config.meshBaseUrl());
     }
 
     /**
@@ -189,18 +225,39 @@ public class MeshClient {
         return value.get();
     }
 
+    /**
+     * Attaches the caller's Mesh identity to a single outgoing request.
+     *
+     * <p>The token is set on the {@link MeshRequest}, never on the shared
+     * {@link MeshRestClient}: concurrent tool calls each carry their own
+     * identity and cannot inherit one another's. {@link MeshAuth#NONE} leaves
+     * the request untouched – Mesh then applies whatever the client itself
+     * carries (stdio) or treats it as anonymous (HTTP).
+     *
+     * @param request the request about to be executed
+     * @param auth    per-call identity; {@code null} is treated as {@link MeshAuth#NONE}
+     * @return the same request, for chaining
+     */
+    private static <T> MeshRequest<T> withAuth(MeshRequest<T> request, MeshAuth auth) {
+        if (auth != null && auth.hasToken()) {
+            request.setHeader("Authorization", "Bearer " + auth.bearerToken());
+        }
+        return request;
+    }
+
     // ── Projects ──────────────────────────────────────────────────────────
 
     /**
      * Returns all projects that exist in Mesh AND are present in
      * {@link MeshConfig#meshAllowedProjects()}.
      *
+     * @param auth per-call Mesh identity
      * @return filtered, immutable list of projects
      * @throws io.gentics.mesh.mcp.domain.AppError on network or auth failure
      */
-    public List<Project> listProjects() {
-        ProjectListResponse response = client
-                .findProjects(new PagingParametersImpl().setPerPage(200L))
+    public List<Project> listProjects(MeshAuth auth) {
+        ProjectListResponse response = withAuth(client
+                .findProjects(new PagingParametersImpl().setPerPage(200L)), auth)
                 .blockingGet();
 
         var result = new ArrayList<Project>();
@@ -221,14 +278,15 @@ public class MeshClient {
      * {@link MeshConfig#meshAllowedSchemas()}.
      *
      * @param project allowlisted project name
+     * @param auth    per-call Mesh identity
      * @return list of schemas (filtered if schema allowlist is configured)
      * @throws io.gentics.mesh.mcp.domain.AppError on network or auth failure
      */
-    public List<MeshSchema> listSchemas(String project) {
+    public List<MeshSchema> listSchemas(String project, MeshAuth auth) {
         // Use var to avoid importing the internal SchemaListResponse class;
         // the compiler infers the correct type from findSchemas()'s return type.
-        var response = client
-                .findSchemas(project, new PagingParametersImpl().setPerPage(200L))
+        var response = withAuth(client
+                .findSchemas(project, new PagingParametersImpl().setPerPage(200L)), auth)
                 .blockingGet();
 
         var result = new ArrayList<MeshSchema>();
@@ -250,13 +308,14 @@ public class MeshClient {
      *
      * @param project  allowlisted project name
      * @param language ISO 639-1 language code
+     * @param auth     per-call Mesh identity
      * @return list of mapped nodes (sensitive fields redacted)
      */
-    public List<MeshNode> listNodes(String project, String language) {
-        NodeListResponse response = client
+    public List<MeshNode> listNodes(String project, String language, MeshAuth auth) {
+        NodeListResponse response = withAuth(client
                 .findNodes(project,
                         new NodeParametersImpl().setLanguages(language),
-                        new PagingParametersImpl().setPerPage(100L))
+                        new PagingParametersImpl().setPerPage(100L)), auth)
                 .blockingGet();
 
         var result = new ArrayList<MeshNode>();
@@ -276,13 +335,14 @@ public class MeshClient {
      * @param project  allowlisted project name
      * @param uuid     node UUID
      * @param language ISO 639-1 language code
+     * @param auth     per-call Mesh identity
      * @return normalised node with redacted sensitive fields
      * @throws io.gentics.mesh.mcp.domain.AppError(NOT_FOUND) if the UUID does not exist
      */
-    public MeshNode getNode(String project, String uuid, String language) {
-        NodeResponse response = client
+    public MeshNode getNode(String project, String uuid, String language, MeshAuth auth) {
+        NodeResponse response = withAuth(client
                 .findNodeByUuid(project, uuid,
-                        new NodeParametersImpl().setLanguages(language))
+                        new NodeParametersImpl().setLanguages(language)), auth)
                 .blockingGet();
         return MeshMapper.mapNode(toJsonNode(response), project);
     }
@@ -303,11 +363,12 @@ public class MeshClient {
      * @param snippetFields ordered list of field names to use for snippet extraction
      * @param limit         maximum number of results (1–20)
      * @param publishedOnly when {@code true}, only published nodes are returned
+     * @param auth          per-call Mesh identity
      * @return list of search results with snippets
      */
     public List<SearchResult> searchNodes(
             String project, String query, String schema, String language,
-            List<String> snippetFields, int limit, boolean publishedOnly) {
+            List<String> snippetFields, int limit, boolean publishedOnly, MeshAuth auth) {
 
         Map<String, Object> esBody = buildEsQuery(query, schema, language, publishedOnly, limit);
         String esBodyJson;
@@ -317,9 +378,9 @@ public class MeshClient {
             esBodyJson = "{\"query\":{\"query_string\":{\"query\":\"" + query + "\"}}}";
         }
 
-        NodeListResponse response = client
+        NodeListResponse response = withAuth(client
                 .searchNodes(project, esBodyJson,
-                        new PagingParametersImpl().setPerPage((long) limit))
+                        new PagingParametersImpl().setPerPage((long) limit)), auth)
                 .blockingGet();
 
         var result = new ArrayList<SearchResult>();
@@ -341,18 +402,19 @@ public class MeshClient {
      * @param project  allowlisted project name
      * @param path     webroot path (e.g. {@code "/automobiles/delorean-dmc-12"})
      * @param language ISO 639-1 language code
+     * @param auth     per-call Mesh identity
      * @return normalised node at the given path
      * @throws io.gentics.mesh.mcp.domain.AppError(NOT_FOUND) if no node exists at the path
      */
-    public MeshNode getWebroot(String project, String path, String language) {
+    public MeshNode getWebroot(String project, String path, String language, MeshAuth auth) {
         String normPath = path.startsWith("/") ? path : "/" + path;
         // webroot() accepts the path split into individual segments as varargs
         String[] segments = normPath.substring(1).split("/");
         // webroot() returns MeshWebrootResponse which wraps either a node or a binary;
         // getNodeResponse() yields the underlying NodeResponse.
-        MeshWebrootResponse webrootResponse = client
+        MeshWebrootResponse webrootResponse = withAuth(client
                 .webroot(project, segments,
-                        new NodeParametersImpl().setLanguages(language))
+                        new NodeParametersImpl().setLanguages(language)), auth)
                 .blockingGet();
         NodeResponse response = webrootResponse.getNodeResponse();
         return MeshMapper.mapWebrootNode(toJsonNode(response), normPath, project);
@@ -366,12 +428,14 @@ public class MeshClient {
      * @param project   allowlisted project name
      * @param query     read-only GraphQL query string
      * @param variables optional variables map
+     * @param auth      per-call Mesh identity
      * @return raw Mesh GraphQL response JSON
      * @throws io.gentics.mesh.mcp.domain.AppError(FORBIDDEN)        on mutation attempt
      * @throws io.gentics.mesh.mcp.domain.AppError(VALIDATION_ERROR) on depth violation
      */
-    public JsonNode runGraphql(String project, String query, Map<String, Object> variables) {
-        return graphql.query(project, query, variables);
+    public JsonNode runGraphql(String project, String query, Map<String, Object> variables,
+                               MeshAuth auth) {
+        return graphql.query(project, query, variables, auth);
     }
 
     // ── Private helpers ───────────────────────────────────────────────────

@@ -2,6 +2,7 @@ package io.gentics.mesh.mcp.application;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.gentics.mesh.mcp.config.MeshConfig;
+import io.gentics.mesh.mcp.mesh.MeshAuth;
 import io.gentics.mesh.mcp.mesh.MeshClient;
 import io.gentics.mesh.mcp.security.PolicyService;
 
@@ -57,16 +58,17 @@ public class GetWebrootUseCase {
      * @param project  allowlisted project name
      * @param path     webroot path (e.g. {@code "/automobiles/delorean-dmc-12"})
      * @param language ISO 639-1 language code
+     * @param auth     per-call Mesh identity (token from the caller, or NONE)
      * @return JSON string representing the resolved {@link io.gentics.mesh.mcp.domain.model.MeshNode}
      * @throws io.gentics.mesh.mcp.domain.AppError(FORBIDDEN)  if the project or language is not allowed
      * @throws io.gentics.mesh.mcp.domain.AppError(NOT_FOUND)  if no node exists at the path
      * @throws io.gentics.mesh.mcp.domain.AppError(INTERNAL_ERROR) if serialisation fails
      */
-    public String execute(String project, String path, String language) {
+    public String execute(String project, String path, String language, MeshAuth auth) {
         PolicyService.assertProjectAllowed(project, config);
         PolicyService.assertLanguageAllowed(language, config);
 
-        var node = client.getWebroot(project, path, language);
+        var node = client.getWebroot(project, path, language, auth);
         return ToolResult.json(GetNodeUseCase.toJson(node));
     }
 }

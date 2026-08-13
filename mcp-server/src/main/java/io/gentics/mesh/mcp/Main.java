@@ -65,9 +65,13 @@ public class Main {
         boolean stdioFlag    = hasFlag(args, "--stdio");
 
         try {
-            // 1. Load + validate configuration
-            MeshConfig config = MeshConfig.load();
-            log.info("[OK] Konfiguration geladen – Projekte: {}", config.meshAllowedProjects());
+            // 1. Load + validate configuration.
+            //    The transport is resolved *before* validation because it decides which
+            //    Mesh credentials are legal: stdio needs them, HTTP forbids them.
+            String transportOverride = httpFlag ? "http" : (stdioFlag ? "stdio" : null);
+            MeshConfig config = MeshConfig.load(transportOverride);
+            log.info("[OK] Konfiguration geladen – Transport: {}, Projekte: {}",
+                    config.mcpTransport(), config.meshAllowedProjects());
 
             // 2. Build Mesh client
             MeshClient client = new MeshClient(config);
@@ -78,11 +82,9 @@ public class Main {
                 // Keep the main thread alive; the HTTP server runs on daemon threads
                 Thread.currentThread().join();
             } else {
-                // 3b. Determine MCP transport: CLI flag overrides MCP_TRANSPORT env var.
-                String transport;
-                if (httpFlag)        transport = "http";
-                else if (stdioFlag)  transport = "stdio";
-                else                 transport = config.mcpTransport();
+                // 3b. The effective transport is already baked into the config
+                //     (CLI flag overrode MCP_TRANSPORT before validation).
+                String transport = config.mcpTransport();
 
                 String serverVersion = resolveServerVersion();
                 // Protection layer & metrics: identical for both transports.

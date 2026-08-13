@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.gentics.mesh.mcp.TestFixtures;
 import io.gentics.mesh.mcp.config.MeshConfig;
+import io.gentics.mesh.mcp.mesh.MeshAuth;
 import io.gentics.mesh.mcp.domain.AppError;
 import io.gentics.mesh.mcp.domain.ErrorCode;
 import io.gentics.mesh.mcp.domain.model.MeshNode;
@@ -37,11 +38,11 @@ class GetNodeUseCaseTest {
         var useCase = new GetNodeUseCase(mockClient, config);
 
         AppError err = assertThrows(AppError.class,
-                () -> useCase.execute("forbidden-project", "uuid-1", "de"));
+                () -> useCase.execute("forbidden-project", "uuid-1", "de", MeshAuth.NONE));
 
         assertEquals(ErrorCode.FORBIDDEN, err.getCode(),
                 "A non-allowlisted project must yield FORBIDDEN");
-        verify(mockClient, never()).getNode(any(), any(), any());
+        verify(mockClient, never()).getNode(any(), any(), any(), any());
     }
 
     @Test
@@ -50,11 +51,11 @@ class GetNodeUseCaseTest {
         var useCase = new GetNodeUseCase(mockClient, config);
 
         AppError err = assertThrows(AppError.class,
-                () -> useCase.execute("demo", "uuid-1", "fr"));
+                () -> useCase.execute("demo", "uuid-1", "fr", MeshAuth.NONE));
 
         assertEquals(ErrorCode.FORBIDDEN, err.getCode(),
                 "A non-allowlisted language must yield FORBIDDEN");
-        verify(mockClient, never()).getNode(any(), any(), any());
+        verify(mockClient, never()).getNode(any(), any(), any(), any());
     }
 
     @Test
@@ -63,9 +64,9 @@ class GetNodeUseCaseTest {
         var useCase = new GetNodeUseCase(mockClient, config);
         var node    = buildTestNode();
 
-        when(mockClient.getNode("demo", "uuid-abc", "de")).thenReturn(node);
+        when(mockClient.getNode("demo", "uuid-abc", "de", MeshAuth.NONE)).thenReturn(node);
 
-        String json = useCase.execute("demo", "uuid-abc", "de");
+        String json = useCase.execute("demo", "uuid-abc", "de", MeshAuth.NONE);
         JsonNode root = MAPPER.readTree(json);
 
         assertEquals("uuid-abc",    root.get("uuid").asText());
@@ -84,9 +85,9 @@ class GetNodeUseCaseTest {
         var useCase = new GetNodeUseCase(mockClient, config);
         var node    = buildTestNode();
 
-        when(mockClient.getNode("demo", "uuid-abc", "de")).thenReturn(node);
+        when(mockClient.getNode("demo", "uuid-abc", "de", MeshAuth.NONE)).thenReturn(node);
 
-        String json = useCase.execute("demo", "uuid-abc", "de");
+        String json = useCase.execute("demo", "uuid-abc", "de", MeshAuth.NONE);
         JsonNode root = MAPPER.readTree(json);
 
         assertTrue(root.has("fields"), "Response JSON must contain a 'fields' object");
@@ -99,9 +100,9 @@ class GetNodeUseCaseTest {
         var useCase = new GetNodeUseCase(mockClient, config);
         var node    = buildTestNodeWithRef();
 
-        when(mockClient.getNode("demo", "uuid-ref", "de")).thenReturn(node);
+        when(mockClient.getNode("demo", "uuid-ref", "de", MeshAuth.NONE)).thenReturn(node);
 
-        String json = useCase.execute("demo", "uuid-ref", "de");
+        String json = useCase.execute("demo", "uuid-ref", "de", MeshAuth.NONE);
         JsonNode root = MAPPER.readTree(json);
 
         JsonNode refs = root.get("references");
@@ -114,9 +115,9 @@ class GetNodeUseCaseTest {
     void execute_outputIsValidJson() throws Exception {
         var config  = TestFixtures.readOnlyConfig();
         var useCase = new GetNodeUseCase(mockClient, config);
-        when(mockClient.getNode(any(), any(), any())).thenReturn(buildTestNode());
+        when(mockClient.getNode(any(), any(), any(), any())).thenReturn(buildTestNode());
 
-        String json = useCase.execute("demo", "uuid-abc", "de");
+        String json = useCase.execute("demo", "uuid-abc", "de", MeshAuth.NONE);
         assertDoesNotThrow(() -> MAPPER.readTree(json), "execute() must return valid JSON");
     }
 

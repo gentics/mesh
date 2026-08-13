@@ -753,13 +753,14 @@
 
     <h3>Mesh-Anbindung</h3>
     <p class="section-body" style="margin-bottom: 16px;">
-      Für die Authentifizierung gegen Mesh gibt es zwei Wege: einen <strong>API-Key</strong>
-      (<code>MESH_API_KEY</code>, ein von Mesh ausgestelltes langlebiges JWT) oder
-      <strong>Username + Passwort</strong>. Der API-Key wird als Bearer-Header an jede Anfrage
-      gehängt – kein Login-Roundtrip beim Start, kein Passwort im Deployment –
-      und ist damit die empfohlene Variante für Produktion. Sind beide Varianten gesetzt,
-      gewinnt der API-Key. Beide Wege werden beim Start gegen Mesh verifiziert:
-      falsche Credentials brechen den Prozess ab, statt erst beim ersten Tool-Call zu scheitern.
+      Wer gegenüber Mesh auftritt, entscheidet der <strong>Transport</strong> – es gibt dafür
+      keine eigene Einstellung. Die drei Fälle sind unter
+      <a href="#security">Mesh-Identität</a> im Detail beschrieben; in Kurzform:
+      <code>stdio</code> nutzt eine feste Identität aus <code>MESH_API_KEY</code> oder
+      <code>MESH_USERNAME</code>&nbsp;+&nbsp;<code>MESH_PASSWORD</code>, im HTTP-Modus laufen
+      Requests anonym bzw. mit dem Bearer-Token des Clients. Diese drei Variablen sind
+      deshalb <strong>stdio-only</strong>: im HTTP-Modus bricht der Start ab, wenn eine
+      davon gesetzt ist.
     </p>
     <div class="table-wrap">
       <table>
@@ -768,9 +769,9 @@
         </thead>
         <tbody>
           <tr><td><code>MESH_BASE_URL</code></td><td>ja</td><td>–</td><td>Basis-URL der Mesh-Instanz</td></tr>
-          <tr><td><code>MESH_API_KEY</code></td><td>bedingt</td><td>–</td><td>Mesh-API-Key (langlebiges JWT). Ersetzt Username/Passwort; hat Vorrang, wenn beides gesetzt ist</td></tr>
-          <tr><td><code>MESH_USERNAME</code></td><td>bedingt</td><td>–</td><td>Service-Account-Username – Pflicht ohne <code>MESH_API_KEY</code></td></tr>
-          <tr><td><code>MESH_PASSWORD</code></td><td>bedingt</td><td>–</td><td>Service-Account-Passwort (wird nie geloggt) – Pflicht ohne <code>MESH_API_KEY</code></td></tr>
+          <tr><td><code>MESH_API_KEY</code></td><td>stdio</td><td>–</td><td>Mesh-API-Key (langlebiges JWT). Alternative zu Username/Passwort. Im HTTP-Modus verboten</td></tr>
+          <tr><td><code>MESH_USERNAME</code></td><td>stdio</td><td>–</td><td>Service-Account-Username – zusammen mit <code>MESH_PASSWORD</code> Pflicht, wenn kein <code>MESH_API_KEY</code> gesetzt ist. Im HTTP-Modus verboten</td></tr>
+          <tr><td><code>MESH_PASSWORD</code></td><td>stdio</td><td>–</td><td>Service-Account-Passwort (wird nie geloggt). Im HTTP-Modus verboten</td></tr>
           <tr><td><code>MESH_ALLOWED_PROJECTS</code></td><td>ja</td><td>–</td><td>Kommagetrennte Projekt-Allowlist</td></tr>
           <tr><td><code>MESH_ALLOWED_SCHEMAS</code></td><td>nein</td><td>(alle)</td><td>Kommagetrennte Schema-Allowlist</td></tr>
           <tr><td><code>MESH_ALLOWED_LANGUAGES</code></td><td>nein</td><td><code>de,en</code></td><td>ISO 639-1 Sprachcodes</td></tr>
@@ -1164,6 +1165,61 @@ boolean ok = v.isAuthorized(header);</code></pre>
       <strong>Achtung:</strong> Bei <code>MCP_AUTH_DISABLED=true</code> nimmt jeder, der den Port erreicht,
       Tool-Aufrufe vor. Nur in Setups einsetzen, in denen NGINX/Ingress die Auth bereits terminiert.
     </div>
+
+    <h3 id="security">Mesh-Identität: wer fragt Mesh eigentlich?</h3>
+    <p class="section-body" style="margin-bottom: 16px;">
+      Das ist eine andere Frage als „darf dieser Client den MCP-Server benutzen“ – und die
+      Antwort hängt allein am Transport.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Fall</th><th>Setup</th><th>MCP-Auth</th><th>Identität gegenüber Mesh</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td><code>http</code> + <code>MCP_AUTH_TOKEN</code></td>
+            <td>MCP prüft das Bearer-Token, falsche Requests werden abgelehnt</td>
+            <td><strong>anonym.</strong> Das Token gehört dem MCP-Server, nicht Mesh, und wird nie weitergereicht</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td><code>http</code> + <code>MCP_AUTH_DISABLED=true</code></td>
+            <td>keine</td>
+            <td><code>Authorization: Bearer …</code> des Clients wird <strong>pro Request</strong> an Mesh weitergereicht – Mesh entscheidet. Ohne Header: anonym</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td><code>stdio</code></td>
+            <td>entfällt – der spawnende Prozess ist vertrauenswürdig</td>
+            <td>feste Identität aus <code>MESH_API_KEY</code> <em>oder</em> <code>MESH_USERNAME</code>&nbsp;+&nbsp;<code>MESH_PASSWORD</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <strong>Fall 1 heißt: Mesh sieht anonyme Requests.</strong> Die <code>anonymous</code>-Rolle
+      in Mesh braucht Leserechte auf allen Projekten aus <code>MESH_ALLOWED_PROJECTS</code> –
+      sonst liefern alle Tools leere Ergebnisse.
+    </div>
+
+    <p class="section-body" style="margin-top: 16px;">
+      Derselbe Header bedeutet in Fall 1 und Fall 2 also Verschiedenes: einmal ein
+      MCP-Credential, einmal ein Mesh-Credential. Weitergereicht wird er nur dann, wenn
+      dieser Server selbst nichts prüft. Das Token landet dabei am einzelnen
+      <code>MeshRequest</code>, nie am geteilten Client – parallele Aufrufe können also
+      keine fremde Identität erben.
+    </p>
+
+    <p class="section-body" style="margin-top: 16px;">
+      Beim Start wird geprüft: <code>stdio</code> meldet sich an und ruft <code>me()</code>
+      auf – antwortet Mesh mit dem Benutzer <code>anonymous</code>, wurden die Zugangsdaten
+      nicht akzeptiert und der Start bricht ab. Im HTTP-Modus läuft nur ein
+      unauthentifizierter Ping gegen <code>MESH_BASE_URL</code>, damit eine falsche URL
+      sofort auffällt.
+    </p>
   </div>
 </section>
 

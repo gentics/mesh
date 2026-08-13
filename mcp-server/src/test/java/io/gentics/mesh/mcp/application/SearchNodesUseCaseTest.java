@@ -6,6 +6,7 @@ import io.gentics.mesh.mcp.TestFixtures;
 import io.gentics.mesh.mcp.domain.AppError;
 import io.gentics.mesh.mcp.domain.ErrorCode;
 import io.gentics.mesh.mcp.domain.model.SearchResult;
+import io.gentics.mesh.mcp.mesh.MeshAuth;
 import io.gentics.mesh.mcp.mesh.MeshClient;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,11 +38,11 @@ class SearchNodesUseCaseTest {
 
         AppError err = assertThrows(AppError.class,
                 () -> useCase.execute("blocked", "test", null, "de",
-                        List.of("title"), 5, true));
+                        List.of("title"), 5, true, MeshAuth.NONE));
 
         assertEquals(ErrorCode.FORBIDDEN, err.getCode(),
                 "A non-allowlisted project must yield FORBIDDEN");
-        verify(mockClient, never()).searchNodes(any(), any(), any(), any(), any(), anyInt(), anyBoolean());
+        verify(mockClient, never()).searchNodes(any(), any(), any(), any(), any(), anyInt(), anyBoolean(), any());
     }
 
     @Test
@@ -50,7 +51,7 @@ class SearchNodesUseCaseTest {
 
         AppError err = assertThrows(AppError.class,
                 () -> useCase.execute("demo", "test", null, "zh",
-                        List.of("title"), 5, true));
+                        List.of("title"), 5, true, MeshAuth.NONE));
 
         assertEquals(ErrorCode.FORBIDDEN, err.getCode(),
                 "A non-allowlisted language must yield FORBIDDEN");
@@ -64,11 +65,11 @@ class SearchNodesUseCaseTest {
 
         AppError err = assertThrows(AppError.class,
                 () -> useCase.execute("demo", "test", null, "de",
-                        List.of(), 0, true));
+                        List.of(), 0, true, MeshAuth.NONE));
 
         assertEquals(ErrorCode.VALIDATION_ERROR, err.getCode(),
                 "limit=0 must yield VALIDATION_ERROR");
-        verify(mockClient, never()).searchNodes(any(), any(), any(), any(), any(), anyInt(), anyBoolean());
+        verify(mockClient, never()).searchNodes(any(), any(), any(), any(), any(), anyInt(), anyBoolean(), any());
     }
 
     @Test
@@ -77,7 +78,7 @@ class SearchNodesUseCaseTest {
 
         AppError err = assertThrows(AppError.class,
                 () -> useCase.execute("demo", "test", null, "de",
-                        List.of(), 21, true));
+                        List.of(), 21, true, MeshAuth.NONE));
 
         assertEquals(ErrorCode.VALIDATION_ERROR, err.getCode(),
                 "limit=21 (above maximum 20) must yield VALIDATION_ERROR");
@@ -88,22 +89,22 @@ class SearchNodesUseCaseTest {
     @Test
     void execute_limitExactly1_isValid() throws Exception {
         var useCase = new SearchNodesUseCase(mockClient, TestFixtures.readOnlyConfig());
-        when(mockClient.searchNodes(any(), any(), any(), any(), any(), eq(1), anyBoolean()))
+        when(mockClient.searchNodes(any(), any(), any(), any(), any(), eq(1), anyBoolean(), any()))
                 .thenReturn(List.of());
 
         assertDoesNotThrow(() -> useCase.execute("demo", "test", null, "de",
-                List.of("title"), 1, true),
+                List.of("title"), 1, true, MeshAuth.NONE),
                 "limit=1 (minimum) must be accepted");
     }
 
     @Test
     void execute_limitExactly20_isValid() throws Exception {
         var useCase = new SearchNodesUseCase(mockClient, TestFixtures.readOnlyConfig());
-        when(mockClient.searchNodes(any(), any(), any(), any(), any(), eq(20), anyBoolean()))
+        when(mockClient.searchNodes(any(), any(), any(), any(), any(), eq(20), anyBoolean(), any()))
                 .thenReturn(List.of());
 
         assertDoesNotThrow(() -> useCase.execute("demo", "test", null, "de",
-                List.of("title"), 20, true),
+                List.of("title"), 20, true, MeshAuth.NONE),
                 "limit=20 (maximum) must be accepted");
     }
 
@@ -112,7 +113,7 @@ class SearchNodesUseCaseTest {
     @Test
     void execute_returnsResultsAsJson() throws Exception {
         var useCase = new SearchNodesUseCase(mockClient, TestFixtures.readOnlyConfig());
-        when(mockClient.searchNodes(any(), any(), any(), any(), any(), anyInt(), anyBoolean()))
+        when(mockClient.searchNodes(any(), any(), any(), any(), any(), anyInt(), anyBoolean(), any()))
                 .thenReturn(List.of(
                         new SearchResult("uuid-1", "Article 1", "article", "de",
                                 "/path/1", "snippet one", true),
@@ -121,7 +122,7 @@ class SearchNodesUseCaseTest {
                 ));
 
         String json = useCase.execute("demo", "query", null, "de",
-                List.of("title"), 5, true);
+                List.of("title"), 5, true, MeshAuth.NONE);
         JsonNode root = MAPPER.readTree(json);
 
         assertTrue(root.has("results"), "Response JSON must contain a 'results' array");
@@ -140,11 +141,11 @@ class SearchNodesUseCaseTest {
     @Test
     void execute_emptyResults_returnsEmptyArray() throws Exception {
         var useCase = new SearchNodesUseCase(mockClient, TestFixtures.readOnlyConfig());
-        when(mockClient.searchNodes(any(), any(), any(), any(), any(), anyInt(), anyBoolean()))
+        when(mockClient.searchNodes(any(), any(), any(), any(), any(), anyInt(), anyBoolean(), any()))
                 .thenReturn(List.of());
 
         String json = useCase.execute("demo", "nothing", null, "de",
-                List.of("title"), 5, true);
+                List.of("title"), 5, true, MeshAuth.NONE);
         JsonNode root = MAPPER.readTree(json);
         assertTrue(root.get("results").isEmpty(), "results array must be empty when client returns no results");
     }
@@ -152,14 +153,14 @@ class SearchNodesUseCaseTest {
     @Test
     void execute_passesAllParametersToClient() throws Exception {
         var useCase = new SearchNodesUseCase(mockClient, TestFixtures.readOnlyConfig());
-        when(mockClient.searchNodes(any(), any(), any(), any(), any(), anyInt(), anyBoolean()))
+        when(mockClient.searchNodes(any(), any(), any(), any(), any(), anyInt(), anyBoolean(), any()))
                 .thenReturn(List.of());
 
         List<String> fields = List.of("title", "teaser");
-        useCase.execute("demo", "mein query", "article", "en", fields, 10, false);
+        useCase.execute("demo", "mein query", "article", "en", fields, 10, false, MeshAuth.NONE);
 
         verify(mockClient).searchNodes(
                 eq("demo"), eq("mein query"), eq("article"),
-                eq("en"), eq(fields), eq(10), eq(false));
+                eq("en"), eq(fields), eq(10), eq(false), eq(MeshAuth.NONE));
     }
 }

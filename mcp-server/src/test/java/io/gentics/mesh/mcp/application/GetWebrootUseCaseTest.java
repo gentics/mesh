@@ -6,6 +6,7 @@ import io.gentics.mesh.mcp.TestFixtures;
 import io.gentics.mesh.mcp.domain.AppError;
 import io.gentics.mesh.mcp.domain.ErrorCode;
 import io.gentics.mesh.mcp.domain.model.MeshNode;
+import io.gentics.mesh.mcp.mesh.MeshAuth;
 import io.gentics.mesh.mcp.mesh.MeshClient;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,11 +36,11 @@ class GetWebrootUseCaseTest {
         var useCase = new GetWebrootUseCase(mockClient, TestFixtures.readOnlyConfig());
 
         AppError err = assertThrows(AppError.class,
-                () -> useCase.execute("secret", "/path", "de"));
+                () -> useCase.execute("secret", "/path", "de", MeshAuth.NONE));
 
         assertEquals(ErrorCode.FORBIDDEN, err.getCode(),
                 "A non-allowlisted project must yield FORBIDDEN");
-        verify(mockClient, never()).getWebroot(any(), any(), any());
+        verify(mockClient, never()).getWebroot(any(), any(), any(), any());
     }
 
     @Test
@@ -47,11 +48,11 @@ class GetWebrootUseCaseTest {
         var useCase = new GetWebrootUseCase(mockClient, TestFixtures.readOnlyConfig());
 
         AppError err = assertThrows(AppError.class,
-                () -> useCase.execute("demo", "/path", "ru"));
+                () -> useCase.execute("demo", "/path", "ru", MeshAuth.NONE));
 
         assertEquals(ErrorCode.FORBIDDEN, err.getCode(),
                 "A non-allowlisted language must yield FORBIDDEN");
-        verify(mockClient, never()).getWebroot(any(), any(), any());
+        verify(mockClient, never()).getWebroot(any(), any(), any(), any());
     }
 
     @Test
@@ -62,9 +63,9 @@ class GetWebrootUseCaseTest {
                 "My Page", "/my-page", true, "1.0",
                 Map.of("title", "My Page Title"), List.of()
         );
-        when(mockClient.getWebroot("demo", "/my-page", "de")).thenReturn(node);
+        when(mockClient.getWebroot("demo", "/my-page", "de", MeshAuth.NONE)).thenReturn(node);
 
-        String json = useCase.execute("demo", "/my-page", "de");
+        String json = useCase.execute("demo", "/my-page", "de", MeshAuth.NONE);
         JsonNode root = MAPPER.readTree(json);
 
         assertEquals("node-uuid", root.get("uuid").asText());
@@ -76,19 +77,19 @@ class GetWebrootUseCaseTest {
     void execute_delegatesToClientWithCorrectArgs() throws Exception {
         var useCase = new GetWebrootUseCase(mockClient, TestFixtures.readOnlyConfig());
         MeshNode node = new MeshNode("x", "demo", "en", "a", "d", "/p", true, "1", Map.of(), List.of());
-        when(mockClient.getWebroot("demo", "/articles/news", "en")).thenReturn(node);
+        when(mockClient.getWebroot("demo", "/articles/news", "en", MeshAuth.NONE)).thenReturn(node);
 
-        useCase.execute("demo", "/articles/news", "en");
-        verify(mockClient).getWebroot("demo", "/articles/news", "en");
+        useCase.execute("demo", "/articles/news", "en", MeshAuth.NONE);
+        verify(mockClient).getWebroot("demo", "/articles/news", "en", MeshAuth.NONE);
     }
 
     @Test
     void execute_outputIsValidJson() throws Exception {
         var useCase = new GetWebrootUseCase(mockClient, TestFixtures.readOnlyConfig());
         MeshNode node = new MeshNode("x", "demo", "de", "a", "d", "/p", true, "1", Map.of(), List.of());
-        when(mockClient.getWebroot(any(), any(), any())).thenReturn(node);
+        when(mockClient.getWebroot(any(), any(), any(), any())).thenReturn(node);
 
-        String json = useCase.execute("demo", "/path", "de");
+        String json = useCase.execute("demo", "/path", "de", MeshAuth.NONE);
         assertDoesNotThrow(() -> MAPPER.readTree(json), "execute() must return valid JSON");
     }
 }

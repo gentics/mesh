@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.gentics.mesh.mcp.config.MeshConfig;
 import io.gentics.mesh.mcp.domain.model.MeshNode;
+import io.gentics.mesh.mcp.mesh.MeshAuth;
 import io.gentics.mesh.mcp.mesh.MeshClient;
 import io.gentics.mesh.mcp.security.PolicyService;
 
@@ -13,7 +14,7 @@ import io.gentics.mesh.mcp.security.PolicyService;
  *
  * <p>This is the implementation behind the {@code mesh_get_node} MCP tool.
  * It enforces project and language policy, loads the node from the Mesh REST API
- * via {@link MeshClient#getNode(String, String, String)}, and serialises the
+ * via {@link MeshClient#getNode}, and serialises the
  * normalised {@link MeshNode} domain record to JSON.
  *
  * <h2>Policy checks</h2>
@@ -29,7 +30,7 @@ import io.gentics.mesh.mcp.security.PolicyService;
  * fields in the {@code fields} map are already redacted by
  * {@link io.gentics.mesh.mcp.security.RedactionService} at the mapping layer.
  *
- * @see MeshClient#getNode(String, String, String)
+ * @see MeshClient#getNode
  * @see MeshNode
  * @see io.gentics.mesh.mcp.security.PolicyService
  * @since 0.1.0
@@ -57,16 +58,17 @@ public class GetNodeUseCase {
      * @param project  allowlisted project name
      * @param uuid     Mesh node UUID
      * @param language ISO 639-1 language code (e.g. {@code "de"}, {@code "en"})
+     * @param auth     per-call Mesh identity (token from the caller, or NONE)
      * @return JSON string representing the {@link MeshNode}
      * @throws io.gentics.mesh.mcp.domain.AppError(FORBIDDEN)  if the project or language is not allowed
      * @throws io.gentics.mesh.mcp.domain.AppError(NOT_FOUND)  if no node with the given UUID exists
      * @throws io.gentics.mesh.mcp.domain.AppError(INTERNAL_ERROR) if serialisation fails
      */
-    public String execute(String project, String uuid, String language) {
+    public String execute(String project, String uuid, String language, MeshAuth auth) {
         PolicyService.assertProjectAllowed(project, config);
         PolicyService.assertLanguageAllowed(language, config);
 
-        MeshNode node = client.getNode(project, uuid, language);
+        MeshNode node = client.getNode(project, uuid, language, auth);
         return ToolResult.json(toJson(node));
     }
 

@@ -34,6 +34,30 @@ public final class TestFixtures {
         return baseConfig(true, maxDepth, List.of());
     }
 
+    /**
+     * HTTP-transport config. Mesh credentials are always absent here – in HTTP
+     * mode the Mesh identity comes from the request, never from configuration.
+     *
+     * @param mcpAuthDisabled {@code false} = the MCP server checks its own bearer
+     *                        token (Mesh calls stay anonymous);
+     *                        {@code true}  = no MCP auth, so a caller's bearer
+     *                        token is forwarded to Mesh
+     */
+    public static MeshConfig httpConfig(boolean mcpAuthDisabled) {
+        return new MeshConfig(
+                "http://localhost:8080",
+                null, null, null,          // no meshApiKey / username / password in HTTP mode
+                List.of("demo"),
+                List.of(),
+                List.of("de", "en"),
+                true, 6, 5_000L, 10_000L, "info",
+                "http", "0.0.0.0", 3001,
+                mcpAuthDisabled ? null : "mcp-server-token",
+                mcpAuthDisabled,
+                List.of(),
+                10_000, 10_000, 1_000, false, 50, 20, 30_000L, 4_000);
+    }
+
     private static MeshConfig baseConfig(boolean readOnly, int graphqlMaxDepth,
                                          List<String> schemaAllowlist) {
         return new MeshConfig(

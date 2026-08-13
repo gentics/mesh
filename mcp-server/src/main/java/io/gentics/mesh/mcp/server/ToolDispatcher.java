@@ -11,6 +11,7 @@ import io.gentics.mesh.mcp.application.SearchNodesUseCase;
 import io.gentics.mesh.mcp.config.MeshConfig;
 import io.gentics.mesh.mcp.domain.AppError;
 import io.gentics.mesh.mcp.domain.ErrorCode;
+import io.gentics.mesh.mcp.mesh.MeshAuth;
 import io.gentics.mesh.mcp.mesh.MeshClient;
 
 import java.util.List;
@@ -65,10 +66,11 @@ public final class ToolDispatcher {
     }
 
     /**
-     * Convenience: dispatch without a token key (e.g. stdio).
+     * Convenience: dispatch for the stdio transport, where the {@link MeshClient}
+     * already holds the configured Mesh identity.
      */
     public String dispatch(String name, Map<String, Object> args) {
-        return dispatch(name, args, "stdio");
+        return dispatch(name, args, "stdio", MeshAuth.NONE);
     }
 
     /**
@@ -79,31 +81,39 @@ public final class ToolDispatcher {
      * @param args     raw argument map as parsed from JSON-RPC params
      * @param tokenKey stable per-client key (SHA-256 hash of Bearer token,
      *                 {@code "stdio"} for the stdio transport, or
-     *                 {@code "no-auth"} when auth is disabled)
+     *                 {@code "no-auth"} when auth is disabled). Used only for
+     *                 rate-limit accounting – never sent to Mesh.
+     * @param meshAuth Mesh identity for this call. {@link MeshAuth#NONE} means
+     *                 anonymous (HTTP) or client-level auth (stdio); a token is
+     *                 only present when the MCP server runs without its own auth
+     *                 and the caller supplied one.
      * @return JSON string with the tool's result payload
      * @throws AppError when validation fails, the tool is unknown,
      *                  any protection layer rejects, or the upstream Mesh
      *                  request fails
      */
-    public String dispatch(String name, Map<String, Object> args, String tokenKey) {
+    public String dispatch(String name, Map<String, Object> args, String tokenKey, MeshAuth meshAuth) {
         final Map<String, Object> finalArgs = (args == null) ? Map.of() : args;
-        return guard.execute(name, tokenKey, () -> dispatchInternal(name, finalArgs));
+        final MeshAuth auth = (meshAuth == null) ? MeshAuth.NONE : meshAuth;
+        return guard.execute(name, tokenKey, () -> dispatchInternal(name, finalArgs, auth));
     }
 
-    private String dispatchInternal(String name, Map<String, Object> args) {
+    private String dispatchInternal(String name, Map<String, Object> args, MeshAuth auth) {
         return switch (name) {
-            case "mesh_list_projects" -> listProjects.execute();
-            case "mesh_list_schemas"  -> listSchemas.execute(require(args, "project"));
+            case "mesh_list_projects" -> listProjects.execute(auth);
+            case "mesh_list_schemas"  -> listSchemas.execute(require(args, "project"), auth);
             case "mesh_get_node"      -> getNode.execute(
                     require(args, "project"),
                     require(args, "uuid"),
-                    str(args, "language", "de"));
-            case "mesh_search_nodes"  -> dispatchSearch(args);
+                    str(args, "language", "de"),
+                    auth);
+            case "mesh_search_nodes"  -> dispatchSearch(args, auth);
             case "mesh_get_webroot"   -> getWebroot.execute(
                     require(args, "project"),
                     require(args, "path"),
-                    str(args, "language", "de"));
-            case "mesh_run_graphql"   -> dispatchGraphql(args);
+                    str(args, "language", "de"),
+                    auth);
+            case "mesh_run_graphql"   -> dispatchGraphql(args, auth);
             default -> throw new AppError(ErrorCode.VALIDATION_ERROR,
                     "Unbekanntes Tool: '" + name + "'.");
         };
@@ -112,7 +122,7 @@ public final class ToolDispatcher {
     // ── private dispatchers with structured argument extraction ───────────
 
     @SuppressWarnings("unchecked")
-    private String dispatchSearch(Map<String, Object> args) {
+    private String dispatchSearch(Map<String, Object> args, MeshAuth auth) {
         List<String> fields = args.containsKey("fields")
                 ? (List<String>) args.get("fields")
                 : List.of("title", "teaser", "body");
@@ -123,18 +133,20 @@ public final class ToolDispatcher {
                 str(args, "language", "de"),
                 fields,
                 num(args, "limit", 5),
-                bool(args, "publishedOnly", true));
+                bool(args, "publishedOnly", true),
+                auth);
     }
 
     @SuppressWarnings("unchecked")
-    private String dispatchGraphql(Map<String, Object> args) {
+    private String dispatchGraphql(Map<String, Object> args, MeshAuth auth) {
         Map<String, Object> vars = args.containsKey("variables")
                 ? (Map<String, Object>) args.get("variables")
                 : Map.of();
         return runGraphql.execute(
                 require(args, "project"),
                 require(args, "query"),
-                vars);
+                vars,
+                auth);
     }
 
     // ── tool specs ─────────────────────────────────────────────────────────

@@ -42,29 +42,47 @@ trägt die Version über das `VERSION`-Build-Arg im Dockerfile.
 ```bash
 cp .env.example .env
 # Pflichtfelder editieren: MESH_BASE_URL, MESH_ALLOWED_PROJECTS
-# und die Mesh-Authentifizierung: MESH_API_KEY *oder* MESH_USERNAME + MESH_PASSWORD
 export $(grep -v '^#' .env | xargs)
 
-# stdio (default)
+# stdio (default) – braucht zusätzlich MESH_API_KEY *oder* MESH_USERNAME + MESH_PASSWORD
 java -jar target/mesh-mcp-server.jar
 
-# HTTP
-MCP_TRANSPORT=http MCP_AUTH_TOKEN=secret-please-rotate \
+# HTTP – ohne Mesh-Credentials; die kommen hier pro Request bzw. gar nicht.
+# Sind MESH_API_KEY/MESH_USERNAME/MESH_PASSWORD gesetzt, bricht der Start ab.
+env -u MESH_API_KEY -u MESH_USERNAME -u MESH_PASSWORD \
+  MCP_TRANSPORT=http MCP_AUTH_TOKEN=secret-please-rotate \
   java -jar target/mesh-mcp-server.jar
 ```
 
 ## Mesh-Authentifizierung
 
-Zwei Varianten, eine davon ist Pflicht:
+Wer gegenüber Mesh auftritt, hängt am Transport – nicht an einer eigenen Einstellung:
 
-| Variante | ENV | Verhalten |
-|----------|-----|-----------|
-| **API-Key** (empfohlen für Prod) | `MESH_API_KEY` | Von Mesh ausgestelltes langlebiges JWT, wird als Bearer-Header an jede Anfrage gehängt. Kein Login-Roundtrip, kein Passwort im Deployment. |
-| Username/Passwort | `MESH_USERNAME` + `MESH_PASSWORD` | Login beim Start, Client hält das JWT der Session. |
+| Fall | Transport | MCP-Auth | Identität gegenüber Mesh |
+|------|-----------|----------|---------------------------|
+| 1 | `http` mit `MCP_AUTH_TOKEN` | MCP prüft das Bearer-Token und lehnt falsche Requests ab | **anonym** – das Token gehört dem MCP-Server, nicht Mesh, und wird nie weitergereicht |
+| 2 | `http` mit `MCP_AUTH_DISABLED=true` | keine | Das `Authorization: Bearer …` des Clients wird **pro Request** an Mesh weitergereicht; Mesh entscheidet. Ohne Header: anonym |
+| 3 | `stdio` | entfällt (der spawnende Prozess ist vertrauenswürdig) | feste Identität aus `MESH_API_KEY` **oder** `MESH_USERNAME` + `MESH_PASSWORD` |
 
-Sind beide gesetzt, gewinnt der API-Key (der Server loggt eine Warnung). Beide
-Varianten werden beim Start gegen Mesh verifiziert – falsche Credentials brechen
-den Start ab, statt erst beim ersten Tool-Call zu scheitern.
+**Fall 1 heißt: Mesh sieht anonyme Requests.** Die `anonymous`-Rolle in Mesh
+braucht Leserechte auf allen Projekten aus `MESH_ALLOWED_PROJECTS`, sonst liefern
+alle Tools leere Ergebnisse.
+
+`MESH_API_KEY`, `MESH_USERNAME` und `MESH_PASSWORD` gelten **nur für stdio**. Im
+HTTP-Modus bricht der Start mit einem Konfigurationsfehler ab, wenn eine davon
+gesetzt ist – sie wären dort wirkungslos, und ein stiller No-Op bei
+Zugangsdaten ist die schlechtere Überraschung.
+
+Beim Start prüft der Server:
+
+- **stdio** – meldet sich an und ruft `me()` auf. Antwortet Mesh mit dem Benutzer
+  `anonymous`, wurden die Zugangsdaten nicht akzeptiert und der Start bricht ab.
+- **http** – ein unauthentifizierter Ping gegen `MESH_BASE_URL`, damit eine
+  falsche URL sofort auffällt und nicht erst beim ersten Tool-Call.
+
+Das Token aus Fall 2 wird nur für den einen Request gesetzt (Header am
+`MeshRequest`, nicht am geteilten Client) – parallele Aufrufe können keine
+fremde Identität erben.
 
 ## Transport-Modi im Detail
 

@@ -4,6 +4,7 @@ import io.gentics.mesh.mcp.domain.AppError;
 import io.gentics.mesh.mcp.domain.ErrorCode;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -25,9 +26,9 @@ import java.util.Set;
  * <table border="1" summary="Environment variables">
  *   <tr><th>Variable</th><th>Required</th><th>Default</th><th>Description</th></tr>
  *   <tr><td>MESH_BASE_URL</td><td>yes</td><td>–</td><td>Base URL of the Mesh instance</td></tr>
- *   <tr><td>MESH_API_KEY</td><td>conditional</td><td>–</td><td>Mesh API key (long-lived JWT). Replaces username/password; takes precedence if both are set</td></tr>
- *   <tr><td>MESH_USERNAME</td><td>conditional</td><td>–</td><td>Service-account username – required unless MESH_API_KEY is set</td></tr>
- *   <tr><td>MESH_PASSWORD</td><td>conditional</td><td>–</td><td>Service-account password (never logged) – required unless MESH_API_KEY is set</td></tr>
+ *   <tr><td>MESH_API_KEY</td><td>stdio only</td><td>–</td><td>Mesh API key (long-lived JWT); alternative to username/password. Rejected in HTTP mode</td></tr>
+ *   <tr><td>MESH_USERNAME</td><td>stdio only</td><td>–</td><td>Service-account username; required with MESH_PASSWORD unless MESH_API_KEY is set. Rejected in HTTP mode</td></tr>
+ *   <tr><td>MESH_PASSWORD</td><td>stdio only</td><td>–</td><td>Service-account password (never logged). Rejected in HTTP mode</td></tr>
  *   <tr><td>MESH_ALLOWED_PROJECTS</td><td>yes</td><td>–</td><td>Comma-separated project allowlist</td></tr>
  *   <tr><td>MESH_ALLOWED_SCHEMAS</td><td>no</td><td>(all)</td><td>Comma-separated schema allowlist</td></tr>
  *   <tr><td>MESH_ALLOWED_LANGUAGES</td><td>no</td><td>de,en</td><td>Comma-separated language codes</td></tr>
@@ -52,10 +53,12 @@ import java.util.Set;
  * </table>
  *
  * @param meshBaseUrl           Base URL of the Gentics Mesh instance (required)
- * @param meshApiKey            Mesh API key (long-lived JWT); {@code null} when
- *                              username/password authentication is used
- * @param meshUsername          Service-account username ({@code null} when an API key is used)
- * @param meshPassword          Service-account password – never logged ({@code null} when an API key is used)
+ * @param meshApiKey            Mesh API key (long-lived JWT) for the stdio transport;
+ *                              always {@code null} in HTTP mode
+ * @param meshUsername          Service-account username for the stdio transport;
+ *                              always {@code null} in HTTP mode
+ * @param meshPassword          Service-account password – never logged; stdio only,
+ *                              always {@code null} in HTTP mode
  * @param meshAllowedProjects   Allowlisted project names (required, non-empty)
  * @param meshAllowedSchemas    Allowlisted schema names; empty list = all allowed
  * @param meshAllowedLanguages  Allowlisted ISO 639-1 language codes
@@ -137,27 +140,20 @@ public record MeshConfig(
      * <p>Collects all validation errors before throwing so that operators
      * can fix every problem in one deployment cycle.
      *
+     * @param transportOverride transport selected by a CLI flag ({@code "http"} /
+     *                          {@code "stdio"}), or {@code null} to use
+     *                          {@code MCP_TRANSPORT}. Resolved before validation
+     *                          because the transport decides which Mesh
+     *                          credentials are legal.
      * @return a fully validated, immutable {@link MeshConfig}
      * @throws AppError with code {@link ErrorCode#VALIDATION_ERROR} if any
      *                  required variable is missing or any value is out of range
      */
-    public static MeshConfig load() {
+    public static MeshConfig load(String transportOverride) {
         var errors = new StringBuilder();
 
         String baseUrl  = requireEnv("MESH_BASE_URL",         errors);
         String projects = requireEnv("MESH_ALLOWED_PROJECTS", errors);
-
-        // ── Mesh authentication: API key OR username+password ──────────────
-        // An API key is a long-lived JWT issued by Mesh; it is sent as a Bearer
-        // header on every request and needs no login round-trip. When both are
-        // configured the API key wins (MeshClient logs which mode is active).
-        String apiKey   = optionalEnv("MESH_API_KEY");
-        String username = optionalEnv("MESH_USERNAME");
-        String password = optionalEnv("MESH_PASSWORD");
-        if (apiKey == null && (username == null || password == null)) {
-            errors.append("Mesh-Authentifizierung fehlt: entweder MESH_API_KEY setzen "
-                    + "oder MESH_USERNAME und MESH_PASSWORD. ");
-        }
 
         // Validate URL format
         if (baseUrl != null) {
@@ -209,11 +205,42 @@ public record MeshConfig(
         String authDisabled  = System.getenv("MCP_AUTH_DISABLED");
         String corsEnv       = System.getenv("MCP_CORS_ORIGINS");
 
-        String transport = (transportEnv != null && !transportEnv.isBlank())
-                ? transportEnv.strip().toLowerCase()
-                : DEFAULT_TRANSPORT;
+        String transport;
+        if (transportOverride != null && !transportOverride.isBlank()) {
+            transport = transportOverride.strip().toLowerCase();      // --http / --stdio
+        } else if (transportEnv != null && !transportEnv.isBlank()) {
+            transport = transportEnv.strip().toLowerCase();
+        } else {
+            transport = DEFAULT_TRANSPORT;
+        }
         if (!VALID_TRANSPORTS.contains(transport)) {
             errors.append("MCP_TRANSPORT muss 'stdio' oder 'http' sein. ");
+        }
+
+        // ── Mesh authentication ────────────────────────────────────────────
+        // stdio: the server holds one identity for all calls, so it needs
+        //        credentials – an API key or username+password.
+        // http:  the Mesh identity comes from the request (or is anonymous),
+        //        so server-side credentials would be silently ineffective.
+        //        Configuring them is an error rather than a no-op.
+        String apiKey   = optionalEnv("MESH_API_KEY");
+        String username = optionalEnv("MESH_USERNAME");
+        String password = optionalEnv("MESH_PASSWORD");
+        if ("stdio".equals(transport)) {
+            if (apiKey == null && (username == null || password == null)) {
+                errors.append("Mesh-Authentifizierung fehlt: im stdio-Modus entweder "
+                        + "MESH_API_KEY setzen oder MESH_USERNAME und MESH_PASSWORD. ");
+            }
+        } else {
+            var configured = new ArrayList<String>();
+            if (apiKey   != null) configured.add("MESH_API_KEY");
+            if (username != null) configured.add("MESH_USERNAME");
+            if (password != null) configured.add("MESH_PASSWORD");
+            if (!configured.isEmpty()) {
+                errors.append(String.join(", ", configured))
+                      .append(" ist im HTTP-Modus nicht erlaubt: Mesh-Requests laufen "
+                            + "anonym bzw. mit dem Bearer-Token des Clients. Variablen entfernen. ");
+            }
         }
 
         int httpPort = DEFAULT_HTTP_PORT;

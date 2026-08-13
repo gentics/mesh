@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.gentics.mesh.mcp.config.MeshConfig;
+import io.gentics.mesh.mcp.mesh.MeshAuth;
 import io.gentics.mesh.mcp.mesh.MeshClient;
 import io.gentics.mesh.mcp.security.PolicyService;
 
@@ -62,14 +63,15 @@ public class ListSchemasUseCase {
      * serialises them to a JSON string.
      *
      * @param project allowlisted project name
+     * @param auth     per-call Mesh identity (token from the caller, or NONE)
      * @return JSON string containing the {@code project} name and a {@code schemas} array
      * @throws io.gentics.mesh.mcp.domain.AppError(FORBIDDEN) if the project is not in the allowlist
      * @throws io.gentics.mesh.mcp.domain.AppError if the Mesh API call or JSON serialisation fails
      */
-    public String execute(String project) {
+    public String execute(String project, MeshAuth auth) {
         PolicyService.assertProjectAllowed(project, config);
 
-        var schemas = client.listSchemas(project);
+        var schemas = client.listSchemas(project, auth);
 
         ObjectNode root        = MAPPER.createObjectNode();
         ArrayNode  schemasArr  = MAPPER.createArrayNode();

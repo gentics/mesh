@@ -8,6 +8,7 @@ import com.sun.net.httpserver.HttpServer;
 import io.gentics.mesh.mcp.application.*;
 import io.gentics.mesh.mcp.config.MeshConfig;
 import io.gentics.mesh.mcp.domain.model.MeshNode;
+import io.gentics.mesh.mcp.mesh.MeshAuth;
 import io.gentics.mesh.mcp.mesh.MeshClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -146,14 +147,14 @@ public class ShowcaseServer {
 
     /** GET /api/projects  →  { "projects": [ { "name": "...", "uuid": "..." } ] } */
     private void handleProjects(HttpExchange ex) throws Exception {
-        String json = new ListProjectsUseCase(client, config).execute();
+        String json = new ListProjectsUseCase(client, config).execute(MeshAuth.NONE);
         sendJson(ex, 200, json);
     }
 
     /** GET /api/schemas?project=demo  →  { "project": "demo", "schemas": [...] } */
     private void handleSchemas(HttpExchange ex, Map<String,String> q) throws Exception {
         String project = q.getOrDefault("project", firstAllowedProject());
-        String json    = new ListSchemasUseCase(client, config).execute(project);
+        String json    = new ListSchemasUseCase(client, config).execute(project, MeshAuth.NONE);
         sendJson(ex, 200, json);
     }
 
@@ -166,7 +167,7 @@ public class ShowcaseServer {
         String schema   = q.get("schema");
         String language = q.getOrDefault("lang", defaultLanguage());
 
-        List<MeshNode> nodes = client.listNodes(project, language);
+        List<MeshNode> nodes = client.listNodes(project, language, MeshAuth.NONE);
 
         // Optional schema filter
         if (schema != null && !schema.isBlank()) {
@@ -197,7 +198,7 @@ public class ShowcaseServer {
                             Map<String,String> q) throws Exception {
         String project  = q.getOrDefault("project",  firstAllowedProject());
         String language = q.getOrDefault("lang", defaultLanguage());
-        String json     = new GetNodeUseCase(client, config).execute(project, uuid, language);
+        String json     = new GetNodeUseCase(client, config).execute(project, uuid, language, MeshAuth.NONE);
         sendJson(ex, 200, json);
     }
 
@@ -206,7 +207,7 @@ public class ShowcaseServer {
         String project  = q.getOrDefault("project",  firstAllowedProject());
         String path     = q.getOrDefault("path",     "/");
         String language = q.getOrDefault("lang",     defaultLanguage());
-        String json     = new GetWebrootUseCase(client, config).execute(project, path, language);
+        String json     = new GetWebrootUseCase(client, config).execute(project, path, language, MeshAuth.NONE);
         sendJson(ex, 200, json);
     }
 

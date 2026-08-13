@@ -10,6 +10,7 @@ import com.sun.net.httpserver.HttpServer;
 import io.gentics.mesh.mcp.config.MeshConfig;
 import io.gentics.mesh.mcp.domain.AppError;
 import io.gentics.mesh.mcp.domain.ErrorCode;
+import io.gentics.mesh.mcp.mesh.MeshAuth;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,6 +75,9 @@ public final class HttpMcpServer {
 
     /** Methods that go through auth + dispatcher. /healthz, /readyz, /metrics stay open. */
     private static final String MCP_PATH = "/mcp";
+
+    /** Scheme prefix of the {@code Authorization} header. */
+    private static final String BEARER_PREFIX = "Bearer ";
 
     /** Floor for the request pool, so /healthz and /metrics stay answerable under load. */
     private static final int MIN_HTTP_THREADS = 16;
@@ -200,6 +204,7 @@ public final class HttpMcpServer {
                 return;
             }
             String tokenKey = config.mcpAuthDisabled() ? "no-auth" : tokenKeyFromHeader(authHeader);
+            MeshAuth meshAuth = meshAuthFor(authHeader);
 
             JsonNode request;
             try (InputStream is = ex.getRequestBody()) {
@@ -213,7 +218,7 @@ public final class HttpMcpServer {
                 return;
             }
 
-            JsonRpcResponse response = dispatchJsonRpc(request, tokenKey);
+            JsonRpcResponse response = dispatchJsonRpc(request, tokenKey, meshAuth);
             if (response.envelope() == null) {
                 // Notification – no response per JSON-RPC 2.0 spec.
                 respondNoBody(ex, 204);
@@ -242,11 +247,11 @@ public final class HttpMcpServer {
 
     /** Test/back-compat helper – returns only the envelope, treats all errors as 200. */
     JsonNode dispatchJsonRpc(JsonNode request) {
-        return dispatchJsonRpc(request, "stdio").envelope();
+        return dispatchJsonRpc(request, "stdio", MeshAuth.NONE).envelope();
     }
 
     /** Dispatches a JSON-RPC request and returns the envelope + HTTP status hints. */
-    JsonRpcResponse dispatchJsonRpc(JsonNode request, String tokenKey) {
+    JsonRpcResponse dispatchJsonRpc(JsonNode request, String tokenKey, MeshAuth meshAuth) {
         JsonNode idNode = request.get("id");
         String method = request.path("method").asText("");
         JsonNode params = request.get("params");
@@ -259,7 +264,7 @@ public final class HttpMcpServer {
                 case "notifications/initialized", "initialized" -> JsonRpcResponse.notification();
                 case "ping" -> JsonRpcResponse.ok(jsonRpcResult(idNode, MAPPER.createObjectNode()));
                 case "tools/list" -> JsonRpcResponse.ok(jsonRpcResult(idNode, buildToolsList()));
-                case "tools/call" -> dispatchToolsCall(idNode, params, tokenKey);
+                case "tools/call" -> dispatchToolsCall(idNode, params, tokenKey, meshAuth);
                 default -> isNotification
                         ? JsonRpcResponse.notification()
                         : JsonRpcResponse.ok(jsonRpcError(idNode, -32601, "Method not found: " + method));
@@ -299,7 +304,8 @@ public final class HttpMcpServer {
         return result;
     }
 
-    private JsonRpcResponse dispatchToolsCall(JsonNode idNode, JsonNode params, String tokenKey) {
+    private JsonRpcResponse dispatchToolsCall(JsonNode idNode, JsonNode params,
+                                              String tokenKey, MeshAuth meshAuth) {
         if (params == null) {
             return JsonRpcResponse.ok(jsonRpcError(idNode, -32602, "Missing params"));
         }
@@ -322,7 +328,7 @@ public final class HttpMcpServer {
         ErrorCode errorCode = null;
         String resultJson;
         try {
-            resultJson = dispatcher.dispatch(name, args, tokenKey);
+            resultJson = dispatcher.dispatch(name, args, tokenKey, meshAuth);
         } catch (AppError e) {
             error = true;
             errorCode = e.getCode();
@@ -358,6 +364,34 @@ public final class HttpMcpServer {
                     Math.max(1, (int) Math.ceil(config.mcpCircuitBreakerOpenDurationMs() / 1000.0)));
             default                 -> JsonRpcResponse.ok(envelope);
         };
+    }
+
+    /**
+     * Decides which Mesh identity a request runs under.
+     *
+     * <p>The {@code Authorization} header means two different things depending
+     * on whether this server checks it:
+     * <ul>
+     *   <li><strong>MCP auth enabled</strong> – the token authenticates the client
+     *       <em>to this server</em>. It is an MCP credential and has no meaning to
+     *       Mesh, so it is never forwarded; Mesh serves the call anonymously.</li>
+     *   <li><strong>MCP auth disabled</strong> – this server checks nothing, so the
+     *       header is passed through as a Mesh credential and Mesh decides what the
+     *       caller may see. Without a header the call is anonymous.</li>
+     * </ul>
+     *
+     * @param authHeader raw {@code Authorization} header, may be {@code null}
+     * @return the identity to use for Mesh calls of this request
+     */
+    MeshAuth meshAuthFor(String authHeader) {   // package-private for tests
+        if (!config.mcpAuthDisabled() || authHeader == null) {
+            return MeshAuth.NONE;
+        }
+        String trimmed = authHeader.strip();
+        if (!trimmed.regionMatches(true, 0, BEARER_PREFIX, 0, BEARER_PREFIX.length())) {
+            return MeshAuth.NONE;
+        }
+        return MeshAuth.bearer(trimmed.substring(BEARER_PREFIX.length()));
     }
 
     /**

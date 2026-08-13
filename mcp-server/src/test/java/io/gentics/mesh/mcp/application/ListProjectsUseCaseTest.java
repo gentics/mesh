@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.gentics.mesh.mcp.TestFixtures;
 import io.gentics.mesh.mcp.domain.model.Project;
+import io.gentics.mesh.mcp.mesh.MeshAuth;
 import io.gentics.mesh.mcp.mesh.MeshClient;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,13 +29,13 @@ class ListProjectsUseCaseTest {
 
     @Test
     void execute_returnsProjectsArrayAsJson() throws Exception {
-        when(mockClient.listProjects()).thenReturn(List.of(
+        when(mockClient.listProjects(MeshAuth.NONE)).thenReturn(List.of(
                 new Project("demo",  "uuid-demo"),
                 new Project("shop",  "uuid-shop")
         ));
 
         var useCase = new ListProjectsUseCase(mockClient, TestFixtures.readOnlyConfig());
-        String json = useCase.execute();
+        String json = useCase.execute(MeshAuth.NONE);
         JsonNode root = MAPPER.readTree(json);
 
         assertTrue(root.has("projects"), "Response JSON must contain a 'projects' array");
@@ -47,10 +48,10 @@ class ListProjectsUseCaseTest {
 
     @Test
     void execute_emptyList_returnsEmptyArray() throws Exception {
-        when(mockClient.listProjects()).thenReturn(List.of());
+        when(mockClient.listProjects(MeshAuth.NONE)).thenReturn(List.of());
 
         var useCase = new ListProjectsUseCase(mockClient, TestFixtures.readOnlyConfig());
-        String json = useCase.execute();
+        String json = useCase.execute(MeshAuth.NONE);
         JsonNode root = MAPPER.readTree(json);
 
         assertTrue(root.get("projects").isEmpty(), "projects array must be empty when client returns no projects");
@@ -58,19 +59,19 @@ class ListProjectsUseCaseTest {
 
     @Test
     void execute_delegatesToMeshClient() throws Exception {
-        when(mockClient.listProjects()).thenReturn(List.of());
+        when(mockClient.listProjects(MeshAuth.NONE)).thenReturn(List.of());
         var useCase = new ListProjectsUseCase(mockClient, TestFixtures.readOnlyConfig());
-        useCase.execute();
-        verify(mockClient, times(1)).listProjects();
+        useCase.execute(MeshAuth.NONE);
+        verify(mockClient, times(1)).listProjects(MeshAuth.NONE);
     }
 
     @Test
     void execute_outputIsValidJson() throws Exception {
-        when(mockClient.listProjects()).thenReturn(
+        when(mockClient.listProjects(MeshAuth.NONE)).thenReturn(
                 List.of(new Project("alpha", "uuid-alpha")));
 
         var useCase = new ListProjectsUseCase(mockClient, TestFixtures.readOnlyConfig());
-        String json = useCase.execute();
+        String json = useCase.execute(MeshAuth.NONE);
         assertDoesNotThrow(() -> MAPPER.readTree(json), "execute() must return valid JSON");
     }
 }

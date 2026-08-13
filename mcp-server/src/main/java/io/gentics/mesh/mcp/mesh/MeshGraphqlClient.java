@@ -97,6 +97,7 @@ public class MeshGraphqlClient {
      * @param project   project name (must be allowlisted by the caller)
      * @param gqlQuery  the GraphQL query string
      * @param variables optional variable map; may be {@code null} or empty
+     * @param auth      per-call Mesh identity; {@link MeshAuth#NONE} for anonymous
      * @return the raw JSON response from Mesh (includes {@code data} and optionally {@code errors})
      * @throws AppError(FORBIDDEN)        if the query starts with {@code mutation}
      * @throws AppError(VALIDATION_ERROR) if {@link #measureDepth(String)} exceeds
@@ -104,7 +105,8 @@ public class MeshGraphqlClient {
      * @throws AppError(TIMEOUT_ERROR)    if the request exceeds {@link MeshConfig#meshGraphqlTimeoutMs()}
      * @throws AppError(UPSTREAM_ERROR)   if Mesh returns a non-2xx status
      */
-    public JsonNode query(String project, String gqlQuery, Map<String, Object> variables) {
+    public JsonNode query(String project, String gqlQuery, Map<String, Object> variables,
+                          MeshAuth auth) {
         // 1. Mutation guard
         if (isMutation(gqlQuery)) {
             throw AppError.forbidden(
@@ -139,10 +141,12 @@ public class MeshGraphqlClient {
             request.setVariables(new JsonObject(variables));
         }
 
-        // 4. Execute via official client (blocking)
-        GraphQLResponse response = client
-                .graphql(project, request)
-                .blockingGet();
+        // 4. Execute via official client (blocking), carrying the caller's identity
+        var meshRequest = client.graphql(project, request);
+        if (auth != null && auth.hasToken()) {
+            meshRequest.setHeader("Authorization", "Bearer " + auth.bearerToken());
+        }
+        GraphQLResponse response = meshRequest.blockingGet();
 
         // 5. Serialise DTO back to JsonNode so callers receive the raw envelope
         return MAPPER.valueToTree(response);

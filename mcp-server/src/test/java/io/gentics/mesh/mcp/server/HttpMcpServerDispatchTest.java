@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.gentics.mesh.mcp.TestFixtures;
 import io.gentics.mesh.mcp.config.MeshConfig;
+import io.gentics.mesh.mcp.mesh.MeshAuth;
 import io.gentics.mesh.mcp.mesh.MeshClient;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -85,7 +86,7 @@ class HttpMcpServerDispatchTest {
     void toolsCall_unknownTool_returnsIsErrorTrue() throws Exception {
         JsonNode req = MAPPER.readTree(
                 "{\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"tools/call\",\"params\":{\"name\":\"does_not_exist\",\"arguments\":{}}}");
-        HttpMcpServer.JsonRpcResponse resp = server().dispatchJsonRpc(req, "test-token");
+        HttpMcpServer.JsonRpcResponse resp = server().dispatchJsonRpc(req, "test-token", MeshAuth.NONE);
         assertNotNull(resp.envelope());
         JsonNode result = resp.envelope().get("result");
         assertNotNull(result);

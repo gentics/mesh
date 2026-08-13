@@ -3,6 +3,7 @@ package io.gentics.mesh.mcp.application;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.gentics.mesh.mcp.config.MeshConfig;
+import io.gentics.mesh.mcp.mesh.MeshAuth;
 import io.gentics.mesh.mcp.mesh.MeshClient;
 import io.gentics.mesh.mcp.security.PolicyService;
 
@@ -65,6 +66,7 @@ public class RunGraphqlUseCase {
      * @param project   allowlisted project name
      * @param query     read-only GraphQL query string (mutations are rejected)
      * @param variables optional GraphQL variable bindings; may be empty but not {@code null}
+     * @param auth     per-call Mesh identity (token from the caller, or NONE)
      * @return JSON string with {@code data} and {@code meta} fields
      * @throws io.gentics.mesh.mcp.domain.AppError(FORBIDDEN)         if the project is not allowed or a mutation was attempted
      * @throws io.gentics.mesh.mcp.domain.AppError(VALIDATION_ERROR)  if the query exceeds the depth limit
@@ -72,10 +74,10 @@ public class RunGraphqlUseCase {
      * @throws io.gentics.mesh.mcp.domain.AppError(INTERNAL_ERROR) if serialisation fails
      */
     public String execute(String project, String query,
-                          Map<String, Object> variables) {
+                          Map<String, Object> variables, MeshAuth auth) {
         PolicyService.assertProjectAllowed(project, config);
 
-        var raw = client.runGraphql(project, query, variables);
+        var raw = client.runGraphql(project, query, variables, auth);
 
         ObjectNode result = MAPPER.createObjectNode();
         result.set("data", raw.path("data"));

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.gentics.mesh.mcp.config.MeshConfig;
 import io.gentics.mesh.mcp.domain.AppError;
 import io.gentics.mesh.mcp.domain.ErrorCode;
+import io.gentics.mesh.mcp.mesh.MeshAuth;
 import io.gentics.mesh.mcp.mesh.MeshClient;
 import io.gentics.mesh.mcp.security.PolicyService;
 
@@ -79,6 +80,7 @@ public class SearchNodesUseCase {
      * @param fields        ordered list of field names to prefer for snippet extraction
      * @param limit         maximum result count; must be in [1, 20]
      * @param publishedOnly when {@code true}, only published nodes are returned
+     * @param auth     per-call Mesh identity (token from the caller, or NONE)
      * @return JSON string containing a {@code results} array
      * @throws io.gentics.mesh.mcp.domain.AppError(FORBIDDEN)         if the project or language is not allowed
      * @throws io.gentics.mesh.mcp.domain.AppError(VALIDATION_ERROR)  if {@code limit} is out of range
@@ -87,7 +89,7 @@ public class SearchNodesUseCase {
     public String execute(String project, String query,
                           String schema, String language,
                           List<String> fields, int limit,
-                          boolean publishedOnly) {
+                          boolean publishedOnly, MeshAuth auth) {
 
         PolicyService.assertProjectAllowed(project, config);
         PolicyService.assertLanguageAllowed(language, config);
@@ -98,7 +100,7 @@ public class SearchNodesUseCase {
         }
 
         var results = client.searchNodes(project, query, schema, language,
-                fields, limit, publishedOnly);
+                fields, limit, publishedOnly, auth);
 
         ObjectNode root = MAPPER.createObjectNode();
         ArrayNode  arr  = MAPPER.createArrayNode();

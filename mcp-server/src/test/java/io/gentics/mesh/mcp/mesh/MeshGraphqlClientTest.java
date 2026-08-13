@@ -8,6 +8,7 @@ import io.gentics.mesh.mcp.TestFixtures;
 import io.gentics.mesh.mcp.config.MeshConfig;
 import io.gentics.mesh.mcp.domain.AppError;
 import io.gentics.mesh.mcp.domain.ErrorCode;
+import io.gentics.mesh.mcp.mesh.MeshAuth;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -138,7 +139,7 @@ class MeshGraphqlClientTest {
         var gqlClient = new MeshGraphqlClient(config, mockClient);
 
         AppError err = assertThrows(AppError.class,
-                () -> gqlClient.query("demo", "mutation { createNode { uuid } }", Map.of()));
+                () -> gqlClient.query("demo", "mutation { createNode { uuid } }", Map.of(), MeshAuth.NONE));
 
         assertEquals(ErrorCode.FORBIDDEN, err.getCode(),
                 "A mutation query must be blocked with FORBIDDEN");
@@ -151,7 +152,7 @@ class MeshGraphqlClientTest {
         var gqlClient = new MeshGraphqlClient(config, mockClient);
 
         AppError err = assertThrows(AppError.class,
-                () -> gqlClient.query("demo", "{ a { b { c } } }", Map.of()));
+                () -> gqlClient.query("demo", "{ a { b { c } } }", Map.of(), MeshAuth.NONE));
 
         assertEquals(ErrorCode.VALIDATION_ERROR, err.getCode(),
                 "A query exceeding the depth limit must yield VALIDATION_ERROR");
@@ -169,7 +170,7 @@ class MeshGraphqlClientTest {
         when(mockClient.graphql(eq("demo"), any(GraphQLRequest.class))).thenReturn(stub);
 
         var gqlClient = new MeshGraphqlClient(config, mockClient);
-        var result = gqlClient.query("demo", "{ node(uuid:\"x\") { uuid } }", Map.of());
+        var result = gqlClient.query("demo", "{ node(uuid:\"x\") { uuid } }", Map.of(), MeshAuth.NONE);
 
         assertNotNull(result, "query() must return a non-null JsonNode result");
         verify(mockClient, times(1)).graphql(eq("demo"), any(GraphQLRequest.class));
@@ -182,7 +183,7 @@ class MeshGraphqlClientTest {
         when(mockClient.graphql(any(), any(GraphQLRequest.class))).thenReturn(stub);
 
         var gqlClient = new MeshGraphqlClient(config, mockClient);
-        gqlClient.query("demo", "{ nodes { uuid } }", Map.of("lang", "de"));
+        gqlClient.query("demo", "{ nodes { uuid } }", Map.of("lang", "de"), MeshAuth.NONE);
 
         verify(mockClient).graphql(
                 eq("demo"),
@@ -198,7 +199,7 @@ class MeshGraphqlClientTest {
         when(mockClient.graphql(any(), any(GraphQLRequest.class))).thenReturn(stub);
 
         var gqlClient = new MeshGraphqlClient(config, mockClient);
-        gqlClient.query("demo", "{ nodes { uuid } }", Map.of());
+        gqlClient.query("demo", "{ nodes { uuid } }", Map.of(), MeshAuth.NONE);
 
         verify(mockClient).graphql(
                 eq("demo"),
@@ -214,7 +215,7 @@ class MeshGraphqlClientTest {
         when(mockClient.graphql(any(), any(GraphQLRequest.class))).thenReturn(stub);
 
         var gqlClient = new MeshGraphqlClient(config, mockClient);
-        assertDoesNotThrow(() -> gqlClient.query("demo", "{ nodes { uuid } }", Map.of()),
+        assertDoesNotThrow(() -> gqlClient.query("demo", "{ nodes { uuid } }", Map.of(), MeshAuth.NONE),
                 "A query at exactly the depth limit must not throw");
     }
 }

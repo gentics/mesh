@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.gentics.mesh.mcp.TestFixtures;
 import io.gentics.mesh.mcp.domain.AppError;
 import io.gentics.mesh.mcp.domain.ErrorCode;
+import io.gentics.mesh.mcp.mesh.MeshAuth;
 import io.gentics.mesh.mcp.mesh.MeshClient;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,11 +34,11 @@ class RunGraphqlUseCaseTest {
         var useCase = new RunGraphqlUseCase(mockClient, TestFixtures.readOnlyConfig());
 
         AppError err = assertThrows(AppError.class,
-                () -> useCase.execute("hidden", "{ nodes { uuid } }", Map.of()));
+                () -> useCase.execute("hidden", "{ nodes { uuid } }", Map.of(), MeshAuth.NONE));
 
         assertEquals(ErrorCode.FORBIDDEN, err.getCode(),
                 "A non-allowlisted project must yield FORBIDDEN");
-        verify(mockClient, never()).runGraphql(any(), any(), any());
+        verify(mockClient, never()).runGraphql(any(), any(), any(), any());
     }
 
     @Test
@@ -46,9 +47,9 @@ class RunGraphqlUseCaseTest {
         JsonNode rawResponse = MAPPER.readTree("""
             { "data": { "node": { "uuid": "abc123" } } }
             """);
-        when(mockClient.runGraphql(eq("demo"), any(), any())).thenReturn(rawResponse);
+        when(mockClient.runGraphql(eq("demo"), any(), any(), any())).thenReturn(rawResponse);
 
-        String json = useCase.execute("demo", "{ node(uuid:\"abc123\") { uuid } }", Map.of());
+        String json = useCase.execute("demo", "{ node(uuid:\"abc123\") { uuid } }", Map.of(), MeshAuth.NONE);
         JsonNode root = MAPPER.readTree(json);
 
         // Must have "data" wrapper
@@ -65,9 +66,9 @@ class RunGraphqlUseCaseTest {
     void execute_metaFlagsAlwaysFalse() throws Exception {
         var useCase = new RunGraphqlUseCase(mockClient, TestFixtures.readOnlyConfig());
         JsonNode rawResponse = MAPPER.readTree("{\"data\":{}}");
-        when(mockClient.runGraphql(any(), any(), any())).thenReturn(rawResponse);
+        when(mockClient.runGraphql(any(), any(), any(), any())).thenReturn(rawResponse);
 
-        String json = useCase.execute("demo", "{ nodes { uuid } }", Map.of());
+        String json = useCase.execute("demo", "{ nodes { uuid } }", Map.of(), MeshAuth.NONE);
         JsonNode meta = MAPPER.readTree(json).get("meta");
 
         assertFalse(meta.get("truncated").asBoolean(), "truncated must be false");
@@ -79,21 +80,21 @@ class RunGraphqlUseCaseTest {
         var useCase = new RunGraphqlUseCase(mockClient, TestFixtures.readOnlyConfig());
         JsonNode rawResponse = MAPPER.readTree("{\"data\":{}}");
         Map<String, Object> vars = Map.of("lang", "de", "limit", 5);
-        when(mockClient.runGraphql(eq("demo"), any(), eq(vars))).thenReturn(rawResponse);
+        when(mockClient.runGraphql(eq("demo"), any(), eq(vars), any())).thenReturn(rawResponse);
 
-        useCase.execute("demo", "{ nodes { uuid } }", vars);
+        useCase.execute("demo", "{ nodes { uuid } }", vars, MeshAuth.NONE);
 
-        verify(mockClient).runGraphql(eq("demo"), any(), eq(vars));
+        verify(mockClient).runGraphql(eq("demo"), any(), eq(vars), any());
     }
 
     @Test
     void execute_emptyVariables_passedThrough() throws Exception {
         var useCase = new RunGraphqlUseCase(mockClient, TestFixtures.readOnlyConfig());
         JsonNode rawResponse = MAPPER.readTree("{\"data\":{}}");
-        when(mockClient.runGraphql(any(), any(), eq(Map.of()))).thenReturn(rawResponse);
+        when(mockClient.runGraphql(any(), any(), eq(Map.of()), any())).thenReturn(rawResponse);
 
         assertDoesNotThrow(() ->
-                useCase.execute("demo", "{ nodes { uuid } }", Map.of()),
+                useCase.execute("demo", "{ nodes { uuid } }", Map.of(), MeshAuth.NONE),
                 "execute() must not throw for an empty variables map");
     }
 
@@ -101,20 +102,20 @@ class RunGraphqlUseCaseTest {
     void execute_outputIsValidJson() throws Exception {
         var useCase = new RunGraphqlUseCase(mockClient, TestFixtures.readOnlyConfig());
         JsonNode rawResponse = MAPPER.readTree("{\"data\":{\"x\":1}}");
-        when(mockClient.runGraphql(any(), any(), any())).thenReturn(rawResponse);
+        when(mockClient.runGraphql(any(), any(), any(), any())).thenReturn(rawResponse);
 
-        String json = useCase.execute("demo", "{ nodes { uuid } }", Map.of());
+        String json = useCase.execute("demo", "{ nodes { uuid } }", Map.of(), MeshAuth.NONE);
         assertDoesNotThrow(() -> MAPPER.readTree(json), "execute() must return valid JSON");
     }
 
     @Test
     void execute_clientThrowsForbidden_propagates() throws Exception {
         var useCase = new RunGraphqlUseCase(mockClient, TestFixtures.readOnlyConfig());
-        when(mockClient.runGraphql(any(), any(), any()))
+        when(mockClient.runGraphql(any(), any(), any(), any()))
                 .thenThrow(AppError.forbidden("mutation blocked by guardrail"));
 
         AppError err = assertThrows(AppError.class,
-                () -> useCase.execute("demo", "mutation { x }", Map.of()));
+                () -> useCase.execute("demo", "mutation { x }", Map.of(), MeshAuth.NONE));
         assertEquals(ErrorCode.FORBIDDEN, err.getCode(),
                 "FORBIDDEN from the client layer must propagate unchanged");
     }

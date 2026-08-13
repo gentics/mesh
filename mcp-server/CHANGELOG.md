@@ -10,14 +10,29 @@ der Mesh-Version – ein eigenes Semver für den MCP-Server wird nicht mehr gef�
 ## [Unreleased]
 
 ### Added
-- **API-Key-Authentifizierung gegen Mesh** (`MESH_API_KEY`) als Alternative zu
-  `MESH_USERNAME` + `MESH_PASSWORD`. Der Key (langlebiges JWT aus Mesh) wird per
-  `MeshRestClient.setAPIKey()` als Bearer-Header an jede Anfrage gehängt – kein
-  Login-Roundtrip, kein Passwort im Deployment. Sind beide Varianten gesetzt,
-  gewinnt der API-Key (mit Warnung im Log). Beide Wege werden beim Start gegen
-  Mesh verifiziert, damit falsche Credentials sofort auffallen.
+- **Mesh-Identität hängt am Transport** – drei Fälle:
+  - `stdio`: feste Identität aus `MESH_API_KEY` (neu, langlebiges JWT via
+    `MeshRestClient.setAPIKey()`) **oder** `MESH_USERNAME` + `MESH_PASSWORD`.
+    Beim Start wird `me()` aufgerufen; antwortet Mesh als `anonymous`, wurden die
+    Zugangsdaten nicht akzeptiert und der Start bricht ab.
+  - `http` mit `MCP_AUTH_TOKEN`: das Bearer-Token authentifiziert den Client
+    gegenüber dem MCP-Server und wird **nicht** an Mesh weitergereicht – Mesh
+    sieht anonyme Requests.
+  - `http` mit `MCP_AUTH_DISABLED=true`: das `Authorization: Bearer …` des
+    Clients wird pro Request an Mesh durchgereicht (Header am einzelnen
+    `MeshRequest`, nicht am geteilten Client). Ohne Header: anonym.
+- CLI-Flags `--http`/`--stdio` werden jetzt vor der Konfigurations-Validierung
+  ausgewertet, weil der Transport entscheidet, welche Credentials zulässig sind.
 
 ### Changed
+- **BREAKING für HTTP-Deployments:** `MESH_API_KEY`, `MESH_USERNAME` und
+  `MESH_PASSWORD` gelten nur noch für `stdio`. Im HTTP-Modus bricht der Start mit
+  einem Konfigurationsfehler ab, wenn eine davon gesetzt ist – dort wären sie
+  wirkungslos. Bestehende HTTP-Deployments (inkl. `mcpServer.mesh.*` im
+  Helm-Chart) müssen diese Werte entfernen, und die `anonymous`-Rolle in Mesh
+  braucht Leserechte auf den Projekten aus `MESH_ALLOWED_PROJECTS`.
+- Startup-Check im HTTP-Modus ist jetzt ein unauthentifizierter Ping gegen
+  `MESH_BASE_URL` (es gibt dort nichts zu authentifizieren).
 - **Java-Baseline von 21 auf 17** gesenkt – identisch zum `mesh-enterprise`-Parent
   (`<release>17</release>`). Der Modul-eigene `maven-compiler-plugin`-Block entfällt,
   das Level kommt jetzt aus dem Parent. Der HTTP-Transport nutzt statt eines
