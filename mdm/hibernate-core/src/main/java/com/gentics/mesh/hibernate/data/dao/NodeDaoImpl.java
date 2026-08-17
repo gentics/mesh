@@ -1240,7 +1240,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 					.setParameter("schemaVersion", schemaVersion)
 					.getResultList();		
 			List<HibNodeFieldContainerImpl> schemaContent = contentStorage.findMany(edges);
-		Map<UUID, HibNodeFieldContainer> contentByNode = schemaContent.stream()
+			Map<UUID, HibNodeFieldContainer> contentByNode = schemaContent.stream()
 					.collect(collectingByNodeWithLanguageFallback(languageTags));
 
 			return contentByNode.values().stream().map(c -> new NodeContent(c.getNode(), c, languageTags, type));
