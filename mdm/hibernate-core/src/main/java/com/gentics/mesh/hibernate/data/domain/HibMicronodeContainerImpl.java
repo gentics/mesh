@@ -108,8 +108,13 @@ public class HibMicronodeContainerImpl extends AbstractHibBaseElement
 	}
 
 	@Override
+	public Class<? extends HibMicroschemaVersion> getSchemaContainerVersionClass() {
+		return HibMicroschemaVersionImpl.class;
+	}
+
+	@Override
 	public HibMicroschemaVersion getSchemaContainerVersion() {
-		return HibernateTx.get().load(getSchemaContainerVersionUuid(), HibMicroschemaVersionImpl.class);
+		return HibUnmanagedFieldContainer.super.getSchemaContainerVersion();
 	}
 
 	@Override

@@ -62,8 +62,6 @@ import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.database.connector.DatabaseConnector;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.etc.config.hibernate.HibernateStorageOptions;
-import com.gentics.mesh.unhibernate.ANSIJoinFragment;
-import com.gentics.mesh.unhibernate.Select;
 import com.gentics.mesh.hibernate.data.domain.HibMicronodeContainerImpl;
 import com.gentics.mesh.hibernate.data.domain.HibMicroschemaVersionImpl;
 import com.gentics.mesh.hibernate.data.domain.HibNodeFieldContainerImpl;
@@ -72,6 +70,8 @@ import com.gentics.mesh.hibernate.data.domain.HibSchemaVersionImpl;
 import com.gentics.mesh.hibernate.data.domain.HibUnmanagedFieldContainer;
 import com.gentics.mesh.hibernate.util.HibernateUtil;
 import com.gentics.mesh.hibernate.util.SplittingUtils;
+import com.gentics.mesh.unhibernate.ANSIJoinFragment;
+import com.gentics.mesh.unhibernate.Select;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
@@ -544,7 +544,13 @@ public class ContentNoCacheStorage {
 					query.setParameter("high", columnBetween.getRight());
 				}
 			});
-			result.putAll(resultStream.distinct().collect(Collectors.toMap(ContentKey::fromContent, Function.identity())));
+			result.putAll(resultStream.distinct().collect(Collectors.toMap(
+					content -> ContentKey.fromContentUUIDAndVersionUUID(
+							content.getDbUuid(), 
+							(UUID) content.getSchemaContainerVersionUuid(), 
+							content.getSchemaContainerVersionClass().equals(HibSchemaVersionImpl.class) ? ReferenceType.FIELD : ReferenceType.MICRONODE), 
+					Function.identity()
+			)));
 		});
 	}
 
