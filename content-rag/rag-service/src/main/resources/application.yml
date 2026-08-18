@@ -1,0 +1,46 @@
+spring:
+  application:
+    name: mesh-content-rag-service
+
+server:
+  port: 8090
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# RAG-spezifische Konfiguration (siehe RagProperties). Werte hier sind Entwicklungs-Defaults.
+rag:
+  elasticsearch:
+    url: ${ES_URL:http://localhost:9200}
+    index-prefix: rag
+  mesh:
+    url: ${MESH_URL:http://localhost:8080}
+    api-token: ${MESH_API_TOKEN:}
+  embedding:
+    provider: local-tei            # local-tei | external
+    model: intfloat/multilingual-e5-small
+    dimension: 384
+    endpoint: ${TEI_URL:http://localhost:8081}
+    batch-size: 32
+  llm:
+    profile: cloud-hybrid          # cloud-hybrid | sovereign-onprem
+    model: ${LLM_MODEL:eu-managed-llm}
+    endpoint: ${LLM_ENDPOINT:}
+    api-key: ${LLM_API_KEY:}
+  chunking:
+    max-chars: 1200
+    overlap-chars: 150
+  retrieval:
+    top-k: 8
+    min-score: 0.2
+    live-permission-check: false   # optionales Hardening (K3), default aus
+
+logging:
+  level:
+    com.gentics.mesh.contentrag: INFO

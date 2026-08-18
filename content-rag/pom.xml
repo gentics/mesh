@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.gentics.mesh.contentrag</groupId>
+    <artifactId>mesh-content-rag-parent</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>Gentics Mesh Content RAG (Parent)</name>
+    <description>
+        Retrieval-Augmented-Generation-System ueber Gentics-Mesh-Inhalte.
+        Hybrid-Deployment: schlankes Mesh-Plugin/Bridge + separater RAG-Service,
+        Elasticsearch als gemeinsame Such-/Vektor-Plattform. Siehe Konzept v0.2.
+    </description>
+
+    <modules>
+        <module>common</module>
+        <module>mesh-bridge</module>
+        <module>rag-service</module>
+    </modules>
+
+    <properties>
+        <java.version>21</java.version>
+        <maven.compiler.release>21</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- Versionen zentral verwaltet -->
+        <spring-boot.version>3.3.5</spring-boot.version>
+        <elasticsearch-java.version>8.15.3</elasticsearch-java.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Spring Boot BOM -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Interne Module -->
+            <dependency>
+                <groupId>com.gentics.mesh.contentrag</groupId>
+                <artifactId>mesh-content-rag-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.gentics.mesh.contentrag</groupId>
+                <artifactId>mesh-content-rag-bridge</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- Elasticsearch Java Client (gemeinsame Plattform mit Mesh-Volltextsuche) -->
+            <dependency>
+                <groupId>co.elastic.clients</groupId>
+                <artifactId>elasticsearch-java</artifactId>
+                <version>${elasticsearch-java.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.elasticsearch.client</groupId>
+                <artifactId>elasticsearch-rest-client</artifactId>
+                <version>${elasticsearch-java.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>${spring-boot.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <release>${maven.compiler.release}</release>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>3.6.3</version>
+                    <configuration>
+                        <source>${java.version}</source>
+                        <!-- Vollstaendige Doclint-Pruefung (Syntax, HTML, Referenzen, fehlende Doku). -->
+                        <doclint>all</doclint>
+                        <quiet>true</quiet>
+                        <!-- Aggregierte API-Doku: mvn javadoc:aggregate -->
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project>

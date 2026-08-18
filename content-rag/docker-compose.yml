@@ -1,0 +1,41 @@
+# Lokaler Entwicklungs-Stack fuer Gentics Mesh Content RAG (Konzept Abschnitt 8).
+# Bewusst KEINE separate Datenbank im Default: Betriebsdaten liegen in Elasticsearch (Konzept 6.1).
+#
+#   docker compose up -d
+#
+# Danach: RAG-Service lokal starten mit
+#   ES_URL=http://localhost:9200 TEI_URL=http://localhost:8081 \
+#   mvn -pl rag-service spring-boot:run
+
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.3
+    container_name: rag-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false        # nur lokal! Produktiv: Security aktivieren.
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+    ports:
+      - "9200:9200"
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  # HuggingFace Text Embeddings Inference (lokal, CPU-faehig) – Konzept 5.5.
+  # Multilinguales Embedding-Modell als Default (e5-small).
+  tei:
+    image: ghcr.io/huggingface/text-embeddings-inference:cpu-1.5
+    container_name: rag-tei
+    command: ["--model-id", "intfloat/multilingual-e5-small"]
+    ports:
+      - "8081:80"
+    volumes:
+      - tei-data:/data
+
+volumes:
+  es-data:
+  tei-data:
