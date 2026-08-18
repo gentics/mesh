@@ -30,6 +30,7 @@ import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
@@ -1168,4 +1169,20 @@ public interface ContentDao {
 	 * @return length limit
 	 */
 	int getStringLengthLimit();
+
+	/**
+	 * Stream the version's containers.
+	 * 
+	 * @param version
+	 * @return
+	 */
+	Stream<? extends HibNodeFieldContainer> getFieldsContainers(HibSchemaVersion version);
+
+	/**
+	 * Stream the version's microcontainers.
+	 * 
+	 * @param version
+	 * @return
+	 */
+	Stream<? extends HibMicronode> getFieldsContainers(HibMicroschemaVersion version);
 }

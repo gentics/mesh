@@ -2012,6 +2012,16 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	}
 
 	@Override
+	public Stream<HibNodeFieldContainerImpl> getFieldsContainers(HibSchemaVersion version) {
+		return contentStorage.findMany(version).stream();
+	}
+
+	@Override
+	public Stream<HibMicronodeContainerImpl> getFieldsContainers(HibMicroschemaVersion version) {
+		return contentStorage.findManyMicronodes(version).stream();
+	}
+
+	@Override
 	public int getStringLengthLimit() {
 		return databaseConnector.getStringLengthLimit();
 	}
