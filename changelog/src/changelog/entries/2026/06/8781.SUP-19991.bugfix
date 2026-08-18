@@ -1,0 +1,1 @@
+Core: An inconsistency case of a content edge pointing to the missing content record now has a repair mechanism.

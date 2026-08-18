@@ -1,0 +1,2 @@
+Schema Migrations, which renamed multiple fields and additionally created new fields using the old names but different field types always failed.
+This has been fixed.

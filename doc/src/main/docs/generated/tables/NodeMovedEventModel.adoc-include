@@ -8,52 +8,52 @@
 
 
 | branchUuid
-| true
+| yes
 | string
 | Branch uuid to which the node belongs.
 
 | cause
-| true
+| yes
 | object
 | Some events will be caused by another action. This object contains information about the cause of the event.
 
 | languageTag
-| false
+| no
 | string
 | ISO 639-1 language tag of the node content.
 
 | name
-| true
+| yes
 | string
 | Name of the referenced element.
 
 | origin
-| true
+| yes
 | string
 | Name of the mesh node from which the event originates.
 
 | project
-| true
+| yes
 | object
 | Reference to the project to which the element belonged.
 
 | schema
-| false
+| no
 | object
 | Schema reference of the node.
 
 | target
-| true
+| yes
 | object
 | Reference of the target node into which the source node was moved.
 
 | type
-| false
+| no
 | string
 | Type of the content (e.g. draft/published)
 
 | uuid
-| true
+| yes
 | string
 | Uuid of the referenced element.
 

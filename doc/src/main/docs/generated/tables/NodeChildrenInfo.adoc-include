@@ -8,12 +8,12 @@
 
 
 | count
-| true
+| yes
 | integer
-| Count of children which utilize the schema.
+| Count of children which utilize the schema.  Default: *0*.
 
 | schemaUuid
-| true
+| yes
 | string
 | Reference to the schema of the node child
 

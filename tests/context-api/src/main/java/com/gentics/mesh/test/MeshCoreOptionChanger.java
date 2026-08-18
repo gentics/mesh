@@ -37,7 +37,7 @@ public enum MeshCoreOptionChanger implements MeshOptionChanger {
 		} catch (Exception e) {
 			throw new RuntimeException("Could not find free port", e);
 		}
-	}), BATCH_MIGRATION(options -> {
+	}), SHORT_CONTENT_BATCH(options -> {
 		options.getContentOptions().setBatchSize(2);
 	}), GRAPHQL_FORCE_NATIVE_FILTER(options -> {
 		options.setNativeQueryFiltering(NativeQueryFiltering.ALWAYS);
@@ -45,6 +45,8 @@ public enum MeshCoreOptionChanger implements MeshOptionChanger {
 		options.setNativeQueryFiltering(NativeQueryFiltering.NEVER);
 	}), SHORT_BINARY_CHECK_INTERVAL(options -> {
 		options.getUploadOptions().setCheckInterval(5_000);
+	}), SHORT_MIGRATION_BATCH(options -> {
+		options.setMigrationMaxBatchSize(2);
 	});
 
 	private final Consumer<MeshOptions> changer;

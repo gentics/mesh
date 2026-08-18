@@ -8,32 +8,32 @@
 
 
 | versions.additionalProperties.items.branchRoot
-| true
+| yes
 | boolean
 | Is the version used as a root version in another branch?
 
 | versions.additionalProperties.items.created
-| true
+| yes
 | string
 | ISO8601 formatted created date string.
 
 | versions.additionalProperties.items.creator
-| true
+| yes
 | object
 | User reference of the creator of the element.
 
 | versions.additionalProperties.items.draft
-| true
+| yes
 | boolean
 | Is the content a draft version?
 
 | versions.additionalProperties.items.published
-| true
+| yes
 | boolean
 | Is the content published version?
 
 | versions.additionalProperties.items.version
-| true
+| yes
 | string
 | Version of the content.
 

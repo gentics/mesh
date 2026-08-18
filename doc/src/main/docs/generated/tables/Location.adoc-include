@@ -8,17 +8,17 @@
 
 
 | alt
-| false
+| no
 | integer
 | GPS Altitude in meters over sea level.
 
 | lat
-| true
+| yes
 | number
 | GPS Latitude
 
 | lon
-| true
+| yes
 | number
 | GPS Longitude
 

@@ -8,12 +8,12 @@
 
 
 | deleteOther
-| false
+| no
 | boolean
-| This flag states that all the existing variants, except the mentioned in &#x60;variants&#x60; field, should be dropped.If no variants are provided along with the flag, all the image manipulation variants are to be dropped.
+| This flag states that all the existing variants, except the mentioned in &#x60;variants&#x60; field, should be dropped.If no variants are provided along with the flag, all the image manipulation variants are to be dropped.  Default: *false*.
 
 | variants
-| false
+| no
 | array
 | This field contains a set of image manipulation variants to be manipulated upon.
 

@@ -8,68 +8,68 @@
 
 
 | completionCount
-| true
+| yes
 | integer
-| The completion count of the job. This indicates how many items the job has processed.
+| The completion count of the job. This indicates how many items the job has processed.  Default: *0*.
 
 | created
-| true
+| yes
 | string
 | ISO8601 formatted created date string.
 
 | creator
-| true
+| yes
 | object
 | User reference of the creator of the element.
 
 | errorDetail
-| false
+| no
 | string
 | The detailed error information of the job.
 
 | errorMessage
-| false
+| no
 | string
 | The error message of the job.
 
 | nodeName
-| false
+| no
 | string
 | Name of the Gentics Mesh instance on which the job was executed.
 
 | properties
-| true
+| yes
 | object
-| Properties of the job.
+| Properties of the job.  Default: *{}*.
 
 | startDate
-| true
+| yes
 | string
 | The start date of the job.
 
 | status
-| true
+| yes
 | string
 | Migration status.
 
 | stopDate
-| true
+| yes
 | string
 | The stop date of the job.
 
 | type
-| true
+| yes
 | string
 | The type of the job.
 
 | uuid
-| true
+| yes
 | string
 | Uuid of the element
 
 | warnings
-| false
+| no
 | array
-| List of warnings which were encoutered while executing the job.
+| List of warnings which were encoutered while executing the job.  Default: *[]*.
 
 |======

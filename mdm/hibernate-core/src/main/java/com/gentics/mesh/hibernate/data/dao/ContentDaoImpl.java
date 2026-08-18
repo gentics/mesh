@@ -460,7 +460,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 
 		EntityManager em = currentTransaction.getEntityManager();
 		// origin content UUID / referencing Content map, split by reftype
-		Map<ReferenceType, Map<UUID, ContentKey>> micronodeEdges = SplittingUtils.splitAndMergeInSet(micronodeFields.keySet(), HibernateUtil.inQueriesLimitForSplitting(1), slice -> {
+		Map<ReferenceType, Map<UUID, Set<ContentKey>>> micronodeEdges = SplittingUtils.splitAndMergeInSet(micronodeFields.keySet(), HibernateUtil.inQueriesLimitForSplitting(1), slice -> {
 				return Stream.concat(
 					em.createNamedQuery("micronodefieldref.findByMicrocontainerUuids", HibMicronodeFieldEdgeImpl.class)
 						.setParameter("micronodeUuids", slice)
@@ -469,15 +469,19 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 						.setParameter("micronodeUuids", slice)
 						.getResultStream()
 				).map(edge -> Pair.of(ContentKey.fromEdge(edge), edge.getValueOrUuid())).collect(Collectors.toSet());
-			}).stream().collect(Collectors.groupingBy(pair -> pair.getLeft().getType(), Collectors.mapping(Function.identity(), Collectors.toMap(pair -> pair.getRight(), pair -> pair.getLeft()))));
+			}).stream().collect(Collectors.groupingBy(pair -> pair.getLeft().getType(), Collectors.mapping(Function.identity(), Collectors.toMap(pair -> pair.getRight(), pair -> Set.of(pair.getLeft()), (a,b) -> {
+				Set<ContentKey> mergedSet = new HashSet<>(a);
+				mergedSet.addAll(b);
+				return mergedSet;
+			}))));
 
 		// Nodes referenced by micronode (s|lists). Note the remove() call.
 		Stream<Pair<HibNodeField, Collection<HibNodeFieldContainer>>> nodeMicroEdges = (Stream) Optional.ofNullable(micronodeEdges.remove(ReferenceType.FIELD))
 				.map(nodeFieldEdges -> {
 					// referencing ContentKey / origin 
-					Map<ContentKey, Set<UUID>> contentKeyUuids = nodeFieldEdges.entrySet().stream().collect(Collectors.groupingBy(Entry::getValue, Collectors.mapping(Entry::getKey, Collectors.toSet())));
+					Map<ContentKey, Set<UUID>> contentKeyUuids = nodeFieldEdges.entrySet().stream().flatMap(e -> e.getValue().stream().map(v -> Pair.of(e.getKey(), v))).collect(Collectors.groupingBy(Pair::getValue, Collectors.mapping(Pair::getKey, Collectors.toSet())));
 					// content referencing micronodes of target fields
-					List<HibNodeFieldContainerImpl> nodesReferencingMicronodes = contentStorage.findMany(nodeFieldEdges.values().stream().collect(Collectors.toSet()));
+					List<HibNodeFieldContainerImpl> nodesReferencingMicronodes = contentStorage.findMany(nodeFieldEdges.values().stream().flatMap(v -> v.stream()).collect(Collectors.toSet()));
 					return nodesReferencingMicronodes.stream().flatMap(nodeMicroContent -> Optional.ofNullable(contentKeyUuids.get(ContentKey.fromContent(nodeMicroContent)))
 									.map(Set::stream).orElseGet(Stream::empty)
 								.flatMap(origContentUuid -> Optional.ofNullable(micronodeFields.get(origContentUuid))

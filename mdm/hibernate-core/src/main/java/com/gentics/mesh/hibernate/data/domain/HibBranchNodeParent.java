@@ -3,6 +3,7 @@ package com.gentics.mesh.hibernate.data.domain;
 import java.io.Serializable;
 import java.util.Objects;
 
+import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.jpa.AvailableHints;
 
@@ -24,7 +25,7 @@ import jakarta.persistence.QueryHint;
  * An alternative solution would be to use Common Table Expression but this is not supported by all databases and JPA.
  *
  */
-@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "HibEntityCache")
 @Entity(name = "node_branch_parent")
 @NamedQueries(
         value = {

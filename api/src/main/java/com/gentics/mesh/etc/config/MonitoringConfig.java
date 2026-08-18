@@ -32,32 +32,32 @@ public class MonitoringConfig implements Option {
 	public static final long DEFAULT_GC_TIME_LIMIT = 50;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Enable or disable the monitoring system. Default is: " + DEFAULT_MONITORING_ENABLED)
+	@JsonPropertyDescription("Enable or disable the monitoring system.")
 	@EnvironmentVariable(name = MESH_MONITORING_ENABLED_ENV, description = "Override the configured monitoring enabled flag.")
 	public boolean enabled = DEFAULT_MONITORING_ENABLED;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Configure the Gentics Mesh monitoring HTTP server port. Default is: " + DEFAULT_MONITORING_HTTP_PORT)
+	@JsonPropertyDescription("Configure the Gentics Mesh monitoring HTTP server port.")
 	@EnvironmentVariable(name = MESH_MONITORING_HTTP_PORT_ENV, description = "Override the configured monitoring server http port.")
 	private int port = DEFAULT_MONITORING_HTTP_PORT;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Configure the Gentics Mesh monitoring HTTP server host to bind to. Default is: " + DEFAULT_MONITORING_HTTP_HOST)
+	@JsonPropertyDescription("Configure the Gentics Mesh monitoring HTTP server host to bind to.")
 	@EnvironmentVariable(name = MESH_MONITORING_HTTP_HOST_ENV, description = "Override the configured monitoring http server host which is used to bind to.")
 	private String host = DEFAULT_MONITORING_HTTP_HOST;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Enable or disable the measuring of JVM metrics. Default is: " + DEFAULT_JVM_METRICS_ENABLED)
+	@JsonPropertyDescription("Enable or disable the measuring of JVM metrics.")
 	@EnvironmentVariable(name = "MESH_MONITORING_JVM_METRICS_ENABLED", description = "Override the configured JVM metrics enabled flag.")
 	private boolean jvmMetricsEnabled = DEFAULT_JVM_METRICS_ENABLED;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Limit of used memory in percent, which will cause Mesh to become unhealthy. Defaults to " + DEFAULT_MEMORY_LIMIT + "%")
+	@JsonPropertyDescription("Limit of used memory in percent, which will cause Mesh to become unhealthy.")
 	@EnvironmentVariable(name = MESH_MONITORING_MEMORY_LIMIT_ENV, description = "Override the memory limit in percent.")
 	private long memoryLimit = DEFAULT_MEMORY_LIMIT;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Limit time used for garbage collections percent, which will cause Mesh to become unhealthy. Defaults to " + DEFAULT_GC_TIME_LIMIT + "%")
+	@JsonPropertyDescription("Limit time used for garbage collections percent, which will cause Mesh to become unhealthy.")
 	@EnvironmentVariable(name = MESH_MONITORING_GC_LIMIT_ENV, description = "Override the garbage collection limit in percent.")
 	private long gcTimeLimit = DEFAULT_GC_TIME_LIMIT;
 

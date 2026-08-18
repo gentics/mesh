@@ -8,42 +8,42 @@
 
 
 | fields
-| false
+| no
 | object
-| Dynamic map with fields of the node content.
+| Dynamic map with fields of the node content.  Default: *{}*.
 
 | grant
-| false
+| no
 | object
 | Permissions to be granted to roles on the node.
 
 | language
-| true
+| yes
 | string
 | ISO 639-1 language tag of the node content.
 
 | parentNode
-| true
+| yes
 | object
 | Reference to the parent node in which the node will be created. The uuid of this object must be set.
 
 | publish
-| false
+| no
 | boolean
-| Whether the publish the node after creation/updating.
+| Whether the publish the node after creation/updating.  Default: *false*.
 
 | schema
-| true
+| yes
 | object
 | Reference to the schema of the node.
 
 | tags
-| false
+| no
 | array
 | List of tags that should be used to tag the node.
 
 | version
-| false
+| no
 | string
 | Version number which must be provided in order to handle and detect concurrent changes to the node content.
 

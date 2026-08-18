@@ -8,37 +8,37 @@
 
 
 | branch
-| true
+| yes
 | object
 | Reference to the branch.
 
 | cause
-| true
+| yes
 | object
 | Some events will be caused by another action. This object contains information about the cause of the event.
 
 | oldSchema
-| true
+| yes
 | object
 | Reference to the old schema version that was assigned before (may be null).
 
 | origin
-| true
+| yes
 | string
 | Name of the mesh node from which the event originates.
 
 | project
-| true
+| yes
 | object
 | Reference to the project to which the element belonged.
 
 | schema
-| true
+| yes
 | object
 | Reference to the schema that was assigned.
 
 | status
-| true
+| yes
 | string
 | Status of the migration job that has been created when assigning the schema.
 

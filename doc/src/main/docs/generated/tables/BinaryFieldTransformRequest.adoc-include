@@ -8,42 +8,42 @@
 
 
 | cropMode
-| false
+| no
 | string
 | Crop mode. To be used in conjunction with cropRect
 
 | cropRect
-| false
+| no
 | object
 | Crop area.
 
 | focalPoint
-| false
+| no
 | object
 | Optional new focal point for the transformed image.
 
 | height
-| false
+| no
 | string
 | New height of the image.
 
 | language
-| true
+| yes
 | string
 | ISO 639-1 language tag of the node which provides the image which should be transformed.
 
 | resizeMode
-| false
+| no
 | string
 | Resize mode.
 
 | version
-| true
+| yes
 | string
 | Version number which must be provided in order to handle and detect concurrent changes to the node content.
 
 | width
-| false
+| no
 | string
 | New width of the image.
 

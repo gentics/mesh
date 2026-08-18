@@ -8,118 +8,118 @@
 
 
 | bulkDebounceTime
-| false
+| no
 | integer
-| The maximum amount of time in milliseconds between two bulkable requests before they are sent. Default: 2000
+| The maximum amount of time in milliseconds between two bulkable requests before they are sent.  Default: *2000*.
 
 | bulkLengthLimit
-| false
+| no
 | integer
-| Upper limit for the total encoded string length of the bulk requests. Default: 5000000
+| Upper limit for the total encoded string length of the bulk requests.  Default: *5000000*.
 
 | bulkLimit
-| false
+| no
 | integer
-| Upper limit for the size of bulk requests. Default: 100
+| Upper limit for the size of bulk requests.  Default: *100*.
 
 | caPath
-| false
+| no
 | string
 | Path to the trusted common authority certificate (PEM format)
 
 | certPath
-| false
+| no
 | string
 | Path to the trusted server certificate (PEM format). This setting can be used when the Elasticsearch server is using a self-signed certificate which would otherwise not be trusted.
 
 | complianceMode
-| false
+| no
 | string
-| This setting controls the compliance mode for Elasticsearch. Currently supported modes are ES_6, ES_7 and ES_8. Default: ES_6
+| This setting controls the compliance mode for Elasticsearch. Currently supported modes are ES_6, ES_7 and ES_8.  Default: *ES_6*.
 
 | eventBufferSize
-| false
+| no
 | integer
-| Upper limit for mesh events that are to be mapped to elastic search requests. Default: 1000
+| Upper limit for mesh events that are to be mapped to elastic search requests.  Default: *1000*.
 
 | hostnameVerification
-| false
+| no
 | boolean
-| Flag which controls whether hostname verification should be enabled. Default: true
+| Flag which controls whether hostname verification should be enabled.  Default: *true*.
 
 | idleDebounceTime
-| false
+| no
 | integer
-| The maximum amount of time in milliseconds between two successful requests before the idle event is emitted. Default: 100
+| The maximum amount of time in milliseconds between two successful requests before the idle event is emitted.  Default: *100*.
 
 | includeBinaryFields
-| false
+| no
 | boolean
-| If true, the content and metadata of binary fields will be included in the search index. Default: true
+| If true, the content and metadata of binary fields will be included in the search index.  Default: *true*.
 
 | indexCheckInterval
-| false
+| no
 | integer
-| Set the interval of index checks in ms. Default: 60000
+| Set the interval of index checks in ms.  Default: *60000*.
 
 | indexMappingCacheTimeout
-| false
+| no
 | integer
-| Set the timeout for the cache of index mappings in ms. Default: 3600000
+| Set the timeout for the cache of index mappings in ms.  Default: *3600000*.
 
 | mappingMode
-| false
+| no
 | string
-| This setting controls the mapping mode of fields for Elasticsearch. When set to STRICT only fields which have a custom mapping will be added to Elasticsearch. Mode DYNAMIC will automatically use the Gentics Mesh default mappings which can be supplemented with custom mappings. Default: DYNAMIC
+| This setting controls the mapping mode of fields for Elasticsearch. When set to STRICT only fields which have a custom mapping will be added to Elasticsearch. Mode DYNAMIC will automatically use the Gentics Mesh default mappings which can be supplemented with custom mappings.  Default: *DYNAMIC*.
 
 | password
-| false
+| no
 | string
 | Password to be used for Elasticsearch authentication.
 
 | prefix
-| false
+| no
 | string
-| Search server prefix for this installation. Choosing different prefixes for each Gentics Mesh instance will allow you to use a single Elasticsearch cluster for multiple Gentics Mesh instances. Default: mesh-
+| Search server prefix for this installation. Choosing different prefixes for each Gentics Mesh instance will allow you to use a single Elasticsearch cluster for multiple Gentics Mesh instances.  Default: *mesh-*.
 
 | retryInterval
-| false
+| no
 | integer
-| The time in milliseconds between retries of elastic search requests in case of a failure. Default: 5000
+| The time in milliseconds between retries of elastic search requests in case of a failure.  Default: *5000*.
 
 | retryLimit
-| false
+| no
 | integer
-| The amount of retries on a single request before the request is discarded. Default: 3
+| The amount of retries on a single request before the request is discarded.  Default: *3*.
 
 | syncBatchSize
-| false
+| no
 | integer
-| Configure the index sync batch size. Default: 50000
+| Configure the index sync batch size.  Default: *50000*.
 
 | syncFetchBatchSize
-| false
+| no
 | integer
-| Configure the batch size while fetching the index versions. Default: 10000
+| Configure the batch size while fetching the index versions.  Default: *10000*.
 
 | timeout
-| false
+| no
 | integer
-| Timeout for Elasticsearch operations. Default: 60000ms
+| Timeout for Elasticsearch operations.  Default: *60000*.
 
 | url
-| false
+| no
 | string
-| Elasticsearch connection url to be used. Set this setting to null will disable the Elasticsearch support.
+| Elasticsearch connection url to be used. Set this setting to null will disable the Elasticsearch support.  Default: *http://localhost:9200*.
 
 | username
-| false
+| no
 | string
 | Username to be used for Elasticsearch authentication.
 
 | waitForIdle
-| false
+| no
 | boolean
-| If true, search endpoints wait for elasticsearch to be idle before sending a response. Default: true
+| If true, search endpoints wait for elasticsearch to be idle before sending a response.  Default: *true*.
 
 |======

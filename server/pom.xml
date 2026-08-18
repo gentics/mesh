@@ -144,6 +144,7 @@
 									<excludes>
 										<exclude>com/hazelcast/hibernate/PhoneHomeInfo.class</exclude>
 										<exclude>com/hazelcast/hibernate/PhoneHomeInfo$QueryStringBuilder.class</exclude>
+										<exclude>com/hazelcast/hibernate/local/FreeHeapBasedCacheEvictor.class</exclude>
 									</excludes>
 								</filter>
 								<filter>

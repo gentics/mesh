@@ -8,7 +8,7 @@
 
 
 | status
-| true
+| yes
 | string
 | The current Gentics Mesh server status.
 

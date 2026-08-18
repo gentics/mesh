@@ -8,8 +8,8 @@
 
 
 | microschemas
-| false
+| no
 | array
-| List of microschema references.
+| List of microschema references.  Default: *[]*.
 
 |======

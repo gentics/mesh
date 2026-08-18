@@ -8,17 +8,17 @@
 
 
 | strictValidation
-| boolean  (default: false) 
+| boolean
 | false
-| Validate the Elasticsearch settings in the schema. When this parameter is set, a schema update or creation will fail, when the respective Elasticsearch index cannot be created.
+| Validate the Elasticsearch settings in the schema. When this parameter is set, a schema update or creation will fail, when the respective Elasticsearch index cannot be created. Default: false. 
 
 | updateAssignedBranches
-| boolean  (default: true) 
+| boolean
 | false
-| Update the schema version for all branches which already utilize the schema.
+| Update the schema version for all branches which already utilize the schema. Default: true. 
 
 | updateBranchNames
-| string 
+| string
 | false
 | List of branch names which should be included in the update process. By default all branches which use the schema will be updated. You can thus use this parameter to only include a subset of branch in the update.
 

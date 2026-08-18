@@ -31,7 +31,7 @@ import com.gentics.mesh.dagger.annotations.ElementTypeKey;
 	name = "tagfamily.findtagsfortagfamilies",
 	query = "select f, t from tagfamily f inner join f.tags t where f.dbUuid in :tagFamilyUuids"
 )
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "HibEntityCache")
 @Entity(name = "tagfamily")
 @ElementTypeKey(ElementType.TAGFAMILY)
 public class HibTagFamilyImpl extends AbstractHibUserTrackedElement<TagFamilyResponse> implements HibTagFamily, Serializable {

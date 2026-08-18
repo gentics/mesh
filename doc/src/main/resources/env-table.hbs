@@ -2,10 +2,10 @@
 |======
 
 | Variable
-| Description
+| Description _(and its YAML config field, if exists)_
 
 {{#each entries}}
 | *{{this.name}}*
-| {{this.description}}
+| {{this.description}}  {{#if this.field}}_({{this.field}})_{{/if}}
 {{/each}}
 |======

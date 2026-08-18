@@ -8,17 +8,17 @@
 
 
 | children
-| false
+| no
 | array
 | List of further child elements of the node.
 
 | node
-| false
+| no
 | object
 | Detailed node information.
 
 | uuid
-| false
+| no
 | string
 | Uuid of the node within this navigation element.
 

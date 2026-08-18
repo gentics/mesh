@@ -8,22 +8,22 @@
 
 
 | hostname
-| false
+| no
 | string
 | The hostname of the branch which will be used to generate links across multiple projects.
 
 | name
-| true
+| yes
 | string
 | Name of the branch.
 
 | pathPrefix
-| false
+| no
 | string
 | Optional path prefix for webroot path and rendered links.
 
 | ssl
-| false
+| no
 | boolean
 | SSL flag of the branch which will be used to generate links across multiple projects.
 

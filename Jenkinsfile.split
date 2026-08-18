@@ -26,6 +26,7 @@ properties([
 		booleanParam(name: 'setBranchAsVersion',  defaultValue: false, description: "Whether to set the branch name as project version (unless runDeploy is true). Use this together with runMavenBuild to install the maven artifacts to the local repository (changelog and documentation will be skipped)."),
 		booleanParam(name: 'runIntegrationTests', defaultValue: false, description: "Whether to run integration tests."),
 		booleanParam(name: 'consistencyChecks',   defaultValue: false, description: "Whether to do consistency checks for every test. Enabling this will increase overall test runtime."),
+		booleanParam(name: 'skipJsLibraries',     defaultValue: false, description: "Whether to skip deployment of Javascript/Typescript libraries"),
 		string(	     name: 'testingVersion',      defaultValue: "",    description: "Version for testing"),
 		string(		 name: 'meshVersion',         defaultValue: "",    description: "Override Mesh version"),
 	])
@@ -358,7 +359,7 @@ stage("Setup Build Environment") {
 					sh "cd server ; docker build --network=host -t " + registryHost + "/gentics/mesh:latest -t " + registryHost + "/gentics/mesh:" + version + " . ; cd .. "
 
 					if (!params.omitScan) {
-						scanImage image: registryHost + "/gentics/mesh:" + version, exitCode: 1
+						scanImage image: registryHost + "/gentics/mesh:" + version, exitCode: 1, dockerParams: "-v ${env.WORKSPACE}/build/trivyignore:/tmp/trivyignore", params: "--ignorefile /tmp/trivyignore"
 					}
 
 					// connectors
@@ -367,8 +368,8 @@ stage("Setup Build Environment") {
 					sh "cd .docker ; cp ../connectors/mariadb/target/mesh-database-connector-mariadb-" + mavenVersion + ".jar ./mesh-connector.jar ; docker build --network=host -t " + registryHost + "/gentics/mesh-mariadb:latest -t " + registryHost + "/gentics/mesh-mariadb:" + version + " --build-arg MESH_VERSION=" + version + " --build-arg MESH_REGISTRY_HOST=" + registryHost + " . ; rm -f mesh-connector.jar ; cd .."
 
 					if (!params.omitScan) {
-						scanImage image: registryHost + "/gentics/mesh-hsqldb:" + version, exitCode: 1
-						scanImage image: registryHost + "/gentics/mesh-mariadb:" + version, exitCode: 1
+						scanImage image: registryHost + "/gentics/mesh-hsqldb:" + version, exitCode: 1, dockerParams: "-v ${env.WORKSPACE}/build/trivyignore:/tmp/trivyignore", params: "--ignorefile /tmp/trivyignore"
+						scanImage image: registryHost + "/gentics/mesh-mariadb:" + version, exitCode: 1, dockerParams: "-v ${env.WORKSPACE}/build/trivyignore:/tmp/trivyignore", params: "--ignorefile /tmp/trivyignore"
 					}
 
 				} else {
@@ -423,7 +424,7 @@ stage("Setup Build Environment") {
 						}
 					}
 
-					if (Boolean.valueOf(params.runDeploy)) {
+					if (Boolean.valueOf(params.runDeploy) && !Boolean.valueOf(params.skipJsLibraries)) {
 						sh "echo @gentics:registry=https://repo.gentics.com/repository/npm-products/ > js/.npmrc"
 						sh "echo 'git-tag-version = false' >> js/.npmrc"
 						sh "echo 'allow-same-version = true' >> js/.npmrc"

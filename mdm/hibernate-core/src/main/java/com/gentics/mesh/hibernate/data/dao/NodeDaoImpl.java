@@ -434,9 +434,12 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 	public Map<HibNode, List<NodeContent>> getChildren(Set<HibNode> nodes, InternalActionContext ac, String branchUuid, List<String> languageTags, ContainerType type, PagingParameters paging, Optional<FilterOperation<?>> maybeNativeFiltering) {
 		InternalPermission perm = type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM;
 		Map<HibNode, List<HibNode>> nodeChildrenMap = Optional.of(maybeNativeFiltering.isPresent() || PersistingRootDao.shouldSort(paging)).filter(b -> b)
-				.map(unused -> findAllStream(Tx.get().getProject(ac), ac, perm, paging, 
-								Optional.ofNullable(type), maybeNativeFiltering, Optional.ofNullable(nodes), Optional.empty(), Optional.empty(), Optional.ofNullable(languageTags), Optional.of(UUIDUtil.toJavaUuid(branchUuid)), true, true)
-						.collect(Collectors.groupingBy(p -> p.getParentEdge().getNodeParent(), Collectors.mapping(p -> p.getNode(), Collectors.toList()))))
+				.map(unused -> {
+					int limit = maybeNativeFiltering.map(nf -> nf.toSql().split(" :").length).orElse(1) + paging.getSort().size() + languageTags.size();
+					return SplittingUtils.splitAndMergeInMap(nodes, inQueriesLimitForSplitting(limit), uuids -> findAllStream(Tx.get().getProject(ac), ac, perm, paging, 
+							Optional.ofNullable(type), maybeNativeFiltering, Optional.ofNullable(new HashSet<>(uuids)), Optional.empty(), Optional.empty(), Optional.ofNullable(languageTags), Optional.of(UUIDUtil.toJavaUuid(branchUuid)), true, true)
+					.collect(Collectors.groupingBy(p -> p.getParentEdge().getNodeParent(), Collectors.mapping(p -> p.getNode(), Collectors.toList()))));
+				})
 				.orElseGet(() -> {
 					Map<HibNode, List<HibNode>> children = getChildren(nodes, branchUuid);
 
@@ -1405,15 +1408,15 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 						.getResultList();
 			});
 		} else {
-			edges = SplittingUtils.splitAndMergeInList(nodes, HibernateUtil.inQueriesLimitForSplitting(3 + roles.size() + languageTags.size()), (params) -> {
-				return em().createNamedQuery("contentEdge.findByNodeTypeBranchAndLanguage", HibNodeFieldContainerEdgeImpl.class)
-						.setParameter("nodes", params)
-						.setParameter("type", type)
-						.setParameter("branchUuid", UUIDUtil.toJavaUuid(branchUuid))
-						.setParameter("languageTags", languageTags)
-						.setParameter("roles", roles)
-						.getResultList();
-			});
+			edges = SplittingUtils.splitAndMergeInList(nodes, HibernateUtil.inQueriesLimitForSplitting(3 + languageTags.size()),
+					(nodeSplit) -> SplittingUtils.splitAndMergeInList(roles, HibernateUtil.inQueriesLimitForSplitting(3 + nodeSplit.size() + languageTags.size()), 
+							roleSplit -> em().createNamedQuery("contentEdge.findByNodeTypeBranchAndLanguage", HibNodeFieldContainerEdgeImpl.class)
+								.setParameter("nodes", nodeSplit)
+								.setParameter("type", type)
+								.setParameter("branchUuid", UUIDUtil.toJavaUuid(branchUuid))
+								.setParameter("languageTags", languageTags)
+								.setParameter("roles", roleSplit)
+								.getResultList()));
 		}
 
 		List<HibNodeFieldContainerImpl> schemaContent = contentStorage.findMany(edges);
@@ -1502,6 +1505,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 				.getResultStream().collect(Collectors.toSet());
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Map<String, NodeChildrenInfo> getChildrenInfo(HibNode node, InternalActionContext ac, String branchUuid, boolean allowDataLoader) {
 		if (allowDataLoader && maybeChildrenInfoLoader().isPresent()) {
@@ -1543,6 +1547,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 		return childrenInfo;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Map<HibNode, Map<String, NodeChildrenInfo>> getChildrenInfo(Collection<HibNode> nodes,
 			InternalActionContext ac, String branchUuid) {
@@ -1622,7 +1627,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 
 		SplittingUtils.splitAndConsume(nodeUuids, inQueriesLimitForSplitting(0), split -> {
 			em().createQuery("select edge from nodefieldcontainer edge where edge.node.dbUuid in :uuids",
-					HibNodeFieldContainerEdgeImpl.class).setParameter("uuids", nodeUuids).getResultList();
+					HibNodeFieldContainerEdgeImpl.class).setParameter("uuids", split).getResultList();
 		});
 	}
 }

@@ -8,22 +8,22 @@
 
 
 | publishDate
-| false
+| no
 | string
 | ISO8601 formatted publish date string.
 
 | published
-| true
+| yes
 | boolean
-| Flag which indicates whether the content is published.
+| Flag which indicates whether the content is published.  Default: *false*.
 
 | publisher
-| false
+| no
 | object
 | Reference to the publisher user of the node content.
 
 | version
-| true
+| yes
 | string
 | Version number.
 

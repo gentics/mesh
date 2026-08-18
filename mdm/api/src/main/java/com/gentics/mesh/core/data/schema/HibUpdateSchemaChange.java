@@ -14,7 +14,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import com.gentics.mesh.core.rest.common.FieldContainer;
+import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -194,7 +194,7 @@ public interface HibUpdateSchemaChange extends HibFieldSchemaContainerUpdateChan
 	}
 
 	@Override
-	default Map<String, Field> createFields(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
+	default Map<String, Field> createFields(FieldSchemaContainer oldSchema, FieldMap oldFields) {
 		return Collections.emptyMap();
 	}
 }

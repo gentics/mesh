@@ -169,6 +169,8 @@ cache:
   pathCacheSize: 20000
   fieldContainerCacheSize: "50_000"
   listFieldCacheSize: "50_000"
+  clusteredHibernateCacheHeapFree: "10%"
+  nonClusteredHibernateCacheSize: "50_000"
 debugInfo:
   logFolder: "debuginfo"
   logFileSize: "5MB"

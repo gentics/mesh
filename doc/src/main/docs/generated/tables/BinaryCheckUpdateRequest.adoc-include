@@ -8,12 +8,12 @@
 
 
 | reason
-| false
+| no
 | string
 | The reason why the binary was denied if applicable.
 
 | status
-| true
+| yes
 | string
 | The new status for the binary. One of ACCEPTED or DENIED.
 

@@ -31,8 +31,8 @@ public class MeshUploadOptions implements Option {
 	public static final String MESH_BINARY_METADATA_WHITELIST_ENV = "MESH_BINARY_METADATA_WHITELIST";
 	public static final String MESH_BINARY_CHECK_INTERVAL = "MESH_BINARY_CHECK_INTERVAL";
 
-	@JsonProperty(required = false)
-	@JsonPropertyDescription("The upload size limit in bytes. Default: " + DEFAULT_FILEUPLOAD_BYTE_LIMIT + " (" + DEFAULT_FILEUPLOAD_MB_LIMIT + " MB)")
+	@JsonProperty(required = false, defaultValue = DEFAULT_FILEUPLOAD_BYTE_LIMIT + " (" + DEFAULT_FILEUPLOAD_MB_LIMIT + " MB)")
+	@JsonPropertyDescription("The upload size limit in bytes.")
 	@EnvironmentVariable(name = MESH_BINARY_UPLOAD_LIMIT_ENV, description = "Override the configured binary byte upload limit.")
 
 	private long byteLimit = DEFAULT_FILEUPLOAD_BYTE_LIMIT;
@@ -48,13 +48,12 @@ public class MeshUploadOptions implements Option {
 	private String tempDirectory = DEFAULT_TEMP_DIR;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("The parser limit for uploaded documents (pdf, doc, docx). Default: " + DEFAULT_DOCUMENT_PARSER_LIMIT)
+	@JsonPropertyDescription("The parser limit for uploaded documents (pdf, doc, docx).")
 	@EnvironmentVariable(name = MESH_BINARY_DOCUMENT_PARSER_LIMIT_ENV, description = "Override the configured parser limit.")
 	private int parserLimit = DEFAULT_DOCUMENT_PARSER_LIMIT;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("If true, the document parser will process uploads and extract metadata and contents. Default: "
-		+ DEFAULT_UPLOAD_PARSER_FLAG)
+	@JsonPropertyDescription("If true, the document parser will process uploads and extract metadata and contents.")
 	@EnvironmentVariable(name = MESH_BINARY_DOCUMENT_PARSER_ENV, description = "Override the document parser enabled flag.")
 	private boolean parser = DEFAULT_UPLOAD_PARSER_FLAG;
 
@@ -64,7 +63,7 @@ public class MeshUploadOptions implements Option {
 	private Set<String> metadataWhitelist;
 
 	@JsonProperty
-	@JsonPropertyDescription("Interval in milliseconds for performing binary check requests for binary fields where a check service URL is defined. For values less than one the check is disabled. (default: 60000).")
+	@JsonPropertyDescription("Interval in milliseconds for performing binary check requests for binary fields where a check service URL is defined. For values less than one the check is disabled.")
 	@EnvironmentVariable(name = MESH_BINARY_CHECK_INTERVAL, description = "Override the binary check interval")
 	private long checkInterval = DEFAULT_CHECK_INTERVAL;
 

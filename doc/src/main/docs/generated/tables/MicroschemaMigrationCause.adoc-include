@@ -8,42 +8,42 @@
 
 
 | branch
-| true
+| yes
 | object
 | Branch to which the migration applies.
 
 | cause
-| true
+| yes
 | object
 | Some events will be caused by another action. This object contains information about the cause of the event.
 
 | fromVersion
-| true
+| yes
 | object
 | Reference to the source microschema version.
 
 | origin
-| true
+| yes
 | string
 | Name of the mesh node from which the event originates.
 
 | project
-| true
+| yes
 | object
 | Project to which the migration applies.
 
 | status
-| true
+| yes
 | string
 | Status of the migration at the time when the event was send.
 
 | toVersion
-| true
+| yes
 | object
 | Reference to the target microschema version.
 
 | uuid
-| true
+| yes
 | string
 | Uuid of the corresponding job.
 

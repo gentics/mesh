@@ -8,17 +8,17 @@
 
 
 | cause
-| true
+| yes
 | object
 | Some events will be caused by another action. This object contains information about the cause of the event.
 
 | indexPattern
-| true
+| yes
 | string
-| Index pattern
+| Index pattern  Default: *.**.
 
 | origin
-| true
+| yes
 | string
 | Name of the mesh node from which the event originates.
 

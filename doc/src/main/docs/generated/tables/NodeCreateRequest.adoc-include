@@ -8,42 +8,42 @@
 
 
 | assignLanguage
-| false
+| no
 | boolean
-| Assign a requested language to the project, if none was so far. Default is &#x27;true&#x27;.
+| Assign a requested language to the project, if none was so far. Default is &#x27;true&#x27;.  Default: *true*.
 
 | fields
-| true
+| yes
 | object
-| Dynamic map with fields of the node content.
+| Dynamic map with fields of the node content.  Default: *{}*.
 
 | grant
-| false
+| no
 | object
 | Permissions to be granted to roles on the created node.
 
 | language
-| true
+| yes
 | string
 | ISO 639-1 language tag of the node content.
 
 | parentNode
-| true
+| yes
 | object
 | Reference to the parent node in which the node will be created. The uuid of this object must be set.
 
 | publish
-| false
+| no
 | boolean
-| Whether the publish the node after creation.
+| Whether the publish the node after creation.  Default: *false*.
 
 | schema
-| true
+| yes
 | object
 | Reference to the schema of the node.
 
 | tags
-| false
+| no
 | array
 | List of tags that should be used to tag the node.
 

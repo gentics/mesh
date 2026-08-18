@@ -35,53 +35,53 @@ public class HikariCPOptions implements Option {
 	private static final String HIKARI_CP_LEAK_DETECTION_THRESHOLD = "HIKARI_CP_LEAK_DETECTION_THRESHOLD";
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Connection auto-commit behavior.")
-	@EnvironmentVariable(name = HIKARI_CP_AUTOCOMMIT, description = "This property controls the default auto-commit behavior of connections returned from the pool. It is a boolean value.")
+	@JsonPropertyDescription("This property controls the default auto-commit behavior of connections returned from the pool. It is a boolean value.")
+	@EnvironmentVariable(name = HIKARI_CP_AUTOCOMMIT, description = "Override the HikariCP connection auto-commit behavior.")
 	private boolean autocommit = DEFAULT_AUTOCOMMIT;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Connection timeout.")
-	@EnvironmentVariable(name = HIKARI_CP_CONNECTION_TIMEOUT, description = "This property controls the maximum number of milliseconds that a client (that's you) will wait for a connection from the pool. If this time is exceeded without a connection becoming available, a SQLException will be thrown. Lowest acceptable connection timeout is 250 ms.")
+	@JsonPropertyDescription("This property controls the maximum number of milliseconds that a client (that's you) will wait for a connection from the pool. If this time is exceeded without a connection becoming available, a SQLException will be thrown. Lowest acceptable connection timeout is 250 ms.")
+	@EnvironmentVariable(name = HIKARI_CP_CONNECTION_TIMEOUT, description = "Override the HikariCP connection timeout.")
 	private Integer connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Idle timeout.")
-	@EnvironmentVariable(name = HIKARI_CP_IDLE_TIMEOUT, description = "This property controls the maximum amount of time that a connection is allowed to sit idle in the pool. This setting only applies when minimumIdle is defined to be less than maximumPoolSize. Idle connections will not be retired once the pool reaches minimumIdle connections. Whether a connection is retired as idle or not is subject to a maximum variation of +30 seconds, and average variation of +15 seconds. A connection will never be retired as idle before this timeout. A value of 0 means that idle connections are never removed from the pool. The minimum allowed value is 10000ms (10 seconds).")
+	@JsonPropertyDescription("This property controls the maximum amount of time that a connection is allowed to sit idle in the pool. This setting only applies when minimumIdle is defined to be less than maximumPoolSize. Idle connections will not be retired once the pool reaches minimumIdle connections. Whether a connection is retired as idle or not is subject to a maximum variation of +30 seconds, and average variation of +15 seconds. A connection will never be retired as idle before this timeout. A value of 0 means that idle connections are never removed from the pool. The minimum allowed value is 10000ms (10 seconds).")
+	@EnvironmentVariable(name = HIKARI_CP_IDLE_TIMEOUT, description = "Override the HikariCP idle timeout.")
 	private Integer idleTimeout = DEFAULT_IDLE_TIMEOUT;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Max lifetime.")
-	@EnvironmentVariable(name = HIKARI_CP_MAX_LIFETIME, description = "This property controls the maximum lifetime of a connection in the pool. An in-use connection will never be retired, only when it is closed will it then be removed. On a connection-by-connection basis, minor negative attenuation is applied to avoid mass-extinction in the pool. We strongly recommend setting this value, and it should be several seconds shorter than any database or infrastructure imposed connection time limit. A value of 0 indicates no maximum lifetime (infinite lifetime), subject of course to the idleTimeout setting. The minimum allowed value is 30000ms (30 seconds).")
+	@JsonPropertyDescription("This property controls the maximum lifetime of a connection in the pool. An in-use connection will never be retired, only when it is closed will it then be removed. On a connection-by-connection basis, minor negative attenuation is applied to avoid mass-extinction in the pool. We strongly recommend setting this value, and it should be several seconds shorter than any database or infrastructure imposed connection time limit. A value of 0 indicates no maximum lifetime (infinite lifetime), subject of course to the idleTimeout setting. The minimum allowed value is 30000ms (30 seconds).")
+	@EnvironmentVariable(name = HIKARI_CP_MAX_LIFETIME, description = "Override the HikariCP max lifetime.")
 	private Integer maxLifetime = DEFAULT_MAX_LIFETIME;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Minimum idle connections in the pool.")
-	@EnvironmentVariable(name = HIKARI_CP_MIN_IDLE_CONNECTION, description = "This property controls the minimum number of idle connections that HikariCP tries to maintain in the pool. If the idle connections dip below this value and total connections in the pool are less than maximumPoolSize, HikariCP will make a best effort to add additional connections quickly and efficiently. However, for maximum performance and responsiveness to spike demands, we recommend not setting this value and instead allowing HikariCP to act as a fixed size connection pool.")
+	@JsonPropertyDescription("This property controls the minimum number of idle connections that HikariCP tries to maintain in the pool. If the idle connections dip below this value and total connections in the pool are less than maximumPoolSize, HikariCP will make a best effort to add additional connections quickly and efficiently. However, for maximum performance and responsiveness to spike demands, we recommend not setting this value and instead allowing HikariCP to act as a fixed size connection pool.")
+	@EnvironmentVariable(name = HIKARI_CP_MIN_IDLE_CONNECTION, description = "Override the HikariCP minimum idle connections in the pool.")
 	private Integer minimumIdleConnection = DEFAULT_MIN_IDLE_CONNECTION;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Maximum pool size.")
-	@EnvironmentVariable(name = HIKARI_CP_MAX_POOL_SIZE, description = "This property controls the maximum size that the pool is allowed to reach, including both idle and in-use connections. Basically this value will determine the maximum number of actual connections to the database backend. A reasonable value for this is best determined by your execution environment. When the pool reaches this size, and no idle connections are available, calls to getConnection() will block for up to connectionTimeout milliseconds before timing out.")
+	@JsonPropertyDescription("This property controls the maximum size that the pool is allowed to reach, including both idle and in-use connections. Basically this value will determine the maximum number of actual connections to the database backend. A reasonable value for this is best determined by your execution environment. When the pool reaches this size, and no idle connections are available, calls to getConnection() will block for up to connectionTimeout milliseconds before timing out.")
+	@EnvironmentVariable(name = HIKARI_CP_MAX_POOL_SIZE, description = "Override the HikariCP maximum pool size.")
 	private Integer maxPoolSize = DEFAULT_MAX_POOL_SIZE;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Name of the connection pool.")
-	@EnvironmentVariable(name = HIKARI_CP_POOL_NAME, description = "This property represents a user-defined name for the connection pool and appears mainly in logging and JMX management consoles to identify pools and pool configurations.")
+	@JsonPropertyDescription("This property represents a user-defined name for the connection pool and appears mainly in logging and JMX management consoles to identify pools and pool configurations.")
+	@EnvironmentVariable(name = HIKARI_CP_POOL_NAME, description = "Override the HikariCP name of the connection pool.")
 	private String poolName = DEFAULT_POOL_NAME;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Register JMX Management Beans.")
-	@EnvironmentVariable(name = HIKARI_CP_REGISTER_MBEANS, description = "This property controls whether or not JMX Management Beans (\"MBeans\") are registered or not.")
+	@JsonPropertyDescription("This property controls whether or not JMX Management Beans (\\\"MBeans\\\") are registered or not.")
+	@EnvironmentVariable(name = HIKARI_CP_REGISTER_MBEANS, description = "Override the HikariCP Register JMX Management Beans.")
 	private Boolean registerMBeans = DEFAULT_REGISTER_MBEANS;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Transaction isolation level.")
-	@EnvironmentVariable(name = HIKARI_CP_TRANSACTION_ISOLATION_LEVEL, description = "This property controls the default transaction isolation level of connections returned from the pool. If this property is not specified, the default transaction isolation level defined by the JDBC driver is used. Only use this property if you have specific isolation requirements that are common for all queries. The value of this property is the constant name from the Connection class such as TRANSACTION_READ_COMMITTED, TRANSACTION_REPEATABLE_READ. Setting it to null defaults to isolation level defined in the JDBC driver.")
+	@JsonPropertyDescription("This property controls the default transaction isolation level of connections returned from the pool. If this property is not specified, the default transaction isolation level defined by the JDBC driver is used. Only use this property if you have specific isolation requirements that are common for all queries. The value of this property is the constant name from the Connection class such as TRANSACTION_READ_COMMITTED, TRANSACTION_REPEATABLE_READ. Setting it to null defaults to isolation level defined in the JDBC driver.")
+	@EnvironmentVariable(name = HIKARI_CP_TRANSACTION_ISOLATION_LEVEL, description = "Override the HikariCP transaction isolation level.")
 	private Integer transactionIsolationLevel = DEFAULT_TRANSACTION_ISOLATION_LEVEL;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Leak detection threshold.")
-	@EnvironmentVariable(name = HIKARI_CP_LEAK_DETECTION_THRESHOLD, description = "This property controls the amount of time that a connection can be out of the pool before a message is logged indicating a possible connection leak. A value of 0 means leak detection is disabled. Lowest acceptable value for enabling leak detection is 2000 (2 seconds).")
+	@JsonPropertyDescription("This property controls the amount of time that a connection can be out of the pool before a message is logged indicating a possible connection leak. A value of 0 means leak detection is disabled. Lowest acceptable value for enabling leak detection is 2000 (2 seconds).")
+	@EnvironmentVariable(name = HIKARI_CP_LEAK_DETECTION_THRESHOLD, description = "Override the HikariCP leak detection threshold.")
 	private Integer leakDetectionThreshold = DEFAULT_LEAK_DETECTION_THRESHOLD;
 
 	public boolean isAutocommit() {

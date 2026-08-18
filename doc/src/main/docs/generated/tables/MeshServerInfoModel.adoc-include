@@ -8,47 +8,47 @@
 
 
 | databaseRevision
-| false
+| no
 | string
 | Database structure revision hash.
 
 | databaseVendor
-| false
+| no
 | string
 | Used database implementation vendor name.
 
 | databaseVersion
-| false
+| no
 | string
 | Used database implementation version.
 
 | meshNodeName
-| false
+| no
 | string
 | Node name of the Gentics Mesh instance.
 
 | meshRevision
-| false
+| no
 | string
 | Mesh revision name.
 
 | meshVersion
-| false
+| no
 | string
 | Gentics Mesh Version string.
 
 | searchVendor
-| false
+| no
 | string
 | Used search implementation vendor name.
 
 | searchVersion
-| false
+| no
 | string
 | Used search implementation version.
 
 | vertxVersion
-| false
+| no
 | string
 | Used Vert.x version.
 

@@ -8,52 +8,52 @@
 
 
 | auto
-| false
+| no
 | boolean
-| This flag states that this variant is a proportional (aka &#x27;auto&#x27;) image.
+| This flag states that this variant is a proportional (aka &#x27;auto&#x27;) image.  Default: *false*.
 
 | cropMode
-| false
+| no
 | string
 | The image crop mode.
 
 | fileSize
-| false
+| no
 | integer
 | The image file size.
 
 | focalPoint
-| false
+| no
 | object
 | The image focal point, containing factors of the image width/height. The value 0.5 is the center of the image.
 
 | focalZoom
-| false
+| no
 | number
 | The image focal point zoom factor.
 
 | height
-| false
+| no
 | integer
 | Image height.
 
 | origin
-| false
+| no
 | boolean
-| This flag states that this variant is an original image.
+| This flag states that this variant is an original image.  Default: *false*.
 
 | rect
-| false
+| no
 | object
 | Image crop parameters.
 
 | resizeMode
-| false
+| no
 | string
 | The image resize mode.
 
 | width
-| false
+| no
 | integer
 | Image width.
 

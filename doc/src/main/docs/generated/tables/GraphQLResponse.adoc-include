@@ -8,12 +8,12 @@
 
 
 | data
-| true
+| yes
 | object
 | Nested JSON object which contains the query result data.
 
 | errors
-| false
+| no
 | array
 | Array of errors which were encoutered when handling the query.
 

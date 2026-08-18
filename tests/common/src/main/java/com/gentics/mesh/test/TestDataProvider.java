@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import javax.inject.Provider;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.mockito.Mockito;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -65,7 +66,6 @@ import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.MeshJsonException;
-import com.github.jknack.handlebars.internal.lang3.tuple.Pair;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

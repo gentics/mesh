@@ -8,13 +8,13 @@
 
 
 | available
-| true
+| yes
 | boolean
-| Flag which indicates whether Elasticsearch is available and search queries can be executed.
+| Flag which indicates whether Elasticsearch is available and search queries can be executed.  Default: *false*.
 
 | metrics
-| false
+| no
 | object
-| Map which contains various metric values.
+| Map which contains various metric values.  Default: *{}*.
 
 |======

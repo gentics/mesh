@@ -11,6 +11,7 @@ import static com.gentics.mesh.test.ElasticsearchTestMode.TRACKING;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -18,9 +19,15 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Comparator;
+import java.util.Optional;
 import java.util.UUID;
 
+import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.Strings;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
@@ -49,8 +56,11 @@ import com.gentics.mesh.core.data.schema.HibUpdateFieldChange;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.branch.BranchResponse;
+import com.gentics.mesh.core.rest.branch.info.BranchSchemaInfo;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.job.JobListResponse;
+import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -58,6 +68,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
@@ -65,6 +76,7 @@ import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
+import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
@@ -88,6 +100,7 @@ import io.vertx.core.json.JsonObject;
 
 @MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true, clusterMode = false)
 public class NodeMigrationEndpointTest extends AbstractMeshTest {
+	public final static int WAIT_TIMEOUT_MS = 5_000;
 
 	/**
 	 * Create a schema model and assign it to the project/branch. Assert that an index has been created.
@@ -1368,6 +1381,103 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		JobListResponse status = adminCall(() -> client().findJobs());
 		assertThat(status).listsAll(COMPLETED).hasInfos(1);
 
+	}
+
+	@Test
+	public void testMigrateMultipleRenames() throws InterruptedException, IOException {
+		ProjectResponse projectResponse = adminCall(() -> client().findProjectByName(PROJECT_NAME));
+		byte[] binaryContent = "This is the binary content".getBytes();
+
+		// create a schema containing two binary fields
+		SchemaCreateRequest createSchema = new SchemaCreateRequest();
+		createSchema.setName("test_schema");
+		createSchema.addField(new BinaryFieldSchemaImpl().setName("first"));
+		createSchema.addField(new BinaryFieldSchemaImpl().setName("second"));
+		SchemaResponse schemaResponse = adminCall(() -> client().createSchema(createSchema));
+		adminCall(() -> client().assignSchemaToProject(PROJECT_NAME, schemaResponse.getUuid()));
+
+		// create a node with some data
+		NodeCreateRequest createNode = new NodeCreateRequest();
+		createNode.setLanguage("en");
+		createNode.setSchemaName("test_schema");
+		createNode.setParentNodeUuid(projectResponse.getRootNode().getUuid());
+		NodeResponse nodeResponse = adminCall(() -> client().createNode(PROJECT_NAME, createNode));
+		try (InputStream in = new ByteArrayInputStream(binaryContent)) {
+			adminCall(() -> client().updateNodeBinaryField(PROJECT_NAME, nodeResponse.getUuid(), "en", "draft", "first", in, binaryContent.length, "content.txt", "text/plain"));
+		}
+		try (InputStream in = new ByteArrayInputStream(binaryContent)) {
+			adminCall(() -> client().updateNodeBinaryField(PROJECT_NAME, nodeResponse.getUuid(), "en", "draft", "second", in, binaryContent.length, "content.txt", "text/plain"));
+		}
+
+		// update the schema by renaming the fields
+		SchemaChangesListModel changes = new SchemaChangesListModel();
+		changes.getChanges()
+				.add(new SchemaChangeModel().setOperation(SchemaChangeOperation.UPDATEFIELD)
+						.setProperty(SchemaChangeModel.FIELD_NAME_KEY, "first")
+						.setProperty(SchemaChangeModel.NAME_KEY, "old_first"));
+		changes.getChanges()
+				.add(new SchemaChangeModel().setOperation(SchemaChangeOperation.UPDATEFIELD)
+						.setProperty(SchemaChangeModel.FIELD_NAME_KEY, "second")
+						.setProperty(SchemaChangeModel.NAME_KEY, "old_second"));
+		adminCall(() -> client().applyChangesToSchema(schemaResponse.getUuid(), changes));
+
+		// update the schema again by adding new fields with the old names
+		changes.getChanges().clear();
+		changes.getChanges().add(new SchemaChangeModel().setOperation(SchemaChangeOperation.ADDFIELD)
+				.setProperty(SchemaChangeModel.FIELD_NAME_KEY, "first").setProperty(SchemaChangeModel.TYPE_KEY, "node"));
+		changes.getChanges().add(new SchemaChangeModel().setOperation(SchemaChangeOperation.ADDFIELD)
+				.setProperty(SchemaChangeModel.FIELD_NAME_KEY, "second").setProperty(SchemaChangeModel.TYPE_KEY, "node"));
+		adminCall(() -> client().applyChangesToSchema(schemaResponse.getUuid(), changes));
+
+		// load schema
+		SchemaResponse updatedSchemaResponse = adminCall(() -> client().findSchemaByUuid(schemaResponse.getUuid()));
+
+		// assign the schema version to the branch
+		Optional<BranchResponse> optLatestBranch = adminCall(() -> client().findBranches(PROJECT_NAME)).getData().stream()
+				.filter(branch -> BooleanUtils.isTrue(branch.getLatest())).findFirst();
+		assertThat(optLatestBranch).as("Latest branch").isPresent();
+		adminCall(() -> client().assignBranchSchemaVersions(PROJECT_NAME, optLatestBranch.get().getUuid(), new SchemaReferenceImpl()
+				.setUuid(updatedSchemaResponse.getUuid()).setVersion(updatedSchemaResponse.getVersion())));
+
+		// wait for the migration to succeed in the branch
+		waitForMigration(schemaResponse.getUuid());
+	}
+
+	/**
+	 * Wait until the schema with given UUID is fully migrated in the default branch of the project
+	 * @param schemaUuid schema UUID
+	 * @throws InterruptedException
+	 */
+	protected void waitForMigration(String schemaUuid) throws InterruptedException {
+		Optional<BranchResponse> optLatestBranch = adminCall(() -> client().findBranches(PROJECT_NAME)).getData().stream()
+				.filter(branch -> BooleanUtils.isTrue(branch.getLatest())).findFirst();
+		assertThat(optLatestBranch).as("Latest branch").isPresent();
+
+		boolean isMigrated = isSchemaMigrated(schemaUuid, optLatestBranch.get().getUuid());
+		long start = System.currentTimeMillis();
+		while (!isMigrated) {
+			long waitTime = System.currentTimeMillis() - start;
+			if (waitTime > WAIT_TIMEOUT_MS) {
+				fail("Schema %s failed to be migrated withing %d ms".formatted(schemaUuid, WAIT_TIMEOUT_MS));
+			}
+			Thread.sleep(1000);
+			isMigrated = isSchemaMigrated(schemaUuid, optLatestBranch.get().getUuid());
+		}
+	}
+
+	/**
+	 * Check whether the schema with given UUID is fully migrated in the given branch
+	 * @param schemaUuid schema UUID
+	 * @param branchUuid branch UUID
+	 * @return true if migrated, false if not
+	 */
+	protected boolean isSchemaMigrated(String schemaUuid, String branchUuid) {
+		Optional<BranchSchemaInfo> optSchemaInfo = adminCall(
+				() -> client().getBranchSchemaVersions(PROJECT_NAME, branchUuid)).getSchemas().stream()
+				.filter(schema -> Strings.CS.equals(schema.getUuid(), schemaUuid)).findFirst();
+		assertThat(optSchemaInfo).as("Schema in Branch").isPresent();
+
+		return optSchemaInfo.get().getMigrationStatus() == JobStatus.COMPLETED;
 	}
 
 	private HibSchema createDummySchemaWithChanges(String oldFieldName, String newFieldName, boolean setAddRaw) {

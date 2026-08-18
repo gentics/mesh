@@ -21,7 +21,7 @@ import com.gentics.mesh.dagger.annotations.ElementTypeKey;
  * @author plyhun
  *
  */
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "HibEntityCache")
 @Entity(name = "tag")
 @ElementTypeKey(ElementType.TAG)
 public class HibTagImpl extends AbstractHibUserTrackedElement<TagResponse> implements HibTag, Serializable {

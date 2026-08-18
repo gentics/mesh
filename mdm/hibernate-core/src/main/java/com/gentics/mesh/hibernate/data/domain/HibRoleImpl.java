@@ -55,7 +55,7 @@ import jakarta.persistence.OneToMany;
 		query = "select r, g from role r inner join r.groups g where r.dbUuid in :roleUuids"
 	)
 })
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "HibEntityCache")
 @Entity(name = "role")
 @ElementTypeKey(ElementType.ROLE)
 public class HibRoleImpl extends AbstractHibUserTrackedElement<RoleResponse> implements HibRole, Serializable {

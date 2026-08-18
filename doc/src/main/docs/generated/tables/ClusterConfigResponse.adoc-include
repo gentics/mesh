@@ -8,7 +8,7 @@
 
 
 | servers
-| false
+| no
 | array
 | List of server configurations.
 

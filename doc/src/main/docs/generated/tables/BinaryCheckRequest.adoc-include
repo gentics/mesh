@@ -8,22 +8,22 @@
 
 
 | callbackUrl
-| true
+| yes
 | string
 | The URL where the check service should post its results to.
 
 | downloadUrl
-| true
+| yes
 | string
 | The URL for the check service to download the binary.
 
 | filename
-| true
+| yes
 | string
 | The checked binary&#x27;s filename
 
 | mimeType
-| true
+| yes
 | string
 | The checked binary&#x27;s MIME type
 

@@ -8,12 +8,12 @@
 
 
 | order
-| string  (default: UNSORTED) 
+| string
 | false
-| Field order (ASC/DESC/UNSORTED) to sort the result by.
+| Field order (ASC/DESC/UNSORTED) to sort the result by. Default: UNSORTED. 
 
 | sortBy
-| string 
+| string
 | false
 | Field name to sort the result by.
 

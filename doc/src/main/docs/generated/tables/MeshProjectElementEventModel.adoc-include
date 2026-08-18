@@ -8,12 +8,12 @@
 
 
 | project.name
-| false
+| no
 | string
 | Name of the referenced element
 
 | project.uuid
-| true
+| yes
 | string
 | Uuid of the referenced element
 

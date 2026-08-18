@@ -2,6 +2,7 @@ package com.gentics.mesh.hibernate.data.dao;
 
 import java.util.Collection;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -62,9 +63,10 @@ public abstract class AbstractHibDaoGlobal<T extends HibCoreElement<R>, R extend
 
 	@Override
 	public Stream<Pair<String, T>> findByUuids(Collection<String> uuids) {
-		return SplittingUtils.splitAndMergeInList(uuids, HibernateUtil.inQueriesLimitForSplitting(1), slice -> {
+		Set<UUID> uuids1 = uuids.stream().map(UUIDUtil::toJavaUuid).collect(Collectors.toSet());
+		return SplittingUtils.splitAndMergeInList(uuids1, HibernateUtil.inQueriesLimitForSplitting(1), slice -> {
 			return em().createQuery("select t from " + getPersistenceClass().getAnnotation(Entity.class).name() + " t where t.dbUuid in :uuids", getPersistenceClass())
-				.setParameter("uuids", slice.stream().map(UUIDUtil::toJavaUuid).collect(Collectors.toSet()))
+				.setParameter("uuids", slice)
 				.getResultStream()
 				.map(t -> Pair.of(t.getUuid(), (T) t))
 				.collect(Collectors.toList());

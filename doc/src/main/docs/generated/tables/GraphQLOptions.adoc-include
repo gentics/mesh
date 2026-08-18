@@ -8,18 +8,18 @@
 
 
 | asyncWaitTimeout
-| false
+| no
 | integer
-| Threshold for waiting for asynchronous graphql queries. Default: 120000ms
+| Threshold for waiting for asynchronous graphql queries, in milliseconds.  Default: *120000*.
 
 | schemaCacheSize
-| false
+| no
 | integer
-| Cache size for graphQl Schema instances. Setting this to 0 will disable the cache. Default: 1000
+| Cache size for graphQl Schema instances. Setting this to 0 will disable the cache.  Default: *1000*.
 
 | slowThreshold
-| false
+| no
 | integer
-| Threshold for logging slow graphql queries. Default: 60000ms
+| Threshold for logging slow graphql queries, in milliseconds.  Default: *60000*.
 
 |======

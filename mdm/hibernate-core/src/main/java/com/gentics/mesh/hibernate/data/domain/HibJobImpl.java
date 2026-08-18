@@ -31,7 +31,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
  * @author plyhun
  *
  */
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "HibEntityCache")
 @Entity(name = "job")
 @ElementTypeKey(ElementType.JOB)
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)

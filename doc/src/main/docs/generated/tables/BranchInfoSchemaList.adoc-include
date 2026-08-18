@@ -8,8 +8,8 @@
 
 
 | schemas
-| false
+| no
 | array
-| List of schema references.
+| List of schema references.  Default: *[]*.
 
 |======

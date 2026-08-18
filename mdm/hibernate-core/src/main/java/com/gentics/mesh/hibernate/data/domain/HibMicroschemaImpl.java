@@ -49,7 +49,7 @@ import com.gentics.mesh.dagger.annotations.ElementTypeKey;
 			}
 	)
 })
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "HibEntityCache")
 @Entity(name = HibMicroschemaImpl.TABLE_NAME)
 @ElementTypeKey(ElementType.MICROSCHEMA)
 public class HibMicroschemaImpl extends AbstractHibUserTrackedElement<MicroschemaResponse> implements HibMicroschema, Serializable {
@@ -64,7 +64,7 @@ public class HibMicroschemaImpl extends AbstractHibUserTrackedElement<Microschem
 	@OneToOne(targetEntity = HibMicroschemaVersionImpl.class)
 	private HibMicroschemaVersion latestVersion;
 
-	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "HibEntityCache")
 	@OneToMany(mappedBy = "microschema", targetEntity = HibMicroschemaVersionImpl.class, cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
 	private Set<HibMicroschemaVersion> versions = new HashSet<>();
 

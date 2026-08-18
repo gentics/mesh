@@ -8,8 +8,8 @@
 
 
 | recursive
-| boolean  (default: false) 
+| boolean
 | false
-| Specifiy whether the invoked action should be applied recursively.
+| Specifiy whether the invoked action should be applied recursively. Default: false. 
 
 |======
