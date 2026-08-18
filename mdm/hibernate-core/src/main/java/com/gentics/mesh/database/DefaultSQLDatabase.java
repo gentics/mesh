@@ -98,7 +98,10 @@ public class DefaultSQLDatabase implements DatabaseProvider {
 			optionBuilder
 					.put("hibernate.cache.default_cache_concurrency_strategy", CacheConcurrencyStrategy.READ_WRITE.toAccessType().getExternalName())
 					.put("hibernate.cache.use_query_cache", Boolean.TRUE.toString())
-					.put("hibernate.cache.use_second_level_cache", Boolean.TRUE.toString());
+					.put("hibernate.cache.use_second_level_cache", Boolean.TRUE.toString())
+					.put("hibernate.criteria.plan_cache_enabled", Boolean.TRUE.toString())
+					.put("hibernate.query.plan_cache_max_size", 100000)
+					.put("hibernate.query.plan_parameter_metadata_max_size", 1000);
 			if (options.getClusterOptions().isEnabled()) {
 				// Cache sizes are configured in com.gentics.mesh.database.cluster.HibClusterManager.getHazelcast()
 				optionBuilder
@@ -162,13 +165,15 @@ public class DefaultSQLDatabase implements DatabaseProvider {
 		} else {
 			optionBuilder
 				.put("hibernate.cache.use_query_cache", Boolean.FALSE.toString())
-				.put("hibernate.cache.use_second_level_cache", Boolean.FALSE.toString());
+				.put("hibernate.cache.use_second_level_cache", Boolean.FALSE.toString())
+				.put("hibernate.criteria.plan_cache_enabled", Boolean.FALSE.toString());
 		}
 	}
 
 	private void setStatisticsOptions(ImmutableMap.Builder<String, Object> optionBuilder) {
 		optionBuilder.put(AvailableSettings.GENERATE_STATISTICS, options.getStorageOptions().isGenerateStatistics());
 		optionBuilder.put(AvailableSettings.LOG_SLOW_QUERY, Long.toString(options.getStorageOptions().getSlowSqlThreshold()));
+		optionBuilder.put(AvailableSettings.USE_SQL_COMMENTS, options.getStorageOptions().isGenerateStatistics());
 	}
 
 	private void setOtherOptions(ImmutableMap.Builder<String, Object> optionBuilder) {
