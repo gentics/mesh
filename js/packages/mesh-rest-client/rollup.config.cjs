@@ -3,7 +3,7 @@ const { withNx } = require('@nx/rollup/with-nx');
 module.exports = withNx(
   {
     main: './src/public-api.ts',
-    outputPath: '../../dist/packages/mesh-rest-client',
+    outputPath: '../../dist/mesh-rest-client',
     tsConfig: './tsconfig.lib.json',
     compiler: 'swc',
     format: ['cjs', 'esm'],
