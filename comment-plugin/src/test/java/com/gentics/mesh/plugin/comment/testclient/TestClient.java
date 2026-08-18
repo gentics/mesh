@@ -1,5 +1,7 @@
 package com.gentics.mesh.plugin.comment.testclient;
 
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.common.NameOrUUIDsRequest;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
@@ -192,6 +194,20 @@ public class TestClient extends AbstractTestClient {
 			log.error("Error while loading example response {" + name + "}", e);
 			return null;
 		}
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> purgeSchemaVersions(NameOrUUIDsRequest request) {
+		log.info("Handling purgeSchemaVersions");
+		GenericMessageResponse response = mock(GenericMessageResponse.class);
+		return mockResponse(response);
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> purgeMicroschemaVersions(NameOrUUIDsRequest request) {
+		log.info("Handling purgeMicroschemaVersions");
+		GenericMessageResponse response = mock(GenericMessageResponse.class);
+		return mockResponse(response);
 	}
 
 }
