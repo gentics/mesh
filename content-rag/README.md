@@ -31,7 +31,7 @@ Hybrid-Deployment aus zwei deploybaren Einheiten plus Infrastruktur:
 
 ## Build
 
-Voraussetzung: **JDK 21**, Maven 3.9+.
+Voraussetzung: **JDK 17**, Maven 3.9+.
 
 ```bash
 mvn clean verify
