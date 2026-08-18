@@ -102,6 +102,8 @@ export interface EditableUserTokenData {
 }
 
 export interface UserTokenData extends EditableUserTokenData {
+    /** The UUID of the token */
+    uuid: string;
     /** ISO-8601 formatted issue date string. */
     issued: string;
     /** True when the token is valid (not expired), false if not. */
