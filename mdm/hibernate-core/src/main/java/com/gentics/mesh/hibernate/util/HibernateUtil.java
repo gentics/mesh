@@ -15,13 +15,14 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.hibernate.boot.SchemaAutoTooling;
 import org.hibernate.boot.model.naming.PhysicalNamingStrategy;
-import org.hibernate.boot.spi.SessionFactoryOptions;
+import org.hibernate.cfg.SchemaToolingSettings;
 import org.hibernate.dialect.Dialect;
+import org.hibernate.engine.config.spi.ConfigurationService;
 import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
+import org.hibernate.tool.schema.Action;
 import org.slf4j.Logger;
 
 import com.gentics.mesh.ElementType;
@@ -97,10 +98,10 @@ public final class HibernateUtil {
 	 * @return
 	 */
 	public static boolean shouldCleanDatabase(SessionFactoryImplementor sessionFactory) {
-		SessionFactoryOptions settings = sessionFactory.getSessionFactoryOptions();
-		return settings.getSchemaAutoTooling() == SchemaAutoTooling.CREATE_DROP
-				|| settings.getSchemaAutoTooling() == SchemaAutoTooling.CREATE
-				|| settings.getSchemaAutoTooling() == SchemaAutoTooling.DROP;
+		Object autoTooling = sessionFactory.getServiceRegistry().requireService(ConfigurationService.class).getSettings().get(SchemaToolingSettings.HBM2DDL_AUTO);
+		return autoTooling == Action.CREATE_DROP
+				|| autoTooling == Action.CREATE
+				|| autoTooling == Action.DROP;
 	}
 
 	/**

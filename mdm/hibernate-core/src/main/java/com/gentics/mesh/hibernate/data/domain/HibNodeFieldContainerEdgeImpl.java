@@ -7,7 +7,7 @@ import java.util.UUID;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.jpa.QueryHints;
+import org.hibernate.jpa.AvailableHints;
 
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
@@ -97,7 +97,7 @@ import jakarta.persistence.QueryHint;
 						"where edge.node.dbUuid = :nodeUuid " +
 						"and edge.type = :type " +
 						"and edge.branch.dbUuid = :branchUuid ",
-				hints = {@QueryHint(name = QueryHints.HINT_CACHEABLE, value = "true")}),
+				hints = {@QueryHint(name = AvailableHints.HINT_CACHEABLE, value = "true")}),
 		@NamedQuery(
 				name = "contentEdge.findByNodeTypeBranchAndVersion",
 				query = "select distinct (edge.contentUuid) from nodefieldcontainer edge " +
@@ -105,7 +105,7 @@ import jakarta.persistence.QueryHint;
 						"and edge.type = :type " +
 						"and edge.branch.dbUuid = :branchUuid " +
 						"and edge.version.dbUuid = :versionUuid",
-				hints = {@QueryHint(name = QueryHints.HINT_CACHEABLE, value = "true")}),
+				hints = {@QueryHint(name = AvailableHints.HINT_CACHEABLE, value = "true")}),
 		@NamedQuery(
 				name = "contentEdge.findByNodesTypeBranchAndVersion",
 				query = "select distinct (edge.contentUuid) from nodefieldcontainer edge " +
@@ -137,7 +137,7 @@ import jakarta.persistence.QueryHint;
 						"and edge.type = :type " +
 						"and edge.branch.dbUuid = :branchUuid " +
 						"and edge.languageTag in :languageTags ",
-				hints = {@QueryHint(name = QueryHints.HINT_CACHEABLE, value = "true")}
+				hints = {@QueryHint(name = AvailableHints.HINT_CACHEABLE, value = "true")}
 		),
 		@NamedQuery(
 				name = "contentEdge.findByTypeBranchLanguageAndVersionForAdmin",

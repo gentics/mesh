@@ -810,7 +810,7 @@
 			<dependency>
 			    <groupId>jakarta.persistence</groupId>
 			    <artifactId>jakarta.persistence-api</artifactId>
-			    <version>3.2.0</version>
+			    <version>4.0.0-M5</version>
 			</dependency>
 			<dependency>
 				<groupId>com.squareup.inject</groupId>
