@@ -1240,7 +1240,14 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 					.setParameter("schemaVersion", schemaVersion)
 					.getResultList();		
 			List<HibNodeFieldContainerImpl> schemaContent = contentStorage.findMany(edges);
-			return HibernateTx.get().contentDao().getNodes(schemaContent).map(p -> new NodeContent(p.getValue(), p.getKey(), languageTags, type));
+
+			return HibernateTx.get().contentDao().getNodes(schemaContent)
+					.map(p -> new NodeContent(p.getValue(), p.getKey(), languageTags, type))
+					.collect(Collectors.toMap(NodeContent::getNode, Function.identity(), (a, b) -> {
+						int indexOfA = languageTags.indexOf(a.getContainer().getLanguageTag());
+						int indexOfB = languageTags.indexOf(b.getContainer().getLanguageTag());
+						return indexOfA < indexOfB ? a : b;
+					})).values().stream();
 		}
 	}
 
