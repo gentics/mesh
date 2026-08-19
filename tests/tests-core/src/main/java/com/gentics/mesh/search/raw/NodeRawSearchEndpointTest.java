@@ -84,7 +84,30 @@ public class NodeRawSearchEndpointTest extends AbstractMeshTest {
 		assertNotNull(initialBranchUuid(), hitTwo.getJsonObject("_source").getString("branchUuid"));
 
 		assertThat(Arrays.asList(uuid1, uuid2)).containsExactlyInAnyOrder(nodeA.getUuid() + "-en", nodeB.getUuid() + "-en");
+	}
 
+	@Test
+	public void testRawSearchAccess() throws Exception {
+		try (Tx tx = tx()) {
+			recreateIndices();
+		}
+		waitForSearchIdleEvent();
+
+		// Log out = make anonymous calls
+		client().logout().blockingGet();
+
+		// Mimic a meaningful all-inclusive request
+		JsonObject response = new JsonObject(call(() -> client().searchNodesRaw("{\"_source\": [\n"
+				+ "    \"project.name\",\n"
+				+ "    \"fields.name\",\n"
+				+ "    \"fields.slug\",\n"
+				+ "    \"fields.teaser\",\n"
+				+ "    \"fields.content\",\n"
+				+ "    \"name\",\n"
+				+ "    \"uuid\"\n"
+				+ "  ]}")).toString());
+		String path = complianceMode() == ComplianceMode.ES_6 ? "responses[0].hits.total" : "responses[0].hits.total.value";
+		assertThat(response).has(path, "0", "There should not be any hits for anonymous.");
 	}
 
 	@Test
