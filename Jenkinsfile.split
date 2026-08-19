@@ -65,12 +65,15 @@ final def testPart(partName, current, branches) {
 						if (Boolean.valueOf(params.testHsqlm)) {
 							noHsqldb = false
 						}
-						withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
+						withCredentials([
+							usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),
+							usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')
+						]) {
 							try {
 								// prior to starting the tests, start the docker containers with the db and the testdb-manager
 								sh 'docker login -u $repoUsername -p $repoPassword docker.gentics.com'
 								if (Boolean.valueOf(params.testMaria)) {
-								sh "mvn -pl :mesh-database-connector-mariadb docker:start -Dskip.mariadb.tests=${noMariadb} "
+									sh "mvn -pl :mesh-database-connector-mariadb docker:start -Dskip.mariadb.tests=${noMariadb} "
 								}
 								// run the tests
 								withEnv(["TESTCONTAINERS_RYUK_DISABLED=true", "MESH_CONSISTENCY_CHECKS=" + (Boolean.valueOf(params.consistencyChecks) ? "true" : "false"), "MAVEN_OPTS=-Xmx1g -XX:MaxMetaspaceSize=128m "]) {
@@ -79,9 +82,9 @@ final def testPart(partName, current, branches) {
 							} finally {
 								// finally stop the docker containers
 								if (Boolean.valueOf(params.testMaria)) {
-								sh "mvn -pl :mesh-database-connector-mariadb docker:stop -Dskip.mariadb.tests=${noMariadb} "
+									sh "mvn -pl :mesh-database-connector-mariadb docker:stop -Dskip.mariadb.tests=${noMariadb} "
+								}
 							}
-						}
 						}
 						stash name: "jacoco" + current, includes: "**/jacoco-partial.exec", allowEmpty: true
 					} finally {
@@ -95,7 +98,7 @@ final def testPart(partName, current, branches) {
 }
 
 stage("Setup Build Environment") {
-	node("mesh-root-worker-3.2") {
+	node("mesh-root-worker-3.3") {
 		githubBuildStarted()
 		try {
 			stage("Checkout") {
@@ -128,10 +131,8 @@ stage("Setup Build Environment") {
 							version = MavenHelper.transformSnapshotToReleaseVersion(version)
 							MavenHelper.setVersion(version)
 						}
-						//TODO only add pom.xml files
-						sh 'git add .'
-						sh "git commit -m 'Raise version'"
-						GitHelper.addTag(version, 'Release of version ' + version)
+						sh 'git add **/pom.xml'
+						// Committing the changes is done later in git-push, as the JS packages also need to update their versions
 					} else if (Boolean.valueOf(params.setBranchAsVersion)) {
 						version = branchName + "-SNAPSHOT"
 						echo "Building version " + version
@@ -232,6 +233,50 @@ stage("Setup Build Environment") {
 				}
 			}
 
+			stage("Javascript Packages") {
+				if (env.BUILD_SKIPPED != "true" && !Boolean.valueOf(params.skipJsLibraries)) {
+					environment {
+						// Disable colors/special characters, if projects do properly check it
+						TERM="dumb"
+						// Disable node based color libraries
+						FORCE_COLOR="0"
+						// Mark this as a CI build
+						CI="true"
+					}
+
+					dir("js") {
+						// Patch test version, if requested
+						def jsVersion = version
+						if (params.meshJsVersion?.trim()) {
+							jsVersion = params.meshJsVersion.trim()
+						}
+
+						// Install dependencies
+						sh 'npm ci --no-audit --no-fund'
+
+						if (
+							// If the version isn't semver, we can't set it, as NX just explodes
+							(jsVersion ==~ /[\d]+\.[\d]+\.[\d]+[a-zA-Z0-9-]*/)
+							// Or if we just do a testing deployment
+							|| !Boolean.valueOf(params.runDeployTesting)
+						) {
+							// Set the version for the packages
+							sh "npm run nx -- release version ${jsVersion}"
+						}
+
+						// Build all JS packages
+						sh 'npm run nx -- run-many --targets=build --configuration=ci'
+
+						// Run the tests if enabled
+						if (Boolean.valueOf(params.runTests)) {
+							sh 'npm run nx -- run-many --targets=test --configuration=ci'
+						}
+					}
+				} else {
+					echo "Javascript Packages skipped.."
+				}
+			}
+
 			stage("Unstable Tests") {
 				if (env.BUILD_SKIPPED != "true" && Boolean.valueOf(params.runUnstableTests)) {
 					sshagent(["git"]) {
@@ -259,7 +304,10 @@ stage("Setup Build Environment") {
 						} else {
 							echo "MariaDB skipped.."
 						}
-                        withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'), usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
+                        withCredentials([
+							usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),
+							usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')
+						]) {
 							try {
 								// first we start the test db manager
 								sh 'docker login -u $repoUsername -p $repoPassword docker.gentics.com'
@@ -288,25 +336,37 @@ stage("Setup Build Environment") {
 							// echo "Setup of GPG"
 							// sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-public-key.asc"
 							// sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-secret-key.asc"
-							withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
+							withCredentials([
+								usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),
+								usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')
+							]) {
 								sh "mvn -B -DskipTests -Dskip.unit.tests -am -pl 'server,:mesh-database-connector-mariadb,:mesh-database-connector-hsqldb,bom,plugin-bom,plugin-parent' clean deploy"
 							}
 						} else if (Boolean.valueOf(params.runDeploy)) {
 							// echo "Setup of GPG"
 							// sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-public-key.asc"
 							// sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-secret-key.asc"
-							withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
+							withCredentials([
+								usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),
+								usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')
+							]) {
 								sh "mvn -U -B -DskipTests -Dgpg.skip=false clean deploy"
 							}
 						} else if (Boolean.valueOf(params.setBranchAsVersion)) {
-							withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
+							withCredentials([
+								usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername',
+								passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')
+							]) {
 								sh "mvn -U -B -DskipTests -Dgpg.skip=false -pl '!doc,!changelog' clean install"
 							}
 						} else {
-							withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
+							withCredentials([
+								usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),
+								usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')
+							]) {
 								sh "mvn -B -DskipTests clean package"
+							}
 						}
-					}
 					}
 				} else {
 					echo "Maven build skipped.."
@@ -425,37 +485,23 @@ stage("Setup Build Environment") {
 						}
 					}
 
-					if (!Boolean.valueOf(params.skipJsLibraries) && (Boolean.valueOf(params.runDeploy) || (Boolean.valueOf(params.runDeployTesting) && params.meshJsVersion?.trim()))) {
-						sh "echo @gentics:registry=https://repo.gentics.com/repository/npm-products/ > js/.npmrc"
-						sh "echo 'git-tag-version = false' >> js/.npmrc"
-						sh "echo 'allow-same-version = true' >> js/.npmrc"
+					if (!Boolean.valueOf(params.skipJsLibraries) && (Boolean.valueOf(params.runDeploy) || Boolean.valueOf(params.runDeployTesting))) {
+						environment {
+							// Disable colors/special characters, if projects do properly check it
+							TERM="dumb"
+							// Disable node based color libraries
+							FORCE_COLOR="0"
+						}
 
 						// Add private repository credentials and scopes
 						withCredentials([string(credentialsId: 'nexus-npm', variable: 'NPM_TOKEN')]) {
-							sh "echo //repo.gentics.com/repository/npm-products/:_auth=${env.NPM_TOKEN} >> js/.npmrc"
+							sh "echo //repo.gentics.com/repository/npm-products/:_auth=${env.NPM_TOKEN} >> ~/.npmrc"
 						}
 
 						dir(path: 'js') {
-							// Patch test version, if requested
-							def jsVersion = version
-							if (params.meshJsVersion?.trim()) {
-								jsVersion = params.meshJsVersion.trim()
-							}
-
-							// Install dependencies
-							sh 'npm ci --no-audit --no-fund'
-
-							// Set the version for the packages
-							sh "npm run nx -- release version ${jsVersion}"
-
-							// Build all JS packages
-							sh 'npm run nx -- run-many --targets build'
-
 							// Publish the pacakges to artifactory
 							sh "npm run nx -- release publish"
 						}
-
-						sh "rm js/.npmrc"
 					}
 				} else {
 					echo "Deploy skipped.."
@@ -465,9 +511,17 @@ stage("Setup Build Environment") {
 			stage("Git push") {
 				if (env.BUILD_SKIPPED != "true" && Boolean.valueOf(params.runDeploy)) {
 					sshagent(["git"]) {
+						// First we want to commit + tag the changes pom.xml and package.json files,
+						// where the verison has changed from x.y.z-SNAPSHOT to just x.y.z for a release.
+						GitHelper.addCommit('.', gitCommitTag + ' Release of version (' + version + ')')
+						GitHelper.addTag(version, 'Release of version ' + version)
+
+						// Then update all the pom.xml files again to add the -SNAPSHOT suffix again,
+						// and commit that as a new develop iteration.
 						def snapshotVersion = MavenHelper.getNextSnapShotVersion(version)
 						MavenHelper.setVersion(snapshotVersion)
 						GitHelper.addCommit('.', gitCommitTag + ' Prepare for the next development iteration (' + snapshotVersion + ')')
+
 						GitHelper.pushBranch(branchName)
 						GitHelper.pushTag(version)
 					}
