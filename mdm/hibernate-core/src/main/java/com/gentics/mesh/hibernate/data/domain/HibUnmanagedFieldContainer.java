@@ -14,6 +14,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
 
 import com.gentics.mesh.contentoperation.CommonContentColumn;
 import com.gentics.mesh.contentoperation.ContentColumn;
@@ -29,11 +30,13 @@ import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.node.field.HibBooleanField;
 import com.gentics.mesh.core.data.node.field.HibDateField;
 import com.gentics.mesh.core.data.node.field.HibHtmlField;
+import com.gentics.mesh.core.data.node.field.HibJsonField;
 import com.gentics.mesh.core.data.node.field.HibNumberField;
 import com.gentics.mesh.core.data.node.field.HibStringField;
 import com.gentics.mesh.core.data.node.field.list.HibBooleanFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibDateFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibHtmlFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibJsonFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibNodeFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibNumberFieldList;
@@ -68,6 +71,8 @@ import com.gentics.mesh.hibernate.data.node.field.impl.HibDateFieldImpl;
 import com.gentics.mesh.hibernate.data.node.field.impl.HibDateListFieldImpl;
 import com.gentics.mesh.hibernate.data.node.field.impl.HibHtmlFieldImpl;
 import com.gentics.mesh.hibernate.data.node.field.impl.HibHtmlListFieldImpl;
+import com.gentics.mesh.hibernate.data.node.field.impl.HibJsonFieldImpl;
+import com.gentics.mesh.hibernate.data.node.field.impl.HibJsonListFieldImpl;
 import com.gentics.mesh.hibernate.data.node.field.impl.HibMicronodeFieldImpl;
 import com.gentics.mesh.hibernate.data.node.field.impl.HibMicronodeListFieldImpl;
 import com.gentics.mesh.hibernate.data.node.field.impl.HibNodeFieldImpl;
@@ -78,8 +83,6 @@ import com.gentics.mesh.hibernate.data.node.field.impl.HibS3BinaryFieldImpl;
 import com.gentics.mesh.hibernate.data.node.field.impl.HibStringFieldImpl;
 import com.gentics.mesh.hibernate.data.node.field.impl.HibStringListFieldImpl;
 import com.gentics.mesh.util.UUIDUtil;
-
-import org.slf4j.Logger;
 
 /**
  * A base for the field container entities, that are not known to the Hibernate entity manager.
@@ -240,6 +243,11 @@ public interface HibUnmanagedFieldContainer<
 	}
 
 	@Override
+    default HibJsonField getJson(String key) {
+		return getFieldValueFromNullableColumn(key, FieldTypes.JSON, HibJsonFieldImpl::new);
+    }
+
+	@Override
 	default HibBinaryFieldImpl getBinary(String key) {
 		return getReferenceFieldValueFromNullableColumn(key, FieldTypes.BINARY, HibBinaryFieldImpl::new);
 	}
@@ -327,6 +335,12 @@ public interface HibUnmanagedFieldContainer<
 		ensureColumnExists(key, FieldTypes.BOOLEAN);
 		return new HibBooleanFieldImpl(key, this, null);
 	}
+
+	@Override
+    default HibJsonField createJson(String key) {
+		ensureColumnExists(key, FieldTypes.JSON);
+		return new HibJsonFieldImpl(key, this, null);
+    }
 
 	@Override
 	default HibStringField createString(String key) {
@@ -451,11 +465,24 @@ public interface HibUnmanagedFieldContainer<
 	}
 
 	@Override
+    default HibJsonListFieldImpl getJsonList(String key) {
+		return getListFieldFromNullableColumn(key, FieldTypes.JSON, HibJsonListFieldImpl::new);
+    }
+
+	@Override
 	default HibNumberFieldList createNumberList(String key) {
 		HibernateTx tx = HibernateTx.get();
 		ensureColumnExists(key, FieldTypes.LIST);
 		ensureOldReferenceRemoved(tx, key, this::getNumberList, false);
 		return HibNumberListFieldImpl.fromContainer(tx, this, key, Collections.emptyList());
+	}
+
+	@Override
+	default HibJsonFieldList createJsonList(String key) {
+		HibernateTx tx = HibernateTx.get();
+		ensureColumnExists(key, FieldTypes.LIST);
+		ensureOldReferenceRemoved(tx, key, this::getJsonList, false);
+		return HibJsonListFieldImpl.fromContainer(tx, this, key, Collections.emptyList());
 	}
 
 	@Override

@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.node.field.HibBooleanField;
 import com.gentics.mesh.core.data.node.field.HibDateField;
 import com.gentics.mesh.core.data.node.field.HibHtmlField;
+import com.gentics.mesh.core.data.node.field.HibJsonField;
 import com.gentics.mesh.core.data.node.field.HibStringField;
 import com.gentics.mesh.core.data.node.field.list.HibListField;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
@@ -88,6 +89,9 @@ public class FieldFilter extends MainFilter<HibFieldContainer> {
 		case BOOLEAN:
 			return new FieldMappedFilter<>(type, name, description, BooleanFilter.filter(),
 				node -> node == null ? null : getOrNull(node.getBoolean(name), HibBooleanField::getBoolean), schema);
+		case JSON:
+			return new FieldMappedFilter<>(type, name, description, JsonFilter.filter(),
+				node -> node == null ? null : getOrNull(node.getJson(name), HibJsonField::getJson), schema);
 		case NUMBER:
 			return new FieldMappedFilter<>(type, name, description, NumberFilter.filter(),
 				node -> node == null ? null : getOrNull(node.getNumber(name), val -> new BigDecimal(val.getNumber().toString())), schema);
@@ -123,6 +127,10 @@ public class FieldFilter extends MainFilter<HibFieldContainer> {
 		case BOOLEAN:
 			listFilter = ListFilter.booleanListFilter();
 			listFieldGetter = node -> node.getBooleanList(name);
+			break;
+		case JSON:
+			listFilter = ListFilter.jsonListFilter();
+			listFieldGetter = node -> node.getJsonList(name);
 			break;
 		case DATE:
 			listFilter = ListFilter.dateListFilter();

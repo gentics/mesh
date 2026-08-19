@@ -23,6 +23,8 @@ import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.HtmlField;
+import com.gentics.mesh.core.rest.node.field.JsonContent;
+import com.gentics.mesh.core.rest.node.field.JsonField;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.NumberField;
@@ -31,6 +33,7 @@ import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.JsonFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.node.field.list.FieldList;
@@ -38,6 +41,7 @@ import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.JsonFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
@@ -46,6 +50,7 @@ import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
 
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 public class FieldMapTest {
@@ -80,6 +85,10 @@ public class FieldMapTest {
 		fieldMap.put("booleanField", new BooleanFieldImpl().setValue(true));
 		fieldMap.put("booleanFieldNull", null);
 		fieldMap.put("booleanFieldNullValue", new BooleanFieldImpl().setValue(null));
+
+		fieldMap.put("jsonField", new JsonFieldImpl().setJson(JsonContent.fromArray(new JsonArray().add("whatever").add("wherever"))));
+		fieldMap.put("jsonFieldNull", null);
+		fieldMap.put("jsonFieldNullValue", new JsonFieldImpl().setJson(null));
 
 		fieldMap.put("micronodeField", new MicronodeResponse());
 		fieldMap.put("micronodeFieldNull", null);
@@ -139,6 +148,12 @@ public class FieldMapTest {
 		numberList.add(12);
 		fieldMap.put("numberListField", numberList);
 
+		JsonFieldListImpl jsonList = new JsonFieldListImpl();
+		jsonList.add(JsonContent.fromObject(new JsonObject().put("content", "A")));
+		jsonList.add(JsonContent.fromObject(new JsonObject().put("content", "B")));
+		jsonList.add(JsonContent.fromObject(new JsonObject().put("content", "C")));
+		fieldMap.put("jsonListField", jsonList);
+
 		fieldMap.put("nulled", null);
 
 		// Assert fieldmap fields
@@ -161,6 +176,7 @@ public class FieldMapTest {
 		assertThat(jsonObject).hasNullValue("htmlFieldNull");
 		assertThat(jsonObject).hasNullValue("dateFieldNull");
 		assertThat(jsonObject).hasNullValue("stringFieldNull");
+		assertThat(jsonObject).hasNullValue("jsonFieldNull");
 
 		assertNotNull(json);
 		FieldMap fieldMapDeserialized = JsonUtil.readValue(json, FieldMap.class);
@@ -198,6 +214,13 @@ public class FieldMapTest {
 
 		assertNull(fieldMap.getField("booleanFieldNullValue", FieldTypes.BOOLEAN, null, false));
 		assertNull("The field was explicitly set to null and should be null but it was not.", fieldMap.getBooleanField("booleanFieldNull"));
+
+		JsonField jsonField = fieldMap.getField("jsonField", FieldTypes.JSON, null, false);
+		assertNotNull(jsonField);
+		assertNotNull(fieldMap.getJsonField("jsonField"));
+
+		assertNull(fieldMap.getField("jsonFieldNullValue", FieldTypes.JSON, null, false));
+		assertNull("The field was explicitly set to null and should be null but it was not.", fieldMap.getJsonField("jsonFieldNull"));
 
 		DateField dateField = fieldMap.getField("dateField", FieldTypes.DATE, null, false);
 		assertNotNull(dateField);
@@ -248,6 +271,10 @@ public class FieldMapTest {
 		assertNotNull(booleanList);
 		assertEquals(3, booleanList.getItems().size());
 
+		JsonFieldListImpl jsonList = fieldMap.getJsonFieldList("jsonListField");
+		assertNotNull(jsonList);
+		assertEquals(3, jsonList.getItems().size());
+
 		StringFieldListImpl stringList = fieldMap.getStringFieldList("stringListField");
 		assertNotNull(stringList);
 		assertEquals(3, stringList.getItems().size());
@@ -260,7 +287,7 @@ public class FieldMapTest {
 		assertNotNull(micronodeList);
 		assertEquals(3, micronodeList.getItems().size());
 
-		assertEquals("The map did not contain the expected amount of fields.", 29, fieldMap.size());
+		assertEquals("The map did not contain the expected amount of fields.", 33, fieldMap.size());
 		assertFalse("The map should not be empty.", fieldMap.isEmpty());
 		assertTrue("The string field should be within the map.", fieldMap.hasField("stringField"));
 

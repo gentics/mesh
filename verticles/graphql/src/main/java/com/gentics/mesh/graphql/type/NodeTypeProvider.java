@@ -859,6 +859,9 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				case BOOLEAN:
 					root.field(fields.createBooleanDef(fieldSchema));
 					break;
+				case JSON:
+					root.field(fields.createJsonDef(fieldSchema));
+					break;
 				case NODE:
 					root.field(fields.createNodeDef(fieldSchema));
 					break;
@@ -923,6 +926,9 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 						break;
 					case BOOLEAN:
 						fieldsType.field(fields.createBooleanDef(fieldSchema));
+						break;
+					case JSON:
+						fieldsType.field(fields.createJsonDef(fieldSchema));
 						break;
 					case NODE:
 						fieldsType.field(fields.createNodeDef(fieldSchema));

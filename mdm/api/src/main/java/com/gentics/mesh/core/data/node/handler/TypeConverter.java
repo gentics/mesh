@@ -19,6 +19,10 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.core.rest.node.field.ListField;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.node.field.NodeField;
@@ -31,14 +35,12 @@ import com.gentics.mesh.core.rest.node.field.list.impl.AbstractFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.JsonFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Type converter for the script engine used by the node migration handler.
@@ -85,6 +87,17 @@ public class TypeConverter {
 	}
 
 	/**
+	 * Convert the given value to a string list
+	 *
+	 * @param value
+	 *            Value to be converted
+	 * @return String array
+	 */
+	public JsonFieldListImpl toJsonList(Object value) {
+		return listField(JsonFieldListImpl::new, this::toJsonContent, value);
+	}
+
+	/**
 	 * Convert the given value to an HTML list
 	 *
 	 * @param value
@@ -116,6 +129,29 @@ public class TypeConverter {
 		} else {
 			return null;
 		}
+	}
+
+	/**
+	 * Convert the given value to a boolean.
+	 *
+	 * @param value
+	 *            Value to be converted
+	 * @return Boolean value
+	 */
+	public JsonContent toJsonContent(Object value) {
+		value = firstIfList(value);
+
+		if (value == null) {
+			return null;
+		}
+		try {
+			return JsonContent.fromString(value.toString());
+		} catch (Exception e) {
+			if (log.isDebugEnabled()) {
+				log.debug("Could not convert to JsonObject {" + value.toString() + "}", e);
+			}
+		}
+		return null;
 	}
 
 	/**

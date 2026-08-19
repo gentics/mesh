@@ -29,6 +29,7 @@ properties([
 		booleanParam(name: 'skipJsLibraries',     defaultValue: false, description: "Whether to skip deployment of Javascript/Typescript libraries"),
 		string(	     name: 'testingVersion',      defaultValue: "",    description: "Version for testing"),
 		string(		 name: 'meshVersion',         defaultValue: "",    description: "Override Mesh version"),
+		string(		 name: 'meshJsVersion',       defaultValue: "",    description: "Override Mesh JS version for the testing deployment"),
 	])
 ])
 
@@ -244,17 +245,23 @@ stage("Setup Build Environment") {
 					}
 
 					dir("js") {
+						// Patch test version, if requested
+						def jsVersion = version
+						if (params.meshJsVersion?.trim()) {
+							jsVersion = params.meshJsVersion.trim()
+						}
+
 						// Install dependencies
 						sh 'npm ci --no-audit --no-fund'
 
 						if (
 							// If the version isn't semver, we can't set it, as NX just explodes
-							(version ==~ /[\d]+\.[\d]+\.[\d]+[a-zA-Z0-9-]*/)
+							(jsVersion ==~ /[\d]+\.[\d]+\.[\d]+[a-zA-Z0-9-]*/)
 							// Or if we just do a testing deployment
 							|| !Boolean.valueOf(params.runDeployTesting)
 						) {
 							// Set the version for the packages
-							sh "npm run nx -- release version ${version}"
+							sh "npm run nx -- release version ${jsVersion}"
 						}
 
 						// Build all JS packages
@@ -478,7 +485,7 @@ stage("Setup Build Environment") {
 						}
 					}
 
-					if (Boolean.valueOf(params.runDeploy) && !Boolean.valueOf(params.skipJsLibraries)) {
+					if (!Boolean.valueOf(params.skipJsLibraries) && (Boolean.valueOf(params.runDeploy) || Boolean.valueOf(params.runDeployTesting))) {
 						environment {
 							// Disable colors/special characters, if projects do properly check it
 							TERM="dumb"
