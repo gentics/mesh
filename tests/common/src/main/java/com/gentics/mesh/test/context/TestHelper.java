@@ -83,6 +83,7 @@ import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.JsonFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
@@ -1015,6 +1016,8 @@ public interface TestHelper extends EventHelper, ClientHelper {
 			return new BinaryFieldSchemaImpl();
 		case BOOLEAN:
 			return new BooleanFieldSchemaImpl();
+		case JSON:
+			return new JsonFieldSchemaImpl();
 		case DATE:
 			return new DateFieldSchemaImpl();
 		case HTML:

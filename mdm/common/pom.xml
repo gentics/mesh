@@ -28,7 +28,7 @@
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-plugin-api</artifactId>
 		</dependency>
-	
+
 		<!-- Dagger -->
 		<dependency>
 			<groupId>com.google.dagger</groupId>

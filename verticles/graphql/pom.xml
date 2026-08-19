@@ -45,6 +45,10 @@
 			<groupId>com.gentics.graphqlfilter</groupId>
 			<artifactId>graphql-java-filter</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.jayway.jsonpath</groupId>
+		    <artifactId>json-path</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>

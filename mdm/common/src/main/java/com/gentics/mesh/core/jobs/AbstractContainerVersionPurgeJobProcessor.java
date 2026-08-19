@@ -88,7 +88,7 @@ public abstract class AbstractContainerVersionPurgeJobProcessor<
 	 */
 	protected Completable purge(HibJob job) {
 		return Completable.defer(() -> {
-			NameOrUUIDsRequest request = JsonUtil.readValue(job.getQuery(), NameOrUUIDsRequest.class, true);
+			NameOrUUIDsRequest request = JsonUtil.readValue(job.getQuery(), NameOrUUIDsRequest.class, true, false);
 			Set<Pair<String, String>> affectedVersions = db.tx(tx -> {
 				Set<String> usedVersionUuids = containerDao.findActiveSchemaVersions().stream()
 						.map(version -> version.getUuid())

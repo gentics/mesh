@@ -19,6 +19,8 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
@@ -47,8 +49,6 @@ import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeReference;
 import graphql.schema.GraphQLUnionType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Singleton
 public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
@@ -162,6 +162,9 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 						case BOOLEAN:
 							microschemaType.field(fields.get().createBooleanDef(fieldSchema).transform(addDeprecation));
 							break;
+						case JSON:
+							microschemaType.field(fields.get().createJsonDef(fieldSchema).transform(addDeprecation));
+							break;
 						case NODE:
 							microschemaType.field(fields.get().createNodeDef(fieldSchema).transform(addDeprecation));
 							break;
@@ -217,6 +220,9 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 							break;
 						case BOOLEAN:
 							fieldsType.field(fields.get().createBooleanDef(fieldSchema));
+							break;
+						case JSON:
+							fieldsType.field(fields.get().createJsonDef(fieldSchema));
 							break;
 						case NODE:
 							fieldsType.field(fields.get().createNodeDef(fieldSchema));

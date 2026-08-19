@@ -16,6 +16,7 @@ import com.gentics.mesh.hibernate.data.domain.AbstractHibFieldSchemaVersion;
 import com.gentics.mesh.hibernate.data.domain.HibBooleanListFieldEdgeImpl;
 import com.gentics.mesh.hibernate.data.domain.HibDateListFieldEdgeImpl;
 import com.gentics.mesh.hibernate.data.domain.HibHtmlListFieldEdgeImpl;
+import com.gentics.mesh.hibernate.data.domain.HibJsonListFieldEdgeImpl;
 import com.gentics.mesh.hibernate.data.domain.HibMicronodeListFieldEdgeImpl;
 import com.gentics.mesh.hibernate.data.domain.HibNodeFieldContainerEdgeImpl;
 import com.gentics.mesh.hibernate.data.domain.HibNodeFieldEdgeImpl;
@@ -85,6 +86,7 @@ public final class ContentUtils {
 							case BOOLEAN: return Stream.of(HibBooleanListFieldEdgeImpl.class);
 							case DATE: return Stream.of(HibDateListFieldEdgeImpl.class);
 							case HTML: return Stream.of(HibHtmlListFieldEdgeImpl.class);
+							case JSON: return Stream.of(HibJsonListFieldEdgeImpl.class);
 							case MICRONODE: return Stream.of(HibMicronodeListFieldEdgeImpl.class, HibMicronodeFieldImpl.class);
 							case NODE: return Stream.of(HibNodeListFieldEdgeImpl.class, HibNodeListFieldImpl.class);
 							default: return Stream.empty();

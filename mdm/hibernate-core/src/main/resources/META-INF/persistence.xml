@@ -18,6 +18,7 @@
 		<class>com.gentics.mesh.hibernate.data.domain.HibDateListFieldEdgeImpl</class>
 		<class>com.gentics.mesh.hibernate.data.domain.HibFieldTypeChangeImpl</class>
 		<class>com.gentics.mesh.hibernate.data.domain.HibGroupImpl</class>
+		<class>com.gentics.mesh.hibernate.data.domain.HibJsonListFieldEdgeImpl</class>
 		<class>com.gentics.mesh.hibernate.data.domain.HibHtmlListFieldEdgeImpl</class>
 		<class>com.gentics.mesh.hibernate.data.domain.HibImageVariantImpl</class>
 		<class>com.gentics.mesh.hibernate.data.domain.HibJobImpl</class>

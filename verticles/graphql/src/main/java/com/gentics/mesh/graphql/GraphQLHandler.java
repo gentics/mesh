@@ -18,6 +18,8 @@ import javax.inject.Singleton;
 import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderOptions;
 import org.dataloader.DataLoaderRegistry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.error.AbstractUnavailableException;
@@ -27,6 +29,7 @@ import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.dataloader.NodeDataLoader;
 import com.gentics.mesh.graphql.type.QueryTypeProvider;
 import com.gentics.mesh.graphql.type.field.FieldDefinitionProvider;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.metric.SimpleMetric;
 
@@ -40,8 +43,6 @@ import graphql.language.SourceLocation;
 import io.micrometer.core.instrument.Timer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
 
 /**
@@ -110,6 +111,7 @@ public class GraphQLHandler {
 					dataLoaderRegistry.register(NodeDataLoader.NODE_REFERENCE_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.NODE_REFERENCE_LOADER, dlOptions));
 					dataLoaderRegistry.register(FieldDefinitionProvider.LINK_REPLACER_DATA_LOADER_KEY, DataLoader.newDataLoader(typeProvider.getFieldDefProvider().LINK_REPLACER_LOADER, dlOptions));
 					dataLoaderRegistry.register(FieldDefinitionProvider.BOOLEAN_LIST_VALUES_DATA_LOADER_KEY, DataLoader.newDataLoader(typeProvider.getFieldDefProvider().BOOLEAN_LIST_VALUE_LOADER, dlOptions));
+					dataLoaderRegistry.register(FieldDefinitionProvider.JSON_LIST_VALUES_DATA_LOADER_KEY, DataLoader.newDataLoader(typeProvider.getFieldDefProvider().JSON_LIST_VALUE_LOADER, dlOptions));
 					dataLoaderRegistry.register(FieldDefinitionProvider.DATE_LIST_VALUES_DATA_LOADER_KEY, DataLoader.newDataLoader(typeProvider.getFieldDefProvider().DATE_LIST_VALUE_LOADER, dlOptions));
 					dataLoaderRegistry.register(FieldDefinitionProvider.NUMBER_LIST_VALUES_DATA_LOADER_KEY, DataLoader.newDataLoader(typeProvider.getFieldDefProvider().NUMBER_LIST_VALUE_LOADER, dlOptions));
 					dataLoaderRegistry.register(FieldDefinitionProvider.HTML_LIST_VALUES_DATA_LOADER_KEY, DataLoader.newDataLoader(typeProvider.getFieldDefProvider().HTML_LIST_VALUE_LOADER, dlOptions));
@@ -152,7 +154,7 @@ public class GraphQLHandler {
 							response.put("data", new JsonObject(data));
 						}
 						boolean minify = gc.isMinify(options.getHttpServerOptions());
-						gc.send(minify ? response.encode() : response.encodePrettily(), OK);
+						gc.send(JsonUtil.toJson(response, minify), OK);
 					} catch (TimeoutException | InterruptedException | ExecutionException e) {
 						// If an error happens while "waiting" for the result, we log the GraphQL query here.
 						log.error("GraphQL query failed after {} ms with {}:\n{}\nvariables: {}",
