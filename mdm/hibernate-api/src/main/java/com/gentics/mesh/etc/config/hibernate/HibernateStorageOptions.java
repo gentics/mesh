@@ -44,6 +44,7 @@ public class HibernateStorageOptions implements Option {
 	public static final String DEFAULT_SQL_PARAMETERS_LIMIT = SQL_PARAMETERS_LIMIT_OPTION_DB_DEFINED;
 	public static final String DEFAULT_EXPORT_DIRECTORY = DEFAULT_DATA_ROOT + File.separator + "export";
 	public static final long DEFAULT_STALE_TX_CHECK_INTERVAL_MS = 10_000;
+	public static final long DEFAULT_QUERY_PLAN_CACHE_MAX_SIZE = 2048; // Default Hibernate 7 value
 
 	public static final String MESH_JDBC_DRIVER_CLASS = "MESH_JDBC_DRIVER_CLASS";
 	public static final String MESH_DATABASE_ADDRESS = "MESH_DATABASE_ADDRESS";
@@ -71,6 +72,7 @@ public class HibernateStorageOptions implements Option {
 	public static final String MESH_HIBERNATE_JDBC_BATCH_SIZE = "MESH_HIBERNATE_JDBC_BATCH_SIZE";
 	public static final String MESH_STALE_TX_CHECK_INTERVAL = "MESH_STALE_TX_CHECK_INTERVAL";
 	public static final String MESH_HIBERNATE_NATIVE_QUERY_FILTERING = "MESH_HIBERNATE_NATIVE_QUERY_FILTERING";
+	public static final String MESH_QUERY_PLAN_CACHE_MAX_SIZE = "MESH_QUERY_PLAN_CACHE_MAX_SIZE";
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Enables the native database level filtering for queries.")
@@ -186,6 +188,11 @@ public class HibernateStorageOptions implements Option {
 	@JsonPropertyDescription("Interval in ms for periodic check for stale transactions. Defaults to " + DEFAULT_STALE_TX_CHECK_INTERVAL_MS + " ms.")
 	@EnvironmentVariable(name = MESH_STALE_TX_CHECK_INTERVAL, description = "Overwrite the interval (in ms) for periodic check for stale transactions.")
 	private long staleTxCheckInterval = DEFAULT_STALE_TX_CHECK_INTERVAL_MS;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Hibernate query plan + parameter metadata cache max size. Defaults to " + DEFAULT_QUERY_PLAN_CACHE_MAX_SIZE + ". Zero or negative value disables the query plan cache.")
+	@EnvironmentVariable(name = MESH_QUERY_PLAN_CACHE_MAX_SIZE, description = "Overwrite the query plan + parameter metadata cache max size.")
+	private long queryPlanCacheMaxSize = DEFAULT_STALE_TX_CHECK_INTERVAL_MS;
 
 	public String getConnectionUsername() {
 		return connectionUsername;
@@ -412,6 +419,16 @@ public class HibernateStorageOptions implements Option {
 	@Setter
 	public HibernateStorageOptions setStaleTxCheckInterval(long staleTxCheckInterval) {
 		this.staleTxCheckInterval = staleTxCheckInterval;
+		return this;
+	}
+
+	public long getQueryPlanCacheMaxSize() {
+		return queryPlanCacheMaxSize;
+	}
+
+	@Setter
+	public HibernateStorageOptions setQueryPlanCacheMaxSize(long queryPlanCacheMaxSize) {
+		this.queryPlanCacheMaxSize = queryPlanCacheMaxSize;
 		return this;
 	}
 

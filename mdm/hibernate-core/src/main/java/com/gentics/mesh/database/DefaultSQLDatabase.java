@@ -99,9 +99,10 @@ public class DefaultSQLDatabase implements DatabaseProvider {
 					.put("hibernate.cache.default_cache_concurrency_strategy", CacheConcurrencyStrategy.READ_WRITE.toAccessType().getExternalName())
 					.put("hibernate.cache.use_query_cache", Boolean.TRUE.toString())
 					.put("hibernate.cache.use_second_level_cache", Boolean.TRUE.toString())
-					.put("hibernate.criteria.plan_cache_enabled", Boolean.TRUE.toString())
-					.put("hibernate.query.plan_cache_max_size", 100000)
-					.put("hibernate.query.plan_parameter_metadata_max_size", 1000);
+					.put("hibernate.criteria.plan_cache_enabled", Boolean.toString(options.getStorageOptions().getQueryPlanCacheMaxSize() > 0))
+					.put("hibernate.query.plan_cache_max_size", Long.toString(options.getStorageOptions().getQueryPlanCacheMaxSize()))
+					// Since we use native queries excessively, the metadata cache should be bigger than the default values comparing to the plan cache size.
+					.put("hibernate.query.plan_parameter_metadata_max_size", Long.toString(options.getStorageOptions().getQueryPlanCacheMaxSize() / 4));
 			if (options.getClusterOptions().isEnabled()) {
 				// Cache sizes are configured in com.gentics.mesh.database.cluster.HibClusterManager.getHazelcast()
 				optionBuilder
