@@ -2,6 +2,21 @@ package com.gentics.mesh.plugin.comment.testclient;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.NameOrUUIDsRequest;
+
+import static com.gentics.mesh.plugin.comment.TestUtil.loadUserResponse;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
@@ -20,23 +35,11 @@ import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.gentics.mesh.rest.client.impl.EmptyResponse;
 import com.gentics.mesh.util.UUIDUtil;
+
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.apache.commons.io.IOUtils;
-
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import static com.gentics.mesh.plugin.comment.TestUtil.loadUserResponse;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class TestClient extends AbstractTestClient {
 
@@ -209,5 +212,4 @@ public class TestClient extends AbstractTestClient {
 		GenericMessageResponse response = mock(GenericMessageResponse.class);
 		return mockResponse(response);
 	}
-
 }

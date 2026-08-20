@@ -7,6 +7,9 @@ import com.gentics.mesh.plugin.mustread.config.ProjectConfig;
 import com.gentics.mesh.plugin.mustread.helper.LogHelper;
 import com.gentics.mesh.plugin.mustread.object.User;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.vertx.openapi.model.MessageResponse;
+import com.gentics.vertx.openapi.model.RestModel;
+
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Handler;
 import io.vertx.core.json.Json;
@@ -110,12 +113,16 @@ abstract class BaseHandler implements Handler<RoutingContext> {
 			.end(Json.encode(object));
 	}
 
+	void doJsonResponse(RestModel object, HttpResponseStatus status) {
+		getRoutingContext().response()
+				.setStatusCode(status.code())
+			.putHeader("content-type", "application/json; charset=utf-8")
+			.end(object.toJson(plugin.environment().options().getHttpServerOptions().isMinifyJson()));
+	}
+
 	void doJsonResponse(String text, HttpResponseStatus status) {
-		JsonObject jsonResponse = new JsonObject();
-
-		jsonResponse.put("message", text);
-
-		doJsonResponse(jsonResponse, status);
+		MessageResponse response = new MessageResponse(text);
+		doJsonResponse(response, status);
 	}
 
 	void doJsonResponse(String text) {

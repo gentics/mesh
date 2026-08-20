@@ -1,6 +1,8 @@
 package com.gentics.mesh.plugin.forms.model.response;
 
-public class RenderResponse {
+import com.gentics.mesh.core.rest.common.RestModel;
+
+public class RenderResponse implements RestModel {
 	private String html;
 
 	public String getHtml() {

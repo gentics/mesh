@@ -27,7 +27,7 @@ import com.gentics.mesh.RestAPIVersion;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.plugin.AbstractPlugin;
-import com.gentics.mesh.plugin.RestPlugin;
+import com.gentics.mesh.plugin.CommercialRestPlugin;
 import com.gentics.mesh.plugin.common.license.LicenseService;
 import com.gentics.mesh.plugin.common.license.LicensedPlugin;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
@@ -42,6 +42,7 @@ import com.gentics.mesh.plugin.export.model.CsvRequest;
 import com.gentics.mesh.plugin.export.model.PluginConfiguration;
 import com.gentics.mesh.plugin.export.validaton.ConstraintViolationSerializer;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.vertx.openapi.route.InternalEndpointBuilder;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
@@ -49,7 +50,7 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 
-public class ExportPlugin extends AbstractPlugin implements RestPlugin, ExportConfigValuePlugin {
+public class ExportPlugin extends AbstractPlugin implements CommercialRestPlugin, ExportConfigValuePlugin {
 
 	private static final Logger log = LoggerFactory.getLogger(ExportPlugin.class);
 
@@ -116,12 +117,16 @@ public class ExportPlugin extends AbstractPlugin implements RestPlugin, ExportCo
 		RoleCheckHandler roleCheck = new RoleCheckHandler(this.component.getConfiguration().getRoleName());
 		CsvHandler handler = component.getCsvHandler();
 
-		router.route("/csv")
-			.method(HttpMethod.POST)
-			.handler(BodyHandler.create())
-			.handler(wrapHandler(roleCheck))
-			.handler(new DecodeValidateHandler<>(CsvRequest.class))
-			.handler(wrapHandler(handler));
+		InternalEndpointBuilder.wrap(router)
+			.withDescription("Export in CSV format")
+			.withPath("/csv")
+			.withMethod(HttpMethod.POST)
+			.withHandler(BodyHandler.create())
+			.withHandler(wrapHandler(roleCheck))
+			.withHandler(new DecodeValidateHandler<>(CsvRequest.class))
+			.withHandler(wrapHandler(handler))
+			.produces("application/csv")
+			.build();
 
 		return router;
 	}

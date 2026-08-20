@@ -140,8 +140,9 @@ public class Form implements RestModel {
 		return uuid;
 	}
 
-	public void setUuid(String uuid) {
+	public Form setUuid(String uuid) {
 		this.uuid = uuid;
+		return this;
 	}
 
 	/**
@@ -156,8 +157,9 @@ public class Form implements RestModel {
 	 * Set the form name
 	 * @param name name
 	 */
-	public void setName(String name) {
+	public Form setName(String name) {
 		this.name = name;
+		return this;
 	}
 
 	/**
@@ -172,8 +174,9 @@ public class Form implements RestModel {
 	 * Set the form language
 	 * @param language language
 	 */
-	public void setLanguage(String language) {
+	public Form setLanguage(String language) {
 		this.language = language;
+		return this;
 	}
 
 	/**
@@ -191,8 +194,9 @@ public class Form implements RestModel {
 	 *
 	 * @param type The form type
 	 */
-	public void setType(String type) {
+	public Form setType(String type) {
 		this.type = type;
+		return this;
 	}
 
 	/**
@@ -211,7 +215,6 @@ public class Form implements RestModel {
 	 */
 	public Form setSubmitOnce(boolean submitOnce) {
 		this.submitOnce = submitOnce;
-
 		return this;
 	}
 
@@ -227,8 +230,9 @@ public class Form implements RestModel {
 	 * Set email addresses
 	 * @param email email addresses
 	 */
-	public void setEmail(String email) {
+	public Form setEmail(String email) {
 		this.email = email;
+		return this;
 	}
 
 	/**
@@ -243,8 +247,9 @@ public class Form implements RestModel {
 	 * Set email subject
 	 * @param mailsubject email subject
 	 */
-	public void setMailsubject(String mailsubject) {
+	public Form setMailsubject(String mailsubject) {
 		this.mailsubject = mailsubject;
+		return this;
 	}
 
 	/**
@@ -259,8 +264,9 @@ public class Form implements RestModel {
 	 * Set admin email template path.
 	 * @param mailtemp mail template path
 	 */
-	public void setMailtemp(String mailtemp) {
+	public Form setMailtemp(String mailtemp) {
 		this.mailtemp = mailtemp;
+		return this;
 	}
 
 
@@ -275,8 +281,9 @@ public class Form implements RestModel {
 	/**
 	 * Set the admin mail template source.
 	 */
-	public void setMailsource(String mailsource) {
+	public Form setMailsource(String mailsource) {
 		this.mailsource = mailsource;
+		return this;
 	}
 
 	/**
@@ -291,8 +298,9 @@ public class Form implements RestModel {
 	 * Set the successurl
 	 * @param successurl successurl
 	 */
-	public void setSuccessurl(String successurl) {
+	public Form setSuccessurl(String successurl) {
 		this.successurl = successurl;
+		return this;
 	}
 
 	/**
@@ -307,8 +315,9 @@ public class Form implements RestModel {
 	 * Set the schema definition of this form.
 	 * @param schema form schema
 	 */
-	public void setSchema(FormSchema schema) {
+	public Form setSchema(FormSchema schema) {
 		this.schema = schema;
+		return this;
 	}
 
 	/**
@@ -323,8 +332,9 @@ public class Form implements RestModel {
 	 * Set the UI schema definition of this form.
 	 * @param uiSchema ui schema
 	 */
-	public void setUiSchema(FormUiSchema uiSchema) {
+	public Form setUiSchema(FormUiSchema uiSchema) {
 		this.uiSchema = uiSchema;
+		return this;
 	}
 
 	/**
@@ -339,8 +349,9 @@ public class Form implements RestModel {
 	 * Set the data (pre-filled / current control values) of this form.
 	 * @param data form data
 	 */
-	public void setData(FormData data) {
+	public Form setData(FormData data) {
 		this.data = data;
+		return this;
 	}
 
 	/**
@@ -406,16 +417,18 @@ public class Form implements RestModel {
 	 * 
 	 * @param captchaId captchaId
 	 */
-	public void setCaptchaId(String captchaId) {
+	public Form setCaptchaId(String captchaId) {
 		this.captchaId = captchaId;
+		return this;
 	}
 
 	public CaptchaConfigModel getCaptchaConfig() {
 		return captchaConfigModel;
 	}
 
-	public void setCaptchaConfig(CaptchaConfigModel captchaConfigModel) {
+	public Form setCaptchaConfig(CaptchaConfigModel captchaConfigModel) {
 		this.captchaConfigModel = captchaConfigModel;
+		return this;
 	}
 
 	/**
@@ -953,10 +966,12 @@ public class Form implements RestModel {
 	/**
 	 * Set the configuration
 	 * @param configuration configuration
+	 * @return 
 	 */
 	@JsonIgnore
-	public void setConfiguration(FormsConfig configuration) {
+	public Form setConfiguration(FormsConfig configuration) {
 		this.configuration = configuration;
+		return this;
 	}
 
 	/**

@@ -548,12 +548,12 @@ public abstract class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<ProjectResponse> assignLanguageToProject(String projectUuid, String languageUuid) {
+	public MeshRequest<ProjectResponse> assignLanguageToProject(String projectUuid, String languageUuid, ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
 	@Override
-	public MeshRequest<ProjectResponse> unassignLanguageFromProject(String projectUuid, String languageUuid) {
+	public MeshRequest<ProjectResponse> unassignLanguageFromProject(String projectUuid, String languageUuid, ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
@@ -1480,4 +1480,10 @@ public abstract class AbstractTestClient implements MeshRestClient {
 			ParameterProvider... parameterProviders) {
 		throw new NotImplementedException();
 	}
+
+	@Override
+	public MeshRequest<String> getOpenAPI() {
+		throw new NotImplementedException();
+	}
+
 }

@@ -1,9 +1,25 @@
 package com.gentics.mesh.plugin.favorite;
 
+import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
+import static io.vertx.core.http.HttpMethod.DELETE;
+import static io.vertx.core.http.HttpMethod.GET;
+import static io.vertx.core.http.HttpMethod.POST;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+
+import org.apache.commons.lang3.StringUtils;
+import org.pf4j.PluginWrapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.plugin.AbstractPlugin;
+import com.gentics.mesh.plugin.CommercialRestPlugin;
 import com.gentics.mesh.plugin.PluginContext;
-import com.gentics.mesh.plugin.RestPlugin;
 import com.gentics.mesh.plugin.common.MeshPluginException;
 import com.gentics.mesh.plugin.common.license.LicenseService;
 import com.gentics.mesh.plugin.common.license.LicensedPlugin;
@@ -14,30 +30,20 @@ import com.gentics.mesh.plugin.favorite.dagger.DaggerFavoritePluginComponent;
 import com.gentics.mesh.plugin.favorite.dagger.FavoritePluginComponent;
 import com.gentics.mesh.plugin.favorite.error.FavoritePluginError;
 import com.gentics.mesh.plugin.favorite.handler.AbstractFavoriteHandler;
+import com.gentics.mesh.plugin.favorite.model.FavoriteResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshRestClientMessageException;
+import com.gentics.vertx.openapi.route.InternalEndpointBuilder;
+
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Completable;
 import io.vertx.core.Handler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 
-import org.apache.commons.lang3.StringUtils;
-import org.pf4j.PluginWrapper;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
-
-import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
-import static io.vertx.core.http.HttpMethod.*;
-
-public class FavoritePlugin extends AbstractPlugin implements RestPlugin {
+public class FavoritePlugin extends AbstractPlugin implements CommercialRestPlugin {
 
 	public final static String NAME = "Favorite Plugin";
 
@@ -56,10 +62,44 @@ public class FavoritePlugin extends AbstractPlugin implements RestPlugin {
 	public Router createProjectRouter() {
 		log.info("Registering routes for {" + name() + "}");
 		Router projectRouter = Router.router(vertx());
-		projectRouter.route("/:type").method(POST).handler(fromComponent(FavoritePluginComponent::getOverrideFavoriteHandler));
-		projectRouter.route("/:type").method(GET).produces(APPLICATION_JSON).handler(fromComponent(FavoritePluginComponent::getFavoriteHandler));
-		projectRouter.route("/:type/:id").method(POST).handler(fromComponent(FavoritePluginComponent::storeFavoriteHandler));
-		projectRouter.route("/:type/:id").method(DELETE).handler(fromComponent(FavoritePluginComponent::getDeleteFavoriteHandler));
+		InternalEndpointBuilder.wrap(projectRouter)
+			.withDescription("Create favorites")
+			.withPath("/:type")
+			.withMethod(POST)
+			.withUriParameter("type", "Favorite type", "some_known_fav_type")
+			.produces(APPLICATION_JSON)
+			.consumes(APPLICATION_JSON)
+			.withExampleRequest(new JsonObject().put(FavoriteService.FAVORITE_FIELD, new JsonArray().add("some_fav").add("some_other_fav")))
+			.withExampleResponse(HttpResponseStatus.CREATED, "Favorites created")
+			.withHandler(fromComponent(FavoritePluginComponent::getOverrideFavoriteHandler))
+			.build();
+		InternalEndpointBuilder.wrap(projectRouter)
+			.withDescription("Obtain favorites")
+			.withPath("/:type")
+			.withUriParameter("type", "Favorite type", "some_known_fav_type")
+			.withMethod(GET)
+			.produces(APPLICATION_JSON)
+			.withExampleResponse(HttpResponseStatus.OK, new FavoriteResponse().setFavorites(List.of("some_fav", "some_other_favs")), "Favorites")
+			.withHandler(fromComponent(FavoritePluginComponent::getFavoriteHandler))
+			.build();
+		InternalEndpointBuilder.wrap(projectRouter)
+			.withDescription("Update favorites of given type with the given favorite")
+			.withPath("/:type/:id")
+			.withUriParameter("type", "Favorite type", "some_known_fav_type")
+			.withUriParameter("id", "Favorite", "some_fav")
+			.withMethod(POST)
+			.withExampleResponse(HttpResponseStatus.CREATED, "Favorites updated")
+			.withHandler(fromComponent(FavoritePluginComponent::storeFavoriteHandler))
+			.build();
+		InternalEndpointBuilder.wrap(projectRouter)
+			.withDescription("Delete the given favorite from the list of a given type")
+			.withPath("/:type/:id")
+			.withUriParameter("type", "Favorite type", "some_known_fav_type")
+			.withUriParameter("id", "Favorite", "some_fav")
+			.withMethod(DELETE)
+			.withHandler(fromComponent(FavoritePluginComponent::getDeleteFavoriteHandler))
+			.withExampleResponse(HttpResponseStatus.NO_CONTENT, "Favorite deleted")
+			.build();
 		return projectRouter;
 	}
 

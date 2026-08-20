@@ -1,6 +1,7 @@
 package com.gentics.mesh.plugin.comment.model;
 
 import com.gentics.mesh.core.rest.common.PermissionInfo;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.json.JsonUtil;
 import io.vertx.core.json.JsonArray;
@@ -8,7 +9,7 @@ import io.vertx.core.json.JsonObject;
 
 import java.util.List;
 
-public class NestedCommentSection implements CommentChildren, JsonSerializable {
+public class NestedCommentSection implements CommentChildren, RestModel {
 	private String uuid;
 	private List<NestedComment> children;
 	private Fields fields;
