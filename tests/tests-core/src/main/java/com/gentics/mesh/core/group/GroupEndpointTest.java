@@ -113,9 +113,9 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		final String name = "New Name";
 		String uuid = UUIDUtil.randomUUID();
 
-		GroupUpdateRequest request = new GroupUpdateRequest();
+		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName(name);
-		GroupResponse restGroup = call(() -> client().updateGroup(uuid, request));
+		GroupResponse restGroup = call(() -> client().createGroup(uuid, request));
 
 		waitForSearchIdleEvent();
 

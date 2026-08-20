@@ -10,18 +10,18 @@ import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.plugin.MeshPlugin;
 import com.gentics.mesh.plugin.RestPlugin;
 import com.gentics.mesh.router.PluginRouter;
-import com.gentics.mesh.router.PluginRouterImpl;
 import com.gentics.mesh.router.RouterStorage;
-import com.gentics.mesh.router.RouterStorageImpl;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
 
 import io.reactivex.Completable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.vertx.ext.web.Router;
 
 /**
@@ -57,19 +57,19 @@ public class RestPluginRegistry implements PluginRegistry {
 					PluginRouter globalPluginRouter = rs.root().apiRouter().pluginRouter();
 					PluginRouter projectPluginRouter = rs.root().apiRouter().projectsRouter().projectRouter().pluginRouter();
 
-					Router globalRouter = restPlugin.createGlobalRouter();
+					Pair<Router, Router> routers = restPlugin.createRouters();
+					Router globalRouter = routers.getLeft();
 					if (globalRouter != null) {
 						globalPluginRouter.addRouter(apiName, globalRouter);
 						log.info("Registering REST API Plugin {" + name + "} for globally");
 					}
-					Router projectRouter = restPlugin.createProjectRouter();
+					Router projectRouter = routers.getRight();
 					if (projectRouter != null) {
 						projectPluginRouter.addRouter(apiName, projectRouter);
 						log.info("Registering REST API Plugin {" + name + "} for projects");
 					}
 				}
 			}
-
 			sub.onComplete();
 		}).doOnError(error -> {
 			if (error instanceof GenericRestException) {

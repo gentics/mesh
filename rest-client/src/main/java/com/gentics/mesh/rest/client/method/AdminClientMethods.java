@@ -35,44 +35,6 @@ public interface AdminClientMethods {
 	MeshRequest<ClusterStatusResponse> clusterStatus();
 
 	/**
-	 * Invoke a graph database backup.
-	 * 
-	 * @return
-	 */
-	MeshRequest<GenericMessageResponse> invokeBackup();
-
-	/**
-	 * Invoke a graph database backup.
-	 * @return
-	 */
-	MeshRequest<GenericMessageResponse> invokeBackup(BackupParameters parameters);
-
-	/**
-	 * Invoke a graph database export.
-	 * 
-	 * @return
-	 * @deprecated Endpoint currently not supported
-	 */
-	@Deprecated
-	MeshRequest<GenericMessageResponse> invokeExport();
-
-	/**
-	 * Invoke a graph database restore.
-	 * 
-	 * @return
-	 */
-	MeshRequest<GenericMessageResponse> invokeRestore();
-
-	/**
-	 * Invoke a graph database import.
-	 * 
-	 * @return
-	 * @deprecated Endpoint currently not supported
-	 */
-	@Deprecated
-	MeshRequest<GenericMessageResponse> invokeImport();
-
-	/**
 	 * Invoke a consistency check of the graph database.
 	 * 
 	 * @param parameters optional parameters

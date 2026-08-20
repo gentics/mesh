@@ -2,15 +2,18 @@ package com.gentics.mesh.parameter;
 
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.impl.BackupParametersImpl;
+import com.gentics.mesh.parameter.impl.BinaryCheckParametersImpl;
 import com.gentics.mesh.parameter.impl.BranchParametersImpl;
 import com.gentics.mesh.parameter.impl.ConsistencyCheckParametersImpl;
 import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
 import com.gentics.mesh.parameter.impl.DisplayParametersImpl;
+import com.gentics.mesh.parameter.impl.EtagParametersImpl;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.parameter.impl.ImageManipulationRetrievalParametersImpl;
 import com.gentics.mesh.parameter.impl.IndexMaintenanceParametersImpl;
 import com.gentics.mesh.parameter.impl.JobParametersImpl;
+import com.gentics.mesh.parameter.impl.LanguageParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.ProjectLoadParametersImpl;
@@ -42,6 +45,10 @@ public interface ParameterProviderContext extends ActionContext {
 
 	default VersioningParameters getVersioningParameters() {
 		return new VersioningParametersImpl(this);
+	}
+
+	default LanguageParameters getLanguageParameters() {
+		return new LanguageParametersImpl(this);
 	}
 
 	default PagingParameters getPagingParameters() {
@@ -80,6 +87,10 @@ public interface ParameterProviderContext extends ActionContext {
 		return new GenericParametersImpl(this);
 	}
 
+	default EtagParameters getEtagParameters() {
+		return new EtagParametersImpl(this);
+	}
+
 	default ImageManipulationRetrievalParameters getImageManipulationRetrievalParameters() {
 		return new ImageManipulationRetrievalParametersImpl(this);
 	}
@@ -110,5 +121,9 @@ public interface ParameterProviderContext extends ActionContext {
 
 	default ConsistencyCheckParameters getConsistencyCheckParameters() {
 		return new ConsistencyCheckParametersImpl(this);
+	}
+
+	default BinaryCheckParameters getBinaryCheckParameters() {
+		return new BinaryCheckParametersImpl(this);
 	}
 }

@@ -91,7 +91,7 @@ public interface SchemaUpdateParameters extends ParameterProvider {
 	 * @return
 	 */
 	default boolean isStrictValidation() {
-		return BooleanUtils.toBooleanDefaultIfNull(Boolean.valueOf(getParameter(STRICT_VALIDATION_KEY)), false);
+		return BooleanUtils.toBooleanDefaultIfNull(BooleanUtils.toBooleanObject(getParameter(STRICT_VALIDATION_KEY)), false);
 	}
 
 }

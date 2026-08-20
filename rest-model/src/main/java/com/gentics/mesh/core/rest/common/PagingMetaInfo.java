@@ -6,13 +6,13 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 /**
  * Paging meta info model.
  */
-public class PagingMetaInfo {
+public class PagingMetaInfo implements RestModel {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Number of the current page.")
 	private long currentPage;
 
-	@JsonProperty(required = true)
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("Number of elements which can be included in a single page.")
 	private Long perPage;
 

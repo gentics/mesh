@@ -22,11 +22,14 @@ import com.fasterxml.jackson.core.util.MinimalPrettyPrinter;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.module.SimpleAbstractTypeResolver;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
 import com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.AbstractRestException;
@@ -71,12 +74,14 @@ import com.gentics.mesh.json.serializer.FieldListSerializer;
 import com.gentics.mesh.json.serializer.JsonArraySerializer;
 import com.gentics.mesh.json.serializer.JsonContentSerializer;
 import com.gentics.mesh.json.serializer.JsonObjectSerializer;
+import com.gentics.vertx.openapi.model.serde.JsonArrayDeserializer;
+import com.gentics.vertx.openapi.model.serde.JsonArraySerializer;
+import com.gentics.vertx.openapi.model.serde.JsonObjectSerializer;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.json.schema.Draft;
 import io.vertx.json.schema.JsonSchemaOptions;
-import io.vertx.reactivex.json.schema.JsonSchema;
 import io.vertx.reactivex.json.schema.Validator;
 
 /**
@@ -121,8 +126,11 @@ public final class JsonUtil {
 	private static void initDefaultMapper() {
 		minifyingPrettyPrinter = new MinimalPrettyPrinter();
 
-		defaultMapper = new ObjectMapper(new JsonFactoryBuilder()
-				.streamReadConstraints(StreamReadConstraints.builder().maxStringLength(Integer.MAX_VALUE).build()).build());
+		defaultMapper = JsonMapper.builder(new JsonFactoryBuilder()
+				.streamReadConstraints(StreamReadConstraints.builder().maxStringLength(Integer.MAX_VALUE).build())
+				.build())
+				.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
+				.build();
 		defaultMapper.setDefaultPropertyInclusion(JsonInclude.Value.construct(Include.NON_NULL, Include.ALWAYS));
 		defaultMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
@@ -296,16 +304,41 @@ public final class JsonUtil {
 	}
 
 	/**
-	 * Generate the JSON schema for the given model class.
+	 * Generate the JSON string for the given model schema.
+	 * 
+	 * @param clazz
+	 *            Model class
+	 * @return
+	 */
+	public static String getJsonSchema(JsonSchema schema) {
+		try {
+			return defaultMapper.writerWithDefaultPrettyPrinter().writeValueAsString(schema);
+		} catch (Exception e) {
+			throw new GenericRestException(INTERNAL_SERVER_ERROR, "error_internal", e);
+		}
+	}
+
+	/**
+	 * Generate the JSON schema model for the given model class.
 	 * 
 	 * @param clazz
 	 *            Model class
 	 * @return
 	 */
 	public static String getJsonSchema(Class<?> clazz) {
+		return getJsonSchema(getJsonSchemaObject(clazz));
+	}
+
+	/**
+	 * Generate the JSON schema for the given model class.
+	 * 
+	 * @param clazz
+	 *            Model class
+	 * @return
+	 */
+	public static JsonSchema getJsonSchemaObject(Class<?> clazz) {
 		try {
-			com.fasterxml.jackson.module.jsonSchema.JsonSchema schema = schemaGen.generateSchema(clazz);
-			return defaultMapper.writerWithDefaultPrettyPrinter().writeValueAsString(schema);
+			return schemaGen.generateSchema(clazz);
 		} catch (Exception e) {
 			throw new GenericRestException(INTERNAL_SERVER_ERROR, "error_internal", e);
 		}

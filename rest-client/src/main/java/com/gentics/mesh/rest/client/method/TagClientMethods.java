@@ -53,7 +53,7 @@ public interface TagClientMethods {
 	 *            Update request
 	 * @return
 	 */
-	MeshRequest<TagResponse> updateTag(String projectName, String tagFamilyUuid, String uuid, TagUpdateRequest request);
+	MeshRequest<TagResponse> updateTag(String projectName, String tagFamilyUuid, String uuid, TagUpdateRequest request, ParameterProvider... parameters);
 
 	/**
 	 * Create the tag with the given uuid

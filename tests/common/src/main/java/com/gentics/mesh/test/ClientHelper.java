@@ -10,6 +10,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -18,6 +20,7 @@ import java.util.function.Function;
 import com.gentics.mesh.core.data.i18n.I18NUtil;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClientMessageException;
@@ -25,6 +28,7 @@ import com.gentics.mesh.rest.client.impl.EmptyResponse;
 import com.gentics.mesh.test.context.ClientHandler;
 import com.gentics.mesh.test.util.TestUtils;
 import com.gentics.mesh.util.ETag;
+import com.google.gson.JsonSyntaxException;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Observable;
@@ -159,6 +163,17 @@ public final class ClientHelper {
 				Throwable cause = e.getCause();
 				if (cause instanceof MeshRestClientMessageException) {
 					error = (MeshRestClientMessageException) e.getCause();
+				} else if (cause.getClass().getCanonicalName().equals("org.openapitools.client.ApiException")) {
+					try {
+						String responseBody = (String) Arrays.stream(cause.getClass().getDeclaredMethods()).filter(m -> m.getName().equals("getResponseBody") && m.getParameterCount() == 0).findAny().orElseThrow(() -> new IllegalStateException(e)).invoke(cause);
+						int code = (int) Arrays.stream(cause.getClass().getDeclaredMethods()).filter(m -> m.getName().equals("getCode") && m.getParameterCount() == 0).findAny().orElseThrow(() -> new IllegalStateException(e)).invoke(cause);
+						String message = (String) Arrays.stream(cause.getClass().getDeclaredMethods()).filter(m -> m.getName().equals("getMessage") && m.getParameterCount() == 0).findAny().orElseThrow(() -> new IllegalStateException(e)).invoke(cause);
+						error = new MeshRestClientMessageException(code, message, JsonUtil.readValue(responseBody, GenericMessageResponse.class), null, null);
+					} catch (JsonSyntaxException | GenericRestException | IllegalAccessException
+							| IllegalArgumentException | InvocationTargetException | IllegalStateException
+							| SecurityException e1) {
+						throw new RuntimeException(e1);
+					}
 				} else {
 					throw (RuntimeException) e;
 				}
@@ -170,9 +185,7 @@ public final class ClientHelper {
 			} else {
 				expectException(error, status, bodyMessageI18nKey, i18nParams);
 			}
-			if (error instanceof MeshRestClientMessageException) {
-				return (MeshRestClientMessageException) e.getCause();
-			}
+			return error;
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

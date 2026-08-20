@@ -247,8 +247,8 @@ public class BranchEndpoint extends RolePermissionHandlingProjectEndpoint {
 		updateBranch.consumes(APPLICATION_JSON);
 		updateBranch.produces(APPLICATION_JSON);
 		updateBranch.exampleRequest(versioningExamples.createBranchUpdateRequest("Winter Collection Branch"));
-		updateBranch.exampleResponse(OK, versioningExamples.createBranchResponse("Winter Collection Branch", false), "Updated branch");
-		updateBranch.events(BRANCH_UPDATED);
+		updateBranch.exampleResponse(OK, versioningExamples.createBranchResponse("Winter Collection Branch", false), "Updated or new branch");
+		updateBranch.events(BRANCH_CREATED, BRANCH_UPDATED);
 		updateBranch.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().params().get("branchUuid");

@@ -40,6 +40,7 @@ import org.raml.model.parameter.FormParameter;
 import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
+import com.gentics.mesh.core.rest.node.BinaryCheckUpdateRequest;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
@@ -48,6 +49,7 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
+import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -60,6 +62,7 @@ import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryUploadRequest;
 import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
 import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
@@ -334,22 +337,18 @@ public class NodeExamples extends AbstractExamples {
 		return parameters;
 	}
 
-	public Map<String, List<FormParameter>> getExampleBinaryCheckCallbackParameters() {
-		Map<String, List<FormParameter>> parameters = new HashMap<>();
-		FormParameter statusParameter = new FormParameter();
-		statusParameter.setExample("DENIED");
-		statusParameter.setType(ParamType.STRING);
-		statusParameter.setDescription("The result of the binary check. One of ACCEPTED or DENIED.");
-		statusParameter.setRequired(true);
-		parameters.put("status", Arrays.asList(statusParameter));
+	public S3BinaryUploadRequest getExampleS3BinaryUploadFormParameters() {
+		S3BinaryUploadRequest parameters = new S3BinaryUploadRequest();
+		parameters.setVersion("1.0");
+		parameters.setLanguage("en");
+		parameters.setFilename("blumen/blume.jpg");
+		return parameters;
+	}
 
-		FormParameter reasonParameter = new FormParameter();
-		reasonParameter.setExample("Malware detected");
-		reasonParameter.setType(ParamType.STRING);
-		reasonParameter.setDescription("The reason why the binary was denied.");
-		reasonParameter.setRequired(false);
-		parameters.put("reason", Arrays.asList(reasonParameter));
-
+	public BinaryCheckUpdateRequest getExampleBinaryCheckCallbackParameters() {
+		BinaryCheckUpdateRequest parameters = new BinaryCheckUpdateRequest();
+		parameters.setStatus(BinaryCheckStatus.DENIED);
+		parameters.setReason("Malware detected");
 		return parameters;
 	}
 

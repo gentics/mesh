@@ -26,6 +26,6 @@ public interface DeleteParameters extends ParameterProvider {
 	 * @return
 	 */
 	default boolean isRecursive() {
-		return BooleanUtils.toBooleanDefaultIfNull(Boolean.valueOf(getParameter(RECURSIVE_PARAMETER_KEY)), false);
+		return BooleanUtils.toBooleanDefaultIfNull(BooleanUtils.toBooleanObject(getParameter(RECURSIVE_PARAMETER_KEY)), false);
 	}
 }

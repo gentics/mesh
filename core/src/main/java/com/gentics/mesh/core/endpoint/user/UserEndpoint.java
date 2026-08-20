@@ -11,6 +11,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
+import static io.vertx.core.http.HttpMethod.PUT;
 
 import javax.inject.Inject;
 
@@ -213,8 +214,8 @@ public class UserEndpoint extends RolePermissionHandlingEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.addQueryParameters(UserParametersImpl.class);
 		endpoint.exampleRequest(userExamples.getUserUpdateRequest("jdoe42"));
-		endpoint.exampleResponse(OK, userExamples.getUserResponse1("jdoe42"), "Updated user response.");
-		endpoint.events(USER_UPDATED);
+		endpoint.exampleResponse(OK, userExamples.getUserResponse1("jdoe42"), "Updated or new user response.");
+		endpoint.events(USER_CREATED, USER_UPDATED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("userUuid");

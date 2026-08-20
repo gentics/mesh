@@ -32,7 +32,9 @@ import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.distributed.coordinator.Coordinator;
 import com.gentics.mesh.distributed.coordinator.MasterServer;
+import com.gentics.mesh.etc.config.Format;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.Version;
 import com.gentics.mesh.generator.RAMLGenerator;
 import com.gentics.mesh.parameter.BackupParameters;
 import com.gentics.mesh.router.RouterStorageImpl;
@@ -225,6 +227,22 @@ public abstract class AdminHandler extends AbstractHandler {
 		}
 		return info;
 	}
+
+	/**
+	 * Handle a request of generating OpenAPI spec for all the routes. All the necessary parameters will be taken from an action context.
+	 * 
+	 * @param ac internal action context.
+	 */
+	public void handleOpenAPIv3(InternalActionContext ac) {
+		handleOpenAPIv3(ac, options.getDefaultOpenAPIFormat(), options.getDefaultOpenAPIVersion());
+	}
+
+	/**
+	 * Handle a request of generating OpenAPI spec for all the routes, using the configured format and version.
+	 * 
+	 * @param ac internal action context.
+	 */
+	public abstract void handleOpenAPIv3(InternalActionContext ac, Format format, Version version);
 
 	/**
 	 * Generate and return the RAML of the server.

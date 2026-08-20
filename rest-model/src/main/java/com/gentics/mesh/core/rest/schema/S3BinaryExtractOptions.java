@@ -1,9 +1,11 @@
 package com.gentics.mesh.core.rest.schema;
 
+import com.gentics.mesh.core.rest.common.RestModel;
+
 /**
  * Determines what parts of the s3binary data should be extracted and sent to Elasticsearch.
  */
-public class S3BinaryExtractOptions {
+public class S3BinaryExtractOptions implements RestModel {
 	private boolean content;
 	private boolean metadata;
 

@@ -7,6 +7,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -28,8 +31,6 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.reactivex.Flowable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Base class for binary upload handler and S3 binary upload handler.
@@ -63,19 +64,19 @@ public class AbstractBinaryUploadHandler extends AbstractHandler {
 		validateParameter(nodeUuid, "uuid");
 		validateParameter(fieldName, "fieldName");
 
-		String languageTag = ac.getParameter("lang");
+		String[] languageTag = ac.getLanguageParameters().getLanguages();
 
-		if (isEmpty(languageTag)) {
+		if (languageTag == null || languageTag.length < 1) {
 			throw error(BAD_REQUEST, "upload_error_no_language");
 		}
 
-		String nodeVersion = ac.getParameter("version");
+		String nodeVersion = ac.getVersioningParameters().getVersion();
 
 		if (isEmpty(nodeVersion)) {
 			throw error(BAD_REQUEST, "upload_error_no_version");
 		}
 
-		String checkSecret = ac.getParameter("secret");
+		String checkSecret = ac.getBinaryCheckParameters().getSecret();
 
 		if (isEmpty(checkSecret)) {
 			throw error(BAD_REQUEST, "error_binaryfield_invalid_check_secret", fieldName);
@@ -85,7 +86,7 @@ public class AbstractBinaryUploadHandler extends AbstractHandler {
 			(batch, tx) -> {
 				CommonTx ctx = tx.unwrap();
 				HibProject project = tx.getProject(ac);
-				HibLanguage language = tx.languageDao().findByLanguageTag(project, languageTag);
+				HibLanguage language = tx.languageDao().findByLanguageTag(project, languageTag[0]);
 
 				if (language == null) {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
@@ -94,7 +95,7 @@ public class AbstractBinaryUploadHandler extends AbstractHandler {
 				HibBranch branch = tx.getBranch(ac);
 				NodeDao nodeDao = tx.nodeDao();
 				HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, UPDATE_PERM);
-				HibNodeFieldContainer nodeFieldContainer = ctx.contentDao().findVersion(node, languageTag, branch.getUuid(), nodeVersion);
+				HibNodeFieldContainer nodeFieldContainer = ctx.contentDao().findVersion(node, languageTag[0], branch.getUuid(), nodeVersion);
 
 				if (nodeFieldContainer == null) {
 					throw error(BAD_REQUEST, "object_not_found_for_uuid_version", nodeUuid, nodeVersion);

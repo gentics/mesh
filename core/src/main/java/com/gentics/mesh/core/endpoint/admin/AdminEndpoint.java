@@ -9,6 +9,7 @@ import static com.gentics.mesh.core.rest.MeshEvent.REPAIR_START;
 import static com.gentics.mesh.example.ExampleUuids.JOB_UUID;
 import static com.gentics.mesh.example.ExampleUuids.PLUGIN_1_ID;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
+import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
@@ -28,6 +29,7 @@ import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.impl.ConsistencyCheckParametersImpl;
 import com.gentics.mesh.parameter.impl.JobParametersImpl;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
@@ -138,16 +140,16 @@ public abstract class AdminEndpoint extends AbstractInternalEndpoint {
 		}, isOrderedBlockingHandlers());
 
 		InternalEndpointRoute readEndpoint = createRoute();
-		readEndpoint.path("/plugins/:uuid");
+		readEndpoint.path("/plugins/:id");
 		readEndpoint.method(GET);
 		readEndpoint.description("Loads deployment information for the plugin with the given id.");
 		readEndpoint.produces(APPLICATION_JSON);
-		readEndpoint.addUriParameter("uuid", "Uuid of the plugin.", PLUGIN_1_ID);
+		readEndpoint.addUriParameter("id", "Id of the plugin.", PLUGIN_1_ID);
 		readEndpoint.exampleResponse(OK, adminExamples.createHelloWorldPluginResponse(), "Plugin response.");
 		readEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
-			String uuid = ac.getParameter("uuid");
-			pluginHandler.handleRead(ac, uuid);
+			String id = ac.getParameter("id");
+			pluginHandler.handleRead(ac, id);
 		}, false);
 
 		InternalEndpointRoute readAllEndpoint = createRoute();
@@ -156,6 +158,7 @@ public abstract class AdminEndpoint extends AbstractInternalEndpoint {
 		readAllEndpoint.description("Loads deployment information for all deployed plugins.");
 		readAllEndpoint.produces(APPLICATION_JSON);
 		readAllEndpoint.exampleResponse(OK, adminExamples.createPluginListResponse(), "Plugin list response.");
+		readAllEndpoint.addQueryParameters(PagingParametersImpl.class);
 		readAllEndpoint.blockingHandler(rc -> {
 			pluginHandler.handleReadList(wrap(rc));
 		}, false);
@@ -271,6 +274,7 @@ public abstract class AdminEndpoint extends AbstractInternalEndpoint {
 		deleteJob.method(DELETE);
 		deleteJob.description("Deletes the job. Note that it is only possible to delete failed jobs");
 		deleteJob.addUriParameter("jobUuid", "Uuid of the job.", JOB_UUID);
+		deleteJob.exampleResponse(NO_CONTENT, "Job has been deleted.");
 		deleteJob.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("jobUuid");
@@ -281,6 +285,7 @@ public abstract class AdminEndpoint extends AbstractInternalEndpoint {
 		processJob.path("/jobs/:jobUuid/process");
 		processJob.method(POST);
 		processJob.description("Process the job. Failed jobs will be automatically reset and put in queued state.");
+		processJob.exampleResponse(OK, jobExamples.createJobResponse(), "Job information.");
 		processJob.addUriParameter("jobUuid", "Uuid of the job.", JOB_UUID);
 		processJob.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -292,6 +297,7 @@ public abstract class AdminEndpoint extends AbstractInternalEndpoint {
 		resetJob.path("/jobs/:jobUuid/error");
 		resetJob.method(DELETE);
 		resetJob.description("Deletes error state from the job. This will make it possible to execute the job once again.");
+		resetJob.exampleResponse(NO_CONTENT, "Job has been reset.");
 		resetJob.addUriParameter("jobUuid", "Uuid of the job.", JOB_UUID);
 		resetJob.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -304,6 +310,8 @@ public abstract class AdminEndpoint extends AbstractInternalEndpoint {
 		InternalEndpointRoute route = createRoute();
 		route.path("/debuginfo");
 		route.method(GET);
+		route.produces("*/*");
+		route.exampleResponse(OK, "ZIP file");
 		route.description("Downloads a zip file of various [debug information](/docs/administration-guide/#debuginfo) files.");
 		route.addQueryParameter("include", "Information to include. See the [documentation](/docs/administration-guide/#debuginfo) for possible usages.", "-log,consistencyCheck");
 		route.handler(rc -> debugInfoHandler.handle(rc));
@@ -323,6 +331,8 @@ public abstract class AdminEndpoint extends AbstractInternalEndpoint {
 		postRoute.method(POST);
 		postRoute.setMutating(false);
 		postRoute.produces(APPLICATION_JSON);
+		postRoute.consumes(APPLICATION_JSON);
+		postRoute.exampleRequest(localConfig.createExample());
 		postRoute.description("Sets the currently active local configuration of this instance.");
 		postRoute.exampleResponse(OK, localConfig.createExample(), "The currently active local configuration");
 		postRoute.handler(rc -> localConfigHandler.handleSetActiveConfig(wrap(rc)));

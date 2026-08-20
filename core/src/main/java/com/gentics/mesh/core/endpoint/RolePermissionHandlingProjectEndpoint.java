@@ -6,6 +6,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
+import static io.vertx.core.http.HttpMethod.PUT;
 
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -67,17 +68,34 @@ public abstract class RolePermissionHandlingProjectEndpoint extends AbstractProj
 			crudHandler.handleGrantPermissions(ac, uuid);
 		}, isOrderedBlockingHandlers());
 
-		InternalEndpointRoute revokePermissionsEndpoint = createRoute();
-		revokePermissionsEndpoint.path(path);
-		revokePermissionsEndpoint.addUriParameter(uuidParameterName, "Uuid of the " + typeDescription, uuidParameterExample);
-		revokePermissionsEndpoint.method(DELETE);
-		revokePermissionsEndpoint.description("Revoke permissions on the " + typeDescription + " from multiple roles.");
-		revokePermissionsEndpoint.consumes(APPLICATION_JSON);
-		revokePermissionsEndpoint.produces(APPLICATION_JSON);
-		revokePermissionsEndpoint.exampleRequest(roleExamples.getObjectPermissionRevokeRequest(includePublishPermissions));
-		revokePermissionsEndpoint.exampleResponse(OK, roleExamples.getObjectPermissionResponse(includePublishPermissions), "Updated permissions.");
-		revokePermissionsEndpoint.events(ROLE_PERMISSIONS_CHANGED);
-		revokePermissionsEndpoint.blockingHandler(rc -> {
+		InternalEndpointRoute revokePermissionsEndpointNonStandard = createRoute();
+		revokePermissionsEndpointNonStandard.path(path);
+		revokePermissionsEndpointNonStandard.addUriParameter(uuidParameterName, "Uuid of the " + typeDescription, uuidParameterExample);
+		revokePermissionsEndpointNonStandard.method(DELETE);
+		revokePermissionsEndpointNonStandard.setHidden(true);
+		revokePermissionsEndpointNonStandard.description("Revoke permissions on the " + typeDescription + " from multiple roles.");
+		revokePermissionsEndpointNonStandard.consumes(APPLICATION_JSON);
+		revokePermissionsEndpointNonStandard.produces(APPLICATION_JSON);
+		revokePermissionsEndpointNonStandard.exampleRequest(roleExamples.getObjectPermissionRevokeRequest(includePublishPermissions));
+		revokePermissionsEndpointNonStandard.exampleResponse(OK, roleExamples.getObjectPermissionResponse(includePublishPermissions), "Updated permissions.");
+		revokePermissionsEndpointNonStandard.events(ROLE_PERMISSIONS_CHANGED);
+		revokePermissionsEndpointNonStandard.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String uuid = rc.request().getParam(uuidParameterName);
+			crudHandler.handleRevokePermissions(ac, uuid);
+		}, isOrderedBlockingHandlers());
+
+		InternalEndpointRoute revokePermissionsEndpointStandard = createRoute();
+		revokePermissionsEndpointStandard.path(path);
+		revokePermissionsEndpointStandard.addUriParameter(uuidParameterName, "Uuid of the " + typeDescription, uuidParameterExample);
+		revokePermissionsEndpointStandard.method(PUT);
+		revokePermissionsEndpointStandard.description("Revoke permissions on the " + typeDescription + " from multiple roles.");
+		revokePermissionsEndpointStandard.consumes(APPLICATION_JSON);
+		revokePermissionsEndpointStandard.produces(APPLICATION_JSON);
+		revokePermissionsEndpointStandard.exampleRequest(roleExamples.getObjectPermissionRevokeRequest(includePublishPermissions));
+		revokePermissionsEndpointStandard.exampleResponse(OK, roleExamples.getObjectPermissionResponse(includePublishPermissions), "Updated permissions.");
+		revokePermissionsEndpointStandard.events(ROLE_PERMISSIONS_CHANGED);
+		revokePermissionsEndpointStandard.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().getParam(uuidParameterName);
 			crudHandler.handleRevokePermissions(ac, uuid);

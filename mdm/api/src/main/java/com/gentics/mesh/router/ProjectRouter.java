@@ -7,14 +7,7 @@ import io.vertx.ext.web.Router;
 /**
  * This class manages the project routers (e.g. routers for endpoints like :apibase:/:projectName/nodes)
  */
-public interface ProjectRouter {
-
-	/**
-	 * Return the Vert.x router.
-	 * 
-	 * @return
-	 */
-	Router getRouter();
+public interface ProjectRouter extends InternalRouter {
 
 	/**
 	 * Return all routers that have been registered.

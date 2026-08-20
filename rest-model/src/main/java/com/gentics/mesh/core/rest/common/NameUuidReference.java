@@ -5,7 +5,7 @@ package com.gentics.mesh.core.rest.common;
  * 
  * @param <T>
  */
-public interface NameUuidReference<T> {
+public interface NameUuidReference<T> extends RestModel {
 
 	/**
 	 * Return the name of the referenced element.

@@ -26,6 +26,6 @@ public interface BackupParameters extends ParameterProvider {
 	 * @return
 	 */
 	default boolean isConsistencyCheck() {
-		return BooleanUtils.toBooleanDefaultIfNull(Boolean.valueOf(getParameter(CONSISTENCY_CHECK_PARAMETER_KEY)), false);
+		return BooleanUtils.toBooleanDefaultIfNull(BooleanUtils.toBooleanObject(getParameter(CONSISTENCY_CHECK_PARAMETER_KEY)), false);
 	}
 }

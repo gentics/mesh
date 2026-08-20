@@ -141,4 +141,8 @@ public abstract class AbstractInternalEndpoint implements InternalCommonEndpoint
 		return Optional.ofNullable(options).map(MeshOptions::getVertxOptions)
 				.map(VertxOptions::isOrderedBlockingHandlers).orElse(true);
 	}
+
+	public MeshOptions getOptions() {
+		return options;
+	}
 }

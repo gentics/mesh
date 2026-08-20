@@ -191,14 +191,13 @@ public class GroupEndpoint extends RolePermissionHandlingEndpoint {
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(groupExamples.getGroupUpdateRequest("New group name"));
-		endpoint.exampleResponse(OK, groupExamples.getGroupResponse1("New group name"), "Updated group.");
-		endpoint.events(GROUP_UPDATED);
+		endpoint.exampleResponse(OK, groupExamples.getGroupResponse1("New group name"), "Updated or new group.");
+		endpoint.events(GROUP_CREATED, GROUP_UPDATED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("groupUuid");
 			crudHandler.handleUpdate(ac, uuid);
 		}, isOrderedBlockingHandlers());
-
 	}
 
 	private void addReadHandler() {

@@ -16,7 +16,6 @@ import static com.gentics.mesh.example.ExampleUuids.NODE_DELOREAN_UUID;
 import static com.gentics.mesh.example.ExampleUuids.TAG_RED_UUID;
 import static com.gentics.mesh.example.ExampleUuids.UUID_1;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
-import static com.gentics.mesh.http.HttpConstants.APPLICATION_OCTET_STREAM;
 import static com.gentics.mesh.http.HttpConstants.MULTIPART_FORM_DATA;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
@@ -30,7 +29,9 @@ import static io.vertx.core.http.HttpMethod.POST;
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
+import org.raml.model.ParamType;
 import org.raml.model.Resource;
+import org.raml.model.parameter.QueryParameter;
 
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -40,6 +41,7 @@ import com.gentics.mesh.core.endpoint.RolePermissionHandlingProjectEndpoint;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.parameter.impl.BinaryCheckParametersImpl;
 import com.gentics.mesh.parameter.impl.BranchParametersImpl;
 import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
@@ -176,6 +178,8 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		endpoint.addUriParameter("language", "Language tag of the content which should be deleted.", "en");
 		endpoint.method(DELETE);
 		endpoint.produces(APPLICATION_JSON);
+		endpoint.addQueryParameters(DeleteParametersImpl.class);
+		endpoint.addQueryParameters(BranchParametersImpl.class);
 		endpoint.description("Delete the language specific content of the node.");
 		endpoint.exampleResponse(NO_CONTENT, "Language variation of the node has been deleted.");
 		endpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
@@ -189,11 +193,16 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 	}
 
 	private void addBinaryHandlers() {
+		QueryParameter publishQueryParameter = new QueryParameter();
+		publishQueryParameter.setDescription("Should the saved data be published at once");
+		publishQueryParameter.setDefaultValue("false");
+		publishQueryParameter.setType(ParamType.BOOLEAN);
+
 		InternalEndpointRoute fieldUpdate = createRoute();
 		fieldUpdate.path("/:nodeUuid/binary/:fieldName");
 		fieldUpdate.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
 		fieldUpdate.addUriParameter("fieldName", "Name of the field which should be created.", "stringField");
-		fieldUpdate.addUriParameter("publish", "Whether the node shall be published after updating the binary field", "true");
+		fieldUpdate.addQueryParameter("publish", publishQueryParameter);
 		fieldUpdate.method(POST);
 		fieldUpdate.consumes(MULTIPART_FORM_DATA);
 		fieldUpdate.produces(APPLICATION_JSON);
@@ -210,10 +219,17 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 			binaryUploadHandler.handleUpdateField(ac, uuid, fieldName, attributes);
 		}, isOrderedBlockingHandlers());
 
+		QueryParameter lang = new QueryParameter();
+		lang.setExample("en");
+		lang.setRequired(true);
+		lang.setDescription("Node language");
 		InternalEndpointRoute checkCallback = createRoute();
 		checkCallback.path("/:nodeUuid/binary/:fieldName/checkCallback");
 		checkCallback.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
 		checkCallback.addUriParameter("fieldName", "Name of the field for which the check status is to be updated.", "stringField");
+		checkCallback.addQueryParameters(VersioningParametersImpl.class);
+		checkCallback.addQueryParameter("lang", lang);
+		checkCallback.addQueryParameters(BinaryCheckParametersImpl.class);
 		checkCallback.method(POST);
 		checkCallback.produces(APPLICATION_JSON);
 		checkCallback.exampleRequest(nodeExamples.getExampleBinaryCheckCallbackParameters());
@@ -253,6 +269,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		fieldGet.addQueryParameters(ImageManipulationParametersImpl.class);
 		fieldGet.addQueryParameters(VersioningParametersImpl.class);
 		fieldGet.method(GET);
+		fieldGet.produces("*/*");
 		fieldGet.description(
 			"Download the binary field with the given name. You can use image query parameters for crop and resize if the binary data represents an image.");
 		fieldGet.blockingHandler(rc -> {
@@ -325,7 +342,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		fieldUpdate.addQueryParameters(VersioningParametersImpl.class);
 		fieldUpdate.method(POST);
 		fieldUpdate.produces(APPLICATION_JSON);
-		fieldUpdate.exampleRequest(nodeExamples.getExampleBinaryUploadFormParameters());
+		fieldUpdate.exampleRequest(nodeExamples.getExampleS3BinaryUploadFormParameters());
 		fieldUpdate.exampleResponse(OK, nodeExamples.getNodeResponseWithAllFields(), "The response contains the updated node.");
 		fieldUpdate.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the field could not be found.");
 		fieldUpdate.description("Create the s3 binaryfield with the given name.");
@@ -363,7 +380,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		fieldMetadataExtraction.addQueryParameters(VersioningParametersImpl.class);
 		fieldMetadataExtraction.method(POST);
 		fieldMetadataExtraction.produces(APPLICATION_JSON);
-		fieldMetadataExtraction.exampleRequest(nodeExamples.getExampleBinaryUploadFormParameters());
+		fieldMetadataExtraction.exampleRequest(nodeExamples.getExampleS3BinaryUploadFormParameters());
 		fieldMetadataExtraction.exampleResponse(OK, nodeExamples.getNodeResponseWithAllFields(), "The response contains the updated node.");
 		fieldMetadataExtraction.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the field could not be found.");
 		fieldMetadataExtraction.description("Parse metadata of s3 binaryfield with the given name.");
@@ -578,10 +595,9 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		endpoint.method(POST);
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleRequest(nodeExamples.getNodeUpdateRequest());
-		endpoint.exampleResponse(OK, nodeExamples.getNodeResponse2(), "Updated node.");
+		endpoint.exampleRequest(nodeExamples.getNodeUpdateRequest2());
+		endpoint.exampleResponse(OK, nodeExamples.getNodeResponse2(), "New or updated node.");
 		endpoint.exampleResponse(CONFLICT, miscExamples.createMessageResponse(), "A conflict has been detected.");
-		endpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
 		endpoint.events(NODE_UPDATED, NODE_CREATED, NODE_CONTENT_CREATED, NODE_UPDATED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);

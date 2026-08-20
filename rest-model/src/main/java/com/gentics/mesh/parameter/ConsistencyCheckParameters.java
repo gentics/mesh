@@ -28,6 +28,6 @@ public interface ConsistencyCheckParameters extends ParameterProvider {
 	 * @return flag value
 	 */
 	default boolean isAsync() {
-		return BooleanUtils.toBooleanDefaultIfNull(Boolean.valueOf(getParameter(ASYNC_PARAMETER_KEY)), false);
+		return BooleanUtils.toBooleanDefaultIfNull(BooleanUtils.toBooleanObject(getParameter(ASYNC_PARAMETER_KEY)), false);
 	}
 }

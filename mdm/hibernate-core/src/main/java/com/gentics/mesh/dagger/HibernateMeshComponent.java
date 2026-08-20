@@ -22,7 +22,7 @@ import dagger.Component;
  * Central dagger mesh component which will expose dependencies.
  */
 @Singleton
-@Component(modules = { CommonModule.class, HibernateModule.class, SearchWaitUtilProviderModule.class, AdminEndpointProviderModule.class, DatabaseConnectorModule.class, AuthChainProviderModule.class })
+@Component(modules = { CommonModule.class, HibernateModule.class, SearchWaitUtilProviderModule.class, EndpointProviderModule.class, DatabaseConnectorModule.class, AuthChainProviderModule.class })
 public interface HibernateMeshComponent extends MeshComponent {
 
 	@Getter

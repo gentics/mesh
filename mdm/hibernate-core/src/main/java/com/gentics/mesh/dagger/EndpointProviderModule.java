@@ -13,6 +13,7 @@ import com.gentics.mesh.core.endpoint.admin.AdminHandler;
 import com.gentics.mesh.core.endpoint.admin.JobHandler;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigHandler;
+import com.gentics.mesh.core.endpoint.admin.RestInfoEndpoint;
 import com.gentics.mesh.core.endpoint.admin.ShutdownHandler;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoHandler;
@@ -21,6 +22,7 @@ import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.distributed.coordinator.Coordinator;
 import com.gentics.mesh.endpoint.admin.HibAdminHandler;
+import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.router.RouterStorageImpl;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
@@ -31,7 +33,21 @@ import dagger.Provides;
 import io.vertx.core.Vertx;
 
 @Module
-public class AdminEndpointProviderModule {
+public class EndpointProviderModule {
+
+	@Provides
+	public static HibernateMeshOptions hibernateMeshOptions(MeshOptions meshOptions) {
+		if (meshOptions instanceof HibernateMeshOptions) {
+			return (HibernateMeshOptions) meshOptions;
+		} else {
+			throw new IllegalArgumentException("Unsupported MeshOptions class:" + meshOptions.getClass().getCanonicalName());
+		}
+	}
+
+	@Provides
+	public static RestInfoEndpoint provideRestInfoEndpoint(MeshAuthChain chain, AdminHandler adminHandler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+		return new RestInfoEndpoint(chain, adminHandler, localConfigApi, db, options);
+	}
 
 	@Provides
 	public static AdminEndpoint provideAdminEndpoint(MeshAuthChain chain, AdminHandler adminHandler, JobHandler jobHandler,

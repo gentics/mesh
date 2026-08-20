@@ -3,6 +3,7 @@ package com.gentics.mesh.rest.client.impl;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.InvalidParameterException;
+import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -79,7 +80,7 @@ public final class Util {
 	 * @param <T>
 	 * @return
 	 */
-	public static <T> Supplier<T> lazily(WrappedSupplier<T> supplier) {
+	public static <T> Supplier<T> lazily(Callable<T> supplier) {
 		return new Supplier<T>() {
 			T value;
 			boolean supplied = false;
@@ -88,7 +89,7 @@ public final class Util {
 			public synchronized T get() {
 				if (!supplied) {
 					try {
-						value = supplier.get();
+						value = supplier.call();
 						supplied = true;
 					} catch (Exception e) {
 						throw new RuntimeException(e);
@@ -169,9 +170,5 @@ public final class Util {
 		String normalizedURI = new URI("http://host%s".formatted(Strings.CI.prependIfMissing(path, "/"))).normalize().toString();
 
 		return Strings.CI.removeStart(normalizedURI, "http://host");
-	}
-
-	interface WrappedSupplier<T> {
-		T get() throws Exception;
 	}
 }

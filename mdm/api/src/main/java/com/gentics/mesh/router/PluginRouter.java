@@ -1,11 +1,13 @@
 package com.gentics.mesh.router;
 
+import java.util.Map;
+
 import io.vertx.ext.web.Router;
 
 /**
  * Router to track plugin sub routers.
  */
-public interface PluginRouter {
+public interface PluginRouter extends InternalRouter {
 
 	/**
 	 * Remove the plugin router.
@@ -22,4 +24,10 @@ public interface PluginRouter {
 	 */
 	void addRouter(String name, Router pluginRouter);
 
+	/**
+	 * Get currently registered routers.
+	 * 
+	 * @return immutable name/router map
+	 */
+	Map<String, Router> pluginRouters();
 }

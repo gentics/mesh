@@ -124,7 +124,7 @@ public class RoleEndpoint extends RolePermissionHandlingEndpoint {
 		endpoint.method(POST);
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.exampleRequest(roleExamples.getRoleUpdateRequest("New role name"));
-		endpoint.exampleResponse(OK, roleExamples.getRoleResponse1("New role name"), "Updated role.");
+		endpoint.exampleResponse(OK, roleExamples.getRoleResponse1("New role name"), "Updated or new role.");
 		endpoint.events(ROLE_UPDATED, ROLE_CREATED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);

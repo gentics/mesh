@@ -12,6 +12,8 @@ import com.gentics.mesh.core.rest.common.RestModel;
  */
 public class LocalConfigModel implements RestModel, Serializable {
 
+	private static final long serialVersionUID = 7018419343844051338L;
+
 	@JsonProperty
 	@JsonPropertyDescription("If true, mutating requests to this instance are not allowed.")
 	private Boolean readOnly = false;
