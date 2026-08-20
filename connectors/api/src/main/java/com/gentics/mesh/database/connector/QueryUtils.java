@@ -331,4 +331,11 @@ public interface QueryUtils {
 	 * @return
 	 */
 	String getUUIDTypeName();
+
+	/**
+	 * Create a CTE definition.
+	 * 
+	 * @return
+	 */
+	String getCteFunctionDefinition(String name, List<String> arguments, boolean recursive);
 }

@@ -42,8 +42,8 @@ public class MeshRestOkHttpClientImpl extends MeshRestHttpClientImpl {
 	}
 
 	@Override
-	public <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, RestModel restModel) {
-		return handleRequest(method, path, classOfT, restModel == null ? null :restModel.toJson(config.isMinifyJson()));
+	public <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, RestModel restModel, boolean nullBodyAllowed) {
+		return handleRequest(method, path, classOfT, restModel == null ? null :restModel.toJson(config.isMinifyJson()), nullBodyAllowed);
 	}
 
 	@Override
@@ -52,13 +52,13 @@ public class MeshRestOkHttpClientImpl extends MeshRestHttpClientImpl {
 	}
 
 	@Override
-	public <T> MeshRequest<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, String jsonBodyData) {
-		return MeshOkHttpRequestImpl.JsonRequest(this, client, config, method.name(), getUrl(path), createHeaders(), classOfT, jsonBodyData);
+	public <T> MeshRequest<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, String jsonBodyData, boolean nullBodyAllowed) {
+		return MeshOkHttpRequestImpl.JsonRequest(this, client, config, method.name(), getUrl(path), createHeaders(), classOfT, jsonBodyData, nullBodyAllowed);
 	}
 
 	@Override
-	public <T> MeshRequest<T> handleTextRequest(HttpMethod method, String path, Class<? extends T> classOfT, String data) {
-		return MeshOkHttpRequestImpl.TextRequest(this, client, config, method.name(), getUrl(path), createHeaders(), classOfT, data);
+	public <T> MeshRequest<T> handleTextRequest(HttpMethod method, String path, Class<? extends T> classOfT, String data, boolean nullBodyAllowed) {
+		return MeshOkHttpRequestImpl.TextRequest(this, client, config, method.name(), getUrl(path), createHeaders(), classOfT, data, nullBodyAllowed);
 	}
 
 	@Override

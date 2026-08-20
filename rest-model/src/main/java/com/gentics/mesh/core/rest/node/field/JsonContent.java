@@ -120,12 +120,12 @@ public class JsonContent {
 	public static JsonContent fromString(String jsonString) {
 		if (StringUtils.isNotBlank(jsonString)) {
 			if (jsonString.trim().startsWith("[")) {
-				JsonArray array = JsonUtil.readValue(jsonString, JsonArray.class, true);
+				JsonArray array = JsonUtil.readValue(jsonString, JsonArray.class, true, true);
 				if (array != null) {
 					return fromArray(array);
 				}
 			} else {
-				JsonObject object = JsonUtil.readValue(jsonString, JsonObject.class, true);
+				JsonObject object = JsonUtil.readValue(jsonString, JsonObject.class, true, true);
 				if (object != null) {
 					return fromObject(object);
 				}

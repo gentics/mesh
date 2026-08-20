@@ -21,6 +21,8 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.rest.common.NameOrUUIDsRequest;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.data.dao.util.CommonDaoHelper;
@@ -147,28 +149,23 @@ public class JobDaoImpl extends AbstractHibDaoGlobal<HibJob, JobResponse, HibJob
 	}
 
 	@Override
+	public HibJob enqueueSchemaVersionPurge(HibUser user, NameOrUUIDsRequest request) {
+		return mergeIntoPersisted(enqueue(user, JobType.schemaversionpurge, "schema version purge", request));
+	}
+
+	@Override
+	public HibJob enqueueMicroschemaVersionPurge(HibUser user, NameOrUUIDsRequest request) {
+		return mergeIntoPersisted(enqueue(user, JobType.microschemaversionpurge, "microschema version purge", request));
+	}
+
+	@Override
 	public HibJob enqueueConsistencyCheck(HibUser user, boolean repair) {
-		HibJob job = createPersisted(null, j -> {
-			j.setType(repair ? JobType.consistencyrepair : JobType.consistencycheck);
-			j.setCreationTimestamp();
-			j.setStatus(QUEUED);
-		});
-		mergeIntoPersisted(job);
-		return job;
+		return mergeIntoPersisted(enqueue(user, repair ? JobType.consistencyrepair : JobType.consistencycheck, repair ? "consistency repair" : "consistency check", null));
 	}
 
 	@Override
 	public HibJob enqueueImageCacheMigration(HibUser user) {
-		HibJob job = createPersisted(null, j -> {
-			j.setType(JobType.imagecache);
-			j.setCreationTimestamp();
-			j.setStatus(QUEUED);
-		});
-		if (log.isDebugEnabled()) {
-			log.debug("Enqueued image cache migration job {" + job.getUuid() + "}");
-		}
-		mergeIntoPersisted(job);
-		return job;
+		return mergeIntoPersisted(enqueue(user, JobType.imagecache, "image cache migration", null));
 	}
 
 	@Override
@@ -202,5 +199,20 @@ public class JobDaoImpl extends AbstractHibDaoGlobal<HibJob, JobResponse, HibJob
 	@Override
 	public void clear() {
 		em().createQuery("delete from job").executeUpdate();
+	}
+
+	protected <T extends RestModel> HibJob enqueue(HibUser user, JobType jobType, String debugInfoLog, T query) {
+		HibJob job = createPersisted(null, j -> {
+			j.setType(jobType);
+			j.setCreationTimestamp();
+			j.setStatus(QUEUED);
+			if (query != null) {
+				j.setQuery(query.toJson(true));
+			}
+		});
+		if (log.isDebugEnabled()) {
+			log.debug("Enqueued {} {}", debugInfoLog, job.getUuid());
+		}
+		return job;
 	}
 }

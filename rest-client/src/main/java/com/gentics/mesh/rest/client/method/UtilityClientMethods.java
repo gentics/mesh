@@ -1,5 +1,7 @@
 package com.gentics.mesh.rest.client.method;
 
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.common.NameOrUUIDsRequest;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.validation.SchemaValidationResponse;
@@ -36,4 +38,35 @@ public interface UtilityClientMethods {
 	 * @return
 	 */
 	MeshRequest<SchemaValidationResponse> validateMicroschema(MicroschemaModel microschemaModel);
+
+
+	/**
+	 * Request a purge for unused/empty schema versions.
+	 * @return status message response
+	 */
+	default MeshRequest<GenericMessageResponse> purgeSchemaVersions() {
+		return purgeSchemaVersions(null);
+	}
+
+	/**
+	 * Request a purge for unused/empty schema versions.
+	 * @param request optional limits
+	 * @return status message response
+	 */
+	MeshRequest<GenericMessageResponse> purgeSchemaVersions(NameOrUUIDsRequest request);
+
+	/**
+	 * Request a purge for unused/empty microschema versions.
+	 * @return status message response
+	 */
+	default MeshRequest<GenericMessageResponse> purgeMicroschemaVersions() {
+		return purgeMicroschemaVersions(null);
+	}
+
+	/**
+	 * Request a purge for unused/empty microschema versions.
+	 * @param request optional limits
+	 * @return status message response
+	 */
+	MeshRequest<GenericMessageResponse> purgeMicroschemaVersions(NameOrUUIDsRequest request);
 }

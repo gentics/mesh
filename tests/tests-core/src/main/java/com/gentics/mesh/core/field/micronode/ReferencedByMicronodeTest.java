@@ -247,7 +247,7 @@ public class ReferencedByMicronodeTest extends AbstractMeshTest {
 			Collection<HibNodeField> fieldsAll = new HashSet<>();
 			HibMicroschema microschema = tx.microschemaDao().findByUuid(microschemaUuid);
 			StreamUtil.toStream(tx.microschemaDao().findAllVersions(microschema))
-				.flatMap(version -> ((PersistingMicroschemaDao) tx.microschemaDao()).findMicronodes(version).stream())
+				.flatMap(version -> tx.contentDao().getFieldsContainers(version))
 				.forEach(micronode -> {
 					HibNodeFieldList nodeList2015 = micronode.getNodeList("listfield-node");
 					HibNodeField nodeRef2015 = micronode.getNode("nodefield");

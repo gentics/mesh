@@ -16,5 +16,4 @@ public interface FieldsSet extends Set<String> {
 	default boolean has(String fieldName) {
 		return isEmpty() || contains(fieldName);
 	}
-
 }

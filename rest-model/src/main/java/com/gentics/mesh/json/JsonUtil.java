@@ -6,6 +6,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import java.io.IOException;
 import java.util.Comparator;
 
+import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -233,7 +234,6 @@ public final class JsonUtil {
 			throw new GenericRestException(INTERNAL_SERVER_ERROR, "error_internal", e);
 		}
 	}
-
 	/**
 	 * Transform the given JSON content back into a POJO, throwing an exception on parse errors.
 	 * 
@@ -246,7 +246,7 @@ public final class JsonUtil {
 	 *             Exception which contains information about the JSON error line, column
 	 */
 	public static <T> T readValue(String content, Class<T> valueType) throws GenericRestException {
-		return readValue(content, valueType, false);
+		return readValue(content, valueType, false, false);
 	}
 
 	/**
@@ -256,12 +256,16 @@ public final class JsonUtil {
 	 *            JSON string
 	 * @param valueType
 	 *            Class of the POJO
+	 * @param nullable if true, an empty value is considered valid
 	 * @param nullOnError if true, return null on parse exceptions 
 	 * @return POJO instance
 	 * @throws GenericRestException
 	 *             Exception which contains information about the JSON error line, column
 	 */
-	public static <T> T readValue(String content, Class<T> valueType, boolean nullOnError) throws GenericRestException {
+	public static <T> T readValue(String content, Class<T> valueType, boolean nullable, boolean nullOnError) throws GenericRestException {
+		if (StringUtils.isBlank(content) && nullable) {
+			return null;
+		}
 		try {
 			return defaultMapper.readValue(content, valueType);
 		} catch (JsonMappingException e) {

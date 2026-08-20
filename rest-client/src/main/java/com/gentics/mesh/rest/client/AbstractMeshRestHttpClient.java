@@ -107,7 +107,26 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 	 *            Rest model which should be used to construct the JSON post data
 	 * @return
 	 */
-	abstract public <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, RestModel restModel);
+	public <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, RestModel restModel) {
+		return prepareRequest(method, path, classOfT, restModel, false);
+	}
+
+	/**
+	 * Prepare the request using the provides information and return a mesh request which is ready to be invoked.
+	 *
+	 * @param method
+	 *            Http method
+	 * @param path
+	 *            Request path
+	 * @param classOfT
+	 *            POJO class for the response
+	 * @param restModel
+	 *            Rest model which should be used to construct the JSON post data
+	 * @param nullBodyAllowed
+	 *            Whether this method allows no body, despite it is declared
+	 * @return
+	 */
+	abstract public <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, RestModel restModel, boolean nullBodyAllowed);
 
 	/**
 	 * Prepare the request using the provides information and return a mesh request which is ready to be invoked.
@@ -118,7 +137,9 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 	 * @param data
 	 * @return
 	 */
-	abstract public <T> MeshRequest<T> handleTextRequest(HttpMethod method, String path, Class<? extends T> classOfT, String data);
+	public <T> MeshRequest<T> handleTextRequest(HttpMethod method, String path, Class<? extends T> classOfT, String data) {
+		return handleTextRequest(method, path, classOfT, data, false);
+	}
 
 	/**
 	 * Prepare the request using the provides information and return a mesh request which is ready to be invoked.
@@ -129,7 +150,33 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 	 * @param jsonBodyData
 	 * @return
 	 */
-	abstract public <T> MeshRequest<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, String jsonBodyData);
+	public <T> MeshRequest<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, String jsonBodyData) {
+		return handleRequest(method, path, classOfT, jsonBodyData, false);
+	}
+
+	/**
+	 * Prepare the request using the provides information and return a mesh request which is ready to be invoked.
+	 *
+	 * @param method
+	 * @param path
+	 * @param classOfT
+	 * @param data
+	 * @param nullBodyAllowed
+	 * @return
+	 */
+	abstract public <T> MeshRequest<T> handleTextRequest(HttpMethod method, String path, Class<? extends T> classOfT, String data, boolean nullBodyAllowed);
+
+	/**
+	 * Prepare the request using the provides information and return a mesh request which is ready to be invoked.
+	 *
+	 * @param method
+	 * @param path
+	 * @param classOfT
+	 * @param jsonBodyData
+	 * @param nullBodyAllowed
+	 * @return
+	 */
+	abstract public <T> MeshRequest<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, String jsonBodyData, boolean nullBodyAllowed);
 
 	/**
 	 * Prepare the request using the provides information and return a mesh request which is ready to be invoked.

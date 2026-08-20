@@ -7,7 +7,10 @@ import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperatio
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
+
+import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
@@ -22,10 +25,7 @@ import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.test.MeshTestSetting;
-import com.gentics.mesh.test.category.FailingTests;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 @MeshTestSetting(testSize = FULL, startServer = true)
 public class MicroschemaDiffEndpointTest extends AbstractMeshTest {
@@ -65,7 +65,6 @@ public class MicroschemaDiffEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	@Category({FailingTests.class})
 	public void testDiffEmptyDescription() {
 		// Set the description to empty string
 		String microschemaUuid = tx(() -> microschemaContainer("vcard").getUuid());
@@ -83,9 +82,6 @@ public class MicroschemaDiffEndpointTest extends AbstractMeshTest {
 		request.setDescription(null);
 		SchemaChangesListModel changes = call(() -> client().diffMicroschema(microschemaUuid, request));
 
-		/**
-		 * TODO: This assertion currently fails since Mesh is not correctly handling the null value of description. 
-		 */
 		assertThat(changes.getChanges()).isEmpty();
 	}
 

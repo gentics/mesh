@@ -19,7 +19,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -54,14 +53,6 @@ import com.gentics.mesh.parameter.value.FieldsSet;
 public interface PersistingMicroschemaDao 
 		extends MicroschemaDao, 
 			PersistingContainerDao<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschema, HibMicroschemaVersion, MicroschemaModel>, PersistingNamedEntityDao<HibMicroschema> {
-
-	/**
-	 * Find all micronodes belonging to this microschema version
-	 * 
-	 * @param version
-	 * @return
-	 */
-	Result<? extends HibMicronode> findMicronodes(HibMicroschemaVersion version);
 
 	/**
 	 * Create a new microschema container.
@@ -309,7 +300,7 @@ public interface PersistingMicroschemaDao
 	@Override
 	default void delete(HibMicroschema microschema) {
 		for (HibMicroschemaVersion version : findAllVersions(microschema)) {
-			if (findMicronodes(version).hasNext()) {
+			if (countVersionEdges(version) > 0) {
 				throw error(BAD_REQUEST, "microschema_delete_still_in_use", microschema.getUuid());
 			}
 			deleteVersion(version);

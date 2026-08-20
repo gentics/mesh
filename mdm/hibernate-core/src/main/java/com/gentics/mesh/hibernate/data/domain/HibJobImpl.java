@@ -70,6 +70,8 @@ public class HibJobImpl extends AbstractHibUserTrackedElement<JobResponse> imple
 
 	private String nodeName;
 
+	private String query;
+
 	@Column(length = ERROR_DETAIL_MAX_LENGTH)
 	private String warnings;
 
@@ -218,5 +220,15 @@ public class HibJobImpl extends AbstractHibUserTrackedElement<JobResponse> imple
 	@Override
 	public void setWarnings(JobWarningList warnings) {
 		this.warnings = warnings.toJson();
+	}
+
+	@Override
+	public String getQuery() {
+		return query;
+	}
+
+	@Override
+	public void setQuery(String query) {
+		this.query = query;
 	}
 }

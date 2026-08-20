@@ -1,6 +1,11 @@
 package com.gentics.mesh.core.data.dao;
 
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
+import java.util.Set;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -56,6 +61,19 @@ public interface ContainerDao<
 	void deleteVersion(SCV version);
 
 	/**
+	 * Delete the schema versions by UUIDs, notifying the context, if necessary
+	 * 
+	 * @param affectedVersions pairs of UUIDS of version and owning schema
+	 */
+	default void deleteVersions(Set<Pair<String, String>> affectedVersions) {
+		Map<String, SC> schemaVersions = affectedVersions.stream()
+				.map(pair -> Pair.of(pair.getKey(), findByUuid(pair.getValue())))
+				.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+		for (Entry<String, SC> pair : schemaVersions.entrySet()) {
+			deleteVersion(findVersionByUuid(pair.getValue(), pair.getKey()));
+		}
+	}
+	/**
 	 * Load the schema version via the schema and version.
 	 * 
 	 * @param schema
@@ -97,6 +115,14 @@ public interface ContainerDao<
 	 * @return
 	 */
 	Result<SCV> findActiveSchemaVersions(HibBranch branch);
+
+	/**
+	 * Find all active schema versions.
+	 * 
+	 * @param branch
+	 * @return
+	 */
+	Result<SCV> findActiveSchemaVersions();
 
 	/**
 	 * Load the contents that use the given schema version for the given branch.
@@ -190,4 +216,19 @@ public interface ContainerDao<
 	 * @param batch
 	 */
 	void unassign(SC schema, HibProject project, EventQueueBatch batch);
+
+	/**
+	 * Count content (edges) belonging to the given container version.
+	 * 
+	 * @param version
+	 * @return
+	 */
+	long countVersionEdges(SCV version);
+
+	/**
+	 * Get the counts of contents per version uuid. If versions that are not used by any content are not
+	 * contained in the returned map
+	 * @return map containing the content counts
+	 */
+	Map<String, Long> countVersionEdges();
 }

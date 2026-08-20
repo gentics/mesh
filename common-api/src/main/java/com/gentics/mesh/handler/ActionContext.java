@@ -112,7 +112,19 @@ public interface ActionContext extends DataHolderContext {
 	 * @return Deserialized object
 	 * @throws GenericRestException
 	 */
-	<T> T fromJson(Class<?> classOfT) throws GenericRestException;
+	default <T> T fromJson(Class<?> classOfT) throws GenericRestException {
+		return fromJson(classOfT, false);
+	}
+
+	/**
+	 * Deserialize the optionally nullable body string using the given class.
+	 * 
+	 * @param classOfT
+	 *            Class to be used for deserialisation
+	 * @return Deserialized object
+	 * @throws GenericRestException
+	 */
+	<T> T fromJson(Class<?> classOfT, boolean nullable) throws GenericRestException;
 
 	/**
 	 * Return the body string of the request.

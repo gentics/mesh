@@ -4,6 +4,9 @@ import static com.gentics.mesh.core.rest.MeshEvent.JOB_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.JOB_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.JOB_UPDATED;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
@@ -19,9 +22,6 @@ import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.core.rest.job.JobWarningList;
 import com.gentics.mesh.handler.VersionUtils;
 import com.gentics.mesh.util.DateUtils;
-
-import io.reactivex.Completable;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * Domain model for job.
@@ -142,6 +142,18 @@ public interface HibJob extends HibCoreElement<JobResponse>, HibCreatorTracking 
 	void setStatus(JobStatus status);
 
 	/**
+	 * Get the job start query.
+	 * 
+	 * @return
+	 */
+	String getQuery();
+
+	/**
+	 * Set the job start query.
+	 */
+	void setQuery(String query);
+
+	/**
 	 * Removes the error information from the job and thus it can be processed again.
 	 */
 	default void resetJob() {
@@ -233,7 +245,7 @@ public interface HibJob extends HibCoreElement<JobResponse>, HibCreatorTracking 
 		String stackTrace = ExceptionUtils.getStackTrace(e);
 		// truncate the error detail message to the max length for the error detail property
 		setErrorDetail(truncateStackTrace(stackTrace));
-		setErrorMessage(e.getMessage());
+		setErrorMessage(StringUtils.substring(e.getMessage(), 0, 255));
 	}
 
 	private String truncateStackTrace(String info) {

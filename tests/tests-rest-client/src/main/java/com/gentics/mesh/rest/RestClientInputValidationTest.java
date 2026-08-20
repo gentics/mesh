@@ -82,7 +82,7 @@ public class RestClientInputValidationTest {
 	/**
 	 * Methods, which are ignored
 	 */
-	protected final static Set<String> IGNORED_METHODS = Set.of("debugInfo", "assignLanguageToProject", "unassignLanguageFromProject");
+	protected final static Set<String> IGNORED_METHODS = Set.of("debugInfo", "assignLanguageToProject", "unassignLanguageFromProject", "purgeSchemaVersions", "purgeMicroschemaVersions");
 
 	/**
 	 * Parameter types, which have no extra validation
