@@ -73,6 +73,7 @@ import com.gentics.mesh.json.serializer.JsonContentSerializer;
 import com.gentics.vertx.openapi.model.serde.JsonArrayDeserializer;
 import com.gentics.vertx.openapi.model.serde.JsonArraySerializer;
 import com.gentics.vertx.openapi.model.serde.JsonObjectSerializer;
+import com.gentics.vertx.openapi.model.serde.JsonObjectDeserializer;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -346,7 +347,7 @@ public final class JsonUtil {
 	 * @param schema
 	 * @return
 	 */
-	public static Validator newJsonSchemaValidator(JsonSchema schema) {
+	public static Validator newJsonSchemaValidator(io.vertx.reactivex.json.schema.JsonSchema schema) {
 		return Validator.create(schema, new JsonSchemaOptions().setBaseUri("https://gentics.com/mesh").setDraft(Draft.DRAFT202012));
 	}
 
