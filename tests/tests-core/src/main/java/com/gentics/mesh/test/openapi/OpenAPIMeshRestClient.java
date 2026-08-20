@@ -30,6 +30,7 @@ import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
 import com.gentics.mesh.core.rest.branch.info.BranchInfoMicroschemaList;
 import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaList;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.common.NameOrUUIDsRequest;
 import com.gentics.mesh.core.rest.common.ObjectPermissionGrantRequest;
 import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
 import com.gentics.mesh.core.rest.common.ObjectPermissionRevokeRequest;
@@ -2125,6 +2126,16 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 			ParameterProvider... parameters) {
 		return new OpenAPIMeshRequestImpl(() -> api.apiV2ProjectLanguagesTagLanguageTagDeleteWithHttpInfo(tag, projectName, findParameter(ProjectLoadParameters.LANGS_QUERY_PARAM_KEY, parameters)), 
 				ProjectResponse.class);
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> purgeSchemaVersions(NameOrUUIDsRequest request) {
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2UtilitiesPurgeSchemaVersionsPostWithHttpInfo(adaptRequest(request)), GenericMessageResponse.class);
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> purgeMicroschemaVersions(NameOrUUIDsRequest request) {
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2UtilitiesPurgeMicroschemaVersionsPostWithHttpInfo(adaptRequest(request)), GenericMessageResponse.class);
 	}
 
 	@Override
