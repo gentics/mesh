@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.plugin.common.TemplateWrapper;
 import com.gentics.mesh.plugin.common.dagger.StorageDir;
+import com.gentics.mesh.plugins.common.handlebars.HandlebarsInternals;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.jknack.handlebars.Context;
@@ -24,7 +25,6 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.templ.handlebars.impl.HandlebarsInternals;
 import io.vertx.reactivex.ext.web.templ.handlebars.HandlebarsTemplateEngine;
 import io.vertx.reactivex.impl.AsyncResultSingle;
 
