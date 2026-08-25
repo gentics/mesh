@@ -14,8 +14,8 @@
     <name>Gentics Mesh Content RAG (Common)</name>
     <description>
         Domaenenmodell, Kerninterfaces und Store-Abstraktionen.
-        Framework-frei gehalten, damit es von rag-service und mesh-bridge
-        gemeinsam genutzt werden kann.
+        Framework-frei gehalten, damit es sowohl im Mesh-Prozess (Chunking, Dokumentaufbau)
+        als auch im rag-service (Query-Pfad) genutzt werden kann.
     </description>
 
     <dependencies>

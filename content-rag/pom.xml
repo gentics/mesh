@@ -11,13 +11,16 @@
     <name>Gentics Mesh Content RAG (Parent)</name>
     <description>
         Retrieval-Augmented-Generation-System ueber Gentics-Mesh-Inhalte.
-        Hybrid-Deployment: schlankes Mesh-Plugin/Bridge + separater RAG-Service,
-        Elasticsearch als gemeinsame Such-/Vektor-Plattform. Siehe Konzept v0.2.
+        Befuellung ueber den Standard-Sync von Mesh in eigene RAG-Chunk-Indizes derselben
+        Elasticsearch; Vektorisierung durch eine Ingest-Pipeline in Elasticsearch;
+        Query und Antwortgenerierung im eigenstaendigen rag-service. Siehe Konzept v0.2
+        und README.
     </description>
 
     <modules>
         <module>common</module>
-        <module>mesh-bridge</module>
+        <module>chunking</module>
+        <module>index-contract</module>
         <module>rag-service</module>
     </modules>
 
@@ -50,7 +53,12 @@
             </dependency>
             <dependency>
                 <groupId>com.gentics.mesh.contentrag</groupId>
-                <artifactId>mesh-content-rag-bridge</artifactId>
+                <artifactId>mesh-content-rag-chunking</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.gentics.mesh.contentrag</groupId>
+                <artifactId>mesh-content-rag-index-contract</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

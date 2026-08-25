@@ -13,8 +13,10 @@
     <artifactId>mesh-content-rag-service</artifactId>
     <name>Gentics Mesh Content RAG (Service)</name>
     <description>
-        Eigenstaendiger Spring-Boot-Service: Ingestion, Normalisierung, Chunking,
-        Embedding, Retrieval und Antwortgenerierung. Persistenz/Suche via Elasticsearch.
+        Eigenstaendiger Spring-Boot-Service fuer den Query-Pfad: Hybrid-Retrieval,
+        Permission-Filter, Antwortgenerierung und Feedback. Schreibt keine Chunk-Dokumente –
+        die Indizes befuellt Mesh ueber seinen Standard-Sync. Beim Start werden lediglich
+        Inference-Endpunkt, Ingest-Pipeline und Index-Template sichergestellt.
     </description>
 
     <dependencies>
@@ -24,7 +26,7 @@
         </dependency>
         <dependency>
             <groupId>com.gentics.mesh.contentrag</groupId>
-            <artifactId>mesh-content-rag-bridge</artifactId>
+            <artifactId>mesh-content-rag-index-contract</artifactId>
         </dependency>
 
         <dependency>
@@ -40,11 +42,7 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
-        <!-- Elasticsearch Java Client (gemeinsame Plattform mit Mesh-Volltextsuche) -->
-        <dependency>
-            <groupId>co.elastic.clients</groupId>
-            <artifactId>elasticsearch-java</artifactId>
-        </dependency>
+        <!-- Low-Level-REST-Client: stabile, versionsrobuste API fuer explizit gebaute Queries. -->
         <dependency>
             <groupId>org.elasticsearch.client</groupId>
             <artifactId>elasticsearch-rest-client</artifactId>

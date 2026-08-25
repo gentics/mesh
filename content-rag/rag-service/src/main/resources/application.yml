@@ -14,28 +14,40 @@ management:
     health:
       show-details: when-authorized
 
-# RAG-spezifische Konfiguration (siehe RagProperties). Werte hier sind Entwicklungs-Defaults.
+# Konfiguration des RAG-Service (siehe RagProperties). Werte hier sind Entwicklungs-Defaults.
 rag:
   elasticsearch:
     url: ${ES_URL:http://localhost:9200}
-    index-prefix: rag
+    # Muss mit dem Praefix der Mesh-Suchkonfiguration uebereinstimmen: die RAG-Indizes liegen
+    # in derselben Elasticsearch neben den Node-Indizes der Volltextsuche.
+    index-prefix: ${ES_INDEX_PREFIX:mesh}
+
+  # Vektorisierung passiert in Elasticsearch: ein Inference-Endpunkt zeigt auf den
+  # Embedding-Server, eine Ingest-Pipeline haengt den Vektor beim Indexieren an. Derselbe
+  # Endpunkt erzeugt zur Query-Zeit den Frage-Vektor.
+  inference:
+    id: mesh-content-rag-embeddings
+    pipeline-id: mesh-content-rag-embed
+    url: ${TEI_URL:http://localhost:8081}/embed
+    api-key: ${TEI_API_KEY:}
+    # Muss zum Modell des Endpunkts passen (multilingual-e5-small: 384).
+    dimension: 384
+    shards: 1
+    replicas: 1
+    # Legt Endpunkt, Pipeline und Index-Template beim Start an, falls nicht vorhanden.
+    bootstrap: true
+
+  # Nur fuer den optionalen Live-Permission-Check; der regulaere Betrieb kommt ohne Mesh-Zugriff aus.
   mesh:
     url: ${MESH_URL:http://localhost:8080}
     api-token: ${MESH_API_TOKEN:}
-  embedding:
-    provider: local-tei            # local-tei | external
-    model: intfloat/multilingual-e5-small
-    dimension: 384
-    endpoint: ${TEI_URL:http://localhost:8081}
-    batch-size: 32
+
   llm:
     profile: cloud-hybrid          # cloud-hybrid | sovereign-onprem
     model: ${LLM_MODEL:eu-managed-llm}
     endpoint: ${LLM_ENDPOINT:}
     api-key: ${LLM_API_KEY:}
-  chunking:
-    max-chars: 1200
-    overlap-chars: 150
+
   retrieval:
     top-k: 8
     min-score: 0.2

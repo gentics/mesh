@@ -5,24 +5,26 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Normalisierter, sprachreiner Inhalt eines (Node, Branch, Sprache) vor dem Chunking
- * (Ergebnis der Normalisierung, Konzept 5.3). HTML wurde bereits nach Markdown konvertiert (V8).
+ * Normalisierter Quellinhalt einer Document-Group (Node, Branch, Sprache) als Eingabe des
+ * Chunkings. Wird auf der Mesh-Seite aus dem Node-Container aufgebaut, waehrend der
+ * Standard-Sync das RAG-Chunk-Dokument erzeugt – es findet kein Rueckruf nach Mesh statt.
  *
- * @param groupId         Document-Group-Identitaet
+ * @param groupId         Document-Group (Node, Branch, Sprache)
  * @param projectUuid     Mandant
  * @param project         Projektname
+ * @param branchUuid      Branch-UUID (Index-Zuordnung)
  * @param schema          Schemaname
  * @param title           Titel des Nodes
  * @param path            Pfad/Slug
- * @param sourceUrl       Quelle-URL
- * @param markdownByField normalisierter Markdown-Text je Feldpfad (erhaelt Struktur fuers Chunking)
- * @param meshVersion     Mesh-Version
+ * @param sourceUrl       Quellen-URL
+ * @param markdownByField normalisierter Text je Feldpfad (HTML bereits nach Markdown gewandelt)
+ * @param meshVersion     Mesh-Version des Node-Containers
  * @param publishStatus   Publikationsstatus
- * @param validFrom       Gueltig-ab (nullable)
- * @param validTo         Gueltig-bis (nullable)
+ * @param validFrom       Gueltig-ab, nullable
+ * @param validTo         Gueltig-bis, nullable
  * @param createdDate     Erstelldatum
  * @param editedDate      Aenderungsdatum
- * @param readRoleUuids   Rollen-UUIDs mit Leserecht (K3)
+ * @param roleUuids       Rollen-UUIDs mit Leserecht, identisch zu Mesh' {@code _roleUuids}
  * @param referencedNodes aufgeloeste Referenzen
  * @param editorialTags   redaktionelle Metadaten
  */
@@ -30,6 +32,7 @@ public record SourceContent(
         DocumentGroupId groupId,
         String projectUuid,
         String project,
+        String branchUuid,
         String schema,
         String title,
         String path,
@@ -41,13 +44,14 @@ public record SourceContent(
         Instant validTo,
         Instant createdDate,
         Instant editedDate,
-        List<String> readRoleUuids,
+        List<String> roleUuids,
         List<String> referencedNodes,
         List<String> editorialTags
 ) {
+    /** Defensivkopien fuer Map- und Listenfelder. */
     public SourceContent {
         markdownByField = markdownByField == null ? Map.of() : Map.copyOf(markdownByField);
-        readRoleUuids = readRoleUuids == null ? List.of() : List.copyOf(readRoleUuids);
+        roleUuids = roleUuids == null ? List.of() : List.copyOf(roleUuids);
         referencedNodes = referencedNodes == null ? List.of() : List.copyOf(referencedNodes);
         editorialTags = editorialTags == null ? List.of() : List.copyOf(editorialTags);
     }

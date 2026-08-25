@@ -1,33 +1,94 @@
 # Gentics Mesh Content RAG
 
-Retrieval-Augmented-Generation-System über Gentics-Mesh-Inhalte. Macht veröffentlichte
-Mesh-Inhalte über semantische Suche und quellenbelegte, generierte Antworten zugänglich –
-ergänzend zum bestehenden MCP-Server.
+Retrieval-Augmented-Generation über Gentics-Mesh-Inhalte: semantische Suche und quellenbelegte,
+generierte Antworten – ergänzend zum bestehenden MCP-Server. Grundlage ist das Konzept **v0.2**
+(`Konzept_Gentics_Mesh_Content_RAG.md`).
 
-Grundlage ist das Konzept **v0.2** (`Konzept_Gentics_Mesh_Content_RAG.md` im Projektordner).
-Dieses Repository enthält das **Projektgerüst** (Schritt 4 aus „Nächste Schritte" des Konzepts):
-Maven-Multimodul, Kerninterfaces, REST-API-Skizze, Stub-Implementierungen und lokaler Stack.
+## Architektur
 
-## Architektur (Kurzform)
+Es gibt genau **einen Schreibweg** in den Index, und das ist der Standard-Sync von Gentics Mesh.
 
-Hybrid-Deployment aus zwei deploybaren Einheiten plus Infrastruktur:
+```
+Gentics Mesh                          Elasticsearch                     rag-service
+────────────                          ─────────────                     ───────────
+Standard-Sync                                                           (nur lesend)
+  ├─ node-…-Indizes  ───────────────▶ Volltextsuche (unverändert)
+  └─ RAG-Index-Handler                                                  Query
+       chunking      ───────────────▶ …-ragchunk-…                  ┌── Hybrid-Retrieval
+       index-contract                   Ingest-Pipeline             │   Permission-Filter
+                                        └─ Vektor ◀── TEI           └── LLM ─▶ Antwort
+       Full-Sync + periodischer
+       Korrektheits-Check
+```
 
-- **mesh-bridge** – schlanke Mesh-Integrationsschicht. Push von Änderungen + Rollen an den
-  RAG-Indexer (Reuse der bestehenden Mesh-Elasticsearch-Search-Integration), Full-Sync-Trigger.
-  Keine ML-Last im CMS-Prozess.
-- **rag-service** – eigenständiger Spring-Boot-Service. Ingestion → Normalisierung → Chunking →
-  Embedding → Indexer sowie Query → Hybrid-Retrieval → Permission-Filter → LLM → Antwort.
-- **common** – framework-freies Domänenmodell, Kerninterfaces und Store-Abstraktionen.
-- **Elasticsearch** – gemeinsame Such-/Vektor-Plattform (BM25 + kNN via RRF), zugleich
-  Default-Speicher für Betriebsdaten (kein zusätzlicher Datastore).
+Drei Festlegungen tragen das:
+
+**Mesh schreibt, über seinen eigenen Sync.** Kein Push-Pfad, kein eigener Indexer, kein
+Reconciler auf RAG-Seite. Voll-Sync (`POST /api/v2/search/sync`) und der periodische
+Index-Korrektheits-Check gelten damit unverändert auch für die RAG-Indizes. Das ist auch der
+Grund, warum es im Service keinen Reindex-Endpunkt mehr gibt: ein zweiter Auslöser wäre ein
+zweites Sync-Paradigma.
+
+**Elasticsearch vektorisiert.** Eine Ingest-Pipeline hängt den Vektor beim Indexieren an. Damit
+trägt weder Mesh noch der Service ML-Last, und der Sync-Durchsatz hängt nicht am Embedder – bei
+einer Schema-Migration über Millionen Nodes wäre er sonst der limitierende Faktor. Bewusst
+Pipeline und nicht `semantic_text`: letzteres würde den Text ein zweites Mal chunken, wort- statt
+strukturbasiert, und damit das Chunking entlang von Überschriften und Feldgrenzen entwerten.
+
+**Eigene Indizes in derselben Elasticsearch.** Die Node-Indizes der Volltextsuche bleiben
+unangetastet. Gründe im Detail in `index-contract/…/package-info.java`; kurz: RAG braucht
+Chunk- statt Node-Granularität, Mesh-Node-Indizes tragen die Schemaversion im Namen (jede
+Migration erzwänge sonst einen kompletten Neuaufbau des Vektorbestands), und Vektoren dominieren
+die Indexgröße – in eigenen Indizes bleiben Heap-Bedarf, Merge-Verhalten, Snapshot-Größe und
+Recovery-Zeit der Suche unverändert, auch für Installationen ohne RAG.
+
+Identisch bleibt, was identisch bleiben soll: dieselbe Elasticsearch, derselbe Schreibmechanismus
+und dieselbe Permission-Semantik über `_roleUuids`.
 
 ## Module
 
-| Modul | Artifact | Inhalt |
-|---|---|---|
-| `common` | `mesh-content-rag-common` | Modell (`Chunk`, `SourceContent`, `RagQuery/RagAnswer`, `ChunkState`, …), SPI (`EmbeddingProvider`, `LlmProvider`, `ContentReader`, `Chunker`, `Indexer`, `Retriever`), Stores (`SyncStateStore`, `ConfigStore`, `AuditStore`, `FeedbackStore`) |
-| `mesh-bridge` | `mesh-content-rag-bridge` | Push-Kontrakt (`PushEvent`), `RagIngestionGateway`, `FullSyncTrigger` |
-| `rag-service` | `mesh-content-rag-service` | Spring-Boot-App, REST-API (`/api/rag/*`), Orchestrierung, Stub-/In-Memory-Implementierungen |
+| Modul | Artifact | Läuft in | Inhalt |
+|---|---|---|---|
+| `common` | `mesh-content-rag-common` | beiden | Domänenmodell (`Chunk`, `SourceContent`, `RagQuery/RagAnswer`), SPI (`Chunker`, `LlmProvider`, `Retriever`), Stores |
+| `chunking` | `mesh-content-rag-chunking` | Mesh | strukturbasiertes Chunking, framework-frei |
+| `index-contract` | `mesh-content-rag-index-contract` | beiden | Indexbenennung, Mapping, Ingest-Pipeline, Inference-Endpunkt, Chunk → ES-Dokument |
+| `rag-service` | `mesh-content-rag-service` | eigenständig | REST-API (`/api/rag/*`), Hybrid-Retrieval, Antwortgenerierung |
+
+`chunking` und `index-contract` haben bewusst **keine** Spring-, Elasticsearch- oder
+JSON-Abhängigkeit: was in den Mesh-Prozess eingebunden wird, soll dort nichts mitbringen.
+Definitionen werden als `Map`/`List` zurückgegeben, jede Seite serialisiert mit ihrem eigenen
+Jackson.
+
+## Was auf der Mesh-Seite noch zu implementieren ist
+
+Ein zusätzlicher Index-Handler neben den bestehenden (node, tag, user …). Die vier Aufrufe:
+
+```java
+// 1. Indexname – ohne schemaVersionUuid, damit eine Migration den Index nicht wechselt
+String index = RagIndexNaming.indexName(prefix, projectUuid, branchUuid, RagIndexNaming.PUBLISHED);
+
+// 2. Chunks bilden (SourceContent aus dem Node-Container, wie für das Node-Dokument auch)
+List<Chunk> chunks = new StructuralChunker(options).chunk(sourceContent);
+
+// 3. Bulk-Upsert; die deterministischen IDs überschreiben die vorherige Fassung
+for (Chunk c : chunks) {
+    bulk.index(index, RagChunkDocuments.documentId(c), RagChunkDocuments.toSource(c));
+}
+
+// 4. Überzählige Chunks entfernen, falls der Node kürzer geworden ist
+deleteByQuery(index, RagChunkDocuments.staleChunksQuery(groupKey, chunks.size()));
+```
+
+Beim Löschen oder Depublizieren eines Nodes genügt
+`RagChunkDocuments.documentGroupQuery(groupKey)`.
+
+Mapping und Pipeline muss der Handler nicht kennen: das Index-Template greift automatisch, sobald
+ein Indexname auf das Pattern passt. Angelegt wird es beim Start des rag-service
+(`RagIndexBootstrap`), zusammen mit Inference-Endpunkt und Pipeline – das hängt am
+Embedding-Modell und ist damit RAG-Wissen, das im CMS nichts verloren hat.
+
+Offen ist noch die Frage, welche Felder je Schema in den RAG-Index gehen (Allow-List) und wie die
+No-RAG-Konvention (K4) ausgewertet wird; beides gehört an dieselbe Stelle im Sync-Pfad.
 
 ## Build
 
@@ -43,56 +104,50 @@ mvn clean verify
 # 1) Infrastruktur (Elasticsearch + TEI-Embeddings)
 docker compose up -d
 
-# 2) RAG-Service
+# 2) RAG-Service – legt beim Start Inference-Endpunkt, Pipeline und Index-Template an
 mvn -pl rag-service spring-boot:run
 # Service auf http://localhost:8090, Health: /actuator/health
 ```
 
-## REST-API (Skizze, Konzept Abschnitt 9)
+## REST-API
 
 | Methode | Pfad | Zweck |
 |---|---|---|
-| POST | `/api/rag/query` | Frage + Filter → Antwort + Quellen (optional Streaming/Debug) |
-| POST | `/api/rag/reindex` | Reindex Projekt (Full-Sync-Reuse) oder einzelner Node |
-| GET | `/api/rag/status` | Index-/Sync-Status, Zähler, Fehler |
+| POST | `/api/rag/query` | Frage + Filter → Antwort + Quellen |
+| GET | `/api/rag/status` | Chunk-Zähler und Chunks ohne Vektor |
 | GET | `/api/rag/debug/chunks` | Quellen-/Chunk-Inspektion |
 | POST | `/api/rag/feedback` | Nutzerfeedback je Antwort |
 
-## Status: Was ist Gerüst, was fehlt noch
+Ein Reindex-Endpunkt fehlt absichtlich – siehe oben.
 
-Implementiert: Modulstruktur, Domänenmodell, Interfaces, REST-API, Ingestion-Orchestrierung
-mit No-Op-Erkennung (`contentHash`), strukturbasiertes Chunking, In-Memory-Stores.
+## Stand
 
-Neu konkret implementiert (echte ES-/HTTP-Anbindung):
+Implementiert: Modulstruktur, Domänenmodell, Index-Kontrakt (Benennung, Mapping mit
+`int8_hnsw`-quantisiertem Vektorfeld, Ingest-Pipeline, Inference-Endpunkt), strukturbasiertes
+Chunking mit Überlappung, Bootstrap der Cluster-Objekte, Hybrid-Retrieval (BM25 + kNN via RRF)
+mit `_roleUuids`-Permission-Filter und Gültigkeitszeitraum-Filter, Status-Endpunkt.
 
-- `ElasticsearchIndexer` → Index-pro-Projekt, dense_vector-Mapping, Delete-by-Query je
-  Document-Group + Bulk-Index (K5/V3). ES-Zugriff über Low-Level-REST-Client (`ElasticsearchGateway`).
-- `ElasticsearchRetriever` → Hybrid BM25 + kNN, manuelles RRF, Metadaten- und
-  **`readRoleUuids`-Permission-Filter** exakt nach dokumentiertem Mesh-Modell inkl. `public` (K3),
-  plus Gültigkeitszeitraum-Filter zur Query-Zeit (V1).
-- `TeiEmbeddingProvider` → HuggingFace TEI `/embed`, e5-Passage/Query-Prefixe, Batching + Retry.
+Noch offen:
 
-Noch **Stub** (markiert mit `SCAFFOLD` / `UnsupportedOperationException`):
+- **Mesh-seitiger Index-Handler** – der Schreibweg selbst, mit dem Mesh-Core-Team abzustimmen
+- **`LlmProvider`** – EU-Managed bzw. lokal (Ollama/vLLM), offen bis Modellwahl (O4)
+- **Persistente Store-Backends** für Config, Audit und Feedback – derzeit In-Memory
+- **Auth** vor der REST-API (O5)
 
-- `ContentReader` → Mesh-GraphQL-Read, HTML→Markdown, Referenzauflösung (V7/V8)
-- `LlmProvider` → EU-Managed bzw. lokal (Ollama/vLLM) — offen bis Modellwahl (O4)
-- `FullSyncTrigger` → Anbindung an Mesh `POST /api/v2/search/sync` — offen bis Push-Hook (O8)
-- Persistente Store-Backends (Elasticsearch-Indizes; optional JPA) — derzeit In-Memory
+## Zu klärendes Risiko: Elasticsearch-Lizenz
 
-Damit ist der **Query-Pfad ab vorhandenem Index funktionsfähig** (Retrieval + Permission-Filter);
-es fehlt für einen End-to-End-Lauf nur noch der `ContentReader` (Befüllung) und der `LlmProvider`
-(Antwortgenerierung).
+`dense_vector` samt kNN ist im Basic-Tier enthalten, die Inference-Seite nicht durchgängig – für
+die Ziel-Version und die Kundenlizenzen ist zu prüfen, ob der Inference-Processor nutzbar ist.
 
-## Offene Entscheidungen vor weiterer Umsetzung (Konzept 16/17)
+Der Entwurf ist darauf vorbereitet: fällt die ES-seitige Vektorisierung weg, wird ausschließlich
+`RagInferenceSetup` ersetzt. Der Vektor käme dann vom Schreiber, das Feld `embedding` bliebe
+dasselbe. Dokumentformat, Mapping, Indexbenennung und die gesamte Query-Seite sind davon nicht
+betroffen.
 
-- **O8** Push-Hook: bestehende Mesh-Search-Integration erweitern vs. paralleler Push-Pfad via Plugin
-- **O9** Reuse-Umfang: welche Teile der bestehenden ES-Integration (Mapping, Permission-Filter,
-  Full-Sync) sind 1:1 übernehmbar → Code-Review der Search-Integration
-- **O4** Modellwahl: konkretes Embedding (lokal/CPU) + EU-LLM, Benchmark auf realem Content
-- **O5** CMP-Auth: Token-/Rollen-Semantik, Mapping Rolle → `readRoleUuids`
+## Offene Entscheidungen aus dem Konzept
 
-## MVP-Abgrenzung
+- **O4** Modellwahl: Embedding (lokal/CPU) und EU-LLM, Benchmark auf realem Content
+- **O5** CMP-Auth: Token-/Rollen-Semantik, Mapping Rolle → `_roleUuids`
+- **O9** Reuse-Umfang der bestehenden ES-Integration (Mapping, Permission-Filter, Full-Sync)
 
-Siehe Konzept Abschnitt 14 (veröffentlichte Nodes, Schema-/Feldauswahl, mehrsprachiges
-Chunking, Embedding + Hybrid-Suche auf Elasticsearch, Metadatenfilter, Antwort mit Quellen,
-No-RAG-Flag, manueller Reindex + Chunk-State, Basis-Monitoring, Rollen-Filter im Index).
+O8 (Push-Hook) ist mit diesem Umbau gegenstandslos: es gibt keinen Push-Pfad mehr.
