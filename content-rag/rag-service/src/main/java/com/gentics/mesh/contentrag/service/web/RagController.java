@@ -1,0 +1,89 @@
+package com.gentics.mesh.contentrag.service.web;
+
+import com.gentics.mesh.contentrag.common.model.Feedback;
+import com.gentics.mesh.contentrag.common.model.RagAnswer;
+import com.gentics.mesh.contentrag.common.model.RagQuery;
+import com.gentics.mesh.contentrag.common.model.RetrievedChunk;
+import com.gentics.mesh.contentrag.common.spi.Retriever;
+import com.gentics.mesh.contentrag.common.store.FeedbackStore;
+import com.gentics.mesh.contentrag.service.query.QueryService;
+import com.gentics.mesh.contentrag.service.status.IndexStatusService;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
+
+/**
+ * REST-API des RAG-Service (Konzept 9).
+ *
+ * <p>Rein lesend. Einen Reindex-Endpunkt gibt es bewusst nicht mehr: Befuellung und Voll-Sync
+ * laufen ueber Mesh ({@code POST /api/v2/search/sync}), damit es fuer den Index genau einen
+ * Schreibweg gibt. Ein zweiter Ausloeser hier waere ein zweites Sync-Paradigma – genau das,
+ * was der Umbau beseitigt hat.
+ *
+ * <p>Auth und Mandantentrennung ueber die bestehenden CMP-/Mesh-Mechanismen sind noch
+ * vorzuschalten (O5).
+ */
+@RestController
+@RequestMapping("/api/rag")
+public class RagController {
+
+    private final QueryService queryService;
+    private final Retriever retriever;
+    private final IndexStatusService statusService;
+    private final FeedbackStore feedbackStore;
+
+    /**
+     * @param queryService  Query-Orchestrierung
+     * @param retriever     Hybrid-Retriever (fuer die Chunk-Inspektion)
+     * @param statusService Index-Status
+     * @param feedbackStore Feedback-Persistenz
+     */
+    public RagController(QueryService queryService, Retriever retriever,
+                         IndexStatusService statusService, FeedbackStore feedbackStore) {
+        this.queryService = queryService;
+        this.retriever = retriever;
+        this.statusService = statusService;
+        this.feedbackStore = feedbackStore;
+    }
+
+    /** Frage und Filter zu Antwort und Quellen. */
+    @PostMapping("/query")
+    public RagAnswer query(@Valid @RequestBody QueryRequest request) {
+        return queryService.answer(request.toQuery());
+    }
+
+    /** Zaehler ueber die RAG-Chunk-Indizes. */
+    @GetMapping("/status")
+    public IndexStatus status(@RequestParam(required = false) String projectUuid) {
+        return statusService.current(projectUuid);
+    }
+
+    /** Quellen- und Chunk-Inspektion: rohe Retrieval-Treffer zu einer Frage. */
+    @GetMapping("/debug/chunks")
+    public List<RetrievedChunk> debugChunks(@RequestParam String question,
+                                            @RequestParam(required = false) String language,
+                                            @RequestParam(required = false) Integer topK) {
+        RagQuery query = new RagQuery(question, language, List.of(), List.of(), List.of(),
+                null, topK, false, true);
+        return retriever.retrieve(query);
+    }
+
+    /** Nutzerfeedback je Antwort. */
+    @PostMapping("/feedback")
+    public ResponseEntity<Void> feedback(@Valid @RequestBody FeedbackRequest request) {
+        feedbackStore.save(new Feedback(
+                UUID.randomUUID().toString(), Instant.now(),
+                request.auditEntryId(), request.projectUuid(), request.helpful(),
+                request.comment()));
+        return ResponseEntity.accepted().build();
+    }
+}
