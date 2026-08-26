@@ -109,6 +109,94 @@ mvn -pl rag-service spring-boot:run
 # Service auf http://localhost:8090, Health: /actuator/health
 ```
 
+## Build-Integration in mesh-enterprise
+
+Der Mesh-seitige Teil baut bereits im Reaktor mit. Für den **rag-service** als eigenständig
+deploybare Einheit fehlt die Pipeline-Anbindung noch. Vorbild ist durchgehend `mcp-server`,
+der denselben Weg schon gegangen ist.
+
+### 1. Maven-Anbindung
+
+**Erledigt** (`53deec18`): `content-rag/pom.xml` hängt am Parent
+`com.gentics.mesh.enterprise:mesh-enterprise`, die eigene `<version>` ist entfallen, die
+Module erben `3.3.0-SNAPSHOT`. Damit erfasst `MavenHelper.setVersion()` in der Jenkins-Stage
+„Set Version" beim Release auch dieses Modul — sonst wäre es auf `0.1.0-SNAPSHOT` stehen
+geblieben und `mvn deploy` hätte ein dauerhaft veraltetes Artefakt ins Nexus gelegt.
+
+Offen bleibt:
+
+- `mesh-bom` importieren wie in `mcp-server` und `connectors`, damit Jackson, slf4j und JUnit
+  auf demselben Stand liegen wie im übrigen Reaktor.
+- `<finalName>mesh-content-rag-service</finalName>` im `rag-service`, damit Dockerfile und
+  Jenkinsfile die JAR ohne Versionsnummer im Namen finden — dieselbe Konvention wie
+  `mcp-server`.
+- `maven-surefire-plugin` im Modul deklarieren, damit die JUnit-5-Tests im Reaktor sicher
+  ausgeführt werden.
+
+Zwei Nebenwirkungen der Vererbung, die jetzt gelten und beim ersten vollständigen Build zu
+prüfen sind:
+
+- Das `pluginManagement` des Parents wird mitgeerbt. `<release>17</release>` passt, aber die
+  `annotationProcessorPaths` mit `dagger-compiler` laufen damit auch über die
+  Spring-Boot-Module. Meist folgenlos, kostet aber Build-Zeit; bei Bedarf im `rag-service`
+  mit einem leeren `<annotationProcessorPaths/>` abschalten.
+- Geerbtes `dependencyManagement` hat in Maven Vorrang vor einem im selben POM **importierten**
+  BOM. Überlappende Einträge aus `mesh-enterprise` bzw. `com.gentics:maven-parent` können also
+  die Versionen des Spring-Boot-BOM überstimmen. `mvn -pl content-rag/rag-service -am
+  help:effective-pom` zeigt, was tatsächlich gewinnt.
+
+### 2. Container-Image
+
+`content-rag/rag-service/Dockerfile` nach dem Muster von `mcp-server/Dockerfile`:
+
+- Basis `eclipse-temurin:17-jre-alpine`, davor eine Stage mit `apk upgrade --no-cache` —
+  ohne die scheitert der Trivy-Scan in der Pipeline (`exitCode: 1`).
+- Die JAR wird **nicht** im Image gebaut, sondern aus `target/` übernommen; gebaut hat sie
+  die Stage „Maven Build".
+- Non-root-User (UID/GID 10001), OCI-Labels, `ARG VERSION`,
+  `JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+ExitOnOutOfMemoryError"`.
+- Anders als beim MCP-Server: das hier ist ein HTTP-Dienst, also `EXPOSE 8090` und ein
+  normaler Entrypoint — die stdio-Rücksichten aus dem MCP-Dockerfile entfallen.
+- `.dockerignore` nicht vergessen.
+
+### 3. Jenkinsfile.split
+
+Drei Stellen, jeweils analog zu den `mcp-server`-Zeilen:
+
+- **Docker Build**: `docker build --network=host -t <registry>/gentics/mesh-enterprise/content-rag:latest -t …:<version> --build-arg VERSION=<version>` im Modulverzeichnis.
+- **Docker Build**, direkt danach: `scanImage` für das neue Image.
+- **Deploy**: `docker push` für `:latest` und `:<version>`.
+
+### 4. Laufzeit-Voraussetzungen im Deployment
+
+- **Elasticsearch** — dieselbe Instanz wie die Mesh-Volltextsuche. `ES_INDEX_PREFIX` muss mit
+  dem Präfix der Mesh-Suchkonfiguration übereinstimmen, sonst findet der Service die von Mesh
+  geschriebenen Indizes nicht.
+- **Inference-Server (TEI)** — die konfigurierte URL wird von **Elasticsearch** aufgerufen,
+  nicht vom Service. Sie muss also aus Sicht des ES-Clusters auflösbar sein; eine
+  Service-lokale Adresse führt hier zu einem Fehler, der erst beim Indexieren auffällt.
+- **LLM-Endpunkt** je nach Deployment-Profil.
+- Konfiguration ausschließlich über Umgebungsvariablen (`ES_URL`, `ES_INDEX_PREFIX`,
+  `TEI_URL`, `LLM_*`), Secrets über den üblichen Weg — nichts davon ins Image.
+
+Zu Health-Checks: der Service startet bewusst auch ohne erreichbares Elasticsearch, damit ein
+kurz nicht verfügbarer Cluster keine Absturzschleife auslöst. `/actuator/health` eignet sich
+deshalb als **Liveness**-Probe; eine Readiness-Probe, die erst bei erreichbarem Cluster grün
+wird, ist noch zu ergänzen. `/actuator/prometheus` ist bereits aktiv.
+
+### 5. Offen
+
+- **Helm/Deployment**: im `helm-chart` von mesh-enterprise gibt es für den MCP-Server nichts;
+  dessen Deployment liegt im CMP-Chart. Für den rag-service ist zu klären, wo er hingehört.
+- **Cluster-Objekte**: Inference-Endpunkt, Ingest-Pipeline und Index-Template legt der Service
+  beim Start selbst an (`rag.inference.bootstrap`). In Umgebungen, in denen der Service keine
+  Cluster-Rechte bekommt, muss das stattdessen ein Provisionierungsschritt übernehmen —
+  die Definitionen liefert `index-contract`.
+
+`chunking` und `index-contract` brauchen dagegen **kein** eigenes Image: es sind Bibliotheken,
+die über die Mesh-Abhängigkeit im Mesh-Artefakt landen. Sie müssen lediglich ins Nexus
+deployt werden, was der Reaktor mit Punkt 1 automatisch erledigt.
+
 ## REST-API
 
 | Methode | Pfad | Zweck |
