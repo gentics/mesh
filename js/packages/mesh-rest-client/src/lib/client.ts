@@ -114,7 +114,7 @@ export class MeshRestClient {
     protected executeJsonRequest<T>(
         method: RequestMethod,
         path: string,
-        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+
         body?: null | any,
         queryParams?: Record<string, any>,
     ): MeshRestClientResponse<T> {
@@ -144,7 +144,11 @@ export class MeshRestClient {
         update: (uuid, body) => this.executeJsonRequest(POST, `/users/${uuid}`, body),
         delete: (uuid) => this.executeJsonRequest(DELETE, `/users/${uuid}`),
 
-        createAPIToken: (uuid) => this.executeJsonRequest(POST, `/users/${uuid}/token`),
+        createResetToken: (uuid) => this.executeJsonRequest(POST, `/users/${uuid}/reset_token`),
+
+        createToken: (uuid, body) => this.executeJsonRequest(POST, `/users/${uuid}/token`, body),
+        listTokens: (uuid, params) => this.executeJsonRequest(GET, `/users/${uuid}/token`, null, params),
+        deleteToken: (uuid, tokenUuid) => this.executeJsonRequest(DELETE, `/users/${uuid}/token/${tokenUuid}`),
     } as const;
 
     public roles: MeshRoleAPI = {

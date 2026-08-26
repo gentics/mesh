@@ -60,7 +60,6 @@ import {
     StatusResponse,
     TagListResponse,
     TagListUpdateRequest,
-    UserAPITokenResponse,
     UserCreateRequest,
     UserListOptions,
     UserListResponse,
@@ -84,6 +83,11 @@ import {
     LoginRequest,
     Language,
     ListResponse,
+    UserResetTokenResponse,
+    UserTokenCreateRequest,
+    UserTokenResponse,
+    PagingOptions,
+    UserTokenListResponse,
 } from '@gentics/mesh-models';
 
 export interface MeshClientDriver {
@@ -164,7 +168,11 @@ export interface MeshUserAPI {
     update(uuid: string, body: UserUpdateRequest): MeshRestClientResponse<UserResponse>;
     delete(uuid: string): MeshRestClientResponse<GenericMessageResponse>;
 
-    createAPIToken(uuid: string): MeshRestClientResponse<UserAPITokenResponse>;
+    createResetToken(uuid: string): MeshRestClientResponse<UserResetTokenResponse>;
+
+    createToken(uuid: string, body: UserTokenCreateRequest): MeshRestClientResponse<UserTokenResponse>;
+    listTokens(uuid: string, params?: PagingOptions): MeshRestClientResponse<UserTokenListResponse>;
+    deleteToken(uuid: string, tokenUuid: string): MeshRestClientResponse<GenericMessageResponse>;
 }
 
 export interface MeshRoleAPI {
