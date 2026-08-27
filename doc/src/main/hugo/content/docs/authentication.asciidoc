@@ -144,15 +144,14 @@ curl -X GET \
 
 === API Token
 
-An API token will never expire. This is different from regular tokens which will be issued when calling `{apiLatest}/auth/login`. 
+API tokens can be created with optional expiration. This is different from regular tokens which will be issued when calling `{apiLatest}/auth/login`. 
 
 WARNING: Leaking an API token is potentially dangerous and thus the API token should only be used in combination with a secure connection.
 
 Typical use cases for API tokens are backend implementations which constantly communicate with Gentics Mesh using a secure or local connection.
 
-The token can be issued per user with ```POST {apiLatest}/users/:userUuid/token```. Note that update permissions is required on the user associated with the provided userUuid.
-
-NOTE: Creating a new API token will automatically invalidate a previously issued token.
+Tokens can be issued per user with ```POST {apiLatest}/users/:userUuid/token```. It must be given a unique name and can optionally have an expiration date.
+Note that update permissions is required on the user associated with the provided userUuid.
 
 Since the token is just a regular JWT you just need to add it to your request `Authorization` header field.
 
@@ -163,7 +162,7 @@ curl -X GET \
   -H 'Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyVXVpZCI6IjNjYjY2YzU0MmFlMzRiMDFiNjZjNTQyYWUzY2IwMWRiIiwiaWF0IjoxNDkxNzY1NDEzLCJleHAiOjE0OTE3NjkwMTN9.UY8OgjiK5qyZobAWt6X1Vd1Z-zg68BeJgGZKbW4Ucj0=' \
 ----
 
-It is possible to manually revoke a previously issued token via ```DELETE {apiLatest}/users/:userUuid/token```. Once the token is invalidated it can no longer be used for authentication. This requires delete permission on the user associated with the provided userUuid.
+It is possible to manually revoke a previously issued token via ```DELETE {apiLatest}/users/:userUuid/token/:tokenUuid```. Once the token is invalidated it can no longer be used for authentication. This requires update permission on the user associated with the provided userUuid.
 
 === Anonymous Access 
 

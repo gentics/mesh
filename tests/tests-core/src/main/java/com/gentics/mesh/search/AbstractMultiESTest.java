@@ -23,6 +23,7 @@ import com.gentics.mesh.test.AWSTestMode;
 import com.gentics.mesh.test.ElasticsearchTestMode;
 import com.gentics.mesh.test.MeshCoreOptionChanger;
 import com.gentics.mesh.test.MeshOptionChanger;
+import com.gentics.mesh.test.MeshTestInitializer;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.ResetTestDb;
 import com.gentics.mesh.test.SSLTestMode;
@@ -207,6 +208,11 @@ public abstract class AbstractMultiESTest implements TestHttpMethods, TestGraphH
 		@Override
 		public ResetTestDb resetBetweenTests() {
 			return delegate.resetBetweenTests();
+		}
+
+		@Override
+		public Class<? extends MeshTestInitializer> initializer() {
+			return delegate.initializer();
 		}
 	}
 

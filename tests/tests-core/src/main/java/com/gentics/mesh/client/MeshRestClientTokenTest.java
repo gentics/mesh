@@ -7,6 +7,8 @@ import static com.gentics.mesh.test.TestSize.PROJECT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
@@ -14,6 +16,7 @@ import java.util.function.Consumer;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.gentics.mesh.core.rest.user.UserAPITokenCreateRequest;
 import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.rest.client.MeshRestClientMessageException;
@@ -21,6 +24,7 @@ import com.gentics.mesh.test.MeshOptionChanger;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.util.DateUtils;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Flowable;
@@ -53,7 +57,7 @@ public class MeshRestClientTokenTest extends AbstractMeshTest {
 	@Before
 	public void setUp() throws Exception {
 		String userUuid = TestDataProvider.getInstance().getUserInfo().getUserUuid();
-		testUserApiToken = testContext.getHttpClient().issueAPIToken(userUuid).blockingGet().getToken();
+		testUserApiToken = testContext.getHttpClient().issueAPIToken(userUuid, new UserAPITokenCreateRequest().setName("Test Token")).blockingGet().getToken();
 
 		UserInfo userInfo = TestDataProvider.getInstance().getUserInfo();
 		username = tx(tx -> {
@@ -123,6 +127,27 @@ public class MeshRestClientTokenTest extends AbstractMeshTest {
 			// assert that we still use the API Token
 			assertThat(client().getAPIKey()).as("API Token").isEqualTo(testUserApiToken);
 		}).blockingSubscribe();
+	}
+
+	/**
+	 * Test using an expired API Token
+	 * @throws Exception
+	 */
+	@Test
+	public void testExpiredApiToken() throws Exception {
+		String uuid = tx(() -> user().getUuid());
+
+		// create a token, which will expire in one second
+		String expires = DateUtils.toISO8601(Instant.now().plus(1, ChronoUnit.SECONDS).toEpochMilli());
+		client().setLogin(username, password).login().blockingGet();
+		String expiredToken = call(() -> client().issueAPIToken(uuid,
+				new UserAPITokenCreateRequest().setName("Expired token").setExpires(expires))).getToken();
+
+		// wait two seconds
+		Thread.sleep(2_000);
+
+		client().setLogin(null, null).setAPIKey(expiredToken);
+		call(() -> client().me(), HttpResponseStatus.UNAUTHORIZED);
 	}
 
 	/**

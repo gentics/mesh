@@ -27,6 +27,7 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
+import com.gentics.mesh.core.rest.user.UserAPITokenCreateRequest;
 import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.parameter.LinkType;
@@ -93,7 +94,7 @@ public class OAuth2KeycloakPluginTest extends AbstractOAuthTest {
 		setAdminToken();
 
 		// Now invoke request with regular Mesh API token.
-		UserAPITokenResponse meshApiToken = call(() -> client().issueAPIToken(me2.getUuid()));
+		UserAPITokenResponse meshApiToken = call(() -> client().issueAPIToken(me2.getUuid(), new UserAPITokenCreateRequest().setName("Test Token")));
 		client().logout().blockingGet();
 		client().setAPIKey(meshApiToken.getToken());
 		me = call(() -> client().me());

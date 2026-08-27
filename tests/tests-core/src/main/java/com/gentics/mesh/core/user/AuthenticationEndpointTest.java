@@ -24,6 +24,7 @@ import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.user.UserAPITokenCreateRequest;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshRestClientMessageException;
@@ -76,7 +77,7 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testApiTokenLogin() {
 		UserResponse response = call(() -> client().me());
-		String token = call(() -> client().issueAPIToken(response.getUuid())).getToken();
+		String token = call(() -> client().issueAPIToken(response.getUuid(), new UserAPITokenCreateRequest().setName("Test Token"))).getToken();
 		client().setAPIKey(token).setLogin(null, null, null);
 		GenericMessageResponse loginResponse = client().login().blockingGet();
 		assertNotNull(loginResponse);

@@ -97,6 +97,8 @@ import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagListUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
+import com.gentics.mesh.core.rest.user.UserAPITokenCreateRequest;
+import com.gentics.mesh.core.rest.user.UserAPITokenListResponse;
 import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
@@ -952,16 +954,6 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 	@Override
 	public MeshRequest<UserResetTokenResponse> getUserResetToken(String userUuid) {
 		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2UsersUserUuidResetTokenPostWithHttpInfo(userUuid), UserResetTokenResponse.class);
-	}
-
-	@Override
-	public MeshRequest<UserAPITokenResponse> issueAPIToken(String userUuid) {
-		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2UsersUserUuidTokenPostWithHttpInfo(userUuid), UserAPITokenResponse.class);
-	}
-
-	@Override
-	public MeshRequest<GenericMessageResponse> invalidateAPIToken(String userUuid) {
-		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2UsersUserUuidTokenDeleteWithHttpInfo(userUuid), GenericMessageResponse.class);
 	}
 
 	@Override
@@ -2180,5 +2172,24 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 	@Override
 	public MeshRestClientConfig getConfig() {
 		return config;
+	}
+
+	@Override
+	public MeshRequest<UserAPITokenResponse> issueAPIToken(String userUuid, UserAPITokenCreateRequest request) {
+		return new OpenAPIMeshRequestImpl<>(() -> api.apiV2UsersUserUuidTokenPostWithHttpInfo(userUuid, adaptRequest(request)), UserAPITokenResponse.class);
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> invalidateAPIToken(String userUuid, String tokenUuid) {
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2UsersUserUuidTokenTokenUuidDeleteWithHttpInfo(userUuid, tokenUuid), GenericMessageResponse.class);
+	}
+
+	@Override
+	public MeshRequest<UserAPITokenListResponse> findAPITokens(String userUuid, ParameterProvider... parameters) {
+		return new OpenAPIMeshRequestImpl(() -> api.apiV2UsersUserUuidTokenGet(userUuid, 
+				findParameter(PagingParameters.SORT_BY_PARAMETER_KEY, parameters), 
+				findParameter(PagingParameters.PAGE_PARAMETER_KEY, parameters), 
+				findParameter(PagingParameters.PER_PAGE_PARAMETER_KEY, parameters), 
+				findParameter(PagingParameters.SORT_ORDER_PARAMETER_KEY, parameters)), UserAPITokenListResponse.class);
 	}
 }

@@ -90,6 +90,7 @@ import com.gentics.mesh.hibernate.data.dao.helpers.RootJoin;
 import com.gentics.mesh.hibernate.data.domain.AbstractBinaryImpl;
 import com.gentics.mesh.hibernate.data.domain.AbstractFieldEdgeImpl;
 import com.gentics.mesh.hibernate.data.domain.AbstractHibListFieldEdgeImpl;
+import com.gentics.mesh.hibernate.data.domain.HibAPITokenDataImpl;
 import com.gentics.mesh.hibernate.data.domain.HibBinaryFieldEdgeImpl;
 import com.gentics.mesh.hibernate.data.domain.HibBinaryImpl;
 import com.gentics.mesh.hibernate.data.domain.HibBooleanListFieldEdgeImpl;
@@ -1716,6 +1717,9 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 				break;
 			case USER:
 				clss = HibUserImpl.class;
+				break;
+			case APITOKEN:
+				clss = HibAPITokenDataImpl.class;
 				break;
 			default:
 				throw new IllegalStateException("FIXME: unexpected element type, that should be supported " + etype);
