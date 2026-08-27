@@ -29,6 +29,7 @@ properties([
 		booleanParam(name: 'skipJsLibraries',     defaultValue: false, description: "Whether to skip deployment of Javascript/Typescript libraries"),
 		string(	     name: 'testingVersion',      defaultValue: "",    description: "Version for testing"),
 		string(		 name: 'meshVersion',         defaultValue: "",    description: "Override Mesh version"),
+		string(		 name: 'meshJsVersion',       defaultValue: "",    description: "Override Mesh JS version for the testing deployment"),
 	])
 ])
 

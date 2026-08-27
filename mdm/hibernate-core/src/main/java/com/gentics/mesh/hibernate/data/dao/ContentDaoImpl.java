@@ -66,6 +66,7 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.common.ReferenceType;
+import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -88,6 +89,7 @@ import com.gentics.mesh.hibernate.data.domain.HibDateListFieldEdgeImpl;
 import com.gentics.mesh.hibernate.data.domain.HibFieldEdge;
 import com.gentics.mesh.hibernate.data.domain.HibHtmlListFieldEdgeImpl;
 import com.gentics.mesh.hibernate.data.domain.HibImageVariantImpl;
+import com.gentics.mesh.hibernate.data.domain.HibJsonListFieldEdgeImpl;
 import com.gentics.mesh.hibernate.data.domain.HibMicronodeContainerImpl;
 import com.gentics.mesh.hibernate.data.domain.HibMicronodeFieldEdgeImpl;
 import com.gentics.mesh.hibernate.data.domain.HibMicronodeListFieldEdgeImpl;
@@ -110,6 +112,7 @@ import com.gentics.mesh.hibernate.data.node.field.impl.AbstractReferenceHibField
 import com.gentics.mesh.hibernate.data.node.field.impl.HibBooleanListFieldImpl;
 import com.gentics.mesh.hibernate.data.node.field.impl.HibDateListFieldImpl;
 import com.gentics.mesh.hibernate.data.node.field.impl.HibHtmlListFieldImpl;
+import com.gentics.mesh.hibernate.data.node.field.impl.HibJsonListFieldImpl;
 import com.gentics.mesh.hibernate.data.node.field.impl.HibMicronodeFieldImpl;
 import com.gentics.mesh.hibernate.data.node.field.impl.HibMicronodeListFieldImpl;
 import com.gentics.mesh.hibernate.data.node.field.impl.HibNumberListFieldImpl;
@@ -529,6 +532,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 					case HTML:
 					case NUMBER:
 					case DATE:
+					case JSON:
 					case BOOLEAN:
 						// nothing to do
 						break;
@@ -604,6 +608,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 				case HTML:
 				case NUMBER:
 				case DATE:
+				case JSON:
 				case BOOLEAN:
 					// These are stored in the content table, so they will be deleted later on.
 					break;
@@ -653,6 +658,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 				case HTML:
 				case NUMBER:
 				case DATE:
+				case JSON:
 				case BOOLEAN:
 					// nothing to do
 					break;
@@ -874,6 +880,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 				case HTML:
 				case NUMBER:
 				case DATE:
+				case JSON:
 				case BOOLEAN:
 					// These are stored in the content table, so they will be deleted later on.
 					break;
@@ -957,6 +964,8 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 				return HibStringListFieldEdgeImpl.class;
 			case HTML:
 				return HibHtmlListFieldEdgeImpl.class;
+			case JSON:
+				return HibJsonListFieldEdgeImpl.class;
 			case NUMBER:
 				return HibNumberListFieldEdgeImpl.class;
 			case DATE:
@@ -1535,6 +1544,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 				case HTML:
 				case NUMBER:
 				case DATE:
+				case JSON:
 				case BOOLEAN:
 					// These are stored in the content table, so they will be deleted later on.
 					break;
@@ -1621,6 +1631,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 				case HTML:
 				case NUMBER:
 				case DATE:
+				case JSON:
 				case BOOLEAN:
 					// These are stored in the content table, so they will be deleted later on.
 					break;
@@ -1810,6 +1821,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 		getNumberListFieldValues(getListFieldListUuids(containers, HibNumberListFieldImpl.class));
 		getHtmlListFieldValues(getListFieldListUuids(containers, HibHtmlListFieldImpl.class));
 		getStringListFieldValues(getListFieldListUuids(containers, HibStringListFieldImpl.class));
+		getJsonListFieldValues(getListFieldListUuids(containers, HibJsonListFieldImpl.class));
 		getMicronodeListFieldValues(getListFieldListUuids(containers, HibMicronodeListFieldImpl.class));
 	}
 
@@ -1843,6 +1855,11 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	@Override
 	public Map<String, List<Long>> getDateListFieldValues(List<String> listUuids) {
 		return getListValues(listUuids, HibDateListFieldEdgeImpl::getDate, HibDateListFieldEdgeImpl.class);
+	}
+
+	@Override
+	public Map<String, List<JsonContent>> getJsonListFieldValues(List<String> listUuids) {
+		return getListValues(listUuids, HibJsonListFieldEdgeImpl::getJson, HibJsonListFieldEdgeImpl.class);
 	}
 
 	@Override

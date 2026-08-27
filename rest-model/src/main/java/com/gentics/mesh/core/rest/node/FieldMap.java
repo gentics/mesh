@@ -15,6 +15,7 @@ import com.gentics.mesh.core.rest.node.field.S3BinaryField;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.JsonFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
@@ -22,6 +23,7 @@ import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.JsonFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -105,6 +107,22 @@ public interface FieldMap extends RestModel {
 	 * @return
 	 */
 	NumberFieldListImpl getNumberFieldList(String fieldKey);
+
+	/**
+	 * Return the JSON object field with the given key
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
+	JsonFieldImpl getJsonField(String fieldKey);
+
+	/**
+	 * Return the JSON object list field with the given key.
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
+	JsonFieldListImpl getJsonFieldList(String fieldKey);
 
 	/**
 	 * Return the html field with the given key

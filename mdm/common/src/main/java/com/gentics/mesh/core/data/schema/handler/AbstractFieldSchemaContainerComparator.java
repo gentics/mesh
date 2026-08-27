@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperatio
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,10 +14,12 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.gentics.mesh.core.rest.JsonSchema;
 import com.gentics.mesh.core.rest.schema.BinaryExtractOptions;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
+import com.gentics.mesh.core.rest.schema.JsonFieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
@@ -25,6 +28,7 @@ import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.CompareUtils;
 
 import io.vertx.core.json.JsonObject;
@@ -102,6 +106,10 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 				}
 				if (fieldInB instanceof StringFieldSchema) {
 					change.setProperty(SchemaChangeModel.ALLOW_KEY, ((StringFieldSchema) fieldInB).getAllowedValues());
+				}
+				if (fieldInB instanceof JsonFieldSchema) {
+					JsonSchema[] schemas = ((JsonFieldSchema) fieldInB).getAllowedSchemas();
+					change.setProperty(SchemaChangeModel.ALLOW_KEY, schemas == null ? null : Arrays.stream(schemas).map(JsonUtil::toJson).toArray(size -> new String[size]));
 				}
 				if (fieldInB instanceof BinaryFieldSchema) {
 					BinaryFieldSchema field = (BinaryFieldSchema) fieldInB;

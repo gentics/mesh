@@ -57,6 +57,10 @@
 			<artifactId>commons-io</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-json-schema</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.raml</groupId>
 			<artifactId>raml-parser</artifactId>
 			<exclusions>

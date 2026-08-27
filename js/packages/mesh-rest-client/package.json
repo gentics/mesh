@@ -7,9 +7,9 @@
     "tslib": "^2.3.0"
   },
   "peerDependencies": {
-    "@gentics/mesh-models": "^3.2.0"
+    "@gentics/mesh-models": "^3.3.0-alpha"
   },
   "devDependencies": {
-    "@gentics/mesh-models": "^3.2.0"
+    "@gentics/mesh-models": "^3.3.0-alpha"
   }
 }

@@ -37,6 +37,7 @@ import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
 import org.hibernate.query.Query;
 import org.hibernate.query.internal.QueryOptionsImpl;
 import org.hibernate.query.spi.Limit;
+import org.hibernate.type.SqlTypes;
 import org.hibernate.type.spi.TypeConfiguration;
 import org.slf4j.Logger;
 
@@ -46,6 +47,7 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.rest.common.FieldTypes;
+import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.hibernate.MeshTablePrefixStrategy;
@@ -385,6 +387,11 @@ public abstract class AbstractDatabaseConnector implements DatabaseConnector {
 		TypeConfiguration typeConfig = getSessionMetadataIntegrator().getSessionFactoryImplementor().getTypeConfiguration();
 		Dialect dialect = getHibernateDialect();
 		switch (type) {
+			case JSON:
+				return typeConfig.getDdlTypeRegistry().getTypeName(
+								SqlTypes.JSON, 
+								new Size(getSqlTypePrecision(type), getSqlTypeScale(type), getSqlTypeLength(type)), 
+								typeConfig.getBasicTypeForJavaType(JsonContent.class));
 			case STRING:
 			case HTML:
 				return typeConfig.getDdlTypeRegistry().getTypeName(

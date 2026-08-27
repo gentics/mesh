@@ -100,6 +100,7 @@ import com.gentics.mesh.hibernate.data.domain.HibGroupImpl;
 import com.gentics.mesh.hibernate.data.domain.HibHtmlListFieldEdgeImpl;
 import com.gentics.mesh.hibernate.data.domain.HibImageVariantImpl;
 import com.gentics.mesh.hibernate.data.domain.HibJobImpl;
+import com.gentics.mesh.hibernate.data.domain.HibJsonListFieldEdgeImpl;
 import com.gentics.mesh.hibernate.data.domain.HibLanguageImpl;
 import com.gentics.mesh.hibernate.data.domain.HibMicronodeContainerImpl;
 import com.gentics.mesh.hibernate.data.domain.HibMicronodeFieldEdgeImpl;
@@ -1101,7 +1102,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 				String paramName = makeParamName(value);
 				if (value != null) {
 					if (UUIDUtil.isUUID(value.toString())) {
-						if (maybeOperandType.filter(otype -> "string".equalsIgnoreCase(otype) || "html".equalsIgnoreCase(otype)).isEmpty()) {
+						if (maybeOperandType.filter(otype -> "string".equalsIgnoreCase(otype) || "json".equalsIgnoreCase(otype) || "html".equalsIgnoreCase(otype)).isEmpty()) {
 							value = UUIDUtil.toJavaUuid(value.toString());
 						}
 					} else if (value.getClass().isEnum()) {
@@ -1747,6 +1748,9 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 				break;
 			case "STRINGLIST":
 				clss = HibStringListFieldEdgeImpl.class;
+				break;
+			case "JSONLIST":
+				clss = HibJsonListFieldEdgeImpl.class;
 				break;
 			case "NUMBERLIST":
 				clss = HibNumberListFieldEdgeImpl.class;
