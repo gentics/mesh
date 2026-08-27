@@ -18,6 +18,7 @@ import com.gentics.mesh.core.rest.user.ExpandableNode;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserAPITokenCreateRequest;
 import com.gentics.mesh.core.rest.user.UserAPITokenDataModel;
+import com.gentics.mesh.core.rest.user.UserAPITokenListResponse;
 import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
@@ -145,5 +146,11 @@ public class UserExamples extends AbstractExamples {
 		return new UserAPITokenCreateRequest()
 				.setName(name)
 				.setExpires(DateUtils.toISO8601(Instant.parse("2026-12-24T18:00:00.00Z").toEpochMilli()));
+	}
+
+	public UserAPITokenListResponse getAPITokenListResponse(String name) {
+		UserAPITokenListResponse list = new UserAPITokenListResponse();
+		list.add(getAPITokenData(name));
+		return list;
 	}
 }

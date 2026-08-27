@@ -116,7 +116,7 @@ public class UserEndpoint extends RolePermissionHandlingEndpoint {
 		listEndpoint.method(GET);
 		listEndpoint.setMutating(false);
 		listEndpoint.produces(APPLICATION_JSON);
-		listEndpoint.exampleResponse(OK, null); // FIXME
+		listEndpoint.exampleResponse(OK, userExamples.getAPITokenListResponse("Some API Token"), "API token list response");
 		listEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String userUuid = ac.getParameter("userUuid");
