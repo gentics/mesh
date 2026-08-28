@@ -4,6 +4,7 @@ import static com.gentics.mesh.hibernate.util.HibernateUtil.firstOrNull;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.inQueriesLimitForSplitting;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -67,6 +68,8 @@ import jakarta.persistence.TypedQuery;
  */
 @Singleton
 public class BranchDaoImpl extends AbstractHibRootDao<HibBranch, BranchResponse, HibBranchImpl, HibProject, HibProjectImpl> implements PersistingBranchDao {
+
+	public static final String[] SORT_FIELDS = new String[] { "name" };
 
 	@Inject
 	public BranchDaoImpl(RootDaoHelper<HibBranch, HibBranchImpl, HibProject, HibProjectImpl> rootDaoHelper,
@@ -246,6 +249,14 @@ public class BranchDaoImpl extends AbstractHibRootDao<HibBranch, BranchResponse,
 	@Override
 	public HibBranch getInitialBranch(HibProject project) {
 		return ((HibProjectImpl)project).getInitialBranch();
+	}
+
+	@Override
+	public String[] getGraphQlSortingFieldNames(boolean noDependencies) {
+		return Stream.of(
+				Arrays.stream(super.getGraphQlSortingFieldNames(noDependencies)),
+				Arrays.stream(SORT_FIELDS)					
+			).flatMap(Function.identity()).toArray(String[]::new);
 	}
 
 	@Override

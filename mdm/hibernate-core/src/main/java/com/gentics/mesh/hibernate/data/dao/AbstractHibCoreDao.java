@@ -1,5 +1,9 @@
 package com.gentics.mesh.hibernate.data.dao;
 
+import java.util.Arrays;
+import java.util.function.Function;
+import java.util.stream.Stream;
+
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
@@ -21,6 +25,8 @@ import io.vertx.core.Vertx;
  * @param <D>
  */
 public abstract class AbstractHibCoreDao<T extends HibCoreElement<R>, R extends RestModel, D extends T> extends AbstractHibDao<T> {
+
+	public static final String[] SORT_FIELDS = new String[] { "created", "edited" };
 
 	protected final DaoHelper<T,D> daoHelper;
 
@@ -138,5 +144,22 @@ public abstract class AbstractHibCoreDao<T extends HibCoreElement<R>, R extends 
 		case "USER.creator_dbUuid": return mapGraphQlSortingFieldName("creator");
 		}
 		return super.mapGraphQlSortingFieldName(gqlName);
+	}
+
+	@Override
+	public String[] getGraphQlSortingFieldNames(boolean noDependencies) {
+		if (noDependencies) {
+			return Stream.of(
+					Arrays.stream(super.getGraphQlSortingFieldNames(true)),
+					Arrays.stream(SORT_FIELDS)					
+				).flatMap(Function.identity()).toArray(String[]::new);
+		}
+		String[] userFields = currentTransaction.getTx().userDao().getGraphQlSortingFieldNames(true);
+		return Stream.of(
+				Arrays.stream(super.getGraphQlSortingFieldNames(true)),
+				Arrays.stream(SORT_FIELDS), 
+				Arrays.stream(userFields).map(f -> "creator." + f),
+				Arrays.stream(userFields).map(f -> "editor." + f)
+			).flatMap(Function.identity()).toArray(String[]::new);
 	}
 }

@@ -19,12 +19,6 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import jakarta.persistence.Tuple;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.Root;
-import jakarta.persistence.metamodel.EntityType;
-import jakarta.persistence.metamodel.Metamodel;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.IteratorUtils;
@@ -62,6 +56,12 @@ import com.gentics.mesh.util.UUIDUtil;
 
 import dagger.Lazy;
 import io.vertx.core.Vertx;
+import jakarta.persistence.Tuple;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.metamodel.EntityType;
+import jakarta.persistence.metamodel.Metamodel;
 
 /**
  * Role DAO implementation for Gentics Mesh.
@@ -71,6 +71,7 @@ import io.vertx.core.Vertx;
  */
 @Singleton
 public class RoleDaoImpl extends AbstractHibDaoGlobal<HibRole, RoleResponse, HibRoleImpl> implements PersistingRoleDao {
+	public static final String[] SORT_FIELDS = new String[] { "name" };
 	
 	@Inject
 	public RoleDaoImpl(DaoHelper<HibRole, HibRoleImpl> daoHelper, HibPermissionRoots permissionRoots,
@@ -405,5 +406,13 @@ public class RoleDaoImpl extends AbstractHibDaoGlobal<HibRole, RoleResponse, Hib
 			Triple<String, String, Object> triple = Triple.of(UUIDUtil.toShortUuid(tuple.get("uuid", UUID.class)), tuple.get("name", String.class), tuple.get("uuid", UUID.class));
 			return triple;
 		}).collect(Collectors.toSet());
+	}
+
+	@Override
+	public String[] getGraphQlSortingFieldNames(boolean noDependencies) {
+		return Stream.of(
+				Arrays.stream(super.getGraphQlSortingFieldNames(noDependencies)),
+				Arrays.stream(SORT_FIELDS)					
+			).flatMap(Function.identity()).toArray(String[]::new);
 	}
 }

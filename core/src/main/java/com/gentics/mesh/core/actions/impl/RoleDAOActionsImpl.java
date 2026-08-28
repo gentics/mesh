@@ -55,9 +55,7 @@ public class RoleDAOActionsImpl implements RoleDAOActions {
 
 	@Override
 	public Page<? extends HibRole> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, Predicate<HibRole> extraFilter) {
-		return ctx.tx().roleDao().findAll(ctx.ac(), pagingInfo, role -> {
-			return extraFilter.test(role);
-		});
+		return ctx.tx().roleDao().findAll(ctx.ac(), pagingInfo, extraFilter);
 	}
 
 	@Override
