@@ -37,6 +37,7 @@ import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.core.rest.user.UserAPITokenCreateRequest;
 import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserResponse;
@@ -117,7 +118,7 @@ public class LikePluginIntegrationTest extends AbstractPluginLocalIntegrationTes
 			createUser.setUsername(String.format("user%d", i));
 			createUser.setPassword(String.format("user%d", i));
 			UserResponse user = call(() -> server.client().createUser(createUser));
-			UserAPITokenResponse token = call(() -> server.client().issueAPIToken(user.getUuid()));
+			UserAPITokenResponse token = call(() -> server.client().issueAPIToken(user.getUuid(), new UserAPITokenCreateRequest().setName("Test Token")));
 			userTokens.put(user.getUuid(), token.getToken());
 		}
 	}
