@@ -6,6 +6,9 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v3.2.14]]
+== 3.2.14 (28.08.2026)
+
 [[v3.2.13]]
 == 3.2.13 (05.08.2026)
 

@@ -170,7 +170,7 @@
 | cacheConfig
 | true
 | hibernatecacheconfig
-| Cache options.  Default: *com.gentics.mesh.etc.config.hibernate.HibernateCacheConfig@e9ef5b6*.
+| Cache options.  Default: *com.gentics.mesh.etc.config.hibernate.HibernateCacheConfig@5cbe2654*.
 
 | licenseKeyPath
 | false
