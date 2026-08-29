@@ -16,6 +16,9 @@
 		<projectRoot>${project.basedir}</projectRoot>
 		<mesh.build.version>${project.version}</mesh.build.version>
 		<mesh.build.timestamp>${maven.build.timestamp}</mesh.build.timestamp>
+		<liveness.version>0.0.1-SNAPSHOT</liveness.version>
+
+		<otel.javaagent.version>2.27.0</otel.javaagent.version>
 
 		<vertx.version>5.0.12</vertx.version>
 		<dagger.version>2.56.2</dagger.version>
@@ -102,6 +105,16 @@
 		<module>connectors</module>
 		<module>performance-tests</module>
 	</modules>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.gentics</groupId>
+				<artifactId>cmp-liveness-dagger</artifactId>
+				<version>${liveness.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<dependencies>
 		<dependency>

@@ -1,10 +1,10 @@
 ARG MESH_REGISTRY_HOST=docker.gentics.com
 ARG MESH_VERSION
 
-FROM maven:3.8-eclipse-temurin-17 AS build-env
-
 ARG MVN_USERNAME
 ARG MVN_PASSWORD
+
+FROM maven:3.8-eclipse-temurin-17 AS build-env
 
 ARG MESH_CONNECTOR
 ARG MESH_ARTIFACTS_REPO=maven-snapshots

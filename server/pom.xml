@@ -103,6 +103,25 @@
 							<outputDirectory>${project.build.directory}/mavendependencies-sharedlibs</outputDirectory>
 						</configuration>
 					</execution>
+					<execution>
+						<?m2e ignore?>
+						<id>copy-otel-javaagent</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>io.opentelemetry.javaagent</groupId>
+									<artifactId>opentelemetry-javaagent</artifactId>
+									<version>${otel.javaagent.version}</version>
+									<outputDirectory>${project.build.directory}</outputDirectory>
+									<destFileName>opentelemetry-javaagent.jar</destFileName>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 

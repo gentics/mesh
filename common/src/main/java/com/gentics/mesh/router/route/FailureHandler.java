@@ -8,6 +8,7 @@ import java.nio.file.NoSuchFileException;
 import java.util.MissingResourceException;
 import java.util.Optional;
 
+import com.gentics.monitoring.liveness.LivenessManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,7 +23,6 @@ import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
-import com.gentics.mesh.monitor.liveness.LivenessManager;
 
 import io.vertx.core.Handler;
 import io.vertx.core.VertxException;

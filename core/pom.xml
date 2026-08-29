@@ -36,7 +36,6 @@
 
 
 	<dependencies>
-
 		<!-- Internal dependencies -->
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
@@ -59,6 +58,11 @@
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-graphql</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.gentics</groupId>
+			<artifactId>cmp-liveness-dagger</artifactId>
 		</dependency>
 
 		<!-- Plugin dependency -->
@@ -144,6 +148,17 @@
 		<dependency>
 			<groupId>io.micrometer</groupId>
 			<artifactId>micrometer-registry-prometheus</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>io.opentelemetry.instrumentation</groupId>
+			<artifactId>opentelemetry-micrometer-1.5</artifactId>
+			<version>2.30.0-alpha</version>
+		</dependency>
+		<dependency>
+			<groupId>io.opentelemetry</groupId>
+			<artifactId>opentelemetry-sdk-extension-autoconfigure</artifactId>
+			<version>1.64.0</version>
 		</dependency>
 
 		<dependency>

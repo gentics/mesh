@@ -14,9 +14,9 @@ import com.gentics.mesh.core.db.cluster.ClusterManager;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.rest.admin.localconfig.LocalConfigModel;
 import com.gentics.mesh.core.rest.plugin.PluginStatus;
-import com.gentics.mesh.monitor.liveness.LivenessManager;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
 
+import com.gentics.monitoring.liveness.LivenessManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;

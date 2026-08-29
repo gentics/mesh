@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.monitoring.liveness.LivenessManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +24,6 @@ import com.gentics.mesh.core.rest.admin.cluster.ClusterInstanceInfo;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.monitor.liveness.EventBusLivenessManager;
-import com.gentics.mesh.monitor.liveness.LivenessManager;
 
 import dagger.Lazy;
 import io.vertx.core.Vertx;
