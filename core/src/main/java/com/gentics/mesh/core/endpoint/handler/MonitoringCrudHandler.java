@@ -60,7 +60,7 @@ public class MonitoringCrudHandler {
 			PluginStatus status = pluginManager.getStatus(id);
 			if (status == PluginStatus.FAILED) {
 				log.warn("Plugin {" + id + "} is in status failed.");
-				throw error(SERVICE_UNAVAILABLE, "error_internal").setLogStackTrace(false);
+				throw error(SERVICE_UNAVAILABLE, "error_service_unavailable").setLogStackTrace(false);
 			}
 		}
 		if (!liveness.isLive()) {
@@ -72,7 +72,7 @@ public class MonitoringCrudHandler {
 				break;
 			default:
 				log.warn("Liveness was set to false due to {}", liveness.getError());
-				throw error(SERVICE_UNAVAILABLE, "error_internal").setLogStackTrace(false);
+				throw error(SERVICE_UNAVAILABLE, "error_service_unavailable").setLogStackTrace(false);
 			}
 		}
 		rc.response().setStatusCode(200).end();
@@ -87,7 +87,7 @@ public class MonitoringCrudHandler {
 		MeshStatus status = boot.mesh().getStatus();
 		if (!status.equals(MeshStatus.READY)) {
 			log.warn("Status is {" + status.name() + "} - Failing readiness probe");
-			throw error(SERVICE_UNAVAILABLE, "error_internal").setLogStackTrace(false);
+			throw error(SERVICE_UNAVAILABLE, "error_service_unavailable").setLogStackTrace(false);
 		}
 		for (String id : pluginManager.getPluginIds()) {
 			PluginStatus pluginStatus = pluginManager.getStatus(id);
@@ -99,16 +99,16 @@ public class MonitoringCrudHandler {
 			// be reached.
 			if (pluginStatus == PluginStatus.FAILED) {
 				log.error("Plugin {" + id + "} is in status failed.");
-				throw error(SERVICE_UNAVAILABLE, "error_internal").setLogStackTrace(false);
+				throw error(SERVICE_UNAVAILABLE, "error_service_unavailable").setLogStackTrace(false);
 			}
 		}
 		if (!liveness.isLive()) {
 			log.warn("Liveness was set to false due to {}", liveness.getError());
-			throw error(SERVICE_UNAVAILABLE, "error_internal").setLogStackTrace(false);
+			throw error(SERVICE_UNAVAILABLE, "error_service_unavailable").setLogStackTrace(false);
 		}
 		if (!db.isHealthy()) {
 			log.warn("Failing DB health check");
-			throw error(SERVICE_UNAVAILABLE, "error_internal").setLogStackTrace(false);
+			throw error(SERVICE_UNAVAILABLE, "error_service_unavailable").setLogStackTrace(false);
 		}
 		rc.response().end();
 	}
@@ -123,18 +123,18 @@ public class MonitoringCrudHandler {
 	 */
 	public void handleWritable(RoutingContext rc) {
 		localConfigApi.getActiveConfig()
-				.map(LocalConfigModel::isReadOnly)
-				.map(Boolean::booleanValue)
-				.subscribe(isReadOnly -> {
-					if (isReadOnly) {
-						log.warn("Local node cannot write - read only mode set");
-						rc.fail(error(SERVICE_UNAVAILABLE, "error_internal").setLogStackTrace(false));
-					} else if (db.isReadOnly(false)) {
-						log.warn("Local node cannot write - read only database");
-						rc.fail(error(SERVICE_UNAVAILABLE, "error_internal").setLogStackTrace(false));
-					} else {
-						rc.response().setStatusCode(200).end();
-					}
-				});
+			.map(LocalConfigModel::isReadOnly)
+			.map(Boolean::booleanValue)
+			.subscribe(isReadOnly -> {
+				if (isReadOnly) {
+					log.warn("Local node cannot write - read only mode set");
+					rc.fail(error(SERVICE_UNAVAILABLE, "error_service_unavailable").setLogStackTrace(false));
+				} else if (db.isReadOnly(false)) {
+					log.warn("Local node cannot write - read only database");
+					rc.fail(error(SERVICE_UNAVAILABLE, "error_service_unavailable").setLogStackTrace(false));
+				} else {
+					rc.response().setStatusCode(200).end();
+				}
+			});
 	}
 }
