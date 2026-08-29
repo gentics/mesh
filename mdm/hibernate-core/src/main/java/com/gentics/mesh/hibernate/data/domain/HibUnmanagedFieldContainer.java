@@ -120,7 +120,16 @@ public interface HibUnmanagedFieldContainer<
 	 * Get the schema version.
 	 */
 	@Override
-	SCV getSchemaContainerVersion();
+	default SCV getSchemaContainerVersion() {
+		return HibernateTx.get().load(getSchemaContainerVersionUuid(), getSchemaContainerVersionClass());
+	}
+
+	/**
+	 * Get the schema version class.
+	 * 
+	 * @return
+	 */
+	Class<? extends SCV> getSchemaContainerVersionClass();
 
 	/**
 	 * Get the schema version UUID object;
