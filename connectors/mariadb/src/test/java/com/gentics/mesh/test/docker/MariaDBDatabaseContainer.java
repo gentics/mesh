@@ -18,6 +18,7 @@ public class MariaDBDatabaseContainer extends PreparingDatabaseContainer<MariaDB
 	 * Create an instance
 	 */
 	public MariaDBDatabaseContainer() {
+		// Keep in sync with the mariadb image in connectors/mariadb/pom.xml (docker-maven-plugin).
 		super("mariadb:12.3");
 	}
 
