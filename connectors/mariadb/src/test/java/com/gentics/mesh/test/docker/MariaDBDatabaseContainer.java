@@ -18,9 +18,7 @@ public class MariaDBDatabaseContainer extends PreparingDatabaseContainer<MariaDB
 	 * Create an instance
 	 */
 	public MariaDBDatabaseContainer() {
-		// Note: Version is pinned to 10.7, because "latest" image cannot be used as of the time of this writing.
-		// See https://github.com/MariaDB/mariadb-docker/issues/434
-		super("mariadb:10.7");
+		super("mariadb:12.3");
 	}
 
 	@Override
