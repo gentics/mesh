@@ -204,9 +204,12 @@ deployt werden, was der Reaktor mit Punkt 1 automatisch erledigt.
 | POST | `/api/rag/query` | Frage + Filter → Antwort + Quellen |
 | GET | `/api/rag/status` | Chunk-Zähler und Chunks ohne Vektor |
 | GET | `/api/rag/debug/chunks` | Quellen-/Chunk-Inspektion |
-| POST | `/api/rag/feedback` | Nutzerfeedback je Antwort |
 
-Ein Reindex-Endpunkt fehlt absichtlich – siehe oben.
+Zwei Endpunkte fehlen absichtlich. Der **Reindex** würde einen zweiten Schreibweg neben dem
+Mesh-Sync aufmachen – siehe oben. Und **Feedback** wäre erst mit einer Referenz auf den
+Audit-Eintrag der Antwort auswertbar; die gibt `RagAnswer` heute nicht heraus, und ohne eine
+Oberfläche, die Feedback erhebt, gäbe es auch niemanden, der ihn aufruft. Wenn er kommt, dann
+zusammen mit der Audit-ID in der Antwort und persistenten Stores.
 
 ## Stand
 
@@ -219,7 +222,7 @@ Noch offen:
 
 - **Mesh-seitiger Index-Handler** – der Schreibweg selbst, mit dem Mesh-Core-Team abzustimmen
 - **`LlmProvider`** – EU-Managed bzw. lokal (Ollama/vLLM), offen bis Modellwahl (O4)
-- **Persistente Store-Backends** für Config, Audit und Feedback – derzeit In-Memory
+- **Persistente Store-Backends** für Config und Audit – derzeit In-Memory
 - **Auth** vor der REST-API (O5)
 
 ## Zu klärendes Risiko: Elasticsearch-Lizenz
