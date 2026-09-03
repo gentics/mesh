@@ -37,10 +37,19 @@ rag:
     # Legt Endpunkt, Pipeline und Index-Template beim Start an, falls nicht vorhanden.
     bootstrap: true
 
-  # Nur fuer den optionalen Live-Permission-Check; der regulaere Betrieb kommt ohne Mesh-Zugriff aus.
+  # Mesh ist die Autoritaet fuer Berechtigungen: der Service loest mit dem Token des
+  # Anfragenden dessen Benutzer und Rollen auf. Bewusst kein Dienst-Token hier - ein solches
+  # wuerde alle Anfragen mit denselben Rechten ausstatten.
   mesh:
     url: ${MESH_URL:http://localhost:8080}
-    api-token: ${MESH_API_TOKEN:}
+
+  auth:
+    # Anfragen ohne Token laufen als anonymer Mesh-Benutzer und sehen nur, was dessen Rolle
+    # lesen darf. Auf false setzen, wenn ausschliesslich angemeldete Zugriffe erlaubt sind.
+    allow-anonymous: ${RAG_ALLOW_ANONYMOUS:true}
+    # Bestimmt, wie schnell eine entzogene Rolle wirkt - kurz halten.
+    cache-ttl-seconds: 60
+    cache-max-entries: 10000
 
   llm:
     profile: cloud-hybrid          # cloud-hybrid | sovereign-onprem

@@ -43,10 +43,11 @@ public class QueryService {
     /**
      * Beantwortet eine Anfrage: Retrieval, Schwellwert-Pruefung, Antwortgenerierung und Audit.
      *
-     * @param query Anfrage inkl. Rollen-/Metadatenfilter
+     * @param query    Anfrage inkl. Rollen-/Metadatenfilter
+     * @param auditRef pseudonymisierte Referenz auf den Anfragenden fuer das Audit-Log
      * @return quellenbelegte Antwort oder die definierte Nicht-Antwort bei fehlender Basis
      */
-    public RagAnswer answer(RagQuery query) {
+    public RagAnswer answer(RagQuery query, String auditRef) {
         List<RetrievedChunk> retrieved = retriever.retrieve(query);
 
         double minScore = properties.getRetrieval().getMinScore();
@@ -63,15 +64,15 @@ public class QueryService {
             answer = llmProvider.generate(query, grounded);
         }
 
-        audit(query, answer);
+        audit(query, answer, auditRef);
         return answer;
     }
 
-    private void audit(RagQuery query, RagAnswer answer) {
+    private void audit(RagQuery query, RagAnswer answer, String auditRef) {
         AuditEntry entry = new AuditEntry(
                 UUID.randomUUID().toString(),
                 Instant.now(),
-                null, // pseudonymisierte Nutzerreferenz: in spaeterer Ausbaustufe aus Auth-Kontext
+                auditRef,
                 query.projectFilter().isEmpty() ? null : query.projectFilter().get(0),
                 query.question(),
                 answer.sources().stream().map(s -> s.chunkId()).toList(),

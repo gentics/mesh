@@ -33,7 +33,9 @@ import java.util.stream.Collectors;
  * braucht keinen eigenen Embedding-Client.
  *
  * <p>Der Permission-Filter arbeitet auf {@link RagChunkFields#ROLE_UUIDS} und damit auf
- * demselben Feld und derselben Semantik wie die Mesh-Volltextsuche (K3) – ohne Mesh-Roundtrip.
+ * demselben Feld und derselben Semantik wie die Mesh-Volltextsuche (K3). Die Rollen des
+ * Anfragenden kommen aus seinem Mesh-Token (siehe Paket {@code security}); pro Anfrage
+ * entsteht dadurch kein Mesh-Roundtrip, da die Aufloesung kurz gecacht wird.
  */
 @Component
 public class ElasticsearchRetriever implements Retriever {
@@ -118,18 +120,22 @@ public class ElasticsearchRetriever implements Retriever {
         return filters;
     }
 
+    /**
+     * Rollenfilter: ein Chunk ist sichtbar, wenn eine der Rollen des Anfragenden in seinen
+     * {@link RagChunkFields#ROLE_UUIDS} steht. Die Rollen stammen aus dem Mesh-Token, nicht aus
+     * der Anfrage.
+     *
+     * <p>Ohne Rollen faellt der Filter auf {@code match_none} zurueck statt auf „kein Filter" –
+     * ein leerer Rollenkontext darf niemals alles sichtbar machen. Anonyme Anfragen haben
+     * uebrigens sehr wohl eine Rolle: die der anonymen Mesh-Rolle, aufgeloest ueber Mesh.
+     */
     private ObjectNode permissionFilter(List<String> roleUuids) {
-        ArrayNode should = mapper.createArrayNode();
-        if (roleUuids != null && !roleUuids.isEmpty()) {
-            should.add(terms(RagChunkFields.ROLE_UUIDS, roleUuids));
+        if (roleUuids == null || roleUuids.isEmpty()) {
+            ObjectNode none = mapper.createObjectNode();
+            none.putObject("match_none");
+            return none;
         }
-        should.add(term(RagChunkFields.ROLE_UUIDS, RagChunkFields.PUBLIC_ROLE));
-
-        ObjectNode wrapper = mapper.createObjectNode();
-        ObjectNode bool = wrapper.putObject("bool");
-        bool.set("should", should);
-        bool.put("minimum_should_match", 1);
-        return wrapper;
+        return terms(RagChunkFields.ROLE_UUIDS, roleUuids);
     }
 
     private List<Hit> runBm25(String indexExpr, String question, ArrayNode filters, int topK) {

@@ -45,6 +45,42 @@ Recovery-Zeit der Suche unverändert, auch für Installationen ohne RAG.
 Identisch bleibt, was identisch bleiben soll: dieselbe Elasticsearch, derselbe Schreibmechanismus
 und dieselbe Permission-Semantik über `_roleUuids`.
 
+## Berechtigungen
+
+Geschützte Inhalte stehen im Index wie alle anderen — die Trennung passiert zur Query-Zeit, nach
+demselben Modell wie in der Mesh-Volltextsuche.
+
+**Index-Zeit:** Jeder Chunk trägt `_roleUuids`, also die Rollen mit Leserecht, geschrieben von
+Mesh über den Standard-Sync. Rechteänderungen ziehen dadurch automatisch nach: Mesh reindiziert
+seine Dokumente ohnehin, wenn sich Permissions ändern.
+
+**Query-Zeit:** Der Anfragende weist sich mit seinem **Mesh-Token** aus — als
+`Authorization: Bearer <token>` oder über das `mesh.token`-Cookie. Der `MeshAuthenticationFilter`
+löst damit gegen Mesh Benutzer und Rollen auf (`/api/v2/auth/me`, dann die Rollen der Gruppen),
+und ausschließlich diese Rollen gehen in den Filter des Retrievals — an BM25 **und** kNN, also
+vor jede Trefferliste und damit lange vor dem LLM.
+
+Drei Eigenschaften, die dabei bewusst so sind:
+
+- **Der Aufrufer kann seine Rollen nicht behaupten.** Im Request-Body gibt es kein Rollenfeld;
+  wo früher eines war, war die Prüfung eine Formalie.
+- **Fail-closed.** Ohne Rollenkontext filtert die Query auf `match_none`, nicht auf „kein
+  Filter". Ein Chunk ohne `_roleUuids` wird nie gefunden. Ein Fehler auf der schreibenden Seite
+  führt damit zu fehlenden Treffern, nicht zu offenen Inhalten.
+- **Keine „public"-Markierung.** Anonyme Anfragen laufen gegen Mesh als anonymer Benutzer und
+  bekommen dessen Rollen-UUID — dieselbe, die für öffentlich lesbare Inhalte im Index steht. Ein
+  Sonderwert wäre eine Konvention, die die schreibende Seite künstlich erzeugen müsste.
+
+Ist Mesh für die Auflösung nicht erreichbar, antwortet der Service mit `503`. Ein stiller
+Rückfall auf „keine Rollen" wäre zwar ungefährlich, würde einen Ausfall aber als leeres
+Suchergebnis tarnen. Die Auflösung wird kurz gecacht (`rag.auth.cache-ttl-seconds`, Standard
+60 s); dieser Wert bestimmt, wie schnell eine entzogene Rolle wirkt.
+
+Nicht abgedeckt ist damit die Frage, wer den Service überhaupt aufrufen darf — Mandantengrenzen
+jenseits der Rollen und ein Rate-Limit gehören auf die Ebene davor. Und das Audit-Log hält Frage
+und verwendete Chunk-IDs fest, ist also selbst schützenswert und braucht Zugriffsschutz und
+Löschfristen (Konzept 13).
+
 ## Module
 
 | Modul | Artifact | Läuft in | Inhalt |
@@ -205,6 +241,10 @@ deployt werden, was der Reaktor mit Punkt 1 automatisch erledigt.
 | GET | `/api/rag/status` | Chunk-Zähler und Chunks ohne Vektor |
 | GET | `/api/rag/debug/chunks` | Quellen-/Chunk-Inspektion |
 
+Alle Endpunkte verlangen den Mesh-Token des Anfragenden (Bearer-Header oder `mesh.token`-Cookie);
+ohne Token wird als anonymer Mesh-Benutzer gearbeitet, sofern `rag.auth.allow-anonymous` das
+zulässt. Siehe [Berechtigungen](#berechtigungen).
+
 Zwei Endpunkte fehlen absichtlich. Der **Reindex** würde einen zweiten Schreibweg neben dem
 Mesh-Sync aufmachen – siehe oben. Und **Feedback** wäre erst mit einer Referenz auf den
 Audit-Eintrag der Antwort auswertbar; die gibt `RagAnswer` heute nicht heraus, und ohne eine
@@ -216,14 +256,16 @@ zusammen mit der Audit-ID in der Antwort und persistenten Stores.
 Implementiert: Modulstruktur, Domänenmodell, Index-Kontrakt (Benennung, Mapping mit
 `int8_hnsw`-quantisiertem Vektorfeld, Ingest-Pipeline, Inference-Endpunkt), strukturbasiertes
 Chunking mit Überlappung, Bootstrap der Cluster-Objekte, Hybrid-Retrieval (BM25 + kNN via RRF)
-mit `_roleUuids`-Permission-Filter und Gültigkeitszeitraum-Filter, Status-Endpunkt.
+mit `_roleUuids`-Permission-Filter und Gültigkeitszeitraum-Filter, Status-Endpunkt sowie die
+Auflösung der Rollen aus dem Mesh-Token.
 
 Noch offen:
 
 - **Mesh-seitiger Index-Handler** – der Schreibweg selbst, mit dem Mesh-Core-Team abzustimmen
 - **`LlmProvider`** – EU-Managed bzw. lokal (Ollama/vLLM), offen bis Modellwahl (O4)
 - **Persistente Store-Backends** für Config und Audit – derzeit In-Memory
-- **Auth** vor der REST-API (O5)
+- **Mandantengrenzen und Rate-Limit** auf der Ebene vor dem Service; die Rollenprüfung selbst
+  steht (O5 damit nur noch teilweise offen)
 
 ## Zu klärendes Risiko: Elasticsearch-Lizenz
 

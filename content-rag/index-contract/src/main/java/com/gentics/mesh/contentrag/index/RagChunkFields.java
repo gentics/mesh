@@ -7,6 +7,11 @@ package com.gentics.mesh.contentrag.index;
  * <p>Das Permission-Feld heisst bewusst {@value #ROLE_UUIDS} – identisch zu dem Feld, das die
  * Mesh-Volltextsuche in ihren Node-Dokumenten fuehrt. Damit ist die Filterlogik zwischen
  * Volltextsuche und RAG-Retrieval dieselbe (K3).
+ *
+ * <p>Eine eigene Markierung fuer oeffentliche Inhalte gibt es bewusst nicht: anonym lesbare
+ * Inhalte tragen die UUID der anonymen Mesh-Rolle in diesem Feld, und eine Anfrage ohne Token
+ * laeuft gegen Mesh als anonymer Benutzer und bekommt genau diese Rolle. Ein zusaetzlicher
+ * Sonderwert waere eine Konvention, die die schreibende Seite kuenstlich erzeugen muesste.
  */
 public final class RagChunkFields {
 
@@ -68,7 +73,4 @@ public final class RagChunkFields {
     public static final String REFERENCED_NODES = "referencedNodes";
     /** Redaktionelle Metadaten. */
     public static final String EDITORIAL_TAGS = "editorialTags";
-
-    /** Rollenwert fuer oeffentlich lesbare Inhalte, analog zur Mesh-Suche. */
-    public static final String PUBLIC_ROLE = "public";
 }

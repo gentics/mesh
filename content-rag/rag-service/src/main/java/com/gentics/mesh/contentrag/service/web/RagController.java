@@ -5,10 +5,12 @@ import com.gentics.mesh.contentrag.common.model.RagQuery;
 import com.gentics.mesh.contentrag.common.model.RetrievedChunk;
 import com.gentics.mesh.contentrag.common.spi.Retriever;
 import com.gentics.mesh.contentrag.service.query.QueryService;
+import com.gentics.mesh.contentrag.service.security.MeshPrincipal;
 import com.gentics.mesh.contentrag.service.status.IndexStatusService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -27,10 +29,10 @@ import java.util.List;
  * <p>Einen Feedback-Endpunkt gibt es bewusst nicht: sinnvoll auswertbar waere er erst mit einer
  * Referenz auf den Audit-Eintrag der Antwort, und die gibt {@code RagAnswer} nicht heraus.
  * Solange keine Oberflaeche Feedback erhebt, waere er totes Gewicht in der API-Oberflaeche.
- * Wenn er kommt, dann zusammen mit der Audit-ID in der Antwort und persistenten Stores.
  *
- * <p>Auth und Mandantentrennung ueber die bestehenden CMP-/Mesh-Mechanismen sind noch
- * vorzuschalten (O5).
+ * <p>Jeder Endpunkt arbeitet mit dem {@link MeshPrincipal}, den der
+ * {@code MeshAuthenticationFilter} aus dem Mesh-Token aufgeloest hat. Ohne diesen Principal
+ * kommt keine Anfrage bis hierher.
  */
 @RestController
 @RequestMapping("/api/rag")
@@ -54,8 +56,9 @@ public class RagController {
 
     /** Frage und Filter zu Antwort und Quellen. */
     @PostMapping("/query")
-    public RagAnswer query(@Valid @RequestBody QueryRequest request) {
-        return queryService.answer(request.toQuery());
+    public RagAnswer query(@Valid @RequestBody QueryRequest request,
+                           @RequestAttribute(MeshPrincipal.ATTRIBUTE) MeshPrincipal principal) {
+        return queryService.answer(request.toQuery(principal), principal.auditRef());
     }
 
     /** Zaehler ueber die RAG-Chunk-Indizes. */
@@ -64,13 +67,19 @@ public class RagController {
         return statusService.current(projectUuid);
     }
 
-    /** Quellen- und Chunk-Inspektion: rohe Retrieval-Treffer zu einer Frage. */
+    /**
+     * Quellen- und Chunk-Inspektion: rohe Retrieval-Treffer zu einer Frage. Nutzt denselben
+     * Rollenfilter wie die regulaere Anfrage – sonst waere ausgerechnet der Debug-Endpunkt
+     * das Schlupfloch.
+     */
     @GetMapping("/debug/chunks")
     public List<RetrievedChunk> debugChunks(@RequestParam String question,
                                             @RequestParam(required = false) String language,
-                                            @RequestParam(required = false) Integer topK) {
-        RagQuery query = new RagQuery(question, language, List.of(), List.of(), List.of(),
-                null, topK, false, true);
+                                            @RequestParam(required = false) Integer topK,
+                                            @RequestAttribute(MeshPrincipal.ATTRIBUTE)
+                                            MeshPrincipal principal) {
+        RagQuery query = new RagQuery(question, language, principal.roleUuids(), List.of(),
+                List.of(), null, topK, false, true);
         return retriever.retrieve(query);
     }
 }
