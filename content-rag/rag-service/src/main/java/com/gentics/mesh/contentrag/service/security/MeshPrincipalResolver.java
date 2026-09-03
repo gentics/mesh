@@ -29,7 +29,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * <ol>
  *   <li>{@code GET /api/v2/auth/me} liefert Benutzer, seine Gruppen und den
  *       {@code rolesHash},</li>
- *   <li>{@code GET /api/v2/groups/<uuid>/roles} je Gruppe die zugeordneten Rollen.</li>
+ *   <li>{@code GET /api/v2/groups/<uuid>/roles} je Gruppe die zugeordneten Rollen; die
+ *       Antwort ist paginiert und wird vollstaendig durchgeblaettert.</li>
  * </ol>
  *
  * <p>Der zweite Schritt ist der teure – er skaliert mit der Zahl der Gruppen. Mesh liefert
@@ -52,6 +53,10 @@ public class MeshPrincipalResolver implements PrincipalResolver {
 
     private static final Logger log = LoggerFactory.getLogger(MeshPrincipalResolver.class);
     private static final String ANONYMOUS_KEY = "anonymous";
+    /** Seitengroesse der Rollenabfrage. Mesh liefert die Gruppenrollen paginiert. */
+    private static final int PER_PAGE = 100;
+    /** Notbremse gegen eine endlose Blaetterschleife bei unerwarteten Antworten. */
+    private static final int MAX_PAGES = 50;
 
     private final HttpClient http;
     private final ObjectMapper mapper;
@@ -109,13 +114,7 @@ public class MeshPrincipalResolver implements PrincipalResolver {
 
         Set<String> roleUuids = new LinkedHashSet<>();
         for (String groupUuid : groupUuids(me)) {
-            JsonNode roles = get("/api/v2/groups/" + groupUuid + "/roles", token);
-            for (JsonNode role : roles.path("data")) {
-                String uuid = text(role, "uuid");
-                if (uuid != null) {
-                    roleUuids.add(uuid);
-                }
-            }
+            collectGroupRoles(groupUuid, token, roleUuids);
         }
 
         if (roleUuids.isEmpty()) {
@@ -125,6 +124,39 @@ public class MeshPrincipalResolver implements PrincipalResolver {
                     username == null ? userUuid : username);
         }
         return new MeshPrincipal(userUuid, username, List.copyOf(roleUuids), anonymous);
+    }
+
+    /**
+     * Sammelt die Rollen einer Gruppe. Die Antwort ist paginiert, deshalb wird geblaettert, bis
+     * eine Seite nicht mehr voll ist.
+     *
+     * <p>Abgebrochen wird ueber die Seitengroesse und nicht ueber {@code _metainfo}: fehlt oder
+     * aendert sich dieses Feld, wuerde stillschweigend nur die erste Seite gelesen — und fehlende
+     * Rollen faellt niemandem auf, weil das System dann einfach weniger findet.
+     *
+     * @param groupUuid Gruppe
+     * @param token     Token des Anfragenden
+     * @param target    Sammelmenge der Rollen-UUIDs
+     */
+    private void collectGroupRoles(String groupUuid, String token, Set<String> target) {
+        for (int page = 1; page <= MAX_PAGES; page++) {
+            JsonNode response = get("/api/v2/groups/" + groupUuid + "/roles"
+                    + "?perPage=" + PER_PAGE + "&page=" + page, token);
+
+            int found = 0;
+            for (JsonNode role : response.path("data")) {
+                found++;
+                String uuid = text(role, "uuid");
+                if (uuid != null) {
+                    target.add(uuid);
+                }
+            }
+            if (found < PER_PAGE) {
+                return;
+            }
+        }
+        log.warn("Rollen der Gruppe {} nach {} Seiten abgebrochen – Ergebnis moeglicherweise "
+                + "unvollstaendig.", groupUuid, MAX_PAGES);
     }
 
     private List<String> groupUuids(JsonNode me) {
