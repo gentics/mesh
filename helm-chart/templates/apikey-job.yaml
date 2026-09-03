@@ -143,7 +143,7 @@ spec:
 
               echo "Generating API token (invalidates any previous token of this user)..."
               APITOKEN=$(curl -sf -b /tmp/cookies -X POST "$MESH_URL/api/v2/users/$UUID/token" \
-                -d "{\"name\":\"$(esc "$SECRET_NAME")\"}" \
+                -H 'Content-Type: application/json' -d "{\"name\":\"$(esc "$SECRET_NAME")\"}" \
                 | grep -o '"token"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | cut -d'"' -f4)
               if [ -z "$APITOKEN" ]; then echo "Token generation failed"; exit 1; fi
 
