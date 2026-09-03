@@ -178,6 +178,38 @@ public class FormPostFilesTest extends AbstractFormPostDataTest {
 		validate(formUuid, null, toValidate);
 	}
 
+	/**
+	 * A mandatory file field, which was uploaded with a previous save request, must not be reported as
+	 * missing when the form data is validated afterwards (the validate request does not repeat the upload).
+	 */
+	@Test
+	public void testValidateMandatoryFileAfterSave() throws IOException {
+		String formUuid = createForm(MULTIPLE_FILE_FIELDS_FORM);
+
+		FormData responseData = postSingleFile(TestMethod.save, formUuid, null, MULTI_FILE_FORM);
+		assertSingleFile(formUuid, responseData, MULTI_FILE_FORM);
+
+		FormData validated = validate(formUuid, responseData.getFormDataID(), responseData);
+		assertThat(validated.getProperties().get(FIELD_NAME).getValidationMessage())
+				.as(FIELD_NAME + " validationMessage").isNull();
+	}
+
+	/**
+	 * Like {@link #testValidateMandatoryFileAfterSave()}, but for a mandatory multi file field.
+	 */
+	@Test
+	public void testValidateMandatoryMultiFileAfterSave() throws IOException {
+		String formUuid = createForm(MULTIPLE_MULTIFILE_FIELDS_FORM);
+
+		FormData responseData = postMultipleFiles(TestMethod.save, formUuid, null,
+				Pair.of(SINGLE_FILE_FORM, null), Pair.of(MULTI_FILE_FORM, null));
+		assertMultipleFiles(formUuid, responseData, SINGLE_FILE_FORM, MULTI_FILE_FORM);
+
+		FormData validated = validate(formUuid, responseData.getFormDataID(), responseData);
+		assertThat(validated.getProperties().get(FIELD_NAME).getValidationMessage())
+				.as(FIELD_NAME + " validationMessage").isNull();
+	}
+
 	@Test
 	public void testDownloadSavedBinaryLikeFormGen() throws IOException {
 		String formUuid = createForm(SINGLE_FILE_FORM);

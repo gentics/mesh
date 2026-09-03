@@ -29,6 +29,7 @@ import org.apache.tika.metadata.TikaCoreProperties;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gentics.mesh.core.rest.common.FieldContainer;
+import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
@@ -135,11 +136,8 @@ public class BinaryElement extends FormElement {
 		Set<FileUpload> myUploads = getFileUploads(fileUploads);
 		if (myUploads.isEmpty()) {
 			if (isMandatory()) {
-				if (ctx.getFormDataNode() != null) {
-					BinaryField field = ctx.getFormDataNode().getFields().getBinaryField(getName());
-					if (field != null && field.hasValues()) {
-						return RxUtil.emptyMaybe();
-					}
+				if (ctx.getFormDataNode() != null && hasStoredBinary(ctx.getFormDataNode())) {
+					return RxUtil.emptyMaybe();
 				}
 				return Maybe.just(new ValidationError()
 					.setName(getName())
@@ -204,6 +202,38 @@ public class BinaryElement extends FormElement {
 		} else {
 			return RxUtil.emptyMaybe();
 		}
+	}
+
+	/**
+	 * Check whether the given form data node already contains a stored binary for this element.
+	 *
+	 * <p>
+	 * Binaries are stored as node field(s) referencing {@link SchemaInitializer#MULTIBINARY_ITEM_SCHEMA_NAME} nodes.
+	 * Form data which has not been migrated yet still holds the value in the old binary field
+	 * {@link FormService#OLD_BINARY_FIELD_PATTERN}.
+	 * </p>
+	 *
+	 * @param formDataNode form data node to check
+	 * @return true if a binary is stored for this element
+	 */
+	protected boolean hasStoredBinary(NodeResponse formDataNode) {
+		var fields = formDataNode.getFields();
+
+		if (isList()) {
+			NodeFieldList field = fields.getNodeFieldList(getName());
+			if (field != null && CollectionUtils.isNotEmpty(field.getItems())) {
+				return true;
+			}
+		} else {
+			NodeField field = fields.getNodeField(getName());
+			if (field != null && StringUtils.isNotBlank(field.getUuid())) {
+				return true;
+			}
+		}
+
+		// fallback to the old binary field
+		BinaryField oldField = fields.getBinaryField(FormService.OLD_BINARY_FIELD_PATTERN.formatted(getName()));
+		return oldField != null && oldField.hasValues();
 	}
 
 	@Override
