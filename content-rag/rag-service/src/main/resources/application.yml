@@ -47,7 +47,9 @@ rag:
     # Anfragen ohne Token laufen als anonymer Mesh-Benutzer und sehen nur, was dessen Rolle
     # lesen darf. Auf false setzen, wenn ausschliesslich angemeldete Zugriffe erlaubt sind.
     allow-anonymous: ${RAG_ALLOW_ANONYMOUS:true}
-    # Bestimmt, wie schnell eine entzogene Rolle wirkt - kurz halten.
+    # Innerhalb dieser Frist wird Mesh gar nicht gefragt. Danach genuegt meist ein Aufruf:
+    # /auth/me validiert das Token und liefert den rolesHash, ueber den entschieden wird, ob
+    # die Rollen neu aufgeloest werden muessen.
     cache-ttl-seconds: 60
     cache-max-entries: 10000
 

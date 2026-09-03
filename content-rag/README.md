@@ -73,8 +73,14 @@ Drei Eigenschaften, die dabei bewusst so sind:
 
 Ist Mesh für die Auflösung nicht erreichbar, antwortet der Service mit `503`. Ein stiller
 Rückfall auf „keine Rollen" wäre zwar ungefährlich, würde einen Ausfall aber als leeres
-Suchergebnis tarnen. Die Auflösung wird kurz gecacht (`rag.auth.cache-ttl-seconds`, Standard
-60 s); dieser Wert bestimmt, wie schnell eine entzogene Rolle wirkt.
+Suchergebnis tarnen.
+
+Gecacht wird zweistufig. Innerhalb von `rag.auth.cache-ttl-seconds` (Standard 60 s) wird Mesh
+gar nicht gefragt. Danach genügt in aller Regel ein einziger Aufruf: `/auth/me` validiert das
+Token und liefert den `rolesHash` — Mesh' eigene Hashsumme über die Rollen des Benutzers,
+ausdrücklich für dieses Caching gedacht. Ist er unverändert, bleiben die Rollen wie sie waren
+und die Abfrage der Gruppen entfällt. Ändert sich etwas an den Rollen, wechselt der Hash und die
+Auflösung passiert neu — ohne auf den Ablauf einer Frist zu warten.
 
 Nicht abgedeckt ist damit die Frage, wer den Service überhaupt aufrufen darf — Mandantengrenzen
 jenseits der Rollen und ein Rate-Limit gehören auf die Ebene davor. Und das Audit-Log hält Frage

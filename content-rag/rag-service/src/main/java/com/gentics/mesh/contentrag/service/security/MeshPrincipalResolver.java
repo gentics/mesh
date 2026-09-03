@@ -27,17 +27,25 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * <p>Zwei Aufrufe, beide mit dem Token des Anfragenden, nie mit einem Dienst-Token:
  * <ol>
- *   <li>{@code GET /api/v2/auth/me} liefert Benutzer und seine Gruppen,</li>
+ *   <li>{@code GET /api/v2/auth/me} liefert Benutzer, seine Gruppen und den
+ *       {@code rolesHash},</li>
  *   <li>{@code GET /api/v2/groups/<uuid>/roles} je Gruppe die zugeordneten Rollen.</li>
  * </ol>
+ *
+ * <p>Der zweite Schritt ist der teure – er skaliert mit der Zahl der Gruppen. Mesh liefert
+ * dafuer den {@code rolesHash}, ausdruecklich gedacht fuer genau dieses Caching: bleibt er
+ * gleich, sind die Rollen unveraendert und die Gruppenaufrufe entfallen. Aendert sich etwas an
+ * den Rollen des Benutzers, wechselt der Hash und wir loesen neu auf – ohne auf den Ablauf
+ * einer Frist zu warten.
  *
  * <p>Ohne Token wird derselbe Weg ohne Authorization-Header gegangen: Mesh antwortet dann als
  * anonymer Benutzer, und wir erhalten dessen Rollen. Dadurch braucht es keine ausgedachte
  * „public"-Markierung im Index — anonym lesbare Inhalte tragen ohnehin die UUID der anonymen
  * Rolle in {@code _roleUuids}, genau wie in der Mesh-Suche.
  *
- * <p>Ergebnisse werden kurz zwischengespeichert, damit nicht jede Frage zwei Mesh-Aufrufe
- * ausloest. Der Cache-Schluessel ist ein Hash des Tokens, nicht das Token selbst.
+ * <p>Zwei Cache-Stufen: innerhalb der konfigurierten Frist wird Mesh gar nicht gefragt,
+ * danach nur noch {@code /auth/me} – das validiert zugleich das Token. Der Cache-Schluessel ist
+ * ein Hash des Tokens, nicht das Token selbst.
  */
 @Component
 public class MeshPrincipalResolver implements PrincipalResolver {
@@ -74,17 +82,27 @@ public class MeshPrincipalResolver implements PrincipalResolver {
             return cached.principal();
         }
 
-        MeshPrincipal principal = load(token);
+        // Frist abgelaufen: /auth/me validiert das Token und sagt ueber den rolesHash, ob sich
+        // an den Rollen ueberhaupt etwas geaendert hat.
+        JsonNode me = get("/api/v2/auth/me", token);
+        String rolesHash = text(me, "rolesHash");
+
+        MeshPrincipal principal;
+        if (cached != null && rolesHash != null && rolesHash.equals(cached.rolesHash())) {
+            principal = cached.principal();
+        } else {
+            principal = load(me, token);
+        }
+
         if (cache.size() >= maxEntries) {
             // Grob, aber ausreichend: der Cache ist eine Latenz-Optimierung, kein Speicher.
             cache.clear();
         }
-        cache.put(key, new CacheEntry(principal, Instant.now().plus(ttl)));
+        cache.put(key, new CacheEntry(principal, rolesHash, Instant.now().plus(ttl)));
         return principal;
     }
 
-    private MeshPrincipal load(String token) {
-        JsonNode me = get("/api/v2/auth/me", token);
+    private MeshPrincipal load(JsonNode me, String token) {
         String userUuid = text(me, "uuid");
         String username = text(me, "username");
         boolean anonymous = token == null || token.isBlank();
@@ -164,6 +182,11 @@ public class MeshPrincipalResolver implements PrincipalResolver {
         return url != null && url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
     }
 
-    private record CacheEntry(MeshPrincipal principal, Instant expiresAt) {
+    /**
+     * @param principal aufgeloester Benutzer samt Rollen
+     * @param rolesHash Mesh-Hashsumme der Rollen; entscheidet, ob die Gruppenaufrufe noetig sind
+     * @param expiresAt bis wann Mesh gar nicht erst gefragt wird
+     */
+    private record CacheEntry(MeshPrincipal principal, String rolesHash, Instant expiresAt) {
     }
 }
