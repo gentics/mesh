@@ -14,12 +14,18 @@
     <name>Gentics Mesh Content RAG (Mesh-Sync)</name>
     <description>
         Mesh-seitiger Teil des RAG-Syncs: Feldauswahl je Schema (Allow-List), Auswertung der
-        No-RAG-Konvention (K4) und das Einsammeln der normalisierten Feldtexte. Noch ohne
-        Abhaengigkeit auf mesh-elasticsearch und mesh-mdm-api: die Auswahlregeln sind der
-        inhaltlich kniffligste Teil und sollen ohne laufendes Mesh testbar bleiben. Der Adapter
-        auf die Mesh-Schema-API und die beiden Handler kommen mit der Anbindung an den Sync dazu
+        No-RAG-Konvention (K4), HTML-nach-Markdown-Wandlung und der Aufbau des SourceContent aus
+        einem Node-Container. Die Auswahlregeln selbst kennen keine Mesh-Typen und bleiben ohne
+        laufendes Mesh testbar; die beiden Handler kommen mit der Anbindung an den Sync dazu
         (siehe MESH-INDEX-HANDLER.md).
     </description>
+
+    <properties>
+        <!-- Dieselbe Version, die mesh-bom pinnt; jsoup liegt im Mesh-Prozess ohnehin. -->
+        <jsoup.version>1.21.1</jsoup.version>
+        <!-- Wie in mesh-bom: der Client, den SearchProvider#getClient() herausgibt. -->
+        <elasticsearch.client.version>1.1.4</elasticsearch.client.version>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -34,6 +40,45 @@
             <groupId>com.gentics.mesh.contentrag</groupId>
             <artifactId>mesh-content-rag-index-contract</artifactId>
         </dependency>
+
+        <!-- Mesh-Seite: alles provided, weil dieser Code im Mesh-Prozess laeuft. -->
+        <dependency>
+            <groupId>com.gentics.mesh</groupId>
+            <artifactId>mesh-mdm-api</artifactId>
+            <version>${mesh.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.gentics.mesh</groupId>
+            <artifactId>mesh-rest-model</artifactId>
+            <version>${mesh.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.gentics.mesh</groupId>
+            <artifactId>mesh-elasticsearch</artifactId>
+            <version>${mesh.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.gentics.elasticsearch</groupId>
+            <artifactId>elasticsearch-client</artifactId>
+            <version>${elasticsearch.client.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.dagger</groupId>
+            <artifactId>dagger</artifactId>
+            <version>${dagger.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>${jsoup.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>

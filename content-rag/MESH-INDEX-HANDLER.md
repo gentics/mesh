@@ -1,9 +1,27 @@
-# Mesh-seitiger RAG-Index-Handler — Umsetzungsvorschlag
+# Mesh-seitiger RAG-Index-Handler
 
-Ergänzung zu `content-rag/README.md`, Abschnitt „Was auf der Mesh-Seite noch zu implementieren ist".
+Ergänzung zu `content-rag/README.md`, Abschnitt „Der Mesh-seitige Sync".
 
 Geprüft gegen: `mesh-enterprise` @ `f-gpu-2581` (`a2ba4748`, mesh.version `3.3.0-SNAPSHOT`) und
-`gentics/mesh` @ `dev` (`de01ed9d85`), Modul `elasticsearch`.
+`gentics/mesh` @ `f-gpu-2581` (aus `dev`, `de01ed9d85`), Modul `elasticsearch`.
+
+## Stand (04.09.2026)
+
+Umgesetzt ist der Weg **(c)** aus Abschnitt 1: zwei generische Dagger-Multibindings im OSS-Mesh,
+die Handler in mesh-enterprise.
+
+| Wo | Was |
+| --- | --- |
+| `gentics/mesh` @ `f-gpu-2581` | `@Multibinds Set<IndexHandler<?>>` und `Set<EventHandler>` in `CommonBindModule`; `IndexHandlerRegistryImpl` und `MainEventHandler` hängen die Sets an ihre Listen an — kein RAG-Wissen im OSS-Teil |
+| `content-rag/mesh-sync` | Feldauswahl (`RagFieldSelector`), HTML→Markdown (`HtmlToMarkdown`), `RagSourceContentBuilder`, `RagChunkWriter` und die beiden Handler |
+| `mesh-enterprise-core` | `EnterpriseSearchModule` bindet die Handler in die Sets und stellt die Parameter bereit |
+
+**Noch nicht gebaut.** Aus Cowork ist kein Maven-Build möglich (kein Netz zu Maven Central,
+lokal nur ein JRE). Verifiziert sind die Mesh-freien Teile mit `javac --release 17 -Xlint:all
+-Werror` und einem Probe-Main über alle Regelfälle; die Signaturen der Mesh-API sind gegen die
+OSS-Quellen geprüft, aber nicht compiliert. Der erste Reaktor-Build ist der eigentliche Test —
+erwartbare Nacharbeit: Dao-Methodennamen im `RagSourceContentBuilder` und die Generics in
+`RagChunkIndexHandler`.
 
 ---
 
@@ -446,18 +464,23 @@ auch über Neustarts hinweg.
 
 ## 6. Konfiguration und zwei Betriebsfallen
 
-```yaml
-search:
-  rag:
-    enabled: false          # Default aus, bestehende Installationen bleiben unberührt
-    defaultMode: NONE       # NONE | ALL – Verhalten ohne Schema-Angabe (RagSyncOptions)
-    includeBinaries: false  # binary/s3binary nur mit ausdrücklicher Freigabe
-    chunk:
-      maxChars: 1200        # ChunkingOptions.DEFAULTS
-      overlapChars: 150
-```
+Umgesetzt als Umgebungsvariablen bzw. System-Properties (`RagSyncConfig`), **nicht** als
+`MeshOptions`-Zweig: der Konfigurationsbaum von Mesh liegt im OSS-Modell, und ein
+`search.rag`-Abschnitt dort wäre eine Modelländerung samt Dokumentation und Migration. Für den
+Helm-Chart ist die Form ohnehin die passende.
 
-Die ersten drei Werte bilden `RagSyncOptions`, die letzten beiden `ChunkingOptions`.
+| Umgebung | Property | Vorgabe |
+| --- | --- | --- |
+| `MESH_SEARCH_RAG_ENABLED` | `mesh.search.rag.enabled` | `false` |
+| `MESH_SEARCH_RAG_DEFAULT_MODE` | `mesh.search.rag.defaultMode` | `NONE` |
+| `MESH_SEARCH_RAG_INCLUDE_BINARIES` | `mesh.search.rag.includeBinaries` | `false` |
+| `MESH_SEARCH_RAG_CHUNK_MAX_CHARS` | `mesh.search.rag.chunk.maxChars` | `1200` |
+| `MESH_SEARCH_RAG_CHUNK_OVERLAP_CHARS` | `mesh.search.rag.chunk.overlapChars` | `150` |
+| `MESH_SEARCH_RAG_SOURCE_URL_TEMPLATE` | `mesh.search.rag.sourceUrlTemplate` | leer |
+
+Die ersten drei Werte bilden `RagSyncOptions`, die beiden Chunk-Werte `ChunkingOptions`. Die
+Vorlage der Quellen-URL kennt die Platzhalter `{project}`, `{branch}`, `{language}`, `{path}` und
+`{uuid}`; ohne sie bleibt `sourceUrl` im Chunk leer.
 
 Ein `enabled: false` muss **beide** Handler stilllegen: der EventHandler gibt `Flowable.empty()`
 zurück, `syncIndices()` ebenso. Sonst baut ein Voll-Sync Indizes auf, die niemand pflegt.
@@ -484,22 +507,20 @@ einer klaren Meldung starten zu verweigern.
 
 ## 7. Reihenfolge der Umsetzung
 
-1. ~~`content-rag/mesh-sync`-Modul anlegen, Feldauswahl mit Unit-Tests~~ — **erledigt**: Modul, `RagFieldSelector`, `RagFieldTexts` und die Tests aus Abschnitt 5 liegen im Repo.
-2. Adapter auf die Mesh-Schema-API (Abschnitt 5.5) und `RagSourceContentBuilder` — braucht die Mesh-Abhängigkeiten im Modul, aber keine OSS-Änderung.
-3. HTML→Markdown entscheiden (flexmark vs. Eigenbau) und mit Beispielinhalten aus einem echten Projekt prüfen, ob der `StructuralChunker` sinnvolle Schnitte macht.
-4. Zwei Multibindings in OSS mesh, `EnterpriseSearchModule`, `RagChunkEventHandler` — ab hier läuft der Delta-Pfad und ist mit dem `/api/rag/status`-Endpunkt gegenprüfbar.
-5. `RagChunkIndexHandler` mit `syncIndices()` und `filterUnknownIndices()`.
-6. Präfix-Prüfung, Feature-Flag, Changelog.
-
-Schritt 2 und 3 hängen an keiner OSS-Änderung und können sofort weitergehen; Schritt 4 braucht die
-Abstimmung mit dem Core-Team.
+1. ~~Modul `content-rag/mesh-sync`, Feldauswahl mit Unit-Tests~~ — **erledigt**.
+2. ~~Adapter auf die Mesh-Schema-API und `RagSourceContentBuilder`~~ — **erledigt**.
+3. ~~HTML→Markdown entscheiden~~ — **erledigt**: eigene Wandlung auf jsoup (`HtmlToMarkdown`), keine neue Fremdbibliothek im Mesh-Prozess. Offen bleibt die Probe mit Beispielinhalten aus einem echten Projekt: schneidet der `StructuralChunker` darauf sinnvoll?
+4. ~~Zwei Multibindings in OSS mesh, `EnterpriseSearchModule`, `RagChunkEventHandler`~~ — **erledigt**, aber mit dem Core-Team abzustimmen (Abschnitt 1).
+5. ~~`RagChunkIndexHandler` mit `syncIndices()` und `filterUnknownIndices()`~~ — **erledigt**.
+6. **Offen:** erster Reaktor-Build beider Repos, dann Test gegen ein echtes Projekt: Feature-Flag setzen, `POST /api/v2/search/sync`, Chunks im Index gegenprüfen, `/api/rag/status` und eine Beispielabfrage im rag-service.
+7. **Offen:** Changelog-Einträge und die Dokumentation der Schema-Settings im Admin-UI.
 
 ---
 
 ## 8. Was noch zu entscheiden ist
 
-1. **Weg (a), (b) oder (c) aus Abschnitt 1.** Die Antwort bestimmt, wo der Code liegt und wie viel OSS-Änderung nötig ist. Das ist die einzige Frage, die die anderen blockiert. Das neue Modul `mesh-sync` ist so geschnitten, dass es zu allen dreien passt: es kennt keine Mesh- und keine Elasticsearch-Typen.
-2. **HTML→Markdown**: Fremdbibliothek in den Mesh-Prozess oder eigene, kleine Wandlung?
-3. **Ziel-Branch und Ticketnummer.** Aktuell steht `mesh-enterprise` auf `f-gpu-2581`; für die OSS-Seite braucht es einen eigenen Branch.
-4. **Binaries im RAG-Index**: die Mechanik steht (`includeBinaries`, Feldfreigabe), offen bleibt die Längengrenze für extrahierten Dokumenttext — ohne sie kann ein einzelnes PDF hunderte Chunks erzeugen.
-5. **Wer pflegt die Allow-List beim Kunden?** Die Settings sind über die Schema-API pflegbar; ob das Admin-UI (Konzept 5.9) dafür eine eigene Maske bekommt oder die Schema-Bearbeitung genügt, ist eine Produktentscheidung.
+1. **Die zwei Multibindings im OSS-Mesh** sind mit dem Mesh-Core-Team abzustimmen. Sie sind klein und generisch (kein RAG-Wissen), aber sie ändern zwei zentrale Klassen der Suche.
+2. **Binaries im RAG-Index**: die Mechanik steht (`includeBinaries`, Feldfreigabe), offen bleibt die Längengrenze für extrahierten Dokumenttext — ohne sie kann ein einzelnes PDF hunderte Chunks erzeugen.
+3. **Wer pflegt die Allow-List beim Kunden?** Die Settings sind über die Schema-API pflegbar; ob das Admin-UI (Konzept 5.9) dafür eine eigene Maske bekommt oder die Schema-Bearbeitung genügt, ist eine Produktentscheidung.
+4. **Branch-Umbenennung.** Der Document-Group-Schlüssel ist `nodeUuid:branchName:language` — benennt jemand einen Branch um, zeigen die alten Chunks auf einen Namen, den niemand mehr bildet; sie werden erst durch einen Voll-Sync mit anschließendem Aufräumen los. Alternative wäre die Branch-UUID im Schlüssel, dann steht im Chunk-Feld `branch` aber keine Anzeigeform mehr. Vorschlag: so lassen, dokumentieren, und beim Umbenennen einen Reindex des Branches fahren.
+5. **`POST /search/clear` löscht die RAG-Indizes mit** (Abschnitt 6, Falle 1) — akzeptiert und zu dokumentieren, weil ein Voll-Sync sie wieder aufbaut; kostet aber die komplette Neuvektorisierung.

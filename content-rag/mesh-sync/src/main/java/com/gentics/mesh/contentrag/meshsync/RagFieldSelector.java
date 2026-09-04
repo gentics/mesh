@@ -164,6 +164,21 @@ public final class RagFieldSelector {
         return new RagSchemaSelection(schema.name(), schema.versionUuid(), selected);
     }
 
+    /**
+     * Prueft ein Feld auf die No-RAG-Konvention, unabhaengig von einer Schemaauswahl.
+     *
+     * <p>Gedacht fuer Felder, die nicht selbst im Schema stehen und deshalb auch nicht freigegeben
+     * werden koennen – die Felder eines Micronodes zum Beispiel. Sie erben die Entscheidung ihres
+     * aeusseren Schemafeldes, ein ausdrueckliches {@code rag: false} oder {@code noIndex} soll aber
+     * auch dort gelten.
+     *
+     * @param field Feld
+     * @return {@code true}, wenn das Feld ausdruecklich ausgeschlossen ist
+     */
+    public static boolean isExcluded(RagFieldDescriptor field) {
+        return field.noIndex() || Boolean.FALSE.equals(booleanSetting(field.settings()));
+    }
+
     private static boolean supportsType(String type, RagSyncOptions options, boolean explicit) {
         if (TEXT_TYPES.contains(type)) {
             return true;

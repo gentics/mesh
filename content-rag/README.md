@@ -94,17 +94,21 @@ Löschfristen (Konzept 13).
 | `common` | `mesh-content-rag-common` | beiden | Domänenmodell (`Chunk`, `SourceContent`, `RagQuery/RagAnswer`), SPI (`Chunker`, `LlmProvider`, `Retriever`), Stores |
 | `chunking` | `mesh-content-rag-chunking` | Mesh | strukturbasiertes Chunking, framework-frei |
 | `index-contract` | `mesh-content-rag-index-contract` | beiden | Indexbenennung, Mapping, Ingest-Pipeline, Inference-Endpunkt, Chunk → ES-Dokument |
-| `mesh-sync` | `mesh-content-rag-mesh-sync` | Mesh | Feldauswahl je Schema (Allow-List), No-RAG-Konvention (K4), Einsammeln der Feldtexte |
+| `mesh-sync` | `mesh-content-rag-mesh-sync` | Mesh | Feldauswahl je Schema (Allow-List), No-RAG-Konvention (K4), HTML→Markdown, `SourceContent`-Aufbau und die beiden Such-Handler |
 | `rag-service` | `mesh-content-rag-service` | eigenständig | REST-API (`/api/rag/*`), Hybrid-Retrieval, Antwortgenerierung |
 
-`chunking`, `index-contract` und `mesh-sync` haben bewusst **keine** Spring-, Elasticsearch- oder
+`chunking` und `index-contract` haben bewusst **keine** Spring-, Elasticsearch- oder
 JSON-Abhängigkeit: was in den Mesh-Prozess eingebunden wird, soll dort nichts mitbringen.
 Definitionen werden als `Map`/`List` zurückgegeben, jede Seite serialisiert mit ihrem eigenen
 Jackson.
 
-## Was auf der Mesh-Seite noch zu implementieren ist
+## Der Mesh-seitige Sync
 
-Ein zusätzlicher Index-Handler neben den bestehenden (node, tag, user …). Die vier Aufrufe:
+Ein zusätzlicher Index-Handler neben den bestehenden (node, tag, user …), plus ein Event-Handler
+für den Delta-Pfad. Beide liegen in `mesh-sync` und teilen sich `RagChunkWriter`, damit Delta- und
+Voll-Indexierung nicht auseinanderlaufen; angemeldet werden sie über zwei generische
+Dagger-Multibindings im OSS-Mesh (`EnterpriseSearchModule` in `mesh-enterprise-core`). Die vier
+Aufrufe, um die es im Kern geht:
 
 ```java
 // 1. Indexname – ohne schemaVersionUuid, damit eine Migration den Index nicht wechselt
