@@ -277,3 +277,119 @@ Operators can override via mcpServer.mesh.baseUrl.
 {{- printf "http://%s:%v" (include "mesh.fullname" .) .Values.service.mesh.port -}}
 {{- end -}}
 {{- end -}}
+
+
+{{/* ── Content-RAG helpers ────────────────────────────────────────── */}}
+
+{{/* Full name for content-rag resources: <release>-content-rag */}}
+{{- define "mesh.contentRag.fullname" -}}
+{{- printf "%s-content-rag" (include "mesh.fullname" .) | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/* Common labels for content-rag resources */}}
+{{- define "mesh.contentRag.labels" -}}
+helm.sh/chart: {{ include "mesh.chart" . }}
+{{ include "mesh.contentRag.selectorLabels" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+app.kubernetes.io/component: content-rag
+app.kubernetes.io/part-of: {{ include "mesh.name" . }}
+{{- end -}}
+
+{{- define "mesh.contentRag.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "mesh.name" . }}-content-rag
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end -}}
+
+{{/*
+Fully qualified content-rag image (registry/repository:tag, global.imageRegistry aware).
+Tag falls back to Chart.AppVersion (the service is versioned with mesh-enterprise).
+*/}}
+{{- define "mesh.contentRag.image" -}}
+{{- include "gentics-common.image" (dict "root" . "image" .Values.contentRag.image "tag" (default .Chart.AppVersion .Values.contentRag.image.tag)) -}}
+{{- end -}}
+
+{{/*
+Image pull secrets for the content-rag image.
+Local contentRag.image.pullSecret (string) overrides global.imagePullSecrets.
+*/}}
+{{- define "mesh.contentRag.imagePullSecrets" -}}
+{{- include "gentics-common.imagePullSecrets" (dict "root" . "localName" .Values.contentRag.image.pullSecret) -}}
+{{- end -}}
+
+{{/*
+Elasticsearch URL for the RAG service.
+The RAG chunks live in the SAME Elasticsearch as the Mesh full-text search, so the
+chart-wide elasticsearch.url is the default. That value is the string "null" when the
+Mesh ES integration is off - in that case there is nothing to fall back to and a
+deployment would silently query a cluster that does not exist, hence the hard failure.
+*/}}
+{{- define "mesh.contentRag.elasticsearchUrl" -}}
+{{- $url := .Values.contentRag.elasticsearch.url | default "" -}}
+{{- if not $url -}}
+{{- $shared := .Values.elasticsearch.url | default "" -}}
+{{- if or (not $shared) (eq $shared "null") -}}
+{{- fail "contentRag: no Elasticsearch URL. Set contentRag.elasticsearch.url, or configure the shared elasticsearch.url - the RAG indices live in the same Elasticsearch as the Mesh full-text search." -}}
+{{- end -}}
+{{- $url = $shared -}}
+{{- end -}}
+{{- $url -}}
+{{- end -}}
+
+{{/*
+Index prefix for the RAG indices. Must match what Mesh writes with
+(MESH_ELASTICSEARCH_PREFIX, i.e. elasticsearch.prefix) - otherwise the service queries
+indices nobody fills and returns nothing, without an error anywhere.
+A missing trailing "-" is harmless: RagIndexNaming normalises the value.
+*/}}
+{{- define "mesh.contentRag.elasticsearchPrefix" -}}
+{{- .Values.contentRag.elasticsearch.prefix | default .Values.elasticsearch.prefix | default "mesh-" -}}
+{{- end -}}
+
+{{/*
+Base URL of the embedding server (TEI), without the /embed suffix - the service appends it.
+Only needed while the service bootstraps the cluster objects: afterwards the URL lives in
+the Elasticsearch inference endpoint, and it is ELASTICSEARCH that calls it.
+*/}}
+{{- define "mesh.contentRag.teiUrl" -}}
+{{- $url := .Values.contentRag.inference.teiUrl | default "" -}}
+{{- if and (not $url) .Values.contentRag.inference.bootstrap -}}
+{{- fail "contentRag: inference.teiUrl is required while inference.bootstrap is true - the URL is written into the Elasticsearch inference endpoint and must be resolvable FROM THE ELASTICSEARCH CLUSTER. Set inference.bootstrap=false if the cluster objects are provisioned separately." -}}
+{{- end -}}
+{{- $url -}}
+{{- end -}}
+
+{{/*
+Default Mesh URL: the Mesh service of this release, same derivation as the MCP server uses.
+Only the optional live permission check talks to Mesh; normal operation does not.
+*/}}
+{{- define "mesh.contentRag.meshUrl" -}}
+{{- if .Values.contentRag.mesh.baseUrl -}}
+{{- .Values.contentRag.mesh.baseUrl -}}
+{{- else -}}
+{{- printf "http://%s:%v" (include "mesh.fullname" .) .Values.service.mesh.port -}}
+{{- end -}}
+{{- end -}}
+
+{{/* Secret name for the content-rag credentials: existingSecret or chart-managed */}}
+{{- define "mesh.contentRag.secretName" -}}
+{{- if .Values.contentRag.elasticsearch.existingSecret -}}
+{{- .Values.contentRag.elasticsearch.existingSecret -}}
+{{- else -}}
+{{- printf "%s-secret" (include "mesh.contentRag.fullname" .) -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Whether there is anything to put into a chart-managed Secret. Renders "true" (truthy)
+or "" (falsy). With an existingSecret the chart creates nothing and only references it.
+*/}}
+{{- define "mesh.contentRag.hasSecret" -}}
+{{- if not .Values.contentRag.elasticsearch.existingSecret -}}
+{{- if or .Values.contentRag.elasticsearch.password .Values.contentRag.inference.apiKey .Values.contentRag.llm.apiKey -}}
+true
+{{- end -}}
+{{- end -}}
+{{- end -}}

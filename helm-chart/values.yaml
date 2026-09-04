@@ -569,3 +569,188 @@ mcpServer:
     timeoutSeconds: 5
     failureThreshold: 3
 
+
+# ── Content RAG (rag-service) ─────────────────────────────────────────────────
+# Retrieval-augmented generation over Mesh content. A standalone HTTP service
+# that only READS: the RAG indices are filled by Mesh through its standard sync,
+# the service merely queries them. Hence no PVC, no init container, no job.
+contentRag:
+  enabled: false
+
+  image:
+    ## Registry and repository are combined to "registry/repository:tag".
+    ## global.imageRegistry (umbrella mirror override) takes precedence over registry.
+    registry: docker.gentics.com
+    repository: gentics/mesh-enterprise/content-rag
+    # tag: ""   # default: Chart.AppVersion
+    pullPolicy: IfNotPresent
+    ## Pull secret for the content-rag image (overrides global.imagePullSecrets).
+    # pullSecret: docker-gentics-com
+
+  ## Configuration and audit currently live in the memory of the pod (in-memory
+  ## stores), so with more than one replica each keeps its own state. The query
+  ## path itself is stateless - until there are persistent backends, stay at 1.
+  replicaCount: 1
+
+  ## PodDisruptionBudget — only applied when replicaCount > 1.
+  podDisruptionBudget:
+    minAvailable: "50%"
+    ## Alternative to minAvailable — if set, it is used INSTEAD of minAvailable.
+    # maxUnavailable: 1
+
+  http:
+    ## Container and service port. Also passed to the service as SERVER_PORT.
+    port: 8090
+
+  elasticsearch:
+    ## Empty = elasticsearch.url resp. elasticsearch.prefix of this chart: the RAG
+    ## chunks live in the same Elasticsearch as the full-text search.
+    ## If nothing is configured there (url: "null"), rendering fails.
+    url: ""
+    ## MUST match the prefix Mesh writes with (MESH_ELASTICSEARCH_PREFIX /
+    ## elasticsearch.prefix). If not set it uses the one configured for mesh
+    #prefix: ""
+    ## Basic auth, only for a secured Elasticsearch.
+    username: ""
+    password: ""
+    ## An existing Secret instead of the values above. It has to carry the keys
+    ## the service expects as environment variables: RAG_ELASTICSEARCH_PASSWORD,
+    ## TEI_API_KEY, MESH_API_TOKEN, LLM_API_KEY - only the ones actually needed.
+    existingSecret: ""
+
+  inference:
+    ## Base URL of the embedding server (TEI), WITHOUT /embed - the service
+    ## appends the path itself.
+    ##
+    ## IMPORTANT: this address is called by ELASTICSEARCH, not by the rag-service.
+    ## It has to resolve from the point of view of the ES cluster; a name only the
+    ## namespace of the service knows leads to an error that surfaces at indexing
+    ## time.
+    teiUrl: ""
+    ## Ignored by TEI, but required by the Elasticsearch configuration.
+    apiKey: ""
+    id: mesh-content-rag-embeddings
+    pipelineId: mesh-content-rag-embed
+    ## Vector dimension of the model - has to match the model behind the endpoint
+    ## (multilingual-e5-small: 384).
+    dimension: 384
+    shards: 1
+    replicas: 1
+    ## Creates the inference endpoint, ingest pipeline and index template on
+    ## startup. Needs manage_index_templates, manage_pipeline and inference
+    ## management in Elasticsearch. Without those permissions: set to false and
+    ## provision the objects separately (the index-contract module supplies the
+    ## definitions).
+    bootstrap: true
+
+  mesh:
+    ## Default: in-cluster service DNS of the Mesh component of this release.
+    ## REQUIRED: every request is authenticated against Mesh - the service calls
+    ## GET /api/v2/auth/me to validate the caller token and resolve the roles it
+    ## filters on. That happens for anonymous requests too, so Mesh has to be
+    ## reachable even when auth.allowAnonymous is true.
+    baseUrl: ""
+
+  auth:
+    ## Requests without a token run as the anonymous Mesh user and see only what
+    ## that role may read. Set to false to allow authenticated access only - the
+    ## service then answers unauthenticated requests with 401.
+    ## Passed to the service as RAG_ALLOW_ANONYMOUS.
+    allowAnonymous: false
+
+  llm:
+    ## Currently without effect: the only LlmProvider implementation is a stub, no
+    ## call goes out to an LLM endpoint. The values are prepared, but creating a
+    ## Secret for them is not worth it yet.
+    profile: cloud-hybrid          # cloud-hybrid | sovereign-onprem
+    model: ""
+    endpoint: ""
+    apiKey: ""
+
+  retrieval:
+    topK: 8
+    ## Score threshold for "no answer without a basis".
+    minScore: 0.2
+    ## Optional hardening: additionally checks permissions live against Mesh.
+    livePermissionCheck: false
+
+  logLevel: INFO
+
+  ## Additional environment variables passed through directly.
+  extraEnv: []
+
+  service:
+    type: ClusterIP
+    annotations: {}
+
+  ingress:
+    ## Deliberately off. The service authenticates callers against Mesh and
+    ## filters on their roles, but with auth.allowAnonymous (default true) a
+    ## request without a token is served as the anonymous Mesh user - so a public
+    ## ingress exposes everything the anonymous role may read, and
+    ## /api/rag/debug/chunks returns that content in plain text. Before enabling
+    ## this, set auth.allowAnonymous=false or put auth in front of it.
+    enabled: false
+    annotations: {}
+    # ingressClassName: nginx
+    hosts:
+      - host: mesh-content-rag.local
+        paths:
+          - "/"
+    tls: []
+    #  - secretName: content-rag-tls
+    #    hosts:
+    #      - mesh-content-rag.local
+
+  ## A thin HTTP layer: the retrieval is done by Elasticsearch, the vectorisation
+  ## as well. The heap follows the memory limit via MaxRAMPercentage, so do not
+  ## leave the limit out.
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+  podSecurityContext:
+    ## null = the user baked into the image (UID/GID 10001, non-root).
+    runAsUser: null
+    fsGroup: null
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+
+  securityContext:
+    allowPrivilegeEscalation: false
+    ## Tomcat needs a writable /tmp; the deployment mounts an emptyDir for it.
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  podAnnotations: {}
+  podLabels: {}
+
+  ## The probe paths are fixed in the deployment: startup and liveness on
+  ## /actuator/health/liveness, readiness on /actuator/health/readiness.
+  ## The aggregate /actuator/health is NOT suitable as a liveness probe - it
+  ## contains the Elasticsearch indicator and is DOWN whenever the cluster is
+  ## unreachable.
+  startupProbe:
+    periodSeconds: 5
+    timeoutSeconds: 5
+    failureThreshold: 30
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 20
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readinessProbe:
+    initialDelaySeconds: 15
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3

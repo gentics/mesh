@@ -22,7 +22,7 @@
 
 {{- if .Values.mcpServer.enabled }}
 
-3. MCP Server ist aktiviert ({{ .Values.mcpServer.transport.mode }}-Modus).
+3. MCP server is enabled ({{ .Values.mcpServer.transport.mode }} mode).
 {{- if eq .Values.mcpServer.transport.mode "http" }}
 
    Service: {{ include "mesh.mcpServer.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.mcpServer.transport.http.port }}/mcp
@@ -31,34 +31,73 @@
    Ingress: {{ range .Values.mcpServer.ingress.hosts }}https://{{ .host }} {{ end }}
    {{- end }}
 
-   Bearer-Token abrufen:
+   Retrieve the bearer token:
    {{- if .Values.mcpServer.transport.auth.disabled }}
-     (Auth deaktiviert – Reverse-Proxy übernimmt!)
+     (Auth disabled - a reverse proxy has to take over!)
 
-   Mesh-Identität: das `Authorization: Bearer …` des Aufrufers wird pro Request
-   an Mesh weitergereicht; Mesh wendet die Rechte dieses Users an. Requests ohne
-   Header laufen anonym.
+   Mesh identity: the caller's `Authorization: Bearer ...` is forwarded to Mesh
+   per request; Mesh applies that user's permissions. Requests without the
+   header run anonymously.
    {{- else }}
      kubectl get secret {{ include "mesh.mcpServer.authSecretName" . }} \
        -n {{ .Release.Namespace }} -o jsonpath='{.data.MCP_AUTH_TOKEN}' | base64 -d ; echo
 
-   ACHTUNG – Mesh-Identität: dieses Token authentifiziert Clients gegenüber dem
-   MCP-Server und wird NICHT an Mesh weitergereicht. Mesh sieht anonyme Requests.
-   Die `anonymous`-Rolle in Mesh braucht Leserechte auf {{ .Values.mcpServer.mesh.allowedProjects | quote }},
-   sonst liefern alle Tools leere Ergebnisse.
+   CAUTION - Mesh identity: this token authenticates clients against the MCP
+   server and is NOT forwarded to Mesh. Mesh sees anonymous requests. The
+   `anonymous` role in Mesh needs read permission on {{ .Values.mcpServer.mesh.allowedProjects | quote }},
+   otherwise all tools return empty results.
    {{- end }}
 
-   Quick-Test:
+   Quick test:
      kubectl port-forward svc/{{ include "mesh.mcpServer.fullname" . }} {{ .Values.mcpServer.transport.http.port }}:{{ .Values.mcpServer.transport.http.port }} &
      curl -s http://localhost:{{ .Values.mcpServer.transport.http.port }}/mcp \
        -H "Authorization: Bearer <TOKEN>" -H 'Content-Type: application/json' \
        -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}'
 {{- else }}
 
-   stdio-Modus: kein Service, Zugriff via kubectl exec oder Sidecar.
+   stdio mode: no Service, access via kubectl exec or a sidecar.
 
-   Mesh-Identität: stdio braucht feste Zugangsdaten. Über mcpServer.extraEnv
-   setzen – entweder MESH_API_KEY oder MESH_USERNAME + MESH_PASSWORD.
-   Ohne diese startet der Server nicht.
+   Mesh identity: stdio needs fixed credentials. Set them through
+   mcpServer.extraEnv - either MESH_API_KEY or MESH_USERNAME + MESH_PASSWORD.
+   Without them the server does not start.
+{{- end }}
+{{- end }}
+{{- if .Values.contentRag.enabled }}
+
+4. Content RAG is enabled.
+
+   Service: {{ include "mesh.contentRag.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.contentRag.http.port }}
+
+   Elasticsearch: {{ include "mesh.contentRag.elasticsearchUrl" . }}
+   Index prefix:  {{ include "mesh.contentRag.elasticsearchPrefix" . }}
+
+   The prefix MUST match the one in the Mesh search configuration, otherwise
+   every answer comes back empty - without an error anywhere.
+{{- if .Values.contentRag.inference.bootstrap }}
+
+   On startup the service creates the inference endpoint, the ingest pipeline
+   and the index template. For that it needs manage_index_templates,
+   manage_pipeline and inference management in Elasticsearch. Without those
+   permissions it only logs a WARN and retrieval runs without vector search;
+   then set contentRag.inference.bootstrap=false and provision the objects
+   separately.
+{{- end }}
+
+   Quick test:
+     kubectl port-forward svc/{{ include "mesh.contentRag.fullname" . }} {{ .Values.contentRag.http.port }}:{{ .Values.contentRag.http.port }} &
+     curl -s http://localhost:{{ .Values.contentRag.http.port }}/api/rag/status
+{{- if .Values.contentRag.ingress.enabled }}
+
+   Ingress: {{ range .Values.contentRag.ingress.hosts }}{{ .host }} {{ end }}
+
+   Callers are authenticated against Mesh and every answer is filtered by the
+   roles resolved for them, so the ingress does not bypass CMS permissions.
+{{- if .Values.contentRag.auth.allowAnonymous }}
+
+   CAUTION - contentRag.auth.allowAnonymous is true: requests without a token are
+   answered as the anonymous Mesh user, so this ingress exposes everything that
+   role may read, and /api/rag/debug/chunks returns it in plain text. Set
+   contentRag.auth.allowAnonymous=false or put auth in front of the ingress.
+{{- end }}
 {{- end }}
 {{- end }}
