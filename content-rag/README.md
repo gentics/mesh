@@ -153,9 +153,9 @@ mvn -pl rag-service spring-boot:run
 
 ## Build-Integration in mesh-enterprise
 
-Der Mesh-seitige Teil baut bereits im Reaktor mit. Für den **rag-service** als eigenständig
-deploybare Einheit fehlt die Pipeline-Anbindung noch. Vorbild ist durchgehend `mcp-server`,
-der denselben Weg schon gegangen ist.
+Der Mesh-seitige Teil baut im Reaktor mit, der **rag-service** wird zusätzlich als
+eigenständiges Image gebaut und deployt. Vorbild ist durchgehend `mcp-server`, der denselben
+Weg schon gegangen ist; wo dieser Teil bewusst abweicht, steht es unten dabei.
 
 ### 1. Maven-Anbindung
 

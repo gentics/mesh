@@ -56,10 +56,24 @@
     </dependencies>
 
     <build>
+        <finalName>mesh-content-rag-service</finalName>
+
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <!-- Der Parent ist mesh-enterprise und nicht spring-boot-starter-parent;
+                             die repackage-Ausfuehrung kommt daher nicht mit, sondern muss hier
+                             stehen. Ohne sie liegt in target/ nur das duenne JAR ohne
+                             Start-Class und Dependencies - fuer 'mvn spring-boot:run' egal,
+                             fuer 'java -jar' im Container nicht. -->
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
