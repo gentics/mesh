@@ -16,6 +16,7 @@ public class RagProperties {
     private final Elasticsearch elasticsearch = new Elasticsearch();
     private final Inference inference = new Inference();
     private final Mesh mesh = new Mesh();
+    private final Auth auth = new Auth();
     private final Llm llm = new Llm();
     private final Retrieval retrieval = new Retrieval();
 
@@ -29,9 +30,14 @@ public class RagProperties {
         return inference;
     }
 
-    /** @return Mesh-Verbindungseinstellungen (nur optionaler Live-Permission-Check) */
+    /** @return Mesh-Verbindungseinstellungen fuer die Rollenaufloesung */
     public Mesh getMesh() {
         return mesh;
+    }
+
+    /** @return Einstellungen der Authentifizierung */
+    public Auth getAuth() {
+        return auth;
     }
 
     /** @return LLM-Provider-Einstellungen */
@@ -198,12 +204,14 @@ public class RagProperties {
     }
 
     /**
-     * Anbindung an Gentics Mesh. Wird ausschliesslich vom optionalen Live-Permission-Check
-     * benoetigt (K3, default aus); der regulaere Betrieb kommt ohne Mesh-Zugriff aus.
+     * Anbindung an Gentics Mesh. Wird fuer die Rollenaufloesung gebraucht: der Service fragt
+     * mit dem Token des Anfragenden nach dessen Benutzer und Rollen.
+     *
+     * <p>Bewusst <strong>ohne</strong> Dienst-Token: ein solches wuerde alle Anfragen mit
+     * denselben Rechten ausstatten und die gesamte Berechtigungspruefung aushebeln.
      */
     public static class Mesh {
         private String url = "http://localhost:8080";
-        private String apiToken;
 
         /** @return Basis-URL der Mesh-Instanz */
         public String getUrl() {
@@ -214,15 +222,49 @@ public class RagProperties {
         public void setUrl(String url) {
             this.url = url;
         }
+    }
 
-        /** @return API-Token/JWT (oder {@code null}) */
-        public String getApiToken() {
-            return apiToken;
+    /**
+     * Authentifizierung. Der Anfragende weist sich mit seinem Mesh-Token aus; daraus leitet der
+     * Service die Rollen ab, nach denen gefiltert wird (Konzept 10, O5).
+     */
+    public static class Auth {
+        /** Ob Anfragen ohne Token als anonymer Mesh-Benutzer zugelassen werden. */
+        private boolean allowAnonymous = true;
+        /** Wie lange eine Rollenaufloesung gecacht wird. Kurz halten: sie bestimmt, wie schnell
+         *  eine entzogene Rolle wirkt. */
+        private int cacheTtlSeconds = 60;
+        /** Obergrenze der Cache-Eintraege. */
+        private int cacheMaxEntries = 10000;
+
+        /** @return ob anonyme Anfragen zugelassen sind */
+        public boolean isAllowAnonymous() {
+            return allowAnonymous;
         }
 
-        /** @param apiToken API-Token/JWT */
-        public void setApiToken(String apiToken) {
-            this.apiToken = apiToken;
+        /** @param allowAnonymous laesst Anfragen ohne Token als anonymen Benutzer zu */
+        public void setAllowAnonymous(boolean allowAnonymous) {
+            this.allowAnonymous = allowAnonymous;
+        }
+
+        /** @return Cache-Lebensdauer einer Rollenaufloesung in Sekunden */
+        public int getCacheTtlSeconds() {
+            return cacheTtlSeconds;
+        }
+
+        /** @param cacheTtlSeconds Cache-Lebensdauer einer Rollenaufloesung in Sekunden */
+        public void setCacheTtlSeconds(int cacheTtlSeconds) {
+            this.cacheTtlSeconds = cacheTtlSeconds;
+        }
+
+        /** @return Obergrenze der Cache-Eintraege */
+        public int getCacheMaxEntries() {
+            return cacheMaxEntries;
+        }
+
+        /** @param cacheMaxEntries Obergrenze der Cache-Eintraege */
+        public void setCacheMaxEntries(int cacheMaxEntries) {
+            this.cacheMaxEntries = cacheMaxEntries;
         }
     }
 

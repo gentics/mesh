@@ -1,25 +1,22 @@
 package com.gentics.mesh.contentrag.service.web;
 
-import com.gentics.mesh.contentrag.common.model.Feedback;
 import com.gentics.mesh.contentrag.common.model.RagAnswer;
 import com.gentics.mesh.contentrag.common.model.RagQuery;
 import com.gentics.mesh.contentrag.common.model.RetrievedChunk;
 import com.gentics.mesh.contentrag.common.spi.Retriever;
-import com.gentics.mesh.contentrag.common.store.FeedbackStore;
 import com.gentics.mesh.contentrag.service.query.QueryService;
+import com.gentics.mesh.contentrag.service.security.MeshPrincipal;
 import com.gentics.mesh.contentrag.service.status.IndexStatusService;
 import jakarta.validation.Valid;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * REST-API des RAG-Service (Konzept 9).
@@ -29,8 +26,13 @@ import java.util.UUID;
  * Schreibweg gibt. Ein zweiter Ausloeser hier waere ein zweites Sync-Paradigma – genau das,
  * was der Umbau beseitigt hat.
  *
- * <p>Auth und Mandantentrennung ueber die bestehenden CMP-/Mesh-Mechanismen sind noch
- * vorzuschalten (O5).
+ * <p>Einen Feedback-Endpunkt gibt es bewusst nicht: sinnvoll auswertbar waere er erst mit einer
+ * Referenz auf den Audit-Eintrag der Antwort, und die gibt {@code RagAnswer} nicht heraus.
+ * Solange keine Oberflaeche Feedback erhebt, waere er totes Gewicht in der API-Oberflaeche.
+ *
+ * <p>Jeder Endpunkt arbeitet mit dem {@link MeshPrincipal}, den der
+ * {@code MeshAuthenticationFilter} aus dem Mesh-Token aufgeloest hat. Ohne diesen Principal
+ * kommt keine Anfrage bis hierher.
  */
 @RestController
 @RequestMapping("/api/rag")
@@ -39,26 +41,24 @@ public class RagController {
     private final QueryService queryService;
     private final Retriever retriever;
     private final IndexStatusService statusService;
-    private final FeedbackStore feedbackStore;
 
     /**
      * @param queryService  Query-Orchestrierung
      * @param retriever     Hybrid-Retriever (fuer die Chunk-Inspektion)
      * @param statusService Index-Status
-     * @param feedbackStore Feedback-Persistenz
      */
     public RagController(QueryService queryService, Retriever retriever,
-                         IndexStatusService statusService, FeedbackStore feedbackStore) {
+                         IndexStatusService statusService) {
         this.queryService = queryService;
         this.retriever = retriever;
         this.statusService = statusService;
-        this.feedbackStore = feedbackStore;
     }
 
     /** Frage und Filter zu Antwort und Quellen. */
     @PostMapping("/query")
-    public RagAnswer query(@Valid @RequestBody QueryRequest request) {
-        return queryService.answer(request.toQuery());
+    public RagAnswer query(@Valid @RequestBody QueryRequest request,
+                           @RequestAttribute(MeshPrincipal.ATTRIBUTE) MeshPrincipal principal) {
+        return queryService.answer(request.toQuery(principal), principal.auditRef());
     }
 
     /** Zaehler ueber die RAG-Chunk-Indizes. */
@@ -67,23 +67,19 @@ public class RagController {
         return statusService.current(projectUuid);
     }
 
-    /** Quellen- und Chunk-Inspektion: rohe Retrieval-Treffer zu einer Frage. */
+    /**
+     * Quellen- und Chunk-Inspektion: rohe Retrieval-Treffer zu einer Frage. Nutzt denselben
+     * Rollenfilter wie die regulaere Anfrage – sonst waere ausgerechnet der Debug-Endpunkt
+     * das Schlupfloch.
+     */
     @GetMapping("/debug/chunks")
     public List<RetrievedChunk> debugChunks(@RequestParam String question,
                                             @RequestParam(required = false) String language,
-                                            @RequestParam(required = false) Integer topK) {
-        RagQuery query = new RagQuery(question, language, List.of(), List.of(), List.of(),
-                null, topK, false, true);
+                                            @RequestParam(required = false) Integer topK,
+                                            @RequestAttribute(MeshPrincipal.ATTRIBUTE)
+                                            MeshPrincipal principal) {
+        RagQuery query = new RagQuery(question, language, principal.roleUuids(), List.of(),
+                List.of(), null, topK, false, true);
         return retriever.retrieve(query);
-    }
-
-    /** Nutzerfeedback je Antwort. */
-    @PostMapping("/feedback")
-    public ResponseEntity<Void> feedback(@Valid @RequestBody FeedbackRequest request) {
-        feedbackStore.save(new Feedback(
-                UUID.randomUUID().toString(), Instant.now(),
-                request.auditEntryId(), request.projectUuid(), request.helpful(),
-                request.comment()));
-        return ResponseEntity.accepted().build();
     }
 }
