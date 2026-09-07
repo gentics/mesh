@@ -1,6 +1,8 @@
 package com.gentics.mesh.contentrag.common.model;
 
 import java.time.Instant;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,7 +19,9 @@ import java.util.Map;
  * @param title           Titel des Nodes
  * @param path            Pfad/Slug
  * @param sourceUrl       Quellen-URL
- * @param markdownByField normalisierter Text je Feldpfad (HTML bereits nach Markdown gewandelt)
+ * @param markdownByField normalisierter Text je Feldpfad (HTML bereits nach Markdown gewandelt),
+ *                        in Schemareihenfolge; die Iterationsreihenfolge geht in {@code chunkIndex}
+ *                        und damit in die Chunk-IDs ein und wird deshalb erhalten
  * @param meshVersion     Mesh-Version des Node-Containers
  * @param publishStatus   Publikationsstatus
  * @param validFrom       Gueltig-ab, nullable
@@ -48,9 +52,18 @@ public record SourceContent(
         List<String> referencedNodes,
         List<String> editorialTags
 ) {
-    /** Defensivkopien fuer Map- und Listenfelder. */
+    /**
+     * Defensivkopien fuer Map- und Listenfelder.
+     *
+     * <p>Bewusst {@link LinkedHashMap} statt {@link Map#copyOf(Map)}: dessen Iterationsreihenfolge
+     * ist nicht festgelegt und aendert sich seit Java 9 sogar zwischen zwei JVM-Starts. Der
+     * Chunker zaehlt {@code chunkIndex} in Iterationsreihenfolge hoch, und die Chunk-ID haengt an
+     * {@code fieldPath + chunkIndex} – eine wechselnde Reihenfolge ergaebe also fuer denselben
+     * Inhalt andere IDs und damit Dubletten im Index statt eines Upserts.
+     */
     public SourceContent {
-        markdownByField = markdownByField == null ? Map.of() : Map.copyOf(markdownByField);
+        markdownByField = markdownByField == null ? Map.of()
+                : Collections.unmodifiableMap(new LinkedHashMap<>(markdownByField));
         roleUuids = roleUuids == null ? List.of() : List.copyOf(roleUuids);
         referencedNodes = referencedNodes == null ? List.of() : List.copyOf(referencedNodes);
         editorialTags = editorialTags == null ? List.of() : List.copyOf(editorialTags);

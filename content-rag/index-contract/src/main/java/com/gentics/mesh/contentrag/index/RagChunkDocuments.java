@@ -103,6 +103,35 @@ public final class RagChunkDocuments {
         return Map.of("bool", bool);
     }
 
+    /**
+     * Query, die alle Chunks eines Nodes trifft – unabhaengig von der Sprache.
+     *
+     * <p>Fuer den Loeschfall, in dem die Sprachversionen nicht mehr ermittelbar sind (geloeschter
+     * Node). Der Branch muss die Query nicht einschraenken: die RAG-Indizes sind bereits nach
+     * Projekt und Branch getrennt.
+     *
+     * @param nodeUuid UUID des Nodes
+     * @return Term-Query auf {@link RagChunkFields#NODE_UUID}
+     */
+    public static Map<String, Object> nodeQuery(String nodeUuid) {
+        return Map.of("term", Map.of(RagChunkFields.NODE_UUID, nodeUuid));
+    }
+
+    /**
+     * Query, die alle Chunks einer Sprachversion eines Nodes trifft – etwa beim Depublizieren
+     * einer einzelnen Sprache.
+     *
+     * @param nodeUuid UUID des Nodes
+     * @param language Sprachcode
+     * @return Bool-Query auf Node und Sprache
+     */
+    public static Map<String, Object> nodeLanguageQuery(String nodeUuid, String language) {
+        Map<String, Object> languageTerm = Map.of("term", Map.of(RagChunkFields.LANGUAGE, language));
+        Map<String, Object> bool = new LinkedHashMap<>();
+        bool.put("filter", List.of(nodeQuery(nodeUuid), languageTerm));
+        return Map.of("bool", bool);
+    }
+
     private static void put(Map<String, Object> doc, String field, String value) {
         if (value != null && !value.isEmpty()) {
             doc.put(field, value);

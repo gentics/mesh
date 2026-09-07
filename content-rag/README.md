@@ -94,6 +94,7 @@ Löschfristen (Konzept 13).
 | `common` | `mesh-content-rag-common` | beiden | Domänenmodell (`Chunk`, `SourceContent`, `RagQuery/RagAnswer`), SPI (`Chunker`, `LlmProvider`, `Retriever`), Stores |
 | `chunking` | `mesh-content-rag-chunking` | Mesh | strukturbasiertes Chunking, framework-frei |
 | `index-contract` | `mesh-content-rag-index-contract` | beiden | Indexbenennung, Mapping, Ingest-Pipeline, Inference-Endpunkt, Chunk → ES-Dokument |
+| `mesh-sync` | `mesh-content-rag-mesh-sync` | Mesh | Feldauswahl je Schema (Allow-List), No-RAG-Konvention (K4), HTML→Markdown, `SourceContent`-Aufbau und die beiden Such-Handler |
 | `rag-service` | `mesh-content-rag-service` | eigenständig | REST-API (`/api/rag/*`), Hybrid-Retrieval, Antwortgenerierung |
 
 `chunking` und `index-contract` haben bewusst **keine** Spring-, Elasticsearch- oder
@@ -101,9 +102,13 @@ JSON-Abhängigkeit: was in den Mesh-Prozess eingebunden wird, soll dort nichts m
 Definitionen werden als `Map`/`List` zurückgegeben, jede Seite serialisiert mit ihrem eigenen
 Jackson.
 
-## Was auf der Mesh-Seite noch zu implementieren ist
+## Der Mesh-seitige Sync
 
-Ein zusätzlicher Index-Handler neben den bestehenden (node, tag, user …). Die vier Aufrufe:
+Ein zusätzlicher Index-Handler neben den bestehenden (node, tag, user …), plus ein Event-Handler
+für den Delta-Pfad. Beide liegen in `mesh-sync` und teilen sich `RagChunkWriter`, damit Delta- und
+Voll-Indexierung nicht auseinanderlaufen; angemeldet werden sie über zwei generische
+Dagger-Multibindings im OSS-Mesh (`EnterpriseSearchModule` in `mesh-enterprise-core`). Die vier
+Aufrufe, um die es im Kern geht:
 
 ```java
 // 1. Indexname – ohne schemaVersionUuid, damit eine Migration den Index nicht wechselt
@@ -129,8 +134,24 @@ ein Indexname auf das Pattern passt. Angelegt wird es beim Start des rag-service
 (`RagIndexBootstrap`), zusammen mit Inference-Endpunkt und Pipeline – das hängt am
 Embedding-Modell und ist damit RAG-Wissen, das im CMS nichts verloren hat.
 
-Offen ist noch die Frage, welche Felder je Schema in den RAG-Index gehen (Allow-List) und wie die
-No-RAG-Konvention (K4) ausgewertet wird; beides gehört an dieselbe Stelle im Sync-Pfad.
+Welche Felder je Schema in den RAG-Index gehen (Allow-List) und wie die No-RAG-Konvention (K4)
+ausgewertet wird, entscheidet das Modul `mesh-sync` — beides an derselben Stelle, vor der
+Normalisierung, damit ausgeschlossener Inhalt gar nicht erst gewandelt und geschrieben wird:
+
+```java
+RagSchemaSelection selection = selector.selectionFor(describe(schemaVersion));
+if (selection.isEmpty()) {
+    return null;                                   // → documentGroupQuery-Delete: No-RAG auf Node-Ebene
+}
+RagFieldTexts texts = new RagFieldTexts(selection);
+texts.add(fieldPath, markdown);                    // nimmt nur an, was freigegeben ist
+SourceContent source = new SourceContent(…, texts.toMarkdownByField(), …);
+```
+
+Gesteuert wird das über die bestehenden `elasticsearch`-Settings von Schema und Feld
+(`"rag": false` als K4-Opt-out, `"rag": { "fields": [...] }` als Allow-List) sowie das vorhandene
+`noIndex`; Vorgabe ohne Angabe ist `NONE`, also nichts ohne ausdrückliche Freigabe. Regeln,
+Adapter und offene Punkte: `MESH-INDEX-HANDLER.md`, Abschnitt 5.
 
 ## Build
 
