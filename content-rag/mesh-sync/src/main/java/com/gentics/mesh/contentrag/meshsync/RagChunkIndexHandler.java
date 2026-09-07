@@ -243,6 +243,9 @@ public class RagChunkIndexHandler implements IndexHandler<HibNodeFieldContainer>
                     tx.schemaDao().getFieldContainers(version, branch.getUuid(), bucket, Optional.of(PUBLISHED))
                             .forEach(container -> {
                                 requests.addAll(writer.upsert(container, project, branch, PUBLISHED));
+                                // Erst anmelden, dann abhaken: SyncMeter zieht bei synced() von
+                                // pending ab, ohne addPending liefe der Zaehler ins Negative.
+                                meters.getInsertMeter().addPending(1L);
                                 meters.getInsertMeter().synced();
                             });
                     return Flowable.fromIterable(requests);
