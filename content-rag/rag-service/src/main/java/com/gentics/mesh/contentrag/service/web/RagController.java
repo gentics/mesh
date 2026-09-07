@@ -63,7 +63,7 @@ public class RagController {
 
     /** Zaehler ueber die RAG-Chunk-Indizes. */
     @GetMapping("/status")
-    public IndexStatus status(@RequestParam(required = false) String projectUuid) {
+    public IndexStatus status(@RequestParam(name = "projectUuid", required = false) String projectUuid) {
         return statusService.current(projectUuid);
     }
 
@@ -73,9 +73,9 @@ public class RagController {
      * das Schlupfloch.
      */
     @GetMapping("/debug/chunks")
-    public List<RetrievedChunk> debugChunks(@RequestParam String question,
-                                            @RequestParam(required = false) String language,
-                                            @RequestParam(required = false) Integer topK,
+    public List<RetrievedChunk> debugChunks(@RequestParam(name = "question") String question,
+                                            @RequestParam(name = "language", required = false) String language,
+                                            @RequestParam(name = "topK", required = false) Integer topK,
                                             @RequestAttribute(MeshPrincipal.ATTRIBUTE)
                                             MeshPrincipal principal) {
         RagQuery query = new RagQuery(question, language, principal.roleUuids(), List.of(),
