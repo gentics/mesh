@@ -199,7 +199,11 @@ public class RagChunkIndexHandler implements IndexHandler<HibNodeFieldContainer>
 
     @Override
     public long getTotalCountFromGraph() {
-        return db.tx(tx -> tx.contentDao().globalCount());
+        // Block statt Ausdruck: ein Ausdruckslambda waere hier auch void-kompatibel, und
+        // TxFactory#tx(TxAction) und tx(TxAction2) wuerden beide passen.
+        return db.tx(tx -> {
+            return tx.contentDao().globalCount();
+        });
     }
 
     /**
