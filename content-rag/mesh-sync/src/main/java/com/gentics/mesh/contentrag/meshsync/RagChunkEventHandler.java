@@ -57,17 +57,21 @@ public class RagChunkEventHandler implements EventHandler {
     private final MeshHelper helper;
     private final RagSyncOptions options;
     private final RagChunkWriter writer;
+    private final RagIndexReadiness readiness;
 
     /**
-     * @param helper  Zugriff auf Datenbank und Request-Factory
-     * @param options Betriebsparameter; {@code enabled=false} legt den Handler still
-     * @param writer  gemeinsame Schreiblogik mit dem Voll-Sync
+     * @param helper    Zugriff auf Datenbank und Request-Factory
+     * @param options   Betriebsparameter; {@code enabled=false} legt den Handler still
+     * @param writer    gemeinsame Schreiblogik mit dem Voll-Sync
+     * @param readiness Wachposten fuer das Index-Template des rag-service
      */
     @Inject
-    public RagChunkEventHandler(MeshHelper helper, RagSyncOptions options, RagChunkWriter writer) {
+    public RagChunkEventHandler(MeshHelper helper, RagSyncOptions options, RagChunkWriter writer,
+                                RagIndexReadiness readiness) {
         this.helper = helper;
         this.options = options;
         this.writer = writer;
+        this.readiness = readiness;
     }
 
     @Override
@@ -79,7 +83,11 @@ public class RagChunkEventHandler implements EventHandler {
 
     @Override
     public Flowable<SearchRequest> handle(MessageEvent messageEvent) {
-        if (!options.enabled()) {
+        // Ohne Index-Template wird nicht geschrieben: der erste Write wuerde den Index mit
+        // dynamischem Mapping anlegen, und das laesst sich nachtraeglich nicht mehr beheben.
+        // Hier bewusst ohne Log - das Ereignis kommt tausendfach, gemeldet wird einmal in
+        // RagIndexReadiness.
+        if (!options.enabled() || !readiness.isReady()) {
             return Flowable.empty();
         }
         return Flowable.defer(() -> {

@@ -63,7 +63,10 @@ public final class RagChunkDocuments {
         putInstant(doc, RagChunkFields.VALID_TO, chunk.validTo());
         putInstant(doc, RagChunkFields.CREATED_DATE, chunk.createdDate());
         putInstant(doc, RagChunkFields.EDITED_DATE, chunk.editedDate());
-        putList(doc, RagChunkFields.ROLE_UUIDS, chunk.roleUuids());
+        // Als einzige Liste immer geschrieben, auch leer - so wie Mesh es im Node-Dokument
+        // tut. Sonst sehen "keine Rolle hat Leserecht" und "das Feld wurde nie geschrieben"
+        // im Dokument gleich aus, und die Unterscheidung kostet eine Fehlersuche.
+        doc.put(RagChunkFields.ROLE_UUIDS, List.copyOf(chunk.roleUuids()));
         put(doc, RagChunkFields.SOURCE_URL, chunk.sourceUrl());
         putList(doc, RagChunkFields.REFERENCED_NODES, chunk.referencedNodes());
         putList(doc, RagChunkFields.EDITORIAL_TAGS, chunk.editorialTags());
