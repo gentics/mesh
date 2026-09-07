@@ -190,10 +190,10 @@ Secret key ref for the Mesh initial admin password.
 Priority: existingSecret → chart-managed secret (explicit or auto-generated).
 */}}
 {{- define "mesh.initialAdminPasswordRef" -}}
-{{- if .Values.initialAdminPassword.existingSecret -}}
+{{- if .Values.credentials.existingSecret -}}
 secretKeyRef:
-  name: {{ .Values.initialAdminPassword.existingSecret }}
-  key: {{ .Values.initialAdminPassword.existingSecretKey | default "password" }}
+  name: {{ .Values.credentials.existingSecret }}
+  key: {{ .Values.credentials.existingSecretKey | default "password" }}
 {{- else -}}
 secretKeyRef:
   name: {{ include "mesh.fullname" . }}-admin

@@ -297,7 +297,7 @@ generateApiKey: false
 ## Configuration for the API-key job (only used when generateApiKey is true).
 apiKeyJob:
   ## Mesh user whose API token is generated. The password is taken from the
-  ## initialAdminPassword secret (or its existingSecret).
+  ## admin credentials secret (or credentials.existingSecret).
   ## NOTE: issuing the token invalidates any previously issued API token of
   ## this user.
   username: admin
@@ -316,19 +316,21 @@ apiKeyJob:
       cpu: 200m
       memory: 64Mi
 
-# Initial admin credentials
-initialAdminPassword:
-  ## Explicit password. Leave empty to auto-generate a random 24-char password on install.
-  ## The generated password is persisted in the Secret and reused on upgrades.
-  password: ""
+# Configure credentials
+credentials:
+  ## Explicit initial admin password. Leave empty to auto-generate a random
+  ## 24-char password on install. The generated password is persisted in the
+  ## Secret and reused on upgrades.
+  initialAdminPassword: ""
 
   ## Reference an existing Secret instead of creating one.
-  ## When set, password above is ignored and no Secret is created by the chart.
+  ## When set, initialAdminPassword above is ignored and no Secret is created
+  ## by the chart.
   # existingSecret: ""
   # existingSecretKey: password
 
   ## Force the admin user to reset the password on first login.
-  forceReset: false
+  forcePasswordReset: false
 
 config:
   publicKeys: ""
