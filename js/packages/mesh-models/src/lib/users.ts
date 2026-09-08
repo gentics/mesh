@@ -13,13 +13,6 @@ import {
 } from './common';
 import { GroupReference } from './groups';
 
-export interface UserAPITokenResponse {
-    /** Date of the last time the API token was issued. */
-    previousIssueDate: string;
-    /** Issued client API token. */
-    token: string;
-}
-
 export interface EditableUserProperties {
     /** Email address of the user */
     emailAddress?: string;
@@ -66,6 +59,9 @@ export interface UserReference {
     uuid: string;
 }
 
+/**
+ * A one time login token used for users to reset their passwords.
+ */
 export interface UserResetTokenResponse {
     /** ISO8601 date of the creation date for the provided token */
     created: string;
@@ -97,3 +93,32 @@ export interface UserUpdateRequest extends EditableUserProperties {
     /** New password of the user */
     password?: string;
 }
+
+export interface EditableUserTokenData {
+    /** Name of the Token. */
+    name: string;
+    /** ISO-8601 formatted expire date string. */
+    expires?: string;
+}
+
+export interface UserTokenData extends EditableUserTokenData {
+    /** The UUID of the token */
+    uuid: string;
+    /** ISO-8601 formatted issue date string. */
+    issued: string;
+    /** True when the token is valid (not expired), false if not. */
+    valid: boolean;
+    /** ISO-8601 formatted last used date string. */
+    lastUsed?: string;
+}
+
+export interface UserTokenCreateRequest extends EditableUserTokenData {}
+
+export interface UserTokenResponse {
+    /** Issued client API token. */
+    token: string;
+    /** Data of the created API token. */
+    data: UserTokenData;
+}
+
+export interface UserTokenListResponse extends ListResponse<UserTokenData> {}
