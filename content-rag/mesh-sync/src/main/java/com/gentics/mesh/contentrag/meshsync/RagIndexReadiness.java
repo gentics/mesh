@@ -4,6 +4,7 @@ import com.gentics.mesh.contentrag.index.RagIndexNaming;
 import com.gentics.mesh.search.SearchProvider;
 
 import com.gentics.elasticsearch.client.ElasticsearchClient;
+import com.gentics.elasticsearch.client.HttpErrorException;
 
 import io.reactivex.Completable;
 import io.vertx.core.json.JsonObject;
@@ -38,6 +39,12 @@ import javax.inject.Singleton;
  * also. <em>Diese Reihenfolge ist Teil des Vertrags:</em> wer sie in {@code RagIndexBootstrap}
  * umstellt, macht diese Pruefung stillschweigend unwahr.
  *
+ * <p><strong>Fehlt oder antwortet nicht?</strong> Beide Faelle fuehren zur selben Entscheidung –
+ * nicht schreiben –, verlangen aber verschiedene Reaktionen: ein fehlendes Template heisst
+ * „rag-service starten", ein nicht erreichbares Elasticsearch heisst etwas ganz anderes. Sie
+ * werden deshalb getrennt gemeldet. Beides in eine Meldung zu werfen hat bei der Inbetriebnahme
+ * eine Fehlersuche in die falsche Richtung geschickt.
+ *
  * <p><strong>Weich statt hart.</strong> Fehlt das Template, scheitert Mesh nicht – anders als beim
  * Praefix-Guard in {@code RagChunkIndexHandler#init()}. Mesh und rag-service starten unabhaengig
  * voneinander; ein harter Fehler wuerde die gesamte Mesh-Suche vom Startzeitpunkt des rag-service
@@ -55,8 +62,25 @@ public class RagIndexReadiness {
     /** Von {@link #probe()} geschrieben, von beiden Handlern gelesen. */
     private volatile boolean ready;
 
-    /** Damit das fehlende Template nicht bei jedem Durchlauf erneut gemeldet wird. */
-    private volatile boolean missingReported;
+    /** Zuletzt gemeldeter Zustand – gemeldet wird nur, was sich geaendert hat. */
+    private volatile State reported;
+
+    /** Ergebnis einer Abfrage. */
+    private enum State {
+        /** Template vorhanden. */
+        PRESENT,
+        /** Elasticsearch antwortet, kennt das Template aber nicht. */
+        MISSING,
+        /** Elasticsearch antwortet nicht oder mit einem anderen Fehler. */
+        UNREACHABLE
+    }
+
+    /**
+     * @param state  Ergebnis
+     * @param detail Fehlertext bei {@link State#UNREACHABLE}, sonst {@code null}
+     */
+    private record Probe(State state, String detail) {
+    }
 
     /**
      * @param searchProvider fuer den rohen Client und den Installations-Praefix
@@ -79,22 +103,24 @@ public class RagIndexReadiness {
     /**
      * Name des Index-Templates, so wie ihn der rag-service anlegt.
      *
-     * <p>Abgeleitet aus Praefix und Infix, weil der rag-service es genauso bildet. Bekommt
-     * {@code RagIndexNaming} irgendwann ein eigenes {@code templateName(prefix)}, gehoert der
-     * Aufruf hierher – dann steht die Ableitung nur noch an einer Stelle.
+     * <p>Ueber {@link RagIndexNaming#templateName(String)} gebildet – derselbe Aufruf, den der
+     * rag-service beim Anlegen verwendet. Die Ableitung steht damit an genau einer Stelle; eine
+     * eigene Nachbildung hier waere ein zweiter Ort, an dem sie stillschweigend auseinanderlaufen
+     * koennte.
      *
      * @return Templatename, etwa {@code mesh-ragchunk}
      */
     public String templateName() {
-        return searchProvider.installationPrefix() + RagIndexNaming.INFIX;
+        return RagIndexNaming.templateName(searchProvider.installationPrefix());
     }
 
     /**
      * Fragt einmal nach, ob das Index-Template existiert, und merkt sich das Ergebnis.
      *
-     * <p>Schlaegt nie fehl: ein Fehler bei der Abfrage wird wie „nicht vorhanden" behandelt. Ein
-     * nicht erreichbares Elasticsearch soll den Start von Mesh nicht verhindern, und beim
-     * naechsten {@code check()} wird ohnehin erneut gefragt.
+     * <p>Schlaegt nie fehl: ein Fehler bei der Abfrage laesst den Sync ebenfalls pausieren, wird
+     * aber als solcher gemeldet und nicht als fehlendes Template. Ein nicht erreichbares
+     * Elasticsearch soll den Start von Mesh nicht verhindern, und beim naechsten {@code check()}
+     * wird ohnehin erneut gefragt.
      *
      * @return Completable, das nach der Abfrage abschliesst
      */
@@ -114,8 +140,8 @@ public class RagIndexReadiness {
         // Completable.fromSingle statt Single#ignoreElement: die RxJava-Version im Mesh-Prozess
         // kennt ignoreElement() auf Single noch nicht.
         return Completable.fromSingle(client.getBuilder(path).async()
-                .map(response -> Boolean.TRUE)
-                .onErrorReturn(error -> Boolean.FALSE)
+                .map(response -> new Probe(State.PRESENT, null))
+                .onErrorReturn(RagIndexReadiness::classify)
                 .doOnSuccess(this::update));
     }
 
@@ -138,31 +164,52 @@ public class RagIndexReadiness {
         if (client == null) {
             return Completable.complete();
         }
-        String pattern = searchProvider.installationPrefix() + RagIndexNaming.INFIX + "-*";
+        String pattern = RagIndexNaming.allIndices(searchProvider.installationPrefix());
         return Completable.fromSingle(client.getBuilder(pattern + "/_settings")
                 .addQueryParameter("ignore_unavailable", "true")
                 .async()
                 .map(RagIndexReadiness::withoutPipeline)
-                .onErrorReturn(error -> new ArrayList<String>())
+                .onErrorReturn(error -> {
+                    log.debug("Settings der RAG-Indizes nicht abfragbar: {}", error.getMessage());
+                    return new ArrayList<String>();
+                })
                 .doOnSuccess(RagIndexReadiness::report));
     }
 
-    private void update(Boolean found) {
-        boolean present = Boolean.TRUE.equals(found);
-        boolean previous = ready;
-        ready = present;
-        if (present && !previous) {
-            log.info("Index-Template {} gefunden – der RAG-Sync schreibt ab jetzt.", templateName());
-            missingReported = false;
-        } else if (!present && previous) {
-            log.warn("Index-Template {} ist nicht mehr da – der RAG-Sync setzt das Schreiben aus.",
+    /**
+     * Ordnet einen Fehler bei der Abfrage einem Zustand zu. Nur ein 404 heisst „Template gibt es
+     * nicht"; jeder andere Fehler sagt etwas ueber Elasticsearch aus, nicht ueber das Template.
+     */
+    private static Probe classify(Throwable error) {
+        if (error instanceof HttpErrorException http) {
+            if (http.getStatusCode() == 404) {
+                return new Probe(State.MISSING, null);
+            }
+            return new Probe(State.UNREACHABLE, "HTTP " + http.getStatusCode());
+        }
+        return new Probe(State.UNREACHABLE,
+                error.getClass().getSimpleName() + ": " + error.getMessage());
+    }
+
+    /** Uebernimmt das Ergebnis und meldet nur, was sich gegenueber der letzten Abfrage geaendert hat. */
+    private void update(Probe probe) {
+        ready = probe.state() == State.PRESENT;
+        if (probe.state() == reported) {
+            return;
+        }
+        reported = probe.state();
+        switch (probe.state()) {
+            case PRESENT -> log.info("Index-Template {} gefunden – der RAG-Sync schreibt ab jetzt.",
                     templateName());
-            missingReported = true;
-        } else if (!present && !missingReported) {
-            missingReported = true;
-            log.warn("Index-Template {} fehlt. Der RAG-Sync schreibt nicht, damit kein Index mit"
-                    + " dynamischem Mapping entsteht. Laeuft der rag-service? Sobald das Template"
-                    + " da ist, nimmt der naechste Index-Check den Betrieb auf.", templateName());
+            case MISSING -> log.warn("Index-Template {} fehlt. Der RAG-Sync schreibt nicht, damit"
+                    + " kein Index mit dynamischem Mapping entsteht. Laeuft der rag-service? Sobald"
+                    + " das Template da ist, nimmt der naechste Index-Check den Betrieb auf.",
+                    templateName());
+            case UNREACHABLE -> log.warn("Elasticsearch beantwortet die Frage nach dem"
+                    + " Index-Template {} nicht ({}). Ob es vorhanden ist, ist damit unbekannt, und"
+                    + " der RAG-Sync schreibt vorerst nicht. Der naechste Index-Check fragt erneut.",
+                    templateName(), probe.detail());
+            default -> { }
         }
     }
 
