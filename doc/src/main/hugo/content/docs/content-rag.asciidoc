@@ -1,0 +1,380 @@
+---
+title: Content RAG
+---
+
+include::content/docs/variables.adoc-include[]
+
+Content RAG makes published Gentics Mesh content available for semantic search and for generated, source-backed answers.
+It reuses the Elasticsearch instance that already carries the Gentics Mesh full-text search, and it reuses the same synchronisation mechanism: content is written to the RAG indices by the regular Gentics Mesh search sync, not by a second, competing pipeline.
+
+NOTE: Content RAG is a commercial feature and is turned off by default. It has to be enabled explicitly on the Gentics Mesh side, and it requires the separate Content RAG service to be running.
+
+== Overview
+
+Three parts are involved.
+
+[options="header",cols="1,3"]
+|===
+| Part | Responsibility
+
+| Gentics Mesh
+| Decides which fields of which schemas are eligible, converts them to Markdown, splits them into chunks and writes those chunks to Elasticsearch — through the regular search sync, both event-driven and on a full sync.
+
+| Elasticsearch
+| Stores the chunks next to the Gentics Mesh node indices, creates the embedding vector during ingest and answers both the keyword and the vector part of a query.
+
+| Content RAG service
+| A separate Spring Boot service. It sets up the Elasticsearch objects that vectorisation needs, answers queries over a hybrid retrieval, and passes the retrieved chunks to a language model. It never writes content chunks.
+|===
+
+The split follows one rule: there is exactly one write path into the RAG index.
+Everything that puts content into Elasticsearch is Gentics Mesh, everything that reads it is the Content RAG service.
+A second writer would eventually drift from the first, and the difference would only show up as inconsistent retrieval results.
+
+== How content reaches the index
+
+=== Event path
+
+A dedicated event handler runs alongside the regular node handler and translates node events into chunk writes.
+It reacts to content creation, updates, publish, unpublish, move and delete.
+
+Two details differ from the node index on purpose:
+
+* A schema migration does not trigger deletes. The node index carries the `schemaVersionUuid` in the index name and has to clean up documents of the previous version. The RAG index deliberately does not — an upsert into the same index is enough.
+* `NODE_MOVED` is handled, because `path` and `sourceUrl` are part of every chunk document and are wrong after a node has been moved.
+
+=== Full sync and index check
+
+The RAG indices participate in the regular `POST {apiLatest}/search/sync` and in the periodic index consistency check, because Content RAG registers a real index handler.
+
+The full sync does not diff. It upserts every published container again; the deterministic chunk IDs overwrite the previous revision, and a delete-by-query removes chunks beyond the new chunk count.
+A version-by-version diff would not work here, because a container maps to many documents rather than one.
+
+=== Published content only
+
+Only containers of type `published` are indexed.
+Draft content is not written, and events that concern draft versions are discarded early — in an editorial workload that is the majority of all events.
+
+== Index layout
+
+=== Index names
+
+Indices are named per project and branch:
+
+[source]
+----
+<prefix>ragchunk-<projectUuid>-<branchUuid>-published
+----
+
+`<prefix>` is the Elasticsearch installation prefix from the Gentics Mesh search configuration, for example `mesh-`.
+Both sides derive the name from the same code, so the Content RAG service finds the indices that Gentics Mesh writes.
+
+IMPORTANT: The prefix must be lower case and should end with `-`. Gentics Mesh uses the configured prefix verbatim, while the RAG naming normalises it. If the two spellings differ, Gentics Mesh refuses to start the RAG sync and says so, rather than writing to an index name that is one character off.
+
+The schema version is deliberately *not* part of the name. A schema migration therefore does not switch indices, and no old index is left behind.
+
+=== Document fields
+
+Every chunk is one Elasticsearch document.
+
+[options="header",cols="1,1,3"]
+|===
+| Field | Type | Meaning
+
+| `chunkId` | keyword | Deterministic ID, also used as the document ID
+| `documentGroup` | keyword | `nodeUuid:branch:language` — the unit that is replaced or removed as a whole
+| `nodeUuid`, `projectUuid`, `branchUuid` | keyword | References into Gentics Mesh
+| `project`, `branch`, `language`, `schema` | keyword | Filters and display
+| `path` | keyword | Path of the node, used for the path prefix filter
+| `title` | text | Display field of the container, boosted in the keyword query
+| `chunkText` | text | The chunk itself: keyword search, vectorisation input and language model context
+| `chunkIndex` | integer | Position within the document group
+| `fieldPath` | keyword | Field the chunk originates from
+| `embedding` | dense_vector | Added by the ingest pipeline, not by Gentics Mesh
+| `contentHash`, `meshVersion` | keyword | Diagnostics
+| `publishStatus` | keyword | `published`
+| `createdDate`, `editedDate` | date | Timestamps of the node and the container
+| `validFrom`, `validTo` | date | Optional validity window, evaluated at query time
+| `_roleUuids` | keyword | Roles that may read the content — same field and same semantics as the Gentics Mesh full-text search
+| `sourceUrl` | keyword | Citation link, only present if a source URL template is configured
+| `referencedNodes`, `editorialTags` | keyword | Metadata
+|===
+
+=== Chunk identity and updates
+
+The chunk ID is derived from node, branch, language, field path and chunk index.
+Re-indexing unchanged content therefore overwrites the same documents instead of creating duplicates.
+
+When a node gets shorter, the surplus chunks of its document group are removed by a delete-by-query that only matches chunk indices at or beyond the new count.
+The bulk operator flushes before a non-bulkable request, so the new chunks are written before the old ones are removed.
+
+== Elasticsearch setup
+
+Vectorisation happens inside Elasticsearch. Three cluster objects carry it:
+
+. an inference endpoint (`mesh-content-rag-embeddings`) pointing at the text embedding server,
+. an ingest pipeline (`mesh-content-rag-embed`) that adds the vector while a document is indexed,
+. an index template (`<prefix>ragchunk`, pattern `<prefix>ragchunk-*`) that brings the mapping and sets the pipeline as `index.default_pipeline`.
+
+All three are created by the Content RAG service at startup, in exactly that order — the pipeline references the endpoint, and the template references the pipeline.
+Existing objects are never overwritten: changing model or dimension is a deliberate operation that includes rebuilding the existing data, and it must not happen as a side effect of a restart.
+
+Gentics Mesh does not create the RAG indices itself. They come into existence implicitly with the first write, and Elasticsearch applies the index template at that moment.
+
+IMPORTANT: An index template only takes effect when the index is created. If Gentics Mesh wrote before the template existed, Elasticsearch would create the index with a dynamic mapping — every keyword field as `text`, no `embedding` field and no ingest pipeline. Such an index accepts documents and reports no error; it only fails to return anything useful at retrieval time, and it cannot be repaired afterwards.
+
+Gentics Mesh therefore checks for the index template before it writes:
+
+* At startup and before every full sync it asks Elasticsearch whether the template exists.
+* While it is missing, the RAG sync writes nothing and logs why.
+* The periodic index check asks again. As soon as the template appears, the next run picks up the work.
+* The same check reports existing RAG indices that have no `index.default_pipeline`, which is the signature of an index created before the template.
+
+Startup with everything in place looks like this:
+
+[source]
+----
+INFO  RagChunkIndexHandler - Der RAG-Sync ist eingeschaltet, Praefix mesh-, Vorgabe-Auswahl ALL.
+INFO  RagIndexReadiness    - Index-Template mesh-ragchunk gefunden ...
+INFO  RagChunkIndexHandler - Voll-Sync des RAG-Index: 1 Branches, 9 Schemaversionen, 1463 Container insgesamt.
+----
+
+Gentics Mesh starts normally when the template is missing; only the RAG sync holds back.
+Gentics Mesh and the Content RAG service start independently of each other, so a hard failure would make the whole Gentics Mesh search depend on the startup order of another service.
+
+.Repairing an index created without the template
+****
+An index with a dynamic mapping cannot be fixed in place. Delete it and let it be rebuilt:
+
+[source,bash,subs=attributes]
+----
+curl -X DELETE "http://localhost:9200/mesh-ragchunk-<projectUuid>-<branchUuid>-published"
+curl -X POST -H "Authorization: Bearer <token>" "http://localhost:8080{apiLatest}/search/sync"
+----
+
+The content is fully reconstructible from Gentics Mesh, so nothing is lost.
+****
+
+== Selecting the content to index
+
+Which fields leave the CMS is decided on the Gentics Mesh side, before normalisation — excluded content is never converted, chunked or written.
+
+The settings live in the existing `elasticsearch` settings of schemas and fields. That is free-form JSON, versioned together with the schema version and editable through the regular schema API, so no model change and no migration is required.
+
+Rules are evaluated schema first, then field; the first match wins.
+
+. Schema `"elasticsearch": { "rag": false }` — the whole schema stays out. This is a hard exclusion and also wins against an explicit opt-in on a single field.
+. Field `"elasticsearch": { "rag": false }` — the field stays out.
+. Field with `noIndex` — implicit exclusion: what should not be searchable is not RAG material either.
+. Field `"elasticsearch": { "rag": true }` — explicit opt-in, even if the schema carries a narrower allow list.
+. Schema `"elasticsearch": { "rag": { "fields": [...] } }` — allow list per schema. `"exclude": [...]` and `"mode": "all" | "none"` are also accepted.
+. Schema `"elasticsearch": { "rag": true }` — all text-carrying fields.
+. Without any setting, the configured default mode applies, which is `none`.
+
+A type filter applies throughout: `string`, `html`, `list` and `micronode` are taken; `binary` and `s3binary` only when binaries are enabled or the field opts in explicitly. `number`, `boolean`, `date` and `node` carry no running text.
+
+.Allow list on a schema
+[source,json]
+----
+{
+  "name": "manual_content",
+  "elasticsearch": {
+    "rag": { "fields": ["title", "content", "teaser"] }
+  },
+  "fields": [ ... ]
+}
+----
+
+If the evaluation yields no field at all, no chunk is produced and an existing document group is removed.
+The exclusion therefore also works retroactively, without a second code path.
+
+TIP: `mode: all` indexes every text-carrying field, including structural fields such as URL or slug fields. That is convenient for a first functional test, but those chunks receive an embedding vector like any other and dilute similarity search. For content that is actually queried, prefer an allow list per schema.
+
+== Configuration
+
+=== Gentics Mesh
+
+The RAG sync is configured through environment variables or system properties, in the same shape the Helm chart uses for the other search settings.
+
+[options="header",cols="2,2,1,3"]
+|===
+| Environment variable | System property | Default | Purpose
+
+| `MESH_SEARCH_RAG_ENABLED` | `mesh.search.rag.enabled` | `false` | Turns the RAG sync on
+| `MESH_SEARCH_RAG_DEFAULT_MODE` | `mesh.search.rag.defaultMode` | `NONE` | Applies to schemas without an explicit setting; `ALL` or `NONE`
+| `MESH_SEARCH_RAG_INCLUDE_BINARIES` | `mesh.search.rag.includeBinaries` | `false` | Includes extracted binary text
+| `MESH_SEARCH_RAG_CHUNK_MAX_CHARS` | `mesh.search.rag.chunk.maxChars` | `1200` | Maximum chunk size in characters
+| `MESH_SEARCH_RAG_CHUNK_OVERLAP_CHARS` | `mesh.search.rag.chunk.overlapChars` | `150` | Overlap with the preceding chunk
+| `MESH_SEARCH_RAG_SOURCE_URL_TEMPLATE` | `mesh.search.rag.sourceUrlTemplate` | empty | Template for the citation link
+|===
+
+The source URL template understands the placeholders `{project}`, `{branch}`, `{language}`, `{path}` and `{uuid}`, for example `https://example.org{path}`.
+Without a template the `sourceUrl` field stays empty and answers cite the node without a link.
+
+These settings are deliberately not part of `mesh.yml`: the Gentics Mesh configuration model lives in the open source part, and a `search.rag` section there would be a model change including documentation and migration.
+
+=== Content RAG service
+
+The service is a Spring Boot application and listens on port `8090` by default.
+
+.application.yml
+[source,yaml]
+----
+rag:
+  elasticsearch:
+    url: http://localhost:9200
+    # Must match the prefix of the Gentics Mesh search configuration.
+    index-prefix: mesh
+  inference:
+    id: mesh-content-rag-embeddings
+    pipeline-id: mesh-content-rag-embed
+    url: http://localhost:8081/embed
+    dimension: 384
+    shards: 1
+    replicas: 1
+    bootstrap: true
+  mesh:
+    url: http://localhost:8080
+  auth:
+    allow-anonymous: true
+    cache-ttl-seconds: 60
+  llm:
+    profile: cloud-hybrid          # cloud-hybrid | sovereign-onprem
+  retrieval:
+    top-k: 8
+    min-score: 0.2
+    live-permission-check: false
+----
+
+`inference.dimension` has to match the model behind the endpoint; the default configuration assumes a multilingual model with 384 dimensions.
+`bootstrap: false` skips creating endpoint, pipeline and template and assumes they already exist.
+
+NOTE: There is no service token for the Gentics Mesh connection. The service resolves the roles of the requesting user with that user's own token — a service token would give every request the same permissions and turn the permission check into a formality.
+
+== Permissions
+
+Content RAG uses the same model as the Gentics Mesh full-text search, and it applies it before the language model ever sees a chunk.
+
+At index time every chunk carries the UUIDs of the roles that may read the node in `_roleUuids` — read permission, plus read-published permission for published containers.
+This is the same field, filled from the same source, as in the node documents of the full-text search.
+
+At query time the retrieval is wrapped in a filter on those role UUIDs.
+The roles come from the Mesh token of the requester, never from the request body: a role field in the body would be a self-declaration.
+
+Resolving them takes two calls against Gentics Mesh, both with the requester's token: `GET {apiLatest}/auth/me` for user, groups and `rolesHash`, and `GET {apiLatest}/groups/<uuid>/roles` per group.
+The second one scales with the number of groups, so the result is cached; the `rolesHash` decides whether it has to be resolved again, which means a revoked role takes effect without waiting for a cache period to expire.
+
+Requests without a token are resolved the same way but without an authorization header.
+Gentics Mesh answers as the anonymous user, and the service filters by that user's roles.
+There is therefore no invented `public` marker in the index: publicly readable content carries the UUID of the anonymous role in `_roleUuids` anyway.
+Anonymous access can be disabled with `rag.auth.allow-anonymous: false`.
+
+IMPORTANT: The filter is fail-closed. A request that resolves to no roles at all matches nothing. If `_roleUuids` is empty on all documents — which happens when no role has been granted read permission and content is only ever read as admin — then every non-administrative request returns no results, in the RAG index exactly as in the node index.
+
+`rag.retrieval.live-permission-check` adds an optional hardening step that re-checks the top hits against Gentics Mesh. It is off by default; permission changes otherwise arrive through the same sync as the content, with the same eventual consistency.
+
+== Querying
+
+All endpoints of the service are read-only and live under `/api/rag`.
+There is deliberately no reindex endpoint: filling the index is the job of the Gentics Mesh sync, and a second trigger would be a second synchronisation paradigm.
+
+=== POST /api/rag/query
+
+[source,json]
+----
+{
+  "question": "How do I configure the search?",
+  "language": "en",
+  "projects": ["d3b1840b..."],
+  "schemas": ["manual_content"],
+  "pathPrefix": "/en/admin",
+  "topK": 8,
+  "debug": true
+}
+----
+
+`projects`, `schemas` and `pathPrefix` only narrow the result further; they never widen it, because the boundary is drawn by the role filter.
+
+The response carries the answer, whether it is grounded, and the sources with title, source URL, node UUID, chunk ID and score.
+With `debug: true` the raw retrieval hits are included as well.
+
+If no chunk reaches the configured `min-score`, no answer is generated at all and the response says so — "no answer without a basis" is a deliberate property, not a failure.
+
+=== GET /api/rag/status
+
+Counters over the published RAG chunk indices, optionally restricted to one project with `?projectUuid=`.
+
+[source,json]
+----
+{
+  "status": "ok",
+  "documentGroups": 512,
+  "chunks": 4387,
+  "chunksWithoutVector": 0,
+  "lastCheck": null
+}
+----
+
+`chunksWithoutVector` is the interesting number: it counts chunks for which the ingest pipeline could not produce a vector.
+Those are still findable by keyword search, so the system keeps answering — just worse. Without this counter the condition would go unnoticed.
+
+=== GET /api/rag/debug/chunks
+
+Raw retrieval hits for a question, for inspecting sources and chunking.
+It uses the same role filter as a regular query — otherwise the debug endpoint would be the loophole.
+
+== Retrieval
+
+Retrieval combines a keyword and a vector search and merges them with Reciprocal Rank Fusion.
+RRF is robust against the very different score scales of the two methods and needs no licensed Elasticsearch features.
+
+The question vector is produced by Elasticsearch itself, through the same inference endpoint that creates the chunk vectors during ingest.
+A model change therefore cannot make the index side and the query side drift apart, and the service needs no embedding client of its own.
+
+If the vector part fails — endpoint unreachable or not licensed — the keyword search remains as a usable fallback and the service logs that the answer is based on BM25 only.
+
+Only published indices are searched, and the restriction is expressed through the index name rather than a filter: draft and published are separate indices anyway, and what is not searched costs nothing.
+
+== Monitoring and troubleshooting
+
+Both sides report separately, and they answer different questions.
+
+`GET {apiLatest}/search/status` on Gentics Mesh lists a `ragchunk` entry next to the other index handlers with the number of synchronised containers.
+Note that this counter counts *containers*, not written documents.
+
+`GET /api/rag/status` on the Content RAG service reports what is actually in the index.
+
+[options="header",cols="2,3"]
+|===
+| Symptom | Likely cause
+
+| `ragchunk` missing from `{apiLatest}/search/status`
+| The index handler is not registered — the enterprise build does not contain Content RAG.
+
+| Log says the RAG sync is skipped because the index template is missing
+| The Content RAG service has not run yet, or Elasticsearch lost its cluster state. Restart the service; its bootstrap recreates endpoint, pipeline and template.
+
+| Index exists, `chunksWithoutVector` equals `chunks`
+| The index was created without the index template. Delete it and run a full sync.
+
+| Queries return nothing for regular users, everything for admins
+| `_roleUuids` is empty. No role has read permission on the content.
+
+| Log says the prefix is normalised differently
+| The Elasticsearch prefix contains upper case characters or does not end with `-`. Use a lower case prefix.
+|===
+
+IMPORTANT: Index template, ingest pipeline and inference endpoint are Elasticsearch cluster state. If the cluster is reset or recreated, all three are gone, and they are only recreated when the Content RAG service starts. Deleting a RAG index, on the other hand, is harmless — the template survives it, and the content is rebuilt by a full sync.
+
+== Current limitations
+
+* Only published content is indexed. Draft versions are not.
+* The language model provider is not implemented yet. Retrieval, permission filtering, status and the debug endpoint work; generated answers do not.
+* `validFrom` and `validTo` are evaluated at query time but not yet filled by the Gentics Mesh side.
+* `referencedNodes` is stored as metadata; referenced content is not resolved and not included in the chunk text.
+* Chunking is structural and does not consider sentence boundaries beyond paragraph level.
+
+== See also
+
+* link:{{< relref "elasticsearch.asciidoc" >}}[Elasticsearch] — the underlying search integration, its permission model and its document format
+* link:{{< relref "administration-guide.asciidoc" >}}#_environment_variables[Environment variables] — how Gentics Mesh settings are supplied

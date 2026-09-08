@@ -241,6 +241,9 @@ ul.doc-toc h2 {
                                 <a href="elasticsearch">Elasticsearch</a>
                             </li>
                             <li>
+                                <a href="content-rag">Content RAG</a>
+                            </li>
+                            <li>
                                 <a href="features#_preview_handling">Preview Handling</a>
                             </li>
                             <li>
