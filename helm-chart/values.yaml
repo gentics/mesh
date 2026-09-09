@@ -87,7 +87,7 @@ service:
 
 # Ingress for Gentics Mesh API
 ingress:
-  enabled: true
+  enabled: false
   annotations:
     nginx.ingress.kubernetes.io/proxy-body-size: 8m
     # kubernetes.io/ingress.class: nginx # Kubernetes <1.19
