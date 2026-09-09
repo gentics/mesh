@@ -360,7 +360,7 @@ public final class JsonUtil {
 	 * @return instance
 	 */
 	public static JsonNode toJsonNode(String json, boolean nullOnError) {
-		return readValue(json, JsonNode.class, nullOnError);
+		return readValue(json, JsonNode.class, true, nullOnError);
 	}
 
 	/**
