@@ -319,6 +319,16 @@ public final class JsonUtil {
 	}
 
 	/**
+	 * Parse the given json to an instance of {@link JsonNode}
+	 * @param json JSON to parse
+	 * @param nullOnError if true, return null on parse exceptions 
+	 * @return instance
+	 */
+	public static JsonNode toJsonNode(String json, boolean nullOnError) {
+		return readValue(json, JsonNode.class, nullOnError);
+	}
+
+	/**
 	 * Validate the given JSON object against the schema
 	 * @param schemaNode schema as JsonNode instance
 	 * @param json JSON object
