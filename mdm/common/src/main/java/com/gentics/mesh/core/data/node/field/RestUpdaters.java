@@ -451,7 +451,7 @@ public class RestUpdaters {
 
 		// Add items from rest model
 		for (JsonNode item : jsonList.getItems()) {
-			if (item == null) {
+			if (item == null || item.isNull()) {
 				throw error(BAD_REQUEST, "field_list_error_null_not_allowed", fieldKey);
 			}
 		}
