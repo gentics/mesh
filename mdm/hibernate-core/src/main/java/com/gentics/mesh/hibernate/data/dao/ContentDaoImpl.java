@@ -37,6 +37,7 @@ import org.hibernate.query.NativeQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.mesh.cache.ListableFieldCache;
 import com.gentics.mesh.cache.TotalsCache;
 import com.gentics.mesh.contentoperation.CommonContentColumn;
@@ -66,7 +67,6 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.common.ReferenceType;
-import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -1858,7 +1858,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	}
 
 	@Override
-	public Map<String, List<JsonContent>> getJsonListFieldValues(List<String> listUuids) {
+	public Map<String, List<JsonNode>> getJsonListFieldValues(List<String> listUuids) {
 		return getListValues(listUuids, HibJsonListFieldEdgeImpl::getJson, HibJsonListFieldEdgeImpl.class);
 	}
 

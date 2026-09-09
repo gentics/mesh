@@ -5,6 +5,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 
 import java.io.IOException;
 import java.util.Comparator;
+import java.util.List;
 
 import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
@@ -21,6 +22,7 @@ import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.fasterxml.jackson.core.util.MinimalPrettyPrinter;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,7 +38,6 @@ import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
-import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.core.rest.node.field.ListableField;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
@@ -60,7 +61,6 @@ import com.gentics.mesh.json.deserializer.FieldDeserializer;
 import com.gentics.mesh.json.deserializer.FieldMapDeserializer;
 import com.gentics.mesh.json.deserializer.FieldSchemaDeserializer;
 import com.gentics.mesh.json.deserializer.JsonArrayDeserializer;
-import com.gentics.mesh.json.deserializer.JsonContentDeserializer;
 import com.gentics.mesh.json.deserializer.JsonObjectDeserializer;
 import com.gentics.mesh.json.deserializer.NodeFieldListItemDeserializer;
 import com.gentics.mesh.json.deserializer.PermissionChangedEventModelDeserializer;
@@ -69,15 +69,13 @@ import com.gentics.mesh.json.deserializer.UserNodeReferenceDeserializer;
 import com.gentics.mesh.json.serializer.BasicFieldSerializer;
 import com.gentics.mesh.json.serializer.FieldListSerializer;
 import com.gentics.mesh.json.serializer.JsonArraySerializer;
-import com.gentics.mesh.json.serializer.JsonContentSerializer;
 import com.gentics.mesh.json.serializer.JsonObjectSerializer;
+import com.networknt.schema.Error;
+import com.networknt.schema.SchemaRegistry;
+import com.networknt.schema.dialect.Dialects;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.json.schema.Draft;
-import io.vertx.json.schema.JsonSchemaOptions;
-import io.vertx.reactivex.json.schema.JsonSchema;
-import io.vertx.reactivex.json.schema.Validator;
 
 /**
  * Main JSON Util which is used to register all custom JSON specific handlers and deserializers.
@@ -87,7 +85,7 @@ public final class JsonUtil {
 	/**
 	 * JSON object comparator
 	 */
-	public static Comparator<JsonContent> COMPARATOR = (a,b) -> {
+	public static Comparator<JsonNode> COMPARATOR = (a,b) -> {
 		if (a == null && b == null) {
 			return 0;
 		}
@@ -107,6 +105,8 @@ public final class JsonUtil {
 	protected static ObjectMapper defaultMapper;
 	protected static JsonSchemaGenerator schemaGen;
 	protected static PrettyPrinter minifyingPrettyPrinter;
+
+	protected static SchemaRegistry schemaRegistry = SchemaRegistry.withDialect(Dialects.getDraft202012());
 
 	private static final Logger log = LoggerFactory.getLogger(JsonUtil.class);
 
@@ -138,7 +138,6 @@ public final class JsonUtil {
 		module.addSerializer(FieldList.class, new FieldListSerializer());
 		module.addSerializer(JsonObject.class, new JsonObjectSerializer());
 		module.addSerializer(JsonArray.class, new JsonArraySerializer());
-		module.addSerializer(JsonContent.class, new JsonContentSerializer());
 
 		module.addSerializer(FieldMapImpl.class, new JsonSerializer<FieldMapImpl>() {
 			@Override
@@ -155,7 +154,6 @@ public final class JsonUtil {
 		module.addDeserializer(FieldSchema.class, new FieldSchemaDeserializer<FieldSchema>());
 		module.addDeserializer(EventCauseInfo.class, new EventCauseInfoDeserializer());
 		module.addDeserializer(PermissionChangedEventModel.class, new PermissionChangedEventModelDeserializer());
-		module.addDeserializer(JsonContent.class, new JsonContentDeserializer());
 
 		defaultMapper.registerModule(module);
 		defaultMapper.registerModule(new SimpleModule("interfaceMapping") {
@@ -312,13 +310,23 @@ public final class JsonUtil {
 	}
 
 	/**
-	 * Create new schema validator against the given input schema.
-	 * 
-	 * @param schema
-	 * @return
+	 * Parse the given json to an instance of {@link JsonNode}
+	 * @param json JSON to parse
+	 * @return instance
 	 */
-	public static Validator newJsonSchemaValidator(JsonSchema schema) {
-		return Validator.create(schema, new JsonSchemaOptions().setBaseUri("https://gentics.com/mesh").setDraft(Draft.DRAFT202012));
+	public static JsonNode toJsonNode(String json) {
+		return readValue(json, JsonNode.class);
+	}
+
+	/**
+	 * Validate the given JSON object against the schema
+	 * @param schemaNode schema as JsonNode instance
+	 * @param json JSON object
+	 * @return true when validation succeeds, false if not
+	 */
+	public static boolean validate(JsonNode schemaNode, JsonNode json) {
+		List<Error> errors = schemaRegistry.getSchema(schemaNode).validate(json);
+		return errors.isEmpty();
 	}
 
 	/**

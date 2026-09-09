@@ -11,10 +11,10 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.util.Map;
 
 import org.junit.Test;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.mesh.core.data.schema.HibFieldTypeChange;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
@@ -22,8 +22,6 @@ import com.gentics.mesh.core.data.schema.HibUpdateFieldChange;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerMutator;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.rest.JsonSchema;
-import com.gentics.mesh.core.rest.JsonSchemaType;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
 import com.gentics.mesh.core.rest.schema.DateFieldSchema;
@@ -49,10 +47,10 @@ import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.error.MeshSchemaException;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.util.IndexOptionHelper;
-import com.hazelcast.jet.json.JsonUtil;
 
 /**
  * Test for common mutator operations on a field containers.
@@ -169,7 +167,15 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 				schemaModel.addField(nodeField);
 
 				JsonFieldSchema jsonField = new JsonFieldSchemaImpl();
-				jsonField.setAllowedSchemas(new JsonSchema().setProperties(Map.of("blub", new JsonSchemaType())).setRequired(new String[] {"blub"}));
+				JsonNode jsonSchema = JsonUtil.toJsonNode(
+					"""
+						"type": "object",
+						"properties": {
+								"blub": {"type": "object"}
+						},
+						"required": ["blub"]
+					""");
+				jsonField.setAllowedSchemas(jsonSchema);
 				jsonField.setName("jsonField");
 				jsonField.setRequired(true);
 				schemaModel.addField(jsonField);
@@ -223,7 +229,15 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 			binaryFieldUpdate.setNextChange(nodeFieldUpdate);
 
 			HibUpdateFieldChange jsonFieldUpdate = (HibUpdateFieldChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.UPDATEFIELD);
-			jsonFieldUpdate.setRestProperty(ALLOW_KEY, new String[] { JsonUtil.toJson(new JsonSchema().setProperties(Map.of("content", new JsonSchemaType())).setRequired(new String[] {"content"})) });
+			jsonFieldUpdate.setRestProperty(ALLOW_KEY, new String[] { """
+				{
+					"type": "object",
+					"properties": {
+						"content": {"type": "object"}
+					},
+					"required": ["content"]
+				}
+				""" });
 			jsonFieldUpdate.setFieldName("jsonField");
 			jsonFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			jsonFieldUpdate.setIndexOptions(IndexOptionHelper.getRawFieldOption());
@@ -304,7 +318,16 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 			// JSON
 			JsonFieldSchema jsonFieldSchema = updatedSchema.getField("jsonField", JsonFieldSchemaImpl.class);
 			assertNotNull(jsonFieldSchema);
-			assertArrayEquals(new JsonSchema[] { new JsonSchema().setProperties(Map.of("content", new JsonSchemaType())).setRequired(new String[] {"content"}) }, jsonFieldSchema.getAllowedSchemas());
+			JsonNode jsonSchema = JsonUtil.toJsonNode("""
+				{
+					"type": "object",
+					"properties": {
+						"content": {"type": "object"}
+					},
+					"required": ["content"]
+				}
+				""");
+			assertArrayEquals(new JsonNode[] { jsonSchema }, jsonFieldSchema.getAllowedSchemas());
 			assertFalse("The required flag should now be set to false.", jsonFieldSchema.isRequired());
 			assertTrue("The index option did not contain the raw field. {" + jsonFieldSchema.getElasticsearch().encodePrettily() + "}",
 					jsonFieldSchema.getElasticsearch().containsKey("raw"));

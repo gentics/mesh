@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.graphqlfilter.filter.BooleanFilter;
 import com.gentics.graphqlfilter.filter.DateFilter;
 import com.gentics.graphqlfilter.filter.Filter;
@@ -30,7 +31,6 @@ import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.filter.operation.ListItemOperationOperand;
 import com.gentics.mesh.graphql.model.NodeReferenceIn;
@@ -56,7 +56,7 @@ public class ListFilter<T, Q> extends MainFilter<Collection<T>> {
 	private static ListFilter<String, ?> htmlListFilterInstance;
 	private static ListFilter<Number, ?> numberListFilterInstance;
 	private static ListFilter<Boolean, ?> booleanListFilterInstance;
-	private static ListFilter<JsonContent, ?> jsonListFilterInstance;
+	private static ListFilter<JsonNode, ?> jsonListFilterInstance;
 	private static ListFilter<Long, ?> dateListFilterInstance;
 	private static ListFilter<HibNode, ?> nodeListFilterInstance;
 	private static ListFilter<HibMicronode, ?> micronodeListFilterInstance;
@@ -174,7 +174,7 @@ public class ListFilter<T, Q> extends MainFilter<Collection<T>> {
 		return booleanListFilterInstance;
 	}
 
-	public static final ListFilter<JsonContent, ?> jsonListFilter() {
+	public static final ListFilter<JsonNode, ?> jsonListFilter() {
 		if (jsonListFilterInstance == null) {
 			jsonListFilterInstance = new ListFilter<>("JsonListFilter", "Filters JSON object lists", JsonFilter.filter(), Optional.of("JSONLIST"), false);
 		}

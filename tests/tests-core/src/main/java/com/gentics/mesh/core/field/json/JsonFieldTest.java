@@ -21,7 +21,6 @@ import com.gentics.mesh.core.data.node.field.HibJsonField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.core.rest.node.field.JsonField;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.JsonFieldImpl;
@@ -96,7 +95,7 @@ public class JsonFieldTest extends AbstractFieldTest<JsonFieldSchema> {
 		try (Tx tx = tx()) {
 			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
 			HibJsonField testField = container.createJson(JSON_FIELD);
-			testField.setJson(JsonContent.fromObject(new JsonObject()));
+			testField.setJson(JsonUtil.getMapper().createObjectNode());
 
 			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer(createFieldSchema(true));
 			testField.cloneTo(otherContainer);

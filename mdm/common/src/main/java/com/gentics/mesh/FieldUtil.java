@@ -1,5 +1,6 @@
 package com.gentics.mesh;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
@@ -10,7 +11,6 @@ import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.HtmlField;
-import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.core.rest.node.field.JsonField;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.node.field.NumberField;
@@ -177,7 +177,7 @@ public final class FieldUtil {
 	 * @param stringValue
 	 * @return
 	 */
-	public static JsonField createJsonField(JsonContent jsonValue) {
+	public static JsonField createJsonField(JsonNode jsonValue) {
 		JsonField field = new JsonFieldImpl();
 		field.setJson(jsonValue);
 		return field;

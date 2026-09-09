@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.node.field;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.mesh.core.data.node.field.list.HibBooleanFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibDateFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibHtmlFieldList;
@@ -23,7 +24,6 @@ import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.HtmlField;
-import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.core.rest.node.field.JsonField;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.node.field.NodeField;
@@ -177,7 +177,7 @@ public interface RestTransformers {
 				if (project == null) {
 					project = parentNode.get().getProject();
 				}
-				field.setJson(JsonContent.fromString(webRootLinkReplacer.replace(ac, tx.getBranch(ac).getUuid(),
+				field.setJson(JsonUtil.toJsonNode(webRootLinkReplacer.replace(ac, tx.getBranch(ac).getUuid(),
 						ContainerType.forVersion(ac.getVersioningParameters().getVersion()), JsonUtil.toJson(field.getJson(), true),
 						ac.getNodeParameters().getResolveLinks(), project.getName(), languageTags)));
 			}

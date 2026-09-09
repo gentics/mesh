@@ -1,10 +1,10 @@
 package com.gentics.mesh.core.field.json;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.FieldFetcher;
-import com.gentics.mesh.core.rest.node.field.JsonContent;
-
-import io.vertx.core.json.JsonObject;
+import com.gentics.mesh.json.JsonUtil;
 
 public interface JsonFieldTestHelper {
 
@@ -14,7 +14,9 @@ public interface JsonFieldTestHelper {
 	static final DataProvider CREATE_EMPTY = (container, name) -> container.createJson(name).setJson(null);
 	static final FieldFetcher FETCH = (container, name) -> container.getJson(name);
 
-	public static JsonContent make(String content) {
-		return JsonContent.fromObject(new JsonObject().put("content", content));
+	public static JsonNode make(String content) {
+		ObjectNode objectNode = JsonUtil.getMapper().createObjectNode();
+		objectNode.put("content", content);
+		return objectNode;
 	}
 }

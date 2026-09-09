@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.rest.node.field;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.mesh.core.rest.node.field.impl.JsonFieldImpl;
 
 /**
@@ -12,7 +13,7 @@ public interface JsonField extends ListableField, MicroschemaListableField {
 	 * 
 	 * @return
 	 */
-	JsonContent getJson();
+	JsonNode getJson();
 
 	/**
 	 * Store the given JSON object
@@ -20,7 +21,7 @@ public interface JsonField extends ListableField, MicroschemaListableField {
 	 * @param json
 	 * @return
 	 */
-	JsonField setJson(JsonContent json);
+	JsonField setJson(JsonNode json);
 
 	@Override
 	default Object getValue() {
@@ -33,7 +34,7 @@ public interface JsonField extends ListableField, MicroschemaListableField {
 	 * @param json
 	 * @return
 	 */
-	static JsonField of(JsonContent json) {
+	static JsonField of(JsonNode json) {
 		return new JsonFieldImpl().setJson(json);
 	}
 }

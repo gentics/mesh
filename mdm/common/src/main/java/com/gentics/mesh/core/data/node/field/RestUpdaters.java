@@ -18,6 +18,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
@@ -39,13 +40,11 @@ import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.rest.JsonSchema;
 import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.HtmlField;
-import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.core.rest.node.field.JsonField;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.node.field.NodeField;
@@ -402,12 +401,12 @@ public class RestUpdaters {
 
 		// check value restrictions
 		JsonFieldSchema jsonFieldSchema = (JsonFieldSchema) fieldSchema;
-		JsonSchema[] allowedSchemas = jsonFieldSchema.getAllowedSchemas();
+		JsonNode[] allowedSchemas = jsonFieldSchema.getAllowedSchemas();
 		if (allowedSchemas != null && allowedSchemas.length != 0) {
-			Object jsonContent = jsonField.getJson().getContent();
-			if (jsonField.getJson() != null && Arrays.asList(allowedSchemas).stream()
-					.noneMatch(schema1 -> JsonUtil.newJsonSchemaValidator(schema1.getVertxSchema()).validate(jsonContent).getValid() == Boolean.TRUE)) {
-				throw error(BAD_REQUEST, "node_error_invalid_json_field_value", fieldKey, JsonUtil.toJson(jsonContent));
+			JsonNode jsonNode = jsonField.getJson();
+			if (jsonNode != null && Arrays.asList(allowedSchemas).stream()
+					.noneMatch(schema1 -> JsonUtil.validate(schema1, jsonNode) == Boolean.TRUE)) {
+				throw error(BAD_REQUEST, "node_error_invalid_json_field_value", fieldKey, JsonUtil.toJson(jsonNode));
 			}
 		}
 
@@ -451,7 +450,7 @@ public class RestUpdaters {
 		graphJsonFieldList = container.createJsonList(fieldKey);
 
 		// Add items from rest model
-		for (JsonContent item : jsonList.getItems()) {
+		for (JsonNode item : jsonList.getItems()) {
 			if (item == null) {
 				throw error(BAD_REQUEST, "field_list_error_null_not_allowed", fieldKey);
 			}

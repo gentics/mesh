@@ -26,6 +26,7 @@ import org.jsoup.Jsoup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.HibImageDataElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -64,7 +65,6 @@ import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.FieldTypes;
-import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
 import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.core.rest.schema.BinaryExtractOptions;
@@ -368,7 +368,7 @@ public class NodeContainerTransformer extends AbstractTransformer<HibNodeFieldCo
 					case JSON:
 						HibJsonFieldList sqlJsonList = container.getJsonList(fieldSchema.getName());
 						if (sqlJsonList != null) {
-							List<JsonContent> jsonItems = new ArrayList<>();
+							List<JsonNode> jsonItems = new ArrayList<>();
 							for (HibJsonField listItem : sqlJsonList.getList()) {
 								jsonItems.add(listItem.getJson());
 							}
