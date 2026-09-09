@@ -7,8 +7,8 @@ import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.mesh.core.rest.common.FieldTypes;
-import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.hibernate.data.node.field.impl.HibNumberFieldImpl;
@@ -54,7 +54,7 @@ public class DynamicContentColumn implements ContentColumn, Serializable {
 	public Class<?> getJavaClass() {
 		switch (fieldType) {
 			case JSON:
-				return JsonContent.class;
+				return JsonNode.class;
 			case STRING:
 			case HTML:
 				return String.class;

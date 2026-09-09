@@ -14,7 +14,7 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gentics.mesh.core.rest.JsonSchema;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.mesh.core.rest.schema.BinaryExtractOptions;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -107,8 +107,8 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 				if (fieldInB instanceof StringFieldSchema) {
 					change.setProperty(SchemaChangeModel.ALLOW_KEY, ((StringFieldSchema) fieldInB).getAllowedValues());
 				}
-				if (fieldInB instanceof JsonFieldSchema) {
-					JsonSchema[] schemas = ((JsonFieldSchema) fieldInB).getAllowedSchemas();
+				if (fieldInB instanceof JsonFieldSchema jsonField) {
+					JsonNode[] schemas = jsonField.getAllowedSchemas();
 					change.setProperty(SchemaChangeModel.ALLOW_KEY, schemas == null ? null : Arrays.stream(schemas).map(JsonUtil::toJson).toArray(size -> new String[size]));
 				}
 				if (fieldInB instanceof BinaryFieldSchema) {

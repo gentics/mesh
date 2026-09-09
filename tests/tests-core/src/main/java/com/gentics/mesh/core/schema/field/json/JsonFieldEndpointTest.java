@@ -10,18 +10,13 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.field.json.JsonFieldTestHelper;
-import com.gentics.mesh.core.rest.JsonSchema;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.JsonFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 
 @MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true)
 public class JsonFieldEndpointTest extends AbstractMeshTest {
@@ -36,7 +31,7 @@ public class JsonFieldEndpointTest extends AbstractMeshTest {
 		SchemaModel schema = tx(() -> schemaContainer("content").getLatestVersion().getSchema());
 		SchemaUpdateRequest request = JsonUtil.readValue(schema.toJson(), SchemaUpdateRequest.class);
 		request.addField(new JsonFieldSchemaImpl()
-				.setAllowedSchemas(new JsonSchema("{\"type\":\"object\",\"properties\":{\"firstName\":{\"type\":\"string\"},\"lastName\":{\"type\":\"string\"}},\"required\":[\"firstName\",\"lastName\"]}"))
+				.setAllowedSchemas(JsonUtil.toJsonNode("{\"type\":\"object\",\"properties\":{\"firstName\":{\"type\":\"string\"},\"lastName\":{\"type\":\"string\"}},\"required\":[\"firstName\",\"lastName\"]}"))
 				.setName("extraJson"));
 
 		waitForJobs(() -> {
@@ -55,7 +50,7 @@ public class JsonFieldEndpointTest extends AbstractMeshTest {
 		// 3. Update the schema again with empty allowed value
 		request.removeField("extraJson");
 		request.addField(new JsonFieldSchemaImpl()
-				.setAllowedSchemas(new JsonSchema("{\"type\":\"object\",\"properties\":{\"content\":{\"type\":\"string\"},\"extra\":{\"type\":\"string\"}},\"required\":[\"content\"]}"))
+				.setAllowedSchemas(JsonUtil.toJsonNode("{\"type\":\"object\",\"properties\":{\"content\":{\"type\":\"string\"},\"extra\":{\"type\":\"string\"}},\"required\":[\"content\"]}"))
 				.setName("extraJson"));
 
 		waitForJobs(() -> {
@@ -76,7 +71,7 @@ public class JsonFieldEndpointTest extends AbstractMeshTest {
 		SchemaModel schema = tx(() -> schemaContainer("content").getLatestVersion().getSchema());
 		SchemaUpdateRequest request = JsonUtil.readValue(schema.toJson(), SchemaUpdateRequest.class);
 		request.addField(new JsonFieldSchemaImpl()
-				.setAllowedSchemas(new JsonSchema("{\"type\":\"array\",\"items\":{\"type\":\"string\"}}"))
+				.setAllowedSchemas(JsonUtil.toJsonNode("{\"type\":\"array\",\"items\":{\"type\":\"string\"}}"))
 				.setName("extraJson"));
 
 		waitForJobs(() -> {
@@ -93,7 +88,7 @@ public class JsonFieldEndpointTest extends AbstractMeshTest {
 			JsonUtil.toJson(JsonFieldTestHelper.make("someValue")));
 
 		// 3. Update the node again wit the correct data
-		nodeUpdateRequest.getFields().put("extraJson", FieldUtil.createJsonField(JsonContent.fromArray(new JsonArray().add("whatever").add("wherever"))));
+		nodeUpdateRequest.getFields().put("extraJson", FieldUtil.createJsonField(JsonUtil.getMapper().createArrayNode().add("whatever").add("wherever")));
 		call(() -> client().updateNode(projectName(), nodeUuid, nodeUpdateRequest));
 	}
 
@@ -107,7 +102,7 @@ public class JsonFieldEndpointTest extends AbstractMeshTest {
 		SchemaModel schema = tx(() -> schemaContainer("content").getLatestVersion().getSchema());
 		SchemaUpdateRequest request = JsonUtil.readValue(schema.toJson(), SchemaUpdateRequest.class);
 		request.addField(new JsonFieldSchemaImpl()
-				.setAllowedSchemas(new JsonSchema("{\"type\":\"object\",\"properties\":{\"firstName\":{\"type\":\"string\"},\"lastName\":{\"type\":\"string\"}},\"required\":[\"firstName\",\"lastName\"]}"))
+				.setAllowedSchemas(JsonUtil.toJsonNode("{\"type\":\"object\",\"properties\":{\"firstName\":{\"type\":\"string\"},\"lastName\":{\"type\":\"string\"}},\"required\":[\"firstName\",\"lastName\"]}"))
 				.setName("extraJson"));
 
 		waitForJobs(() -> {
@@ -124,7 +119,7 @@ public class JsonFieldEndpointTest extends AbstractMeshTest {
 			JsonUtil.toJson(JsonFieldTestHelper.make("someValue")));
 
 		// 3. Update the node again wit the correct data
-		nodeUpdateRequest.getFields().put("extraJson", FieldUtil.createJsonField(JsonContent.fromObject(new JsonObject().put("firstName", "Mickey").put("lastName", "Mouse"))));
+		nodeUpdateRequest.getFields().put("extraJson", FieldUtil.createJsonField(JsonUtil.getMapper().createObjectNode().put("firstName", "Mickey").put("lastName", "Mouse")));
 		call(() -> client().updateNode(projectName(), nodeUuid, nodeUpdateRequest));
 	}
 }

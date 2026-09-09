@@ -1,9 +1,9 @@
 package com.gentics.mesh.core.data.node.field;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.node.field.nesting.HibListableField;
-import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.core.rest.node.field.JsonField;
 import com.gentics.mesh.core.rest.node.field.impl.JsonFieldImpl;
 import com.gentics.mesh.handler.ActionContext;
@@ -16,14 +16,14 @@ public interface HibJsonField extends HibListableField, HibBasicField<JsonField>
 	 * 
 	 * @param json
 	 */
-	void setJson(JsonContent json);
+	void setJson(JsonNode json);
 
 	/**
 	 * Return the JSON object which is stored in the field.
 	 * 
 	 * @return
 	 */
-	JsonContent getJson();
+	JsonNode getJson();
 
 	@Override
 	default HibField cloneTo(HibFieldContainer container) {
@@ -40,14 +40,14 @@ public interface HibJsonField extends HibListableField, HibBasicField<JsonField>
 	}
 
 	default boolean jsonEquals(Object obj) {
-		if (obj instanceof HibJsonField) {
-			JsonContent jsonA = getJson();
-			JsonContent jsonB = ((HibJsonField) obj).getJson();
+		if (obj instanceof HibJsonField otherField) {
+			JsonNode jsonA = getJson();
+			JsonNode jsonB = otherField.getJson();
 			return CompareUtils.equals(jsonA, jsonB);
 		}
-		if (obj instanceof JsonField) {
-			JsonContent jsonA = getJson();
-			JsonContent jsonB = ((JsonField) obj).getJson();
+		if (obj instanceof JsonField otherField) {
+			JsonNode jsonA = getJson();
+			JsonNode jsonB = otherField.getJson();
 			return CompareUtils.equals(jsonA, jsonB);
 		}
 		return false;

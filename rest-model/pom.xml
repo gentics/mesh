@@ -82,8 +82,8 @@
 			<version>1.5.4</version>
 		</dependency>
 		<dependency>
-			<groupId>io.vertx</groupId>
-			<artifactId>vertx-json-schema</artifactId>
+			<groupId>com.networknt</groupId>
+			<artifactId>json-schema-validator</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>

@@ -39,6 +39,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.dataloader.BatchLoaderWithContext;
 import org.dataloader.DataLoader;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.binary.HibBinary;
@@ -72,7 +73,6 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.link.WebRootLinkReplacerImpl;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.FieldTypes;
-import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
@@ -220,7 +220,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	/**
 	 * DataLoader implementation for values of JSON object lists
 	 */
-	public BatchLoaderWithContext<String, List<JsonContent>> JSON_LIST_VALUE_LOADER = (keys, environment) -> {
+	public BatchLoaderWithContext<String, List<JsonNode>> JSON_LIST_VALUE_LOADER = (keys, environment) -> {
 		ContentDao contentDao = Tx.get().contentDao();
 		return listValueDataLoader(keys, contentDao::getJsonListFieldValues, Functions.identity());
 	};
@@ -344,11 +344,11 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		Builder type = newObject().name(JSON_FIELD_TYPE_NAME).description("JSON object field");
 
 		type.field(newFieldDefinition().name("text").description("Value as JSON string").type(GraphQLString).dataFetcher(fetcher -> {
-			JsonContent json = fetcher.getSource();
+			JsonNode json = fetcher.getSource();
 			return json == null ? null : JsonUtil.toJson(json, options.getHttpServerOptions().isMinifyJson());
 		}));
 		type.field(newFieldDefinition().name("json").description("Value as JSON object").type(ExtendedScalars.Json).dataFetcher(fetcher -> {
-			JsonContent json = fetcher.getSource();
+			JsonNode json = fetcher.getSource();
 			return json == null ? null : json;
 		}));
 

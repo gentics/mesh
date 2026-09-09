@@ -4,12 +4,12 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.IntStream;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.node.field.HibJsonField;
 import com.gentics.mesh.core.data.node.field.list.HibJsonFieldList;
 import com.gentics.mesh.core.rest.common.FieldTypes;
-import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.core.rest.node.field.list.impl.JsonFieldListImpl;
 import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.hibernate.data.domain.HibJsonListFieldEdgeImpl;
@@ -22,7 +22,7 @@ import com.gentics.mesh.hibernate.data.domain.HibUnmanagedFieldContainer;
  *
  */
 public class HibJsonListFieldImpl extends
-		AbstractHibHeterogenicPrimitiveListFieldImpl<HibJsonListFieldEdgeImpl, HibJsonField, JsonFieldListImpl, JsonContent, JsonContent>
+		AbstractHibHeterogenicPrimitiveListFieldImpl<HibJsonListFieldEdgeImpl, HibJsonField, JsonFieldListImpl, JsonNode, JsonNode>
 		implements HibJsonFieldList {
 
 	protected HibJsonListFieldImpl(HibernateTx tx, String fieldKey, HibUnmanagedFieldContainer<?, ?, ?, ?, ?> parent) {
@@ -43,12 +43,12 @@ public class HibJsonListFieldImpl extends
 	}
 
 	@Override
-	public HibJsonField createJson(JsonContent value) {
+	public HibJsonField createJson(JsonNode value) {
 		return createItem(value);
 	}
 
 	@Override
-	public void createJsons(List<JsonContent> items) {
+	public void createJsons(List<JsonNode> items) {
 		createItems(items);
 	}
 
@@ -67,7 +67,7 @@ public class HibJsonListFieldImpl extends
 	 * @return
 	 */
 	public static HibJsonListFieldImpl fromContainer(HibernateTx tx,
-			HibUnmanagedFieldContainer<?, ?, ?, ?, ?> container, String fieldKey, List<JsonContent> values) {
+			HibUnmanagedFieldContainer<?, ?, ?, ?, ?> container, String fieldKey, List<JsonNode> values) {
 		HibJsonListFieldImpl list = new HibJsonListFieldImpl(tx, fieldKey, container);
 		IntStream.range(0, values.size()).mapToObj(
 				i -> new HibJsonListFieldEdgeImpl(tx, list.valueOrNull(), i, fieldKey, values.get(i), container))
@@ -76,12 +76,12 @@ public class HibJsonListFieldImpl extends
 	}
 
 	@Override
-	protected JsonContent getValue(HibJsonField field) {
+	protected JsonNode getValue(HibJsonField field) {
 		return field.getJson();
 	}
 
 	@Override
-	protected HibListFieldItemConstructor<HibJsonListFieldEdgeImpl, JsonContent, JsonContent> getItemConstructor() {
+	protected HibListFieldItemConstructor<HibJsonListFieldEdgeImpl, JsonNode, JsonNode> getItemConstructor() {
 		return HibJsonListFieldEdgeImpl::new;
 	}
 

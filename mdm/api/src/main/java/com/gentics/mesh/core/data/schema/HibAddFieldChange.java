@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang3.BooleanUtils;
 
-import com.gentics.mesh.core.rest.JsonSchema;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -42,6 +42,7 @@ import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.S3BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+import com.gentics.mesh.json.JsonUtil;
 
 import io.vertx.core.json.JsonObject;
 
@@ -172,7 +173,7 @@ public interface HibAddFieldChange extends HibSchemaFieldChange {
 		switch (FieldTypes.valueByName(getType())) {
 			case JSON:
 				JsonFieldSchema jsonField = new JsonFieldSchemaImpl();
-				jsonField.setAllowedSchemas(getAllowProp() != null ? Arrays.stream(getAllowProp()).map(JsonSchema::new).toArray(size -> new JsonSchema[size]) : null);
+				jsonField.setAllowedSchemas(getAllowProp() != null ? Arrays.stream(getAllowProp()).map(JsonUtil::toJsonNode).toArray(size -> new JsonNode[size]) : null);
 				field = jsonField;
 				break;
 			case HTML:

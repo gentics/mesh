@@ -4,6 +4,7 @@ import static com.gentics.mesh.test.AWSTestMode.MINIO;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -26,6 +27,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
@@ -38,7 +41,6 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.HtmlField;
-import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.core.rest.node.field.JsonField;
 import com.gentics.mesh.core.rest.node.field.NumberField;
 import com.gentics.mesh.core.rest.node.field.StringField;
@@ -296,9 +298,7 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 	}
 
 	private void testJson(boolean fieldShouldExist, boolean contentShouldExist) throws IOException {
-		JsonContent value = JsonContent.fromArray(new JsonArray("""
-				["Mickey", "Mouse"]
-		"""));
+		JsonNode value = JsonUtil.getMapper().createArrayNode().add("Mickey").add("Mouse");
 
 		Optional<FieldSchema> maybeField = fieldShouldExist
 				? Optional.of(new JsonFieldSchemaImpl().setName("json_content").setLabel("JSON object content"))
@@ -318,7 +318,11 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 		Consumer<MeshWebrootFieldResponse> resultsConsumer = response -> {
 			assertFalse(response.isPlainText());
 			assertFalse(response.isBinary());
-			Assert.assertEquals(JsonContent.fromString(response.getResponseAsJsonString()), value);
+			try {
+				Assert.assertEquals(JsonUtil.getMapper().readTree(response.getResponseAsJsonString()), value);
+			} catch (JsonProcessingException e) {
+				fail(e);
+			}
 		};
 
 		testField("/News/2015/News_2015.en.html", maybeField, maybeContentSupplier, resultsConsumer, false);

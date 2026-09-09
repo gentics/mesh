@@ -18,6 +18,7 @@ import java.util.stream.Stream;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.tuple.Pair;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -38,7 +39,6 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.Errors;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
-import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -1109,7 +1109,7 @@ public interface ContentDao {
 	 * @param listUuids list UUIDs
 	 * @return map of list UUIDs to lists of JSON values
 	 */
-	Map<String, List<JsonContent>> getJsonListFieldValues(List<String> listUuids);
+	Map<String, List<JsonNode>> getJsonListFieldValues(List<String> listUuids);
 
 	/**
 	 * Get the boolean list field values for the given list UUIDs

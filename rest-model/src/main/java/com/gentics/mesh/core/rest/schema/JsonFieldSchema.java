@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.rest.schema;
 
-import com.gentics.mesh.core.rest.JsonSchema;
+import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  * REST POJO for a JSON object field schema.
@@ -12,7 +12,7 @@ public interface JsonFieldSchema extends FieldSchema {
 	 * 
 	 * @return Allowed values
 	 */
-	JsonSchema[] getAllowedSchemas();
+	JsonNode[] getAllowedSchemas();
 
 	/**
 	 * Set the list of values which are allowed for this field. Set to null to remove value restriction
@@ -21,5 +21,5 @@ public interface JsonFieldSchema extends FieldSchema {
 	 *            Allowed values or null
 	 * @return Fluent API
 	 */
-	JsonFieldSchema setAllowedSchemas(JsonSchema... allowedSchemas);
+	JsonFieldSchema setAllowedSchemas(JsonNode... allowedSchemas);
 }

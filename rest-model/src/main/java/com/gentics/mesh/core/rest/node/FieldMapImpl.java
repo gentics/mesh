@@ -26,7 +26,6 @@ import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.HtmlField;
-import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.core.rest.node.field.JsonField;
 import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
@@ -59,7 +58,6 @@ import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.json.JsonUtil;
 import com.google.common.collect.Lists;
 
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -195,8 +193,8 @@ public class FieldMapImpl implements FieldMap {
 			if (jsonNode.isPojo()) {
 				return pojoNodeToValue(jsonNode, JsonFieldListImpl.class, key);
 			}
-			JsonContent[] itemsJsonArray = mapper.treeToValue(jsonNode, JsonContent[].class);
-			return getBasicList(key, JsonObject[].class, new JsonFieldListImpl(), JsonContent.class, itemsJsonArray);
+			JsonNode[] itemsJsonArray = mapper.treeToValue(jsonNode, JsonNode[].class);
+			return getBasicList(key, JsonObject[].class, new JsonFieldListImpl(), JsonNode.class, itemsJsonArray);
 		case NUMBER:
 			// Unwrap stored pojos
 			if (jsonNode.isPojo()) {
@@ -376,13 +374,7 @@ public class FieldMapImpl implements FieldMap {
 
 		JsonField jsonField = new JsonFieldImpl();
 		if (!jsonNode.isNull()) {
-			if (jsonNode.isArray()) {
-				jsonField.setJson(JsonContent.fromArray(new JsonArray(jsonNode.toString())));
-			} else if (jsonNode.isObject()) {
-				jsonField.setJson(JsonContent.fromObject(new JsonObject(jsonNode.toString())));
-			} else {
-				throw error(BAD_REQUEST, "The field value for {" + key + "} is not a valid JSON. The value was {" + jsonNode.get("json") + "}");
-			}
+			jsonField.setJson(jsonNode);
 		}
 		return jsonField;
 	}

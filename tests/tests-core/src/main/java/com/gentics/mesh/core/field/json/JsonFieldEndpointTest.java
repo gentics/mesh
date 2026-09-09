@@ -12,16 +12,15 @@ import java.util.Optional;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.HibJsonField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
-import com.gentics.mesh.core.rest.JsonSchema;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
-import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.core.rest.node.field.JsonField;
 import com.gentics.mesh.core.rest.node.field.impl.JsonFieldImpl;
 import com.gentics.mesh.core.rest.schema.JsonFieldSchema;
@@ -33,7 +32,6 @@ import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.util.VersionNumber;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.vertx.core.json.JsonObject;
 
 
 @MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = true)
@@ -59,7 +57,7 @@ public class JsonFieldEndpointTest extends AbstractFieldEndpointTest {
 			JsonFieldSchema restrictedJsonFieldSchema = new JsonFieldSchemaImpl();
 			restrictedJsonFieldSchema.setName("restrictedjsonField");
 			restrictedJsonFieldSchema.setLabel("Some label");
-			restrictedJsonFieldSchema.setAllowedSchemas(new JsonSchema("{\"type\":\"object\",\"properties\":{\"firstName\":{\"type\":\"string\"},\"lastName\":{\"type\":\"string\"}},\"required\":[\"firstName\",\"lastName\"]}"));
+			restrictedJsonFieldSchema.setAllowedSchemas(JsonUtil.toJsonNode("{\"type\":\"object\",\"properties\":{\"firstName\":{\"type\":\"string\"},\"lastName\":{\"type\":\"string\"}},\"required\":[\"firstName\",\"lastName\"]}"));
 
 			prepareTypedSchema(schemaContainer("folder"), List.of(jsonFieldSchema, restrictedJsonFieldSchema), Optional.empty());
 			tx.success();
@@ -80,7 +78,7 @@ public class JsonFieldEndpointTest extends AbstractFieldEndpointTest {
 		for (int i = 0; i < 20; i++) {
 			VersionNumber oldVersion = tx(tx -> { return tx.contentDao().getFieldContainer(folder("2015"), "en").getVersion(); });
 
-			JsonContent newValue = JsonFieldTestHelper.make("content " + i);
+			JsonNode newValue = JsonFieldTestHelper.make("content " + i);
 
 			NodeResponse response = updateNode(FIELD_NAME, new JsonFieldImpl().setJson(newValue));
 			JsonFieldImpl field = response.getFields().getJsonField(FIELD_NAME);
@@ -104,7 +102,7 @@ public class JsonFieldEndpointTest extends AbstractFieldEndpointTest {
 	public void testUpdateSetNull() {
 		disableAutoPurge();
 
-		JsonContent old = JsonFieldTestHelper.make("bla");
+		JsonNode old = JsonFieldTestHelper.make("bla");
 		NodeResponse firstResponse = updateNode(FIELD_NAME, new JsonFieldImpl().setJson(old));
 		String oldVersion = firstResponse.getVersion();
 
@@ -120,7 +118,7 @@ public class JsonFieldEndpointTest extends AbstractFieldEndpointTest {
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getJson(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getJson(FIELD_NAME)).isNotNull();
-			JsonContent oldValue = latest.getPreviousVersion().getJson(FIELD_NAME).getJson();
+			JsonNode oldValue = latest.getPreviousVersion().getJson(FIELD_NAME).getJson();
 			assertThat(oldValue).isEqualTo(old);
 		}
 		NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
@@ -131,7 +129,7 @@ public class JsonFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetEmpty() {
-		JsonContent content = JsonFieldTestHelper.make("bla");
+		JsonNode content = JsonFieldTestHelper.make("bla");
 		NodeResponse firstResponse = updateNode(FIELD_NAME, new JsonFieldImpl().setJson(content));
 		JsonField emptyField = new JsonFieldImpl();
 		emptyField.setJson(null);
@@ -150,7 +148,7 @@ public class JsonFieldEndpointTest extends AbstractFieldEndpointTest {
 	 *            field name
 	 * @return json value (may be null)
 	 */
-	protected JsonContent getJsonValue(HibNodeFieldContainer container, String fieldName) {
+	protected JsonNode getJsonValue(HibNodeFieldContainer container, String fieldName) {
 		HibJsonField field = container.getJson(fieldName);
 		return field != null ? field.getJson() : null;
 	}
@@ -166,7 +164,7 @@ public class JsonFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() {
-		JsonContent someJson = JsonFieldTestHelper.make("someJson");
+		JsonNode someJson = JsonFieldTestHelper.make("someJson");
 		try (Tx tx = tx()) {
 			HibNode node = folder("2015");
 			ContentDao contentDao = tx.contentDao();
@@ -186,7 +184,7 @@ public class JsonFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Test
 	public void testValueRestrictionValidValue() {
-		JsonContent valid = JsonContent.fromObject(new JsonObject().put("firstName", "Mickey").put("lastName", "Mouse"));
+		JsonNode valid = JsonUtil.getMapper().createObjectNode().put("firstName", "Mickey").put("lastName", "Mouse");
 		NodeResponse response = updateNode("restrictedjsonField", new JsonFieldImpl().setJson(valid));
 		JsonFieldImpl field = response.getFields().getJsonField("restrictedjsonField");
 		assertEquals(valid, field.getJson());
@@ -194,7 +192,7 @@ public class JsonFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Test
 	public void testValueRestrictionInvalidValue() {
-		JsonContent invalid = JsonFieldTestHelper.make("whatever");
+		JsonNode invalid = JsonFieldTestHelper.make("whatever");
 		updateNodeFailure("restrictedjsonField", new JsonFieldImpl().setJson(invalid), HttpResponseStatus.BAD_REQUEST,
 				"node_error_invalid_json_field_value", "restrictedjsonField", JsonUtil.toJson(invalid));
 	}
@@ -211,7 +209,7 @@ public class JsonFieldEndpointTest extends AbstractFieldEndpointTest {
 			schemaContainer("folder").getLatestVersion().setSchema(schema);
 			tx.success();
 		}
-		JsonContent valid = JsonFieldTestHelper.make("whatever");
+		JsonNode valid = JsonFieldTestHelper.make("whatever");
 		NodeResponse response = updateNode("restrictedjsonField", new JsonFieldImpl().setJson(valid));
 		JsonFieldImpl field = response.getFields().getJsonField("restrictedjsonField");
 		assertEquals(valid, field.getJson());

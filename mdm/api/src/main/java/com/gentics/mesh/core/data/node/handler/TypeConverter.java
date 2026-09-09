@@ -22,7 +22,7 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gentics.mesh.core.rest.node.field.JsonContent;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.mesh.core.rest.node.field.ListField;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.node.field.NodeField;
@@ -41,6 +41,7 @@ import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
+import com.gentics.mesh.json.JsonUtil;
 
 /**
  * Type converter for the script engine used by the node migration handler.
@@ -87,14 +88,14 @@ public class TypeConverter {
 	}
 
 	/**
-	 * Convert the given value to a string list
+	 * Convert the given value to a JSON list
 	 *
 	 * @param value
 	 *            Value to be converted
-	 * @return String array
+	 * @return JSON list
 	 */
 	public JsonFieldListImpl toJsonList(Object value) {
-		return listField(JsonFieldListImpl::new, this::toJsonContent, value);
+		return listField(JsonFieldListImpl::new, this::toJsonNode, value);
 	}
 
 	/**
@@ -132,20 +133,20 @@ public class TypeConverter {
 	}
 
 	/**
-	 * Convert the given value to a boolean.
+	 * Convert the given value to a JSON node.
 	 *
 	 * @param value
 	 *            Value to be converted
-	 * @return Boolean value
+	 * @return JSON node value
 	 */
-	public JsonContent toJsonContent(Object value) {
+	public JsonNode toJsonNode(Object value) {
 		value = firstIfList(value);
 
 		if (value == null) {
 			return null;
 		}
 		try {
-			return JsonContent.fromString(value.toString());
+			return JsonUtil.getMapper().readTree(value.toString());
 		} catch (Exception e) {
 			if (log.isDebugEnabled()) {
 				log.debug("Could not convert to JsonObject {" + value.toString() + "}", e);

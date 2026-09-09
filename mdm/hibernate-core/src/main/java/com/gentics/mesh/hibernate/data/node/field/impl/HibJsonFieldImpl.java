@@ -1,8 +1,8 @@
 package com.gentics.mesh.hibernate.data.node.field.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.mesh.core.data.node.field.HibJsonField;
 import com.gentics.mesh.core.rest.common.FieldTypes;
-import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.hibernate.data.domain.HibUnmanagedFieldContainer;
 
 /**
@@ -11,19 +11,19 @@ import com.gentics.mesh.hibernate.data.domain.HibUnmanagedFieldContainer;
  * @author plyhun
  *
  */
-public class HibJsonFieldImpl extends AbstractBasicHibField<JsonContent> implements HibJsonField {
+public class HibJsonFieldImpl extends AbstractBasicHibField<JsonNode> implements HibJsonField {
 
-	public HibJsonFieldImpl(String fieldKey, HibUnmanagedFieldContainer<?, ?, ?, ?, ?> parent, JsonContent value) {
+	public HibJsonFieldImpl(String fieldKey, HibUnmanagedFieldContainer<?, ?, ?, ?, ?> parent, JsonNode value) {
 		super(fieldKey, parent, FieldTypes.JSON, value);
 	}
 
 	@Override
-	public JsonContent getJson() {
+	public JsonNode getJson() {
 		return valueOrNull();
 	}
 
 	@Override
-	public void setJson(JsonContent string) {
+	public void setJson(JsonNode string) {
 		storeValue(string);
 	}
 

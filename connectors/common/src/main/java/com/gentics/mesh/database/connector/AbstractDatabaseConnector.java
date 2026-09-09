@@ -41,13 +41,13 @@ import org.hibernate.type.SqlTypes;
 import org.hibernate.type.spi.TypeConfiguration;
 import org.slf4j.Logger;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.mesh.contentoperation.ContentColumn;
 import com.gentics.mesh.contentoperation.JoinedContentColumn;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.rest.common.FieldTypes;
-import com.gentics.mesh.core.rest.node.field.JsonContent;
 import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.hibernate.MeshTablePrefixStrategy;
@@ -391,7 +391,7 @@ public abstract class AbstractDatabaseConnector implements DatabaseConnector {
 				return typeConfig.getDdlTypeRegistry().getTypeName(
 								SqlTypes.JSON, 
 								new Size(getSqlTypePrecision(type), getSqlTypeScale(type), getSqlTypeLength(type)), 
-								typeConfig.getBasicTypeForJavaType(JsonContent.class));
+								typeConfig.getBasicTypeForJavaType(JsonNode.class));
 			case STRING:
 			case HTML:
 				return typeConfig.getDdlTypeRegistry().getTypeName(
