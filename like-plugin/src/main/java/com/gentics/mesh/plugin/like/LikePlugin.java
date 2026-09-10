@@ -4,36 +4,44 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
-import com.gentics.mesh.plugin.common.license.LicenseService;
-import com.gentics.mesh.plugin.common.license.LicensedPlugin;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
 import org.pf4j.PluginWrapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.http.HttpConstants;
 import com.gentics.mesh.plugin.AbstractPlugin;
+import com.gentics.mesh.plugin.CommercialRestPlugin;
 import com.gentics.mesh.plugin.PluginContext;
-import com.gentics.mesh.plugin.RestPlugin;
+import com.gentics.mesh.plugin.common.license.LicenseService;
+import com.gentics.mesh.plugin.common.license.LicensedPlugin;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.like.config.LikePluginConfig;
 import com.gentics.mesh.plugin.like.dagger.DaggerLikePluginComponent;
 import com.gentics.mesh.plugin.like.dagger.LikePluginComponent;
 import com.gentics.mesh.plugin.like.error.LikePluginError;
 import com.gentics.mesh.plugin.like.handler.AbstractLikeHandler;
+import com.gentics.mesh.plugin.like.model.LikeResponse;
+import com.gentics.mesh.plugin.like.model.PlusMinusType;
+import com.gentics.mesh.plugin.like.model.PostedLike;
+import com.gentics.mesh.plugin.like.model.StatisticsResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshRestClientMessageException;
+import com.gentics.mesh.util.UUIDUtil;
+import com.gentics.vertx.openapi.route.InternalEndpointBuilder;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Completable;
 import io.vertx.core.Handler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 
-public class LikePlugin extends AbstractPlugin implements RestPlugin {
+public class LikePlugin extends AbstractPlugin implements CommercialRestPlugin {
 
 	public final static String NAME = "Like Plugin";
 
@@ -52,20 +60,52 @@ public class LikePlugin extends AbstractPlugin implements RestPlugin {
 		log.info("Registering routes for {" + name() + "}");
 		Router projectRouter = Router.router(vertx());
 
-		// post a like for the given node
-		projectRouter.route("/likes/:nodeUuid/:lang").method(POST).handler(fromComponent(LikePluginComponent::storeLikeHandler));
+		InternalEndpointBuilder.wrap(projectRouter)
+			.withDescription("Post a like for the given node")
+			.withPath("/likes/:nodeUuid/:lang").withMethod(POST)
+			.withUriParameter("nodeUuid", "The target node to like", UUIDUtil.randomUUID())
+			.withUriParameter("lang", "Language code", "en")
+			.consumes(HttpConstants.APPLICATION_JSON)
+			.withExampleRequest(new JsonObject().put("rating", 5))
+			.withHandler(fromComponent(LikePluginComponent::storeLikeHandler))
+			.withExampleResponse(HttpResponseStatus.CREATED, "Like stored")
+			.build();
 
-		// get the likes for a given node
-		projectRouter.route("/likes/:nodeUuid/:lang").method(GET).handler(fromComponent(LikePluginComponent::getLikeHandler));
+		InternalEndpointBuilder.wrap(projectRouter)
+			.withDescription("Get the likes for a given node")
+			.withPath("/likes/:nodeUuid/:lang").withMethod(GET)
+			.withUriParameter("nodeUuid", "The target node to like", UUIDUtil.randomUUID())
+			.withUriParameter("lang", "Language code", "en")
+			.withHandler(fromComponent(LikePluginComponent::getLikeHandler))
+			.produces(HttpConstants.APPLICATION_JSON)
+			.withExampleResponse(HttpResponseStatus.OK, new LikeResponse().setPosted(new PostedLike().setPlusMinus(PlusMinusType.plus)), "Like response")
+			.build();
 
-		// delete the like for a node
-		projectRouter.route("/likes/:nodeUuid/:lang").method(DELETE).handler(fromComponent(LikePluginComponent::deleteLikeHandler));
+		InternalEndpointBuilder.wrap(projectRouter)
+			.withDescription("Delete the like for a node")
+			.withPath("/likes/:nodeUuid/:lang").withMethod(DELETE)
+			.withUriParameter("nodeUuid", "The target node to like", UUIDUtil.randomUUID())
+			.withUriParameter("lang", "Language code", "en")
+			.withHandler(fromComponent(LikePluginComponent::deleteLikeHandler))
+			.withExampleResponse(HttpResponseStatus.NO_CONTENT, "Like deleted")
+			.build();
 
-		// get the statistics for a given node
-		projectRouter.route("/likes/:nodeUuid/:lang/statistics").method(GET).handler(fromComponent(LikePluginComponent::getStatisticsHandler));
+		InternalEndpointBuilder.wrap(projectRouter)
+			.withDescription("Get the statistics for a given node")	
+			.withPath("/likes/:nodeUuid/:lang/statistics").withMethod(GET)
+			.withUriParameter("nodeUuid", "The target node to like", UUIDUtil.randomUUID())
+			.withUriParameter("lang", "Language code", "en")
+			.withHandler(fromComponent(LikePluginComponent::getStatisticsHandler))
+			.produces(HttpConstants.APPLICATION_JSON)
+			.withExampleResponse(HttpResponseStatus.OK, new StatisticsResponse().setLikes(8), "Like statistics")
+			.build();
 
-		// get the templates
-		projectRouter.route("/templates").method(GET).handler(fromComponent(LikePluginComponent::templateEngineHandler));
+		InternalEndpointBuilder.wrap(projectRouter)
+			.withDescription("Get the plugin templates")
+			.withPath("/templates").withMethod(GET)
+			.withHandler(fromComponent(LikePluginComponent::templateEngineHandler))
+			.withExampleResponse(HttpResponseStatus.OK, "Template string or JSON or HTML")
+			.build();
 		return projectRouter;
 	}
 

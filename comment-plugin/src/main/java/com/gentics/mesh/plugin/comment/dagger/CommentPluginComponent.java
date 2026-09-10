@@ -1,7 +1,11 @@
 package com.gentics.mesh.plugin.comment.dagger;
 
+import java.io.File;
+
+import javax.inject.Named;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.plugin.comment.config.Configuration;
-import com.gentics.mesh.plugin.comment.dagger.InitializationComponent.Builder;
 import com.gentics.mesh.plugin.comment.handler.CreateCommentHandler;
 import com.gentics.mesh.plugin.comment.handler.DeleteCommentHandler;
 import com.gentics.mesh.plugin.comment.handler.FetchCommentHandler;
@@ -13,16 +17,12 @@ import com.gentics.mesh.plugin.comment.handler.UnpublishCommentHandler;
 import com.gentics.mesh.plugin.comment.handler.UpdateCommentHandler;
 import com.gentics.mesh.plugin.comment.service.TemplateService;
 import com.gentics.mesh.rest.client.MeshRestClient;
+
 import dagger.BindsInstance;
 import dagger.Component;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.ext.web.RoutingContext;
-
-import java.io.File;
-
-import javax.inject.Named;
-import javax.inject.Singleton;
 
 @Singleton
 @Component(modules = { CommentPluginModule.class })

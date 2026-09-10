@@ -1,9 +1,11 @@
 package com.gentics.mesh.plugin.forms.model.response;
 
+import com.gentics.mesh.core.rest.common.RestModel;
+
 /**
  * Response containing the online status of a form
  */
-public class FormOnlineResponse {
+public class FormOnlineResponse implements RestModel {
 	private boolean online;
 
 	/**

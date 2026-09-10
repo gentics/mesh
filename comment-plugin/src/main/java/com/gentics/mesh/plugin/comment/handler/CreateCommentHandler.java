@@ -1,13 +1,14 @@
 package com.gentics.mesh.plugin.comment.handler;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.comment.model.request.CreateCommentRequest;
 import com.gentics.mesh.plugin.comment.service.CommentService;
-import io.reactivex.Completable;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import io.reactivex.Completable;
 
 @Singleton
 public class CreateCommentHandler extends AbstractCommentHandler {

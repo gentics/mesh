@@ -143,6 +143,9 @@ public class MeshPluginService {
 	 * 		registered
 	 */
 	public final Completable prepareProjects(Collection<String> projects, InitializationAction ...actions) {
+		if (projects == null) {
+			projects = Collections.emptyList();
+		}
 		return prepareProjects(projects::contains, actions);
 	}
 

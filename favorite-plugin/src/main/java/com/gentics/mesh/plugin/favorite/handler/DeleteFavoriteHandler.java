@@ -7,6 +7,7 @@ import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.common.util.ParameterUtil;
 import com.gentics.mesh.plugin.favorite.FavoriteService;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Completable;
 import io.reactivex.Single;
 
@@ -29,7 +30,7 @@ public class DeleteFavoriteHandler extends AbstractFavoriteHandler {
 				.zip(typeSingle, favoriteIDSingle,
 						(type, favoriteID) -> favoriteService.deleteFavorite(projectName, type, favoriteID))
 				.flatMap(x -> x).doOnSuccess(response -> {
-					context.response().setStatusCode(204).end();
+					context.response().setStatusCode(HttpResponseStatus.NO_CONTENT.code()).end();
 				}).ignoreElement();
 	}
 
