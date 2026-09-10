@@ -53,19 +53,33 @@ public class IndexStatusService {
             String status = chunks == 0 ? "leer" : withoutVector == 0 ? "ok" : "unvollstaendig";
             return new IndexStatus(status, groupCount(indexExpr), chunks, withoutVector, null);
         } catch (RuntimeException e) {
-            log.warn("Statusabfrage fuer {} fehlgeschlagen: {}", indexExpr, e.getMessage());
+            log.warn("Statusabfrage fuer {} fehlgeschlagen: {}", indexExpr, e.getMessage(), e);
             return new IndexStatus("nicht verfuegbar", 0L, 0L, 0L, null);
         }
     }
 
-    /** Anzahl unterschiedlicher Document-Groups ueber eine Cardinality-Aggregation (Naeherung). */
+    /**
+     * Anzahl unterschiedlicher Document-Groups ueber eine Cardinality-Aggregation (Naeherung).
+     *
+     * <p>Scheitert die Aggregation, ist das kein Grund, die ganze Auskunft zu verwerfen: die
+     * Chunk-Zahlen stehen dann schon fest und sind die wichtigere Information. Der haeufigste
+     * Grund fuer ein Scheitern ist ein Index, der ohne das RAG-Index-Template angelegt wurde –
+     * dann ist {@code documentGroup} ein {@code text}-Feld und nicht aggregierbar. Genau das
+     * steht dann auch in der Logzeile.
+     */
     private long groupCount(String indexExpr) {
         ObjectNode body = es.mapper().createObjectNode();
         body.put("size", 0);
         body.putObject("aggs").putObject("groups").putObject("cardinality")
                 .put("field", RagChunkFields.DOCUMENT_GROUP);
-        return es.search(indexExpr, body).path("aggregations").path("groups")
-                .path("value").asLong(0L);
+        try {
+            return es.search(indexExpr, body).path("aggregations").path("groups")
+                    .path("value").asLong(0L);
+        } catch (RuntimeException e) {
+            log.warn("Document-Group-Aggregation fuer {} fehlgeschlagen (Mapping pruefen: greift das"
+                    + " RAG-Index-Template?): {}", indexExpr, e.getMessage());
+            return 0L;
+        }
     }
 
     private ObjectNode missingEmbedding() {

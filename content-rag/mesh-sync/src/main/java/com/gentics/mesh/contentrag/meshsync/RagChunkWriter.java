@@ -153,11 +153,12 @@ public class RagChunkWriter {
             }
             String fullIndex = provider.installationPrefix() + index;
             JsonObject body = new JsonObject().put("query", new JsonObject(query));
-            return client.postBuilder(fullIndex + "/_delete_by_query", body)
+            // Completable.fromSingle statt Single#ignoreElement: die RxJava-Version im
+            // Mesh-Prozess kennt ignoreElement() auf Single noch nicht.
+            return Completable.fromSingle(client.postBuilder(fullIndex + "/_delete_by_query", body)
                     .addQueryParameter("conflicts", "proceed")
                     .addQueryParameter("ignore_unavailable", "true")
-                    .async()
-                    .ignoreElement();
+                    .async());
         }));
     }
 

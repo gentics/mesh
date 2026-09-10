@@ -27,6 +27,8 @@ import io.reactivex.Completable;
 import io.reactivex.Flowable;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -61,11 +63,14 @@ import javax.inject.Singleton;
 @Singleton
 public class RagChunkIndexHandler implements IndexHandler<HibNodeFieldContainer> {
 
+    private static final Logger log = LoggerFactory.getLogger(RagChunkIndexHandler.class);
+
     private final Database db;
     private final SearchProvider searchProvider;
     private final BucketManager bucketManager;
     private final RagSyncOptions options;
     private final RagChunkWriter writer;
+    private final RagIndexReadiness readiness;
     private final SyncMeters meters;
 
     /**
@@ -75,15 +80,18 @@ public class RagChunkIndexHandler implements IndexHandler<HibNodeFieldContainer>
      * @param syncMetersFactory  Metriken fuer {@code /search/status}
      * @param options            Betriebsparameter
      * @param writer             gemeinsame Schreiblogik mit dem Event-Pfad
+     * @param readiness          Wachposten fuer das Index-Template des rag-service
      */
     @Inject
     public RagChunkIndexHandler(Database db, SearchProvider searchProvider, BucketManager bucketManager,
-                                SyncMetersFactory syncMetersFactory, RagSyncOptions options, RagChunkWriter writer) {
+                                SyncMetersFactory syncMetersFactory, RagSyncOptions options, RagChunkWriter writer,
+                                RagIndexReadiness readiness) {
         this.db = db;
         this.searchProvider = searchProvider;
         this.bucketManager = bucketManager;
         this.options = options;
         this.writer = writer;
+        this.readiness = readiness;
         this.meters = syncMetersFactory.createSyncMetric(RagIndexNaming.INFIX);
     }
 
@@ -93,7 +101,7 @@ public class RagChunkIndexHandler implements IndexHandler<HibNodeFieldContainer>
     }
 
     /**
-     * Prueft nur, dass beide Seiten denselben Indexnamen bilden.
+     * Prueft den Indexnamen und fragt danach einmal nach dem Index-Template.
      *
      * <p>{@code RagIndexNaming} ergaenzt ein fehlendes {@code -} und schreibt alles klein, Mesh'
      * {@code installationPrefix()} tut das nicht. Bei einem Praefix wie {@code Mesh_} heisst der
@@ -102,11 +110,15 @@ public class RagChunkIndexHandler implements IndexHandler<HibNodeFieldContainer>
      * finden ist. Lieber hier scheitern.
      *
      * <p>Der Index selbst entsteht implizit beim ersten Schreiben ueber das Index-Template, das
-     * der rag-service anlegt.
+     * der rag-service anlegt. Ob dieses Template schon da ist, klaert
+     * {@link RagIndexReadiness#probe()} - fehlt es, startet Mesh trotzdem, der RAG-Sync haelt sich
+     * nur zurueck. Der Praefix-Guard darunter scheitert dagegen hart: ein falscher Praefix ist eine
+     * Fehlkonfiguration, die sich nicht von selbst aufloest, ein fehlendes Template schon.
      */
     @Override
     public Completable init() {
         if (!options.enabled()) {
+            log.info("Der RAG-Sync ist ausgeschaltet (MESH_SEARCH_RAG_ENABLED).");
             return Completable.complete();
         }
         String prefix = searchProvider.installationPrefix();
@@ -118,13 +130,25 @@ public class RagChunkIndexHandler implements IndexHandler<HibNodeFieldContainer>
                             + " unterschiedlich normalisiert (" + prefixed + " vs. " + withPrefix
                             + "). Bitte einen kleingeschriebenen Praefix verwenden, der auf '-' endet."));
         }
-        return Completable.complete();
+        log.info("Der RAG-Sync ist eingeschaltet, Praefix {}, Vorgabe-Auswahl {}.", prefix, options.defaultMode());
+        return readiness.probe();
     }
 
-    /** Mapping und Pipeline kommen aus dem Index-Template des rag-service, nicht aus Mesh. */
+    /**
+     * Mapping und Pipeline kommen aus dem Index-Template des rag-service, nicht aus Mesh - hier
+     * wird deshalb nichts angelegt und nichts angeglichen.
+     *
+     * <p>Geprueft wird stattdessen zweierlei: ob das Template inzwischen existiert (dann nimmt der
+     * Sync den Betrieb auf) und ob ein Index vor dem Template entstanden ist und deshalb ohne
+     * Embeddings dasteht. Der zweite Fall faellt sonst nirgends auf - der Index nimmt Dokumente an
+     * und meldet keinen Fehler, nur das Retrieval liefert nichts.
+     */
     @Override
     public Completable check() {
-        return Completable.complete();
+        if (!options.enabled()) {
+            return Completable.complete();
+        }
+        return readiness.probe().andThen(readiness.reportBrokenIndices());
     }
 
     /**
@@ -199,7 +223,11 @@ public class RagChunkIndexHandler implements IndexHandler<HibNodeFieldContainer>
 
     @Override
     public long getTotalCountFromGraph() {
-        return db.tx(tx -> tx.contentDao().globalCount());
+        // Block statt Ausdruck: ein Ausdruckslambda waere hier auch void-kompatibel, und
+        // TxFactory#tx(TxAction) und tx(TxAction2) wuerden beide passen.
+        return db.tx(tx -> {
+            return tx.contentDao().globalCount();
+        });
     }
 
     /**
@@ -215,32 +243,54 @@ public class RagChunkIndexHandler implements IndexHandler<HibNodeFieldContainer>
         if (!options.enabled()) {
             return Flowable.empty();
         }
+        if (!readiness.isReady()) {
+            log.warn("Voll-Sync des RAG-Index uebersprungen: das Index-Template {} fehlt. Ohne das"
+                    + " Template entstuende ein Index ohne Embeddings, und der liesse sich"
+                    + " nachtraeglich nicht mehr geradebiegen.", readiness.templateName());
+            return Flowable.empty();
+        }
         return Flowable.defer(() -> db.tx(tx -> {
+            // Einmal je Lauf statt einmal je Schemaversion: getTotalCountFromGraph() wuerde eine
+            // Transaktion innerhalb der hier laufenden oeffnen, und die Zahl aendert sich waehrend
+            // eines Laufs ohnehin nicht sinnvoll.
+            long total = tx.contentDao().globalCount();
             List<Flowable<SearchRequest>> parts = new ArrayList<>();
+            int branches = 0;
             for (HibProject project : tx.projectDao().findAll()) {
                 for (HibBranch branch : tx.branchDao().findAll(project)) {
                     String index = writer.indexName(project.getUuid(), branch.getUuid());
                     if (indexPattern.isPresent() && !indexPattern.get().matcher(index).matches()) {
                         continue;
                     }
+                    branches++;
                     for (HibSchemaVersion version : branch.findActiveSchemaVersions()) {
-                        parts.add(syncVersion(project, branch, version));
+                        parts.add(syncVersion(project, branch, version, total));
                     }
                 }
             }
+            log.info("Voll-Sync des RAG-Index: {} Branches, {} Schemaversionen, {} Container insgesamt.",
+                    branches, parts.size(), total);
             return Flowable.merge(parts);
         }));
     }
 
-    private Flowable<SearchRequest> syncVersion(HibProject project, HibBranch branch, HibSchemaVersion version) {
-        return bucketManager.getBuckets(getTotalCountFromGraph())
+    private Flowable<SearchRequest> syncVersion(HibProject project, HibBranch branch, HibSchemaVersion version,
+                                                long total) {
+        return bucketManager.getBuckets(total)
                 .concatMap(bucket -> Flowable.defer(() -> db.tx(tx -> {
                     List<SearchRequest> requests = new ArrayList<>();
                     tx.schemaDao().getFieldContainers(version, branch.getUuid(), bucket, Optional.of(PUBLISHED))
                             .forEach(container -> {
                                 requests.addAll(writer.upsert(container, project, branch, PUBLISHED));
+                                // Erst anmelden, dann abhaken: SyncMeter zieht bei synced() von
+                                // pending ab, ohne addPending liefe der Zaehler ins Negative.
+                                meters.getInsertMeter().addPending(1L);
                                 meters.getInsertMeter().synced();
                             });
+                    if (log.isDebugEnabled()) {
+                        log.debug("RAG-Voll-Sync {}/{}, Version {}, Bucket {}: {} Requests.",
+                                project.getName(), branch.getName(), version.getName(), bucket, requests.size());
+                    }
                     return Flowable.fromIterable(requests);
                 })));
     }

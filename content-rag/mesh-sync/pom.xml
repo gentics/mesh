@@ -25,6 +25,9 @@
         <jsoup.version>1.21.1</jsoup.version>
         <!-- Wie in mesh-bom: der Client, den SearchProvider#getClient() herausgibt. -->
         <elasticsearch.client.version>1.1.4</elasticsearch.client.version>
+        <!-- Nur zum Kompilieren; zur Laufzeit bringt Mesh sein eigenes slf4j mit. Die Mesh-
+             Abhaengigkeiten stehen auf provided und reichen slf4j deshalb nicht weiter. -->
+        <slf4j.version>2.0.16</slf4j.version>
     </properties>
 
     <dependencies>
@@ -76,6 +79,12 @@
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
             <version>${jsoup.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
             <scope>provided</scope>
         </dependency>
 
