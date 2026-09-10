@@ -1,7 +1,9 @@
 package com.gentics.mesh.search;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -43,12 +45,19 @@ public class IndexHandlerRegistryImpl implements IndexHandlerRegistry {
 
 	protected final MicroschemaContainerIndexHandlerImpl microschemaContainerIndexHandler;
 
+	/**
+	 * Zusaetzliche Index-Handler aus anderen Modulen (Dagger-Multibinding). Leer, wenn keiner
+	 * beitraegt - dafuer sorgt die {@code @Multibinds}-Deklaration in {@code CommonBindModule}.
+	 */
+	protected final Set<IndexHandler<?>> customIndexHandlers;
+
 	@Inject
 	public IndexHandlerRegistryImpl(NodeIndexHandlerImpl nodeIndexHandler, UserIndexHandlerImpl userIndexHandler,
 			GroupIndexHandlerImpl groupIndexHandler, RoleIndexHandlerImpl roleIndexHandler,
 			ProjectIndexHandlerImpl projectIndexHandler, TagFamilyIndexHandlerImpl tagFamilyIndexHandler,
 			TagIndexHandlerImpl tagIndexHandler, SchemaContainerIndexHandlerImpl schemaContainerIndexHandler,
-			MicroschemaContainerIndexHandlerImpl microschemaContainerIndexHandler) {
+			MicroschemaContainerIndexHandlerImpl microschemaContainerIndexHandler,
+			Set<IndexHandler<?>> customIndexHandlers) {
 		this.nodeIndexHandler = nodeIndexHandler;
 		this.userIndexHandler = userIndexHandler;
 		this.groupIndexHandler = groupIndexHandler;
@@ -58,11 +67,12 @@ public class IndexHandlerRegistryImpl implements IndexHandlerRegistry {
 		this.tagIndexHandler = tagIndexHandler;
 		this.schemaContainerIndexHandler = schemaContainerIndexHandler;
 		this.microschemaContainerIndexHandler = microschemaContainerIndexHandler;
+		this.customIndexHandlers = customIndexHandlers;
 	}
 
 	@Override
 	public List<IndexHandler<?>> getHandlers() {
-		return Arrays.asList(
+		List<IndexHandler<?>> handlers = new ArrayList<>(Arrays.asList(
 			nodeIndexHandler,
 			userIndexHandler,
 			groupIndexHandler,
@@ -71,7 +81,9 @@ public class IndexHandlerRegistryImpl implements IndexHandlerRegistry {
 			tagFamilyIndexHandler,
 			tagIndexHandler,
 			schemaContainerIndexHandler,
-			microschemaContainerIndexHandler);
+			microschemaContainerIndexHandler));
+		handlers.addAll(customIndexHandlers);
+		return handlers;
 	}
 
 	/**

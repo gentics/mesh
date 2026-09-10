@@ -1,0 +1,690 @@
+---
+title: MCP Server
+---
+
+include::content/docs/variables.adoc-include[]
+
+The Gentics Mesh MCP Server exposes published Gentics Mesh content to language models through the https://modelcontextprotocol.io/[Model Context Protocol] (MCP).
+It is a small, separate Java service that sits between an AI client and Gentics Mesh: the client calls a handful of well-defined tools, the server translates them into Gentics Mesh REST and GraphQL requests, and the language model never talks to the Gentics Mesh API directly.
+
+NOTE: The MCP Server is part of the commercial Gentics Mesh Enterprise distribution. It is shipped as its own container image and runs as a separate process next to Gentics Mesh.
+
+== Overview
+
+The server offers six read-only tools. Whatever an AI client does, the set of operations it can trigger is fixed, every call is checked against an allowlist of projects and languages before Gentics Mesh sees it, and write operations are not available at all.
+
+[options="header",cols="1,3"]
+|===
+| Part | Responsibility
+
+| AI client
+| Claude Desktop, Cursor, OpenAI Agents, LangChain, n8n, Open WebUI or any other MCP-capable client. Discovers the tools, decides when to call them and interprets the results.
+
+| MCP Server
+| Speaks MCP over stdio or HTTP, validates tool input, enforces the policy layer and the protection layer, and calls Gentics Mesh.
+
+| Gentics Mesh
+| Answers the underlying REST and GraphQL requests with the permissions of the identity the request carries — see <<_mesh_identity>>.
+|===
+
+The tool surface is identical for both transports. Tool names, input schemas and output formats are the same whether the server is started as a child process by a desktop client or reached over HTTP from a remote agent framework.
+
+== Transports
+
+=== stdio
+
+The server reads JSON-RPC from standard input and writes to standard output.
+This is the natural transport for local clients such as Claude Desktop, Cursor, Continue or Zed, which start the server as a child process and own it for the lifetime of the session.
+There is exactly one client per process and no authentication step: whoever is able to start the process is trusted.
+
+stdio is the default. It is selected when `MCP_TRANSPORT` is not set, or explicitly with the `--stdio` command line flag.
+
+=== HTTP
+
+The server binds an HTTP port and accepts JSON-RPC 2.0 requests on `POST /mcp`.
+This is the transport for remote clients — agent frameworks, workflow tools and self-hosted LLM stacks that run somewhere else in the cluster.
+Several clients can use the server at the same time, and each request is authenticated with a Bearer token.
+
+HTTP is selected with `MCP_TRANSPORT=http` or the `--http` command line flag. A command line flag takes precedence over the environment variable.
+
+The following JSON-RPC methods are handled: `initialize`, `notifications/initialized`, `ping`, `tools/list` and `tools/call`.
+
+[source,http]
+----
+POST /mcp HTTP/1.1
+Host: mcp.example.com
+Authorization: Bearer <MCP_AUTH_TOKEN>
+Content-Type: application/json
+
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "mesh_list_projects",
+    "arguments": {}
+  }
+}
+----
+
+NOTE: The HTTP transport is request/response only. Server-initiated streams (SSE) for progress events are not implemented. All tools of this server answer in a single response, so nothing is lost by that.
+
+== Tools
+
+All six tools are read-only. A tool result is returned as a single MCP text content block that contains a JSON document.
+
+[options="header",cols="1,2"]
+|===
+| Tool | Purpose
+
+| `mesh_list_projects`
+| Lists the Gentics Mesh projects that are both allowlisted and readable for the current identity.
+
+| `mesh_list_schemas`
+| Lists the schemas of a project together with their field definitions.
+
+| `mesh_get_node`
+| Loads a single node by UUID and returns a normalised representation.
+
+| `mesh_search_nodes`
+| Full-text search over the nodes of a project. Requires the Gentics Mesh Elasticsearch integration.
+
+| `mesh_get_webroot`
+| Resolves a webroot path to the node behind it.
+
+| `mesh_run_graphql`
+| Executes a read-only GraphQL query against a project.
+|===
+
+=== mesh_list_projects
+
+Takes no input.
+
+[source,json]
+----
+{
+  "projects": [
+    { "name": "demo", "uuid": "..." },
+    { "name": "shop", "uuid": "..." }
+  ]
+}
+----
+
+Projects that are not on the `MESH_ALLOWED_PROJECTS` list are not returned, even if the identity could read them.
+
+=== mesh_list_schemas
+
+[options="header",cols="1,1,3"]
+|===
+| Input | Required | Meaning
+
+| `project` | yes | Project name
+|===
+
+[source,json]
+----
+{
+  "project": "demo",
+  "schemas": [
+    {
+      "uuid": "...",
+      "name": "vehicle",
+      "fields": [
+        { "name": "name", "type": "string", "required": true },
+        { "name": "weight", "type": "number", "required": false }
+      ]
+    }
+  ]
+}
+----
+
+=== mesh_get_node
+
+[options="header",cols="1,1,3"]
+|===
+| Input | Required | Meaning
+
+| `project` | yes | Project name
+| `uuid` | yes | Node UUID
+| `language` | no | Language code, default `de`. Must be on the language allowlist.
+|===
+
+[source,json]
+----
+{
+  "uuid": "...",
+  "project": "demo",
+  "language": "de",
+  "schema": "vehicle",
+  "displayName": "DeLorean DMC-12",
+  "path": "/automobiles/delorean",
+  "published": true,
+  "version": "1.0",
+  "fields": { "name": "DeLorean DMC-12", "weight": 1230 },
+  "references": [
+    { "field": "vehicleImage", "uuid": "..." }
+  ]
+}
+----
+
+Node references are listed by field name and UUID; the referenced nodes themselves are not resolved.
+Follow-up calls to `mesh_get_node` load them on demand.
+
+=== mesh_search_nodes
+
+[options="header",cols="1,1,3"]
+|===
+| Input | Required | Meaning
+
+| `project` | yes | Project name
+| `query` | yes | Search text
+| `schema` | no | Restrict the search to one schema
+| `language` | no | Language code, default `de`
+| `fields` | no | Fields to search in, default `["title", "teaser", "body"]`
+| `limit` | no | Number of results, `1`–`20`, default `5`
+| `publishedOnly` | no | Only search published content, default `true`
+|===
+
+[source,json]
+----
+{
+  "results": [
+    {
+      "uuid": "...",
+      "title": "DeLorean DMC-12",
+      "schema": "vehicle",
+      "language": "de",
+      "path": "/automobiles/delorean",
+      "snippet": "...",
+      "published": true
+    }
+  ]
+}
+----
+
+The search is executed through the Gentics Mesh search endpoint and therefore needs a configured and synchronised Elasticsearch — see link:{{< relref "elasticsearch.asciidoc" >}}[Elasticsearch].
+Without it, the tool returns an upstream error.
+
+=== mesh_get_webroot
+
+[options="header",cols="1,1,3"]
+|===
+| Input | Required | Meaning
+
+| `project` | yes | Project name
+| `path` | yes | Webroot path, for example `/automobiles/delorean`. A missing leading slash is added.
+| `language` | no | Language code, default `de`
+|===
+
+The response has the same shape as `mesh_get_node`.
+
+=== mesh_run_graphql
+
+[options="header",cols="1,1,3"]
+|===
+| Input | Required | Meaning
+
+| `project` | yes | Project name
+| `query` | yes | GraphQL query document
+| `variables` | no | Query variables as a JSON object
+|===
+
+[source,json]
+----
+{
+  "data": { "...": "..." },
+  "meta": { "truncated": false, "timedOut": false }
+}
+----
+
+Three guardrails apply before the query reaches Gentics Mesh, in this order:
+
+. A document that starts with the `mutation` keyword is rejected with `forbidden`.
+. A document longer than `MCP_GRAPHQL_MAX_QUERY_LENGTH` characters is rejected with `validation_error`.
+. A document whose brace nesting is deeper than `MESH_GRAPHQL_MAX_DEPTH` is rejected with `validation_error`.
+
+The depth check counts braces; it does not parse the query. See link:{{< relref "graphql.asciidoc" >}}[GraphQL] for the query language itself.
+
+== Policy layer
+
+Every tool call passes through the policy layer before any request is sent to Gentics Mesh.
+The checks are deliberately simple and fail fast, so that a badly parameterised call from a language model is answered by the MCP Server and never reaches Gentics Mesh.
+
+* *Project allowlist* — `MESH_ALLOWED_PROJECTS` is mandatory. A tool call for any other project is rejected with `forbidden`.
+* *Language allowlist* — `MESH_ALLOWED_LANGUAGES` (default `de,en`). Tools that take a `language` argument reject other codes with `forbidden`.
+* *Read-only* — `MESH_READ_ONLY` defaults to `true`. There are currently no write tools; the setting exists so that a future write tool cannot be enabled by accident.
+* *GraphQL guardrails* — mutation block, length and depth limits, as described under <<_mesh_run_graphql>>.
+
+The policy layer is independent of Gentics Mesh permissions. It narrows what the MCP Server will ask for; what Gentics Mesh actually returns is still decided by the permissions of the identity the request runs under.
+
+[[_mesh_identity]]
+== Mesh identity
+
+Two different questions are easy to confuse: whether a client may use the MCP Server, and which user Gentics Mesh sees when the server calls it.
+The answer to the second question depends only on the transport.
+
+[options="header",cols="1,2,2,3"]
+|===
+| Case | Setup | MCP authentication | Identity towards Gentics Mesh
+
+| 1
+| `http` with `MCP_AUTH_TOKEN`
+| The server checks the Bearer token and rejects requests that do not carry it.
+| *anonymous*. The token is a credential of the MCP Server, not of Gentics Mesh, and is never forwarded.
+
+| 2
+| `http` with `MCP_AUTH_DISABLED=true`
+| none
+| The client's `Authorization: Bearer …` header is forwarded to Gentics Mesh per request, and Gentics Mesh decides what it may read. Without a header the request is anonymous.
+
+| 3
+| `stdio`
+| not applicable — the process that started the server is trusted
+| A fixed identity from `MESH_API_KEY`, or from `MESH_USERNAME` and `MESH_PASSWORD`.
+|===
+
+Case 1 means that Gentics Mesh serves anonymous requests. The `anonymous` role in Gentics Mesh needs read permission on every project listed in `MESH_ALLOWED_PROJECTS`; otherwise all tools return empty results without any error.
+See link:{{< relref "authentication.asciidoc" >}}#_anonymous_access[Anonymous access] for how to set that up.
+
+In case 2 the forwarded token is attached to the individual request, not to the shared Gentics Mesh client, so concurrent calls cannot inherit each other's identity.
+
+`MESH_API_KEY`, `MESH_USERNAME` and `MESH_PASSWORD` are only valid for stdio. In HTTP mode the server refuses to start when any of them is set — they would have no effect there, and a silently ignored credential is the worse surprise.
+
+At startup the server verifies the connection:
+
+* *stdio* — logs in and calls `me()`. If Gentics Mesh answers with the user `anonymous`, the credentials were not accepted and the server exits.
+* *http* — sends an unauthenticated ping to `MESH_BASE_URL`, so that a wrong URL shows up immediately rather than at the first tool call.
+
+== Authentication (HTTP)
+
+In HTTP mode every request to `/mcp` must carry `Authorization: Bearer <token>`, where the token equals `MCP_AUTH_TOKEN`.
+The comparison is constant-time, so the token cannot be guessed through timing differences.
+Requests without a valid token are answered with HTTP 401 and counted in `mcp_http_auth_failed_total`.
+
+Authentication can be switched off with `MCP_AUTH_DISABLED=true`. That is only appropriate when a reverse proxy or ingress in front of the server already terminates authentication — with it disabled, everyone who can reach the port can call tools.
+It also changes the Mesh identity, as described above.
+
+Starting in HTTP mode without either `MCP_AUTH_TOKEN` or `MCP_AUTH_DISABLED=true` is a configuration error, and the server exits.
+
+The `AuthValidator` interface in the source is the extension point for other schemes such as JWT introspection or OAuth 2.1; only the static Bearer token is shipped.
+
+== Protection layer
+
+A language model in a retry loop, or an agent that is simply very curious, can produce a lot of requests in a short time.
+The protection layer keeps that away from Gentics Mesh. Three independent mechanisms sit between every tool call and the Gentics Mesh client, and all of them fail fast: nothing is queued, the client gets an error immediately.
+
+=== Rate limit
+
+A token bucket per Bearer token and a global one. Each tool consumes a fixed number of permits that roughly reflects the load it puts on Gentics Mesh:
+
+[options="header",cols="2,1"]
+|===
+| Tool | Permits
+
+| `mesh_list_projects`, `mesh_list_schemas` | 1
+| `mesh_get_node`, `mesh_get_webroot` | 2
+| `mesh_search_nodes` | 3
+| `mesh_run_graphql` | 5
+|===
+
+Defaults are 20 permits per second per token and 50 per second globally.
+The per-token limit does not apply to stdio, where there is only one client by design.
+When a bucket is empty the call is rejected with `rate_limited`, HTTP 429 and `Retry-After: 1`.
+
+=== Bulkhead
+
+At most `MCP_MESH_MAX_CONCURRENT` Gentics Mesh calls are in flight at the same time (default 10).
+A single `mesh_run_graphql` can hold a connection for the full GraphQL timeout, which is a concurrency problem rather than a rate problem, and this is the cap for it.
+Beyond the limit a call is rejected with `busy`, HTTP 429 and `Retry-After: 1`.
+
+=== Circuit breaker
+
+When Gentics Mesh starts failing, the server stops sending load instead of piling on.
+The failure rate is measured over a sliding window of the last `MCP_CIRCUIT_BREAKER_WINDOW_SIZE` calls (default 20); at `MCP_CIRCUIT_BREAKER_FAILURE_RATE_PERCENT` (default 50 %) the breaker opens for `MCP_CIRCUIT_BREAKER_OPEN_DURATION_MS` (default 30 seconds) and then lets three probe calls through before closing again.
+Client-side faults — `validation_error`, `forbidden`, `not_found` — do not count as failures; only problems on the Gentics Mesh side do.
+While the breaker is open, calls are rejected with `circuit_open`, HTTP 503 and a `Retry-After` equal to the remaining open duration.
+
+The breaker can be disabled with `MCP_CIRCUIT_BREAKER_ENABLED=false`; rate limit and bulkhead stay active.
+
+=== What a client should do
+
+On HTTP 429 or 503 a client should read `Retry-After` and back off exponentially.
+Agent frameworks such as the OpenAI Agents SDK or LangChain do that on their own; custom integrations have to implement it.
+
+The JSON-RPC envelope of a rejected call additionally carries `result.isError = true` and a structured error body, so the language model can put the situation into words for the user rather than retrying blindly.
+
+== Errors
+
+Every tool error is returned as a JSON document with a stable code. Codes are never renamed; new ones are appended.
+
+[source,json]
+----
+{
+  "error": {
+    "code": "forbidden",
+    "message": "Projekt 'staging' ist nicht in der Allowlist. Erlaubt: [demo, shop]"
+  }
+}
+----
+
+[options="header",cols="1,1,3"]
+|===
+| Code | HTTP status | Meaning
+
+| `validation_error` | 200 | Invalid tool input: a required field is missing, a value is out of range, or a GraphQL guardrail was hit.
+| `forbidden` | 200 | Policy violation: project or language not on the allowlist, GraphQL mutation, or Gentics Mesh answered 401/403.
+| `not_found` | 200 | The node or webroot path does not exist in the project.
+| `upstream_error` | 200 | The Gentics Mesh call failed: connection refused, 5xx, unexpected response.
+| `timeout_error` | 200 | The GraphQL request exceeded `MESH_GRAPHQL_TIMEOUT_MS`.
+| `internal_error` | 200 | Unexpected exception in the server. Worth a bug report.
+| `rate_limited` | 429 | Token bucket empty, globally or for this Bearer token. `Retry-After` is set.
+| `busy` | 429 | Bulkhead full — too many concurrent Gentics Mesh calls. `Retry-After` is set.
+| `circuit_open` | 503 | Gentics Mesh is unhealthy and the breaker is open. `Retry-After` is set.
+|===
+
+The HTTP status column applies to the HTTP transport. Tool-level errors are ordinary MCP results with `isError = true` and HTTP 200; only the protection layer changes the status, so that generic HTTP clients and proxies see 429 and 503.
+Over stdio the same JSON is returned inside the MCP result.
+
+== Configuration
+
+All configuration is read from environment variables and validated once at startup.
+Validation collects every problem it finds and reports them together, so a misconfigured deployment fails on the first start with a complete list rather than one error per restart.
+
+=== Gentics Mesh connection
+
+[options="header",cols="2,1,1,3"]
+|===
+| Variable | Required | Default | Meaning
+
+| `MESH_BASE_URL` | yes | – | Base URL of the Gentics Mesh instance, without trailing slash
+| `MESH_API_KEY` | stdio | – | Gentics Mesh API token (a long-lived JWT). Alternative to username and password. Rejected in HTTP mode.
+| `MESH_USERNAME` | stdio | – | Service account user, together with `MESH_PASSWORD`, when no `MESH_API_KEY` is set. Rejected in HTTP mode.
+| `MESH_PASSWORD` | stdio | – | Service account password. Never logged. Rejected in HTTP mode.
+| `MESH_ALLOWED_PROJECTS` | yes | – | Comma-separated list of project names
+| `MESH_ALLOWED_SCHEMAS` | no | (all) | Comma-separated list of schema names. Accepted, but currently not enforced by any tool — see <<_current_limitations>>.
+| `MESH_ALLOWED_LANGUAGES` | no | `de,en` | Comma-separated ISO 639-1 language codes
+| `MESH_READ_ONLY` | no | `true` | Reserved for future write tools; keep at `true`
+| `MESH_GRAPHQL_MAX_DEPTH` | no | `6` | Maximum GraphQL nesting depth, `1`–`20`
+| `MESH_GRAPHQL_TIMEOUT_MS` | no | `5000` | GraphQL request timeout in milliseconds, at least `100`
+| `LOG_LEVEL` | no | `info` | `debug`, `info`, `warn` or `error`
+|===
+
+REST requests to Gentics Mesh use a fixed timeout of 10 seconds.
+
+=== Transport and HTTP
+
+[options="header",cols="2,1,3"]
+|===
+| Variable | Default | Meaning
+
+| `MCP_TRANSPORT` | `stdio` | `stdio` or `http`. Overridden by the `--stdio` / `--http` command line flags.
+| `MCP_HTTP_HOST` | `0.0.0.0` | Bind address in HTTP mode
+| `MCP_HTTP_PORT` | `3001` | Bind port in HTTP mode, `1`–`65535`
+| `MCP_AUTH_TOKEN` | – | Bearer token. Required in HTTP mode unless `MCP_AUTH_DISABLED=true`.
+| `MCP_AUTH_DISABLED` | `false` | `true` switches authentication off. Only behind a reverse proxy that authenticates.
+| `MCP_CORS_ORIGINS` | – | Comma-separated origin allowlist for browser clients; `*` allows all. Unset means no CORS headers.
+|===
+
+=== Protection layer
+
+[options="header",cols="2,1,3"]
+|===
+| Variable | Default | When to change it
+
+| `MCP_RATE_LIMIT_PER_SECOND` | `50` | Global weighted permits per second. Raise when many tokens are expected to produce real load.
+| `MCP_RATE_LIMIT_PER_TOKEN_PER_SECOND` | `20` | Weighted permits per second per Bearer token. Lower to throttle individual agents harder.
+| `MCP_MESH_MAX_CONCURRENT` | `10` | Bulkhead permits. Should mirror the Gentics Mesh capacity; one to two times the Gentics Mesh CPU cores is a reasonable start.
+| `MCP_CIRCUIT_BREAKER_ENABLED` | `true` | `false` only for load tests.
+| `MCP_CIRCUIT_BREAKER_FAILURE_RATE_PERCENT` | `50` | Lower means a more sensitive breaker, `1`–`100`.
+| `MCP_CIRCUIT_BREAKER_WINDOW_SIZE` | `20` | Larger is more stable but reacts later.
+| `MCP_CIRCUIT_BREAKER_OPEN_DURATION_MS` | `30000` | How long Gentics Mesh gets to recover.
+| `MCP_GRAPHQL_MAX_QUERY_LENGTH` | `4000` | Maximum characters in a GraphQL query. Raise for power-user queries, lower when models build overly long ones.
+|===
+
+== Operational endpoints
+
+In HTTP mode the following endpoints are available without authentication. They are meant for the cluster — Kubernetes probes and a Prometheus scraper — not for clients.
+
+[options="header",cols="1,3"]
+|===
+| Endpoint | Meaning
+
+| `GET /healthz` | Liveness: `200 OK` as long as the process runs.
+| `GET /readyz` | Readiness: `200 OK` once the HTTP server is bound.
+| `GET /metrics` | Prometheus text format.
+| `POST /mcp` | The MCP endpoint. Authentication required.
+|===
+
+=== Metrics
+
+[source]
+----
+mcp_uptime_seconds 3845.2
+mcp_http_requests_total 1284
+mcp_http_auth_failed_total 7
+mcp_tool_calls_total{tool="mesh_get_node"} 612
+mcp_tool_errors_total{tool="mesh_get_node"} 4
+mcp_tool_duration_ms_total{tool="mesh_get_node"} 91240
+mcp_rate_limit_rejected_total{scope="token",tool="mesh_run_graphql"} 42
+mcp_rate_limit_rejected_total{scope="global",tool="mesh_search_nodes"} 5
+mcp_concurrency_rejected_total{tool="mesh_get_node"} 11
+mcp_circuit_breaker_rejected_total 8
+mcp_circuit_breaker_state{state="CLOSED"} 1
+mcp_circuit_breaker_state{state="OPEN"} 0
+mcp_circuit_breaker_state{state="HALF_OPEN"} 0
+----
+
+`mcp_circuit_breaker_state` is a set of `0`/`1` gauges, one per state, in the same shape as the Resilience4j Prometheus binding, so alerts can be written on `mcp_circuit_breaker_state{state="OPEN"} == 1`.
+Metrics are kept in memory and reset with the process.
+
+== Running the server
+
+=== Container image
+
+The image is built by the Gentics Mesh Enterprise pipeline and tagged with the Gentics Mesh version:
+
+[source]
+----
+docker.gentics.com/gentics/mesh-enterprise/mcp-server:<version>
+----
+
+The image runs as a non-root user on a JRE 17 base. In stdio mode no port is exposed and no init wrapper is used — that would break the stdio pipes.
+
+.stdio
+[source,bash]
+----
+docker run -i --rm \
+  -e MESH_BASE_URL=http://mesh:8080 \
+  -e MESH_USERNAME=admin \
+  -e MESH_PASSWORD=admin \
+  -e MESH_ALLOWED_PROJECTS=demo \
+  docker.gentics.com/gentics/mesh-enterprise/mcp-server:<version>
+----
+
+.HTTP
+[source,bash]
+----
+docker run --rm -p 3001:3001 \
+  -e MESH_BASE_URL=http://mesh:8080 \
+  -e MESH_ALLOWED_PROJECTS=demo \
+  -e MCP_TRANSPORT=http \
+  -e MCP_AUTH_TOKEN=$(openssl rand -base64 32) \
+  docker.gentics.com/gentics/mesh-enterprise/mcp-server:<version>
+----
+
+=== Kubernetes
+
+Run the HTTP transport as a Deployment with a Service, and point `MESH_BASE_URL` at the Gentics Mesh Service.
+Use `httpGet` probes on `/healthz` and `/readyz`, put `MCP_AUTH_TOKEN` into a Secret, and scrape `/metrics` with Prometheus.
+The MCP Server is stateless, so it can be scaled horizontally; note that rate limits and the circuit breaker are per instance.
+
+The Gentics Mesh Helm chart does not include the MCP Server at the moment.
+
+=== JAR
+
+The server is a single executable JAR that needs Java 17:
+
+[source,bash]
+----
+export MESH_BASE_URL=http://localhost:8080
+export MESH_ALLOWED_PROJECTS=demo
+export MESH_USERNAME=admin
+export MESH_PASSWORD=admin
+java -jar mesh-mcp-server.jar            # stdio
+
+MCP_TRANSPORT=http MCP_AUTH_TOKEN=secret java -jar mesh-mcp-server.jar   # HTTP
+----
+
+Both transports share one JAR; the transport is the only thing that differs.
+Remember that the Gentics Mesh credentials must be absent in HTTP mode.
+
+== Client integration
+
+=== Claude Desktop (stdio)
+
+[source,json]
+----
+{
+  "mcpServers": {
+    "gentics-mesh": {
+      "command": "java",
+      "args": ["-jar", "/path/to/mesh-mcp-server.jar"],
+      "env": {
+        "MESH_BASE_URL": "http://localhost:8080",
+        "MESH_USERNAME": "admin",
+        "MESH_PASSWORD": "admin",
+        "MESH_ALLOWED_PROJECTS": "demo"
+      }
+    }
+  }
+}
+----
+
+The container image works the same way with `"command": "docker"` and `"args": ["run", "-i", "--rm", ...]`.
+
+=== Cursor, Continue, Zed (HTTP)
+
+[source,json]
+----
+{
+  "mcpServers": {
+    "gentics-mesh": {
+      "url": "https://mcp.example.com/mcp",
+      "headers": { "Authorization": "Bearer <MCP_AUTH_TOKEN>" }
+    }
+  }
+}
+----
+
+=== OpenAI Responses API
+
+[source,python]
+----
+from openai import OpenAI
+
+client = OpenAI()
+resp = client.responses.create(
+    model="gpt-4.1",
+    tools=[{
+        "type": "mcp",
+        "server_label": "gentics-mesh",
+        "server_url": "https://mcp.example.com/mcp",
+        "headers": {"Authorization": "Bearer <MCP_AUTH_TOKEN>"},
+    }],
+    input="List the projects in Gentics Mesh.",
+)
+print(resp.output_text)
+----
+
+=== LangChain
+
+[source,python]
+----
+from langchain_mcp_adapters.client import MultiServerMCPClient
+
+mcp = MultiServerMCPClient({
+    "gentics-mesh": {
+        "url": "https://mcp.example.com/mcp",
+        "transport": "streamable_http",
+        "headers": {"Authorization": "Bearer <MCP_AUTH_TOKEN>"},
+    }
+})
+tools = await mcp.get_tools()
+----
+
+=== n8n and Open WebUI
+
+Both take the endpoint URL `https://mcp.example.com/mcp` and an `Authorization: Bearer …` header in their MCP client settings. The tools are discovered automatically.
+
+=== Testing with curl
+
+[source,bash]
+----
+TOKEN=<MCP_AUTH_TOKEN>
+
+curl -s http://localhost:3001/mcp \
+  -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | jq
+
+curl -s http://localhost:3001/mcp \
+  -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{"jsonrpc":"2.0","id":2,"method":"tools/call",
+       "params":{"name":"mesh_list_projects","arguments":{}}}' | jq
+----
+
+For stdio the https://github.com/modelcontextprotocol/inspector[MCP Inspector] is the quickest way to try the tools interactively:
+
+[source,bash]
+----
+npx @modelcontextprotocol/inspector --command java --args -jar,mesh-mcp-server.jar
+----
+
+== Troubleshooting
+
+[options="header",cols="2,3"]
+|===
+| Symptom | Likely cause
+
+| Server exits at startup with `Konfigurationsfehler`
+| A required variable is missing or a value is out of range. The message lists every problem at once.
+
+| Server exits in HTTP mode because `MESH_USERNAME` (or `MESH_API_KEY`, `MESH_PASSWORD`) is set
+| Gentics Mesh credentials are stdio-only. Remove them; in HTTP mode the identity comes from the request or is anonymous.
+
+| stdio start fails with a message about the user `anonymous`
+| The API key or username/password were not accepted by Gentics Mesh.
+
+| All tools return empty results, no error (HTTP mode with `MCP_AUTH_TOKEN`)
+| Requests are anonymous, and the `anonymous` role has no read permission on the allowlisted projects.
+
+| `forbidden` for a project or language
+| Not on `MESH_ALLOWED_PROJECTS` or `MESH_ALLOWED_LANGUAGES`.
+
+| `mesh_search_nodes` returns `upstream_error`
+| Elasticsearch is not configured or not synchronised on the Gentics Mesh side.
+
+| HTTP 429 with `rate_limited` or `busy`
+| The client is faster than the configured limits. Back off, or raise the limits if Gentics Mesh has the capacity.
+
+| HTTP 503 with `circuit_open`
+| Gentics Mesh was failing recently. Check Gentics Mesh; the breaker closes on its own once probe calls succeed.
+|===
+
+[[_current_limitations]]
+== Current limitations
+
+* All tools are read-only; there are no write tools.
+* `MESH_ALLOWED_SCHEMAS` is parsed and validated but not enforced by any tool. The `schema` argument of `mesh_search_nodes` is passed to Elasticsearch as given.
+* The `mesh_get_node` input schema advertises an optional `resolveReferencesDepth` argument; it is currently ignored, and references are always returned as `field` and `uuid` only.
+* The HTTP transport is request/response only; server-initiated SSE streams are not supported.
+* Rate limits, bulkhead and circuit breaker are per instance and are not shared between replicas.
+* Only the static Bearer token is shipped as an authentication scheme.
+
+== See also
+
+* link:{{< relref "authentication.asciidoc" >}}[Authentication] — API tokens, anonymous access and how Gentics Mesh identifies a request
+* link:{{< relref "graphql.asciidoc" >}}[GraphQL] — the query language behind `mesh_run_graphql`
+* link:{{< relref "elasticsearch.asciidoc" >}}[Elasticsearch] — the search integration behind `mesh_search_nodes`
+* link:{{< relref "monitoring.asciidoc" >}}[Monitoring] — Prometheus metrics of Gentics Mesh itself

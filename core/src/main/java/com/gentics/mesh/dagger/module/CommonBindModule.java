@@ -45,6 +45,7 @@ import com.gentics.mesh.core.binary.BinaryProcessorRegistry;
 import com.gentics.mesh.core.binary.BinaryProcessorRegistryImpl;
 import com.gentics.mesh.core.context.ContextDataRegistry;
 import com.gentics.mesh.core.context.impl.ContextDataRegistryImpl;
+import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.dao.BinaryDao;
 import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.ContentDao;
@@ -143,6 +144,7 @@ import com.gentics.mesh.search.index.tag.TagIndexHandler;
 import com.gentics.mesh.search.index.tag.TagIndexHandlerImpl;
 import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
 import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandlerImpl;
+import com.gentics.mesh.search.verticle.eventhandler.EventHandler;
 import com.gentics.mesh.search.index.user.UserIndexHandler;
 import com.gentics.mesh.search.index.user.UserIndexHandlerImpl;
 import com.gentics.mesh.security.SecurityUtils;
@@ -151,6 +153,9 @@ import com.gentics.mesh.storage.LocalBinaryStorageImpl;
 
 import dagger.Binds;
 import dagger.Module;
+import dagger.multibindings.Multibinds;
+
+import java.util.Set;
 
 /**
  * Dagger module for common bindings
@@ -379,4 +384,23 @@ public abstract class CommonBindModule {
 
 	@Binds
 	abstract LanguageDao bindLanguageDao(PersistingLanguageDao e);
+
+	/**
+	 * Erweiterungspunkt fuer zusaetzliche Suchindex-Handler aus anderen Modulen, etwa dem
+	 * RAG-Chunk-Handler von mesh-enterprise. Die Deklaration sorgt dafuer, dass das Set auch dann
+	 * injizierbar ist, wenn niemand beitraegt - Mesh selbst traegt hier nichts bei.
+	 *
+	 * @return Menge zusaetzlicher Index-Handler
+	 */
+	@Multibinds
+	abstract Set<IndexHandler<?>> customIndexHandlers();
+
+	/**
+	 * Erweiterungspunkt fuer zusaetzliche Event-Handler des Suchmoduls, analog zu
+	 * {@link #customIndexHandlers()}.
+	 *
+	 * @return Menge zusaetzlicher Event-Handler
+	 */
+	@Multibinds
+	abstract Set<EventHandler> customSearchEventHandlers();
 }
