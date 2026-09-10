@@ -246,7 +246,7 @@
 					<images>
 						<image>
 							<alias>mariadb</alias>
-							<name>mariadb:10.7</name>
+							<name>mariadb:12.3</name>
 							<run>
 								<skip>${skip.mariadb.tests}</skip>
 								<cmd>
