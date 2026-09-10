@@ -1,6 +1,7 @@
 package com.gentics.mesh.enterprise.hibernate.dialect;
 
 import static org.hibernate.type.SqlTypes.DOUBLE;
+import static org.hibernate.type.SqlTypes.JSON;
 import static org.hibernate.type.SqlTypes.LONGNVARCHAR;
 import static org.hibernate.type.SqlTypes.LONGVARCHAR;
 
@@ -25,6 +26,7 @@ public class OracleLongTextDialect extends OracleDialect {
 		final DdlTypeRegistry ddlTypeRegistry = typeContributions.getTypeConfiguration().getDdlTypeRegistry();
 		ddlTypeRegistry.addDescriptor( new DdlTypeImpl( LONGVARCHAR, "nclob", this ) );
 		ddlTypeRegistry.addDescriptor( new DdlTypeImpl( LONGNVARCHAR, "nclob", this ) );
+		ddlTypeRegistry.addDescriptor( new DdlTypeImpl( JSON, "nclob", this ) );
 		ddlTypeRegistry.addDescriptor( new DdlTypeImpl( DOUBLE, "binary_double", this ) );
 	}
 }

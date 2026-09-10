@@ -2,6 +2,7 @@ package com.gentics.mesh.enterprise.hibernate.dialect;
 
 import static org.hibernate.type.SqlTypes.CHAR;
 import static org.hibernate.type.SqlTypes.CLOB;
+import static org.hibernate.type.SqlTypes.JSON;
 import static org.hibernate.type.SqlTypes.LONGNVARCHAR;
 import static org.hibernate.type.SqlTypes.LONGVARCHAR;
 import static org.hibernate.type.SqlTypes.NCHAR;
@@ -45,6 +46,8 @@ public class SqlServerUnicodeDialect extends SQLServerDialect {
 		ddlTypeRegistry.addDescriptor( new DdlTypeImpl( LONGNVARCHAR, "nvarchar(max)", this ) );
 		ddlTypeRegistry.addDescriptor( new DdlTypeImpl( NVARCHAR, "nvarchar(max)", this ) );
 		ddlTypeRegistry.addDescriptor( new DdlTypeImpl( NCLOB, "nvarchar(max)", this ) );
+
+		ddlTypeRegistry.addDescriptor( new DdlTypeImpl( JSON, "nvarchar(max)", this ) );
 	}
 
 	@Override

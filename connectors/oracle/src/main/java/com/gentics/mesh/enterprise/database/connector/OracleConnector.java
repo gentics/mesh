@@ -49,7 +49,7 @@ public class OracleConnector extends AbstractEnterpriseDatabaseConnector {
 
 	@Override
 	public String installListContentColumn(String listItemType, String listAlias, String operator, String paramName) {
-		if ("stringlist".equalsIgnoreCase(listItemType) || "htmllist".equalsIgnoreCase(listItemType)) {
+		if ("stringlist".equalsIgnoreCase(listItemType) || "htmllist".equalsIgnoreCase(listItemType) || "jsonlist".equalsIgnoreCase(listItemType)) {
 			return unblobStringContentColumn(listAlias + "." + renderNonContentColumn("valueOrUuid"), false, false) + " " + operator + " " + ":" + paramName;
 		} else {
 			return super.installListContentColumn(listItemType, listAlias, operator, paramName);
@@ -58,7 +58,7 @@ public class OracleConnector extends AbstractEnterpriseDatabaseConnector {
 
 	@Override
 	public String installStringContentColumn(String columnName, boolean makeAlias, boolean customAlias) {
-		if (columnName.endsWith("-string\"") || columnName.endsWith("-html\"")) {
+		if (columnName.endsWith("-string\"") || columnName.endsWith("-html\"") || columnName.endsWith("-json\"")) {
 			return unblobStringContentColumn(columnName, makeAlias, customAlias);
 		} else {
 			return super.installStringContentColumn(columnName, makeAlias, customAlias);
