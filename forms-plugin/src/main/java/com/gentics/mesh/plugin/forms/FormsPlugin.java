@@ -311,7 +311,7 @@ public class FormsPlugin extends AbstractPlugin implements CommercialRestPlugin 
 			.withUriParameter("formUuid", "Form UUID", UUIDUtil.randomUUID())
 			.withQueryParameter("formDataUuid", "Form data ID", UUIDUtil.randomUUID())
 			.withQueryParameter("lang", "Language code", "en")
-			.consumes(MULTIPART_FORM_DATA)
+			.consumes("*/*")
 			.withExampleResponse(HttpResponseStatus.OK, new FormData(), "Posted data")
 			.withHandler(fromComponent(FormsPluginComponent::submitDataHandler))
 			.build();
@@ -321,7 +321,7 @@ public class FormsPlugin extends AbstractPlugin implements CommercialRestPlugin 
 			.withUriParameter("formUuid", "Form UUID", UUIDUtil.randomUUID())
 			.withQueryParameter("formDataUuid", "Form data ID", UUIDUtil.randomUUID())
 			.withQueryParameter("lang", "Language code", "en")
-			.consumes(MULTIPART_FORM_DATA)
+			.consumes("*/*")
 			.withExampleResponse(HttpResponseStatus.OK, new FormData(), "Posted data")
 			.withHandler(fromComponent(FormsPluginComponent::saveDataHandler))
 			.build();
@@ -331,7 +331,7 @@ public class FormsPlugin extends AbstractPlugin implements CommercialRestPlugin 
 			.withUriParameter("formUuid", "Form UUID", UUIDUtil.randomUUID())
 			.withQueryParameter("formDataUuid", "Form data ID", UUIDUtil.randomUUID())
 			.withQueryParameter("lang", "Language code", "en")
-			.consumes(MULTIPART_FORM_DATA)
+			.consumes("*/*")
 			.withExampleResponse(HttpResponseStatus.OK, new FormData(), "Posted data")
 			.withHandler(fromComponent(FormsPluginComponent::validationHandler))
 			.build();
