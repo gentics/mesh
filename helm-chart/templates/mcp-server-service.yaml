@@ -1,0 +1,21 @@
+{{- if and .Values.mcpServer.enabled (eq .Values.mcpServer.transport.mode "http") -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "mesh.mcpServer.fullname" . }}
+  labels:
+    {{- include "mesh.mcpServer.labels" . | nindent 4 }}
+  {{- with .Values.mcpServer.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.mcpServer.service.type }}
+  ports:
+    - port: {{ .Values.mcpServer.transport.http.port }}
+      targetPort: mcp-http
+      protocol: TCP
+      name: mcp-http
+  selector:
+    {{- include "mesh.mcpServer.selectorLabels" . | nindent 4 }}
+{{- end }}

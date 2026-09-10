@@ -1,0 +1,22 @@
+{{- /*
+PodDisruptionBudget for the MCP server — only rendered when running more than one
+replica (a PDB at a single fixed replica would block node drains).
+maxUnavailable, when set, takes precedence over minAvailable (K8s allows only one).
+*/}}
+{{- if and .Values.mcpServer.enabled (gt (.Values.mcpServer.replicaCount | int) 1) }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: "{{ include "mesh.mcpServer.fullname" . }}-pdb"
+  labels:
+    {{- include "mesh.mcpServer.labels" . | nindent 4 }}
+spec:
+  {{- if ((.Values.mcpServer.podDisruptionBudget).maxUnavailable) }}
+  maxUnavailable: {{ .Values.mcpServer.podDisruptionBudget.maxUnavailable }}
+  {{- else }}
+  minAvailable: {{ ((.Values.mcpServer.podDisruptionBudget).minAvailable) | default "50%" }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "mesh.mcpServer.selectorLabels" . | nindent 6 }}
+{{- end }}

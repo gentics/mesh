@@ -1,66 +1,22 @@
-# Gentics Mesh 3.x Helm Chart
+# Gentics Mesh Helm Chart
 
+## Introduction
 
-## Prerequisite
+This chart bootstraps a Gentics Mesh Enterprise installation
 
-* Kubernetes
-* Helm 3
+## Links
 
-## Setup
+* [Installation Guide](https://www.gentics.com/cmp8/operations/kubernetes/installation)
+* [Documentation](https://www.gentics.com/mesh/docs/getting-started/)
+* [Changelog](https://www.gentics.com/cmp/changelog/)
 
-First the initial master database needs to be setup. This will automatically be handled by the helm chart when `replicaCount=1`.
+## Update dependency charts
 
+Set gentics-common `version` in `Chart.yml`
 ```bash
-helm install --wait -f example-values.yaml --set "replicaCount=1,backup.enabled=false" gentics-mesh .
+helm dependency update
 ```
-
-Once the database is setup you can start the full stack by running.
-
-```bash
-helm upgrade --wait -f example-values.yaml gentics-mesh .
-```
-
-## Pull Secrets
-
-```bash
-kubectl create secret docker-registry docker-gentics-com \
---docker-server=docker.gentics.com  \
---docker-username=customer-xxx \
---docker-password=YOUR_PASSWORD
-```
-
-## Default Configuration
-
-By default various features are enabled / settings:
-
-* Server tokens will be omitted by default
-* No update check will be performed
-* Backup is disabled
-
-## TODOs / Missing configuration
-
-* Elasticsearch support
-* Backup requires Gentics Mesh which includes Mesh CLI
-* PV for image cache
-
-## Changelog
-### 3.0.2
-* A `.Values.persistence.enabled` key has been removed as unsound.
-
-### 3.0.1
-* Initial Release of Mesh Helm Chart for Mesh 3.x
 
 ## Building / Release
 
-Increase `version` in `Chart.yaml` and create git Tag. Then this tag can be pushed to Artifactory
-
-### package current version 
-```bash
-helm package ./
-```
-
-### Upload the generated/packaged file (check filename)
-
-```bash
-curl -u USERNAME:PASSWORD -s -w "%{http_code}\n" https://repo.gentics.com/repository/helm/ --upload-file ./gentics-mesh-xxx.tgz
-```
+Helm chart is automatically built with a mesh-enterprise release

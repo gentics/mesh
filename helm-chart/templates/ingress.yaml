@@ -1,4 +1,3 @@
-{{- if semverCompare ">=1.19-0" .Capabilities.KubeVersion.GitVersion -}}
 {{- if .Values.ingress.enabled -}}
 {{- $fullName := include "mesh.fullname" . -}}
 {{- $svcPort := .Values.service.mesh.port -}}
@@ -41,5 +40,4 @@ spec:
                   number: {{ $svcPort }}
         {{- end }}
   {{- end }}
-{{- end }}
 {{- end }}
