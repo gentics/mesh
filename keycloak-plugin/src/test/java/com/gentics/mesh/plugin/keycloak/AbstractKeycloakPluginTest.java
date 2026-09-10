@@ -17,6 +17,7 @@ import org.junit.Test;
 import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.auth.util.KeycloakUtils;
 import com.gentics.mesh.core.rest.group.GroupReference;
+import com.gentics.mesh.core.rest.user.UserAPITokenCreateRequest;
 import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.plugin.test.common.AbstractPluginLocalIntegrationTest;
@@ -92,7 +93,7 @@ public abstract class AbstractKeycloakPluginTest extends AbstractPluginLocalInte
 		restClient().login().blockingGet();
 
 		// Now invoke request with regular Mesh API token.
-		UserAPITokenResponse meshApiToken = call(() -> restClient().issueAPIToken(me2.getUuid()));
+		UserAPITokenResponse meshApiToken = call(() -> restClient().issueAPIToken(me2.getUuid(), new UserAPITokenCreateRequest().setName("Test Token")));
 		restClient().logout().blockingGet();
 		restClient().setAPIKey(meshApiToken.getToken());
 		me = call(() -> restClient().me());

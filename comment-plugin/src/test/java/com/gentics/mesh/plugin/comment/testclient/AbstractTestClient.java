@@ -83,6 +83,8 @@ import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagListUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
+import com.gentics.mesh.core.rest.user.UserAPITokenCreateRequest;
+import com.gentics.mesh.core.rest.user.UserAPITokenListResponse;
 import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
@@ -1063,12 +1065,17 @@ public abstract class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<UserAPITokenResponse> issueAPIToken(String userUuid) {
+	public MeshRequest<UserAPITokenResponse> issueAPIToken(String userUuid, UserAPITokenCreateRequest request) {
 		throw new NotImplementedException();
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> invalidateAPIToken(String userUuid) {
+	public MeshRequest<GenericMessageResponse> invalidateAPIToken(String userUuid, String tokenUuid) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<UserAPITokenListResponse> findAPITokens(String userUuid, ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 

@@ -11,6 +11,7 @@ import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.core.rest.user.UserAPITokenCreateRequest;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.plugin.comment.TestClient;
@@ -54,8 +55,8 @@ public class TestDataSetup {
 
 		HashMap<TestCommentClient.User, String> tokens = new HashMap<>(TestCommentClient.User.values().length - 1);
 
-		tokens.put(EDITOR, call(() -> client.issueAPIToken(builder.getEditorUser().getUuid())).getToken());
-		tokens.put(ADMIN, call(() -> client.issueAPIToken(builder.getAdminUser().getUuid())).getToken());
+		tokens.put(EDITOR, call(() -> client.issueAPIToken(builder.getEditorUser().getUuid(), new UserAPITokenCreateRequest().setName("Test Token"))).getToken());
+		tokens.put(ADMIN, call(() -> client.issueAPIToken(builder.getAdminUser().getUuid(), new UserAPITokenCreateRequest().setName("Test Token"))).getToken());
 		builder.setTokens(tokens);
 
 		testClient.setEditorPermissions(builder.getProject(), builder.getEditorUser());
