@@ -601,11 +601,14 @@ In order to be able to store and retrieve content, a user needs to authenticate 
 | Return a one time token to update a user
 | link:++/docs/api#users__userUuid__reset_token_post++[```POST {apiLatest}/users/:userUuid/reset_token```]
 
-| Return an API token
+| Create an API token
 | link:++/docs/api#users__userUuid__token_post++[```POST {apiLatest}/users/:userUuid/token```]
 
+| List the API tokens
+| link:++/docs/api#users__userUuid__token_get++[```GET {apiLatest}/users/:userUuid/token```]
+
 | Invalidate an API token
-| link:++/docs/api#users__userUuid__token_delete++[```DELETE {apiLatest}/users/:userUuid/token```]
+| link:++/docs/api#users__userUuid__token_delete++[```DELETE {apiLatest}/users/:userUuid/token/:tokenUuid```]
 
 |======
 

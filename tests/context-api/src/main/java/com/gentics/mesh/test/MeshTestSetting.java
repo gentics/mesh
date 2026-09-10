@@ -4,6 +4,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 import com.gentics.mesh.test.MeshOptionChanger.NoOptionChanger;
+import com.gentics.mesh.test.MeshTestInitializer.NoOptionInitializer;
 
 /**
  * 
@@ -123,4 +124,10 @@ public @interface MeshTestSetting {
 	 * @return
 	 */
 	ResetTestDb resetBetweenTests() default ResetTestDb.ALWAYS;
+
+	/**
+	 * Class of an initializer to use. The initialize will be called before anything else
+	 * @return class
+	 */
+	Class<? extends MeshTestInitializer> initializer() default NoOptionInitializer.class;
 }

@@ -5,35 +5,46 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.rest.Messages.message;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
+import java.time.Instant;
+import java.util.Optional;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.UserDAOActions;
 import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.dao.APITokenDao;
 import com.gentics.mesh.core.data.dao.UserDao;
+import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.PageTransformer;
 import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.user.HibAPITokenData;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.user.UserAPITokenCreateRequest;
 import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResetTokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
+import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.TokenUtil;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.gentics.mesh.util.ValidationUtil;
 
 /**
  * Handler which contains methods for user related requests.
@@ -47,11 +58,16 @@ public class UserCrudHandler extends AbstractCrudHandler<HibUser, UserResponse> 
 
 	private MeshJWTAuthProvider authProvider;
 
+	private final PageTransformer pageTransformer;
+
 	@Inject
-	public UserCrudHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, MeshJWTAuthProvider authProvider, WriteLock writeLock, UserDAOActions userActions) {
+	public UserCrudHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils,
+			MeshJWTAuthProvider authProvider, WriteLock writeLock, UserDAOActions userActions,
+			PageTransformer pageTransformer) {
 		super(db, utils, writeLock, userActions);
 		this.boot = boot;
 		this.authProvider = authProvider;
+		this.pageTransformer = pageTransformer;
 	}
 
 	/**
@@ -139,26 +155,38 @@ public class UserCrudHandler extends AbstractCrudHandler<HibUser, UserResponse> 
 	 */
 	public void handleIssueAPIToken(InternalActionContext ac, String userUuid) {
 		validateParameter(userUuid, "The userUuid must not be empty");
+		UserAPITokenCreateRequest request = ac.fromJson(UserAPITokenCreateRequest.class);
+		// Check for completeness of request
+		if (StringUtils.isEmpty(request.getName())) {
+			throw error(BAD_REQUEST, "apitoken_missing_name");
+		}
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				// 1. Load the user that should be used
 				HibUser user = tx.userDao().loadObjectByUuid(ac, userUuid, UPDATE_PERM);
 
-				// 2. Generate the API key for the user
-				UserAPITokenResponse apiKeyRespose = db.tx(() -> {
-					String tokenId = TokenUtil.randomToken();
-					String apiToken = authProvider.generateAPIToken(user, tokenId, null);
-					UserAPITokenResponse response = new UserAPITokenResponse();
-					response.setPreviousIssueDate(user.getAPITokenIssueDate());
+				// 2. Generate the API token for the user
+				Integer expiresInSeconds = null;
+				Instant expires = null;
+				if (!StringUtils.isEmpty(request.getExpires())) {
+					expires = Instant.ofEpochMilli(DateUtils.fromISO8601(request.getExpires(), true));
+					if (expires.isBefore(Instant.now())) {
+						throw error(BAD_REQUEST, "apitoken_expires_in_past");
+					}
+					expiresInSeconds = (int)(expires.getEpochSecond() - Instant.now().getEpochSecond());
+				}
 
-					// 3. Issue a new token and update the issue timestamp
-					user.setAPITokenId(tokenId);
-					user.setAPITokenIssueTimestamp();
-					response.setToken(apiToken);
-					return response;
-				});
-				return apiKeyRespose;
+				String tokenId = TokenUtil.randomToken();
+				String apiToken = authProvider.generateAPIToken(user, tokenId, expiresInSeconds);
+
+				APITokenDao apiTokenDao = tx.apiTokenDao();
+				HibAPITokenData tokenData = apiTokenDao.create(user, request.getName(), tokenId,
+						Optional.ofNullable(expires).map(Instant::toEpochMilli).orElse(null));
+
+				return new UserAPITokenResponse()
+						.setToken(apiToken)
+						.setData(apiTokenDao.transformToRestSync(tokenData, ac, 0));
 			}, model -> ac.send(model, CREATED));
 		}
 	}
@@ -166,25 +194,49 @@ public class UserCrudHandler extends AbstractCrudHandler<HibUser, UserResponse> 
 	/**
 	 * Delete the stored API key token code in order to invalidate the API key.
 	 * 
-	 * @param ac
-	 * @param userUuid
+	 * @param ac action context
+	 * @param userUuid user uuid
+	 * @param tokenUuid token uuid
 	 */
-	public void handleDeleteAPIToken(InternalActionContext ac, String userUuid) {
+	public void handleDeleteAPIToken(InternalActionContext ac, String userUuid, String tokenUuid) {
 		validateParameter(userUuid, "The userUuid must not be empty");
+		validateParameter(tokenUuid, "The tokenUuid must not be empty");
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				// 1. Load the user that should be used
-				HibUser user = tx.userDao().loadObjectByUuid(ac, userUuid, UPDATE_PERM);
+				UserDao userDao = tx.userDao();
+				APITokenDao apiTokenDao = tx.apiTokenDao();
 
-				// 2. Generate the API key for the user
-				GenericMessageResponse message = db.tx(() -> {
-					user.resetAPIToken();
-					return message(ac, "api_key_invalidated");
-				});
-				return message;
+				HibUser user = userDao.loadObjectByUuid(ac, userUuid, UPDATE_PERM);
+				HibAPITokenData tokenData = apiTokenDao.findByUuid(user, tokenUuid);
+				if (tokenData == null) {
+					throw error(NOT_FOUND, "object_not_found_for_uuid", tokenUuid);
+				}
+				apiTokenDao.delete(tokenData);
+
+				return message(ac, "apitoken_deleted");
 			}, model -> ac.send(model, CREATED));
 		}
 	}
 
+	/**
+	 * List the API Tokens of the user
+	 * @param ac action context
+	 * @param userUuid user uuid
+	 */
+	public void handleListAPITokens(InternalActionContext ac, String userUuid) {
+		validateParameter(userUuid, "The userUuid must not be empty");
+		PagingParameters pagingInfo = ac.getPagingParameters();
+		ValidationUtil.validate(pagingInfo);
+
+		utils.syncTx(ac, tx -> {
+			UserDao userDao = tx.userDao();
+			APITokenDao apiTokenDao = tx.apiTokenDao();
+
+			HibUser user = userDao.loadObjectByUuid(ac, userUuid, UPDATE_PERM);
+			Page<? extends HibAPITokenData> page = apiTokenDao.findAll(ac, user, pagingInfo);
+
+			return pageTransformer.transformToRestSync(page, ac, 0);
+		}, model -> ac.send(model, OK));
+	}
 }

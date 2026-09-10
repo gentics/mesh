@@ -226,6 +226,8 @@ public class MeshTestContext implements TestRule {
 			throw new RuntimeException("Settings could not be found. Did you forget to add the @MeshTestSetting annotation to your test?");
 		}
 
+		settings.initializer().getConstructor().newInstance().init();
+
 		int numberOfInstances = settings.clusterMode() ? settings.clusterInstances() : 1;
 
 		meshTestContextProvider = MeshTestContextProvider.getProvider();

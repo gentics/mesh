@@ -111,21 +111,6 @@ public class NodeMigrationUser implements HibUser {
 	}
 
 	@Override
-	public String getAPIKeyTokenCode() {
-		return null;
-	}
-
-	@Override
-	public HibUser setAPITokenId(String code) {
-		return null;
-	}
-
-	@Override
-	public HibUser setAPITokenIssueTimestamp() {
-		return null;
-	}
-
-	@Override
 	public MeshElementEventModel onCreated() {
 		return null;
 	}
@@ -179,16 +164,6 @@ public class NodeMigrationUser implements HibUser {
 	@Override
 	public HibUser setPasswordHash(String hash) {
 		return this;
-	}
-
-	@Override
-	public Long getAPITokenIssueTimestamp() {
-		return null;
-	}
-
-	@Override
-	public void resetAPIToken() {
-
 	}
 
 	@Override

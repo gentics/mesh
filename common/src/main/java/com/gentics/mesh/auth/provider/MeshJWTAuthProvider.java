@@ -17,6 +17,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import com.gentics.mesh.auth.AuthenticationResult;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.user.HibAPITokenData;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Database;
@@ -230,7 +231,7 @@ public class MeshJWTAuthProvider implements AuthenticationProvider, JWTAuth {
 	 * @param user
 	 * @param tokenCode
 	 *            Code which will be part of the JWT. This code is used to verify that the JWT is still valid
-	 * @param expireDuration
+	 * @param expireDuration expire duration in seconds
 	 * @return Generated API key
 	 */
 	public String generateAPIToken(HibUser user, String tokenCode, Integer expireDuration) {
@@ -240,7 +241,7 @@ public class MeshJWTAuthProvider implements AuthenticationProvider, JWTAuth {
 			.put(API_KEY_TOKEN_CODE_FIELD_NAME, tokenCode);
 		JWTOptions jwtOptions = new JWTOptions().setAlgorithm(options.getAlgorithm());
 		if (expireDuration != null) {
-			jwtOptions.setExpiresInMinutes(expireDuration);
+			jwtOptions.setExpiresInSeconds(expireDuration);
 		}
 		return jwtProvider.generateToken(tokenData, jwtOptions);
 	}
@@ -271,15 +272,12 @@ public class MeshJWTAuthProvider implements AuthenticationProvider, JWTAuth {
 			// }
 
 			// Check whether the token might be an API key token
-			if (!jwt.containsKey("exp")) {
-				String apiKeyToken = jwt.getString(API_KEY_TOKEN_CODE_FIELD_NAME);
-				// TODO: All tokens without exp must have a token code - See https://github.com/gentics/mesh/issues/412
-				if (apiKeyToken != null) {
-					String storedApiKey = user.getDelegate().getAPIKeyTokenCode();
-					// Verify that the API token is invalid.
-					if (apiKeyToken != null && !apiKeyToken.equals(storedApiKey)) {
-						throw new Exception("API key token is invalid.");
-					}
+			String apiKeyToken = jwt.getString(API_KEY_TOKEN_CODE_FIELD_NAME);
+			if (apiKeyToken != null) {
+				HibAPITokenData tokenData = tx.apiTokenDao().findByTokenId(user.getDelegate(), apiKeyToken);
+
+				if (tokenData == null) {
+					throw new Exception("API key token is invalid.");
 				}
 			}
 
