@@ -21,9 +21,14 @@ spec:
           serviceAccountName: {{ include "mesh.serviceAccountName" $ }}
           securityContext:
             {{- toYaml $.Values.podSecurityContext | nindent 12 }}
+          {{- /* Three-state, matching the chart-wide pull secret logic: set -> use it;
+               set to "" -> no pull secret; absent -> fall back to the Mesh chain
+               (imagePullSecrets -> global.imagePullSecrets -> defaultImagePullSecret). */}}
+          {{- if not (kindIs "invalid" $job.image.pullSecret) }}
           {{- if $job.image.pullSecret }}
           imagePullSecrets:
           - name: {{ $job.image.pullSecret }}
+          {{- end }}
           {{- else }}
           {{- include "mesh.imagePullSecrets" $ | nindent 10 }}
           {{- end }}
