@@ -10,6 +10,7 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.database.connector.QueryUtils;
 import com.gentics.mesh.json.JsonUtil;
@@ -69,7 +70,7 @@ public abstract class AbstractHibPropertyContainerElement extends AbstractHibBas
 				Object array = Array.newInstance(cls, ja.size());
 				for (int i = 0; i < ja.size(); i++) {
 					Object item = ja.getValue(i);
-					item = isJson ? JsonUtil.readValue(item.toString(), cls) : item;
+					item = isJson || cls.isAssignableFrom(JsonNode.class) ? JsonUtil.readValue(item.toString(), cls) : item;
 					if (!cls.isAssignableFrom(item.getClass())) {
 						try {
 							item = cls.getConstructor(item.getClass()).newInstance(item);
@@ -99,7 +100,7 @@ public abstract class AbstractHibPropertyContainerElement extends AbstractHibBas
 	public <R> void property(String key, R value) {
 		JsonObject json = new JsonObject();
 		if (value != null) {
-			json.put(IS_JSON, value instanceof RestModel);
+			json.put(IS_JSON, value instanceof RestModel || value instanceof JsonNode);
 			if (value.getClass().isArray()) {
 				JsonArray array = new JsonArray();
 				for (int i = 0; i < Array.getLength(value); i++) {
