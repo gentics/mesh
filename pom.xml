@@ -153,6 +153,17 @@
 		</dependencies>
 	</dependencyManagement>
 
+	<!-- Inherited by every module (like mesh-plugin-parent's own provided dependencies). "provided" so it
+	     compiles the offline OpenAPI spec generator in "common" and each plugin's own generator invocation,
+	     without ending up bundled in any plugin's shaded runtime jar. -->
+	<dependencies>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<scope>provided</scope>
+		</dependency>
+	</dependencies>
+
 	<build>
 		<!--
 			Plugin management can be released once the parents are updated

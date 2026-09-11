@@ -110,11 +110,6 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-core</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.assertj</groupId>
 			<artifactId>assertj-core</artifactId>
 			<scope>test</scope>
@@ -140,6 +135,32 @@
 
 	<build>
 		<plugins>
+			<!-- Generates this plugin's own OpenAPI v3 spec (covering just its REST endpoints) into
+			     target/classes/META-INF/openapi/, so the jar/shade packaging below bundles it into the plugin jar. -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>3.3.0</version>
+				<executions>
+					<execution>
+						<id>generate-openapi-spec</id>
+						<phase>process-classes</phase>
+						<goals>
+							<goal>java</goal>
+						</goals>
+						<configuration>
+							<classpathScope>compile</classpathScope>
+							<mainClass>com.gentics.mesh.plugin.common.generator.PluginOpenApiGeneratorRunner</mainClass>
+							<arguments>
+								<argument>${plugin.name}</argument>
+								<argument>${plugin.id}</argument>
+								<argument>${plugin.class}</argument>
+								<argument>${project.build.outputDirectory}/META-INF/openapi/openapi.yaml</argument>
+							</arguments>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
