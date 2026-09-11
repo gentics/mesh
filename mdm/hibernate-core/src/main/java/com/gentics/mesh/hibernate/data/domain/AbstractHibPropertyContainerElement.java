@@ -70,7 +70,7 @@ public abstract class AbstractHibPropertyContainerElement extends AbstractHibBas
 				Object array = Array.newInstance(cls, ja.size());
 				for (int i = 0; i < ja.size(); i++) {
 					Object item = ja.getValue(i);
-					item = isJson || cls.isAssignableFrom(JsonNode.class) ? JsonUtil.readValue(item.toString(), cls) : item;
+					item = isJson || JsonNode.class.isAssignableFrom(cls) ? JsonUtil.readValue(item.toString(), cls) : item;
 					if (!cls.isAssignableFrom(item.getClass())) {
 						try {
 							item = cls.getConstructor(item.getClass()).newInstance(item);
