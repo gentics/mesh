@@ -164,31 +164,6 @@ public abstract class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> invokeBackup() {
-		throw new NotImplementedException();
-	}
-
-	@Override
-	public MeshRequest<GenericMessageResponse> invokeBackup(BackupParameters parameters) {
-		throw new NotImplementedException();
-	}
-
-	@Override
-	public MeshRequest<GenericMessageResponse> invokeExport() {
-		throw new NotImplementedException();
-	}
-
-	@Override
-	public MeshRequest<GenericMessageResponse> invokeRestore() {
-		throw new NotImplementedException();
-	}
-
-	@Override
-	public MeshRequest<GenericMessageResponse> invokeImport() {
-		throw new NotImplementedException();
-	}
-
-	@Override
 	public MeshRequest<ConsistencyCheckResponse> checkConsistency(ParameterProvider... parameterProviders) {
 		throw new NotImplementedException();
 	}
@@ -254,7 +229,7 @@ public abstract class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GroupResponse> updateGroup(String uuid, GroupUpdateRequest request) {
+	public MeshRequest<GroupResponse> updateGroup(String uuid, GroupUpdateRequest request, ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
@@ -568,7 +543,7 @@ public abstract class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<ProjectResponse> updateProject(String uuid, ProjectUpdateRequest request) {
+	public MeshRequest<ProjectResponse> updateProject(String uuid, ProjectUpdateRequest request, ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
@@ -620,12 +595,12 @@ public abstract class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<BranchResponse> updateBranch(String projectName, String branchUuid, BranchUpdateRequest request) {
+	public MeshRequest<BranchResponse> updateBranch(String projectName, String branchUuid, BranchUpdateRequest request, ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
 	@Override
-	public MeshRequest<BranchInfoSchemaList> getBranchSchemaVersions(String projectName, String branchUuid) {
+	public MeshRequest<BranchInfoSchemaList> getBranchSchemaVersions(String projectName, String branchUuid, ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
@@ -642,7 +617,7 @@ public abstract class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<BranchInfoMicroschemaList> getBranchMicroschemaVersions(String projectName, String branchUuid) {
+	public MeshRequest<BranchInfoMicroschemaList> getBranchMicroschemaVersions(String projectName, String branchUuid, ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
@@ -704,12 +679,12 @@ public abstract class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<RoleResponse> updateRole(String uuid, RoleUpdateRequest restRole) {
+	public MeshRequest<RoleResponse> updateRole(String uuid, RoleUpdateRequest restRole, ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
 	@Override
-	public MeshRequest<ObjectPermissionResponse> getRoleRolePermissions(String uuid) {
+	public MeshRequest<ObjectPermissionResponse> getRoleRolePermissions(String uuid, ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
@@ -839,7 +814,7 @@ public abstract class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<ObjectNode> searchUsersRaw(String json) {
+	public MeshRequest<ObjectNode> searchUsersRaw(String json, ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
@@ -849,7 +824,7 @@ public abstract class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<ObjectNode> searchGroupsRaw(String json) {
+	public MeshRequest<ObjectNode> searchGroupsRaw(String json, ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
@@ -859,7 +834,7 @@ public abstract class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<ObjectNode> searchRolesRaw(String json) {
+	public MeshRequest<ObjectNode> searchRolesRaw(String json, ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
@@ -869,7 +844,7 @@ public abstract class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<ObjectNode> searchProjectsRaw(String json) {
+	public MeshRequest<ObjectNode> searchProjectsRaw(String json, ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
@@ -879,7 +854,7 @@ public abstract class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<ObjectNode> searchTagsRaw(String json) {
+	public MeshRequest<ObjectNode> searchTagsRaw(String json, ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
@@ -889,7 +864,7 @@ public abstract class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<ObjectNode> searchTagsRaw(String projectName, String json) {
+	public MeshRequest<ObjectNode> searchTagsRaw(String projectName, String json, ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
@@ -899,7 +874,7 @@ public abstract class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<ObjectNode> searchTagFamiliesRaw(String json) {
+	public MeshRequest<ObjectNode> searchTagFamiliesRaw(String json, ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
@@ -909,7 +884,7 @@ public abstract class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<ObjectNode> searchTagFamiliesRaw(String projectName, String json) {
+	public MeshRequest<ObjectNode> searchTagFamiliesRaw(String projectName, String json, ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
@@ -919,7 +894,7 @@ public abstract class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<ObjectNode> searchSchemasRaw(String json) {
+	public MeshRequest<ObjectNode> searchSchemasRaw(String json, ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
@@ -929,7 +904,7 @@ public abstract class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<ObjectNode> searchMicroschemasRaw(String json) {
+	public MeshRequest<ObjectNode> searchMicroschemasRaw(String json, ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
@@ -959,7 +934,7 @@ public abstract class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<TagResponse> updateTag(String projectName, String tagFamilyUuid, String uuid, TagUpdateRequest request) {
+	public MeshRequest<TagResponse> updateTag(String projectName, String tagFamilyUuid, String uuid, TagUpdateRequest request, ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
@@ -1014,7 +989,7 @@ public abstract class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<TagFamilyResponse> updateTagFamily(String projectName, String tagFamilyUuid, TagFamilyUpdateRequest request) {
+	public MeshRequest<TagFamilyResponse> updateTagFamily(String projectName, String tagFamilyUuid, TagFamilyUpdateRequest request, ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
