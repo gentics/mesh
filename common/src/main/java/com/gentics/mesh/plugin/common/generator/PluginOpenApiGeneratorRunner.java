@@ -57,7 +57,7 @@ public class PluginOpenApiGeneratorRunner {
 
 			generator.generate(pluginName, pluginId, plugin, outputFile, "yaml", false);
 		} finally {
-			vertx.close();
+			vertx.close().await();
 		}
 	}
 }
