@@ -290,8 +290,10 @@ public class SchemaDaoImpl
 					    inner join allChanges prev_ on change_.previouschange_dbuuid = prev_.change_dbuuid    
 					) select change_dbuuid from allChanges
 				""";
-				List<Object> changes = em().createNativeQuery("WITH " + databaseConnector.getCteFunctionDefinition("allChanges", List.of("change_dbuuid"), true) + cte)
-						.setParameter("versionUuids", versionUuids).getResultList();
+				List<UUID> changes = (List<UUID>) em().createNativeQuery("WITH " + databaseConnector.getCteFunctionDefinition("allChanges", List.of("change_dbuuid"), true) + cte)
+						.setParameter("versionUuids", versionUuids).getResultStream()
+						.map(UUIDUtil::toJavaUuid)
+						.collect(Collectors.toList());
 				log.info("Change properties dropped: {}", em().createNativeQuery("""
 					delete from mesh_schemachange_properties WHERE schemachange_dbuuid in :changes
 				""").setParameter("changes", changes).executeUpdate());
@@ -308,11 +310,17 @@ public class SchemaDaoImpl
 				""").setParameter("changes", changes).executeUpdate());
 			}
 			// Delete jobs
-			SplittingUtils.splitAndConsume(versionUuids, (versionUuids.size() < 2) ? 1 : versionUuids.size() / 2, split -> {
-				log.info("Referencing jobs dropped: {}", em().createQuery("""
-						delete from job where toSchemaVersion.dbUuid in :versionUuids or fromSchemaVersion.dbUuid in :versionUuids
-					""").setParameter("versionUuids", split).executeUpdate());
-			});
+			{
+				int splitSize = versionUuids.size() / 2;
+				if (splitSize < 1) {
+					splitSize = 1;
+				}
+				SplittingUtils.splitAndConsume(versionUuids, splitSize, split -> {
+					log.info("Referencing jobs dropped: {}", em().createQuery("""
+							delete from job where toSchemaVersion.dbUuid in :versionUuids or fromSchemaVersion.dbUuid in :versionUuids
+						""").setParameter("versionUuids", split).executeUpdate());
+				});
+			}
 			{
 				// Construct target version chains
 				List<UUID[]> list = em().createQuery("select pv.dbUuid, v.dbUuid, nv.dbUuid from schemaversion v left join v.previousVersion pv left join v.nextVersion nv where v.dbUuid in :versionUuids", UUID[].class)

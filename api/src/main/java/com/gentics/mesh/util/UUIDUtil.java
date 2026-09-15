@@ -100,6 +100,24 @@ public final class UUIDUtil {
 	}
 
 	/**
+	 * Convert an arbitrary object to a java {@link UUID}, if supported, throws an {@link IllegalArgumentException} otherwise. 
+	 * 
+	 * @param uuid
+	 * @return
+	 */
+	public static UUID toJavaUuid(Object o) {
+		if (o instanceof UUID uuid) {
+			return uuid;
+		} else if (o instanceof byte[] bytes) {
+			return toJavaUuid(bytes);
+		} else if (o != null) {
+			return toJavaUuid(o.toString());
+		} else {
+			return null;
+		}
+	}
+
+	/**
 	 * Convert a uuid with dashes to a uuid without dashes.
 	 *
 	 * @return
