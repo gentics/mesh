@@ -48,7 +48,10 @@ import com.gentics.mesh.database.HibernateTx;
 			query = "select l from micronodelistitem l "
 					+ " where l.containerUuid in :containerUuids"),
 	@NamedQuery(name = "micronodelistitem.removeByContainerUuids",
-			query = "delete from micronodelistitem where containerUuid in :containerUuids")
+			query = "delete from micronodelistitem where containerUuid in :containerUuids"),
+	@NamedQuery(
+			name = "micronodelistitem.countByVersion",
+			query =  "select count(distinct edge.valueOrUuid) from micronodelistitem edge where edge.microschemaVersion = :version"),
 })
 @Table(uniqueConstraints = { 
 		@UniqueConstraint(

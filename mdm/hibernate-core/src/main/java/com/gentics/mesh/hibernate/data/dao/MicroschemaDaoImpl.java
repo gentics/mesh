@@ -393,7 +393,8 @@ public class MicroschemaDaoImpl
 
 	@Override
     public long countVersionEdges(HibMicroschemaVersion version) {
-		return em().createNamedQuery("micronodefieldref.countByVersion", Long.class).setParameter("version", version).getSingleResult();
+		return em().createNamedQuery("micronodefieldref.countByVersion", Long.class).setParameter("version", version).getSingleResult()
+				+ em().createNamedQuery("micronodelistitem.countByVersion", Long.class).setParameter("version", version).getSingleResult();
     }
 
 	@Override

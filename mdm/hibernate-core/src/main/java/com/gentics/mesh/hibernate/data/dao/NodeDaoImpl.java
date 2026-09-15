@@ -673,8 +673,12 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 
 	private List<HibNodeImpl> getResult(Query<HibNodeImpl> query, PagingParameters pagingInfo) {
 		if (pagingInfo.getPerPage() != null) {
+			if (pagingInfo.getPerPage().intValue() == 0) {
+				// TODO API still allows negative values
+				return Collections.emptyList();
+			}
 			query.setFirstResult(pagingInfo.getActualPage() * pagingInfo.getPerPage().intValue())
-					.setMaxResults(pagingInfo.getPerPage().intValue());
+				.setMaxResults(pagingInfo.getPerPage().intValue());
 		}
 		return query.getResultList();
 	}
