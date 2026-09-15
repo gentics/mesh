@@ -193,9 +193,6 @@ public class MicroschemaDaoImpl
 			version.getNextVersion().setPreviousVersion(version.getPreviousVersion());
 		}
 
-		// Drop the whole content table
-		tx.contentDao().deleteContentTable(version);
-
 		// Make the events, drop the version itself
 		super.deleteVersion(version);
 	}
@@ -231,7 +228,7 @@ public class MicroschemaDaoImpl
 		// Rearrange versioning
 		HibMicroschemaImpl microschema = (HibMicroschemaImpl) version.getSchemaContainer();
 		microschema.getVersions().removeIf(v -> v.getUuid().equals(version.getUuid()));
-		if (microschema.getLatestVersion().getUuid().equals(version.getUuid())) {
+		if (microschema.getLatestVersion() != null && microschema.getLatestVersion().getUuid().equals(version.getUuid())) {
 			microschema.setLatestVersion(version.getPreviousVersion());
 		}
 		if (version.getPreviousVersion() != null) {

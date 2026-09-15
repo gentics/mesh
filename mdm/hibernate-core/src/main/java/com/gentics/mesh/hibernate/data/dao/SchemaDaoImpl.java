@@ -252,7 +252,7 @@ public class SchemaDaoImpl
 		// Rearrange versioning
 		HibSchemaImpl schema = (HibSchemaImpl) version.getSchemaContainer();
 		schema.getVersions().removeIf(v -> v.getUuid().equals(version.getUuid()));
-		if (schema.getLatestVersion().getUuid().equals(version.getUuid())) {
+		if (schema.getLatestVersion() != null && schema.getLatestVersion().getUuid().equals(version.getUuid())) {
 			schema.setLatestVersion(version.getPreviousVersion());
 		}
 		if (version.getPreviousVersion() != null) {
