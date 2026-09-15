@@ -33,6 +33,17 @@
 			<artifactId>mesh-database-tests-common</artifactId>
 			<version>${mesh.version}</version>
 			<scope>compile</scope>
+			<exclusions>
+				<!--
+					This needs to be excluded, because it is contained in the dependency to mesh-database-connector-hsqldb.
+					Not excluding it would cause failures when starting mesh in the tests, because the liquibase changelog
+					files are present multiple times.
+				 -->
+				<exclusion>
+					<groupId>com.gentics.mesh</groupId>
+					<artifactId>mesh-database-connector-common</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
