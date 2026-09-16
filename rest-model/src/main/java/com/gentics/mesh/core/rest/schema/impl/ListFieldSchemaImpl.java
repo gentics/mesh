@@ -118,7 +118,7 @@ public class ListFieldSchemaImpl extends AbstractFieldSchema implements ListFiel
 			throw error(BAD_REQUEST, "schema_error_list_type_missing", getName());
 		}
 		// TODO the list type should be a enum.
-		List<String> validTypes = Arrays.asList("html", "boolean", "string", "micronode", "node", "number", "date", "binary");
+		List<String> validTypes = Arrays.asList("html", "boolean", "string", "micronode", "node", "number", "date", "json");
 		if (!validTypes.contains(getListType())) {
 			throw error(BAD_REQUEST, "schema_error_list_type_invalid", getListType(), getName());
 		}
