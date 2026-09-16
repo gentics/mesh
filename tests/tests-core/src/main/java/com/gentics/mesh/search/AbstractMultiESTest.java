@@ -1,16 +1,10 @@
 package com.gentics.mesh.search;
 
-import static org.assertj.core.api.Assertions.fail;
-
 import java.lang.annotation.Annotation;
-import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadInfo;
-import java.lang.management.ThreadMXBean;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import org.junit.After;
 import org.junit.Before;
@@ -18,7 +12,6 @@ import org.junit.ClassRule;
 import org.junit.rules.Timeout;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.gentics.mesh.cli.AbstractBootstrapInitializer;
 import com.gentics.mesh.test.AWSTestMode;
 import com.gentics.mesh.test.ElasticsearchTestMode;
 import com.gentics.mesh.test.MeshCoreOptionChanger;
@@ -97,6 +90,9 @@ public abstract class AbstractMultiESTest implements TestHttpMethods, TestGraphH
 
 	@Before
 	public void setup() throws Throwable {
+		if (getTestContext().getInstances().size() < 1) {
+			getTestContext().setupOnce(settings);
+		}
 		getTestContext().setup(settings);
 		redeploySearchVerticle();
 	}
