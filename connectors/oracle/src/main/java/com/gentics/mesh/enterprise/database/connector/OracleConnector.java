@@ -1,14 +1,20 @@
 package com.gentics.mesh.enterprise.database.connector;
 
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 
+import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.enterprise.hibernate.dialect.OracleLongTextDialect;
 import com.gentics.mesh.enterprise.license.LicenseService;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
@@ -151,5 +157,27 @@ public class OracleConnector extends AbstractEnterpriseDatabaseConnector {
 	@Override
 	public String getCteFunctionDefinition(String name, List<String> arguments, boolean recursive) {
 		return name + (arguments.isEmpty() ? "" : arguments.stream().collect(Collectors.joining(",", "(", ")")));
+	}
+
+	@Override
+	public Optional<Set<String>> getDatabaseColumnNames(Class<?> cls) {
+		return maybeGetPhysicalTableName(cls).map(tableName -> {
+			try {
+				// Oracle closed source driver implements the connection metadata dependent on the current user/schema,
+				// whose access possibilities may be restricted, giving back the wrong column result set. So we go another way of fetching the metadata here.
+				ResultSet columnRs = HibernateUtil.getConnectionFromEntityManager(HibernateTx.get().entityManager())
+						.prepareStatement("select * from " + maybeGetPhysicalTableNameIdentifier(cls).get() + " where rownum < 1")
+						.getResultSet();
+				Set<String> entityColumns = new HashSet<>();
+				ResultSetMetaData metadata = columnRs.getMetaData();
+				for (int i = 0; i < metadata.getColumnCount(); i++) {
+					String columnName = metadata.getColumnName(i+1);
+					entityColumns.add(columnName);
+				}
+				return entityColumns;
+			} catch (SQLException e1) {
+				throw new IllegalStateException(e1);
+			}
+		});
 	}
 }
