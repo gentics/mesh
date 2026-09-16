@@ -359,7 +359,7 @@ public class FormsPlugin extends AbstractPlugin implements CommercialRestPlugin 
 			.withUriParameter("formUuid", "Form UUID", UUIDUtil.randomUUID())
 			.withQueryParameter("formDataUuid", "Form data ID", UUIDUtil.randomUUID())
 			.withQueryParameter("lang", "Language code", "en")
-			.consumes(MULTIPART_FORM_DATA)
+			.consumes("*/*")
 			.withExampleResponse(HttpResponseStatus.OK, "Data has been cancelled")
 			.withHandler(fromComponent(FormsPluginComponent::cancelFormDataHandler))
 			.build();
