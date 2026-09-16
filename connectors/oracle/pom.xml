@@ -22,8 +22,8 @@
 		</dependency>
 		<dependency>
 			<groupId>com.oracle.database.jdbc</groupId>
-			<artifactId>ojdbc11</artifactId>
-			<version>23.9.0.25.07</version>
+			<artifactId>ojdbc17</artifactId>
+			<version>23.26.3.0.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

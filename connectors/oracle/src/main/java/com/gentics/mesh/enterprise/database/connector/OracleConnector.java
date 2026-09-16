@@ -163,10 +163,10 @@ public class OracleConnector extends AbstractEnterpriseDatabaseConnector {
 	public Optional<Set<String>> getDatabaseColumnNames(Class<?> cls) {
 		return maybeGetPhysicalTableName(cls).map(tableName -> {
 			try {
-				// Oracle closed source driver implements the connection metadata dependent on the current user/schema,
-				// whose access possibilities may be restricted, giving back the wrong column result set. So we go another way of fetching the metadata here.
+				// We go another way of fetching the metadata here, utilizing the ability of Oracle to early return,
+				// if where clause contains expected nonsense. 
 				ResultSet columnRs = HibernateUtil.getConnectionFromEntityManager(HibernateTx.get().entityManager())
-						.prepareStatement("select * from " + maybeGetPhysicalTableNameIdentifier(cls).get() + " where rownum < 1")
+						.prepareStatement("select * from " + tableName + " where rownum < 1")
 						.getResultSet();
 				Set<String> entityColumns = new HashSet<>();
 				ResultSetMetaData metadata = columnRs.getMetaData();

@@ -1,6 +1,9 @@
 package com.gentics.mesh.enterprise.database.connector;
 
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -8,6 +11,7 @@ import com.gentics.mesh.database.connector.QueryUtils;
 import com.gentics.mesh.enterprise.hibernate.dialect.PostgresDuplicationAwareDialect;
 import com.gentics.mesh.enterprise.license.LicenseService;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
+import com.gentics.mesh.hibernate.data.domain.HibUserImpl;
 import com.gentics.mesh.hibernate.util.HibernateUtil;
 
 /**
@@ -57,5 +61,19 @@ public class PostgreSQLConnector extends AbstractEnterpriseDatabaseConnector {
 	public int getStringLengthLimit() {
 		// Postgres honors the requested limit
 		return QueryUtils.DEFAULT_STRING_LENGTH;
+	}
+
+	@Override
+	public Optional<Set<String>> getDatabaseColumnNames(Class<?> cls) {
+		return super.getDatabaseColumnNames(cls)
+				// TODO FIXME Somehow the JDBC driver at PG does not update the cached metadata set,
+				// so there is no legal way to retrieve the actual columns for the user.
+				.map(set -> {
+					if (cls.equals(HibUserImpl.class)) {
+						return set.stream().filter(name -> !name.equalsIgnoreCase("apitokenid") && !name.equalsIgnoreCase("apitokenissuetimestamp")).collect(Collectors.toSet());
+					} else {
+						return set;
+					}
+				});
 	}
 }
