@@ -303,10 +303,10 @@ public abstract class AbstractDatabaseConnector implements DatabaseConnector {
 
 	@Override
 	public Optional<Set<String>> getDatabaseColumnNames(Class<?> cls) {
-		return maybeGetPhysicalTableName(cls).map(tableName -> {
+		return maybeGetPhysicalTableNameIdentifier(cls).map(tableName -> {
 			try {
 				ResultSet columnRs = HibernateUtil.getConnectionFromEntityManager(HibernateTx.get().entityManager())
-						.getMetaData().getColumns(null, null, getSessionMetadataIntegrator().getJdbcEnvironment().getIdentifierHelper().toMetaDataObjectName(maybeGetPhysicalTableNameIdentifier(cls).get()), "%");
+						.getMetaData().getColumns(null, null, getSessionMetadataIntegrator().getJdbcEnvironment().getIdentifierHelper().toMetaDataObjectName(tableName), "%");
 				Set<String> entityColumns = new HashSet<>();
 				while (columnRs.next()) {
 					String columnName = columnRs.getString("COLUMN_NAME");

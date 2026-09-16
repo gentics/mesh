@@ -5,16 +5,21 @@ import static org.slf4j.LoggerFactory.getLogger;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
 
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
+import com.gentics.mesh.hibernate.data.domain.HibUserImpl;
 import com.gentics.mesh.hibernate.dialect.MariaDBBinaryUuidDialect;
 import com.gentics.mesh.hibernate.util.HibernateUtil;
 import com.gentics.mesh.hibernate.util.SplittingUtils;
 
-import org.slf4j.Logger;
 import jakarta.persistence.EntityManager;
 
 /**
@@ -106,5 +111,19 @@ public class MariaDBConnector extends AbstractDatabaseConnector {
 	public int getStringLengthLimit() {
 		// MariaDB uses "mediumtext"
 		return 16_777_215;
+	}
+
+	@Override
+	public Optional<Set<String>> getDatabaseColumnNames(Class<?> cls) {
+		return super.getDatabaseColumnNames(cls)
+			// TODO FIXME Somehow the JDBC driver at MariaDB does not update the cached metadata set,
+			// so there is no legal way to retrieve the actual columns for the user.
+			.map(set -> {
+				if (cls.equals(HibUserImpl.class)) {
+					return set.stream().filter(name -> !name.equalsIgnoreCase("apitokenid") && !name.equalsIgnoreCase("apitokenissuetimestamp")).collect(Collectors.toSet());
+				} else {
+					return set;
+				}
+			});
 	}
 }
