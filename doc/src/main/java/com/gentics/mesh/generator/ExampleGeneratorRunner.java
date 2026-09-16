@@ -77,5 +77,4 @@ public class ExampleGeneratorRunner {
 			conf.delete();
 		}
 	}
-
 }

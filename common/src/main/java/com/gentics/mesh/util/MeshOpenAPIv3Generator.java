@@ -71,7 +71,11 @@ public class MeshOpenAPIv3Generator extends OpenAPIv3Generator {
 				// transform project path item
 				Optional.of((path, item) -> {
 					if (path.contains("/{project}/")) {
-						Parameter projectNameParam = new Parameter().name("project").in(InParameter.PATH.toString()).schema(new Schema<String>().type("string").description("Name of the related project"));
+						Parameter projectNameParam = new Parameter()
+								.name("project")
+								.in(InParameter.PATH.toString())
+								.description("Name of the related project")
+								.schema(new Schema<String>().type("string"));
 						item.readOperations().stream()
 							.forEach(o -> o.getParameters().stream().filter(p -> "project".equals(p.getName())).findAny()
 									.ifPresentOrElse(present -> {
