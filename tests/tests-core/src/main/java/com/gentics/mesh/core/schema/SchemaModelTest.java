@@ -340,7 +340,7 @@ public class SchemaModelTest {
 		schema.setName("test");
 		schema.setDescription("some blub");
 		schema.addField(FieldUtil.createListFieldSchema("list").setListType("binary"));
-		expectErrorOnValidate(schema, "microschema_error_field_type_not_allowed", "list", "list:binary");
+		expectErrorOnValidate(schema, "schema_error_list_type_invalid", "binary", "list");
 	}
 
 }
