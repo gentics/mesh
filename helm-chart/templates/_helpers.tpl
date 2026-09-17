@@ -163,8 +163,9 @@ Note: Mesh mounts the license from the shared PVC, not directly from this secret
 {{- end -}}
 
 {{/*
-Image pull secrets for the main Mesh image.
-Local imagePullSecrets overrides global; global is the default. Both use the array format.
+Image pull secrets for the main Mesh image (array format).
+Three-state: set -> local wins (global ignored); set to [] -> no pull secret;
+absent -> global.imagePullSecrets, else gentics-common.defaultImagePullSecret.
 */}}
 {{- define "mesh.imagePullSecrets" -}}
 {{- include "gentics-common.imagePullSecretsList" (dict "root" . "localList" .Values.imagePullSecrets) -}}
@@ -203,8 +204,8 @@ secretKeyRef:
 
 {{/*
 Image pull secrets for the Mesh tools image.
-Local tools.image.pullSecret overrides global; global is the default.
-Local accepts a plain secret name string; global uses the array format.
+Three-state: set -> local wins (global ignored); set to "" -> no pull secret;
+absent -> global.imagePullSecrets, else gentics-common.defaultImagePullSecret.
 */}}
 {{- define "mesh.toolsImagePullSecrets" -}}
 {{- include "gentics-common.imagePullSecrets" (dict "root" . "localName" .Values.tools.image.pullSecret) -}}
@@ -245,7 +246,8 @@ Tag falls back to Chart.AppVersion (the MCP server is versioned with mesh-enterp
 
 {{/*
 Image pull secrets for the MCP-server image.
-Local mcpServer.image.pullSecret (string) overrides global.imagePullSecrets.
+Three-state: set -> local wins (global ignored); set to "" -> no pull secret;
+absent -> global.imagePullSecrets, else gentics-common.defaultImagePullSecret.
 */}}
 {{- define "mesh.mcpServer.imagePullSecrets" -}}
 {{- include "gentics-common.imagePullSecrets" (dict "root" . "localName" .Values.mcpServer.image.pullSecret) -}}
@@ -313,7 +315,8 @@ Tag falls back to Chart.AppVersion (the service is versioned with mesh-enterpris
 
 {{/*
 Image pull secrets for the content-rag image.
-Local contentRag.image.pullSecret (string) overrides global.imagePullSecrets.
+Three-state: set -> local wins (global ignored); set to "" -> no pull secret;
+absent -> global.imagePullSecrets, else gentics-common.defaultImagePullSecret.
 */}}
 {{- define "mesh.contentRag.imagePullSecrets" -}}
 {{- include "gentics-common.imagePullSecrets" (dict "root" . "localName" .Values.contentRag.image.pullSecret) -}}

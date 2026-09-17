@@ -15,7 +15,9 @@ image:
   #tag: x.x.x #defaults to chart version
   pullPolicy: IfNotPresent
 
-imagePullSecrets: []
+# imagePullSecrets:
+#   - name: docker-gentics-com
+
 nameOverride: ""
 fullnameOverride: ""
 
@@ -236,7 +238,7 @@ tools:
     repository: gentics/mesh/mesh-tools
     tag: 1.0.2
     pullPolicy: IfNotPresent
-    pullSecret: ""
+    # pullSecret: docker-gentics-com
 
 # Restore settings. The restore operation is invoked when the initial cluster is being setup.
 # The restore will utilize the backup snapshot to populate the keystore and uploads folders.
@@ -422,7 +424,6 @@ mcpServer:
     repository: gentics/mesh-enterprise/mcp-server
     # tag: ""   # default: Chart.AppVersion
     pullPolicy: IfNotPresent
-    ## Pull secret for the MCP-server image (overrides global.imagePullSecrets).
     # pullSecret: docker-gentics-com
 
   replicaCount: 1
@@ -586,7 +587,6 @@ contentRag:
     repository: gentics/mesh-enterprise/content-rag
     # tag: ""   # default: Chart.AppVersion
     pullPolicy: IfNotPresent
-    ## Pull secret for the content-rag image (overrides global.imagePullSecrets).
     # pullSecret: docker-gentics-com
 
   ## Configuration and audit currently live in the memory of the pod (in-memory
