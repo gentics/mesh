@@ -1,0 +1,10 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:auth:TokenResponse",
+  "properties" : {
+    "token" : {
+      "type" : "string",
+      "description" : "A current JWT access token"
+    }
+  }
+}

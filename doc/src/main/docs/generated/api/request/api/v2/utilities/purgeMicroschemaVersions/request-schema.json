@@ -1,0 +1,18 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:common:NameOrUUIDsRequest",
+  "properties" : {
+    "data" : {
+      "type" : "array",
+      "required" : true,
+      "description" : "Array which contains the elements.",
+      "items" : {
+        "type" : "string"
+      }
+    },
+    "excluded" : {
+      "type" : "boolean",
+      "description" : "Should the listed names/UUIDs be excluded, not included"
+    }
+  }
+}

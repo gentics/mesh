@@ -1,0 +1,16 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:BinaryCheckUpdateRequest",
+  "properties" : {
+    "status" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "The new status for the binary. One of ACCEPTED or DENIED.",
+      "enum" : [ "ACCEPTED", "DENIED", "POSTPONED" ]
+    },
+    "reason" : {
+      "type" : "string",
+      "description" : "The reason why the binary was denied if applicable."
+    }
+  }
+}

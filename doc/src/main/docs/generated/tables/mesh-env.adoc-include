@@ -416,6 +416,9 @@
 | *MESH_S3_CORS_ALLOWED_ORIGINS*
 | Override the configured AWS S3 CORS allowed origins.  _(s3options.corsAllowedOrigins)_
 
+| *MESH_SERVE_OPENAPI*
+| Serve OpenAPI specification under &#x60;/openapi*&#x60; endpoints. Default: true  _(serveOpenApi)_
+
 | *MESH_STALE_TX_CHECK_INTERVAL*
 | Overwrite the interval (in ms) for periodic check for stale transactions.  _(storageOptions.staleTxCheckInterval)_
 

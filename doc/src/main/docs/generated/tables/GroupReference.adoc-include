@@ -1,0 +1,20 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| name
+| no
+| string
+| Name of the referenced element
+
+| uuid
+| yes
+| string
+| Uuid of the referenced element
+
+|======

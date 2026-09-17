@@ -7,10 +7,10 @@
 | Description
 
 
-| previousIssueDate
+| data
 | yes
-| string
-| Date of the last time the API token was issued.
+| object
+| Data of the created API token.
 
 | token
 | yes

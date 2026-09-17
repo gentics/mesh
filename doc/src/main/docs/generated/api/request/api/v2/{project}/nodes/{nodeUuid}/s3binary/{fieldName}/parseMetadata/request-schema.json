@@ -1,0 +1,20 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:s3binary:S3BinaryUploadRequest",
+  "properties" : {
+    "version" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "Version number which must be provided in order to handle and detect concurrent changes to the node content."
+    },
+    "language" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "ISO 639-1 language tag of the node which provides the image which should be transformed."
+    },
+    "filename" : {
+      "type" : "string",
+      "description" : "Expected filename for the s3 binary field."
+    }
+  }
+}

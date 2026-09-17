@@ -1,0 +1,40 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| expires
+| no
+| string
+| ISO8601 formatted expire date string.
+
+| issued
+| yes
+| string
+| ISO8601 formatted issued date string.
+
+| lastUsed
+| no
+| string
+| ISO8601 formatted last used date string.
+
+| name
+| yes
+| string
+| Name of the Token.
+
+| uuid
+| yes
+| string
+| Uuid of the element
+
+| valid
+| yes
+| boolean
+| True when the token is valid (not expired), false if not.  Default: *false*.
+
+|======

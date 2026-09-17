@@ -1,0 +1,20 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| data
+| yes
+| array
+| Array which contains the elements.
+
+| excluded
+| no
+| boolean
+| Should the listed names/UUIDs be excluded, not included  Default: *false*.
+
+|======

@@ -45,6 +45,7 @@ startInReadOnly: false
 versionPurgeMaxBatchSize: 10
 migrationMaxBatchSize: 50
 migrationTriggerInterval: 60000
+serveOpenApi: true
 pluginUseHttp2: false
 storageOptions:
   nativeQueryFiltering: "ON_DEMAND"

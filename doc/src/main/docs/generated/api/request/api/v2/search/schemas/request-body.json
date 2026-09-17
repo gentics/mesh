@@ -1,1 +1,7 @@
-{"query":{"query_string":{"query":"some name"}}}
+{
+  "query" : {
+    "query_string" : {
+      "query" : "some name"
+    }
+  }
+}

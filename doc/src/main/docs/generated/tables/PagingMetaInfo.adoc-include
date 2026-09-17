@@ -1,0 +1,30 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| currentPage
+| yes
+| integer
+| Number of the current page.  Default: *0*.
+
+| pageCount
+| yes
+| integer
+| Number of the pages which can be found for the given per page count.  Default: *0*.
+
+| perPage
+| no
+| integer
+| Number of elements which can be included in a single page.
+
+| totalCount
+| yes
+| integer
+| Number of all elements which could be found.  Default: *0*.
+
+|======

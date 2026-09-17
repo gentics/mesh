@@ -6,6 +6,29 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v3.3.0]]
+== 3.3.0 (17.09.2026)
+
+icon:plus[] REST API: Along with existing RAML API definition, it is now possible to generate an OpenAPI (aka Swagger) specification for the Mesh REST API. For that, an endpoint `/openapi.yaml` has been provided.
+
+icon:plus[] Core: Now it is possible to purge empty (micro)schema versions automatically, via new background jobs. This will save storage and runtime resources of the database.
+ The purge process is triggered via REST API `POST /utilities/purge/schemas/versions` and `POST /utilities/purge/microschemas/versions` respectively, and can be parameterized by schema name/UUID filters.
+
+
+icon:plus[] Core: A new field type, `JSON`, has been added. Having a string in its base, it provides such additional functionality, as JSON structure / schema verification, and extended JsonPath filtering in GraphQL requests.
+
+icon:plus[] Core: The `Hibernate` ORM dependency has been updated to the version `7.4.4.Final`.
+
+icon:plus[] The `Vert.x` framework dependency has been updated to the version `5.1.5`.
+
+icon:plus[] MCP Server: A new Model Context Protocol (MCP) server is now available as an optional, separately deployed component of Gentics Mesh Enterprise. It exposes published Gentics Mesh content to AI agents and LLM-based tools through a small set of well-defined MCP tools (listing projects and schemas, loading nodes by UUID or webroot path, searching nodes and running GraphQL queries), so language models never talk to the Gentics Mesh API directly. Access is restricted by a policy layer (project and language allowlists), protected by rate limiting, bulkheads and a circuit breaker, and authenticated with a Bearer token in HTTP mode. The server is shipped as its own container image.
+See "MCP Server":https://www.gentics.com/mesh/docs/mcp-server/ in the documentation for details.
+
+
+icon:plus[] Search: Added *Content RAG* – semantic search and source-referenced answer generation over Mesh content (enterprise feature, disabled by default). Content is chunked and stored in dedicated `…-ragchunk-…` indices as part of the standard search sync; vectorization is handled by an Elasticsearch ingest pipeline. Included schemas and fields are controlled via the existing `elasticsearch` settings (`rag: true|false`, `rag.fields`) and `noIndex`. Permissions are derived from the requesting user's Mesh token.
+See "Content RAG":https://www.gentics.com/mesh/docs/content-rag/ in the documentation for details.
+
+
 [[v3.2.14]]
 == 3.2.14 (28.08.2026)
 

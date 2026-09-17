@@ -18,7 +18,7 @@
 | ISO8601 formatted created date string.
 
 | creator
-| yes
+| no
 | object
 | User reference of the creator of the element.
 
@@ -43,7 +43,7 @@
 | Properties of the job.  Default: *{}*.
 
 | startDate
-| yes
+| no
 | string
 | The start date of the job.
 
@@ -53,7 +53,7 @@
 | Migration status.
 
 | stopDate
-| yes
+| no
 | string
 | The stop date of the job.
 

@@ -1,0 +1,20 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:lang:LanguageResponse",
+  "properties" : {
+    "uuid" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "Uuid of the element"
+    },
+    "name" : {
+      "type" : "string"
+    },
+    "nativeName" : {
+      "type" : "string"
+    },
+    "languageTag" : {
+      "type" : "string"
+    }
+  }
+}

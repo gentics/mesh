@@ -5,7 +5,7 @@
     "data" : {
       "type" : "array",
       "required" : true,
-      "description" : "Array which contains the found elements.",
+      "description" : "Array which contains the elements.",
       "items" : {
         "type" : "object",
         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:job:JobResponse",
@@ -18,7 +18,6 @@
           "creator" : {
             "type" : "object",
             "id" : "urn:jsonschema:com:gentics:mesh:core:rest:user:UserReference",
-            "required" : true,
             "description" : "User reference of the creator of the element.",
             "properties" : {
               "firstName" : {
@@ -53,7 +52,7 @@
             "type" : "string",
             "required" : true,
             "description" : "The type of the job.",
-            "enum" : [ "schema", "microschema", "branch", "versionpurge", "consistencycheck", "consistencyrepair", "imagecache" ]
+            "enum" : [ "schema", "microschema", "branch", "versionpurge", "schemaversionpurge", "microschemaversionpurge", "consistencycheck", "consistencyrepair", "imagecache" ]
           },
           "status" : {
             "type" : "string",
@@ -71,12 +70,10 @@
           },
           "stopDate" : {
             "type" : "string",
-            "required" : true,
             "description" : "The stop date of the job."
           },
           "startDate" : {
             "type" : "string",
-            "required" : true,
             "description" : "The start date of the job."
           },
           "completionCount" : {
@@ -126,7 +123,6 @@
         },
         "perPage" : {
           "type" : "integer",
-          "required" : true,
           "description" : "Number of elements which can be included in a single page."
         },
         "pageCount" : {

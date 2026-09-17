@@ -1,0 +1,14 @@
+{
+  "changeLogEntryFileNames": [
+    "8924.GPU-2475.enhancement",
+    "8685.GPU-2196.enhancement",
+    "8925.GPU-2581.enhancement",
+    "8741.GPU-2210.enhancement",
+    "8848.GPU-2598.enhancement",
+    "8852.GPU-2648.enhancement",
+    "8720.GPU-2209.enhancement"
+  ],
+  "version": "3.3.0",
+  "date": "17.09.2026",
+  "genericProperties": {}
+}

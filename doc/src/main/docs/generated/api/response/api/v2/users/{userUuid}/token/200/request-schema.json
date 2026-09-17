@@ -1,23 +1,71 @@
 {
   "type" : "object",
-  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:common:GenericMessageResponse",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:user:UserAPITokenListResponse",
   "properties" : {
-    "message" : {
-      "type" : "string",
+    "data" : {
+      "type" : "array",
       "required" : true,
-      "description" : "Enduser friendly translated message. Translation depends on the 'Accept-Language' header value"
-    },
-    "internalMessage" : {
-      "type" : "string",
-      "required" : true,
-      "description" : "Internal developer friendly message"
-    },
-    "properties" : {
-      "type" : "object",
-      "description" : "Map of i18n properties which were used to construct the provided message",
-      "additionalProperties" : {
+      "description" : "Array which contains the elements.",
+      "items" : {
         "type" : "object",
-        "id" : "urn:jsonschema:java:lang:Object"
+        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:user:UserAPITokenDataModel",
+        "properties" : {
+          "uuid" : {
+            "type" : "string",
+            "required" : true,
+            "description" : "Uuid of the element"
+          },
+          "name" : {
+            "type" : "string",
+            "required" : true,
+            "description" : "Name of the Token."
+          },
+          "issued" : {
+            "type" : "string",
+            "required" : true,
+            "description" : "ISO8601 formatted issued date string."
+          },
+          "lastUsed" : {
+            "type" : "string",
+            "description" : "ISO8601 formatted last used date string."
+          },
+          "expires" : {
+            "type" : "string",
+            "description" : "ISO8601 formatted expire date string."
+          },
+          "valid" : {
+            "type" : "boolean",
+            "required" : true,
+            "description" : "True when the token is valid (not expired), false if not."
+          }
+        }
+      }
+    },
+    "_metainfo" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:com:gentics:mesh:core:rest:common:PagingMetaInfo",
+      "required" : true,
+      "description" : "Paging information of the list result.",
+      "properties" : {
+        "currentPage" : {
+          "type" : "integer",
+          "required" : true,
+          "description" : "Number of the current page."
+        },
+        "perPage" : {
+          "type" : "integer",
+          "description" : "Number of elements which can be included in a single page."
+        },
+        "pageCount" : {
+          "type" : "integer",
+          "required" : true,
+          "description" : "Number of the pages which can be found for the given per page count."
+        },
+        "totalCount" : {
+          "type" : "integer",
+          "required" : true,
+          "description" : "Number of all elements which could be found."
+        }
       }
     }
   }

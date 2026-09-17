@@ -10,7 +10,7 @@
 | order
 | string
 | false
-| Field order (ASC/DESC/UNSORTED) to sort the result by. Default: UNSORTED. 
+| Field order (ASC/DESC) to sort the result by.
 
 | sortBy
 | string

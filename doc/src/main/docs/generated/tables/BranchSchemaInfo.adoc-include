@@ -1,0 +1,35 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| jobUuid
+| no
+| string
+| Uuid of the migration job.
+
+| migrationStatus
+| no
+| string
+| Status of the migration which was triggered when the schema/microschema was added to the branch.
+
+| name
+| no
+| string
+| Name of the referenced element
+
+| uuid
+| yes
+| string
+| Uuid of the referenced element
+
+| version
+| yes
+| string
+| The version of the microschema.
+
+|======

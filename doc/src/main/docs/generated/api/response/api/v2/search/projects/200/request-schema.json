@@ -5,7 +5,7 @@
     "data" : {
       "type" : "array",
       "required" : true,
-      "description" : "Array which contains the found elements.",
+      "description" : "Array which contains the elements.",
       "items" : {
         "type" : "object",
         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:project:ProjectResponse",
@@ -185,7 +185,6 @@
         },
         "perPage" : {
           "type" : "integer",
-          "required" : true,
           "description" : "Number of elements which can be included in a single page."
         },
         "pageCount" : {

@@ -1,0 +1,45 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| allow
+| no
+| array
+| List of allowed string values. Only one of the listed values will be accepted during update and create requests.
+
+| elasticsearch
+| no
+| object
+| Additional elasticsearch index field configuration. This can be used to add custom fields with custom analyzers to the search index.
+
+| label
+| no
+| string
+| Label of the field.
+
+| name
+| yes
+| string
+| Name of the field.
+
+| noIndex
+| no
+| boolean
+| Flag which indicates whether the field is excluded from indexing or not.
+
+| required
+| no
+| boolean
+| Flag which indicates whether the field is required or not. A create request will fail if no field value has been specified. The update request will fail when the value is omitted and the field has never been saved before.
+
+| type
+| yes
+| string
+| Type of the field.
+
+|======

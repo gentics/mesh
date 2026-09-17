@@ -8,8 +8,8 @@
 
 
 | data
-| true
+| yes
 | array
-| Array of the requests.
+| Array which contains the elements.  Default: *[]*.
 
 |======

@@ -21,7 +21,6 @@
         },
         "internalMessage" : {
           "type" : "string",
-          "required" : true,
           "description" : "Internal developer friendly message"
         },
         "properties" : {

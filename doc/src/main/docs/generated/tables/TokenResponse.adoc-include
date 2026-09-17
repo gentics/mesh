@@ -7,4 +7,9 @@
 | Description
 
 
+| token
+| no
+| string
+| A current JWT access token
+
 |======

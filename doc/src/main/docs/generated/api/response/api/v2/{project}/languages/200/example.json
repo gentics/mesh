@@ -1,0 +1,18 @@
+{
+  "data" : [ {
+    "uuid" : "c5ac82fa1a9c43b6ac82fa1a9ca3b61c",
+    "name" : "German",
+    "nativeName" : "Deutsch",
+    "languageTag" : "de"
+  }, {
+    "uuid" : "86c0a2b6435d434280a2b6435da34247",
+    "name" : "Japanese",
+    "nativeName" : "日本語",
+    "languageTag" : "jp"
+  } ],
+  "_metainfo" : {
+    "currentPage" : 0,
+    "pageCount" : 0,
+    "totalCount" : 0
+  }
+}

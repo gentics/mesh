@@ -1,0 +1,15 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:user:UserAPITokenCreateRequest",
+  "properties" : {
+    "name" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "Name of the API Token."
+    },
+    "expires" : {
+      "type" : "string",
+      "description" : "ISO8601 formatted expire date string."
+    }
+  }
+}

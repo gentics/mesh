@@ -1,3 +1,5 @@
 {
-  "message" : "I18n message"
+  "message" : "I18n message",
+  "internalMessage" : null,
+  "properties" : null
 }
