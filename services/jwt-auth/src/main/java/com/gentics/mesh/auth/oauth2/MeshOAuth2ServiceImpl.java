@@ -417,7 +417,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 	 * @param admin admin user
 	 * @param obstacle an obstacle provider for slowing down the process in testing purposes
 	 */
-	public void handleMappingResult(Tx tx, EventQueueBatch batch, MappingResult result, HibUser authUser, HibUser admin, Runnable obstacle)  {
+	void handleMappingResult(Tx tx, EventQueueBatch batch, MappingResult result, HibUser authUser, HibUser admin, Runnable obstacle)  {
 		RoleDao roleDao = tx.roleDao();
 		GroupDao groupDao = tx.groupDao();
 		UserDao userDao = tx.userDao();
