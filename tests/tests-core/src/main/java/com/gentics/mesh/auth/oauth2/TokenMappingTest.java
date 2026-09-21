@@ -1,25 +1,34 @@
-package com.gentics.mesh.auth;
+package com.gentics.mesh.auth.oauth2;
 
 import static com.gentics.mesh.test.TestSize.PROJECT;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.assertj.core.util.Objects;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
-import com.gentics.mesh.auth.oauth2.MeshOAuth2ServiceImpl;
+import com.gentics.mesh.auth.MeshOAuthService;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -44,6 +53,7 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
  * Test cases for mapping groups and roles with the {@link MeshOAuthService}
  */
 @MeshTestSetting(testSize = PROJECT, startServer = false)
+@RunWith(value = Parameterized.class)
 public class TokenMappingTest extends AbstractMeshTest {
 	/**
 	 * Name of the test user
@@ -54,7 +64,7 @@ public class TokenMappingTest extends AbstractMeshTest {
 	 * Comparator for events
 	 */
 	private final static Comparator<? super MeshEventModel> EVENT_COMPARATOR = (e1, e2) -> {
-		if (Objects.areEqual(e1, e2)) {
+		if (Objects.deepEquals(e1, e2)) {
 			return 0;
 		}
 		if (e1 == null && e2 != null) {
@@ -64,22 +74,22 @@ public class TokenMappingTest extends AbstractMeshTest {
 			return -1;
 		}
 
-		if (!Objects.areEqual(e1.getEvent(), e2.getEvent())) {
+		if (!Objects.deepEquals(e1.getEvent(), e2.getEvent())) {
 			return -1;
 		}
-		if (!Objects.areEqual(e1.getClass(), e2.getClass())) {
+		if (!Objects.deepEquals(e1.getClass(), e2.getClass())) {
 			return -1;
 		}
 		if (e1 instanceof MeshElementEventModel) {
-			return Objects.areEqual(MeshElementEventModel.class.cast(e1).getName(),
+			return Objects.deepEquals(MeshElementEventModel.class.cast(e1).getName(),
 					MeshElementEventModel.class.cast(e2).getName()) ? 0 : -1;
 		} else if (e1 instanceof GroupUserAssignModel) {
 			GroupUserAssignModel g1 = GroupUserAssignModel.class.cast(e1);
 			GroupUserAssignModel g2 = GroupUserAssignModel.class.cast(e2);
 
-			if (Objects.areEqual(g1.getUser().getFirstName(), g2.getUser().getFirstName())
-					&& Objects.areEqual(g1.getUser().getLastName(), g2.getUser().getLastName())
-					&& Objects.areEqual(g1.getGroup().getName(), g2.getGroup().getName())) {
+			if (Objects.deepEquals(g1.getUser().getFirstName(), g2.getUser().getFirstName())
+					&& Objects.deepEquals(g1.getUser().getLastName(), g2.getUser().getLastName())
+					&& Objects.deepEquals(g1.getGroup().getName(), g2.getGroup().getName())) {
 				return 0;
 			} else {
 				return -1;
@@ -88,8 +98,8 @@ public class TokenMappingTest extends AbstractMeshTest {
 			GroupRoleAssignModel g1 = GroupRoleAssignModel.class.cast(e1);
 			GroupRoleAssignModel g2 = GroupRoleAssignModel.class.cast(e2);
 
-			if (Objects.areEqual(g1.getRole().getName(), g2.getRole().getName())
-					&& Objects.areEqual(g1.getGroup().getName(), g2.getGroup().getName())) {
+			if (Objects.deepEquals(g1.getRole().getName(), g2.getRole().getName())
+					&& Objects.deepEquals(g1.getGroup().getName(), g2.getGroup().getName())) {
 				return 0;
 			} else {
 				return -1;
@@ -98,10 +108,60 @@ public class TokenMappingTest extends AbstractMeshTest {
 		return -1;
 	};
 
+	@Parameters(name = "{index}: {0} users, {1} obstacle")
+	public static Collection<Object[]> numbers() {
+		Collection<Object[]> params = new ArrayList<>();
+		List<Runnable> obstacles = List.of(
+				new Runnable() {
+
+					@Override
+					public void run() {
+					}
+					@Override
+					public String toString() {
+						return "no";
+					}
+				},
+				new Runnable() {
+
+					@Override
+					public void run() {
+						try {
+							Thread.sleep(200);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+					}
+					@Override
+					public String toString() {
+						return "delay 200 ms";
+					}
+				}
+		);
+		for (int i = 1; i < 5; i++) {
+			for (Runnable obstacle : obstacles) {
+				params.add(new Object[] {i, obstacle});
+			}
+		}
+		return params;
+	}
+
 	/**
 	 * Tested service instance
 	 */
 	private MeshOAuth2ServiceImpl service;
+
+	/**
+	 * Number of simultaneous calls
+	 */
+	@Parameter(0)
+	public int numSimultaneous;
+
+	/**
+	 * An obstacle to slow down the mapping process
+	 */
+	@Parameter(1)
+	public Runnable obstacle;
 
 	/**
 	 * Setup basic data and the {@link #service}
@@ -136,7 +196,7 @@ public class TokenMappingTest extends AbstractMeshTest {
 			.expectThat(roleHasGroups(mappedRoleName))
 			.expectUpdate(true)
 			.expect(event(MeshEvent.ROLE_CREATED, mappedRoleName))
-			.test();
+			.test(numSimultaneous);
 	}
 
 	/**
@@ -156,7 +216,7 @@ public class TokenMappingTest extends AbstractMeshTest {
 			.expectThat(roleHasGroups(mappedRoleName))
 			.expectUpdate(false)
 			.expectNoEvents()
-			.test();
+			.test(numSimultaneous);
 	}
 
 	/**
@@ -174,7 +234,7 @@ public class TokenMappingTest extends AbstractMeshTest {
 			.expectUpdate(true)
 			.expect(event(MeshEvent.GROUP_CREATED, mappedGroupName))
 			.expect(event(MeshEvent.GROUP_USER_ASSIGNED, groupRef(mappedGroupName), testUserRef()))
-			.test();
+			.test(numSimultaneous);
 	}
 
 	/**
@@ -196,7 +256,7 @@ public class TokenMappingTest extends AbstractMeshTest {
 			.expectUpdate(true)
 			.expect(event(MeshEvent.GROUP_UPDATED, mappedGroupName))
 			.expect(event(MeshEvent.GROUP_USER_ASSIGNED, groupRef(mappedGroupName), testUserRef()))
-			.test();
+			.test(numSimultaneous);
 	}
 
 	/**
@@ -219,7 +279,7 @@ public class TokenMappingTest extends AbstractMeshTest {
 			.expectThat(groupHasUsers(mappedGroupName, TESTUSER_NAME))
 			.expectUpdate(false)
 			.expectNoEvents()
-			.test();
+			.test(numSimultaneous);
 	}
 
 	/**
@@ -242,7 +302,7 @@ public class TokenMappingTest extends AbstractMeshTest {
 			.expect(event(MeshEvent.ROLE_CREATED, mappedRoleName))
 			.expect(event(MeshEvent.GROUP_USER_ASSIGNED, groupRef(mappedGroupName), testUserRef()))
 			.expect(event(MeshEvent.GROUP_ROLE_ASSIGNED, groupRef(mappedGroupName), roleRef(mappedRoleName)))
-			.test();
+			.test(numSimultaneous);
 	}
 
 	/**
@@ -267,7 +327,7 @@ public class TokenMappingTest extends AbstractMeshTest {
 			.expectUpdate(true)
 			.expect(event(MeshEvent.ROLE_CREATED, mappedRoleName))
 			.expect(event(MeshEvent.GROUP_ROLE_ASSIGNED, groupRef(existingGroupName), roleRef(mappedRoleName)))
-			.test();
+			.test(numSimultaneous);
 	}
 
 	/**
@@ -293,7 +353,7 @@ public class TokenMappingTest extends AbstractMeshTest {
 			.expect(event(MeshEvent.GROUP_CREATED, mappedGroupName))
 			.expect(event(MeshEvent.GROUP_USER_ASSIGNED, groupRef(mappedGroupName), testUserRef()))
 			.expect(event(MeshEvent.GROUP_ROLE_ASSIGNED, groupRef(mappedGroupName), roleRef(mappedRoleName)))
-			.test();
+			.test(numSimultaneous);
 	}
 
 	@Test
@@ -317,7 +377,7 @@ public class TokenMappingTest extends AbstractMeshTest {
 			.expectThat(groupHasRoles(existingGroupName, existingRoleName))
 			.expectUpdate(true)
 			.expect(event(MeshEvent.GROUP_ROLE_ASSIGNED, groupRef(existingGroupName), roleRef(existingRoleName)))
-			.test();
+			.test(numSimultaneous);
 	}
 
 	@Test
@@ -341,7 +401,7 @@ public class TokenMappingTest extends AbstractMeshTest {
 			.expectThat(groupHasRoles(existingGroupName, existingRoleName))
 			.expectUpdate(true)
 			.expect(event(MeshEvent.GROUP_ROLE_ASSIGNED, groupRef(existingGroupName), roleRef(existingRoleName)))
-			.test();
+			.test(numSimultaneous);
 	}
 
 	/**
@@ -421,7 +481,7 @@ public class TokenMappingTest extends AbstractMeshTest {
 			.expect(event(MeshEvent.GROUP_ROLE_ASSIGNED, groupRef(groupName5), roleRef(roleName1)))
 			.expect(event(MeshEvent.GROUP_ROLE_ASSIGNED, groupRef(groupName5), roleRef(roleName2)))
 
-			.test();
+			.test(numSimultaneous);
 	}
 
 	/**
@@ -446,7 +506,7 @@ public class TokenMappingTest extends AbstractMeshTest {
 			.expectUpdate(true)
 			.expect(event(MeshEvent.GROUP_CREATED, mappedGroupName))
 			.expect(event(MeshEvent.GROUP_USER_ASSIGNED, groupRef(mappedGroupName), testUserRef()))
-			.test();
+			.test(numSimultaneous);
 	}
 
 	/**
@@ -476,7 +536,7 @@ public class TokenMappingTest extends AbstractMeshTest {
 			.expect(event(MeshEvent.GROUP_UPDATED, mappedGroupName))
 			.expect(event(MeshEvent.GROUP_USER_ASSIGNED, groupRef(mappedGroupName), testUserRef()))
 			.expect(event(MeshEvent.GROUP_ROLE_ASSIGNED, groupRef(mappedGroupName), roleRef(mappedRoleName)))
-			.test();
+			.test(numSimultaneous);
 	}
 
 	/**
@@ -501,7 +561,7 @@ public class TokenMappingTest extends AbstractMeshTest {
 			.expect(event(MeshEvent.ROLE_CREATED, mappedRoleName))
 			.expect(event(MeshEvent.GROUP_USER_ASSIGNED, groupRef(mappedGroupName), testUserRef()))
 			.expect(event(MeshEvent.GROUP_ROLE_ASSIGNED, groupRef(mappedGroupName), roleRef(mappedRoleName)))
-			.test();
+			.test(numSimultaneous);
 	}
 
 	@Test
@@ -516,7 +576,7 @@ public class TokenMappingTest extends AbstractMeshTest {
 			.expectThat(roleHasGroups(mappedRoleName))
 			.expectUpdate(true)
 			.expect(event(MeshEvent.ROLE_CREATED, mappedRoleName))
-			.test();
+			.test(numSimultaneous);
 	}
 
 	/**
@@ -547,7 +607,7 @@ public class TokenMappingTest extends AbstractMeshTest {
 			.expect(event(MeshEvent.GROUP_CREATED, mappedGroupName))
 			.expect(event(MeshEvent.GROUP_USER_ASSIGNED, groupRef(mappedGroupName), testUserRef()))
 			.expect(event(MeshEvent.GROUP_USER_UNASSIGNED, groupRef(filteredGroupName), testUserRef()))
-			.test();
+			.test(numSimultaneous);
 	}
 
 	@Test
@@ -566,7 +626,7 @@ public class TokenMappingTest extends AbstractMeshTest {
 			.expectThat(userHasGroups(TESTUSER_NAME))
 			.expectUpdate(true)
 			.expect(event(MeshEvent.GROUP_USER_UNASSIGNED, groupRef(existingGroupName), testUserRef()))
-			.test();
+			.test(numSimultaneous);
 	}
 
 	/**
@@ -619,7 +679,7 @@ public class TokenMappingTest extends AbstractMeshTest {
 			.expect(event(MeshEvent.GROUP_USER_ASSIGNED, groupRef(mappedGroupName), testUserRef()))
 			.expect(event(MeshEvent.GROUP_ROLE_ASSIGNED, groupRef(mappedGroupName), roleRef(mappedRoleName)))
 			.expect(event(MeshEvent.GROUP_ROLE_UNASSIGNED, groupRef(filteredGroupName), roleRef(filteredRoleName)))
-			.test();
+			.test(numSimultaneous);
 	}
 
 	/**
@@ -938,36 +998,53 @@ public class TokenMappingTest extends AbstractMeshTest {
 		}
 
 		/**
-		 * Run the test case
+		 * Run the test case for num parallel logins.
+		 * @throws  
 		 */
-		public void test() {
+		public void test(int numAtOnce) {
 			List<MeshEventModel> caughtEvents = new ArrayList<>();
-			boolean success = tx(tx -> {
-				EventQueueBatch eqb = tx.batch();
-				HibUser admin = tx.userDao().findByName("admin");
-				HibUser testUser = tx.userDao().findByName(TESTUSER_NAME);
 
-				try {
-					service.handleMappingResult(tx, eqb, result, testUser, admin);
-					if (expectedEvents != null) {
-						caughtEvents.addAll(eqb.getEntries());
-					}
-					return true;
-				} catch (Throwable e) {
-					if (!expectUpdate) {
-						throw e;
-					}
-					return false;
-				}
+			CountDownLatch latch = new CountDownLatch(numAtOnce);
+			AtomicBoolean ab = new AtomicBoolean(true);
+
+			IntStream.range(0, numAtOnce).forEach(i -> {
+				new Thread(() -> {
+					boolean success = tx(tx -> {
+						EventQueueBatch eqb = tx.batch();
+						HibUser admin = tx.userDao().findByName("admin");
+						HibUser testUser = tx.userDao().findByName(TESTUSER_NAME);
+
+						try {
+							service.handleMappingResult(tx, eqb, result, testUser, admin, obstacle);
+							if (expectedEvents != null) {
+								caughtEvents.addAll(eqb.getEntries());
+							}
+							return true;
+						} catch (Throwable e) {
+							if (!expectUpdate) {
+								throw e;
+							}
+							return false;
+						}
+					});
+					ab.set(ab.get() & success);
+					latch.countDown();
+				}).start();
 			});
+			
+			try {
+				latch.await();
+			} catch (InterruptedException e) {
+				fail(e);
+			}
 
-			if (success && !CollectionUtils.isEmpty(asserters)) {
+			if (ab.get() && !CollectionUtils.isEmpty(asserters)) {
 				tx(tx -> {
 					asserters.forEach(asserter -> asserter.accept(tx));
 				});
 			}
 
-			if (success && expectedEvents != null) {
+			if (ab.get() && expectedEvents != null) {
 				assertThat(caughtEvents).as("Events").usingElementComparator(EVENT_COMPARATOR).containsOnlyElementsOf(expectedEvents);
 			}
 		}
