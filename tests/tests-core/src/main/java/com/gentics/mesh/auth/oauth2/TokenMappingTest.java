@@ -1,4 +1,4 @@
-package com.gentics.mesh.auth;
+package com.gentics.mesh.auth.oauth2;
 
 import static com.gentics.mesh.test.TestSize.PROJECT;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,7 +28,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.gentics.mesh.auth.oauth2.MeshOAuth2ServiceImpl;
+import com.gentics.mesh.auth.MeshOAuthService;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
