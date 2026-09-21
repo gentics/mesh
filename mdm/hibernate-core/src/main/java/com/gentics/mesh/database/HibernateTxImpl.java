@@ -9,7 +9,9 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.hibernate.proxy.HibernateProxy;
+import org.hibernate.resource.transaction.spi.TransactionStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -35,7 +37,6 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.s3binary.S3Binaries;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.dagger.tx.TransactionScope;
-import com.gentics.mesh.hibernate.data.dao.APITokenDaoImpl;
 import com.gentics.mesh.hibernate.data.dao.BinaryDaoImpl;
 import com.gentics.mesh.hibernate.data.dao.BranchDaoImpl;
 import com.gentics.mesh.hibernate.data.dao.ContentDaoImpl;
@@ -124,8 +125,10 @@ public class HibernateTxImpl implements HibernateTx {
 	public void commit() {
 		if (!isNested()) {
 			executeDeferred();
-			tx.commit();
-			tx.begin();
+			if (!wasCommitted()) {
+				tx.commit();
+				tx.begin();
+			}
 		}
 	}
 
@@ -133,7 +136,7 @@ public class HibernateTxImpl implements HibernateTx {
 	public void rollback() {
 		if (isNested()) {
 			failure();
-		} else {
+		} else if (!wasCommitted()) {
 			tx.rollback();
 			tx.begin();
 		}
@@ -158,7 +161,9 @@ public class HibernateTxImpl implements HibernateTx {
 			try {
 				if (isSuccess) {
 					executeDeferred();
-					tx.commit();
+					if (!wasCommitted()) {
+						tx.commit();
+					}
 				} else {
 					tx.rollback();
 				}
@@ -364,11 +369,6 @@ public class HibernateTxImpl implements HibernateTx {
 	}
 
 	@Override
-	public APITokenDaoImpl apiTokenDao() {
-		return daoCollection.apiTokenDao();
-	}
-
-	@Override
 	public PermissionCache permissionCache() {
 		return caches.permissionCache();
 	}
@@ -525,6 +525,13 @@ public class HibernateTxImpl implements HibernateTx {
 	 */
 	public ContentStorage getContentStorage() {
 		return contentStorage;
+	}
+
+	protected boolean wasCommitted() {
+		return (tx instanceof Transaction ttx) && ttx.getStatus().isOneOf(
+		        TransactionStatus.MARKED_ROLLBACK,
+		        TransactionStatus.ROLLING_BACK,
+		        TransactionStatus.ROLLED_BACK);
 	}
 
 	private void executeDeferred() {
