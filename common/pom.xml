@@ -51,6 +51,11 @@
 			<artifactId>mesh-core</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh.plugin.commercial</groupId>
+			<artifactId>mesh-commercial-plugins-test-common</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>

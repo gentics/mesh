@@ -24,7 +24,6 @@ import com.gentics.vertx.openapi.model.Format;
 import com.gentics.vertx.openapi.model.OpenAPIGenerationException;
 import com.gentics.vertx.openapi.route.InternalEndpointBuilder;
 
-import io.vertx.core.Vertx;
 import io.vertx.ext.web.Router;
 
 /**
@@ -42,7 +41,7 @@ public interface CommercialRestPlugin extends RestPlugin {
 		if (environment().options().isServeOpenApi() && (StringUtils.isBlank(pluginsWithNoOpenAPI) 
 				|| (!"*".equals(pluginsWithNoOpenAPI) && Arrays.stream(pluginsWithNoOpenAPI.split(",")).map(String::trim).noneMatch(id -> id.equals(id()))))) {
 			if (globalRouter == null) {
-				globalRouter = Router.router(Vertx.vertx());
+				globalRouter = Router.router(vertx());
 				routers = Pair.of(globalRouter, projectRouter);
 			}
 			Version defaultVersion = environment().options().getDefaultOpenAPIVersion();
