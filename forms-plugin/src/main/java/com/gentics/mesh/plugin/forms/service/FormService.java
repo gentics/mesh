@@ -788,6 +788,9 @@ public class FormService {
 					JsonNode formTypeConfig = formtypeConfigs.getConfigs().get(form.getType());
 					if (formTypeConfig != null) {
 						form.setProperty("flows", formTypeConfig.get("flows"));
+						if (formTypeConfig.has("formgenSettings")) {
+							form.setProperty("formgenSettings", formTypeConfig.get("formgenSettings"));
+						}
 					}
 					form.setData(formDataNode != null
 							? buildFormDataFromNode(new PostedData(form), form, formID, Collections.emptyMap(), language, formDataNode)

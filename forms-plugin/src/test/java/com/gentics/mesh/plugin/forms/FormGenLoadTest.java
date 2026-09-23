@@ -364,6 +364,22 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 		assertThat(response.code()).as("Response code when captchaId set but sitekey missing").isEqualTo(400);
 	}
 
+	@Test
+	public void testLoadFormGenFormgenSettingsObject() throws IOException {
+		setFormtypeConfigs(PROJECT_NAME, buildModel("{\"GENERIC\":{\"flows\":[],\"formgenSettings\":{\"foo\":\"bar\",\"enabled\":true}}}"));
+		String uuid = createForm("formgen_load.json");
+
+		Response response = doLoadRequest(uuid, FORM_ID, "de");
+		String responseBody = response.body() != null ? response.body().string() : "";
+		assertSuccessfulJsonResponse(response, responseBody);
+		JsonNode body = JsonUtil.readValue(responseBody, JsonNode.class);
+
+		JsonNode formgenSettings = body.get("formgenSettings");
+		assertThat(formgenSettings).as("formgenSettings is present").isNotNull();
+		assertThat(formgenSettings.get("foo").asText()).isEqualTo("bar");
+		assertThat(formgenSettings.get("enabled").asBoolean()).isTrue();
+	}
+
 	private Response doLoadRequest(String formUuid, String formID, String language)
 			throws IOException {
 		return doLoadRequest(formUuid, formID, language, null);
