@@ -5,6 +5,7 @@ import static com.gentics.mesh.hibernate.util.HibernateUtil.firstOrNull;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.inQueriesLimitForSplitting;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -73,6 +75,7 @@ import jakarta.persistence.criteria.Root;
  */
 @Singleton
 public class TagDaoImpl extends AbstractHibDaoGlobal<HibTag, TagResponse, HibTagImpl> implements PersistingTagDao {
+	public static final String[] SORT_FIELDS = new String[] { "name" };
 
 	private final RootDaoHelper<HibTag, HibTagImpl, HibTagFamily, HibTagFamilyImpl> rootDaoHelper;
 
@@ -336,5 +339,21 @@ public class TagDaoImpl extends AbstractHibDaoGlobal<HibTag, TagResponse, HibTag
 			branch.removeTag(element);
 		}
 		return element;
+	}
+
+	@Override
+	public String[] getGraphQlSortingFieldNames(boolean noDependencies) {
+		if (noDependencies) {
+			return Stream.of(
+					Arrays.stream(super.getGraphQlSortingFieldNames(true)),
+					Arrays.stream(SORT_FIELDS)					
+				).flatMap(Function.identity()).toArray(String[]::new);
+		}
+		return Stream.of(
+				Arrays.stream(super.getGraphQlSortingFieldNames(false)),
+				Arrays.stream(SORT_FIELDS)
+				// Technically works, but REST API allows no direct tag access, only through a defined tag family 
+				//, Arrays.stream(currentTransaction.getTx().tagFamilyDao().getGraphQlSortingFieldNames(true)).map(f -> "tagFamily." + f)
+			).flatMap(Function.identity()).toArray(String[]::new);
 	}
 }

@@ -80,12 +80,19 @@ import com.gentics.mesh.parameter.impl.SortingParametersImpl;
 import com.gentics.mesh.parameter.impl.UserParametersImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
+import com.gentics.mesh.rest.client.MeshRestClientConfig;
+import com.gentics.mesh.rest.client.MeshRestClientMessageException;
+import com.gentics.mesh.rest.client.impl.OkHttpClientUtil;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.json.JsonObject;
+import okhttp3.Headers;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 @MeshTestSetting(elasticsearch = TRACKING, testSize = PROJECT_AND_NODE, startServer = true)
 public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
@@ -199,11 +206,18 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 				});
 			}
 		}
-		UserListResponse list = call(() -> client().findUsers(new SortingParametersImpl("name", SortOrder.DESCENDING)));
+		UserListResponse list = call(() -> client().findUsers(new SortingParametersImpl("username", SortOrder.DESCENDING)));
 		assertEquals("Total data size should be 8", 8, list.getData().size());
 		assertThat(list.getData()).isSortedAccordingTo((fa, fb) -> getTestContext().getSortComparator().reversed().compare(
 				fa != null ? fa.getUsername() : null,
 				fb != null ? fb.getUsername() : null));
+	}
+
+	@Test
+	@Override
+	public void testReadPermittedSortedWrongField() throws Exception {
+		MeshRestClientMessageException error = call(() -> client().findUsers(new SortingParametersImpl("existiertleidernicht", SortOrder.DESCENDING)), BAD_REQUEST);
+		assertThat(error.getResponseMessage().getMessage()).as("Error message").startsWith("The following column names are not allowed for sorting: [existiertleidernicht].");
 	}
 
 	/**
@@ -1601,5 +1615,18 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		UserResponse response = call(() -> client().findUserByUuid(user().getUuid()));
 
 		assertTrue("Roles hash should be in response", !StringUtils.isBlank(response.getRolesHash()));
+	}
+
+	@Test
+	public void testPreventSqlInjection() throws Exception {
+		OkHttpClient client = OkHttpClientUtil.createClient(client().getConfig());
+		Response response = client.newCall(new Request.Builder()
+				.url(client().getConfig().getBaseUrl() + "/users?order=asc&sortBy=dbUuid,extractvalue(1,concat(0x7e,(SELECT SUBSTRING(passwordHash,1,32) FROM mesh_user WHERE name='admin')))")
+				.headers(Headers.of(client().getAuthentication().getHeaders()))
+				.build())
+				.execute();
+		assertThat(response.code()).as("Response code").isEqualTo(BAD_REQUEST.code());
+		JsonObject jsonResponse = new JsonObject(response.body().string());
+		assertThat(jsonResponse.getString("message")).as("Error message").startsWith("The following column names are not allowed for sorting: [dbUuid,extractvalue(1,concat(0x7e,(SELECT SUBSTRING(passwordHash,1,32) FROM mesh_user WHERE name='admin')))].");
 	}
 }

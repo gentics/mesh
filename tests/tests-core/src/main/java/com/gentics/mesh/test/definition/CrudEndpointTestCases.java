@@ -41,6 +41,8 @@ public interface CrudEndpointTestCases {
 
 	void testReadPermittedSorted() throws Exception;
 
+	void testReadPermittedSortedWrongField() throws Exception;
+
 	void testPermissionResponse();
 
 	// Update
