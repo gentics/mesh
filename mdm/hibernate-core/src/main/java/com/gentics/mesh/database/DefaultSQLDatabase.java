@@ -174,7 +174,6 @@ public class DefaultSQLDatabase implements DatabaseProvider {
 	private void setStatisticsOptions(ImmutableMap.Builder<String, Object> optionBuilder) {
 		optionBuilder.put(AvailableSettings.GENERATE_STATISTICS, options.getStorageOptions().isGenerateStatistics());
 		optionBuilder.put(AvailableSettings.LOG_SLOW_QUERY, Long.toString(options.getStorageOptions().getSlowSqlThreshold()));
-		optionBuilder.put(AvailableSettings.USE_SQL_COMMENTS, options.getStorageOptions().isGenerateStatistics());
 	}
 
 	private void setOtherOptions(ImmutableMap.Builder<String, Object> optionBuilder) {
