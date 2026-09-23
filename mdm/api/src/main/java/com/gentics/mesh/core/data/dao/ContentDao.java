@@ -615,7 +615,7 @@ public interface ContentDao {
 	 *
 	 * @return
 	 */
-	default Stream<Pair<HibNodeFieldContainer, HibNode>> getNodes(Collection<HibNodeFieldContainer>  contents) {
+	default Stream<Pair<? extends HibNodeFieldContainer, HibNode>> getNodes(Collection<? extends HibNodeFieldContainer>  contents) {
 		return contents.stream().map(content -> Pair.of(content, getNode(content)));
 	}
 

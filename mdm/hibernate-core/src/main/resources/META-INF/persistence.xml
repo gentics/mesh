@@ -52,5 +52,7 @@
 		<class>com.gentics.mesh.hibernate.data.domain.HibUserImpl</class>
 		<class>com.gentics.mesh.hibernate.data.domain.HibVersionPurgeJobImpl</class>
 		<class>com.gentics.mesh.hibernate.data.domain.MeshVersionEntityImpl</class>
+
+		<shared-cache-mode>DISABLE_SELECTIVE</shared-cache-mode>
 	</persistence-unit>
 </persistence>

@@ -1063,7 +1063,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
-	public Stream<Pair<HibNodeFieldContainer, HibNode>> getNodes(Collection<HibNodeFieldContainer> contents) {
+	public Stream<Pair<? extends HibNodeFieldContainer, HibNode>> getNodes(Collection<? extends HibNodeFieldContainer> contents) {
 		Map<UUID, Collection<HibNodeFieldContainer>> nodeUuids = (Map) contents.stream()
 				.map(HibNodeFieldContainerImpl.class::cast)
 				.map(impl -> Pair.of(impl.get(CommonContentColumn.NODE, () -> null), impl))
