@@ -144,6 +144,12 @@ public interface ClientHelper extends EventHelper {
 		return client().createNode(uuid, PROJECT_NAME, request).toSingle();
 	}
 
+	default <T> MeshRestClientMessageException adminCall(ClientHandler<T> handler, HttpResponseStatus status) {
+		return runAsAdmin(() -> {
+			return com.gentics.mesh.test.ClientHelper.call(handler, status);
+		});
+	}
+
 	default <T> MeshRestClientMessageException adminCall(ClientHandler<T> handler, HttpResponseStatus status, String bodyMessageI18nKey,
 		String... i18nParams) {
 		return runAsAdmin(() -> {

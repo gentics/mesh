@@ -174,7 +174,6 @@ public class DefaultSQLDatabase implements DatabaseProvider {
 	private void setStatisticsOptions(ImmutableMap.Builder<String, Object> optionBuilder) {
 		optionBuilder.put(AvailableSettings.GENERATE_STATISTICS, options.getStorageOptions().isGenerateStatistics());
 		optionBuilder.put(AvailableSettings.LOG_SLOW_QUERY, Long.toString(options.getStorageOptions().getSlowSqlThreshold()));
-		optionBuilder.put(AvailableSettings.USE_SQL_COMMENTS, options.getStorageOptions().isGenerateStatistics());
 	}
 
 	private void setOtherOptions(ImmutableMap.Builder<String, Object> optionBuilder) {
@@ -185,6 +184,7 @@ public class DefaultSQLDatabase implements DatabaseProvider {
 			.put(AvailableSettings.HBM2DDL_CHARSET_NAME, CHARSET)
 			.put(AvailableSettings.SHOW_SQL, Boolean.toString(options.getStorageOptions().isShowSql()))
 			.put(AvailableSettings.FORMAT_SQL, Boolean.toString(options.getStorageOptions().isFormatSql()))
+			.put(AvailableSettings.USE_SQL_COMMENTS, Boolean.toString(options.getStorageOptions().isFormatSql()))
 			.put(AvailableSettings.STATEMENT_BATCH_SIZE, String.valueOf(options.getStorageOptions().getJdbcBatchSize()))
 			.put(AvailableSettings.ORDER_INSERTS, "true")
 			.put(AvailableSettings.ORDER_UPDATES, "true")

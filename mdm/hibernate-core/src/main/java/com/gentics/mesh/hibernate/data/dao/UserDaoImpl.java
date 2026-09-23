@@ -5,6 +5,7 @@ import static com.gentics.mesh.hibernate.util.HibernateUtil.firstOrNull;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.inQueriesLimitForSplitting;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -12,7 +13,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -68,6 +71,8 @@ import jakarta.persistence.metamodel.Metamodel;
  */
 @Singleton
 public class UserDaoImpl extends AbstractHibDaoGlobal<HibUser, UserResponse, HibUserImpl> implements PersistingUserDao {
+	public static final String[] SORT_FIELDS = new String[] { "username", "firstname", "lastname", "emailAddress", "forcedPasswordChange" };
+
 	private final Database db;
 	
 	@Inject
@@ -302,5 +307,13 @@ public class UserDaoImpl extends AbstractHibDaoGlobal<HibUser, UserResponse, Hib
 		HibUserImpl user = (HibUserImpl) element;
 		user.removeGroups();
 		return user;
+	}
+
+	@Override
+	public String[] getGraphQlSortingFieldNames(boolean noDependencies) {
+		return Stream.of(
+				Arrays.stream(super.getGraphQlSortingFieldNames(noDependencies)),
+				Arrays.stream(SORT_FIELDS)					
+			).flatMap(Function.identity()).toArray(String[]::new);
 	}
 }

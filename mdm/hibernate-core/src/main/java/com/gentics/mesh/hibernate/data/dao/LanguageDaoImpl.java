@@ -2,7 +2,10 @@ package com.gentics.mesh.hibernate.data.dao;
 
 import static com.gentics.mesh.hibernate.util.HibernateUtil.firstOrNull;
 
+import java.util.Arrays;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -36,6 +39,8 @@ import io.vertx.core.Vertx;
  */
 @Singleton
 public class LanguageDaoImpl extends AbstractHibDaoGlobal<HibLanguage, LanguageResponse, HibLanguageImpl> implements PersistingLanguageDao {
+
+	public static final String[] SORT_FIELDS = new String[] { "name", "nativeName", "languageTag" };
 
 	@Inject
 	public LanguageDaoImpl(DaoHelper<HibLanguage, HibLanguageImpl> daoHelper, HibPermissionRoots permissionRoots,
@@ -74,5 +79,14 @@ public class LanguageDaoImpl extends AbstractHibDaoGlobal<HibLanguage, LanguageR
 		return PersistingRootDao.shouldSort(pagingInfo) 
 				? daoHelper.findAll(ac, Optional.empty(), pagingInfo, Optional.empty()) 
 				: daoHelper.findAll(ac, pagingInfo, null, false);
+	}
+
+	@Override
+	public String[] getGraphQlSortingFieldNames(boolean noDependencies) {
+		return Stream.of(
+				Arrays.stream(super.getGraphQlSortingFieldNames(noDependencies))
+					.filter(item -> !item.startsWith("created") && !item.startsWith("edited") && !item.startsWith("creator.") && !item.startsWith("editor.")),
+				Arrays.stream(SORT_FIELDS)					
+			).flatMap(Function.identity()).toArray(String[]::new);
 	}
 }
