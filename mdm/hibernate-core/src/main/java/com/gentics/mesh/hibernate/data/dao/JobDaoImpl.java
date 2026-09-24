@@ -222,6 +222,10 @@ public class JobDaoImpl extends AbstractHibDaoGlobal<HibJob, JobResponse, HibJob
 			return "jobType";
 		case "status":
 			return "jobStatus";
+		case "startDate":
+			return "starttimestamp";
+		case "stopDate":
+			return "stoptimestamp";
 		default:
 			return super.mapGraphQlSortingFieldName(gqlName);
 		}
