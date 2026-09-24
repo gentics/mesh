@@ -100,7 +100,11 @@ public class DefaultSQLDatabase implements DatabaseProvider {
 			optionBuilder
 					.put("hibernate.cache.default_cache_concurrency_strategy", CacheConcurrencyStrategy.READ_WRITE.toAccessType().getExternalName())
 					.put("hibernate.cache.use_query_cache", Boolean.TRUE.toString())
-					.put("hibernate.cache.use_second_level_cache", Boolean.TRUE.toString());
+					.put("hibernate.cache.use_second_level_cache", Boolean.TRUE.toString())
+					.put("hibernate.criteria.plan_cache_enabled", Boolean.toString(options.getStorageOptions().getQueryPlanCacheMaxSize() > 0))
+					.put("hibernate.query.plan_cache_max_size", Long.toString(options.getStorageOptions().getQueryPlanCacheMaxSize()))
+					// Since we use native queries excessively, the metadata cache should be bigger than the default values comparing to the plan cache size.
+					.put("hibernate.query.plan_parameter_metadata_max_size", Long.toString(options.getStorageOptions().getQueryPlanCacheMaxSize() / 4));
 			if (options.getClusterOptions().isEnabled()) {
 				// Cache sizes are configured in com.gentics.mesh.database.cluster.HibClusterManager.getHazelcast()
 				optionBuilder
@@ -164,7 +168,8 @@ public class DefaultSQLDatabase implements DatabaseProvider {
 		} else {
 			optionBuilder
 				.put("hibernate.cache.use_query_cache", Boolean.FALSE.toString())
-				.put("hibernate.cache.use_second_level_cache", Boolean.FALSE.toString());
+				.put("hibernate.cache.use_second_level_cache", Boolean.FALSE.toString())
+				.put("hibernate.criteria.plan_cache_enabled", Boolean.FALSE.toString());
 		}
 	}
 
@@ -181,6 +186,7 @@ public class DefaultSQLDatabase implements DatabaseProvider {
 			.put(AvailableSettings.HBM2DDL_CHARSET_NAME, CHARSET)
 			.put(AvailableSettings.SHOW_SQL, Boolean.toString(options.getStorageOptions().isShowSql()))
 			.put(AvailableSettings.FORMAT_SQL, Boolean.toString(options.getStorageOptions().isFormatSql()))
+			.put(AvailableSettings.USE_SQL_COMMENTS, Boolean.toString(options.getStorageOptions().isFormatSql()))
 			.put(AvailableSettings.STATEMENT_BATCH_SIZE, String.valueOf(options.getStorageOptions().getJdbcBatchSize()))
 			.put(AvailableSettings.ORDER_INSERTS, "true")
 			.put(AvailableSettings.ORDER_UPDATES, "true")

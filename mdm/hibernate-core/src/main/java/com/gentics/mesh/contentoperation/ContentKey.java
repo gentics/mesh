@@ -55,7 +55,11 @@ public class ContentKey implements Serializable {
 
 	public static ContentKey fromContentUUIDAndVersion(UUID contentUuid, HibFieldSchemaVersionElement<?, ?, ?, ?, ?> version) {
 		ReferenceType type = version instanceof HibSchemaVersion ? ReferenceType.FIELD : ReferenceType.MICRONODE;
-		return new ContentKey(contentUuid, (UUID) version.getId(), type);
+		return fromContentUUIDAndVersionUUID(contentUuid, (UUID) version.getId(), type);
+	}
+
+	public static ContentKey fromContentUUIDAndVersionUUID(UUID contentUuid, UUID versionUuid, ReferenceType referenceType) {
+		return new ContentKey(contentUuid, versionUuid, referenceType);
 	}
 
 	@Override

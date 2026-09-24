@@ -214,8 +214,13 @@ public class HibNodeFieldContainerImpl extends AbstractHibBucketableElement
 	}
 
 	@Override
+	public Class<? extends HibSchemaVersion> getSchemaContainerVersionClass() {
+		return HibSchemaVersionImpl.class;
+	}
+
+	@Override
 	public HibSchemaVersion getSchemaContainerVersion() {
-		return HibernateTx.get().load(getSchemaContainerVersionUuid(), HibSchemaVersionImpl.class);
+		return HibUnmanagedFieldContainer.super.getSchemaContainerVersion();
 	}
 
 	@Override
