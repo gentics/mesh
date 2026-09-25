@@ -316,6 +316,15 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 		sendFinishEvent();
 	}
 
+	/**
+	 * Return a handler for {@link EventbusEvent} instances.
+	 * The handler will allow all expected events (counting down for async) and end the test when {@link #TEST_FINISHED_ADDRESS} is fired.
+	 * All other events will fail the test
+	 * @param context test context
+	 * @param async Async
+	 * @param expected optional expected events
+	 * @return handler
+	 */
 	protected Consumer<? super EventbusEvent> handle(TestContext context, Async async, String...expected) {
 		List<String> expectedList = Arrays.asList(expected);
 
