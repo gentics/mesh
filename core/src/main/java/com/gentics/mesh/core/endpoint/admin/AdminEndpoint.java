@@ -316,7 +316,9 @@ public abstract class AdminEndpoint extends AbstractInternalEndpoint {
 		getRoute.produces(APPLICATION_JSON);
 		getRoute.description("Retrieves the currently active local configuration of this instance.");
 		getRoute.exampleResponse(OK, localConfig.createExample(), "The currently active local configuration");
-		getRoute.handler(rc -> localConfigHandler.handleGetActiveConfig(wrap(rc)));
+		getRoute
+			.blockingHandler(rc -> handlerUtilities.requiresAdminRole(rc), isOrderedBlockingHandlers())
+			.handler(rc -> localConfigHandler.handleGetActiveConfig(wrap(rc)));
 
 		InternalEndpointRoute postRoute = createRoute();
 		postRoute.path("/config");
@@ -325,7 +327,9 @@ public abstract class AdminEndpoint extends AbstractInternalEndpoint {
 		postRoute.produces(APPLICATION_JSON);
 		postRoute.description("Sets the currently active local configuration of this instance.");
 		postRoute.exampleResponse(OK, localConfig.createExample(), "The currently active local configuration");
-		postRoute.handler(rc -> localConfigHandler.handleSetActiveConfig(wrap(rc)));
+		postRoute
+			.blockingHandler(rc -> handlerUtilities.requiresAdminRole(rc), isOrderedBlockingHandlers())
+			.handler(rc -> localConfigHandler.handleSetActiveConfig(wrap(rc)));
 	}
 
 	protected void addShutdownHandler() {
