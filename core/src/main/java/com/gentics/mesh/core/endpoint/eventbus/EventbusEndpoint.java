@@ -62,8 +62,6 @@ public class EventbusEndpoint extends AbstractInternalEndpoint {
 			SockJSHandler handler = SockJSHandler.create(vertx, sockJSoptions);
 			SockJSBridgeOptions bridgeOptions = new SockJSBridgeOptions();
 			for (MeshEvent event : MeshEvent.publicEvents()) {
-				// TODO ensure that clients can't fire internal mesh events.
-				bridgeOptions.addInboundPermitted(new PermittedOptions().setAddress(event.address));
 				bridgeOptions.addOutboundPermitted(new PermittedOptions().setAddress(event.address));
 			}
 

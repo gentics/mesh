@@ -1,0 +1,1 @@
+Eventbus: It is no longer possible to publish mesh internal events (mesh.*) over the websocket eventbus bridge.
