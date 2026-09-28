@@ -365,6 +365,9 @@
 | *MESH_PLUGIN_USE_HTTP2*
 | Override the HTTP/2 usage flag for plugins.  _(pluginUseHttp2)_
 
+| *MESH_QUERY_PLAN_CACHE_MAX_SIZE*
+| Overwrite the query plan + parameter metadata cache max size.  _(storageOptions.queryPlanCacheMaxSize)_
+
 | *MESH_S3_BINARY_ACCESS_KEY_ID*
 | Override the configured AWS S3 access key id.  _(s3options.accessKeyId)_
 
