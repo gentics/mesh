@@ -9,6 +9,7 @@ import static org.junit.Assert.assertFalse;
 import java.util.function.IntFunction;
 
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.admin.localconfig.LocalConfigModel;
@@ -23,6 +24,11 @@ import io.vertx.core.json.pointer.JsonPointer;
 
 @MeshTestSetting(testSize = PROJECT, startServer = true)
 public class ReadOnlyModeTest extends AbstractMeshTest {
+
+	@Before
+	public void setup() {
+		grantAdmin();
+	}
 
 	@After
 	public void tearDown() {
