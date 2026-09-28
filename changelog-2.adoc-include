@@ -6,6 +6,9 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v3.3.1]]
+== 3.3.1 (28.09.2026)
+
 [[v3.3.0]]
 == 3.3.0 (17.09.2026)
 
@@ -25,7 +28,7 @@ icon:plus[] MCP Server: A new Model Context Protocol (MCP) server is now availab
 See "MCP Server":https://www.gentics.com/mesh/docs/mcp-server/ in the documentation for details.
 
 
-icon:plus[] Search: Added *Content RAG* – semantic search and source-referenced answer generation over Mesh content (enterprise feature, disabled by default). Content is chunked and stored in dedicated `…-ragchunk-…` indices as part of the standard search sync; vectorization is handled by an Elasticsearch ingest pipeline. Included schemas and fields are controlled via the existing `elasticsearch` settings (`rag: true|false`, `rag.fields`) and `noIndex`. Permissions are derived from the requesting user's Mesh token.
+icon:plus[] Search: Added *Content RAG* â€“ semantic search and source-referenced answer generation over Mesh content (enterprise feature, disabled by default). Content is chunked and stored in dedicated `â€¦-ragchunk-â€¦` indices as part of the standard search sync; vectorization is handled by an Elasticsearch ingest pipeline. Included schemas and fields are controlled via the existing `elasticsearch` settings (`rag: true|false`, `rag.fields`) and `noIndex`. Permissions are derived from the requesting user's Mesh token.
 See "Content RAG":https://www.gentics.com/mesh/docs/content-rag/ in the documentation for details.
 
 
@@ -37,10 +40,6 @@ The errors, caused by improper user input of sorting parameters, will now result
 
 
 icon:check[] Core/GraphQL: Some performance improvements of fetching hierarchical node structures have been done.
-
-
-icon:check[] Some dependencies have been updated:
-* Hibernate: 7.1.35.Final
 
 
 [[v3.2.14]]

@@ -53,9 +53,6 @@
           "noIndex" : {
             "type" : "boolean"
           },
-          "noIndex" : {
-            "type" : "boolean"
-          },
           "name" : {
             "type" : "string",
             "required" : true,
