@@ -1,0 +1,1 @@
+Rest API: The endpoints to read and update the local configuration will now require admin permissions.
