@@ -77,7 +77,7 @@ public class UserEndpoint extends RolePermissionHandlingEndpoint {
 		endpoint.setRAMLPath("/{userUuid}/token");
 		endpoint.addUriParameter("userUuid", "Uuid of the user.", USER_EDITOR_UUID);
 		endpoint.description(
-			"Return API token which can be used to authenticate the user. Store the key somewhere save since you won't be able to retrieve it later on. This invalidates all tokens previously issued for this user. Requires UPDATE permission on the user.");
+			"Return API token which can be used to authenticate the user. Store the key somewhere save since you won't be able to retrieve it later on. Requires UPDATE permission on the user.");
 		endpoint.method(POST);
 		endpoint.setMutating(true);
 		endpoint.consumes(APPLICATION_JSON);
