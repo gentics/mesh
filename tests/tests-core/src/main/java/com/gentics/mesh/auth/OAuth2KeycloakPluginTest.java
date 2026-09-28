@@ -280,7 +280,7 @@ public class OAuth2KeycloakPluginTest extends AbstractOAuthTest {
 	private void setReadOnly(boolean readOnly) {
 		String key = client().getAPIKey();
 		setAdminToken();
-		call(() -> client().updateLocalConfig(new LocalConfigModel().setReadOnly(readOnly)));
+		adminCall(() -> client().updateLocalConfig(new LocalConfigModel().setReadOnly(readOnly)));
 		client().setAPIKey(key);
 	}
 }
