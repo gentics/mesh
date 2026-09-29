@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "3.3.1"
+version: "3.3.0"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -1519,7 +1519,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "c7a1dd4a49c3483cb92c3c6380362671"
+                            "uuid" : "21c64c3e2f544ac1b13f39c8fd1f4542"
                           } ]
                         }
             responses: 
@@ -2030,7 +2030,7 @@ mediaType: application/json
                 repeat: false
                 example: "589319933be24ec79319933be24ec7fe"
         post: 
-            description: Return API token which can be used to authenticate the user. Store the key somewhere save since you won't be able to retrieve it later on. Requires UPDATE permission on the user.
+            description: Return API token which can be used to authenticate the user. Store the key somewhere save since you won't be able to retrieve it later on. This invalidates all tokens previously issued for this user. Requires UPDATE permission on the user.
             body: 
                 application/json: 
                     schema: |
@@ -3455,7 +3455,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "377b039bc5114988969aa630ee48ce07"
+                            "uuid" : "72ad71e5d7784fd39a9a4bf999dcf09e"
                           } ]
                         }
             responses: 
@@ -4961,7 +4961,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "000a3f9435944cdab8c889e3a1ff1239"
+                            "uuid" : "77270c25d0cd4cd8a9596970850cd2e7"
                           } ]
                         }
             responses: 
@@ -7666,7 +7666,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "52b2b748870c439b8ee5f169520e8e11"
+                            "uuid" : "edcfdeda149b4f20a61f4582a973685b"
                           } ]
                         }
             responses: 
@@ -10317,7 +10317,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "5caad07ea1324d04a75013eccb76da78"
+                            "uuid" : "34cce548782549449cf6a0b31926d722"
                           } ]
                         }
             responses: 
@@ -12268,7 +12268,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "fb6dacf74358423ea2b4d72c8d6a70fa"
+                            "uuid" : "a4aac2d0f0a34df6b3d467edac836ee7"
                           } ]
                         }
             responses: 
@@ -17912,7 +17912,7 @@ mediaType: application/json
                         }
                     example: |
                         {
-                          "data" : [ "mesh_content", "1d75314cab144177bfda6124d70995e5", "c44132787de84a6aa66a256e5c9837d8" ],
+                          "data" : [ "mesh_content", "4ddf251a97f54e708439dfbcd354abd7", "f98eb079930e482d87a2a2fae1a4028c" ],
                           "excluded" : false
                         }
             responses: 
@@ -17944,7 +17944,7 @@ mediaType: application/json
                         }
                     example: |
                         {
-                          "data" : [ "mesh_content", "58bfefbe933c402bb574a6bba7bf364f", "e3033473c5234078a4e9ffea1985f4d3" ],
+                          "data" : [ "mesh_content", "483f2cc9f8b14fb4ae43fd47d27ae664", "89a8f64e861b4273b1a477313056855e" ],
                           "excluded" : false
                         }
             responses: 
@@ -19092,7 +19092,7 @@ mediaType: application/json
                                 }
                             example: |
                                 {
-                                  "meshVersion" : "3.3.1",
+                                  "meshVersion" : "3.3.0",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "mariadb",
                                   "databaseVersion" : "10.7",
@@ -25741,7 +25741,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "84421117487340cbb7641011f4349917"
+                            "uuid" : "3e2ae43031354d9595b49377f7148050"
                           } ]
                         }
             responses: 
@@ -29477,7 +29477,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "87672a674b2941aa9f98d55123215d9f"
+                            "uuid" : "56ce1a01cdd944e983b79b246070850e"
                           } ]
                         }
             responses: 
@@ -31587,7 +31587,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "ee78608c301d45c880d908edde5fe13c"
+                            "uuid" : "a77fa98d70194bbb944df98cf18448b9"
                           } ]
                         }
             responses: 
@@ -35629,7 +35629,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "20e3579b012847b3b6a33f2772a9860d"
+                            "uuid" : "bc3a98436222456f96fd927843fa2f60"
                           } ]
                         }
             responses: 
