@@ -167,15 +167,10 @@
 | long
 | Interval in ms for periodic check for stale transactions. Defaults to 10000 ms.  Default: *10000*.
 
-| storageOptions.queryPlanCacheMaxSize
-| false
-| long
-| Hibernate query plan + parameter metadata cache max size. Defaults to 2048. Zero or negative value disables the query plan cache.  Default: *10000*.
-
 | cacheConfig
 | true
 | hibernatecacheconfig
-| Cache options.  Default: *com.gentics.mesh.etc.config.hibernate.HibernateCacheConfig@e042c99*.
+| Cache options.  Default: *com.gentics.mesh.etc.config.hibernate.HibernateCacheConfig@5cbe2654*.
 
 | licenseKeyPath
 | false

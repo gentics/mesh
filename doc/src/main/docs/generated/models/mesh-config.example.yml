@@ -80,7 +80,6 @@ storageOptions:
   jdbcBatchSize: 5
   sqlParametersLimit: "definedByDatabase"
   staleTxCheckInterval: 10000
-  queryPlanCacheMaxSize: 10000
 licenseKeyPath: "license.key"
 licenseKey: null
 httpServer:

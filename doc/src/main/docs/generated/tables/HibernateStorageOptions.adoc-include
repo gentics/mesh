@@ -122,11 +122,6 @@
 | string
 | Enables the native database level filtering for queries.  Default: *ON_DEMAND*.
 
-| queryPlanCacheMaxSize
-| no
-| integer
-| Hibernate query plan + parameter metadata cache max size. Defaults to 2048. Zero or negative value disables the query plan cache.  Default: *10000*.
-
 | queryTimeout
 | no
 | integer
