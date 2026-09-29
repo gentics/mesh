@@ -30,7 +30,7 @@ See "Content RAG":https://www.gentics.com/mesh/docs/content-rag/ in the document
 
 
 [[v3.2.15]]
-== 3.2.15 (28.09.2026)
+== 3.2.15 (29.09.2026)
 
 icon:check[] Core: The sorting fetch functionality has been restored for some of the entities.
 The errors, caused by improper user input of sorting parameters, will now result in `HTTP 400` responses with meaningful error descriptions.
