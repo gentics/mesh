@@ -6,6 +6,20 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v3.2.15]]
+== 3.2.15 (29.09.2026)
+
+icon:check[] Core: The sorting fetch functionality has been restored for some of the entities.
+The errors, caused by improper user input of sorting parameters, will now result in `HTTP 400` responses with meaningful error descriptions.
+
+
+icon:check[] Core/GraphQL: Some performance improvements of fetching hierarchical node structures have been done.
+
+
+icon:check[] Some dependencies have been updated:
+* Hibernate: 7.1.35.Final
+
+
 [[v3.2.14]]
 == 3.2.14 (28.08.2026)
 
