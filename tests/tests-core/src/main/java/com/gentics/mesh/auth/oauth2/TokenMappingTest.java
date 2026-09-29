@@ -1008,7 +1008,7 @@ public class TokenMappingTest extends AbstractMeshTest {
 			AtomicBoolean ab = new AtomicBoolean(true);
 
 			IntStream.range(0, numAtOnce).forEach(i -> {
-				new Thread(() -> {
+				Thread thread = new Thread(() -> {
 					boolean success = tx(tx -> {
 						EventQueueBatch eqb = tx.batch();
 						HibUser admin = tx.userDao().findByName("admin");
@@ -1029,7 +1029,9 @@ public class TokenMappingTest extends AbstractMeshTest {
 					});
 					ab.set(ab.get() & success);
 					latch.countDown();
-				}).start();
+				});
+				thread.setName("TokenMappingTest worker #" + i);
+				thread.start();
 			});
 			
 			try {
