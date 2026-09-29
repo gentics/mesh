@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.gentics.mesh.contentrag</groupId>
         <artifactId>mesh-content-rag-parent</artifactId>
-        <version>3.3.2-SNAPSHOT</version>
+        <version>3.3.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>mesh-content-rag-chunking</artifactId>
