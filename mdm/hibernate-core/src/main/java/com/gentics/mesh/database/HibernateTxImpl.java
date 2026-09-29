@@ -527,11 +527,17 @@ public class HibernateTxImpl implements HibernateTx {
 		return contentStorage;
 	}
 
+	/**
+	 * Has this transaction already attempted committing/rolling back?
+	 * 
+	 * @return
+	 */
 	protected boolean wasCommitted() {
 		return (tx instanceof Transaction ttx) && ttx.getStatus().isOneOf(
-		        TransactionStatus.MARKED_ROLLBACK,
-		        TransactionStatus.ROLLING_BACK,
-		        TransactionStatus.ROLLED_BACK);
+		        TransactionStatus.COMMITTED,
+		        TransactionStatus.ROLLED_BACK,
+		        TransactionStatus.FAILED_COMMIT,
+		        TransactionStatus.FAILED_ROLLBACK);
 	}
 
 	private void executeDeferred() {

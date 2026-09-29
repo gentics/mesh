@@ -111,35 +111,36 @@ public class TokenMappingTest extends AbstractMeshTest {
 	@Parameters(name = "{index}: {0} users, {1} obstacle")
 	public static Collection<Object[]> numbers() {
 		Collection<Object[]> params = new ArrayList<>();
-		List<Runnable> obstacles = List.of(
-				new Runnable() {
+		Runnable noObstacle = new Runnable() {
 
-					@Override
-					public void run() {
-					}
-					@Override
-					public String toString() {
-						return "no";
-					}
-				},
-				new Runnable() {
+			@Override
+			public void run() {
+			}
+			@Override
+			public String toString() {
+				return "no";
+			}
+		};
+		Runnable delay200ms = new Runnable() {
 
-					@Override
-					public void run() {
-						try {
-							Thread.sleep(200);
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-					}
-					@Override
-					public String toString() {
-						return "delay 200 ms";
-					}
+			@Override
+			public void run() {
+				try {
+					Thread.sleep(200);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
 				}
-		);
-		for (int i = 1; i < 5; i++) {
-			for (Runnable obstacle : obstacles) {
+			}
+			@Override
+			public String toString() {
+				return "delay 200 ms";
+			}
+		};
+		// 1 user, no need to mimic the race
+		params.add(new Object[] {1, noObstacle});
+		// more that 1 user
+		for (int i = 2; i < 5; i++) {
+			for (Runnable obstacle : List.of(noObstacle, delay200ms)) {
 				params.add(new Object[] {i, obstacle});
 			}
 		}
@@ -353,6 +354,7 @@ public class TokenMappingTest extends AbstractMeshTest {
 			.expect(event(MeshEvent.GROUP_CREATED, mappedGroupName))
 			.expect(event(MeshEvent.GROUP_USER_ASSIGNED, groupRef(mappedGroupName), testUserRef()))
 			.expect(event(MeshEvent.GROUP_ROLE_ASSIGNED, groupRef(mappedGroupName), roleRef(mappedRoleName)))
+			.expectTentative(event(MeshEvent.GROUP_UPDATED, mappedGroupName))
 			.test(numSimultaneous);
 	}
 
@@ -506,6 +508,7 @@ public class TokenMappingTest extends AbstractMeshTest {
 			.expectUpdate(true)
 			.expect(event(MeshEvent.GROUP_CREATED, mappedGroupName))
 			.expect(event(MeshEvent.GROUP_USER_ASSIGNED, groupRef(mappedGroupName), testUserRef()))
+			.expectTentative(event(MeshEvent.GROUP_UPDATED, mappedGroupName))
 			.test(numSimultaneous);
 	}
 
@@ -894,7 +897,7 @@ public class TokenMappingTest extends AbstractMeshTest {
 		/**
 		 * Expected events (for no event expectations)
 		 */
-		protected List<MeshEventModel> expectedEvents;
+		protected Map<MeshEventModel, Expectancy> expectedEvents;
 
 		/**
 		 * Map the given role
@@ -982,9 +985,22 @@ public class TokenMappingTest extends AbstractMeshTest {
 		 */
 		public TestCase expect(MeshEventModel event) {
 			if (this.expectedEvents == null) {
-				this.expectedEvents = new ArrayList<>();
+				this.expectedEvents = new HashMap<>();
 			}
-			this.expectedEvents.add(event);
+			this.expectedEvents.put(event, Expectancy.REQUIRED);
+			return this;
+		}
+
+		/**
+		 * Optionally expect an event
+		 * @param event expected event
+		 * @return fluent API
+		 */
+		public TestCase expectTentative(MeshEventModel event) {
+			if (this.expectedEvents == null) {
+				this.expectedEvents = new HashMap<>();
+			}
+			this.expectedEvents.put(event, Expectancy.TENTATIVE);
 			return this;
 		}
 
@@ -993,7 +1009,7 @@ public class TokenMappingTest extends AbstractMeshTest {
 		 * @return fluent API
 		 */
 		public TestCase expectNoEvents() {
-			this.expectedEvents = Collections.emptyList();
+			this.expectedEvents = Collections.emptyMap();
 			return this;
 		}
 
@@ -1047,8 +1063,21 @@ public class TokenMappingTest extends AbstractMeshTest {
 			}
 
 			if (ab.get() && expectedEvents != null) {
-				assertThat(caughtEvents).as("Events").usingElementComparator(EVENT_COMPARATOR).containsOnlyElementsOf(expectedEvents);
+				try {
+					assertThat(caughtEvents).as("Events").usingElementComparator(EVENT_COMPARATOR).containsOnlyElementsOf(expectedEvents.keySet());
+				} catch (AssertionError ae) {
+					List<MeshEventModel> noTentatives = expectedEvents.entrySet().stream().filter(e -> e.getValue() == Expectancy.REQUIRED).map(e -> e.getKey()).collect(Collectors.toList());
+					if (noTentatives.size() == expectedEvents.size()) {
+						throw ae;
+					} else {
+						assertThat(caughtEvents).as("Events").usingElementComparator(EVENT_COMPARATOR).containsOnlyElementsOf(noTentatives);
+					}
+				}
 			}
 		}
+	}
+
+	protected enum Expectancy {
+		REQUIRED, TENTATIVE
 	}
 }

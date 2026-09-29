@@ -79,8 +79,8 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 
 	@Override
 	protected void finished(Description description) {
-		super.finished(description);
 		contextProvider.getInstanceProvider().teardownStorage();
+		super.finished(description);
 	}
 
 	@Override
