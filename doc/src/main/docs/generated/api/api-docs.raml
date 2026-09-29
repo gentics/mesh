@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "3.3.0"
+version: "3.3.1"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -698,7 +698,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "1c72ca79e44f40c7929f06bd808f4bc2"
+                            "uuid" : "3dc293362aee41b990a63c7072166a85"
                           } ]
                         }
             responses: 
@@ -904,7 +904,7 @@ mediaType: application/json
                 repeat: false
                 example: "589319933be24ec79319933be24ec7fe"
         post: 
-            description: Return API token which can be used to authenticate the user. Store the key somewhere save since you won't be able to retrieve it later on. This invalidates all tokens previously issued for this user. Requires UPDATE permission on the user.
+            description: Return API token which can be used to authenticate the user. Store the key somewhere save since you won't be able to retrieve it later on. Requires UPDATE permission on the user.
             body: 
                 application/json: 
                     schema: |
@@ -1520,7 +1520,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "8ecbd0a2960f47c18670eb738182349d"
+                            "uuid" : "41a29676c2154615a7614f91627a0786"
                           } ]
                         }
             responses: 
@@ -2138,7 +2138,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "784efbff53a44565bf7340af96ae29d4"
+                            "uuid" : "c81494fb3eff4056aa8248998abe2a84"
                           } ]
                         }
             responses: 
@@ -3190,7 +3190,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "d27cf8f8205a4517831466f3f317bd11"
+                            "uuid" : "5c0c674a140d4028ab4c2303bb63fc18"
                           } ]
                         }
             responses: 
@@ -4300,7 +4300,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "3bce25a0e03d427490efa6be34c59de3"
+                            "uuid" : "53fd70e6bab44c12b42b14eee84b6e76"
                           } ]
                         }
             responses: 
@@ -5049,7 +5049,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "0be5c916b58842b48681fa2865ac1577"
+                            "uuid" : "7edd707db2fb488ebf0ddd8934c80203"
                           } ]
                         }
             responses: 
@@ -7771,7 +7771,7 @@ mediaType: application/json
                         | excluded | no | boolean | Should the listed names/UUIDs be excluded, not included |
                     example: |
                         {
-                          "data" : [ "mesh_content", "45e0055aa1dd496daa5432d6239af343", "e6db0c1057174c2db2c7567387d5361c" ],
+                          "data" : [ "mesh_content", "addca54d0bac4774bd03cc52392c24bf", "51da5cdbf6f74f5eb1a4af910e6d38c9" ],
                           "excluded" : false
                         }
             responses: 
@@ -7789,7 +7789,7 @@ mediaType: application/json
                         | excluded | no | boolean | Should the listed names/UUIDs be excluded, not included |
                     example: |
                         {
-                          "data" : [ "mesh_content", "b5298e650ed34d2b9e9699391c8535f5", "500e9d38305448da812692cbaa8502dc" ],
+                          "data" : [ "mesh_content", "724317b9f93b4f0aa662d48dafeb6b79", "aacd98698cee41548c0034dea15a3e78" ],
                           "excluded" : false
                         }
             responses: 
@@ -8467,7 +8467,7 @@ mediaType: application/json
                                 | vertxVersion | no | string | Used Vert.x version. |
                             example: |
                                 {
-                                  "meshVersion" : "3.3.0",
+                                  "meshVersion" : "3.3.1",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "mariadb",
                                   "databaseVersion" : "10.7",
@@ -11303,7 +11303,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "7401099cff134c608e8eca97c022f84d"
+                            "uuid" : "08543c40b8ba4b9bb55738ead3e0cd33"
                           } ]
                         }
             responses: 
@@ -12931,7 +12931,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "4f6927f0b5e04f4db86ec18def6a8d6a"
+                            "uuid" : "7df5bcd0734c4136b807c468d24cd885"
                           } ]
                         }
             responses: 
@@ -13847,7 +13847,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "f864a6485db44a25b7d6072e7fd64792"
+                            "uuid" : "4a84cedec42744bd8270535f44bc5329"
                           } ]
                         }
             responses: 
@@ -15617,7 +15617,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "63086ca59d27454695cd7f1f9087e01a"
+                            "uuid" : "3a31f56e40484383bc079e493047ddc6"
                           } ]
                         }
             responses: 
