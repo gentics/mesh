@@ -46,7 +46,7 @@
 		<jaxb.runtime.version>4.0.5</jaxb.runtime.version>
 		<handlebars.version>4.5.2</handlebars.version>
 		<hsqldb.version>2.7.3</hsqldb.version>
-		<micrometer.version>1.15.5</micrometer.version>
+		<micrometer.version>1.15.12</micrometer.version>
 	</properties>
 
 	<!-- IMPORTANT: Always keep dependencies in-sync with mesh-plugin-parent pom in order to avoid duplicate libraries in shaded plugin jars -->
