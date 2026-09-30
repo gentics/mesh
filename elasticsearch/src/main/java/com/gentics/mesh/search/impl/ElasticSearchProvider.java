@@ -397,7 +397,7 @@ public class ElasticSearchProvider implements SearchProvider {
 				}
 			})
 			.doOnError(e -> {
-				if (ElasticsearchErrorHelper.isNotFoundError(e)) {
+				if (ElasticsearchErrorHelper.isNotFoundError(e) && !failOnMissingIndex) {
 					if (log.isDebugEnabled()) {
 						log.debug("Already deleted {" + indices + "}", e);
 					}
