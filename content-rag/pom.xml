@@ -46,6 +46,12 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- TODO remove this in favor of proper management in the Mesh BOM -->
+            <dependency>
+                <groupId>io.micrometer</groupId>
+                <artifactId>micrometer-core</artifactId>
+                <version>1.15.12</version>
+            </dependency>
 			<dependency>
 				<groupId>com.gentics.mesh</groupId>
 				<artifactId>mesh-bom</artifactId>
