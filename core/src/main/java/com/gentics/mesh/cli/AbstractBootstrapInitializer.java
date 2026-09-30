@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -458,40 +459,46 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 		if (!debugInfoOptions.isLogEnabled()) {
 			return;
 		}
-		String logFolder = debugInfoOptions.getLogFolder();
 		// This requires that slf4j is actually used.
-		LoggerContext lc = (LoggerContext) org.slf4j.LoggerFactory.getILoggerFactory();
-		ch.qos.logback.classic.Logger rootLogger = lc.getLogger(ROOT_LOGGER_NAME);
+		ILoggerFactory lf = org.slf4j.LoggerFactory.getILoggerFactory();
+		if (lf instanceof LoggerContext lc) {
+			String logFolder = debugInfoOptions.getLogFolder();
+			ch.qos.logback.classic.Logger rootLogger = lc.getLogger(ROOT_LOGGER_NAME);
 
-		RollingFileAppender<ILoggingEvent> appender = new RollingFileAppender<>();
-		appender.setFile(Paths.get(logFolder, "debuginfo.log").toString());
-		appender.setContext(lc);
+			RollingFileAppender<ILoggingEvent> appender = new RollingFileAppender<>();
+			appender.setFile(Paths.get(logFolder, "debuginfo.log").toString());
+			appender.setContext(lc);
 
-		SizeBasedTriggeringPolicy<ILoggingEvent> triggeringPolicy = new SizeBasedTriggeringPolicy<>();
-		triggeringPolicy.setMaxFileSize(FileSize.valueOf(debugInfoOptions.getLogFileSize()));
-		triggeringPolicy.setContext(lc);
+			SizeBasedTriggeringPolicy<ILoggingEvent> triggeringPolicy = new SizeBasedTriggeringPolicy<>();
+			triggeringPolicy.setMaxFileSize(FileSize.valueOf(debugInfoOptions.getLogFileSize()));
+			triggeringPolicy.setContext(lc);
 
-		FixedWindowRollingPolicy rollingPolicy = new FixedWindowRollingPolicy();
+			FixedWindowRollingPolicy rollingPolicy = new FixedWindowRollingPolicy();
 
-		rollingPolicy.setMinIndex(1);
-		rollingPolicy.setMaxIndex(1);
-		rollingPolicy.setFileNamePattern(Paths.get(logFolder, "debuginfo.%i.log").toString());
-		rollingPolicy.setParent(appender);
-		rollingPolicy.setContext(lc);
+			rollingPolicy.setMinIndex(1);
+			rollingPolicy.setMaxIndex(1);
+			rollingPolicy.setFileNamePattern(Paths.get(logFolder, "debuginfo.%i.log").toString());
+			rollingPolicy.setParent(appender);
+			rollingPolicy.setContext(lc);
 
-		PatternLayoutEncoder encoder = new PatternLayoutEncoder();
-		encoder.setPattern(debugInfoOptions.getLogPattern());
-		encoder.setContext(lc);
+			PatternLayoutEncoder encoder = new PatternLayoutEncoder();
+			encoder.setPattern(debugInfoOptions.getLogPattern());
+			encoder.setContext(lc);
 
-		appender.setRollingPolicy(rollingPolicy);
-		appender.setTriggeringPolicy(triggeringPolicy);
-		appender.setEncoder(encoder);
+			appender.setRollingPolicy(rollingPolicy);
+			appender.setTriggeringPolicy(triggeringPolicy);
+			appender.setEncoder(encoder);
 
-		rootLogger.addAppender(appender);
-		triggeringPolicy.start();
-		rollingPolicy.start();
-		encoder.start();
-		appender.start();
+			rootLogger.addAppender(appender);
+			triggeringPolicy.start();
+			rollingPolicy.start();
+			encoder.start();
+			appender.start();
+			log.info("Debug info runtime logging initialized.");
+		} else {
+			log.warn("The provided SLF4J implementor [{}] is not of a type [ch.qos.logback.classic.LoggerContext]."
+					+ " The debug info will not contain the runtime logs.", debugInfoOptions);
+		}
 	}
 
 	/**
