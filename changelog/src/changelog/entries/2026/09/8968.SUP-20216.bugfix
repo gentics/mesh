@@ -1,0 +1,1 @@
+Auth: The token mapping process has been improved to prevent errors between several simultaneous login sessions.

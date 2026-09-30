@@ -405,6 +405,19 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 	 * @param admin admin user
 	 */
 	public void handleMappingResult(Tx tx, EventQueueBatch batch, MappingResult result, HibUser authUser, HibUser admin)  {
+		handleMappingResult(tx, batch, result, authUser, admin, () -> {});
+	}
+
+	/**
+	 * Handle the mapping result by creating groups/roles and changing the assignment user <-> group and group <-> role
+	 * @param tx transaction
+	 * @param batch event queue batch
+	 * @param result mapping result
+	 * @param authUser authenticated user
+	 * @param admin admin user
+	 * @param obstacle an obstacle provider for slowing down the process in testing purposes
+	 */
+	void handleMappingResult(Tx tx, EventQueueBatch batch, MappingResult result, HibUser authUser, HibUser admin, Runnable obstacle)  {
 		RoleDao roleDao = tx.roleDao();
 		GroupDao groupDao = tx.groupDao();
 		UserDao userDao = tx.userDao();
@@ -424,6 +437,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 			return roleDao.create(roleName, admin);
 		}, created -> {
 			userDao.inheritRolePermissions(admin, roleRoot, created);
+			tx.commit();
 		});
 
 		// Prepare MappingHelper for groups
@@ -436,6 +450,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 			return groupDao.create(groupName, admin);
 		}, created -> {
 			userDao.inheritRolePermissions(admin, groupRoot, created);
+			tx.commit();
 		});
 
 		// check which groups are not yet assigned to the user and add them
@@ -456,6 +471,8 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		}
 
 		if (assignedGroupsEdited) {
+			tx.commit();
+			obstacle.run();
 			assignedGroups = new ArrayList<>(userDao.getGroups(authUser).list());
 		}
 
@@ -507,7 +524,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		boolean rolesPerGroupEdited = false;
 		Map<HibGroup, Collection<? extends HibRole>> rolesPerGroup = groupDao.getRoles(groupsHelper.getEntities(groupUuids));
 
-		// check which group <-> role assignement is not yet present and assign
+		// check which group <-> role assignment is not yet present and assign
 		for (Entry<String, Set<String>> entry : roleUuidsPerGroupUuid.entrySet()) {
 			String groupUuid = entry.getKey();
 			Optional<HibGroup> optGroup = groupsHelper.getEntity(groupUuid, null);
@@ -525,6 +542,8 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		}
 
 		if (rolesPerGroupEdited) {
+			tx.commit();
+			obstacle.run();
 			// update roles per group to consider newly added roles
 			rolesPerGroup = groupDao.getRoles(groupsHelper.getEntities(groupUuids));
 		}
@@ -537,7 +556,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 						log.info("Unassigning role {" + role.getName() + "} from group {" + group.getName() + "}");
 						groupDao.removeRole(group, role);
 						batch.add(groupDao.createRoleAssignmentEvent(group, role, UNASSIGNED));
-					}
+						tx.commit();					}
 				}
 			}
 		}
@@ -550,6 +569,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 					log.info("Unassigning group {" + group.getName() + "} from user {" + authUser.getUsername() + "}");
 					groupDao.removeUser(group, authUser);
 					batch.add(groupDao.createUserAssignmentEvent(group, authUser, UNASSIGNED));
+					tx.commit();
 				}
 			}
 		}
