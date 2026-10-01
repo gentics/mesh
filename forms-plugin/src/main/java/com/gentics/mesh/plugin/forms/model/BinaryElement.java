@@ -256,12 +256,9 @@ public class BinaryElement extends FormElement {
 	@Override
 	public String installFilter(String query) {
 		if (isList()) {
-			return "";
-			// SUP-19994
-			//return getName() + ": { anyMatch: { fields: { form_binary_item: { binary: { fileName: { like: \"%" + query + "%\" } } } } } }";
+			return getName() + ": { anyMatch: { fields: { form_binary_item: { binary: { fileName: { like: \"%" + query + "%\" } } } } } }";
 		} else {
-			return "";
-			// return getName() + ": { node: { fields: { form_binary_item: { binary: { fileName: {like: \"%" + query + "%\"} } } } } }";
+			return getName() + ": { node: { fields: { form_binary_item: { binary: { fileName: {like: \"%" + query + "%\"} } } } } }";
 		}
 	}
 
