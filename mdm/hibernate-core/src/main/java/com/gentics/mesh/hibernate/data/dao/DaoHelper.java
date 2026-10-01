@@ -1593,11 +1593,6 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 			actualFieldName = String.format("(%s.%s LIKE '%s')%s", 
 					versionAlias, databaseConnector.renderNonContentColumn("schemaJson"), "%\"container\" : true%", databaseConnector.getDummyComparison(paramsMap, true));
 		}
-		// An operand without both field and owner (e.g. the no-op left side of an entity reference filter) has no SQL representation.
-		// It must not be rendered as a column of the owner alias, which is not empty for the nested filters, e.g. of list items.
-		if (StringUtils.isEmpty(actualFieldName) && maybeOwner.isEmpty()) {
-			return new HibernateFilter(StringUtils.EMPTY, localJoins, paramsMap, Optional.empty());
-		}
 		// At last, in the case of content, get the right owner table and field name, if applicable
 		String schemaKeySuffix = "." + actualFieldName;
 		Optional<String> maybeFieldType = maybeOwner.flatMap(o -> joins.stream()
