@@ -1,0 +1,1 @@
+GraphQL: A crash on filtering nodes by a binary field (e.g. its file name) of the nodes referenced in a node list field with native filtering has been fixed.
