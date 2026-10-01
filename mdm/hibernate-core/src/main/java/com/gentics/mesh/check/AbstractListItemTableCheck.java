@@ -53,7 +53,8 @@ public abstract class AbstractListItemTableCheck extends AbstractContentReferenc
 		}
 		DatabaseConnector dc = HibernateTx.get().data().getDatabaseConnector();
 		String contentTable = dc.getPhysicalTableName(UUIDUtil.toJavaUuid(version.getUuid()));
-		String uuidColumn = dc.renderColumn(CommonContentColumn.DB_UUID);
+		String contentUuidColumn = dc.renderColumn(CommonContentColumn.DB_UUID);
+		String dbUuidColumn = dc.renderNonContentColumn("dbUuid");
 
 		List<String> listFields = version.getSchema().getFields().stream()
 				.filter(f -> FieldTypes.valueByName(f.getType()).equals(FieldTypes.LIST) && FieldTypes.valueByName(((ListFieldSchema) f).getListType()).equals(getListFieldType()))
@@ -65,7 +66,7 @@ public abstract class AbstractListItemTableCheck extends AbstractContentReferenc
 			String fieldColumn = dc.identify(field + "-list." + getListFieldType().name().toLowerCase()).render(dc.getHibernateDialect());
 			String sql = String.format(
 					"SELECT ref.%s c FROM %s ref LEFT JOIN %s content ON ref.%s = content.%s WHERE ref.fieldkey = :%s AND content.%s <> ref.listuuid",
-					uuidColumn, refTableName, contentTable, contentRefColumn, uuidColumn, fieldParam, fieldColumn);
+					dbUuidColumn, refTableName, contentTable, contentRefColumn, contentUuidColumn, fieldParam, fieldColumn);
 
 			List<UUID> orphanedListItems = em.createNativeQuery(sql)
 					.setParameter(fieldParam, field).getResultList();
@@ -78,7 +79,7 @@ public abstract class AbstractListItemTableCheck extends AbstractContentReferenc
 						.setRepairAction(RepairAction.DELETE);
 				long deleted = 0;
 				if (attemptRepair) {
-					String delete = "DELETE FROM " + refTableName + " WHERE " + uuidColumn + " IN :" + fieldParam;
+					String delete = "DELETE FROM " + refTableName + " WHERE " + dbUuidColumn + " IN :" + fieldParam;
 					deleted += SplittingUtils.splitAndCount(orphanedListItems, HibernateUtil.inQueriesLimitForSplitting(1), slice -> Long.valueOf(em.createNativeQuery(delete).setParameter(fieldParam, slice).executeUpdate()));
 					info.setRepaired(deleted == orphanedListItems.size());
 				}
