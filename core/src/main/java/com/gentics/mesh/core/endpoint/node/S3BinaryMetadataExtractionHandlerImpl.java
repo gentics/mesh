@@ -52,6 +52,7 @@ import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.NodeUtil;
+import com.gentics.mesh.util.UUIDUtil;
 
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -135,7 +136,7 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 						return db.singleTx(tx -> s3binaries.findByS3ObjectKey(objectKey.get())
 								.runInExistingTx(tx).getFileName()).flatMap(fileName -> {
 									String mimeTypeForFilename = MimeMapping.mimeTypeForFilename(fileName);
-									File tmpFile = new File(System.getProperty("java.io.tmpdir"), fileName);
+									File tmpFile = new File(System.getProperty("java.io.tmpdir"), UUIDUtil.randomUUID() + ".upload");
 									vertx.fileSystem().writeFileBlocking(tmpFile.getAbsolutePath(), fileBuffer);
 									byte[] fileData = fileBuffer.getBytes();
 									FileUpload fileUpload = new FileUpload() {
@@ -194,10 +195,15 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 									ctx.setFileSize(fileData.length);
 									return Single.just(fileUpload);
 								})
-								.flatMap(fileUpload -> postProcessUpload(
-										new S3BinaryDataProcessorContext(ac, nodeUuid, fieldName, languageTag, fileUpload)).toList())
-								.flatMap(postProcess -> storeUploadInGraph(ac, postProcess, ctx, nodeUuid, languageTag,
-										nodeVersion, fieldName));
+								.flatMap(
+										fileUpload -> postProcessUpload(new S3BinaryDataProcessorContext(ac, nodeUuid,
+												fieldName, languageTag, fileUpload))
+												.toList()
+												.flatMap(postProcess -> storeUploadInGraph(ac, postProcess, ctx,
+														nodeUuid, languageTag, nodeVersion, fieldName))
+												.doOnEvent((response, error) -> {
+													vertx.getDelegate().fileSystem().deleteBlocking(fileUpload.uploadedFileName());
+												}));
 					} else {
 						return Single.error(error(INTERNAL_SERVER_ERROR, "image_error_reading_failed"));
 					}
