@@ -49,6 +49,10 @@ public class SearchPlugin extends AbstractPlugin implements CommercialRestPlugin
 
 	private static final String MSG_CACHING_ENABLED = "Caching enabled";
 
+	private static final JsonObject EXAMPLE_SEARCH_RESPONSE = new JsonObject().put("totalHits", 1).put("hasMore", false).put("results", new JsonArray().add(new JsonObject().put("raw", new JsonObject().put("uuid", UUIDUtil.randomUUID()))));
+
+	private static final JsonArray EXAMPLE_AUTOCOMPLETE_RESPONSE = new JsonArray().add(new JsonObject().put("name", "what")).add(new JsonObject().put("name", "where")).add(new JsonObject().put("name", "which"));
+
 	private static final Logger log = LoggerFactory.getLogger(SearchPlugin.class);
 
 	private SearchConfiguration config;
@@ -103,7 +107,7 @@ public class SearchPlugin extends AbstractPlugin implements CommercialRestPlugin
 			.produces(HttpConstants.APPLICATION_JSON)
 			.withQueryParameter("q", qParameter)
 			.withHandler(fromComponent(SearchPluginComponent::searchHandler))
-			.withExampleResponse(io.netty.handler.codec.http.HttpResponseStatus.OK, new JsonObject().put("totalHits", 1).put("hasMore", false).put("results", new JsonArray().add(new JsonObject().put("raw", new JsonObject().put("uuid", UUIDUtil.randomUUID())))), "Search response")
+			.withExampleResponse(io.netty.handler.codec.http.HttpResponseStatus.OK, EXAMPLE_SEARCH_RESPONSE, "Search response")
 			.build();
 
 		InternalEndpointBuilder.wrap(router).withPath("/autocomplete")
@@ -111,7 +115,7 @@ public class SearchPlugin extends AbstractPlugin implements CommercialRestPlugin
 			.produces(HttpConstants.APPLICATION_JSON)
 			.withQueryParameter("q", qParameter)
 			.withHandler(fromComponent(SearchPluginComponent::autocompleteHandler))
-			.withExampleResponse(io.netty.handler.codec.http.HttpResponseStatus.OK, new JsonArray().add(new JsonObject().put("name", "what")).add(new JsonObject().put("name", "where")).add(new JsonObject().put("name", "which")), "Search response")
+			.withExampleResponse(io.netty.handler.codec.http.HttpResponseStatus.OK, EXAMPLE_AUTOCOMPLETE_RESPONSE, "Search response")
 			.build();
 
 		registerCustomEndpoints(router);
@@ -145,24 +149,33 @@ public class SearchPlugin extends AbstractPlugin implements CommercialRestPlugin
 				log.debug("Registering custom route /custom{} with handler {}", path, handler.getClass().getSimpleName());
 			}
 
+			boolean autocomplete = handler.type() == HandlerType.AUTOCOMPLETE;
+			String description = (autocomplete ? "Autocomplete using the custom query " : "Search using the custom query ") + handler.name();
+			Object exampleResponse = autocomplete ? EXAMPLE_AUTOCOMPLETE_RESPONSE : EXAMPLE_SEARCH_RESPONSE;
+
 			InternalEndpointBuilder.wrap(customRouter).withPath(path)
+					.withDescription(description)
 					.withMethod(HttpMethod.GET)
 					.produces(HttpConstants.APPLICATION_JSON)
 					.withHandler(fromCustomhandler(handler))
+					.withExampleResponse(io.netty.handler.codec.http.HttpResponseStatus.OK, exampleResponse, "Search response")
 					.build();
 
-			Handler<RoutingContext> wrappedHandler = handler.type() == HandlerType.AUTOCOMPLETE
+			Handler<RoutingContext> wrappedHandler = autocomplete
 					? fromComponent(SearchPluginComponent::autocompleteHandler, handler)
 					: fromComponent(SearchPluginComponent::searchHandler, handler);
 
 			InternalEndpointBuilder.wrap(customRouter).withPath(path)
+					.withDescription(description)
 					.withMethod(HttpMethod.GET)
 					.produces(HttpConstants.APPLICATION_JSON)
 					.withHandler(wrappedHandler)
+					.withExampleResponse(io.netty.handler.codec.http.HttpResponseStatus.OK, exampleResponse, "Search response")
 					.build();
 		});
 
-		InternalEndpointBuilder.wrap(projectRouter).withPath("/custom*").withSubRouter(customRouter);
+		// InternalEndpointBuilder validates a sub-router route before applying its description, so mount it directly.
+		projectRouter.route("/custom*").subRouter(customRouter);
 	}
 
 	private Collection<CustomHandler> getCustomHandlers() {
