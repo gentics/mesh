@@ -277,10 +277,10 @@ public class MeshTestContext implements TestRule {
 
 			OkHttpClient.Builder builder = new OkHttpClient.Builder();
 			int timeout = MeshAssert.getTimeout();
-			builder.callTimeout(Duration.ofMinutes(timeout));
-			builder.connectTimeout(Duration.ofMinutes(timeout));
-			builder.writeTimeout(Duration.ofMinutes(timeout));
-			builder.readTimeout(Duration.ofMinutes(timeout));
+			builder.callTimeout(Duration.ofSeconds(timeout));
+			builder.connectTimeout(Duration.ofSeconds(timeout));
+			builder.writeTimeout(Duration.ofSeconds(timeout));
+			builder.readTimeout(Duration.ofSeconds(timeout));
 			builder.sslSocketFactory(sslSocketFactory, (X509TrustManager) trustAllCerts[0]);
 			builder.hostnameVerifier((hostName, sslSession) -> true);
 			return builder.build();
