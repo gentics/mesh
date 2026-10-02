@@ -1,0 +1,1 @@
+Consistency check: The list item checks of the consistency check no longer fail with an "invalid identifier" error on Oracle and HSQLDB databases, when a schema or microschema contains list fields.
