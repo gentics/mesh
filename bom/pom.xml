@@ -49,7 +49,7 @@
 		<jaxb.runtime.version>4.0.5</jaxb.runtime.version>
 		<handlebars.version>4.5.2</handlebars.version>
 		<hsqldb.version>2.7.3</hsqldb.version>
-		<micrometer.version>1.15.5</micrometer.version>
+		<micrometer.version>1.15.12</micrometer.version>
 		<vertx.openapi.version>1.0.0</vertx.openapi.version>
 		<okhttp.version>5.3.0</okhttp.version>
 	</properties>
@@ -788,7 +788,7 @@
 			<dependency>
 				<groupId>org.jsoup</groupId>
 				<artifactId>jsoup</artifactId>
-				<version>1.21.1</version>
+				<version>1.23.2</version>
 			</dependency>
 
 			<!-- GraphQL -->
