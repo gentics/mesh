@@ -955,7 +955,7 @@ public class MeshTestContext implements TestRule {
 				break;
 			case AWS:
 				throw new IllegalStateException("AWS test container is currently unsupported");
-			case MINIO:
+			case RUSTFS:
 				String ACCESS_KEY = "accessKey";
 				String SECRET_KEY = "secretKey";
 					AWSContainer awsContainer = new AWSContainer(
