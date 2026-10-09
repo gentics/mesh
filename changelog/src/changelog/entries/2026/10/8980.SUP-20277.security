@@ -1,0 +1,1 @@
+S3 Binaries: Extracting the metadata of an S3 binary field no longer uses the uploaded filename for the temporary file, which allowed writing files outside of the temporary directory. The temporary file is now deleted after the extraction.
