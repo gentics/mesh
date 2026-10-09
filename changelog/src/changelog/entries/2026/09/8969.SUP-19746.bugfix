@@ -1,0 +1,1 @@
+Search: Now the application log is not polluted by stacktraces of failed deletions of already missing indices, while performing a sync.
