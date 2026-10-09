@@ -368,6 +368,9 @@ public class MeshTestContext implements TestRule {
 			if (instance.mesh != null) {
 				instance.mesh.shutdown();
 			}
+			if (instance.awsContainer != null) {
+				instance.awsContainer.stop();
+			}
 		}
 		instances.clear();
 		dataProvider = null;
@@ -699,6 +702,8 @@ public class MeshTestContext implements TestRule {
 
 		private MeshComponent meshDagger;
 
+		private AWSContainer awsContainer;
+
 		private Vertx vertx;
 
 		protected int httpPort;
@@ -958,7 +963,7 @@ public class MeshTestContext implements TestRule {
 			case RUSTFS:
 				String ACCESS_KEY = "accessKey";
 				String SECRET_KEY = "secretKey";
-					AWSContainer awsContainer = new AWSContainer(
+					awsContainer = new AWSContainer(
 							new AWSContainer.CredentialsProvider(ACCESS_KEY, SECRET_KEY));
 				awsContainer.start();
 				s3Options.setCorsAllowedOrigins(null);
