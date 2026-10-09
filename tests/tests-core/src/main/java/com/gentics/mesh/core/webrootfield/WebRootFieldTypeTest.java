@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.webrootfield;
 
-import static com.gentics.mesh.test.AWSTestMode.MINIO;
+import static com.gentics.mesh.test.AWSTestMode.RUSTFS;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
@@ -75,7 +75,7 @@ import com.gentics.mesh.util.DateUtils;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-@MeshTestSetting(awsContainer = MINIO, testSize = TestSize.FULL, startServer = true)
+@MeshTestSetting(awsContainer = RUSTFS, testSize = TestSize.FULL, startServer = true)
 public class WebRootFieldTypeTest extends AbstractMeshTest {
 
 	// Binary field

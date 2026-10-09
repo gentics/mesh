@@ -6,7 +6,7 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.parameter.LinkType.MEDIUM;
 import static com.gentics.mesh.parameter.LinkType.SHORT;
-import static com.gentics.mesh.test.AWSTestMode.MINIO;
+import static com.gentics.mesh.test.AWSTestMode.RUSTFS;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
@@ -68,7 +68,7 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.util.CoreTestUtils;
 import com.gentics.mesh.util.URIUtils;
 
-@MeshTestSetting(awsContainer = MINIO, testSize = FULL, startServer = true)
+@MeshTestSetting(awsContainer = RUSTFS, testSize = FULL, startServer = true)
 public class WebRootEndpointTest extends AbstractMeshTest {
 
 	@Test

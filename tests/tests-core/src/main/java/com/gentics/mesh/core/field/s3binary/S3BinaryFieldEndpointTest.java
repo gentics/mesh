@@ -2,7 +2,7 @@ package com.gentics.mesh.core.field.s3binary;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
-import static com.gentics.mesh.test.AWSTestMode.MINIO;
+import static com.gentics.mesh.test.AWSTestMode.RUSTFS;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static org.junit.Assert.assertEquals;
@@ -54,7 +54,7 @@ import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.json.JsonObject;
 
-@MeshTestSetting(awsContainer = MINIO, startServer = true, elasticsearch = ElasticsearchTestMode.CONTAINER_ES7)
+@MeshTestSetting(awsContainer = RUSTFS, startServer = true, elasticsearch = ElasticsearchTestMode.CONTAINER_ES7)
 public class S3BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	private static final String FIELD_NAME = "s3";

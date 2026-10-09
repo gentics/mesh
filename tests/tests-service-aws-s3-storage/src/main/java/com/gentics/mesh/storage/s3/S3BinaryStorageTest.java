@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 import java.net.URI;
 
 import com.gentics.mesh.core.data.storage.s3.S3BinaryStorageImpl;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
@@ -54,6 +55,11 @@ public class S3BinaryStorageTest implements MeshOptionsTypeUnawareContext {
         S3AsyncClient client = getClient();
         createBucket(BUCKET);
         s3BinaryStorage = new S3BinaryStorageImpl(meshOptions, client);
+    }
+
+    @After
+    public void tearDown() {
+        container.stop();
     }
 
     @AfterClass
