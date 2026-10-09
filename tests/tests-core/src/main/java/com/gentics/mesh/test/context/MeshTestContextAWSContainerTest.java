@@ -7,14 +7,13 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.junit.Test;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
-import org.testcontainers.DockerClientFactory;
 
 import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.docker.AWSContainer;
 
 /**
  * Test for the lifecycle of the S3 container, which is started by the {@link MeshTestContext} for test classes using
@@ -26,7 +25,7 @@ public class MeshTestContextAWSContainerTest {
 
 	@Test
 	public void testS3ContainerIsStoppedAfterTestClass() {
-		Set<String> before = runningS3Containers();
+		Set<String> before = AWSContainer.runningContainerIds();
 
 		Result result = JUnitCore.runClasses(S3ContainerTestCase.class);
 		assertTrue("The test class using the S3 container should succeed: " + result.getFailures(), result.wasSuccessful());
@@ -35,21 +34,9 @@ public class MeshTestContextAWSContainerTest {
 		started.removeAll(before);
 		assertFalse("An S3 container should have been started for the test class", started.isEmpty());
 
-		Set<String> leaked = runningS3Containers();
+		Set<String> leaked = AWSContainer.runningContainerIds();
 		leaked.retainAll(started);
 		assertTrue("The S3 containers " + leaked + " should have been stopped after the test class", leaked.isEmpty());
-	}
-
-	/**
-	 * Return the ids of the currently running S3 (RustFS) containers.
-	 *
-	 * @return
-	 */
-	private static Set<String> runningS3Containers() {
-		return DockerClientFactory.instance().client().listContainersCmd().exec().stream()
-			.filter(container -> container.getImage().contains("rustfs/rustfs"))
-			.map(container -> container.getId())
-			.collect(Collectors.toSet());
 	}
 
 	/**
@@ -60,7 +47,7 @@ public class MeshTestContextAWSContainerTest {
 
 		@Test
 		public void testS3ContainerRunning() {
-			CONTAINERS_DURING_TEST.addAll(runningS3Containers());
+			CONTAINERS_DURING_TEST.addAll(AWSContainer.runningContainerIds());
 		}
 	}
 }

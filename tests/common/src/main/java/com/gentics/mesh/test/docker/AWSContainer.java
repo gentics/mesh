@@ -1,10 +1,13 @@
 package com.gentics.mesh.test.docker;
 
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.utility.Base58;
 
 import java.time.Duration;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class AWSContainer extends GenericContainer<AWSContainer> {
 
@@ -43,6 +46,19 @@ public class AWSContainer extends GenericContainer<AWSContainer> {
 
     public String getHostAddress() {
         return getContainerIpAddress() + ":" + getMappedPort(DEFAULT_PORT);
+    }
+
+    /**
+     * Return the ids of all currently running containers of the S3 image.
+     *
+     * @return container ids
+     */
+    public static Set<String> runningContainerIds() {
+        String image = DEFAULT_IMAGE + ":" + DEFAULT_TAG;
+        return DockerClientFactory.instance().client().listContainersCmd().exec().stream()
+                .filter(container -> image.equals(container.getImage()))
+                .map(container -> container.getId())
+                .collect(Collectors.toSet());
     }
 
 
