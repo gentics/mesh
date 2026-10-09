@@ -1,0 +1,1 @@
+Forms: Now the binaries export correctly processes the given query upon filenames of exported binaries, either of single- or multi-upload binary form elements.
