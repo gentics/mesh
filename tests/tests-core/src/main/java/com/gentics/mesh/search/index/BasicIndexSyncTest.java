@@ -333,6 +333,9 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		tx(tx -> {
 			HibProject project = tx.projectDao().findByName("project_2");
 			tx.projectDao().delete(project);
+
+			// suppress publishing of events
+			CommonTx.get().data().suppressEventQueueBatch();
 		});
 		boot().globalCacheClear();
 		// Assert that the deletion was detected
