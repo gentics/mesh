@@ -1,0 +1,25 @@
+{
+	nodes(filter: {
+		schema: {is: form_e2933548c2c54daea0a5f61f8c0e39e2}
+		fields: {
+			form_e2933548c2c54daea0a5f61f8c0e39e2: {
+				or: {
+					input1: {like: "%i%"}
+					file1: { fileName: {like: "%i%"} }
+					file2: { fileName: {like: "%i%"} }
+					filesssss: { anyMatch: { fields: { form_binary_item: { binary: { fileName: { like: "%i%" } } } } } }
+					sssss: { anyMatch: { fields: { form_binary_item: { binary: { fileName: { like: "%i%" } } } } } }
+				}
+			}
+		}
+	}) {
+		# [$.data.nodes.elements.length()=1]
+		elements {
+			uuid
+			schema {
+				name
+			}
+		}
+	}
+}
+# [$.errors=<is-undefined>]

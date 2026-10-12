@@ -40,6 +40,7 @@ public class BranchIndexSyncTest extends AbstractMeshTest {
 		call(() -> client().updateSchema(contentSchemaUuid, request, new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false)));
 
 		// 3. Invoke index sync
+		grantAdmin();
 		waitForEvent(INDEX_SYNC_FINISHED, () -> {
 			call(() -> client().invokeIndexClear());
 			call(() -> client().invokeIndexSync());

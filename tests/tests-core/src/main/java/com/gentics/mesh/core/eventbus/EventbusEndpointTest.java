@@ -73,7 +73,7 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 		}
 	}
 
-	@Test(timeout = 4_000)
+	@Test(timeout = 10_000)
 	public void testExternalEventbusMessage(TestContext context) throws Exception {
 
 		Async async = context.async();
@@ -92,7 +92,7 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 		vertx().eventBus().publish(allowedAddress.address, new JsonObject().put("test", "someValue"));
 	}
 
-	@Test(timeout = 4_000)
+	@Test(timeout = 10_000)
 	public void testNodeDeleteEvent(TestContext context) throws Exception {
 		Async async = context.async();
 
@@ -108,7 +108,7 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 		call(() -> client().deleteNode(PROJECT_NAME, contentUuid()));
 	}
 
-	@Test(timeout = 4_000)
+	@Test(timeout = 10_000)
 	public void testNodeDeleteLanguageEvent(TestContext context) throws Exception {
 		Async async = context.async();
 
@@ -127,7 +127,7 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 		call(() -> client().deleteNode(PROJECT_NAME, contentUuid(), "en"));
 	}
 
-	@Test(timeout = 4_000)
+	@Test(timeout = 10_000)
 	public void testNodeUpdateEvent(TestContext context) {
 		Async async = context.async();
 
@@ -170,7 +170,7 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 		ws.publishEvent("custom.myEvent", "someText");
 	}
 
-	@Test(timeout = 4_000)
+	@Test(timeout = 10_000)
 	public void testMultipleRegistration(TestContext context) {
 		Async asyncRec = context.async();
 

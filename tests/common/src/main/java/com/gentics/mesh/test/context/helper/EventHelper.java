@@ -101,23 +101,17 @@ public interface EventHelper extends BaseHelper {
 		CountDownLatch latch = new CountDownLatch(1);
 		MessageConsumer<Object> consumer = vertx().eventBus().consumer(address);
 		consumer.handler(msg -> latch.countDown());
-		// The completion handler will be invoked once the consumer has been registered
-		consumer.completion().andThen(res -> {
-			if (res.failed()) {
-				throw new RuntimeException("Could not listen to event", res.cause());
-			}
-			try {
-				code.run();
-			} catch (Exception e) {
-				throw new RuntimeException(e);
-			}
-		});
 		try {
+			// Wait until the consumer has been registered and execute the code on the calling thread.
+			// The code must not be executed on an event loop thread, because it typically does blocking calls.
+			consumer.completion().toCompletionStage().toCompletableFuture().get(timeoutMs, TimeUnit.MILLISECONDS);
+			code.run();
 			latch.await(timeoutMs, TimeUnit.MILLISECONDS);
-		} catch (InterruptedException e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
+		} finally {
+			consumer.unregister();
 		}
-		consumer.unregister();
 	}
 
 	/**
