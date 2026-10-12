@@ -461,6 +461,76 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		assertThat(data.getJsonArray("entries").getJsonObject(0).getString("uuid")).isEqualTo(dataNode.getUuid());
 	}
 
+	/**
+	 * Test requesting data of a form with a query, which only matches the filenames of uploaded files
+	 */
+	@Test
+	public void testReportFilterByFileName() throws IOException {
+		String formDefinition = "messed_up_but_valid.json";
+		String formUuid = createForm(formDefinition);
+
+		Map<String, Object> formDataMap = Map.of(
+				"input1", "test",
+				"file1", getFileData(formDefinition),
+				"file2", getFileData(formDefinition),
+				"filesssss", Arrays.asList(getFileData("multipage.json"), getFileData("multipage.json")),
+				"sssss", Arrays.asList(getFileData("multipage.html")));
+
+		MultipartBody requestBody = new MultipartBody.Builder()
+			.setType(MultipartBody.FORM)
+			.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(formUuid, null, formDataMap))
+			.addFormDataPart(fileUploadKey("file1"), formDefinition, requestBodyFromFile(formDefinition))
+			.addFormDataPart(fileUploadKey("file2"), formDefinition, requestBodyFromFile(formDefinition))
+			.addFormDataPart(fileUploadKey("filesssss", 0), "multipage.0.json", requestBodyFromFile("multipage.json"))
+			.addFormDataPart(fileUploadKey("filesssss", 1), "multipage.1.json", requestBodyFromFile("multipage.json"))
+			.addFormDataPart(fileUploadKey("sssss", 0), "multipage.html", requestBodyFromFile("multipage.html"))
+			.build();
+
+		Request request = new Request.Builder()
+			.url(projectUrl("/form/" + formUuid + "/save?lang=" + language))
+			.post(requestBody)
+			.build();
+		Response response = client().newCall(request).execute();
+		assertThat(response.isSuccessful())
+			.as(String.format("Response success %d (%s)", response.code(), response.message()))
+			.isTrue();
+
+		NodeResponse dataNode = assertSingleDataNode(formUuid, node -> {/* Nothing more to assert */});
+
+		// filename of the single upload elements
+		assertThat(findDataUuids(formUuid, "messed_up")).as("Data found by single upload filename").containsExactly(dataNode.getUuid());
+		// filename of the second file of a multi upload element
+		assertThat(findDataUuids(formUuid, "multipage.1")).as("Data found by multi upload filename").containsExactly(dataNode.getUuid());
+		// filename of the other multi upload element
+		assertThat(findDataUuids(formUuid, "multipage.html")).as("Data found by multi upload filename").containsExactly(dataNode.getUuid());
+		// neither a value nor a filename
+		assertThat(findDataUuids(formUuid, "nomatch")).as("Data found by non-matching query").isEmpty();
+	}
+
+	/**
+	 * Find the data of the given form with the given query
+	 * @param formUuid form UUID
+	 * @param query query
+	 * @return list of UUIDs of the found data
+	 * @throws IOException
+	 */
+	protected List<String> findDataUuids(String formUuid, String query) throws IOException {
+		Request request = new Request.Builder()
+			.url(projectUrl("/forms/" + formUuid + "/data?q=" + query + "&publishedOnly=false"))
+			.headers(auth(true))
+			.get()
+			.build();
+		Response response = client().newCall(request).execute();
+		String body = response.body().string();
+		assertThat(response.isSuccessful())
+			.as(String.format("Response success %d (%s): %s", response.code(), response.message(), body))
+			.isTrue();
+
+		JsonObject data = new JsonObject(body);
+		assertThat(data.getJsonArray("entries")).as("Entries").isNotNull();
+		return data.getJsonArray("entries").stream().map(JsonObject.class::cast).map(entry -> entry.getString("uuid")).toList();
+	}
+
 
 	/**
 	 * Test canceling form where several single- and multi-upload elements mix
