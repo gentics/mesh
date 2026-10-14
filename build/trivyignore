@@ -1,0 +1,10 @@
+# The following 8 CVEs are introduced via hazelcast 5.7.0, currently, there is no
+# fix for this
+CVE-2026-68494
+CVE-2026-89407
+CVE-2026-89425
+CVE-2026-54512
+CVE-2026-54513
+CVE-2026-68497
+CVE-2026-91776
+CVE-2026-91777
