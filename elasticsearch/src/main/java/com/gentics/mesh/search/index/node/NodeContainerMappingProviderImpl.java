@@ -338,23 +338,19 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 	}
 
 	private void addS3BinaryFieldMapping(JsonObject fieldInfo, JsonObject customIndexOptions) {
+		JsonObject binaryProps = new JsonObject();
 		if (!isStrictMode()) {
-			JsonObject binaryProps = new JsonObject();
-
-			// .s3ObjectKey
 			binaryProps.put("s3ObjectKey", notAnalyzedType(KEYWORD));
-			addCommonBinaryFieldMapping(fieldInfo, customIndexOptions, binaryProps);
-		}
+		} 
+		addCommonBinaryFieldMapping(fieldInfo, customIndexOptions, binaryProps);
 	}
 
 	private void addBinaryFieldMapping(JsonObject fieldInfo, JsonObject customIndexOptions) {
+		JsonObject binaryProps = new JsonObject();
 		if (!isStrictMode()) {
-			JsonObject binaryProps = new JsonObject();
-
-			// .sha512sum
 			binaryProps.put("sha512sum", notAnalyzedType(KEYWORD));
-			addCommonBinaryFieldMapping(fieldInfo, customIndexOptions, binaryProps);
 		}
+		addCommonBinaryFieldMapping(fieldInfo, customIndexOptions, binaryProps);
 	}
 
 	private void addCommonBinaryFieldMapping(JsonObject fieldInfo, JsonObject customIndexOptions, JsonObject binaryProps) {
