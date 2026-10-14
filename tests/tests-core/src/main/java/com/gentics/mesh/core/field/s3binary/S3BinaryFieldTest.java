@@ -3,7 +3,7 @@ package com.gentics.mesh.core.field.s3binary;
 import static com.gentics.mesh.core.field.binary.BinaryFieldTestHelper.CREATE_EMPTY;
 import static com.gentics.mesh.core.field.s3binary.S3BinaryFieldTestHelper.FETCH;
 import static com.gentics.mesh.core.field.s3binary.S3BinaryFieldTestHelper.FILL_BASIC;
-import static com.gentics.mesh.test.AWSTestMode.MINIO;
+import static com.gentics.mesh.test.AWSTestMode.RUSTFS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -37,7 +37,7 @@ import com.gentics.mesh.util.CoreTestUtils;
 import com.gentics.mesh.util.UUIDUtil;
 import com.gentics.mesh.util.VersionNumber;
 
-@MeshTestSetting(awsContainer = MINIO, testSize = TestSize.PROJECT_AND_NODE)
+@MeshTestSetting(awsContainer = RUSTFS, testSize = TestSize.PROJECT_AND_NODE)
 public class S3BinaryFieldTest extends AbstractFieldTest<S3BinaryFieldSchema> {
 
     private static final String S3_BINARY_FIELD = "s3binaryField";

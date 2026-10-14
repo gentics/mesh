@@ -11,9 +11,9 @@ public enum AWSTestMode {
 	AWS,
 
 	/**
-	 * Run with a local minio container
+	 * Run with a local RustFS container
 	 */
-	MINIO,
+	RUSTFS,
 
 	/**
 	 * No AWS connection setup

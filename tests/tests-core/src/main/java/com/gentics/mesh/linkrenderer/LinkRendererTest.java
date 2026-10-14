@@ -2,7 +2,7 @@ package com.gentics.mesh.linkrenderer;
 
 import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.AWSTestMode.MINIO;
+import static com.gentics.mesh.test.AWSTestMode.RUSTFS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -35,7 +35,7 @@ import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.util.UUIDUtil;
 
-@MeshTestSetting(awsContainer = MINIO, testSize = FULL, startServer = false)
+@MeshTestSetting(awsContainer = RUSTFS, testSize = FULL, startServer = false)
 public class LinkRendererTest extends AbstractMeshTest {
 
 	private WebRootLinkReplacer replacer;
