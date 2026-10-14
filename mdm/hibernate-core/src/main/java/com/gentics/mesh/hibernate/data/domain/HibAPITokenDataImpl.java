@@ -11,6 +11,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.user.HibAPITokenData;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.dagger.annotations.ElementTypeKey;
+import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.ETag;
 
 import jakarta.persistence.Entity;
@@ -76,7 +77,7 @@ public class HibAPITokenDataImpl extends AbstractHibDatabaseElement implements H
 
 	@Override
 	public Long getIssuedTimestamp() {
-		return Optional.ofNullable(issued).map(Instant::toEpochMilli).orElse(null);
+		return DateUtils.instantToMillis(issued, true);
 	}
 
 	@Override
@@ -87,7 +88,7 @@ public class HibAPITokenDataImpl extends AbstractHibDatabaseElement implements H
 
 	@Override
 	public Long getLastUsedTimestamp() {
-		return Optional.ofNullable(lastUsed).map(Instant::toEpochMilli).orElse(null);
+		return DateUtils.instantToMillis(lastUsed, false);
 	}
 
 	@Override
@@ -98,7 +99,7 @@ public class HibAPITokenDataImpl extends AbstractHibDatabaseElement implements H
 
 	@Override
 	public Long getExpiresTimestamp() {
-		return Optional.ofNullable(expires).map(Instant::toEpochMilli).orElse(null);
+		return DateUtils.instantToMillis(expires, false);
 	}
 
 	@Override
@@ -109,7 +110,7 @@ public class HibAPITokenDataImpl extends AbstractHibDatabaseElement implements H
 
 	@Override
 	public boolean isValid() {
-		if (expires == null) {
+		if (getExpiresTimestamp() == null) {
 			return true;
 		} else {
 			return expires.isAfter(Instant.now());
