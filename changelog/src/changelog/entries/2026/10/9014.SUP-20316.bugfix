@@ -1,0 +1,1 @@
+API/REST: Now the `VersionUtils` class is a part of the `mesh-api` module and REST Client Java library, allowing standardized version comparison mechanism. The generic REST message has been improved to include internal data to construct custom messages from.
