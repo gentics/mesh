@@ -10,8 +10,10 @@ import org.junit.Test;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.S3BinaryFieldSchemaImpl;
+import com.gentics.mesh.etc.config.Format;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.NativeQueryFiltering;
+import com.gentics.mesh.etc.config.Version;
 import com.gentics.mesh.etc.config.search.MappingMode;
 import com.gentics.mesh.search.impl.Elasticsearch7ComplianceImpl;
 
@@ -91,6 +93,21 @@ public class NodeContainerMappingProviderImplTest {
 			@Override
 			public boolean hasDatabaseLevelCache() {
 				return false;
+			}
+
+			@Override
+			public Version getDefaultOpenAPIVersion() {
+				return Version.V30;
+			}
+
+			@Override
+			public Format getDefaultOpenAPIFormat() {
+				return Format.YAML;
+			}
+
+			@Override
+			public String getNoApiInfoPlugins() {
+				return null;
 			}
 		};
 		options.getSearchOptions().setMappingMode(mode);
