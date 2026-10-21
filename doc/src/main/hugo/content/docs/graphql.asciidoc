@@ -87,6 +87,16 @@ Combine multiple filters to further narrow down your results. One example is the
 We get the same nodes as in the previous example. Additionally we also get all vehicles that have a price lower than 200.000.
 include::content/docs/examples/graphql/filtering/vehicles-or[]
 
+.A note on GraphiQL
+[TIP]
+Edit the above examples and experiment with the API.
+Use the GraphiQL autocompletion (press `ctrl`+`space` while typing your query) to see what options are available.
+Check the documentation explorer (in the top-right corner) to find out more details.
+
+.Try it in your own installation
+[TIP]
+Your instance of Gentics Mesh comes with the <<_graphiql_browser>> as well.
+
 === Native Filtering
 
 There is a possibility to speed up the filtering by using a *native filtering* feature, that is applied on a database level. This means that initially less data will be fetched from the database, but at a cost of filtering flexibility, as not every Mesh filter is natively supported.
