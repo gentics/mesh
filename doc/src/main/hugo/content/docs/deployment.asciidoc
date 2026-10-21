@@ -27,7 +27,7 @@ docker push registry.heroku.com/mesh-test/worker
 
 Gentics Mesh can quickly be installed on a Linux by registering a systemd service.
 
-First you need to install Java 11 on your server. After that step you can link:/download[download the Gentics Mesh] server jar to your installation folder.
+First you need to install Java 17 on your server. After that step you can link:/download[download the Gentics Mesh] server jar to your installation folder.
 
 Store the service file in the same folder. Please don't forget to set up the database and its corresponding Database Connector, either in the `mesh.yml` or in the environment variables!
 
