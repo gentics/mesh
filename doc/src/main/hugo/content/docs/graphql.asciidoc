@@ -82,28 +82,10 @@ In this example we get all nodes with the schema `vehicle`. We check if their na
 include::content/docs/examples/graphql/filtering/vehicles-regex[]
 
 === Combining different filters
+
 Combine multiple filters to further narrow down your results. One example is the `OrFilter`.
 We get the same nodes as in the previous example. Additionally we also get all vehicles that have a price lower than 200.000.
 include::content/docs/examples/graphql/filtering/vehicles-or[]
-
-=== Filtering limitations
-When filtering by fields of a node, it is currently only possible to filter by fields of the following types:
-
-* `string`
-* `html`
-* `number`
-* `date`
-* `boolean`
-
-.A note on GraphiQL
-[TIP]
-Edit the above examples and experiment with the API.
-Use the GraphiQL autocompletion (press `ctrl`+`space` while typing your query) to see what options are available.
-Check the documentation explorer (in the top-right corner) to find out more details.
-
-.Try it in your own installation
-[TIP]
-Your instance of Gentics Mesh comes with the <<_graphiql_browser>> as well.
 
 === Native Filtering
 
@@ -112,12 +94,12 @@ There is a possibility to speed up the filtering by using a *native filtering* f
 The native filtering is enabled on Mesh level by The GraphQL Mesh options' new preference `nativeQueryFiltering` with possible values: 
 * `NEVER` - old runtime filtering.
 * `ALWAYS` - DB filtering is forced.
-* `ON_DEMAND` - GraphQL parameter `nativeFilter` is considered for the filtering (default value)
+* `ON_DEMAND` - GraphQL parameter `nativeFilter` is considered for the filtering (default value).
 
 The native filtering itself is controlled by a GraphQL parameter `nativeFilter` with values:
-* `NEVER` - old filtering is forced.
-* `ALWAYS` - native DB filtering is forced. If the requested filter is not supported by a DB, an exception is thrown.
-* `IF_POSSIBLE` - if the requested filter is supported by a DB, DB filtering is used, otherwise filtering is fallen back to the old filter mechanism (default value).
+* `NEVER` - old filtering is forced. Ignored, if sorting is specified.
+* `ALWAYS` - native DB filtering is forced. If the requested filter is not supported by a DB, an exception is thrown. If no filtering but paging is specified, is applied as well.
+* `IF_POSSIBLE` - if the requested filter is supported by a DB, DB filtering is used, otherwise filtering is fallen back to the old filter mechanism (default value). Does not apply native paging, if no filter is specified.
 
 === Sorting
 
@@ -217,3 +199,4 @@ GraphQL queries that take longer than the configured threshold (see link:{{< rel
 * At the moment, the GraphQL API can currently only be used for read-only operations. Modifying data with via mutations is currently not supported.
 * GraphQL queries are restricted to a specific project. It is not possible to query data across multiple projects.
 * GraphQL queries are restricted to a specific project branch. The scope of the branch can be changed by adding the `?branch` query parameter.
+* GraphQL multi-request queries are not supported at the moment.
