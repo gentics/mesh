@@ -209,4 +209,4 @@ GraphQL queries that take longer than the configured threshold (see link:{{< rel
 * At the moment, the GraphQL API can currently only be used for read-only operations. Modifying data with via mutations is currently not supported.
 * GraphQL queries are restricted to a specific project. It is not possible to query data across multiple projects.
 * GraphQL queries are restricted to a specific project branch. The scope of the branch can be changed by adding the `?branch` query parameter.
-* GraphQL multi-request queries are not supported at the moment.
+* GraphQL multi-query requests are not supported at the moment.
