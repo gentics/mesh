@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: Gentics Mesh REST API
-  version: 3.3.1
+  version: 3.3.2
 servers: []
 paths:
   /api/v2/schemas/{schemaUuid}:
@@ -941,7 +941,7 @@ paths:
                 "exclusive" : true,
                 "ignore" : [ {
                   "name" : "admin",
-                  "uuid" : "00372f13650643c4a85c87bea9c3c47a"
+                  "uuid" : "05fabb4d82ae4b93bcd39e2457fffa08"
                 } ]
               }
       responses:
@@ -1929,7 +1929,7 @@ paths:
                 "exclusive" : true,
                 "ignore" : [ {
                   "name" : "admin",
-                  "uuid" : "90fdf5a154624098a63b129810afbec8"
+                  "uuid" : "d9d8d7a233d4447f868e1856f51afc15"
                 } ]
               }
       responses:
@@ -5932,7 +5932,7 @@ paths:
                 "exclusive" : true,
                 "ignore" : [ {
                   "name" : "admin",
-                  "uuid" : "6a14f2235faf408997a48aedbd40965e"
+                  "uuid" : "81ab9aeb3322454ea760c34e86c63906"
                 } ]
               }
       responses:
@@ -7650,7 +7650,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/MeshServerInfoModel"
               example:
-                meshVersion: 3.3.1
+                meshVersion: 3.3.2
                 meshNodeName: Reminiscent Tirtouga
                 databaseVendor: mariadb
                 databaseVersion: "10.7"
@@ -9169,7 +9169,7 @@ paths:
                 "exclusive" : true,
                 "ignore" : [ {
                   "name" : "admin",
-                  "uuid" : "cbf051ee0e18409796d899a4bd890214"
+                  "uuid" : "a3d5222cdd354c8a87daa1b4c8e3ccaa"
                 } ]
               }
       responses:
@@ -9982,7 +9982,7 @@ paths:
                 "exclusive" : true,
                 "ignore" : [ {
                   "name" : "admin",
-                  "uuid" : "e32f898956634a43af3b75dd79f68539"
+                  "uuid" : "1ad757e6b80d4ea5a46ff2faf08c11e6"
                 } ]
               }
       responses:
@@ -11309,7 +11309,7 @@ paths:
               $ref: "#/components/schemas/NameOrUUIDsRequest"
             example: |-
               {
-                "data" : [ "mesh_content", "9d745cea2f3f4b6da5124e762444a526", "44b32fc85e854155999b54630c5e7d4b" ],
+                "data" : [ "mesh_content", "8eff4e4d5eed4cfd825d3e2d9876b077", "6d61bc2821f749dabcefde0756e62739" ],
                 "excluded" : false
               }
       responses:
@@ -11333,7 +11333,7 @@ paths:
               $ref: "#/components/schemas/NameOrUUIDsRequest"
             example: |-
               {
-                "data" : [ "mesh_content", "7e6db410609a4d6bb8c9af763670d58f", "18b98897e8c544189a15e82aae048138" ],
+                "data" : [ "mesh_content", "ed8f8bcd79d0468dba07a232e132f06b", "02a49cfdcdb743fcaf1970d5fded82ba" ],
                 "excluded" : false
               }
       responses:
@@ -12784,7 +12784,7 @@ paths:
                 "exclusive" : true,
                 "ignore" : [ {
                   "name" : "admin",
-                  "uuid" : "7a6fa219545f4665a17903b6d73d4cdd"
+                  "uuid" : "e129a29510314b529aa4a983a4bb6f6b"
                 } ]
               }
       responses:
@@ -13754,7 +13754,7 @@ paths:
                 "exclusive" : true,
                 "ignore" : [ {
                   "name" : "admin",
-                  "uuid" : "03ee363caecf429599a29b06d73644e9"
+                  "uuid" : "7f62a72b33ed4e7a8dcecc739ac1ed00"
                 } ]
               }
       responses:
@@ -16015,7 +16015,7 @@ paths:
                 "exclusive" : true,
                 "ignore" : [ {
                   "name" : "admin",
-                  "uuid" : "c341ce083a35453392e1db5a18c1199f"
+                  "uuid" : "4909c35dadc9459cba6432218e60d063"
                 } ]
               }
       responses:
@@ -16724,7 +16724,7 @@ paths:
                 "exclusive" : true,
                 "ignore" : [ {
                   "name" : "admin",
-                  "uuid" : "910752125b0645ee9c7016fa2281e9fd"
+                  "uuid" : "6e79c15766cd4a56b16af437915866ee"
                 } ]
               }
       responses:
@@ -17618,7 +17618,7 @@ paths:
                 "exclusive" : true,
                 "ignore" : [ {
                   "name" : "admin",
-                  "uuid" : "0d23d07502474a74830dc2547e99609a"
+                  "uuid" : "9c9168bd4fef43649e190b6f9b516f1d"
                 } ]
               }
       responses:
@@ -19137,11 +19137,11 @@ components:
                 type: number
                 format: double
                 nullable: false
+              size:
+                $ref: "#/components/schemas/Point"
               cacheKey:
                 type: string
                 nullable: false
-              size:
-                $ref: "#/components/schemas/Point"
               width:
                 type: string
                 description: Desired image width. Set to 'auto' to compute automatically
