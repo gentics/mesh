@@ -27,7 +27,7 @@ docker push registry.heroku.com/mesh-test/worker
 
 Gentics Mesh can quickly be installed on a Linux by registering a systemd service.
 
-First you need to install Java 11 on your server. After that step you can link:/download[download the Gentics Mesh] server jar to your installation folder.
+First you need to install Java 11 on your server. After that step you can link:/download[download the Gentics Mesh] server jar, as well as link:{{< relref "administration-guide.asciidoc" >}}#_use_mariadb_connected_container[the required database connector and its JDBC driver], to your installation folder.
 
 Store the service file in the same folder. Please don't forget to set up the database and its corresponding Database Connector, either in the `mesh.yml` or in the environment variables!
 
@@ -42,7 +42,7 @@ After=basic.target network.target syslog.target
 [Service]
 User=node
 Restart=on-failure
-ExecStart=/usr/bin/java -Xms1024m -Xmx1024m -XX:MaxDirectMemorySize=512m -Dstorage.diskCache.bufferSize=512 -jar mesh-server.jar
+ExecStart=/usr/bin/java -Xms1024m -Xmx1024m -XX:MaxDirectMemorySize=512m -Dstorage.diskCache.bufferSize=512 -cp mariadb-java-client-3.1.2.jar:mesh-database-connector-mariadb-X.X.X.jar:mesh-server-X.X.X.jar com.gentics.mesh.server.ServerRunner
 WorkingDirectory=/opt/mesh-server
 LimitMEMLOCK=infinity
 LimitNOFILE=65536
@@ -55,6 +55,7 @@ WantedBy=multi-user.target
 ----
 
 NOTE: The given limits are mandatory. Especially the `LimitNOFILE` setting must be set to prevent database issues.
+NOTE: If using Mesh Enterprise Edition, replace `com.gentics.mesh.server.ServerRunner` with `com.gentics.mesh.enterprise.server.ServerRunner` in the lines above.
 
 You can also change the `Wants` and `After` setting if you run Elasticsearch on the same server. In that case it is recommended to start Gentics Mesh after Elasticsearch has been started.
 
