@@ -205,7 +205,7 @@ The ```elasticsearch``` folder contains the included Elasticsearch installation 
 
 === Server Requirements
 
-There are no external dependencies besides Java Runtime 11.
+There are no external dependencies besides Java Runtime 17.
 
 Production servers must be run on Linux. Work on Windows is neither guaranteed nor eligible for support. Running Gentics Mesh on Windows is encouraged via link:https://docs.docker.com/docker-for-windows/[Docker Windows].
 
