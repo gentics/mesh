@@ -1,0 +1,16 @@
+---
+title: Gentics Mesh Must Read Plugin
+icon: far fa-bookmark
+image: noun_adherence_996301.svg
+sort-key: 5
+teaser: This plugin makes sure that users have read certain nodes.
+fineprint: The plugin includes developer documentation, but does not provide a management user interface.
+status: details
+licence: commercial
+author: Gentics
+pageType: feature
+---
+
+Do you want to broadcast messages to all your users and want to make sure that everyone has read them?
+
+With the must read plugin you can configure a list of nodes that are initially unread for every user. Via the API you can then mark them as read when your user has seen it, so that the user won't see the node again.

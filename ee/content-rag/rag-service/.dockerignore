@@ -1,0 +1,10 @@
+# Die vorgebaute Fat-JAR muss in den Build-Context, der Rest von target/ nicht –
+# insbesondere nicht das duenne JAR (.jar.original) und die vom Parent
+# angehaengten sources-/javadoc-JARs.
+target/*
+!target/mesh-content-rag-service.jar
+.idea/
+*.iml
+.DS_Store
+.env
+.env.*

@@ -1,0 +1,21 @@
+{{- if .Values.backup.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "mesh.fullname" . }}-backup
+  labels:
+    {{- include "mesh.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.mesh.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+    - port: {{ .Values.service.monitoring.port }}
+      targetPort: monitoring
+      protocol: TCP
+      name: monitoring
+  selector:
+    {{- include "mesh.selectorLabels" . | nindent 4 }}-backup
+{{- end }}

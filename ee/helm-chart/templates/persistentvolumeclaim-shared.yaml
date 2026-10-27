@@ -1,0 +1,23 @@
+{{- if not .Values.persistence.shared.existingClaim }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ include "mesh.fullname" . }}-shared
+
+  labels:
+    {{- include "mesh.labels" . | nindent 4 }}
+
+  {{- $keepAnnotations := include "gentics-common.pvcKeepAnnotations" (dict "root" . "local" (.Values.persistence).keepOnUninstall) }}
+  {{- if or $keepAnnotations .Values.persistence.shared.annotations }}
+  annotations:
+    {{- with $keepAnnotations }}
+    {{- . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.persistence.shared.annotations }}
+    {{ toYaml . }}
+  {{- end }}
+  {{- end }}
+
+spec:
+  {{- toYaml .Values.persistence.shared.spec | nindent 2 }}
+{{- end }}

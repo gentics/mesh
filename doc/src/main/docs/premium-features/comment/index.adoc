@@ -1,0 +1,23 @@
+---
+title: Gentics Mesh Comment Plugin
+icon: far fa-comments
+image: noun_talk_1068557.svg
+sort-key: 1
+teaser: This plugin provides an API which can be used to create, read, update, delete, publish, approve and reject comments.
+fineprint: The plugin includes developer documentation, but does not provide a management user interface.
+status: details
+licence: commercial
+author: Gentics
+pageType: feature
+---
+
+All the content on your website is great, but it's even greater if you allow visitors to interact.
+That's why we built the Comment Plugin to increase the engagement!
+
+The plugin provides the API that allows users (logged-in and optionally also anonymous ones) to leave comments to your content.
+
+Of course the plugin can be configured to require moderation of either all or only anonymous comments.
+When enabled, the moderator(s) will be notified via email when new comments are waiting for approval.
+The text of the email can be customized according to your needs.
+
+// include::content/comment-plugin/README.adoc[]

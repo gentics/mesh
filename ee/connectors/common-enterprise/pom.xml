@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+    <parent>
+		<groupId>com.gentics.mesh.enterprise</groupId>
+		<artifactId>mesh-enterprise-database-connectors</artifactId>
+		<version>3.3.3-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>mesh-enterprise-database-connector-common</artifactId>
+	<packaging>jar</packaging>
+
+	<name>Gentics Mesh Enterprise - Database connector common code</name>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-database-connector-common</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh.enterprise</groupId>
+			<artifactId>mesh-enterprise-database-connector-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-mdm-hibernate-core</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-database-tests-common</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<!-- Licensing -->
+		<dependency>
+			<groupId>com.gentics</groupId>
+			<artifactId>license-checker</artifactId>
+		</dependency>
+		<!-- Tests -->
+		<dependency>
+			<groupId>com.gentics.mesh.enterprise</groupId>
+			<artifactId>mesh-enterprise-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+				<includes>
+					<include>**/connector.build.properties</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>false</filtering>
+				<includes>
+					<include>**/*</include>
+				</includes>
+			</resource>
+		</resources>
+		<plugins>
+			<plugin>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>test-scanner-maven-plugin</artifactId>
+				<version>${mesh.version}</version>
+				<configuration>
+					<splits>${test.scanner.splits}</splits>
+					<dependenciesToScan>
+						<dependency>com.gentics.mesh:tests-mesh-api</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-core</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-rest-model</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-rest-client</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-plugin-api</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-server</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-elasticsearch</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-distributed</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-distributed-coordinator</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-service-aws-s3-storage</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-service-image-imgscalr</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-service-jwt-auth</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-service-local-storage</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-service-metrics-prometheus</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-hibernate</dependency>
+					</dependenciesToScan>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>scan-test-files</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>test-jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>

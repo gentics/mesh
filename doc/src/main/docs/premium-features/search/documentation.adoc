@@ -1,0 +1,630 @@
+---
+title: Gentics Mesh Search Plugin
+---
+
+:icons: font
+:source-highlighter: prettify
+:toc:
+:plugin-base-name: mesh-search-plugin
+
+
+# Search plugin
+
+A plugin to search Mesh projects used as a content respository for the Gentics CMS.
+
+## Installation
+
+include::content/premium-features/_plugin_install.adoc[]
+
+## Configuration
+
+This is an example configuration file specifying every possible setting.
+Except for `projects` and `customQueries` (which are by default empty), all
+values are the default values.
+
+.Example configuration:
+```yml
+pageSize: 8
+projects:
+  main_project_name:
+    - other_searched_project
+resultQuery: null
+didYouMeanThreshold: 10
+customQueries:
+  - custom_search
+  - name: custom_auto
+    type: AUTOCOMPLETE
+caching: true
+expireTime: 300
+```
+
+Note that whatever is specified by `projects` each Mesh project will always
+search itself. This setting is only useful to define _additional_ projects
+that should be searched.
+
+For custom queries of type `SEARCH` a shorthand notation can be used by just
+specifying the name (without the `name:` and `type:` parts).
+
+## Search endpoints
+
+When no custom handlers or queries are configured, the plugin exposes two
+search endpoints. One for normal search, and one for autocompletion.
+
+### Normal search
+
+.Normal search summary
+[frame=none, grid=none, cols=".^1, ~a"]
+|===
+| Endpoint | `/api/v1/_[project]_/plugins/search/search`
+| Handler | `com.gentics.mesh.plugin.handler.SearchHandler`
+| Used{nbsp}queries | _search.es_, _didYouMeanBinary.es_, _didYouMeanContent.es_, _searchResults.graphql_
+| Parameters |
+
+[options="header"]
+!===
+! Name ! Description ! Default
+! `q` ! Query String ! REQUIRED
+! `p` ! Current page ! `0`
+! `t` ! Filter by tags (facetted search) ! `[]`
+! `l` ! Language ! Portal default language
+! `branch` ! Project branch ! Empty
+!===
+|===
+
+#### Request flow
+
+The processing of a new request starts in the ``SearchHandler``s
+`internalHandle()` method.
+
+Sections in the request flow wich cover only internals are marked with an
+asterisk (*).
+
+##### Request validation
+
+The request will fail when the mandatory parameter `q` is missing.
+
+[#search-loading-es]
+##### Loading the Elasticsearch query
+
+The search query is loaded by the `QueryService`, which will look for the
+query in the following places in this order
+
+. _[pluginStorageDir]/queries/_[project]_/search.es_
+. _[pluginStorageDir]/queries/search.es_
+. _classpath:/queries/search.es_
+
+(whichever is found first, will be used). Depending on the used `QueryBuilder`
+the file must contain valid JSON, or may contain Handlebars placeholders.
+
+The `QueryBuilder` implementations provided by the plugin will replace the
+following parameters in the loaded query.
+
+.Searchquery parameters
+[options="header"]
+|===
+| Name | Description
+| `query` | Sanitized search query
+| `lang` | Language
+| `projects` | Regex, matching all searched project names
+| `tags` | Comma separated list from parameter `t`
+|===
+
+Both the included `BasicQueryBuilder` and the `TemplateQueryBuilder` will add
+paging parameters automatically, after the above parameters have been inserted.
+The `size` parameter is the configured `pageSize` and `from` is computed from
+the current page (request parameter `p`) and the `pageSize`.
+
+By default the `TemplateQueryBuilder` is used, so a search query might look
+like the one below (more examples for the two different ``QueryBuilder``s can
+be found in the _/examples/queries_ directory).footnote:[The queries loaded
+from the files need not be valid JSON in general but the `TemplateQueryBuilder`
+as well as the `BasicQueryBuilder` will only work on valid JSON queries.]
+
+Note that the query builder will already sanitize the parameters, so the
+`{{{ parameter }}}` notation should be used, to prevent Handlebars from escaping
+them again.
+
+The `TemplateQueryBuilder` will cache the created template for `expireTime`
+seconds.
+
+.Example search.es
+```json
+{
+  "query": {
+    "bool": {
+      "must": {
+        "multi_match": {
+          "type": "best_fields",
+          "query": "{{{ query }}}",
+          "fields": [
+            "fields.title.search^3",
+            "fields.teaser.search^2",
+            "fields.content.search",
+            "fields.name.search"
+          ]
+        }
+      },
+      "should": {
+        "match_phrase": {
+          "fields.content.search": "{{{ query }}}"
+        }
+      },
+      "filter": [
+        {
+          "regexp": {
+            "project.name.raw": {
+              "value": "{{{ projects }}}",
+              "flags": "ANYSTRING"
+            }
+          }
+        },
+        {
+          "regexp": {
+            "language.raw": {
+              "value": "{{{ language }}}",
+              "flags": "ANYSTRING"
+            }
+          }
+        },
+        {
+          "match": {
+            "fields.searchtags": {
+              "query": "{{{ tags }}}",
+              "operator": "and",
+              "zero_terms_query": "all"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "aggregations": {
+    "searchtags": {
+      "terms": {
+        "field": "fields.searchtags.taglist",
+        "size": 9999,
+        "min_doc_count": 1
+      }
+    }
+  },
+  "_source": [
+    "project.name",
+    "uuid",
+    "language",
+    "fields.title"
+  ]
+}
+```
+
+###### Using the `BasicQueryBuilder`*
+
+To use the `BasicQueryBuilder` instead of the `TemplateQueryBuilder`, the
+respective binding in the `BindModule` needs to be changed.
+
+The `BasicQueryBuilder` will insert the parameters by setting them for certain
+paths in the raw query. These paths must be specified in a field called
+`params`. Any parameters for which no paths are defined, will _not_ be inserted.
+
+.Example query for `BasicQueryBuilder`
+```
+{
+  "params": {
+    "query": [
+      "bool/must/multi_match/query",
+      "bool/should/match_phrase/fields.content.search"
+    ],
+    "project": [
+      "bool/filter[0]/regexp/project.name.raw"
+    ],
+    "language": [
+      "bool/filter[1]/regexp/language.raw"
+    ]
+  },
+  // ... rest as in example above
+}
+```
+
+##### Performing the search request*
+
+The plugin will send the final Elasticsearch query to
+
+* `/api/v1/[meshProject]/rawSearch/nodes` if only the current Mesh project is
+  searched, or to
+* `/api/v1/rawSearch/nodes` if multiple projects are searched
+
+From the resulting JSON, the search hits, total count, hits count and
+aggregations are extracted.
+
+###### Refining the search hits
+
+If a `resultQuery` is configured, the GraphQl query with that name will be
+loaded from the `QueryService` and used to load additional information about the
+hits from Mesh. All hits will be grouped by Mesh branch and one GraphQl query
+will be issued per branch. 
+
+The resultQuery can only contain the following Handlebars placeholders for
+schema names, and must otherwise be a valid GraphQL query:
+
+* `{{{ binaryContentSchema }}}`,
+* `{{{ contentSchema }}}`, and
+* `{{{ folderSchema }}}`
+
+The search result query _must_ retrieve the `uuid` and `language` fields, and
+_should_ load the `path`.
+
+The variable `uuids` will be set to the hit UUIDs and the language will be
+passed in the variable `lang`.
+
+.Minimum resultQuery
+```graphQl
+query ($uuids: [String]) {
+  nodes(uuids: $uuids) {
+    elements {
+      languages {
+        uuid
+        language
+        path
+      }
+    }
+  }
+}
+```
+
+The `languages` part can be extended to load specific fields:
+
+.Example resultQuery loading fields
+```
+query ($uuids: [String], $lang: String) {
+  nodes(uuids: $uuids, lang: [ $lang ]) {
+    elements {
+      languages {
+        uuid
+        language
+        path
+        ... contentFields
+      }
+      breadcrumb {
+        ... breadcrumbFields
+      }
+    }
+  }
+}
+
+fragment contentFields on {{{ contentSchema }}} {
+  title
+  teaser
+}
+
+fragment breadcrumbFields on {{{ folderSchema }}} {
+  name
+  navhidden
+}
+```
+
+When a fragment definition cannot be found in the query, the plugin will search
+for a file with the name of the fragment (and the _.graphql_ extension). Those
+are loaded with the same priorities mentioned for the search query:
+
+. _queries/[project]/fragments/fragmentName.graphql_,
+. _queries/fragments/fragmentName.graphql_, and
+. _classpath:queries/fragments/fragmentName.graphql_
+
+This makes it possible to fetch different fields for search hits, based on the
+project that received the search request.
+
+The response of the `resultQuery` is used to enhance the hits:
+
+.Hits enhancement
+|===
+| Name | Description
+| `uuid` | Set as `uuid`
+| `language` | Set as `language`
+| `path` | Used to build the `url` of the hit
+|===
+
+Every entry in `languages` is passed to the injected `HitTransformer`, which can
+further enhance the hits with data loaded by the GraphQL query.
+
+Default implementation is `com.gentics.mesh.plugin.search.transformer.BasicHitTransformer`, 
+which adds the field `title` as `excerpt`, and copies all fields to the result.
+
+###### Cleaning up the search result*
+
+Any null entries are removed by `finalizeHits()` (which can happen, if
+the `resultQuery` did not return data for an entry in the raw hits), and
+`addPagingInfo()` repairs info about total hits, if some were removed before
+and adds link for next page of search results (if more hits are expected).
+
+###### Did-You-Mean suggestions
+
+If less than ``didYouMeanThreshold``footnote:[To disable did-you-mean
+suggestions, just set the value to 0.] hits are returned, the 'did-you-mean'
+elasticsearch queries (_didYouMeanBinary.es_ and _didYouMeanContent.es_) are
+loaded from the `QueryService` for each searched project. (Currently, the
+queries can be specific for the project that receives the search request, but
+not for every searched project, this should be changed).
+
+The `QueryService` uses the injected ``QueryBuilder``s
+`buildDidYouMeanQuery()` to create the final search queries for each project.
+
+For each project, the queries are POSTed to
+`/api/v1/[project]/rawSearch/nodes` and from all responses, the option with
+highest score is added as `didYouMean` to the complete search result.
+
+.Example didYouMeanContent.es
+```json
+{
+  "suggest": {
+    "text": "{{{ query }}}"
+    "did-you-mean-teaser": {
+      "term": {
+        "suggest_mode": "always",
+        "field":  "fields.teaser.suggest"
+      }
+    },
+    "did-you-mean-content": {
+      "term": {
+        "suggest_mode": "always",
+        "field":  "fields.content.suggest"
+      }
+    }
+  }
+}
+```
+
+###### Example for a search response
+
+```json
+{
+  "results": [
+    {
+      "branch": "12345",
+      "uuid": "1",
+      "language": "de",
+      "url": "/foo/bar.html",
+      "title": "Testseite",
+      "isBinary": false,
+      "excerpt": "Testseite"
+    },
+    {
+      "branch": "12345",
+      "uuid": "2",
+      "language": "de",
+      "url": "/doo/tmp.html",
+      "title": "Eine weitere Seite",
+      "isBinary": false,
+      "excerpt": "Eine weitere Seite"
+    },
+  ],
+  "totalHits": 2,
+  "tags": [
+    {
+      "Verschiedenes": 1
+    },
+    {
+      "Tests": 2
+    }
+  ],
+  "hasMore": false,
+  "didYouMean": "Taste"
+}
+```
+
+### Autocomplete
+
+.Normal search summary
+[frame=none, grid=none, cols=".^1, ~a"]
+|===
+| Endpoint | `/api/v1/_[project]_/plugins/search/autocomplete`
+| Handler | `com.gentics.mesh.plugin.handler.AutocompleteHandler`
+| Used{nbsp}queries | _autocomplete.es_
+| Parameters |
+
+[options="header"]
+!===
+! Name ! Description ! Default
+! `q` ! Query String ! REQUIRED
+! `l` ! Language ! Portal default language
+! `branch` ! Project branch ! Empty
+!===
+|===
+
+#### Request flow
+
+The flow for an autocomplete request is very similar to the one for a
+<<_normal_search, normal search>>, so the following sections are not covered
+with the same level of detail.
+
+The processing of a new request starts in the ``AutocompleteHandler``s
+`internalHandle()` method.
+
+##### Request validation
+
+The request will fail when the mandatory parameter `q` is missing.
+
+##### Loading the Elasticsearch query
+
+As with the <<search-loading-es,normal search>> the autocomplete query is
+loaded by the `QueryService`, which will look for the query in the following
+places in this order
+
+. _[pluginStorageDir]/queries/_[project]_/autocomplete.es_
+. _[pluginStorageDir]/queries/autocomplete.es_
+. _classpath:/queries/autocomplete.es_
+
+The `QueryBuilder` implementations provided by the plugin will replace the
+following parameters in the loaded query.
+
+.Searchquery parameters
+[options="header"]
+|===
+| Name | Description
+| `query` | Sanitized search query
+| `lang` | Language
+| `projects` | Regex, matching all searched project names
+|===
+
+###### Requirements for autocomplete queries
+
+The autocomplete query should find the same results as the normal search
+query, so the actual `query` part should be the same with the exeption that
+the autocomplete query should use `phrase_prefix` wherever applicable. Since
+autocompletion does not support tags, any parts of the query concerning them
+can be removed.
+
+The provided ``QueryBuilder``s will not add the `size` parameter to the
+query, so it should be hardcoded in the file (with a low value since the
+search results are only needed to generate suggestions).
+
+In contrast do a normal search query, an autocomplete query _must_ define
+highlights for the searched fields, which are later used to extract
+suggestions. On the other hand ``aggregations`` and `_source` fields are not
+used by the handler (although specifying `_source` with a short list reduces
+the size of the Elasticsearch result).
+
+For the highlights it is important to define special `pre_tags` and
+`post_tags`, because by default these are `+<strong>+` tags, which might
+occur in the source.
+
+.Example search.es
+```json
+{
+  "query": {
+    // Like the search query without tags and using "phrase_prefix".
+  },
+	"highlight": {
+		"pre_tags" : [ "%hb%" ],
+		"post_tags" : [ "%he%" ],
+		"fragment_size": 0,
+		"number_of_fragments": 0,
+		"fields": {
+			"fields.content.autocomplete": {},
+			"fields.teaser.autocomplete": {},
+			"fields.title.autocomplete": {}
+		}
+	},
+  "_source": [ "uuid" ]
+}
+```
+
+##### Performing the search request*
+
+As for the normal search the plugin will send the final Elasticsearch query to
+
+* `/api/v1/[meshProject]/rawSearch/nodes` if only the current Mesh project is
+  searched, or to
+* `/api/v1/rawSearch/nodes` if multiple projects are searched
+
+###### Extracting the suggestions
+
+From the resulting JSON, the highlights are searched for suggestions by
+matching agains the special pre and post tags `%hb%` and `%hw%` respectively.
+Any complete words that are already part of the query term are removed (as
+well as any HTML markup), and the resulting words are returned as a list of
+suggestions.
+
+###### Example for a search response
+
+When requesting autocompletion for the term `test` the following might be
+returned by the autocomplete handler:
+
+```json
+[
+  {
+    "name": "tester"
+  },
+  {
+    "name": "testing"
+  },
+  {
+    "name": "testenvironment"
+  }
+]
+```
+
+## Administrative endpoints
+
+The search plugin also registers the following endpoints to control caching of
+search queries. All the endpoints only listen to POST requests.
+
+* `/api/v1/plugins/search/cache/clear`: clears all caches
+* `/api/v1/plugins/search/cache/enable`: clears all caches, and enables caching
+* `/api/v1/plugins/search/cache/disable`: clears all caches, and disables caching
+
+## Custom endpoints
+
+There are two ways to add more endpoints via the search plugin: specifying a custom
+search query and implementing the `CustomHandler` interface.
+
+### Custom search query
+
+By specifying a list of `customQueries` in the plugin configuration. The name
+of the custom query is used to
+
+* load the raw query using the name as the filename (without the extions), and
+* register the endpoint `/api/v1/[project]/plugins/search/custom/[name]`.
+
+Depending on the type of the custom query, either the `SearchHandler` or the
+`AutocompleteHandler` will be executed using the specified query instead of
+_search.es_ or _autocomplete.es_ respectively.
+
+When no type for a custom query is specified, the `SearchHandler` will be
+used implicitly.
+
+For example the following configuration will add the endpoints
+`.../custom/contacts` and `.../custom/contactAutocomplete` which will use the
+specified queries for search and autocompletion:
+
+[yaml] ``` customQueries: - name: contacts type: SEARCH - name:
+contactsAutocomplete type: AUTOCOMPLETE ```
+
+(Note that the first entry could simply be written as `- contacts` because
+the type is then implicitly `SEARCH`.)
+
+### Custom handler
+
+When using a custom raw query is not enough, the `CustomHandler` interface
+can be implemented.
+
+Every custom handler must expose its `name` and `type` via the respective
+methods.
+
+For custom handlers with very complex behaviour it is best to override the
+default `handle()` method which handles the request completely on its own.
+
+When only specific post processing is needed (which is outside the scope of a
+`HitTransformer`) it is also possible to just implement the `getQuery()` and
+`processResult()` methods. In this case the `SearchHandler` is invoked but it
+will get the query from the custom handlers `getQuery()` method and will pass
+the result to `processResult()` (which is responsible for terminating the
+request). The default implementation will just cast the result to a
+`JsonObject` and send it as the response.
+
+#### Custom handler providers
+
+While custom queries only need entries in the plugin configuration, custom
+handlers need additional Java code, and the implemented handlers must be made
+available to the plugin.
+
+To do this a `CustomHandlerProvider` must be implemented and bound in the
+`BindModule`.
+
+The default `CustomHandlerProvider` will return an empty set.
+
+## Included queries
+
+### Default `resultsQuery`
+
+A default result query with the name _searchResults_ is provided by the
+plugin, which will load the fields `uuid`, `language`, `path` and
+`fields.teaser`, as well as the `breadcrumbs` with the fields `name` and
+`navhidden`.
+
+## Tipps
+
+### Highlighting
+
+Since the indexed fields might contain HTML markup themselves, it is
+probably a good idea to define custom pre and post tags for Elasticsearch
+to mark highlights. These custom markers should then be transformed to appropriate
+markup by a `HitTransformer`.

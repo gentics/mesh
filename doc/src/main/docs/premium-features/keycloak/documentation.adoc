@@ -1,0 +1,111 @@
+---
+pageType: documentation
+---
+
+:icons: font
+:source-highlighter: prettify
+:plugin-base-name: mesh-keycloak-plugin
+
+=== Installation
+
+include::content/premium-features/_plugin_install.adoc[]
+
+=== Setup
+
+1. Setup your realm in keycloak
+2. Add the plugin jar to the `/plugins` folder of Gentics Mesh
+3. Adapt the `mapperScript.groovy` file
+4. Issue a access token in keycloak
+5. Dispatch a REST API request to Gentics Mesh which contains the access token
+
+The request will execute the mapper script and create the user/groups/roles.
+
+NOTE: The mapper script will only be invoked again when the access token changes.
+
+=== Configuration
+
+In the configuration file you can configure your keycloak server settings.
+
+NOTE: You may also completely omit the server settings. In this case the public keys have to be added manually to the Mesh server file `config/public-keys.json`. This process is recommended for production systems since it allows to place Gentics Mesh and Keycloak in different networks and it removes the startup order dependency.
+
+./plugins/keycloak/config.yaml
+[source]
+----
+---
+# Keycloak server URL
+# url: http://your-keycloak
+# Name of the realm to be used to load public keys from.
+# realmName: master
+# Whether to load the realms public keys from the Keycloak server
+loadPublicKeys: false
+----
+
+=== Mapper Script
+
+The mapper script contains your custom logic. It defines how the accepted `JWT` should be mapped in Gentics Mesh. Within the mapper script you may access the public claims of the JWT to create roles, groups and assign those to the user.
+
+./plugins/keycloak/storage/mapperScript.groovy
+[source]
+----
+import com.gentics.mesh.plugin.auth.*;
+import com.gentics.mesh.core.rest.user.UserUpdateRequest;
+import com.gentics.mesh.core.rest.group.GroupResponse;
+import com.gentics.mesh.core.rest.role.RoleResponse;
+import com.gentics.mesh.core.rest.role.RoleReference;
+import io.vertx.core.json.JsonObject;
+
+static def printToken(JsonObject token) {
+	String username = token.getString("preferred_username");
+	System.out.println("Token for {" + username + "}");
+	System.out.println(token.encodePrettily());
+}
+
+MappingResult result = new MappingResult();
+
+if (uuid == null) {
+	log.info("First time login of the user");
+} else {
+	log.info("Already synced user is logging in.");
+}
+
+log.info("Mapping user in plugin");
+printToken(token);
+String username = token.getString("preferred_username");
+UserUpdateRequest user = new UserUpdateRequest();
+user.setUsername(username);
+user.setEmailAddress("mapped@email.tld");
+user.setFirstname("mapepdFirstname");
+user.setLastname("mapepdLastname");
+result.setUser(user);
+
+log.info("Mapping groups in plugin");
+List<GroupResponse> groupList = new ArrayList<>();
+groupList.add(new GroupResponse().setName("group1"));
+groupList.add(new GroupResponse()
+	.setName("group2")
+	.setRoles(Arrays.asList(new RoleReference().setName("role1"))));
+groupList.add(new GroupResponse()
+	.setName("group3")
+	.setRoles(Arrays.asList(new RoleReference().setName("role1"), new RoleReference().setName("role2"))));
+result.setGroups(groupList);
+
+log.info("Mapping role in plugin");
+List<RoleResponse> roleList = new ArrayList<>();
+roleList.add(new RoleResponse().setName("role1"));
+roleList.add(new RoleResponse().setName("role2"));
+result.setRoles(roleList);
+
+result.setGroupFilter { groupName ->
+	log.info("Handling removal of user from group {" + groupName + "}");
+	// Return true here if you want to remove the group with the given name
+	return false;
+}
+
+result.setRoleFilter { groupName, roleName ->
+	log.info("Handling removal of role {" + roleName + "} from {" + groupName + "}");
+	//  Return true here if you want to remove the role with the given name
+	return false;
+}
+
+return result;
+----

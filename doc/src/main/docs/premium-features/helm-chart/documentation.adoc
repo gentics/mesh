@@ -1,0 +1,336 @@
+---
+pageType: documentation
+---
+
+==== Prerequisite
+
+* Helm 3
+
+=== Helm Repo
+
+The Gentics Mesh helm repository needs to be registered before it can be used.
+Please use the USERNAME and API_KEY which you have received to access the commercial repository.
+
+```bash
+helm repo add --username USERNAME --password API_KEY \
+  gentics https://repo.gentics.com/repository/helm/
+helm repo update
+helm search repo
+```
+
+=== Container Image
+
+Each provided container image contains Gentics Mesh (either the Open Source variant or the Enterprise variant),
+a database specific connector, but not the JDBC driver. It is recommended to build a customer container image containing
+also the JDBC driver (and optionally plugins, see below).
+
+This docker file shows how to include a JDBC driver into the customized container image:
+
+.Example Dockerfile
+```bash
+ARG version
+FROM gentics/mesh-mariadb:$version
+
+# Add the JDBC Driver
+COPY mariadb-java-client-3.4.1.jar /mesh/database/mariadb-java-client-3.4.1.jar
+```
+
+Once the image has been deployed to your registry you may use it in the helm chart by setting the image and tag values:
+
+```
+image:
+  repository: acme/my-custom-mesh-image
+  tag: 3.0.0
+```
+
+=== Setup
+
+Before starting Gentics Mesh for the first time, an empty database needs to be created.
+See link:{{<relref "administration-guide.asciidoc">}}#_use_mariadb_connected_container[Use MariaDB-connected container]
+or link:{{<relref "premium-features/premium-db">}}[Commercial DB connectors] for details.
+
+Then the database configuration needs to be added the the *values.yaml* file so that Gentics Mesh can access the database.
+When using one of the commercial database connectors, also a valid license key needs to be provided.
+
+Once the database is setup and the basic configuration is done, you can start the full stack by running.
+
+```bash
+#!/bin/bash
+helm upgrade --wait -f values.yaml gentics-mesh gentics/gentics-mesh --version=x.x.x
+```
+
+Gentics Mesh will automatically create tables and data in the database if necessary.
+
+=== Default Configuration
+
+By default various features are enabled / settings:
+
+* Server tokens will be omitted by default
+* No update check will be performed
+* Backup is disabled
+
+=== Example values
+
+[source,bash]
+----
+# Default values for Gentics Mesh.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Setting this higher than 1 will enable master clustering automatically
+# In this case, be sure you have correctly configured a network storage for the uploads
+replicaCount: 1
+
+image:
+  repository: acme/my-custom-mesh-image
+  tag: 3.0.0
+  pullPolicy: IfNotPresent
+
+# Please enter your secret if you use the LTS repository
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+# For the commercial version of Gentics Mesh, a valid license key needs to be provided.
+# The license can either be added directly (as license.key) or provided via a secret (with key "licensekey"). In the latter case,
+# license.secret must contain the secret's name.
+# license:
+  # key: ""
+  # secret: ""
+
+# Database access configuration. The password of the database user can either be configured directly (discouraged) or via a secret (with key "password").
+# In the latter case, database.passwordSecret must contain the secret's name.
+database:
+  host: "database.host"
+  port: 3306
+  name: "mesh"
+  username: "meshuser"
+  # password: ""
+  passwordSecret: "database"
+  extraParams: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: false
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name:
+
+podSecurityContext: {}
+
+securityContext: {}
+
+service:
+  type: ClusterIP
+
+  mesh:
+    port: 80
+    # nodePort is only available when using service type NodePort
+    # nodePort: 80
+
+  meshSSL:
+    port: 443
+    # nodePort is only available when using service type NodePort
+    # nodePort: 80
+
+  monitoring:
+    port: 8081
+    # nodePort is only available when using service type NodePort
+    # nodePort: 80
+
+ingress:
+  enabled: true
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: 8m
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: mesh.local
+      paths:
+        - "/"
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+# You should adjust this to your needs. This just defines the absolute minimum defaults.
+# The memory values should be set in conjunction with the Java Xmx plus other Java memory settings
+# See: https://www.gentics.com/mesh/docs/administration-guide/#_memory_settings
+resources:
+  limits:
+    memory: 2Gi
+    cpu: 2000m
+  requests:
+    memory: 256Mi
+    cpu: 500m
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Settings for clustering will be configured automatically
+extraEnv:
+- name: JAVA_TOOL_OPTIONS
+  value: "-Xms128m -Xmx128m"
+
+# By default, a default configmap will be created
+# existingConfigmap: "mesh-custom-config"
+# All settings in mesh.yml are configurable with env vars (See: extraEnv)
+
+persistence:
+  enabled: true
+
+  # Volume for shared data (uploads, keystore)
+  # This volume will only be created when replicaCount > 1
+  # This volume should be a network volume (NFS) and will be shared across all instances
+  shared:
+    # Use existingClaim if you don't have a storage provisioner for your NFS
+    # existingClaim: ""
+    annotations: {}
+    spec:
+      accessModes:
+        - ReadWriteMany
+      # storageClassName: ""
+      resources:
+        requests:
+          storage: 10Gi
+
+  backup:
+    ##  Storage for database snapshots
+    snapshots:
+      # Use existingClaim if you don't have a storage provisioner for your NFS
+      # existingClaim: ""
+      annotations: {}
+      spec:
+        accessModes:
+          - ReadWriteMany
+        # storageClassName: ""
+        resources:
+          requests:
+            storage: 10Gi
+
+# livenessProbe:
+#   exec:
+#     command:
+#     - /bin/sh
+#     - live.sh
+  # initialDelaySeconds: 10
+  # periodSeconds: 8
+  # failureThreshold: 3
+
+# readinessProbe:
+#   httpGet:
+#     path: /api/v2/health/ready
+#     port: http
+#   initialDelaySeconds: 10
+#   periodSeconds: 5
+#   failureThreshold: 5
+
+vertxOptions:
+  workerPoolSize: 20
+  eventLoopSize: 10
+  verticleCount: 10
+
+keystore:
+  # passwordSecret: ""
+  # Change this password. This will be used if no custom keystore secret has been specified.
+  password: "secret"
+
+ssl:
+  # Controls the HTTPS server of Gentrics Mesh. Please note that this is not related to ingress SSL handling.
+  # Enabling SSL here will allow you to setup secured connections between Gentics Mesh PODs and other PODs which internally access Gentics Mesh API.
+  enabled: false
+  # Client Authentication mode can be: NONE, REQUEST or REQUIRE
+  # See https://gentics.com/mesh/docs/references/#_client_certificate for details
+  clientAuthMode: "NONE"
+  serverKeyPath: "/certs/key.pem"
+  serverCertPath: "/certs/cert.pem"
+  #trustedCertPaths: ""
+  existingSecret: "mesh-ssl-secret"
+
+# Configure clustering related settings
+cluster:
+  enabled: true
+  coordinatorRegex: "gentics-mesh-[0-9]"
+
+# Tools settings, which are used for backup/restore and in the NOTES for generation of an api key
+tools:
+  image:
+    repository: docker.gentics.com/gentics/mesh/mesh-tools
+    tag: 1.0.2
+    pullPolicy: IfNotPresent
+    pullSecret: docker-gentics-com
+
+# Configure backup related settings
+backup:
+  # Per default, backup is not enabled
+  enabled: false
+  # Backup may be suspended
+  suspended: false
+
+  cron:
+    # Daily at 22 pm
+    schedule: "0 22 * * *"
+    # Define the time limit for the backup in seconds
+    timeLimitSeconds: 3600
+
+# Configure credentials
+credentials:
+  initialAdminPassword: ""
+  forcePasswordReset: false
+
+config:
+  publicKeys: ""
+
+# Monitoring related settings
+monitoring:
+  enabled: true
+
+# Elasticsearch settings
+elasticsearch:
+  ## ES integration disabled by default
+  url: "null"
+  complianceMode: "ES_8"
+
+# Upload settings
+upload:
+  limit: "262144000" ## 260 MB
+----
+
+=== Features
+
+==== Backup
+
+When enabled via `backup.enabled` an automatic backup cronjob will be created.
+This cronjob will create filesystem backups and store those in the `gentics-mesh-snapshots` PVC.
+Backup of the database is not part of this helm chart and must be configured separately.
+
+==== Clustering
+
+The helm chart supports Gentics Mesh with clustering. It is important to note that clustering of the database
+is out of the scope of Gentics Mesh and must be set up separately.
+
+==== Mesh Commercial Plugins
+
+:plugin-base-name: pass:quotes[_$YOUR_PLUGIN_]
+include::content/premium-features/_plugin_install.adoc[]
+
+This docker file shows how to include all plugin files into one customized docker image:
+
+.Example Dockerfile
+```bash
+ARG version
+FROM gentics/mesh-mariadb:$version
+
+# Add the JDBC Driver
+COPY mariadb-java-client-3.4.1.jar /mesh/database/mariadb-java-client-3.4.1.jar
+
+# Optionally: Add plugins to the image
+COPY plugins /plugins
+
+# Optionally: Add custom languages 
+ENV MESH_LANGUAGES_FILE_PATH=/languages.json
+COPY config/languages.json /languages.json
+```

@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.gentics.mesh.enterprise</groupId>
+    <artifactId>mesh-enterprise</artifactId>
+    <version>3.3.3-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>mesh-mcp-server</artifactId>
+  <packaging>jar</packaging>
+
+  <name>Gentics Mesh Enterprise - MCP Server</name>
+  <description>Model-Context-Protocol-Adapter für Gentics Mesh CMS</description>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    <!--
+      MCP-spezifische Properties. Falls eines Tages ins mesh-bom aufgenommen,
+      hier streichen und <version> an den jeweiligen Dependencies entfernen.
+    -->
+    <mcp.version>0.9.0</mcp.version>
+    <resilience4j.version>2.2.0</resilience4j.version>
+
+    <!--
+      Test-Stack: mesh-bom verwaltet nur mockito-core (2.18.3, pre-Java-9) und
+      der Parent zieht junit:junit (JUnit 4) ein. JUnit 5 und ein Java-17-
+      taugliches Mockito müssen deshalb hier explizit gepinnt werden – die
+      Versionen stehen auch an den Dependencies, damit sie den BOM-Import
+      überstimmen.
+    -->
+    <junit.jupiter.version>5.10.2</junit.jupiter.version>
+    <mockito.version>5.7.0</mockito.version>
+  </properties>
+
+  <!--
+    mesh-bom liefert die Versionen für mesh-rest-client, jackson, slf4j,
+    logback, junit-jupiter, mockito etc. – dieselbe BOM-Import-Konvention
+    wie in connectors/pom.xml.
+  -->
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.gentics.mesh</groupId>
+        <artifactId>mesh-bom</artifactId>
+        <type>pom</type>
+        <scope>import</scope>
+        <version>${mesh.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <!-- ── MCP SDK ─────────────────────────────────────── -->
+    <dependency>
+      <groupId>io.modelcontextprotocol.sdk</groupId>
+      <artifactId>mcp</artifactId>
+      <version>${mcp.version}</version>
+    </dependency>
+
+    <!-- ── Resilience4j (Rate-Limit / Bulkhead / Circuit Breaker) ── -->
+    <dependency>
+      <groupId>io.github.resilience4j</groupId>
+      <artifactId>resilience4j-ratelimiter</artifactId>
+      <version>${resilience4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.github.resilience4j</groupId>
+      <artifactId>resilience4j-bulkhead</artifactId>
+      <version>${resilience4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.github.resilience4j</groupId>
+      <artifactId>resilience4j-circuitbreaker</artifactId>
+      <version>${resilience4j.version}</version>
+    </dependency>
+
+    <!-- ── Gentics Mesh REST Client ───────────────────── -->
+    <!-- Version aus mesh-bom (folgt damit automatisch jedem Mesh-Release). -->
+    <dependency>
+      <groupId>com.gentics.mesh</groupId>
+      <artifactId>mesh-rest-client</artifactId>
+    </dependency>
+
+    <!--
+      RxJava 2 bridge – mesh-rest-client liefert RxJava-2-Singles/Observables.
+      Version aus mesh-bom (mesh-rest-client zieht die Version dort transitiv).
+    -->
+    <dependency>
+      <groupId>io.reactivex.rxjava2</groupId>
+      <artifactId>rxjava</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-core</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.gentics</groupId>
+      <artifactId>vertx-openapi</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+
+    <!-- ── JSON (Jackson) ─────────────────────────────── -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
+
+    <!-- ── Logging ────────────────────────────────────── -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+    </dependency>
+
+    <!-- ── Test ───────────────────────────────────────── -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>${junit.jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>${mockito.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-junit-jupiter</artifactId>
+      <version>${mockito.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <!--
+      finalName ohne ${project.version}, damit Jenkinsfile + Dockerfile die
+      JAR stabil als mesh-mcp-server.jar finden. Der Image-Tag enthält die
+      Mesh-Version separat (Docker-ARG VERSION).
+    -->
+    <finalName>${project.artifactId}</finalName>
+
+    <plugins>
+      <!--
+        Kein eigener maven-compiler-plugin-Block: Source-/Target-Level kommt
+        aus dem pluginManagement des mesh-enterprise-Parents (<release>17</release>),
+        damit das Modul nicht aus der Reactor-Baseline ausschert.
+      -->
+
+      <!-- Fat-JAR via shade-Plugin -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals><goal>shade</goal></goals>
+            <configuration>
+              <shadedArtifactAttached>false</shadedArtifactAttached>
+              <createDependencyReducedPom>false</createDependencyReducedPom>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <mainClass>io.gentics.mesh.mcp.Main</mainClass>
+                  <manifestEntries>
+                    <Implementation-Title>${project.name}</Implementation-Title>
+                    <Implementation-Version>${project.version}</Implementation-Version>
+                    <Implementation-Vendor>Gentics</Implementation-Vendor>
+                  </manifestEntries>
+                </transformer>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>META-INF/io.vertx.core.spi.VertxServiceProvider</resource>
+                </transformer>
+              </transformers>
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/*.SF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.RSA</exclude>
+                  </excludes>
+                </filter>
+              </filters>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+</project>

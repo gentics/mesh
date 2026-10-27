@@ -1,0 +1,98 @@
+{{- if .Values.contentRag.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "mesh.contentRag.fullname" . }}
+  labels:
+    {{- include "mesh.contentRag.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.contentRag.replicaCount }}
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      {{- include "mesh.contentRag.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "mesh.contentRag.selectorLabels" . | nindent 8 }}
+        {{- with .Values.contentRag.podLabels }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/content-rag-configmap.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/content-rag-secret.yaml") . | sha256sum }}
+        {{- with .Values.contentRag.podAnnotations }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with (include "mesh.contentRag.imagePullSecrets" .) }}
+      {{- . | nindent 6 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.contentRag.podSecurityContext | nindent 8 }}
+      containers:
+        - name: content-rag
+          image: {{ include "mesh.contentRag.image" . | quote }}
+          imagePullPolicy: {{ .Values.contentRag.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.contentRag.securityContext | nindent 12 }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.contentRag.http.port }}
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ include "mesh.contentRag.fullname" . }}
+            {{- if or .Values.contentRag.elasticsearch.existingSecret (include "mesh.contentRag.hasSecret" .) }}
+            - secretRef:
+                name: {{ include "mesh.contentRag.secretName" . }}
+            {{- end }}
+          {{- with .Values.contentRag.extraEnv }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.contentRag.resources | nindent 12 }}
+          {{- /* Deliberately /actuator/health/liveness and not /actuator/health:
+                 the aggregate health contains the Elasticsearch indicator and is
+                 DOWN whenever the cluster is unreachable. The service, however,
+                 starts without Elasticsearch on purpose - a liveness probe on it
+                 would kill the pods exactly when the cluster is briefly gone.
+                 Readiness covers that case instead (see the ConfigMap). */}}
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+            {{- toYaml .Values.contentRag.startupProbe | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+            {{- toYaml .Values.contentRag.livenessProbe | nindent 12 }}
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
+            {{- toYaml .Values.contentRag.readinessProbe | nindent 12 }}
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        # readOnlyRootFilesystem: Tomcat puts its work directory under /tmp.
+        - name: tmp
+          emptyDir:
+            sizeLimit: 64Mi
+      {{- with .Values.contentRag.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.contentRag.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.contentRag.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

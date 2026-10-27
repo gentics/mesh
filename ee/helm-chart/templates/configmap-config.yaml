@@ -1,0 +1,38 @@
+{{- if not .Values.existingConfigmap }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "mesh.fullname" . }}-config
+data:
+  
+{{- if .Values.logging.logback }}
+  logback.xml: |-
+{{ tpl .Values.logging.logback . | indent 4 }}
+{{- else }}
+  logback.xml: |-
+{{- $file := .Files.Get "config/common/logback.xml" | indent 6 }}
+{{ tpl $file . }}
+{{- end }}
+
+{{ (.Files.Glob "config/common/hazelcast.xml").AsConfig | indent 2 }}
+
+  backup.sh: |-
+{{- if .Values.backup.backupScript }}
+{{ tpl .Values.backup.backupScript . | indent 6 }}
+{{- else }}
+{{- $file := .Files.Get "scripts/backup.sh" | indent 6 }}
+{{ tpl $file . }}
+{{- end }}
+
+  restore.sh: |-
+{{- if .Values.backup.restoreScript }}
+{{ tpl .Values.backup.restoreScript . | indent 6 }}
+{{- else }}
+{{- $file := .Files.Get "scripts/restore.sh" | indent 6 }}
+{{ tpl $file . }}
+{{- end }}
+
+  public-keys.json: |-
+{{ .Values.config.publicKeys | indent 4 }}
+
+{{- end }}

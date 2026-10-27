@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+		<groupId>com.gentics.mesh.enterprise</groupId>
+		<artifactId>mesh-enterprise</artifactId>
+		<version>3.3.3-SNAPSHOT</version>
+	</parent>
+
+    <groupId>com.gentics.mesh.contentrag</groupId>
+    <artifactId>mesh-content-rag-parent</artifactId>
+    <packaging>pom</packaging>
+    <name>Gentics Mesh Content RAG (Parent)</name>
+    <description>
+        Retrieval-Augmented-Generation-System ueber Gentics-Mesh-Inhalte.
+        Befuellung ueber den Standard-Sync von Mesh in eigene RAG-Chunk-Indizes derselben
+        Elasticsearch; Vektorisierung durch eine Ingest-Pipeline in Elasticsearch;
+        Query und Antwortgenerierung im eigenstaendigen rag-service. Siehe Konzept v0.2
+        und README.
+    </description>
+
+    <modules>
+        <module>common</module>
+        <module>chunking</module>
+        <module>index-contract</module>
+        <module>mesh-sync</module>
+        <module>rag-service</module>
+    </modules>
+
+    <properties>
+        <java.version>17</java.version>
+        <maven.compiler.release>17</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- Versionen zentral verwaltet -->
+        <spring-boot.version>4.1.1</spring-boot.version>
+        <elasticsearch-java.version>8.15.3</elasticsearch-java.version>
+        <!-- Spring Boot 4.1.1 managed Tomcat 11.0.24; 11.0.27 schliesst CVE-2026-65182,
+             CVE-2026-65905 und CVE-2026-68525. Bis die naechste Boot-Version nachzieht,
+             wird die Version unten explizit hochgezogen. -->
+        <tomcat.version>11.0.27</tomcat.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- TODO remove this in favor of proper management in the Mesh BOM -->
+            <dependency>
+                <groupId>io.micrometer</groupId>
+                <artifactId>micrometer-core</artifactId>
+                <version>1.15.12</version>
+            </dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-bom</artifactId>
+				<type>pom</type>
+				<scope>import</scope>
+				<version>${mesh.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh.enterprise</groupId>
+				<artifactId>mesh-enterprise-bom</artifactId>
+				<type>pom</type>
+				<scope>import</scope>
+				<version>${project.version}</version>
+			</dependency>
+
+            <!-- Muss vor dem Spring-Boot-BOM stehen: die erste Deklaration gewinnt, damit
+                 ueberschreibt der Block die von Boot verwaltete Tomcat-Version. -->
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-core</artifactId>
+                <version>${tomcat.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-el</artifactId>
+                <version>${tomcat.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-websocket</artifactId>
+                <version>${tomcat.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat</groupId>
+                <artifactId>tomcat-annotations-api</artifactId>
+                <version>${tomcat.version}</version>
+            </dependency>
+
+            <!-- Spring Boot BOM -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Interne Module -->
+            <dependency>
+                <groupId>com.gentics.mesh.contentrag</groupId>
+                <artifactId>mesh-content-rag-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.gentics.mesh.contentrag</groupId>
+                <artifactId>mesh-content-rag-chunking</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.gentics.mesh.contentrag</groupId>
+                <artifactId>mesh-content-rag-index-contract</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.gentics.mesh.contentrag</groupId>
+                <artifactId>mesh-content-rag-mesh-sync</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- Elasticsearch Java Client (gemeinsame Plattform mit Mesh-Volltextsuche) -->
+            <dependency>
+                <groupId>co.elastic.clients</groupId>
+                <artifactId>elasticsearch-java</artifactId>
+                <version>${elasticsearch-java.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.elasticsearch.client</groupId>
+                <artifactId>elasticsearch-rest-client</artifactId>
+                <version>${elasticsearch-java.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>${spring-boot.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <release>${maven.compiler.release}</release>
+                        <!-- Spring loest @RequestParam ohne name-Attribut ueber die
+                             Parameternamen auf; ohne -parameters stehen die nicht im Bytecode
+                             und der Endpunkt scheitert erst zur Laufzeit mit HTTP 500.
+                             spring-boot-starter-parent setzt das selbst - der Parent hier ist
+                             aber mesh-enterprise. -->
+                        <parameters>true</parameters>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>3.6.3</version>
+                    <configuration>
+                        <source>${java.version}</source>
+                        <!-- Vollstaendige Doclint-Pruefung (Syntax, HTML, Referenzen, fehlende Doku). -->
+                        <doclint>all</doclint>
+                        <quiet>true</quiet>
+                        <!-- Aggregierte API-Doku: mvn javadoc:aggregate -->
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project>
