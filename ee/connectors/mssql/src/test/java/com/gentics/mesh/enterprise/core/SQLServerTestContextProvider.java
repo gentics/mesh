@@ -4,8 +4,6 @@ import java.util.Comparator;
 
 import com.gentics.mesh.core.HibernateMeshOptionsProvider;
 import com.gentics.mesh.core.PreparingDatabaseTestContextProvider;
-import com.gentics.mesh.enterprise.dagger.DaggerEnterpriseHibernateMeshComponent;
-import com.gentics.mesh.enterprise.etc.config.EnterpriseHibernateMeshOptions;
 import com.gentics.mesh.enterprise.test.docker.SQLServerDatabaseContainer;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.test.MeshOptionsProvider;
@@ -16,11 +14,10 @@ public class SQLServerTestContextProvider extends PreparingDatabaseTestContextPr
 
 	static {
 		System.setProperty(MeshOptionsProvider.ENV_OPTIONS_PROVIDER_CLASS, SQLServerTestContextProvider.class.getCanonicalName());
-		System.setProperty(HibernateMeshOptionsProvider.ENV_OPTIONS_CLASS, EnterpriseHibernateMeshOptions.class.getCanonicalName());
 	}
 
 	public SQLServerTestContextProvider() {
-		super(new SQLServerDatabaseContainer(), DaggerEnterpriseHibernateMeshComponent.builder());
+		super(new SQLServerDatabaseContainer());
 	}
 
 	@Override

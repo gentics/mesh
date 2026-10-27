@@ -22,13 +22,6 @@
 				<artifactId>mesh-bom</artifactId>
 				<type>pom</type>
 				<scope>import</scope>
-				<version>${mesh.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.gentics.mesh.enterprise</groupId>
-				<artifactId>mesh-enterprise-bom</artifactId>
-				<type>pom</type>
-				<scope>import</scope>
 				<version>${project.version}</version>
 			</dependency>
 		</dependencies>
@@ -38,10 +31,6 @@
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-database-connector-api</artifactId>			
 			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh.enterprise</groupId>
-			<artifactId>mesh-enterprise-licensing-api</artifactId>
 		</dependency>
 	</dependencies>
 </project>

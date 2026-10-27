@@ -48,19 +48,19 @@
         <dependency>
             <groupId>com.gentics.mesh</groupId>
             <artifactId>mesh-mdm-api</artifactId>
-            <version>${mesh.version}</version>
+            <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.gentics.mesh</groupId>
             <artifactId>mesh-rest-model</artifactId>
-            <version>${mesh.version}</version>
+            <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.gentics.mesh</groupId>
             <artifactId>mesh-elasticsearch</artifactId>
-            <version>${mesh.version}</version>
+            <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

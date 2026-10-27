@@ -41,11 +41,6 @@
 			<artifactId>tests-mesh-hibernate</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh.enterprise</groupId>
-			<artifactId>mesh-enterprise-core</artifactId>
-			<scope>test</scope>
-		</dependency>
 	</dependencies>
 	<build>
 		<resources>
@@ -230,11 +225,6 @@
 								<includes>
 									<!-- Deps from mesh-enterprise-database-connector-common -->
 									<include>com.gentics.mesh:mesh-database-connector-common</include>
-									<!-- Deps from license-checker -->
-									<include>commons-io:commons-io</include>
-									<include>commons-httpclient:commons-httpclient</include>
-									<include>org.apache.httpcomponents:httpclient</include>
-									<include>javax.servlet:servlet-api</include>
 								</includes>
 							</artifactSet>
 						</configuration>

@@ -16,7 +16,6 @@ import org.apache.commons.lang3.Strings;
 
 import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.enterprise.hibernate.dialect.OracleLongTextDialect;
-import com.gentics.mesh.enterprise.license.LicenseService;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.hibernate.MeshTablePrefixStrategy;
 import com.gentics.mesh.hibernate.data.domain.AbstractHibListFieldEdgeImpl;
@@ -39,8 +38,8 @@ public class OracleConnector extends AbstractEnterpriseDatabaseConnector {
 	 */
 	protected final static String[] DISALLOWED_ENTITY_GRAPHS = new String[] {"schema.load", "schema.rest", "microschema.rest", "microschema.load"};
 
-	public OracleConnector(HibernateMeshOptions options, LicenseService licenseService) {
-		super(options, licenseService);
+	public OracleConnector(HibernateMeshOptions options) {
+		super(options);
 	}
 
 	@Override

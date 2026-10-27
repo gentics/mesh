@@ -34,17 +34,6 @@
 			<artifactId>mesh-database-tests-common</artifactId>
 			<scope>provided</scope>
 		</dependency>
-		<!-- Licensing -->
-		<dependency>
-			<groupId>com.gentics</groupId>
-			<artifactId>license-checker</artifactId>
-		</dependency>
-		<!-- Tests -->
-		<dependency>
-			<groupId>com.gentics.mesh.enterprise</groupId>
-			<artifactId>mesh-enterprise-core</artifactId>
-			<scope>test</scope>
-		</dependency>
 	</dependencies>
 
 	<build>
@@ -68,7 +57,7 @@
 			<plugin>
 				<groupId>com.gentics.mesh</groupId>
 				<artifactId>test-scanner-maven-plugin</artifactId>
-				<version>${mesh.version}</version>
+				<version>${project.version}</version>
 				<configuration>
 					<splits>${test.scanner.splits}</splits>
 					<dependenciesToScan>

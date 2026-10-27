@@ -5,8 +5,6 @@ import java.util.Locale;
 
 import com.gentics.mesh.core.HibernateMeshOptionsProvider;
 import com.gentics.mesh.core.PreparingDatabaseTestContextProvider;
-import com.gentics.mesh.enterprise.dagger.DaggerEnterpriseHibernateMeshComponent;
-import com.gentics.mesh.enterprise.etc.config.EnterpriseHibernateMeshOptions;
 import com.gentics.mesh.enterprise.test.docker.OracleDatabaseContainer;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.test.MeshOptionsProvider;
@@ -17,13 +15,12 @@ public class OracleTestContextProvider extends PreparingDatabaseTestContextProvi
 
 	static {
 		System.setProperty(MeshOptionsProvider.ENV_OPTIONS_PROVIDER_CLASS, OracleTestContextProvider.class.getCanonicalName());
-		System.setProperty(HibernateMeshOptionsProvider.ENV_OPTIONS_CLASS, EnterpriseHibernateMeshOptions.class.getCanonicalName());
 		// we set the default locale to english, because the jdbc driver depends on this when setting the sort collation
 		Locale.setDefault(Locale.ENGLISH);
 	}
 
 	public OracleTestContextProvider() {
-		super(new OracleDatabaseContainer(), DaggerEnterpriseHibernateMeshComponent.builder());
+		super(new OracleDatabaseContainer());
 	}
 
 	@Override

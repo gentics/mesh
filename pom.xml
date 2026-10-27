@@ -101,6 +101,8 @@
 		<module>test-scanner</module>
 		<module>connectors</module>
 		<module>performance-tests</module>
+		<module>mcp-server</module>
+		<module>ee</module>
 	</modules>
 
 	<dependencies>

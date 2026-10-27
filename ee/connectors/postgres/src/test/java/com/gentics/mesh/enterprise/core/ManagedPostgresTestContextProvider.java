@@ -4,7 +4,6 @@ import java.util.Comparator;
 
 import com.gentics.mesh.core.ManagedBy;
 import com.gentics.mesh.core.ManagedDatabaseTestContextProvider;
-import com.gentics.mesh.enterprise.dagger.DaggerEnterpriseHibernateMeshComponent;
 import com.gentics.mesh.enterprise.database.connector.PostgreSQLConnector;
 
 /**
@@ -12,10 +11,6 @@ import com.gentics.mesh.enterprise.database.connector.PostgreSQLConnector;
  */
 @ManagedBy(name = "postgres", connector = PostgreSQLConnector.class)
 public class ManagedPostgresTestContextProvider extends ManagedDatabaseTestContextProvider {
-
-	public ManagedPostgresTestContextProvider() {
-		super(DaggerEnterpriseHibernateMeshComponent.builder());
-	}
 
 	@Override
 	protected String getConnectionUrlExtraParams() {

@@ -767,9 +767,26 @@
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-database-tests-common</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
 				<groupId>com.github.stefanbirkner</groupId>
 				<artifactId>system-rules</artifactId>
 				<version>1.18.0</version>
+			</dependency>
+
+			<!-- Mesh Enterprise -->
+			<dependency>
+				<groupId>com.gentics.mesh.enterprise</groupId>
+				<artifactId>mesh-enterprise-database-connector-api</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh.enterprise</groupId>
+				<artifactId>mesh-enterprise-database-connector-common</artifactId>
+				<version>${project.version}</version>
 			</dependency>
 
 			<!-- Elasticsearch -->

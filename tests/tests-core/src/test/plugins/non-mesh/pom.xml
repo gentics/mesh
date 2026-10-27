@@ -22,7 +22,7 @@
 				<artifactId>mesh-plugin-bom</artifactId>
 				<type>pom</type>
 				<scope>import</scope>
-				<version>${mesh.version}</version>
+				<version>${project.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

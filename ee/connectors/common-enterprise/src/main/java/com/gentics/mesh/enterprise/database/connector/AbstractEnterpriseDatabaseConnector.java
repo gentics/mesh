@@ -1,16 +1,11 @@
 package com.gentics.mesh.enterprise.database.connector;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Set;
 import java.util.UUID;
 
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.database.connector.AbstractDatabaseConnector;
-import com.gentics.mesh.enterprise.license.LicenseService;
-import com.gentics.mesh.enterprise.license.LicensedFeature;
-import com.gentics.mesh.enterprise.license.service.RequiresLicense;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
 
 import jakarta.persistence.EntityManager;
@@ -18,21 +13,10 @@ import jakarta.persistence.EntityManager;
 /**
  * Base functionality for the Mesh Database Connector - licensed implementations.
  */
-public abstract class AbstractEnterpriseDatabaseConnector extends AbstractDatabaseConnector implements RequiresLicense {
+public abstract class AbstractEnterpriseDatabaseConnector extends AbstractDatabaseConnector {
 
-	private final LicenseService licenseService;
-
-	protected AbstractEnterpriseDatabaseConnector(HibernateMeshOptions options, LicenseService licenseService) {
+	protected AbstractEnterpriseDatabaseConnector(HibernateMeshOptions options) {
 		super(options);
-		this.licenseService = licenseService;
-		if (licenseService == null) {
-			licenseService = new LicenseService(options);
-			if (!licenseService.isLicenseSufficient()) {
-				throw new IllegalStateException("Usage of " + getClass().getSimpleName() + " requires a valid Gentics license!");
-			}
-		} else {
-			licenseService.registerRequestor(this);
-		}
 	}
 
 	@Override
@@ -55,14 +39,5 @@ public abstract class AbstractEnterpriseDatabaseConnector extends AbstractDataba
 				.setParameter("nodesUuid", uuids)
 				.setParameter("branch", branch)
 				.executeUpdate();
-	}
-
-	@Override
-	public Set<String> requiredFeatures() {
-		return Collections.singleton(LicensedFeature.MSQL.getProductName());
-	}
-
-	public LicenseService getLicenseService() {
-		return licenseService;
 	}
 }

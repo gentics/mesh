@@ -4,8 +4,6 @@ import java.util.Comparator;
 
 import com.gentics.mesh.core.HibernateMeshOptionsProvider;
 import com.gentics.mesh.core.PreparingDatabaseTestContextProvider;
-import com.gentics.mesh.enterprise.dagger.DaggerEnterpriseHibernateMeshComponent;
-import com.gentics.mesh.enterprise.etc.config.EnterpriseHibernateMeshOptions;
 import com.gentics.mesh.enterprise.test.docker.PostgresDatabaseContainer;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.test.MeshOptionsProvider;
@@ -16,11 +14,10 @@ public class PostgresTestContextProvider extends PreparingDatabaseTestContextPro
 
 	static {
 		System.setProperty(MeshOptionsProvider.ENV_OPTIONS_PROVIDER_CLASS, PostgresTestContextProvider.class.getCanonicalName());
-		System.setProperty(HibernateMeshOptionsProvider.ENV_OPTIONS_CLASS, EnterpriseHibernateMeshOptions.class.getCanonicalName());
 	}
 
 	public PostgresTestContextProvider() {
-		super(new PostgresDatabaseContainer(), DaggerEnterpriseHibernateMeshComponent.builder());
+		super(new PostgresDatabaseContainer());
 	}
 
 	@Override

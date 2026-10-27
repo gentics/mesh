@@ -5,7 +5,6 @@ import java.util.Locale;
 
 import com.gentics.mesh.core.ManagedBy;
 import com.gentics.mesh.core.ManagedDatabaseTestContextProvider;
-import com.gentics.mesh.enterprise.dagger.DaggerEnterpriseHibernateMeshComponent;
 import com.gentics.mesh.enterprise.database.connector.OracleConnector;
 
 /**
@@ -16,10 +15,6 @@ public class ManagedOracleTestContextProvider extends ManagedDatabaseTestContext
 	static {
 		// we set the default locale to english, because the jdbc driver depends on this when setting the sort collation
 		Locale.setDefault(Locale.ENGLISH);
-	}
-
-	public ManagedOracleTestContextProvider() {
-		super(DaggerEnterpriseHibernateMeshComponent.builder());
 	}
 
 	@Override

@@ -42,6 +42,10 @@ public class HibernateMeshOptions extends MeshOptions {
 	@EnvironmentVariable(name = LICENSE_KEY_ENV, description = "The license key")
 	private String licenseKey;
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("OpenAPI options.")
+	private OpenAPIOptions openApiOptions = new OpenAPIOptions();
+
 	/**
 	 * Validate this and the nested options.
 	 */
@@ -124,21 +128,40 @@ public class HibernateMeshOptions extends MeshOptions {
 		return true;
 	}
 
+	/**
+	 * Get the OpenAPI options
+	 * @return options
+	 */
+	@JsonProperty("openApi")
+	public OpenAPIOptions getOpenAPIOptions() {
+		return openApiOptions;
+	}
+
+	/**
+	 * Set the OpenAPI options
+	 * @param openApiOptions options
+	 * @return fluent API
+	 */
+	public MeshOptions setOpenAPIOptions(OpenAPIOptions openApiOptions) {
+		this.openApiOptions = openApiOptions;
+		return this;
+	}
+
 	@Override
 	@JsonIgnore
 	public Version getDefaultOpenAPIVersion() {
-		return Version.V30;
+		return openApiOptions.getDefaultVersion();
 	}
 
 	@Override
 	@JsonIgnore
 	public Format getDefaultOpenAPIFormat() {
-		return Format.YAML;
+		return openApiOptions.getDefaultFormat();
 	}
 
 	@Override
 	@JsonIgnore
 	public String getNoApiInfoPlugins() {
-		return null;
+		return openApiOptions.getNoApiInfoPlugins();
 	}
 }
