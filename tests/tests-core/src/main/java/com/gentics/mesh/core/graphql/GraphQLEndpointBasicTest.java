@@ -131,6 +131,15 @@ public class GraphQLEndpointBasicTest extends AbstractMeshTest {
 	}
 
 	/**
+	 * Test requesting an operation, which is not contained in the query
+	 */
+	@Test
+	public void testMultiOperationQueryNoOperation() {
+		GraphQLRequest request = new GraphQLRequest().setQuery("query me { me { firstname } } query project { project { name } }");
+		call(() -> client().graphql(PROJECT_NAME, request), BAD_REQUEST);
+	}
+
+	/**
 	 * Test getting schemas from a project that has a schema without fields assigned (API v1)
 	 * @throws JSONException
 	 */
