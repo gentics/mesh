@@ -8,7 +8,14 @@ package com.gentics.mesh.util;
  * @param <T> throwable type
  */
 @FunctionalInterface
-public interface ThrowableFunction<I, O, T extends Throwable> {
+public interface ThrowingFunction<I, O, T extends Throwable> {
 
+	/**
+	 * Turn input into output, possibly throwing a checked exception
+	 * 
+	 * @param input
+	 * @return
+	 * @throws T
+	 */
 	O apply(I input) throws T;
 }

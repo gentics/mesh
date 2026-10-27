@@ -34,7 +34,7 @@ import com.gentics.mesh.graphql.type.field.FieldDefinitionProvider;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.metric.SimpleMetric;
 import com.gentics.mesh.parameter.value.FieldsSet;
-import com.gentics.mesh.util.ThrowableFunction;
+import com.gentics.mesh.util.ThrowingFunction;
 
 import graphql.ExceptionWhileDataFetching;
 import graphql.ExecutionInput;
@@ -127,7 +127,7 @@ public class GraphQLHandler {
 
 					try {
 						JsonObject response = new JsonObject();
-						ThrowableFunction<String, ExecutionResult, Exception> fieldConsumer = field -> {
+						ThrowingFunction<String, ExecutionResult, Exception> fieldConsumer = field -> {
 							ExecutionInput.Builder executionInput = ExecutionInput
 								.newExecutionInput()
 								.dataLoaderRegistry(dataLoaderRegistry)
