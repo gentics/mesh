@@ -1,0 +1,1 @@
+GraphQL: The support for multi-query requests has been added. The requested queries *should* now be added to the `fields` query parameter as a comma separated list.
