@@ -1,0 +1,3 @@
+Forms Plugin: The attempt to create a form with an incorrect definition could lead to
+unpublished form nodes without the corresponding schema. The error handling for this case
+has been improved, so that no data will be created in Mesh.

@@ -1,0 +1,44 @@
+{
+  "name": "comment",
+  "container": true,
+  "description": "CommentPlugin: A single comment",
+  "fields": [
+    {
+      "name": "email",
+      "type": "string"
+    },
+    {
+      "name": "author",
+      "type": "string"
+    },
+    {
+      "name": "authorReference",
+      "type": "string",
+      "required": true,
+      "label": "UUID of the user that created the comment"
+    },
+    {
+      "name": "subject",
+      "type": "string"
+    },
+    {
+      "name": "comment",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "hidden",
+      "type": "boolean"
+    },
+    {
+      "name": "status",
+      "type": "string",
+      "allowed": [
+        "approved",
+        "pending",
+        "deleted"
+      ],
+      "required": true
+    }
+  ]
+}

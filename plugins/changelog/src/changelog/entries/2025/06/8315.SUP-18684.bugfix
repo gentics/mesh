@@ -1,0 +1,2 @@
+Forms Plugin: The asynchronous generation of downloads will now use the temp folder instead of the plugins "storage" folder
+for temporary storage of the download.

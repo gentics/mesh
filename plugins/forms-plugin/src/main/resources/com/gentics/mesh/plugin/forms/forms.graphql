@@ -1,0 +1,19 @@
+query Forms($perPage: Long = 2147483647, $page: Long = 1, $rootNodeUuid: String, $lang: [String]) {
+  node (uuid: $rootNodeUuid) {
+    children (perPage: $perPage, page: $page, lang: $lang, filter: {schema: {is: form}}) {
+      elements {
+        uuid
+        fields {
+          ... on form {
+            name
+            cms_id
+          }
+        }
+      }
+      totalCount
+      currentPage
+      pageCount
+      perPage
+    }
+  }
+}

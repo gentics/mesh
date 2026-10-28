@@ -1,0 +1,27 @@
+{
+	"name": "Form with Friendly Captcha",
+	"cms_id": 1,
+    "type": "GENERIC",
+	"captchaId": "friendlycaptcha_background",
+	"schema": {
+		"key": "test-schema",
+	    "version": "1.0.0",
+	    "properties": {
+			"input1": {
+				"type": "string",
+				"name": "input1",
+				"placeholderName": "",
+				"label": "Text",
+				"mandatory": false,
+				"info": "",
+				"tooltip": "",
+
+				"value": "",
+				"minVal": "",
+				"maxVal": "",
+				"maxCharCount": "",
+				"elements": []
+			}
+		}
+	}
+}

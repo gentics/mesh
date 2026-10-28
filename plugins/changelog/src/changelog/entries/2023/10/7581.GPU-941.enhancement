@@ -1,0 +1,3 @@
+Forms: The storage structure of form data has been modified: Form data nodes will now not be created as direct children of the corresponding form node,
+but will be children of the node "Data" (using the schema form_folder), which is a child of the form node.
+This allows to set permissions on the "Data" node (different from the permissions on the form node), which will be passed on to the created form data node.

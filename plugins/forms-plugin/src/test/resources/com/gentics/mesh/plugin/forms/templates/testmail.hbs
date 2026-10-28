@@ -1,0 +1,18 @@
+{{# each data }}
+    {{~# if this.isFile ~}}
+        {{ baseUrl }}/{{ dataUuid }}/binary/{{ this.name }}
+    {{~ else }}
+value: {{{formatDate value "MM/dd/yyyy" srcFormat="dd.MM.yyyy"}}}
+valueProperty: {{valueProperty}}
+valueLabel: {{{valueLabel}}}
+options.length: {{{selectOptions.length}}}
+customProperty: {{{customProperty}}}
+moreCustomProperties.no: {{moreCustomProperties.no}}
+moreCustomProperties.yes: {{moreCustomProperties.yes}}
+moreCustomProperties.one: {{moreCustomProperties.one}}
+moreCustomProperties.many: {{moreCustomProperties.many}}
+moreCustomProperties.more.foo: {{moreCustomProperties.more.foo }}
+
+===
+{{/ if ~}}
+{{~/ each ~}}

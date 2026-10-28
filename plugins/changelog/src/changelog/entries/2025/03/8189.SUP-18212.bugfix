@@ -1,0 +1,1 @@
+Keycloak: The set of plugin dependencies has been revised, to avoid a range of issues, from carrying obsolete/duplicated dependencies that take too much space, to a crash of a plugin that tries to load a conflicting version of a class.

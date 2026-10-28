@@ -1,0 +1,78 @@
+{
+	"formWidth": 12,
+	"flowId": "default",
+	"captchaId": null,
+	"templateContext": null,
+	"successUrlI18n": null,
+	"successPageId": null,
+	"successNodeId": null,
+	"adminEmailAddress": null,
+	"adminEmailSubject": null,
+	"adminEmailPageId": null,
+	"adminEmailNodeId": null,
+	"adminEmailTemplate": null,
+	"schema": {
+		"key": "0e29acd8-1eb0-4c69-95b8-a9f8bdb20c8d",
+		"version": "1.0",
+		"properties": {
+			"catalog_element": {
+				"type": "catalog",
+				"name": "catalog_element",
+				"formPage": 0,
+				"formGridOptions": {
+					"selectOptions": [
+						{
+							"value": "eins",
+							"label": {
+								"de": "eins"
+							}
+						},
+						{
+							"value": "zwei",
+							"label": {
+								"de": "zwei"
+							}
+						}
+					]
+				},
+				"isList": true
+			}
+		}
+	},
+	"ui-schema": {
+		"key": "0e29acd8-1eb0-4c69-95b8-a9f8bdb20c8d",
+		"version": "1.0",
+		"pages": [
+			{
+				"pagename": {
+					"de": "Allgemein",
+					"en": "General"
+				},
+				"elements": [
+					{
+						"id": "catalog_element",
+						"type": "property",
+						"label": {
+							"de": "Auswahl"
+						},
+						"formGridOptions": {
+							"type": "catalog",
+							"numberOfColumns": 6,
+							"valueSummary": {},
+							"inForm": true,
+							"inSummary": false,
+							"overlayOptions": {
+								"isShowOverlay": false,
+								"texts": {
+									"textPre": {},
+									"textPost": {}
+								}
+							}
+						},
+						"uiSchemaPage": 0
+					}
+				]
+			}
+		]
+	}
+}

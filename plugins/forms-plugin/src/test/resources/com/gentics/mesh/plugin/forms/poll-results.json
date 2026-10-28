@@ -1,0 +1,108 @@
+{
+	"name": "Full poll",
+	"type": "POLL",
+	"schema": {
+		"key": "test-schema",
+	    "version": "1.0.0",
+	    "properties": {
+			"section_headline": {
+				"type": "sectionheadline",
+				"name": "section_headline",
+				"active": true,
+				"elements": [],
+				"text": "The section headline"
+			},
+			"description_text": {
+				"type": "text",
+				"name": "description_text",
+				"active": true,
+				"elements": [],
+				"text": "Some description"
+			},
+			"checkbox1": {
+				"type": "boolean",
+				"name": "checkbox1",
+				"label": "Checkbox element",
+				"customScalarProperty": "Custom Checkbox Property",
+				"customPropertyMap": {
+					"key": "Value"
+				}
+			},
+			"radiobuttons1": {
+				"type": "catalog",
+				"name": "radiobuttons1",
+				"select_type": "radiobuttons",
+				"label": "Radio button elements",
+				"properties": {
+					"customProperty": "Custom Radio Buttons Property"
+				},
+				"selectOptions": [
+					{
+						"value": "r_X",
+						"label": { "en": "Option which is never selected at the beginning", "de": "Nie ursprunglich gewählte Option" }
+					},
+					{
+						"value": "r_1",
+						"label": { "en": "Radio button option 1", "de": "1. Radiotaste" }
+					},
+					{
+						"value": "r_2",
+						"label": { "en": "Radio button option 2", "de": "2. Radiotaste" }
+					},
+					{
+						"value": "r_3",
+						"label": { "en": "Radio button option 3", "de": "3. Radiotaste" }
+					}
+				]
+			},
+			"singleselect1": {
+				"type": "catalog",
+				"name": "singleselect1",
+				"select_type": "singleselect",
+				"label": "Single select element",
+				"selectOptions": [
+					{
+						"value": "s_1",
+						"label": { "en": "Single-select option 1", "de": "1. Einzelwahl" }
+					},
+					{
+						"value": "s_X",
+						"label": { "en": "Option which is never selected in the middle", "de": "Nie gewaehlte Mitteloption" }
+					},
+					{
+						"value": "s_2",
+						"label": { "en": "Single-select option 2", "de": "2. Einzelwahl" }
+					},
+					{
+						"value": "s_3",
+						"label": { "en": "Single-select option 3", "de": "3. Einzelwahl" }
+					}
+				]
+			},
+			"multiselect1": {
+				"type": "catalog",
+				"name": "multiselect1",
+				"select_type": "multiselect",
+				"label": "Multi select element",
+				"selectOptions": [
+					{
+						"value": "m_1",
+						"label": { "en": "Multi-select option 1", "de": "1. Mehrfachwahl" }
+					},
+					{
+						"value": "m_2",
+						"label": { "en": "Multi-select option 2", "de": "2. Mehrfachwahl" }
+					},
+					{
+						"value": "m_3",
+						"label": { "en": "Multi-select option 3", "de": "3. Mehrfachwahl" }
+					},
+					{
+						"value": "m_X",
+						"label": { "en": "Option which is never selected at the end", "de": "Nie gewaehlte Endoption" }
+					}
+				]
+			}
+		}
+	}
+}

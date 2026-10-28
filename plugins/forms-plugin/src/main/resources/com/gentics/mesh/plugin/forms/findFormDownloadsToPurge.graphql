@@ -1,0 +1,11 @@
+query($purgeThreshold: String) {
+  schema(name: "form_download") {
+    nodes(filter: {created: {before: $purgeThreshold}}, perPage: 100) {
+      hasNextPage
+      elements {
+        uuid
+        created
+      }
+    }
+  }
+}

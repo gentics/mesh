@@ -1,0 +1,2 @@
+Forms Plugin: Reports will now be created with UTF-8 even if the default character set of the
+platform is different.

@@ -1,0 +1,38 @@
+{
+  "nodes": {
+    "elements": [
+      {
+        "languages": [
+          {
+            "uuid": "01234",
+            "language": "de",
+            "path": "/home/foo.de.html"
+          },
+          {
+            "uuid": "01234",
+            "language": "en",
+            "path": "/home/foo.en.html"
+          }
+        ]
+      },
+      {
+        "languages": [
+          {
+            "uuid": "56789",
+            "language": "en",
+            "path": "/home/bar.html"
+          }
+        ]
+      },
+      {
+        "languages": [
+          {
+            "uuid": "abcde",
+            "language": "en",
+            "path": "/home/doo.html"
+          }
+        ]
+      }
+    ]
+  }
+}

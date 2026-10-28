@@ -1,0 +1,1 @@
+Forms: Adds new configuration options @security.injectionPreventionMode@ and @security.sanitationRules@ to either mark unsafe posted values as validation errors or sanitize the values before storing them.

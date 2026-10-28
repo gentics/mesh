@@ -1,0 +1,10 @@
+Checkbox
+	name: {{ name }}
+	label: {{ label }}
+	type: {{ type  }}
+	inputType: {{formsInputType this}}
+	minVal: {{ minVal }}
+	maxVal: {{ maxVal }}
+	maxCharCount: {{ maxCharCount }}
+	value: {{#if data.value }}{{ data.value }}{{else}}{{ value }}{{/if}}
+	properties.textkey: {{ properties.textkey }}

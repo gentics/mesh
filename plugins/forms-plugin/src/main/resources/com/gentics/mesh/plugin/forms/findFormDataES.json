@@ -1,0 +1,23 @@
+{
+    "query": {
+        "bool": {
+            "must": [
+                {
+                    "term": { "schema.name.raw": "form_schemaID" }
+                },
+                {
+                    "multi_match": {
+                        "query": "The query string",
+                        "fields": "fields.*",
+                        "lenient": true
+                    }
+                }
+            ]
+        }
+    },
+    "sort": [
+        {
+            "created": "asc"
+        }
+    ]
+}

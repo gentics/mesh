@@ -1,0 +1,51 @@
+{
+  "name": "section",
+  "container": true,
+  "description": "CommentPlugin: A comment section for a node",
+  "segmentField": "language",
+  "fields": [
+    {
+      "name": "node",
+      "type": "string",
+      "required": true,
+      "label": "The node uuid to which the comments are attached"
+    },
+    {
+      "name": "language",
+      "type": "string",
+      "required": true,
+      "label": "The language of the node to which the comments are attached"
+    },
+    {
+      "name": "nodeConfigField",
+      "type": "string",
+      "label": "Field name in the node reference to copy section settings from"
+    },
+    {
+      "name": "allowAnonymous",
+      "type": "boolean",
+      "label": "If true, anonymous users can create comments"
+    },
+    {
+      "name": "moderatorEmails",
+      "type": "list",
+      "listType": "string",
+      "label": "List of emails of moderators that are notified when a comment needs approval"
+    },
+    {
+      "name": "requiresApproval",
+      "type": "boolean",
+      "label": "If true, the comment needs to be approved by a moderator before it is displayed in public"
+    },
+    {
+      "name": "requiredForAnonymous",
+      "type": "list",
+      "listType": "string",
+      "label": "List of fields that an anonymous user is required to fill in",
+      "allowed": [
+        "email",
+        "author"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+Forms: The attribute containing the poll results in the rendering context has been renamed from "values" to "pollValues". Templates used for rendering poll results need to be adapted accordingly.

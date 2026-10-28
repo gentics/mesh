@@ -1,0 +1,1 @@
+Now it is possible to initialize all the necessary Mesh schemas once per plugin, not per project. The existing commercial plugins have been updated to use this approach.

@@ -1,0 +1,1 @@
+REST API: The endpoint definitions of all REST plugins have been extended to provide the most possible fullfilling information to the OpenAPI specification, available per plugin via `/openapi.yaml` (or `/openapi.json` for Mesh Enterprise) endpoint.

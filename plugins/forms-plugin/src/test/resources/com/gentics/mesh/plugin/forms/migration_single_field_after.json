@@ -1,0 +1,20 @@
+{
+	"name": "Form to Migrate",
+	"cms_id": 1,
+	"schema": {
+		"key": "test-schema",
+	    "version": "1.0.0",
+	    "properties": {
+			"input1": {
+				"type": "string",
+				"name": "input1",
+				"mandatory": false
+			},
+            "file1": {
+				"type": "binary",
+				"name": "file1",
+				"mandatory": false
+			}
+		}
+	}
+}

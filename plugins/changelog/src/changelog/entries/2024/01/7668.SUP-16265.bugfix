@@ -1,0 +1,1 @@
+Forms: Fixes checks for validation and storing of file elements inside a conditional container. File elements marked as mandatory were required even if the file element was in a conditional container that was to be ignored.

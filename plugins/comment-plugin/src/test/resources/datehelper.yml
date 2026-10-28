@@ -1,0 +1,12 @@
+commentRoot: "/comments"
+projectNames:
+  - test
+requiredForAnonymous: []
+moderatorEmails:
+  - moderator@example.com
+mailServerConfig:
+  port: 3025
+mailSubjects:
+  commentCreated: "A test comment has been created"
+mailSender: Testmailer <test@mailer.com>
+mailTemplateFolder: "/datehelper"

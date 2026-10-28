@@ -1,0 +1,11 @@
+nodeListParameterName: "uuids"
+projects:
+  - name: "Test"
+    folderName: "Must-Read"
+    queryFiles:
+      uuid: "Test/MustRead.graphql"
+      data: "Test/Data.graphql"
+    fieldNames:
+      uuid: "testUuid"
+      published: "published"
+    publishedOnly: false

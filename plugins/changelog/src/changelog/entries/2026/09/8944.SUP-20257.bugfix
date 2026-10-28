@@ -1,0 +1,2 @@
+Plugins registering API Endpoints created additional instances of Vert.x, unnecessarily
+consuming resources. This has been fixed.

@@ -1,0 +1,92 @@
+swagger: "2.0"
+info:
+  description: "API for the comment plugin"
+  version: "0.0.1"
+  title: "Comment Plugin API"
+  contact:
+    email: "pg@gentics.com"
+basePath: "/api/v1"
+tags:
+- name: "comments"
+  description: "Manages comments"
+paths:
+  /{projectName}/plugins/comment/comments:
+    parameters:
+    - name: "projectName"
+      in: "path"
+      description: "Name of the project"
+      required: true
+      type: "string"
+    - in: "body"
+      name: "body"
+      required: true
+      schema:
+        $ref: "#/definitions/CommentCreateRequest"
+    post:
+      tags:
+      - comments
+      summary: "Creates a comment"
+      responses:
+        200:
+          description: Successfully updated
+  /{projectName}/plugins/comment/comments/{commentUuid}:
+    parameters:
+    - name: "projectName"
+      in: "path"
+      description: "Name of the project"
+      required: true
+      type: "string"
+    - name: "commentUuid"
+      in: "path"
+      description: "The uuid of the comment"
+      required: true
+      type: "string"
+    get:
+      tags:
+      - comments
+      summary: "Get details of a single comment"
+      responses:
+        404:
+          description: "Asset not found"
+    post:
+      tags:
+      - comments
+      summary: "Updates a comment"
+      responses:
+        200:
+          description: Successfully updated
+definitions:
+  CommentCreateRequest:
+    type: "object"
+    required:
+    - "node"
+    - "language"
+    - "comment"
+    properties:
+      node:
+        type: "string"
+        description: "UUID of the node for which the comment is made"
+        example: "39e4720c5a9d417b9ade5563fc9fb2b1"
+      language:
+        type: "string"
+        description: "Language of the referenced node"
+        example: "de"
+      comment:
+        type: "string"
+        example: "Hello World!"
+      parentComment:
+        type: "string"
+        description: "UUID of the parent comment"
+        example: "6c2e95bdd52449df989644650799a370"
+      subject:
+        type: "string"
+        description: "Subject of the comment"
+        example: "My comment"
+      author:
+        type: "string"
+        description: "Name of the commenter"
+        example: "Carl Carlson"
+      email:
+        description: "Email of the commenter"
+        type: "string"
+        example: "carl@carlson.com"

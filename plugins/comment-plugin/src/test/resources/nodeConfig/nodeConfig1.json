@@ -1,0 +1,6 @@
+{
+  "moderatorEmails": [
+    "nodeconfig@example.com"
+  ],
+  "requiresApproval": true
+}

@@ -1,0 +1,20 @@
+{
+  "name": "folder",
+  "displayField": "name",
+  "segmentField": "slug",
+  "container": true,
+  "fields": [
+    {
+      "name": "slug",
+      "label": "Slug",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "name": "name",
+      "label": "Name",
+      "required": false,
+      "type": "string"
+    }
+  ]
+}

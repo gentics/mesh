@@ -1,0 +1,6 @@
+{
+  node(uuid: "2c572ab6f65e4f42972ab6f65ebf4245") {
+    testUuid: uuid
+    testPublished: isPublished
+  }
+}

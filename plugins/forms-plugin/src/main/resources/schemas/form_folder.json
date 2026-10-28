@@ -1,0 +1,14 @@
+{
+	"name": "formgenerator_folder",
+	"displayField": "name",
+	"segmentField": "name",
+	"container": true,
+	"fields": [
+		{
+			"name": "name",
+			"label": "",
+			"type": "string",
+			"required": true
+		}
+	]
+}

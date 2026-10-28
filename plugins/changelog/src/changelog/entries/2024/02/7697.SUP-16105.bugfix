@@ -1,0 +1,4 @@
+Keycloak: An ability to setup custom Realms URL format has been added, targeting newer versions of Keycloak.
+
+CAUTION: The plugin requires Mesh >= 2.0.15 to run.
+

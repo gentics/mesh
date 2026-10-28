@@ -1,0 +1,42 @@
+{
+	"name": "Form with Inactive Textfield",
+	"language": "en",
+	"schema": {
+		"key": "test-schema",
+	    "version": "1.0.0",
+	    "properties": {
+			"input1": {
+				"type": "string",
+				"name": "input1",
+				"placeholderName": "",
+				"label": "Text",
+				"mandatory": false,
+				"active": true,
+				"info": "",
+				"tooltip": "",
+				
+				"value": "",
+				"minVal": "",
+				"maxVal": "",
+				"maxCharCount": "",
+				"elements": []
+			},
+			"input2": {
+				"type": "string",
+				"name": "input2",
+				"placeholderName": "",
+				"label": "Text",
+				"mandatory": true,
+				"active": false,
+				"info": "",
+				"tooltip": "",
+				
+				"value": "",
+				"minVal": "",
+				"maxVal": "",
+				"maxCharCount": "",
+				"elements": []
+			}
+		}
+	}
+}

@@ -1,0 +1,1 @@
+Fixed an issue where missing reCAPTCHA configuration would cause a NullPointerException and a 500 error.

@@ -1,0 +1,20 @@
+{
+	"name": "like_section",
+	"description": "LikePlugin: Likes section of a node",
+	"container": true,
+	"segmentField": "nodeUuid",
+	"fields": [
+		{
+			"name": "nodeUuid",
+			"type": "string",
+			"required": true,
+			"label": "UUID of the node to which the likes are attached"
+		},
+		{
+			"name": "node",
+			"type": "node",
+			"required": true,
+			"label": "The node to which the likes are attached"
+		}
+	]
+}

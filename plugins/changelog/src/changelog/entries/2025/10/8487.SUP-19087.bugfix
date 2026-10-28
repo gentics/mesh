@@ -1,0 +1,4 @@
+Forms Plugin: Scheduling of the background purge jobs has been fixed, so that
+a single job is scheduled per Mesh instance when the forms plugin is initialized.
+The job will perform purging of all projects with activated forms plugin when running
+in the cluster master.

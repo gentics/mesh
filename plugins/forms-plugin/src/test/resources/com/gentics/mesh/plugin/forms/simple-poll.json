@@ -1,0 +1,19 @@
+{
+	"name": "Simple poll",
+	"type": "POLL",
+	"cms_id": 1,
+	"schema": {
+		"key": "test-schema",
+	    "version": "1.0.0",
+	    "properties": {
+			"checkbox1": {
+				"type": "boolean",
+				"name": "checkbox1",
+				"label": "Checkbox element",
+				"properties": {
+					"textkey": "Custom Checkbox Property"
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,2 @@
+Forms: Fixes an issue when posting updated form data with multiple file fields. Requests to the form data update endpoint would fail when the automatic version purge was enabled.
+

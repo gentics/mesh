@@ -1,0 +1,54 @@
+{
+	"responses": [
+		{
+			"hits": {
+				"total": 2,
+				"hits": [
+					{
+						"_id": "01234-de",
+						"_index": "mesh-node-project-branch_dummy-version-draft",
+						"_source": {
+							"project": {
+								"name": "dummy"
+							},
+							"language": "de",
+							"fields": {
+								"title": "Test result 1"
+							},
+							"uuid": "01234"
+						},
+						"highlight": {
+							"fields.title": [
+								"%hb%Test%he% result 1"
+							]
+						}
+					},
+					{
+						"_id": "56789-en",
+						"_index": "mesh-node-project-branch_dummy-version-draft",
+						"_source": {
+							"project": {
+								"name": "dummy"
+							},
+							"language": "en",
+							"fields": {
+								"title": "Test result 2"
+							},
+							"uuid": "56789"
+						},
+						"highlight": {
+							"fields.title": [
+								"%hb%Test%he% result 2 - title"
+							],
+							"fields.content": [
+								"%hb%Test%he% result 2 - content 1",
+								"%hb%Test%he% result 2 - content 2"
+							]
+						}
+					}
+				]
+			},
+			"status": 200
+		}
+	]
+}

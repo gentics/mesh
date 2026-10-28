@@ -1,0 +1,1 @@
+Forms: Now the values of the Checkbox element are trimmed out of surrounding spaces and caret returns before validation.
