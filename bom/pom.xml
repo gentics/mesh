@@ -806,6 +806,18 @@
 				<version>${project.version}</version>
 			</dependency>
 
+			<!-- Plugins -->
+			<dependency>
+				<groupId>com.gentics.mesh.plugin</groupId>
+				<artifactId>mesh-commercial-plugins-common</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh.plugin</groupId>
+				<artifactId>mesh-commercial-plugins-test-common</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
 			<!-- HTML stripping -->
 			<dependency>
 				<groupId>org.jsoup</groupId>

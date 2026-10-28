@@ -1,0 +1,76 @@
+<assembly
+	xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0 http://maven.apache.org/xsd/assembly-1.1.0.xsd">
+	<id>content</id>
+	<formats>
+		<format>zip</format>
+	</formats>
+	<fileSets>
+		<fileSet>
+			<directory>${project.basedir}/content</directory>
+			<outputDirectory>/</outputDirectory>
+			<filtered>false</filtered>
+		</fileSet>
+		<!-- Each plugin's openapi.yaml is unpacked from its jar by maven-dependency-plugin
+		     (see docs/pom.xml) into target/openapi/<plugin>/META-INF/openapi before this
+		     assembly runs. -->
+		<fileSet>
+			<directory>${project.build.directory}/openapi/mustread-plugin/META-INF/openapi</directory>
+			<outputDirectory>/plugins/mustread-plugin</outputDirectory>
+			<includes>
+				<include>openapi.yaml</include>
+			</includes>
+			<filtered>false</filtered>
+		</fileSet>
+		<fileSet>
+			<directory>${project.build.directory}/openapi/like-plugin/META-INF/openapi</directory>
+			<outputDirectory>/plugins/like-plugin</outputDirectory>
+			<includes>
+				<include>openapi.yaml</include>
+			</includes>
+			<filtered>false</filtered>
+		</fileSet>
+		<fileSet>
+			<directory>${project.build.directory}/openapi/favorite-plugin/META-INF/openapi</directory>
+			<outputDirectory>/plugins/favorite-plugin</outputDirectory>
+			<includes>
+				<include>openapi.yaml</include>
+			</includes>
+			<filtered>false</filtered>
+		</fileSet>
+		<fileSet>
+			<directory>${project.build.directory}/openapi/comment-plugin/META-INF/openapi</directory>
+			<outputDirectory>/plugins/comment-plugin</outputDirectory>
+			<includes>
+				<include>openapi.yaml</include>
+			</includes>
+			<filtered>false</filtered>
+		</fileSet>
+		<fileSet>
+			<directory>${project.build.directory}/openapi/search-plugin/META-INF/openapi</directory>
+			<outputDirectory>/plugins/search-plugin</outputDirectory>
+			<includes>
+				<include>openapi.yaml</include>
+			</includes>
+			<filtered>false</filtered>
+		</fileSet>
+		<fileSet>
+			<directory>${project.build.directory}/openapi/export-plugin/META-INF/openapi</directory>
+			<outputDirectory>/plugins/export-plugin</outputDirectory>
+			<includes>
+				<include>openapi.yaml</include>
+			</includes>
+			<filtered>false</filtered>
+		</fileSet>
+		<fileSet>
+			<directory>${project.build.directory}/openapi/forms-plugin/META-INF/openapi</directory>
+			<outputDirectory>/plugins/forms-plugin</outputDirectory>
+			<includes>
+				<include>openapi.yaml</include>
+			</includes>
+			<filtered>false</filtered>
+		</fileSet>
+	</fileSets>
+	<includeBaseDirectory>false</includeBaseDirectory>
+</assembly>

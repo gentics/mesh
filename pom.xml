@@ -103,6 +103,7 @@
 		<module>connectors</module>
 		<module>mcp-server</module>
 		<module>ee</module>
+		<module>plugins</module>
 	</modules>
 
 	<dependencies>

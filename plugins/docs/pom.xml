@@ -5,9 +5,9 @@
 	<packaging>pom</packaging>
 
     <parent>
-        <groupId>com.gentics.mesh.plugin.commercial</groupId>
+        <groupId>com.gentics.mesh.plugin</groupId>
 		<artifactId>mesh-commercial-plugins</artifactId>
-        <version>3.4.4-SNAPSHOT</version>
+        <version>4.0.0-SNAPSHOT</version>
     </parent>
 
 	<organization>
@@ -20,43 +20,31 @@
 	     below unpack the spec out of the plugin's jar. -->
 	<dependencies>
 		<dependency>
-			<groupId>com.gentics.mesh.plugin.commercial</groupId>
+			<groupId>com.gentics.mesh.plugin</groupId>
 			<artifactId>mesh-mustread-plugin</artifactId>
 			<version>${project.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.gentics.mesh.plugin.commercial</groupId>
+			<groupId>com.gentics.mesh.plugin</groupId>
 			<artifactId>mesh-like-plugin</artifactId>
 			<version>${project.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.gentics.mesh.plugin.commercial</groupId>
-			<artifactId>mesh-favorite-plugin</artifactId>
-			<version>${project.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh.plugin.commercial</groupId>
+			<groupId>com.gentics.mesh.plugin</groupId>
 			<artifactId>mesh-comment-plugin</artifactId>
 			<version>${project.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.gentics.mesh.plugin.commercial</groupId>
-			<artifactId>mesh-search-plugin</artifactId>
-			<version>${project.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh.plugin.commercial</groupId>
+			<groupId>com.gentics.mesh.plugin</groupId>
 			<artifactId>mesh-export-plugin</artifactId>
 			<version>${project.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.gentics.mesh.plugin.commercial</groupId>
+			<groupId>com.gentics.mesh.plugin</groupId>
 			<artifactId>mesh-forms-plugin</artifactId>
 			<version>${project.version}</version>
 			<scope>provided</scope>
@@ -91,21 +79,9 @@
 								</artifactItem>
 								<artifactItem>
 									<groupId>com.gentics.mesh.plugin.commercial</groupId>
-									<artifactId>mesh-favorite-plugin</artifactId>
-									<includes>META-INF/openapi/openapi.yaml</includes>
-									<outputDirectory>${project.build.directory}/openapi/favorite-plugin</outputDirectory>
-								</artifactItem>
-								<artifactItem>
-									<groupId>com.gentics.mesh.plugin.commercial</groupId>
 									<artifactId>mesh-comment-plugin</artifactId>
 									<includes>META-INF/openapi/openapi.yaml</includes>
 									<outputDirectory>${project.build.directory}/openapi/comment-plugin</outputDirectory>
-								</artifactItem>
-								<artifactItem>
-									<groupId>com.gentics.mesh.plugin.commercial</groupId>
-									<artifactId>mesh-search-plugin</artifactId>
-									<includes>META-INF/openapi/openapi.yaml</includes>
-									<outputDirectory>${project.build.directory}/openapi/search-plugin</outputDirectory>
 								</artifactItem>
 								<artifactItem>
 									<groupId>com.gentics.mesh.plugin.commercial</groupId>

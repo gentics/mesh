@@ -5,9 +5,9 @@
 	<artifactId>mesh-favorite-plugin</artifactId>
 
 	<parent>
-		<groupId>com.gentics.mesh.plugin.commercial</groupId>
-		<artifactId>mesh-commercial-plugins</artifactId>
-		<version>3.4.4-SNAPSHOT</version>
+		<groupId>com.gentics.mesh.plugin.enterprise</groupId>
+		<artifactId>mesh-enterprise-plugins</artifactId>
+		<version>4.0.0-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -32,11 +32,11 @@
 			<artifactId>json-path</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.gentics.mesh.plugin.commercial</groupId>
+			<groupId>com.gentics.mesh.plugin</groupId>
 			<artifactId>mesh-commercial-plugins-common</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.gentics.mesh.plugin.commercial</groupId>
+			<groupId>com.gentics.mesh.plugin</groupId>
 			<artifactId>mesh-commercial-plugins-common</artifactId>
 		</dependency>
 
@@ -54,11 +54,10 @@
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-mdm-hibernate-core</artifactId>
-			<version>${mesh.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.gentics.mesh.plugin.commercial</groupId>
+			<groupId>com.gentics.mesh.plugin</groupId>
 			<artifactId>mesh-commercial-plugins-test-common</artifactId>
 			<scope>test</scope>
 		</dependency>

@@ -2,8 +2,8 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.gentics.mesh.plugin.commercial</groupId>
-	<artifactId>mesh-commercial-plugins</artifactId>
+	<groupId>com.gentics.mesh.plugin.enterprise</groupId>
+	<artifactId>mesh-enterprise-plugins</artifactId>
 	<packaging>pom</packaging>
 
 	<parent>
@@ -32,6 +32,7 @@
 		<module>favorite-plugin</module>
 		<module>search-plugin</module>
 		<module>keycloak-plugin</module>
+		<module>docs</module>
 	</modules>
 
 	<dependencyManagement>
@@ -42,6 +43,7 @@
 				<artifactId>mesh-bom</artifactId>
 				<type>pom</type>
 				<scope>import</scope>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.tika</groupId>

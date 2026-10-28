@@ -5,9 +5,9 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>mesh-export-plugin</artifactId>
 	<parent>
-		<groupId>com.gentics.mesh.plugin.commercial</groupId>
+		<groupId>com.gentics.mesh.plugin</groupId>
 		<artifactId>mesh-export-plugin-base</artifactId>
-		<version>3.4.4-SNAPSHOT</version>
+		<version>4.0.0-SNAPSHOT</version>
 	</parent>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -27,7 +27,7 @@
 			<dependency>
 				<groupId>com.gentics.mesh</groupId>
 				<artifactId>mesh-bom</artifactId>
-				<version>${mesh.version}</version>
+				<version>${project.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -35,16 +35,16 @@
 	</dependencyManagement>
 	<dependencies>
 		<dependency>
-			<groupId>com.gentics.mesh.plugin.commercial</groupId>
+			<groupId>com.gentics.mesh.plugin</groupId>
 			<artifactId>mesh-commercial-plugins-test-common</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.gentics.mesh.plugin.commercial</groupId>
+			<groupId>com.gentics.mesh.plugin</groupId>
 			<artifactId>mesh-commercial-plugins-common</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.gentics.mesh.plugin.commercial</groupId>
+			<groupId>com.gentics.mesh.plugin</groupId>
 			<artifactId>mesh-export-plugin-extension-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
@@ -102,7 +102,6 @@
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-mdm-hibernate-core</artifactId>
-			<version>${mesh.version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
