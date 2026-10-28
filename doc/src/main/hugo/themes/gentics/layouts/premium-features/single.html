@@ -1,0 +1,71 @@
+{{ define "content" }}
+<div class="topsection-wrapper">
+  <div class="topsection container">
+    <div>
+      <div class="col-md-12">
+        <h1>{{ .Title }}</h1>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      <h2 class="headlines-plugins">
+        {{ if .Params.image }}
+        <img src="/assets/{{ .Params.image }}" height="150">
+        {{ else }}
+        <i class="fas {{ .Params.icon }} plugins-icon"></i> &nbsp;
+        {{ end }}
+        {{ .Title }}
+      </h2>
+    </div>
+  </div>
+</div>
+{{ $bundle := .Site.GetPage .Path }}
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="tab-content">
+        <div class="tab-pane active" id="docs" role="tabpanel">
+		  <h2 class="headlines-plugins">Overview</h2>
+		  <div>
+		   {{ .Content }}
+		  </div>
+		  {{ range where ($bundle.Resources.ByType "page") ".Params.pageType" "!=" "documentation" }}
+	      <h2 class="headlines-plugins">Documentation</h2>
+          <div>
+            {{ .Content }}
+          </div>
+		  {{ end }}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row marketplace-metadata">
+    <div class="col-lg-4 col-md-4">
+      <div class="data">
+        <p><strong>Version</strong></p>
+        <p>{{ .Params.version | default .Site.Data.mesh.version }}</p>
+      </div>
+      <div class="data">
+        <p><strong>License</strong></p>
+        <p>{{ .Params.licence }}</p>
+      </div>
+    </div>
+
+    <div class="col-md-clearfix col-sm-clearfix"></div>
+
+    <div class="col-lg-4 col-md-4">
+      <div class="data">
+        <p><strong>Authors</strong></p>
+        <p>{{ .Params.author }}</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{{ partial "quote-form.html" }}
+
+{{end}}

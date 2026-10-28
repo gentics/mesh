@@ -20,6 +20,21 @@ include::content/docs/variables.adoc-include[]
 
 Starting with version 3.0.0 OrientDB is no longer part of Gentics Mesh, and is replaced by RDBMS-based solutions. The integration with link:https://mariadb.org/[MariaDB] is link:https://www.gentics.com/mesh/docs/getting-started/#_use_mariadb_connected_container[available for public use].
 
+[[v3.3.x]]
+== 3.3.x Changelog
+
+Mesh 3.3.x is part of the Gentics Content Management Platform 8.6: link:https://www.gentics.com/cmp/changelog/8.6.0/merged_changelog.html?show=mesh,meshplugins[Changelog]
+
+[[v3.2.x]]
+== 3.2.x Changelog
+
+Mesh 3.2.x is part of the Gentics Content Management Platform 8.4 ( link:https://www.gentics.com/cmp/changelog/8.4.0/merged_changelog.html?show=mesh,meshplugins[Changelog] ) and Gentics Content Management Platform 8.5 ( link:https://www.gentics.com/cmp/changelog/8.5.0/merged_changelog.html?show=mesh,meshplugins[Changelog] ).
+
+[[v3.1.x]]
+== 3.1.x Changelog
+
+Mesh 3.1.x is part of the Gentics Content Management Platform 8.3: link:https://www.gentics.com/cmp/changelog/8.3.0/merged_changelog.html?show=mesh,meshplugins[Changelog]
+
 [[v3.0.x]]
 == 3.0.x Changelog
 

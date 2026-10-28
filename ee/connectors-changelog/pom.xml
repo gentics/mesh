@@ -44,35 +44,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!-- Build the combined changelog -->
-			<plugin>
-				<groupId>com.gentics</groupId>
-				<artifactId>changelog-manager-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-						<phase>package</phase>
-					</execution>
-				</executions>
-				<configuration>
-					<foldNewlinesInEntries>true</foldNewlinesInEntries>
-					<baseDirectory>${project.basedir}/src/changelog</baseDirectory>
-					<entriesDirectory>${project.build.directory}/changelog/entries</entriesDirectory>
-					<outputDirectory>${project.build.directory}/output</outputDirectory>
-					<outputFileExtension>adoc-include</outputFileExtension>
-					<changelogTitle>Gentics Mesh SQL</changelogTitle>
-					<changelogTypes>note,manualchange,feature,enhancement,bugfix</changelogTypes>
-					<changelogVersion>${changelog.version}</changelogVersion>
-					<strictRenderMode>true</strictRenderMode>
-					<allowEmptyChangelog>true</allowEmptyChangelog>
-					<includeProjectProperties>false</includeProjectProperties>
-					<overviewTemplateFiles>changelog-3.vm</overviewTemplateFiles>
-					<perMajorVersionTemplateFiles></perMajorVersionTemplateFiles>
-					<perMajorVersionChangelogFile>empty.vm</perMajorVersionChangelogFile>
-				</configuration>
-			</plugin>
 			<!-- Assemble combined changelog entries -->
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
