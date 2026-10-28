@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-		<groupId>com.gentics.mesh.enterprise</groupId>
-		<artifactId>mesh-enterprise</artifactId>
+		<groupId>com.gentics.mesh</groupId>
+		<artifactId>mesh</artifactId>
 		<version>3.3.3-SNAPSHOT</version>
 	</parent>
 

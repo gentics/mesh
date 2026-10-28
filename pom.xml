@@ -92,6 +92,7 @@
 		<module>services</module>
 		<module>distributed</module>
 		<module>distributed-coordinator</module>
+		<module>content-rag</module>
 		<module>core</module>
 		<module>verticles</module>
 		<module>doc</module>
@@ -100,7 +101,6 @@
 		<module>database-tests</module>
 		<module>test-scanner</module>
 		<module>connectors</module>
-		<module>performance-tests</module>
 		<module>mcp-server</module>
 		<module>ee</module>
 	</modules>

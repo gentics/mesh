@@ -2,13 +2,14 @@ package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.ElasticsearchTestMode.CONTAINER_ES6;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.performance.StopWatch.loggingStopWatch;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.dao.NodeDao;
@@ -20,13 +21,11 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
+import com.gentics.mesh.test.ElasticsearchTestMode;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.performance.StopWatchLogger;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-@MeshTestSetting(elasticsearch = CONTAINER_ES6, testSize = FULL, startServer = true)
+@MeshTestSetting(elasticsearch = ElasticsearchTestMode.CONTAINER_ES9, testSize = FULL, startServer = true)
 public class NodeSearchPerformanceTest extends AbstractMeshTest {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeSearchPerformanceTest.class);
@@ -47,7 +46,9 @@ public class NodeSearchPerformanceTest extends AbstractMeshTest {
 			request.setLanguage("en");
 			request.setParentNodeUuid(uuid);
 			request.setSchema(new SchemaReferenceImpl().setName("content"));
-			request.getFields().put("name", FieldUtil.createStringField("someNode_" + i));
+			request.getFields().put("title", FieldUtil.createStringField("someNode_" + i));
+			request.getFields().put("slug", FieldUtil.createStringField("someSlug_" + i));
+			request.getFields().put("teaser", FieldUtil.createStringField("someTeaser_" + i));
 			request.getFields().put("content", FieldUtil.createHtmlField("someContent"));
 			NodeResponse response = call(() -> client().createNode(PROJECT_NAME, request));
 			lastNodeUuid = response.getUuid();
@@ -68,6 +69,8 @@ public class NodeSearchPerformanceTest extends AbstractMeshTest {
 				}
 			}
 		}
+
+		refreshIndices();
 
 		String json = "{";
 		json += "	\"sort\" : {";
@@ -104,7 +107,9 @@ public class NodeSearchPerformanceTest extends AbstractMeshTest {
 			request.setLanguage("en");
 			request.setParentNodeUuid(uuid);
 			request.setSchema(new SchemaReferenceImpl().setName("content"));
-			request.getFields().put("name", FieldUtil.createStringField("someNode_" + i));
+			request.getFields().put("title", FieldUtil.createStringField("someNode_" + i));
+			request.getFields().put("slug", FieldUtil.createStringField("someSlug_" + i));
+			request.getFields().put("teaser", FieldUtil.createStringField("someTeaser_" + i));
 			request.getFields().put("content", FieldUtil.createHtmlField("someContent"));
 			NodeResponse response = call(() -> client().createNode(PROJECT_NAME, request));
 			call(() -> client().publishNode(PROJECT_NAME, response.getUuid()));

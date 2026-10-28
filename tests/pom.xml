@@ -38,10 +38,10 @@
 		<module>tests-service-jwt-auth</module>
 		<module>tests-service-local-storage</module>
 		<module>tests-service-metrics-prometheus</module>
-
+		<module>tests-performance</module>
 		<!-- Other tests -->
 <!-- Move here from the root as soon as https://issues.jenkins.io/browse/JENKINS-26472 is fixed -->
-<!--		<module>tests-performance</module>
+<!--		
 		<module>tests-integration</module>
 -->
 	</modules>

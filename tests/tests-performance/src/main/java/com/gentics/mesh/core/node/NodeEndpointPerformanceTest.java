@@ -32,6 +32,8 @@ public class NodeEndpointPerformanceTest extends AbstractMeshTest {
 			request.setParentNodeUuid(uuid);
 			request.setSchema(new SchemaReferenceImpl().setName("content"));
 			request.getFields().put("slug", FieldUtil.createStringField("someNode_" + i));
+			request.getFields().put("teaser", FieldUtil.createStringField("someTeaser_" + i));
+			request.getFields().put("title", FieldUtil.createStringField("someTitle_" + i));
 			request.getFields().put("content", FieldUtil.createHtmlField("someContent"));
 			NodeResponse response = call(() -> client().createNode(PROJECT_NAME, request));
 			call(() -> client().publishNode(PROJECT_NAME, response.getUuid()));
@@ -80,8 +82,8 @@ public class NodeEndpointPerformanceTest extends AbstractMeshTest {
 			request.setSchema(new SchemaReferenceImpl().setName("content"));
 			request.setLanguage("en");
 			request.getFields().put("title", FieldUtil.createStringField("some title"));
-			request.getFields().put("name", FieldUtil.createStringField("some name"));
-			request.getFields().put("fileName", FieldUtil.createStringField("new-page_" + step + ".html"));
+			request.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+			request.getFields().put("slug", FieldUtil.createStringField("some slug " + System.currentTimeMillis()));
 			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			request.setParentNodeUuid(uuid);
 			call(() -> client().createNode(PROJECT_NAME, request));

@@ -57,12 +57,12 @@
 			<plugin>
 				<groupId>com.gentics.mesh</groupId>
 				<artifactId>test-scanner-maven-plugin</artifactId>
-				<version>${project.version}</version>
 				<configuration>
 					<splits>${test.scanner.splits}</splits>
 					<dependenciesToScan>
 						<dependency>com.gentics.mesh:tests-mesh-api</dependency>
 						<dependency>com.gentics.mesh:tests-mesh-core</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-performance</dependency>
 						<dependency>com.gentics.mesh:tests-mesh-rest-model</dependency>
 						<dependency>com.gentics.mesh:tests-mesh-rest-client</dependency>
 						<dependency>com.gentics.mesh:tests-mesh-plugin-api</dependency>

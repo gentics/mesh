@@ -688,6 +688,11 @@
 			</dependency>
 			<dependency>
 				<groupId>com.gentics.mesh</groupId>
+				<artifactId>tests-mesh-performance</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
 				<artifactId>tests-mesh-rest-model</artifactId>
 				<version>${project.version}</version>
 			</dependency>

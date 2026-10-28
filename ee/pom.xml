@@ -28,7 +28,6 @@
 	<modules>
 		<module>connectors</module>
 		<module>connectors-changelog</module>
-		<module>content-rag</module>
     </modules>
 
 	<dependencies>
