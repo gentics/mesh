@@ -127,17 +127,17 @@
         "mandatory": false,
         "isList": false,
         "formGridOptions": {
-          "defaultValue": "mr@gmail.com",
+          "defaultValue": "mr@somemail.com",
           "selectOptions": [
             {
-              "value": "mr@gmail.com",
+              "value": "mr@somemail.com",
               "label": {
                 "de": "Herr",
                 "en": "Mr"
               }
             },
             {
-              "value": "ms@gmail.com",
+              "value": "ms@somemail.com",
               "label": {
                 "de": "Frau",
                 "en": "Ms"
