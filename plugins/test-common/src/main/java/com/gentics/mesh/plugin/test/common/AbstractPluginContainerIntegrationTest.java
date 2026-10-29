@@ -62,6 +62,7 @@ public abstract class AbstractPluginContainerIntegrationTest {
 			.filter(Files::isRegularFile)
 			.filter(f -> f.getFileName().toString().endsWith(".jar"))
 			.filter(f -> !f.getFileName().toString().endsWith("sources.jar"))
+			.filter(f -> !f.getFileName().toString().endsWith("javadoc.jar"))
 			.filter(f -> !f.getFileName().toString().startsWith("original-"))
 			.findFirst().orElse(null);
 		if (pluginJar == null) {
@@ -86,7 +87,7 @@ public abstract class AbstractPluginContainerIntegrationTest {
 	public static String meshImage() {
         return StringUtils.isNotBlank(System.getenv(DOCKER_MESH_IMAGE))
 			? System.getenv(DOCKER_MESH_IMAGE)
-			: "docker.gentics.com/gentics/mesh-hsqldb:" + MeshVersion.getPlainVersion();
+			: "docker.gentics.com/gentics/mesh-hsqldb:" + MeshVersion.getPreviousVersion();
 	}
 
 	@AfterClass
