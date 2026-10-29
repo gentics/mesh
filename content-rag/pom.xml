@@ -145,7 +145,7 @@
                              Parameternamen auf; ohne -parameters stehen die nicht im Bytecode
                              und der Endpunkt scheitert erst zur Laufzeit mit HTTP 500.
                              spring-boot-starter-parent setzt das selbst - der Parent hier ist
-                             aber mesh-enterprise. -->
+                             aber mesh. -->
                         <parameters>true</parameters>
                     </configuration>
                 </plugin>

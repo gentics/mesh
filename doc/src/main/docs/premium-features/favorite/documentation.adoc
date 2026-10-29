@@ -2,6 +2,8 @@
 pageType: documentation
 ---
 :plugin-base-name: mesh-favorite-plugin
+:plugin-group-id: com.gentics.mesh.plugin.enterprise
+:plugin-group-path: com/gentics/mesh/plugin/enterprise
 
 === Functional Description
 

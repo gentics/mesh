@@ -22,6 +22,8 @@ NOTE: This plugin will currently not add automatic SSO support for the Gentics M
 
 === Installation
 
+:plugin-group-id: com.gentics.mesh.plugin.enterprise
+:plugin-group-path: com/gentics/mesh/plugin/enterprise
 include::content/premium-features/_plugin_install.adoc[]
 
 === Setup

@@ -2,14 +2,16 @@ NOTE: Make sure to only use commercial plugins which match the *Major* and *Mino
 Plugins which do not match may not be compatible with the Gentics Mesh version.
 
 :plugin-version: pass:quotes[_$YOUR_MESH_VERSION_]
+ifndef::plugin-group-id[:plugin-group-id: com.gentics.mesh.plugin]
+ifndef::plugin-group-path[:plugin-group-path: com/gentics/mesh/plugin]
 
 Commercial plugins can be downloaded from
-link:https://repo.gentics.com/repository/maven-releases/com/gentics/mesh/plugin/commercial/[our repository site].
+link:https://repo.gentics.com/repository/maven-releases/{plugin-group-path}/[our repository site].
 Alternatively you can also use `maven` to download the jar:
 [source,bash,subs="+quotes,+attributes"]
 ----
 mvn dependency:get \
-  -Dartifact=com.gentics.mesh.plugin.commercial:{plugin-base-name}:{plugin-version} \
+  -Dartifact={plugin-group-id}:{plugin-base-name}:{plugin-version} \
   -DremoteRepositories=gentics.nexus.releases::default::https://repo.gentics.com/repository/maven-releases \
   -Ddest={plugin-base-name}.jar -Dtransitive=false
 ----

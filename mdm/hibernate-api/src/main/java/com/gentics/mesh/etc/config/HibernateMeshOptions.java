@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.gentics.mesh.annotation.Getter;
 import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.doc.GenerateDocumentation;
-import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 import com.gentics.mesh.etc.config.hibernate.HibernateCacheConfig;
 import com.gentics.mesh.etc.config.hibernate.HibernateStorageOptions;
 
@@ -31,16 +30,6 @@ public class HibernateMeshOptions extends MeshOptions {
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Cache options.")
 	private HibernateCacheConfig cacheConfig = new HibernateCacheConfig();
-
-	@JsonProperty(defaultValue = "license.key")
-	@JsonPropertyDescription("Path to the license key file")
-	@EnvironmentVariable(name = LICENSE_KEY_PATH_ENV, description = "Override the default licence key file path.")
-	private String licenseKeyPath = "license.key";
-
-	@JsonProperty
-	@JsonPropertyDescription("The license key")
-	@EnvironmentVariable(name = LICENSE_KEY_ENV, description = "The license key")
-	private String licenseKey;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("OpenAPI options.")
@@ -93,14 +82,6 @@ public class HibernateMeshOptions extends MeshOptions {
 		validate();
 	}
 
-	public String getLicenseKey() {
-		return licenseKey;
-	}
-
-	public void setLicenseKey(String licenseKey) {
-		this.licenseKey = licenseKey;
-	}
-
 	@Override
 	@JsonIgnore
 	public NativeQueryFiltering getNativeQueryFiltering() {
@@ -112,14 +93,6 @@ public class HibernateMeshOptions extends MeshOptions {
 	public MeshOptions setNativeQueryFiltering(NativeQueryFiltering nativeQueryFiltering) {
 		storageOptions.setNativeQueryFiltering(nativeQueryFiltering);
 		return this;
-	}
-
-	public String getLicenseKeyPath() {
-		return licenseKeyPath;
-	}
-
-	public void setLicenseKeyPath(String licenseKeyPath) {
-		this.licenseKeyPath = licenseKeyPath;
 	}
 
 	@Override

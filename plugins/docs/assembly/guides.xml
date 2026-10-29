@@ -32,24 +32,8 @@
 			<filtered>false</filtered>
 		</fileSet>
 		<fileSet>
-			<directory>${project.build.directory}/openapi/favorite-plugin/META-INF/openapi</directory>
-			<outputDirectory>/plugins/favorite-plugin</outputDirectory>
-			<includes>
-				<include>openapi.yaml</include>
-			</includes>
-			<filtered>false</filtered>
-		</fileSet>
-		<fileSet>
 			<directory>${project.build.directory}/openapi/comment-plugin/META-INF/openapi</directory>
 			<outputDirectory>/plugins/comment-plugin</outputDirectory>
-			<includes>
-				<include>openapi.yaml</include>
-			</includes>
-			<filtered>false</filtered>
-		</fileSet>
-		<fileSet>
-			<directory>${project.build.directory}/openapi/search-plugin/META-INF/openapi</directory>
-			<outputDirectory>/plugins/search-plugin</outputDirectory>
 			<includes>
 				<include>openapi.yaml</include>
 			</includes>

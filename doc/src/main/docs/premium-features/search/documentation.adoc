@@ -6,6 +6,8 @@ title: Gentics Mesh Search Plugin
 :source-highlighter: prettify
 :toc:
 :plugin-base-name: mesh-search-plugin
+:plugin-group-id: com.gentics.mesh.plugin.enterprise
+:plugin-group-path: com/gentics/mesh/plugin/enterprise
 
 
 # Search plugin

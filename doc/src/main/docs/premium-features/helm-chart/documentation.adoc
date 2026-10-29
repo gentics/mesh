@@ -50,7 +50,7 @@ See link:{{<relref "administration-guide.asciidoc">}}#_use_mariadb_connected_con
 or link:{{<relref "premium-features/premium-db">}}[Commercial DB connectors] for details.
 
 Then the database configuration needs to be added the the *values.yaml* file so that Gentics Mesh can access the database.
-When using one of the commercial database connectors, also a valid license key needs to be provided.
+NOTE: The Enterprise parts of Gentics Mesh, located under `/ee` (e.g. the commercial database connectors and the Enterprise plugins), are licensed separately from the Apache 2.0 licensed Gentics Mesh core and require a Gentics License for usage. No license key needs to be configured in Gentics Mesh.
 
 Once the database is setup and the basic configuration is done, you can start the full stack by running.
 
@@ -90,13 +90,6 @@ image:
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
-
-# For the commercial version of Gentics Mesh, a valid license key needs to be provided.
-# The license can either be added directly (as license.key) or provided via a secret (with key "licensekey"). In the latter case,
-# license.secret must contain the secret's name.
-# license:
-  # key: ""
-  # secret: ""
 
 # Database access configuration. The password of the database user can either be configured directly (discouraged) or via a secret (with key "password").
 # In the latter case, database.passwordSecret must contain the secret's name.
@@ -316,6 +309,8 @@ is out of the scope of Gentics Mesh and must be set up separately.
 
 :plugin-base-name: pass:quotes[_$YOUR_PLUGIN_]
 include::content/premium-features/_plugin_install.adoc[]
+
+NOTE: The Enterprise plugins (favorite, keycloak, search) use the group id `com.gentics.mesh.plugin.enterprise` instead of `com.gentics.mesh.plugin`.
 
 This docker file shows how to include all plugin files into one customized docker image:
 

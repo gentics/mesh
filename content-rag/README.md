@@ -107,7 +107,8 @@ Jackson.
 Ein zusätzlicher Index-Handler neben den bestehenden (node, tag, user …), plus ein Event-Handler
 für den Delta-Pfad. Beide liegen in `mesh-sync` und teilen sich `RagChunkWriter`, damit Delta- und
 Voll-Indexierung nicht auseinanderlaufen; angemeldet werden sie über zwei generische
-Dagger-Multibindings im OSS-Mesh (`EnterpriseSearchModule` in `mesh-enterprise-core`). Die vier
+Dagger-Multibindings im OSS-Mesh (`EnterpriseSearchModule` in `core`, eingebunden über
+`CommonModule`). Die vier
 Aufrufe, um die es im Kern geht:
 
 ```java
@@ -172,7 +173,7 @@ mvn -pl rag-service spring-boot:run
 # Service auf http://localhost:8090, Health: /actuator/health
 ```
 
-## Build-Integration in mesh-enterprise
+## Build-Integration im Mesh-Reaktor
 
 Der Mesh-seitige Teil baut im Reaktor mit, der **rag-service** wird zusätzlich als
 eigenständiges Image gebaut und deployt. Vorbild ist durchgehend `mcp-server`, der denselben
@@ -180,9 +181,9 @@ Weg schon gegangen ist; wo dieser Teil bewusst abweicht, steht es unten dabei.
 
 ### 1. Maven-Anbindung
 
-**Erledigt** (`53deec18`): `content-rag/pom.xml` hängt am Parent
-`com.gentics.mesh.enterprise:mesh-enterprise`, die eigene `<version>` ist entfallen, die
-Module erben `3.3.0-SNAPSHOT`. Damit erfasst `MavenHelper.setVersion()` in der Jenkins-Stage
+**Erledigt** (`53deec18`, seit der Zusammenführung mit Mesh angepasst): `content-rag/pom.xml`
+hängt am Parent `com.gentics.mesh:mesh`, die eigene `<version>` ist entfallen, die Module erben
+`4.0.0-SNAPSHOT`. Damit erfasst `MavenHelper.setVersion()` in der Jenkins-Stage
 „Set Version" beim Release auch dieses Modul — sonst wäre es auf `0.1.0-SNAPSHOT` stehen
 geblieben und `mvn deploy` hätte ein dauerhaft veraltetes Artefakt ins Nexus gelegt.
 
@@ -204,7 +205,7 @@ prüfen sind:
   Spring-Boot-Module. Meist folgenlos, kostet aber Build-Zeit; bei Bedarf im `rag-service`
   mit einem leeren `<annotationProcessorPaths/>` abschalten.
 - Geerbtes `dependencyManagement` hat in Maven Vorrang vor einem im selben POM **importierten**
-  BOM. Überlappende Einträge aus `mesh-enterprise` bzw. `com.gentics:maven-parent` können also
+  BOM. Überlappende Einträge aus `mesh` bzw. `com.gentics:maven-parent` können also
   die Versionen des Spring-Boot-BOM überstimmen. `mvn -pl content-rag/rag-service -am
   help:effective-pom` zeigt, was tatsächlich gewinnt.
 
@@ -226,7 +227,7 @@ prüfen sind:
 
 Drei Stellen, jeweils analog zu den `mcp-server`-Zeilen:
 
-- **Docker Build**: `docker build --network=host -t <registry>/gentics/mesh-enterprise/content-rag:latest -t …:<version> --build-arg VERSION=<version>` im Modulverzeichnis.
+- **Docker Build**: `docker build --network=host -t <registry>/gentics/mesh/content-rag:latest -t …:<version> --build-arg VERSION=<version>` im Modulverzeichnis.
 - **Docker Build**, direkt danach: `scanImage` für das neue Image.
 - **Deploy**: `docker push` für `:latest` und `:<version>`.
 
@@ -249,7 +250,7 @@ wird, ist noch zu ergänzen. `/actuator/prometheus` ist bereits aktiv.
 
 ### 5. Offen
 
-- **Helm/Deployment**: im `helm-chart` von mesh-enterprise gibt es für den MCP-Server nichts;
+- **Helm/Deployment**: im `ee/helm-chart` gibt es für den MCP-Server nichts;
   dessen Deployment liegt im CMP-Chart. Für den rag-service ist zu klären, wo er hingehört.
 - **Cluster-Objekte**: Inference-Endpunkt, Ingest-Pipeline und Index-Template legt der Service
   beim Start selbst an (`rag.inference.bootstrap`). In Umgebungen, in denen der Service keine

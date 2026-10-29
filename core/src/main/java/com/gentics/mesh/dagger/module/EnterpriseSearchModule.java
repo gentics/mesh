@@ -25,8 +25,9 @@ import dagger.multibindings.IntoSet;
  * Bindet den RAG-Chunk-Sync in die Suche ein.
  *
  * <p>Die beiden Handler haengen sich ueber die {@code @Multibinds}-Erweiterungspunkte aus
- * {@code CommonBindModule} an {@code MainEventHandler} und {@code IndexHandlerRegistry}. Damit
- * bleibt im OSS-Mesh kein RAG-Wissen zurueck: dort sind die Sets schlicht leer.
+ * {@code CommonBindModule} an {@code MainEventHandler} und {@code IndexHandlerRegistry}. Die
+ * Handler stammen aus {@code content-rag/mesh-sync}; eingebunden wird das Modul ueber
+ * {@code CommonModule}.
  */
 @Module
 public abstract class EnterpriseSearchModule {

@@ -418,7 +418,7 @@ For extending the forms-plugin, a new maven project must be created, that uses t
     </dependency>
 
     <dependency>
-         <groupId>com.gentics.mesh.plugin.commercial</groupId>
+         <groupId>com.gentics.mesh.plugin</groupId>
          <artifactId>mesh-forms-plugin</artifactId>
          <version>${forms.plugin.version}</version>
      </dependency>

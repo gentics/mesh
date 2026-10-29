@@ -14,6 +14,8 @@ You can furthermore configure which fields you want to return for each search re
 
 == Installation
 
+:plugin-group-id: com.gentics.mesh.plugin.enterprise
+:plugin-group-path: com/gentics/mesh/plugin/enterprise
 include::content/premium-features/_plugin_install.adoc[]
 
 == Configuration

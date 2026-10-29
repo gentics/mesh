@@ -16,22 +16,6 @@
 		     (see docs/pom.xml) into target/openapi/<plugin>/META-INF/openapi before this
 		     assembly runs. -->
 		<fileSet>
-			<directory>${project.build.directory}/openapi/mustread-plugin/META-INF/openapi</directory>
-			<outputDirectory>/plugins/mustread-plugin</outputDirectory>
-			<includes>
-				<include>openapi.yaml</include>
-			</includes>
-			<filtered>false</filtered>
-		</fileSet>
-		<fileSet>
-			<directory>${project.build.directory}/openapi/like-plugin/META-INF/openapi</directory>
-			<outputDirectory>/plugins/like-plugin</outputDirectory>
-			<includes>
-				<include>openapi.yaml</include>
-			</includes>
-			<filtered>false</filtered>
-		</fileSet>
-		<fileSet>
 			<directory>${project.build.directory}/openapi/favorite-plugin/META-INF/openapi</directory>
 			<outputDirectory>/plugins/favorite-plugin</outputDirectory>
 			<includes>
@@ -40,32 +24,8 @@
 			<filtered>false</filtered>
 		</fileSet>
 		<fileSet>
-			<directory>${project.build.directory}/openapi/comment-plugin/META-INF/openapi</directory>
-			<outputDirectory>/plugins/comment-plugin</outputDirectory>
-			<includes>
-				<include>openapi.yaml</include>
-			</includes>
-			<filtered>false</filtered>
-		</fileSet>
-		<fileSet>
 			<directory>${project.build.directory}/openapi/search-plugin/META-INF/openapi</directory>
 			<outputDirectory>/plugins/search-plugin</outputDirectory>
-			<includes>
-				<include>openapi.yaml</include>
-			</includes>
-			<filtered>false</filtered>
-		</fileSet>
-		<fileSet>
-			<directory>${project.build.directory}/openapi/export-plugin/META-INF/openapi</directory>
-			<outputDirectory>/plugins/export-plugin</outputDirectory>
-			<includes>
-				<include>openapi.yaml</include>
-			</includes>
-			<filtered>false</filtered>
-		</fileSet>
-		<fileSet>
-			<directory>${project.build.directory}/openapi/forms-plugin/META-INF/openapi</directory>
-			<outputDirectory>/plugins/forms-plugin</outputDirectory>
 			<includes>
 				<include>openapi.yaml</include>
 			</includes>

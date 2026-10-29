@@ -5,6 +5,11 @@ Ergänzung zu `content-rag/README.md`, Abschnitt „Der Mesh-seitige Sync".
 Geprüft gegen: `mesh-enterprise` @ `f-gpu-2581` (`a2ba4748`, mesh.version `3.3.0-SNAPSHOT`) und
 `gentics/mesh` @ `f-gpu-2581` (aus `dev`, `de01ed9d85`), Modul `elasticsearch`.
 
+> **Stand 29.10.2026 (GPU-2756):** mesh-enterprise ist in `gentics/mesh` aufgegangen. Die
+> Handler liegen weiter in `content-rag/mesh-sync`, angemeldet werden sie jetzt von
+> `EnterpriseSearchModule` in `core` (eingebunden über `CommonModule`). Die Abschnitte unten
+> beschreiben den Stand vom 04.09.2026.
+
 ## Stand (04.09.2026)
 
 Umgesetzt ist der Weg **(c)** aus Abschnitt 1: zwei generische Dagger-Multibindings im OSS-Mesh,

@@ -5,6 +5,8 @@ pageType: documentation
 :icons: font
 :source-highlighter: prettify
 :plugin-base-name: mesh-keycloak-plugin
+:plugin-group-id: com.gentics.mesh.plugin.enterprise
+:plugin-group-path: com/gentics/mesh/plugin/enterprise
 
 === Installation
 
