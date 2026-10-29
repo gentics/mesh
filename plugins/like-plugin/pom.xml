@@ -78,7 +78,7 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.gentics.mesh.plugin.commercial</groupId>
+			<groupId>com.gentics.mesh.plugin</groupId>
 			<artifactId>mesh-commercial-plugins-test-common</artifactId>
 			<scope>test</scope>
 		</dependency>

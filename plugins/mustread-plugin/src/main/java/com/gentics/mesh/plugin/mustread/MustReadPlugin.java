@@ -13,8 +13,6 @@ import org.slf4j.LoggerFactory;
 import com.gentics.mesh.plugin.AbstractPlugin;
 import com.gentics.mesh.plugin.CommercialRestPlugin;
 import com.gentics.mesh.plugin.common.MeshPluginException;
-import com.gentics.mesh.plugin.common.license.LicenseService;
-import com.gentics.mesh.plugin.common.license.LicensedPlugin;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.mustread.config.FieldNamesConfig;
 import com.gentics.mesh.plugin.mustread.config.MustReadConfig;
@@ -62,22 +60,16 @@ public class MustReadPlugin extends AbstractPlugin implements CommercialRestPlug
 
     @Override
     public Completable initialize() {
-        try {
-            getProjectCreateConsumer().register();
+    	getProjectCreateConsumer().register();
 
-            MustReadConfig configuration = getConfiguration();
-            configuration.overrideWithEnv();
+        MustReadConfig configuration = getConfiguration();
+        configuration.overrideWithEnv();
 
-            LicenseService licenseService = new LicenseService(configuration);
-            licenseService.isLicenseSufficient(LicensedPlugin.MMRD);
-            // FolderInitializer after SchemaInitializer because folder is based on schema
-            SchemaInitializer schemaInitializer = new SchemaInitializer(adminClient(), configuration, getLogHelper(), getSchemaController());
-            FolderInitializer folderInitializer = new FolderInitializer(adminClient(), configuration, getLogHelper(), getNodeController());
+        // FolderInitializer after SchemaInitializer because folder is based on schema
+        SchemaInitializer schemaInitializer = new SchemaInitializer(adminClient(), configuration, getLogHelper(), getSchemaController());
+        FolderInitializer folderInitializer = new FolderInitializer(adminClient(), configuration, getLogHelper(), getNodeController());
 
-            return schemaInitializer.initialize().andThen(folderInitializer.initialize());
-        } catch (MeshPluginException e) {
-            return Completable.error(e);
-        }
+        return schemaInitializer.initialize().andThen(folderInitializer.initialize());
     }
 
     private void initializeConfig() throws IOException {

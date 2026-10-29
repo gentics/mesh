@@ -1,14 +1,5 @@
 package com.gentics.mesh.plugin.search.config;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import com.gentics.mesh.etc.config.env.EnvironmentVariable;
-import com.gentics.mesh.plugin.common.license.LicenseConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.apache.commons.lang.StringUtils;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Collections;
@@ -17,7 +8,15 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class SearchConfiguration extends LicenseConfiguration {
+import org.apache.commons.lang.StringUtils;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.etc.config.env.EnvironmentVariable;
+import com.gentics.mesh.etc.config.env.Option;
+
+public class SearchConfiguration implements Option {
 
 	public static final String SEARCH_PAGE_SIZE = "SEARCH_PAGE_SIZE";
 	public static final String SEARCH_PROJECTS = "SEARCH_PROJECTS";
@@ -31,8 +30,6 @@ public class SearchConfiguration extends LicenseConfiguration {
 	public static final int DEFAULT_PAGE_SIZE = 8;
 	public static final int DEFAULT_EXPIRE_TIME = 60;
 	public static final Boolean DEFAULT_WAIT_FOR_IDLE = null;
-
-	private final Logger log = LoggerFactory.getLogger(SearchConfiguration.class);
 
 	@JsonProperty(defaultValue = "8")
 	@JsonPropertyDescription("How many search hits should be returned per page.")

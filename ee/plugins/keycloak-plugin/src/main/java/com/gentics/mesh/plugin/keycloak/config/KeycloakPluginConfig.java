@@ -7,10 +7,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.auth.util.KeycloakUtils;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
+import com.gentics.mesh.etc.config.env.Option;
 
-import com.gentics.mesh.plugin.common.license.LicenseConfiguration;
-
-public class KeycloakPluginConfig extends LicenseConfiguration {
+public class KeycloakPluginConfig implements Option {
 
 	public static final String ENV_PREFIX = "MESH_PLUGIN_KEYCLOAK_";
 

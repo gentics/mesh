@@ -17,8 +17,6 @@ import com.gentics.mesh.http.HttpConstants;
 import com.gentics.mesh.plugin.AbstractPlugin;
 import com.gentics.mesh.plugin.CommercialRestPlugin;
 import com.gentics.mesh.plugin.PluginContext;
-import com.gentics.mesh.plugin.common.license.LicenseService;
-import com.gentics.mesh.plugin.common.license.LicensedPlugin;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.like.config.LikePluginConfig;
 import com.gentics.mesh.plugin.like.dagger.DaggerLikePluginComponent;
@@ -117,9 +115,6 @@ public class LikePlugin extends AbstractPlugin implements CommercialRestPlugin {
 				configuration = new LikePluginConfig();
 			}
 			configuration.overrideWithEnv();
-
-			LicenseService licenseService = new LicenseService(configuration);
-			licenseService.isLicenseSufficient(LicensedPlugin.MLKE);
 
 			// initialize schemas, etc.
 			return component(null).schemaInitializer().initialize();

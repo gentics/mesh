@@ -21,8 +21,6 @@ import com.gentics.mesh.plugin.AbstractPlugin;
 import com.gentics.mesh.plugin.CommercialRestPlugin;
 import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.common.MeshPluginException;
-import com.gentics.mesh.plugin.common.license.LicenseService;
-import com.gentics.mesh.plugin.common.license.LicensedPlugin;
 import com.gentics.mesh.plugin.common.service.MeshPluginService;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.favorite.config.FavoritePluginConfig;
@@ -110,9 +108,6 @@ public class FavoritePlugin extends AbstractPlugin implements CommercialRestPlug
 				configuration = new FavoritePluginConfig();
 			}
 			configuration.overrideWithEnv();
-
-			LicenseService licenseService = new LicenseService(configuration);
-			licenseService.isLicenseSufficient(LicensedPlugin.MFAV);
 
 			meshPluginService = new MeshPluginService(getRxVertx(), adminClient(), getStorageDir());
 			return initializeMeshProjects(configuration.getProjects());

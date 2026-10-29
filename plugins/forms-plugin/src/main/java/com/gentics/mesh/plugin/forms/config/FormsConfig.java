@@ -1,18 +1,19 @@
 package com.gentics.mesh.plugin.forms.config;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.gentics.mesh.core.rest.SortOrder;
-import com.gentics.mesh.plugin.common.license.LicenseConfiguration;
-import com.gentics.mesh.plugin.forms.export.ExportFormat;
-
-import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.annotation.Nonnull;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.gentics.mesh.core.rest.SortOrder;
+import com.gentics.mesh.etc.config.env.Option;
+import com.gentics.mesh.plugin.forms.export.ExportFormat;
 
 /**
  * Configuration POJO
  */
-public class FormsConfig extends LicenseConfiguration {
+public class FormsConfig implements Option {
 
 	private String fromAddress;
 

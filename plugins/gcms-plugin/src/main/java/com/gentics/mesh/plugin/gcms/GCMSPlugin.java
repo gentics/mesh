@@ -1,7 +1,5 @@
 package com.gentics.mesh.plugin.gcms;
 
-import com.gentics.mesh.plugin.common.license.LicenseService;
-import com.gentics.mesh.plugin.common.license.LicensedPlugin;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.Collections;
@@ -57,9 +55,6 @@ public class GCMSPlugin extends AbstractCommercialPlugin<GCMSPluginConfig> imple
 	public Completable initialize() {
 		return loadConfig(GCMSPluginConfig.class).map(config -> {
 			config.overrideWithEnv();
-
-			LicenseService licenseService = new LicenseService(config);
-			licenseService.isLicenseSufficient(LicensedPlugin.MGCMS);
 
 			config.validate();
 			return config;

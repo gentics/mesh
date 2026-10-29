@@ -28,8 +28,6 @@ import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.plugin.AbstractPlugin;
 import com.gentics.mesh.plugin.CommercialRestPlugin;
-import com.gentics.mesh.plugin.common.license.LicenseService;
-import com.gentics.mesh.plugin.common.license.LicensedPlugin;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.export.dagger.DaggerExportPluginComponent;
 import com.gentics.mesh.plugin.export.dagger.ExportPluginComponent;
@@ -70,9 +68,6 @@ public class ExportPlugin extends AbstractPlugin implements CommercialRestPlugin
 					config = new PluginConfiguration();
 				}
 				config.overrideWithEnv();
-
-				LicenseService licenseService = new LicenseService(config);
-				licenseService.isLicenseSufficient(LicensedPlugin.MEXP);
 
 				// Setup JSON Validation and serialization
 				ObjectMapper mapper = JsonUtil.getMapper();

@@ -210,7 +210,7 @@ First, you need to add a dependency to the export-plugin extension for the inter
 
 ```xml
 <dependency>
-    <groupId>com.gentics.mesh.plugin.commercial</groupId>
+    <groupId>com.gentics.mesh.plugin</groupId>
     <artifactId>mesh-export-plugin-extension-api</artifactId>
     <version>YOUR_VERSION_HERE</version>
     <scope>provided</scope>

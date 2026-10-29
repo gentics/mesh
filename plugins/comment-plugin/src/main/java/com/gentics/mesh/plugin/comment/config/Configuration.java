@@ -1,14 +1,7 @@
 package com.gentics.mesh.plugin.comment.config;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import com.gentics.mesh.etc.config.env.EnvironmentVariable;
-import com.gentics.mesh.etc.config.env.Option;
-import com.gentics.mesh.parameter.LinkType;
-import com.gentics.mesh.plugin.comment.model.AnonymousCommentField;
-import com.gentics.mesh.plugin.comment.service.MailService;
-import com.gentics.mesh.plugin.common.license.LicenseConfiguration;
-import io.vertx.ext.mail.MailConfig;
+import static com.gentics.mesh.plugin.comment.model.AnonymousCommentField.AUTHOR;
+import static com.gentics.mesh.plugin.comment.model.AnonymousCommentField.EMAIL;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,13 +9,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.gentics.mesh.plugin.comment.model.AnonymousCommentField.AUTHOR;
-import static com.gentics.mesh.plugin.comment.model.AnonymousCommentField.EMAIL;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.etc.config.env.Option;
+import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.plugin.comment.model.AnonymousCommentField;
+import com.gentics.mesh.plugin.comment.service.MailService;
+
+import io.vertx.ext.mail.MailConfig;
 
 /**
  * Central comment plugin configuration.
  */
-public class Configuration extends LicenseConfiguration {
+public class Configuration implements Option {
 
 	public static final boolean DEFAULT_REQUIRES_APPROVAL = false;
 	public static final String DEFAULT_SCHEMA_PREFIX = "comment_";

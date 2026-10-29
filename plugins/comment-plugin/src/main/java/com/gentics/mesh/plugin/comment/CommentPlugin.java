@@ -31,8 +31,6 @@ import com.gentics.mesh.plugin.comment.model.request.CreateCommentRequest;
 import com.gentics.mesh.plugin.comment.model.request.UpdateCommentRequest;
 import com.gentics.mesh.plugin.comment.service.TemplateService;
 import com.gentics.mesh.plugin.comment.util.Examples;
-import com.gentics.mesh.plugin.common.license.LicenseService;
-import com.gentics.mesh.plugin.common.license.LicensedPlugin;
 import com.gentics.mesh.plugin.common.service.MeshPluginService;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -199,9 +197,6 @@ public class CommentPlugin extends AbstractPlugin implements CommercialRestPlugi
 		try {
 			this.configuration = readConfig(Configuration.class);
 			this.configuration.overrideWithEnv();
-
-			LicenseService licenseService = new LicenseService(configuration);
-			licenseService.isLicenseSufficient(LicensedPlugin.MCMT);
 
 			InitializationComponent component = DaggerInitializationComponent.builder()
 				.configuration(configuration)

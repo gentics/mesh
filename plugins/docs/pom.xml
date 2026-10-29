@@ -66,31 +66,31 @@
 						<configuration>
 							<artifactItems>
 								<artifactItem>
-									<groupId>com.gentics.mesh.plugin.commercial</groupId>
+									<groupId>com.gentics.mesh.plugin</groupId>
 									<artifactId>mesh-mustread-plugin</artifactId>
 									<includes>META-INF/openapi/openapi.yaml</includes>
 									<outputDirectory>${project.build.directory}/openapi/mustread-plugin</outputDirectory>
 								</artifactItem>
 								<artifactItem>
-									<groupId>com.gentics.mesh.plugin.commercial</groupId>
+									<groupId>com.gentics.mesh.plugin</groupId>
 									<artifactId>mesh-like-plugin</artifactId>
 									<includes>META-INF/openapi/openapi.yaml</includes>
 									<outputDirectory>${project.build.directory}/openapi/like-plugin</outputDirectory>
 								</artifactItem>
 								<artifactItem>
-									<groupId>com.gentics.mesh.plugin.commercial</groupId>
+									<groupId>com.gentics.mesh.plugin</groupId>
 									<artifactId>mesh-comment-plugin</artifactId>
 									<includes>META-INF/openapi/openapi.yaml</includes>
 									<outputDirectory>${project.build.directory}/openapi/comment-plugin</outputDirectory>
 								</artifactItem>
 								<artifactItem>
-									<groupId>com.gentics.mesh.plugin.commercial</groupId>
+									<groupId>com.gentics.mesh.plugin</groupId>
 									<artifactId>mesh-export-plugin</artifactId>
 									<includes>META-INF/openapi/openapi.yaml</includes>
 									<outputDirectory>${project.build.directory}/openapi/export-plugin</outputDirectory>
 								</artifactItem>
 								<artifactItem>
-									<groupId>com.gentics.mesh.plugin.commercial</groupId>
+									<groupId>com.gentics.mesh.plugin</groupId>
 									<artifactId>mesh-forms-plugin</artifactId>
 									<includes>META-INF/openapi/openapi.yaml</includes>
 									<outputDirectory>${project.build.directory}/openapi/forms-plugin</outputDirectory>

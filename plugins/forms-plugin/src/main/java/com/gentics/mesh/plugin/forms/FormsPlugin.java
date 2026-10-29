@@ -32,8 +32,6 @@ import com.gentics.mesh.plugin.AbstractPlugin;
 import com.gentics.mesh.plugin.CommercialRestPlugin;
 import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.common.MeshPluginException;
-import com.gentics.mesh.plugin.common.license.LicenseService;
-import com.gentics.mesh.plugin.common.license.LicensedPlugin;
 import com.gentics.mesh.plugin.common.util.MiscUtil;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
@@ -481,9 +479,6 @@ public class FormsPlugin extends AbstractPlugin implements CommercialRestPlugin 
 			configuration.overrideWithEnv();
 
 			configuration.getSecurityOptions().validateSanitationRules();
-
-			LicenseService licenseService = new LicenseService(configuration);
-			licenseService.isLicenseSufficient(LicensedPlugin.FORMS);
 
 			FormsPluginComponent component = component(null);
 			StatusService statusService = component.statusService();

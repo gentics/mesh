@@ -1,14 +1,14 @@
 package com.gentics.mesh.plugin.export.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import com.gentics.mesh.etc.config.env.EnvironmentVariable;
-
-import com.gentics.mesh.plugin.common.license.LicenseConfiguration;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PluginConfiguration extends LicenseConfiguration {
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.etc.config.env.EnvironmentVariable;
+import com.gentics.mesh.etc.config.env.Option;
+
+public class PluginConfiguration implements Option {
 
 	public static final Long DEFAULT_CACHE_TIME = 600_000L;
 

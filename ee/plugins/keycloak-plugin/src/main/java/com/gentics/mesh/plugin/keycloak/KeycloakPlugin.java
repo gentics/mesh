@@ -26,8 +26,6 @@ import com.gentics.mesh.plugin.AbstractCommercialPlugin;
 import com.gentics.mesh.plugin.auth.AuthServicePlugin;
 import com.gentics.mesh.plugin.auth.MappingResult;
 import com.gentics.mesh.plugin.common.MeshPluginException;
-import com.gentics.mesh.plugin.common.license.LicenseService;
-import com.gentics.mesh.plugin.common.license.LicensedPlugin;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.keycloak.config.KeycloakPluginConfig;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -42,7 +40,6 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.file.FileSystem;
-
 
 public class KeycloakPlugin extends AbstractCommercialPlugin<KeycloakPluginConfig> implements AuthServicePlugin {
 
@@ -67,19 +64,12 @@ public class KeycloakPlugin extends AbstractCommercialPlugin<KeycloakPluginConfi
 	public Completable initialize() {
 		return loadConfig(KeycloakPluginConfig.class)
 				.doOnSuccess(KeycloakPluginConfig::overrideWithEnv)
-				.doOnSuccess(this::performLicenseCheck)
 				.ignoreElement()
 				// TODO Make loading of public keys non-blocking
 				.andThen(Completable.defer(this::loadPublicKeys))
 				.andThen(loadMapperScript())
 				.andThen(initializeRolesAndGroups());
 	}
-
-	private void performLicenseCheck(KeycloakPluginConfig configuration) throws MeshPluginException {
-		LicenseService licenseService = new LicenseService(configuration);
-		licenseService.isLicenseSufficient(LicensedPlugin.MKC);
-	}
-
 
 	@Override
 	public MappingResult mapToken(HttpServerRequest httpServerRequest, String uuid, JsonObject token) {
