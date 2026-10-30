@@ -17,7 +17,7 @@ All sources for this example are available on link:https://github.com/gentics/me
 
 == Requirements
 
-Before we can start you need to install link:https://maven.apache.org/[Apache Maven] and a link:https://adoptopenjdk.net/[Java Development Kit].
+Before we can start you need to install link:https://maven.apache.org/[Apache Maven] and a link:https://adoptopenjdk.net/[Java Development Kit 17+].
 
 == Files
 
