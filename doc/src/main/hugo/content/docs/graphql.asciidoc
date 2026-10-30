@@ -108,7 +108,7 @@ The native filtering is enabled on Mesh level by The GraphQL Mesh options' new p
 
 The native filtering itself is controlled by a GraphQL parameter `nativeFilter` with values:
 * `NEVER` - old filtering is forced. Ignored, if sorting is specified.
-* `ALWAYS` - native DB filtering is forced. If the requested filter is not supported by a DB, an exception is thrown. If no filtering but paging is specified, is applied as well.
+* `ONLY` - native DB filtering is forced. If the requested filter is not supported by a DB, an exception is thrown. If no filtering but paging is specified, is applied as well.
 * `IF_POSSIBLE` - if the requested filter is supported by a DB, DB filtering is used, otherwise filtering is fallen back to the old filter mechanism (default value). Does not apply native paging, if no filter is specified.
 
 === Sorting
