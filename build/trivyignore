@@ -8,3 +8,6 @@ CVE-2026-54513
 CVE-2026-68497
 CVE-2026-91776
 CVE-2026-91777
+
+# The following CVE is introduced via graphql-java, currently, there is no fix for this
+CVE-2026-102554

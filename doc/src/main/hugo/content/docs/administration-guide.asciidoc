@@ -145,21 +145,23 @@ Multi node clustering setup:
 
 == Run with JAR File
 
-There is no dedicated installation procedure for Gentics Mesh. However, you will need to download https://github.com/gentics/mesh/releases[a Gentics Mesh JAR and a database connector JAR file]. An example of starting Mesh along with the HSQL in-memory mode database, assuming having both downloaded JARs in the same folder, looks as following:
+There is no dedicated installation procedure for Gentics Mesh. However, you will need to download https://github.com/gentics/mesh/releases[a Gentics Mesh JAR and a database connector JAR file], plus a dedicated JDBC driver (link:{{< relref "administration-guide.asciidoc" >}}#_use_mariadb_connected_container[like this]). An example of starting Mesh along with the MariaDB database, assuming having all downloaded JARs in the same folder, looks as following:
 
 === For Unix/Linux/MacOS
 
 [source,bash]
 ----
-java -cp mesh-database-connector-hsqldb-X.X.X.jar:mesh-server-X.X.X.jar com.gentics.mesh.server.ServerRunner
+java -cp mariadb-java-client-3.1.2.jar:mesh-database-connector-mariadb-X.X.X.jar:mesh-server-X.X.X.jar com.gentics.mesh.server.ServerRunner
 ----
 
 === For Windows
 
 [source,bash]
 ----
-java -cp mesh-database-connector-hsqldb-X.X.X.jar;mesh-server-X.X.X.jar com.gentics.mesh.server.ServerRunner
+java -cp mariadb-java-client-3.1.2.jar;mesh-database-connector-mariadb-X.X.X.jar;mesh-server-X.X.X.jar com.gentics.mesh.server.ServerRunner
 ----
+
+NOTE: If using Mesh Enterprise Edition, replace `com.gentics.mesh.server.ServerRunner` with `com.gentics.mesh.enterprise.server.ServerRunner` in the lines above.
 
 On first startup, Gentics Mesh will create the data folder and subfolders, set a password for the keystore file and provide the `mesh.yml` configuration file. See <<Installation Directory>> for a detailed discussion on Gentics Mesh files & folders.
 
@@ -205,7 +207,7 @@ The ```elasticsearch``` folder contains the included Elasticsearch installation 
 
 === Server Requirements
 
-There are no external dependencies besides Java Runtime 11.
+There are no external dependencies besides Java Runtime 17.
 
 Production servers must be run on Linux. Work on Windows is neither guaranteed nor eligible for support. Running Gentics Mesh on Windows is encouraged via link:https://docs.docker.com/docker-for-windows/[Docker Windows].
 
