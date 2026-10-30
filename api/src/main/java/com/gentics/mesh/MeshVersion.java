@@ -1,8 +1,6 @@
 package com.gentics.mesh;
 
-import java.io.File;
 import java.nio.file.Files;
-import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
@@ -67,7 +65,11 @@ public interface MeshVersion {
 		currentVersion = currentVersion.split("-")[0];
 		String[] versions = currentVersion.split("\\.");
 		try {
-			Path path = Path.of(MeshVersion.class.getResource("/mesh.build.properties").toURI()).getParent().resolve("../../../changelog/src/changelog/mappings").toRealPath();
+			Path path = findChangelogMappings();
+			if (path == null) {
+				System.err.println("Could not find changelog mappings, using current Mesh version: " + currentVersion);
+				return currentVersion;
+			}
 			for (int i = versions.length-1; i >=0; i--) {
 				int version = Integer.parseInt(versions[i]);
 				int ii = i;
@@ -94,5 +96,22 @@ public interface MeshVersion {
 			e.printStackTrace();
 		}
 		return currentVersion;
+	}
+
+	/**
+	 * Find the changelog mappings directory by searching upwards from the location Mesh is loaded from (classes directory or jar file).
+	 *
+	 * @return mappings directory or null, if not found
+	 * @throws Exception
+	 */
+	private static Path findChangelogMappings() throws Exception {
+		Path location = Path.of(MeshVersion.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+		for (Path dir = location.getParent(); dir != null; dir = dir.getParent()) {
+			Path candidate = dir.resolve("changelog/src/changelog/mappings");
+			if (Files.isDirectory(candidate)) {
+				return candidate;
+			}
+		}
+		return null;
 	}
 }

@@ -47,12 +47,7 @@ public abstract class AbstractPluginContainerIntegrationTest {
 	}
 
 	@ClassRule
-	public static final MeshContainer meshServer = new File("license.key").exists() 
-			? new MeshContainer(meshImage())
-					.withFileSystemBind(Path.of("license.key").toAbsolutePath().toString(), "/mesh/license.key")
-					.withFileSystemBind(PLUGINS_DIR.getAbsolutePath(), "/plugins")
-					.waitForStartup()
-			: new MeshContainer(meshImage())
+	public static final MeshContainer meshServer = new MeshContainer(meshImage())
 					.withFileSystemBind(PLUGINS_DIR.getAbsolutePath(), "/plugins")
 					.waitForStartup();
 

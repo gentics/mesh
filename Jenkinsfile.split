@@ -18,9 +18,12 @@ properties([
 		booleanParam(name: 'runDeployTesting',    defaultValue: false, description: "Whether to run the testing deploy steps."),
 		booleanParam(name: 'runDocker',           defaultValue: false, description: "Whether to run the docker steps."),
 		booleanParam(name: 'runMavenBuild',       defaultValue: false, description: "Whether to run the maven build steps."),
+		booleanParam(name: 'runHelmBuild',        defaultValue: false, description: "Whether to run the helm build steps."),
 		booleanParam(name: 'setBranchAsVersion',  defaultValue: false, description: "Whether to set the branch name as project version (unless runDeploy is true). Use this together with runMavenBuild to install the maven artifacts to the local repository (changelog and documentation will be skipped)."),
 
 		booleanParam(name: 'dontSplitTests',      defaultValue: false, description: "Whether to run tests in a single in-place chunk instead of delegating to the evenly distributed splits"),
+		booleanParam(name: 'skipMeshTests',       defaultValue: false, description: "Whether to skip unit tests for Mesh"),
+		booleanParam(name: 'skipPluginTests',     defaultValue: false, description: "Whether to skip unit tests for Mesh Plugins"),
 		booleanParam(name: 'skipSearchTests',     defaultValue: false, description: "Whether to skip search tests or not"),
 		booleanParam(name: 'runSonar',            defaultValue: false, description: "Whether to run the sonarqube checks"),
 		booleanParam(name: 'runSmokeTests',       defaultValue: false, description: "Whether to run smoke tests for the selected databases"),
@@ -34,7 +37,7 @@ properties([
 		string(	     name: 'testingVersion',      defaultValue: "",    description: "Version for testing"),
 		string(		 name: 'meshVersion',         defaultValue: "",    description: "Override Mesh version"),
 		string(		 name: 'meshJsVersion',       defaultValue: "",    description: "Override Mesh JS version for the testing deployment"),
-		booleanParam(name: 'debug', defaultValue: false, description: "Debug output."),
+		booleanParam(name: 'debug',               defaultValue: false, description: "Debug output."),
 	])
 ])
 
@@ -50,6 +53,7 @@ def registryHost = registryHostStaging;
 def helmRepository = helmRepositoryProd;
 def meshOssVersion = '';
 def helmVersion = null;
+def pluginModules = [':mesh-commercial-plugins-common', ':mesh-commercial-plugins-test-common', ':mesh-comment-plugin', ':mesh-export-plugin', ':mesh-forms-plugin', ':mesh-gcms-plugin', ':mesh-like-plugin', ':mesh-mustread-plugin', ':mesh-favorite-plugin', ':mesh-keycloak-plugin', ':mesh-search-plugin']
 
 final def testPart(partName, current, branches) {
 	def partId = "split${partName}${current}"
@@ -107,7 +111,7 @@ final def testPart(partName, current, branches) {
 									sh "mvn -pl :mesh-enterprise-database-connector-postgres docker:start -Dskip.postgres.tests=${noPostgres}"
 								}
 								if (!noHsqlm || !noMssql || !noOracle || !noPostgres || !noMariadb) {
-									// run the tests
+									// run Mesh tests
 									withEnv(["TESTCONTAINERS_RYUK_DISABLED=true", "MESH_CONSISTENCY_CHECKS=" + (Boolean.valueOf(params.consistencyChecks) ? "true" : "false"), "MAVEN_OPTS=-Xmx1g -XX:MaxMetaspaceSize=128m ", "MESH_REST_CLIENT_CLASS=" + (Boolean.valueOf(params.useOpenApiTestClient) ? "com.gentics.mesh.test.openapi.OpenAPIMeshRestClient" : "")]) {
 										sh ".jenkins/run-splits.sh includes-${postfix} ${jacoco} ${partName} ${partId}"
 									}
@@ -230,84 +234,99 @@ stage("Setup Build Environment") {
 					debug = "debug"
 				} 
 				if (env.BUILD_SKIPPED != "true" && Boolean.valueOf(params.runTests)) {
-					if (!Boolean.valueOf(params.dontSplitTests)) {
-						if (Boolean.valueOf(params.skipSearchTests)) {
-							sh ".jenkins/split-tests.sh ${splits} nosearch"
-						} else {
-							sh ".jenkins/split-tests.sh ${splits}"
-						}
-						stash includes: '**', name: 'project'
-						def branches = [:]
-						for (int i = 0; i < runs; i++) {
-							def current = i
-							if (Boolean.valueOf(params.testMaria)) {
-								echo "MariaDB split.."
-								testPart("mariadb", current, branches)
-							}
-							if (Boolean.valueOf(params.testHsqlm)) {
-								echo "HSQLDB split.."
-								testPart("hsqlm", current, branches)
-							}
-							if (Boolean.valueOf(params.testMssql)) {
-								echo "MSSQL split.."
-								testPart("mssql", current, branches)
-							}
-							if (Boolean.valueOf(params.testOracle)) {
-								echo "Oracle split.."
-								testPart("oracle", current, branches)
-							}
-							if (Boolean.valueOf(params.testPostgres)) {
-								echo "Postgres split.."
-								testPart("postgres", current, branches)
-							}
-						}
-						try {
-							parallel branches
-						} catch (err) {
-							echo "Failed " + err.getMessage()
-							error err.getMessage()
-						}
-					} else {
-						sshagent(["git"]) {
-							def noMariadb = true
-							def noHsqldb = true
-							def noMssql = true
-							def noOracle = true
-							def noPostgres = true
-							if (Boolean.valueOf(params.testMssql)) {
-								noMssql = false
+					if (!Boolean.valueOf(params.skipMeshTests)) {
+						if (!Boolean.valueOf(params.dontSplitTests)) {
+							if (Boolean.valueOf(params.skipSearchTests)) {
+								sh ".jenkins/split-tests.sh ${splits} nosearch"
 							} else {
-								echo "MS SQL skipped.."
+								sh ".jenkins/split-tests.sh ${splits}"
 							}
-							if (Boolean.valueOf(params.testOracle)) {
-								noOracle = false
-							} else {
-								echo "Oracle XE skipped.."
-							}
-							if (Boolean.valueOf(params.testPostgres)) {
-								noPostgres = false
-							} else {
-								echo "Postgres skipped.."
-							}
-							if (Boolean.valueOf(params.testMaria)) {
-								noMariadb = false
-							} else {
-								echo "MariaDB skipped.."
-							}
-							if (Boolean.valueOf(params.testHsqlm)) {
-								noHsqldb = false
-							} else {
-								echo "HSQLDB skipped.."
+							stash includes: '**', name: 'project'
+							def branches = [:]
+							for (int i = 0; i < runs; i++) {
+								def current = i
+								if (Boolean.valueOf(params.testMaria)) {
+									echo "MariaDB split.."
+									testPart("mariadb", current, branches)
+								}
+								if (Boolean.valueOf(params.testHsqlm)) {
+									echo "HSQLDB split.."
+									testPart("hsqlm", current, branches)
+								}
+								if (Boolean.valueOf(params.testMssql)) {
+									echo "MSSQL split.."
+									testPart("mssql", current, branches)
+								}
+								if (Boolean.valueOf(params.testOracle)) {
+									echo "Oracle split.."
+									testPart("oracle", current, branches)
+								}
+								if (Boolean.valueOf(params.testPostgres)) {
+									echo "Postgres split.."
+									testPart("postgres", current, branches)
+								}
 							}
 							try {
-								withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
-									withEnv(["TESTCONTAINERS_RYUK_DISABLED=true", "LICENSEKEY=${mesh_enterprise_licensekey_2}", "MESH_CONSISTENCY_CHECKS=" + (Boolean.valueOf(params.consistencyChecks) ? "true" : "false"), "MESH_REST_CLIENT_CLASS=" + (Boolean.valueOf(params.useOpenApiTestClient) ? "com.gentics.mesh.test.openapi.OpenAPIMeshRestClient" : "")]) {
-										sh "mvn -fae -Dsurefire.excludedGroups=com.gentics.mesh.test.category.FailingTests,com.gentics.mesh.test.category.ClusterTests -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.gentics.com/ -Dskip.mssql.tests=${noMssql} -Dskip.oracle.tests=${noOracle} -Dskip.postgres.tests=${noPostgres} -Dskip.mariadb.tests=${noMariadb} -Dskip.hsqlmemory.tests=${noHsqldb} -B -U -e test"
-									}
-								}
-							} finally {
-								step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
+								parallel branches
+							} catch (err) {
+								echo "Failed " + err.getMessage()
+								error err.getMessage()
 							}
+						} else {
+							sshagent(["git"]) {
+								def noMariadb = true
+								def noHsqldb = true
+								def noMssql = true
+								def noOracle = true
+								def noPostgres = true
+								if (Boolean.valueOf(params.testMssql)) {
+									noMssql = false
+								} else {
+									echo "MS SQL skipped.."
+								}
+								if (Boolean.valueOf(params.testOracle)) {
+									noOracle = false
+								} else {
+									echo "Oracle XE skipped.."
+								}
+								if (Boolean.valueOf(params.testPostgres)) {
+									noPostgres = false
+								} else {
+									echo "Postgres skipped.."
+								}
+								if (Boolean.valueOf(params.testMaria)) {
+									noMariadb = false
+								} else {
+									echo "MariaDB skipped.."
+								}
+								if (Boolean.valueOf(params.testHsqlm)) {
+									noHsqldb = false
+								} else {
+									echo "HSQLDB skipped.."
+								}
+								try {
+									withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
+										withEnv(["TESTCONTAINERS_RYUK_DISABLED=true", "LICENSEKEY=${mesh_enterprise_licensekey_2}", "MESH_CONSISTENCY_CHECKS=" + (Boolean.valueOf(params.consistencyChecks) ? "true" : "false"), "MESH_REST_CLIENT_CLASS=" + (Boolean.valueOf(params.useOpenApiTestClient) ? "com.gentics.mesh.test.openapi.OpenAPIMeshRestClient" : "")]) {
+											sh "mvn -fae -Dsurefire.excludedGroups=com.gentics.mesh.test.category.FailingTests,com.gentics.mesh.test.category.ClusterTests -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.gentics.com/ -Dskip.mssql.tests=${noMssql} -Dskip.oracle.tests=${noOracle} -Dskip.postgres.tests=${noPostgres} -Dskip.mariadb.tests=${noMariadb} -Dskip.hsqlmemory.tests=${noHsqldb} -pl '!" + pluginModules.join(",!") + "' -B -U -e test"
+										}
+									}
+								} finally {
+									step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
+								}
+							}
+						}
+					}
+					// run plugin tests
+					if (!Boolean.valueOf(params.skipPluginTests)) {
+						try {
+							withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
+								sh 'docker login -u $repoUsername -p $repoPassword docker.gentics.com'
+								withEnv(["TESTCONTAINERS_RYUK_DISABLED=true", "MESH_CONSISTENCY_CHECKS=" + (Boolean.valueOf(params.consistencyChecks) ? "true" : "false"), "MAVEN_OPTS=-Xmx1g -XX:MaxMetaspaceSize=128m ", "MESH_REST_CLIENT_CLASS=" + (Boolean.valueOf(params.useOpenApiTestClient) ? "com.gentics.mesh.test.openapi.OpenAPIMeshRestClient" : "")]) {
+									sh "mvn -fae -B -Dmaven.test.failure.ignore=true -pl '" + pluginModules.join(",") + "' test"
+								}
+							}
+						} finally {
+							step([$class: 'JUnitResultArchiver', testResults: 'plugins/**/target/surefire-reports/*.xml,ee/plugins/**/target/surefire-reports/*.xml'])
 						}
 					}
 				} else {
@@ -492,7 +511,6 @@ stage("Setup Build Environment") {
 
 					withCredentials([string(credentialsId: 'sonarcloud.key', variable: 'TOKEN')]) {
 						sh "mvn sonar:sonar -Dsonar.projectKey=gentics_mesh -Dsonar.organization=gentics -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$TOKEN -Dsonar.pullrequest.key=$GITHUB_PR_NUMBER -Dsonar.pullrequest.branch=" + branchName + " -Dsonar.pullrequest.base=dev"
-						//sh "mvn sonar:sonar -Dsonar.projectKey=mesh -Dsonar.host.url=https://sonarqube.apa.at -Dsonar.login=$TOKEN"
 					}
 				}
 			}

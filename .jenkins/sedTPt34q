@@ -1,0 +1,51 @@
+#!/bin/bash
+
+BASEDIR=$(dirname "$0")
+
+echo "Generating batches for $1 splits"
+cd $BASEDIR/..
+
+rm includes*
+
+echo
+echo  "Collecting all tests"
+mvn -Dstyle.color=never com.gentics.mesh:test-scanner-maven-plugin:scan-test-files | grep "TEST_CLASS:" | sed 's/TEST_CLASS: //g' | awk '!seen[$0]++' > alltests
+tests=$(cat alltests | wc -l)
+
+echo "Found $tests tests"
+# plugin tests are run separately (see Jenkinsfile.split)
+grep -v -E 'com[./]gentics[./]mesh[./]plugin[./](comment|common|export|favorite|forms|gcms|keycloak|like|mustread|search)[./]' alltests > meshtests
+echo "Found $(cat meshtests | wc -l) Mesh tests"
+grep search meshtests  > searchtests
+grep -v search meshtests  > nonsearchtests
+
+echo 
+echo "Generating splits"
+split -a 2 -d -n l/$1 nonsearchtests includes-nonsearch-
+split -a 2 -d -n l/$1 searchtests includes-search-
+ls -l includes-*
+
+if [ "$2" == "nosearch" ] ; then
+  echo "Removing search tests"
+  rm includes-search*
+fi
+TO=`expr $1 - 1`
+
+echo "Combining splits"
+for i in $(seq -w 00 $TO) ; do
+  echo "Combining: $i"
+  if [ -e includes-search-$i ] ; then
+    cat includes-search-$i includes-nonsearch-$i > includes-$i
+    rm includes-nonsearch-$i includes-search-$i
+  else
+    mv includes-nonsearch-$i  includes-$i
+  fi
+done
+
+
+echo 
+echo "Cleanup"
+rm alltests 
+rm meshtests
+rm searchtests
+rm nonsearchtests
