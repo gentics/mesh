@@ -130,6 +130,12 @@ For instance,
 sort: {fields: { mesh_binary_content: {name:ASCENDING}} edited:DESCENDING creator:{lastname:ASCENDING} editor:{emailAddress:DESCENDING}}
 ----
 
+=== Multi-Operation Queries
+
+It is possible as well to collect several operations into one query. The query parameter `fields` *should* in this case contain name(s) of the operations to run. Example:
+include::content/docs/examples/graphql/multi-query[]
+has to be started with either `?fields=root,node` or `?fields=root` or `?fields=node`. Otherwise, a `HTTP 400` will be thrown.
+
 === Comparison to Elasticsearch
 Many tasks can be done by both the search and the filtering feature. Here are a few tips that help you decide which technology is suited best for your needs:
 

@@ -3,6 +3,7 @@ package com.gentics.mesh.core.graphql;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -22,6 +23,8 @@ import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.parameter.client.FieldsParametersImpl;
+import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -86,6 +89,54 @@ public class GraphQLEndpointBasicTest extends AbstractMeshTest {
 			.repeat(100);
 
 		Completable.merge(calls).blockingAwait();
+	}
+
+	/**
+	 * Test executing several named operations of a single request, selected by the "fields" query parameter.
+	 * Each operation result is put into the response under the operation name.
+	 * @throws JSONException
+	 */
+	@Test
+	public void testMultiOperationQuery() throws JSONException {
+		GraphQLRequest request = new GraphQLRequest().setQuery("query me { me { firstname } } query project { project { name } }");
+		MeshResponse<GraphQLResponse> response = client().graphql(PROJECT_NAME, request, new FieldsParametersImpl().setFields("me", "project"))
+			.getResponse().blockingGet();
+		JsonObject json = new JsonObject(response.getBodyAsString());
+		assertThat(json.fieldNames()).containsExactlyInAnyOrder("me", "project");
+		MeshJSONAssert.assertEquals("{'me':{'firstname':'Joe'}}", json.getJsonObject("me"));
+		MeshJSONAssert.assertEquals("{'project':{'name':'" + PROJECT_NAME + "'}}", json.getJsonObject("project"));
+	}
+
+	/**
+	 * Test executing only one of several named operations, selected by the "fields" query parameter.
+	 * @throws JSONException
+	 */
+	@Test
+	public void testMultiOperationQuerySingleOperation() throws JSONException {
+		GraphQLRequest request = new GraphQLRequest().setQuery("query me { me { firstname } } query project { project { name } }");
+		MeshResponse<GraphQLResponse> response = client().graphql(PROJECT_NAME, request, new FieldsParametersImpl().setFields("project"))
+			.getResponse().blockingGet();
+		JsonObject json = new JsonObject(response.getBodyAsString());
+		assertThat(json.fieldNames()).containsExactly("project");
+		MeshJSONAssert.assertEquals("{'project':{'name':'" + PROJECT_NAME + "'}}", json.getJsonObject("project"));
+	}
+
+	/**
+	 * Test requesting an operation, which is not contained in the query
+	 */
+	@Test
+	public void testMultiOperationQueryUnknownOperation() {
+		GraphQLRequest request = new GraphQLRequest().setQuery("query me { me { firstname } } query project { project { name } }");
+		call(() -> client().graphql(PROJECT_NAME, request, new FieldsParametersImpl().setFields("bogus")), BAD_REQUEST);
+	}
+
+	/**
+	 * Test requesting an operation, which is not contained in the query
+	 */
+	@Test
+	public void testMultiOperationQueryNoOperation() {
+		GraphQLRequest request = new GraphQLRequest().setQuery("query me { me { firstname } } query project { project { name } }");
+		call(() -> client().graphql(PROJECT_NAME, request), BAD_REQUEST);
 	}
 
 	/**
