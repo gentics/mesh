@@ -1,7 +1,10 @@
 package com.gentics.mesh.util;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+
+import java.time.Instant;
 
 import org.junit.Test;
 
@@ -17,5 +20,16 @@ public class DateUtilsTest {
 		assertNull(DateUtils.fromISO8601("0"));
 		assertNull(DateUtils.fromISO8601("1"));
 		assertNull(DateUtils.fromISO8601("42"));
+	}
+
+	@Test
+	public void testFromInstant() {
+		Instant now = Instant.now();
+		assertNull(DateUtils.instantToMillis(null, false));
+		assertNull(DateUtils.instantToMillis(null, true));
+		assertNull(DateUtils.instantToMillis(Instant.ofEpochMilli(0), false));
+		assertEquals(DateUtils.instantToMillis(Instant.ofEpochMilli(0), true), Long.valueOf(0));
+		assertEquals(DateUtils.instantToMillis(now, false), Long.valueOf(now.toEpochMilli()));
+		assertEquals(DateUtils.instantToMillis(now, true), Long.valueOf(now.toEpochMilli()));
 	}
 }
