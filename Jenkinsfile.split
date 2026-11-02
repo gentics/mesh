@@ -72,10 +72,10 @@ final def testPart(partName, current, branches) {
 					try {
 						def jacoco = Boolean.valueOf(params.runSonar);
 						def noMariadb = true
-						def noHsqldb = true
 						def noMssql = true
 						def noOracle = true
 						def noPostgres = true
+						def noHsqldb = true
 						if (Boolean.valueOf(params.testMssql)) {
 							noMssql = false
 						}
@@ -98,19 +98,19 @@ final def testPart(partName, current, branches) {
 							try {
 								// prior to starting the tests, start the docker containers with the db and the testdb-manager
 								sh 'docker login -u $repoUsername -p $repoPassword docker.gentics.com'
-								if (Boolean.valueOf(params.testMaria)) {
+								if (!noMariadb) {
 									sh "mvn -pl :mesh-database-connector-mariadb docker:start -Dskip.mariadb.tests=${noMariadb} "
 								}
-								if (Boolean.valueOf(params.testMssql)) {
+								if (!noMssql) {
 									sh "mvn -pl :mesh-enterprise-database-connector-mssql docker:start -Dskip.mssql.tests=${noMssql}"
 								}
-								if (Boolean.valueOf(params.testOracle)) {
+								if (!noOracle) {
 									sh "mvn -pl :mesh-enterprise-database-connector-oracle docker:start -Dskip.oracle.tests=${noOracle}"
 								}
-								if (Boolean.valueOf(params.testPostgres)) {
+								if (!noPostgres) {
 									sh "mvn -pl :mesh-enterprise-database-connector-postgres docker:start -Dskip.postgres.tests=${noPostgres}"
 								}
-								if (!noHsqlm || !noMssql || !noOracle || !noPostgres || !noMariadb) {
+								if (!noHsqldb || !noMssql || !noOracle || !noPostgres || !noMariadb) {
 									// run Mesh tests
 									withEnv(["TESTCONTAINERS_RYUK_DISABLED=true", "MESH_CONSISTENCY_CHECKS=" + (Boolean.valueOf(params.consistencyChecks) ? "true" : "false"), "MAVEN_OPTS=-Xmx1g -XX:MaxMetaspaceSize=128m ", "MESH_REST_CLIENT_CLASS=" + (Boolean.valueOf(params.useOpenApiTestClient) ? "com.gentics.mesh.test.openapi.OpenAPIMeshRestClient" : "")]) {
 										sh ".jenkins/run-splits.sh includes-${postfix} ${jacoco} ${partName} ${partId}"
@@ -120,16 +120,16 @@ final def testPart(partName, current, branches) {
 								}
 							} finally {
 								// finally stop the docker containers
-								if (Boolean.valueOf(params.testMaria)) {
+								if (!noMariadb) {
 									sh "mvn -pl :mesh-database-connector-mariadb docker:stop -Dskip.mariadb.tests=${noMariadb} "
 								}
-								if (Boolean.valueOf(params.testMssql)) {
+								if (!noMssql) {
 									sh "mvn -pl :mesh-enterprise-database-connector-mssql docker:stop -Dskip.mssql.tests=${noMssql}"
 								}
-								if (Boolean.valueOf(params.testOracle)) {
+								if (!noOracle) {
 									sh "mvn -pl :mesh-enterprise-database-connector-oracle docker:stop -Dskip.oracle.tests=${noOracle}"
 								}
-								if (Boolean.valueOf(params.testPostgres)) {
+								if (!noPostgres) {
 									sh "mvn -pl :mesh-enterprise-database-connector-postgres docker:stop -Dskip.postgres.tests=${noPostgres}"
 								}
 							}
@@ -221,7 +221,7 @@ stage("Setup Build Environment") {
 					// sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-public-key.asc"
 					// sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-secret-key.asc"
 					withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
-						sh "mvn -s build/settings.xml -ff -B -U -pl '!connectors-changelog,!changelog,!doc' -Dmaven.javadoc.skip=true -Dskip.test-plugins=false -Dskip.cluster.tests=true -Dgpg.skip=false -DskipTests ${extraFlags} clean install"
+						sh "mvn -s build/settings.xml -ff -B -U -pl '!ee/connectors-changelog,!changelog,!doc' -Dmaven.javadoc.skip=true -Dskip.test-plugins=false -Dskip.cluster.tests=true -Dgpg.skip=false -DskipTests ${extraFlags} clean install"
 					}
 				} else {
 					echo "Omitted since we don't execute tests"
@@ -306,7 +306,7 @@ stage("Setup Build Environment") {
 								}
 								try {
 									withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
-										withEnv(["TESTCONTAINERS_RYUK_DISABLED=true", "LICENSEKEY=${mesh_enterprise_licensekey_2}", "MESH_CONSISTENCY_CHECKS=" + (Boolean.valueOf(params.consistencyChecks) ? "true" : "false"), "MESH_REST_CLIENT_CLASS=" + (Boolean.valueOf(params.useOpenApiTestClient) ? "com.gentics.mesh.test.openapi.OpenAPIMeshRestClient" : "")]) {
+										withEnv(["TESTCONTAINERS_RYUK_DISABLED=true","MESH_CONSISTENCY_CHECKS=" + (Boolean.valueOf(params.consistencyChecks) ? "true" : "false"), "MESH_REST_CLIENT_CLASS=" + (Boolean.valueOf(params.useOpenApiTestClient) ? "com.gentics.mesh.test.openapi.OpenAPIMeshRestClient" : "")]) {
 											sh "mvn -fae -Dsurefire.excludedGroups=com.gentics.mesh.test.category.FailingTests,com.gentics.mesh.test.category.ClusterTests -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.gentics.com/ -Dskip.mssql.tests=${noMssql} -Dskip.oracle.tests=${noOracle} -Dskip.postgres.tests=${noPostgres} -Dskip.mariadb.tests=${noMariadb} -Dskip.hsqlmemory.tests=${noHsqldb} -pl '!" + pluginModules.join(",!") + "' -B -U -e test"
 										}
 									}
@@ -384,7 +384,7 @@ stage("Setup Build Environment") {
 						try {
 							withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
 								withEnv(["TESTCONTAINERS_RYUK_DISABLED=true", "MESH_CONSISTENCY_CHECKS=" + (Boolean.valueOf(params.consistencyChecks) ? "true" : "false")]) {
-									sh "mvn -fae -Dsurefire.groups=com.gentics.mesh.test.category.FailingTests -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.gentics.com/ -B -e -pl '!doc' test -DfailIfNoTests=false"
+									sh "mvn -fae -Dsurefire.groups=com.gentics.mesh.test.category.FailingTests -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.gentics.com/ -B -e -pl '!doc,!" + pluginModules.join(",!") + "' test -DfailIfNoTests=false"
 								}
 							}
 						} finally {
@@ -414,17 +414,17 @@ stage("Setup Build Environment") {
 								if (!noMssql) {
 									sh "mvn -pl :mesh-enterprise-database-connector-mssql docker:start -Dskip.mssql.tests=${noMssql}"
 									echo "Running MSSql smoke test"
-									sh "mvn -fae -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.gentics.com/ -B -e -pl '!doc' -Dskip.mssql.tests=false -Dmesh.testdb.manager.host=localhost -Dmesh.testdb.manager.port=8080 -Dtest=com.gentics.mesh.enterprise.smoketests.SmokeTest -DfailIfNoTests=false test"
+									sh "mvn -fae -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.gentics.com/ -B -e -pl '!doc' -Dskip.mssql.tests=false -Dmesh.testdb.manager.host=localhost -Dmesh.testdb.manager.port=8080 -Dtest=com.gentics.mesh.smoketests.SmokeTest -DfailIfNoTests=false test"
 								}
 								if (!noOracle) {
 									sh "mvn -pl :mesh-enterprise-database-connector-oracle docker:start -Dskip.oracle.tests=${noOracle}"
 									echo "Running Oracle smoke test"
-									sh "mvn -fae -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.gentics.com/ -B -e -pl '!doc' -Dskip.oracle.tests=false -Dmesh.testdb.manager.host=localhost -Dmesh.testdb.manager.port=8080 -Dtest=com.gentics.mesh.enterprise.smoketests.SmokeTest -DfailIfNoTests=false test"
+									sh "mvn -fae -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.gentics.com/ -B -e -pl '!doc' -Dskip.oracle.tests=false -Dmesh.testdb.manager.host=localhost -Dmesh.testdb.manager.port=8080 -Dtest=com.gentics.mesh.smoketests.SmokeTest -DfailIfNoTests=false test"
 								}
 								if (!noPostgres) {
 									sh "mvn -pl :mesh-enterprise-database-connector-postgres docker:start -Dskip.postgres.tests=${noPostgres}"
 									echo "Running Postgres smoke test"
-									sh "mvn -fae -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.gentics.com/ -B -e -pl '!doc' -Dskip.postgres.tests=false -Dmesh.testdb.manager.host=localhost -Dmesh.testdb.manager.port=8080 -Dtest=com.gentics.mesh.enterprise.smoketests.SmokeTest -DfailIfNoTests=false test"
+									sh "mvn -fae -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.gentics.com/ -B -e -pl '!doc' -Dskip.postgres.tests=false -Dmesh.testdb.manager.host=localhost -Dmesh.testdb.manager.port=8080 -Dtest=com.gentics.mesh.smoketests.SmokeTest -DfailIfNoTests=false test"
 								}
 								if (!noMariadb) {
 									sh "mvn -pl :mesh-database-connector-mariadb docker:start -Dskip.mariadb.tests=${noMariadb} "
@@ -434,16 +434,16 @@ stage("Setup Build Environment") {
 							} finally {
 								step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
 								// stop the db manager
-								if (Boolean.valueOf(params.testMaria)) {
+								if (!noMariadb) {
 									sh "mvn -pl :mesh-database-connector-mariadb docker:stop -Dskip.mariadb.tests=${noMariadb} "
 								}
-								if (Boolean.valueOf(params.testMssql)) {
+								if (!noMssql) {
 									sh "mvn -pl :mesh-enterprise-database-connector-mssql docker:stop -Dskip.mssql.tests=${noMssql}"
 								}
-								if (Boolean.valueOf(params.testOracle)) {
+								if (!noOracle) {
 									sh "mvn -pl :mesh-enterprise-database-connector-oracle docker:stop -Dskip.oracle.tests=${noOracle}"
 								}
-								if (Boolean.valueOf(params.testPostgres)) {
+								if (!noPostgres) {
 									sh "mvn -pl :mesh-enterprise-database-connector-postgres docker:stop -Dskip.postgres.tests=${noPostgres}"
 								}
 							}
@@ -547,8 +547,8 @@ stage("Setup Build Environment") {
 					sh "cd content-rag/rag-service ; docker build --network=host -t " + registryHost + "/gentics/mesh/content-rag:latest -t " + registryHost + "/gentics/mesh/content-rag:" + version + " --build-arg VERSION=" + version + " . ; cd ../.."
 					if (!params.omitScan) {
 						scanImage image: registryHost + "/gentics/mesh:" + version, exitCode: 1, dockerParams: "-v ${env.WORKSPACE}/build/trivyignore:/tmp/trivyignore", params: "--ignorefile /tmp/trivyignore"
-						scanImage image: registryHost + "/gentics/mesh/mcp-server:" + version, exitCode: 1, dockerParams: "-v ${env.WORKSPACE}/.jenkins/trivyignore:/tmp/trivyignore", params: "--ignorefile /tmp/trivyignore"
-						scanImage image: registryHost + "/gentics/mesh/content-rag:" + version, exitCode: 1, dockerParams: "-v ${env.WORKSPACE}/.jenkins/trivyignore:/tmp/trivyignore", params: "--ignorefile /tmp/trivyignore"
+						scanImage image: registryHost + "/gentics/mesh/mcp-server:" + version, exitCode: 1, dockerParams: "-v ${env.WORKSPACE}/build/trivyignore:/tmp/trivyignore", params: "--ignorefile /tmp/trivyignore"
+						scanImage image: registryHost + "/gentics/mesh/content-rag:" + version, exitCode: 1, dockerParams: "-v ${env.WORKSPACE}/build/trivyignore:/tmp/trivyignore", params: "--ignorefile /tmp/trivyignore"
 					}
 
 					// connectors
@@ -561,9 +561,9 @@ stage("Setup Build Environment") {
 					if (!params.omitScan) {
 						scanImage image: registryHost + "/gentics/mesh-hsqldb:" + version, exitCode: 1, dockerParams: "-v ${env.WORKSPACE}/build/trivyignore:/tmp/trivyignore", params: "--ignorefile /tmp/trivyignore"
 						scanImage image: registryHost + "/gentics/mesh-mariadb:" + version, exitCode: 1, dockerParams: "-v ${env.WORKSPACE}/build/trivyignore:/tmp/trivyignore", params: "--ignorefile /tmp/trivyignore"
-						scanImage image: registryHost + "/gentics/mesh-enterprise-postgres:" + version, exitCode: 1, dockerParams: "-v ${env.WORKSPACE}/.jenkins/trivyignore:/tmp/trivyignore", params: "--ignorefile /tmp/trivyignore"
-						scanImage image: registryHost + "/gentics/mesh-enterprise-mssql:" + version, exitCode: 1, dockerParams: "-v ${env.WORKSPACE}/.jenkins/trivyignore:/tmp/trivyignore", params: "--ignorefile /tmp/trivyignore"
-						scanImage image: registryHost + "/gentics/mesh-enterprise-oracle:" + version, exitCode: 1, dockerParams: "-v ${env.WORKSPACE}/.jenkins/trivyignore:/tmp/trivyignore", params: "--ignorefile /tmp/trivyignore"
+						scanImage image: registryHost + "/gentics/mesh-enterprise-postgres:" + version, exitCode: 1, dockerParams: "-v ${env.WORKSPACE}/build/trivyignore:/tmp/trivyignore", params: "--ignorefile /tmp/trivyignore"
+						scanImage image: registryHost + "/gentics/mesh-enterprise-mssql:" + version, exitCode: 1, dockerParams: "-v ${env.WORKSPACE}/build/trivyignore:/tmp/trivyignore", params: "--ignorefile /tmp/trivyignore"
+						scanImage image: registryHost + "/gentics/mesh-enterprise-oracle:" + version, exitCode: 1, dockerParams: "-v ${env.WORKSPACE}/build/trivyignore:/tmp/trivyignore", params: "--ignorefile /tmp/trivyignore"
 					}
 				} else {
 					echo "Docker build skipped.."

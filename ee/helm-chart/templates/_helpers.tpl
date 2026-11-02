@@ -152,17 +152,6 @@ Returns a full secretKeyRef block.
 {{- end -}}
 
 {{/*
-Name of the secret containing the Mesh license key.
-Priority: local license.secret (explicit override) → global license secret (umbrella chart)
-         → mesh.fullname-secrets (sub-chart's own secret, when license.key is set locally).
-Note: Mesh mounts the license from the shared PVC, not directly from this secret.
-      This helper is provided for consistency and future use.
-*/}}
-{{- define "mesh.licenseSecretName" -}}
-{{- include "gentics-common.licenseSecretName" (dict "root" . "localSecret" .Values.license.secret "fallbackName" (printf "%s-secrets" (include "mesh.fullname" .))) -}}
-{{- end -}}
-
-{{/*
 Image pull secrets for the main Mesh image (array format).
 Three-state: set -> local wins (global ignored); set to [] -> no pull secret;
 absent -> global.imagePullSecrets, else gentics-common.defaultImagePullSecret.

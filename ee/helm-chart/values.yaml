@@ -21,12 +21,6 @@ image:
 nameOverride: ""
 fullnameOverride: ""
 
-license:
-  key: null
-  # secret:
-  path: "/license"
-  filename: "license.key"
-
 database:
   # host: ""
   # port: 0

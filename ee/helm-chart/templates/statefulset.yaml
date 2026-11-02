@@ -139,12 +139,6 @@ spec:
             name: shared
             subPath: binaryImageCache
           {{- end }}
-          {{- $globalLicense := ((.Values.global | default dict).license) | default dict -}}
-          {{- if or .Values.license.key .Values.license.secret $globalLicense.key }}
-          - name: shared
-            mountPath: {{ .Values.license.path }}
-            subPath: license
-          {{- end }}
           {{ if .Values.extraConfig }}
           {{- range .Values.extraConfig }}
           {{ $extraConfVolScope := . }}

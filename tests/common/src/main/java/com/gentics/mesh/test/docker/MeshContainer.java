@@ -192,14 +192,6 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 		}
 		addEnv("JAVAOPTS", javaOpts);
 
-		String licenseKey = System.getenv("LICENSEKEY");
-		if (StringUtils.isBlank(licenseKey)) {
-			licenseKey = System.getProperty("licenseKey");
-		}
-		if (StringUtils.isNotBlank(licenseKey)) {
-			addEnv("LICENSEKEY", licenseKey);
-		}
-
 		exposedPorts.add(8600);
 		exposedPorts.add(8080);
 

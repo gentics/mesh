@@ -19,10 +19,6 @@ import com.gentics.mesh.etc.config.hibernate.HibernateStorageOptions;
 @GenerateDocumentation
 public class HibernateMeshOptions extends MeshOptions {
 
-	public static final String LICENSE_KEY_ENV = "LICENSEKEY";
-
-	public static final String LICENSE_KEY_PATH_ENV = "LICENSEKEY_PATH";
-
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Hibernate database options.")
 	private HibernateStorageOptions storageOptions = new HibernateStorageOptions();
