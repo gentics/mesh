@@ -20,6 +20,7 @@ import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderOptions;
 import org.dataloader.DataLoaderRegistry;
 
+import com.gentics.mesh.core.data.i18n.I18NUtil;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.error.AbstractUnavailableException;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -160,7 +161,7 @@ public class GraphQLHandler {
 							if (log.isDebugEnabled()) {
 								log.debug("Malformed GraphQL request", ue);
 							}
-							gc.send(new com.gentics.mesh.core.rest.graphql.GraphQLError().setType(ue.getClass().getSimpleName()).setMessage(ue.getLocalizedMessage()), BAD_REQUEST);
+							gc.send(new com.gentics.mesh.core.rest.graphql.GraphQLError().setType("OperationError").setMessage(gc.i18n("graphql_error_unknown_operation")), BAD_REQUEST);
 						} else {
 							// If an error happens while "waiting" for the result, we log the GraphQL query here.
 							log.error("GraphQL query failed after {} ms with {}:\n{}\nvariables: {}",

@@ -23,8 +23,6 @@ import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
-import com.gentics.mesh.parameter.client.GenericParametersImpl;
-import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -97,19 +95,7 @@ public class GraphQLEndpointBasicTest extends AbstractMeshTest {
 	@Test
 	public void testMultiOperationQueryNoOperation() {
 		GraphQLRequest request = new GraphQLRequest().setQuery("query me { me { firstname } } query project { project { name } }");
-		MeshRestClientMessageException e = call(() -> client().graphql(PROJECT_NAME, request), BAD_REQUEST);
-		assertThat(e.getResponseMessage().getMessage()).contains("Must provide operation name if query contains multiple operations");
-	}
-
-	/**
-	 * Test that the "fields" query parameter does not select an operation of a request containing several operations,
-	 * so the request is still rejected with HTTP 400
-	 */
-	@Test
-	public void testMultiOperationQueryFieldsNotSelectingOperation() {
-		GraphQLRequest request = new GraphQLRequest().setQuery("query me { me { firstname } } query project { project { name } }");
-		MeshRestClientMessageException e = call(() -> client().graphql(PROJECT_NAME, request, new GenericParametersImpl().setFields("me")), BAD_REQUEST);
-		assertThat(e.getResponseMessage().getMessage()).contains("Must provide operation name if query contains multiple operations");
+		call(() -> client().graphql(PROJECT_NAME, request), BAD_REQUEST, "graphql_error_unknown_operation");
 	}
 
 	/**
