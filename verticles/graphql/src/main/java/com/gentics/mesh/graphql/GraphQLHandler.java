@@ -16,12 +16,9 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.apache.commons.lang3.StringUtils;
 import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderOptions;
 import org.dataloader.DataLoaderRegistry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.error.AbstractUnavailableException;
@@ -33,8 +30,6 @@ import com.gentics.mesh.graphql.type.QueryTypeProvider;
 import com.gentics.mesh.graphql.type.field.FieldDefinitionProvider;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.metric.SimpleMetric;
-import com.gentics.mesh.parameter.value.FieldsSet;
-import com.gentics.mesh.util.ThrowingFunction;
 
 import graphql.ExceptionWhileDataFetching;
 import graphql.ExecutionInput;
@@ -47,6 +42,8 @@ import graphql.language.SourceLocation;
 import io.micrometer.core.instrument.Timer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
 
 /**
@@ -123,53 +120,38 @@ public class GraphQLHandler {
 					dataLoaderRegistry.register(FieldDefinitionProvider.NODE_LIST_VALUES_DATA_LOADER_KEY, DataLoader.newDataLoader(typeProvider.getFieldDefProvider().NODE_LIST_VALUE_LOADER, dlOptions));
 					dataLoaderRegistry.register(FieldDefinitionProvider.MICRONODE_DATA_LOADER_KEY, DataLoader.newDataLoader(typeProvider.getFieldDefProvider().MICRONODE_LOADER, dlOptions));
 
-					FieldsSet fields = gc.getFieldsParameters().getFields();
-
+					ExecutionInput executionInput = ExecutionInput
+						.newExecutionInput()
+						.dataLoaderRegistry(dataLoaderRegistry)
+						.query(query)
+						.context(gc)
+						.variables(variables)
+						.build();
 					try {
+						// Implementation Note: GraphQL is implemented synchronously (no implemented datafetcher returns a CompletableFuture, which is not yet completed)
+						// Nonetheless, we see sometimes that the CompletableFuture is not completed (and never will be), when GraphQL joins it, which leads to endlessly
+						// blocked worker threads.
+						// Therefore, we use the "async approach" for calling GraphQL and wait for the result with a timeout.
+						ExecutionResult result = graphQL.executeAsync(executionInput)
+								.get(options.getGraphQLOptions().getAsyncWaitTimeout(), TimeUnit.MILLISECONDS);
+						List<GraphQLError> errors = result.getErrors();
 						JsonObject response = new JsonObject();
-						ThrowingFunction<String, ExecutionResult, Exception> fieldConsumer = field -> {
-							ExecutionInput.Builder executionInput = ExecutionInput
-								.newExecutionInput()
-								.dataLoaderRegistry(dataLoaderRegistry)
-								.query(query)
-								.context(gc)
-								.variables(variables)
-								.operationName(field);
-							if (StringUtils.isNotBlank(field)) {
-								executionInput.operationName(field);
-							}
-							// Implementation Note: GraphQL is implemented synchronously (no implemented datafetcher returns a CompletableFuture, which is not yet completed)
-							// Nonetheless, we see sometimes that the CompletableFuture is not completed (and never will be), when GraphQL joins it, which leads to endlessly
-							// blocked worker threads.
-							// Therefore, we use the "async approach" for calling GraphQL and wait for the result with a timeout.
-							ExecutionResult result = graphQL.executeAsync(executionInput.build())
-									.get(options.getGraphQLOptions().getAsyncWaitTimeout(), TimeUnit.MILLISECONDS);
-							List<GraphQLError> errors = result.getErrors();
-							if (!errors.isEmpty()) {
-								addErrors(errors, response);
-								if (log.isDebugEnabled()) {
-									log.debug("Encountered {" + errors.size() + "} errors while executing query {" + query + "}");
-									for (GraphQLError error : errors) {
-										String loc = "unknown location";
-										if (error.getLocations() != null) {
-											loc = error.getLocations().stream().map(Object::toString).collect(Collectors.joining(","));
-										}
-										log.debug("Error: " + error.getErrorType() + ":" + error.getMessage() + ":" + loc);
+						if (!errors.isEmpty()) {
+							addErrors(errors, response);
+							if (log.isDebugEnabled()) {
+								log.debug("Encountered {" + errors.size() + "} errors while executing query {" + query + "}");
+								for (GraphQLError error : errors) {
+									String loc = "unknown location";
+									if (error.getLocations() != null) {
+										loc = error.getLocations().stream().map(Object::toString).collect(Collectors.joining(","));
 									}
+									log.debug("Error: " + error.getErrorType() + ":" + error.getMessage() + ":" + loc);
 								}
 							}
-							if (result.getData() != null) {
-								Map<String, Object> data = result.getData();
-								response.put(StringUtils.isNotBlank(field) ? field : "data", new JsonObject(data));
-							}
-							return result;
-						};
-						if (fields != null && !fields.isEmpty()) {
-							for (String field : fields) {
-								fieldConsumer.apply(field);
-							}
-						} else {
-							fieldConsumer.apply(null);
+						}
+						if (result.getData() != null) {
+							Map<String, Object> data = result.getData();
+							response.put("data", new JsonObject(data));
 						}
 						boolean minify = gc.isMinify(options.getHttpServerOptions());
 						gc.send(minify ? response.encode() : response.encodePrettily(), OK);

@@ -23,8 +23,8 @@ import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
-import com.gentics.mesh.parameter.client.FieldsParametersImpl;
-import com.gentics.mesh.rest.client.MeshResponse;
+import com.gentics.mesh.parameter.client.GenericParametersImpl;
+import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -92,51 +92,24 @@ public class GraphQLEndpointBasicTest extends AbstractMeshTest {
 	}
 
 	/**
-	 * Test executing several named operations of a single request, selected by the "fields" query parameter.
-	 * Each operation result is put into the response under the operation name.
-	 * @throws JSONException
-	 */
-	@Test
-	public void testMultiOperationQuery() throws JSONException {
-		GraphQLRequest request = new GraphQLRequest().setQuery("query me { me { firstname } } query project { project { name } }");
-		MeshResponse<GraphQLResponse> response = client().graphql(PROJECT_NAME, request, new FieldsParametersImpl().setFields("me", "project"))
-			.getResponse().blockingGet();
-		JsonObject json = new JsonObject(response.getBodyAsString());
-		assertThat(json.fieldNames()).containsExactlyInAnyOrder("me", "project");
-		MeshJSONAssert.assertEquals("{'me':{'firstname':'Joe'}}", json.getJsonObject("me"));
-		MeshJSONAssert.assertEquals("{'project':{'name':'" + PROJECT_NAME + "'}}", json.getJsonObject("project"));
-	}
-
-	/**
-	 * Test executing only one of several named operations, selected by the "fields" query parameter.
-	 * @throws JSONException
-	 */
-	@Test
-	public void testMultiOperationQuerySingleOperation() throws JSONException {
-		GraphQLRequest request = new GraphQLRequest().setQuery("query me { me { firstname } } query project { project { name } }");
-		MeshResponse<GraphQLResponse> response = client().graphql(PROJECT_NAME, request, new FieldsParametersImpl().setFields("project"))
-			.getResponse().blockingGet();
-		JsonObject json = new JsonObject(response.getBodyAsString());
-		assertThat(json.fieldNames()).containsExactly("project");
-		MeshJSONAssert.assertEquals("{'project':{'name':'" + PROJECT_NAME + "'}}", json.getJsonObject("project"));
-	}
-
-	/**
-	 * Test requesting an operation, which is not contained in the query
-	 */
-	@Test
-	public void testMultiOperationQueryUnknownOperation() {
-		GraphQLRequest request = new GraphQLRequest().setQuery("query me { me { firstname } } query project { project { name } }");
-		call(() -> client().graphql(PROJECT_NAME, request, new FieldsParametersImpl().setFields("bogus")), BAD_REQUEST);
-	}
-
-	/**
-	 * Test requesting an operation, which is not contained in the query
+	 * Test that a request containing several operations is rejected with HTTP 400
 	 */
 	@Test
 	public void testMultiOperationQueryNoOperation() {
 		GraphQLRequest request = new GraphQLRequest().setQuery("query me { me { firstname } } query project { project { name } }");
-		call(() -> client().graphql(PROJECT_NAME, request), BAD_REQUEST);
+		MeshRestClientMessageException e = call(() -> client().graphql(PROJECT_NAME, request), BAD_REQUEST);
+		assertThat(e.getResponseMessage().getMessage()).contains("Must provide operation name if query contains multiple operations");
+	}
+
+	/**
+	 * Test that the "fields" query parameter does not select an operation of a request containing several operations,
+	 * so the request is still rejected with HTTP 400
+	 */
+	@Test
+	public void testMultiOperationQueryFieldsNotSelectingOperation() {
+		GraphQLRequest request = new GraphQLRequest().setQuery("query me { me { firstname } } query project { project { name } }");
+		MeshRestClientMessageException e = call(() -> client().graphql(PROJECT_NAME, request, new GenericParametersImpl().setFields("me")), BAD_REQUEST);
+		assertThat(e.getResponseMessage().getMessage()).contains("Must provide operation name if query contains multiple operations");
 	}
 
 	/**

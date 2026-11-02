@@ -7,12 +7,13 @@ import org.raml.model.ParamType;
 import org.raml.model.parameter.QueryParameter;
 
 import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.parameter.AbstractParameters;
 import com.gentics.mesh.parameter.GenericParameters;
 
 /**
  * @see GenericParameters
  */
-public class GenericParametersImpl extends FieldsParametersImpl implements GenericParameters {
+public class GenericParametersImpl extends AbstractParameters implements GenericParameters {
 
 	public GenericParametersImpl(ActionContext ac) {
 		super(ac);
@@ -34,7 +35,13 @@ public class GenericParametersImpl extends FieldsParametersImpl implements Gener
 
 	@Override
 	public Map<? extends String, ? extends QueryParameter> getRAMLParameters() {
-		Map<String, QueryParameter> parameters = new HashMap<>(super.getRAMLParameters());
+		Map<String, QueryParameter> parameters = new HashMap<>();
+
+		QueryParameter fieldsParam = new QueryParameter();
+		fieldsParam.setDescription("Limit the output to certain fields. This is useful in order to reduce the response JSON overhead.");
+		fieldsParam.setType(ParamType.STRING);
+		fieldsParam.setDefaultValue("");
+		parameters.put(FIELDS_PARAM_KEY, fieldsParam);
 
 		QueryParameter etagParam = new QueryParameter();
 		etagParam.setDescription(
