@@ -1,0 +1,1 @@
+Here the text of modified Business Source License will be provided, containing details of terms of usage of the Gentics CMP products, available under the current (/ee) repository folder.
