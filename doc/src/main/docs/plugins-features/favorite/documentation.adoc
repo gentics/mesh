@@ -72,7 +72,7 @@ POST /api/v1/[project]/plugins/favorite/[type]
 
 === Installation
 
-include::content/premium-features/_plugin_install.adoc[]
+include::content/plugins-features/_plugin_install.adoc[]
 
 === Configuration
 

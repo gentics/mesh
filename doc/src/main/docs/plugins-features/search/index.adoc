@@ -5,7 +5,7 @@ image: noun_Search_1032262.svg
 sort-key: 999
 teaser: Adds high-level API endpoints to perform search, did-you-mean and autocompletion without having to deal with ElasticSearch queries in your application.
 fineprint: The plugin includes the required logic to create the query based on your search terms, and to render the resulting search hits.
-status: in-planning
+status: details
 licence: commercial
 author: Gentics
 pageType: feature

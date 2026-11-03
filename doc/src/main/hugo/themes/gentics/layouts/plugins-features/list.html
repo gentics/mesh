@@ -3,7 +3,7 @@
     <div class="topsection container">
         <div>
             <div class="col-md-12">
-                <h1>Gentics Mesh Premium Features</h1>
+                <h1>Gentics Mesh Plugins and Features</h1>
             </div>
         </div>
     </div>
@@ -15,15 +15,15 @@
     <div class="container center">
         <div class="row">
             <div class="content col-md-12 padding-top-bottom-20">
-                <p class="big">We offer a range of Gentics Mesh Premium Features, which have been developed by our developer core team. They extend the extensive set of features, which is already included in the main product.</p>
-                <p>Every Gentics Mesh Premium Feature can be licensed independently. When you purchase a 12 month subscription for one feature, you receive for 12 months updates and product maintenance from the date of purchase. After this period if wanted,
+                <p class="big">We offer a range of Gentics Mesh Plugins and Features, which have been developed by our developer core team. They extend the extensive set of features, which is already included in the main product.</p>
+                <p>Please notice that some of the features, marked with <span style="color: red;">Premium</span>, require a license for its usage. Though each of those can be licensed independently. When you purchase a 12 month subscription for one feature, you receive for 12 months updates and product maintenance from the date of purchase. After this period if wanted,
                     you can renew your license to receive further updates and product maintenance.</p>
             </div>
             {{ $count := $plugins | len }} {{ range $i, $p := $plugins }}
             <div class="content teaser col-lg-4 col-md-4 col-sm-12 plugin {{ if eq $count (add $i 1) }}{{if modBool $i 3}}col-md-offset-4 {{ end }}{{ end }}">
                 <div class="box box-md box-premium-features text-center">
                     <header>
-                        <h3>{{ .Title }} </h3>
+                        <h3>{{ if eq .Params.licence "commercial" }}<span style="color: red;">Premium </span>{{ end }}{{ .Title }} </h3>
                     </header>
                     <section>
                         <div class="section plugins-height">

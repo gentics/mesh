@@ -16,7 +16,7 @@ A plugin to search Mesh projects used as a content respository for the Gentics C
 
 ## Installation
 
-include::content/premium-features/_plugin_install.adoc[]
+include::content/plugins-features/_plugin_install.adoc[]
 
 ## Configuration
 

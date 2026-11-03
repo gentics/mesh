@@ -1,9 +1,9 @@
 ---
-title: Extended SQL storage for Gentics Mesh
+title: More supported SQL databases for Gentics Mesh
 icon: fas fa-search
 image: noun_database_1.svg
 sort-key: 9999
-teaser: Have a an existing SQL database, and want to use it as a storage for Gentics Mesh, but no Mesh Database Connector openly available for it? Take a look here.
+teaser: Have a an existing SQL database, and want to use it as a storage for Gentics Mesh? Take a look here.
 fineprint: Gentics Mesh provides a feature of using one of the mainstream SQL RDBMSs as a storage for Mesh, to allow more control over the data being served.
 status: details
 version: 3.0.x

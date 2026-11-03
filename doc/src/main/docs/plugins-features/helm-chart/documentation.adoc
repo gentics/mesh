@@ -47,7 +47,7 @@ image:
 
 Before starting Gentics Mesh for the first time, an empty database needs to be created.
 See link:{{<relref "administration-guide.asciidoc">}}#_use_mariadb_connected_container[Use MariaDB-connected container]
-or link:{{<relref "premium-features/premium-db">}}[Commercial DB connectors] for details.
+or link:{{<relref "plugins-features/premium-db">}}[Commercial DB connectors] for details.
 
 Then the database configuration needs to be added the the *values.yaml* file so that Gentics Mesh can access the database.
 NOTE: The Enterprise parts of Gentics Mesh, located under `/ee` (e.g. the commercial database connectors and the Enterprise plugins), are licensed separately from the Apache 2.0 licensed Gentics Mesh core and require a Gentics License for usage. No license key needs to be configured in Gentics Mesh.
@@ -308,7 +308,7 @@ is out of the scope of Gentics Mesh and must be set up separately.
 ==== Mesh Commercial Plugins
 
 :plugin-base-name: pass:quotes[_$YOUR_PLUGIN_]
-include::content/premium-features/_plugin_install.adoc[]
+include::content/plugins-features/_plugin_install.adoc[]
 
 NOTE: The Enterprise plugins (favorite, keycloak, search) use the group id `com.gentics.mesh.plugin.enterprise` instead of `com.gentics.mesh.plugin`.
 

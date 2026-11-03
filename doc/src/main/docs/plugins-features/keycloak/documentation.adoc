@@ -10,7 +10,7 @@ pageType: documentation
 
 === Installation
 
-include::content/premium-features/_plugin_install.adoc[]
+include::content/plugins-features/_plugin_install.adoc[]
 
 === Setup
 
