@@ -6,7 +6,7 @@ sort-key: 5
 teaser: This plugin makes sure that users have read certain nodes.
 fineprint: The plugin includes developer documentation, but does not provide a management user interface.
 status: details
-licence: commercial
+licence: free
 author: Gentics
 pageType: feature
 ---

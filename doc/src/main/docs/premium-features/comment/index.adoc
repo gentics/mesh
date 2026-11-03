@@ -6,7 +6,7 @@ sort-key: 1
 teaser: This plugin provides an API which can be used to create, read, update, delete, publish, approve and reject comments.
 fineprint: The plugin includes developer documentation, but does not provide a management user interface.
 status: details
-licence: commercial
+licence: free
 author: Gentics
 pageType: feature
 ---

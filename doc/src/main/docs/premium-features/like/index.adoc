@@ -6,7 +6,7 @@ sort-key: 2
 teaser: This plugin allows logged-in users to like and rate content.
 fineprint: The plugin can be configured to only allow upvotes, allow up- or down-votes, or accept numeric ratings. Includes API to retrieve statistics.
 status: details
-licence: commercial
+licence: free
 author: Gentics
 pageType: feature
 ---
