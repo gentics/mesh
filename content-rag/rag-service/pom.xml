@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.gentics.mesh.contentrag</groupId>
         <artifactId>mesh-content-rag-parent</artifactId>
-        <version>4.0.0-SNAPSHOT</version>
+        <version>9.0.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>mesh-content-rag-service</artifactId>

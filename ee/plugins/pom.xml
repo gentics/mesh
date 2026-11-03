@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>com.gentics.mesh.plugin</groupId>
 		<artifactId>mesh-commercial-plugins</artifactId>
-		<version>4.0.0-SNAPSHOT</version>
+		<version>9.0.0-SNAPSHOT</version>
 		<relativePath>../../plugins/pom.xml</relativePath>
 	</parent>
 
