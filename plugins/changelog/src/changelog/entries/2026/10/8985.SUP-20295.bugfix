@@ -1,3 +1,0 @@
-Search Plugin: When custom queries were configured, the plugin failed to register with the
-error "Endpoint {GET /<name>} has no example responses", and none of its endpoints were
-available. This has been fixed.

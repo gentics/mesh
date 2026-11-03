@@ -1,1 +1,0 @@
-The licensed database connectors for Oracle, Microsoft SQL server, Postgres have been provided an own repository.

@@ -30,7 +30,6 @@
 	</properties>
 
 	<modules>
-		<module>changelog</module>
 		<module>docs</module>
 		<module>common</module>
 		<module>test-common</module>

@@ -1,1 +1,0 @@
-Forms: In the terms of support of changing of the `noIndex` flag from REST API, two new endpoints have been added, `POST /noindex` for global setting, `DELETE /noindex` for global removal.

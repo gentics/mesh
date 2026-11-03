@@ -10,6 +10,8 @@ HTMLROOT=$ROOT/target/html
 
 echo "Generating HTML out of: " $ROOT
 
+# start from empty output folders, otherwise re-runs copy directories into the existing ones and keep stale pages
+rm -rf "${CONTENTROOT:?}" "${HTMLROOT:?}"
 mkdir -p $CONTENTROOT
 mkdir -p $HTMLROOT
 cp -Rf $SRCCONTENTROOT/* $CONTENTROOT
@@ -18,15 +20,6 @@ cp -Rf $SRCCONTENTROOT/* $CONTENTROOT
 EXAMPLEDIR=$CONTENTROOT/content/examples
 if [ -n $EXAMPLEDIR ] ; then
   git clone --depth 1 --single-branch -- https://github.com/gentics/mesh-plugin-examples $EXAMPLEDIR
-fi
-
-# Fetch Mesh Enterprise, if available
-ENTERPRISEDIR=$ROOT/../ee
-if [ -e $ENTERPRISEDIR ] ; then
-  cp -Rf $ENTERPRISEDIR/CHANGELOG.adoc $CONTENTROOT/content/docs/sql-changelog.asciidoc
-  cp -Rf $ENTERPRISEDIR/ENTERPRISE-CHANGELOG.adoc $CONTENTROOT/content/docs/enterprise-changelog.asciidoc
-  cp -Rf $ENTERPRISEDIR/changelog-2.adoc-include $CONTENTROOT/content/docs/sql-changelog-2.adoc-include
-  cp -Rf $ENTERPRISEDIR/changelog-3.adoc-include $CONTENTROOT/content/docs/enterprise-changelog-3.adoc-include
 fi
 
 # Copy parts in place

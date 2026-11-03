@@ -1,1 +1,0 @@
-The check for plugin specific schemas has been modified to not perform requests to Mesh in parallel.

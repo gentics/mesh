@@ -1,1 +1,0 @@
-Forms-Plugin: Fixed the issue that the validate endpoint reported a mandatory file upload field as empty, although the file had already been uploaded and saved.

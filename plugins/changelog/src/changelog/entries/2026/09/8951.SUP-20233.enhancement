@@ -1,1 +1,0 @@
-Forms Plugin: The load form response now also contains the formgenSettings of the form type configuration (if configured under pluginConfiguration), so they can be used by formgen. It can be for example used for maxFileSizeToPreviewMB field to limit the file size for file previews.

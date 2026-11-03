@@ -27,7 +27,6 @@
 
 	<modules>
 		<module>connectors</module>
-		<module>connectors-changelog</module>
 		<module>plugins</module>
     </modules>
 

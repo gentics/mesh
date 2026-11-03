@@ -116,7 +116,6 @@
 						<configuration>
 							<skip>${skip.doc.package}</skip>
 							<executable>${basedir}/build/dockerBuild.sh</executable>
-							<successCodes>0,255</successCodes>
 						</configuration>
 					</execution>
 				</executions>
