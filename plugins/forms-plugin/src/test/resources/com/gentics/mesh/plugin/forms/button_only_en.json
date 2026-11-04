@@ -14,10 +14,10 @@
 			}
 		}
 	},
-	"email": "",
+	"adminEmailAddress": "",
 	"successurl": "",
-	"mailsubject": null,
-	"mailtemp": null,
+	"adminEmailSubject": null,
+	"adminEmailTemplate": null,
 	"language": "en",
 	"name": "Formular ohne Felder",
 	"cms_id": 16

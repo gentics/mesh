@@ -1,8 +1,8 @@
 {
 	"name": "Form with Filefield",
-	"email": "test@green.mail",
-	"mailsubject": "testmail",
-	"mailtemp": "testmail",
+	"adminEmailAddress": "test@green.mail",
+	"adminEmailSubject": "testmail",
+	"adminEmailTemplate": "testmail",
 	"schema": {
 		"key": "test-schema",
 	    "version": "1.0.0",

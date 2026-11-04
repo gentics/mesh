@@ -56,9 +56,6 @@ public abstract class ValueListElement extends FormElement {
 			LinkedHashMap::new);
 	}
 
-	@JsonProperty
-	protected List<ValueListItem> selectOptions = new ArrayList<>();
-
 	@JsonIgnore
 	protected Set<String> validValues = new HashSet<>();
 
@@ -68,18 +65,12 @@ public abstract class ValueListElement extends FormElement {
 	protected ValueListElement(ValueListElement other, boolean deep) {
 		super(other, deep);
 
-		this.selectOptions = cloneField(other.selectOptions, deep);
 		updateValidValues();
 	}
 
-	@JsonIgnore
-	public List<ValueListItem> getSelectOptions() {
-		return selectOptions;
-	}
-
 	@JsonProperty("selectOptions")
-	public void setSelectOptions(List<ValueListItem> selectOptions) {
-		this.selectOptions = Optional.ofNullable(selectOptions).orElse(new ArrayList<>());
+	public List<ValueListItem> getSelectOptions() {
+		return getFormGridOptions().getSelectOptions();
 	}
 
 	/**
@@ -93,7 +84,7 @@ public abstract class ValueListElement extends FormElement {
 			.setName(getName())
 			.setTitle(I18nHelper.get(Locale.GERMAN, "error.validation.form.title"));
 
-		List<ValueListItem> effectiveOptions = getEffectiveSelectOptions();
+		List<ValueListItem> effectiveOptions = getSelectOptions();
 
 		if (effectiveOptions == null || effectiveOptions.isEmpty()) {
 			// A catalog which allows custom values is valid even without predefined options.
@@ -190,7 +181,7 @@ public abstract class ValueListElement extends FormElement {
 			return StringUtils.isBlank(value);
 		}
 		// This is also checked in validateForm(), but just to be sure.
-		if (CollectionUtils.isEmpty(getEffectiveSelectOptions())) {
+		if (CollectionUtils.isEmpty(getSelectOptions())) {
 			return true;
 		}
 		if (validValues.isEmpty()) {
@@ -212,18 +203,11 @@ public abstract class ValueListElement extends FormElement {
 		return false;
 	}
 
-	@JsonIgnore
-	protected List<ValueListItem> getEffectiveSelectOptions() {
-		return (selectOptions != null && !selectOptions.isEmpty())
-				? selectOptions
-				: getFormGridOptions().getSelectOptions();
-	}
-
 	/**
 	 * Prepare the set of valid values from the current collection of options.
 	 */
 	private void updateValidValues() {
 		validValues.clear();
-		validValues.addAll(getEffectiveSelectOptions().stream().map(ValueListItem::getValue).collect(Collectors.toSet()));
+		validValues.addAll(getSelectOptions().stream().map(ValueListItem::getValue).collect(Collectors.toSet()));
 	}
 }

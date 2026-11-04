@@ -1,9 +1,9 @@
 {
 	"name": "Selection fields",
 	"type": "GENERIC",
-	"email": "test@green.mail",
-	"mailsubject": "testmail",
-	"mailtemp": "testmail",
+	"adminEmailAddress": "test@green.mail",
+	"adminEmailSubject": "testmail",
+	"adminEmailTemplate": "testmail",
 	"schema": {
 		"key": "test-schema",
 	    "version": "1.0.0",
@@ -26,23 +26,24 @@
 			"adminmail1": {
 				"type": "adminmail",
 				"name": "adminmail1",
-				"select_type": "multiselect",
 				"label": "Admin email",
 				"isList": true,
-				"selectOptions": [
-					{
-						"value": "admin1@green.mail",
-						"label": { "en": "Admin 1", "de": "1.Admin" }
-					},
-					{
-						"value": "admin2@green.mail",
-						"label": { "en": "Admin 2", "de": "2.Admin" }
-					},
-					{
-						"value": "admin3@green.mail",
-						"label": { "en": "Admin 3", "de": "3.Admin" }
-					}
-				]
+				"formGridOptions": {
+					"selectOptions": [
+						{
+							"value": "admin1@green.mail",
+							"label": { "en": "Admin 1", "it": "Admin 1", "de": "1.Admin" }
+						},
+						{
+							"value": "admin2@green.mail",
+							"label": { "en": "Admin 2", "it": "Admin 2", "de": "2.Admin" }
+						},
+						{
+							"value": "admin3@green.mail",
+							"label": { "en": "Admin 3", "it": "Admin 3", "de": "3.Admin" }
+						}
+					]
+				}
 			}
 		}
 	}

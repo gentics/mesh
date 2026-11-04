@@ -1,9 +1,9 @@
 {
 	"name": "Form with Filefield",
 	"downloadBaseUrl": "http://cms.domain/editor/#proxy/CNPortletapp/rest/form/1/data",
-	"email": "test@green.mail",
-	"mailsubject": "testmail",
-	"mailtemp": "testmail",
+	"adminEmailAddress": "test@green.mail",
+	"adminEmailSubject": "testmail",
+	"adminEmailTemplate": "testmail",
 	"schema": {
 		"key": "test-schema",
 	    "version": "1.0.0",

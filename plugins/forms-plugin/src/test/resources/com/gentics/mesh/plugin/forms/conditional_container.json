@@ -1,9 +1,9 @@
 {
 	"name": "Form with Conditional Container",
 	"type": "GENERIC",
-	"email": "test@green.mail",
-	"mailsubject": "testmail",
-	"mailtemp": "testmail",
+	"adminEmailAddress": "test@green.mail",
+	"adminEmailSubject": "testmail",
+	"adminEmailTemplate": "testmail",
 	"cms_id": 1,
 	"schema": {
 		"key": "test-schema",

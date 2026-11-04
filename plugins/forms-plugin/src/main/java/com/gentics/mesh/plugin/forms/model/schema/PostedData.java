@@ -252,9 +252,10 @@ public class PostedData extends LinkedHashMap<String, FormDataProperty> {
 			FormDataProperty property = Optional.ofNullable(get(name)).orElseGet(() -> new FormDataProperty());
 
 			if (element.isList()) {
-				Optional.ofNullable(property.getValues()).orElseGet(() -> new ArrayList<>())
-						.add(element.transformToExternal(value));
+				List<Object> values = Optional.ofNullable(property.getValues()).orElseGet(() -> new ArrayList<>());
+				values.add(element.transformToExternal(value));
 
+				property.setValues(values);
 				property.setValue(null);
 			} else {
 				property.setValues(null);

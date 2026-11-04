@@ -8,11 +8,13 @@
 				"type": "catalog",
 				"name": "selectgroup1",
 				"label": "Select group",
-				"selectOptions": [
-					{
-						"label": { "en": "no-value", "de": "wein wert" }
-					}
-				]
+				"formGridOptions": {
+					"selectOptions": [
+						{
+							"label": { "en": "no-value", "de": "wein wert" }
+						}
+					]
+				}
 			}
 		}
 	}
