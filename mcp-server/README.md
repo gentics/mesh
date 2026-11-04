@@ -206,6 +206,10 @@ mvn -B -ntp -pl mcp-server test
 Drei dedizierte Tests decken die HTTP-Schicht ab:
 `BearerTokenValidatorTest`, `MetricsTest`, `HttpMcpServerDispatchTest`.
 
+`MeshMcpServerIntegrationTest` (basiert auf `AbstractNodeSearchEndpointTest`) ruft
+die Tools gegen eine echte Mesh-Instanz mit In-Memory-HSQLDB (Mesh OSS) auf, je
+einmal pro Elasticsearch-Version. Die Elasticsearch-Container benötigen Docker.
+
 ## CI
 
 `Jenkinsfile` definiert die Modul-Pipeline (Build, Test, Docker, Push nach

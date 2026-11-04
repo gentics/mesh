@@ -58,6 +58,26 @@ public final class TestFixtures {
                 10_000, 10_000, 1_000, false, 50, 20, 30_000L, 4_000);
     }
 
+    /**
+     * stdio config against a real Mesh instance (integration tests): the
+     * {@link io.gentics.mesh.mcp.mesh.MeshClient} logs in with the given
+     * credentials on construction.
+     */
+    public static MeshConfig stdioConfig(String meshBaseUrl, String username, String password,
+                                         List<String> allowedProjects) {
+        return new MeshConfig(
+                meshBaseUrl,
+                null, username, password,
+                allowedProjects,
+                List.of(),
+                List.of("de", "en"),
+                true, 6, 5_000L, 10_000L, "info",
+                "stdio", "0.0.0.0", 3001,
+                null, true,
+                List.of(),
+                10_000, 10_000, 1_000, false, 50, 20, 30_000L, 4_000);
+    }
+
     private static MeshConfig baseConfig(boolean readOnly, int graphqlMaxDepth,
                                          List<String> schemaAllowlist) {
         return new MeshConfig(
