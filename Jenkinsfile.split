@@ -465,7 +465,7 @@ stage("Setup Build Environment") {
 								usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),
 								usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')
 							]) {
-								sh "mvn -B -DskipTests -Dskip.unit.tests -am -pl 'server,mcp-server,content-rag,:mesh-database-connector-mariadb,:mesh-database-connector-hsqldb,:mesh-enterprise-database-connector-mssql,:mesh-enterprise-database-connector-oracle,:mesh-enterprise-database-connector-postgres,bom,plugin-bom,plugin-parent,:mesh-forms-plugin,:mesh-comment-plugin,:mesh-export-plugin,:mesh-gcms-plugin,:mesh-like-plugin,:mesh-mustread-plugin,:mesh-favorite-plugin,:mesh-keycloak-plugin,:mesh-search-plugin' clean deploy"
+								sh "mvn -B -DskipTests -Dskip.unit.tests -am -pl 'server,mcp-server,content-rag,content-rag/rag-service:mesh-database-connector-mariadb,:mesh-database-connector-hsqldb,:mesh-enterprise-database-connector-mssql,:mesh-enterprise-database-connector-oracle,:mesh-enterprise-database-connector-postgres,bom,plugin-bom,plugin-parent,:mesh-forms-plugin,:mesh-comment-plugin,:mesh-export-plugin,:mesh-gcms-plugin,:mesh-like-plugin,:mesh-mustread-plugin,:mesh-favorite-plugin,:mesh-keycloak-plugin,:mesh-search-plugin' clean deploy"
 							}
 						} else if (Boolean.valueOf(params.runDeploy)) {
 							// echo "Setup of GPG"
