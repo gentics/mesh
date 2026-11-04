@@ -8,11 +8,14 @@ import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.parameter.client.NodeParametersImpl;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
+import com.gentics.mesh.parameter.client.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshRestClientConfig;
+import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import io.gentics.mesh.mcp.config.MeshConfig;
+import io.gentics.mesh.mcp.domain.AppError;
 import io.gentics.mesh.mcp.domain.model.*;
 import io.reactivex.Single;
 import org.slf4j.Logger;
@@ -245,6 +248,32 @@ public class MeshClient {
         return request;
     }
 
+    /**
+     * Executes the request and maps Mesh HTTP errors to {@link AppError} via
+     * {@link AppError#fromHttpStatus(int, String)} (404 → {@code NOT_FOUND},
+     * 401/403 → {@code FORBIDDEN}, otherwise {@code UPSTREAM_ERROR}).
+     *
+     * <p>{@code blockingGet()} wraps the {@link MeshRestClientMessageException}
+     * in a {@link RuntimeException}, so the cause chain is searched. Anything
+     * that is not a Mesh HTTP error is rethrown unchanged.
+     *
+     * @param request the request to execute
+     * @return the response
+     * @throws AppError if Mesh answered with an HTTP error status
+     */
+    private static <T> T execute(MeshRequest<T> request) {
+        try {
+            return request.blockingGet();
+        } catch (RuntimeException e) {
+            for (Throwable t = e; t != null; t = t.getCause()) {
+                if (t instanceof MeshRestClientMessageException meshError) {
+                    throw AppError.fromHttpStatus(meshError.getStatusCode(), meshError.getMessage());
+                }
+            }
+            throw e;
+        }
+    }
+
     // ── Projects ──────────────────────────────────────────────────────────
 
     /**
@@ -256,9 +285,8 @@ public class MeshClient {
      * @throws io.gentics.mesh.mcp.domain.AppError on network or auth failure
      */
     public List<Project> listProjects(MeshAuth auth) {
-        ProjectListResponse response = withAuth(client
-                .findProjects(new PagingParametersImpl().setPerPage(200L)), auth)
-                .blockingGet();
+        ProjectListResponse response = execute(withAuth(client
+                .findProjects(new PagingParametersImpl().setPerPage(200L)), auth));
 
         var result = new ArrayList<Project>();
         if (response.getData() != null) {
@@ -285,9 +313,8 @@ public class MeshClient {
     public List<MeshSchema> listSchemas(String project, MeshAuth auth) {
         // Use var to avoid importing the internal SchemaListResponse class;
         // the compiler infers the correct type from findSchemas()'s return type.
-        var response = withAuth(client
-                .findSchemas(project, new PagingParametersImpl().setPerPage(200L)), auth)
-                .blockingGet();
+        var response = execute(withAuth(client
+                .findSchemas(project, new PagingParametersImpl().setPerPage(200L)), auth));
 
         var result = new ArrayList<MeshSchema>();
         if (response.getData() != null) {
@@ -312,11 +339,10 @@ public class MeshClient {
      * @return list of mapped nodes (sensitive fields redacted)
      */
     public List<MeshNode> listNodes(String project, String language, MeshAuth auth) {
-        NodeListResponse response = withAuth(client
+        NodeListResponse response = execute(withAuth(client
                 .findNodes(project,
                         new NodeParametersImpl().setLanguages(language),
-                        new PagingParametersImpl().setPerPage(100L)), auth)
-                .blockingGet();
+                        new PagingParametersImpl().setPerPage(100L)), auth));
 
         var result = new ArrayList<MeshNode>();
         if (response.getData() != null) {
@@ -340,10 +366,9 @@ public class MeshClient {
      * @throws io.gentics.mesh.mcp.domain.AppError(NOT_FOUND) if the UUID does not exist
      */
     public MeshNode getNode(String project, String uuid, String language, MeshAuth auth) {
-        NodeResponse response = withAuth(client
+        NodeResponse response = execute(withAuth(client
                 .findNodeByUuid(project, uuid,
-                        new NodeParametersImpl().setLanguages(language)), auth)
-                .blockingGet();
+                        new NodeParametersImpl().setLanguages(language)), auth));
         return MeshMapper.mapNode(toJsonNode(response), project);
     }
 
@@ -363,6 +388,7 @@ public class MeshClient {
      * @param snippetFields ordered list of field names to use for snippet extraction
      * @param limit         maximum number of results (1–20)
      * @param publishedOnly when {@code true}, only published nodes are returned
+     *                      (Mesh's published index); otherwise the draft index is searched
      * @param auth          per-call Mesh identity
      * @return list of search results with snippets
      */
@@ -370,7 +396,7 @@ public class MeshClient {
             String project, String query, String schema, String language,
             List<String> snippetFields, int limit, boolean publishedOnly, MeshAuth auth) {
 
-        Map<String, Object> esBody = buildEsQuery(query, schema, language, publishedOnly, limit);
+        Map<String, Object> esBody = buildEsQuery(query, schema, language, limit);
         String esBodyJson;
         try {
             esBodyJson = MAPPER.writeValueAsString(esBody);
@@ -378,10 +404,12 @@ public class MeshClient {
             esBodyJson = "{\"query\":{\"query_string\":{\"query\":\"" + query + "\"}}}";
         }
 
-        NodeListResponse response = withAuth(client
+        NodeListResponse response = execute(withAuth(client
                 .searchNodes(project, esBodyJson,
-                        new PagingParametersImpl().setPerPage((long) limit)), auth)
-                .blockingGet();
+                        new PagingParametersImpl().setPerPage((long) limit),
+                        publishedOnly
+                                ? new VersioningParametersImpl().published()
+                                : new VersioningParametersImpl().draft()), auth));
 
         var result = new ArrayList<SearchResult>();
         if (response.getData() != null) {
@@ -412,10 +440,9 @@ public class MeshClient {
         String[] segments = normPath.substring(1).split("/");
         // webroot() returns MeshWebrootResponse which wraps either a node or a binary;
         // getNodeResponse() yields the underlying NodeResponse.
-        MeshWebrootResponse webrootResponse = withAuth(client
+        MeshWebrootResponse webrootResponse = execute(withAuth(client
                 .webroot(project, segments,
-                        new NodeParametersImpl().setLanguages(language)), auth)
-                .blockingGet();
+                        new NodeParametersImpl().setLanguages(language)), auth));
         NodeResponse response = webrootResponse.getNodeResponse();
         return MeshMapper.mapWebrootNode(toJsonNode(response), normPath, project);
     }
@@ -460,13 +487,11 @@ public class MeshClient {
      * @param query        user-provided query string
      * @param schema       optional schema name filter
      * @param language     language code filter
-     * @param publishedOnly add a published=true term filter when {@code true}
      * @param limit        result size
      * @return Elasticsearch request body as a {@code Map}
      */
     private Map<String, Object> buildEsQuery(
-            String query, String schema, String language,
-            boolean publishedOnly, int limit) {
+            String query, String schema, String language, int limit) {
 
         var must = new ArrayList<Map<String, Object>>();
         must.add(Map.of("query_string", Map.of("query", query)));
@@ -477,10 +502,6 @@ public class MeshClient {
         if (schema != null && !schema.isBlank()) {
             must.add(Map.of("term", Map.of("schema.name.raw", schema)));
         }
-        if (publishedOnly) {
-            must.add(Map.of("term", Map.of("published", true)));
-        }
-
         return Map.of(
                 "query", Map.of("bool", Map.of("must", must)),
                 "size",  limit

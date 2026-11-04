@@ -142,6 +142,50 @@
       <version>${mockito.version}</version>
       <scope>test</scope>
     </dependency>
+
+    <!--
+      Integrationstests gegen eine echte Mesh-Instanz (AbstractNodeSearchEndpointTest,
+      JUnit 4) mit der In-Memory-HSQLDB aus Mesh OSS: das tests-JAR des
+      HSQLDB-Connectors liefert den HSQLMemoryTestContextProvider.
+      junit-vintage-engine lässt die JUnit-4-Tests auf der JUnit Platform neben
+      den JUnit-5-Tests laufen.
+    -->
+    <dependency>
+      <groupId>com.gentics.mesh</groupId>
+      <artifactId>mesh-database-tests-common</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+      <exclusions>
+        <!--
+          Steckt bereits (identisch) im geshadeten HSQLDB-Connector-JAR; doppelt
+          auf dem Classpath bricht Liquibase ab ("Found 2 files with the path
+          META-INF/liquibase/changelog-master.xml").
+        -->
+        <exclusion>
+          <groupId>com.gentics.mesh</groupId>
+          <artifactId>mesh-database-connector-common</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.gentics.mesh</groupId>
+      <artifactId>mesh-database-connector-hsqldb</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.gentics.mesh</groupId>
+      <artifactId>mesh-database-connector-hsqldb</artifactId>
+      <version>${project.version}</version>
+      <classifier>tests</classifier>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.vintage</groupId>
+      <artifactId>junit-vintage-engine</artifactId>
+      <version>${junit.jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>

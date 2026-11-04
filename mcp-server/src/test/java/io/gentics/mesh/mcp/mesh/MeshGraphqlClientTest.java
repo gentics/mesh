@@ -9,6 +9,7 @@ import io.gentics.mesh.mcp.config.MeshConfig;
 import io.gentics.mesh.mcp.domain.AppError;
 import io.gentics.mesh.mcp.domain.ErrorCode;
 import io.gentics.mesh.mcp.mesh.MeshAuth;
+import io.vertx.core.json.JsonObject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -174,6 +175,21 @@ class MeshGraphqlClientTest {
 
         assertNotNull(result, "query() must return a non-null JsonNode result");
         verify(mockClient, times(1)).graphql(eq("demo"), any(GraphQLRequest.class));
+    }
+
+    @Test
+    void query_returnsDataAsPlainJson() {
+        MeshConfig config = TestFixtures.readOnlyConfig();
+        var response = new GraphQLResponse()
+                .setData(new JsonObject().put("node", new JsonObject().put("uuid", "abc")));
+        var stub = stubRequest(response);
+        when(mockClient.graphql(eq("demo"), any(GraphQLRequest.class))).thenReturn(stub);
+
+        var gqlClient = new MeshGraphqlClient(config, mockClient);
+        var result = gqlClient.query("demo", "{ node(uuid:\"abc\") { uuid } }", Map.of(), MeshAuth.NONE);
+
+        assertEquals("abc", result.path("data").path("node").path("uuid").asText(),
+                "data must be the plain GraphQL JSON, not the serialised JsonObject bean: " + result);
     }
 
     @Test

@@ -1,5 +1,6 @@
 package io.gentics.mesh.mcp.mesh;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
@@ -148,8 +149,15 @@ public class MeshGraphqlClient {
         }
         GraphQLResponse response = meshRequest.blockingGet();
 
-        // 5. Serialise DTO back to JsonNode so callers receive the raw envelope
-        return MAPPER.valueToTree(response);
+        // 5. Serialise DTO back to JsonNode so callers receive the raw envelope.
+        //    Via Mesh's own JSON mapping: data is a Vert.x JsonObject, which plain
+        //    Jackson would serialise as a bean ({"map":…,"empty":…}).
+        try {
+            return MAPPER.readTree(response.toJson(false));
+        } catch (JsonProcessingException e) {
+            throw new AppError(ErrorCode.INTERNAL_ERROR,
+                    "GraphQL-Antwort konnte nicht gelesen werden: " + e.getMessage(), e);
+        }
     }
 
     // ── Static helpers (package-visible for unit tests) ───────────────────
