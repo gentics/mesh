@@ -11,6 +11,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -118,4 +119,17 @@ public final class DateUtils {
 		return date != null;
 	}
 
+	/**
+	 * Transform an instant into its epoch millis. Nulls are welcomed too.
+	 * 
+	 * @param instant
+	 * @param zeroIsValid 0 millis is expected valid epoch start date, if true, false otherwise.
+	 * @return
+	 */
+	public static Long instantToMillis(Instant instant, boolean zeroIsValid) {
+		return Optional.ofNullable(instant)
+				.map(Instant::toEpochMilli)
+				.filter(millis -> millis == null || millis != 0 || zeroIsValid)
+				.orElse(null);
+	}
 }

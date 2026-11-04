@@ -128,14 +128,17 @@ public class APITokenMigrationTest extends AbstractMeshTest implements MeshTestI
 				Condition<HibAPITokenData> nameCondition = new Condition<HibAPITokenData>(
 						token -> Strings.CS.equals(token.getName(), "Migrated API Token"), "Correct name");
 				Condition<HibAPITokenData> expiresCondition = new Condition<HibAPITokenData>(
-						token -> Objects.equals(token.getExpiresTimestamp(), 0L), "Correct expiration date");
+						token -> Objects.equals(token.getExpiresTimestamp(), null), "Correct expiration date");
+				Condition<HibAPITokenData> validTokenCondition = new Condition<HibAPITokenData>(
+						HibAPITokenData::isValid, "Token is valid");
 
 				assertThat(tokens).as("Tokens for %s".formatted(user.getName()))
 					.hasSize(1)
 					.areExactly(1, tokenIdCondition)
 					.areExactly(1, issuedAtCondition)
 					.areExactly(1, nameCondition)
-					.areExactly(1, expiresCondition);
+					.areExactly(1, expiresCondition)
+					.areExactly(1, validTokenCondition);
 			} else {
 				assertThat(tokens).as("Tokens for %s".formatted(user.getName())).isEmpty();
 			}
