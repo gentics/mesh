@@ -16,54 +16,58 @@
 				"name": "radiobuttons1",
 				"select_type": "radiobuttons",
 				"label": "Radio buttons element",
-				"customProperty": "customValue",
-				"moreCustomProperties": {
-					"no": false,
-					"yes": "yes",
-					"one": 1,
-					"many": [1, 2, 3],
-					"more": {
-						"foo": "bar"
-					}
-				},
-				"selectOptions": [
-					{
-						"value": "r_X",
-						"label": { "en": "Option which is never selected at the beginning", "de": "Nie ursprunglich gewählte Option" }
+				"formGridOptions": {
+					"customProperty": "customValue",
+					"moreCustomProperties": {
+						"no": false,
+						"yes": "yes",
+						"one": 1,
+						"many": [1, 2, 3],
+						"more": {
+							"foo": "bar"
+						}
 					},
-					{
-						"value": "r_1",
-						"label": { "en": "Radio button option 1", "de": "1. Radiotaste" }
-					},
-					{
-						"value": "r_2",
-						"label": { "en": "Radio button option 2", "de": "2. Radiotaste" }
-					},
-					{
-						"value": "r_3",
-						"label": { "en": "Radio button option 3", "de": "3. Radiotaste" }
-					}
-				]
+					"selectOptions": [
+						{
+							"value": "r_X",
+							"label": { "en": "Option which is never selected at the beginning", "de": "Nie ursprunglich gewählte Option" }
+						},
+						{
+							"value": "r_1",
+							"label": { "en": "Radio button option 1", "de": "1. Radiotaste" }
+						},
+						{
+							"value": "r_2",
+							"label": { "en": "Radio button option 2", "de": "2. Radiotaste" }
+						},
+						{
+							"value": "r_3",
+							"label": { "en": "Radio button option 3", "de": "3. Radiotaste" }
+						}
+					]
+				}
 			},
 			"singleselect1": {
 				"type": "catalog",
 				"name": "singleselect1",
 				"select_type": "singleselect",
 				"label": "Single select element",
-				"selectOptions": [
-					{
-						"value": "s_1",
-						"label": { "en": "Single-select option 1", "de": "1. Einzelwahl" }
-					},
-					{
-						"value": "s_2",
-						"label": { "en": "Single-select option 2", "de": "2. Einzelwahl" }
-					},
-					{
-						"value": "s_3",
-						"label": { "en": "Single-select option 3", "de": "3. Einzelwahl" }
-					}
-				]
+				"formGridOptions": {
+					"selectOptions": [
+						{
+							"value": "s_1",
+							"label": { "en": "Single-select option 1", "de": "1. Einzelwahl" }
+						},
+						{
+							"value": "s_2",
+							"label": { "en": "Single-select option 2", "de": "2. Einzelwahl" }
+						},
+						{
+							"value": "s_3",
+							"label": { "en": "Single-select option 3", "de": "3. Einzelwahl" }
+						}
+					]
+				}
 			},
 			"multiselect1": {
 				"type": "catalog",
@@ -71,20 +75,22 @@
 				"select_type": "multiselect",
 				"label": "Multi select element",
 				"isList": true,
-				"selectOptions": [
-					{
-						"value": "m_1",
-						"label": { "en": "Multi-select option 1", "de": "1. Mehrfachwahl" }
-					},
-					{
-						"value": "m_2",
-						"label": { "en": "Multi-select option 2", "de": "2. Mehrfachwahl" }
-					},
-					{
-						"value": "m_3",
-						"label": { "en": "Multi-select option 3", "de": "3. Mehrfachwahl" }
-					}
-				]
+				"formGridOptions": {
+					"selectOptions": [
+						{
+							"value": "m_1",
+							"label": { "en": "Multi-select option 1", "de": "1. Mehrfachwahl" }
+						},
+						{
+							"value": "m_2",
+							"label": { "en": "Multi-select option 2", "de": "2. Mehrfachwahl" }
+						},
+						{
+							"value": "m_3",
+							"label": { "en": "Multi-select option 3", "de": "3. Mehrfachwahl" }
+						}
+					]
+				}
 			}
 		}
 	}

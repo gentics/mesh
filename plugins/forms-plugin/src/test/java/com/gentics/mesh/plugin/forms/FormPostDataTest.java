@@ -836,7 +836,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 	@Test
 	public void testAdminMailElement() throws IOException, MessagingException {
 		String uuid = createForm("admin_mail_element.json");
-		submit(uuid, true, false, false, language, "input1", "test input", "adminmail1", "admin1@green.mail");
+		submit(uuid, true, false, false, language, "input1", "test input", "adminmail1", "Admin 1");
 
 		assertThat(greenMail.waitForIncomingEmail(MAIL_TIMEOUT, 1))
 			.as("Mail sent in time")
@@ -870,7 +870,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 	@Test
 	public void testAdminMailElementMultiple() throws IOException, MessagingException {
 		String uuid = createForm("admin_mail_element_multiselect.json");
-		submit(uuid, true, false, false, language, "input1", "test input", "adminmail1", "admin1@green.mail", "adminmail1", "admin3@green.mail");
+		submit(uuid, true, false, false, language, "input1", "test input", "adminmail1", "Admin 1", "adminmail1", "Admin 3");
 
 		assertThat(greenMail.waitForIncomingEmail(MAIL_TIMEOUT, 1))
 			.as("Mail sent in time")

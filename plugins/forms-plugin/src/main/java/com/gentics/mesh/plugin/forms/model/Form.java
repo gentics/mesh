@@ -30,6 +30,7 @@ import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.config.InjectionPreventionMode;
 import com.gentics.mesh.plugin.forms.config.SecurityOptions;
@@ -69,12 +70,16 @@ public class Form implements RestModel {
 
 	private boolean submitOnce;
 
+	@JsonProperty("adminEmailAddress")
 	private String email;
 
+	@JsonProperty("adminEmailSubject")
 	private String mailsubject;
 
+	@JsonProperty("adminEmailTemplate")
 	private String mailtemp;
 
+	@JsonProperty("adminEmailSource")
 	private String mailsource;
 
 	private String successurl;
@@ -756,6 +761,12 @@ public class Form implements RestModel {
 			.forEach(elem -> {
 				JsonObject elemObj = new JsonObject(elem.toJson())
 					.put("isFile", elem instanceof BinaryElement);
+
+				Optional.ofNullable(elem.getFormGridOptions()).ifPresent(formGridOptions -> {
+					JsonObject formGridOptionsJsonObject = new JsonObject(JsonUtil.toJson(formGridOptions));
+					elemObj.mergeIn(formGridOptionsJsonObject, true);
+				});
+
 				Object valueProperty = elemObj.remove(FIELD_VALUE);
 
 				if (valueProperty != null) {

@@ -1,7 +1,7 @@
 {
 	"name": "Form without admin mail template",
-	"email": "test@green.mail",
-	"mailsubject": "testmail",
+	"adminEmailAddress": "test@green.mail",
+	"adminEmailSubject": "testmail",
 	"schema": {
 		"key": "test-schema",
 	    "version": "1.0.0",
