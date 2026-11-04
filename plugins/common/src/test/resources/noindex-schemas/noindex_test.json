@@ -1,0 +1,20 @@
+{
+  "name": "noindex_test",
+  "container": false,
+  "fields": [
+    {
+      "name": "indexedInMesh",
+      "type": "string"
+    },
+    {
+      "name": "notIndexedInMesh",
+      "type": "string",
+      "noIndex": true
+    },
+    {
+      "name": "newField",
+      "type": "string",
+      "noIndex": true
+    }
+  ]
+}
