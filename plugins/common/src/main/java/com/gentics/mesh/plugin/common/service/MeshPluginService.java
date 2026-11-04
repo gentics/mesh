@@ -30,6 +30,7 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
@@ -285,7 +286,9 @@ public class MeshPluginService {
 					.flatMap(completed -> {
 						if (completed) {
 							SchemaListResponse schemas = new SchemaListResponse();
-							allSchemas.forEach(schema -> schemas.add(schema.getSchema()));
+							allSchemas.forEach(schema -> {
+								schemas.add(schema.getSchema());
+							});
 							return Single.just(schemas);
 						} else {
 							return Single.error(() -> new IllegalStateException("The schema migration process has not succeeded for: "
@@ -587,10 +590,21 @@ public class MeshPluginService {
 		}
 		// Make sure to not change the name
 		request.setName(schema.getName());
+		// Make sure to not change the noIndex flags
+		request.setNoIndex(schema.getNoIndex());
+		for (FieldSchema field: schema.getFields()) {
+			FieldSchema newField = request.getField(field.getName());
+			if (newField != null) {
+				newField.setNoIndex(field.isNoIndex());
+			}
+		}
 
 		return adminClient.updateSchema(schema.getUuid(), request).toSingle()
 			.map(response -> {
-				String msg = response.getMessage();
+				String msg = response.getInternalMessage();
+				if (StringUtils.isBlank(msg)) {
+					msg = response.getMessage();
+				}
 				boolean updated = !NO_MIGRATION_MSG.contains(msg);
 
 				if (log.isInfoEnabled()) {
