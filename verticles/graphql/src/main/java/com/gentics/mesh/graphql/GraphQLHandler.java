@@ -1,6 +1,7 @@
 package com.gentics.mesh.graphql;
 
 import static graphql.GraphQL.newGraphQL;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.util.Collections;
@@ -21,6 +22,7 @@ import org.dataloader.DataLoaderRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.gentics.mesh.core.data.i18n.I18NUtil;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.error.AbstractUnavailableException;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -38,6 +40,7 @@ import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import graphql.GraphQLError;
+import graphql.execution.UnknownOperationException;
 import graphql.execution.instrumentation.dataloader.DataLoaderDispatcherInstrumentation;
 import graphql.language.SourceLocation;
 import io.micrometer.core.instrument.Timer;
@@ -156,11 +159,18 @@ public class GraphQLHandler {
 						boolean minify = gc.isMinify(options.getHttpServerOptions());
 						gc.send(JsonUtil.toJson(response, minify), OK);
 					} catch (TimeoutException | InterruptedException | ExecutionException e) {
-						// If an error happens while "waiting" for the result, we log the GraphQL query here.
-						log.error("GraphQL query failed after {} ms with {}:\n{}\nvariables: {}",
-								options.getGraphQLOptions().getAsyncWaitTimeout(), e.getClass().getSimpleName(), loggableQuery.get(),
-								loggableVariables.get());
-						gc.fail(e);
+						if (e.getCause() instanceof UnknownOperationException ue) {
+							if (log.isDebugEnabled()) {
+								log.debug("Malformed GraphQL request", ue);
+							}
+							gc.send(new com.gentics.mesh.core.rest.graphql.GraphQLError().setType("OperationError").setMessage(gc.i18n("graphql_error_unknown_operation")), BAD_REQUEST);
+						} else {
+							// If an error happens while "waiting" for the result, we log the GraphQL query here.
+							log.error("GraphQL query failed after {} ms with {}:\n{}\nvariables: {}",
+									options.getGraphQLOptions().getAsyncWaitTimeout(), e.getClass().getSimpleName(), loggableQuery.get(),
+									loggableVariables.get());
+							gc.fail(e);
+						}
 					}
 				});
 			} catch (Exception e) {

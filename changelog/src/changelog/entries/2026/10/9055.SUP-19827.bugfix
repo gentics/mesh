@@ -1,0 +1,1 @@
+GraphQL: A request containing several operations now results in a `HTTP 400 Bad Request` instead of an internal server error.

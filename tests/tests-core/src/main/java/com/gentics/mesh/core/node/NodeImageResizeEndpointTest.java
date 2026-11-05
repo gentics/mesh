@@ -22,7 +22,6 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -54,32 +53,23 @@ import io.vertx.core.buffer.Buffer;
 @RunWith(Parameterized.class)
 public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 
-	@Parameters(name = "{index}: filetype={0}")
+	@Parameters(name = "{index}: filetype={0}, extension={1}, resized={2}")
 	public static Collection<Object[]> paramData() {
 		return Arrays.asList(
-			new Object[] { "jpeg" },
-			new Object[] { "webp" });
+			new Object[] { "jpeg", "jpg", "jpeg" },
+			new Object[] { "webp", "webp", "webp" },
+			new Object[] { "pjpeg", "jpg", "jpeg" },
+			new Object[] { "jpg", "jpg", "jpeg" });
 	}
 
-	@Parameter
+	@Parameter(0)
 	public String fileType;
 
-	private String extension;
+	@Parameter(1)
+	public String extension;
 
-	@Before
-	public void setup() {
-		switch (fileType) {
-		case "jpeg":
-			extension = "jpg";
-
-			break;
-
-		case "webp":
-			extension = "webp";
-
-			break;
-		}
-	}
+	@Parameter(2)
+	public String resized;
 
 	@Test
 	public void testImageResize() throws Exception {
@@ -643,7 +633,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 									 int expectedWidth, int expectedHeight) throws Exception {
 		assertThat(download.getContentType())
 			.as("Resized image filetype")
-			.isEqualTo("image/" + fileType);
+			.isEqualTo("image/" + resized);
 
 		File targetFile = new File("target", UUID.randomUUID() + "_resized." + extension);
 		CountDownLatch latch = new CountDownLatch(1);

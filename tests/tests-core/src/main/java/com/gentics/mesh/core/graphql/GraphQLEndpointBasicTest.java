@@ -3,6 +3,7 @@ package com.gentics.mesh.core.graphql;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -86,6 +87,15 @@ public class GraphQLEndpointBasicTest extends AbstractMeshTest {
 			.repeat(100);
 
 		Completable.merge(calls).blockingAwait();
+	}
+
+	/**
+	 * Test that a request containing several operations is rejected with HTTP 400
+	 */
+	@Test
+	public void testMultiOperationQueryNoOperation() {
+		GraphQLRequest request = new GraphQLRequest().setQuery("query me { me { firstname } } query project { project { name } }");
+		call(() -> client().graphql(PROJECT_NAME, request), BAD_REQUEST, "graphql_error_unknown_operation");
 	}
 
 	/**
