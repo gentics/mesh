@@ -205,6 +205,11 @@ public class FormService {
 
 	private static final int CHILDREN_BATCH_SIZE = 100;
 
+	/**
+	 * Value of a checked boolean element without "storedValue" (same fallback as in FormGen)
+	 */
+	private static final String DEFAULT_BOOLEAN_STORED_VALUE = "X";
+
 	private static final String PARAM_TEMPLATE_CONTEXT = "templateContext";
 	private final String PARAM_SHOW_RESULTS = "showResults";
 
@@ -946,13 +951,20 @@ public class FormService {
 				// The default value for boolean elements is stored as true/false, but the rendered checkboxes must set
 				// the value defined as "storedValue". Before calling buildDefaultProperty() for a BooleanElement,
 				// initFormData() is responsible for setting the BooleanElements value to the "storedValue" defined
-				// in the elements form grid options.
-				if (element instanceof BooleanElement booleanElement && Boolean.TRUE.equals(resolvedValue) && booleanElement.getValue() != null) {
-					prop.setValue(booleanElement.getValue());
+				// in the elements form grid options. Without (or with empty) "storedValue", true is mapped to the FormGen
+				// fallback DEFAULT_BOOLEAN_STORED_VALUE. False is always mapped to an empty string.
+				if (element instanceof BooleanElement booleanElement && resolvedValue instanceof Boolean checked
+						&& StringUtils.isBlank(booleanElement.getValue())) {
+					prop.setValue(checked ? DEFAULT_BOOLEAN_STORED_VALUE : "");
+				} else if (element instanceof BooleanElement booleanElement && resolvedValue instanceof Boolean checked) {
+					prop.setValue(checked ? booleanElement.getValue() : "");
 				} else {
 					prop.setValue(resolvedValue);
 				}
 			}
+		} else if (element instanceof BooleanElement) {
+			// A boolean element without default value is handled like an unchecked one
+			prop.setValue("");
 		}
 		return prop;
 	}
