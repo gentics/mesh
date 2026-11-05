@@ -1,0 +1,6 @@
+Forms Plugin: When a form was loaded for FormGen, checkboxes were returned with true/false or without
+any value instead of a text value. Submitting such a form failed with an internal server error when
+injection prevention was enabled, and checked checkboxes with an empty stored value were rejected as
+invalid. This has been fixed: in FormGen, checkboxes checked by default now start with their stored
+value ("X" if none is configured), unchecked checkboxes and checkboxes without a default value start
+with an empty value ("" ).

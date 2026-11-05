@@ -90,6 +90,6 @@ public class BooleanElement extends FormElement {
 	protected boolean isInvalidValue(String value) {
 		var actualValue = Optional.ofNullable(value).map(String::trim).orElse(null);
 
-		return this.value != null && !this.value.trim().equals(actualValue);
+		return StringUtils.isNotBlank(this.value) && !this.value.trim().equals(actualValue);
 	}
 }

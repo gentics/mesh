@@ -308,6 +308,21 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 		assertThat(properties.get("greeting").get("value").asText()).as("greeting value en").isEqualTo("Hello");
 	}
 
+	/**
+	 * Boolean elements must be loaded with a text value: the "storedValue" (or the FormGen fallback "X" when it is
+	 * missing or empty) when checked by default, an empty string when unchecked by default or without default value.
+	 */
+	@Test
+	public void testLoadFormGenBooleanStartValues() throws IOException {
+		JsonNode properties = loadBooleanProperties();
+
+		assertBooleanValue(properties, "checkTrueNoStored", "X");
+		assertBooleanValue(properties, "checkFalseEmptyStored", "");
+		assertBooleanValue(properties, "checkTrueStored", "Y");
+		assertBooleanValue(properties, "checkFalseStored", "");
+		assertBooleanValue(properties, "checkNoDefault", "");
+	}
+
 	@Test
 	public void testLoadFormGenPublishedFormDataReturnsConflict() throws IOException {
 		String formUuid = createForm("formgen_load.json");
@@ -378,6 +393,24 @@ public class FormGenLoadTest extends AbstractFormsPluginIntegrationTest {
 		assertThat(formgenSettings).as("formgenSettings is present").isNotNull();
 		assertThat(formgenSettings.get("foo").asText()).isEqualTo("bar");
 		assertThat(formgenSettings.get("enabled").asBoolean()).isTrue();
+	}
+
+	private JsonNode loadBooleanProperties() throws IOException {
+		String uuid = createForm("formgen_load_boolean.json");
+
+		Response response = doLoadRequest(uuid, FORM_ID, "de");
+		String responseBody = response.body() != null ? response.body().string() : "";
+		assertSuccessfulJsonResponse(response, responseBody);
+		return JsonUtil.readValue(responseBody, JsonNode.class).get("data").get("properties");
+	}
+
+	private void assertBooleanValue(JsonNode properties, String key, String expected) {
+		JsonNode property = properties.get(key);
+
+		assertThat(property).as(key + " property").isNotNull();
+		assertThat(property.has("value")).as(key + " has value, was: " + property).isTrue();
+		assertThat(property.get("value").isTextual()).as(key + " value is a string, was: " + property.get("value")).isTrue();
+		assertThat(property.get("value").asText()).as(key + " value").isEqualTo(expected);
 	}
 
 	private Response doLoadRequest(String formUuid, String formID, String language)

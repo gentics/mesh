@@ -914,6 +914,22 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 	}
 
 	/**
+	 * Test if boolean elements with empty stored value accept the FormGen fallback value "X".
+	 */
+	@Test
+	public void testBooleanWithEmptyStoredValueValid() throws IOException, MessagingException {
+		String uuid = createForm("boolean_empty_stored_value.json");
+		ResponseWithCookies rs = submit(uuid, true, true, false, true, language,
+			"checkbox1", "X");
+
+		var rsBody = new JsonObject(rs.response.body().string());
+
+		assertThat(rsBody.getBoolean("hasValidationErrors"))
+			.as("Field errors on submit, was: " + rsBody.getJsonObject("properties"))
+			.isFalse();
+	}
+
+	/**
 	 * Test if boolean elements which stored value is defined as "value" in the properties.
 	 */
 	@Test
