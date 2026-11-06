@@ -795,6 +795,8 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 			String subject = msg.getSubject();
 			String content = msg.getContent().toString().replaceAll("\\r", "");
 
+			assertThat(subject).as("Mail Subject").contains("(%s)".formatted(language));
+
 			System.out.println(content);
 
 			assertThat(content.trim())
