@@ -110,7 +110,9 @@ public class MailService {
 				TemplateWrapper template = TemplateWrapper.wrap(form.getMailsource(), form.getMailtemp(), configuration.getAdminMailTemplate());
 
 				if (template.isValid()) {
-					String subject = StringUtils.defaultIfBlank(form.getMailsubject(), configuration.getAdminMailSubject());
+					String subject = StringUtils.firstNonBlank(
+							Optional.ofNullable(form.getMailsubject()).map(map -> map.get(language)).orElse(null),
+							configuration.getAdminMailSubject());
 
 					subject = StringUtils.defaultIfBlank(subject, PLACEHOLDER_FORMNAME)
 						.replace(PLACEHOLDER_FORMNAME, form.getName());

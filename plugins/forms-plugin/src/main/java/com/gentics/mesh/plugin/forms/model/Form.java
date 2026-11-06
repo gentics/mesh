@@ -74,7 +74,7 @@ public class Form implements RestModel {
 	private String email;
 
 	@JsonProperty("adminEmailSubject")
-	private String mailsubject;
+	private Map<String, String> mailsubject;
 
 	@JsonProperty("adminEmailTemplate")
 	private String mailtemp;
@@ -129,7 +129,7 @@ public class Form implements RestModel {
 		this.language = other.language;
 		this.type = other.type;
 		this.email = other.email;
-		this.mailsubject = other.mailsubject;
+		this.mailsubject = other.mailsubject == null ? new LinkedHashMap<>() : new LinkedHashMap<>(other.mailsubject);
 		this.mailtemp = other.mailtemp;
 		this.mailsource = other.mailsource;
 		this.successurl = other.successurl;
@@ -244,7 +244,7 @@ public class Form implements RestModel {
 	 * Get email subject for verification mails
 	 * @return email subject
 	 */
-	public String getMailsubject() {
+	public Map<String, String> getMailsubject() {
 		return mailsubject;
 	}
 
@@ -252,7 +252,7 @@ public class Form implements RestModel {
 	 * Set email subject
 	 * @param mailsubject email subject
 	 */
-	public Form setMailsubject(String mailsubject) {
+	public Form setMailsubject(Map<String, String> mailsubject) {
 		this.mailsubject = mailsubject;
 		return this;
 	}
