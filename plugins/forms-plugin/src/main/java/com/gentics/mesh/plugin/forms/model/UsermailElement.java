@@ -1,19 +1,18 @@
 package com.gentics.mesh.plugin.forms.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import java.util.concurrent.Callable;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.validator.routines.EmailValidator;
+
 import com.gentics.mesh.plugin.forms.context.FormDataCreateContext;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
 import com.gentics.mesh.plugin.forms.model.schema.FormUiSchema;
 import com.gentics.mesh.plugin.forms.util.RxUtil;
+
 import io.reactivex.Maybe;
 import io.vertx.reactivex.core.Vertx;
 import okhttp3.OkHttpClient;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.validator.routines.EmailValidator;
-
-import java.util.Collections;
-import java.util.concurrent.Callable;
 
 /**
  * Usermail element
@@ -21,68 +20,37 @@ import java.util.concurrent.Callable;
 @Reportable
 @FormElementType("usermail")
 public class UsermailElement extends FormElement {
-	@JsonProperty("mailsubject")
-	private String subject;
-
-	@JsonProperty("mailtemplate")
-	@JsonPropertyDescription("Path to the e-mail template")
-	private String template;
-
-	@JsonProperty
-	private String mailsource;
 
 	public UsermailElement() {
 	}
 
 	protected UsermailElement(UsermailElement other, boolean deep) {
 		super(other, deep);
-
-		this.subject = other.subject;
-		this.template = other.template;
-		this.mailsource = other.mailsource;
 	}
 
-	@JsonProperty("mailsubject")
-	public String getSubject() {
-		return subject;
-	}
-
-	@JsonProperty("mailsubject")
-	public void setSubject(String subject) {
-		this.subject = subject;
+	/**
+	 * Get the mail subject in the given language (or null if not found)
+	 * @param language language
+	 * @return subject
+	 */
+	public String getSubject(String language) {
+		return getStringFromFormGridOptions("mailsubject", language);
 	}
 
 	/**
 	 * Get the path to the user mail template.
 	 * @return The path to the user mail template.
 	 */
-	@JsonProperty("mailtemplate")
 	public String getTemplate() {
-		return template;
-	}
-
-	/**
-	 * Set the path to the user mail template.
-	 */
-	@JsonProperty("mailtemplate")
-	public void setTemplate(String template) {
-		this.template = template;
+		return getStringFromFormGridOptions("mailtemplate");
 	}
 
 	/**
 	 * Get the user mail template source.
 	 * @return The user mail template source.
 	 */
-	public String getMailsource() {
-		return mailsource;
-	}
-
-	/**
-	 * Set the user mail template source.
-	 */
-	public UsermailElement setMailsource(String mailsource) {
-		this.mailsource = mailsource;
-		return this;
+	public String getMailsource(String language) {
+		return getStringFromFormGridOptions("mailsource", language);
 	}
 
 	@Override

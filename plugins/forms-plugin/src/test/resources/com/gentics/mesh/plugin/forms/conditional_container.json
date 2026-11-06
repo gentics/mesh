@@ -2,7 +2,11 @@
 	"name": "Form with Conditional Container",
 	"type": "GENERIC",
 	"adminEmailAddress": "test@green.mail",
-	"adminEmailSubject": "testmail",
+	"adminEmailSubject": {
+		"en": "testmail",
+		"it": "testmail",
+		"de": "testmail"
+	},
 	"adminEmailTemplate": "testmail",
 	"cms_id": 1,
 	"schema": {
