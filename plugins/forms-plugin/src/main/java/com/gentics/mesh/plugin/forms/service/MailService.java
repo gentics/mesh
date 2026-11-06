@@ -107,7 +107,8 @@ public class MailService {
 
 			// send mail to admins
 			if (!emails.isEmpty()) {
-				TemplateWrapper template = TemplateWrapper.wrap(form.getMailsource(), form.getMailtemp(), configuration.getAdminMailTemplate());
+				String mailSourceFromForm = Optional.ofNullable(form.getMailsource()).map(map -> map.get(language)).orElse(null);
+				TemplateWrapper template = TemplateWrapper.wrap(mailSourceFromForm, form.getMailtemp(), configuration.getAdminMailTemplate());
 
 				if (template.isValid()) {
 					String subject = StringUtils.firstNonBlank(
@@ -135,7 +136,7 @@ public class MailService {
 					return;
 				}
 
-				TemplateWrapper template = TemplateWrapper.wrap(element.getMailsource(), element.getTemplate(), configuration.getUserMailTemplate());
+				TemplateWrapper template = TemplateWrapper.wrap(element.getMailsource(language), element.getTemplate(), configuration.getUserMailTemplate());
 
 				if (!template.isValid()) {
 					log.error(
@@ -143,7 +144,7 @@ public class MailService {
 							element.getLabel(language, form.getUiSchema()), form.getName());
 					return;
 				}
-				String subject = StringUtils.defaultIfBlank(element.getSubject(), configuration.getUserMailSubject());
+				String subject = StringUtils.defaultIfBlank(element.getSubject(language), configuration.getUserMailSubject());
 
 				subject = StringUtils.defaultIfBlank(subject, PLACEHOLDER_FORMNAME)
 					.replace(PLACEHOLDER_FORMNAME, form.getName());

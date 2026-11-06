@@ -80,7 +80,7 @@ public class Form implements RestModel {
 	private String mailtemp;
 
 	@JsonProperty("adminEmailSource")
-	private String mailsource;
+	private Map<String, String> mailsource;
 
 	private String successurl;
 
@@ -131,7 +131,7 @@ public class Form implements RestModel {
 		this.email = other.email;
 		this.mailsubject = other.mailsubject == null ? new LinkedHashMap<>() : new LinkedHashMap<>(other.mailsubject);
 		this.mailtemp = other.mailtemp;
-		this.mailsource = other.mailsource;
+		this.mailsource = other.mailsource == null ? new LinkedHashMap<>() : new LinkedHashMap<>(other.mailsource);
 		this.successurl = other.successurl;
 		this.schema = other.schema;
 		this.uiSchema = other.uiSchema;
@@ -279,14 +279,14 @@ public class Form implements RestModel {
 	 * Get the admin mail template source.
 	 * @return The admin mail template source.
 	 */
-	public String getMailsource() {
+	public Map<String, String> getMailsource() {
 		return mailsource;
 	}
 
 	/**
 	 * Set the admin mail template source.
 	 */
-	public Form setMailsource(String mailsource) {
+	public Form setMailsource(Map<String, String> mailsource) {
 		this.mailsource = mailsource;
 		return this;
 	}
