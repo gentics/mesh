@@ -74,13 +74,13 @@ public class Form implements RestModel {
 	private String email;
 
 	@JsonProperty("adminEmailSubject")
-	private String mailsubject;
+	private Map<String, String> mailsubject;
 
 	@JsonProperty("adminEmailTemplate")
 	private String mailtemp;
 
 	@JsonProperty("adminEmailSource")
-	private String mailsource;
+	private Map<String, String> mailsource;
 
 	private String successurl;
 
@@ -129,9 +129,9 @@ public class Form implements RestModel {
 		this.language = other.language;
 		this.type = other.type;
 		this.email = other.email;
-		this.mailsubject = other.mailsubject;
+		this.mailsubject = other.mailsubject == null ? new LinkedHashMap<>() : new LinkedHashMap<>(other.mailsubject);
 		this.mailtemp = other.mailtemp;
-		this.mailsource = other.mailsource;
+		this.mailsource = other.mailsource == null ? new LinkedHashMap<>() : new LinkedHashMap<>(other.mailsource);
 		this.successurl = other.successurl;
 		this.schema = other.schema;
 		this.uiSchema = other.uiSchema;
@@ -244,7 +244,7 @@ public class Form implements RestModel {
 	 * Get email subject for verification mails
 	 * @return email subject
 	 */
-	public String getMailsubject() {
+	public Map<String, String> getMailsubject() {
 		return mailsubject;
 	}
 
@@ -252,7 +252,7 @@ public class Form implements RestModel {
 	 * Set email subject
 	 * @param mailsubject email subject
 	 */
-	public Form setMailsubject(String mailsubject) {
+	public Form setMailsubject(Map<String, String> mailsubject) {
 		this.mailsubject = mailsubject;
 		return this;
 	}
@@ -279,14 +279,14 @@ public class Form implements RestModel {
 	 * Get the admin mail template source.
 	 * @return The admin mail template source.
 	 */
-	public String getMailsource() {
+	public Map<String, String> getMailsource() {
 		return mailsource;
 	}
 
 	/**
 	 * Set the admin mail template source.
 	 */
-	public Form setMailsource(String mailsource) {
+	public Form setMailsource(Map<String, String> mailsource) {
 		this.mailsource = mailsource;
 		return this;
 	}

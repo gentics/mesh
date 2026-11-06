@@ -721,4 +721,27 @@ public abstract class FormElement implements RestModel {
 	protected boolean isInvalidValue(String value) {
 		return false;
 	}
+
+	/**
+	 * Get a (plain) String property from the formGridOptions
+	 * @param property property name
+	 * @return value or null
+	 */
+	protected String getStringFromFormGridOptions(String property) {
+		return Optional.ofNullable(getFormGridOptions()).map(SchemaFormGridOptions::getAny)
+				.map(props -> props.get(property)).filter(value -> value instanceof String)
+				.map(value -> String.class.cast(value)).orElse(null);
+	}
+
+	/**
+	 * Get a translated String property from the formGridOptions in the given language
+	 * @param property property name
+	 * @param language language code
+	 * @return value or null
+	 */
+	protected String getStringFromFormGridOptions(String property, String language) {
+		return Optional.ofNullable(getFormGridOptions()).map(SchemaFormGridOptions::getAny).map(props -> props.get(property))
+				.filter(map -> map instanceof Map).map(map -> Map.class.cast(map)).map(map -> map.get(language))
+				.filter(value -> value instanceof String).map(value -> String.class.cast(value)).orElse(null);
+	}
 }

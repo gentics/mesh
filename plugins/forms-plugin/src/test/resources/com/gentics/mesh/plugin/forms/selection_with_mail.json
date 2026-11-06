@@ -2,7 +2,11 @@
 	"name": "Selection fields",
 	"type": "GENERIC",
 	"adminEmailAddress": "test@green.mail",
-	"adminEmailSubject": "testmail",
+	"adminEmailSubject": {
+		"en": "testmail",
+		"it": "testmail",
+		"de": "testmail"
+	},
 	"adminEmailTemplate": "testmail",
 	"schema": {
 		"key": "test-schema",
