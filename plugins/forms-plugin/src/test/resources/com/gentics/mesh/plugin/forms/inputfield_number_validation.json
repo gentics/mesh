@@ -1,0 +1,26 @@
+{
+  "name": "Test",
+  "language": "en",
+  "type": "GENERIC",
+  "schema": {
+    "key": "test-schema",
+    "version": "2.0.0",
+    "properties": {
+      "number": {
+        "name": "number",
+        "type": "number",
+        "active": true,
+        "mandatory": false,
+        "isList": false,
+        "formGridOptions": {
+          "defaultValue": "15"
+        },
+        "validation": {
+          "minValue": 5,
+          "maxValue": 23
+        }
+      }
+    }
+  },
+  "data": {}
+}

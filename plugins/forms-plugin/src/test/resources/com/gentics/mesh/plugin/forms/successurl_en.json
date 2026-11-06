@@ -1,0 +1,27 @@
+{
+	"name": "Form with Textfield",
+	"cms_id": 1,
+    "language": "en",
+    "successurl": "/thanks",
+	"schema": {
+		"key": "test-schema",
+	    "version": "1.0.0",
+	    "properties": {
+			"input1": {
+				"type": "string",
+				"name": "input1",
+				"placeholderName": "",
+				"label": "Text",
+				"mandatory": true,
+				"info": "",
+				"tooltip": "",
+				
+				"value": "",
+				"minVal": "",
+				"maxVal": "",
+				"maxCharCount": "",
+				"elements": []
+			}
+		}
+	}
+}

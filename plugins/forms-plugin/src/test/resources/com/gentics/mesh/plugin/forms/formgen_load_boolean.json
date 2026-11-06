@@ -1,0 +1,100 @@
+{
+  "name": "Boolean defaults",
+  "type": "GENERIC",
+  "schema": {
+    "key": "test-schema",
+    "version": "1.0.0",
+    "properties": {
+      "checkTrueNoStored": {
+        "type": "boolean",
+        "name": "checkTrueNoStored",
+        "label": "Checked without stored value",
+        "formGridOptions": {
+          "defaultValue": true
+        }
+      },
+      "checkFalseEmptyStored": {
+        "type": "boolean",
+        "name": "checkFalseEmptyStored",
+        "label": "Unchecked with empty stored value",
+        "formGridOptions": {
+          "defaultValue": false
+        }
+      },
+      "checkTrueStored": {
+        "type": "boolean",
+        "name": "checkTrueStored",
+        "label": "Checked with stored value",
+        "formGridOptions": {
+          "defaultValue": true
+        }
+      },
+      "checkFalseStored": {
+        "type": "boolean",
+        "name": "checkFalseStored",
+        "label": "Unchecked with stored value",
+        "formGridOptions": {
+          "defaultValue": false
+        }
+      },
+      "checkNoDefault": {
+        "type": "boolean",
+        "name": "checkNoDefault",
+        "label": "Without default value"
+      }
+    }
+  },
+  "uiSchema": {
+    "key": "test-ui",
+    "version": "1.0.0",
+    "pages": [
+      {
+        "elements": [
+          {
+            "id": "checkTrueNoStored",
+            "type": "property",
+            "formGridOptions": {
+              "type": "boolean"
+            },
+            "uiSchemaPage": 0
+          },
+          {
+            "id": "checkFalseEmptyStored",
+            "type": "property",
+            "formGridOptions": {
+              "type": "boolean",
+              "storedValue": ""
+            },
+            "uiSchemaPage": 0
+          },
+          {
+            "id": "checkTrueStored",
+            "type": "property",
+            "formGridOptions": {
+              "type": "boolean",
+              "storedValue": "Y"
+            },
+            "uiSchemaPage": 0
+          },
+          {
+            "id": "checkFalseStored",
+            "type": "property",
+            "formGridOptions": {
+              "type": "boolean",
+              "storedValue": "Y"
+            },
+            "uiSchemaPage": 0
+          },
+          {
+            "id": "checkNoDefault",
+            "type": "property",
+            "formGridOptions": {
+              "type": "boolean"
+            },
+            "uiSchemaPage": 0
+          }
+        ]
+      }
+    ]
+  }
+}

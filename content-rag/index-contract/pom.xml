@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.gentics.mesh.contentrag</groupId>
+        <artifactId>mesh-content-rag-parent</artifactId>
+        <version>9.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>mesh-content-rag-index-contract</artifactId>
+    <name>Gentics Mesh Content RAG (Index-Kontrakt)</name>
+    <description>
+        Gemeinsamer Kontrakt zwischen der schreibenden Mesh-Seite und dem lesenden RAG-Service:
+        Indexbenennung, Mapping, Ingest-Pipeline, Inference-Endpunkt und die Abbildung
+        Chunk -&gt; Elasticsearch-Dokument. Alle Definitionen werden als Map/List zurueckgegeben,
+        damit beide Seiten mit ihrer eigenen JSON-Bibliothek serialisieren koennen und dieses
+        Modul dependency-frei bleibt.
+    </description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.gentics.mesh.contentrag</groupId>
+            <artifactId>mesh-content-rag-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

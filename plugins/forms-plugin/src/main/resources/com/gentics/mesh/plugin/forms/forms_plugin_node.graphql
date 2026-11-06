@@ -1,0 +1,19 @@
+{
+  schema(name: "forms_plugin") {
+    nodes {
+      elements {
+        uuid
+        languages {
+          uuid
+          isPublished
+          language
+          fields {
+            ... on forms_plugin {
+              isMigrated
+            }
+          }
+        }
+      }
+    }
+  }
+}

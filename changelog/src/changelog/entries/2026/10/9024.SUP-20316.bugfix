@@ -1,0 +1,1 @@
+Plugins: Now the changed `noIndex` flag does not trigger the update of a plugin's schema on Mesh start.

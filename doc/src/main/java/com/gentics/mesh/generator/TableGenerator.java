@@ -163,9 +163,6 @@ public class TableGenerator extends AbstractRenderingGenerator {
 	 * @return Rendered table
 	 * @throws IOException
 	 * @throws SecurityException 
-	 * @throws NoSuchFieldException 
-	 * @throws InstantiationException 
-	 * @throws IllegalAccessException 
 	 * @throws IllegalArgumentException 
 	 */
 	public String renderModelTableViaSchema(Class<?> clazz, String template) throws IOException {

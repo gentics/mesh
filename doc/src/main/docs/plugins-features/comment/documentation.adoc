@@ -1,0 +1,146 @@
+---
+pageType: documentation
+---
+
+=== Setup
+
+* Create a folder called `+plugins+` in your mesh directory if it does
+not exist yet
+* Put the fat jar inside your `+plugins+` folder
+* Create the folders `+plugins/comment+`,
+`+plugins/comment/storage/templates+`
+* Create a file `+plugins/comment/config.yml+`. See the configuration
+section for more details
+* Create handlebars templates in your `+storage/templates+` folder
+* If you want the plugin to send mails, follow the steps in the mail
+template section
+
+=== Configuration
+
+==== Basics
+
+All configuration fields can be set in the `+config.yml+`. Some fields
+can can be overridden by other means. Here is the fallback order:
+
+[arabic]
+. Referenced Field Config
+. Comment Section Node
+. Project Configuration
+. Configuration
+. Default values
+
+These fields can be overridden per project: `+allowAnonymous+`,
+`+requiresApproval+`, `+moderatorEmails+`, `+requiredForAnonymous+`,
+`+commentRoot+`, `+nodeConfigField+`
+
+These fields can be overridden per comment section and in the referenced
+node: `+allowAnonymous+`, `+moderatorEmails+`, `+requiresApproval+`,
+`+requiredForAnonymous+`
+
+==== Fields
+
+[width="100%",cols="14%,15%,33%,38%",options="header",]
+|===
+|Key |Type |Description |Default value
+|`+commentRoot+` |uuid or webroot path |Must point to a folder node. All
+nodes for the comment plugin will be stored under this node. |REQUIRED
+
+|`+projectNames+` |array of strings |Names of the projects for which
+this plugin is activated |REQUIRED
+
+|`+allowAnonymous+` |boolean |Allows anonymous users to create comments
+|`+true+`
+
+|`+requiresApproval+` |boolean |Created comments have to be approved by
+an admin to be shown in public |`+false+`
+
+|`+moderatorEmails+` |array of strings |Emails will be sent to these
+adresses. Leave empty to deactivate emails |`+[]+`
+
+|`+requiredForAnonymous+` |Array of `+email+`, `+author+`, `+subject+`
+|These fields are required when anonymous users create comments
+|`+["email", "author"]+`
+
+|`+projectConfig+` |object |See above for details |`+{}+`
+
+|`+cacheTemplate+` |boolean |Caches JS templates |`+true+`
+
+|`+nodeConfigField+` |string |See above for details |`+null+`
+
+|`+mailServerConfig+` |object |See below for example |`+{}+`
+
+|`+mailTemplateFolder+` |string |Path to the folder of mail templates
+|`+plugins/comment/mailTemplates/+`
+
+|`+mailSender+` |string |Sender of mails |`+Admin <admin@example.com>+`
+
+|`+mailSubjects+` |map |See example below |See section
+`+Mail templates+`
+|===
+
+==== Example File
+
+[source,yml]
+----
+commentRoot: "/comments"
+projectNames:
+  - cmsdemo
+requiredForAnonymous: [
+  "email", "author", "subject"
+]
+allowAnonymous: true
+# Remove the following line for production. Default value is true
+cacheTemplates: false
+requiresApproval: true
+nodeConfigField: commentConfig
+moderatorEmails:
+  - moderator@example.com
+mailTemplateFolder: plugins/comment/mailTemplates
+mailServerConfig:
+  hostname: smtp.example.com
+  port: 25
+  starttls: REQUIRED
+  login: NONE
+  authMethods: null
+  username: null
+  password: null
+  ssl: false
+  trustAll: false
+  keyStore: null
+  keyStorePassword: null
+  ownHostname: null
+  maxPoolSize: 10
+  keepAlive: true
+  allowRcptErrors: false
+mailSubjects:
+  commentCreated: "A test comment has been created"
+mailSender: CMS Admin <cms@example.com>
+----
+
+=== Mail Templates
+
+If you want the plugin to send mails, you have to provide mail templates
+as handlebar files. You can configure the folder of your templates in
+the configuration file. You must provide all template files or else
+sending mails will fail.
+
+==== Available Templates
+
+[width="99%",cols="14%,18%,24%,35%,9%",options="header",]
+|===
+|Event |Filename |Description |Default subject |Available context
+variables
+|Comment created |`+commentCreated.hbs+` |Sent whenever a comment is
+created |`+A comment has been created+` |`+comment+`, `+reference+`
+|===
+
+==== Context Variables
+
+[cols=",,",options="header",]
+|===
+|Name |Description |Type
+|`+comment+` |Related comment |Mesh node response
+
+|`+reference+` |Referenced node of the comment section |Mesh node
+response
+|===

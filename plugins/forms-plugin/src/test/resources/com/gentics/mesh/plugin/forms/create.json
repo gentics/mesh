@@ -1,0 +1,9 @@
+{
+	"name": "Created Form",
+	"type": "POLL",
+	"schema": {
+		"key": "test-schema",
+	    "version": "1.0.0",
+	    "properties": {}
+	}
+}

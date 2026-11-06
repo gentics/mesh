@@ -1,0 +1,30 @@
+{
+	"name": "Form with Date field",
+	"type": "GENERIC",
+	"adminEmailAddress": "test@green.mail",
+	"adminEmailSubject": "testmail",
+	"adminEmailTemplate": "testmail",
+	"schema": {
+		"key": "test-schema",
+	    "version": "1.0.0",
+	    "properties": {
+			"date1": {
+				"type": "string",
+				"name": "date1",
+				"placeholderName": "",
+				"label": "Date",
+				"mandatory": true,
+				"info": "",
+				"tooltip": "",
+				"validation": {
+					"regex": "\\d{2}\\.\\d{2}\\.\\d{4}"
+				},
+				"value": "",
+				"minVal": "",
+				"maxVal": "",
+				"maxCharCount": "",
+				"elements": []
+			}
+		}
+	}
+}

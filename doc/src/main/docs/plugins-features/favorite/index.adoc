@@ -1,0 +1,18 @@
+---
+title: Gentics Mesh Favorite Plugin
+icon: far fa-star
+image: noun_fanpage_996321.svg
+sort-key: 3
+teaser: This plugin adds an API to manage favorite nodes for each logged-in user.
+fineprint: The plugin supports different types of nodes.
+status: details
+licence: commercial
+author: Gentics
+pageType: feature
+---
+
+== Description
+Do you want your users to save their favorite contents? 
+
+The favorite plugin allows your users to mark nodes as favorites.
+If you have multiple kinds of content (e.g. images, videos, blog posts) you can easily configure different categories to separate them visually.

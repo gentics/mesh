@@ -1,0 +1,13 @@
+{{#if ../form.isMultipage}}
+	<ol class="gtx-form-progress" role="progressbar" aria-valuetext="{{ ../form.currentPage.description }}"
+		aria-valuemin="1" aria-valuenow="{{ ../form.currentPage.index }}" aria-valuemax="{{ ../form.pageCount }}">
+	{{#each ../form.elements}}
+		{{#equals type "formpage" }}
+			<li class="gtx-form-progress__step {{ class }}" id="step_{{ name }}">
+				<a class="c-form-progress__step-link" href="#!" data-formpageid="{{ name }}">{{{ description }}}</a>
+				<div class="c-form-progress__step-description">{{ info }}</div>
+			</li>
+		{{/equals}}
+	{{/each}}
+	</ol>
+{{/if}}

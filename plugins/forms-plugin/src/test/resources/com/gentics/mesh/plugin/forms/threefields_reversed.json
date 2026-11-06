@@ -1,0 +1,101 @@
+{
+	"name": "Form with three Textfields",
+	"schema": {
+		"key": "test-schema",
+		"version": "1.0.0",
+		"properties": {
+			"input3": {
+				"type": "string",
+				"name": "input3",
+				"placeholderName": "",
+				"label": "Third Field",
+				"mandatory": true,
+				"info": "",
+				"tooltip": "",
+				"value": "",
+				"minVal": "",
+				"maxVal": "",
+				"maxCharCount": "",
+				"elements": []
+			},
+			"input2": {
+				"type": "string",
+				"name": "input2",
+				"placeholderName": "",
+				"label": "Second Field",
+				"mandatory": true,
+				"info": "",
+				"tooltip": "",
+				"value": "",
+				"minVal": "",
+				"maxVal": "",
+				"maxCharCount": "",
+				"elements": []
+			},
+			"input1": {
+				"type": "string",
+				"name": "input1",
+				"placeholderName": "",
+				"label": "First Field",
+				"mandatory": true,
+				"info": "",
+				"tooltip": "",
+				"value": "",
+				"minVal": "",
+				"maxVal": "",
+				"maxCharCount": "",
+				"elements": []
+			}
+		}
+	},
+	"uiSchema": {
+		"key": "test-ui",
+		"version": "1.0.0",
+		"formname": {
+			"de": "Testformular",
+			"en": "Test Form"
+		},
+		"formdescription": {
+			"de": "Beispielbeschreibung",
+			"en": "Example description"
+		},
+		"formwidth": "9",
+		"pages": [
+			{
+				"pagename": {
+					"de": "Seite 1",
+					"en": "Page 1"
+				},
+				"elements": [
+					{
+						"type": "control",
+						"id": "input1",
+						"label": {
+							"de": "1. Eintrag",
+							"en": "First Field"
+						},
+						"uiSchemaPage": 0
+					},
+					{
+						"type": "control",
+						"id": "input2",
+						"label": {
+							"de": "2. Eintrag",
+							"en": "Second Field"
+						},
+						"uiSchemaPage": 0
+					},
+					{
+						"type": "control",
+						"id": "input3",
+						"label": {
+							"de": "3. Eintrag",
+							"en": "Third Field"
+						},
+						"uiSchemaPage": 0
+					}
+				]
+			}
+		]
+	}
+}

@@ -1,0 +1,53 @@
+{
+	"name": "Form with Filefield",
+	"schema": {
+		"key": "test-schema",
+		"version": "1.0.0",
+		"properties": {
+			"file1": {
+				"type": "binary",
+				"name": "file1",
+				"placeholderName": "",
+				"label": "Datei",
+				"mandatory": false,
+				"info": "",
+				"tooltip": "",
+				"isList": true,
+				"allowed_filetypes": [],
+				"max_filesize": "10",
+				"elements": []
+			}
+		}
+	},
+	"uiSchema": {
+		"key": "test-ui",
+		"version": "1.0.0",
+		"formname": {
+			"de": "Testformular",
+			"en": "Test Form"
+		},
+		"formdescription": {
+			"de": "Beispielbeschreibung",
+			"en": "Example description"
+		},
+		"formwidth": "9",
+		"pages": [
+			{
+				"pagename": {
+					"de": "Seite 1",
+					"en": "Page 1"
+				},
+				"elements": [
+					{
+						"type": "control",
+						"id": "file1",
+						"label": {
+							"de": "Datei"
+						},
+						"uiSchemaPage": 0
+					}
+				]
+			}
+		]
+	}
+}

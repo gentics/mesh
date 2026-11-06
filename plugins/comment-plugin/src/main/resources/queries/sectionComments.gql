@@ -1,0 +1,49 @@
+query sectionComments($uuid: String){
+	node(uuid: $uuid) {
+		...section
+		children {
+			elements {
+				...comment
+				children {
+					elements {
+						...comment
+						children {
+							elements {
+								...comment
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+fragment section on Node {
+	uuid
+	fields {
+		... on comment_section {
+			node
+			language
+			allowAnonymous
+			requiresApproval
+			requiredForAnonymous
+		}
+	}
+}
+
+fragment comment on Node {
+	uuid
+	created
+	fields {
+		... on comment_comment {
+			email
+			author
+			authorReference
+			subject
+			comment
+			hidden
+			status
+		}
+	}
+}

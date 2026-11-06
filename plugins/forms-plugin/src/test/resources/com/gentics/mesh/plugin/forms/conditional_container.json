@@ -1,0 +1,56 @@
+{
+	"name": "Form with Conditional Container",
+	"type": "GENERIC",
+	"adminEmailAddress": "test@green.mail",
+	"adminEmailSubject": "testmail",
+	"adminEmailTemplate": "testmail",
+	"cms_id": 1,
+	"schema": {
+		"key": "test-schema",
+	    "version": "1.0.0",
+	    "properties": {
+			"checked_input": {
+				"type": "string",
+				"name": "checked_input",
+				"label": "Checked input"
+			},
+			"normal_input": {
+				"type": "string",
+				"name": "normal_input",
+				"label": "Normal input"
+			},
+			"conditionalcontainer1": {
+				"type": "conditionalcontainer",
+				"name": "conditionalcontainer1",
+				"element_to_check": "checked_input",
+				"value_to_check": "process_conditional_container",
+				"elements": [
+					{
+						"type": "string",
+						"name": "conditional_input",
+						"label": "Conditional input",
+						"mandatory": true
+					},
+					{
+						"type": "binary",
+						"name": "conditional_file",
+						"label": "Conditional file",
+						"mandatory": true
+					},
+					{
+						"type": "mandatorygroup",
+						"name": "mandatory_group",
+						"label": "Conditional group",
+						"elements": [
+							{
+								"type": "string",
+								"name": "mandatory_group_input",
+								"label": "Mandatory group input"
+							}
+						]
+					}
+				]
+			}
+		}
+	}
+}

@@ -1,0 +1,20 @@
+<div class="element-radio floating-label" element-name="{{ name }}">
+	<div class="content form-group">
+		<fieldset class="c-radio-set">
+			<legend class="c-radio-set__legend">{{ label }}</legend>
+{{#each options }}
+			<div class="mdc-radio" data-mdc-auto-init="Radio">
+				<input type="radio" id="{{ name }}-{{ @index }}" name="{{ name }}"
+					value="Radio eins" class="mdc-radio__native-control"
+					{{#if mandatory}}required="required"{{/if}}
+					{{#equals value data.value}}checked="checked"{{/equals}}>
+				<div class="mdc-radio__background">
+					<div class="mdc-radio__outer-circle"></div>
+					<div class="mdc-radio__inner-circle"></div>
+				</div>
+				<label class="mdc-radio__label" for="{{ name }}-{{ @index }}">{{{ label }}}</label>
+			</div>
+{{/each}}
+		</fieldset>
+	</div>
+</div>

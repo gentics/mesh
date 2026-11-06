@@ -1,0 +1,24 @@
+{
+	"schema": {
+		"key": "test-schema",
+	    "version": "1.0.0",
+	    "properties": {
+			"buttons_1": {
+				"name": "buttons_1",
+				"type": "buttons",
+				"active": true,
+				"elements": [],
+				"submitlabel": "Absenden",
+				"resetlabel": null,
+				"showreset": false
+			}
+		}
+	},
+	"adminEmailAddress": "",
+	"successurl": "",
+	"adminEmailSubject": null,
+	"adminEmailTemplate": null,
+	"language": "en",
+	"name": "Formular ohne Felder",
+	"cms_id": 16
+}

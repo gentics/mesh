@@ -1,0 +1,58 @@
+projects:
+  - "test"
+types:
+  widgets:
+    maxEntries: -1
+    allowDuplicates: false
+    reorderDuplicates: false
+    addToList: append
+  infobox:
+    maxEntries: -1
+    allowDuplicates: false
+    reorderDuplicates: false
+    addToList: append
+  ongoing_procedures:
+    maxEntries: 3
+    allowDuplicates: false
+    reorderDuplicates: true
+    addToList: append
+  widgets_max_nr_prepend:
+    maxEntries: 4
+    allowDuplicates: false
+    reorderDuplicates: false
+    addToList: prepend
+  infobox_max_nr_duplicates:
+    maxEntries: 5
+    allowDuplicates: true
+    reorderDuplicates: false
+    addToList: append
+  ongoing_procedures_duplicates:
+    maxEntries: 4
+    allowDuplicates: true
+    reorderDuplicates: true
+    addToList: append
+  test_prepend:
+    maxEntries: 4
+    allowDuplicates: true
+    reorderDuplicates: true
+    addToList: prepend
+  test_no_max:
+    maxEntries: -1
+    allowDuplicates: true
+    reorderDuplicates: true
+    addToList: prepend
+  prepend_duplicates:
+    maxEntries: 5
+    allowDuplicates: false
+    reorderDuplicates: true
+    addToList: prepend
+  ongoing_procedures_append:
+    maxEntries: 4
+    allowDuplicates: false
+    reorderDuplicates: false
+    addToList: append
+  ongoing_procedures_append_reorder:
+    maxEntries: 4
+    allowDuplicates: false
+    reorderDuplicates: true
+    addToList: append

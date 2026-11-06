@@ -1,0 +1,22 @@
+{{- /*
+PodDisruptionBudget for the content-rag service — only rendered when running more than
+one replica (a PDB at a single fixed replica would block node drains).
+maxUnavailable, when set, takes precedence over minAvailable (K8s allows only one).
+*/}}
+{{- if and .Values.contentRag.enabled (gt (.Values.contentRag.replicaCount | int) 1) }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: "{{ include "mesh.contentRag.fullname" . }}-pdb"
+  labels:
+    {{- include "mesh.contentRag.labels" . | nindent 4 }}
+spec:
+  {{- if ((.Values.contentRag.podDisruptionBudget).maxUnavailable) }}
+  maxUnavailable: {{ .Values.contentRag.podDisruptionBudget.maxUnavailable }}
+  {{- else }}
+  minAvailable: {{ ((.Values.contentRag.podDisruptionBudget).minAvailable) | default "50%" }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "mesh.contentRag.selectorLabels" . | nindent 6 }}
+{{- end }}

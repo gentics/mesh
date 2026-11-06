@@ -1,0 +1,17 @@
+{
+	"name": "Form with Textfield",
+	"cms_id": 1,
+	"adminEmailAddress": "admin@test.com",
+	"adminEmailSubject": "admin mail",
+	"adminEmailSource": "Custom admin mail source, value: {{#each data}}{{{value}}}{{/each}}",
+	"schema": {
+		"properties": {
+			"usermail1": {
+				"type": "usermail",
+				"name": "usermail1",
+				"mailsubject": "user mail",
+				"mailsource": "Custom user mail source, value: {{#each data}}{{{value}}}{{/each}}"
+			}
+		}
+	}
+}

@@ -1,0 +1,7 @@
+<div>
+	<textarea id="{{ name }}" class="form-control mdc-textfield__input"
+		rows="8" cols="40" name="{{ name }}" placeholder="{{placeholder}}"
+		{{#if maxCharCount }}maxlength="{{ maxCharCount }}" maxcharcount="{{ maxCharCount }}"{{/if}}
+		{{#if mandatory}}required="required"{{/if}}>{{#if data.value }}{{ data.value }}{{else}}{{ value }}{{/if}}</textarea>
+	<label for="{{ name }}" class="control-label mdc-textfield__label">{{{ label }}}</label>
+</div>

@@ -159,22 +159,22 @@ ul.doc-toc h2 {
                     </li>
 
                     <li class="section">
-                        <h2><a href="/premium-features">Commercial Plugins</a></h2>
+                        <h2><a href="/plugins-features">Plugins and more</a></h2>
                         <ul>
                             <li>
-                                <a href="/premium-features/favorite">Favourites Plugin</a>
+                                <a href="/plugins-features/favorite">Favourites Plugin</a>
                             </li>
                             <li>
-                                <a href="/premium-features/comment">Comments Plugin</a>
+                                <a href="/plugins-features/comment">Comments Plugin</a>
                             </li>
                             <li>
-                                <a href="/premium-features/like">Likes Plugin</a>
+                                <a href="/plugins-features/like">Likes Plugin</a>
                             </li>
                             <li>
-                                <a href="/premium-features/keycloak">Keycloak Plugin</a>
+                                <a href="/plugins-features/keycloak">Keycloak Plugin</a>
                             </li>
                            <li>
-                                <a href="/premium-features/must-read">Must Read Plugin</a>
+                                <a href="/plugins-features/must-read">Must Read Plugin</a>
                             </li>
                         </ul>
                     </li>

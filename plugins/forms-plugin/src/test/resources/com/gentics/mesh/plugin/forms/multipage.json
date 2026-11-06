@@ -1,0 +1,88 @@
+{
+	"name": "Form with Pages",
+	"cms_id": 1,
+	"schema": {
+		"key": "test-schema",
+	    "version": "1.0.0",
+	    "properties": {
+			"formprogress1": {
+				"type": "formprogress",
+				"name": "formprogress1",
+				"active": true,
+				"elements": []
+			},
+			"page1": {
+				"type": "formpage",
+				"name": "page1",
+				"label": "Page 1",
+				"description": "Page 1 description",
+				"active": true,
+				"elements": [
+					{
+						"type": "string",
+						"name": "input1",
+						"placeholderName": "",
+						"label": "Text",
+						"mandatory": true,
+						"info": "",
+						"tooltip": "",
+						
+						"value": "",
+						"minVal": "",
+						"maxVal": "",
+						"maxCharCount": "",
+						"elements": []
+					}
+				]
+			},
+			"page2": {
+				"type": "formpage",
+				"name": "page2",
+				"label": "Page 2",
+				"description": "Page 2 description",
+				"active": true,
+				"elements": [
+					{
+						"type": "string",
+						"name": "input2",
+						"placeholderName": "",
+						"label": "Text",
+						"mandatory": true,
+						"info": "",
+						"tooltip": "",
+						
+						"value": "",
+						"minVal": "",
+						"maxVal": "",
+						"maxCharCount": "",
+						"elements": []
+					}
+				]
+			},
+			"page3": {
+				"type": "formpage",
+				"name": "page3",
+				"label": "Page 3",
+				"description": "Page 3 description",
+				"active": true,
+				"elements": [
+					{
+						"type": "string",
+						"name": "input3",
+						"placeholderName": "",
+						"label": "Text",
+						"mandatory": true,
+						"info": "",
+						"tooltip": "",
+						
+						"value": "",
+						"minVal": "",
+						"maxVal": "",
+						"maxCharCount": "",
+						"elements": []
+					}
+				]
+			}
+		}
+	}
+}
