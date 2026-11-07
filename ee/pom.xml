@@ -25,6 +25,14 @@
 		<version>9.0.0-SNAPSHOT</version>
 	</parent>
 
+	<licenses>
+		<license>
+			<name>BUSL-1.1</name>
+			<url>https://github.com/gentics/mesh/blob/dev/ee/LICENSE</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
 	<modules>
 		<module>connectors</module>
 		<module>plugins</module>

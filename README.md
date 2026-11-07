@@ -304,7 +304,12 @@ legal information, give you instructions on how to set up your IDE in order to b
 
 # Copyright & License
 
-Copyright (c) 2014-2025 Gentics Software GmbH. Licensed under the
-Apache License, Version 2.0.
+Copyright (c) 2014-2026 Gentics Software GmbH.
 
-Gentics is a registered trade mark of Gentics Software GmbH.
+Gentics Mesh uses an open-core model: everything outside the `ee/` directory is
+licensed under the Apache License, Version 2.0; the Enterprise Modules in `ee/`
+are licensed under the Business Source License 1.1 and convert to the Apache
+License 2.0 on their Change Date. See [LICENSING.md](LICENSING.md).
+
+Gentics is a registered trade mark of Gentics Software GmbH. See
+[TRADEMARKS.md](TRADEMARKS.md).
