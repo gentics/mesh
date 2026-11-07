@@ -20,8 +20,11 @@ successfully in less time, no matter which technology you prefer.
 
  <img src="https://img.shields.io/badge/status-stable-brightgreen.svg" alt="stable" />
 
- <a href="https://www.apache.org/licenses/LICENSE-2.0">
-  <img src="https://img.shields.io/:license-apache-brightgreen.svg" alt="License" />
+ <a href="LICENSING.md">
+  <img src="https://img.shields.io/badge/core-Apache--2.0-brightgreen.svg" alt="Core: Apache-2.0" />
+ </a>
+ <a href="LICENSING.md">
+  <img src="https://img.shields.io/badge/ee-BUSL--1.1-blue.svg" alt="Enterprise Modules: BUSL-1.1" />
  </a>
  <a href="https://stackoverflow.com/questions/tagged/gentics-mesh">
   <img src="https://img.shields.io/badge/stack%20overflow-gentics--mesh-brightgreen.svg" alt="Stack Overflow" />
@@ -75,12 +78,18 @@ for an explanation of the basic concepts of Gentics Mesh.
 
 ## Gentics CMP
 
-Gentics CMP (Content Management Platform) is composed of the following components: Gentics CMS, Gentics Mesh, and Gentics Portal. Gentics CMS and Mesh are available as both open-source software (OSS) and Enterprise Edition (EE). Gentics Portal Java and PHP can only be acquired with the Enterprise Edition. You can find the EE features here: [Open-Source and Enterprise Edition](https://www.gentics.com/infoportal/cmp/ossandee/). For more information about the EE, please contact [sales@gentics.com](mailto:sales@gentics.com).
+Gentics Mesh is one component of **Gentics CMP** (Content Management Platform). The platform consists of four repositories that work together:
 
-Here are the links to our open-source projects:
+| Repository | Component |
+| --- | --- |
+| [gentics/cms-oss](https://github.com/gentics/cms-oss) | Gentics CMS – editing, publishing, Workspace, MCP tools |
+| [gentics/mesh](https://github.com/gentics/mesh) | Gentics Mesh – headless content repository, search, Content RAG, MCP server |
+| [gentics/cmp-portals](https://github.com/gentics/cmp-portals) | Portal \| php and Portal \| java – render content from Mesh |
+| [gentics/cmp](https://github.com/gentics/cmp) | Umbrella: platform changelog, guides, Helm chart, licensing overview |
 
-- Gentics CMS OSS: https://github.com/gentics/cms-oss
-- Gentics Mesh OSS: https://github.com/gentics/mesh
+The content flows from Gentics CMS into Gentics Mesh and from there into the portals or your own applications. The [cmp README](https://github.com/gentics/cmp#readme) explains the big picture and how to get started across repositories.
+
+Every repository is **open core**: the core is open source under the Apache License 2.0, the Enterprise Modules in `ee/` are source-available under the Business Source License 1.1 and convert to Apache 2.0 three years after their release. In this repository the Enterprise Modules are the MS SQL, Oracle and PostgreSQL connectors, the Keycloak, search and favorite plugins and the enterprise Helm chart. Production use of the Enterprise Modules requires a commercial license; contact [sales@gentics.com](mailto:sales@gentics.com). Details: [LICENSING.md](LICENSING.md).
 
 ## What is a Headless CMS?
 
@@ -297,10 +306,9 @@ query webroot($path: String) {
 
 # Contributing to Gentics Mesh
 
-Please read our [Contributing Guidelines](https://www.gentics.com/mesh/docs/contributing/) if you intend to contribute to the project. The guidelines will tell you the
-legal information, give you instructions on how to set up your IDE in order to build Gentics Mesh, and will tell you necessary knowledge to understand the codebase.
+Pull requests are welcome. Contributions to the core are accepted under the Apache License 2.0 with a DCO sign-off (`git commit -s`). Contributions to `ee/` additionally need our [Contributor License Agreement](CLA-individual.md) ([corporate version](CLA-corporate.md)); the CLA bot asks on your first pull request that touches `ee/`. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-* https://github.com/gentics/mesh contains the Gentics Mesh code
+The [Contributing Guidelines](https://www.gentics.com/mesh/docs/contributing/) explain how to set up your IDE and give you the background to understand the codebase.
 
 # Copyright & License
 
