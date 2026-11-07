@@ -494,10 +494,4 @@
 | *HIKARI_CP_TRANSACTION_ISOLATION_LEVEL*
 | Override the HikariCP transaction isolation level.  _(hikariOptions.transactionIsolationLevel)_
 
-| *LICENSEKEY*
-| The license key  _(licenseKey)_
-
-| *LICENSEKEY_PATH*
-| Override the default licence key file path.  _(licenseKeyPath)_
-
 |======

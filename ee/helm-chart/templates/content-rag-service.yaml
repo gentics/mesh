@@ -1,0 +1,21 @@
+{{- if .Values.contentRag.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "mesh.contentRag.fullname" . }}
+  labels:
+    {{- include "mesh.contentRag.labels" . | nindent 4 }}
+  {{- with .Values.contentRag.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.contentRag.service.type }}
+  ports:
+    - port: {{ .Values.contentRag.http.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "mesh.contentRag.selectorLabels" . | nindent 4 }}
+{{- end }}

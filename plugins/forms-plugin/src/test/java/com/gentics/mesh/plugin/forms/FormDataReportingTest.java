@@ -1,0 +1,1066 @@
+package com.gentics.mesh.plugin.forms;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
+
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.plugin.forms.model.schema.FormData;
+import com.gentics.mesh.plugin.forms.model.schema.FormDataProperty;
+import com.google.common.net.HttpHeaders;
+
+import io.vertx.core.json.JsonObject;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.MultipartBody.Builder;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
+/**
+ * Test cases for getting reporting data
+ */
+@RunWith(value = Parameterized.class)
+public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
+	@Parameters(name = "{index}: permission {0}, online {1}")
+	public static Collection<Object[]> data() {
+		Collection<Object[]> data = new ArrayList<>();
+		for (Boolean permission : Arrays.asList(true, false)) {
+			for (boolean online : Arrays.asList(true, false)) {
+				data.add(new Object[] { permission, online });
+			}
+		}
+		return data;
+	}
+
+	@Parameter(0)
+	public boolean permission;
+
+	@Parameter(1)
+	public boolean online;
+
+	@Before
+	public void setup() {
+		super.setup();
+		// activate plugin
+		assertThat(activate(PROJECT_NAME)).as("Activation status").isTrue();
+	}
+
+	/**
+	 * Test exporting data
+	 * @throws IOException
+	 */
+	@Test
+	public void testExport() throws IOException {
+		doExportTest(false, false);
+	}
+
+	/**
+	 * Test exporting data where the fields are in reversed order
+	 * @throws IOException
+	 */
+	@Test
+	public void testExportReversed() throws IOException {
+		doExportTest(true, false);
+	}
+
+	/**
+	 * Test exporting data including non-completed form data.
+	 * @throws IOException
+	 */
+	@Test
+	public void testExportIncludeDraftReversed() throws IOException {
+		doExportTest(true, true);
+	}
+
+	/**
+	 * Test exporting data including non-completed form data.
+	 * @throws IOException
+	 */
+	@Test
+	public void testExportIncludeDraft() throws IOException {
+		doExportTest(false, true);
+	}
+
+	/**
+	 * Execute the export test
+	 * @param reversed true to execute for form with fields in reversed order
+	 * @throws IOException
+	 */
+	protected void doExportTest(boolean reversed, boolean includeDraft) throws IOException {
+		String uuid = createForm(reversed ? "threefields_reversed.json" : "threefields.json");
+
+		// we collect the expected records (including the header) here as Set, because the actual order in
+		// the CSV is indeterministic, so we will just check that all the records are there
+		Set<String> records = new HashSet<>();
+		// add "record" for the header
+		List<String> headers = Arrays.asList("input1|||First Field", "input2|||Second Field", "input3|||Third Field");
+		if (reversed) {
+			Collections.reverse(headers);
+		}
+		records.add(StringUtils.join(headers, ","));
+
+		String postUrl = projectUrl("/form/" + uuid + "/submit?lang=en");
+		String saveUrl = projectUrl("/form/" + uuid + "/save?lang=en");
+
+		Response response;
+		for (String value : Arrays.asList("one", "two", "three")) {
+			String value1 = value + " in field 1";
+			String value2 = value + " in field 2";
+			String value3 = value + " in field 3";
+			RequestBody requestBody = new MultipartBody.Builder()
+					.setType(MultipartBody.FORM)
+					.addFormDataPart("formdata", makeFormdataMultipart(uuid, null, Map.of("input1", value1, "input2", value2, "input3", value3)))
+					.build();
+			Request postRequest = new Request.Builder().url(postUrl).post(requestBody).build();
+			response = client().newCall(postRequest).execute();
+
+			// add the line to the set of expected records
+			List<String> values = Arrays.asList(value1, value2, value3);
+			if (reversed) {
+				Collections.reverse(values);
+			}
+			records.add(StringUtils.join(values, ","));
+		}
+
+		// Add a non-complete record.
+		List<String> values = new ArrayList<>(3);
+		MultipartBody.Builder requestBodyBuilder = new MultipartBody.Builder()
+			.setType(MultipartBody.FORM);
+
+		FormData formData = AbstractFormsPluginIntegrationTest.makeFormdata(uuid, null, Map.of());
+		for (int ii = 1; ii <= 3; ii++) {
+			String value = "unpublished in field" + ii;
+
+			formData.getProperties().put("input" + ii, new FormDataProperty().setValue(value));
+			values.add(value);
+		}
+		requestBodyBuilder.addFormDataPart("formdata", JsonUtil.toJson(formData));
+		
+		if (includeDraft) {
+			if (reversed) {
+				Collections.reverse(values);
+			}
+
+			records.add(StringUtils.join(values, ","));
+		}
+
+		Request postRequest = new Request.Builder()
+			.url(saveUrl)
+			.post(requestBodyBuilder.build())
+			.build();
+
+		response = client().newCall(postRequest).execute();
+		System.out.println(response.body().string());
+
+		if (!online) {
+			setFormOffline(uuid, "en", true, true);
+		}
+
+		StringBuilder exportUrl = new StringBuilder(projectUrl("/forms/" + uuid + "/export?lang=en"));
+
+		if (includeDraft) {
+			exportUrl.append("&publishedOnly=false");
+		}
+
+		Request exportRequest = new Request.Builder()
+				.url(exportUrl.toString())
+				.headers(auth(permission))
+				.get()
+				.build();
+		Response exportResponse = client().newCall(exportRequest).execute();
+
+		if (permission) {
+			assertThat(exportResponse.isSuccessful()).as(String.format("Response success %d (%s)", exportResponse.code(), exportResponse.message())).isTrue();
+
+			Set<String> actualRecords = getExportRecords(exportResponse.body().string());
+
+			assertThat(actualRecords).as("Exported data").containsOnlyElementsOf(records);
+		} else {
+			assertForbidden(exportResponse);
+		}
+	}
+
+	/**
+	 * Test exporting data from a form existing only in "de"
+	 * @throws IOException
+	 */
+	@Test
+	public void testExportDe() throws IOException {
+		String uuid = createForm("threefields_de.json");
+
+		// we collect the expected records (including the header) here as Set, because the actual order in
+		// the CSV is indeterministic, so we will just check that all the records are there
+		Set<String> records = new HashSet<>();
+		// add "record" for the header, input2 does not have a label
+		records.add(StringUtils.join(Arrays.asList("input1|||Erstes Feld", "input2", "input3|||Drittes Feld", "input4"), ","));
+
+		for (String value : Arrays.asList("one", "two", "three")) {
+			String value1 = value + " in field 1";
+			String value2 = value + " in field 2";
+			String value3 = value + " in field 3";
+			String value4 = value + " in field 4";
+			RequestBody requestBody = new MultipartBody.Builder()
+					.setType(MultipartBody.FORM)
+					.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("input1", value1, "input2", value2, "input3", value3, "input4", value4)))
+					.build();
+			Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=de")).post(requestBody).build();
+			client().newCall(postRequest).execute();
+
+			// add the line to the set of expected records
+			records.add(StringUtils.join(Arrays.asList(value1, value2, value3, value4), ","));
+		}
+
+		if (!online) {
+			setFormOffline(uuid, "de", true, true);
+		}
+
+		Request exportRequest = new Request.Builder()
+				.url(projectUrl("/forms/" + uuid + "/export"))
+				.headers(auth(permission))
+				.get()
+				.build();
+		Response exportResponse = client().newCall(exportRequest).execute();
+
+		if (permission) {
+			assertThat(exportResponse.isSuccessful()).as(String.format("Response success %d (%s)", exportResponse.code(), exportResponse.message())).isTrue();
+
+			Set<String> actualRecords = new HashSet<>();
+			try (BufferedReader in = new BufferedReader(new StringReader(exportResponse.body().string()))) {
+				String line = null;
+				while ((line = in.readLine()) != null) {
+					actualRecords.add(line);
+				}
+			}
+
+			assertThat(actualRecords).as("Exported data").containsOnlyElementsOf(records);
+		} else {
+			assertForbidden(exportResponse);
+		}
+	}
+
+	/**
+	 * Test exporting data with a custom title row header delimiter
+	 * @throws IOException
+	 */
+	@Test
+	public void testExportDeCustomDelimiter() throws IOException {
+		String customDelimiter = "CUSTOM_DELIMITER";
+		String uuid = createForm("threefields_de.json");
+
+		// we collect the expected records (including the header) here as Set, because the actual order in
+		// the CSV is indeterministic, so we will just check that all the records are there
+		Set<String> records = new HashSet<>();
+		// add "record" for the header, input2 does not have a label
+		records.add(StringUtils.join(Arrays.asList("input1" + customDelimiter + "Erstes Feld", "input2", "input3" + customDelimiter + "Drittes Feld", "input4"), ","));
+
+		for (String value : Arrays.asList("one", "two", "three")) {
+			String value1 = value + " in field 1";
+			String value2 = value + " in field 2";
+			String value3 = value + " in field 3";
+			String value4 = value + " in field 4";
+			RequestBody requestBody = new MultipartBody.Builder()
+					.setType(MultipartBody.FORM)
+					.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("input1", value1, "input2", value2, "input3", value3, "input4", value4)))
+					.build();
+			Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=de")).post(requestBody).build();
+			client().newCall(postRequest).execute();
+
+			// add the line to the set of expected records
+			records.add(StringUtils.join(Arrays.asList(value1, value2, value3, value4), ","));
+		}
+
+		if (!online) {
+			setFormOffline(uuid, "de", true, true);
+		}
+
+		Request exportRequest = new Request.Builder()
+				.url(projectUrl("/forms/" + uuid + "/export?lang=de&headerDelimiter=" + URLEncoder.encode(customDelimiter, "UTF-8")))
+				.headers(auth(permission))
+				.get()
+				.build();
+		Response exportResponse = client().newCall(exportRequest).execute();
+
+		if (permission) {
+			assertThat(exportResponse.isSuccessful()).as(String.format("Response success %d (%s)", exportResponse.code(), exportResponse.message())).isTrue();
+
+			Set<String> actualRecords = new HashSet<>();
+			try (BufferedReader in = new BufferedReader(new StringReader(exportResponse.body().string()))) {
+				String line = null;
+				while ((line = in.readLine()) != null) {
+					actualRecords.add(line);
+				}
+			}
+
+			assertThat(actualRecords).as("Exported data").containsOnlyElementsOf(records);
+		} else {
+			assertForbidden(exportResponse);
+		}
+	}
+
+	/**
+	 * Test "exporting" data for a form, that has no fields
+	 * @throws IOException
+	 */
+	@Test
+	public void testExportNoFields() throws IOException {
+		String uuid = createForm("button_only_en.json");
+
+		if (!online) {
+			setFormOffline(uuid, "en", true, true);
+		}
+
+		Request exportRequest = new Request.Builder()
+				.url(projectUrl("/forms/" + uuid + "/export"))
+				.headers(auth(permission))
+				.get()
+				.build();
+		Response exportResponse = client().newCall(exportRequest).execute();
+
+		if (permission) {
+			assertThat(exportResponse.isSuccessful()).as(String.format("Response success %d (%s)", exportResponse.code(), exportResponse.message())).isTrue();
+
+			Set<String> actualRecords = new HashSet<>();
+			try (BufferedReader in = new BufferedReader(new StringReader(exportResponse.body().string()))) {
+				String line = null;
+				while ((line = in.readLine()) != null) {
+					if (!StringUtils.isEmpty(line)) {
+						actualRecords.add(line);
+					}
+				}
+			}
+
+			assertThat(actualRecords).as("Exported data").isEmpty();
+		} else {
+			assertForbidden(exportResponse);
+		}
+	}
+
+	@Test
+	public void testListFormData() throws IOException {
+		String uuid = createForm("inputfield.json");
+
+		RequestBody requestBody;
+		for (String value : Arrays.asList("one", "two", "three")) {
+			requestBody = new MultipartBody.Builder()
+					.setType(MultipartBody.FORM)
+					.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("input1", value)))
+					.build();
+			Request postRequest = new Request.Builder()
+					.url(projectUrl("/form/" + uuid + "/submit?lang=en"))
+					.post(requestBody)
+					.build();
+			client().newCall(postRequest).execute();
+		}
+
+		if (!online) {
+			setFormOffline(uuid, "en", true, true);
+		}
+
+		requestBody = RequestBody.create(
+				new JsonObject().put("formID", uuid).encode(), 
+				MediaType.parse("application/json; charset=utf-8"));
+
+		Request loadRequest = new Request.Builder()
+				.url(projectUrl("/forms/" + uuid + "/data"))
+				.headers(auth(permission))
+				.get()
+				.build();
+		Response response = client().newCall(loadRequest).execute();
+		if (permission) {
+			assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+		} else {
+			assertForbidden(response);
+		}
+
+		// TODO more assertions
+	}
+
+	/**
+	 * Test finding form data
+	 * @throws IOException
+	 */
+	@Test
+	public void testFindFormData() throws IOException {
+		String uuid = createForm("inputfield.json");
+
+		for (String value : Arrays.asList("one", "two", "three")) {
+			RequestBody requestBody = new MultipartBody.Builder()
+					.setType(MultipartBody.FORM)
+					.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("input1", value)))
+					.build();
+			Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=en")).post(requestBody).build();
+			client().newCall(postRequest).execute();
+		}
+
+		if (!online) {
+			setFormOffline(uuid, "en", true, true);
+		}
+
+		Request findRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data?q=two")).headers(auth(permission)).get().build();
+		Response response = client().newCall(findRequest).execute();
+		if (permission) {
+			assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+		} else {
+			assertForbidden(response);
+		}
+	}
+
+	/**
+	 * Test finding form data
+	 * @throws IOException
+	 */
+	@Test
+	public void testFindFormDataBackSorted() throws IOException {
+		String uuid = createForm("inputfield.json");
+
+		for (String value : Arrays.asList("one", "two", "three")) {
+			RequestBody requestBody = new MultipartBody.Builder()
+					.setType(MultipartBody.FORM)
+					.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("input1", value)))
+					.build();
+			Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=en")).post(requestBody).build();
+			client().newCall(postRequest).execute();
+		}
+
+		if (!online) {
+			setFormOffline(uuid, "en", true, true);
+		}
+
+		Request findRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data?q=two&sortBy=created&sortOrder=desc")).headers(auth(permission)).get().build();
+		Response response = client().newCall(findRequest).execute();
+		if (permission) {
+			assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+		} else {
+			assertForbidden(response);
+		}
+	}
+
+	/**
+	 * Test export with binary data and default base URL.
+	 */
+	@Test
+	public void testExportBinaryDefaultBaseUrl() throws Exception {
+		doTestExportBinary("filefield.json", String.format("/api/v2/%s/plugins/forms/forms", PROJECT_NAME), true);
+	}
+
+	/**
+	 * Test export with binary data and custom base URL.
+	 */
+	@Test
+	public void testExportBinaryCustomBaseUrl() throws Exception {
+		doTestExportBinary("filefield_with_download_url.json", "http://cms.domain/editor/#proxy/CNPortletapp/rest/form/1/data", false);
+
+	}
+
+	private void doTestExportBinary(String filename, String expectedBaseUrl, boolean addFormUuidToBasePath) throws IOException {
+		if (!online || !permission) {
+			// Permission and online status is covered by other tests. Here we
+			// are only interested if the binary fields are exported correctly.
+
+			return;
+		}
+
+		String fieldName = "file1";
+		String uuid = createForm(filename);
+		RequestBody requestBody = new MultipartBody.Builder()
+			.setType(MultipartBody.FORM)
+			.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("file1", getFileData(filename))))
+			.addFormDataPart(fileUploadKey(fieldName), filename, requestBodyFromFile(filename))
+			.build();
+		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=en")).post(requestBody).build();
+		Response postResponse = client().newCall(postRequest).execute();
+		Request exportRequest = new Request.Builder()
+			.url(projectUrl("/forms/" + uuid + "/export?lang=de"))
+			.headers(auth(permission))
+			.get()
+			.build();
+		Response exportResponse = client().newCall(exportRequest).execute();
+		String dataUuid = new JsonObject(postResponse.body().string()).getString(FIELD_RS_DATA_UUID);
+		String fileUrl = addFormUuidToBasePath
+			? String.format("%s/%s/data/%s/binary/%s,%s", expectedBaseUrl, uuid, dataUuid, fieldName, filename)
+			: String.format("%s/%s/binary/%s,%s", expectedBaseUrl, dataUuid, fieldName, filename);
+		List<String> expected = Arrays.asList(
+			String.format("%1$s|||Datei,%1$s|||Datei (filename)", fieldName),
+			fileUrl);
+		Set<String> actual = getExportRecords(exportResponse.body().string());
+
+		assertThat(actual).as("Exported data").containsOnlyElementsOf(expected);
+	}
+
+	/**
+	 * Test export with multivalue binary data
+	 * @throws IOException
+	 */
+	@Test
+	public void testExportMultiBinaries() throws IOException {
+		if (!online || !permission) {
+			// Permission and online status is covered by other tests. Here we
+			// are only interested if the binary fields are exported correctly.
+
+			return;
+		}
+
+		String uuid = createForm("multifilefield.json");
+		String fieldName = "file1";
+		String expectedBaseUrl = String.format("/api/v2/%s/plugins/forms/forms", PROJECT_NAME);
+
+		List<String> filesToPost = Arrays.asList("list1.json", "list2.json", "list3.json");
+		Builder builder = new MultipartBody.Builder().setType(MultipartBody.FORM);
+		List<String> expectedNames = IntStream.range(0, filesToPost.size()).mapToObj(index -> {
+			String fileName = filesToPost.get(index);
+			try {
+				builder.addFormDataPart(fileUploadKey("file1", index), fileName, requestBodyFromFile(fileName));
+			} catch (IOException e) {
+				throw new IllegalStateException(e);
+			}
+			return "/file1/" + index + "/" + fileName;
+		}).collect(Collectors.toList());
+		List<Map<String, Object>> formData = new ArrayList<>();
+		for (String name : filesToPost) {
+			formData.add(getFileData(name));
+		}
+
+		builder.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("file1", formData)));
+		String dataUuid;
+		try {
+			RequestBody requestBody = builder.build();
+			Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=en")).header("Referer", "ref").post(requestBody).build();
+			Response response = client().newCall(postRequest).execute();
+			assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+			dataUuid = new JsonObject(response.body().string()).getString(FIELD_RS_DATA_UUID);
+		} catch (IOException e) {
+			throw new IllegalStateException(e);
+		}
+		expectedNames = expectedNames.stream().map(name -> dataUuid + "/<node-uuid>" +  name).collect(Collectors.toList());
+
+		Request exportRequest = new Request.Builder()
+				.url(projectUrl("/forms/" + uuid + "/export?lang=de"))
+				.headers(auth(permission))
+				.get()
+				.build();
+		Response exportResponse = client().newCall(exportRequest).execute();
+		Set<String> actual = getExportRecords(exportResponse.body().string());
+
+		List<String> fileUrls = new ArrayList<>();
+		for (int i = 0; i < filesToPost.size(); i++) {
+			fileUrls.add("%s/%s/data/%s/binary/%s/%d".formatted(expectedBaseUrl, uuid, dataUuid, fieldName, i));
+		}
+		String exportLine = "\"%s\",\"%s\"".formatted(fileUrls.toString(), filesToPost.toString());
+
+		List<String> expected = Arrays.asList(
+				String.format("%1$s|||Datei,%1$s|||Datei (filename)", fieldName),
+				exportLine);
+
+		assertThat(actual).hasSameElementsAs(expected);
+	}
+
+	/**
+	 * Test loading binary data
+	 * @throws IOException
+	 */
+	@Test
+	public void testLoadBinaryData() throws IOException {
+		String uuid = createForm("filefield.json");
+
+		RequestBody requestBody = new MultipartBody.Builder()
+				.setType(MultipartBody.FORM)
+				.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("file1", getFileData("filefield.json"))))
+				.addFormDataPart(fileUploadKey("file1"), "filefield.json", requestBodyFromFile("filefield.json"))
+				.build();
+
+		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=en")).post(requestBody).build();
+		client().newCall(postRequest).execute();
+
+		if (!online) {
+			setFormOffline(uuid, "en", true, true);
+		}
+
+		List<NodeResponse> dataNodes = getFormDataNodes(uuid);
+		for (NodeResponse nodeResponse : dataNodes) {
+			Request downloadRequest = new Request.Builder()
+					.url(projectUrl("/forms/" + uuid + "/data/" + nodeResponse.getUuid() + "/binary/file1"))
+					.headers(auth(permission))
+					.get()
+					.build();
+			Response downloadResponse = client().newCall(downloadRequest).execute();
+
+			if (permission) {
+				assertThat(downloadResponse.isSuccessful()).as(String.format("Response success %d (%s)", downloadResponse.code(), downloadResponse.message())).isTrue();
+				String download = downloadResponse.body().string();
+				assertThat(download).as("Downloaded file").isEqualTo(fromFile("filefield.json"));
+				assertThat(downloadResponse.header("Content-Type")).as("Content-Type").isEqualTo("application/json");
+				assertThat(downloadResponse.header("Content-Disposition")).as("Content-Disposition").isEqualTo("attachment; filename=\"filefield.json\"");
+			} else {
+				assertForbidden(downloadResponse);
+			}
+		}
+	}
+
+	/**
+	 * Test loading binary data
+	 * @throws IOException
+	 */
+	@Test
+	public void testLoadBinaryDataDe() throws IOException {
+		String uuid = createForm("filefield_de.json");
+
+		RequestBody requestBody = new MultipartBody.Builder()
+				.setType(MultipartBody.FORM)
+				.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("file1", getFileData("filefield.json"))))
+				.addFormDataPart(fileUploadKey("file1"), "filefield.json", requestBodyFromFile("filefield.json"))
+				.build();
+
+		Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=en")).post(requestBody).build();
+		client().newCall(postRequest).execute();
+
+		if (!online) {
+			setFormOffline(uuid, "de", true, true);
+		}
+
+		List<NodeResponse> dataNodes = getFormDataNodes(uuid);
+		for (NodeResponse nodeResponse : dataNodes) {
+			Request downloadRequest = new Request.Builder()
+					.url(projectUrl("/forms/" + uuid + "/data/" + nodeResponse.getUuid() + "/binary/file1"))
+					.headers(auth(permission))
+					.get()
+					.build();
+			Response downloadResponse = client().newCall(downloadRequest).execute();
+
+			if (permission) {
+				assertThat(downloadResponse.isSuccessful()).as(String.format("Response success %d (%s)", downloadResponse.code(), downloadResponse.message())).isTrue();
+				String download = downloadResponse.body().string();
+				assertThat(download).as("Downloaded file").isEqualTo(fromFile("filefield.json"));
+				assertThat(downloadResponse.header("Content-Type")).as("Content-Type").isEqualTo("application/json");
+				assertThat(downloadResponse.header("Content-Disposition")).as("Content-Disposition").isEqualTo("attachment; filename=\"filefield.json\"");
+			} else {
+				assertForbidden(downloadResponse);
+			}
+		}
+	}
+
+	/**
+	 * Test deleting form data
+	 * @throws IOException
+	 */
+	@Test
+	public void testDeleteFormData() throws IOException {
+		String uuid = createForm("inputfield.json");
+
+		for (String value : Arrays.asList("one", "two", "three")) {
+			RequestBody requestBody = new MultipartBody.Builder()
+					.setType(MultipartBody.FORM)
+					.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("input1", value)))
+					.build();
+			Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=en")).post(requestBody).build();
+			client().newCall(postRequest).execute();
+		}
+
+		if (!online) {
+			setFormOffline(uuid, "en", true, true);
+		}
+
+		List<NodeResponse> dataNodes = getFormDataNodes(uuid);
+		assertThat(dataNodes).as("List of data nodes").isNotEmpty();
+		for (NodeResponse nodeResponse : dataNodes) {
+			List<NodeResponse> nodes2 = getFormDataNodes(uuid);
+			assertThat(nodes2).as("List before deleting").usingElementComparatorOnFields("uuid").contains(nodeResponse);
+
+			Request deleteRequest = new Request.Builder()
+					.url(projectUrl("/forms/" + uuid + "/data/" + nodeResponse.getUuid()))
+					.headers(auth(permission))
+					.delete()
+					.build();
+			Response response = client().newCall(deleteRequest).execute();
+
+			if (permission) {
+				assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+
+				nodes2 = getFormDataNodes(uuid);
+				assertThat(nodes2).as("List after deleting").usingElementComparatorOnFields("uuid").doesNotContain(nodeResponse);
+			} else {
+				assertForbidden(response);
+			}
+		}
+	}
+
+	/**
+	 * Test loading binaries as zip
+	 * @throws IOException
+	 */
+	@Test
+	public void testLoadBinariesAsZip() throws IOException {
+		String uuid = createForm("filefield.json");
+
+		List<String> filesToPost = Arrays.asList("list1.json", "list2.json", "list3.json");
+		List<String> expectedNames = filesToPost.stream().map(fileName -> {
+			try {
+				RequestBody requestBody = new MultipartBody.Builder()
+						.setType(MultipartBody.FORM)
+						.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("file1", getFileData(fileName))))
+						.addFormDataPart(fileUploadKey("file1"), fileName, requestBodyFromFile(fileName))
+						.build();
+				Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=en")).header("Referer", "ref").post(requestBody).build();
+				Response response = client().newCall(postRequest).execute();
+				assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+				return new JsonObject(response.body().string()).getValue(FIELD_RS_DATA_UUID) + "/file1/" + fileName;
+			} catch (IOException e) {
+				throw new IllegalStateException(e);
+			}
+		}).collect(Collectors.toList());
+
+		if (!online) {
+			setFormOffline(uuid, "en", true, true);
+		}
+
+		Request zipDownloadRequest = new Request.Builder()
+				.url(projectUrl("/forms/" + uuid + "/binaries"))
+				.headers(auth(permission))
+				.get()
+				.build();
+		Response zipDownloadResponse = client().newCall(zipDownloadRequest).execute();
+
+		if (permission) {
+			assertThat(zipDownloadResponse.isSuccessful()).as(String.format("Response success %d (%s)", zipDownloadResponse.code(), zipDownloadResponse.message())).isTrue();
+
+			assertThat(zipDownloadResponse.header(HttpHeaders.CONTENT_DISPOSITION)).as("Content-Disposition").startsWith("attachment; filename=forms-files_Form with Filefield_").endsWith(".zip");
+			assertThat(zipDownloadResponse.header(HttpHeaders.CONTENT_TYPE)).as("Content-Type").isEqualTo("application/zip");
+
+			Set<String> foundFiles = new HashSet<>();
+			try (ZipInputStream zipIn = new ZipInputStream(zipDownloadResponse.body().byteStream())) {
+				ZipEntry entry = null;
+				while ((entry = zipIn.getNextEntry()) != null) {
+					String name = entry.getName();
+					foundFiles.add(name);
+					StringWriter fileContents = new StringWriter();
+					IOUtils.copy(zipIn, fileContents, "UTF-8");
+					assertThat(fileContents.toString()).as(String.format("Contents of file %s", name)).isEqualTo(fromFile(name.contains("/") ? name.substring(name.lastIndexOf("/") + 1) : name));
+				}
+			}
+			assertThat(foundFiles).as("Files found in ZIP").containsOnlyElementsOf(expectedNames);
+		} else {
+			assertForbidden(zipDownloadResponse);
+		}
+	}
+
+	/**
+	 * Test loading binaries as zip
+	 * @throws IOException
+	 */
+	@Test
+	public void testLoadMultiBinariesAsZip() throws IOException {
+		String uuid = createForm("multifilefield.json");
+
+		List<String> filesToPost = Arrays.asList("list1.json", "list2.json", "list3.json");
+		Builder builder = new MultipartBody.Builder().setType(MultipartBody.FORM);
+		List<String> expectedNames = IntStream.range(0, filesToPost.size()).mapToObj(index -> {
+			String fileName = filesToPost.get(index);
+			try {
+				builder.addFormDataPart(fileUploadKey("file1", index), fileName, requestBodyFromFile(fileName));
+			} catch (IOException e) {
+				throw new IllegalStateException(e);
+			}
+			return "/file1/" + index + "/" + fileName;
+		}).collect(Collectors.toList());
+		List<Map<String, Object>> formData = new ArrayList<>();
+		for (String name : filesToPost) {
+			formData.add(getFileData(name));
+		}
+
+		builder.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("file1", formData)));
+
+		String dataUuid;
+		try {
+			RequestBody requestBody = builder.build();
+			Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=en")).header("Referer", "ref").post(requestBody).build();
+			Response response = client().newCall(postRequest).execute();
+			assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+			dataUuid = new JsonObject(response.body().string()).getString(FIELD_RS_DATA_UUID);
+		} catch (IOException e) {
+			throw new IllegalStateException(e);
+		}
+		expectedNames = expectedNames.stream().map(name -> dataUuid + "/<node-uuid>" +  name).collect(Collectors.toList());
+
+		if (!online) {
+			setFormOffline(uuid, "en", true, true);
+		}
+
+		Request zipDownloadRequest = new Request.Builder()
+				.url(projectUrl("/forms/" + uuid + "/binaries"))
+				.headers(auth(permission))
+				.get()
+				.build();
+		Response zipDownloadResponse = client().newCall(zipDownloadRequest).execute();
+
+		if (permission) {
+			assertThat(zipDownloadResponse.isSuccessful()).as(String.format("Response success %d (%s)", zipDownloadResponse.code(), zipDownloadResponse.message())).isTrue();
+
+			assertThat(zipDownloadResponse.header(HttpHeaders.CONTENT_DISPOSITION)).as("Content-Disposition").startsWith("attachment; filename=forms-files_Form with Filefield_").endsWith(".zip");
+			assertThat(zipDownloadResponse.header(HttpHeaders.CONTENT_TYPE)).as("Content-Type").isEqualTo("application/zip");
+
+			Set<String> foundFiles = new HashSet<>();
+			try (ZipInputStream zipIn = new ZipInputStream(zipDownloadResponse.body().byteStream())) {
+				ZipEntry entry = null;
+				while ((entry = zipIn.getNextEntry()) != null) {
+					String name = entry.getName();
+					foundFiles.add(name);
+					StringWriter fileContents = new StringWriter();
+					IOUtils.copy(zipIn, fileContents, "UTF-8");
+					assertThat(fileContents.toString()).as(String.format("Contents of file %s", name)).isEqualTo(fromFile(name.contains("/") ? name.substring(name.lastIndexOf("/") + 1) : name));
+				}
+			}
+			assertThat(foundFiles).as("Files found in ZIP").usingElementComparator((a, b) -> {
+				if (StringUtils.isNotBlank(a) && StringUtils.isNotBlank(b)) {
+					String[] apath = a.split("/");
+					String[] bpath = b.split("/");
+					if (apath.length == 5 && bpath.length == 5) {
+						return apath[0].compareTo(bpath[0])
+							+ apath[2].compareTo(bpath[2])
+							+ apath[3].compareTo(bpath[3])
+							+ apath[4].compareTo(bpath[4]);
+					}
+				}
+				return -1;
+			}).containsExactlyInAnyOrderElementsOf(expectedNames);
+		} else {
+			assertForbidden(zipDownloadResponse);
+		}
+	}
+
+	/**
+	 * Test loading binaries as zip
+	 * @throws IOException
+	 */
+	@Test
+	public void testLoadBinariesAsZipDe() throws IOException {
+		String uuid = createForm("filefield_de.json");
+
+		List<String> filesToPost = Arrays.asList("list1.json", "list2.json", "list3.json");
+		List<String> expectedNames = filesToPost.stream().map(fileName -> {
+			try {
+				RequestBody requestBody = new MultipartBody.Builder()
+						.setType(MultipartBody.FORM)
+						.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("file1", getFileData(fileName))))
+						.addFormDataPart(fileUploadKey("file1"), fileName, requestBodyFromFile(fileName))
+						.build();
+				Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=de")).header("Referer", "ref").post(requestBody).build();
+				Response response = client().newCall(postRequest).execute();
+				assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+				return new JsonObject(response.body().string()).getValue(FIELD_RS_DATA_UUID) + "/file1/" + fileName;
+			} catch (IOException e) {
+				throw new IllegalStateException(e);
+			}
+		}).collect(Collectors.toList());
+
+		if (!online) {
+			setFormOffline(uuid, "de", true, true);
+		}
+
+		Request zipDownloadRequest = new Request.Builder()
+				.url(projectUrl("/forms/" + uuid + "/binaries"))
+				.headers(auth(permission))
+				.get()
+				.build();
+		Response zipDownloadResponse = client().newCall(zipDownloadRequest).execute();
+
+		if (permission) {
+			assertThat(zipDownloadResponse.isSuccessful()).as(String.format("Response success %d (%s)", zipDownloadResponse.code(), zipDownloadResponse.message())).isTrue();
+
+			assertThat(zipDownloadResponse.header(HttpHeaders.CONTENT_DISPOSITION)).as("Content-Disposition").startsWith("attachment; filename=forms-files_Form with Filefield_").endsWith(".zip");
+			assertThat(zipDownloadResponse.header(HttpHeaders.CONTENT_TYPE)).as("Content-Type").isEqualTo("application/zip");
+
+			Set<String> foundFiles = new HashSet<>();
+			try (ZipInputStream zipIn = new ZipInputStream(zipDownloadResponse.body().byteStream())) {
+				ZipEntry entry = null;
+				while ((entry = zipIn.getNextEntry()) != null) {
+					String name = entry.getName();
+					foundFiles.add(name);
+					StringWriter fileContents = new StringWriter();
+					IOUtils.copy(zipIn, fileContents, "UTF-8");
+					assertThat(fileContents.toString()).as(String.format("Contents of file %s", name)).isEqualTo(fromFile(name.contains("/") ? name.substring(name.lastIndexOf("/") + 1) : name));
+				}
+			}
+			assertThat(foundFiles).as("Files found in ZIP").containsOnlyElementsOf(expectedNames);
+		} else {
+			assertForbidden(zipDownloadResponse);
+		}
+	}
+
+	/**
+	 * Test handling of duplicate filenames in ZIP download
+	 * @throws IOException
+	 */
+	@Test
+	public void testLoadBinariesAsZipDuplicateNames() throws IOException {
+		String uuid = createForm("filefield.json");
+
+		List<String> filesToPost = Arrays.asList("list1.json", "list1.json", "list1.json");
+		List<String> expectedNames = filesToPost.stream().map(fileName -> {
+			try {
+				RequestBody requestBody = new MultipartBody.Builder()
+						.setType(MultipartBody.FORM)
+						.addFormDataPart("formdata", AbstractFormsPluginIntegrationTest.makeFormdataMultipart(uuid, null, Map.of("file1", getFileData(fileName))))
+						.addFormDataPart(fileUploadKey("file1"), fileName, requestBodyFromFile(fileName))
+						.build();
+				Request postRequest = new Request.Builder().url(projectUrl("/form/" + uuid + "/submit?lang=en")).header("Referer", "ref").post(requestBody).build();
+				Response response = client().newCall(postRequest).execute();
+				assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+				return new JsonObject(response.body().string()).getValue(FIELD_RS_DATA_UUID) + "/file1/" + fileName;
+			} catch (IOException e) {
+				throw new IllegalStateException(e);
+			}
+		}).collect(Collectors.toList());
+
+		if (!online) {
+			setFormOffline(uuid, "en", true, true);
+		}
+
+		Request zipDownloadRequest = new Request.Builder()
+				.url(projectUrl("/forms/" + uuid + "/binaries"))
+				.headers(auth(permission))
+				.get()
+				.build();
+		Response zipDownloadResponse = client().newCall(zipDownloadRequest).execute();
+
+		if (permission) {
+			assertThat(zipDownloadResponse.isSuccessful()).as(String.format("Response success %d (%s)", zipDownloadResponse.code(), zipDownloadResponse.message())).isTrue();
+
+			Set<String> foundFiles = new HashSet<>();
+			try (ZipInputStream zipIn = new ZipInputStream(zipDownloadResponse.body().byteStream())) {
+				ZipEntry entry = null;
+				while ((entry = zipIn.getNextEntry()) != null) {
+					String name = entry.getName();
+					foundFiles.add(name);
+				}
+			}
+			assertThat(foundFiles).as("Files found in ZIP").containsOnlyElementsOf(expectedNames);
+		} else {
+			assertForbidden(zipDownloadResponse);
+		}
+	}
+
+	/**
+	 * Test loading binaries as zip, when there is no data
+	 * @throws IOException
+	 */
+	@Test
+	public void testLoadBinariesAsZipNoData() throws IOException {
+		String uuid = createForm("filefield.json");
+
+		if (!online) {
+			setFormOffline(uuid, "en", true, true);
+		}
+
+		Request zipDownloadRequest = new Request.Builder()
+				.url(projectUrl("/forms/" + uuid + "/binaries"))
+				.headers(auth(permission))
+				.get()
+				.build();
+		Response zipDownloadResponse = client().newCall(zipDownloadRequest).execute();
+		if (permission) {
+			assertThat(zipDownloadResponse.isSuccessful()).as(String.format("Response success %d (%s)", zipDownloadResponse.code(), zipDownloadResponse.message())).isTrue();
+		} else {
+			assertForbidden(zipDownloadResponse);
+		}
+	}
+
+	/**
+	 * Test loading binaries as zip, when form has no file fields
+	 * @throws IOException
+	 */
+	@Test
+	public void testLoadBinariesAsZipNoFileElements() throws IOException {
+		String uuid = createForm("inputfield.json");
+
+		if (!online) {
+			setFormOffline(uuid, "en", true, true);
+		}
+
+		Request zipDownloadRequest = new Request.Builder()
+				.url(projectUrl("/forms/" + uuid + "/binaries"))
+				.headers(auth(permission))
+				.get()
+				.build();
+		Response zipDownloadResponse = client().newCall(zipDownloadRequest).execute();
+		if (permission) {
+			assertThat(zipDownloadResponse.isSuccessful()).as(String.format("Response success %d (%s)", zipDownloadResponse.code(), zipDownloadResponse.message())).isTrue();
+		} else {
+			assertForbidden(zipDownloadResponse);
+		}
+	}
+
+	@Test
+	public void testExportMultivalueCatalog() throws IOException {
+		String uuid = createForm("catalog.json");
+
+		String postUrl = projectUrl("/form/" + uuid + "/submit?lang=en");
+
+		Set<String> records = new HashSet<>();
+		records.add("catalog_element|||Auswahl");
+
+		for (List<String> values : List.of(List.of("eins", "zwei"), List.of("eins"), List.of("zwei"))) {
+			RequestBody requestBody = new MultipartBody.Builder()
+					.setType(MultipartBody.FORM)
+					.addFormDataPart("formdata", makeFormdataMultipart(uuid, null, Map.of("catalog_element", values)))
+					.build();
+			Request postRequest = new Request.Builder().url(postUrl).post(requestBody).build();
+			client().newCall(postRequest).execute();
+
+			String lineValue = values.toString();
+			if (Strings.CS.contains(lineValue, ",")) {
+				lineValue = "\"%s\"".formatted(lineValue);
+			}
+			records.add(lineValue);
+		}
+
+		if (!online) {
+			setFormOffline(uuid, "en", true, true);
+		}
+
+		StringBuilder exportUrl = new StringBuilder(projectUrl("/forms/" + uuid + "/export?lang=en"));
+
+		Request exportRequest = new Request.Builder()
+				.url(exportUrl.toString())
+				.headers(auth(permission))
+				.get()
+				.build();
+		Response exportResponse = client().newCall(exportRequest).execute();
+
+		if (permission) {
+			assertThat(exportResponse.isSuccessful()).as(String.format("Response success %d (%s)", exportResponse.code(), exportResponse.message())).isTrue();
+
+			Set<String> actualRecords = getExportRecords(exportResponse.body().string());
+
+			assertThat(actualRecords).as("Exported data").containsOnlyElementsOf(records);
+		} else {
+			assertForbidden(exportResponse);
+		}
+	}
+}

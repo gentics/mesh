@@ -6,7 +6,7 @@
 
 	<groupId>com.gentics.mesh</groupId>
 	<artifactId>mesh</artifactId>
-	<version>3.3.3-SNAPSHOT</version>
+	<version>9.0.0-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
 	<name>Gentics Mesh</name>
@@ -92,6 +92,7 @@
 		<module>services</module>
 		<module>distributed</module>
 		<module>distributed-coordinator</module>
+		<module>content-rag</module>
 		<module>core</module>
 		<module>verticles</module>
 		<module>doc</module>
@@ -100,7 +101,9 @@
 		<module>database-tests</module>
 		<module>test-scanner</module>
 		<module>connectors</module>
-		<module>performance-tests</module>
+		<module>mcp-server</module>
+		<module>ee</module>
+		<module>plugins</module>
 	</modules>
 
 	<dependencies>

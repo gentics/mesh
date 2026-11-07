@@ -177,14 +177,4 @@
 | hibernatecacheconfig
 | Cache options.  Default: *com.gentics.mesh.etc.config.hibernate.HibernateCacheConfig@437486cd*.
 
-| licenseKeyPath
-| false
-| string
-| Path to the license key file  Default: *license.key*.
-
-| licenseKey
-| false
-| string
-| The license key  Default: *null*.
-
 |======

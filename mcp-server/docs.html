@@ -1,0 +1,1578 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gentics Mesh MCP Server – Developer Documentation</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <style>
+    /* ─── RESET & BASE ─────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      color: #10212b;
+      background: #ffffff;
+    }
+
+    /* ─── DESIGN TOKENS (Gentics CI) ────────────────────────────────── */
+    :root {
+      --primary:      #029ddd;
+      --primary-dark: #007bb0;
+      --text:         #10212b;
+      --muted:        #5f7481;
+      --line:         #d8e6ee;
+      --bg:           #f5fafc;
+      --white:        #ffffff;
+      --accent:       #e8f7fd;
+      --radius:       10px;
+      --radius-lg:    16px;
+      --shadow-sm:    0 1px 4px rgba(2,157,221,0.08);
+      --shadow-md:    0 4px 18px rgba(2,157,221,0.12);
+      --shadow-lg:    0 8px 32px rgba(2,157,221,0.14);
+      --code-bg:      #f8fbfd;
+      --code-border:  #e2eef5;
+      --max-w:        1180px;
+    }
+
+    /* ─── LAYOUT HELPERS ───────────────────────────────────────────── */
+    .container { width: 100%; max-width: var(--max-w); margin: 0 auto; padding: 0 32px; }
+    .section-inner { padding: 72px 0; }
+    .section-bg    { background: var(--bg); }
+
+    .section-label {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin-bottom: 12px;
+    }
+    .section-headline {
+      font-size: clamp(1.5rem, 2.6vw, 2rem);
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.25;
+      margin-bottom: 14px;
+    }
+    .section-body {
+      font-size: 1.02rem;
+      color: var(--muted);
+      max-width: 720px;
+      margin-bottom: 0;
+    }
+    .section-intro { margin-bottom: 44px; }
+
+    h3 { font-size: 1.05rem; font-weight: 700; color: var(--text); margin: 28px 0 10px; }
+    h4 { font-size: .95rem; font-weight: 700; color: var(--text); margin: 22px 0 8px; }
+    p  { margin-bottom: 14px; }
+    p:last-child { margin-bottom: 0; }
+    a  { color: var(--primary-dark); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ─── STICKY HEADER ────────────────────────────────────────────── */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255,255,255,0.96);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(8px);
+    }
+    .header-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px; gap: 24px;
+    }
+    .logo-wrap { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .logo-img  { height: 26px; width: auto; display: block; }
+    .logo-divider { width: 1px; height: 22px; background: var(--line); }
+    .logo-product {
+      font-size: .8rem; font-weight: 700; color: var(--text);
+      letter-spacing: -.005em;
+    }
+    .logo-product span { color: var(--primary); font-weight: 700; }
+
+    nav { display: flex; align-items: center; gap: 2px; flex-wrap: wrap; }
+    nav a {
+      font-size: .82rem;
+      font-weight: 500;
+      color: var(--muted);
+      padding: 6px 10px;
+      border-radius: 6px;
+      transition: color .18s, background .18s;
+    }
+    nav a:hover { color: var(--primary); background: var(--accent); text-decoration: none; }
+    nav a.nav-cta {
+      margin-left: 6px;
+      background: var(--primary); color: var(--white);
+      padding: 7px 14px; border-radius: 7px;
+    }
+    nav a.nav-cta:hover { background: var(--primary-dark); color: var(--white); }
+
+    /* ─── HERO ─────────────────────────────────────────────────────── */
+    #hero {
+      background: linear-gradient(160deg, #f0f9ff 0%, #e8f7fd 40%, #ffffff 100%);
+      padding: 88px 0 64px;
+      overflow: hidden;
+      position: relative;
+    }
+    #hero::before {
+      content: '';
+      position: absolute;
+      top: -120px; right: -120px;
+      width: 480px; height: 480px;
+      background: radial-gradient(circle, rgba(2,157,221,0.09) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 56px;
+      align-items: center;
+    }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+      color: var(--primary); background: var(--accent);
+      border: 1px solid rgba(2,157,221,0.2);
+      padding: 5px 12px; border-radius: 100px;
+      margin-bottom: 20px;
+    }
+    .hero-eyebrow .dot {
+      width: 6px; height: 6px; border-radius: 50%; background: var(--primary);
+    }
+    .hero-headline {
+      font-size: clamp(2rem, 3.4vw, 2.6rem);
+      font-weight: 800;
+      line-height: 1.18;
+      color: var(--text);
+      margin-bottom: 16px;
+      letter-spacing: -.02em;
+    }
+    .hero-subheadline {
+      font-size: 1.05rem;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 28px;
+      max-width: 540px;
+    }
+    .hero-facts {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      max-width: 520px;
+    }
+    .hero-fact {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+    }
+    .hero-fact-label {
+      font-size: .68rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+      color: var(--primary); margin-bottom: 4px;
+    }
+    .hero-fact-value { font-size: .86rem; font-weight: 600; color: var(--text); line-height: 1.35; }
+
+    /* Hero stack card */
+    .hero-stack {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-lg);
+      padding: 26px;
+    }
+    .hero-stack-title {
+      font-size: .76rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+    .stack-node {
+      border-radius: 10px;
+      padding: 11px 14px;
+      margin-bottom: 6px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .stack-node-tag {
+      font-size: .65rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+      padding: 3px 8px; border-radius: 5px; flex-shrink: 0;
+    }
+    .stack-node-text  { font-size: .85rem; font-weight: 600; color: var(--text); }
+    .stack-node-sub   { font-size: .72rem; color: var(--muted); margin-top: 1px; }
+    .stack-ai     { background: var(--accent); border: 1.5px solid rgba(2,157,221,0.25); }
+    .stack-ai .stack-node-tag    { background: var(--primary); color: var(--white); }
+    .stack-mcp    { background: linear-gradient(135deg,#e8f7fd 0%,#d0eefc 100%); border: 1.5px solid rgba(2,157,221,0.35); }
+    .stack-mcp .stack-node-tag   { background: var(--primary-dark); color: var(--white); }
+    .stack-mesh   { background: #f8fafb; border: 1.5px solid var(--line); }
+    .stack-mesh .stack-node-tag  { background: #cce8f5; color: var(--primary-dark); }
+    .stack-arrow {
+      display: flex; justify-content: flex-start; padding-left: 22px;
+      color: var(--primary); margin: -2px 0;
+    }
+
+    /* ─── CONTENT GRIDS ────────────────────────────────────────────── */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+
+    .card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--line);
+      padding: 28px;
+      box-shadow: var(--shadow-sm);
+    }
+    .card-accent {
+      background: linear-gradient(135deg,#e8f7fd 0%,#d4f0fc 100%);
+      border-color: rgba(2,157,221,0.3);
+    }
+
+    /* ─── TABLES ───────────────────────────────────────────────────── */
+    .table-wrap {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow-x: auto;
+      margin: 18px 0;
+    }
+    table {
+      width: 100%; border-collapse: collapse;
+      font-size: .88rem;
+    }
+    th, td {
+      text-align: left; padding: 12px 16px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+    th {
+      font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+      color: var(--muted); background: var(--bg);
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: rgba(2,157,221,0.03); }
+    code, .mono {
+      font-family: 'SF Mono', ui-monospace, 'Cascadia Mono', Menlo, Monaco, Consolas, monospace;
+      font-size: .85em;
+      background: var(--code-bg);
+      border: 1px solid var(--code-border);
+      padding: 1px 6px;
+      border-radius: 5px;
+      color: var(--primary-dark);
+    }
+    td code { font-size: .85em; }
+
+    /* ─── CODE BLOCKS ──────────────────────────────────────────────── */
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--code-border);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      overflow-x: auto;
+      margin: 14px 0;
+      font-size: .82rem;
+      line-height: 1.55;
+      position: relative;
+    }
+    pre code {
+      background: transparent;
+      border: none;
+      padding: 0;
+      color: var(--text);
+      font-size: 1em;
+    }
+    .code-label {
+      position: absolute;
+      top: 8px; right: 10px;
+      font-size: .65rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+      color: var(--muted); background: var(--white);
+      padding: 2px 7px; border-radius: 4px; border: 1px solid var(--line);
+    }
+
+    /* ─── ARCHITECTURE LAYERED VISUAL ──────────────────────────────── */
+    .arch-stack { display: flex; flex-direction: column; gap: 8px; }
+    .arch-layer {
+      border-radius: 12px;
+      padding: 16px 20px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .arch-layer-left { display: flex; align-items: center; gap: 12px; }
+    .arch-layer-num {
+      width: 28px; height: 28px; border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .76rem; font-weight: 800; flex-shrink: 0;
+    }
+    .arch-layer-text h4 { margin: 0; font-size: .92rem; font-weight: 700; color: var(--text); }
+    .arch-layer-text p  { font-size: .76rem; color: var(--muted); margin-top: 2px; margin-bottom: 0; }
+    .arch-layer-tag {
+      font-size: .68rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+      padding: 4px 10px; border-radius: 100px; flex-shrink: 0; white-space: nowrap;
+      font-family: 'SF Mono', monospace;
+    }
+    .arch-entry  { background: var(--accent); border: 2px solid rgba(2,157,221,0.3); }
+    .arch-entry .arch-layer-num { background: var(--primary); color: var(--white); }
+    .arch-entry .arch-layer-tag { background: var(--primary); color: var(--white); }
+    .arch-app    { background: linear-gradient(90deg,#daf0fc 0%,#c8e8f8 100%); border: 2px solid rgba(2,157,221,0.3); }
+    .arch-app .arch-layer-num { background: var(--primary-dark); color: var(--white); }
+    .arch-app .arch-layer-tag { background: var(--primary-dark); color: var(--white); }
+    .arch-domain { background: #f0f8ff; border: 2px solid rgba(2,157,221,0.18); }
+    .arch-domain .arch-layer-num { background: #c2dff0; color: var(--primary-dark); }
+    .arch-domain .arch-layer-tag { background: #cce8f5; color: var(--primary-dark); }
+    .arch-infra  { background: #f8fafb; border: 2px solid var(--line); }
+    .arch-infra .arch-layer-num { background: #e0eaef; color: var(--text); }
+    .arch-infra .arch-layer-tag { background: #e6eef3; color: var(--muted); }
+
+    /* ─── TOOLS LIST (named anchors) ───────────────────────────────── */
+    .tool-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-sm);
+      padding: 24px 28px;
+      margin-bottom: 16px;
+    }
+    .tool-head {
+      display: flex; align-items: center; gap: 14px;
+      padding-bottom: 14px; margin-bottom: 14px;
+      border-bottom: 1px solid var(--line);
+    }
+    .tool-name {
+      font-family: 'SF Mono', monospace;
+      font-size: .95rem; font-weight: 700; color: var(--primary-dark);
+      background: var(--accent); border: 1px solid rgba(2,157,221,0.25);
+      padding: 4px 10px; border-radius: 6px;
+    }
+    .tool-tag {
+      font-size: .68rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+      padding: 3px 9px; border-radius: 100px;
+      background: var(--bg); color: var(--muted); border: 1px solid var(--line);
+    }
+    .tool-tag.tag-read  { color: var(--primary-dark); background: var(--accent); border-color: rgba(2,157,221,0.2); }
+    .tool-desc { color: var(--text); font-size: .92rem; margin-bottom: 12px; }
+    .tool-card details summary {
+      cursor: pointer;
+      font-size: .82rem; font-weight: 600; color: var(--primary-dark);
+      padding: 6px 0;
+      list-style: none;
+    }
+    .tool-card details summary::-webkit-details-marker { display: none; }
+    .tool-card details summary::before {
+      content: '▸'; display: inline-block;
+      margin-right: 6px; color: var(--primary);
+      transition: transform .15s;
+    }
+    .tool-card details[open] summary::before { transform: rotate(90deg); }
+
+    /* ─── COMPARE PANELS (stdio vs http) ───────────────────────────── */
+    .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .compare-panel {
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      border: 2px solid transparent;
+    }
+    .compare-panel-neutral { background: #f8fafb; border-color: var(--line); }
+    .compare-panel-accent  { background: linear-gradient(135deg,#e8f7fd 0%,#d4f0fc 100%); border-color: rgba(2,157,221,0.3); }
+    .compare-badge {
+      display: inline-block;
+      font-size: .68rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+      padding: 4px 12px; border-radius: 100px; margin-bottom: 14px;
+    }
+    .badge-neutral { background: #d8e6ee; color: var(--muted); }
+    .badge-accent  { background: var(--primary); color: var(--white); }
+    .compare-panel h3 { font-size: 1.1rem; margin-top: 0; }
+    .compare-panel ul { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+    .compare-panel li {
+      display: flex; align-items: flex-start; gap: 10px;
+      font-size: .88rem; color: var(--text);
+    }
+    .compare-panel li::before {
+      content: '';
+      display: block; width: 16px; height: 16px; border-radius: 50%;
+      flex-shrink: 0; margin-top: 2px;
+      background-color: var(--primary);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M3.5 8l3 3 6-6' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-size: cover;
+    }
+    .compare-panel-neutral li::before { background-color: #b0c8d8; }
+
+    /* ─── ENDPOINT LIST ────────────────────────────────────────────── */
+    .endpoint {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 18px;
+      background: var(--white); border: 1px solid var(--line);
+      border-radius: var(--radius); margin-bottom: 10px;
+    }
+    .verb {
+      font-family: 'SF Mono', monospace;
+      font-size: .72rem; font-weight: 800; letter-spacing: .04em;
+      padding: 4px 9px; border-radius: 5px; flex-shrink: 0;
+    }
+    .verb-get  { background: var(--accent); color: var(--primary-dark); }
+    .verb-post { background: var(--primary); color: var(--white); }
+    .endpoint-path {
+      font-family: 'SF Mono', monospace;
+      font-size: .88rem; font-weight: 700; color: var(--text);
+    }
+    .endpoint-desc { font-size: .82rem; color: var(--muted); }
+
+    /* ─── CALLOUT ──────────────────────────────────────────────────── */
+    .callout {
+      background: var(--accent);
+      border-left: 3px solid var(--primary);
+      border-radius: 8px;
+      padding: 14px 18px;
+      font-size: .9rem; color: var(--text);
+      margin: 16px 0;
+    }
+    .callout strong { color: var(--primary-dark); }
+    .callout-warn {
+      background: #fff8e1; border-left-color: #e3a341;
+    }
+    .callout-warn strong { color: #8a5d10; }
+
+    /* ─── ERROR CODE GRID ──────────────────────────────────────────── */
+    .err-grid {
+      display: grid;
+      grid-template-columns: max-content max-content 1fr;
+      gap: 12px 20px;
+      background: var(--white); border: 1px solid var(--line);
+      border-radius: var(--radius); padding: 20px 24px;
+    }
+    .err-code {
+      font-family: 'SF Mono', monospace;
+      font-weight: 700; font-size: .85rem; color: var(--primary-dark);
+    }
+    .err-http {
+      font-family: 'SF Mono', monospace;
+      font-size: .8rem; color: var(--muted);
+      background: var(--bg); padding: 2px 8px; border-radius: 4px;
+      align-self: start;
+    }
+    .err-desc { font-size: .88rem; color: var(--text); }
+
+    /* ─── FOOTER ───────────────────────────────────────────────────── */
+    footer {
+      background: var(--text);
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding: 32px 0;
+      margin-top: 40px;
+    }
+    .footer-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; flex-wrap: wrap;
+    }
+    .footer-logo { display: flex; align-items: center; gap: 12px; }
+    .footer-logo-img { height: 22px; width: auto; display: block; filter: brightness(0) invert(1); opacity: 0.85; }
+    .footer-product { color: rgba(255,255,255,0.7); font-size: .82rem; font-weight: 600; }
+    .footer-copy { font-size: .8rem; color: rgba(255,255,255,0.4); }
+    .footer-badge {
+      font-size: .72rem; font-weight: 600;
+      color: rgba(2,157,221,0.85);
+      background: rgba(2,157,221,0.08);
+      border: 1px solid rgba(2,157,221,0.15);
+      padding: 4px 12px; border-radius: 100px;
+    }
+
+    /* ─── RESPONSIVE ───────────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .hero-grid, .grid-2, .grid-3, .compare-grid { grid-template-columns: 1fr; }
+      nav a:not(.nav-cta) { display: none; }
+      .hero-headline { font-size: 1.9rem; }
+    }
+    @media (max-width: 600px) {
+      .container { padding: 0 20px; }
+      .section-inner { padding: 48px 0; }
+      #hero { padding: 56px 0 40px; }
+      .hero-facts { grid-template-columns: 1fr; }
+      .err-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════
+     HEADER
+════════════════════════════════════════════════════ -->
+<header>
+  <div class="container">
+    <div class="header-inner">
+      <a href="#hero" class="logo-wrap">
+        <img src="gentics-logo-primaryblue.svg" alt="Gentics" class="logo-img" />
+        <span class="logo-divider"></span>
+        <span class="logo-product">Mesh MCP Server <span>· Dev Docs</span></span>
+      </a>
+      <nav>
+        <a href="#overview">Overview</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#config">Config</a>
+        <a href="#tools">Tools</a>
+        <a href="#protection">Protection</a>
+        <a href="#transports">Transports</a>
+        <a href="#auth">Auth</a>
+        <a href="#ops">Ops</a>
+        <a href="#deploy">Deploy</a>
+        <a href="#integration">Integration</a>
+        <a href="#dev">Development</a>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<!-- ═══════════════════════════════════════════════════
+     HERO
+════════════════════════════════════════════════════ -->
+<section id="hero">
+  <div class="container">
+    <div class="hero-grid">
+      <div>
+        <span class="hero-eyebrow"><span class="dot"></span>Developer Documentation · mesh-enterprise Submodul</span>
+        <h1 class="hero-headline">Gentics Mesh MCP Server</h1>
+        <p class="hero-subheadline">
+          Model-Context-Protocol-Adapter für Gentics Mesh CMS. Java 17, zwei Transports (stdio + HTTP),
+          identische Tool-Surface in beiden Modi, ready für Claude Desktop, OpenAI Agents,
+          LangChain, n8n, Open WebUI und private LLM-Stacks.
+        </p>
+        <div class="hero-facts">
+          <div class="hero-fact">
+            <div class="hero-fact-label">Runtime</div>
+            <div class="hero-fact-value">JDK 17 · Fat-JAR</div>
+          </div>
+          <div class="hero-fact">
+            <div class="hero-fact-label">Transports</div>
+            <div class="hero-fact-value">stdio (JSON-RPC) · HTTP (Bearer Auth)</div>
+          </div>
+          <div class="hero-fact">
+            <div class="hero-fact-label">Tools</div>
+            <div class="hero-fact-value">6 read-only Mesh-Operationen</div>
+          </div>
+          <div class="hero-fact">
+            <div class="hero-fact-label">Deploy</div>
+            <div class="hero-fact-value">Docker · Helm · Prometheus-Metriken</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="hero-stack">
+          <div class="hero-stack-title">Anbindungs-Schema</div>
+
+          <div class="stack-node stack-ai">
+            <span class="stack-node-tag">LLM</span>
+            <div>
+              <div class="stack-node-text">AI-Client</div>
+              <div class="stack-node-sub">Claude · GPT · Gemini · Ollama · Open WebUI · n8n</div>
+            </div>
+          </div>
+          <div class="stack-arrow">
+            <svg width="16" height="14" viewBox="0 0 16 14" fill="none">
+              <path d="M8 0v10M4 7l4 5 4-5" stroke="#029ddd" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="stack-node stack-mcp">
+            <span class="stack-node-tag">MCP</span>
+            <div>
+              <div class="stack-node-text">Mesh MCP Server (Java)</div>
+              <div class="stack-node-sub">stdio · HTTP · Bearer-Auth · Policy-Layer</div>
+            </div>
+          </div>
+          <div class="stack-arrow">
+            <svg width="16" height="14" viewBox="0 0 16 14" fill="none">
+              <path d="M8 0v10M4 7l4 5 4-5" stroke="#029ddd" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="stack-node stack-mesh">
+            <span class="stack-node-tag">CMS</span>
+            <div>
+              <div class="stack-node-text">Gentics Mesh</div>
+              <div class="stack-node-sub">REST + GraphQL · v2 · mesh-rest-client 3.2.5</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     OVERVIEW
+════════════════════════════════════════════════════ -->
+<section id="overview" class="section-inner">
+  <div class="container">
+    <div class="section-intro">
+      <span class="section-label">Overview</span>
+      <h2 class="section-headline">Was dieser Server ist – und was nicht.</h2>
+      <p class="section-body">
+        Der Mesh MCP Server stellt sechs read-only Werkzeuge für Gentics Mesh CMS zur Verfügung, die
+        ein Large Language Model über das Model Context Protocol direkt aufrufen kann. Er ersetzt keine Mesh-Funktion;
+        er ist die kontrollierte Brücke, über die AI-Systeme strukturierten Content abfragen, ohne dass
+        ein Sprachmodell direkten Zugang zur Mesh-API erhält.
+      </p>
+    </div>
+
+    <div class="grid-3">
+      <div class="card">
+        <h3>Read-only by default</h3>
+        <p>Sämtliche Mutationen (Mesh-REST-PUT/POST/DELETE und GraphQL <code>mutation</code>) sind hart blockiert.
+        Aktivierbar nur über bewusstes Setzen von <code>MESH_READ_ONLY=false</code> – nicht empfohlen für Produktion.</p>
+      </div>
+      <div class="card">
+        <h3>Defence-in-Depth Policy-Layer</h3>
+        <p>Projekt-, Schema- und Sprach-Allowlists werden vor jedem Mesh-Call geprüft. Selbst wenn ein Tool durch ein
+        LLM falsch parametrisiert wird, sieht Mesh die Anfrage nie.</p>
+      </div>
+      <div class="card">
+        <h3>GraphQL mit Guardrails</h3>
+        <p>Read-only Queries: Mutation-Keyword im Body führt zu <code>FORBIDDEN</code>. Verschachtelungstiefe
+        per Brace-Counting begrenzt (<code>MESH_GRAPHQL_MAX_DEPTH</code>, Default 6).</p>
+      </div>
+      <div class="card">
+        <h3>Zwei Transports, eine Surface</h3>
+        <p>Stdio und HTTP teilen sich denselben <code>ToolDispatcher</code> – das LLM sieht in beiden Modi
+        identische Tool-Namen, Inputs und Outputs.</p>
+      </div>
+      <div class="card">
+        <h3>Production-grade Auth</h3>
+        <p>Constant-time Bearer-Token-Vergleich über <code>MessageDigest.isEqual</code>. Erweiterbar über
+        die <code>AuthValidator</code>-Schnittstelle für OAuth 2.1 / JWT.</p>
+      </div>
+      <div class="card">
+        <h3>Operability eingebaut</h3>
+        <p><code>/healthz</code>, <code>/readyz</code> und <code>/metrics</code> im Prometheus-Textformat.
+        Deployment über das Mesh-Helm-Chart (Sub-Chart), Docker-Multi-Stage-Build mit Non-Root-User.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     ARCHITECTURE
+════════════════════════════════════════════════════ -->
+<section id="architecture" class="section-inner section-bg">
+  <div class="container">
+    <div class="section-intro">
+      <span class="section-label">Architecture</span>
+      <h2 class="section-headline">Vier Schichten, klare Trennlinien.</h2>
+      <p class="section-body">
+        Die Schichten folgen dem klassischen Hexagon-Schema: Transport oben, Use-Cases in der Mitte,
+        Domain darunter, Mesh-Client an der Außenkante.
+      </p>
+    </div>
+
+    <div class="grid-2">
+      <div class="arch-stack">
+        <div class="arch-layer arch-entry">
+          <div class="arch-layer-left">
+            <div class="arch-layer-num">1</div>
+            <div class="arch-layer-text">
+              <h4>Transport</h4>
+              <p>Stdio-Transport via MCP SDK · HTTP-Transport via JDK HttpServer</p>
+            </div>
+          </div>
+          <span class="arch-layer-tag">server/</span>
+        </div>
+        <div class="arch-layer arch-app">
+          <div class="arch-layer-left">
+            <div class="arch-layer-num">2</div>
+            <div class="arch-layer-text">
+              <h4>Application (Use-Cases)</h4>
+              <p>Sechs Use-Cases pro Tool · Policy-Aufrufe · JSON-Serialisierung</p>
+            </div>
+          </div>
+          <span class="arch-layer-tag">application/</span>
+        </div>
+        <div class="arch-layer arch-domain">
+          <div class="arch-layer-left">
+            <div class="arch-layer-num">3</div>
+            <div class="arch-layer-text">
+              <h4>Domain</h4>
+              <p>Records (<code>MeshNode</code>, <code>Project</code>) · <code>AppError</code> + <code>ErrorCode</code></p>
+            </div>
+          </div>
+          <span class="arch-layer-tag">domain/</span>
+        </div>
+        <div class="arch-layer arch-infra">
+          <div class="arch-layer-left">
+            <div class="arch-layer-num">4</div>
+            <div class="arch-layer-text">
+              <h4>Mesh-Infrastruktur</h4>
+              <p>mesh-rest-client (Vert.x) · MeshGraphqlClient (Guardrails) · MeshMapper</p>
+            </div>
+          </div>
+          <span class="arch-layer-tag">mesh/</span>
+        </div>
+      </div>
+
+      <div>
+        <h3 style="margin-top: 0;">Komposition</h3>
+        <p>
+          <code>Main</code> validiert die ENV-Konfiguration über <code>MeshConfig.load()</code>, instanziert
+          den <code>MeshClient</code> und entscheidet anhand <code>MCP_TRANSPORT</code> bzw. CLI-Flags,
+          ob ein <code>McpServerRunner</code> (stdio) oder ein <code>HttpMcpServer</code> gestartet wird.
+        </p>
+        <p>
+          Beide Transport-Implementierungen besitzen denselben <code>ToolDispatcher</code>, der die sechs
+          Use-Case-Klassen kennt und die korrekte Methode mit aus dem JSON-RPC-Request extrahierten
+          Argumenten aufruft.
+        </p>
+        <p>
+          <code>PolicyService</code> wird aus jedem Use-Case <em>vor</em> dem Mesh-Call angesprochen
+          – das ist die zentrale Fail-Fast-Stelle für Allowlist-Verstöße.
+        </p>
+
+        <div class="callout">
+          <strong>Designprinzip:</strong> Tools haben keinen Zugriff auf den HTTP-Exchange. Das verhindert,
+          dass ein Tool versehentlich Request-Header oder Antwort-Status manipuliert.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     CONFIGURATION
+════════════════════════════════════════════════════ -->
+<section id="config" class="section-inner">
+  <div class="container">
+    <div class="section-intro">
+      <span class="section-label">Configuration</span>
+      <h2 class="section-headline">Vollständige ENV-Referenz.</h2>
+      <p class="section-body">
+        Alle Konfiguration kommt aus ENV-Variablen und wird beim Start gegen ein striktes
+        Schema validiert. Fehler werden gesammelt und als <em>einer</em> Fehlermeldung ausgegeben.
+      </p>
+    </div>
+
+    <h3>Mesh-Anbindung</h3>
+    <p class="section-body" style="margin-bottom: 16px;">
+      Wer gegenüber Mesh auftritt, entscheidet der <strong>Transport</strong> – es gibt dafür
+      keine eigene Einstellung. Die drei Fälle sind unter
+      <a href="#security">Mesh-Identität</a> im Detail beschrieben; in Kurzform:
+      <code>stdio</code> nutzt eine feste Identität aus <code>MESH_API_KEY</code> oder
+      <code>MESH_USERNAME</code>&nbsp;+&nbsp;<code>MESH_PASSWORD</code>, im HTTP-Modus laufen
+      Requests anonym bzw. mit dem Bearer-Token des Clients. Diese drei Variablen sind
+      deshalb <strong>stdio-only</strong>: im HTTP-Modus bricht der Start ab, wenn eine
+      davon gesetzt ist.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Variable</th><th>Pflicht</th><th>Default</th><th>Beschreibung</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>MESH_BASE_URL</code></td><td>ja</td><td>–</td><td>Basis-URL der Mesh-Instanz</td></tr>
+          <tr><td><code>MESH_API_KEY</code></td><td>stdio</td><td>–</td><td>Mesh-API-Key (langlebiges JWT). Alternative zu Username/Passwort. Im HTTP-Modus verboten</td></tr>
+          <tr><td><code>MESH_USERNAME</code></td><td>stdio</td><td>–</td><td>Service-Account-Username – zusammen mit <code>MESH_PASSWORD</code> Pflicht, wenn kein <code>MESH_API_KEY</code> gesetzt ist. Im HTTP-Modus verboten</td></tr>
+          <tr><td><code>MESH_PASSWORD</code></td><td>stdio</td><td>–</td><td>Service-Account-Passwort (wird nie geloggt). Im HTTP-Modus verboten</td></tr>
+          <tr><td><code>MESH_ALLOWED_PROJECTS</code></td><td>ja</td><td>–</td><td>Kommagetrennte Projekt-Allowlist</td></tr>
+          <tr><td><code>MESH_ALLOWED_SCHEMAS</code></td><td>nein</td><td>(alle)</td><td>Kommagetrennte Schema-Allowlist</td></tr>
+          <tr><td><code>MESH_ALLOWED_LANGUAGES</code></td><td>nein</td><td><code>de,en</code></td><td>ISO 639-1 Sprachcodes</td></tr>
+          <tr><td><code>MESH_READ_ONLY</code></td><td>nein</td><td><code>true</code></td><td>Schreiboperationen blockieren</td></tr>
+          <tr><td><code>MESH_GRAPHQL_MAX_DEPTH</code></td><td>nein</td><td><code>6</code></td><td>Max. GraphQL-Verschachtelungstiefe (1–20)</td></tr>
+          <tr><td><code>MESH_GRAPHQL_TIMEOUT_MS</code></td><td>nein</td><td><code>5000</code></td><td>GraphQL-Timeout (≥ 100 ms)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>MCP-Transport</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Variable</th><th>Default</th><th>Beschreibung</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>MCP_TRANSPORT</code></td><td><code>stdio</code></td><td><code>stdio</code> oder <code>http</code></td></tr>
+          <tr><td><code>MCP_HTTP_HOST</code></td><td><code>0.0.0.0</code></td><td>Bind-Host (HTTP-Modus)</td></tr>
+          <tr><td><code>MCP_HTTP_PORT</code></td><td><code>3001</code></td><td>Bind-Port (HTTP-Modus, 1–65535)</td></tr>
+          <tr><td><code>MCP_AUTH_TOKEN</code></td><td>–</td><td>Bearer-Token. Pflicht im HTTP-Modus außer <code>MCP_AUTH_DISABLED=true</code>.</td></tr>
+          <tr><td><code>MCP_AUTH_DISABLED</code></td><td><code>false</code></td><td><code>true</code> = Auth komplett aus (nur hinter Reverse-Proxy zulässig)</td></tr>
+          <tr><td><code>MCP_CORS_ORIGINS</code></td><td>–</td><td>Kommagetrennte Origin-Allowlist; <code>*</code> erlaubt alle</td></tr>
+          <tr><td><code>LOG_LEVEL</code></td><td><code>info</code></td><td><code>debug</code> | <code>info</code> | <code>warn</code> | <code>error</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Mesh-Schutz (siehe <a href="#protection">Protection</a>)</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Variable</th><th>Default</th><th>Beschreibung</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>MCP_RATE_LIMIT_PER_SECOND</code></td><td><code>50</code></td><td>Globale gewichtete Permits/s</td></tr>
+          <tr><td><code>MCP_RATE_LIMIT_PER_TOKEN_PER_SECOND</code></td><td><code>20</code></td><td>Per-Bearer-Token Permits/s (stdio exempt)</td></tr>
+          <tr><td><code>MCP_MESH_MAX_CONCURRENT</code></td><td><code>10</code></td><td>Bulkhead-Permits (parallele Mesh-Calls)</td></tr>
+          <tr><td><code>MCP_CIRCUIT_BREAKER_ENABLED</code></td><td><code>true</code></td><td>Breaker an/aus</td></tr>
+          <tr><td><code>MCP_CIRCUIT_BREAKER_FAILURE_RATE_PERCENT</code></td><td><code>50</code></td><td>Öffnungs-Schwelle</td></tr>
+          <tr><td><code>MCP_CIRCUIT_BREAKER_WINDOW_SIZE</code></td><td><code>20</code></td><td>Sliding-Window-Größe</td></tr>
+          <tr><td><code>MCP_CIRCUIT_BREAKER_OPEN_DURATION_MS</code></td><td><code>30000</code></td><td>Cooldown-Dauer</td></tr>
+          <tr><td><code>MCP_GRAPHQL_MAX_QUERY_LENGTH</code></td><td><code>4000</code></td><td>Max. Zeichen in einer GraphQL-Query</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <strong>Hinweis:</strong> Wer im HTTP-Modus startet, ohne <code>MCP_AUTH_TOKEN</code> oder
+      <code>MCP_AUTH_DISABLED=true</code> zu setzen, bekommt einen Konfigurationsfehler beim Start.
+      Das ist Absicht – stilles Defaulten auf "offen" wäre ein Fußschuss.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     TOOLS
+════════════════════════════════════════════════════ -->
+<section id="tools" class="section-inner section-bg">
+  <div class="container">
+    <div class="section-intro">
+      <span class="section-label">Tool API</span>
+      <h2 class="section-headline">Sechs Tools, alle read-only.</h2>
+      <p class="section-body">
+        Tool-Namen, Input-Schemas und Output-Formate sind über beide Transports identisch und versioniert.
+        Schema-Änderungen sind Breaking-Changes und schlagen sich in einem Minor-Bump nieder.
+      </p>
+    </div>
+
+    <!-- mesh_list_projects -->
+    <div class="tool-card" id="tool-list-projects">
+      <div class="tool-head">
+        <span class="tool-name">mesh_list_projects</span>
+        <span class="tool-tag tag-read">Read</span>
+      </div>
+      <p class="tool-desc">Listet alle erlaubten und erreichbaren Gentics-Mesh-Projekte.</p>
+      <details>
+        <summary>Input-Schema · Beispiel-Response</summary>
+<pre><code class="language-json">// Input
+{}
+
+// Response (Text-Content, JSON-String)
+{
+  "projects": [
+    { "name": "demo", "uuid": "abc123…" },
+    { "name": "shop", "uuid": "def456…" }
+  ]
+}</code></pre>
+      </details>
+    </div>
+
+    <!-- mesh_list_schemas -->
+    <div class="tool-card" id="tool-list-schemas">
+      <div class="tool-head">
+        <span class="tool-name">mesh_list_schemas</span>
+        <span class="tool-tag tag-read">Read</span>
+      </div>
+      <p class="tool-desc">Listet Schemas eines erlaubten Projekts mit allen Felddefinitionen.</p>
+      <details>
+        <summary>Input-Schema · Beispiel-Request</summary>
+<pre><code class="language-json">// Input
+{
+  "project": "demo"
+}</code></pre>
+      </details>
+    </div>
+
+    <!-- mesh_get_node -->
+    <div class="tool-card" id="tool-get-node">
+      <div class="tool-head">
+        <span class="tool-name">mesh_get_node</span>
+        <span class="tool-tag tag-read">Read</span>
+      </div>
+      <p class="tool-desc">Lädt einen Node per UUID und gibt eine normalisierte Struktur zurück.</p>
+      <details>
+        <summary>Input-Schema · Optionen</summary>
+<pre><code class="language-json">{
+  "project": "demo",
+  "uuid": "f3b6…-c7a1",
+  "language": "de",                  // optional, Default "de"
+  "resolveReferencesDepth": 0        // optional, 0–2, Default 0
+}</code></pre>
+      </details>
+    </div>
+
+    <!-- mesh_search_nodes -->
+    <div class="tool-card" id="tool-search-nodes">
+      <div class="tool-head">
+        <span class="tool-name">mesh_search_nodes</span>
+        <span class="tool-tag tag-read">Read</span>
+      </div>
+      <p class="tool-desc">Volltextsuche über Nodes eines Projekts. Benötigt eine konfigurierte Elasticsearch-Instanz auf Mesh-Seite.</p>
+      <details>
+        <summary>Input-Schema · Defaults</summary>
+<pre><code class="language-json">{
+  "project": "demo",
+  "query": "Delorean",
+  "schema": "vehicle",               // optional
+  "language": "de",                  // Default "de"
+  "fields": ["title","teaser","body"], // Default ["title","teaser","body"]
+  "limit": 5,                        // 1–20, Default 5
+  "publishedOnly": true              // Default true
+}</code></pre>
+      </details>
+    </div>
+
+    <!-- mesh_get_webroot -->
+    <div class="tool-card" id="tool-get-webroot">
+      <div class="tool-head">
+        <span class="tool-name">mesh_get_webroot</span>
+        <span class="tool-tag tag-read">Read</span>
+      </div>
+      <p class="tool-desc">Löst einen Webroot-Pfad auf und gibt den zugehörigen Node zurück. Pfade ohne führenden Slash werden normalisiert.</p>
+      <details>
+        <summary>Input-Schema</summary>
+<pre><code class="language-json">{
+  "project": "demo",
+  "path": "/automobiles/delorean",
+  "language": "de"                   // optional, Default "de"
+}</code></pre>
+      </details>
+    </div>
+
+    <!-- mesh_run_graphql -->
+    <div class="tool-card" id="tool-run-graphql">
+      <div class="tool-head">
+        <span class="tool-name">mesh_run_graphql</span>
+        <span class="tool-tag tag-read">Read</span>
+      </div>
+      <p class="tool-desc">Führt eine read-only GraphQL-Query gegen ein erlaubtes Projekt aus. Mutations werden blockiert, Depth wird gegen <code>MESH_GRAPHQL_MAX_DEPTH</code> geprüft.</p>
+      <details>
+        <summary>Input-Schema · Beispiel</summary>
+<pre><code class="language-json">{
+  "project": "demo",
+  "query": "query($lang:[String]) { nodes(lang:$lang){ elements{ uuid }}}",
+  "variables": { "lang": ["de","en"] }
+}</code></pre>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     PROTECTION LAYERS
+════════════════════════════════════════════════════ -->
+<section id="protection" class="section-inner">
+  <div class="container">
+    <div class="section-intro">
+      <span class="section-label">Mesh Protection</span>
+      <h2 class="section-headline">Rate-Limit · Bulkhead · Circuit Breaker.</h2>
+      <p class="section-body">
+        Damit ein LLM mit einer Retry-Schleife oder ein generell sehr fragefreudiger
+        Agent Mesh nicht in die Knie zwingt, sitzt der <code>MeshCallGuard</code>
+        zwischen jedem Tool-Call und der Mesh-Anbindung. Drei unabhängige Layer,
+        alle Fail-Fast.
+      </p>
+    </div>
+
+    <div class="grid-3">
+      <div class="card">
+        <h3>1 · Token-Bucket Rate-Limit</h3>
+        <p>Pro Bearer-Token <em>und</em> global. Token-Cost spiegelt grobe
+        Mesh-Last wider:
+        <code>list_projects=1</code>, <code>list_schemas=1</code>,
+        <code>get_node=2</code>, <code>get_webroot=2</code>,
+        <code>search_nodes=3</code>, <code>run_graphql=5</code>.
+        Stdio-Modus ist vom Per-Token-Limit ausgenommen (es gibt nur einen Client).</p>
+        <p>Default: 20/s pro Token, 50/s global. Bei Überschreitung:
+        <code>RATE_LIMITED</code> → HTTP 429 + <code>Retry-After: 1</code>.</p>
+      </div>
+      <div class="card">
+        <h3>2 · Bulkhead (Concurrency Cap)</h3>
+        <p>Begrenzt <em>parallele</em> in-flight Mesh-Calls. Wichtig, weil ein
+        einzelnes <code>mesh_run_graphql</code> 5 Sekunden binden kann –
+        das ist kein Rate-, sondern ein Concurrency-Problem.</p>
+        <p>Default: 10 gleichzeitige Calls. Bei Überschreitung:
+        <code>BUSY</code> → HTTP 429 + <code>Retry-After: 1</code>.</p>
+      </div>
+      <div class="card">
+        <h3>3 · Circuit Breaker</h3>
+        <p>Wenn Mesh anfängt zu erroren, hört der Server auf, Last zu produzieren —
+        statt blind nachzulegen. Sliding-Window über die letzten N Calls;
+        Client-Faults (Validation, Forbidden, NotFound) zählen <em>nicht</em>,
+        nur echte Mesh-Probleme.</p>
+        <p>Default: 50 % Failure-Rate über 20-Call-Fenster → öffnet für 30 s.
+        Bei offenem Breaker: <code>CIRCUIT_OPEN</code> → HTTP 503 +
+        <code>Retry-After: 30</code>.</p>
+      </div>
+    </div>
+
+    <h3>Tuning-Tabelle</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Variable</th><th>Default</th><th>Wann erhöhen / senken</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>MCP_RATE_LIMIT_PER_SECOND</code></td><td><code>50</code></td><td>Erhöhen, wenn viele Tokens echte Last erzeugen sollen.</td></tr>
+          <tr><td><code>MCP_RATE_LIMIT_PER_TOKEN_PER_SECOND</code></td><td><code>20</code></td><td>Senken, um einzelne Agents stärker zu drosseln.</td></tr>
+          <tr><td><code>MCP_MESH_MAX_CONCURRENT</code></td><td><code>10</code></td><td>Spiegelt die Mesh-Capacity. Faustregel: 1–2× CPU-Kerne von Mesh.</td></tr>
+          <tr><td><code>MCP_CIRCUIT_BREAKER_ENABLED</code></td><td><code>true</code></td><td>In Lasttests evtl. <code>false</code>, sonst immer an.</td></tr>
+          <tr><td><code>MCP_CIRCUIT_BREAKER_FAILURE_RATE_PERCENT</code></td><td><code>50</code></td><td>Niedriger = empfindlicher Breaker.</td></tr>
+          <tr><td><code>MCP_CIRCUIT_BREAKER_WINDOW_SIZE</code></td><td><code>20</code></td><td>Größer = stabiler, träger.</td></tr>
+          <tr><td><code>MCP_CIRCUIT_BREAKER_OPEN_DURATION_MS</code></td><td><code>30000</code></td><td>So lang braucht Mesh zum Atmen.</td></tr>
+          <tr><td><code>MCP_GRAPHQL_MAX_QUERY_LENGTH</code></td><td><code>4000</code></td><td>Erhöhen für Power-User-Queries; Senken, wenn LLMs zu lange Queries bauen.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Erwartetes Client-Verhalten</h3>
+    <p>
+      Bei <code>HTTP 429</code> oder <code>503</code> sollte ein guter Client den
+      <code>Retry-After</code>-Header lesen und exponentiell zurückwarten.
+      LLM-Frameworks (OpenAI Agents SDK, LangChain) machen das ootb;
+      eigene Integrationen müssen es selbst implementieren.
+    </p>
+    <p>
+      Innerhalb der MCP-Antwort kommt zusätzlich der JSON-RPC-Envelope mit
+      <code>result.isError = true</code> und einem strukturierten Error-Body –
+      so kann das LLM den Grund sprachlich verarbeiten ("Tool ist gerade
+      ausgelastet, frag in einer Minute nochmal").
+    </p>
+
+    <h3>Metriken</h3>
+<pre><span class="code-label">prom</span><code class="language-text">mcp_rate_limit_rejected_total{scope="token",tool="mesh_run_graphql"} 42
+mcp_rate_limit_rejected_total{scope="global",tool="mesh_search_nodes"} 5
+mcp_concurrency_rejected_total{tool="mesh_get_node"} 11
+mcp_circuit_breaker_rejected_total 8
+mcp_circuit_breaker_state{state="CLOSED"} 1
+mcp_circuit_breaker_state{state="OPEN"} 0
+mcp_circuit_breaker_state{state="HALF_OPEN"} 0</code></pre>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     TRANSPORTS
+════════════════════════════════════════════════════ -->
+<section id="transports" class="section-inner">
+  <div class="container">
+    <div class="section-intro">
+      <span class="section-label">Transports</span>
+      <h2 class="section-headline">stdio für lokal, HTTP für alles andere.</h2>
+      <p class="section-body">
+        Stdio bleibt der natürliche Kanal für Claude Desktop und vergleichbare Child-Prozess-Clients.
+        HTTP ist die Wahl für Remote-Anbindungen an OpenAI Agents, LangChain, n8n, Open WebUI oder
+        eigene LLM-Stacks im Cluster.
+      </p>
+    </div>
+
+    <div class="compare-grid">
+      <div class="compare-panel compare-panel-neutral">
+        <span class="compare-badge badge-neutral">stdio</span>
+        <h3>Lokale Child-Prozess-Clients</h3>
+        <ul>
+          <li>JSON-RPC über <code>stdin</code> / <code>stdout</code></li>
+          <li>Genau ein Client pro Prozess (sessionsgebunden)</li>
+          <li>Auth über Prozess-Spawning impliziert</li>
+          <li>Aktivierung: kein <code>MCP_TRANSPORT</code> setzen, oder <code>--stdio</code></li>
+          <li>Beispiel-Clients: Claude Desktop, Cursor, Continue, Zed</li>
+        </ul>
+      </div>
+
+      <div class="compare-panel compare-panel-accent">
+        <span class="compare-badge badge-accent">HTTP · Remote</span>
+        <h3>Remote-MCP für LLM-Stacks</h3>
+        <ul>
+          <li>JSON-RPC 2.0 über <code>POST /mcp</code></li>
+          <li>Mehrere parallele Sessions auf Virtual-Thread-Executor</li>
+          <li>Bearer-Token-Auth (constant-time)</li>
+          <li>Aktivierung: <code>MCP_TRANSPORT=http</code> oder <code>--http</code></li>
+          <li>Beispiel-Clients: OpenAI Agents, LangChain, n8n, Open WebUI, vLLM-Stacks</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>Stdio – Quickstart</h3>
+<pre><span class="code-label">shell</span><code class="language-bash">cp .env.example .env
+# Pflicht-Felder in .env setzen
+mvn -B -ntp clean package
+export $(grep -v '^#' .env | xargs)
+java -jar target/mesh-mcp-server.jar</code></pre>
+
+    <h3>HTTP – Quickstart</h3>
+<pre><span class="code-label">shell</span><code class="language-bash">MCP_TRANSPORT=http \
+MCP_AUTH_TOKEN=$(openssl rand -base64 32) \
+MCP_HTTP_PORT=3001 \
+java -jar target/mesh-mcp-server.jar</code></pre>
+
+    <h3>HTTP – Wire-Format</h3>
+<pre><span class="code-label">http</span><code class="language-http">POST /mcp HTTP/1.1
+Host: mcp.example.com
+Authorization: Bearer secret-please-rotate
+Content-Type: application/json
+
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "mesh_list_projects",
+    "arguments": {}
+  }
+}</code></pre>
+
+    <div class="callout">
+      <strong>Streamable HTTP:</strong> aktuell Request/Response über <code>POST /mcp</code>.
+      Server-initiierte SSE-Streams (für Progress-Events) sind als Folge-Iteration geplant. Für alle Tool-Calls in
+      diesem Server reicht das aktuelle Request/Response-Modell aus.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     AUTH
+════════════════════════════════════════════════════ -->
+<section id="auth" class="section-inner section-bg">
+  <div class="container">
+    <div class="section-intro">
+      <span class="section-label">Authentication</span>
+      <h2 class="section-headline">Bearer heute, OAuth morgen.</h2>
+      <p class="section-body">
+        Aktuell setzt der Server auf einen statischen Bearer-Token, der per ENV gesetzt und
+        konstant-zeitlich verglichen wird. Der <code>AuthValidator</code>-Hook ist die
+        Erweiterungsstelle für OAuth 2.1 und JWT-Introspection.
+      </p>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>BearerTokenValidator</h3>
+        <p>Akzeptiert <code>Authorization: Bearer &lt;token&gt;</code>. Vergleich über
+        <code>MessageDigest.isEqual</code>, sodass keine Timing-Seitenkanäle den Token leaken.</p>
+<pre><span class="code-label">java</span><code class="language-java">AuthValidator v = new BearerTokenValidator(token);
+boolean ok = v.isAuthorized(header);</code></pre>
+      </div>
+      <div class="card card-accent">
+        <h3>Eigene Auth-Implementierung</h3>
+        <p>Implementiere <code>AuthValidator</code> und reiche sie aus <code>Main</code> in den
+        <code>HttpMcpServer</code> – fertig.</p>
+<pre><span class="code-label">java</span><code class="language-java">AuthValidator v = header -> {
+    // JWT introspection / OAuth resource-server validation
+    return MyJwt.verify(header);
+};</code></pre>
+      </div>
+    </div>
+
+    <h3>Auth deaktivieren (nur hinter Reverse-Proxy)</h3>
+<pre><span class="code-label">shell</span><code class="language-bash">MCP_TRANSPORT=http MCP_AUTH_DISABLED=true java -jar target/mesh-mcp-server.jar</code></pre>
+
+    <div class="callout callout-warn">
+      <strong>Achtung:</strong> Bei <code>MCP_AUTH_DISABLED=true</code> nimmt jeder, der den Port erreicht,
+      Tool-Aufrufe vor. Nur in Setups einsetzen, in denen NGINX/Ingress die Auth bereits terminiert.
+    </div>
+
+    <h3 id="security">Mesh-Identität: wer fragt Mesh eigentlich?</h3>
+    <p class="section-body" style="margin-bottom: 16px;">
+      Das ist eine andere Frage als „darf dieser Client den MCP-Server benutzen“ – und die
+      Antwort hängt allein am Transport.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Fall</th><th>Setup</th><th>MCP-Auth</th><th>Identität gegenüber Mesh</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td><code>http</code> + <code>MCP_AUTH_TOKEN</code></td>
+            <td>MCP prüft das Bearer-Token, falsche Requests werden abgelehnt</td>
+            <td><strong>anonym.</strong> Das Token gehört dem MCP-Server, nicht Mesh, und wird nie weitergereicht</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td><code>http</code> + <code>MCP_AUTH_DISABLED=true</code></td>
+            <td>keine</td>
+            <td><code>Authorization: Bearer …</code> des Clients wird <strong>pro Request</strong> an Mesh weitergereicht – Mesh entscheidet. Ohne Header: anonym</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td><code>stdio</code></td>
+            <td>entfällt – der spawnende Prozess ist vertrauenswürdig</td>
+            <td>feste Identität aus <code>MESH_API_KEY</code> <em>oder</em> <code>MESH_USERNAME</code>&nbsp;+&nbsp;<code>MESH_PASSWORD</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <strong>Fall 1 heißt: Mesh sieht anonyme Requests.</strong> Die <code>anonymous</code>-Rolle
+      in Mesh braucht Leserechte auf allen Projekten aus <code>MESH_ALLOWED_PROJECTS</code> –
+      sonst liefern alle Tools leere Ergebnisse.
+    </div>
+
+    <p class="section-body" style="margin-top: 16px;">
+      Derselbe Header bedeutet in Fall 1 und Fall 2 also Verschiedenes: einmal ein
+      MCP-Credential, einmal ein Mesh-Credential. Weitergereicht wird er nur dann, wenn
+      dieser Server selbst nichts prüft. Das Token landet dabei am einzelnen
+      <code>MeshRequest</code>, nie am geteilten Client – parallele Aufrufe können also
+      keine fremde Identität erben.
+    </p>
+
+    <p class="section-body" style="margin-top: 16px;">
+      Beim Start wird geprüft: <code>stdio</code> meldet sich an und ruft <code>me()</code>
+      auf – antwortet Mesh mit dem Benutzer <code>anonymous</code>, wurden die Zugangsdaten
+      nicht akzeptiert und der Start bricht ab. Im HTTP-Modus läuft nur ein
+      unauthentifizierter Ping gegen <code>MESH_BASE_URL</code>, damit eine falsche URL
+      sofort auffällt.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     OPS ENDPOINTS
+════════════════════════════════════════════════════ -->
+<section id="ops" class="section-inner">
+  <div class="container">
+    <div class="section-intro">
+      <span class="section-label">Operational Endpoints</span>
+      <h2 class="section-headline">Health, Readiness, Metriken.</h2>
+      <p class="section-body">
+        Diese Endpoints stehen <em>ohne</em> Auth-Prüfung zur Verfügung und sind dafür gedacht, vom
+        Cluster (Kubernetes Probes, Prometheus-Scraper) konsumiert zu werden.
+      </p>
+    </div>
+
+    <div class="endpoint">
+      <span class="verb verb-get">GET</span>
+      <span class="endpoint-path">/healthz</span>
+      <span class="endpoint-desc">Liveness: 200 OK, solange der Prozess läuft.</span>
+    </div>
+    <div class="endpoint">
+      <span class="verb verb-get">GET</span>
+      <span class="endpoint-path">/readyz</span>
+      <span class="endpoint-desc">Readiness: 200 OK, sobald der HTTP-Server gebunden ist.</span>
+    </div>
+    <div class="endpoint">
+      <span class="verb verb-get">GET</span>
+      <span class="endpoint-path">/metrics</span>
+      <span class="endpoint-desc">Prometheus-Textformat: HTTP-Requests, Auth-Failures, Tool-Counts / -Errors / -Duration, Uptime.</span>
+    </div>
+    <div class="endpoint">
+      <span class="verb verb-post">POST</span>
+      <span class="endpoint-path">/mcp</span>
+      <span class="endpoint-desc">JSON-RPC 2.0 MCP-Endpoint. Auth erforderlich.</span>
+    </div>
+
+    <h3>Metrik-Beispiel</h3>
+<pre><span class="code-label">prom</span><code class="language-text">mcp_uptime_seconds 3845.2
+mcp_http_requests_total 1284
+mcp_http_auth_failed_total 7
+mcp_tool_calls_total{tool="mesh_list_projects"} 412
+mcp_tool_calls_total{tool="mesh_get_node"} 612
+mcp_tool_errors_total{tool="mesh_get_node"} 4
+mcp_tool_duration_ms_total{tool="mesh_get_node"} 91240</code></pre>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     ERROR CODES
+════════════════════════════════════════════════════ -->
+<section id="errors" class="section-inner section-bg">
+  <div class="container">
+    <div class="section-intro">
+      <span class="section-label">Error Codes</span>
+      <h2 class="section-headline">Stabile Codes für Monitoring und LLM-Handling.</h2>
+      <p class="section-body">
+        Jeder Tool-Fehler wird als <code>AppError</code> mit einer der unten gelisteten Codes
+        serialisiert. Neue Codes werden unten angehängt; existierende Codes werden nie umbenannt.
+      </p>
+    </div>
+
+    <div class="err-grid">
+      <div class="err-code">VALIDATION_ERROR</div>
+      <div class="err-http">HTTP 400</div>
+      <div class="err-desc">Ungültiger Input oder Startup-Mis-Configuration. Pflichtfelder fehlen, Typen passen nicht.</div>
+
+      <div class="err-code">FORBIDDEN</div>
+      <div class="err-http">HTTP 403</div>
+      <div class="err-desc">Policy-Verstoß: Projekt/Schema/Sprache nicht in der Allowlist. Read-only-Modus aktiv und Schreibversuch.</div>
+
+      <div class="err-code">NOT_FOUND</div>
+      <div class="err-http">HTTP 404</div>
+      <div class="err-desc">Node / Webroot-Pfad existiert nicht im Mesh-Projekt.</div>
+
+      <div class="err-code">UPSTREAM_ERROR</div>
+      <div class="err-http">HTTP 502</div>
+      <div class="err-desc">Gentics-Mesh-Aufruf scheitert (Timeout, Connection-Refused, 5xx von Mesh).</div>
+
+      <div class="err-code">INTERNAL_ERROR</div>
+      <div class="err-http">HTTP 500</div>
+      <div class="err-desc">Unerwartete Exception im Server. Sollte in Logs auftauchen und einen Bug-Report wert sein.</div>
+
+      <div class="err-code">RATE_LIMITED</div>
+      <div class="err-http">HTTP 429</div>
+      <div class="err-desc">Token-Bucket leer (global oder pro Bearer-Token). Antwort enthält <code>Retry-After</code>.</div>
+
+      <div class="err-code">BUSY</div>
+      <div class="err-http">HTTP 429</div>
+      <div class="err-desc">Bulkhead voll – zu viele parallele Mesh-Calls. Antwort enthält <code>Retry-After</code>.</div>
+
+      <div class="err-code">CIRCUIT_OPEN</div>
+      <div class="err-http">HTTP 503</div>
+      <div class="err-desc">Mesh ist gerade unhealthy; Breaker fängt Last ab. Antwort enthält <code>Retry-After</code> = Cooldown-Restzeit.</div>
+    </div>
+
+    <h3>JSON-Format eines Fehlers</h3>
+<pre><span class="code-label">json</span><code class="language-json">{
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "Projekt 'staging' ist nicht in der Allowlist. Erlaubt: [demo, shop]"
+  }
+}</code></pre>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     DEPLOY
+════════════════════════════════════════════════════ -->
+<section id="deploy" class="section-inner">
+  <div class="container">
+    <div class="section-intro">
+      <span class="section-label">Deployment</span>
+      <h2 class="section-headline">Mesh-Helm-Chart, Docker, Jenkins.</h2>
+      <p class="section-body">
+        Seit dem Umzug nach <code>mesh-enterprise</code> wird der MCP-Server als
+        Sub-Chart vom Helm-Chart von Mesh deployt. Ein eigenes Chart existiert
+        nicht mehr. Image-Build und Versionierung folgen dem Mesh-Release.
+      </p>
+    </div>
+
+    <h3>Container-Image</h3>
+    <p>
+      Image liegt unter
+      <a href="https://repo.gentics.com/" target="_blank" rel="noopener"><code>repo.gentics.com/mesh/mcp-server</code></a>.
+      Tag entspricht der Mesh-Version (vom mesh-enterprise-Parent-POM geerbt).
+      Image wird durch die mesh-enterprise-Jenkins-Pipeline gebaut und gepusht.
+    </p>
+<pre><span class="code-label">shell</span><code class="language-bash"># &lt;MESH_VERSION&gt; durch die gewünschte Mesh-Version ersetzen, z.B. 3.3.0
+docker run -i --rm \
+  -e MESH_BASE_URL=http://mesh:8080 \
+  -e MESH_USERNAME=admin \
+  -e MESH_PASSWORD=admin \
+  -e MESH_ALLOWED_PROJECTS=demo \
+  repo.gentics.com/mesh/mcp-server:&lt;MESH_VERSION&gt;</code></pre>
+
+    <h3>Helm (über Mesh-Chart)</h3>
+    <p>
+      Werte für den MCP-Server liegen im Mesh-Chart unter dem
+      <code>mcpServer:</code>-Key. Aktivierung:
+    </p>
+<pre><span class="code-label">yaml · mesh-values.yaml</span><code class="language-yaml">mcpServer:
+  enabled: true
+  transport:
+    mode: http               # oder "stdio"
+    http:
+      port: 3001
+    auth:
+      existingSecret: mcp-auth
+      key: MCP_AUTH_TOKEN
+  ingress:
+    enabled: true
+    host: mcp.example.com
+  allowedProjects: "demo"
+  allowedLanguages: "de,en"
+  readOnly: true</code></pre>
+
+    <h3>Kubernetes – Probes</h3>
+    <p>Stdio: Liveness über <code>pgrep</code>. HTTP: <code>httpGet</code> auf <code>/healthz</code> bzw. <code>/readyz</code>.</p>
+
+    <h3>CI &amp; Release</h3>
+    <p>
+      Der Server folgt der Mesh-Release-Kadenz. Push auf <code>main</code> oder
+      einen <code>release/*</code>-Branch löst im Jenkins von
+      <code>mesh-enterprise</code> folgenden Workflow aus:
+    </p>
+    <ol style="padding-left: 18px; color: var(--text); font-size: .92rem; line-height: 1.7;">
+      <li><code>mvn -B -ntp -pl mcp-server -am verify</code></li>
+      <li>Effektive Modul-Version aus dem POM ableiten (geerbt vom Parent)</li>
+      <li>Docker-Build mit <code>--build-arg VERSION=&lt;mesh-version&gt;</code></li>
+      <li>Push nach <code>repo.gentics.com/mesh/mcp-server:&lt;mesh-version&gt;</code> (Credentials <code>gentics-registry</code>)</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     INTEGRATION COOKBOOK
+════════════════════════════════════════════════════ -->
+<section id="integration" class="section-inner section-bg">
+  <div class="container">
+    <div class="section-intro">
+      <span class="section-label">Client Integration</span>
+      <h2 class="section-headline">Cookbook für gängige LLM-Stacks.</h2>
+      <p class="section-body">
+        Stdio-Clients (Claude Desktop &amp; Co.) und HTTP-Clients (OpenAI, LangChain, n8n, Open WebUI)
+        konsumieren denselben Tool-Set. Die folgenden Snippets zeigen jeweils die schlankste
+        Konfiguration.
+      </p>
+    </div>
+
+    <h3>Claude Desktop · stdio</h3>
+<pre><span class="code-label">json · claude_desktop_config.json</span><code class="language-json">{
+  "mcpServers": {
+    "gentics-mesh": {
+      "command": "java",
+      "args": ["-jar", "/abs/pfad/zu/target/mesh-mcp-server.jar"],
+      "env": {
+        "MESH_BASE_URL": "http://localhost:8080",
+        "MESH_USERNAME": "admin",
+        "MESH_PASSWORD": "admin",
+        "MESH_ALLOWED_PROJECTS": "demo"
+      }
+    }
+  }
+}</code></pre>
+
+    <h3>Cursor / Continue / Zed · HTTP</h3>
+<pre><span class="code-label">json</span><code class="language-json">{
+  "mcpServers": {
+    "gentics-mesh": {
+      "url": "https://mcp.example.com/mcp",
+      "headers": { "Authorization": "Bearer secret-please-rotate" }
+    }
+  }
+}</code></pre>
+
+    <h3>OpenAI Responses API · HTTP</h3>
+<pre><span class="code-label">python</span><code class="language-python">from openai import OpenAI
+
+client = OpenAI()
+resp = client.responses.create(
+    model="gpt-4.1",
+    tools=[{
+        "type": "mcp",
+        "server_label": "gentics-mesh",
+        "server_url": "https://mcp.example.com/mcp",
+        "headers": {"Authorization": "Bearer secret-please-rotate"},
+    }],
+    input="Liste die Projekte im Gentics-Mesh.",
+)
+print(resp.output_text)</code></pre>
+
+    <h3>LangChain · HTTP</h3>
+<pre><span class="code-label">python</span><code class="language-python">from langchain_mcp_adapters.client import MultiServerMCPClient
+
+mcp = MultiServerMCPClient({
+    "gentics-mesh": {
+        "url": "https://mcp.example.com/mcp",
+        "transport": "streamable_http",
+        "headers": {"Authorization": "Bearer secret-please-rotate"},
+    }
+})
+tools = await mcp.get_tools()
+# tools direkt in einem LangGraph-Agent verwenden</code></pre>
+
+    <h3>n8n</h3>
+    <p>
+      Node <em>MCP Client</em> hinzufügen, <code>Endpoint URL</code> auf <code>https://mcp.example.com/mcp</code> setzen,
+      <em>Header Auth</em> mit <code>Authorization: Bearer …</code>. Tools werden automatisch geladen und
+      stehen in Agent-Nodes zur Verfügung.
+    </p>
+
+    <h3>Open WebUI + Ollama</h3>
+<pre><span class="code-label">yaml · Open WebUI Settings</span><code class="language-yaml">name: gentics-mesh
+url: https://mcp.example.com/mcp
+headers:
+  Authorization: Bearer secret-please-rotate</code></pre>
+
+    <h3>Quick curl-Test</h3>
+<pre><span class="code-label">shell</span><code class="language-bash">TOKEN=secret-please-rotate
+
+# initialize
+curl -s http://localhost:3001/mcp \
+  -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}' | jq
+
+# tools/list
+curl -s http://localhost:3001/mcp \
+  -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' | jq
+
+# tools/call
+curl -s http://localhost:3001/mcp \
+  -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{"jsonrpc":"2.0","id":3,"method":"tools/call",
+       "params":{"name":"mesh_list_projects","arguments":{}}}' | jq</code></pre>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     DEVELOPMENT
+════════════════════════════════════════════════════ -->
+<section id="dev" class="section-inner">
+  <div class="container">
+    <div class="section-intro">
+      <span class="section-label">Development</span>
+      <h2 class="section-headline">Lokales Setup &amp; Tests.</h2>
+      <p class="section-body">
+        Das Modul lebt im <code>mesh-enterprise</code>-Reactor und wird zusammen mit Mesh gebaut.
+        Den lokalen Dev-Stack (Mesh + MariaDB / Elasticsearch) stellt
+        <code>mesh-enterprise</code> bereit – Doku dort.
+      </p>
+    </div>
+
+    <h3>Voraussetzungen</h3>
+    <ul style="padding-left: 20px; color: var(--text); font-size: .92rem; line-height: 1.8;">
+      <li>JDK 17 (Temurin empfohlen) – Baseline des <code>mesh-enterprise</code>-Parents</li>
+      <li>Maven 3.9+</li>
+      <li>Zugriff aufs Gentics-interne <code>mesh-enterprise</code>-Repo</li>
+    </ul>
+
+    <h3>Build &amp; Tests im Reactor</h3>
+<pre><span class="code-label">shell</span><code class="language-bash"># Vom mesh-enterprise-Root:
+mvn -B -ntp -pl mcp-server -am verify
+mvn -B -ntp -pl mcp-server -am -DskipTests package   # nur die JAR</code></pre>
+
+    <h3>MCP-Inspector zum Debuggen</h3>
+<pre><span class="code-label">shell</span><code class="language-bash">npx @modelcontextprotocol/inspector \
+  --command java \
+  --args -jar,mcp-server/target/mesh-mcp-server.jar</code></pre>
+
+    <h3>Versionierung</h3>
+    <p>
+      Eigene Versionsbumps entfallen – die Modul-Version wird vom Parent-POM
+      über <code>${revision}</code> oder einen direkten <code>&lt;version&gt;</code> geerbt.
+      Ein Mesh-Release bringt automatisch ein entsprechendes MCP-Image
+      <code>repo.gentics.com/mesh/mcp-server:&lt;mesh-version&gt;</code> mit.
+    </p>
+  </div>
+</section>
+
+</main>
+
+<!-- ═══════════════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════════════════ -->
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-logo">
+        <img src="gentics-logo-primaryblue.svg" alt="Gentics" class="footer-logo-img" />
+        <span class="footer-product">Mesh MCP Server</span>
+      </div>
+      <span class="footer-badge">mesh-enterprise · Developer Docs</span>
+      <span class="footer-copy">© Gentics · gentics.com</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Highlight all code blocks
+  if (window.hljs) {
+    document.querySelectorAll('pre code').forEach(b => window.hljs.highlightElement(b));
+  } else {
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('pre code').forEach(b => window.hljs.highlightElement(b));
+    });
+  }
+</script>
+
+</body>
+</html>

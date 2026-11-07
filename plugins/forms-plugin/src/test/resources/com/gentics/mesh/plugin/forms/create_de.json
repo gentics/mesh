@@ -1,0 +1,10 @@
+{
+	"name": "Erstelltes Formular",
+	"type": "POLL",
+	"language": "de",
+	"schema": {
+		"key": "test-schema",
+	    "version": "1.0.0",
+	    "properties": {}
+	}
+}

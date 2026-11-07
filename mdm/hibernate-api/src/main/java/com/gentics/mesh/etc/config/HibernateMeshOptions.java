@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.gentics.mesh.annotation.Getter;
 import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.doc.GenerateDocumentation;
-import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 import com.gentics.mesh.etc.config.hibernate.HibernateCacheConfig;
 import com.gentics.mesh.etc.config.hibernate.HibernateStorageOptions;
 
@@ -20,10 +19,6 @@ import com.gentics.mesh.etc.config.hibernate.HibernateStorageOptions;
 @GenerateDocumentation
 public class HibernateMeshOptions extends MeshOptions {
 
-	public static final String LICENSE_KEY_ENV = "LICENSEKEY";
-
-	public static final String LICENSE_KEY_PATH_ENV = "LICENSEKEY_PATH";
-
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Hibernate database options.")
 	private HibernateStorageOptions storageOptions = new HibernateStorageOptions();
@@ -32,15 +27,9 @@ public class HibernateMeshOptions extends MeshOptions {
 	@JsonPropertyDescription("Cache options.")
 	private HibernateCacheConfig cacheConfig = new HibernateCacheConfig();
 
-	@JsonProperty(defaultValue = "license.key")
-	@JsonPropertyDescription("Path to the license key file")
-	@EnvironmentVariable(name = LICENSE_KEY_PATH_ENV, description = "Override the default licence key file path.")
-	private String licenseKeyPath = "license.key";
-
-	@JsonProperty
-	@JsonPropertyDescription("The license key")
-	@EnvironmentVariable(name = LICENSE_KEY_ENV, description = "The license key")
-	private String licenseKey;
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("OpenAPI options.")
+	private OpenAPIOptions openApiOptions = new OpenAPIOptions();
 
 	/**
 	 * Validate this and the nested options.
@@ -89,14 +78,6 @@ public class HibernateMeshOptions extends MeshOptions {
 		validate();
 	}
 
-	public String getLicenseKey() {
-		return licenseKey;
-	}
-
-	public void setLicenseKey(String licenseKey) {
-		this.licenseKey = licenseKey;
-	}
-
 	@Override
 	@JsonIgnore
 	public NativeQueryFiltering getNativeQueryFiltering() {
@@ -110,35 +91,46 @@ public class HibernateMeshOptions extends MeshOptions {
 		return this;
 	}
 
-	public String getLicenseKeyPath() {
-		return licenseKeyPath;
-	}
-
-	public void setLicenseKeyPath(String licenseKeyPath) {
-		this.licenseKeyPath = licenseKeyPath;
-	}
-
 	@Override
 	@JsonIgnore
 	public boolean hasDatabaseLevelCache() {
 		return true;
 	}
 
+	/**
+	 * Get the OpenAPI options
+	 * @return options
+	 */
+	@JsonProperty("openApi")
+	public OpenAPIOptions getOpenAPIOptions() {
+		return openApiOptions;
+	}
+
+	/**
+	 * Set the OpenAPI options
+	 * @param openApiOptions options
+	 * @return fluent API
+	 */
+	public MeshOptions setOpenAPIOptions(OpenAPIOptions openApiOptions) {
+		this.openApiOptions = openApiOptions;
+		return this;
+	}
+
 	@Override
 	@JsonIgnore
 	public Version getDefaultOpenAPIVersion() {
-		return Version.V30;
+		return openApiOptions.getDefaultVersion();
 	}
 
 	@Override
 	@JsonIgnore
 	public Format getDefaultOpenAPIFormat() {
-		return Format.YAML;
+		return openApiOptions.getDefaultFormat();
 	}
 
 	@Override
 	@JsonIgnore
 	public String getNoApiInfoPlugins() {
-		return null;
+		return openApiOptions.getNoApiInfoPlugins();
 	}
 }

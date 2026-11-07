@@ -1,0 +1,22 @@
+{
+	"name": "Form with Filefield that does not change default allowed filetypes",
+	"schema": {
+		"key": "test-schema",
+	    "version": "1.0.0",
+	    "properties": {
+			"file1": {
+				"type": "binary",
+				"name": "file1",
+				"placeholderName": "",
+				"label": "Datei",
+				"mandatory": false,
+				"info": "",
+				"tooltip": "",
+				
+				"allowed_filetypes": null,
+				"max_filesize": "10",
+				"elements": []
+			}
+		}
+	}
+}

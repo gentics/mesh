@@ -1,0 +1,11 @@
+{
+	"responses": [
+		{
+			"hits": {
+				"total": 0,
+				"hits": []
+			},
+			"status": 200
+		}
+	]
+}

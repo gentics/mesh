@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.gentics.mesh.contentrag</groupId>
+        <artifactId>mesh-content-rag-parent</artifactId>
+        <version>9.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>mesh-content-rag-mesh-sync</artifactId>
+    <name>Gentics Mesh Content RAG (Mesh-Sync)</name>
+    <description>
+        Mesh-seitiger Teil des RAG-Syncs: Feldauswahl je Schema (Allow-List), Auswertung der
+        No-RAG-Konvention (K4), HTML-nach-Markdown-Wandlung und der Aufbau des SourceContent aus
+        einem Node-Container. Die Auswahlregeln selbst kennen keine Mesh-Typen und bleiben ohne
+        laufendes Mesh testbar; die beiden Handler kommen mit der Anbindung an den Sync dazu
+        (siehe MESH-INDEX-HANDLER.md).
+    </description>
+
+    <properties>
+        <!-- Dieselbe Version, die mesh-bom pinnt; jsoup liegt im Mesh-Prozess ohnehin. -->
+        <jsoup.version>1.21.1</jsoup.version>
+        <!-- Wie in mesh-bom: der Client, den SearchProvider#getClient() herausgibt. -->
+        <elasticsearch.client.version>1.1.4</elasticsearch.client.version>
+        <!-- Nur zum Kompilieren; zur Laufzeit bringt Mesh sein eigenes slf4j mit. Die Mesh-
+             Abhaengigkeiten stehen auf provided und reichen slf4j deshalb nicht weiter. -->
+        <slf4j.version>2.0.16</slf4j.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.gentics.mesh.contentrag</groupId>
+            <artifactId>mesh-content-rag-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.gentics.mesh.contentrag</groupId>
+            <artifactId>mesh-content-rag-chunking</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.gentics.mesh.contentrag</groupId>
+            <artifactId>mesh-content-rag-index-contract</artifactId>
+        </dependency>
+
+        <!-- Mesh-Seite: alles provided, weil dieser Code im Mesh-Prozess laeuft. -->
+        <dependency>
+            <groupId>com.gentics.mesh</groupId>
+            <artifactId>mesh-mdm-api</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.gentics.mesh</groupId>
+            <artifactId>mesh-rest-model</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.gentics.mesh</groupId>
+            <artifactId>mesh-elasticsearch</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.gentics.elasticsearch</groupId>
+            <artifactId>elasticsearch-client</artifactId>
+            <version>${elasticsearch.client.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.dagger</groupId>
+            <artifactId>dagger</artifactId>
+            <version>${dagger.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>${jsoup.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

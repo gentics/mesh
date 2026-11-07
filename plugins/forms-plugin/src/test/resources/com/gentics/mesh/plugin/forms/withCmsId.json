@@ -1,0 +1,9 @@
+{
+	"name": "Created Form",
+	"cms_id": "4711",
+	"schema": {
+		"key": "test-schema",
+	    "version": "1.0.0",
+	    "properties": {}
+	}
+}

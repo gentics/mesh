@@ -1,0 +1,49 @@
+# Lokaler Entwicklungs-Stack fuer Gentics Mesh Content RAG.
+# Bewusst KEINE separate Datenbank: Betriebsdaten liegen in Elasticsearch (Konzept 6.1).
+#
+#   docker compose up -d
+#
+# Danach den RAG-Service starten:
+#   ES_URL=http://localhost:9200 TEI_URL=http://host.docker.internal:8081 \
+#   mvn -pl rag-service spring-boot:run
+#
+# Wichtig: die URL des Embedding-Servers wird nicht vom Service selbst aufgerufen, sondern von
+# Elasticsearch. Sie muss daher aus Sicht des ES-Containers aufloesbar sein – im Compose-Netz
+# also http://tei:80/embed, nicht localhost.
+
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.3
+    container_name: rag-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false        # nur lokal! Produktiv: Security aktivieren.
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      # Erlaubt der Inference-Konfiguration, den lokalen TEI-Container anzusprechen.
+      - xpack.inference.enabled=true
+    ports:
+      - "9200:9200"
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    depends_on:
+      - tei
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  # HuggingFace Text Embeddings Inference (lokal, CPU-faehig) – Konzept 5.5.
+  # Wird von Elasticsearch aufgerufen, nicht vom RAG-Service.
+  tei:
+    image: ghcr.io/huggingface/text-embeddings-inference:cpu-1.5
+    container_name: rag-tei
+    command: ["--model-id", "intfloat/multilingual-e5-small"]
+    ports:
+      - "8081:80"
+    volumes:
+      - tei-data:/data
+
+volumes:
+  es-data:
+  tei-data:

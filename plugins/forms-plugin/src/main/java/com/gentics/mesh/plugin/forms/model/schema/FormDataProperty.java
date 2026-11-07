@@ -1,0 +1,124 @@
+package com.gentics.mesh.plugin.forms.model.schema;
+
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Represents the data entry for a single form control inside {@link FormData#getProperties()}.
+ *
+ * <p>The {@code value} field covers all single-value controls (string, number, datetime, binary,
+ * aggregate/container). The {@code values} field is used for multi-value controls ({@code isList=true}),
+ * such as multi-selects or aggregate lists.</p>
+ *
+ * <p>All fields except {@code value}/{@code values} are optional.</p>
+ */
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class FormDataProperty {
+
+	@JsonProperty("value")
+	private Object value;
+
+	@JsonProperty("values")
+	private List<Object> values;
+
+	@JsonProperty("validationMessage")
+	private String validationMessage;
+
+	@JsonProperty("visible")
+	private Boolean visible;
+
+	@JsonProperty("editable")
+	private Boolean editable;
+
+	@JsonProperty("possibleValues")
+	private List<PossibleValue> possibleValues;
+
+	@JsonProperty("customOption")
+	private Boolean customOption;
+
+	protected Map<String, Object> properties = new LinkedHashMap<>();
+
+	public Object getValue() {
+		return value;
+	}
+
+	public FormDataProperty setValue(Object value) {
+		this.value = value;
+		return this;
+	}
+
+	public List<Object> getValues() {
+		return values;
+	}
+
+	public FormDataProperty setValues(List<Object> values) {
+		this.values = values;
+		return this;
+	}
+
+	public String getValidationMessage() {
+		return validationMessage;
+	}
+
+	public FormDataProperty setValidationMessage(String validationMessage) {
+		this.validationMessage = validationMessage;
+		return this;
+	}
+
+	public Boolean getVisible() {
+		return visible;
+	}
+
+	public FormDataProperty setVisible(Boolean visible) {
+		this.visible = visible;
+		return this;
+	}
+
+	public Boolean getEditable() {
+		return editable;
+	}
+
+	public FormDataProperty setEditable(Boolean editable) {
+		this.editable = editable;
+		return this;
+	}
+
+	public List<PossibleValue> getPossibleValues() {
+		return possibleValues;
+	}
+
+	public FormDataProperty setPossibleValues(List<PossibleValue> possibleValues) {
+		this.possibleValues = possibleValues;
+		return this;
+	}
+
+	public Boolean getCustomOption() {
+		return customOption;
+	}
+
+	public FormDataProperty setCustomOption(Boolean customOption) {
+		this.customOption = customOption;
+		return this;
+	}
+
+	@JsonAnyGetter
+	public Map<String, Object> getAny() {
+		if (properties == null) {
+			properties = new LinkedHashMap<>();
+		}
+		return properties;
+	}
+
+	@JsonAnySetter
+	public void setProperty(String key, Object value) {
+		if (key != null && !key.isEmpty()) {
+			getAny().put(key, value);
+		}
+	}
+}

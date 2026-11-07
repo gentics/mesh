@@ -1,0 +1,260 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.gentics.mesh.plugin.enterprise</groupId>
+	<artifactId>mesh-enterprise-plugins</artifactId>
+	<packaging>pom</packaging>
+
+	<parent>
+		<groupId>com.gentics.mesh.plugin</groupId>
+		<artifactId>mesh-commercial-plugins</artifactId>
+		<version>9.0.0-SNAPSHOT</version>
+		<relativePath>../../plugins/pom.xml</relativePath>
+	</parent>
+
+	<licenses>
+		<license>
+			<name>BUSL-1.1</name>
+			<url>https://github.com/gentics/mesh/blob/dev/ee/LICENSE</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<properties>
+		<plugin.license>Commercial</plugin.license>
+		<plugin.author>Gentics</plugin.author>
+		<!--  Don't forget to also update dependencyManagement section! -->
+		<spring.security.version>6.3.9</spring.security.version>
+		<json-smart.version>2.5.2</json-smart.version>
+		<netty.version>4.2.7.Final</netty.version>
+		<hsqldb.version>2.7.3</hsqldb.version>
+		<commons-beanutils.version>1.11.0</commons-beanutils.version>
+		<jackson.version>2.21.7</jackson.version>
+		<tika.version>2.9.2</tika.version>
+		<license.checker.version>2.0.4</license.checker.version>
+		<dependency.report.component.name>Plugins</dependency.report.component.name>
+		<junit.version>4.13.2</junit.version>
+	</properties>
+
+	<modules>
+		<module>favorite-plugin</module>
+		<module>search-plugin</module>
+		<module>keycloak-plugin</module>
+		<module>docs</module>
+	</modules>
+
+	<dependencyManagement>
+		<dependencies>
+
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-bom</artifactId>
+				<type>pom</type>
+				<scope>import</scope>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.tika</groupId>
+				<artifactId>tika-parsers-standard-package</artifactId>
+				<version>${tika.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>org.slf4j</groupId>
+  						<artifactId>slf4j-api</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.slf4j</groupId>
+  						<artifactId>jcl-over-slf4j</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>xml-apis</groupId>
+						<artifactId>xml-apis</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh.plugin</groupId>
+				<artifactId>mesh-commercial-plugins-common</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh.plugin</groupId>
+				<artifactId>mesh-commercial-plugins-test-common</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.testcontainers</groupId>
+				<artifactId>testcontainers</artifactId>
+				<version>1.17.6</version>
+			</dependency>
+			<dependency>
+				<groupId>org.testcontainers</groupId>
+				<artifactId>toxiproxy</artifactId>
+				<version>1.17.6</version>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.datatype</groupId>
+				<artifactId>jackson-datatype-jdk8</artifactId>
+				<version>${jackson.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.module</groupId>
+				<artifactId>jackson-module-parameter-names</artifactId>
+				<version>${jackson.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.datatype</groupId>
+				<artifactId>jackson-datatype-jsr310</artifactId>
+				<version>${jackson.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.hsqldb</groupId>
+				<artifactId>hsqldb</artifactId>
+				<version>${hsqldb.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-beanutils</groupId>
+				<artifactId>commons-beanutils</artifactId>
+				<version>${commons-beanutils.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>net.minidev</groupId>
+				<artifactId>json-smart</artifactId>
+				<version>${json-smart.version}</version>
+			</dependency>
+			<!-- https://mvnrepository.com/artifact/org.springframework.security/spring-security-core -->
+			<dependency>
+				<groupId>org.springframework.security</groupId>
+				<artifactId>spring-security-core</artifactId>
+				<version>${spring.security.version}</version>
+			</dependency>
+			<!-- https://mvnrepository.com/artifact/org.springframework.security/spring-security-crypto -->
+			<dependency>
+				<groupId>org.springframework.security</groupId>
+				<artifactId>spring-security-crypto</artifactId>
+				<version>${spring.security.version}</version>
+			</dependency>
+
+			<!-- This is necessary, since some transitive (test) dependencies would add a dependency to another version of netty-codec, which lets the test fail -->
+			<dependency>
+				<groupId>io.netty</groupId>
+				<artifactId>netty-codec</artifactId>
+				<version>${netty.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>junit</groupId>
+				<artifactId>junit</artifactId>
+				<version>${junit.version}</version>
+				<scope>test</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<!-- Inherited by every module (like mesh-plugin-parent's own provided dependencies). "provided" so it
+	     compiles the offline OpenAPI spec generator in "common" and each plugin's own generator invocation,
+	     without ending up bundled in any plugin's shaded runtime jar. -->
+	<dependencies>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<scope>provided</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<!--
+			Plugin management can be released once the parents are updated
+			to maven-vertx-parent 3.8.5.1 (-> maven-parent 5.1.0).
+		-->
+		<pluginManagement>
+			<plugins>
+				<!--
+					We need to fix the sonar cube version, because newer
+					versions require Java 11 to run.
+				-->
+				<plugin>
+					<groupId>org.sonarsource.scanner.maven</groupId>
+					<artifactId>sonar-maven-plugin</artifactId>
+					<version>3.8.0.2131</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-release-plugin</artifactId>
+					<version>3.0.0-M4</version>
+				</plugin>
+
+				<plugin>
+					<groupId>com.gentics</groupId>
+					<artifactId>dependency-reporting-plugin</artifactId>
+					<version>1.0.0</version>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>versions-maven-plugin</artifactId>
+				<version>2.16.2</version>
+				<executions>
+					<execution>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>dependency-updates-aggregate-report</goal>
+						</goals>
+						<configuration>
+							<formats>xml</formats>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.11.0</version>
+				<configuration>
+					<verbose>false</verbose>
+					<forceJavacCompilerUse>true</forceJavacCompilerUse>
+					<release>17</release>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>com.google.dagger</groupId>
+							<artifactId>dagger-compiler</artifactId>
+							<version>${dagger.version}</version>
+						</path>
+					</annotationProcessorPaths>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<skip>${skip.unit.tests}</skip>
+					<jvm>${java.home}/bin/java</jvm>
+					<argLine>-Xms128m -Xmx256m -XX:MaxDirectMemorySize=128m
+						--add-opens java.base/java.lang=ALL-UNNAMED ${jacoco.env}
+					</argLine>
+					<forkedProcessTimeoutInSeconds>2700</forkedProcessTimeoutInSeconds>
+					<rerunFailingTestsCount>0</rerunFailingTestsCount>
+					<reuseForks>false</reuseForks>
+					<forkCount>${surefire.forkcount}</forkCount>
+					<trimStackTrace>false</trimStackTrace>
+					<useSystemClassLoader>false</useSystemClassLoader>
+					<excludes>
+						<include>**/*AbstractTest.java</include>
+						<include>**/*Abstract*Test.java</include>
+						<exclude>**/*Abstract*.java</exclude>
+						<exclude>**/Abstract*.java</exclude>
+						<exclude>**/*IT.java</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>

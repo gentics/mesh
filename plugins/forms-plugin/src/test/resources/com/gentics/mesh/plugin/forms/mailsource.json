@@ -1,0 +1,35 @@
+{
+	"name": "Form with Textfield",
+	"cms_id": 1,
+	"adminEmailAddress": "admin@test.com",
+	"adminEmailSubject": {
+		"en": "admin mail (en)",
+		"it": "admin mail (it)",
+		"de": "admin mail (de)"
+	},
+	"adminEmailSource": {
+		"en": "Custom admin mail (en) source, value: {{#each data}}{{{value}}}{{/each}}",
+		"it": "Custom admin mail (it) source, value: {{#each data}}{{{value}}}{{/each}}",
+		"de": "Custom admin mail (de) source, value: {{#each data}}{{{value}}}{{/each}}"
+	},
+	"schema": {
+		"properties": {
+			"usermail1": {
+				"type": "usermail",
+				"name": "usermail1",
+				"formGridOptions": {
+					"mailsubject": {
+						"en": "user mail (en)",
+						"it": "user mail (it)",
+						"de": "user mail (de)"
+					},
+					"mailsource": {
+						"en": "Custom user mail (en) source, value: {{#each data}}{{{value}}}{{/each}}",
+						"it": "Custom user mail (it) source, value: {{#each data}}{{{value}}}{{/each}}",
+						"de": "Custom user mail (de) source, value: {{#each data}}{{{value}}}{{/each}}"
+					}
+				}
+			}
+		}
+	}
+}

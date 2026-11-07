@@ -1,0 +1,752 @@
+# Default values for Gentics Mesh.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Setting this higher than 1 will enable clustering automatically
+# In this case, be sure you have correctly configured a network storage for the uploads
+replicaCount: 1
+
+image:
+  ## Registry and repository are combined to "registry/repository:tag".
+  ## global.imageRegistry (umbrella mirror override) takes precedence over registry.
+  ## Leave registry empty if your repository already contains the registry host.
+  registry: docker.gentics.com
+  repository: gentics/mesh-enterprise-mariadb
+  #tag: x.x.x #defaults to chart version
+  pullPolicy: IfNotPresent
+
+# imagePullSecrets:
+#   - name: docker-gentics-com
+
+nameOverride: ""
+fullnameOverride: ""
+
+database:
+  # host: ""
+  # port: 0
+  # name: ""
+  # username: ""
+  # password: ""
+  # extraParams: ""
+
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: false
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name:
+
+podSecurityContext: {}
+
+securityContext: {}
+
+service:
+  type: ClusterIP
+
+  mesh:
+    port: 80
+        # nodePort is only available when using service type NodePort
+    # nodePort: 80
+    useHttp2: false
+    name: mesh
+
+  meshSSL:
+    useHttp2: false
+    port: 443
+    # nodePort is only available when using service type NodePort
+    # nodePort: 80
+
+  monitoring:
+    port: 8081
+    # nodePort is only available when using service type NodePort
+    # nodePort: 80
+
+# Custom annotations for the statefulset
+#statefulsetAnnotations:
+#  customStatefulsetAnnotation: "whatever"
+
+# Custom annotations for the pods
+#podAnnotations:
+#  customPodAnnotation: "whatever"
+
+# extraConfig creates a configmap per name, which can hold multiple
+# items and can be mountad as a specified path
+#extraConfig:
+#  - name: myconfig
+#    items:
+#      - key: custom.yml
+#        mountPath: /plugins/myplugin/custom.yml
+#        value: |
+#          setup:
+#            customValue: value
+
+# Ingress for Gentics Mesh API
+ingress:
+  enabled: false
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: 8m
+    # kubernetes.io/ingress.class: nginx # Kubernetes <1.19
+    # kubernetes.io/tls-acme: "true"
+  #ingressClassName: nginx # Kubernetes >=1.19
+  hosts:
+    - host: mesh.local
+      paths:
+        - "/"
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+# You should adjust this to your needs. This just defines the absolute minimum defaults.
+# The memory values should be set in conjunction with the Java Xmx plus other Java memory settings like Direct memory
+# See: https://gentics.com/mesh/docs/administration-guide/#_memory_settings
+resources:
+  limits:
+    memory: 2Gi
+    cpu: 2000m
+  requests:
+    memory: 256Mi
+    cpu: 500m
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Settings for clustering will be configured automatically
+extraEnv:
+- name: JAVA_TOOL_OPTIONS
+  value: "-Xms128m -Xmx128m"
+
+# - name: MESH_ELASTICSEARCH_URL
+#   value: "http://elasticsearch:9200"
+
+# By default, a default configmap will be created
+# existingConfigmap: "mesh-custom-config"
+# All settings in mesh.yml are configurable with env vars (See: extraEnv)
+
+persistence:
+  enabled: true
+
+  ## Whether Mesh volumes (shared, snapshots) survive "helm uninstall".
+  ## Unset: follows global.persistence.keepOnUninstall, defaulting to true (keep).
+  ## Leave commented so the global umbrella switch stays effective.
+  # keepOnUninstall: true
+
+  # Volume for shared data (uploads, keystore)
+  # This volume should be a network volume (NFS) and will be shared across all instances
+  shared:
+    # Use existingClaim if you don't have a storage provisioner for your NFS
+    # existingClaim: ""
+    annotations: {}
+    spec:
+      accessModes:
+        - ReadWriteMany
+      # storageClassName: ""
+      resources:
+        requests:
+          storage: 10Gi
+
+  backup:
+    ##  Storage for database snapshots
+    snapshots:
+      # Use existingClaim if you don't have a storage provisioner for your NFS
+      # existingClaim: ""
+      annotations: {}
+      spec:
+        accessModes:
+          - ReadWriteMany
+        # storageClassName: ""
+        resources:
+          requests:
+            storage: 10Gi
+
+  # persisting cached images to shared volume
+  imageCache:
+    enabled: false
+
+# livenessProbe:
+#   exec:
+#     command:
+#     - /bin/sh
+#     - live.sh
+  # initialDelaySeconds: 10
+  # periodSeconds: 8
+  # failureThreshold: 3
+
+# readinessProbe:
+#   httpGet:
+#     path: /api/v2/health/ready
+#     port: http
+#   initialDelaySeconds: 10
+#   periodSeconds: 5
+#   failureThreshold: 5
+
+
+vertxOptions:
+  workerPoolSize: 20
+  eventLoopSize: 10
+  verticleCount: 10
+  orderedBlockingHandlers: true
+
+keystore:
+  # passwordSecret: ""
+  # Change this password. This will be used if no custom keystore secret has been specified.
+  password: "secret"
+
+# Add custom certificates to the jvm truststore
+# customCert:
+#   secretName: "my-certs"
+
+ssl:
+  enabled: false
+  # Client Authentication mode can be: NONE, REQUEST or REQUIRE
+  # See https://gentics.com/mesh/docs/references/#_client_certificate for details
+  clientAuthMode: "NONE"
+  serverKeyPath: "/certs/key.pem"
+  serverCertPath: "/certs/cert.pem"
+  #trustedCertPaths: ""
+  existingSecret: "mesh-ssl-secret"
+
+# Configure clustering related settings
+cluster:
+  enabled: true
+  coordinatorRegex: "gentics-mesh-[0-9]"
+  podDisruptionBudget:
+    maxUnavailable: false
+
+  resources:
+    requests:
+      memory: 500Mi
+      cpu: 100m
+    limits:
+      memory: 1Gi
+      cpu: 250m
+
+# Tools settings, which are used for backup/restore and in the NOTES for generation of an api key
+tools:
+  image:
+    registry: docker.gentics.com
+    repository: gentics/mesh/mesh-tools
+    tag: 1.0.2
+    pullPolicy: IfNotPresent
+    # pullSecret: docker-gentics-com
+
+# Restore settings. The restore operation is invoked when the initial cluster is being setup.
+# The restore will utilize the backup snapshot to populate the keystore and uploads folders.
+restore:
+  enabled: false
+  # Which parts to restore?
+  allowedParts: 
+    uploads: true
+    keystore: true
+  snapshotName: "current"
+
+# Configure backup related settings
+backup: 
+  # Per default, backup is not enabled
+  enabled: false
+  # Backup may be suspended
+  suspended: false
+  # Which parts to backup?
+  allowedParts:
+    uploads: true
+    keystore: true
+  # in some installations the backup target is e.g. a NFS and files cannot be rsynced
+  # in this case the files can be tared to preserve file permissions
+  # useTar: true
+  cron:
+    # Daily at 22 pm
+    schedule: "0 22 * * *"
+    # Define the time limit for the backup in seconds
+    timeLimitSeconds: 3600
+
+    successfulJobsHistoryLimit: 3
+    failedJobsHistoryLimit: 3
+
+  #allow to override default backup.sh script
+  #backupScript: |-
+  #allow to override default restore.sh script
+  #restoreScript: |-
+  resources:
+    requests:
+      memory: 500Mi
+      cpu: 100m
+    limits:
+      memory: 1Gi
+      cpu: 250m
+
+## Generate a Gentics Mesh API key and store it in the "<release>-mesh-secret"
+## Secret (key "apikey") — the CMP portals read this secret by default.
+## The (empty) Secret is ALWAYS rendered by this chart; when generateApiKey is
+## true, a Job waits for Mesh, logs in with the admin credentials
+## (login -> auth/me -> POST /users/{uuid}/token) and patches the token into it.
+## Create-once: an existing key is never regenerated, because Mesh invalidates
+## the previous token when a new one is issued. Disabling the flag on a later
+## upgrade removes only the job — the stored key stays intact.
+## Force regeneration: kubectl delete secret <release>-mesh-secret, re-run with
+## the flag enabled (helm upgrade / Argo sync).
+generateApiKey: false
+
+## Configuration for the API-key job (only used when generateApiKey is true).
+apiKeyJob:
+  ## Mesh user whose API token is generated. The password is taken from the
+  ## admin credentials secret (or credentials.existingSecret).
+  ## NOTE: issuing the token invalidates any previously issued API token of
+  ## this user.
+  username: admin
+  image:
+    registry: docker.io
+    repository: curlimages/curl
+    tag: "8.11.1"
+    pullPolicy: IfNotPresent
+  ## Completed jobs are cleaned up automatically after this many seconds.
+  ttlSecondsAfterFinished: 3600
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 200m
+      memory: 64Mi
+
+# Configure credentials
+credentials:
+  ## Explicit initial admin password. Leave empty to auto-generate a random
+  ## 24-char password on install. The generated password is persisted in the
+  ## Secret and reused on upgrades.
+  initialAdminPassword: ""
+
+  ## Reference an existing Secret instead of creating one.
+  ## When set, initialAdminPassword above is ignored and no Secret is created
+  ## by the chart.
+  # existingSecret: ""
+  # existingSecretKey: password
+
+  ## Force the admin user to reset the password on first login.
+  forcePasswordReset: false
+
+config:
+  publicKeys: ""
+
+# Monitoring related settings
+monitoring:
+  enabled: true
+
+# Elasticsearch settings
+elasticsearch:
+  url: "null" ## ES integration disabled by default
+  # complianceMode: "ES_8"
+  # prefix: "mesh-"
+
+# Upload settings
+upload:
+  limit: "262144000" ## 260 MB
+
+logging:
+  defaultLogLevel: INFO
+  #allows you to inject your own logback.xml - otherwise default configured logback.xml will be used
+  #logback: |-
+
+customjobs:
+  ### REQUIRED for a job ###
+  #- name: test-cron
+  #  image:
+  #    repository: docker.gentics.com/gentics/mesh/mesh-tools
+  #    tag: 1.0.2
+  #    imagePullPolicy: IfNotPresent
+  #    #optional secret
+  #    #pullSecret: docker-gentics-com
+  #  schedule: "0 23 * * *"
+  #  failedJobsHistoryLimit: 2
+  #  successfulJobsHistoryLimit: 2
+  #  concurrencyPolicy: Forbid
+  #  restartPolicy: Never
+  #  timeLimitSeconds: 3600
+  #  backoffLimit: 1
+  #  ttlSecondsAfterFinished: 86400
+  ### OPTIONAL for a job ###
+  #  env:
+  #  - name: MESH_CLI_PASSWORD
+  #    value: "admin"
+  #  - name: MESH_CLI_USERNAME
+  #    value: "admin"
+    #envFrom:
+    #- secretRef:
+    #  name: <secret_name>
+    #- configMapRef:
+    #  name: <configmap_name>
+  #  command: ["/bin/sh"]
+  #  args:
+  #  - "/runme.sh"
+  #
+  #  resources:
+  #    limits:
+  #      cpu: 200m
+  #      memory: 500Mi
+  #    requests:
+  #      cpu: 100m
+  #      memory: 200Mi
+  #  #volumes:
+  #  #  - name: config
+  #  #    configMap:
+  #  #      name: extraconfig
+  #  #volumeMounts:
+  #  #  - mountPath: /runme.sh
+  #  #    name: config
+  #  #    subPath: runme.sh
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Gentics Mesh MCP Server (sub-component)
+#
+# Provides a Model Context Protocol interface for LLM clients
+# (Claude Desktop, OpenAI Agents, LangChain, n8n, Open WebUI, …).
+# Six read-only tools, runs as a separate Deployment pod next to Mesh.
+#
+# Disabled by default — enable via `mcpServer.enabled=true`.
+# Source: mesh-enterprise/mcp-server/
+# ─────────────────────────────────────────────────────────────────────────────
+mcpServer:
+  enabled: false
+
+  image:
+    ## Registry and repository are combined to "registry/repository:tag".
+    ## global.imageRegistry (umbrella mirror override) takes precedence over registry.
+    registry: docker.gentics.com
+    repository: gentics/mesh-enterprise/mcp-server
+    # tag: ""   # default: Chart.AppVersion
+    pullPolicy: IfNotPresent
+    # pullSecret: docker-gentics-com
+
+  replicaCount: 1
+
+  ## PodDisruptionBudget — only applied when replicaCount > 1.
+  podDisruptionBudget:
+    ## Minimum number/percentage of pods that must stay available during
+    ## voluntary disruptions (node drains, cluster upgrades).
+    minAvailable: "50%"
+    ## Alternative to minAvailable — if set, it is used INSTEAD of minAvailable
+    ## (Kubernetes allows only one of the two).
+    # maxUnavailable: 1
+
+  # Transport mode.
+  #   "stdio" – only reachable via `kubectl exec -i` or a sidecar (no Service).
+  #   "http"  – creates Service + optional Ingress, JSON-RPC via POST /mcp.
+  transport:
+    mode: http
+    http:
+      port: 3001
+      host: "0.0.0.0"
+    auth:
+      # false: the MCP server checks the bearer token below. Mesh calls then run
+      #        ANONYMOUSLY — that token is an MCP credential and is never forwarded.
+      # true:  the MCP server checks nothing, so the caller's
+      #        `Authorization: Bearer …` is passed through to Mesh per request and
+      #        Mesh applies that user's permissions (no header = anonymous). This is
+      #        the mode for per-user Mesh permissions, but it also means anyone who
+      #        reaches the port can call tools — put a reverse proxy in front.
+      disabled: false
+      # Inline token (testing only). Empty: a token is generated once at install
+      # and reused across upgrades (see NOTES for the retrieval command).
+      token: ""
+      # Existing Secret with key MCP_AUTH_TOKEN.
+      # Recommended for GitOps/Argo CD (see README "Deploying with Argo CD").
+      existingSecret: ""
+    cors:
+      # Comma-separated CORS origin allowlist; "*" allows all.
+      origins: []
+
+  # Mesh connection.
+  #
+  # The chart configures NO Mesh credentials. Who the MCP server is towards Mesh
+  # follows from the transport:
+  #   transport.mode=http, auth.disabled=false -> Mesh sees anonymous requests.
+  #       The bearer token authenticates the client to the MCP server; it belongs
+  #       to MCP, not to Mesh, and is never forwarded. Mesh's `anonymous` role
+  #       needs read permission on every project in `allowedProjects`, otherwise
+  #       all tools return empty results.
+  #   transport.mode=http, auth.disabled=true  -> the caller's
+  #       `Authorization: Bearer …` is passed through to Mesh per request and Mesh
+  #       decides what that user may see. Without a header: anonymous.
+  #   transport.mode=stdio -> the server needs a fixed identity. Supply it via
+  #       `extraEnv` (MESH_API_KEY, or MESH_USERNAME + MESH_PASSWORD).
+  #
+  # Setting MESH_API_KEY / MESH_USERNAME / MESH_PASSWORD in http mode makes the
+  # server refuse to start — they would have no effect there.
+  mesh:
+    # Default: in-cluster service DNS of the Mesh component of this release.
+    # When empty, derived from `mesh.fullname` + service.mesh.port.
+    baseUrl: ""
+    allowedProjects: "demo"
+    allowedSchemas: ""           # leer = alle erlaubt
+    allowedLanguages: "de,en"
+    readOnly: true
+    graphqlMaxDepth: 6
+    graphqlTimeoutMs: 5000
+
+  # Protection layers: prevent an LLM from flooding Mesh with requests.
+  protection:
+    rateLimit:
+      globalPerSecond: 50
+      perTokenPerSecond: 20
+    maxConcurrent: 10
+    circuitBreaker:
+      enabled: true
+      failureRatePercent: 50
+      windowSize: 20
+      openDurationMs: 30000
+    graphqlMaxQueryLength: 4000
+
+  logLevel: "info"
+
+  # Additional environment variables passed through directly.
+  extraEnv: []
+
+  service:
+    type: ClusterIP
+    annotations: {}
+    # When transport.mode = "stdio", no Service is created.
+
+  ingress:
+    enabled: false
+    annotations: {}
+    # ingressClassName: nginx
+    hosts:
+      - host: mesh-mcp.local
+        paths:
+          - "/"
+    tls: []
+    #  - secretName: mcp-tls
+    #    hosts:
+    #      - mesh-mcp.local
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 768Mi
+
+  podSecurityContext:
+    runAsUser: null
+    fsGroup: null
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  podAnnotations: {}
+  podLabels: {}
+
+
+  startupProbe:
+    periodSeconds: 5
+    timeoutSeconds: 5
+    failureThreshold: 30
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 20
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readinessProbe:
+    initialDelaySeconds: 15
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+
+# ── Content RAG (rag-service) ─────────────────────────────────────────────────
+# Retrieval-augmented generation over Mesh content. A standalone HTTP service
+# that only READS: the RAG indices are filled by Mesh through its standard sync,
+# the service merely queries them. Hence no PVC, no init container, no job.
+contentRag:
+  enabled: false
+
+  image:
+    ## Registry and repository are combined to "registry/repository:tag".
+    ## global.imageRegistry (umbrella mirror override) takes precedence over registry.
+    registry: docker.gentics.com
+    repository: gentics/mesh-enterprise/content-rag
+    # tag: ""   # default: Chart.AppVersion
+    pullPolicy: IfNotPresent
+    # pullSecret: docker-gentics-com
+
+  ## Configuration and audit currently live in the memory of the pod (in-memory
+  ## stores), so with more than one replica each keeps its own state. The query
+  ## path itself is stateless - until there are persistent backends, stay at 1.
+  replicaCount: 1
+
+  ## PodDisruptionBudget — only applied when replicaCount > 1.
+  podDisruptionBudget:
+    minAvailable: "50%"
+    ## Alternative to minAvailable — if set, it is used INSTEAD of minAvailable.
+    # maxUnavailable: 1
+
+  http:
+    ## Container and service port. Also passed to the service as SERVER_PORT.
+    port: 8090
+
+  elasticsearch:
+    ## Empty = elasticsearch.url resp. elasticsearch.prefix of this chart: the RAG
+    ## chunks live in the same Elasticsearch as the full-text search.
+    ## If nothing is configured there (url: "null"), rendering fails.
+    url: ""
+    ## MUST match the prefix Mesh writes with (MESH_ELASTICSEARCH_PREFIX /
+    ## elasticsearch.prefix). If not set it uses the one configured for mesh
+    #prefix: ""
+    ## Basic auth, only for a secured Elasticsearch.
+    username: ""
+    password: ""
+    ## An existing Secret instead of the values above. It has to carry the keys
+    ## the service expects as environment variables: RAG_ELASTICSEARCH_PASSWORD,
+    ## TEI_API_KEY, MESH_API_TOKEN, LLM_API_KEY - only the ones actually needed.
+    existingSecret: ""
+
+  inference:
+    ## Base URL of the embedding server (TEI), WITHOUT /embed - the service
+    ## appends the path itself.
+    ##
+    ## IMPORTANT: this address is called by ELASTICSEARCH, not by the rag-service.
+    ## It has to resolve from the point of view of the ES cluster; a name only the
+    ## namespace of the service knows leads to an error that surfaces at indexing
+    ## time.
+    teiUrl: ""
+    ## Ignored by TEI, but required by the Elasticsearch configuration.
+    apiKey: ""
+    id: mesh-content-rag-embeddings
+    pipelineId: mesh-content-rag-embed
+    ## Vector dimension of the model - has to match the model behind the endpoint
+    ## (multilingual-e5-small: 384).
+    dimension: 384
+    shards: 1
+    replicas: 1
+    ## Creates the inference endpoint, ingest pipeline and index template on
+    ## startup. Needs manage_index_templates, manage_pipeline and inference
+    ## management in Elasticsearch. Without those permissions: set to false and
+    ## provision the objects separately (the index-contract module supplies the
+    ## definitions).
+    bootstrap: true
+
+  mesh:
+    ## Default: in-cluster service DNS of the Mesh component of this release.
+    ## REQUIRED: every request is authenticated against Mesh - the service calls
+    ## GET /api/v2/auth/me to validate the caller token and resolve the roles it
+    ## filters on. That happens for anonymous requests too, so Mesh has to be
+    ## reachable even when auth.allowAnonymous is true.
+    baseUrl: ""
+
+  auth:
+    ## Requests without a token run as the anonymous Mesh user and see only what
+    ## that role may read. Set to false to allow authenticated access only - the
+    ## service then answers unauthenticated requests with 401.
+    ## Passed to the service as RAG_ALLOW_ANONYMOUS.
+    allowAnonymous: false
+
+  llm:
+    ## Currently without effect: the only LlmProvider implementation is a stub, no
+    ## call goes out to an LLM endpoint. The values are prepared, but creating a
+    ## Secret for them is not worth it yet.
+    profile: cloud-hybrid          # cloud-hybrid | sovereign-onprem
+    model: ""
+    endpoint: ""
+    apiKey: ""
+
+  retrieval:
+    topK: 8
+    ## Score threshold for "no answer without a basis".
+    minScore: 0.2
+    ## Optional hardening: additionally checks permissions live against Mesh.
+    livePermissionCheck: false
+
+  logLevel: INFO
+
+  ## Additional environment variables passed through directly.
+  extraEnv: []
+
+  service:
+    type: ClusterIP
+    annotations: {}
+
+  ingress:
+    ## Deliberately off. The service authenticates callers against Mesh and
+    ## filters on their roles, but with auth.allowAnonymous (default true) a
+    ## request without a token is served as the anonymous Mesh user - so a public
+    ## ingress exposes everything the anonymous role may read, and
+    ## /api/rag/debug/chunks returns that content in plain text. Before enabling
+    ## this, set auth.allowAnonymous=false or put auth in front of it.
+    enabled: false
+    annotations: {}
+    # ingressClassName: nginx
+    hosts:
+      - host: mesh-content-rag.local
+        paths:
+          - "/"
+    tls: []
+    #  - secretName: content-rag-tls
+    #    hosts:
+    #      - mesh-content-rag.local
+
+  ## A thin HTTP layer: the retrieval is done by Elasticsearch, the vectorisation
+  ## as well. The heap follows the memory limit via MaxRAMPercentage, so do not
+  ## leave the limit out.
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+  podSecurityContext:
+    ## null = the user baked into the image (UID/GID 10001, non-root).
+    runAsUser: null
+    fsGroup: null
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+
+  securityContext:
+    allowPrivilegeEscalation: false
+    ## Tomcat needs a writable /tmp; the deployment mounts an emptyDir for it.
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  podAnnotations: {}
+  podLabels: {}
+
+  ## The probe paths are fixed in the deployment: startup and liveness on
+  ## /actuator/health/liveness, readiness on /actuator/health/readiness.
+  ## The aggregate /actuator/health is NOT suitable as a liveness probe - it
+  ## contains the Elasticsearch indicator and is DOWN whenever the cluster is
+  ## unreachable.
+  startupProbe:
+    periodSeconds: 5
+    timeoutSeconds: 5
+    failureThreshold: 30
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 20
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readinessProbe:
+    initialDelaySeconds: 15
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3

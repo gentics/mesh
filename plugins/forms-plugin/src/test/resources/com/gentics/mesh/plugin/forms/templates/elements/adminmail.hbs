@@ -1,0 +1,9 @@
+Admin mail:
+	name: {{ name }}
+	label: {{ label }}
+	type: {{ type  }}
+	selectType: {{ select_type }}
+	options:
+{{~#each options}}
+		{{ @key }}: {{ @value }}
+{{~/each}}

@@ -1,0 +1,15 @@
+{
+  "name": "favorite_folder",
+  "description": "FavoritePlugin: Plugin root node",
+  "displayField": "name",
+  "segmentField": "name",
+  "container": true,
+  "fields": [
+    {
+      "name": "name",
+      "label": "Name",
+      "type": "string",
+      "required": true
+    }
+  ]
+}

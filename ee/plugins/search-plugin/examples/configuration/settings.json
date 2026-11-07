@@ -1,0 +1,173 @@
+{
+	"page": {
+		"analysis": {
+			"filter": {
+				"german_stop": {
+					"type": "stop",
+					"stopwords": "_german_"
+				},
+				"german_decompose": {
+					"type": "hyphenation_decompounder",
+					"min_subword_size": 4,
+					"word_list_path": "german-wordlist.txt",
+					"hyphenation_patterns_path": "de_DR.xml"
+				},
+				"german_snowball": {
+					"type": "snowball",
+					"language": "German"
+				},
+				"taglist_filter": {
+					"type": "pattern_capture",
+					"patterns": [
+						"(\\S+)"
+					]
+				},
+				"autocomplete_filter": {
+					"type": "edge_ngram",
+					"min_gram": 1,
+					"max_gram": 20
+				}
+			},
+			"analyzer": {
+				"german_text": {
+					"char_filter": "html_strip",
+					"tokenizer": "standard",
+					"filter": [
+						"lowercase",
+						"german_stop",
+						"german_decompose",
+						"german_snowball"
+					]
+				},
+				"german_search": {
+					"char_filter": "html_strip",
+					"tokenizer": "standard",
+					"filter": [
+						"lowercase",
+						"german_stop",
+						"german_snowball"
+					]
+				},
+				"german_suggest": {
+					"char_filter": "html_strip",
+					"tokenizer": "standard",
+					"filter": [
+						"lowercase",
+						"german_stop",
+						"german_decompose"
+					]
+				},
+				"taglist": {
+					"tokenizer": "keyword",
+					"filter": [
+						"lowercase",
+						"taglist_filter"
+					]
+				},
+				"german_autocomplete_index": {
+					"char_filter": "html_strip",
+					"tokenizer": "standard",
+					"filter": [
+						"lowercase",
+						"german_stop",
+						"autocomplete_filter"
+					]
+				},
+				"german_autocomplete_search": {
+					"char_filter": "html_strip",
+					"tokenizer": "standard",
+					"filter": [
+						"lowercase",
+						"german_stop"
+					]
+				}
+			}
+		}
+	},
+	"folder": null,
+	"file": {
+		"analysis": {
+			"filter": {
+				"german_stop": {
+					"type": "stop",
+					"stopwords": "_german_"
+				},
+				"german_decompose": {
+					"type": "hyphenation_decompounder",
+					"min_subword_size": 4,
+					"word_list_path": "german-wordlist.txt",
+					"hyphenation_patterns_path": "de_DR.xml"
+				},
+				"german_snowball": {
+					"type": "snowball",
+					"language": "German"
+				},
+				"taglist_filter": {
+					"type": "pattern_capture",
+					"patterns": [
+						"(\\S+)"
+					]
+				},
+				"autocomplete_filter": {
+					"type": "edge_ngram",
+					"min_gram": 1,
+					"max_gram": 20
+				}
+			},
+			"analyzer": {
+				"german_text": {
+					"char_filter": "html_strip",
+					"tokenizer": "standard",
+					"filter": [
+						"lowercase",
+						"german_stop",
+						"german_decompose",
+						"german_snowball"
+					]
+				},
+				"german_search": {
+					"char_filter": "html_strip",
+					"tokenizer": "standard",
+					"filter": [
+						"lowercase",
+						"german_stop",
+						"german_snowball"
+					]
+				},
+				"german_suggest": {
+					"char_filter": "html_strip",
+					"tokenizer": "standard",
+					"filter": [
+						"lowercase",
+						"german_stop",
+						"german_decompose"
+					]
+				},
+				"taglist": {
+					"tokenizer": "keyword",
+					"filter": [
+						"lowercase",
+						"taglist_filter"
+					]
+				},
+				"german_autocomplete_index": {
+					"char_filter": "html_strip",
+					"tokenizer": "standard",
+					"filter": [
+						"lowercase",
+						"german_stop",
+						"autocomplete_filter"
+					]
+				},
+				"german_autocomplete_search": {
+					"char_filter": "html_strip",
+					"tokenizer": "standard",
+					"filter": [
+						"lowercase",
+						"german_stop"
+					]
+				}
+			}
+		}
+	}
+}

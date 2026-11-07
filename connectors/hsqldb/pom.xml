@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh-database-connectors</artifactId>
-		<version>3.3.3-SNAPSHOT</version>
+		<version>9.0.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>mesh-database-connector-hsqldb</artifactId>
@@ -181,6 +181,7 @@
 					<dependenciesToScan>
 						<dependency>com.gentics.mesh:tests-mesh-api</dependency>
 						<dependency>com.gentics.mesh:tests-mesh-core</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-performance</dependency>
 						<dependency>com.gentics.mesh:tests-mesh-rest-model</dependency>
 						<dependency>com.gentics.mesh:tests-mesh-rest-client</dependency>
 						<dependency>com.gentics.mesh:tests-mesh-plugin-api</dependency>

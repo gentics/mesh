@@ -1,0 +1,23 @@
+{{- if and (not .Values.persistence.backup.snapshots.existingClaim) .Values.backup.enabled}}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ include "mesh.fullname" . }}-snapshots
+
+  labels:
+    {{- include "mesh.labels" . | nindent 4 }}
+
+  {{- $keepAnnotations := include "gentics-common.pvcKeepAnnotations" (dict "root" . "local" (.Values.persistence).keepOnUninstall) }}
+  {{- if or $keepAnnotations .Values.persistence.backup.snapshots.annotations }}
+  annotations:
+    {{- with $keepAnnotations }}
+    {{- . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.persistence.backup.snapshots.annotations }}
+    {{ toYaml . }}
+  {{- end }}
+  {{- end }}
+
+spec:
+  {{- toYaml .Values.persistence.backup.snapshots.spec | nindent 2 }}
+{{- end }}

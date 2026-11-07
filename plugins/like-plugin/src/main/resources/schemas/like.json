@@ -1,0 +1,26 @@
+{
+	"name": "like",
+	"description": "LikePlugin: A like",
+	"container": false,
+	"segmentField": "userUuid",
+	"fields": [
+		{
+			"name": "userUuid",
+			"type": "string",
+			"required": true,
+			"label": "UUID of the user who likes"
+		},
+		{
+			"name": "rating",
+			"type": "number",
+			"required": false,
+			"label": "Rating"
+		},
+		{
+			"name": "plusminus",
+			"type": "boolean",
+			"required": false,
+			"label": "Plus Minus"
+		}
+	]
+}

@@ -13,8 +13,11 @@ mvn -Dstyle.color=never com.gentics.mesh:test-scanner-maven-plugin:scan-test-fil
 tests=$(cat alltests | wc -l)
 
 echo "Found $tests tests"
-grep search alltests  > searchtests
-grep -v search alltests  > nonsearchtests
+# plugin tests are run separately (see Jenkinsfile.split)
+grep -v -E 'com[./]gentics[./]mesh[./]plugin[./](comment|common|export|favorite|forms|gcms|keycloak|like|mustread|search)[./]' alltests > meshtests
+echo "Found $(cat meshtests | wc -l) Mesh tests"
+grep search meshtests  > searchtests
+grep -v search meshtests  > nonsearchtests
 
 echo 
 echo "Generating splits"
@@ -43,5 +46,6 @@ done
 echo 
 echo "Cleanup"
 rm alltests 
+rm meshtests
 rm searchtests
 rm nonsearchtests

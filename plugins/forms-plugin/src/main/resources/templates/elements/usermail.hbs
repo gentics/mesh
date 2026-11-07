@@ -1,0 +1,8 @@
+<div>
+	<input type="email" id="{{ name }}"
+		{{#if maxCharCount }}maxlength="{{ maxCharCount }}" maxcharcount="{{ maxCharCount }}"{{/if}}
+		name="{{ name }}" placeholder="{{ placeholder }}"
+		value="{{#if data.value }}{{ data.value }}{{else}}{{ value }}{{/if}}"
+		{{#if mandatory}}required="required"{{/if}}>
+	<label for="{{ name }}">{{{ label }}}</label>
+</div>

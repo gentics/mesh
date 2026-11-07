@@ -1,0 +1,69 @@
+spring:
+  application:
+    name: mesh-content-rag-service
+
+server:
+  port: 8090
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# Konfiguration des RAG-Service (siehe RagProperties). Werte hier sind Entwicklungs-Defaults.
+rag:
+  elasticsearch:
+    url: ${ES_URL:http://localhost:9200}
+    # Muss mit dem Praefix der Mesh-Suchkonfiguration uebereinstimmen: die RAG-Indizes liegen
+    # in derselben Elasticsearch neben den Node-Indizes der Volltextsuche.
+    index-prefix: ${ES_INDEX_PREFIX:mesh}
+
+  # Vektorisierung passiert in Elasticsearch: ein Inference-Endpunkt zeigt auf den
+  # Embedding-Server, eine Ingest-Pipeline haengt den Vektor beim Indexieren an. Derselbe
+  # Endpunkt erzeugt zur Query-Zeit den Frage-Vektor.
+  inference:
+    id: mesh-content-rag-embeddings
+    pipeline-id: mesh-content-rag-embed
+    url: ${TEI_URL:http://localhost:8081}/embed
+    api-key: ${TEI_API_KEY:}
+    # Muss zum Modell des Endpunkts passen (multilingual-e5-small: 384).
+    dimension: 384
+    shards: 1
+    replicas: 1
+    # Legt Endpunkt, Pipeline und Index-Template beim Start an, falls nicht vorhanden.
+    bootstrap: true
+
+  # Mesh ist die Autoritaet fuer Berechtigungen: der Service loest mit dem Token des
+  # Anfragenden dessen Benutzer und Rollen auf. Bewusst kein Dienst-Token hier - ein solches
+  # wuerde alle Anfragen mit denselben Rechten ausstatten.
+  mesh:
+    url: ${MESH_URL:http://localhost:8080}
+
+  auth:
+    # Anfragen ohne Token laufen als anonymer Mesh-Benutzer und sehen nur, was dessen Rolle
+    # lesen darf. Auf false setzen, wenn ausschliesslich angemeldete Zugriffe erlaubt sind.
+    allow-anonymous: ${RAG_ALLOW_ANONYMOUS:true}
+    # Innerhalb dieser Frist wird Mesh gar nicht gefragt. Danach genuegt meist ein Aufruf:
+    # /auth/me validiert das Token und liefert den rolesHash, ueber den entschieden wird, ob
+    # die Rollen neu aufgeloest werden muessen.
+    cache-ttl-seconds: 60
+    cache-max-entries: 10000
+
+  llm:
+    profile: cloud-hybrid          # cloud-hybrid | sovereign-onprem
+    model: ${LLM_MODEL:eu-managed-llm}
+    endpoint: ${LLM_ENDPOINT:}
+    api-key: ${LLM_API_KEY:}
+
+  retrieval:
+    top-k: 8
+    min-score: 0.2
+    live-permission-check: false   # optionales Hardening (K3), default aus
+
+logging:
+  level:
+    com.gentics.mesh.contentrag: INFO

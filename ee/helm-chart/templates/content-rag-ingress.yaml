@@ -1,0 +1,50 @@
+{{- if and .Values.contentRag.enabled .Values.contentRag.ingress.enabled -}}
+{{- /* Callers are authenticated against Mesh and every answer is filtered by the
+       roles resolved for them, so an ingress does not bypass the permissions of
+       the CMS. What it does expose is the anonymous role: with
+       auth.allowAnonymous (default true) a request without a token is answered as
+       the anonymous Mesh user, and /api/rag/debug/chunks returns that content in
+       plain text. Set auth.allowAnonymous=false or put auth in front of it.
+       See values.yaml. */ -}}
+{{- $fullName := include "mesh.contentRag.fullname" . -}}
+{{- $svcPort := .Values.contentRag.http.port -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ $fullName }}
+  labels:
+    {{- include "mesh.contentRag.labels" . | nindent 4 }}
+  {{- with .Values.contentRag.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.contentRag.ingress.tls }}
+  tls:
+  {{- range .Values.contentRag.ingress.tls }}
+    - hosts:
+      {{- range .hosts }}
+        - {{ . | quote }}
+      {{- end }}
+      secretName: {{ .secretName }}
+  {{- end }}
+  {{- end }}
+  {{- if .Values.contentRag.ingress.ingressClassName }}
+  ingressClassName: {{ .Values.contentRag.ingress.ingressClassName }}
+  {{- end }}
+  rules:
+  {{- range .Values.contentRag.ingress.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+        {{- range .paths }}
+          - path: {{ . }}
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ $fullName }}
+                port:
+                  number: {{ $svcPort }}
+        {{- end }}
+  {{- end }}
+{{- end }}

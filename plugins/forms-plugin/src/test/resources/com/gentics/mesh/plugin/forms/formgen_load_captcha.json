@@ -1,0 +1,248 @@
+{
+  "name": "Test",
+  "language": "en",
+  "type": "GENERIC",
+  "captchaId": "recaptcha_background",
+  "schema": {
+    "key": "test-schema",
+    "version": "2.0.0",
+    "properties": {
+      "firstName": {
+        "name": "firstName",
+        "type": "string",
+        "active": true,
+        "mandatory": true,
+        "isList": false,
+        "formGridOptions": {
+          "defaultValue": "Max"
+        }
+      },
+      "age": {
+        "name": "age",
+        "type": "number",
+        "active": true,
+        "mandatory": false,
+        "isList": false,
+        "formGridOptions": {
+          "defaultValue": 30
+        }
+      },
+      "notes": {
+        "name": "notes",
+        "type": "string",
+        "active": true,
+        "mandatory": false,
+        "isList": false
+      },
+      "topic": {
+        "name": "topic",
+        "type": "catalog",
+        "active": true,
+        "mandatory": false,
+        "isList": false,
+        "formGridOptions": {
+          "defaultValue": "general",
+          "selectOptions": [
+            {
+              "value": "general",
+              "label": {
+                "de": "Allgemein",
+                "en": "General"
+              }
+            },
+            {
+              "value": "support",
+              "label": {
+                "de": "Support",
+                "en": "Support"
+              }
+            },
+            {
+              "value": "drama",
+              "label": {
+                "de": "Drama",
+                "en": "DramaEng"
+              }
+            }
+          ]
+        }
+      },
+      "topicMulti": {
+        "name": "topicMulti",
+        "type": "catalog",
+        "active": true,
+        "mandatory": false,
+        "isList": true,
+        "formGridOptions": {
+          "defaultValue": ["general", "support"],
+          "selectOptions": [
+            {
+              "value": "general",
+              "label": {
+                "de": "Allgemein",
+                "en": "General"
+              }
+            },
+            {
+              "value": "support",
+              "label": {
+                "de": "Support",
+                "en": "Support"
+              }
+            },
+            {
+              "value": "drama",
+              "label": {
+                "de": "Drama",
+                "en": "DramaEng"
+              }
+            }
+          ]
+        }
+      },
+      "tags": {
+        "name": "tags",
+        "type": "string",
+        "active": true,
+        "mandatory": false,
+        "isList": true,
+        "formGridOptions": {
+          "defaultValue": ["tag1", "tag2"]
+        }
+      },
+      "greeting": {
+        "name": "greeting",
+        "type": "string",
+        "active": true,
+        "mandatory": false,
+        "isList": false,
+        "formGridOptions": {
+          "defaultValue": { "de": "Hallo", "en": "Hello" }
+        }
+      },
+      "adminmail": {
+        "_comment": "This is added just to verify that other element can also have selectOptions",
+        "name": "adminmail",
+        "type": "adminmail",
+        "active": true,
+        "mandatory": false,
+        "isList": false,
+        "formGridOptions": {
+          "defaultValue": "mr@gmail.com",
+          "selectOptions": [
+            {
+              "value": "mr@gmail.com",
+              "label": {
+                "de": "Herr",
+                "en": "Mr"
+              }
+            },
+            {
+              "value": "ms@gmail.com",
+              "label": {
+                "de": "Frau",
+                "en": "Ms"
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "uiSchema": {
+    "key": "test-ui",
+    "version": "1.0.0",
+    "formname": {
+      "de": "Testformular",
+      "en": "Test Form"
+    },
+    "formdescription": {
+      "de": "Beispielbeschreibung",
+      "en": "Example description"
+    },
+    "formwidth": "9",
+    "pages": [
+      {
+        "pagename": {
+          "de": "Seite 1",
+          "en": "Page 1"
+        },
+        "elements": [
+          {
+            "type": "control",
+            "id": "firstName",
+            "label": {
+              "de": "Vorname",
+              "en": "First name"
+            },
+            "uiSchemaPage": 0
+          },
+          {
+            "type": "control",
+            "id": "age",
+            "label": {
+              "de": "Alter",
+              "en": "Age"
+            },
+            "uiSchemaPage": 0
+          },
+          {
+            "type": "control",
+            "id": "notes",
+            "label": {
+              "de": "Notizen",
+              "en": "Notes"
+            },
+            "uiSchemaPage": 0
+          },
+          {
+            "type": "control",
+            "id": "topic",
+            "label": {
+              "de": "Thema",
+              "en": "Topic"
+            },
+            "uiSchemaPage": 0
+          },
+          {
+            "type": "control",
+            "id": "topicMulti",
+            "label": {
+              "de": "Themen mehrfach",
+              "en": "Topics multiple"
+            },
+            "uiSchemaPage": 0
+          },
+          {
+            "type": "control",
+            "id": "tags",
+            "label": {
+              "de": "Tags",
+              "en": "Tags"
+            },
+            "uiSchemaPage": 0
+          },
+          {
+            "type": "control",
+            "id": "greeting",
+            "label": {
+              "de": "Begruessung",
+              "en": "Greeting"
+            },
+            "uiSchemaPage": 0
+          },
+          {
+            "type": "control",
+            "id": "adminmail",
+            "label": {
+              "de": "Anrede",
+              "en": "Salutation"
+            },
+            "uiSchemaPage": 0
+          }
+        ]
+      }
+    ]
+  },
+  "data": {}
+}

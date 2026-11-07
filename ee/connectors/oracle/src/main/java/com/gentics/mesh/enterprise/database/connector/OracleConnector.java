@@ -1,0 +1,182 @@
+package com.gentics.mesh.enterprise.database.connector;
+
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
+
+import com.gentics.mesh.database.HibernateTx;
+import com.gentics.mesh.enterprise.hibernate.dialect.OracleLongTextDialect;
+import com.gentics.mesh.etc.config.HibernateMeshOptions;
+import com.gentics.mesh.hibernate.MeshTablePrefixStrategy;
+import com.gentics.mesh.hibernate.data.domain.AbstractHibListFieldEdgeImpl;
+import com.gentics.mesh.hibernate.data.node.field.HibListFieldEdge;
+import com.gentics.mesh.hibernate.util.HibernateUtil;
+
+import jakarta.persistence.EntityGraph;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
+
+/**
+ * Oracle database connector for Gentics Mesh
+ */
+public class OracleConnector extends AbstractEnterpriseDatabaseConnector {
+	/**
+	 * Names of entity graphs, that are not allowed to be used, when selecting entities in a root
+	 * The reason is, that hibernate will create a distinct select query joining the latest schema version, which will lead to an error like
+	 * "[ORA-00932: inconsistent datatypes: expected - got NCLOB", apparently because with the schema version, the column schemajson is also selected
+	 * and oracle cannot make the results distinct when this is the case.
+	 */
+	protected final static String[] DISALLOWED_ENTITY_GRAPHS = new String[] {"schema.load", "schema.rest", "microschema.rest", "microschema.load"};
+
+	public OracleConnector(HibernateMeshOptions options) {
+		super(options);
+	}
+
+	@Override
+	public String getConnectionUrl() {
+		return "jdbc:oracle:thin:@" + options.getStorageOptions().getDatabaseAddress() + "/" + options.getStorageOptions().getDatabaseName();
+	}
+
+	@Override
+	public String installCount(String sqlQuery) {
+		return "SELECT COUNT(1) FROM ( " + sqlQuery + " ) ";
+	}
+
+	@Override
+	public String installListContentColumn(String listItemType, String listAlias, String operator, String paramName) {
+		if ("stringlist".equalsIgnoreCase(listItemType) || "htmllist".equalsIgnoreCase(listItemType) || "jsonlist".equalsIgnoreCase(listItemType)) {
+			return unblobStringContentColumn(listAlias + "." + renderNonContentColumn("valueOrUuid"), false, false) + " " + operator + " " + ":" + paramName;
+		} else {
+			return super.installListContentColumn(listItemType, listAlias, operator, paramName);
+		}
+	}
+
+	@Override
+	public String installStringContentColumn(String columnName, boolean makeAlias, boolean customAlias) {
+		if (columnName.endsWith("-string\"") || columnName.endsWith("-html\"") || columnName.endsWith("-json\"")) {
+			return unblobStringContentColumn(columnName, makeAlias, customAlias);
+		} else {
+			return super.installStringContentColumn(columnName, makeAlias, customAlias);
+		}
+	}
+
+	@Override
+	public String findSortAlias(String columnDef) {
+		return columnDef.indexOf(" AS ") > -1 ? columnDef.substring(columnDef.indexOf(" AS ") + 4) : super.findSortAlias(columnDef);
+	}
+
+	@Override
+	public String makeSortDefinition(String column, Optional<String> customSortAlias) {
+		return customSortAlias.orElseGet(() -> {
+				String[] parts = column.split(" AS ");
+				if (parts.length == 2) {
+					return " MAX(" + parts[0] + ") AS " + makeSortAlias(parts[1]);
+				} else {
+					return " MAX(" + column + ") AS " + makeSortAlias(column);
+				}
+		});
+	}
+
+	@Override
+	public int getQueryParametersCountLimit() {
+		return 1000;
+	}
+
+	@Override
+	public String renderNonContentColumn(String column) {
+		return (column != null && column.contains("-")) ? renderColumnUnsafe(column, false) : column;
+	}
+
+	@Override
+	public String getDummyComparison(Map<String, Object> params, boolean mustPass) {
+		Boolean value = Boolean.valueOf(mustPass);
+		String trueParam = HibernateUtil.makeParamName(value);
+		params.put(trueParam, value);
+		return " AND :" + trueParam + " ";
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
+	public <V, T extends HibListFieldEdge<V>> Query makeListItemsMultiInsertionQuery(List<T> slice, EntityManager em, long startAt) {
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("INSERT ALL ");
+		sb.append(IntStream.range(0, slice.size()).mapToObj(index -> String.format(
+				"INTO %s%s (containertype, containeruuid, containerversionuuid, fieldkey, valueoruuid, itemindex, listuuid, dbuuid) VALUES (:containertype_%d, :containeruuid_%d, :containerversionuuid_%d, :fieldkey_%d, :valueoruuid_%d, :itemindex_%d, :listuuid_%d, :dbuuid_%d)", 
+				MeshTablePrefixStrategy.TABLE_NAME_PREFIX, AbstractHibListFieldEdgeImpl.getEntityTableName((Class) slice.get(0).getClass()), index, index, index, index, index, index, index, index)).collect(Collectors.joining(" ")));
+		sb.append(" SELECT 1 FROM DUAL");
+		Query query = em.createNativeQuery(sb.toString());
+		IntStream.range(0, slice.size()).forEach(index -> {
+			T item = slice.get(index);
+			query.setParameter("containertype_" + index, item.getContainerType().name());
+			query.setParameter("containeruuid_" + index, item.getContainerUuid());
+			query.setParameter("containerversionuuid_" + index, item.getContainerVersionUuid());
+			query.setParameter("fieldkey_" + index, item.getFieldName());
+			query.setParameter("valueoruuid_" + index, item.getValueOrUuid());
+			query.setParameter("itemindex_" + index, startAt + index);
+			query.setParameter("listuuid_" + index, item.getListUuid());
+			query.setParameter("dbuuid_" + index, item.getDbUuid());
+		});
+		return query;
+	}
+
+	@Override
+	public <T> boolean allows(EntityGraph<T> entityGraph, boolean inRoot) {
+		if (inRoot && Strings.CI.equalsAny(entityGraph.getName(), DISALLOWED_ENTITY_GRAPHS)) {
+			return false;
+		} else {
+			return super.allows(entityGraph, inRoot);
+		}
+	}
+
+	protected String unblobStringContentColumn(String columnName, boolean makeAlias, boolean customAlias) {
+		return " TO_CHAR(" + columnName + ") " + (makeAlias ? ("AS " + columnName.substring(columnName.indexOf(".") + 1, columnName.length() - 1) + (customAlias ? Integer.toHexString(columnName.hashCode()) : StringUtils.EMPTY) + "\"") : StringUtils.EMPTY);
+	}
+
+	@Override
+	protected String getDefaultDriverClassName() {
+		return "oracle.jdbc.driver.OracleDriver";
+	}
+
+	@Override
+	protected String getDefaultDialectClassName() {
+		return OracleLongTextDialect.class.getCanonicalName();
+	}
+
+	@Override
+	public String getCteFunctionDefinition(String name, List<String> arguments, boolean recursive) {
+		return name + (arguments.isEmpty() ? "" : arguments.stream().collect(Collectors.joining(",", "(", ")")));
+	}
+
+	@Override
+	public Optional<Set<String>> getDatabaseColumnNames(Class<?> cls) {
+		return maybeGetPhysicalTableName(cls).map(tableName -> {
+			try {
+				// We go another way of fetching the metadata here, utilizing the ability of Oracle to early return,
+				// if where clause contains expected nonsense. 
+				ResultSet columnRs = HibernateUtil.getConnectionFromEntityManager(HibernateTx.get().entityManager())
+						.prepareStatement("select * from " + tableName + " where rownum < 1")
+						.getResultSet();
+				Set<String> entityColumns = new HashSet<>();
+				ResultSetMetaData metadata = columnRs.getMetaData();
+				for (int i = 0; i < metadata.getColumnCount(); i++) {
+					String columnName = metadata.getColumnName(i+1);
+					entityColumns.add(columnName);
+				}
+				return entityColumns;
+			} catch (SQLException e1) {
+				throw new IllegalStateException(e1);
+			}
+		});
+	}
+}

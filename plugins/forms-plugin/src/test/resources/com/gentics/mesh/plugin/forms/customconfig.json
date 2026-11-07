@@ -1,0 +1,16 @@
+{
+	"name": "Form with Custom Configuration Field",
+	"cms_id": 1,
+	"schema": {
+		"key": "test-schema",
+	    "version": "1.0.0",
+	    "properties": {
+			"customconfig1": 			{
+				"type": "customconfig",
+				"name": "customconfig1",
+				"label": "Text",
+				"elements": []
+			}
+		}
+	}
+}

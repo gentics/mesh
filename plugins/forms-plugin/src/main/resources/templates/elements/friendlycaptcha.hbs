@@ -1,0 +1,17 @@
+{{! General Documentation for the Widget: https://docs.friendlycaptcha.com/#/widget_api !}}
+<div class="frc-captcha"
+    data-sitekey="{{ options.friendlyCaptcha.siteKey }}"
+    {{#if start~}}
+        data-start="{{ start }}"
+    {{else~}}
+        data-start="auto"
+    {{/if~}}
+    {{#if lang~}}
+        data-lang="{{ lang }}"
+    {{else~}}
+        data-lang="de"
+    {{~/if~}}
+></div>
+<script type="module" src="https://cdn.jsdelivr.net/npm/friendly-challenge@0.9.0/widget.module.min.js" async defer></script>
+<script nomodule src="https://cdn.jsdelivr.net/npm/friendly-challenge@0.9.0/widget.min.js" async defer></script>
+<input type="hidden" name="{{ name }}" value="1">

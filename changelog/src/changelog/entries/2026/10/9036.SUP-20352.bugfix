@@ -1,0 +1,1 @@
+Content RAG: Several data fetch fixes: fetch errors are now correctly mapped, the draft data is available for retrieval, GraphQL requests pass. 

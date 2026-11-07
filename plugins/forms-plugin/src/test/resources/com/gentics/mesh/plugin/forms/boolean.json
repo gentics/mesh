@@ -1,0 +1,34 @@
+{
+  "name": "Selection fields",
+  "type": "GENERIC",
+  "schema": {
+    "key": "test-schema",
+    "version": "1.0.0",
+    "properties": {
+      "checkbox1": {
+        "type": "boolean",
+        "name": "checkbox1",
+        "label": "Checkbox element"
+      }
+    }
+  },
+  "uiSchema": {
+    "key": "test-ui",
+    "version": "1.0.0",
+    "pages": [
+      {
+        "elements": [
+          {
+            "id": "checkbox1",
+            "type": "property",
+            "formGridOptions": {
+              "type": "boolean",
+              "storedValue": "X"
+            },
+            "uiSchemaPage": 0
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,48 @@
+---
+pageType: documentation
+---
+
+=== How it works
+
+The plugin saves a reaction to the selected content node from the Mesh user.
+First, it requires a string field, named `likes` by default, existing at your project's content schema. This field is populated with a per-node configuration of how exactly to 'like' the content.
+The actual reactions to the content are stored in an own Mesh folder, `Like Plugin`, where can be accessed or manipulated, if required.
+The plugin uses Handlebars for the templating.
+
+=== Configuration
+
+The plugin configuration looks as following:
+
+* `projects`: A list of you projects where Like plugins is expected to work with (read this as: where a field should exist on a content schema, see below)
+* `configField`: A field name, expected to exist at the project's content schema. Default value is `likes`.
+* `templatesPath`: The path to the Handlebars templates.
+* `caching`: Flag of cache usage. Default value is `true`.
+
+The per-node configuration is a JSON, containing the following:
+
+```javascript
+{
+  active: false, // true/false, turning the liking on and off for a particular node. Default value is `false`.
+  type: "like", // a type of a 'like'. Possible values are 'like', 'rating', 'plusminus', see the description below.
+  maxRating: 10, // a maximum value for the 'rating' type. Default value is 0, e.g. rating is disabled and requires explicit limit to be set.
+}
+```
+
+There are following liking types possible, from the perspective of currently logged in Mesh user to the selected content node:
+
+* `like`: a plain 'you have liked this post' reaction.
+* `plusminus`: a polarized 'like/dislike' reaction.
+* `rating`: a 'rating' reaction from zero to the `maxRating` value.
+
+=== API
+
+The plugin contains a set of REST APIs to control the likes functionality per Mesh node:
+
+* `POST /likes/:nodeUuid/:lang` posts a reaction of a current Mesh user to the content with UUID `:nodeUUID` and `:lang` language.
+* `GET /likes/:nodeUuid/:lang` gets the reaction of a current user to the content with UUID `:nodeUUID` and `:lang` language.
+* `DELETE /likes/:nodeUuid/:lang` removes the reaction of the current user to the content with UUID `:nodeUUID` and `:lang` language.
+* `GET /likes/:nodeUuid/:lang/statistics` gets the full reaction statistics to the content with UUID `:nodeUUID` and `:lang` language.
+* `GET /templates` returns the liking HTML according to the Handlebars templates set up.
+
+
+		

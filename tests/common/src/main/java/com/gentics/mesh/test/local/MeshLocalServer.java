@@ -63,6 +63,10 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 
 	private MeshTestContextProvider contextProvider;
 
+	static {
+		System.setProperty("liquibase.duplicateFileMode", "WARN");
+	}
+
 	/**
 	 * Create a new local server.
 	 * 

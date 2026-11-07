@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>3.3.3-SNAPSHOT</version>
+		<version>9.0.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>mesh-doc</artifactId>
@@ -116,7 +116,6 @@
 						<configuration>
 							<skip>${skip.doc.package}</skip>
 							<executable>${basedir}/build/dockerBuild.sh</executable>
-							<successCodes>0,255</successCodes>
 						</configuration>
 					</execution>
 				</executions>
