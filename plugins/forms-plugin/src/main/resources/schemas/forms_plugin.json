@@ -1,0 +1,39 @@
+{
+	"name": "formgenerator_plugin",
+	"displayField": "name",
+	"segmentField": "name",
+	"container": true,
+	"fields": [
+		{
+			"name": "name",
+			"label": "Name",
+			"type": "string",
+			"required": false
+		},
+		{
+			"name": "languages",
+			"label": "Languages",
+			"type": "list",
+			"listType": "string",
+			"required": false
+		},
+		{
+			"name": "isMigrated",
+			"label": "Has form data been migrated?",
+			"type": "boolean",
+			"required": false
+		},
+		{
+			"name": "formtypeconfigs",
+			"label": "Form Type Configurations",
+			"type": "string",
+			"required": false
+		},
+		{
+			"name": "translations",
+			"label": "Translations",
+			"type": "string",
+			"required": false
+		}
+	]
+}

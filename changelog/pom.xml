@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>3.3.3-SNAPSHOT</version>
+		<version>9.0.0-SNAPSHOT</version>
 	</parent>
 
 	<name>Gentics Mesh - Automatic changelog</name>
@@ -20,33 +20,6 @@
 
 	<build>
 		<plugins>
-			<plugin>
-				<groupId>com.gentics</groupId>
-				<artifactId>changelog-manager-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-						<phase>package</phase>
-					</execution>
-				</executions>
-				<configuration>
-					<foldNewlinesInEntries>true</foldNewlinesInEntries>
-					<baseDirectory>${project.basedir}/src/changelog</baseDirectory>
-					<outputDirectory>${project.build.directory}/output</outputDirectory>
-					<outputFileExtension>adoc-include</outputFileExtension>
-					<changelogTitle>Gentics Mesh</changelogTitle>
-					<changelogTypes>note,manualchange,feature,enhancement,bugfix</changelogTypes>
-					<changelogVersion>${changelog.version}</changelogVersion>
-					<strictRenderMode>true</strictRenderMode>
-					<allowEmptyChangelog>true</allowEmptyChangelog>
-					<includeProjectProperties>false</includeProjectProperties>
-					<overviewTemplateFiles>changelog-2.vm</overviewTemplateFiles>
-					<perMajorVersionTemplateFiles></perMajorVersionTemplateFiles>
-					<perMajorVersionChangelogFile>empty.vm</perMajorVersionChangelogFile>
-				</configuration>
-			</plugin>
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<executions>

@@ -1,0 +1,9 @@
+{
+	"name": "Form List 2",
+	"language": "de",
+	"key": "test-schema",
+    "version": "1.0.0",
+    "schema": {
+		"properties": {}
+	}
+}

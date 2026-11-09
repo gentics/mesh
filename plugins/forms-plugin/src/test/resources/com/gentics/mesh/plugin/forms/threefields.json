@@ -1,0 +1,92 @@
+{
+  "name": "Test",
+  "language": "en",
+  "type": "GENERIC",
+  "schema": {
+    "key": "test-schema",
+    "version": "2.0.0",
+    "properties": {
+      "input1": {
+        "name": "input1",
+		"label": "First Field",
+		"type": "string",
+        "active": true,
+        "mandatory": true,
+        "isList": false,
+        "formGridOptions": {
+          "defaultValue": "Max"
+        }
+      },
+      "input2": {
+        "name": "input2",
+        "type": "number",
+		"label": "Second Field",
+		"active": true,
+        "mandatory": false,
+        "isList": false,
+        "formGridOptions": {
+          "defaultValue": 30
+        }
+      },
+      "input3": {
+        "name": "input3",
+		"label": "Third Field",
+		"type": "string",
+        "active": true,
+        "mandatory": false,
+        "isList": false
+      }
+    }
+  },
+  "uiSchema": {
+    "key": "test-ui",
+    "version": "1.0.0",
+    "formname": {
+      "de": "Testformular",
+      "en": "Test Form"
+    },
+    "formdescription": {
+      "de": "Beispielbeschreibung",
+      "en": "Example description"
+    },
+    "formwidth": "9",
+    "pages": [
+      {
+        "pagename": {
+          "de": "Seite 1",
+          "en": "Page 1"
+        },
+        "elements": [
+          {
+            "type": "control",
+            "id": "input1",
+            "label": {
+              "de": "1. Eintrag",
+              "en": "First Field"
+            },
+            "uiSchemaPage": 0
+          },
+		  {
+          "type": "control",
+          "id": "input2",
+          "label": {
+            "de": "2. Eintrag",
+            "en": "Second Field"
+          },
+          "uiSchemaPage": 0
+        },
+		{
+            "type": "control",
+            "id": "input3",
+            "label": {
+              "de": "3. Eintrag",
+              "en": "Third Field"
+            },
+            "uiSchemaPage": 0
+          }
+        ]
+      }
+    ]
+  },
+  "data": {}
+}

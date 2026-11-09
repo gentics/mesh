@@ -1,0 +1,10 @@
+query($formUuid: String, $lang: [String]) {
+  node(uuid: $formUuid, lang: $lang) {
+    children(lang: ["en"], filter: {schema: {is: form_folder}}) {
+      elements {
+        uuid
+        displayName
+      }
+    }
+  }
+}

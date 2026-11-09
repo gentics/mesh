@@ -1,0 +1,19 @@
+{
+	"name": "form_binary_item",
+	"displayField": "name",
+	"container": false,
+	"fields": [
+		{
+			"name": "name",
+			"label": "Name",
+			"type": "string",
+			"required": false
+		},
+		{
+			"name": "binary",
+			"label": "Binary data",
+			"type": "binary",
+			"required": false
+		}
+	]
+}

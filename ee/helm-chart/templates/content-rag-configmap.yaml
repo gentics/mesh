@@ -1,0 +1,63 @@
+{{- if .Values.contentRag.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "mesh.contentRag.fullname" . }}
+  labels:
+    {{- include "mesh.contentRag.labels" . | nindent 4 }}
+data:
+  # ── Elasticsearch ─────────────────────────────────────────────────────
+  # The same instance that carries the Mesh full-text search. The prefix must
+  # match the one Mesh writes with (MESH_ELASTICSEARCH_PREFIX) - otherwise the
+  # service queries indices nobody fills and silently returns no results.
+  ES_URL: {{ include "mesh.contentRag.elasticsearchUrl" . | quote }}
+  ES_INDEX_PREFIX: {{ include "mesh.contentRag.elasticsearchPrefix" . | quote }}
+  {{- with .Values.contentRag.elasticsearch.username }}
+  RAG_ELASTICSEARCH_USERNAME: {{ . | quote }}
+  {{- end }}
+
+  # ── Vectorisation ─────────────────────────────────────────────────────
+  # TEI_URL without /embed - the service appends the path itself. The address is
+  # called by ELASTICSEARCH, not by the rag-service.
+  {{- with (include "mesh.contentRag.teiUrl" .) }}
+  TEI_URL: {{ . | quote }}
+  {{- end }}
+  RAG_INFERENCE_ID: {{ .Values.contentRag.inference.id | quote }}
+  RAG_INFERENCE_PIPELINEID: {{ .Values.contentRag.inference.pipelineId | quote }}
+  RAG_INFERENCE_DIMENSION: {{ .Values.contentRag.inference.dimension | quote }}
+  RAG_INFERENCE_SHARDS: {{ .Values.contentRag.inference.shards | quote }}
+  RAG_INFERENCE_REPLICAS: {{ .Values.contentRag.inference.replicas | quote }}
+  RAG_INFERENCE_BOOTSTRAP: {{ .Values.contentRag.inference.bootstrap | quote }}
+
+  # ── Mesh / authentication ─────────────────────────────────────────────
+  # Required: every request is authenticated against Mesh (GET /api/v2/auth/me
+  # validates the caller token and yields the roles that are filtered on), and
+  # that happens for anonymous requests as well.
+  MESH_URL: {{ include "mesh.contentRag.meshUrl" . | quote }}
+  RAG_ALLOW_ANONYMOUS: {{ .Values.contentRag.auth.allowAnonymous | quote }}
+
+  # ── LLM ───────────────────────────────────────────────────────────────
+  # Currently without effect: the only LlmProvider implementation is a stub, no
+  # call goes out to an LLM endpoint.
+  RAG_LLM_PROFILE: {{ .Values.contentRag.llm.profile | quote }}
+  {{- with .Values.contentRag.llm.model }}
+  LLM_MODEL: {{ . | quote }}
+  {{- end }}
+  {{- with .Values.contentRag.llm.endpoint }}
+  LLM_ENDPOINT: {{ . | quote }}
+  {{- end }}
+
+  # ── Retrieval ─────────────────────────────────────────────────────────
+  RAG_RETRIEVAL_TOPK: {{ .Values.contentRag.retrieval.topK | quote }}
+  RAG_RETRIEVAL_MINSCORE: {{ .Values.contentRag.retrieval.minScore | quote }}
+  RAG_RETRIEVAL_LIVEPERMISSIONCHECK: {{ .Values.contentRag.retrieval.livePermissionCheck | quote }}
+
+  # ── Operations ────────────────────────────────────────────────────────
+  SERVER_PORT: {{ .Values.contentRag.http.port | quote }}
+  LOGGING_LEVEL_COM_GENTICS_MESH_CONTENTRAG: {{ .Values.contentRag.logLevel | quote }}
+  # Without this line /actuator/health/readiness reports UP even when
+  # Elasticsearch is unreachable: the pod would stay in the Service although it
+  # cannot answer anything. Liveness is deliberately left out of it (see the
+  # Deployment).
+  MANAGEMENT_ENDPOINT_HEALTH_GROUP_READINESS_INCLUDE: "readinessState,elasticsearch"
+{{- end }}

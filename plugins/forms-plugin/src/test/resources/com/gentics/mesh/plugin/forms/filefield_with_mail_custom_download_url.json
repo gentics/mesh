@@ -1,0 +1,30 @@
+{
+	"name": "Form with Filefield",
+	"downloadBaseUrl": "http://cms.domain/editor/#proxy/CNPortletapp/rest/form/1/data",
+	"adminEmailAddress": "test@green.mail",
+	"adminEmailSubject": {
+		"en": "testmail",
+		"it": "testmail",
+		"de": "testmail"
+	},
+	"adminEmailTemplate": "testmail",
+	"schema": {
+		"key": "test-schema",
+	    "version": "1.0.0",
+	    "properties": {
+			"file1": {
+				"type": "binary",
+				"name": "file1",
+				"placeholderName": "",
+				"label": "Datei",
+				"mandatory": false,
+				"info": "",
+				"tooltip": "",
+				
+				"allowed_filetypes": [],
+				"max_filesize": "10",
+				"elements": []
+			}
+		}
+	}
+}

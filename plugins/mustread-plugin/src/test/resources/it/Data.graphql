@@ -1,0 +1,15 @@
+query ($uuids: [String])
+{
+    nodes (
+        uuids: $uuids
+    ) {
+        elements {
+            uuid
+            ... on folder {
+                fields {
+                    name
+                }
+            }
+        }
+    }
+}

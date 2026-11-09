@@ -1,0 +1,269 @@
+---
+title: Use more SQL RDBMSs as a storage for Gentics Mesh
+---
+
+:icons: font
+:source-highlighter: prettify
+:toc:
+
+# Premium SQL database storage
+
+As of now the following RDBMSs are supported as a premium feature:
+
+* MSSQL 2019+
+* Oracle 19+
+* PostgreSQL 14.4+
+
+## Configuration
+
+## Mesh Database Connector.
+
+In order to have Gentics Mesh working with a particular database, a database connector module is required. 
+The connector for MariaDB is freely distributed at our link:https://github.com/gentics/mesh/releases/[Github Releases], and its instructions may be found at link:{{<relref "administration-guide.asciidoc">}}#_use_mariadb_connected_container[the administration guide], 
+as well as link:{{<relref "administration-guide.asciidoc">}}#_backup_recovery[the backup/restore section].
+The connectors for Oracle, Microsoft SQL Server, PostgreSQL require a valid Gentics License. Please contact link:https://www.gentics.com/kontakt.html[Gentics Sales] to get one, and you wiil be provided a database connector JAR file.
+
+### Examples:
+
+#### PostgreSQL
+
+.JDBC Driver
+
+Download *postgresql-X.Y.Z.jar* from https://jdbc.postgresql.org/download.html[an official PostgreSQL website] , place it at the server into the folder, reachable by Gentics Mesh. Place the database connector JAR file in this folder as well.
+
+.DB configuration
+
+Define the database and Mesh user. This example uses environment variables.
+
+Since data structure in Postgres requires a definition of a schema as a part of a database, one can either define a schema and a database with the common name *mesh* ...
+```
+export POSTGRES_DB=mesh
+export POSTGRES_USER=meshdbuser
+export POSTGRES_PASSWORD=admin
+```
+```
+CREATE SCHEMA mesh;
+```
+
+.Mesh Configuration
+```yml
+storageOptions:
+  retryLimit: 10
+  retryDelayMillis: 2000
+  databaseAddress: "<postgres_database_host>:5432"
+  databaseName: "mesh"
+  databaseConnectorClasspath: <path/to/downloaded/driver/and/connector>
+  connectionUsername: "meshdbuser"
+  connectionPassword: "admin"
+  showSql: false
+  formatSql: false
+  hikariOptions:
+    autocommit: false
+    connectionTimeout: 10000
+    idleTimeout: 600000
+    maxLifetime: 1800000
+    minimumIdleConnection: 10
+    maxPoolSize: 10
+    poolName: "MeshHikariCP"
+    registerMBeans: false
+    transactionIsolationLevel: null
+    leakDetectionThreshold: 0
+  synchronizeWrites: false
+  synchronizeWritesTimeout: 6000
+```
+...Or, if the users, database and/or schema is already defined:
+
+.Mesh Configuration
+```yml
+storageOptions:
+  retryLimit: 10
+  retryDelayMillis: 2000
+  databaseAddress: "<postgres_database_host>:5432"
+  databaseName: <your_database_name_for_mesh_storage>
+  databaseConnectorClasspath: <path/to/downloaded/driver/and/connector>
+  connectionUrlExtraParams: "?autosave=always&currentSchema=<your_schema_name_for_mesh_storage>"
+  connectionUsername: <your_user_for_mesh_storage>
+  connectionPassword: <password_of_your_user_for_mesh_storage>
+  showSql: false
+  formatSql: false
+  hikariOptions:
+    autocommit: false
+    connectionTimeout: 10000
+    idleTimeout: 600000
+    maxLifetime: 1800000
+    minimumIdleConnection: 10
+    maxPoolSize: 10
+    poolName: "MeshHikariCP"
+    registerMBeans: false
+    transactionIsolationLevel: null
+    leakDetectionThreshold: 0
+  synchronizeWrites: false
+  synchronizeWritesTimeout: 6000
+```
+Gentics provides the pre-build Docker images, which already contain the database connector, so only the JDBC driver is to be provided. 
+Please note that an access to the Gentics' commercial repository is required to obtain the image. Its `docker-compose` configuration may look like as follows:
+
+[source,yaml]
+----
+  mesh:
+    image: docker.gentics.com/gentics/mesh-postgres
+    volumes:
+      - mesh-uploads:/uploads
+      - /whatever/path/you/chose/for/the/postgresql-X.Y.Z.jar:/mesh/database/postgres.jar
+    ports:
+      - '8080:8080'
+    environment:
+      MESH_DATABASE_ADDRESS: <host:port of a PostgreSQL. For instance, if address/name is `postgres`, the content here will be `postgres:5432`>
+      MESH_JDBC_DATABASE_NAME: mesh
+      MESH_JDBC_CONNECTION_USERNAME: "meshdbuser"
+      MESH_JDBC_CONNECTION_PASSWORD: "admin"
+---- 
+The Enterprise Edition image of Gentics Mesh is available with the name `docker.gentics.com/gentics/mesh-enterprise-postgres`.
+
+The backup/restore documentation is available at https://www.postgresql.org/docs/current/backup.html[the official PostgreSQL website].
+
+#### Microsoft SQL Server
+
+This example uses inbuilt "SA" user.
+
+.JDBC Driver
+
+Download *sqljdbc_X.Y.Z.W_enu.zip* from https://docs.microsoft.com/en-us/sql/connect/jdbc/download-microsoft-jdbc-driver-for-sql-server?view=sql-server-ver16[Official SQL Server JDBC driver webpage] , unpack mssql-jdbc-X.Y.Z.jre11.jar at the server into the folder, reachable by Gentics Mesh. Place the database connector JAR file in this folder as well.
+
+.DB configuration
+
+Define the "SA" user password. This example uses environment variables.
+```
+export SA_PASSWORD=admin
+```
+Create the dedicated database:
+```
+CREATE DATABASE mesh;
+```
+Alter the isolation level
+```
+ALTER DATABASE mesh SET READ_COMMITTED_SNAPSHOT ON;
+```
+
+.Mesh Configuration
+```yml
+storageOptions:
+  retryLimit: 10
+  retryDelayMillis: 2000
+  databaseAddress: "<sql_server_host>:1433"
+  databaseName: "mesh"
+  databaseConnectorClasspath: <path/to/downloaded/driver/and/connector>
+  connectionUsername: "SA"
+  connectionPassword: "admin"
+  showSql: false
+  formatSql: false
+  hikariOptions:
+    autocommit: false
+    connectionTimeout: 10000
+    idleTimeout: 600000
+    maxLifetime: 1800000
+    minimumIdleConnection: 10
+    maxPoolSize: 10
+    poolName: "MeshHikariCP"
+    registerMBeans: false
+    transactionIsolationLevel: null
+    leakDetectionThreshold: 0
+  synchronizeWrites: false
+  synchronizeWritesTimeout: 6000
+```
+Gentics provides the pre-build Docker images, which already contain the database connector, so only the JDBC driver is to be provided. 
+Please note that an access to the Gentics' commercial repository is required to obtain the image. Its `docker-compose` configuration may look like as follows:
+
+[source,yaml]
+----
+  mesh:
+    image: docker.gentics.com/gentics/mesh-mssql
+    volumes:
+      - mesh-uploads:/uploads
+      - /whatever/path/you/chose/for/the/mssql-jdbc-X.Y.Z.jre11.jar:/mesh/database/mssql.jar
+    ports:
+      - '8080:8080'
+    environment:
+      MESH_DATABASE_ADDRESS: <host:port of a SQL Server. For instance, if its address/name is `sqlserver`, the content here will be `sqlserver:1433`>
+      MESH_JDBC_DATABASE_NAME: mesh
+      MESH_JDBC_CONNECTION_USERNAME: "SA"
+      MESH_JDBC_CONNECTION_PASSWORD: "admin"
+---- 
+The Enterprise Edition image of Gentics Mesh is available with the name `docker.gentics.com/gentics/mesh-enterprise-mssql`.
+
+The backup/restore documentation is available at https://learn.microsoft.com/en-us/sql/relational-databases/backup-restore/back-up-and-restore-of-sql-server-databases?view=sql-server-ver16[the official Microsoft SQL Server website].
+
+#### Oracle XE
+
+.JDBC Driver
+
+Download *ojdbc11.jar* from https://www.oracle.com/database/technologies/appdev/jdbc-downloads.html[the official Oracle JDBC driver webpage], place it at the server into the folder, reachable by Mesh. Place the database connector JAR file in this folder as well.
+
+.DB configuration
+
+Define the database and Mesh user. This example uses environment variables.
+```
+export ORACLE_DATABASE=mesh
+```
+Create the dedicated database:
+```
+CREATE DATABASE mesh;
+```
+Alter the number of simultaneously open cursors
+```
+ALTER SYSTEM SET OPEN_CURSORS=4444 SID='*' SCOPE=BOTH;
+```
+Create the dedicated user
+```
+CREATE USER meshdbuser IDENTIFIED BY "admin";
+GRANT ALL PRIVILEGES TO meshdbuser;
+```
+
+.Mesh Configuration
+```yml
+storageOptions:
+  retryLimit: 10
+  retryDelayMillis: 2000
+  databaseAddress: "<oracle_host>:1521"
+  connectionUrlExtraParams: ""
+  databaseName: "mesh"
+  databaseConnectorClasspath: <path/to/downloaded/driver/and/connector>
+  connectionUsername: "meshdbuser"
+  connectionPassword: "admin"
+  showSql: false
+  formatSql: false
+  hikariOptions:
+    autocommit: false
+    connectionTimeout: 10000
+    idleTimeout: 600000
+    maxLifetime: 1800000
+    minimumIdleConnection: 10
+    maxPoolSize: 10
+    poolName: "MeshHikariCP"
+    registerMBeans: false
+    transactionIsolationLevel: null
+    leakDetectionThreshold: 0
+  synchronizeWrites: false
+  synchronizeWritesTimeout: 6000
+```
+Gentics provides the pre-build Docker images, which already contain the database connector, so only the JDBC driver is to be provided. 
+Please note that an access to the Gentics' commercial repository is required to obtain the image. Its `docker-compose` configuration may look like as follows:
+
+[source,yaml]
+----
+  mesh:
+    image: docker.gentics.com/gentics/mesh-oracle
+    volumes:
+      - mesh-uploads:/uploads
+      - /whatever/path/you/chose/for/the/ojdbc11.jar:/mesh/database/oracle.jar
+    ports:
+      - '8080:8080'
+    environment:
+      MESH_DATABASE_ADDRESS: <host:port of an Oracle DB. For instance, if its address/name is `oracle`, the content here will be `oracle:1521`>
+      MESH_JDBC_DATABASE_NAME: mesh
+      MESH_JDBC_CONNECTION_USERNAME: "meshdbuser"
+      MESH_JDBC_CONNECTION_PASSWORD: "admin"
+---- 
+The Enterprise Edition image of Gentics Mesh is available with the name `docker.gentics.com/gentics/mesh-enterprise-oracle`.
+
+The backup/restore documentation is available at https://docs.oracle.com/en/engineered-systems/oracle-database-appliance/19.26/cmtxn/backup-recover-restore.html[the official Oracle website].

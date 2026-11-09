@@ -1,0 +1,12 @@
+Gentics Mesh
+Copyright 2026 Gentics Software GmbH
+
+This product includes software developed by Gentics Software GmbH
+(https://www.gentics.com).
+
+Code under the folder ee/ is licensed under the Business Source License 1.1,
+all other code under the Apache License 2.0. See LICENSING.md.
+
+This product includes software developed by third parties. The licenses of
+these components are listed in the dependency report generated at build time
+and shipped with the respective distribution.

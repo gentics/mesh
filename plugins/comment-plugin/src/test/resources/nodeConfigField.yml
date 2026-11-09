@@ -1,0 +1,6 @@
+commentRoot: "/comments"
+projectNames:
+  - test
+requiredForAnonymous: []
+nodeConfigField: "commentConfig"
+# mailTemplates: mailTemplates

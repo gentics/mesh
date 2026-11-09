@@ -1,0 +1,17 @@
+pageSize: 8
+resultQuery: searchResults
+customQueries:
+  - custom_search
+  - name: custom_with_result_query
+    type: SEARCH
+    resultQuery: customResultQuery
+  - name: custom_auto
+    type: AUTOCOMPLETE
+  - name: custom_pagesize
+    pageSize: 10
+projects:
+  foo:
+    - bar
+didYouMeanThreshold: 10
+caching: true
+expireTime: 300

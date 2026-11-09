@@ -1,0 +1,159 @@
+{{- /*
+Generates a Mesh API key and patches it into the "<release>-mesh-secret"
+Secret (rendered empty by apikey-secret.yaml).
+
+Deliberately a PLAIN Job, not a Helm hook: post-install hooks would deadlock
+with "helm --wait" and Argo CD (both wait for the consumers to become healthy
+before running hooks, while the consumers wait for this job's key). As a
+regular resource the job runs in parallel, waits for Mesh readiness itself,
+and the consumer pods start automatically once the key is patched in.
+
+Create-once semantics: issuing a new Mesh token invalidates the previous one,
+so the job exits without action when the key is already present.
+The job name carries the release revision (Jobs are immutable — this allows
+spec changes on upgrade); completed jobs are removed via ttlSecondsAfterFinished.
+*/}}
+{{- if .Values.generateApiKey }}
+{{- $secretName := printf "%s-mesh-secret" .Release.Name }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "mesh.fullname" . }}-apikey
+  labels:
+    {{- include "mesh.labels" . | nindent 4 }}
+    app.kubernetes.io/component: mesh-apikey
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "mesh.fullname" . }}-apikey
+  labels:
+    {{- include "mesh.labels" . | nindent 4 }}
+    app.kubernetes.io/component: mesh-apikey
+rules:
+  # get + patch only, restricted to the one secret this job maintains.
+  - apiGroups: [""]
+    resources: ["secrets"]
+    resourceNames: ["{{ $secretName }}"]
+    verbs: ["get", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "mesh.fullname" . }}-apikey
+  labels:
+    {{- include "mesh.labels" . | nindent 4 }}
+    app.kubernetes.io/component: mesh-apikey
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "mesh.fullname" . }}-apikey
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "mesh.fullname" . }}-apikey
+    namespace: {{ .Release.Namespace }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "mesh.fullname" . }}-apikey-{{ .Release.Revision }}
+  labels:
+    {{- include "mesh.labels" . | nindent 4 }}
+    app.kubernetes.io/component: mesh-apikey
+spec:
+  ttlSecondsAfterFinished: {{ .Values.apiKeyJob.ttlSecondsAfterFinished }}
+  backoffLimit: 10
+  activeDeadlineSeconds: 1800
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "mesh.name" . }}-apikey
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      serviceAccountName: {{ include "mesh.fullname" . }}-apikey
+      restartPolicy: OnFailure
+      {{- include "mesh.imagePullSecrets" . | nindent 6 }}
+      securityContext:
+        # curlimages/curl declares a non-numeric USER — runAsUser must be set
+        # explicitly or the kubelet rejects runAsNonRoot.
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: generate-apikey
+          image: "{{ include "gentics-common.image" (dict "root" . "image" .Values.apiKeyJob.image) }}"
+          imagePullPolicy: {{ .Values.apiKeyJob.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          env:
+            - name: MESH_URL
+              value: "http://{{ include "mesh.fullname" . }}:{{ .Values.service.mesh.port }}"
+            - name: MESH_USERNAME
+              value: {{ .Values.apiKeyJob.username | quote }}
+            - name: MESH_PASSWORD
+              valueFrom:
+                {{- include "mesh.initialAdminPasswordRef" . | nindent 16 }}
+            - name: SECRET_NAME
+              value: {{ $secretName | quote }}
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -eu
+              SA=/var/run/secrets/kubernetes.io/serviceaccount
+              APISERVER=https://kubernetes.default.svc
+              k8s() { curl -sS --cacert "$SA/ca.crt" -H "Authorization: Bearer $(cat "$SA/token")" "$@"; }
+
+              echo "Checking secret $SECRET_NAME..."
+              code=$(k8s -o /tmp/secret -w '%{http_code}' "$APISERVER/api/v1/namespaces/$NAMESPACE/secrets/$SECRET_NAME")
+              if [ "$code" != "200" ]; then
+                echo "Secret $SECRET_NAME not found ($code) - it is rendered by the chart; run helm upgrade / sync first."
+                exit 1
+              fi
+              if grep -q '"apikey"' /tmp/secret; then
+                echo "API key already present - nothing to do (create-once: regenerating would invalidate the stored token)."
+                exit 0
+              fi
+
+              echo "Waiting for Mesh at $MESH_URL..."
+              until curl -sf -o /dev/null "$MESH_URL/api/v2/health/ready"; do
+                echo "  not ready yet, retrying in 5s..."
+                sleep 5
+              done
+              echo "Mesh is ready."
+
+              esc() { printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'; }
+
+              echo "Logging in as $MESH_USERNAME..."
+              curl -sf -c /tmp/cookies -o /dev/null -H 'Content-Type: application/json' \
+                -d "{\"username\":\"$(esc "$MESH_USERNAME")\",\"password\":\"$(esc "$MESH_PASSWORD")\"}" \
+                "$MESH_URL/api/v2/auth/login"
+
+              # The FIRST "uuid" occurrence in the /auth/me response is the
+              # top-level user uuid (creator/editor/groups uuids come later).
+              UUID=$(curl -sf -b /tmp/cookies "$MESH_URL/api/v2/auth/me" \
+                | grep -o '"uuid"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | cut -d'"' -f4)
+              if [ -z "$UUID" ]; then echo "Could not determine the user uuid"; exit 1; fi
+              echo "User uuid: $UUID"
+
+              echo "Generating API token (invalidates any previous token of this user)..."
+              APITOKEN=$(curl -sf -b /tmp/cookies -X POST "$MESH_URL/api/v2/users/$UUID/token" \
+                -H 'Content-Type: application/json' -d "{\"name\":\"$(esc "$SECRET_NAME")\"}" \
+                | grep -o '"token"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | cut -d'"' -f4)
+              if [ -z "$APITOKEN" ]; then echo "Token generation failed"; exit 1; fi
+
+              echo "Patching secret $SECRET_NAME..."
+              code=$(k8s -o /tmp/resp -w '%{http_code}' -X PATCH \
+                -H 'Content-Type: application/merge-patch+json' \
+                -d "{\"stringData\":{\"apikey\":\"$APITOKEN\"}}" \
+                "$APISERVER/api/v1/namespaces/$NAMESPACE/secrets/$SECRET_NAME")
+              if [ "$code" = "200" ]; then echo "API key stored - consumers can start now."; exit 0; fi
+              echo "Patching the secret failed ($code): $(cat /tmp/resp)"; exit 1
+          resources:
+            {{- toYaml .Values.apiKeyJob.resources | nindent 12 }}
+{{- end }}

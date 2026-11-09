@@ -1,0 +1,172 @@
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>mesh-mustread-plugin</artifactId>
+
+	<parent>
+		<groupId>com.gentics.mesh.plugin</groupId>
+		<artifactId>mesh-commercial-plugins</artifactId>
+		<version>9.0.0-SNAPSHOT</version>
+	</parent>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+		<plugin.id>mustread</plugin.id>
+		<plugin.name>Must Read Plugin</plugin.name>
+		<plugin.description>Plugin to handle reading of must-read nodes</plugin.description>
+		<plugin.class>com.gentics.mesh.plugin.mustread.MustReadPlugin</plugin.class>
+		<plugin.inception>2019-08-30</plugin.inception>
+	</properties>
+
+
+	<dependencies>
+		<dependency>
+			<groupId>com.gentics.mesh.plugin</groupId>
+			<artifactId>mesh-commercial-plugins-common</artifactId>
+		</dependency>
+		<!-- Test dependencies -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-test-common</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-mdm-hibernate-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh.plugin</groupId>
+			<artifactId>mesh-commercial-plugins-test-common</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<!-- Generates this plugin's own OpenAPI v3 spec (covering just its REST endpoints) into
+			     target/classes/META-INF/openapi/, so the jar/shade packaging below bundles it into the plugin jar. -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>3.3.0</version>
+				<executions>
+					<execution>
+						<id>generate-openapi-spec</id>
+						<phase>process-classes</phase>
+						<goals>
+							<goal>java</goal>
+						</goals>
+						<configuration>
+							<classpathScope>compile</classpathScope>
+							<mainClass>com.gentics.mesh.plugin.common.generator.PluginOpenApiGeneratorRunner</mainClass>
+							<arguments>
+								<argument>${plugin.name}</argument>
+								<argument>${plugin.id}</argument>
+								<argument>${plugin.class}</argument>
+								<argument>${project.build.outputDirectory}/META-INF/openapi/openapi.yaml</argument>
+								<argument>com.gentics.mesh.plugin.mustread.generator.MustReadOpenApiPreparer</argument>
+							</arguments>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+						<configuration>
+							<includes>
+								<include>**/*IT.java</include>
+							</includes>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<transformers>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<manifestEntries>
+										<Plugin-Id>${plugin.id}</Plugin-Id>
+										<Plugin-Name>${plugin.name}</Plugin-Name>
+										<Plugin-Version>${project.version}</Plugin-Version>
+										<Plugin-Author>${plugin.author}</Plugin-Author>
+										<Plugin-Class>${plugin.class}</Plugin-Class>
+										<Plugin-Description>${plugin.description}</Plugin-Description>
+										<Plugin-License>${plugin.license}</Plugin-License>
+										<Plugin-Inception>${plugin.inception}</Plugin-Inception>
+									</manifestEntries>
+								</transformer>
+							</transformers>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>com.gentics</groupId>
+				<artifactId>dependency-reporting-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>java-transform</id>
+						<goals>
+							<goal>java-transform</goal>
+						</goals>
+						<configuration>
+							<reportFile>../target/dependency-updates-aggregate-report.xml</reportFile>
+							<componentName>${dependency.report.component.name}</componentName>
+							<moduleName>Mustread Plugin</moduleName>
+							<ignoredNames>
+								<ignoredName>com\.gentics\.mesh\.plugin\.commercial:.*</ignoredName>
+							</ignoredNames>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<executions>
+					<execution>
+						<?m2e ignore?>
+						<id>make-report-assembly</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<appendAssemblyId>true</appendAssemblyId>
+							<descriptors>
+								<descriptor>report-assembly.xml</descriptor>
+							</descriptors>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>

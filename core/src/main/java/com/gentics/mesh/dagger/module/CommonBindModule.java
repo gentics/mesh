@@ -387,8 +387,9 @@ public abstract class CommonBindModule {
 
 	/**
 	 * Erweiterungspunkt fuer zusaetzliche Suchindex-Handler aus anderen Modulen, etwa dem
-	 * RAG-Chunk-Handler von mesh-enterprise. Die Deklaration sorgt dafuer, dass das Set auch dann
-	 * injizierbar ist, wenn niemand beitraegt - Mesh selbst traegt hier nichts bei.
+	 * RAG-Chunk-Handler aus {@code content-rag/mesh-sync}, den {@link EnterpriseSearchModule}
+	 * beitraegt. Die Deklaration sorgt dafuer, dass das Set auch dann injizierbar ist, wenn niemand
+	 * beitraegt.
 	 *
 	 * @return Menge zusaetzlicher Index-Handler
 	 */

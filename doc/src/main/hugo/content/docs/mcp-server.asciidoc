@@ -481,11 +481,11 @@ Metrics are kept in memory and reset with the process.
 
 === Container image
 
-The image is built by the Gentics Mesh Enterprise pipeline and tagged with the Gentics Mesh version:
+The image is built by the Gentics Mesh pipeline and tagged with the Gentics Mesh version:
 
 [source]
 ----
-docker.gentics.com/gentics/mesh-enterprise/mcp-server:<version>
+docker.gentics.com/gentics/mesh/mcp-server:<version>
 ----
 
 The image runs as a non-root user on a JRE 17 base. In stdio mode no port is exposed and no init wrapper is used — that would break the stdio pipes.
@@ -498,7 +498,7 @@ docker run -i --rm \
   -e MESH_USERNAME=admin \
   -e MESH_PASSWORD=admin \
   -e MESH_ALLOWED_PROJECTS=demo \
-  docker.gentics.com/gentics/mesh-enterprise/mcp-server:<version>
+  docker.gentics.com/gentics/mesh/mcp-server:<version>
 ----
 
 .HTTP
@@ -509,7 +509,7 @@ docker run --rm -p 3001:3001 \
   -e MESH_ALLOWED_PROJECTS=demo \
   -e MCP_TRANSPORT=http \
   -e MCP_AUTH_TOKEN=$(openssl rand -base64 32) \
-  docker.gentics.com/gentics/mesh-enterprise/mcp-server:<version>
+  docker.gentics.com/gentics/mesh/mcp-server:<version>
 ----
 
 === Kubernetes

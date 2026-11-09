@@ -33,7 +33,6 @@ mesh-graphdb
 orientdb-plugins
 keystore.jceks
 /bower_components/
-mesh.lock
 /dist
 /node
 /node_modules
@@ -64,3 +63,7 @@ server/hmac_store.jceks
 !.vscode/settings.json
 .asciidoctorconfig.adoc
 *.patch
+.idea
+debuginfo
+plugins/comment-plugin/data
+plugins/comment-plugin/config

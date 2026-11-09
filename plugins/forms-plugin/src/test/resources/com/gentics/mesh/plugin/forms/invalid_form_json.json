@@ -1,0 +1,14 @@
+{
+	"name": "Invalid JSON",
+	"schema1": {
+		"key": "test-schema",
+	    "version": "1.0.0",
+	    "properties": {
+			"notvalidated1": {
+				"type": "not-validated",
+				"name": "notvalidated1",
+				"label": "Not validated"
+			}
+		}
+	}
+}

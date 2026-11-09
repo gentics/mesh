@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.gentics.mesh.contentrag</groupId>
+        <artifactId>mesh-content-rag-parent</artifactId>
+        <version>9.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>mesh-content-rag-service</artifactId>
+    <name>Gentics Mesh Content RAG (Service)</name>
+    <description>
+        Eigenstaendiger Spring-Boot-Service fuer den Query-Pfad: Hybrid-Retrieval,
+        Permission-Filter, Antwortgenerierung und Feedback. Schreibt keine Chunk-Dokumente –
+        die Indizes befuellt Mesh ueber seinen Standard-Sync. Beim Start werden lediglich
+        Inference-Endpunkt, Ingest-Pipeline und Index-Template sichergestellt.
+    </description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.gentics.mesh.contentrag</groupId>
+            <artifactId>mesh-content-rag-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.gentics.mesh.contentrag</groupId>
+            <artifactId>mesh-content-rag-index-contract</artifactId>
+        </dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-rest-model</artifactId>
+		</dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <!-- Low-Level-REST-Client: stabile, versionsrobuste API fuer explizit gebaute Queries. -->
+        <dependency>
+            <groupId>org.elasticsearch.client</groupId>
+            <artifactId>elasticsearch-rest-client</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>mesh-content-rag-service</finalName>
+
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <!-- Der Parent ist mesh und nicht spring-boot-starter-parent;
+                             die repackage-Ausfuehrung kommt daher nicht mit, sondern muss hier
+                             stehen. Ohne sie liegt in target/ nur das duenne JAR ohne
+                             Start-Class und Dependencies - fuer 'mvn spring-boot:run' egal,
+                             fuer 'java -jar' im Container nicht. -->
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

@@ -1,0 +1,22 @@
+<div>
+	<fieldset>
+		<legend>{{{ label }}}</legend>
+{{#each options }}
+			<input type="radio" id="{{ name }}-{{ @index }}" name="{{ name }}"
+				value="{{ key }}"
+				{{#if mandatory}}required="required"{{/if}}
+				{{#equals key data.value}}checked="checked"{{/equals}}>
+			<label for="{{ name }}-{{ @index }}">{{{ value }}}</label>
+{{/each}}
+{{#if additional_element }}
+			<input type="radio" id="{{ name }}-additional" name="{{ name }}"
+				value="{{ name }}additional_field" class="mdc-radio__native-control"
+				{{#if mandatory}}required="required"{{/if}}
+				{{#if data.additional_element }}checked="checked"{{/if}}>
+			<label for="{{ name }}additional_field">Additional element</label>
+			<input type="text" class="mdc-textfield__input"
+				name="{{ name }}_additional" placeholdername=""
+				value="{{#if data.additional_element }}{{ data.additional_element }}{{else}}{{ value }}{{/if}}">
+{{/if}}
+		</fieldset>
+</div>

@@ -1,0 +1,52 @@
+{
+    "adminEmailAddress": "",
+    "adminEmailSubject": {},
+    "adminEmailTemplate": "",
+    "templateContext": "",
+    "successUrl": {},
+    "schema": {
+        "properties": {
+            "input1": {
+                "name": "input1",
+                "type": "string",
+                "updateOnChange": false,
+                "mandatory": true,
+                "isList": false,
+                "validation": {
+                    "regexValidation": {
+                        "key": "email",
+                        "regex": "^(([^<>()\\[\\]\\\\.,;:\\s@\"]+(\\.[^<>()\\[\\]\\\\.,;:\\s@\"]+)*)|(\".+\"))@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,}))$",
+                        "errorMessage": null
+                    }
+                },
+                "numberOfLines": 1
+            }
+        }
+    },
+    "ui-schema": {
+        "formname": {
+            "de": "Test Form",
+            "en": "Test Form"
+        },
+        "formdescription": {
+            "de": "This is the Test Form",
+            "en": "This is the Test Form"
+        },
+        "pages": [
+            {
+                "elements": [
+                    {
+                        "type": "property",
+                        "id": "input1",
+                        "label": {},
+                        "description": {}
+                    }
+                ]
+            }
+        ]
+    },
+    "cms_id": 1,
+    "name": "Test Form",
+    "type": "generic",
+    "submitOnce": false
+}

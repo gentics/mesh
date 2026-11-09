@@ -1,0 +1,21 @@
+{
+    schema (
+        name: "must_read_test_page"
+
+    ) {
+        nodes (
+            filter: {
+                fields: {
+                    must_read_test_page: {
+                        must_read: true
+                    }
+                }
+            }
+        ) {
+            elements {
+                testUuid: uuid
+                testPublished: isPublished
+            }
+        }
+    }
+}

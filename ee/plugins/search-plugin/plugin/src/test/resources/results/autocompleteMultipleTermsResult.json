@@ -1,0 +1,15 @@
+{
+	"responses" : [
+		{
+			"hits" : {
+				"hits" : [
+					{
+						"highlight" : {
+							"fields.teaser.auto" : [ "<p>%hb%bar%he% %hb%foo%he%</p>" ]
+						}
+					}
+				]
+			}
+		}
+	]
+}

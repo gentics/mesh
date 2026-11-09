@@ -1,0 +1,11 @@
+<div data-mdc-auto-init="Textfield"
+	class="element-textarea mdc-textfield mdc-textfield--textarea mdc-textfield--box floating-label mdc-textfield--upgraded mdc-ripple-upgraded"
+	element-name="{{ name }}"
+	style="-mdc-ripple-surface-width: 540px; - -mdc-ripple-surface-height: 214.5px; - -mdc-ripple-fg-size: 324px; - -mdc-ripple-fg-scale: 1.8242; - -mdc-ripple-fg-translate-start: -128.5px, -119px; - -mdc-ripple-fg-translate-end: 108px, -54.75px;">
+	<div class="content form-group">
+		<textarea id="{{ name }}" class="form-control mdc-textfield__input"
+			rows="8" cols="40" name="{{ name }}" placeholdername=""
+			{{#if mandatory}}required="required"{{/if}}>{{#if data.value }}{{ data.value }}{{else}}{{ value }}{{/if}}</textarea>
+		<label for="{{ name }}" class="control-label mdc-textfield__label">{{{ label }}}</label>
+	</div>
+</div>

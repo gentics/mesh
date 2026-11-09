@@ -1,0 +1,71 @@
+---
+pageType: documentation
+---
+
+== Mesh CLI
+
+The Gentics Mesh CLI can be used to interact with the Mesh Server.
+
+It can be used to:
+
+* Invoke backup
+* Deploy plugins
+* Issue / Reset API keys
+* Invoke schema / microschema migrations
+* Fetch cluster status
+
+== Usage
+
+```
+Usage: mesh-cli [-hVv] [--color <colorMode>] [-f <format>] [-k <apiKey>] [-p
+                <profile>] [-u <apiUrl>] [COMMAND]
+Gentics Mesh CLI
+      --color <colorMode>   Colorize the output.
+                            Options: [always,never]
+                            (default: always)
+  -f, --format <format>     Format for the output.
+                            auto: use preconfigured format for the command
+                            table: use table output format
+                            json: use JSON output format
+                            minimal: use minimal output format
+                            (default: auto)
+  -h, --help                Show this help message and exit.
+  -k, --apikey <apiKey>     API Key.
+  -p, --profile <profile>   Profile to be used.
+  -u, --url <apiUrl>        Server url to be used.
+  -v                        Specify multiple -v options to increase verbosity.
+                            For example, `-v -v -v` or `-vvv`
+  -V, --version             Print version information and exit.
+Commands:
+  profile      Manage your profiles
+  server, s    Server commands
+  user, u      User commands
+  job, j       Job commands
+  search       Search commands
+  plugin, p    Plugin commands
+  key          Keystore related commands
+  schema       Schema commands
+  microschema  Microschema commands
+```
+
+=== Profile Handling
+
+The profile command can be used to manage profiles. A profile contains information about the mesh server to which the CLI can connect to.
+
+```
+Usage: mesh-cli profile [COMMAND]
+Manage your profiles
+Commands:
+  add, a   Add a new profile
+  list, l  List profiles
+  del      Delete the profile
+  set, s   Set the default profile
+```
+
+=== Env Handling
+
+* MESH_CLI_PROFILE - Override the active profile 
+* MESH_CLI_API_URL - Override the API URL option
+* MESH_CLI_API_KEY - Override the API Key option
+* MESH_CLI_PROJECT_NAME - Override the project name option
+* COLUMNS - Specify the table width

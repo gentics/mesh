@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gentics Mesh × MCP – Live Demo</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d2e;
+    --surface2: #252840;
+    --border: #2e3155;
+    --accent: #6c63ff;
+    --accent2: #ff6584;
+    --text: #e8eaf6;
+    --muted: #8b90b8;
+    --green: #4caf7d;
+    --yellow: #f5c842;
+    --card-hover: #2d3058;
+    --radius: 12px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, #1a1d2e 0%, #252840 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px; position: sticky; top: 0; z-index: 100;
+    backdrop-filter: blur(10px);
+  }
+  .logo { display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 1.1rem; }
+  .logo-badge {
+    background: var(--accent); color: white; padding: 3px 10px;
+    border-radius: 20px; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.05em;
+  }
+  .logo-x { color: var(--muted); margin: 0 4px; }
+  .status-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--green);
+    box-shadow: 0 0 6px var(--green); display: inline-block; margin-right: 6px;
+  }
+  .status { font-size: 0.8rem; color: var(--muted); display: flex; align-items: center; }
+
+  /* Layout */
+  .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+
+  /* Hero */
+  .hero { text-align: center; padding: 3rem 1rem 2rem; }
+  .hero h1 { font-size: 2.8rem; font-weight: 800; margin-bottom: 1rem;
+    background: linear-gradient(135deg, #6c63ff, #ff6584);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .hero p { color: var(--muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto 2rem; line-height: 1.6; }
+
+  /* Stats Bar */
+  .stats { display: flex; gap: 1rem; justify-content: center; margin-bottom: 2.5rem; flex-wrap: wrap; }
+  .stat {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1rem 1.5rem; text-align: center; min-width: 120px;
+  }
+  .stat-num { font-size: 2rem; font-weight: 800; color: var(--accent); }
+  .stat-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 4px; margin-bottom: 2rem; border-bottom: 1px solid var(--border); }
+  .tab {
+    padding: 0.75rem 1.5rem; cursor: pointer; border-radius: var(--radius) var(--radius) 0 0;
+    font-size: 0.9rem; font-weight: 500; color: var(--muted); transition: all 0.2s;
+    border: 1px solid transparent; border-bottom: none; margin-bottom: -1px;
+  }
+  .tab:hover { color: var(--text); background: var(--surface); }
+  .tab.active { color: var(--accent); background: var(--surface);
+    border-color: var(--border); border-bottom-color: var(--surface); }
+
+  /* Tab panels */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* Search */
+  .search-bar {
+    display: flex; gap: 1rem; margin-bottom: 2rem; align-items: center; flex-wrap: wrap;
+  }
+  .search-input {
+    flex: 1; min-width: 200px; background: var(--surface); border: 1px solid var(--border);
+    color: var(--text); padding: 0.75rem 1rem; border-radius: var(--radius);
+    font-size: 0.95rem; outline: none; transition: border-color 0.2s;
+  }
+  .search-input:focus { border-color: var(--accent); }
+  .filter-select {
+    background: var(--surface); border: 1px solid var(--border); color: var(--text);
+    padding: 0.75rem 1rem; border-radius: var(--radius); font-size: 0.9rem;
+    outline: none; cursor: pointer;
+  }
+
+  /* Node Grid */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+
+  /* Cards */
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    overflow: hidden; cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow);
+  }
+  .card:hover { border-color: var(--accent); transform: translateY(-3px);
+    box-shadow: 0 8px 32px rgba(108,99,255,0.2); background: var(--card-hover); }
+  .card-img {
+    width: 100%; height: 180px; object-fit: cover; background: var(--surface2);
+    display: flex; align-items: center; justify-content: center; font-size: 3rem;
+  }
+  .card-img img { width: 100%; height: 100%; object-fit: cover; }
+  .card-body { padding: 1.25rem; }
+  .card-schema {
+    font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--accent); margin-bottom: 0.5rem;
+  }
+  .card-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .card-path { font-size: 0.75rem; color: var(--muted); font-family: monospace; margin-bottom: 0.75rem; }
+  .card-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .card-meta { display: flex; gap: 0.75rem; margin-top: 1rem; flex-wrap: wrap; }
+  .badge {
+    font-size: 0.72rem; padding: 3px 8px; border-radius: 20px; font-weight: 600;
+    background: var(--surface2); border: 1px solid var(--border);
+  }
+  .badge.price { color: var(--green); border-color: var(--green); }
+  .badge.weight { color: var(--yellow); border-color: var(--yellow); }
+  .badge.stock { color: var(--accent2); border-color: var(--accent2); }
+
+  /* Detail Modal */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+    z-index: 200; align-items: center; justify-content: center; padding: 2rem;
+    backdrop-filter: blur(4px);
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+    max-width: 700px; width: 100%; max-height: 85vh; overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  }
+  .modal-img { width: 100%; height: 260px; object-fit: cover;
+    border-radius: 16px 16px 0 0; background: var(--surface2); }
+  .modal-body { padding: 2rem; }
+  .modal-schema { font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--accent); margin-bottom: 0.5rem; }
+  .modal-title { font-size: 1.8rem; font-weight: 800; margin-bottom: 0.5rem; }
+  .modal-path { font-family: monospace; font-size: 0.8rem; color: var(--muted);
+    margin-bottom: 1.5rem; }
+  .modal-desc { color: var(--muted); line-height: 1.7; margin-bottom: 1.5rem; font-size: 0.95rem; }
+  .field-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem; }
+  .field-item { background: var(--surface2); border-radius: 8px; padding: 0.75rem; }
+  .field-key { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--muted); margin-bottom: 4px; }
+  .field-val { font-size: 1rem; font-weight: 600; }
+  .modal-close {
+    position: absolute; top: 1rem; right: 1rem; background: var(--surface2);
+    border: none; color: var(--text); width: 36px; height: 36px;
+    border-radius: 50%; font-size: 1.2rem; cursor: pointer; display: flex;
+    align-items: center; justify-content: center; transition: background 0.2s;
+  }
+  .modal-close:hover { background: var(--accent2); }
+  .modal-inner { position: relative; }
+
+  /* Schema Explorer */
+  .schema-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1rem;
+  }
+  .schema-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;
+    display: flex; align-items: center; gap: 0.75rem; }
+  .schema-icon { font-size: 1.4rem; }
+  .field-table { width: 100%; border-collapse: collapse; }
+  .field-table th { text-align: left; font-size: 0.7rem; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--muted); padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--border); }
+  .field-table td { padding: 0.5rem 0.75rem; font-size: 0.85rem;
+    border-bottom: 1px solid rgba(46,49,85,0.5); }
+  .field-table tr:last-child td { border-bottom: none; }
+  .type-badge {
+    font-size: 0.7rem; padding: 2px 7px; border-radius: 4px; font-weight: 600;
+    background: var(--surface2); color: var(--accent);
+  }
+  .req-yes { color: var(--accent2); font-size: 0.8rem; }
+  .req-no { color: var(--muted); font-size: 0.8rem; }
+
+  /* MCP Log */
+  .log-panel {
+    background: #0a0d1a; border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 1.5rem; font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 0.82rem;
+    max-height: 500px; overflow-y: auto;
+  }
+  .log-entry { margin-bottom: 0.75rem; padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(46,49,85,0.4); }
+  .log-entry:last-child { border-bottom: none; margin-bottom: 0; }
+  .log-time { color: var(--muted); font-size: 0.72rem; }
+  .log-tool { color: var(--accent); font-weight: 700; }
+  .log-arrow { color: var(--muted); margin: 0 0.5rem; }
+  .log-result { color: var(--green); }
+  .log-error { color: var(--accent2); }
+
+  /* Loading */
+  .loading {
+    text-align: center; padding: 4rem; color: var(--muted);
+    display: flex; flex-direction: column; align-items: center; gap: 1rem;
+  }
+  .spinner {
+    width: 40px; height: 40px; border: 3px solid var(--border);
+    border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Empty state */
+  .empty { text-align: center; padding: 3rem; color: var(--muted); font-size: 0.9rem; }
+
+  /* MCP Explainer */
+  .explainer {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem; margin-bottom: 2rem;
+  }
+  .explainer-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1.5rem;
+    border-left: 3px solid var(--accent);
+  }
+  .explainer-icon { font-size: 2rem; margin-bottom: 0.75rem; }
+  .explainer-title { font-weight: 700; margin-bottom: 0.5rem; }
+  .explainer-text { color: var(--muted); font-size: 0.85rem; line-height: 1.6; }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .hero h1 { font-size: 2rem; }
+    .grid { grid-template-columns: 1fr; }
+    header { padding: 0 1rem; }
+    .container { padding: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span class="logo-badge">MCP</span>
+    <span style="color:var(--text)">Gentics Mesh</span>
+    <span class="logo-x">×</span>
+    <span style="color:var(--accent)">Claude</span>
+  </div>
+  <div class="status">
+    <span class="status-dot" id="statusDot"></span>
+    <span id="statusText">Verbinde…</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>Inhalte trifft KI</h1>
+    <p>Dieser Showcase demonstriert wie Claude über den <strong>MCP-Server-Adapter</strong>
+      direkt auf strukturierte Inhalte in Gentics Mesh zugreift — live, in Echtzeit.</p>
+    <div class="stats">
+      <div class="stat"><div class="stat-num" id="statNodes">–</div><div class="stat-label">Nodes</div></div>
+      <div class="stat"><div class="stat-num" id="statSchemas">–</div><div class="stat-label">Schemas</div></div>
+      <div class="stat"><div class="stat-num" id="statVehicles">–</div><div class="stat-label">Fahrzeuge</div></div>
+      <div class="stat"><div class="stat-num" id="statProjects">–</div><div class="stat-label">Projekte</div></div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('catalog')">📦 Katalog</div>
+    <div class="tab" onclick="switchTab('schemas')">🗂 Schemas</div>
+    <div class="tab" onclick="switchTab('mcp')">⚡ MCP Live</div>
+    <div class="tab" onclick="switchTab('about')">ℹ️ Was ist MCP?</div>
+  </div>
+
+  <!-- Panel: Katalog -->
+  <div class="panel active" id="panel-catalog">
+    <div class="search-bar">
+      <input class="search-input" id="searchInput" type="text"
+        placeholder="🔍  Suche nach Name, Beschreibung, Pfad…" oninput="filterCards()">
+      <select class="filter-select" id="schemaFilter" onchange="filterCards()">
+        <option value="">Alle Schemas</option>
+      </select>
+    </div>
+    <div class="grid" id="nodeGrid">
+      <div class="loading"><div class="spinner"></div><span>Lade Inhalte via MCP…</span></div>
+    </div>
+  </div>
+
+  <!-- Panel: Schemas -->
+  <div class="panel" id="panel-schemas">
+    <div id="schemasContainer">
+      <div class="loading"><div class="spinner"></div><span>Lade Schemas…</span></div>
+    </div>
+  </div>
+
+  <!-- Panel: MCP Live -->
+  <div class="panel" id="panel-mcp">
+    <div style="margin-bottom:1.5rem;">
+      <p style="color:var(--muted);font-size:0.9rem;line-height:1.6;margin-bottom:1rem;">
+        Jeder Klick auf eine Karte, jedes Laden von Daten — alles läuft über den
+        <strong>MCP-Server</strong>. Hier sehen Sie die Tool-Aufrufe in Echtzeit.
+      </p>
+      <button onclick="clearLog()"
+        style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);
+               padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.8rem;">
+        Log leeren
+      </button>
+    </div>
+    <div class="log-panel" id="mcpLog">
+      <div style="color:var(--muted);font-size:0.85rem;">Noch keine Tool-Aufrufe…</div>
+    </div>
+  </div>
+
+  <!-- Panel: About -->
+  <div class="panel" id="panel-about">
+    <div class="explainer">
+      <div class="explainer-card">
+        <div class="explainer-icon">🔌</div>
+        <div class="explainer-title">Was ist MCP?</div>
+        <div class="explainer-text">Das <strong>Model Context Protocol</strong> ist ein offener Standard
+          von Anthropic, der es KI-Modellen wie Claude ermöglicht, externe Tools
+          und Datenquellen strukturiert zu nutzen.</div>
+      </div>
+      <div class="explainer-card" style="border-left-color:var(--accent2)">
+        <div class="explainer-icon">🏗️</div>
+        <div class="explainer-title">Der Adapter</div>
+        <div class="explainer-text">Dieser MCP-Server kapselt Gentics Mesh als Backend.
+          Er validiert Anfragen, setzt Sicherheitsregeln durch und liefert
+          normalisierte, KI-freundliche Antworten.</div>
+      </div>
+      <div class="explainer-card" style="border-left-color:var(--green)">
+        <div class="explainer-icon">🛡️</div>
+        <div class="explainer-title">Sicherheit by Design</div>
+        <div class="explainer-text">Read-only-Modus, Projekt-Allowlist,
+          GraphQL-Mutation-Blockierung und Depth-Limits sind fest eingebaut —
+          Claude kann nur lesen, nie schreiben.</div>
+      </div>
+      <div class="explainer-card" style="border-left-color:var(--yellow)">
+        <div class="explainer-icon">⚙️</div>
+        <div class="explainer-title">6 Tools</div>
+        <div class="explainer-text">
+          <code style="font-size:0.75rem;">mesh_list_projects</code><br>
+          <code style="font-size:0.75rem;">mesh_list_schemas</code><br>
+          <code style="font-size:0.75rem;">mesh_get_node</code><br>
+          <code style="font-size:0.75rem;">mesh_search_nodes</code><br>
+          <code style="font-size:0.75rem;">mesh_get_webroot</code><br>
+          <code style="font-size:0.75rem;">mesh_run_graphql</code>
+        </div>
+      </div>
+    </div>
+
+    <!-- Architecture diagram -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;text-align:center;">
+      <div style="font-weight:700;margin-bottom:1.5rem;color:var(--muted);font-size:0.8rem;text-transform:uppercase;letter-spacing:0.1em;">Architektur</div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:1rem;flex-wrap:wrap;font-size:0.85rem;">
+        <div style="background:var(--surface2);border:1px solid var(--accent);border-radius:8px;padding:0.75rem 1.25rem;">
+          🤖 Claude Desktop
+        </div>
+        <div style="color:var(--muted);">──── MCP / stdio ────</div>
+        <div style="background:var(--surface2);border:1px solid var(--accent2);border-radius:8px;padding:0.75rem 1.25rem;">
+          ⚡ MCP Server<br>
+          <span style="font-size:0.7rem;color:var(--muted);">gentics-mesh-mcp</span>
+        </div>
+        <div style="color:var(--muted);">──── REST / GraphQL ────</div>
+        <div style="background:var(--surface2);border:1px solid var(--green);border-radius:8px;padding:0.75rem 1.25rem;">
+          🗄️ Gentics Mesh<br>
+          <span style="font-size:0.7rem;color:var(--muted);">localhost:8080</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-inner">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+      <img class="modal-img" id="modalImg" src="" alt="" onerror="this.style.display='none'">
+      <div class="modal-body">
+        <div class="modal-schema" id="modalSchema"></div>
+        <div class="modal-title" id="modalTitle"></div>
+        <div class="modal-path" id="modalPath"></div>
+        <div class="modal-desc" id="modalDesc"></div>
+        <div class="field-grid" id="modalFields"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = 'http://localhost:3000';
+const MESH = 'http://localhost:8080';
+let allNodes = [];
+let meshToken = null;
+
+// ─── MCP Log ──────────────────────────────────────────────────────────────────
+const logEntries = [];
+function logCall(tool, params, result, isError = false) {
+  const entry = { time: new Date().toLocaleTimeString('de'), tool, params, result, isError };
+  logEntries.unshift(entry);
+  renderLog();
+}
+function renderLog() {
+  const el = document.getElementById('mcpLog');
+  if (!logEntries.length) { el.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;">Noch keine Tool-Aufrufe…</div>'; return; }
+  el.innerHTML = logEntries.map(e => `
+    <div class="log-entry">
+      <span class="log-time">${e.time}</span>
+      <span class="log-arrow">›</span>
+      <span class="log-tool">${e.tool}</span>
+      <span class="log-arrow">›</span>
+      <span class="${e.isError ? 'log-error' : 'log-result'}">${
+        typeof e.result === 'object' ? JSON.stringify(e.result).slice(0, 120) + '…' : String(e.result)
+      }</span>
+      <div style="color:var(--muted);font-size:0.72rem;margin-top:3px;">${JSON.stringify(e.params)}</div>
+    </div>`).join('');
+}
+function clearLog() { logEntries.length = 0; renderLog(); }
+
+// ─── Status ───────────────────────────────────────────────────────────────────
+async function checkStatus() {
+  try {
+    const r = await fetch(`${API}/api/projects`);
+    const data = await r.json();
+    if (data.projects) {
+      document.getElementById('statusDot').style.background = '#4caf7d';
+      document.getElementById('statusDot').style.boxShadow = '0 0 6px #4caf7d';
+      document.getElementById('statusText').textContent = `Verbunden · ${data.projects[0]?.name ?? 'demo'}`;
+      document.getElementById('statProjects').textContent = data.projects.length;
+      logCall('mesh_list_projects', {}, { projects: data.projects.length });
+    }
+  } catch {
+    document.getElementById('statusDot').style.background = '#ff6584';
+    document.getElementById('statusText').textContent = 'Nicht verbunden';
+  }
+}
+
+// ─── Mesh Token für Bildabrufe ────────────────────────────────────────────────
+async function getMeshToken() {
+  if (meshToken) return meshToken;
+  try {
+    const r = await fetch(`${MESH}/api/v2/auth/login`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({username:'admin',password:'admin'})
+    });
+    meshToken = (await r.json()).token;
+  } catch {}
+  return meshToken;
+}
+
+// ─── Nodes laden ──────────────────────────────────────────────────────────────
+const schemaIcons = { vehicle:'🚗', category:'📁', folder:'📂', vehicleImage:'🖼️', content:'📄', binary_content:'📎' };
+const SCHEMA_COLORS = { vehicle:'var(--accent)', category:'var(--yellow)', folder:'var(--muted)', vehicleImage:'var(--green)', content:'var(--accent2)' };
+
+async function loadNodes() {
+  try {
+    const r = await fetch(`${API}/api/nodes?project=demo`);
+    const data = await r.json();
+    allNodes = data.nodes ?? [];
+    logCall('mesh (nodes listing)', { project:'demo' }, { count: allNodes.length });
+
+    document.getElementById('statNodes').textContent = allNodes.length;
+    const vehicles = allNodes.filter(n => n.schema === 'vehicle');
+    document.getElementById('statVehicles').textContent = vehicles.length;
+
+    // Schema-Filter befüllen
+    const schemas = [...new Set(allNodes.map(n => n.schema).filter(Boolean))];
+    const sel = document.getElementById('schemaFilter');
+    schemas.forEach(s => {
+      const o = document.createElement('option');
+      o.value = s; o.textContent = `${schemaIcons[s] ?? '📄'} ${s}`;
+      sel.appendChild(o);
+    });
+
+    renderCards(allNodes);
+  } catch (e) {
+    document.getElementById('nodeGrid').innerHTML = `<div class="empty">⚠️ Fehler beim Laden: ${e.message}</div>`;
+  }
+}
+
+function renderCards(nodes) {
+  const grid = document.getElementById('nodeGrid');
+  const visible = nodes.filter(n => n.schema !== 'folder');
+  if (!visible.length) { grid.innerHTML = '<div class="empty">Keine Ergebnisse</div>'; return; }
+
+  grid.innerHTML = visible.map(node => {
+    const f = node.fields ?? {};
+    const imgUuid = f.vehicleImage?.uuid ?? (node.schema === 'vehicleImage' ? node.uuid : null);
+    const imgSrc = imgUuid ? `${MESH}/api/v2/demo/nodes/${imgUuid}/binary/image?w=400` : '';
+    const name = f.name ?? node.displayName ?? node.uuid;
+    const desc = f.description ? f.description.replace(/<[^>]+>/g,'').slice(0,100)+'…' : '';
+    const color = SCHEMA_COLORS[node.schema] ?? 'var(--muted)';
+    const icon = schemaIcons[node.schema] ?? '📄';
+
+    const badges = [];
+    if (f.price) badges.push(`<span class="badge price">💶 €${Number(f.price).toLocaleString('de')}</span>`);
+    if (f.weight) badges.push(`<span class="badge weight">⚖️ ${f.weight} kg</span>`);
+    if (f.stocklevel != null) badges.push(`<span class="badge stock">📦 ${f.stocklevel}</span>`);
+
+    return `
+      <div class="card" onclick="openModal('${node.uuid}')">
+        <div class="card-img">
+          ${imgSrc
+            ? `<img src="${imgSrc}" alt="${name}" loading="lazy" onerror="this.parentElement.textContent='${icon}'">`
+            : `<span>${icon}</span>`}
+        </div>
+        <div class="card-body">
+          <div class="card-schema" style="color:${color}">${node.schema ?? '?'}</div>
+          <div class="card-title">${name}</div>
+          <div class="card-path">${node.path ?? ''}</div>
+          ${desc ? `<div class="card-desc">${desc}</div>` : ''}
+          ${badges.length ? `<div class="card-meta">${badges.join('')}</div>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function filterCards() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const schema = document.getElementById('schemaFilter').value;
+  const filtered = allNodes.filter(n => {
+    const f = n.fields ?? {};
+    const text = [n.displayName, f.name, f.description, n.path, n.schema].join(' ').toLowerCase();
+    return (!q || text.includes(q)) && (!schema || n.schema === schema);
+  });
+  renderCards(filtered);
+}
+
+// ─── Modal ────────────────────────────────────────────────────────────────────
+async function openModal(uuid) {
+  try {
+    logCall('mesh_get_node', { project:'demo', uuid, language:'en' }, '…');
+    const r = await fetch(`${API}/api/node/${uuid}?project=demo&lang=en`);
+    const node = await r.json();
+    logCall('mesh_get_node', { project:'demo', uuid }, { schema: node.schema, displayName: node.displayName });
+
+    const f = node.fields ?? {};
+    const imgUuid = f.vehicleImage?.uuid;
+    const imgSrc = imgUuid ? `${MESH}/api/v2/demo/nodes/${imgUuid}/binary/image?w=700` : '';
+    const name = f.name ?? node.displayName ?? uuid;
+    const desc = f.description ? f.description.replace(/<[^>]+>/g,'') : '';
+
+    document.getElementById('modalImg').src = imgSrc;
+    document.getElementById('modalImg').style.display = imgSrc ? 'block' : 'none';
+    document.getElementById('modalSchema').textContent = `${schemaIcons[node.schema] ?? ''} ${node.schema}`;
+    document.getElementById('modalTitle').textContent = name;
+    document.getElementById('modalPath').textContent = `📍 ${node.path ?? uuid}`;
+    document.getElementById('modalDesc').textContent = desc;
+
+    const numericFields = ['price','weight','SKU','stocklevel'];
+    const fieldHtml = numericFields
+      .filter(k => f[k] != null)
+      .map(k => `<div class="field-item">
+        <div class="field-key">${k}</div>
+        <div class="field-val">${
+          k === 'price' ? `€ ${Number(f[k]).toLocaleString('de')}` :
+          k === 'weight' ? `${f[k]} kg` : f[k]
+        }</div>
+      </div>`).join('');
+    document.getElementById('modalFields').innerHTML = fieldHtml;
+
+    document.getElementById('modalOverlay').classList.add('open');
+  } catch (e) {
+    logCall('mesh_get_node', { uuid }, e.message, true);
+  }
+}
+
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('modalOverlay') || !e.target) {
+    document.getElementById('modalOverlay').classList.remove('open');
+  }
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// ─── Schemas laden ────────────────────────────────────────────────────────────
+async function loadSchemas() {
+  try {
+    const r = await fetch(`${API}/api/schemas?project=demo`);
+    const data = await r.json();
+    logCall('mesh_list_schemas', { project:'demo' }, { count: data.schemas?.length });
+    document.getElementById('statSchemas').textContent = data.schemas?.length ?? 0;
+
+    document.getElementById('schemasContainer').innerHTML = (data.schemas ?? []).map(s => `
+      <div class="schema-card">
+        <div class="schema-title">
+          <span class="schema-icon">${schemaIcons[s.name] ?? '📄'}</span>
+          <span>${s.name}</span>
+          <span style="font-size:0.7rem;color:var(--muted);font-family:monospace;">${s.uuid.slice(0,8)}…</span>
+        </div>
+        <table class="field-table">
+          <thead><tr><th>Feldname</th><th>Typ</th><th>Pflicht</th></tr></thead>
+          <tbody>${(s.fields ?? []).map(f => `
+            <tr>
+              <td>${f.name}</td>
+              <td><span class="type-badge">${f.type}</span></td>
+              <td>${f.required ? '<span class="req-yes">✓</span>' : '<span class="req-no">–</span>'}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`).join('');
+  } catch (e) {
+    document.getElementById('schemasContainer').innerHTML = `<div class="empty">Fehler: ${e.message}</div>`;
+  }
+}
+
+// ─── Tab-Wechsel ──────────────────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    const names = ['catalog','schemas','mcp','about'];
+    t.classList.toggle('active', names[i] === name);
+  });
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(`panel-${name}`).classList.add('active');
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+(async () => {
+  await checkStatus();
+  await Promise.all([loadNodes(), loadSchemas()]);
+})();
+</script>
+</body>
+</html>

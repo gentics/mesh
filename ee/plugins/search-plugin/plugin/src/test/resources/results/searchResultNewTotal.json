@@ -1,0 +1,43 @@
+{
+	"responses": [
+		{
+			"hits": {
+				"total": {
+					"value": 2,
+					"relation": "eq"
+				},
+				"hits": [
+					{
+						"_id": "01234-de",
+						"_index": "mesh-node-project-branch_dummy-version-draft",
+						"_source": {
+							"project": {
+								"name": "dummy"
+							},
+							"language": "de",
+							"fields": {
+								"title": "Test result 1"
+							},
+							"uuid": "01234"
+						}
+					},
+					{
+						"_id": "56789-en",
+						"_index": "mesh-node-project-branch_dummy-version-draft",
+						"_source": {
+							"project": {
+								"name": "dummy"
+							},
+							"language": "en",
+							"fields": {
+								"title": "Test result 2"
+							},
+							"uuid": "56789"
+						}
+					}
+				]
+			},
+			"status": 200
+		}
+	]
+}

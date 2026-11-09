@@ -10,7 +10,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>3.3.3-SNAPSHOT</version>
+		<version>9.0.0-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -38,10 +38,10 @@
 		<module>tests-service-jwt-auth</module>
 		<module>tests-service-local-storage</module>
 		<module>tests-service-metrics-prometheus</module>
-
+		<module>tests-performance</module>
 		<!-- Other tests -->
 <!-- Move here from the root as soon as https://issues.jenkins.io/browse/JENKINS-26472 is fixed -->
-<!--		<module>tests-performance</module>
+<!--		
 		<module>tests-integration</module>
 -->
 	</modules>
