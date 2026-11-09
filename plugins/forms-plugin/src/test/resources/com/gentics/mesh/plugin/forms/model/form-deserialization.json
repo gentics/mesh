@@ -3,7 +3,7 @@
   "language": "de",
   "type": "GENERIC",
   "adminEmailAddress": "",
-  "adminEmailSource": "",
+  "adminEmailSource": {},
   "successurl": "http://portal-php.hotfix.gentics.com/de/Danke",
   "templateContext": "",
   "downloadBaseUrl": "null/editor/#proxy/rest/form/2/data",
