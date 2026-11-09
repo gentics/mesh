@@ -1,5 +1,5 @@
 ---
-title: "Mesh Commercial Plugins"
+title: "Mesh Plugins"
 layout: "section-overview"
 cascade:
   product: "Gentics CMP"
