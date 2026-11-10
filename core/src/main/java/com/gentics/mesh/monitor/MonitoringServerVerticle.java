@@ -40,6 +40,7 @@ public class MonitoringServerVerticle extends AbstractVerticle {
 		HttpServerOptions options = new HttpServerOptions();
 		options.setPort(port);
 		options.setHost(host);
+		options.setMaxHeaderSize(this.options.getVertxOptions().getMaxHeaderSize());
 
 		// TODO disabling compression is currently necessary due to a but in vert.x
 		options.setCompressionSupported(false);
