@@ -62,7 +62,7 @@ import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.util.Tuple;
 
 /**
- * Utility class that is commonly used for tests and the RAML generator.
+ * Utility class that is commonly used for tests and the API documentation generators.
  */
 public final class FieldUtil {
 

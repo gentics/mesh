@@ -29,9 +29,8 @@ import static io.vertx.core.http.HttpMethod.POST;
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
-import org.raml.model.ParamType;
-import org.raml.model.Resource;
-import org.raml.model.parameter.QueryParameter;
+import com.gentics.vertx.openapi.model.ParamType;
+import com.gentics.vertx.openapi.model.parameters.QueryParameter;
 
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -61,8 +60,6 @@ import io.vertx.core.MultiMap;
  * The content verticle adds rest endpoints for manipulating nodes.
  */
 public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
-
-	private Resource resource = new Resource();
 
 	private NodeCrudHandler crudHandler;
 
@@ -126,10 +123,6 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		addVersioningHandlers();
 		addBinaryVariantsHandlers();
 		addRolePermissionHandler("nodeUuid", NODE_DELOREAN_UUID, "node", crudHandler, true);
-	}
-
-	public Resource getResource() {
-		return resource;
 	}
 
 	private void addNavigationHandlers() {

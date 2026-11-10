@@ -35,50 +35,6 @@ public class UpgradedDefaultApi extends DefaultApi {
 
 	// Fix for no generated response
 
-	public UpgradedCall apiV2RamlGetCall(final ApiCallback _callback) throws ApiException {
-        String basePath = null;
-        // Operation Servers
-        String[] localBasePaths = new String[] {  };
-
-        // Determine Base Path to Use
-        if (getCustomBaseUrl() != null){
-            basePath = getCustomBaseUrl();
-        } else if ( localBasePaths.length > 0 ) {
-            basePath = localBasePaths[getHostIndex()];
-        } else {
-            basePath = null;
-        }
-
-        Object localVarPostBody = null;
-
-        // create path and map variables
-        String localVarPath = "/api/v2/raml";
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        final String[] localVarAccepts = {
-            "application/x-yaml"
-        };
-        final String localVarAccept = getApiClient().selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-        };
-        final String localVarContentType = getApiClient().selectHeaderContentType(localVarContentTypes);
-        if (localVarContentType != null) {
-            localVarHeaderParams.put("Content-Type", localVarContentType);
-        }
-
-        String[] localVarAuthNames = new String[] { "bearerAuth" };
-        return getApiClient().buildCall(basePath, localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
 	public UpgradedCall apiV2ProjectWebrootfieldFieldNamePathGetCall(@jakarta.annotation.Nonnull String path, @jakarta.annotation.Nonnull String fieldName, @jakarta.annotation.Nonnull String project, @jakarta.annotation.Nullable Double fpz, @jakarta.annotation.Nullable String rect, @jakarta.annotation.Nullable Double w, @jakarta.annotation.Nullable Double h, @jakarta.annotation.Nullable String resize, @jakarta.annotation.Nullable String version, @jakarta.annotation.Nullable Double fpy, @jakarta.annotation.Nullable String crop, @jakarta.annotation.Nullable Double fpx, final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers

@@ -1,0 +1,20 @@
+[options="header",cols="10%,20%,10%,60%"]
+|======
+
+| Name
+| Type
+| Mandatory
+| Description
+
+
+| format
+| string
+| false
+| Specify the output format. Default is JSON. Default: json. 
+
+| version
+| string
+| false
+| Specify, whether the OpenAPI standard version 3.1 should be generated. If false or unset, a version 3.0 of standard will be used. Default: v30. 
+
+|======

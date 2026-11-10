@@ -4,7 +4,6 @@ import static com.gentics.mesh.MeshEnv.CONFIG_FOLDERNAME;
 import static com.gentics.mesh.MeshEnv.MESH_CONF_FILENAME;
 
 import java.io.File;
-import java.io.IOException;
 
 import com.gentics.mesh.generator.runner.OpenAPISpecGeneratorRunner;
 
@@ -36,23 +35,12 @@ public class ExampleGeneratorRunner {
 		ModelExampleGenerator restModelGen = new ModelExampleGenerator(OUTPUT_ROOT_FOLDER);
 		restModelGen.run();
 
-		// Generate RAML
-		RAMLGenerator ramlGenerator = new RAMLGenerator(OUTPUT_ROOT_FOLDER, "api.raml", null, false);
-		ramlGenerator.run();
-
-		// Generate the RAML for the raml2html docs. This raml includes a markdown table
-		ramlGenerator = new RAMLGenerator(OUTPUT_ROOT_FOLDER, "api-docs.raml", (mimeType, clazz) -> {
-			try {
-				mimeType.setSchema(tableGen.renderModelTableViaSchema(clazz, tableGen.getTemplate("model-props-markdown-table.hbs")));
-			} catch (IOException e) {
-				e.printStackTrace();
-				throw new RuntimeException("Could not render table");
-			}
-		}, true);
-		ramlGenerator.run();
-
 		// Generate OpenAPI base spec
 		OpenAPISpecGeneratorRunner.main(new String[] { OUTPUT_ROOT_FOLDER.getPath() });
+
+		// Generate the HTML API documentation and the request/response example files from the OpenAPI spec
+		OpenAPIHtmlGenerator apiHtmlGenerator = new OpenAPIHtmlGenerator(OUTPUT_ROOT_FOLDER);
+		apiHtmlGenerator.run();
 
 		// Generate elasticsearch flattened models
 		SearchModelGenerator searchModelGen = new SearchModelGenerator(OUTPUT_ROOT_FOLDER);

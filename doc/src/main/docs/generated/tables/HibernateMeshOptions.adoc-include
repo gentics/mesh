@@ -175,6 +175,11 @@
 | cacheConfig
 | true
 | hibernatecacheconfig
-| Cache options.  Default: *com.gentics.mesh.etc.config.hibernate.HibernateCacheConfig@437486cd*.
+| Cache options.  Default: *com.gentics.mesh.etc.config.hibernate.HibernateCacheConfig@37fdfb05*.
+
+| openApiOptions
+| true
+| openapioptions
+| OpenAPI options.  Default: *com.gentics.mesh.etc.config.OpenAPIOptions@5e39850*.
 
 |======

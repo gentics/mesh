@@ -3,8 +3,8 @@ package com.gentics.mesh.parameter.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.raml.model.ParamType;
-import org.raml.model.parameter.QueryParameter;
+import com.gentics.vertx.openapi.model.ParamType;
+import com.gentics.vertx.openapi.model.parameters.QueryParameter;
 
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.GenericParameters;
@@ -33,8 +33,8 @@ public class GenericParametersImpl extends EtagParametersImpl implements Generic
 	}
 
 	@Override
-	public Map<? extends String, ? extends QueryParameter> getRAMLParameters() {
-		Map<String, QueryParameter> parameters = new HashMap<>(super.getRAMLParameters());
+	public Map<? extends String, ? extends QueryParameter> getParameterDefinitions() {
+		Map<String, QueryParameter> parameters = new HashMap<>(super.getParameterDefinitions());
 
 		QueryParameter fieldsParam = new QueryParameter();
 		fieldsParam.setDescription("Limit the output to certain fields. This is useful in order to reduce the response JSON overhead.");

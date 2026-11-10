@@ -152,7 +152,7 @@ The `server.trustedCertPaths` (Env: `MESH_HTTP_SSL_TRUSTED_CERTS`) setting can b
 
 == API Tools
 
-Gentics Mesh provides the `/raml` endpoint to easily extract the API documentation into third party tools.
+Gentics Mesh provides the `/openapi.yaml` endpoint (`/openapi.json` when JSON is configured as the default OpenAPI format) to easily extract the API documentation into third party tools.
 
 === Insomnia 
 
@@ -165,13 +165,9 @@ You can download and import link:../mesh-insomnia-v1.json[mesh-insomnia-v1.json]
 Here is a quick guide to import the API into link:https://www.getpostman.com/[Postman]:
 
 * Once the Postman app is started go to "Import" > "Import from Link"
-* Input the URL to the `/raml` endpoint of your Mesh instance.
+* Input the URL to the `/openapi.yaml` endpoint of your Mesh instance.
 
 TIP: Make use of the params and workspace parameters to maximize your productiviy. Check out the link:https://www.getpostman.com/docs/v6/postman/sending_api_requests/requests#url[Postman documentation about URL setup] for more.
-
-=== RAML Specification
-
-The link:https://github.com/raml-org/raml-spec/blob/master/versions/raml-08/raml-08.md[RAML v0.8 specification] provides the generic REST API information, and can be checked link:/docs/api/api.raml[here].
 
 === OpenAPI Specification
 

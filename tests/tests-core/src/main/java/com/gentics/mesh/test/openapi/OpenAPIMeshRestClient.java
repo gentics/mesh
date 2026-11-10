@@ -1779,15 +1779,6 @@ public class OpenAPIMeshRestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<String> getRAML() {
-		try {
-			return new OpenAPIMeshRawRequestImpl<>(apiClient.getHttpClient(), api.apiV2RamlGetCall(null), String.class);
-		} catch (ApiException e) {
-			throw new IllegalStateException(e);
-		}
-	}
-
-	@Override
 	public MeshRequest<String> getOpenAPI() {
 		try {
 			return new OpenAPIMeshRawRequestImpl(apiClient.getHttpClient(), api.apiV2OpenapiYamlGetCall(null), String.class);

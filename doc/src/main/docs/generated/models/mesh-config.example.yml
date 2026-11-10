@@ -5,7 +5,7 @@ languagesFilePath: null
 updateCheck: true
 vertxOptions:
   workerPoolSize: 20
-  eventPoolSize: 2
+  eventPoolSize: 24
   orderedBlockingHandlers: true
   eventBus:
     checkInterval: 30000
@@ -82,6 +82,11 @@ storageOptions:
   sqlParametersLimit: "definedByDatabase"
   staleTxCheckInterval: 10000
   queryPlanCacheMaxSize: 10000
+openApiOptions:
+  excludePlugins: true
+  noApiInfoPlugins: null
+  defaultVersion: "V30"
+  defaultFormat: "YAML"
 httpServer:
   port: 8080
   sslPort: 8443
@@ -96,7 +101,7 @@ httpServer:
   keyPath: "config/key.pem"
   clientAuthMode: "NONE"
   trustedCertPaths: []
-  verticleAmount: 2
+  verticleAmount: 24
   minifyJson: true
   maxFormAttributeSize: -1
   serverTokens: true
@@ -180,3 +185,8 @@ graphQL:
   slowThreshold: 60000
   asyncWaitTimeout: 120000
   schemaCacheSize: 1000
+openApi:
+  excludePlugins: true
+  noApiInfoPlugins: null
+  defaultVersion: "V30"
+  defaultFormat: "YAML"

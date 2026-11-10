@@ -74,7 +74,7 @@ public class UserEndpoint extends RolePermissionHandlingEndpoint {
 	private void addAPITokenHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:userUuid/token");
-		endpoint.setRAMLPath("/{userUuid}/token");
+		endpoint.setPathTemplate("/{userUuid}/token");
 		endpoint.addUriParameter("userUuid", "Uuid of the user.", USER_EDITOR_UUID);
 		endpoint.description(
 			"Return API token which can be used to authenticate the user. Store the key somewhere save since you won't be able to retrieve it later on. Requires UPDATE permission on the user.");
@@ -93,7 +93,7 @@ public class UserEndpoint extends RolePermissionHandlingEndpoint {
 
 		InternalEndpointRoute deleteEndpoint = createRoute();
 		deleteEndpoint.path("/:userUuid/token/:tokenUuid");
-		deleteEndpoint.setRAMLPath("/{userUuid}/token/{tokenUuid}");
+		deleteEndpoint.setPathTemplate("/{userUuid}/token/{tokenUuid}");
 		deleteEndpoint.addUriParameter("userUuid", "Uuid of the user.", USER_EDITOR_UUID);
 		deleteEndpoint.addUriParameter("tokenUuid", "Uuid of the token.", TOKEN_UUID);
 		deleteEndpoint.description("Invalidate the issued API token.");
@@ -110,7 +110,7 @@ public class UserEndpoint extends RolePermissionHandlingEndpoint {
 
 		InternalEndpointRoute listEndpoint = createRoute();
 		listEndpoint.path("/:userUuid/token");
-		listEndpoint.setRAMLPath("/{userUuid}/token");
+		listEndpoint.setPathTemplate("/{userUuid}/token");
 		listEndpoint.addUriParameter("userUuid", "Uuid of the user.", USER_EDITOR_UUID);
 		listEndpoint.description(
 			"List tokens of the user. Requires UPDATE permission on the user.");
@@ -129,7 +129,7 @@ public class UserEndpoint extends RolePermissionHandlingEndpoint {
 	private void addReadPermissionHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.pathRegex("\\/([^\\/]*)\\/permissions\\/(.*)");
-		endpoint.setRAMLPath("/{userUuid}/permissions/{path}");
+		endpoint.setPathTemplate("/{userUuid}/permissions/{path}");
 		endpoint.addUriParameter("userUuid", "Uuid of the user.", USER_EDITOR_UUID);
 		endpoint.addUriParameter("path", "Path to the element from which the permissions should be loaded.", "projects/:projectUuid/schemas");
 		endpoint.description("Read the user permissions on the element that can be located by the specified path. Requires READ permission on the user.");
@@ -147,7 +147,7 @@ public class UserEndpoint extends RolePermissionHandlingEndpoint {
 	private void addResetTokenHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:userUuid/reset_token");
-		endpoint.setRAMLPath("/{userUuid}/reset_token");
+		endpoint.setPathTemplate("/{userUuid}/reset_token");
 		endpoint.addUriParameter("userUuid", "Uuid of the user.", USER_EDITOR_UUID);
 		endpoint.description("Return a one time token which can be used by any user to update a user (e.g.: Reset the password). Requires CREATE permission on the user.");
 		endpoint.method(POST);

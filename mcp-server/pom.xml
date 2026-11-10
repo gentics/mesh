@@ -104,7 +104,6 @@
     <dependency>
       <groupId>com.gentics</groupId>
       <artifactId>vertx-openapi</artifactId>
-      <version>1.0.0</version>
     </dependency>
 
     <!-- ── JSON (Jackson) ─────────────────────────────── -->

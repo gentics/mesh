@@ -3,8 +3,8 @@ package com.gentics.mesh.parameter.client;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.raml.model.ParamType;
-import org.raml.model.parameter.QueryParameter;
+import com.gentics.vertx.openapi.model.ParamType;
+import com.gentics.vertx.openapi.model.parameters.QueryParameter;
 
 import com.gentics.mesh.parameter.ImageManipulationRetrievalParameters;
 
@@ -20,7 +20,7 @@ public class ImageManipulationRetrievalParametersImpl extends AbstractParameters
 	}
 
 	@Override
-	public Map<? extends String, ? extends QueryParameter> getRAMLParameters() {
+	public Map<? extends String, ? extends QueryParameter> getParameterDefinitions() {
 		Map<String, QueryParameter> parameters = new HashMap<>();
 
 		QueryParameter filesizeParameter = new QueryParameter();

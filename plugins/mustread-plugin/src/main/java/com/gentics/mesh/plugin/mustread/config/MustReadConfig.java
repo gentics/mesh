@@ -2,7 +2,7 @@ package com.gentics.mesh.plugin.mustread.config;
 
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.etc.config.env.Option;
 

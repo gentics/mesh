@@ -1636,12 +1636,6 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	}
 
 	@Override
-	public MeshRequest<String> getRAML() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public MeshRequest<String> getOpenAPI() {
 		// TODO Auto-generated method stub
 		return null;

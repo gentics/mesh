@@ -6,7 +6,7 @@ import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
 
 /**
- * Simple wrapper for vert.x routes. The wrapper is commonly used to generate RAML descriptions for the route.
+ * Simple wrapper for vert.x routes. The wrapper is commonly used to generate OpenAPI descriptions for the route.
  */
 public interface InternalEndpointRoute extends com.gentics.vertx.openapi.metadata.InternalEndpointRoute {
 

@@ -3,8 +3,8 @@ package com.gentics.mesh.parameter.impl;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.AbstractParameters;
 import com.gentics.mesh.parameter.SearchParameters;
-import org.raml.model.ParamType;
-import org.raml.model.parameter.QueryParameter;
+import com.gentics.vertx.openapi.model.ParamType;
+import com.gentics.vertx.openapi.model.parameters.QueryParameter;
 
 import java.util.Collections;
 import java.util.Map;
@@ -32,7 +32,7 @@ public class SearchParametersImpl extends AbstractParameters implements SearchPa
 	}
 
 	@Override
-	public Map<? extends String, ? extends QueryParameter> getRAMLParameters() {
+	public Map<? extends String, ? extends QueryParameter> getParameterDefinitions() {
 		QueryParameter waitParameter = new QueryParameter();
 		waitParameter.setDescription("Specify whether search should wait for the search to be idle before responding.");
 		waitParameter.setExample("true");

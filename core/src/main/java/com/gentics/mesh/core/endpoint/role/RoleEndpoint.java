@@ -65,7 +65,7 @@ public class RoleEndpoint extends RolePermissionHandlingEndpoint {
 	private void addPermissionHandler() {
 		InternalEndpointRoute permissionSetEndpoint = createRoute();
 		permissionSetEndpoint.pathRegex("\\/([^\\/]*)\\/permissions\\/(.*)");
-		permissionSetEndpoint.setRAMLPath("/{roleUuid}/permissions/{path}");
+		permissionSetEndpoint.setPathTemplate("/{roleUuid}/permissions/{path}");
 		permissionSetEndpoint.addUriParameter("roleUuid", "Uuid of the role.", ROLE_CLIENT_UUID);
 		permissionSetEndpoint.addUriParameter("path", "API path to the element.",
 			"projects/" + PROJECT_DEMO_UUID + "\nprojects/" + PROJECT_DEMO_UUID + "/nodes/" + NODE_DELOREAN_UUID);
@@ -85,7 +85,7 @@ public class RoleEndpoint extends RolePermissionHandlingEndpoint {
 
 		InternalEndpointRoute permissionGetEndpoint = createRoute();
 		permissionGetEndpoint.pathRegex("\\/([^\\/]*)\\/permissions\\/(.*)");
-		permissionGetEndpoint.setRAMLPath("/{roleUuid}/permissions/{path}");
+		permissionGetEndpoint.setPathTemplate("/{roleUuid}/permissions/{path}");
 		permissionGetEndpoint.addUriParameter("roleUuid", "Uuid of the role.", ROLE_CLIENT_UUID);
 		permissionGetEndpoint.addUriParameter("path", "API path to the element.",
 			"projects/" + PROJECT_DEMO_UUID + "\nprojects/" + PROJECT_DEMO_UUID + "/nodes/" + NODE_DELOREAN_UUID);

@@ -7,7 +7,7 @@ import static com.gentics.mesh.rest.client.impl.Util.lazily;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.json.JsonUtil;

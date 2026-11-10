@@ -10,7 +10,7 @@ import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.rest.client.MeshRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;

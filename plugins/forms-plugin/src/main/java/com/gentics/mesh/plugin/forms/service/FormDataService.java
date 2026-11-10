@@ -1046,12 +1046,12 @@ public class FormDataService {
 			if (maybeFolderName.isPresent()) {
 				folderName.append(maybeFolderName.get());
 				folderName.append("/");
-			} else if (org.apache.commons.lang.StringUtils.isNotBlank(formDataUuid) && org.apache.commons.lang.StringUtils.isNotBlank(fieldName)) {
+			} else if (org.apache.commons.lang3.StringUtils.isNotBlank(formDataUuid) && org.apache.commons.lang3.StringUtils.isNotBlank(fieldName)) {
 				folderName.append(formDataUuid);
 				folderName.append("/");
 				folderName.append(fieldName);
 				folderName.append("/");
-			} else if (org.apache.commons.lang.StringUtils.isNotBlank(formDataUuid) ^ org.apache.commons.lang.StringUtils.isNotBlank(fieldName)) {
+			} else if (org.apache.commons.lang3.StringUtils.isNotBlank(formDataUuid) ^ org.apache.commons.lang3.StringUtils.isNotBlank(fieldName)) {
 				throw new IllegalStateException("Incomplete form data: form UUID: " + formDataUuid + ", field: " + fieldName);
 			}
 			out.putNextEntry(new ZipEntry(folderName + filename));

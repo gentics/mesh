@@ -58,5 +58,10 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<!-- Formerly transitive through org.raml:raml-parser (via vertx-openapi) -->
+		<dependency>
+			<groupId>commons-collections</groupId>
+			<artifactId>commons-collections</artifactId>
+		</dependency>
 	</dependencies>
 </project>

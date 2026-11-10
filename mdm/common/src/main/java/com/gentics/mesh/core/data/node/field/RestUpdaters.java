@@ -662,7 +662,7 @@ public class RestUpdaters {
 			NodeFieldSchema nodeFieldSchema = (NodeFieldSchema) fieldSchema;
 			String schemaName = node.getSchemaContainer().getName();
 
-			if (!org.apache.commons.lang.ArrayUtils.isEmpty(nodeFieldSchema.getAllowedSchemas())
+			if (!org.apache.commons.lang3.ArrayUtils.isEmpty(nodeFieldSchema.getAllowedSchemas())
 					&& !Arrays.asList(nodeFieldSchema.getAllowedSchemas()).contains(schemaName)) {
 				throw error(BAD_REQUEST, "node_error_invalid_schema_field_value", fieldKey, schemaName, Arrays.toString(nodeFieldSchema.getAllowedSchemas()));
 			}
@@ -720,7 +720,7 @@ public class RestUpdaters {
 			ListFieldSchema listFieldSchema = (ListFieldSchema) fieldSchema;
 			String schemaName = node.getSchemaContainer().getName();
 
-			if (!org.apache.commons.lang.ArrayUtils.isEmpty(listFieldSchema.getAllowedSchemas())
+			if (!org.apache.commons.lang3.ArrayUtils.isEmpty(listFieldSchema.getAllowedSchemas())
 					&& !Arrays.asList(listFieldSchema.getAllowedSchemas()).contains(schemaName)) {
 				throw error(BAD_REQUEST, "node_error_invalid_schema_field_value", fieldKey, schemaName, Arrays.toString(listFieldSchema.getAllowedSchemas()));
 			}

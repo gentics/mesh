@@ -1,6 +1,6 @@
 package com.gentics.mesh.plugin.common.util;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Values for setting the Content-Disposition HTTP header.

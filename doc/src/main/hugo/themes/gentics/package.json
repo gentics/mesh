@@ -10,7 +10,6 @@
   "devDependencies": {
     "cssnano": "^4.1.0",
     "less": "^3.8.1",
-    "parcel-bundler": "^1.9.7",
-    "raml2html": "2.2.0"
+    "parcel-bundler": "^1.9.7"
   }
 }

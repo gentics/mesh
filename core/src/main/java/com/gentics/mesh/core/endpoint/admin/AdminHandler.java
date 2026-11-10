@@ -3,7 +3,6 @@ package com.gentics.mesh.core.endpoint.admin;
 import static com.gentics.mesh.core.rest.MeshEvent.CLEAR_CACHES;
 import static com.gentics.mesh.core.rest.admin.consistency.ConsistencyRating.INCONSISTENT;
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.http.HttpConstants.APPLICATION_YAML_UTF8;
 import static com.gentics.mesh.rest.Messages.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -35,7 +34,6 @@ import com.gentics.mesh.distributed.coordinator.MasterServer;
 import com.gentics.mesh.etc.config.Format;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.Version;
-import com.gentics.mesh.generator.RAMLGenerator;
 import com.gentics.mesh.parameter.BackupParameters;
 import com.gentics.mesh.router.RouterStorageImpl;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
@@ -243,22 +241,6 @@ public abstract class AdminHandler extends AbstractHandler {
 	 * @param ac internal action context.
 	 */
 	public abstract void handleOpenAPIv3(InternalActionContext ac, Format format, Version version);
-
-	/**
-	 * Generate and return the RAML of the server.
-	 * 
-	 * @param ac
-	 */
-	public void handleRAML(InternalActionContext ac) {
-		boolean admin = db.tx(() -> ac.isAdmin());
-		if (admin) {
-			RAMLGenerator generator = new RAMLGenerator();
-			String raml = generator.generate();
-			ac.send(raml, OK, APPLICATION_YAML_UTF8);
-		} else {
-			throw error(FORBIDDEN, "error_admin_permission_required");
-		}
-	}
 
 	/**
 	 * Load information on the currently elected coordination master.

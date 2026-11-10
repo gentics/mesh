@@ -15,7 +15,7 @@ echo "Building css"
 cd $ROOT/themes/gentics
 yarn install && yarn build
 
-echo "Building raml"
+echo "Installing API documentation"
 OUT=$ROOT/static/docs/api
 if [ -e $OUT/index.html ]; then
   rm -rf $OUT/index.html 
@@ -26,8 +26,8 @@ cp -R /site/assets/* $ROOT/static/docs/
 
 $ROOT/scripts/updateGithub.sh
 
-cd $ROOT/themes/gentics
-npx raml2html -i $ROOT/content/docs/api/api-docs.raml -o $OUT/index.html -t $ROOT/themes/gentics/raml/template.nunjucks
+# The API documentation page is generated from the OpenAPI spec by the doc module (OpenAPIHtmlGenerator)
+mv $ROOT/content/docs/api/index.html $OUT/index.html
 
 echo "Building with hugo"
 cd $ROOT

@@ -125,7 +125,7 @@ public abstract class AbstractEndpointGenerator<T> extends AbstractGenerator {
 	}
 
 	/**
-	 * Add all core verticles to the map of RAML resources.
+	 * Add all core verticles to the generator.
 	 * 
 	 * @param consumer
 	 * @throws IOException

@@ -1,6 +1,6 @@
 package com.gentics.mesh.plugin.mustread.config;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public class FieldNamesConfig {
     private String uuid;

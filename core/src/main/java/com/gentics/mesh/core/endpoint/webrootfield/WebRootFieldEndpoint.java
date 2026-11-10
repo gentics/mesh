@@ -55,7 +55,7 @@ public class WebRootFieldEndpoint extends AbstractProjectEndpoint {
 	private void addGetHandler() {
 		InternalEndpointRoute fieldGet = createRoute();
 		fieldGet.pathRegex("\\/([_a-zA-Z][_a-zA-Z0-9]*)\\/(.*)");
-		fieldGet.setRAMLPath("/{fieldName}/{path}");
+		fieldGet.setPathTemplate("/{fieldName}/{path}");
 		fieldGet.addUriParameter("fieldName", "Name of the field which should be acquired.", "stringField");
 		fieldGet.addUriParameter("path", "Path to the node", "/News/2015/Images/flower.jpg");
 		fieldGet.exampleResponse(OK, "JSON for a node/micronode/list field value, or the binary data for the binary field, or the text data for any other field of the node for the given path.", MeshHeaders.WEBROOT_RESPONSE_TYPE, "node",
@@ -72,7 +72,7 @@ public class WebRootFieldEndpoint extends AbstractProjectEndpoint {
 
 		InternalEndpointRoute fieldPost = createRoute();
 		fieldPost.pathRegex("\\/([_a-zA-Z][_a-zA-Z0-9]*)\\/(.*)");
-		fieldPost.setRAMLPath("/{fieldName}/{path}");
+		fieldPost.setPathTemplate("/{fieldName}/{path}");
 		fieldPost.addUriParameter("fieldName", "Name of the field which should be processed.", "binaryField");
 		fieldPost.addUriParameter("path", "Path to the node", "/News/2015/Images/flower.jpg");
 		fieldPost.exampleRequest(nodeExamples.createImageManipulationRequest());

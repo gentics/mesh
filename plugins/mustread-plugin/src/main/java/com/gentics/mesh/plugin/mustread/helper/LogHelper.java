@@ -1,7 +1,7 @@
 package com.gentics.mesh.plugin.mustread.helper;
 
 import com.gentics.mesh.plugin.mustread.MustReadPlugin;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public class LogHelper {
     MustReadPlugin plugin;

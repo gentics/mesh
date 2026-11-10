@@ -15,7 +15,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
-import org.raml.model.parameter.QueryParameter;
+import com.gentics.vertx.openapi.model.parameters.QueryParameter;
 import org.reflections.Reflections;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -188,11 +188,11 @@ public class TableGenerator extends AbstractRenderingGenerator {
 	private String renderParameterTable(Class<?> clazz) throws Exception {
 		System.out.println(clazz.getName());
 		AbstractParameters parameterObj = (AbstractParameters) clazz.newInstance();
-		Map<? extends String, ? extends QueryParameter> ramlParameters = parameterObj.getRAMLParameters();
+		Map<? extends String, ? extends QueryParameter> parameterDefinitions = parameterObj.getParameterDefinitions();
 
 		Map<String, Object> context = new HashMap<>();
 		List<Map<String, String>> list = new ArrayList<>();
-		for (Entry<? extends String, ? extends QueryParameter> entry : ramlParameters.entrySet()) {
+		for (Entry<? extends String, ? extends QueryParameter> entry : parameterDefinitions.entrySet()) {
 			String name = entry.getKey();
 			QueryParameter value = entry.getValue();
 			Map<String, String> paramDescription = new HashMap<>();
