@@ -60,6 +60,7 @@ public abstract class OptionsLoaderTest<T extends MeshOptions> implements MeshOp
 		environmentVariables.set(HttpServerConfig.MESH_HTTP_CORS_ENABLE_ENV, "true");
 		environmentVariables.set(VertxOptions.MESH_VERTX_EVENT_POOL_SIZE_ENV, "41");
 		environmentVariables.set(VertxOptions.MESH_VERTX_WORKER_POOL_SIZE_ENV, "42");
+		environmentVariables.set(VertxOptions.MESH_VERTX_MAX_HEADER_SIZE_ENV, "16384");
 		environmentVariables.set(MeshOptions.MESH_LOCK_PATH_ENV, "dummy/1234");
 		environmentVariables.set(MeshUploadOptions.MESH_BINARY_DIR_ENV, "/uploads");
 		environmentVariables.set(MonitoringConfig.MESH_MONITORING_HTTP_HOST_ENV, "0.0.0.0");
@@ -76,6 +77,7 @@ public abstract class OptionsLoaderTest<T extends MeshOptions> implements MeshOp
 		assertTrue(options.getHttpServerOptions().getEnableCors());
 		assertEquals(41, options.getVertxOptions().getEventPoolSize());
 		assertEquals(42, options.getVertxOptions().getWorkerPoolSize());
+		assertEquals(16384, options.getVertxOptions().getMaxHeaderSize());
 		assertEquals("*", options.getHttpServerOptions().getCorsAllowedOriginPattern());
 		assertEquals("dummy/1234", options.getLockPath());
 		assertEquals("/uploads", options.getUploadOptions().getDirectory());
@@ -83,6 +85,16 @@ public abstract class OptionsLoaderTest<T extends MeshOptions> implements MeshOp
 		assertTrue(options.getContentOptions().isAutoPurge());
 		assertEquals(MappingMode.STRICT, options.getSearchOptions().getMappingMode());
 		assertEquals("data" + File.separator + "binaryImageCache", options.getImageOptions().getImageCacheDirectory());
+	}
+
+	@Test
+	public void testDefaultMaxHeaderSize() {
+		File confFile = new File(CONFIG_FOLDERNAME + "/" + MESH_CONF_FILENAME);
+		if (confFile.exists()) {
+			confFile.delete();
+		}
+		MeshOptions options = OptionsLoader.createOrloadOptions(getMeshOptionsClass());
+		assertEquals(VertxOptions.DEFAULT_MAX_HEADER_SIZE, options.getVertxOptions().getMaxHeaderSize());
 	}
 
 	@Test

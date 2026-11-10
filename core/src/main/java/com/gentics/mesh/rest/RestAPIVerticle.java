@@ -200,6 +200,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 			applyCommonSettings(httpOptions, meshServerOptions);
 			httpOptions.setPort(meshServerOptions.getPort());
 			httpOptions.setSsl(false);
+			httpOptions.setMaxHeaderSize(this.meshOptions.getVertxOptions().getMaxHeaderSize());
 
 			log.info("Starting http server in verticle {" + getClass().getName() + "} on port {" + httpOptions.getPort() + "}");
 			httpServer = rxVertx.createHttpServer(httpOptions);
@@ -213,6 +214,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 			applyCommonSettings(httpsOptions, meshServerOptions);
 			httpsOptions.setPort(meshServerOptions.getSslPort());
 			httpsOptions.setSsl(true);
+			httpsOptions.setMaxHeaderSize(this.meshOptions.getVertxOptions().getMaxHeaderSize());
 			PemKeyCertOptions keyOptions = new PemKeyCertOptions();
 
 			httpsOptions.setClientAuth(meshServerOptions.getClientAuthMode());
