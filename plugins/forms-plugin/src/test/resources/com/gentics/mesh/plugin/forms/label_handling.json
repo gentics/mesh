@@ -1,0 +1,122 @@
+{
+	"name": "Label handling",
+	"type": "GENERIC",
+	"schema": {
+		"key": "label-handling-schema",
+		"version": "1.0.0",
+		"properties": {
+			"input_schema_label": {
+				"type": "string",
+				"name": "input_schema_label",
+				"label": "Schema only label"
+			},
+			"input_ui_label": {
+				"type": "string",
+				"name": "input_ui_label"
+			},
+			"input_both_labels": {
+				"type": "string",
+				"name": "input_both_labels",
+				"label": "Both labels: schema label"
+			},
+			"input_empty_ui_label": {
+				"type": "string",
+				"name": "input_empty_ui_label",
+				"label": "Empty UI label: schema label"
+			},
+			"input_partial_ui_label": {
+				"type": "string",
+				"name": "input_partial_ui_label",
+				"label": "Partial UI label: schema label"
+			},
+			"select_single": {
+				"type": "catalog",
+				"name": "select_single",
+				"select_type": "singleselect",
+				"label": "Schema label of single select",
+				"formGridOptions": {
+					"selectOptions": [
+						{
+							"value": "single_1",
+							"label": { "en": "Single option 1", "de": "Einzelwahl 1" }
+						},
+						{
+							"value": "single_2",
+							"label": { "en": "Single option 2", "de": "Einzelwahl 2" }
+						}
+					]
+				}
+			},
+			"select_multi": {
+				"type": "catalog",
+				"name": "select_multi",
+				"select_type": "multiselect",
+				"label": "Schema label of multi select",
+				"isList": true,
+				"formGridOptions": {
+					"selectOptions": [
+						{
+							"value": "multi_1",
+							"label": { "en": "Multi option 1", "de": "Mehrfachwahl 1" }
+						},
+						{
+							"value": "multi_2",
+							"label": { "en": "Multi option 2", "de": "Mehrfachwahl 2" }
+						},
+						{
+							"value": "multi_3",
+							"label": { "en": "Multi option 3", "de": "Mehrfachwahl 3" }
+						}
+					]
+				}
+			}
+		}
+	},
+	"uiSchema": {
+		"key": "label-handling-ui",
+		"version": "1.0.0",
+		"pages": [
+			{
+				"pagename": { "en": "Page 1", "de": "Seite 1" },
+				"elements": [
+					{
+						"type": "control",
+						"id": "input_ui_label",
+						"label": { "en": "UI label of input", "de": "UI-Label der Eingabe" },
+						"uiSchemaPage": 0
+					},
+					{
+						"type": "control",
+						"id": "input_both_labels",
+						"label": { "en": "Both labels: UI label", "de": "Beide Labels: UI-Label" },
+						"uiSchemaPage": 0
+					},
+					{
+						"type": "control",
+						"id": "input_empty_ui_label",
+						"label": { "en": "", "de": "   " },
+						"uiSchemaPage": 0
+					},
+					{
+						"type": "control",
+						"id": "input_partial_ui_label",
+						"label": { "en": "", "de": "Teilweise leeres UI-Label" },
+						"uiSchemaPage": 0
+					},
+					{
+						"type": "control",
+						"id": "select_single",
+						"label": { "en": "UI label of single select", "de": "UI-Label der Einzelwahl" },
+						"uiSchemaPage": 0
+					},
+					{
+						"type": "control",
+						"id": "select_multi",
+						"label": { "en": "UI label of multi select", "de": "UI-Label der Mehrfachwahl" },
+						"uiSchemaPage": 0
+					}
+				]
+			}
+		]
+	}
+}
