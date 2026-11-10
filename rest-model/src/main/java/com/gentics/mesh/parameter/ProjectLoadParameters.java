@@ -1,6 +1,6 @@
 package com.gentics.mesh.parameter;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Project load query parameters.

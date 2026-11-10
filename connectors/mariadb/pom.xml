@@ -140,7 +140,6 @@
 									<exclude>com.squareup.okhttp3:*</exclude>
 									<exclude>org.bouncycastle:*</exclude>
 									<exclude>software.amazon.awssdk:*</exclude>
-									<exclude>org.raml:*</exclude>
 									<exclude>com.google.*:*</exclude>
 									<exclude>org.springframework.security:*</exclude>
 									<exclude>com.fasterxml.*:*</exclude>

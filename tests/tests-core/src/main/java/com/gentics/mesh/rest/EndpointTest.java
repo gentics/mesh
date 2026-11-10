@@ -16,58 +16,58 @@ import io.vertx.ext.web.Router;
 public class EndpointTest {
 
 	@Test
-	public void testRAMLPath() {
+	public void testPathTemplate() {
 		Router router = mock(Router.class);
 		Route route = mock(Route.class);
 		when(router.route()).thenReturn(route);
 		InternalEndpointRoute e = new InternalEndpointRouteImpl(router, null, mock(Database.class));
 
 		when(route.getPath()).thenReturn("/:bla/:blub/:blar");
-		assertEquals("/{bla}/{blub}/{blar}", e.getRamlPath());
+		assertEquals("/{bla}/{blub}/{blar}", e.getPathTemplate());
 		assertThat(e.getNamedSegments()).containsExactly("bla", "blub", "blar");
 
 		when(route.getPath()).thenReturn("/:bla/blub");
-		assertEquals("/{bla}/blub", e.getRamlPath());
+		assertEquals("/{bla}/blub", e.getPathTemplate());
 		assertThat(e.getNamedSegments()).containsExactly("bla");
 
 		when(route.getPath()).thenReturn("/:bla/blub/");
-		assertEquals("/{bla}/blub/", e.getRamlPath());
+		assertEquals("/{bla}/blub/", e.getPathTemplate());
 		assertThat(e.getNamedSegments()).containsExactly("bla");
 
 		when(route.getPath()).thenReturn("/:bla/blub/test");
-		assertEquals("/{bla}/blub/test", e.getRamlPath());
+		assertEquals("/{bla}/blub/test", e.getPathTemplate());
 		assertThat(e.getNamedSegments()).containsExactly("bla");
 
 		when(route.getPath()).thenReturn("/:bla/blub/test/");
-		assertEquals("/{bla}/blub/test/", e.getRamlPath());
+		assertEquals("/{bla}/blub/test/", e.getPathTemplate());
 		assertThat(e.getNamedSegments()).containsExactly("bla");
 
 		when(route.getPath()).thenReturn("/:bla/blub/test/:moep");
-		assertEquals("/{bla}/blub/test/{moep}", e.getRamlPath());
+		assertEquals("/{bla}/blub/test/{moep}", e.getPathTemplate());
 		assertThat(e.getNamedSegments()).containsExactly("bla", "moep");
 
 		when(route.getPath()).thenReturn("/:bla/:blub/");
-		assertEquals("/{bla}/{blub}/", e.getRamlPath());
+		assertEquals("/{bla}/{blub}/", e.getPathTemplate());
 		assertThat(e.getNamedSegments()).containsExactly("bla", "blub");
 
 		when(route.getPath()).thenReturn("/:bla/:blub");
-		assertEquals("/{bla}/{blub}", e.getRamlPath());
+		assertEquals("/{bla}/{blub}", e.getPathTemplate());
 		assertThat(e.getNamedSegments()).containsExactly("bla", "blub");
 
 		when(route.getPath()).thenReturn("/:bla/");
-		assertEquals("/{bla}/", e.getRamlPath());
+		assertEquals("/{bla}/", e.getPathTemplate());
 		assertThat(e.getNamedSegments()).containsExactly("bla");
 
 		when(route.getPath()).thenReturn("/:bla");
-		assertEquals("/{bla}", e.getRamlPath());
+		assertEquals("/{bla}", e.getPathTemplate());
 		assertThat(e.getNamedSegments()).containsExactly("bla");
 
 		when(route.getPath()).thenReturn("/bla");
-		assertEquals("/bla", e.getRamlPath());
+		assertEquals("/bla", e.getPathTemplate());
 		assertThat(e.getNamedSegments()).isEmpty();
 
 		when(route.getPath()).thenReturn("/");
-		assertEquals("/", e.getRamlPath());
+		assertEquals("/", e.getPathTemplate());
 		assertThat(e.getNamedSegments()).isEmpty();
 	}
 }

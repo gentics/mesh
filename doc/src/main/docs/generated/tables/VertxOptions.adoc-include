@@ -15,7 +15,7 @@
 | eventPoolSize
 | no
 | integer
-| Configure event pool size.  Default: *2*.
+| Configure event pool size.  Default: *24*.
 
 | orderedBlockingHandlers
 | no

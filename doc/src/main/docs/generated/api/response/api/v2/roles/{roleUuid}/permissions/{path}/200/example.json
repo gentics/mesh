@@ -1,8 +1,5 @@
 {
-  "create" : true,
-  "read" : true,
-  "update" : true,
-  "delete" : true,
-  "publish" : false,
-  "readPublished" : false
+  "message" : "I18n message",
+  "internalMessage" : null,
+  "properties" : null
 }

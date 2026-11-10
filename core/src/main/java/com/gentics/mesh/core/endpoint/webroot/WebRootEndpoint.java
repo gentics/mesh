@@ -55,7 +55,7 @@ public class WebRootEndpoint extends AbstractProjectEndpoint {
 	private void addPathReadHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.pathRegex("\\/(.*)");
-		endpoint.setRAMLPath("/{path}");
+		endpoint.setPathTemplate("/{path}");
 		endpoint.method(GET);
 		endpoint.addUriParameter("path", "Path to the node", "/News/2015/Images/flower.jpg");
 		endpoint.exampleResponse(OK, "JSON for a node or the binary data of the node for the given path.", MeshHeaders.WEBROOT_RESPONSE_TYPE, "node",
@@ -71,7 +71,7 @@ public class WebRootEndpoint extends AbstractProjectEndpoint {
 	private void addPathUpdateCreateHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.pathRegex("\\/(.*)");
-		endpoint.setRAMLPath("/{path}");
+		endpoint.setPathTemplate("/{path}");
 		endpoint.addUriParameter("path", "Path to the node", "/News/2015/Images/flower.jpg");
 		endpoint.method(POST);
 		endpoint.consumes(APPLICATION_JSON);

@@ -65,18 +65,28 @@ public class GraphQLEndpoint extends AbstractProjectEndpoint {
 		staticHandler.setIndexPage("index.html");
 
 		// Redirect handler
-		route("/browser").method(GET).handler(rc -> {
-			if (rc.request().path().endsWith("/browser")) {
-				rc.response().setStatusCode(302);
-				rc.response().headers().set("Location", rc.request().path() + "/");
-				rc.response().end();
-			} else {
-				rc.next();
-			}
-		});
+		InternalEndpointRoute browserRedirectEndpoint = createRoute();
+		browserRedirectEndpoint.path("/browser")
+			.description("GraphiQL editor")
+			.method(GET)
+			.exampleResponse(OK, "GraphiQL redirect web page")
+			.handler(rc -> {
+				if (rc.request().path().endsWith("/browser")) {
+					rc.response().setStatusCode(302);
+					rc.response().headers().set("Location", rc.request().path() + "/");
+					rc.response().end();
+				} else {
+					rc.next();
+				}
+			});
 
-		route("/browser/*").method(GET).handler(staticHandler);
-
+		InternalEndpointRoute browserEndpoint = createRoute();
+		browserEndpoint.method(GET)
+			.description("GraphiQL resources")
+			.exampleResponse(OK, "GraphiQL redirect web page")
+			.path("/browser/*")
+			.handler(staticHandler)
+			.setHidden(true);
 	}
 
 	@Override

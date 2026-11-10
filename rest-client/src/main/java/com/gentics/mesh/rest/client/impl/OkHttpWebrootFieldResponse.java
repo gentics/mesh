@@ -10,7 +10,7 @@ import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;

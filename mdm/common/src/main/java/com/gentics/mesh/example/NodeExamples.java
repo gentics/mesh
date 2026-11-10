@@ -34,8 +34,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.raml.model.ParamType;
-import org.raml.model.parameter.FormParameter;
+import com.gentics.vertx.openapi.model.ParamType;
+import com.gentics.vertx.openapi.model.parameters.FormParameter;
 
 import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.core.rest.navigation.NavigationElement;

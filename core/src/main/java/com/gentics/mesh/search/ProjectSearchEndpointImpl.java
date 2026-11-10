@@ -108,7 +108,7 @@ public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implement
 	 * @param indexHandlerKey
 	 *            index handler key
 	 * @param exampleResponse
-	 *            Example list response used for RAML generation
+	 *            Example list response used for OpenAPI generation
 	 * @param filterByLanguage
 	 *            Whether to append the language filter
 	 */

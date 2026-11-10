@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.rest;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Enum which contains the sortorder states.

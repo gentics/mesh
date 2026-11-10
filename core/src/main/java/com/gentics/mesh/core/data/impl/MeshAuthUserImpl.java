@@ -2,7 +2,7 @@ package com.gentics.mesh.core.data.impl;
 
 import java.util.Objects;
 
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.NotImplementedException;
 
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.group.HibGroup;

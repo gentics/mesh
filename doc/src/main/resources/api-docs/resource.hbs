@@ -1,0 +1,151 @@
+  <div class="panel panel-white">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a class="collapsed" data-toggle="collapse" href="#panel_{{ uniqueId }}">
+          <span class="parent">{{ parentUrl }}</span>{{ relativeUri }}
+        </a>
+
+        <span class="methods">
+          {{#each methods}}
+            <a href="#{{ id }}"><!-- modal shown by hashchange event -->
+              <span class="badge badge_{{ method }}">{{ method }}</span>
+            </a>
+          {{/each}}
+        </span>
+      </h4>
+    </div>
+
+    <div id="panel_{{ uniqueId }}" class="panel-collapse collapse in">
+      <div class="panel-body">
+        <div class="list-group">
+          {{#each methods}}
+            <div onclick="window.location.href = '#{{ id }}'" class="list-group-item">
+              <span class="badge badge_{{ method }}">{{ method }}</span>
+              <div class="method_description">
+                {{#if description}}<p>{{ description }}</p>{{/if}}
+              </div>
+              <div class="clearfix"></div>
+            </div>
+          {{/each}}
+        </div>
+      </div>
+    </div>
+
+    {{#each methods}}
+      <div class="modal fade" tabindex="0" id="{{ id }}">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+              <h4 class="modal-title" id="myModalLabel">
+                <span class="badge badge_{{ method }}">{{ method }}</span>
+                <span class="parent">{{ parentUrl }}</span>{{ relativeUri }}
+              </h4>
+            </div>
+
+            <div class="modal-body">
+              {{#if description}}
+                <div class="alert alert-info">
+                  <p>{{ description }}</p>
+                </div>
+              {{/if}}
+
+              <!-- Nav tabs -->
+              <ul class="nav nav-tabs">
+                {{#if hasRequest}}
+                  <li class="active">
+                    <a href="#{{ id }}_request" data-toggle="tab">Request</a>
+                  </li>
+                {{/if}}
+
+                {{#if responses}}
+                  <li>
+                    <a href="#{{ id }}_response" data-toggle="tab">Response</a>
+                  </li>
+                {{/if}}
+              </ul>
+
+              <!-- Tab panes -->
+              <div class="tab-content">
+                {{#if hasRequest}}
+                  <div class="tab-pane active" id="{{ id }}_request">
+                    {{#if uriParameters}}
+                      <h3>URI Parameters</h3>
+                      <ul>
+                        {{#each uriParameters}}
+                          {{> item}}
+                        {{/each}}
+                      </ul>
+                    {{/if}}
+
+                    {{#if headers}}
+                      <h3>Headers</h3>
+                      <ul>
+                        {{#each headers}}
+                          {{> item}}
+                        {{/each}}
+                      </ul>
+                    {{/if}}
+
+                    {{#if queryParameters}}
+                      <h3>Query Parameters</h3>
+                      <ul>
+                        {{#each queryParameters}}
+                          {{> item}}
+                        {{/each}}
+                      </ul>
+                    {{/if}}
+
+                    {{#if body}}
+                      <h3>Body</h3>
+                      {{#each body}}
+                        <p><strong>Type: {{ type }}</strong></p>
+                        {{#if formParameters}}
+                          <strong>Form Parameters</strong>
+                          <ul>
+                            {{#each formParameters}}
+                              {{> item}}
+                            {{/each}}
+                          </ul>
+                        {{/if}}
+
+                        {{> schema}}
+
+                        {{#if example}}
+                          <p><strong>Example</strong>:</p>
+                          <pre><code>{{ example }}</code></pre>
+                        {{/if}}
+                      {{/each}}
+                    {{/if}}
+                  </div>
+                {{/if}}
+
+                {{#if responses}}
+                  <div class="tab-pane" id="{{ id }}_response">
+                    {{#each responses}}
+                      <h2>HTTP status code <a href="http://httpstatus.es/{{ code }}" target="_blank">{{ code }}</a></h2>
+                      {{#if description}}<p>{{ description }}</p>{{/if}}
+
+                      {{#if body}}
+                        <h3>Body</h3>
+                        {{#each body}}
+                          <p><strong>Type: {{ type }}</strong></p>
+
+                          {{> schema}}
+
+                          {{#if example}}
+                            <p><strong>Example</strong>:</p>
+                            <pre><code>{{ example }}</code></pre>
+                          {{/if}}
+                        {{/each}}
+                      {{/if}}
+                    {{/each}}
+                  </div>
+                {{/if}}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    {{/each}}
+  </div>

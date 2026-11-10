@@ -2,7 +2,7 @@ package com.gentics.mesh.parameter;
 
 import java.util.Map;
 
-import org.raml.model.parameter.QueryParameter;
+import com.gentics.vertx.openapi.model.parameters.QueryParameter;
 
 import com.gentics.mesh.doc.GenerateDocumentation;
 import com.gentics.mesh.handler.ActionContext;
@@ -32,12 +32,12 @@ public abstract class AbstractParameters extends SimpleParameterProviderImpl {
 	}
 
 	/**
-	 * Return the RAML parameters for this provider.
+	 * Return the query parameter definitions of this provider.
 	 * 
 	 * @return
 	 */
 	@Override
-	public abstract Map<? extends String, ? extends QueryParameter> getRAMLParameters();
+	public abstract Map<? extends String, ? extends QueryParameter> getParameterDefinitions();
 
 	/**
 	 * Returns the human readable name of the parameters.

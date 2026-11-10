@@ -20,8 +20,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.pf4j.PluginWrapper;
-import org.raml.model.ParamType;
-import org.raml.model.parameter.QueryParameter;
+import com.gentics.vertx.openapi.model.ParamType;
+import com.gentics.vertx.openapi.model.parameters.QueryParameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

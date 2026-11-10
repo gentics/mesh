@@ -6,9 +6,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
-import org.raml.model.ParamType;
-import org.raml.model.parameter.QueryParameter;
+import org.apache.commons.lang3.StringUtils;
+import com.gentics.vertx.openapi.model.ParamType;
+import com.gentics.vertx.openapi.model.parameters.QueryParameter;
 
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.handler.ActionContext;
@@ -79,8 +79,8 @@ public class PagingParametersImpl extends SortingParametersImpl implements Pagin
 	}
 
 	@Override
-	public Map<? extends String, ? extends QueryParameter> getRAMLParameters() {
-		Map<String, QueryParameter> parameters = new HashMap<>(super.getRAMLParameters());
+	public Map<? extends String, ? extends QueryParameter> getParameterDefinitions() {
+		Map<String, QueryParameter> parameters = new HashMap<>(super.getParameterDefinitions());
 		// page
 		QueryParameter pageParameter = new QueryParameter();
 		pageParameter.setDefaultValue(String.valueOf(DEFAULT_PAGE));

@@ -5,8 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.raml.model.ParamType;
-import org.raml.model.parameter.QueryParameter;
+import com.gentics.vertx.openapi.model.ParamType;
+import com.gentics.vertx.openapi.model.parameters.QueryParameter;
 
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.LinkType;
@@ -36,8 +36,8 @@ public class NodeParametersImpl extends LanguageParametersImpl implements NodePa
 	}
 
 	@Override
-	public Map<? extends String, ? extends QueryParameter> getRAMLParameters() {
-		Map<String, QueryParameter> parameters = new HashMap<>(super.getRAMLParameters());
+	public Map<? extends String, ? extends QueryParameter> getParameterDefinitions() {
+		Map<String, QueryParameter> parameters = new HashMap<>(super.getParameterDefinitions());
 
 		// resolveLinks
 		QueryParameter resolveLinksParameter = new QueryParameter();

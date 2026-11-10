@@ -2,7 +2,7 @@ package com.gentics.mesh.plugin.comment.testclient;
 
 import java.io.InputStream;
 
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.NotImplementedException;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
@@ -176,11 +176,6 @@ public abstract class AbstractTestClient implements MeshRestClient {
 
 	@Override
 	public MeshRequest<MeshServerInfoModel> getApiInfo() {
-		throw new NotImplementedException();
-	}
-
-	@Override
-	public MeshRequest<String> getRAML() {
 		throw new NotImplementedException();
 	}
 

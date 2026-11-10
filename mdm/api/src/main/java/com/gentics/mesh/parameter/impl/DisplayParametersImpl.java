@@ -3,8 +3,8 @@ package com.gentics.mesh.parameter.impl;
 import java.util.Collections;
 import java.util.Map;
 
-import org.raml.model.ParamType;
-import org.raml.model.parameter.QueryParameter;
+import com.gentics.vertx.openapi.model.ParamType;
+import com.gentics.vertx.openapi.model.parameters.QueryParameter;
 
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.AbstractParameters;
@@ -31,7 +31,7 @@ public class DisplayParametersImpl extends AbstractParameters implements Display
 	}
 
 	@Override
-	public Map<? extends String, ? extends QueryParameter> getRAMLParameters() {
+	public Map<? extends String, ? extends QueryParameter> getParameterDefinitions() {
 		QueryParameter minifyParameter = new QueryParameter();
 		minifyParameter.setDescription(
 			"Flag, indicating the requirement of a minification of an input or output value, to save the payload resources. May override the globally set value.");

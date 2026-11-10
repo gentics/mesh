@@ -7,8 +7,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.raml.model.ParamType;
-import org.raml.model.parameter.QueryParameter;
+import com.gentics.vertx.openapi.model.ParamType;
+import com.gentics.vertx.openapi.model.parameters.QueryParameter;
 
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.AbstractParameters;
@@ -61,7 +61,7 @@ public class ImageManipulationParametersImpl extends AbstractParameters implemen
 	}
 
 	@Override
-	public Map<? extends String, ? extends QueryParameter> getRAMLParameters() {
+	public Map<? extends String, ? extends QueryParameter> getParameterDefinitions() {
 		Map<String, QueryParameter> parameters = new HashMap<>();
 
 		// w

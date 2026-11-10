@@ -20,5 +20,10 @@
   "delete" : [ {
     "name" : "editor",
     "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+  } ],
+  "exclusive" : true,
+  "ignore" : [ {
+    "name" : "admin",
+    "uuid" : "4536bd97d2a045f4abb820553d28f129"
   } ]
 }

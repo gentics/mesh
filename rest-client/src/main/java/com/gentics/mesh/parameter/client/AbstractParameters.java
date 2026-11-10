@@ -3,7 +3,7 @@ package com.gentics.mesh.parameter.client;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.raml.model.parameter.QueryParameter;
+import com.gentics.vertx.openapi.model.parameters.QueryParameter;
 
 import com.gentics.mesh.parameter.ParameterProvider;
 
@@ -30,7 +30,7 @@ public abstract class AbstractParameters implements ParameterProvider {
 	}
 
 	@Override
-	public Map<? extends String, ? extends QueryParameter> getRAMLParameters() {
+	public Map<? extends String, ? extends QueryParameter> getParameterDefinitions() {
 		return null;
 	}
 

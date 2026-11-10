@@ -12,9 +12,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang.StringUtils;
-import org.raml.model.ParamType;
-import org.raml.model.parameter.QueryParameter;
+import org.apache.commons.lang3.StringUtils;
+import com.gentics.vertx.openapi.model.ParamType;
+import com.gentics.vertx.openapi.model.parameters.QueryParameter;
 
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.handler.ActionContext;
@@ -44,7 +44,7 @@ public class SortingParametersImpl extends AbstractParameters implements Sorting
 	}
 
 	@Override
-	public Map<? extends String, ? extends QueryParameter> getRAMLParameters() {
+	public Map<? extends String, ? extends QueryParameter> getParameterDefinitions() {
 		Map<String, QueryParameter> parameters = new HashMap<>();
 
 		// sort by

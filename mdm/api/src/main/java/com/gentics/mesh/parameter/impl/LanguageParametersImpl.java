@@ -3,8 +3,8 @@ package com.gentics.mesh.parameter.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.raml.model.ParamType;
-import org.raml.model.parameter.QueryParameter;
+import com.gentics.vertx.openapi.model.ParamType;
+import com.gentics.vertx.openapi.model.parameters.QueryParameter;
 
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.AbstractParameters;
@@ -20,7 +20,7 @@ public class LanguageParametersImpl extends AbstractParameters implements com.ge
 	}
 
 	@Override
-	public Map<? extends String, ? extends QueryParameter> getRAMLParameters() {
+	public Map<? extends String, ? extends QueryParameter> getParameterDefinitions() {
 		Map<String, QueryParameter> parameters = new HashMap<>();
 
 		// lang

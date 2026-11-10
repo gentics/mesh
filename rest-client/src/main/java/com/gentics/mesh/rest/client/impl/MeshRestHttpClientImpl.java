@@ -1,6 +1,5 @@
 package com.gentics.mesh.rest.client.impl;
 
-import static com.gentics.mesh.http.HttpConstants.APPLICATION_YAML_UTF8;
 import static com.gentics.mesh.rest.client.impl.HttpMethod.DELETE;
 import static com.gentics.mesh.rest.client.impl.HttpMethod.GET;
 import static com.gentics.mesh.rest.client.impl.HttpMethod.POST;
@@ -1392,13 +1391,6 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	@Override
 	public MeshRequest<MeshServerInfoModel> getApiInfo() {
 		return prepareRequest(GET, "/", MeshServerInfoModel.class);
-	}
-
-	@Override
-	public MeshRequest<String> getRAML() {
-		MeshRequest<String> request = prepareRequest(GET, "/raml", String.class);
-		request.setHeader("Accept", APPLICATION_YAML_UTF8);
-		return request;
 	}
 
 	@Override

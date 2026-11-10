@@ -1,6 +1,6 @@
 package com.gentics.mesh.parameter;
 
-import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang3.BooleanUtils;
 
 import java.util.Arrays;
 import java.util.List;

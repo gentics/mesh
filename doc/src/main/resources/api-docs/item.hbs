@@ -1,0 +1,16 @@
+<li>
+  <strong>{{ name }}</strong>:
+
+  <em>{{#if required}}required {{/if}}({{#if enum}}one of {{ enum }}{{else}}{{ type }}{{/if}}{{#if default}} - default: {{ default }}{{/if}}{{#if minLength}} - minLength: {{ minLength }}{{/if}}{{#if maxLength}} - maxLength: {{ maxLength }}{{/if}}{{#if minimum}} - minimum: {{ minimum }}{{/if}}{{#if maximum}} - maximum: {{ maximum }}{{/if}}{{#if pattern}} - pattern: {{ pattern }}{{/if}})</em>
+
+  {{#if description}}<p>{{ description }}</p>{{/if}}
+
+  {{#if example}}
+    <p><strong>Example</strong>:</p>
+    {{#if stringType}}
+      <pre>{{ example }}</pre>
+    {{else}}
+      <pre><code>{{ example }}</code></pre>
+    {{/if}}
+  {{/if}}
+</li>

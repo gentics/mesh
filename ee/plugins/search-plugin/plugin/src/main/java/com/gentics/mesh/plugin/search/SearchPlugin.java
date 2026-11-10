@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.pf4j.PluginWrapper;
-import org.raml.model.parameter.QueryParameter;
+import com.gentics.vertx.openapi.model.parameters.QueryParameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

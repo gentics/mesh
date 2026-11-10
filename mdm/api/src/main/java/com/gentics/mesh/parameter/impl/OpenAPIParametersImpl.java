@@ -5,8 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.raml.model.ParamType;
-import org.raml.model.parameter.QueryParameter;
+import com.gentics.vertx.openapi.model.ParamType;
+import com.gentics.vertx.openapi.model.parameters.QueryParameter;
 
 import com.gentics.mesh.etc.config.Format;
 import com.gentics.mesh.etc.config.Version;
@@ -34,7 +34,7 @@ public class OpenAPIParametersImpl extends AbstractParameters implements OpenAPI
 	}
 
 	@Override
-	public Map<? extends String, ? extends QueryParameter> getRAMLParameters() {
+	public Map<? extends String, ? extends QueryParameter> getParameterDefinitions() {
 		Map<String, QueryParameter> parameters = new HashMap<>();
 
 		// version

@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.vertx.reactivex.SingleHelper;
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.NotImplementedException;
 
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;

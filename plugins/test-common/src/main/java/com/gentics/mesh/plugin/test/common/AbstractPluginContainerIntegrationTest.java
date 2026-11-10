@@ -10,7 +10,7 @@ import java.nio.file.Paths;
 
 import com.gentics.mesh.MeshVersion;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.AfterClass;
 import org.junit.ClassRule;
 import org.testcontainers.Testcontainers;

@@ -53,19 +53,6 @@ public class RestInfoEndpoint extends AbstractInternalEndpoint {
 	@Override
 	public void registerEndPoints() {
 
-		secure("/raml");
-		InternalEndpointRoute endpoint = createRoute();
-		endpoint.path("/raml");
-		endpoint.method(GET);
-		endpoint.description("Endpoint which provides a RAML document for all registed endpoints.");
-		endpoint.displayName("RAML specification");
-		endpoint.exampleResponse(OK, "Not yet specified");
-		endpoint.produces(APPLICATION_YAML);
-		endpoint.blockingHandler(rc -> {
-			InternalActionContext ac = wrap(rc);
-			adminHandler.handleRAML(ac);
-		}, false);
-
 		MeshOptions options = getOptions();
 		secure("/openapi." + options.getDefaultOpenAPIFormat().name().toLowerCase());
 		InternalEndpointRoute openapiYml = createRoute();

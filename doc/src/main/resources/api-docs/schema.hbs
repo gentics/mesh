@@ -1,0 +1,4 @@
+{{#if properties}}
+  <p><strong>Schema</strong>:</p>
+  <table class="table"><thead><tr><th>Property</th><th>Mandatory</th><th>Type</th><th>Description</th></tr></thead><tbody>{{#each properties}}<tr><td>{{ key }}</td><td>{{ required }}</td><td>{{ type }}</td><td>{{ description }}</td></tr>{{/each}}</tbody></table>
+{{/if}}

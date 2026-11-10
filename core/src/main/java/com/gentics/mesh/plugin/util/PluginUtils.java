@@ -3,7 +3,7 @@ package com.gentics.mesh.plugin.util;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.plugin.MeshPlugin;
 import com.gentics.mesh.plugin.PluginManifest;

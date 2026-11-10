@@ -54,7 +54,7 @@ public class EventbusEndpoint extends AbstractInternalEndpoint {
 	private void addEventBusHandler() {
 		secureAll();
 		InternalEndpointRoute endpoint = createRoute();
-		endpoint.setRAMLPath("/");
+		endpoint.setPathTemplate("/");
 		endpoint.setHidden(true);
 		endpoint.description("This endpoint provides a sockjs compliant websocket which can be used to interface with the vert.x eventbus.");
 

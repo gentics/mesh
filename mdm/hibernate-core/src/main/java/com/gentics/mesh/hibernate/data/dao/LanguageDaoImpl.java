@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.NotImplementedException;
 import org.hibernate.jpa.HibernateHints;
 
 import com.gentics.mesh.context.InternalActionContext;

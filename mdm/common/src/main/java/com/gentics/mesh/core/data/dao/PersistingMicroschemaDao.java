@@ -13,7 +13,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.stream.Stream;
 
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.NotImplementedException;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
