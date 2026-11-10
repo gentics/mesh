@@ -55,6 +55,7 @@ public class ProjectLanguageEndpoint extends AbstractProjectEndpoint {
 
 		InternalEndpointRoute getRoute = createRoute();
 		getRoute.path("/:languageUuid");
+		getRoute.description("Get the language definition by its UUID");
 		getRoute.addUriParameter("languageUuid", "UUID of a language", ExampleUuids.UUID_1);
 		getRoute.exampleResponse(OK, languageExamples.getJapaneseLanguageResponse(), "A language");
 		getRoute.method(GET);
@@ -67,6 +68,7 @@ public class ProjectLanguageEndpoint extends AbstractProjectEndpoint {
 
 		InternalEndpointRoute getByTagRoute = createRoute();
 		getByTagRoute.path("/tag/:languageTag");
+		getByTagRoute.description("Get the language definition by its ISO tag");
 		getByTagRoute.addUriParameter("languageTag", "ISO language tag", "jp");
 		getByTagRoute.exampleResponse(OK, languageExamples.getJapaneseLanguageResponse(), "A language");
 		getByTagRoute.method(GET);
@@ -79,6 +81,7 @@ public class ProjectLanguageEndpoint extends AbstractProjectEndpoint {
 
 		InternalEndpointRoute assignRoute = createRoute();
 		assignRoute.path("/:languageUuid");
+		assignRoute.description("Assign the language to the project by its UUID");
 		assignRoute.addUriParameter("languageUuid", "UUID of a language to assign", ExampleUuids.UUID_1);
 		assignRoute.addQueryParameters(ProjectLoadParametersImpl.class);
 		assignRoute.exampleResponse(OK, projectExamples.getProjectResponseWithLanguages("Multilingual_project"), "A project");
@@ -92,6 +95,7 @@ public class ProjectLanguageEndpoint extends AbstractProjectEndpoint {
 
 		InternalEndpointRoute unassignRoute = createRoute();
 		unassignRoute.path("/:languageUuid");
+		unassignRoute.description("Unassign the language from the project by its UUID");
 		unassignRoute.addUriParameter("languageUuid", "UUID of a language to unassign", ExampleUuids.UUID_1);
 		unassignRoute.addQueryParameters(ProjectLoadParametersImpl.class);
 		unassignRoute.exampleResponse(OK, projectExamples.getProjectResponseWithLanguages("Multilingual_project"), "A project");
@@ -105,7 +109,8 @@ public class ProjectLanguageEndpoint extends AbstractProjectEndpoint {
 
 		InternalEndpointRoute assignByTagRoute = createRoute();
 		assignByTagRoute.path("/tag/:languageTag");
-		assignByTagRoute.addUriParameter("languageTag", "ISO tag of a language to assign", ExampleUuids.UUID_1);
+		assignByTagRoute.description("Assign the language to the project by its ISO tag");
+		assignByTagRoute.addUriParameter("languageTag", "ISO tag of a language to assign", "en");
 		assignByTagRoute.addQueryParameters(ProjectLoadParametersImpl.class);
 		assignByTagRoute.exampleResponse(OK, projectExamples.getProjectResponseWithLanguages("Multilingual_project"), "A project");
 		assignByTagRoute.method(POST);
@@ -118,7 +123,8 @@ public class ProjectLanguageEndpoint extends AbstractProjectEndpoint {
 
 		InternalEndpointRoute unassignByTagRoute = createRoute();
 		unassignByTagRoute.path("/tag/:languageTag");
-		unassignByTagRoute.addUriParameter("languageTag", "ISO tag of a language to unassign", ExampleUuids.UUID_1);
+		unassignByTagRoute.description("Unassign the language from the project by its ISO tag");
+		unassignByTagRoute.addUriParameter("languageTag", "ISO tag of a language to unassign", "en");
 		unassignByTagRoute.addQueryParameters(ProjectLoadParametersImpl.class);
 		unassignByTagRoute.exampleResponse(OK, projectExamples.getProjectResponseWithLanguages("Multilingual_project"), "A project");
 		unassignByTagRoute.method(DELETE);
