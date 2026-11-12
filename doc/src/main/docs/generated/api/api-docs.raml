@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "3.3.2"
+version: "3.3.3"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -173,7 +173,7 @@ mediaType: application/json
                     repeat: false
                     default: ""
                     example: uuid,name
-                version:
+                version: 
                     description: "Specifies the version to be loaded. Can either be published/draft or version number. e.g.: _0.1_, _1.0_, _draft_, _published_."
                     type: string
                     required: false
@@ -449,7 +449,7 @@ mediaType: application/json
                     repeat: false
                     default: ""
                     example: uuid,name
-                resolveLinks:
+                resolveLinks: 
                     description: The resolve links parameter can be set to either _short_, _medium_ or _full_. Stored mesh links will automatically be resolved and replaced by the resolved webroot link. With the parameter set the _path_ property as well as the _languagesPath_ property (for available language variants) will be included in the response. Gentics Mesh links in any HTML-typed field will automatically be resolved and replaced by the resolved WebRoot path. No resolving occurs if no link has been specified.
                     type: string
                     required: false
@@ -698,14 +698,14 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "bde4559acbde4e9d9691c3d2a0c9d505"
+                            "uuid" : "f4d9ab06845845abb10d95617af367c4"
                           } ]
                         }
-            responses:
-                "200":
+            responses: 
+                "200": 
                     description: Updated permissions.
-                    body:
-                        application/json:
+                    body: 
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -740,10 +740,10 @@ mediaType: application/json
                                     "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
                                   } ]
                                 }
-        put:
+        put: 
             description: Revoke permissions on the user from multiple roles.
-            body:
-                application/json:
+            body: 
+                application/json: 
                     schema: |
                         | Property | Mandatory | Type | Description |
                         |----------|-----------|------|-------------|
@@ -905,8 +905,8 @@ mediaType: application/json
                 example: "589319933be24ec79319933be24ec7fe"
         post: 
             description: Return API token which can be used to authenticate the user. Store the key somewhere save since you won't be able to retrieve it later on. Requires UPDATE permission on the user.
-            body:
-                application/json:
+            body: 
+                application/json: 
                     schema: |
                         | Property | Mandatory | Type | Description |
                         |----------|-----------|------|-------------|
@@ -939,40 +939,40 @@ mediaType: application/json
                                     "valid" : true
                                   }
                                 }
-        get:
+        get: 
             description: List tokens of the user. Requires UPDATE permission on the user.
-            queryParameters:
-                sortBy:
+            queryParameters: 
+                sortBy: 
                     description: Field name to sort the result by.
                     type: string
                     required: false
                     repeat: false
                     example: name
-                page:
+                page: 
                     description: Number of page to be loaded.
                     type: number
                     required: false
                     repeat: false
                     default: 1
                     example: "42"
-                perPage:
+                perPage: 
                     description: Number of elements per page.
                     type: number
                     required: false
                     repeat: false
                     example: "42"
-                order:
+                order: 
                     description: Field order (ASC/DESC) to sort the result by.
                     type: string
                     required: false
                     repeat: false
                     enum: [asc, desc]
                     example: ASCENDING
-            responses:
-                "200":
+            responses: 
+                "200": 
                     description: API token list response
-                    body:
-                        application/json:
+                    body: 
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -994,23 +994,23 @@ mediaType: application/json
                                     "totalCount" : 0
                                   }
                                 }
-    /{userUuid}/token/{tokenUuid}:
-        uriParameters:
-            userUuid:
+    /{userUuid}/token/{tokenUuid}: 
+        uriParameters: 
+            userUuid: 
                 displayName: userUuid
                 description: Uuid of the user.
                 type: string
                 required: true
                 repeat: false
                 example: "589319933be24ec79319933be24ec7fe"
-            tokenUuid:
+            tokenUuid: 
                 displayName: tokenUuid
                 description: Uuid of the token.
                 type: string
                 required: true
                 repeat: false
                 example: "30fa3e4ae00c4ad6ba3e4ae00cfad6cc"
-        delete:
+        delete: 
             description: Invalidate the issued API token.
             responses: 
                 "200": 
@@ -1128,7 +1128,7 @@ mediaType: application/json
                     repeat: false
                     default: ""
                     example: uuid,name
-                order:
+                order: 
                     description: Field order (ASC/DESC) to sort the result by.
                     type: string
                     required: false
@@ -1228,7 +1228,7 @@ mediaType: application/json
                     repeat: false
                     default: ""
                     example: uuid,name
-                etag:
+                etag: 
                     description: Parameter which can be used to disable the etag parameter generation and thus increase performance when etags are not needed.
                     type: boolean
                     required: false
@@ -1520,14 +1520,14 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "7eee8254501548ffa0fc791edb35e3ce"
+                            "uuid" : "4156fbd310ad4bfea815a717c753604d"
                           } ]
                         }
-            responses:
-                "200":
+            responses: 
+                "200": 
                     description: Updated permissions.
-                    body:
-                        application/json:
+                    body: 
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -1562,10 +1562,10 @@ mediaType: application/json
                                     "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
                                   } ]
                                 }
-        put:
+        put: 
             description: Revoke permissions on the role from multiple roles.
-            body:
-                application/json:
+            body: 
+                application/json: 
                     schema: |
                         | Property | Mandatory | Type | Description |
                         |----------|-----------|------|-------------|
@@ -1827,7 +1827,7 @@ mediaType: application/json
                     repeat: false
                     default: ""
                     example: uuid,name
-                order:
+                order: 
                     description: Field order (ASC/DESC) to sort the result by.
                     type: string
                     required: false
@@ -1912,7 +1912,7 @@ mediaType: application/json
                     repeat: false
                     default: ""
                     example: uuid,name
-                etag:
+                etag: 
                     description: Parameter which can be used to disable the etag parameter generation and thus increase performance when etags are not needed.
                     type: boolean
                     required: false
@@ -2138,14 +2138,14 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "09f792c16cce42dd8ee52cec3e9bb773"
+                            "uuid" : "1dd3f6cf72cc410cb49ec84e17c1076b"
                           } ]
                         }
-            responses:
-                "200":
+            responses: 
+                "200": 
                     description: Updated permissions.
-                    body:
-                        application/json:
+                    body: 
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -2180,10 +2180,10 @@ mediaType: application/json
                                     "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
                                   } ]
                                 }
-        put:
+        put: 
             description: Revoke permissions on the group from multiple roles.
-            body:
-                application/json:
+            body: 
+                application/json: 
                     schema: |
                         | Property | Mandatory | Type | Description |
                         |----------|-----------|------|-------------|
@@ -3190,14 +3190,14 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "207458d1d35f41f4a6b7bd360ca8efbc"
+                            "uuid" : "018caa48546843b6be5d475708312db9"
                           } ]
                         }
-            responses:
-                "200":
+            responses: 
+                "200": 
                     description: Updated permissions.
-                    body:
-                        application/json:
+                    body: 
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -3232,10 +3232,10 @@ mediaType: application/json
                                     "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
                                   } ]
                                 }
-        put:
+        put: 
             description: Revoke permissions on the project from multiple roles.
-            body:
-                application/json:
+            body: 
+                application/json: 
                     schema: |
                         | Property | Mandatory | Type | Description |
                         |----------|-----------|------|-------------|
@@ -3425,7 +3425,7 @@ mediaType: application/json
                     repeat: false
                     default: ""
                     example: uuid,name
-                order:
+                order: 
                     description: Field order (ASC/DESC) to sort the result by.
                     type: string
                     required: false
@@ -3731,7 +3731,7 @@ mediaType: application/json
                     repeat: false
                     default: ""
                     example: uuid,name
-                version:
+                version: 
                     description: "Specifies the version to be loaded. Can either be published/draft or version number. e.g.: _0.1_, _1.0_, _draft_, _published_."
                     type: string
                     required: false
@@ -4300,14 +4300,14 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "f22d0d3322f943c0aa31e1dc9561ca5e"
+                            "uuid" : "2cd42e5e922949e7a87e5b519763a87e"
                           } ]
                         }
-            responses:
-                "200":
+            responses: 
+                "200": 
                     description: Updated permissions.
-                    body:
-                        application/json:
+                    body: 
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -4342,10 +4342,10 @@ mediaType: application/json
                                     "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
                                   } ]
                                 }
-        put:
+        put: 
             description: Revoke permissions on the schema from multiple roles.
-            body:
-                application/json:
+            body: 
+                application/json: 
                     schema: |
                         | Property | Mandatory | Type | Description |
                         |----------|-----------|------|-------------|
@@ -5049,14 +5049,14 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "c45be96540bc49558a7854eafa063e81"
+                            "uuid" : "d619a0f29dbb40e3b46773f9444d37f7"
                           } ]
                         }
-            responses:
-                "200":
+            responses: 
+                "200": 
                     description: Updated permissions.
-                    body:
-                        application/json:
+                    body: 
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -5091,10 +5091,10 @@ mediaType: application/json
                                     "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
                                   } ]
                                 }
-        put:
+        put: 
             description: Revoke permissions on the microschema from multiple roles.
-            body:
-                application/json:
+            body: 
+                application/json: 
                     schema: |
                         | Property | Mandatory | Type | Description |
                         |----------|-----------|------|-------------|
@@ -5313,8 +5313,8 @@ mediaType: application/json
                                 }
         post: 
             description: Sets the currently active local configuration of this instance.
-            body:
-                application/json:
+            body: 
+                application/json: 
                     schema: |
                         | Property | Mandatory | Type | Description |
                         |----------|-----------|------|-------------|
@@ -5323,7 +5323,7 @@ mediaType: application/json
                         {
                           "readOnly" : false
                         }
-            responses:
+            responses: 
                 "200": 
                     description: The currently active local configuration
                     body: 
@@ -5458,10 +5458,10 @@ mediaType: application/json
                     required: false
                     repeat: false
                     example: "-log,consistencyCheck"
-            responses:
-                "200":
+            responses: 
+                "200": 
                     description: ZIP file
-    /jobs:
+    /jobs: 
         get: 
             description: List all currently queued jobs.
             queryParameters: 
@@ -5615,10 +5615,10 @@ mediaType: application/json
                                 }
         delete: 
             description: Deletes the job. Note that it is only possible to delete failed jobs
-            responses:
-                "204":
+            responses: 
+                "204": 
                     description: Job has been deleted.
-    /jobs/{jobUuid}/error:
+    /jobs/{jobUuid}/error: 
         uriParameters: 
             jobUuid: 
                 displayName: jobUuid
@@ -5629,10 +5629,10 @@ mediaType: application/json
                 example: afacd93df77a44a2acd93df77a54a27b
         delete: 
             description: Deletes error state from the job. This will make it possible to execute the job once again.
-            responses:
-                "204":
+            responses: 
+                "204": 
                     description: Job has been reset.
-    /jobs/{jobUuid}/process:
+    /jobs/{jobUuid}/process: 
         uriParameters: 
             jobUuid: 
                 displayName: jobUuid
@@ -5643,11 +5643,11 @@ mediaType: application/json
                 example: afacd93df77a44a2acd93df77a54a27b
         post: 
             description: Process the job. Failed jobs will be automatically reset and put in queued state.
-            responses:
-                "200":
+            responses: 
+                "200": 
                     description: Job information.
-                    body:
-                        application/json:
+                    body: 
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -5683,7 +5683,7 @@ mediaType: application/json
                                   "completionCount" : 0,
                                   "warnings" : [ ]
                                 }
-    /plugins:
+    /plugins: 
         post: 
             description: Deploys the plugin using the provided deployment information.
             body: 
@@ -5724,34 +5724,34 @@ mediaType: application/json
                                 }
         get: 
             description: Loads deployment information for all deployed plugins.
-            queryParameters:
-                sortBy:
+            queryParameters: 
+                sortBy: 
                     description: Field name to sort the result by.
                     type: string
                     required: false
                     repeat: false
                     example: name
-                page:
+                page: 
                     description: Number of page to be loaded.
                     type: number
                     required: false
                     repeat: false
                     default: 1
                     example: "42"
-                perPage:
+                perPage: 
                     description: Number of elements per page.
                     type: number
                     required: false
                     repeat: false
                     example: "42"
-                order:
+                order: 
                     description: Field order (ASC/DESC) to sort the result by.
                     type: string
                     required: false
                     repeat: false
                     enum: [asc, desc]
                     example: ASCENDING
-            responses:
+            responses: 
                 "200": 
                     description: Plugin list response.
                     body: 
@@ -5934,22 +5934,22 @@ mediaType: application/json
     /live: 
         get: 
             description: Returns an empty response with status code 200 if Gentics Mesh is alive.
-            responses:
-                "200":
+            responses: 
+                "200": 
                     description: Mesh is alive.
-    /ready:
+    /ready: 
         get: 
             description: Returns an empty response with status code 200 if Gentics Mesh is ready. Responds with 503 otherwise.
-            responses:
-                "200":
+            responses: 
+                "200": 
                     description: Mesh is ready.
-    /writable:
+    /writable: 
         get: 
             description: Returns an empty response with status code 200 if Gentics Mesh is writable. Responds with 503 otherwise.
-            responses:
-                "200":
+            responses: 
+                "200": 
                     description: Mesh is writable.
-/search:
+/search: 
     displayName: /search
     description: Provides search endpoints which can be used to invoke global searches
     /clear: 
@@ -6246,7 +6246,7 @@ mediaType: application/json
                     repeat: false
                     default: ""
                     example: uuid,name
-                branch:
+                branch: 
                     description: Specifies the branch to be used for loading data. The latest project branch will be used if this parameter is omitted.
                     type: string
                     required: false
@@ -7496,7 +7496,7 @@ mediaType: application/json
                 "200": 
                     description: Raw search response.
                     body: 
-                        application/json:
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -7525,7 +7525,7 @@ mediaType: application/json
                 "200": 
                     description: Raw search response.
                     body: 
-                        application/json:
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -7554,7 +7554,7 @@ mediaType: application/json
                 "200": 
                     description: Raw search response.
                     body: 
-                        application/json:
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -7583,7 +7583,7 @@ mediaType: application/json
                 "200": 
                     description: Raw search response.
                     body: 
-                        application/json:
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -7612,7 +7612,7 @@ mediaType: application/json
                 "200": 
                     description: Raw search response.
                     body: 
-                        application/json:
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -7641,7 +7641,7 @@ mediaType: application/json
                 "200": 
                     description: Raw search response.
                     body: 
-                        application/json:
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -7670,7 +7670,7 @@ mediaType: application/json
                 "200": 
                     description: Raw search response.
                     body: 
-                        application/json:
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -7699,7 +7699,7 @@ mediaType: application/json
                 "200": 
                     description: Raw search response.
                     body: 
-                        application/json:
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -7728,7 +7728,7 @@ mediaType: application/json
                 "200": 
                     description: Raw search response.
                     body: 
-                        application/json:
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -7759,11 +7759,11 @@ mediaType: application/json
             responses: 
                 "200": 
                     description: Some text before /api/v2/dummy/webroot/flower.jpg and after
-    /purgeMicroschemaVersions:
-        post:
+    /purgeMicroschemaVersions: 
+        post: 
             description: Purge the unused microschema versions.
-            body:
-                application/json:
+            body: 
+                application/json: 
                     schema: |
                         | Property | Mandatory | Type | Description |
                         |----------|-----------|------|-------------|
@@ -7771,17 +7771,17 @@ mediaType: application/json
                         | excluded | no | boolean | Should the listed names/UUIDs be excluded, not included |
                     example: |
                         {
-                          "data" : [ "mesh_content", "7eabba9ad25f494ba940982232206f59", "1313ead49b27418d9009d6016b22e3fd" ],
+                          "data" : [ "mesh_content", "735457a2b504410ebc1db1370490e42b", "bdd8916710f84f67b2fca339a2e56c76" ],
                           "excluded" : false
                         }
-            responses:
-                "200":
+            responses: 
+                "200": 
                     description: Microschema version purge job initialized.
-    /purgeSchemaVersions:
-        post:
+    /purgeSchemaVersions: 
+        post: 
             description: Purge the unused schema versions.
-            body:
-                application/json:
+            body: 
+                application/json: 
                     schema: |
                         | Property | Mandatory | Type | Description |
                         |----------|-----------|------|-------------|
@@ -7789,13 +7789,13 @@ mediaType: application/json
                         | excluded | no | boolean | Should the listed names/UUIDs be excluded, not included |
                     example: |
                         {
-                          "data" : [ "mesh_content", "d341b21cf9ee4175b9bb2955ee084f09", "26c64cb610794c129a9660c229e47d75" ],
+                          "data" : [ "mesh_content", "95aae21940fd4e53afb283fb2c9cb509", "32424b2d59b745ab99d56344430b723b" ],
                           "excluded" : false
                         }
-            responses:
-                "200":
+            responses: 
+                "200": 
                     description: Schema version purge job initialized.
-    /validateMicroschema:
+    /validateMicroschema: 
         post: 
             description: Validate the posted microschema and report errors.
             body: 
@@ -8334,7 +8334,7 @@ mediaType: application/json
                 "200": 
                     description: Generated login token.
                     body: 
-                        application/json:
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -8467,7 +8467,7 @@ mediaType: application/json
                                 | vertxVersion | no | string | Used Vert.x version. |
                             example: |
                                 {
-                                  "meshVersion" : "3.3.2",
+                                  "meshVersion" : "3.3.3",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "mariadb",
                                   "databaseVersion" : "10.7",
@@ -8475,13 +8475,13 @@ mediaType: application/json
                                   "searchVersion" : "2.4.3",
                                   "vertxVersion" : "5.1.5"
                                 }
-    /openapi.yaml:
-        get:
+    /openapi.yaml: 
+        get: 
             description: Endpoint which provides an OpenAPI v3.0 YAML document for all registed endpoints.
-            responses:
-                "200":
+            responses: 
+                "200": 
                     description: Not yet specified
-    /raml:
+    /raml: 
         get: 
             description: Endpoint which provides a RAML document for all registed endpoints.
             responses: 
@@ -8549,44 +8549,44 @@ mediaType: application/json
                                     "readPublished" : false
                                   }
                                 }
-/languages:
+/languages: 
     displayName: /languages
     description: Provides endpoints which allow the manipulation of languages.
-    /:
-        get:
+    /: 
+        get: 
             description: Get all system installed languages
-            queryParameters:
-                sortBy:
+            queryParameters: 
+                sortBy: 
                     description: Field name to sort the result by.
                     type: string
                     required: false
                     repeat: false
                     example: name
-                page:
+                page: 
                     description: Number of page to be loaded.
                     type: number
                     required: false
                     repeat: false
                     default: 1
                     example: "42"
-                perPage:
+                perPage: 
                     description: Number of elements per page.
                     type: number
                     required: false
                     repeat: false
                     example: "42"
-                order:
+                order: 
                     description: Field order (ASC/DESC) to sort the result by.
                     type: string
                     required: false
                     repeat: false
                     enum: [asc, desc]
                     example: ASCENDING
-            responses:
-                "200":
+            responses: 
+                "200": 
                     description: List of languages
-                    body:
-                        application/json:
+                    body: 
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -8611,22 +8611,22 @@ mediaType: application/json
                                     "totalCount" : 0
                                   }
                                 }
-    /tag/{languageTag}:
-        uriParameters:
-            languageTag:
+    /tag/{languageTag}: 
+        uriParameters: 
+            languageTag: 
                 displayName: languageTag
                 description: ISO language tag
                 type: string
                 required: true
                 repeat: false
                 example: jp
-        get:
+        get: 
             description: Get a system installed language by its ISO tag
-            responses:
-                "200":
+            responses: 
+                "200": 
                     description: A language
-                    body:
-                        application/json:
+                    body: 
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -8638,22 +8638,22 @@ mediaType: application/json
                                   "nativeName" : "日本語",
                                   "languageTag" : "jp"
                                 }
-    /{languageUuid}:
-        uriParameters:
-            languageUuid:
+    /{languageUuid}: 
+        uriParameters: 
+            languageUuid: 
                 displayName: languageUuid
                 description: UUID of a language
                 type: string
                 required: true
                 repeat: false
                 example: c5ac82fa1a9c43b6ac82fa1a9ca3b61c
-        get:
+        get: 
             description: Get a system installed language by its UUID
-            responses:
-                "200":
+            responses: 
+                "200": 
                     description: A language
-                    body:
-                        application/json:
+                    body: 
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -8665,7 +8665,7 @@ mediaType: application/json
                                   "nativeName" : "日本語",
                                   "languageTag" : "jp"
                                 }
-/{project}/nodes:
+/{project}/nodes: 
     displayName: /{project}/nodes
     description: Provides endpoints which allow the manipulation of nodes.
     /: 
@@ -8942,7 +8942,7 @@ mediaType: application/json
                     repeat: false
                     default: ""
                     example: uuid,name
-                version:
+                version: 
                     description: "Specifies the version to be loaded. Can either be published/draft or version number. e.g.: _0.1_, _1.0_, _draft_, _published_."
                     type: string
                     required: false
@@ -9227,7 +9227,7 @@ mediaType: application/json
                     repeat: false
                     default: ""
                     example: uuid,name
-                version:
+                version: 
                     description: "Specifies the version to be loaded. Can either be published/draft or version number. e.g.: _0.1_, _1.0_, _draft_, _published_."
                     type: string
                     required: false
@@ -9241,7 +9241,7 @@ mediaType: application/json
                     repeat: false
                     enum: ["off", short, medium, full]
                     example: medium
-            responses:
+            responses: 
                 "200": 
                     description: Loaded node.
                     body: 
@@ -9426,10 +9426,10 @@ mediaType: application/json
                                     "readPublished" : false
                                   }
                                 }
-                "404":
+                "404": 
                     description: The node could not be found.
-                    body:
-                        application/json:
+                    body: 
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -9442,7 +9442,7 @@ mediaType: application/json
                                   "internalMessage" : null,
                                   "properties" : null
                                 }
-        post:
+        post: 
             description: Update or create the node with the given uuid. Mesh will automatically check for version conflicts if a version was specified in the request and return a 409 error if a conflict has been detected. Additional conflict checks for WebRoot path conflicts will also be performed. The node is created if no node with the specified uuid could be found.
             body: 
                 application/json: 
@@ -9467,7 +9467,7 @@ mediaType: application/json
                           "publish" : false,
                           "assignLanguage" : true
                         }
-            responses:
+            responses: 
                 "200": 
                     description: New or updated node.
                     body: 
@@ -9600,9 +9600,9 @@ mediaType: application/json
                     default: false
                     example: "true"
             responses: 
-                "204":
+                "204": 
                     description: Deletion was successful.
-                "404":
+                "404": 
                     description: The node could not be found.
                     body: 
                         application/json: 
@@ -9636,14 +9636,14 @@ mediaType: application/json
                 example: adaf48da8c124049af48da8c12a0493e
         post: 
             description: Update the binaryfield with the given name.
-            queryParameters:
-                publish:
+            queryParameters: 
+                publish: 
                     description: Should the saved data be published at once
                     type: boolean
                     required: false
                     repeat: false
                     default: false
-            body:
+            body: 
                 multipart/form-data: 
                     formParameters: 
                         binary: 
@@ -9663,7 +9663,7 @@ mediaType: application/json
                             required: true
                             repeat: false
                             example: "1.0"
-            responses:
+            responses: 
                 "200": 
                     description: The response contains the updated node.
                     body: 
@@ -9848,10 +9848,10 @@ mediaType: application/json
                                     "readPublished" : false
                                   }
                                 }
-                "404":
+                "404": 
                     description: The node or the field could not be found.
-                    body:
-                        application/json:
+                    body: 
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -9864,7 +9864,7 @@ mediaType: application/json
                                   "internalMessage" : null,
                                   "properties" : null
                                 }
-        get:
+        get: 
             description: Download the binary field with the given name. You can use image query parameters for crop and resize if the binary data represents an image.
             queryParameters: 
                 fpz: 
@@ -9947,28 +9947,28 @@ mediaType: application/json
                 example: adaf48da8c124049af48da8c12a0493e
         post: 
             description: Set the check status for the binaryfield with the given name.
-            queryParameters:
-                lang:
+            queryParameters: 
+                lang: 
                     description: Node language
                     type: string
                     required: true
                     repeat: false
                     example: en
-                version:
+                version: 
                     description: "Specifies the version to be loaded. Can either be published/draft or version number. e.g.: _0.1_, _1.0_, _draft_, _published_."
                     type: string
                     required: false
                     repeat: false
                     default: draft
                     example: "1.1"
-                secret:
+                secret: 
                     description: "."
                     type: string
                     required: true
                     repeat: false
                     example: lhdgfsgfvaoyegfy
-            body:
-                application/json:
+            body: 
+                application/json: 
                     schema: |
                         | Property | Mandatory | Type | Description |
                         |----------|-----------|------|-------------|
@@ -9980,9 +9980,9 @@ mediaType: application/json
                           "reason" : "Malware detected"
                         }
             responses: 
-                "204":
+                "204": 
                     description: ""
-                "404":
+                "404": 
                     description: The node or the field could not be found.
                     body: 
                         application/json: 
@@ -10091,9 +10091,9 @@ mediaType: application/json
                     repeat: false
                     example: "true"
             responses: 
-                "204":
+                "204": 
                     description: Image variants have been deleted.
-                "404":
+                "404": 
                     description: The node could not be found.
                     body: 
                         application/json: 
@@ -10157,7 +10157,7 @@ mediaType: application/json
                           } ],
                           "deleteOther" : false
                         }
-            responses:
+            responses: 
                 "200": 
                     description: An updated list of variants is returned
                     body: 
@@ -10189,10 +10189,10 @@ mediaType: application/json
                                     "auto" : false
                                   } ]
                                 }
-                "404":
+                "404": 
                     description: The node or the field could not be found.
-                    body:
-                        application/json:
+                    body: 
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -10205,7 +10205,7 @@ mediaType: application/json
                                   "internalMessage" : null,
                                   "properties" : null
                                 }
-    /{nodeUuid}/binaryTransform/{fieldName}:
+    /{nodeUuid}/binaryTransform/{fieldName}: 
         uriParameters: 
             fieldName: 
                 displayName: fieldName
@@ -10253,7 +10253,7 @@ mediaType: application/json
                             "y" : 0.6
                           }
                         }
-            responses:
+            responses: 
                 "200": 
                     description: Transformation was executed and updated node was returned.
                     body: 
@@ -10438,10 +10438,10 @@ mediaType: application/json
                                     "readPublished" : false
                                   }
                                 }
-                "404":
+                "404": 
                     description: The node or the field could not be found.
-                    body:
-                        application/json:
+                    body: 
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -10454,7 +10454,7 @@ mediaType: application/json
                                   "internalMessage" : null,
                                   "properties" : null
                                 }
-    /{nodeUuid}/children:
+    /{nodeUuid}/children: 
         uriParameters: 
             nodeUuid: 
                 displayName: nodeUuid
@@ -10511,7 +10511,7 @@ mediaType: application/json
                     repeat: false
                     default: ""
                     example: uuid,name
-                version:
+                version: 
                     description: "Specifies the version to be loaded. Can either be published/draft or version number. e.g.: _0.1_, _1.0_, _draft_, _published_."
                     type: string
                     required: false
@@ -10525,7 +10525,7 @@ mediaType: application/json
                     repeat: false
                     enum: [asc, desc]
                     example: ASCENDING
-            responses:
+            responses: 
                 "200": 
                     description: List of loaded node children.
                     body: 
@@ -10756,10 +10756,10 @@ mediaType: application/json
                                     "totalCount" : 20
                                   }
                                 }
-                "404":
+                "404": 
                     description: The node could not be found.
-                    body:
-                        application/json:
+                    body: 
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -10772,7 +10772,7 @@ mediaType: application/json
                                   "internalMessage" : null,
                                   "properties" : null
                                 }
-    /{nodeUuid}/languages/{language}:
+    /{nodeUuid}/languages/{language}: 
         uriParameters: 
             language: 
                 displayName: language
@@ -10790,24 +10790,24 @@ mediaType: application/json
                 example: adaf48da8c124049af48da8c12a0493e
         delete: 
             description: Delete the language specific content of the node.
-            queryParameters:
-                branch:
+            queryParameters: 
+                branch: 
                     description: Specifies the branch to be used for loading data. The latest project branch will be used if this parameter is omitted.
                     type: string
                     required: false
                     repeat: false
                     example: "24cf92691c7641158f92691c76c115ef"
-                recursive:
+                recursive: 
                     description: Specifiy whether deletion should also be applied recursively
                     type: boolean
                     required: false
                     repeat: false
                     default: false
                     example: "true"
-            responses:
-                "204":
+            responses: 
+                "204": 
                     description: Language variation of the node has been deleted.
-                "404":
+                "404": 
                     description: The node could not be found.
                     body: 
                         application/json: 
@@ -10841,7 +10841,7 @@ mediaType: application/json
                 example: adaf48da8c124049af48da8c12a0493e
         get: 
             description: Return the publish status for the given language of the node.
-            responses:
+            responses: 
                 "200": 
                     description: Publish status of the specific language.
                     body: 
@@ -10880,10 +10880,10 @@ mediaType: application/json
                                   "internalMessage" : null,
                                   "properties" : null
                                 }
-        post:
+        post: 
             description: Publish the language of the node. This will automatically assign a new major version to the node and update the draft version to the published version.
-            responses:
-                "200":
+            responses: 
+                "200": 
                     description: Updated publish status.
                     body: 
                         application/json: 
@@ -10905,10 +10905,10 @@ mediaType: application/json
                                   },
                                   "publishDate" : "2018-11-20T20:12:01.084Z"
                                 }
-                "404":
+                "404": 
                     description: The node or the language could not be found.
-                    body:
-                        application/json:
+                    body: 
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -10921,12 +10921,12 @@ mediaType: application/json
                                   "internalMessage" : null,
                                   "properties" : null
                                 }
-        delete:
+        delete: 
             description: Take the language of the node offline.
             responses: 
-                "204":
+                "204": 
                     description: Node language was taken offline.
-                "404":
+                "404": 
                     description: The node or the language could not be found.
                     body: 
                         application/json: 
@@ -10969,9 +10969,9 @@ mediaType: application/json
                     default: draft
                     example: "1.1"
             responses: 
-                "204":
+                "204": 
                     description: Node was moved.
-                "404":
+                "404": 
                     description: The source or target node could not be found.
                     body: 
                         application/json: 
@@ -11013,7 +11013,7 @@ mediaType: application/json
                     repeat: false
                     example: "true"
             responses: 
-                "200":
+                "200": 
                     description: Loaded navigation.
                     body: 
                         application/json: 
@@ -11027,7 +11027,7 @@ mediaType: application/json
                                 {
                                   "uuid" : "c5ac82fa1a9c43b6ac82fa1a9ca3b61c"
                                 }
-                "404":
+                "404": 
                     description: The node could not be found.
                     body: 
                         application/json: 
@@ -11054,7 +11054,7 @@ mediaType: application/json
                 example: adaf48da8c124049af48da8c12a0493e
         get: 
             description: Return the published status of the node.
-            responses:
+            responses: 
                 "200": 
                     description: Publish status of the node.
                     body: 
@@ -11086,10 +11086,10 @@ mediaType: application/json
                                     }
                                   }
                                 }
-                "404":
+                "404": 
                     description: The node could not be found.
-                    body:
-                        application/json:
+                    body: 
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -11102,7 +11102,7 @@ mediaType: application/json
                                   "internalMessage" : null,
                                   "properties" : null
                                 }
-        post:
+        post: 
             description: Publish all language specific contents of the node with the given uuid.
             queryParameters: 
                 recursive: 
@@ -11112,7 +11112,7 @@ mediaType: application/json
                     repeat: false
                     default: false
                     example: "true"
-            responses:
+            responses: 
                 "200": 
                     description: Publish status of the node.
                     body: 
@@ -11144,10 +11144,10 @@ mediaType: application/json
                                     }
                                   }
                                 }
-                "404":
+                "404": 
                     description: The node could not be found.
-                    body:
-                        application/json:
+                    body: 
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -11160,7 +11160,7 @@ mediaType: application/json
                                   "internalMessage" : null,
                                   "properties" : null
                                 }
-        delete:
+        delete: 
             description: Unpublish the given node.
             queryParameters: 
                 recursive: 
@@ -11171,9 +11171,9 @@ mediaType: application/json
                     default: false
                     example: "true"
             responses: 
-                "204":
+                "204": 
                     description: Node was unpublished.
-                "404":
+                "404": 
                     description: The node could not be found.
                     body: 
                         application/json: 
@@ -11303,7 +11303,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "cf8baf2e25574e52983acf5ed55f0b41"
+                            "uuid" : "bf4a00f50f5944369a1b74247b7a03f5"
                           } ]
                         }
             responses: 
@@ -11455,10 +11455,10 @@ mediaType: application/json
                                     "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
                                   } ]
                                 }
-        put:
+        put: 
             description: Revoke permissions on the node from multiple roles.
-            body:
-                application/json:
+            body: 
+                application/json: 
                     schema: |
                         | Property | Mandatory | Type | Description |
                         |----------|-----------|------|-------------|
@@ -11504,11 +11504,11 @@ mediaType: application/json
                             "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
                           } ]
                         }
-            responses:
-                "200":
+            responses: 
+                "200": 
                     description: Updated permissions.
-                    body:
-                        application/json:
+                    body: 
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -11554,7 +11554,7 @@ mediaType: application/json
                                     "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
                                   } ]
                                 }
-    /{nodeUuid}/s3binary/{fieldName}:
+    /{nodeUuid}/s3binary/{fieldName}: 
         uriParameters: 
             fieldName: 
                 displayName: fieldName
@@ -11581,7 +11581,7 @@ mediaType: application/json
                     default: draft
                     example: "1.1"
             body: 
-                application/json:
+                application/json: 
                     schema: |
                         | Property | Mandatory | Type | Description |
                         |----------|-----------|------|-------------|
@@ -11594,7 +11594,7 @@ mediaType: application/json
                           "language" : "en",
                           "filename" : "blumen/blume.jpg"
                         }
-            responses:
+            responses: 
                 "200": 
                     description: The response contains the updated node.
                     body: 
@@ -11779,10 +11779,10 @@ mediaType: application/json
                                     "readPublished" : false
                                   }
                                 }
-                "404":
+                "404": 
                     description: The node or the field could not be found.
-                    body:
-                        application/json:
+                    body: 
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -11795,7 +11795,7 @@ mediaType: application/json
                                   "internalMessage" : null,
                                   "properties" : null
                                 }
-    /{nodeUuid}/s3binary/{fieldName}/checkCallback:
+    /{nodeUuid}/s3binary/{fieldName}/checkCallback: 
         uriParameters: 
             fieldName: 
                 displayName: fieldName
@@ -11822,7 +11822,7 @@ mediaType: application/json
                     default: draft
                     example: "1.1"
             body: 
-                application/json:
+                application/json: 
                     schema: |
                         | Property | Mandatory | Type | Description |
                         |----------|-----------|------|-------------|
@@ -11834,9 +11834,9 @@ mediaType: application/json
                           "reason" : "Malware detected"
                         }
             responses: 
-                "204":
+                "204": 
                     description: ""
-                "404":
+                "404": 
                     description: The node or the field could not be found.
                     body: 
                         application/json: 
@@ -11879,7 +11879,7 @@ mediaType: application/json
                     default: draft
                     example: "1.1"
             body: 
-                application/json:
+                application/json: 
                     schema: |
                         | Property | Mandatory | Type | Description |
                         |----------|-----------|------|-------------|
@@ -11892,7 +11892,7 @@ mediaType: application/json
                           "language" : "en",
                           "filename" : "blumen/blume.jpg"
                         }
-            responses:
+            responses: 
                 "200": 
                     description: The response contains the updated node.
                     body: 
@@ -12077,10 +12077,10 @@ mediaType: application/json
                                     "readPublished" : false
                                   }
                                 }
-                "404":
+                "404": 
                     description: The node or the field could not be found.
-                    body:
-                        application/json:
+                    body: 
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -12093,7 +12093,7 @@ mediaType: application/json
                                   "internalMessage" : null,
                                   "properties" : null
                                 }
-    /{nodeUuid}/tags:
+    /{nodeUuid}/tags: 
         uriParameters: 
             nodeUuid: 
                 displayName: nodeUuid
@@ -12112,7 +12112,7 @@ mediaType: application/json
                     repeat: false
                     default: ""
                     example: uuid,name
-                version:
+                version: 
                     description: "Specifies the version to be loaded. Can either be published/draft or version number. e.g.: _0.1_, _1.0_, _draft_, _published_."
                     type: string
                     required: false
@@ -12125,7 +12125,7 @@ mediaType: application/json
                     required: false
                     repeat: false
                     default: true
-            responses:
+            responses: 
                 "200": 
                     description: List of tags that were used to tag the node.
                     body: 
@@ -12199,10 +12199,10 @@ mediaType: application/json
                                     "totalCount" : 20
                                   }
                                 }
-                "404":
+                "404": 
                     description: The node could not be found.
-                    body:
-                        application/json:
+                    body: 
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -12215,7 +12215,7 @@ mediaType: application/json
                                   "internalMessage" : null,
                                   "properties" : null
                                 }
-        post:
+        post: 
             description: Update the list of assigned tags
             body: 
                 application/json: 
@@ -12235,7 +12235,7 @@ mediaType: application/json
                             "tagFamily" : "colors"
                           } ]
                         }
-            responses:
+            responses: 
                 "200": 
                     description: Updated tag list.
                     body: 
@@ -12309,10 +12309,10 @@ mediaType: application/json
                                     "totalCount" : 20
                                   }
                                 }
-                "404":
+                "404": 
                     description: The node could not be found.
-                    body:
-                        application/json:
+                    body: 
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -12325,7 +12325,7 @@ mediaType: application/json
                                   "internalMessage" : null,
                                   "properties" : null
                                 }
-    /{nodeUuid}/tags/{tagUuid}:
+    /{nodeUuid}/tags/{tagUuid}: 
         uriParameters: 
             tagUuid: 
                 displayName: tagUuid
@@ -12351,7 +12351,7 @@ mediaType: application/json
                     repeat: false
                     default: draft
                     example: "1.1"
-            responses:
+            responses: 
                 "200": 
                     description: Updated node.
                     body: 
@@ -12451,10 +12451,10 @@ mediaType: application/json
                                     "readPublished" : false
                                   }
                                 }
-                "404":
+                "404": 
                     description: The node or tag could not be found.
-                    body:
-                        application/json:
+                    body: 
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -12467,12 +12467,12 @@ mediaType: application/json
                                   "internalMessage" : null,
                                   "properties" : null
                                 }
-        delete:
+        delete: 
             description: Remove the given tag from the node.
             responses: 
-                "204":
+                "204": 
                     description: Removal was successful.
-                "404":
+                "404": 
                     description: The node or tag could not be found.
                     body: 
                         application/json: 
@@ -12725,14 +12725,14 @@ mediaType: application/json
                 example: "1898428398164d9a9842839816ed9a3d"
         get: 
             description: Read the tag family with the given uuid.
-            queryParameters:
-                etag:
+            queryParameters: 
+                etag: 
                     description: Parameter which can be used to disable the etag parameter generation and thus increase performance when etags are not needed.
                     type: boolean
                     required: false
                     repeat: false
                     default: true
-            responses:
+            responses: 
                 "200": 
                     description: Loaded tag family.
                     body: 
@@ -12931,7 +12931,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "f869e0f02a64487f8d461740e2a5bf89"
+                            "uuid" : "92aa1645fbcb4da2984ec4091f8ae81f"
                           } ]
                         }
             responses: 
@@ -13011,11 +13011,11 @@ mediaType: application/json
                             "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
                           } ]
                         }
-            responses:
-                "200":
+            responses: 
+                "200": 
                     description: Updated permissions.
-                    body:
-                        application/json:
+                    body: 
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -13050,10 +13050,10 @@ mediaType: application/json
                                     "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
                                   } ]
                                 }
-        put:
+        put: 
             description: Revoke permissions on the tag family from multiple roles.
-            body:
-                application/json:
+            body: 
+                application/json: 
                     schema: |
                         | Property | Mandatory | Type | Description |
                         |----------|-----------|------|-------------|
@@ -13234,7 +13234,7 @@ mediaType: application/json
                     repeat: false
                     default: ""
                     example: uuid,name
-                order:
+                order: 
                     description: Field order (ASC/DESC) to sort the result by.
                     type: string
                     required: false
@@ -13341,7 +13341,7 @@ mediaType: application/json
                     repeat: false
                     default: ""
                     example: uuid,name
-                etag:
+                etag: 
                     description: Parameter which can be used to disable the etag parameter generation and thus increase performance when etags are not needed.
                     type: boolean
                     required: false
@@ -13749,22 +13749,22 @@ mediaType: application/json
                                   }
                                 }
     /{tagFamilyUuid}/tags/{tagUuid}/rolePermissions: 
-        uriParameters:
-            tagFamilyUuid:
+        uriParameters: 
+            tagFamilyUuid: 
                 displayName: tagFamilyUuid
                 description: Uuid of the tag family.
                 type: string
                 required: true
                 repeat: false
                 example: "1898428398164d9a9842839816ed9a3d"
-            tagUuid:
+            tagUuid: 
                 displayName: tagUuid
                 description: Uuid of the tag.
                 type: string
                 required: true
                 repeat: false
                 example: "6e6f1d9f055447d2af1d9f055417d289"
-        get:
+        get: 
             description: Get the permissions on the tag for all roles.
             responses: 
                 "200": 
@@ -13847,7 +13847,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "872d123e60b9449a9cf36f54abfde99b"
+                            "uuid" : "48538764b0e84297a108fc092df6dd04"
                           } ]
                         }
             responses: 
@@ -13927,11 +13927,11 @@ mediaType: application/json
                             "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
                           } ]
                         }
-            responses:
-                "200":
+            responses: 
+                "200": 
                     description: Updated permissions.
-                    body:
-                        application/json:
+                    body: 
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -13966,10 +13966,10 @@ mediaType: application/json
                                     "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
                                   } ]
                                 }
-        put:
+        put: 
             description: Revoke permissions on the tag from multiple roles.
-            body:
-                application/json:
+            body: 
+                application/json: 
                     schema: |
                         | Property | Mandatory | Type | Description |
                         |----------|-----------|------|-------------|
@@ -14554,7 +14554,7 @@ mediaType: application/json
                           "publish" : false,
                           "assignLanguage" : true
                         }
-            responses:
+            responses: 
                 "201": 
                     description: Created node.
                     body: 
@@ -14977,7 +14977,7 @@ mediaType: application/json
                     repeat: false
                     default: ""
                     example: uuid,name
-                order:
+                order: 
                     description: Field order (ASC/DESC) to sort the result by.
                     type: string
                     required: false
@@ -15113,7 +15113,7 @@ mediaType: application/json
                     repeat: false
                     default: ""
                     example: uuid,name
-                etag:
+                etag: 
                     description: Parameter which can be used to disable the etag parameter generation and thus increase performance when etags are not needed.
                     type: boolean
                     required: false
@@ -15617,7 +15617,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "0ae186986eb04b148536b46efcf3f770"
+                            "uuid" : "409cf970c05b44d99edda6b6977c6659"
                           } ]
                         }
             responses: 
@@ -15736,10 +15736,10 @@ mediaType: application/json
                                     "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
                                   } ]
                                 }
-        put:
+        put: 
             description: Revoke permissions on the branch from multiple roles.
-            body:
-                application/json:
+            body: 
+                application/json: 
                     schema: |
                         | Property | Mandatory | Type | Description |
                         |----------|-----------|------|-------------|
@@ -15774,11 +15774,11 @@ mediaType: application/json
                             "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
                           } ]
                         }
-            responses:
-                "200":
+            responses: 
+                "200": 
                     description: Updated permissions.
-                    body:
-                        application/json:
+                    body: 
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -15813,7 +15813,7 @@ mediaType: application/json
                                     "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
                                   } ]
                                 }
-    /{branchUuid}/schemas:
+    /{branchUuid}/schemas: 
         uriParameters: 
             branchUuid: 
                 displayName: branchUuid
@@ -16295,7 +16295,7 @@ mediaType: application/json
                     repeat: false
                     default: ""
                     example: uuid,name
-                order:
+                order: 
                     description: Field order (ASC/DESC) to sort the result by.
                     type: string
                     required: false
@@ -16778,7 +16778,7 @@ mediaType: application/json
                 "200": 
                     description: Raw search response.
                     body: 
-                        application/json:
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -16807,7 +16807,7 @@ mediaType: application/json
                 "200": 
                     description: Raw search response.
                     body: 
-                        application/json:
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -16836,7 +16836,7 @@ mediaType: application/json
                 "200": 
                     description: Raw search response.
                     body: 
-                        application/json:
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -16847,47 +16847,47 @@ mediaType: application/json
     /: 
         get: 
             description: Read multiple schemas and return a paged list response.
-            queryParameters:
-                sortBy:
+            queryParameters: 
+                sortBy: 
                     description: Field name to sort the result by.
                     type: string
                     required: false
                     repeat: false
                     example: name
-                etag:
+                etag: 
                     description: Parameter which can be used to disable the etag parameter generation and thus increase performance when etags are not needed.
                     type: boolean
                     required: false
                     repeat: false
                     default: true
-                page:
+                page: 
                     description: Number of page to be loaded.
                     type: number
                     required: false
                     repeat: false
                     default: 1
                     example: "42"
-                perPage:
+                perPage: 
                     description: Number of elements per page.
                     type: number
                     required: false
                     repeat: false
                     example: "42"
-                fields:
+                fields: 
                     description: Limit the output to certain fields. This is useful in order to reduce the response JSON overhead.
                     type: string
                     required: false
                     repeat: false
                     default: ""
                     example: uuid,name
-                order:
+                order: 
                     description: Field order (ASC/DESC) to sort the result by.
                     type: string
                     required: false
                     repeat: false
                     enum: [asc, desc]
                     example: ASCENDING
-            responses:
+            responses: 
                 "200": 
                     description: Loaded list of schemas.
                     body: 
@@ -17257,47 +17257,47 @@ mediaType: application/json
     /: 
         get: 
             description: Read all microschemas which are assigned to the project.
-            queryParameters:
-                sortBy:
+            queryParameters: 
+                sortBy: 
                     description: Field name to sort the result by.
                     type: string
                     required: false
                     repeat: false
                     example: name
-                etag:
+                etag: 
                     description: Parameter which can be used to disable the etag parameter generation and thus increase performance when etags are not needed.
                     type: boolean
                     required: false
                     repeat: false
                     default: true
-                page:
+                page: 
                     description: Number of page to be loaded.
                     type: number
                     required: false
                     repeat: false
                     default: 1
                     example: "42"
-                perPage:
+                perPage: 
                     description: Number of elements per page.
                     type: number
                     required: false
                     repeat: false
                     example: "42"
-                fields:
+                fields: 
                     description: Limit the output to certain fields. This is useful in order to reduce the response JSON overhead.
                     type: string
                     required: false
                     repeat: false
                     default: ""
                     example: uuid,name
-                order:
+                order: 
                     description: Field order (ASC/DESC) to sort the result by.
                     type: string
                     required: false
                     repeat: false
                     enum: [asc, desc]
                     example: ASCENDING
-            responses:
+            responses: 
                 "200": 
                     description: List of assigned microschemas.
                     body: 
@@ -17442,44 +17442,44 @@ mediaType: application/json
             responses: 
                 "204": 
                     description: Microschema was removed from project.
-/{project}/languages:
+/{project}/languages: 
     displayName: /{project}/languages
     description: Provides endpoints which allow the manipulation of project languages.
-    /:
-        get:
+    /: 
+        get: 
             description: Get all languages, assigned to this project
-            queryParameters:
-                sortBy:
+            queryParameters: 
+                sortBy: 
                     description: Field name to sort the result by.
                     type: string
                     required: false
                     repeat: false
                     example: name
-                page:
+                page: 
                     description: Number of page to be loaded.
                     type: number
                     required: false
                     repeat: false
                     default: 1
                     example: "42"
-                perPage:
+                perPage: 
                     description: Number of elements per page.
                     type: number
                     required: false
                     repeat: false
                     example: "42"
-                order:
+                order: 
                     description: Field order (ASC/DESC) to sort the result by.
                     type: string
                     required: false
                     repeat: false
                     enum: [asc, desc]
                     example: ASCENDING
-            responses:
-                "200":
+            responses: 
+                "200": 
                     description: List of languages
-                    body:
-                        application/json:
+                    body: 
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -17504,21 +17504,21 @@ mediaType: application/json
                                     "totalCount" : 0
                                   }
                                 }
-    /tag/{languageTag}:
-        uriParameters:
-            languageTag:
+    /tag/{languageTag}: 
+        uriParameters: 
+            languageTag: 
                 displayName: languageTag
                 description: ISO tag of a language to unassign
                 type: string
                 required: true
                 repeat: false
                 example: c5ac82fa1a9c43b6ac82fa1a9ca3b61c
-        get:
-            responses:
-                "200":
+        get: 
+            responses: 
+                "200": 
                     description: A language
-                    body:
-                        application/json:
+                    body: 
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -17530,19 +17530,19 @@ mediaType: application/json
                                   "nativeName" : "日本語",
                                   "languageTag" : "jp"
                                 }
-        post:
-            queryParameters:
-                langs:
+        post: 
+            queryParameters: 
+                langs: 
                     description: Load the project's assigned languages.
                     type: boolean
                     required: false
                     repeat: false
                     example: "true"
-            responses:
-                "200":
+            responses: 
+                "200": 
                     description: A project
-                    body:
-                        application/json:
+                    body: 
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -17600,19 +17600,19 @@ mediaType: application/json
                                     "readPublished" : false
                                   }
                                 }
-        delete:
-            queryParameters:
-                langs:
+        delete: 
+            queryParameters: 
+                langs: 
                     description: Load the project's assigned languages.
                     type: boolean
                     required: false
                     repeat: false
                     example: "true"
-            responses:
-                "200":
+            responses: 
+                "200": 
                     description: A project
-                    body:
-                        application/json:
+                    body: 
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -17670,21 +17670,21 @@ mediaType: application/json
                                     "readPublished" : false
                                   }
                                 }
-    /{languageUuid}:
-        uriParameters:
-            languageUuid:
+    /{languageUuid}: 
+        uriParameters: 
+            languageUuid: 
                 displayName: languageUuid
                 description: UUID of a language to unassign
                 type: string
                 required: true
                 repeat: false
                 example: c5ac82fa1a9c43b6ac82fa1a9ca3b61c
-        get:
-            responses:
-                "200":
+        get: 
+            responses: 
+                "200": 
                     description: A language
-                    body:
-                        application/json:
+                    body: 
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -17696,19 +17696,19 @@ mediaType: application/json
                                   "nativeName" : "日本語",
                                   "languageTag" : "jp"
                                 }
-        post:
-            queryParameters:
-                langs:
+        post: 
+            queryParameters: 
+                langs: 
                     description: Load the project's assigned languages.
                     type: boolean
                     required: false
                     repeat: false
                     example: "true"
-            responses:
-                "200":
+            responses: 
+                "200": 
                     description: A project
-                    body:
-                        application/json:
+                    body: 
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
@@ -17766,19 +17766,19 @@ mediaType: application/json
                                     "readPublished" : false
                                   }
                                 }
-        delete:
-            queryParameters:
-                langs:
+        delete: 
+            queryParameters: 
+                langs: 
                     description: Load the project's assigned languages.
                     type: boolean
                     required: false
                     repeat: false
                     example: "true"
-            responses:
-                "200":
+            responses: 
+                "200": 
                     description: A project
-                    body:
-                        application/json:
+                    body: 
+                        application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|

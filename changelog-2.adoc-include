@@ -6,6 +6,11 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v3.3.3]]
+== 3.3.3 (12.11.2026)
+
+icon:check[] API Token: Now `expires` zero value of a token is considered valid and unlimited.
+
 [[v3.3.2]]
 == 3.3.2 (22.10.2026)
 
