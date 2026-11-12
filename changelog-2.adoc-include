@@ -35,6 +35,13 @@ icon:plus[] Search: Added *Content RAG* – semantic search and source-reference
 See "Content RAG":https://www.gentics.com/mesh/docs/content-rag/ in the documentation for details.
 
 
+[[v3.2.17]]
+== 3.2.17 (12.11.2026)
+
+icon:check[] Core: Now the images, marked with old MIME `image/pjpeg`, could also be manipulated.
+
+icon:check[] GraphQL: A request containing several operations now results in a `HTTP 400 Bad Request` instead of an internal server error.
+
 [[v3.2.16]]
 == 3.2.16 (22.10.2026)
 
