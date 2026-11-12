@@ -1,6 +1,6 @@
 {
   "name": "@gentics/mesh-rest-client-angular",
-  "version": "3.2.16",
+  "version": "3.2.17",
   "description": "The Angular specific Client for Gentics Mesh",
   "license": "Apache-2.0",
   "dependencies": {},
