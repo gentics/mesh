@@ -75,7 +75,7 @@ final def testPart(partName, current, branches) {
 								// run the tests
 								withEnv(["TESTCONTAINERS_RYUK_DISABLED=true", "MESH_CONSISTENCY_CHECKS=" + (Boolean.valueOf(params.consistencyChecks) ? "true" : "false"), "MAVEN_OPTS=-Xmx1g -XX:MaxMetaspaceSize=128m "]) {
 									// abort a hanging split (e.g. a test JVM which does not terminate), so that it cannot block the whole job
-									timeout(time: 2, unit: 'HOURS') {
+									timeout(time: 6, unit: 'HOURS') {
 										sh ".jenkins/run-splits.sh includes-${postfix} ${jacoco} ${partName} ${partId}"
 									}
 								}
