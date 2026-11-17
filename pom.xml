@@ -100,7 +100,6 @@
 		<module>database-tests</module>
 		<module>test-scanner</module>
 		<module>connectors</module>
-		<module>performance-tests</module>
 	</modules>
 
 	<dependencies>

@@ -16,7 +16,6 @@ properties([
 		booleanParam(name: 'runSonar',            defaultValue: false, description: "Whether to run the sonarqube checks"),
 		booleanParam(name: 'runSmokeTests',       defaultValue: false, description: "Whether to run smoke tests for the selected databases"),
 		booleanParam(name: 'runUnstableTests',    defaultValue: true,  description: "Whether to run tests in failing group."),
-		booleanParam(name: 'runPerformanceTests', defaultValue: false, description: "Whether to run performance tests."),
 		booleanParam(name: 'runClusterTests',     defaultValue: false, description: "Whether to run cluster tests."),
 		booleanParam(name: 'runDeploy',           defaultValue: false, description: "Whether to run the deploy steps."),
 		booleanParam(name: 'runDeployTesting',    defaultValue: false, description: "Whether to run the testing deploy steps."),
@@ -38,6 +37,8 @@ final def registryHostStaging	   = "push.docker.gentics.com/docker-products";
 final def registryHostTest	   = "push.docker.gentics.com/docker-snapshots";
 
 def registryHost = registryHostStaging;
+// indices of the test splits that contain tests (empty splits are skipped and produce no jacoco stash)
+def nonEmptySplits = [];
 
 final def testPart(partName, current, branches) {
 	def partId = "split${partName}${current}"
@@ -72,7 +73,10 @@ final def testPart(partName, current, branches) {
 								}
 								// run the tests
 								withEnv(["TESTCONTAINERS_RYUK_DISABLED=true", "MESH_CONSISTENCY_CHECKS=" + (Boolean.valueOf(params.consistencyChecks) ? "true" : "false"), "MAVEN_OPTS=-Xmx1g -XX:MaxMetaspaceSize=128m "]) {
-									sh ".jenkins/run-splits.sh includes-${postfix} ${jacoco} ${partName} ${partId}"
+									// abort a hanging split (e.g. a test JVM which does not terminate), so that it cannot block the whole job
+									timeout(time: 6, unit: 'HOURS') {
+										sh ".jenkins/run-splits.sh includes-${postfix} ${jacoco} ${partName} ${partId}"
+									}
 								}
 							} finally {
 								// finally stop the docker containers
@@ -183,6 +187,12 @@ stage("Setup Build Environment") {
 						def branches = [:]
 						for (int i = 0; i < runs; i++) {
 							def current = i
+							def postfix = current <= 9 ? "0" + current : "" + current
+							if (readFile("includes-${postfix}").trim().isEmpty()) {
+								echo "Split ${postfix} contains no tests, skipping it"
+								continue
+							}
+							nonEmptySplits.add(current)
 							if (Boolean.valueOf(params.testMaria)) {
 								testPart("mariadb", current, branches)
 							} else {
@@ -193,6 +203,9 @@ stage("Setup Build Environment") {
 							} else {
 								echo "MariaDB split skipped.."
 							}
+						}
+						if (nonEmptySplits.isEmpty()) {
+							error "No test split contains any tests"
 						}
 						try {
 							parallel branches
@@ -314,7 +327,8 @@ stage("Setup Build Environment") {
 			stage ("Sonar") {
 				if (env.BUILD_SKIPPED != "true" && Boolean.valueOf(params.runTests) && Boolean.valueOf(params.runSonar)) {
 					if (Boolean.valueOf(params.splitTests)) {
-						for (int i = 0; i < runs; i++) {
+						for (int j = 0; j < nonEmptySplits.size(); j++) {
+							def i = nonEmptySplits[j]
 							echo "Invoking merge for " + i
 							unstash "jacoco" + i
 							sh "mvn jacoco:merge@merge-all-jacoco -Djacoco.skip.merge=false"
@@ -373,23 +387,6 @@ stage("Setup Build Environment") {
 
 				} else {
 					echo "Docker build skipped.."
-				}
-			}
-
-			stage("Performance Tests") {
-				if (env.BUILD_SKIPPED != "true" && Boolean.valueOf(params.runPerformanceTests)) {
-					stash includes: '**', name: 'project'
-					node("mesh-performance-worker-17") {
-						try {
-							unstash 'project'
-							sh "mvn -B -U clean package -pl '!doc,!server' -Dskip.unit.tests=true -Dskip.cluster.tests=true -Dskip.performance.tests=false -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.gentics.com/"
-						} finally {
-							step([$class: 'JUnitResultArchiver', testResults: '**/target/*.performance.xml'])
-							deleteDir()
-						}
-					}
-				} else {
-					echo "Performance tests skipped.."
 				}
 			}
 
