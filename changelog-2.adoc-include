@@ -6,6 +6,11 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v3.3.3]]
+== 3.3.3 (12.11.2026)
+
+icon:check[] API Token: Now `expires` zero value of a token is considered valid and unlimited.
+
 [[v3.3.2]]
 == 3.3.2 (22.10.2026)
 
@@ -34,6 +39,13 @@ See "MCP Server":https://www.gentics.com/mesh/docs/mcp-server/ in the documentat
 icon:plus[] Search: Added *Content RAG* – semantic search and source-referenced answer generation over Mesh content (enterprise feature, disabled by default). Content is chunked and stored in dedicated `…-ragchunk-…` indices as part of the standard search sync; vectorization is handled by an Elasticsearch ingest pipeline. Included schemas and fields are controlled via the existing `elasticsearch` settings (`rag: true|false`, `rag.fields`) and `noIndex`. Permissions are derived from the requesting user's Mesh token.
 See "Content RAG":https://www.gentics.com/mesh/docs/content-rag/ in the documentation for details.
 
+
+[[v3.2.17]]
+== 3.2.17 (12.11.2026)
+
+icon:check[] Core: Now the images, marked with old MIME `image/pjpeg`, could also be manipulated.
+
+icon:check[] GraphQL: A request containing several operations now results in a `HTTP 400 Bad Request` instead of an internal server error.
 
 [[v3.2.16]]
 == 3.2.16 (22.10.2026)
