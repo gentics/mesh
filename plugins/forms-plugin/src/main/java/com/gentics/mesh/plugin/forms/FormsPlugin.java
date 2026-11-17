@@ -47,7 +47,9 @@ import com.gentics.mesh.plugin.forms.model.response.StatusResponse;
 import com.gentics.mesh.plugin.forms.model.schema.FormData;
 import com.gentics.mesh.plugin.forms.model.schema.FormSchema;
 import com.gentics.mesh.plugin.forms.model.schema.FormUiSchema;
+import com.gentics.mesh.plugin.forms.postprocessing.PostProcessingRegistry;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
+import com.gentics.mesh.plugin.forms.service.PostProcessingService;
 import com.gentics.mesh.plugin.forms.service.PurgeService;
 import com.gentics.mesh.plugin.forms.service.StatusService;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -70,6 +72,11 @@ public class FormsPlugin extends AbstractPlugin implements CommercialRestPlugin 
 	private static final Logger log = LoggerFactory.getLogger(FormsPlugin.class);
 
 	private FormsConfig configuration;
+
+	/**
+	 * Registry of post processing actions, which is created once, when the plugin is initialized
+	 */
+	private PostProcessingRegistry postProcessingRegistry;
 
 	private Map<String, String> rootNodeUuids = new ConcurrentHashMap<>();
 
@@ -480,12 +487,17 @@ public class FormsPlugin extends AbstractPlugin implements CommercialRestPlugin 
 
 			configuration.getSecurityOptions().validateSanitationRules();
 
+			// scan for post processing actions (once)
+			postProcessingRegistry = new PostProcessingRegistry();
+
 			FormsPluginComponent component = component(null);
 			StatusService statusService = component.statusService();
 			FormDataService formDataService = component.formDataService();
 			PurgeService purgeService = component.purgeService();
+			PostProcessingService postProcessingService = component.postProcessingService();
 
-			return statusService.initialize(getStorageDir().getAbsolutePath()).andThen(formDataService.initialize()).andThen(purgeService.initialize());
+			return statusService.initialize(getStorageDir().getAbsolutePath()).andThen(formDataService.initialize())
+					.andThen(purgeService.initialize()).andThen(postProcessingService.initialize());
 		} catch (Exception e) {
 			return Completable.error(e);
 		}
@@ -501,6 +513,7 @@ public class FormsPlugin extends AbstractPlugin implements CommercialRestPlugin 
 			.storageDir(getStorageDir())
 			.manifest(getManifest())
 			.env(environment())
+			.postProcessingRegistry(postProcessingRegistry)
 			.build();
 	}
 

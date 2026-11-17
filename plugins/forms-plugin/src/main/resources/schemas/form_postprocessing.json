@@ -1,0 +1,43 @@
+{
+	"name": "formgenerator_postprocessing",
+	"displayField": "key",
+	"container": false,
+	"fields": [
+		{
+			"name": "key",
+			"label": "",
+			"type": "string",
+			"required": true
+		},
+		{
+			"name": "status",
+			"label": "",
+			"type": "string",
+			"required": true
+		},
+		{
+			"name": "attempts",
+			"label": "",
+			"type": "number",
+			"required": true
+		},
+		{
+			"name": "language",
+			"label": "",
+			"type": "string",
+			"required": false
+		},
+		{
+			"name": "error",
+			"label": "",
+			"type": "string",
+			"required": false
+		},
+		{
+			"name": "lastUpdate",
+			"label": "",
+			"type": "date",
+			"required": false
+		}
+	]
+}
