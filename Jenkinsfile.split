@@ -397,7 +397,7 @@ stage("Setup Build Environment") {
 					node("mesh-performance-worker-17") {
 						try {
 							unstash 'project'
-							sh "mvn -B -U clean package -pl '!doc,!server' -Dskip.unit.tests=true -Dskip.cluster.tests=true -Dskip.performance.tests=false -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.gentics.com/"
+							sh "mvn -B -U clean package -pl '!doc,!server' -Dskip.unit.tests=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.gentics.com/"
 						} finally {
 							step([$class: 'JUnitResultArchiver', testResults: '**/target/*.performance.xml'])
 							deleteDir()

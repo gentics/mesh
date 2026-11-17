@@ -9,7 +9,7 @@
 
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
-		<artifactId>mesh</artifactId>
+		<artifactId>mesh-tests</artifactId>
 		<version>3.2.18-SNAPSHOT</version>
 	</parent>
 
@@ -35,7 +35,6 @@
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-test-common</artifactId>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
@@ -44,26 +43,14 @@
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>tests-mesh-core</artifactId>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-tests-context-api</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>tests-mesh-common</artifactId>
+		</dependency>
 	</dependencies>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<skip>${skip.performance.tests}</skip>
-					<forkCount>1</forkCount>
-				</configuration>
-			</plugin>
-		</plugins>
-
-	</build>
-
 </project>

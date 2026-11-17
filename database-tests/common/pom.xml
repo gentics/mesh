@@ -107,6 +107,10 @@
 			<artifactId>tests-mesh-service-metrics-prometheus</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-performance-tests</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<scope>compile</scope>

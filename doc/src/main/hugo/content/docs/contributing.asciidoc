@@ -66,7 +66,7 @@ git clone git@github.com:gentics/mesh.git
 cd mesh
 git checkout master
 export JAVA_HOME=<PATH-TO-YOUR-JAVA11>
-mvn clean package -DskipTests -Dskip.unit.tests -Dskip.performance.tests -Dskip.cluster.tests
+mvn clean package -DskipTests -Dskip.unit.tests -Dskip.cluster.tests
 ----
 
 The master branch should be used as the branch to be build since the dev branch can be unstable.
