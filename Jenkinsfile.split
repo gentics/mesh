@@ -16,7 +16,6 @@ properties([
 		booleanParam(name: 'runSonar',            defaultValue: false, description: "Whether to run the sonarqube checks"),
 		booleanParam(name: 'runSmokeTests',       defaultValue: false, description: "Whether to run smoke tests for the selected databases"),
 		booleanParam(name: 'runUnstableTests',    defaultValue: true,  description: "Whether to run tests in failing group."),
-		booleanParam(name: 'runPerformanceTests', defaultValue: false, description: "Whether to run performance tests."),
 		booleanParam(name: 'runClusterTests',     defaultValue: false, description: "Whether to run cluster tests."),
 		booleanParam(name: 'runDeploy',           defaultValue: false, description: "Whether to run the deploy steps."),
 		booleanParam(name: 'runDeployTesting',    defaultValue: false, description: "Whether to run the testing deploy steps."),
@@ -388,23 +387,6 @@ stage("Setup Build Environment") {
 
 				} else {
 					echo "Docker build skipped.."
-				}
-			}
-
-			stage("Performance Tests") {
-				if (env.BUILD_SKIPPED != "true" && Boolean.valueOf(params.runPerformanceTests)) {
-					stash includes: '**', name: 'project'
-					node("mesh-performance-worker-17") {
-						try {
-							unstash 'project'
-							sh "mvn -B -U clean package -pl '!doc,!server' -Dskip.unit.tests=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.gentics.com/"
-						} finally {
-							step([$class: 'JUnitResultArchiver', testResults: '**/target/*.performance.xml'])
-							deleteDir()
-						}
-					}
-				} else {
-					echo "Performance tests skipped.."
 				}
 			}
 
