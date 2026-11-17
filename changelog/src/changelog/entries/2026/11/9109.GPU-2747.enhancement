@@ -1,0 +1,1 @@
+Forms plugin: Forms can now contain custom settings in the new property `formSettings` (a JSON object), which are available in the form model via `Form.getFormSettings()`, e.g. for custom post processing actions.

@@ -192,6 +192,8 @@ public class FormDataService {
 
 	private final SchemaService schemaService;
 
+	private final PostProcessingService postProcessingService;
+
 	private final File storageDir;
 
 	private final String loadFormDataToMigrateGraphQl;
@@ -211,6 +213,7 @@ public class FormDataService {
 			OkHttpClientService okHttpClientService,
 			CaptchaService captchaService,
 			SchemaService schemaService,
+			PostProcessingService postProcessingService,
 			PluginManifest manifest,
 			@StorageDir File storageDir) {
 		this.adminClient = adminClient;
@@ -224,6 +227,7 @@ public class FormDataService {
 		this.okHttpClientService = okHttpClientService;
 		this.captchaService = captchaService;
 		this.schemaService = schemaService;
+		this.postProcessingService = postProcessingService;
 		this.storageDir = storageDir;
 
 		try {
@@ -1779,7 +1783,8 @@ public class FormDataService {
 
 	/**
 	 * Publish the form data. This will also send mails to the configured users, remove the data cookie and create a
-	 * response.
+	 * response. Before publishing, the necessary post processing actions are determined (and recorded), after publishing
+	 * they are performed asynchronously.
 	 *
 	 * @param formtypeConfigs formtype configs
 	 * @param ctx Request context
@@ -1788,13 +1793,18 @@ public class FormDataService {
 	 * @return single
 	 */
 	private Single<FormData> publishFormData(FormtypeConfigsModel formtypeConfigs, FormDataCreateContext ctx, NodeResponse savedFileUploads, Map<String, ValidationError> errors) {
-		return adminClient.publishNode(ctx.getProjectName(), savedFileUploads.getUuid()).toSingle().flatMap(publishStatus -> {
+		return postProcessingService.prepare(ctx.getProjectName(), ctx.getForm(), savedFileUploads, ctx.getLanguage())
+				.andThen(Single.defer(() -> adminClient.publishNode(ctx.getProjectName(), savedFileUploads.getUuid()).toSingle()))
+				.flatMap(publishStatus -> {
 			PluginContext meshContext = ctx.getContext();
 			Form form = ctx.getForm();
 			PostedData postedData = ctx.getPostedData();
 
 			// send mails to admin and user
 			mailService.sendMails(formtypeConfigs, ctx.getProjectName(), ctx.getForm(), savedFileUploads, meshContext);
+
+			// perform post processing actions asynchronously
+			postProcessingService.executeAsync(ctx.getProjectName(), ctx.getForm(), savedFileUploads, ctx.getLanguage());
 
 			// perform actions
 			return Single.zip(

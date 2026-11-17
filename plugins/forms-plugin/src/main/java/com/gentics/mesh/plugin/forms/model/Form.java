@@ -105,6 +105,10 @@ public class Form implements RestModel {
 
 	private String downloadBaseUrl;
 
+	@JsonProperty("formSettings")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private Map<String, Object> formSettings;
+
 	private Map<String, Object> properties = new LinkedHashMap<>();
 
 	@JsonIgnore
@@ -138,6 +142,7 @@ public class Form implements RestModel {
 		this.data = other.data;
 		this.currentPage = other.currentPage;
 		this.templateContext = other.templateContext;
+		this.formSettings = other.formSettings == null ? new LinkedHashMap<>() : new LinkedHashMap<>(other.formSettings);
 		this.properties = other.properties == null ? new LinkedHashMap<>() : new LinkedHashMap<>(other.properties);
 	}
 
@@ -455,6 +460,29 @@ public class Form implements RestModel {
 	 */
 	public void setDownloadBaseUrl(String downloadBaseUrl) {
 		this.downloadBaseUrl = downloadBaseUrl;
+	}
+
+	/**
+	 * Get the custom settings of the form.
+	 * @return The map of custom settings (never null)
+	 */
+	@Nonnull
+	public Map<String, Object> getFormSettings() {
+		if (formSettings == null) {
+			formSettings = new LinkedHashMap<>();
+		}
+
+		return formSettings;
+	}
+
+	/**
+	 * Set the custom settings of the form.
+	 * @param formSettings The map of custom settings
+	 * @return Fluent API
+	 */
+	public Form setFormSettings(Map<String, Object> formSettings) {
+		this.formSettings = formSettings;
+		return this;
 	}
 
 	/**
