@@ -1,6 +1,6 @@
 dependencies:
 - name: gentics-common
   repository: https://repo.gentics.com/repository/helm/
-  version: 0.1.0
-digest: sha256:b04efca9c2773e8219352e06f3057540dbe5ee73dc7668d40dfacad737e0e116
-generated: "2026-07-24T08:40:23.441953+02:00"
+  version: 0.2.0
+digest: sha256:e446ca01aad781746480bbdef435b1f9dba095b8a8b1bd4a54c88bcce33e2eee
+generated: "2026-11-09T16:45:00.000000+01:00"
