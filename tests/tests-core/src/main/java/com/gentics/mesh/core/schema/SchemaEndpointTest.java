@@ -58,6 +58,7 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.common.AbstractResponse;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.EventCauseInfo;
@@ -158,6 +159,47 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 		SchemaResponse schema2 = call(() -> client().findSchemaByUuid(schema.getUuid()));
 		assertTrue("The schema container flag should still be set to true", schema2.getContainer());
+	}
+
+	/**
+	 * Adding or removing fields must keep the autoPurge flag, and sending the same request again must not create another schema version
+	 * (SUP-20452).
+	 */
+	@Test
+	public void testUpdateAddAndRemoveFieldKeepsAutoPurge() {
+		// 1. Create schema with one field and autoPurge false
+		SchemaCreateRequest createRequest = FieldUtil.createMinimalValidSchemaCreateRequest();
+		createRequest.setAutoPurge(false);
+		createRequest.addField(FieldUtil.createStringFieldSchema("first"));
+		SchemaResponse schema = call(() -> client().createSchema(createRequest));
+		assertEquals(Boolean.FALSE, schema.getAutoPurge());
+
+		// 2. Add a field
+		SchemaUpdateRequest addRequest = schema.toUpdateRequest();
+		addRequest.setAutoPurge(false);
+		addRequest.addField(FieldUtil.createStringFieldSchema("second"));
+		call(() -> client().updateSchema(schema.getUuid(), addRequest));
+
+		SchemaResponse afterAdd = call(() -> client().findSchemaByUuid(schema.getUuid()));
+		assertEquals("The schema should contain the added field", 2, afterAdd.getFields().size());
+		assertEquals("The autoPurge flag should still be set to false after adding a field", Boolean.FALSE, afterAdd.getAutoPurge());
+
+		// 3. Sending the same request again must not change anything
+		GenericMessageResponse addAgain = call(() -> client().updateSchema(schema.getUuid(), addRequest));
+		assertThat(addAgain).matches("schema_update_no_difference_detected");
+
+		// 4. Remove the field again
+		SchemaUpdateRequest removeRequest = afterAdd.toUpdateRequest();
+		removeRequest.setAutoPurge(false);
+		removeRequest.removeField("second");
+		call(() -> client().updateSchema(schema.getUuid(), removeRequest));
+
+		SchemaResponse afterRemove = call(() -> client().findSchemaByUuid(schema.getUuid()));
+		assertEquals("The field should have been removed", 1, afterRemove.getFields().size());
+		assertEquals("The autoPurge flag should still be set to false after removing a field", Boolean.FALSE, afterRemove.getAutoPurge());
+
+		GenericMessageResponse removeAgain = call(() -> client().updateSchema(schema.getUuid(), removeRequest));
+		assertThat(removeAgain).matches("schema_update_no_difference_detected");
 	}
 
 	@Test

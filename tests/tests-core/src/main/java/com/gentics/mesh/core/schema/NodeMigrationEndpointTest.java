@@ -22,9 +22,12 @@ import static org.junit.Assert.assertTrue;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.Strings;
@@ -60,8 +63,10 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.branch.info.BranchSchemaInfo;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobStatus;
+import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -89,6 +94,7 @@ import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
+import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -920,6 +926,105 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			.hasStringField("text", "text_value").hasSchemaVersion("dummy", "2.0").hasVersion("2.0");
 
 		// printVersionInfo(draftResponse.getUuid());
+	}
+
+	/**
+	 * Two queued migration jobs of the same schema and branch, which build on each other (1.0 -> 2.0 and 2.0 -> 3.0), must be executed in version
+	 * order, even if the database returns the newer job first. Otherwise the nodes stay on version 2.0 (SUP-20452).
+	 */
+	@Test
+	public void testChainedMigrationJobsRunInVersionOrder() throws Throwable {
+		final int nodeCount = 3;
+		// Job uuids chosen so that the newer job (2.0 -> 3.0) comes first in insertion order as well as in primary key order
+		final String newerJobUuid = "00000000000000000000000000000001";
+		final String olderJobUuid = "7fffffffffffffff7fffffffffffffff";
+
+		// 1. Create schema with nodes
+		SchemaCreateRequest request = new SchemaCreateRequest();
+		request.setName("chained");
+		request.addField(FieldUtil.createStringFieldSchema("text"));
+		request.setSegmentField("text");
+		request.setDisplayField("text");
+		request.validate();
+		SchemaResponse schemaResponse = call(() -> client().createSchema(request));
+		call(() -> client().assignSchemaToProject(PROJECT_NAME, schemaResponse.getUuid()));
+		call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, initialBranchUuid(), schemaResponse.toReference()));
+
+		List<String> nodeUuids = new ArrayList<>();
+		for (int i = 0; i < nodeCount; i++) {
+			NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+			nodeCreateRequest.setLanguage("en");
+			nodeCreateRequest.setSchemaName("chained");
+			nodeCreateRequest.setParentNodeUuid(tx(() -> folder("2015").getUuid()));
+			nodeCreateRequest.getFields().put("text", new StringFieldImpl().setString("text_value_" + i));
+			nodeUuids.add(call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest)).getUuid());
+		}
+
+		// 2. Create schema versions 2.0 and 3.0 without assigning them to the branch
+		SchemaUpdateRequest updateRequest = new SchemaUpdateRequest();
+		updateRequest.setName("chained");
+		updateRequest.addField(FieldUtil.createStringFieldSchema("text"));
+		updateRequest.addField(FieldUtil.createStringFieldSchema("text2"));
+		updateRequest.setSegmentField("text");
+		updateRequest.setDisplayField("text");
+		updateRequest.validate();
+		call(() -> client().updateSchema(schemaResponse.getUuid(), updateRequest, new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false)));
+		updateRequest.addField(FieldUtil.createStringFieldSchema("text3"));
+		call(() -> client().updateSchema(schemaResponse.getUuid(), updateRequest, new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false)));
+
+		// 3. Assign both versions to the branch and queue the two migration jobs, the newer one first
+		tx(tx -> {
+			CommonTx ctx = CommonTx.get();
+			HibBranch branch = initialBranch();
+			HibSchemaVersion version3 = ctx.schemaDao().findByUuid(schemaResponse.getUuid()).getLatestVersion();
+			HibSchemaVersion version2 = version3.getPreviousVersion();
+			HibSchemaVersion version1 = version2.getPreviousVersion();
+			assertEquals("3.0", version3.getVersion());
+			assertEquals("2.0", version2.getVersion());
+			assertEquals("1.0", version1.getVersion());
+
+			HibJob newerJob = queueSchemaMigration(ctx, newerJobUuid, branch, version2, version3);
+			HibJob olderJob = queueSchemaMigration(ctx, olderJobUuid, branch, version1, version2);
+			assignQueued(ctx, branch, version2, olderJob);
+			assignQueued(ctx, branch, version3, newerJob);
+		});
+
+		// Precondition: the database returns the newer job first, so the test actually covers the wrong order
+		List<String> jobOrder = tx(tx -> {
+			return tx.jobDao().findAll().stream()
+				.map(job -> job.getFromSchemaVersion().getVersion() + "->" + job.getToSchemaVersion().getVersion())
+				.collect(Collectors.toList());
+		});
+		assertEquals("Test setup: the database is expected to return the newer job first", List.of("2.0->3.0", "1.0->2.0"), jobOrder);
+
+		// 4. Process the jobs
+		triggerAndWaitForAllJobs(COMPLETED);
+
+		// 5. All nodes must be on the latest schema version
+		for (String nodeUuid : nodeUuids) {
+			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid))).hasSchemaVersion("chained", "3.0");
+		}
+	}
+
+	private HibJob queueSchemaMigration(CommonTx ctx, String uuid, HibBranch branch, HibSchemaVersion fromVersion, HibSchemaVersion toVersion) {
+		// Same properties as set by JobDao#enqueueSchemaMigration, but with a given uuid
+		HibJob job = ctx.jobDao().createPersisted(uuid, j -> {
+			j.setType(JobType.schema);
+			j.setCreationTimestamp();
+			j.setBranch(branch);
+			j.setStatus(QUEUED);
+			j.setFromSchemaVersion(fromVersion);
+			j.setToSchemaVersion(toVersion);
+		});
+		return ctx.jobDao().mergeIntoPersisted(job);
+	}
+
+	private void assignQueued(CommonTx ctx, HibBranch branch, HibSchemaVersion version, HibJob job) {
+		// Same as PersistingBranchDao#assignSchemaVersion, but for an already queued job
+		HibBranchSchemaVersion edge = ctx.branchDao().connectToSchemaVersion(branch, version);
+		edge.setActive(true);
+		edge.setMigrationStatus(QUEUED);
+		edge.setJobUuid(job.getUuid());
 	}
 
 //	private void printVersionInfo(String uuid) {

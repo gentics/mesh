@@ -110,6 +110,54 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 		}
 	}
 
+	/**
+	 * An update change which does not carry the autoPurge flag (e.g. the field order change created when fields are added or removed) must keep the
+	 * autoPurge flag of the schema (SUP-20452).
+	 */
+	@Test
+	public void testFieldOrderChangeKeepsAutoPurge() {
+		for (Boolean autoPurge : new Boolean[] { false, true }) {
+			try (Tx tx = tx()) {
+				HibSchemaVersion version = createVersion(schemaDao(tx));
+
+				SchemaVersionModel schema = new SchemaModelImpl();
+				schema.setAutoPurge(autoPurge);
+				schema.addField(FieldUtil.createHtmlFieldSchema("first"));
+				schema.addField(FieldUtil.createHtmlFieldSchema("second"));
+				version.setSchema(schema);
+
+				HibUpdateSchemaChange change = createChange(schemaDao(tx), version, SchemaChangeOperation.UPDATESCHEMA);
+				change.setOrder("second", "first");
+				version.setNextChange(change);
+
+				SchemaModel updatedSchema = mutator.apply(version);
+				assertEquals("The order should have been changed", "second", updatedSchema.getFields().get(0).getName());
+				assertEquals("The autoPurge flag must not be changed by a change which does not contain it", autoPurge, updatedSchema.getAutoPurge());
+			}
+		}
+	}
+
+	/**
+	 * An update change which explicitly sets the autoPurge flag to null must reset the flag, so that the global setting applies.
+	 */
+	@Test
+	public void testAutoPurgeExplicitNullResetsFlag() {
+		try (Tx tx = tx()) {
+			HibSchemaVersion version = createVersion(schemaDao(tx));
+
+			SchemaVersionModel schema = new SchemaModelImpl();
+			schema.setAutoPurge(false);
+			version.setSchema(schema);
+
+			HibUpdateSchemaChange change = createChange(schemaDao(tx), version, SchemaChangeOperation.UPDATESCHEMA);
+			change.setAutoPurgeFlag(null);
+			version.setNextChange(change);
+
+			SchemaModel updatedSchema = mutator.apply(version);
+			assertNull("The autoPurge flag should have been reset", updatedSchema.getAutoPurge());
+		}
+	}
+
 	@Test
 	public void testUpdateSchemaSegmentFieldToNull() {
 		try (Tx tx = tx()) {

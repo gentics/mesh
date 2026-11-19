@@ -187,8 +187,12 @@ public interface HibUpdateSchemaChange extends HibFieldSchemaContainerUpdateChan
 		}
 
 		// .autoPurge
-		Boolean autoPurge = getAutoPurgeFlag();
-		schema.setAutoPurge(autoPurge);
+		// Only apply the flag if this change contains it. Changes without it (e.g. a field order change) must keep the current value,
+		// while an explicit null still resets the flag to the global setting.
+		if (getRestProperties().containsKey(AUTO_PURGE_FLAG_KEY)) {
+			Boolean autoPurge = getAutoPurgeFlag();
+			schema.setAutoPurge(autoPurge);
+		}
 
 		return (R) schema;
 	}
