@@ -32,7 +32,8 @@ public class IndexResetTest extends AbstractNodeSearchEndpointTest {
 	public static MockingLoggerRule rule;
 
 	static {
-		rule = new MockingLoggerRule();
+		// only the verified logger records its invocations, all other (stub-only) mocks would otherwise exhaust the heap
+		rule = new MockingLoggerRule(ElasticSearchProvider.class.getName());
 		rule.initialize();
 	}
 
