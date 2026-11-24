@@ -7,6 +7,7 @@ import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.doc.GenerateDocumentation;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 import com.gentics.mesh.etc.config.env.Option;
+import io.vertx.core.http.HttpServerOptions;
 
 /**
  * Options for the used Vert.x instance.
@@ -18,6 +19,8 @@ public class VertxOptions implements Option {
 
 	public static final int DEFAULT_EVENT_POOL_SIZE = 2 * Runtime.getRuntime().availableProcessors();
 
+	public static final int DEFAULT_MAX_HEADER_SIZE = HttpServerOptions.DEFAULT_MAX_HEADER_SIZE;
+
 	public static final boolean DEFAULT_ORDERED_BLOCKING_HANDLERS = true;
 
 	public static final String MESH_VERTX_WORKER_POOL_SIZE_ENV = "MESH_VERTX_WORKER_POOL_SIZE";
@@ -25,6 +28,8 @@ public class VertxOptions implements Option {
 	public static final String MESH_VERTX_EVENT_POOL_SIZE_ENV = "MESH_VERTX_EVENT_POOL_SIZE";
 
 	public static final String MESH_VERTX_ORDERED_BLOCKING_HANDLERS_ENV = "MESH_VERTX_ORDERED_BLOCKING_HANDLERS";
+
+	public static final String MESH_VERTX_MAX_HEADER_SIZE_ENV = "MESH_VERTX_MAX_HEADER_SIZE";
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Configure worker pool size.")
@@ -40,6 +45,11 @@ public class VertxOptions implements Option {
 	@JsonPropertyDescription("Configure, whether blocking handlers for mutating requests should be ordered.")
 	@EnvironmentVariable(name = MESH_VERTX_ORDERED_BLOCKING_HANDLERS_ENV, description = "Override the configured Vert.x blocking handlers ordering setting.")
 	private boolean orderedBlockingHandlers = true;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Configure the max http header size for all incoming requests.")
+	@EnvironmentVariable(name = MESH_VERTX_MAX_HEADER_SIZE_ENV, description = "Override the max http header size for all incoming requests.")
+	private int maxHeaderSize = DEFAULT_MAX_HEADER_SIZE;
 
 	@JsonProperty("eventBus")
 	@JsonPropertyDescription("EventBus options")
@@ -73,6 +83,17 @@ public class VertxOptions implements Option {
 	@Setter
 	public VertxOptions setOrderedBlockingHandlers(boolean orderedBlockingHandlers) {
 		this.orderedBlockingHandlers = orderedBlockingHandlers;
+		return this;
+	}
+
+	@Getter
+	public int getMaxHeaderSize() {
+		return maxHeaderSize;
+	}
+
+	@Setter
+	public VertxOptions setMaxHeaderSize(int maxHeaderSize) {
+		this.maxHeaderSize = maxHeaderSize;
 		return this;
 	}
 

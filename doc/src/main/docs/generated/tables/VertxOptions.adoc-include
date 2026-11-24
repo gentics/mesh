@@ -27,4 +27,9 @@
 | integer
 | Configure worker pool size.  Default: *20*.
 
+| maxHeaderSize
+| no
+| integer
+| Configure the max http header size for all incoming requests in bytes. Default: *8192* (8kb).
+
 |======
