@@ -159,41 +159,52 @@ ul.doc-toc h2 {
                     </li>
 
                     <li class="section">
-                        <h2><a href="/premium-features">Commercial Plugins</a></h2>
+                        <h2><a href="/premium-features">Commercial Features</a></h2>
                         <ul>
                             <li>
-                                <a href="/premium-features/favorite">Favourites Plugin</a>
+                                <a href="/premium-features/cli">CLI</a>
                             </li>
                             <li>
-                                <a href="/premium-features/comment">Comments Plugin</a>
+                                <a href="/premium-features/helm-chart">Helm Chart</a>
                             </li>
                             <li>
-                                <a href="/premium-features/like">Likes Plugin</a>
-                            </li>
-                            <li>
-                                <a href="/premium-features/keycloak">Keycloak Plugin</a>
-                            </li>
-                           <li>
-                                <a href="/premium-features/must-read">Must Read Plugin</a>
+                                <a href="/premium-features/premium-db/">Commercial SQL RDBMSs</a>
                             </li>
                         </ul>
                     </li>
 
                     <li class="section">
-                        <h2><a href="support">Support</a></h2>
+                        <h2><a href="https://www.gentics.com/guides/latest/plugins/index.html">Plugins</a></h2>
                         <ul>
                             <li>
-                                <a href="support/#_professional_services">Professional Services</a>
+                                <a href="https://www.gentics.com/guides/latest/plugins/favorite-plugin/index.html">Favourites Plugin</a>
                             </li>
                             <li>
-                                <a href="support/#_release_cycle">Release Cycle</a>
+                                <a href="https://www.gentics.com/guides/latest/plugins/comment/index.html">Comments Plugin</a>
                             </li>
                             <li>
-                                <a href="commercial/long-term-support">Long-term Support</a>
+                                <a href="https://www.gentics.com/guides/latest/plugins/like-plugin/index.html">Likes Plugin</a>
+                            </li>
+                            <li>
+                                <a href="https://www.gentics.com/guides/latest/plugins/keycloak-plugin/index.html">Keycloak Plugin</a>
+                            </li>
+                            <li>
+                                <a href="https://www.gentics.com/guides/latest/plugins/mustread-plugin/index.html">Must Read Plugin</a>
+                            </li>
+                            <li>
+                                <a href="https://www.gentics.com/guides/latest/plugins/gcms-plugin/index.html">Gentics CMS Plugin</a>
+                            </li>
+                            <li>
+                                <a href="https://www.gentics.com/guides/latest/plugins/search-plugin/index.html">Search Plugin</a>
+                            </li>
+                            <li>
+                                <a href="https://www.gentics.com/guides/latest/plugins/export-plugin/index.html">Export Plugin</a>
+                            </li>
+                            <li>
+                                <a href="https://www.gentics.com/guides/latest/plugins/forms-plugin/index.html">Forms Plugin</a>
                             </li>
                         </ul>
                     </li>
-
                 </ul>
             </div>
             <div class="col-md-4">
@@ -329,8 +340,22 @@ ul.doc-toc h2 {
                                 <a href="plugin-migration">Plugin Migration</a>
                             </li>
                         </ul>
-                    </li>
+                    </li>		
 
+                    <li class="section">
+                        <h2><a href="support">Support</a></h2>
+                        <ul>
+                            <li>
+                                <a href="support/#_professional_services">Professional Services</a>
+                            </li>
+                            <li>
+                                <a href="support/#_release_cycle">Release Cycle</a>
+                            </li>
+                            <li>
+                                <a href="commercial/long-term-support">Long-term Support</a>
+                            </li>
+                        </ul>
+                    </li>
                 </ul>
             </div>
             <div class="col-md-4">
