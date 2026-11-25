@@ -24,6 +24,11 @@
           {{ .TableOfContents }}
         </div>
         {{ .Content }}
+        {{- /* Page bundles (e.g. premium-features/*): index = overview, further pages = documentation */}}
+        {{ with .Resources.ByType "page" }}
+          <h2 id="documentation">Documentation</h2>
+          {{ range . }}{{ .Content }}{{ end }}
+        {{ end }}
         {{ if .Params.nofooter }}
           <div id="footnotes">
             {{ range .Params }}
