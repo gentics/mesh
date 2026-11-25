@@ -757,7 +757,7 @@ public class Form implements RestModel {
 		JsonArray array = new JsonArray();
 
 		getElementsInsideProperties()
-			.filter(elt -> elt.isReportable() && filter.test(elt))
+			.filter(elem -> elem.isReportable() && filter.test(elem))
 			.forEach(elem -> {
 				JsonObject elemObj = new JsonObject(elem.toJson())
 					.put("isFile", elem instanceof BinaryElement);
@@ -766,6 +766,9 @@ public class Form implements RestModel {
 					JsonObject formGridOptionsJsonObject = new JsonObject(JsonUtil.toJson(formGridOptions));
 					elemObj.mergeIn(formGridOptionsJsonObject, true);
 				});
+
+				// A label defined in the ui schema takes precedence over the label defined in the schema
+				elem.getUiSchemaLabel(language, uiSchema).ifPresent(label -> elemObj.put("label", label));
 
 				Object valueProperty = elemObj.remove(FIELD_VALUE);
 
@@ -800,11 +803,10 @@ public class Form implements RestModel {
 	 * @return the modified {@code resultObj}
 	 */
 	private JsonObject addValueLabels(FormElement elem, JsonObject resultObj, String language) {
-		if (!(elem instanceof ValueListElement)) {
+		if (!(elem instanceof ValueListElement listElem)) {
 			return resultObj;
 		}
 
-		ValueListElement listElem = (ValueListElement) elem;
 		Map<String, String> valueLabels = listElem.getSelectOptions().stream()
 			.collect(ValueListElement.optionsMapCollector(language));
 
@@ -865,7 +867,7 @@ public class Form implements RestModel {
 	 */
 	public Map<String, Boolean> getReportableElementsInfo() {
 		return getElementsInsideProperties()
-			.filter(elt -> elt.isReportable() && StringUtils.isNotBlank(elt.getName()))
+			.filter(elem -> elem.isReportable() && StringUtils.isNotBlank(elem.getName()))
 			.collect(Collectors.toMap(FormElement::getName, e -> e instanceof BinaryElement, (u, v) -> u, LinkedHashMap::new));
 	}
 
@@ -897,7 +899,7 @@ public class Form implements RestModel {
 	 */
 	public void updateFormPage(PostedData postedData) {
 		getElementsInsideProperties()
-			.filter(elt -> elt.isActive() && elt instanceof FormpageElement && "1".equals(elt.getSingleFormData(postedData)))
+			.filter(elem -> elem.isActive() && elem instanceof FormpageElement && "1".equals(elem.getSingleFormData(postedData)))
 			.map(FormElement::getName)
 			.findFirst()
 			.ifPresent(page -> currentPage = page);

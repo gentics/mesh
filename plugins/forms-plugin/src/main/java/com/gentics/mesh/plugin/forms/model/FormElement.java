@@ -608,19 +608,30 @@ public abstract class FormElement implements RestModel {
 	 */
 	@JsonIgnore
 	public String getLabel(String language, FormUiSchema uiSchema) {
+		// If no translations were found, fall back to the element name.
+		return getUiSchemaLabel(language, uiSchema).orElse(name);
+	}
+
+	/**
+	 * Get the label of the given element from the ui schema. Blank translations are ignored. If no (non-blank)
+	 * translation for the requested language exists, the first found non-blank translation is used.
+	 * @param language language
+	 * @param uiSchema ui schema
+	 * @return optional label, empty if the ui schema does not define a non-blank label for this element
+	 */
+	@JsonIgnore
+	public Optional<String> getUiSchemaLabel(String language, FormUiSchema uiSchema) {
 		return Optional.ofNullable(uiSchema).flatMap(schema -> schema.findElement(key))
 			.map(UiSchemaPageElement::getLabel)
 			.flatMap(map -> {
-				if (map.isEmpty()) {
-					return Optional.empty();
+				String requested = map.get(language);
+				if (StringUtils.isNotBlank(requested)) {
+					return Optional.of(requested);
 				}
 
-				return map.keySet().stream().findFirst()
-					// Try to get the requested translation, if not available the first found translation.
-					.map(fallbackLang -> map.getOrDefault(language, map.get(fallbackLang)));
-			})
-			// If no translations were found, fall back to the element name.
-			.orElse(name);
+				// Fall back to the first non-blank translation.
+				return map.values().stream().filter(StringUtils::isNotBlank).findFirst();
+			});
 	}
 
 	/**
