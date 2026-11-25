@@ -8,23 +8,6 @@
         </div>
     </div>
 </div>
- {{ if eq .Params.nav "docs"}}
- <div class="topsection-wrapper-white">
-        <div class="col-md-12">
-            <ul class="nav navbar-nav">
-                <li>
-                    <a href="../getting-started">Getting Started</a>
-                </li>
-                <li>
-                    <a href="../api">API</a>
-                </li>
-                <li>
-                    <a href="../changelog">Changelog</a>
-                </li>
-            </ul>
-        </div>
-    </div>
- {{end}}
 <div class="docs-layout">
   {{ partial "docs-menu.html" . }}
   <div class="docs-main container-fluid docs-content">
